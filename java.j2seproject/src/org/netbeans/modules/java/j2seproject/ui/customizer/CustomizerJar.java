@@ -38,21 +38,14 @@ import org.openide.util.NbBundle;
  *
  * @author  phrebejk
  */
-public class CustomizerJar extends JPanel implements J2SECustomizer.Panel, HelpCtx.Provider {
+public class CustomizerJar extends JPanel implements HelpCtx.Provider {
     
-    private VisualPropertySupport vps;
+    public CustomizerJar( J2SEProjectProperties uiProperties ) {
+        initComponents();
         
-    /** Creates new form CustomizerCompile */
-    public CustomizerJar(  J2SEProjectProperties j2seProperties  ) {
-        initComponents();        
-        vps = new VisualPropertySupport( j2seProperties );
-    }
-    
-    public void initValues() {
-        
-        vps.register( jTextFieldDistDir, J2SEProjectProperties.DIST_JAR );
-        vps.register( jTextFieldExcludes, J2SEProjectProperties.BUILD_CLASSES_EXCLUDES );
-        vps.register( jCheckBoxCommpress, J2SEProjectProperties.JAR_COMPRESS ); 
+        jTextFieldDistDir.setDocument( uiProperties.DIST_JAR_MODEL );
+        jTextFieldExcludes.setDocument( uiProperties.BUILD_CLASSES_EXCLUDES_MODEL );
+        jCheckBoxCommpress.setModel( uiProperties.JAR_COMPRESS_MODEL ); 
     } 
     
     public HelpCtx getHelpCtx() {
@@ -76,12 +69,11 @@ public class CustomizerJar extends JPanel implements J2SECustomizer.Panel, HelpC
 
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(new javax.swing.border.EtchedBorder());
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelDistDir, org.openide.util.NbBundle.getMessage(CustomizerJar.class, "LBL_CustomizeJar_DistDir_JTextField"));
         jLabelDistDir.setLabelFor(jTextFieldDistDir);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelDistDir, org.openide.util.NbBundle.getMessage(CustomizerJar.class, "LBL_CustomizeJar_DistDir_JTextField"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 12);
         add(jLabelDistDir, gridBagConstraints);
 
         jTextFieldDistDir.setEditable(false);
@@ -89,17 +81,17 @@ public class CustomizerJar extends JPanel implements J2SECustomizer.Panel, HelpC
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 12);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(jTextFieldDistDir, gridBagConstraints);
         jTextFieldDistDir.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerJar.class).getString("AD_jTextFieldDistDir"));
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(CustomizerJar.class, "LBL_CustomizeJar_Excludes_JTextField"));
         jLabel2.setLabelFor(jTextFieldExcludes);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(CustomizerJar.class, "LBL_CustomizeJar_Excludes_JTextField"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(jLabel2, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -108,7 +100,6 @@ public class CustomizerJar extends JPanel implements J2SECustomizer.Panel, HelpC
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(jTextFieldExcludes, gridBagConstraints);
         jTextFieldExcludes.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerJar.class).getString("AD_jTextFieldExcludes"));
 
@@ -120,7 +111,6 @@ public class CustomizerJar extends JPanel implements J2SECustomizer.Panel, HelpC
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
         add(jCheckBoxCommpress, gridBagConstraints);
         jCheckBoxCommpress.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerJar.class).getString("AD_jCheckBoxCompress"));
 
@@ -134,36 +124,5 @@ public class CustomizerJar extends JPanel implements J2SECustomizer.Panel, HelpC
     private javax.swing.JTextField jTextFieldDistDir;
     private javax.swing.JTextField jTextFieldExcludes;
     // End of variables declaration//GEN-END:variables
-        
-    // Storing methods ---------------------------------------------------------
-    
-    /** Stores the value according to the src component into the helper
-     */
-    private void store( JComponent src ) {
-    
-        /*
-        if ( src == jTextFieldSrcDir ) {
-            j2seProperties.put( J2SEProjectProperties.SRC_DIR, jTextFieldSrcDir.getText() );
-        }
-        else if ( src == jTextFieldBuildDir ) {
-            j2seProperties.put( J2SEProjectProperties.BUILD_DIR, jTextFieldBuildDir.getText() );
-        }
-        else if ( src == jListClasspath ) {
-            
-            List elements = new ArrayList( classpathModel.size() );
-            
-            for ( Enumeration e = classpathModel.elements(); e.hasMoreElements(); ) {
-                elements.add( e.nextElement() );
-            }
-            j2seProperties.put( J2SEProjectProperties.JAVAC_CLASSPATH, elements );
-        }
-        
-        assert true : "CustomizerCompile - Unknown component : " + src; // NOI18N
-        */
-    } 
-    
-    
-    
-    // Private methods for classpath data manipulation -------------------------
-        
+                
 }

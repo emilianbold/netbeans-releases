@@ -24,42 +24,49 @@ import org.netbeans.modules.java.j2seproject.J2SEProject;
  *
  * @author  tom
  */
-public class CustomizerSources extends javax.swing.JPanel implements J2SECustomizer.Panel, HelpCtx.Provider {
+public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Provider {
     
-    private J2SEProjectProperties j2seProperties;
-    private VisualPropertySupport vps;
-    private VisualSourceRootsSupport sources;
-    private VisualSourceRootsSupport tests;
-
-
-    /** Creates new form CustomizerSources */
-    public CustomizerSources (J2SEProjectProperties j2seProperties) {
-        this.j2seProperties = j2seProperties;
+    public CustomizerSources( J2SEProjectProperties uiProperties ) {
         initComponents();
-        this.vps = new VisualPropertySupport( j2seProperties );
-        this.sources = new VisualSourceRootsSupport((J2SEProject)j2seProperties.getProject(),this.sourceRoots,this.addSourceRoot,
-                this.removeSourceRoot, this.upSourceRoot, this.downSourceRoot,
-                NbBundle.getMessage(CustomizerSources.class,"TXT_ProjectOwnedRoot"), NbBundle.getMessage(CustomizerSources.class,"TXT_AlreadyInTests"));
-        this.tests = new VisualSourceRootsSupport((J2SEProject)j2seProperties.getProject(),this.testRoots,this.addTestRoot,
-                this.removeTestRoot, this.upTestRoot, this.downTestRoot,
-                NbBundle.getMessage(CustomizerSources.class,"TXT_ProjectOwnedRoot"), NbBundle.getMessage(CustomizerSources.class,"TXT_AlreadyInSources"));
-        this.sources.setRelatedVisualSourceRootsSupport(this.tests);
-        this.tests.setRelatedVisualSourceRootsSupport(this.sources);
-    }
-
-    public void initValues() {
-        FileObject projectFolder = j2seProperties.getProject().getProjectDirectory();
+        jScrollPane1.getViewport().setBackground( sourceRoots.getBackground() );
+        jScrollPane2.getViewport().setBackground( testRoots.getBackground() );
+        
+        sourceRoots.setModel( uiProperties.SOURCE_ROOTS_MODEL );
+        testRoots.setModel( uiProperties.TEST_ROOTS_MODEL );
+        
+        FileObject projectFolder = uiProperties.getProject().getProjectDirectory();
         File pf = FileUtil.toFile( projectFolder );
         this.projectLocation.setText( pf == null ? "" : pf.getPath() ); // NOI18N
-        vps.register(this.sources, J2SEProjectProperties.SOURCE_ROOTS );
-        vps.register(this.tests, J2SEProjectProperties.TEST_ROOTS );
+        
+        
+        J2SESourceRootsUi.EditMediator emSR = J2SESourceRootsUi.registerEditMediator(
+            (J2SEProject)uiProperties.getProject(),
+            sourceRoots,
+            addSourceRoot,
+            removeSourceRoot, 
+            upSourceRoot, 
+            downSourceRoot,
+            NbBundle.getMessage(CustomizerSources.class,"TXT_ProjectOwnedRoot"), 
+            NbBundle.getMessage(CustomizerSources.class,"TXT_AlreadyInTests") );
+        
+        J2SESourceRootsUi.EditMediator emTSR = J2SESourceRootsUi.registerEditMediator(
+            (J2SEProject)uiProperties.getProject(),
+            testRoots,
+            addTestRoot,
+            removeTestRoot, 
+            upTestRoot, 
+            downTestRoot,
+            NbBundle.getMessage(CustomizerSources.class,"TXT_ProjectOwnedRoot"), 
+            NbBundle.getMessage(CustomizerSources.class,"TXT_AlreadyInSources"));
+        
+        emSR.setRelatedEditMediator( emTSR );
+        emTSR.setRelatedEditMediator( emSR );
+        
     }
 
     public HelpCtx getHelpCtx() {
         return new HelpCtx (CustomizerSources.class);
     }
-    
-    
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -90,13 +97,12 @@ public class CustomizerSources extends javax.swing.JPanel implements J2SECustomi
 
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(new javax.swing.border.EtchedBorder());
         jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("MNE_ProjectFolder").charAt(0));
         jLabel1.setLabelFor(projectLocation);
         jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("CTL_ProjectFolder"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
         add(jLabel1, gridBagConstraints);
 
         projectLocation.setEditable(false);
@@ -105,7 +111,7 @@ public class CustomizerSources extends javax.swing.JPanel implements J2SECustomi
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(projectLocation, gridBagConstraints);
 
         sourceRootsPanel.setLayout(new java.awt.GridBagLayout());
@@ -209,7 +215,7 @@ public class CustomizerSources extends javax.swing.JPanel implements J2SECustomi
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 0.45;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(sourceRootsPanel, gridBagConstraints);
 
         testRootsPanel.setLayout(new java.awt.GridBagLayout());
@@ -316,7 +322,7 @@ public class CustomizerSources extends javax.swing.JPanel implements J2SECustomi
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 0.45;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(testRootsPanel, gridBagConstraints);
 
     }//GEN-END:initComponents

@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.List;
 import java.awt.*;
+import javax.swing.ButtonModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -26,6 +27,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
+import javax.swing.text.Document;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
@@ -48,41 +50,16 @@ import org.openide.util.HelpCtx;
  *
  * @author  phrebejk
  */
-public class CustomizerCompile extends JPanel implements J2SECustomizer.Panel, HelpCtx.Provider {
+public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
 
-    // Helper for storing properties
-    private J2SEProjectProperties j2seProperties;
-    private VisualPropertySupport vps;
-    private VisualClasspathSupport vcs;
-
-    /** Creates new form CustomizerCompile */
-    public CustomizerCompile( J2SEProjectProperties j2seProperties ) {
-        initComponents();
-        this.j2seProperties = j2seProperties;
-        vps = new VisualPropertySupport( j2seProperties );
-        vcs = new VisualClasspathSupport(
-            j2seProperties.getProject(),
-            jListClasspath,
-            jButtonAddJar,
-            jButtonAddLibrary,
-            jButtonAddArtifact,
-            jButtonEdit,
-            jButtonRemove,
-            jButtonMoveUp,
-            jButtonMoveDown );
         
-    }
-
-
-    public void initValues() {
-
-        vps.register( jCheckBoxDeprecation, J2SEProjectProperties.JAVAC_DEPRECATION );
-        vps.register( jCheckBoxDebugInfo, J2SEProjectProperties.JAVAC_DEBUG );                
-        vps.register( vcs, J2SEProjectProperties.JAVAC_CLASSPATH );
-        vps.register( jCheckBoxBuildSubprojects, J2SEProjectProperties.NO_DEPENDENCIES );
-        vps.register(additionalJavacParamsJTextField, J2SEProjectProperties.JAVAC_COMPILER_ARG); 
-        jButtonEdit.setVisible( false );
-
+    public CustomizerCompile( J2SEProjectProperties uiProperties ) {
+        initComponents();
+                
+        jCheckBoxDeprecation.setModel( uiProperties.JAVAC_DEPRECATION_MODEL );
+        jCheckBoxDebugInfo.setModel( uiProperties.JAVAC_DEBUG_MODEL );
+        additionalJavacParamsJTextField.setDocument( uiProperties.JAVAC_COMPILER_ARG_MODEL );                 
+        
     }
 
     public HelpCtx getHelpCtx() {
@@ -103,22 +80,9 @@ public class CustomizerCompile extends JPanel implements J2SECustomizer.Panel, H
         additionalJavacParamsJLabel = new javax.swing.JLabel();
         additionalJavacParamsJTextField = new javax.swing.JTextField();
         additionalJavacParamsExampleJLabel = new javax.swing.JLabel();
-        jPanel2 = new javax.swing.JPanel();
-        jLabelClasspath = new javax.swing.JLabel();
-        jScrollClasspath = new javax.swing.JScrollPane();
-        jListClasspath = new javax.swing.JList();
-        jButtonAddArtifact = new javax.swing.JButton();
-        jButtonAddLibrary = new javax.swing.JButton();
-        jButtonAddJar = new javax.swing.JButton();
-        jButtonEdit = new javax.swing.JButton();
-        jButtonRemove = new javax.swing.JButton();
-        jButtonMoveUp = new javax.swing.JButton();
-        jButtonMoveDown = new javax.swing.JButton();
-        jCheckBoxBuildSubprojects = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(new javax.swing.border.CompoundBorder(new javax.swing.border.EtchedBorder(), new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 12, 12))));
         org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxDebugInfo, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_DebugInfo_JCheckBox"));
         jCheckBoxDebugInfo.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -162,108 +126,12 @@ public class CustomizerCompile extends JPanel implements J2SECustomizer.Panel, H
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(additionalJavacParamsExampleJLabel, gridBagConstraints);
-
-        jPanel2.setLayout(new java.awt.GridBagLayout());
-
-        jLabelClasspath.setLabelFor(jListClasspath);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelClasspath, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Classpath_JLabel"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
-        jPanel2.add(jLabelClasspath, gridBagConstraints);
-        jLabelClasspath.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "ACSD_CustomizerCompile_jLabelClasspath"));
-
-        jScrollClasspath.setViewportView(jListClasspath);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
-        jPanel2.add(jScrollClasspath, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(jButtonAddArtifact, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Classpath_AddArtifact_JButton"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        jPanel2.add(jButtonAddArtifact, gridBagConstraints);
-        jButtonAddArtifact.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "ACSD_CustomizerCompile_jButtonAddArtifact"));
-
-        org.openide.awt.Mnemonics.setLocalizedText(jButtonAddLibrary, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Classpath_AddLibrary_JButton"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        jPanel2.add(jButtonAddLibrary, gridBagConstraints);
-        jButtonAddLibrary.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "ACSD_CustomizerCompile_jButtonAddLibrary"));
-
-        org.openide.awt.Mnemonics.setLocalizedText(jButtonAddJar, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Classpath_AddJar_JButton"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
-        jPanel2.add(jButtonAddJar, gridBagConstraints);
-        jButtonAddJar.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "ACSD_CustomizerCompile_jButtonAddJar"));
-
-        org.openide.awt.Mnemonics.setLocalizedText(jButtonEdit, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Classpath_Edit_JButton"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
-        jPanel2.add(jButtonEdit, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(jButtonRemove, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Classpath_Remove_JButton"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
-        jPanel2.add(jButtonRemove, gridBagConstraints);
-        jButtonRemove.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "ACSD_CustomizerCompile_jButtonRemove"));
-
-        org.openide.awt.Mnemonics.setLocalizedText(jButtonMoveUp, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Classpath_MoveUp_JButton"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        jPanel2.add(jButtonMoveUp, gridBagConstraints);
-        jButtonMoveUp.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "ACSD_CustomizerCompile_jButtonMoveUp"));
-
-        org.openide.awt.Mnemonics.setLocalizedText(jButtonMoveDown, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Classpath_MoveDown_JButton"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
-        jPanel2.add(jButtonMoveDown, gridBagConstraints);
-        jButtonMoveDown.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "ACSD_CustomizerCompile_jButtonMoveDown"));
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 13, 0);
-        add(jPanel2, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxBuildSubprojects, org.openide.util.NbBundle.getBundle(CustomizerCompile.class).getString("LBL_CustomizeCompile_Build_Subprojects"));
-        jCheckBoxBuildSubprojects.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(jCheckBoxBuildSubprojects, gridBagConstraints);
 
     }//GEN-END:initComponents
 
@@ -272,20 +140,8 @@ public class CustomizerCompile extends JPanel implements J2SECustomizer.Panel, H
     private javax.swing.JLabel additionalJavacParamsExampleJLabel;
     private javax.swing.JLabel additionalJavacParamsJLabel;
     private javax.swing.JTextField additionalJavacParamsJTextField;
-    private javax.swing.JButton jButtonAddArtifact;
-    private javax.swing.JButton jButtonAddJar;
-    private javax.swing.JButton jButtonAddLibrary;
-    private javax.swing.JButton jButtonEdit;
-    private javax.swing.JButton jButtonMoveDown;
-    private javax.swing.JButton jButtonMoveUp;
-    private javax.swing.JButton jButtonRemove;
-    private javax.swing.JCheckBox jCheckBoxBuildSubprojects;
     private javax.swing.JCheckBox jCheckBoxDebugInfo;
     private javax.swing.JCheckBox jCheckBoxDeprecation;
-    private javax.swing.JLabel jLabelClasspath;
-    private javax.swing.JList jListClasspath;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JScrollPane jScrollClasspath;
     // End of variables declaration//GEN-END:variables
 
 

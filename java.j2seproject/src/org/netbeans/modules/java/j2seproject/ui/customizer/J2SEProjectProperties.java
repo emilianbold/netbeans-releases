@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,45 +15,41 @@ package org.netbeans.modules.java.j2seproject.ui.customizer;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.Collator;
-import java.util.*;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URI;
-
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.platform.Specification;
-import org.netbeans.api.project.Project;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.Vector;
+import javax.swing.ButtonModel;
+import javax.swing.DefaultListModel;
+import javax.swing.ListCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.queries.CollocationQuery;
-import org.netbeans.modules.java.j2seproject.J2SEProjectType;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.SourceRoots;
 import org.netbeans.modules.java.j2seproject.UpdateHelper;
-import org.netbeans.spi.project.SubprojectProvider;
+import org.netbeans.modules.java.j2seproject.classpath.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
+import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
-import org.openide.modules.SpecificationVersion;
-import org.openide.util.MutexException;
 import org.openide.util.Mutex;
-import org.openide.util.NbBundle;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
+import org.openide.util.MutexException;
 
-import javax.swing.table.DefaultTableModel;
 
-/** Helper class. Defines constants for properties. Knows the proper
- *  place where to store the properties.
- * 
+
+/**
+ *
  * @author Petr Hrebejk
  */
 public class J2SEProjectProperties {
@@ -101,398 +97,256 @@ public class J2SEProjectProperties {
     public static final String JAVADOC_VERSION="javadoc.version"; // NOI18N
     public static final String JAVADOC_WINDOW_TITLE="javadoc.windowtitle"; // NOI18N
     public static final String JAVADOC_ENCODING="javadoc.encoding"; // NOI18N
-    
-            
+                
     // Properties stored in the PRIVATE.PROPERTIES
     public static final String APPLICATION_ARGS = "application.args"; // NOI18N
     public static final String JAVADOC_PREVIEW="javadoc.preview"; // NOI18N
 
-    // SOURCE ROOTS
-    public static final String SOURCE_ROOTS = "__virtual_source_roots__";   //NOI18N
-    public static final String TEST_ROOTS = "__virtual_test_roots__";   //NOI18N
-
-    // Shortcuts
-    private static final String PROJECT = AntProjectHelper.PROJECT_PROPERTIES_PATH;
-    private static final String PRIVATE = AntProjectHelper.PRIVATE_PROPERTIES_PATH;
     
-    private static final int IDX_PROJECT = 0;
-    private static final int IDX_PRIVATE = 1;
-
-    private static final PropertyParser STRING_PARSER = new StringParser();
-    private static final BooleanParser BOOLEAN_PARSER = new BooleanParser();
-    private static final InverseBooleanParser INVERSE_BOOLEAN_PARSER = new InverseBooleanParser();
-    private static final PropertyParser PATH_PARSER = new PathParser();
-    private static final PlatformParser PLATFORM_PARSER = new PlatformParser();
-    private static final SourceRootsParser SOURCE_ROOTS_PARSER = new SourceRootsParser();
-
-    // Info about the property destination
-    private PropertyDescriptor PROPERTY_DESCRIPTORS[] = {
-        new PropertyDescriptor( J2SE_PROJECT_NAME, null, STRING_PARSER ),
-                
-        new PropertyDescriptor( DIST_DIR, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( DIST_JAR, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( JAVAC_CLASSPATH, PROJECT, PATH_PARSER ),
-        new PropertyDescriptor( RUN_CLASSPATH, PROJECT, PATH_PARSER ),
-        new PropertyDescriptor( RUN_JVM_ARGS, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( RUN_WORK_DIR, PRIVATE, STRING_PARSER ),
-        new PropertyDescriptor( DEBUG_CLASSPATH, PROJECT, PATH_PARSER ),
-        new PropertyDescriptor( JAR_COMPRESS, PROJECT, BOOLEAN_PARSER ),
-        new PropertyDescriptor( MAIN_CLASS, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( JAVAC_TEST_CLASSPATH, PROJECT, PATH_PARSER ),
-        new PropertyDescriptor( JAVAC_DEBUG, PRIVATE, BOOLEAN_PARSER ),       
-        new PropertyDescriptor( JAVAC_DEPRECATION, PROJECT, BOOLEAN_PARSER ),
-        new PropertyDescriptor( JAVAC_COMPILER_ARG, PROJECT, STRING_PARSER),
-        new PropertyDescriptor( RUN_TEST_CLASSPATH, PROJECT, PATH_PARSER ),
-        new PropertyDescriptor( SRC_DIR, PROJECT, PATH_PARSER ),
-        new PropertyDescriptor( TEST_SRC_DIR, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( BUILD_DIR, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( BUILD_CLASSES_DIR, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( BUILD_TEST_CLASSES_DIR, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( BUILD_TEST_RESULTS_DIR, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( BUILD_CLASSES_EXCLUDES, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( DIST_JAVADOC_DIR, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( APPLICATION_ARGS, PRIVATE, STRING_PARSER ),          
-        new PropertyDescriptor( NO_DEPENDENCIES, PROJECT, INVERSE_BOOLEAN_PARSER ),
-        new PropertyDescriptor( JAVA_PLATFORM, PROJECT, PLATFORM_PARSER ),
-        new PropertyDescriptor( DEBUG_TEST_CLASSPATH, PROJECT, PATH_PARSER ),
-        
-        new PropertyDescriptor( JAVADOC_PRIVATE, PROJECT, BOOLEAN_PARSER ),
-        new PropertyDescriptor( JAVADOC_NO_TREE, PROJECT, INVERSE_BOOLEAN_PARSER ),
-        new PropertyDescriptor( JAVADOC_USE, PROJECT, BOOLEAN_PARSER ),
-        new PropertyDescriptor( JAVADOC_NO_NAVBAR, PROJECT, INVERSE_BOOLEAN_PARSER ),
-        new PropertyDescriptor( JAVADOC_NO_INDEX, PROJECT, INVERSE_BOOLEAN_PARSER ),
-        new PropertyDescriptor( JAVADOC_SPLIT_INDEX, PROJECT, BOOLEAN_PARSER ),
-        new PropertyDescriptor( JAVADOC_AUTHOR, PROJECT, BOOLEAN_PARSER ),
-        new PropertyDescriptor( JAVADOC_VERSION, PROJECT, BOOLEAN_PARSER ),
-        new PropertyDescriptor( JAVADOC_WINDOW_TITLE, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( JAVADOC_ENCODING, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( JAVADOC_PREVIEW, PRIVATE, BOOLEAN_PARSER ),
-
-        new PropertyDescriptor( SOURCE_ROOTS, null, SOURCE_ROOTS_PARSER),
-        new PropertyDescriptor( TEST_ROOTS, null, SOURCE_ROOTS_PARSER),
+    // Well known paths
+    public static final String[] WELL_KNOWN_PATHS = new String[] {            
+            "${" + JAVAC_CLASSPATH + "}", 
+            "${" + JAVAC_TEST_CLASSPATH  + "}", 
+            "${" + RUN_CLASSPATH  + "}", 
+            "${" + RUN_TEST_CLASSPATH  + "}", 
+            "${" + BUILD_CLASSES_DIR  + "}", 
+            "${" + BUILD_TEST_CLASSES_DIR  + "}", 
     };
     
+    // Prefixes and suffixes of classpath
+    public static final String LIBRARY_PREFIX = "${libs."; // NOI18N
+    public static final String LIBRARY_SUFFIX = ".classpath}"; // NOI18N
+    public static final String ANT_ARTIFACT_PREFIX = "${reference."; // NOI18N
+
+    ClassPathSupport cs;
     
-    // Private fields ----------------------------------------------------------
     
-    private Project project;
+    // SOURCE ROOTS
+    // public static final String SOURCE_ROOTS = "__virtual_source_roots__";   //NOI18N
+    // public static final String TEST_ROOTS = "__virtual_test_roots__"; // NOI18N
+                        
+    // MODELS FOR VISUAL CONTROLS
+    
+    // CustomizerSources
+    DefaultTableModel SOURCE_ROOTS_MODEL;
+    DefaultTableModel TEST_ROOTS_MODEL;
+     
+    // CustomizerLibraries
+    DefaultListModel JAVAC_CLASSPATH_MODEL;
+    DefaultListModel JAVAC_TEST_CLASSPATH_MODEL;
+    DefaultListModel RUN_CLASSPATH_MODEL;
+    DefaultListModel RUN_TEST_CLASSPATH_MODEL;
+    ListCellRenderer CLASS_PATH_LIST_RENDERER = new J2SEClassPathUi.ClassPathListCellRenderer();
+    
+    // CustomizerCompile
+    ButtonModel JAVAC_DEPRECATION_MODEL; 
+    ButtonModel JAVAC_DEBUG_MODEL;
+    ButtonModel NO_DEPENDENCIES_MODEL;
+    Document JAVAC_COMPILER_ARG_MODEL;
+    
+    // CustomizerCompileTest
+                
+    // CustomizerJar
+    Document DIST_JAR_MODEL; 
+    Document BUILD_CLASSES_EXCLUDES_MODEL; 
+    ButtonModel JAR_COMPRESS_MODEL;
+                
+    // CustomizerJavadoc
+    ButtonModel JAVADOC_PRIVATE_MODEL;
+    ButtonModel JAVADOC_NO_TREE_MODEL;
+    ButtonModel JAVADOC_USE_MODEL;
+    ButtonModel JAVADOC_NO_NAVBAR_MODEL; 
+    ButtonModel JAVADOC_NO_INDEX_MODEL; 
+    ButtonModel JAVADOC_SPLIT_INDEX_MODEL; 
+    ButtonModel JAVADOC_AUTHOR_MODEL; 
+    ButtonModel JAVADOC_VERSION_MODEL;
+    Document JAVADOC_WINDOW_TITLE_MODEL;
+    ButtonModel JAVADOC_PREVIEW_MODEL; 
+
+    // CustomizerRun
+    Document MAIN_CLASS_MODEL;
+    Document APPLICATION_ARGS_MODEL;
+    Document RUN_JVM_ARGS_MODEL;
+    Document RUN_WORK_DIR_MODEL;
+
+
+    // CustomizerRunTest
+
+    // Private fields ----------------------------------------------------------    
+    private J2SEProject project;
     private HashMap properties;    
     private UpdateHelper updateHelper;
     private PropertyEvaluator evaluator;
     private ReferenceHelper refHelper;
     
-    public J2SEProjectProperties( Project project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper ) {
-        this.project = project;
-        this.properties = new HashMap();
-        this.updateHelper = updateHelper;
-        this.evaluator = evaluator;
-        this.refHelper = refHelper;
-        read();                                
-    }
+    private StoreGroup privateGroup; 
+    private StoreGroup projectGroup;
     
-    /** XXX to be deleted when introduced in AntPropertyHeleper API
-     */    
-    public static String getAntPropertyName( String property ) {
-        if ( property != null && 
-             property.startsWith( "${" ) && // NOI18N
-             property.endsWith( "}" ) ) { // NOI18N
-            return property.substring( 2, property.length() - 1 ); 
-        }
-        else {
-            return property;
-        }
-    }
-    
-    static boolean isAntProperty (String string) {
-        return string != null && string.startsWith( "${" ) && string.endsWith( "}" ); //NOI18N
-    }
-    
-    public void put( String propertyName, Object value ) {
-        PropertyInfo pi = (PropertyInfo)properties.get( propertyName );
-        assert propertyName != null : "Unknown property " + propertyName; // NOI18N
-        pi.setValue( value );
-    }
-    
-    public Object get( String propertyName ) {
-        PropertyInfo pi = (PropertyInfo)properties.get( propertyName );
-        assert propertyName != null : "Unknown property " + propertyName; // NOI18N
-        return pi.getValue();
-    }
-    
-    public boolean isModified( String propertyName ) {
-        PropertyInfo pi = (PropertyInfo)properties.get( propertyName );
-        assert propertyName != null : "Unknown property " + propertyName; // NOI18N
-        return pi.isModified();
-    }
-    
-    public List getSortedSubprojectsList() {
-             
-        ArrayList subprojects = new ArrayList( 5 );
-        addSubprojects( project, subprojects ); // Find the projects recursively
-         
-        // Replace projects in the list with formated names
-        for ( int i = 0; i < subprojects.size(); i++ ) {
-            Project p = (Project)subprojects.get( i );           
-            subprojects.set(i, ProjectUtils.getInformation(p).getDisplayName());
-        }
-        
-        // Sort the list
-        Collections.sort( subprojects, Collator.getInstance() );
-        
-        return subprojects;
-    }
-    
-    Project getProject() {
+    J2SEProject getProject() {
         return project;
     }
     
-    /** Gets all subprojects recursively
-     */
-    private void addSubprojects( Project project, List result ) {
+    /** Creates a new instance of J2SEUIProperties and initializes them */
+    public J2SEProjectProperties( J2SEProject project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper ) {
+        this.project = project;
+        this.updateHelper  = updateHelper;
+        this.evaluator = evaluator;
+        this.refHelper = refHelper;
+        this.cs = new ClassPathSupport( evaluator, refHelper, updateHelper.getAntProjectHelper(), WELL_KNOWN_PATHS, LIBRARY_PREFIX, LIBRARY_SUFFIX, ANT_ARTIFACT_PREFIX );
+                
+        privateGroup = new StoreGroup();
+        projectGroup = new StoreGroup();
         
-        SubprojectProvider spp = (SubprojectProvider)project.getLookup().lookup( SubprojectProvider.class );
-        
-        if ( spp == null ) {
-            return;
-        }
-        
-        for( Iterator/*<Project>*/ it = spp.getSubprojects().iterator(); it.hasNext(); ) {
-            Project sp = (Project)it.next(); 
-            if ( !result.contains( sp ) ) {
-                result.add( sp );
-            }
-            addSubprojects( sp, result );            
-        }
-        
+        init(); // Load known properties        
     }
 
-    /** Reads all the properties of the project and converts them to objects
-     * suitable for usage in the GUI controls.
-     */    
-    private void read() {
+    /** Initializes the visual models 
+     */
+    private void init() {
         
-        // Read the properties from the project             
-        HashMap eProps = new HashMap( 2 );
-        eProps.put( PROJECT, updateHelper.getProperties( PROJECT ) );
-        eProps.put( PRIVATE, updateHelper.getProperties( PRIVATE ) );
+        // CustomizerSources
+        SOURCE_ROOTS_MODEL = J2SESourceRootsUi.createModel( project.getSourceRoots() );
+        TEST_ROOTS_MODEL = J2SESourceRootsUi.createModel( project.getTestSourceRoots() );
+                
+        // CustomizerLibraries
+        EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );                
         
-        // Initialize the property map with objects
-        for ( int i = 0; i < PROPERTY_DESCRIPTORS.length; i++ ) {
-            PropertyDescriptor pd = PROPERTY_DESCRIPTORS[i];
-            if ( pd.dest == null ) {
-                // Specialy handled properties
-                if ( J2SE_PROJECT_NAME.equals( pd.name ) ) {
-                    String projectName = ProjectUtils.getInformation(project).getDisplayName();
-                    properties.put( pd.name, new PropertyInfo( pd, projectName, projectName ) );            
-                }
-                else if (SOURCE_ROOTS.equals(pd.name) || TEST_ROOTS.equals(pd.name)) {
-                    properties.put (pd.name, new PropertyInfo(pd, pd.name, null));
-                }
-            }
-            else {
-                // Standard properties
-                String raw = ((EditableProperties)eProps.get( pd.dest )).getProperty( pd.name );                
-                if ( pd.dest == PRIVATE && raw == null ) {
-                    // Can still be found in the project properties
-                    raw = ((EditableProperties)eProps.get( PROJECT )).getProperty( pd.name );
-                }                
-                String eval = evaluator.getProperty(pd.name);
-                properties.put( pd.name, new PropertyInfo( pd, raw, eval ) );            
-            }
-        }
+        JAVAC_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( JAVAC_CLASSPATH )  ) );
+        JAVAC_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( JAVAC_TEST_CLASSPATH ) ) );
+        RUN_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( RUN_CLASSPATH ) ) );
+        RUN_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( RUN_TEST_CLASSPATH ) ) );
+                
+        // CustomizerCompile
+        JAVAC_DEPRECATION_MODEL = projectGroup.createToggleButtonModel( evaluator, JAVAC_DEPRECATION );
+        JAVAC_DEBUG_MODEL = privateGroup.createToggleButtonModel( evaluator, JAVAC_DEBUG );
+        NO_DEPENDENCIES_MODEL = projectGroup.createInverseToggleButtonModel( evaluator, NO_DEPENDENCIES );
+        JAVAC_COMPILER_ARG_MODEL = projectGroup.createStringDocument( evaluator, JAVAC_COMPILER_ARG );
+        
+        // CustomizerJar
+        DIST_JAR_MODEL = projectGroup.createStringDocument( evaluator, DIST_JAR );
+        BUILD_CLASSES_EXCLUDES_MODEL = projectGroup.createStringDocument( evaluator, BUILD_CLASSES_EXCLUDES );
+        JAR_COMPRESS_MODEL = projectGroup.createToggleButtonModel( evaluator, JAR_COMPRESS );
+        
+        // CustomizerJavadoc
+        JAVADOC_PRIVATE_MODEL = projectGroup.createToggleButtonModel( evaluator, JAVADOC_PRIVATE );
+        JAVADOC_NO_TREE_MODEL = projectGroup.createInverseToggleButtonModel( evaluator, JAVADOC_NO_TREE );
+        JAVADOC_USE_MODEL = projectGroup.createToggleButtonModel( evaluator, JAVADOC_USE );
+        JAVADOC_NO_NAVBAR_MODEL = projectGroup.createInverseToggleButtonModel( evaluator, JAVADOC_NO_NAVBAR );
+        JAVADOC_NO_INDEX_MODEL = projectGroup.createInverseToggleButtonModel( evaluator, JAVADOC_NO_INDEX ); 
+        JAVADOC_SPLIT_INDEX_MODEL = projectGroup.createToggleButtonModel( evaluator, JAVADOC_SPLIT_INDEX );
+        JAVADOC_AUTHOR_MODEL = projectGroup.createToggleButtonModel( evaluator, JAVADOC_AUTHOR );
+        JAVADOC_VERSION_MODEL = projectGroup.createToggleButtonModel( evaluator, JAVADOC_VERSION );
+        JAVADOC_WINDOW_TITLE_MODEL = projectGroup.createStringDocument( evaluator, JAVADOC_WINDOW_TITLE );
+        JAVADOC_PREVIEW_MODEL = privateGroup.createToggleButtonModel( evaluator, JAVADOC_PREVIEW );
+        
+        // CustomizerRun
+        MAIN_CLASS_MODEL = projectGroup.createStringDocument( evaluator, MAIN_CLASS ); 
+        APPLICATION_ARGS_MODEL = privateGroup.createStringDocument( evaluator, APPLICATION_ARGS );
+        RUN_JVM_ARGS_MODEL = projectGroup.createStringDocument( evaluator, RUN_JVM_ARGS );
+        RUN_WORK_DIR_MODEL = privateGroup.createStringDocument( evaluator, RUN_WORK_DIR );
+                
     }
     
-    /** Transforms all the Objects from GUI controls into String Ant 
-     * properties and stores them in the project
-     */    
-    public void store() {
-        
+    public void save() {
         try {
+            // Store properties 
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws IOException {
-          
-                    resolveProjectDependencies();
-                    
-                    Boolean defaultPlatform = null;
-                    
-                    // Some properties need special handling e.g. if the 
-                    // property changes the project.xml files
-                    for( Iterator it = properties.values().iterator(); it.hasNext(); ) {
-                        PropertyInfo pi = (PropertyInfo)it.next();
-                        PropertyDescriptor pd = pi.getPropertyDescriptor();
-                        pi.encode();
-                        String newValueEncoded = pi.getNewValueEncoded();
-                        if( pd.dest == null && newValueEncoded != null ) {
-                            // Specialy handled properties
-                            if ( J2SE_PROJECT_NAME.equals( pd.name ) ) {
-                                String newName = newValueEncoded;
-                                assert false : "No support yet for changing name of J2SEProject; cf. J2SEProject.setName"; // NOI18N
-                            }
-                            else if ( SOURCE_ROOTS.equals( pd.name ) || TEST_ROOTS.equals( pd.name )) {
-                                SourceRoots roots = null;
-                                if (SOURCE_ROOTS.equals(pi.rawValue)) {
-                                    roots = ((J2SEProject)project).getSourceRoots();
-                                }
-                                else if (TEST_ROOTS.equals(pi.rawValue)) {
-                                    roots = ((J2SEProject)project).getTestSourceRoots();
-                                }
-                                if (roots != null) {
-                                    Vector data = ((DefaultTableModel)pi.newValue).getDataVector();
-                                    URL[] rootURLs = new URL[data.size()];
-                                    String []rootLabels = new String[data.size()];
-                                    for (int i=0; i<data.size();i++) {
-                                        rootURLs[i] = ((File)((Vector)data.elementAt(i)).elementAt(0)).toURI().toURL();
-                                        rootLabels[i] = (String) ((Vector)data.elementAt(i)).elementAt(1);
-                                    }
-                                    roots.putRoots(rootURLs,rootLabels);
-                                }
-                            }
-
-                        }
-                        if ( JAVA_PLATFORM.equals( pd.name) && newValueEncoded != null ) {
-                            defaultPlatform = Boolean.valueOf(pi.getNewValueEncoded().equals(
-                                    JavaPlatformManager.getDefault().getDefaultPlatform().getProperties().get("platform.ant.name"))); // NOI18N
-                             setPlatform(defaultPlatform.booleanValue(), pi.getNewValueEncoded());
-                        }
-                    }
-                    
-                    // Reread the properties. It may have changed when
-                    // e.g. when setting references to another projects
-                    HashMap eProps = new HashMap( 2 );
-                    eProps.put( PROJECT, updateHelper.getProperties( PROJECT ) );
-                    eProps.put( PRIVATE, updateHelper.getProperties( PRIVATE ) );
-                    
-                    // Set the changed properties
-                    for( Iterator it = properties.values().iterator(); it.hasNext(); ) {
-                        PropertyInfo pi = (PropertyInfo)it.next();
-                        PropertyDescriptor pd = pi.getPropertyDescriptor();                        
-                        String newValueEncoded = pi.getNewValueEncoded();
-                        if ( newValueEncoded != null ) {                            
-                            if ( pd.dest != null ) {
-                                // Standard properties
-                                EditableProperties ep = (EditableProperties)eProps.get(pd.dest);
-                                if (PATH_PARSER.equals(pd.parser)) {
-                                    // XXX: perhaps PATH_PARSER could return List of paths so that
-                                    // tokenizing could be omitted here:
-                                    String[] items = PropertyUtils.tokenizePath(newValueEncoded);
-                                    for (int i=0; i<items.length-1; i++) {
-                                        items[i] += ':';    //NOI18N
-                                    }
-                                    ep.setProperty(pd.name, items);
-                                } else {
-                                    
-                                    // update javac.source and javac.target
-                                    if (JAVA_PLATFORM.equals(pd.name)) {
-                                        assert defaultPlatform != null;
-                                        updateSourceLevel(defaultPlatform.booleanValue(), newValueEncoded, ep);
-                                    }
-                                    
-                                    if (NO_DEPENDENCIES.equals(pd.name) && newValueEncoded.equals("false")) { // NOI18N
-                                        ep.remove(pd.name);
-                                        continue;
-                                    }
-                                    
-                                    if (RUN_WORK_DIR.equals(pd.name) && newValueEncoded.equals("")) { // NOI18N
-                                        ep.remove(pd.name);
-                                        continue;
-                                    }
-                                    
-                                    ep.setProperty( pd.name, newValueEncoded );
-                                }
-                            }
-                        }
-                    }
-                    
-                    // Store the property changes into the project
-                    updateHelper.putProperties( PROJECT, (EditableProperties)eProps.get( PROJECT ) );
-                    updateHelper.putProperties( PRIVATE, (EditableProperties)eProps.get( PRIVATE ) );
-                    
+                    storeProperties();
                     return null;
                 }
             });
+            // and save the project        
+            ProjectManager.getDefault().saveProject(project);
         } 
         catch (MutexException e) {
             ErrorManager.getDefault().notify((IOException)e.getException());
         }
+        catch ( IOException ex ) {
+            ErrorManager.getDefault().notify( ex );
+        }
+    }
+    
+    
+        
+    private void storeProperties() throws IOException {
+        // Store special properties
+        
+        // Modify the project dependencies properly        
+        resolveProjectDependencies();
+        
+        // Encode all paths (this may change the project properties)
+        String[] javac_cp = cs.encodeToStrings( ClassPathUiSupport.getIterator( JAVAC_CLASSPATH_MODEL ) );
+        String[] javac_test_cp = cs.encodeToStrings( ClassPathUiSupport.getIterator( JAVAC_TEST_CLASSPATH_MODEL ) );
+        String[] run_cp = cs.encodeToStrings( ClassPathUiSupport.getIterator( RUN_CLASSPATH_MODEL ) );
+        String[] run_test_cp = cs.encodeToStrings( ClassPathUiSupport.getIterator( RUN_TEST_CLASSPATH_MODEL ) );
+                
+        // Store source roots
+        storeRoots( project.getSourceRoots(), SOURCE_ROOTS_MODEL );
+        storeRoots( project.getTestSourceRoots(), TEST_ROOTS_MODEL );
+                
+        // Store standard properties
+        EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );        
+        EditableProperties privateProperties = updateHelper.getProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH );
+        
+        // Assure inegrity which can't shound not be assured in UI
+        if ( !JAVADOC_NO_INDEX_MODEL.isSelected() ) {
+            JAVADOC_SPLIT_INDEX_MODEL.setSelected( false ); // Can't split non existing index
+        }
+                                
+        // Standard store of the properties
+        projectGroup.store( projectProperties );        
+        privateGroup.store( privateProperties );
+                
+        // Save all paths
+        projectProperties.setProperty( JAVAC_CLASSPATH, javac_cp );
+        projectProperties.setProperty( JAVAC_TEST_CLASSPATH, javac_test_cp );
+        projectProperties.setProperty( RUN_CLASSPATH, run_cp );
+        projectProperties.setProperty( RUN_TEST_CLASSPATH, run_test_cp );
+                
+        // Handle other special cases
+        if ( NO_DEPENDENCIES_MODEL.isSelected() ) { // NOI18N
+            projectProperties.remove( NO_DEPENDENCIES ); // Remove the property completely if not set
+        }
+
+        if ( getDocumentText( RUN_WORK_DIR_MODEL ).trim().equals( "" ) ) { // NOI18N
+            privateProperties.remove( RUN_WORK_DIR ); // Remove the property completely if not set
+        }
+                
+        // Store the property changes into the project
+        updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
+        updateHelper.putProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties );        
         
     }
-
-    private void updateSourceLevel(boolean defaultPlatform, String platform, EditableProperties ep) {
-        if (defaultPlatform) {
-            ep.setProperty(JAVAC_SOURCE, "${default.javac.source}"); //NOI18N
-            ep.setProperty(JAVAC_TARGET, "${default.javac.target}"); //NOI18N
-        } else {
-            JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
-            for( int i = 0; i < platforms.length; i++ ) {
-                Specification spec = platforms[i].getSpecification();
-                if (!("j2se".equalsIgnoreCase(spec.getName()))) { // NOI18N
-                    continue;
-                }
-                if (platform.equals(platforms[i].getProperties().get("platform.ant.name"))) { //NOI18N
-                    String ver = platforms[i].getSpecification().getVersion().toString();
-                    ep.setProperty(JAVAC_SOURCE, ver);
-                    ep.setProperty(JAVAC_TARGET, ver);
-                    return;
-                }
-            }
-            // The platform does not exist. Perhaps this is project with broken references?
-            // Do not update target and source because nothing is known about the platform.
-        }
-    }
     
-    private final SpecificationVersion JDKSpec13 = new SpecificationVersion("1.3"); // NOI18N
-    
-    private void setPlatform(boolean isDefault, String platformAntID) {
-        Element pcd = updateHelper.getPrimaryConfigurationData( true );
-        NodeList sps = pcd.getElementsByTagNameNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "explicit-platform"); // NOI18N
-        if (isDefault && sps.getLength() > 0) {
-            pcd.removeChild(sps.item(0));
-        } else if (!isDefault) {
-            Element el;
-            if (sps.getLength() == 0) {
-                el = pcd.getOwnerDocument().createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "explicit-platform"); // NOI18N
-                pcd.appendChild(el);
-            } else {
-                el = (Element)sps.item(0);
-            }
-            boolean explicitSource = true;
-            JavaPlatform platform = findPlatform(platformAntID);
-            if ((platform != null && platform.getSpecification().getVersion().compareTo(JDKSpec13) <= 0) || platform == null) {
-                explicitSource = false;
-            }
-            el.setAttribute("explicit-source-supported", explicitSource ? "true" : "false"); // NOI18N
+    private static String getDocumentText( Document document ) {
+        try {
+            return document.getText( 0, document.getLength() );
         }
-        updateHelper.putPrimaryConfigurationData(pcd, true);
+        catch( BadLocationException e ) {
+            return ""; // NOI18N
+        }
     }
     
     /** Finds out what are new and removed project dependencies and 
      * applyes the info to the project
      */
     private void resolveProjectDependencies() {
-    
-        String allPaths[] = { JAVAC_CLASSPATH,  RUN_CLASSPATH, DEBUG_CLASSPATH, RUN_TEST_CLASSPATH, 
-            DEBUG_TEST_CLASSPATH, JAVAC_TEST_CLASSPATH};
-        
+            
         // Create a set of old and new artifacts.
         Set oldArtifacts = new HashSet();
+        EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );        
+        oldArtifacts.addAll( cs.itemsList( (String)projectProperties.get( JAVAC_CLASSPATH ) ) );
+        oldArtifacts.addAll( cs.itemsList( (String)projectProperties.get( JAVAC_TEST_CLASSPATH ) ) );
+        oldArtifacts.addAll( cs.itemsList( (String)projectProperties.get( RUN_CLASSPATH ) ) );
+        oldArtifacts.addAll( cs.itemsList( (String)projectProperties.get( RUN_TEST_CLASSPATH ) ) );
+                   
         Set newArtifacts = new HashSet();
-        for ( int i = 0; i < allPaths.length; i++ ) {            
-            PropertyInfo pi = (PropertyInfo)properties.get( allPaths[i] );
-
-            // Get original artifacts
-            List oldList = (List)pi.getOldValue();
-            if ( oldList != null ) {
-                oldArtifacts.addAll(oldList);
-            }
-            
-            // Get artifacts after the edit
-            List newList = (List)pi.getValue();
-            if ( newList != null ) {
-                newArtifacts.addAll(newList);
-            }
-                        
-        }
-
+        newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_CLASSPATH_MODEL ) );
+        newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_TEST_CLASSPATH_MODEL ) );
+        newArtifacts.addAll( ClassPathUiSupport.getList( RUN_CLASSPATH_MODEL ) );
+        newArtifacts.addAll( ClassPathUiSupport.getList( RUN_TEST_CLASSPATH_MODEL ) );
+                
         // Create set of removed artifacts and remove them
         Set removed = new HashSet( oldArtifacts );
         removed.removeAll( newArtifacts );
@@ -502,22 +356,22 @@ public class J2SEProjectProperties {
         // 1. first remove all project references. The method will modify
         // project property files, so it must be done separately
         for( Iterator it = removed.iterator(); it.hasNext(); ) {
-            VisualClassPathItem vcpi = (VisualClassPathItem)it.next();
-            if ( vcpi.getType() == VisualClassPathItem.TYPE_ARTIFACT ||
-                    vcpi.getType() == VisualClassPathItem.TYPE_JAR ) {
-                refHelper.destroyReference(vcpi.getRaw());
+            ClassPathSupport.Item item = (ClassPathSupport.Item)it.next();
+            if ( item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT ||
+                    item.getType() == ClassPathSupport.Item.TYPE_JAR ) {
+                refHelper.destroyReference(item.getReference());
             }
         }
         
         // 2. now read project.properties and modify rest
-        EditableProperties ep = updateHelper.getProperties( PROJECT );
+        EditableProperties ep = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );
         boolean changed = false;
         
         for( Iterator it = removed.iterator(); it.hasNext(); ) {
-            VisualClassPathItem vcpi = (VisualClassPathItem)it.next();
-            if (vcpi.getType() == VisualClassPathItem.TYPE_LIBRARY) {
+            ClassPathSupport.Item item = (ClassPathSupport.Item)it.next();
+            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
                 // remove helper property pointing to library jar if there is any
-                String prop = vcpi.getRaw();
+                String prop = item.getReference();
                 prop = prop.substring(2, prop.length()-1);
                 ep.remove(prop);
                 changed = true;
@@ -525,11 +379,11 @@ public class J2SEProjectProperties {
         }
         File projDir = FileUtil.toFile(updateHelper.getAntProjectHelper().getProjectDirectory());
         for( Iterator it = added.iterator(); it.hasNext(); ) {
-            VisualClassPathItem vcpi = (VisualClassPathItem)it.next();
-            if (vcpi.getType() == VisualClassPathItem.TYPE_LIBRARY) {
+            ClassPathSupport.Item item = (ClassPathSupport.Item)it.next();
+            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
                 // add property to project.properties pointing to relativized 
                 // library jar(s) if possible
-                String prop = vcpi.getRaw();
+                String prop = cs.getLibraryReference( item );
                 prop = prop.substring(2, prop.length()-1); // XXX make a PropertyUtils method for this!
                 String value = relativizeLibraryClasspath(prop, projDir);
                 if (value != null) {
@@ -543,10 +397,10 @@ public class J2SEProjectProperties {
             }
         }
         if (changed) {
-            updateHelper.putProperties(PROJECT, ep);
+            updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         }
     }
-    
+        
     /**
      * Tokenize library classpath and try to relativize all the jars.
      * @param property library property name ala "libs.someLib.classpath"
@@ -578,337 +432,29 @@ public class J2SEProjectProperties {
             return sb.toString();
         }
     }
-        
-    private class PropertyInfo {
-        
-        private PropertyDescriptor propertyDesciptor;
-        private String rawValue;
-        private String evaluatedValue;
-        private Object value;
-        private Object newValue;
-        private String newValueEncoded;
-        
-        public PropertyInfo( PropertyDescriptor propertyDesciptor, String rawValue, String evaluatedValue ) {
-            this.propertyDesciptor = propertyDesciptor;
-            this.rawValue = rawValue;
-            this.evaluatedValue = evaluatedValue;
-            this.value = propertyDesciptor.parser.decode( rawValue, project, updateHelper.getAntProjectHelper(), evaluator, refHelper );
-            this.newValue = null;
+    
+    private void storeRoots( SourceRoots roots, DefaultTableModel tableModel ) throws MalformedURLException {
+        Vector data = tableModel.getDataVector();
+        URL[] rootURLs = new URL[data.size()];
+        String []rootLabels = new String[data.size()];
+        for (int i=0; i<data.size();i++) {
+            rootURLs[i] = ((File)((Vector)data.elementAt(i)).elementAt(0)).toURI().toURL();
+            rootLabels[i] = (String) ((Vector)data.elementAt(i)).elementAt(1);
         }
-        
-        public PropertyDescriptor getPropertyDescriptor() {
-            return propertyDesciptor;
-        }
-        
-        public void encode() {            
-            if ( isModified() ) {
-                newValueEncoded = propertyDesciptor.parser.encode( newValue, project, updateHelper.getAntProjectHelper(), refHelper);
-            }
-            else {
-                newValueEncoded = null;
-            }
-        }
-
-        public Object getValue() {
-            return isModified() ? newValue : value; 
-        }
-        
-        public void setValue( Object value ) {
-            newValue = value;
-        }
-        
-        public String getNewValueEncoded() {
-            return newValueEncoded;
-        }
-        
-        public boolean isModified() {
-            return newValue != null;
-        }
-        
-        public Object getOldValue() {
-            return value;
-        }
+        roots.putRoots(rootURLs,rootLabels);
     }
     
-    private static class PropertyDescriptor {
-        
-        final PropertyParser parser;
-        final String name;
-        final String dest;
-        
-        PropertyDescriptor( String name, String dest, PropertyParser parser ) {
-            this.name = name;
-            this.dest = dest;
-            this.parser = parser;
+    public static String getAntPropertyName( String property ) {
+        if ( property != null && 
+             property.startsWith( "${" ) && // NOI18N
+             property.endsWith( "}" ) ) { // NOI18N
+            return property.substring( 2, property.length() - 1 ); 
         }
-        
-    }
-    
-    
-    private static abstract class PropertyParser {
-        
-        public abstract Object decode(String raw, Project project, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper);
-        
-        public abstract String encode(Object value, Project project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper);
-        
-    }
-    
-    private static class StringParser extends PropertyParser {
-        
-        public Object decode(String raw, Project project, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
-            return raw;
-        }        
-        
-        public String encode(Object value, Project project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
-            return (String)value;
-        }
-        
-    }
-    
-    private static class BooleanParser extends PropertyParser {
-        
-        public Object decode(String raw, Project project, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
-            
-            if ( raw != null ) {
-               String lowecaseRaw = raw.toLowerCase();
-               
-               if ( lowecaseRaw.equals( "true") || // NOI18N
-                    lowecaseRaw.equals( "yes") || // NOI18N
-                    lowecaseRaw.equals( "enabled") ) // NOI18N
-                   return Boolean.TRUE;                   
-            }
-            
-            return Boolean.FALSE;
-        }
-        
-        public String encode(Object value, Project project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
-            return ((Boolean)value).booleanValue() ? "true" : "false"; // NOI18N
-        }
-        
-    }
-    
-    private static class InverseBooleanParser extends BooleanParser {
-        
-        public Object decode(String raw, Project project, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
-            return ((Boolean)super.decode(raw, project, antProjectHelper, evaluator, refHelper)).booleanValue() ? Boolean.FALSE : Boolean.TRUE;
-        }
-        
-        public String encode(Object value, Project project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
-            return super.encode( ((Boolean)value).booleanValue() ? Boolean.FALSE : Boolean.TRUE, project, antProjectHelper, refHelper );
-        }
-        
-    }
-    
-    public static class PathParser extends PropertyParser {
-        
-        // XXX Define in the LibraryManager
-        private static final String LIBRARY_PREFIX = "${libs."; // NOI18N
-
-        private static final String ANT_ARTIFACT_PREFIX = "${reference."; // NOI18N
-        
-        // Contains well known paths in the J2SEProject
-        private static final String[][] WELL_KNOWN_PATHS = new String[][] {
-            { JAVAC_CLASSPATH, NbBundle.getMessage( J2SEProjectProperties.class, "LBL_JavacClasspath_DisplayName" ) },
-            { JAVAC_TEST_CLASSPATH, NbBundle.getMessage (J2SEProjectProperties.class,"LBL_JavacTestClasspath_DisplayName")},
-            { RUN_CLASSPATH, NbBundle.getMessage( J2SEProjectProperties.class, "LBL_RunClasspath_DisplayName" ) },
-            { RUN_TEST_CLASSPATH, NbBundle.getMessage( J2SEProjectProperties.class, "LBL_RunTestClasspath_DisplayName" ) },
-            { BUILD_CLASSES_DIR, NbBundle.getMessage( J2SEProjectProperties.class, "LBL_BuildClassesDir_DisplayName" ) },            
-            { BUILD_TEST_CLASSES_DIR, NbBundle.getMessage (J2SEProjectProperties.class,"LBL_BuildTestClassesDir_DisplayName")}
-        };
-        
-        
-        public Object decode(String raw, Project project, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
-            
-            String pe[] = PropertyUtils.tokenizePath( raw == null ? "": raw ); // NOI18N
-            List cpItems = new ArrayList( pe.length );
-            for( int i = 0; i < pe.length; i++ ) {
-                VisualClassPathItem cpItem;
-                
-                // First try to find out whether the item is well known classpath
-                // in the J2SE project type
-                int wellKnownPathIndex = -1;
-                for( int j = 0; j < WELL_KNOWN_PATHS.length; j++ ) {
-                    if ( WELL_KNOWN_PATHS[j][0].equals( getAntPropertyName( pe[i] ) ) )  {
-                        wellKnownPathIndex = j;
-                        break;
-                    }
-                }
-                
-                if ( wellKnownPathIndex != - 1 ) {
-                    cpItem = new VisualClassPathItem( pe[i], VisualClassPathItem.TYPE_CLASSPATH, pe[i], WELL_KNOWN_PATHS[wellKnownPathIndex][1] );
-                } else if ( pe[i].startsWith( LIBRARY_PREFIX ) ) {
-                    // Library from library manager
-                    //String eval = antProjectHelper.evaluate( getAntPropertyName( pe[i] ) );
-                    String eval = pe[i].substring( LIBRARY_PREFIX.length(), pe[i].lastIndexOf('.') ); //NOI18N
-                    Library lib = LibraryManager.getDefault().getLibrary (eval);
-                    if (lib != null) {
-                        cpItem = new VisualClassPathItem( lib, VisualClassPathItem.TYPE_LIBRARY, pe[i], eval );
-                    } else {
-                        cpItem = new VisualClassPathItem(null, VisualClassPathItem.TYPE_LIBRARY, pe[i], eval);
-                    }
-                } else if (pe[i].startsWith(ANT_ARTIFACT_PREFIX)) {
-                    Object ret[] = refHelper.findArtifactAndLocation(pe[i]);
-                    if ( ret[0] != null ) {
-                        // Sub project artifact
-                        AntArtifactChooser.ArtifactItem ai = new  AntArtifactChooser.ArtifactItem((AntArtifact)ret[0], (URI)ret[1]);
-                        String eval = ai.getArtifactURI().toString();
-                        cpItem = new VisualClassPathItem( ai, VisualClassPathItem.TYPE_ARTIFACT, pe[i], eval );
-                    } else {
-                        cpItem = new VisualClassPathItem(null, VisualClassPathItem.TYPE_ARTIFACT, pe[i], null);
-                    }
-                } else {
-                    // Standalone jar or property
-                    String eval;
-                    if (isAntProperty (pe[i])) {
-                        eval = evaluator.getProperty(getAntPropertyName(pe[i]));
-                    }
-                    else {
-                        eval = pe[i];
-                    }                    
-                    File f = null;
-                    if (eval != null) {
-                        f = antProjectHelper.resolveFile(eval);
-                    }                    
-                    cpItem = new VisualClassPathItem( f, VisualClassPathItem.TYPE_JAR, pe[i], eval );
-                }
-                if (cpItem!=null) {
-                    cpItems.add( cpItem );
-                }
-            }
-            
-            return cpItems;
-        }
-        
-        public String encode(Object value, Project project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
-            
-            StringBuffer sb = new StringBuffer();
-                        
-            for ( Iterator it = ((List)value).iterator(); it.hasNext(); ) {
-                
-                VisualClassPathItem vcpi = (VisualClassPathItem)it.next();
-                
-                switch( vcpi.getType() ) {
-                                        
-                    case VisualClassPathItem.TYPE_JAR:
-                        String raw = vcpi.getRaw();
-                        if (raw == null) {
-                            // New file
-                            File file = (File)vcpi.getObject();
-                            // pass null as expected artifact type to always get file reference
-                            String reference = refHelper.createForeignFileReference(file, null);
-                            sb.append(reference);
-                        } else {
-                            // Existing property
-                            sb.append( raw );
-                        }
-                        break;
-                    case VisualClassPathItem.TYPE_LIBRARY:
-                        sb.append(vcpi.getRaw());
-                        break;    
-                    case VisualClassPathItem.TYPE_ARTIFACT:
-                        if (vcpi.getObject() != null) {
-                            AntArtifactChooser.ArtifactItem ai = (AntArtifactChooser.ArtifactItem)vcpi.getObject();
-                            String reference = refHelper.addReference(ai.getArtifact(), ai.getArtifactURI());
-                            sb.append( reference );
-                        } else {
-                            sb.append(vcpi.getRaw());
-                        }
-                        break;
-                    case VisualClassPathItem.TYPE_CLASSPATH:
-                        sb.append( vcpi.getRaw() );
-                        break;
-                }
-                
-                if ( it.hasNext() ) {
-                    sb.append( File.pathSeparatorChar );
-                }
-            }
-            
-            return sb.toString();
-        }
-        
-    }
-
-    private static JavaPlatform findPlatform(String platformAntID) {
-        JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();            
-        for(int i = 0; i < platforms.length; i++) {
-            String normalizedName = (String)platforms[i].getProperties().get("platform.ant.name"); // NOI18N
-            if (normalizedName != null && normalizedName.equals(platformAntID)) {
-                return platforms[i];
-            }
-        }
-        return null;
-    }
-    
-    private static class PlatformParser extends PropertyParser {
-        
-        public Object decode(String raw, Project project, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
-            JavaPlatform platform = findPlatform(raw);
-            if (platform != null) {
-                return platform.getDisplayName();
-            }
-            // if platform does not exist then return raw reference.
-            return raw;
-        }
-        
-        public String encode(Object value, Project project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
-            JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms ((String)value,
-                    new Specification ("j2se",null)); // NOI18N
-            if (platforms.length == 0) {
-                // platform for this project does not exist. broken reference? its displayname should 
-                // correspond to platform ID. so just return it:
-                return (String)value;
-            } else {
-                return (String) platforms[0].getProperties().get("platform.ant.name");  //NOI18N
-            }
-        }
-        
-    }
-
-    private static class SourceRootsParser extends PropertyParser {
-
-        public SourceRootsParser () {
-        }
-
-        public Object decode(String raw, Project project, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
-            SourceRoots roots = null;
-            boolean tests;
-            if (SOURCE_ROOTS.equals(raw)) {
-                roots = ((J2SEProject)project).getSourceRoots();
-                tests = false;
-            }
-            else if (TEST_ROOTS.equals(raw)) {
-                roots = ((J2SEProject)project).getTestSourceRoots();
-                tests = true;
-            }
-            else {
-                return null;
-            }
-            String[] rootLabels = roots.getRootNames();
-            String[] rootProps = roots.getRootProperties();
-            URL[] rootURLs = roots.getRootURLs();
-            Object[][] data = new Object[rootURLs.length] [2];
-            for (int i=0; i< rootURLs.length; i++) {
-                data[i][0] = new File (URI.create (rootURLs[i].toExternalForm()));
-                if (rootLabels[i].length()>0) {
-                    data[i][1] = rootLabels[i];
-                }
-                else if (!tests && "src.dir".equals(rootProps[i])) {   //NOI18N
-                    data[i][1] = SourceRoots.DEFAULT_SOURCE_LABEL;
-                }
-                else if (tests && "test.src.dir".equals(rootProps[i])) { //NOI18N
-                    data[i][1] = SourceRoots.DEFAULT_TEST_LABEL;
-                }
-                else {
-                    data[i][1] = "";    //NOI18N
-                }
-            }
-            return VisualSourceRootsSupport.createSourceModel(data);
-        }
-
-        public String encode(Object value, Project project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
-            return "true";   //NOI18N
+        else {
+            return property;
         }
     }
 
+    
+    
 }

@@ -32,8 +32,8 @@ import org.netbeans.modules.java.j2seproject.queries.CompiledSourceForBinaryQuer
 import org.netbeans.modules.java.j2seproject.queries.JavadocForBinaryQueryImpl;
 import org.netbeans.modules.java.j2seproject.queries.SourceLevelQueryImpl;
 import org.netbeans.modules.java.j2seproject.queries.UnitTestForSourceQueryImpl;
-import org.netbeans.modules.java.j2seproject.ui.J2SECustomizerProvider;
 import org.netbeans.modules.java.j2seproject.ui.J2SEPhysicalViewProvider;
+import org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -51,17 +51,14 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
-import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
-import org.w3c.dom.Comment;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -135,7 +132,8 @@ public final class J2SEProject implements Project, AntProjectListener {
             spp,
             new J2SEActionProvider( this, this.updateHelper ),
             new J2SEPhysicalViewProvider(this, this.updateHelper, evaluator(), spp, refHelper),
-            new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
+            // new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
+            new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper),        
             new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
             new CompiledSourceForBinaryQuery(this.helper, evaluator(),getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
             new JavadocForBinaryQueryImpl(this.helper, evaluator()), //Does not use APH to get/put properties/cfgdata

@@ -21,33 +21,24 @@ import org.openide.util.HelpCtx;
  *
  * @author  phrebejk
  */
-public class CustomizerJavadoc extends JPanel implements J2SECustomizer.Panel, HelpCtx.Provider {
+public class CustomizerJavadoc extends JPanel implements HelpCtx.Provider {
     
-    private final J2SEProjectProperties j2seProperties;
-    private final VisualPropertySupport vps;
-        
-    /** Creates new form CustomizerCompile */
-    public CustomizerJavadoc( J2SEProjectProperties j2seProperties ) {
+    private J2SEProjectProperties j2seProperties = null;
+    
+    public CustomizerJavadoc( J2SEProjectProperties uiProperties ) {
         initComponents();
-        this.j2seProperties = j2seProperties;
-        vps = new VisualPropertySupport( j2seProperties );
-    }
-    
-    
-    public void initValues() {
         
-        vps.register( jCheckBoxPrivate, J2SEProjectProperties.JAVADOC_PRIVATE );
-        vps.register( jCheckBoxTree, J2SEProjectProperties.JAVADOC_NO_TREE );
-        vps.register( jCheckBoxUsages, J2SEProjectProperties.JAVADOC_USE );
-        vps.register( jCheckBoxNavigation, J2SEProjectProperties.JAVADOC_NO_NAVBAR ); 
-        vps.register( jCheckBoxIndex, J2SEProjectProperties.JAVADOC_NO_INDEX ); 
-        vps.register( jCheckBoxSplitIndex, J2SEProjectProperties.JAVADOC_SPLIT_INDEX ); 
-        vps.register( jCheckBoxAuthor, J2SEProjectProperties.JAVADOC_AUTHOR ); 
-        vps.register( jCheckBoxVersion, J2SEProjectProperties.JAVADOC_VERSION );
-        vps.register( jTextFieldWinTitle, J2SEProjectProperties.JAVADOC_WINDOW_TITLE );
-        // vps.register( jTextFieldEncoding, J2SEProjectProperties.JAVADOC_ENCODING ); 
-        vps.register( jCheckBoxPreview, J2SEProjectProperties.JAVADOC_PREVIEW ); 
-                
+        jCheckBoxPrivate.setModel( uiProperties.JAVADOC_PRIVATE_MODEL );
+        jCheckBoxTree.setModel( uiProperties.JAVADOC_NO_TREE_MODEL );
+        jCheckBoxUsages.setModel( uiProperties.JAVADOC_USE_MODEL );
+        jCheckBoxNavigation.setModel( uiProperties.JAVADOC_NO_NAVBAR_MODEL ); 
+        jCheckBoxIndex.setModel( uiProperties.JAVADOC_NO_INDEX_MODEL ); 
+        jCheckBoxSplitIndex.setModel( uiProperties.JAVADOC_SPLIT_INDEX_MODEL ); 
+        jCheckBoxAuthor.setModel( uiProperties.JAVADOC_AUTHOR_MODEL ); 
+        jCheckBoxVersion.setModel( uiProperties.JAVADOC_VERSION_MODEL );
+        jTextFieldWinTitle.setDocument( uiProperties.JAVADOC_WINDOW_TITLE_MODEL );
+        jCheckBoxPreview.setModel( uiProperties.JAVADOC_PREVIEW_MODEL ); 
+
         reenableSplitIndex( null );
         
         // XXX Temporarily removing some controls
@@ -58,8 +49,7 @@ public class CustomizerJavadoc extends JPanel implements J2SECustomizer.Panel, H
         jPanel1.remove( jLabelEncoding );
         jPanel1.remove( jTextFieldEncoding );
         
-        
-    } 
+    }
     
     public HelpCtx getHelpCtx() {
         return new HelpCtx( CustomizerJavadoc.class );
@@ -96,7 +86,6 @@ public class CustomizerJavadoc extends JPanel implements J2SECustomizer.Panel, H
 
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(new javax.swing.border.CompoundBorder(new javax.swing.border.EtchedBorder(), new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 12, 12))));
         jLabelPackage.setText(org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Package_JLabel"));
         jLabelPackage.setLabelFor(jTextFieldPackage);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -274,10 +263,6 @@ public class CustomizerJavadoc extends JPanel implements J2SECustomizer.Panel, H
 
     private void reenableSplitIndex(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reenableSplitIndex
         jCheckBoxSplitIndex.setEnabled( jCheckBoxIndex.isSelected() );
-        // Cannot use -splitindex with -noindex:
-        if (!jCheckBoxIndex.isSelected()) {
-            j2seProperties.put(J2SEProjectProperties.JAVADOC_SPLIT_INDEX, Boolean.FALSE);
-        }
     }//GEN-LAST:event_reenableSplitIndex
     
     
@@ -303,36 +288,5 @@ public class CustomizerJavadoc extends JPanel implements J2SECustomizer.Panel, H
     private javax.swing.JTextField jTextFieldPackage;
     private javax.swing.JTextField jTextFieldWinTitle;
     // End of variables declaration//GEN-END:variables
-        
-    // Storing methods ---------------------------------------------------------
-    
-    /** Stores the value according to the src component into the helper
-     */
-    private void store( JComponent src ) {
-    
-        /*
-        if ( src == jTextFieldSrcDir ) {
-            j2seProperties.put( J2SEProjectProperties.SRC_DIR, jTextFieldSrcDir.getText() );
-        }
-        else if ( src == jTextFieldBuildDir ) {
-            j2seProperties.put( J2SEProjectProperties.BUILD_DIR, jTextFieldBuildDir.getText() );
-        }
-        else if ( src == jListClasspath ) {
-            
-            List elements = new ArrayList( classpathModel.size() );
-            
-            for ( Enumeration e = classpathModel.elements(); e.hasMoreElements(); ) {
-                elements.add( e.nextElement() );
-            }
-            j2seProperties.put( J2SEProjectProperties.JAVAC_CLASSPATH, elements );
-        }
-        
-        assert true : "CustomizerCompile - Unknown component : " + src; // NOI18N
-        */
-    } 
-    
-    
-    
-    // Private methods for classpath data manipulation -------------------------
         
 }
