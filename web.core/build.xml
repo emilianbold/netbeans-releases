@@ -25,41 +25,24 @@ Microsystems, Inc. All Rights Reserved.
   <property name="nbm_alias" value="nb_ide"/>
   <property name="webbeans_root" location="src/org/netbeans/modules/web/dd/model"/>
 
+  <taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
+	<classpath>
+	  <pathelement path="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beans.jar" />
+	  <pathelement path="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beansdev.jar" />
+	  <pathelement path="${nb_root}/schema2beans/anttask/s2banttask.jar"/>
+	</classpath>
+  </taskdef>
+
   <target name="init">
     <ant dir="../external" target="unscramble"/>
   </target>
 
-  <!-- Check if it is neceseary to rebuild beans -->
-  <target name="dd2beans_init">
-        <mkdir dir="${webbeans_root}"/>
-        <uptodate property="dd.generation.uptodate" targetfile="${webbeans_root}/WebApp.java">
-          <srcfiles dir="src/org/netbeans/modules/web/dd/webapp"
-                    includes="webapp.mdd"/>
-          <srcfiles dir="src/org/netbeans/modules/web/core/resources"
-                    includes="web-app_2_3.dtd"/>
-        </uptodate>
-  </target>
-
-   <target name="dd2beansgen" depends="dd2beans_init" unless="dd.generation.uptodate">
-     <antcall target="clean-ddgen-src"/>
+   <target name="dd2beansgen">
      <echo message="generating code generation input file information" />
-     <java classname="org.netbeans.modules.schema2beansdev.GenBeans" fork="yes">
-     	<classpath>
-          <fileset dir="${nb_root}/core/external">
-            <include name="crimson*.jar"/>
-            <include name="xml-apis*.jar"/>
-          </fileset>
-	  <pathelement path="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beans.jar" />
-	  <pathelement path="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beansdev.jar" />
-	  <fileset dir = "${nb_root}/openide">
-		<include name="netbeans/lib/openide*.jar"/>
-	  </fileset>
-	</classpath>
-	<arg line= "-f ${nb_root}/web/core/src/org/netbeans/modules/web/core/resources/web-app_2_3.dtd" />
-	<arg line= "-mdd src/org/netbeans/modules/web/dd/webapp/webapp.mdd" />
-	<arg line= "-p org.netbeans.modules.web.dd.model" />
-	<arg line= "-r src" />
-     </java>
+	<schema2beans schema="${nb_root}/web/core/src/org/netbeans/modules/web/core/resources/web-app_2_3.dtd"
+	  mddFile="src/org/netbeans/modules/web/dd/webapp/webapp.mdd"
+	  package="org.netbeans.modules.web.dd.model"
+	  rootDir="src"/>
   </target>
 
   <target name="compile" depends="dd2beansgen">

@@ -23,6 +23,13 @@ Microsystems, Inc. All Rights Reserved.
   <taskdef classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext}/nbantext.jar" name="locjar"/>
   <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nbext}/nbantext.jar"/>
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext}/nbantext.jar"/>
+  <taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
+	<classpath>
+	  <pathelement path="${nbroot}/schema2beans/netbeans/modules/autoload/schema2beans.jar" />
+	  <pathelement path="${nbroot}/schema2beans/netbeans/modules/autoload/schema2beansdev.jar" />
+	  <pathelement path="${nbroot}/schema2beans/anttask/s2banttask.jar"/>
+	</classpath>
+  </taskdef>
 
   <!-- These are the primary targets. -->
 
@@ -166,33 +173,10 @@ Microsystems, Inc. All Rights Reserved.
       </antcall>
   </target>
 
-  <target name="ddinit">
-        <mkdir dir="src/${dtddir}"/>
-        <uptodate property="dd.generation" 
-                targetfile="${dtdfile}">
-            <srcfiles dir="src/${dtddir}" includes="*.java"/>
-        </uptodate> 
-  </target>
-
-  <target name="ddgen" depends="ddinit" if="dd.generation">
+  <target name="ddgen">
      <echo message="Generated schema2beans from ${dtdfile}"/>
-     <java classname="org.netbeans.modules.schema2beansdev.GenBeans" fork="yes">
-       <classpath>
-          <pathelement path="${nbroot}/logger/netbeans/lib/ext/logger.jar" />
-          <pathelement path="${nbroot}/schema2beans/netbeans/modules/autoload/schema2beans.jar" />
-          <pathelement path="${nbroot}/schema2beans/netbeans/modules/autoload/schema2beansdev.jar" />
-          <fileset dir = "${nbroot}/openide">
-                <include name="netbeans/lib/openide*.jar"/>
-          </fileset>
-          <fileset dir="${nbroot}/core/external">
-            <include name="xml-apis*.jar"/> <!-- PENDING remove when move to 1.4 build -->
-            <include name="crimson*.jar"/>
-          </fileset>
-        </classpath>
-        <arg line= "-f ${dtdfile}" />
-        <arg line= "-p ${dtdpackage}" />
-        <arg line= "-r src" />
-     </java>
+	<schema2beans schema="${dtdfile}" package="${dtdpackage}"
+	  rootDir="src" validate="true" attrProp="true"/>
   </target> 
 
   <!--

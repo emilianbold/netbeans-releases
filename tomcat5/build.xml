@@ -27,34 +27,20 @@ Microsystems, Inc. All Rights Reserved.
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nb_root}/nbbuild/nbantext.jar"/>
   <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nb_root}/nbbuild/nbantext.jar"/>
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nb_root}/nbbuild/nbantext.jar"/>
+  <taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
+	<classpath>
+	  <pathelement path="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beans.jar" />
+	  <pathelement path="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beansdev.jar" />
+	  <pathelement path="${nb_root}/schema2beans/anttask/s2banttask.jar"/>
+	</classpath>
+  </taskdef>
 
-  <!-- Check if it is neceseary to rebuild beans for Tomcat 5-->
-  <target name="dd2beans_init">
-        <mkdir dir="${tomcat5_dir}/config"/>
-        <uptodate property="dd.generation.uptodate" targetfile="${tomcat5_dir}/config/Parameter.java">
-          <srcfiles dir="${tomcat5_dir}/resources"
-                    includes="tomcat5_server.*"/>
-        </uptodate>
-  </target>
-
-  <target name="dd2beans_gen" depends="dd2beans_init" unless="dd.generation.uptodate">
-      <antcall target="clean-ddgen-src"/>
+  <target name="dd2beans_gen">
       <echo message="generating bean graph for Tomcat 5 configuration file" />
-      <java classname="org.netbeans.modules.schema2beansdev.GenBeans" fork="yes">	
-     	<classpath>
-          <pathelement path="${nb_root}/core/external/xml-apis-1.0b2.jar" />
-          <pathelement path="${nb_root}/core/external/crimson-1.1.3.jar" />
-          <pathelement path="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beans.jar" />
-          <pathelement path="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beansdev.jar" />
-          <fileset dir = "${nb_root}/openide">
-            <include name="netbeans/lib/openide*.jar"/>
-          </fileset>
-        </classpath>
-        <arg line= "-f ${tomcat5_dir}/resources/tomcat5_server.dtd" />
-        <arg line= "-mdd tomcat5.mdd" />
-        <arg line= "-p org.netbeans.modules.tomcat5.config" />
-        <arg line= "-r src" />
-      </java>
+	<schema2beans schema="${tomcat5_dir}/resources/tomcat5_server.dtd"
+	  mddFile="tomcat5.mdd"
+	  package="org.netbeans.modules.tomcat5.config"
+	  rootDir="src"/>
   </target>
   
   <target name="compile" depends="dd2beans_gen">
