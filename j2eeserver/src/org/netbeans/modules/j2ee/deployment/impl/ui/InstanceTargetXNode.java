@@ -89,7 +89,12 @@ public class InstanceTargetXNode extends FilterXNode implements ServerInstance.R
                     else {
                         RequestProcessor.getDefault().post(new Runnable() {
                             public void run() {
-                                instance.isRunning();
+                                try {
+                                    instance.isRunning();
+                                } catch (IllegalStateException e) {
+                                    // might happen when user removing instance
+                                    org.openide.ErrorManager.getDefault().log(e.toString());
+                                }
                             }
                         });
                     }

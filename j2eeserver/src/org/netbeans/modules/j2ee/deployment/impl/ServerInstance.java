@@ -585,6 +585,10 @@ public class ServerInstance implements Node.Cookie {
         return null;
     }
     
+    public boolean canStartServer() {
+        return this.getStartServer() != null && getStartServer().supportsStartDeploymentManager();
+    }
+    
     private class StartProgressHandler implements ProgressListener {
         public StartProgressHandler() {
         }
