@@ -266,9 +266,11 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
             wiz.setTitleFormat(new java.text.MessageFormat("{0}")); // NOI18N
             Dialog dlg = DialogDisplayer.getDefault().createDialog(wiz);
             dlg.setVisible(true);
-            this.getChildren().refreshPlatforms();
-            Set result = wiz.getInstantiatedObjects();
-            this.expandPlatforms (result.size() == 0 ? null : (JavaPlatform)result.iterator().next());
+            if (wiz.getValue() == WizardDescriptor.FINISH_OPTION) {
+                this.getChildren().refreshPlatforms();
+                Set result = wiz.getInstantiatedObjects();
+                this.expandPlatforms (result.size() == 0 ? null : (JavaPlatform)result.iterator().next());
+            }
         } catch (DataObjectNotFoundException dfne) {
             ErrorManager.getDefault().notify (dfne);
         }
