@@ -107,7 +107,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="apichanges-generate">
-    <style in="doc/changes/apichanges.xml" out="doc/changes/apichanges.html" style="../../openide/api/doc/changes/apichanges.xsl"/>
+    <style in="doc/changes/apichanges.xml" out="doc/changes/apichanges.html" style="../../nbbuild/javadoctools/apichanges.xsl"/>
   </target>
   
 </project>
