@@ -45,7 +45,6 @@ import org.openide.util.actions.*;
 import org.openide.nodes.Node;
 import org.openide.nodes.CookieSet;
 
-import org.netbeans.modules.web.core.ServletSettings;
 import org.netbeans.modules.web.core.QueryStringCookie;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 

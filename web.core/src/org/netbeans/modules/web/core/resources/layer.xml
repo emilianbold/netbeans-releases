@@ -118,9 +118,6 @@ Microsystems, Inc. All Rights Reserved.
       <file name="Set Request Parameters.instance">
         <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.EditQueryStringAction"/>
       </file>
-      <file name="Execute (restart server).instance">
-        <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.execution.Execute2Action"/>
-      </file>
     </folder>
     <folder name="System">
       <file name="View Servlet.instance">
@@ -133,14 +130,6 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Hidden">
 	    <attr name="hidden" boolvalue="true" />
 	    <file name="org-netbeans-modules-web-core-resources-EntityCatalog.xml" url="entityCatalog.xml"/>
-    </folder>
-
-    <folder name="JSP_Servlet">
-      <file name="org-netbeans-modules-web-core-ServletSettings.settings" url="servlet.settings">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle" />
-        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/servletSettings.gif" />
-        <attr name="SystemFileSystem.layer" stringvalue="project" />
-      </file>
     </folder>
 
     <!-- Recognize text/x-jsp -->
