@@ -1137,8 +1137,7 @@ public class FormEditorSupport extends JavaEditor
                                     new CloseHandler(formDataObject));
         
         // #45665 - dock into editor mode if possible..
-        Workspace current = WindowManager.getDefault().getCurrentWorkspace();
-        Mode editorMode = current.findMode(EDITOR_MODE);
+        Mode editorMode = WindowManager.getDefault().findMode(EDITOR_MODE);
         if (editorMode != null) {
             editorMode.dockInto(mvtc);
         }
