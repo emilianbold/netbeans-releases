@@ -317,12 +317,51 @@ class OpenFile extends Object {
   }
   
   /** Ask what dir to mount to access a given file.
+  * First may display a dialog asking whether the user wishes to select the default,
+  * or edit the package selection.
   * @param f the file which should be accessible
   * @param pkgLevel the suggested depth of the package; 0 = default, 1 = single component, 2 = foo.bar, etc.; -1 if no suggested package
   * @param dirToMount 0th elt will contain the directory to mount (null to cancel the mount)
   * @param mountPackage 0th elt will contain the name of the package (possibly empty, not null) the file will be in
   */
   private static void askForMountPoint (File f, int pkgLevel, final File[] dirToMount, final String[] mountPackage) {
+    final Vector dirs = new Vector (); // list of mountable dir names; Vector<File>
+    final Vector pkgs = new Vector (); // list of resulting package names; Vector<String>
+    Vector pkgdisplays = new Vector (); // list of displayable package entries; Vector<String>
+    String pkg = "";
+    for (File dir = f.getParentFile (); dir != null; dir = dir.getParentFile ()) {
+      dirs.add (dir);
+      pkgs.add (pkg);
+      pkgdisplays.add (pkg.equals ("") ?
+                       SettingsBeanInfo.getString ("LBL_packageWillBeDefault") :
+                       SettingsBeanInfo.getString ("LBL_packageWillBe", pkg));
+      if (! pkg.equals ("")) pkg = "." + pkg;
+      pkg = dir.getName () + pkg;
+    }
+
+    // If no guess, always show full dialog.
+    if (pkgLevel != -1) {
+      String guessed = (String) pkgs.elementAt (pkgLevel);
+      Object yesOption = new JButton (SettingsBeanInfo.getString ("LBL_quickMountYes"));
+      Object noOption = new JButton (SettingsBeanInfo.getString ("LBL_quickMountNo"));
+      Object result = TopManager.getDefault ().notify (new NotifyDescriptor
+         ("".equals (guessed) ?
+            SettingsBeanInfo.getString ("MSG_quickMountDefault", f.getName ()) :
+            SettingsBeanInfo.getString ("MSG_quickMount", f.getName (), guessed), // message
+          SettingsBeanInfo.getString ("LBL_quickMountTitle"), // title
+          NotifyDescriptor.YES_NO_OPTION, // optionType
+          NotifyDescriptor.QUESTION_MESSAGE, // messageType
+          null, // icon
+          new Object[] { yesOption, noOption }, // options
+          yesOption // initialValue
+          ));
+      if (result.equals (yesOption)) {
+        dirToMount[0] = (File) dirs.elementAt (pkgLevel);
+        mountPackage[0] = guessed;
+        return;
+      }
+    }
+    
     final JPanel panel = new JPanel ();
     panel.setLayout (new BorderLayout (0, 5));
     panel.setBorder (new javax.swing.border.EmptyBorder (8, 8, 8, 8));
@@ -336,21 +375,13 @@ class OpenFile extends Object {
     textArea.setWrapStyleWord (true);
     panel.add (textArea, BorderLayout.NORTH);
     
-    final Vector dirs = new Vector (); // list of mountable dir names; Vector<File>
-    final Vector pkgs = new Vector (); // list of resulting package names; Vector<String>
-    String pkg = "";
-    for (File dir = f.getParentFile (); dir != null; dir = dir.getParentFile ()) {
-      dirs.add (dir);
-      pkgs.add (pkg);
-      if (! pkg.equals ("")) pkg = "." + pkg;
-      pkg = dir.getName () + pkg;
-    }
-    final JList list = new JList (dirs);
+    final JList list = new JList (pkgdisplays);
     list.setVisibleRowCount (5);
     list.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
     if (pkgLevel != -1) list.setSelectedIndex (pkgLevel);
     panel.add (new JScrollPane (list), BorderLayout.CENTER);
     
+    // Name of mount point:
     final JLabel label = new JLabel ();
     label.setFont (new Font ("Monospaced", Font.PLAIN, 12));
     panel.add (label, BorderLayout.SOUTH);
@@ -361,10 +392,10 @@ class OpenFile extends Object {
     
     list.addListSelectionListener (new ListSelectionListener () {
       public void valueChanged (ListSelectionEvent ev) {
-        updateLabelEtcFromList (label, list, pkgs, okButton);
+        updateLabelEtcFromList (label, list, dirs, okButton);
       }
     });
-    updateLabelEtcFromList (label, list, pkgs, okButton);
+    updateLabelEtcFromList (label, list, dirs, okButton);
 
     final Dialog[] dialog = new Dialog[1];
     dialog[0] = TopManager.getDefault ().createDialog
@@ -394,17 +425,14 @@ class OpenFile extends Object {
     
   }
 
-  private static void updateLabelEtcFromList (JLabel label, JList list, Vector pkgs, JButton okButton) {
+  private static void updateLabelEtcFromList (JLabel label, JList list, Vector dirs, JButton okButton) {
     int idx = list.getSelectedIndex ();
     if (idx == -1) {
       label.setText (" ");
       okButton.setEnabled (false);
     } else {
-      String pkg = (String) pkgs.elementAt (idx);
-      if (pkg.equals (""))
-        label.setText (SettingsBeanInfo.getString ("LBL_packageWillBeDefault"));
-      else
-        label.setText (SettingsBeanInfo.getString ("LBL_packageWillBe", pkg));
+      File dir = (File) dirs.elementAt (idx);
+      label.setText (SettingsBeanInfo.getString ("LBL_dirWillBe", dir.getAbsolutePath ()));
       okButton.setEnabled (true);
     }
   }
@@ -413,6 +441,8 @@ class OpenFile extends Object {
 
 /*
  * Log
+ *  26   Gandalf   1.25        1/4/00   Jesse Glick     Friendlier mount 
+ *       dialogs.
  *  25   Gandalf   1.24        11/10/99 Jesse Glick     Fixed race condition in 
  *       mount dialog.
  *  24   Gandalf   1.23        11/2/99  Jesse Glick     Commented out testing 
