@@ -196,7 +196,10 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/pdf/PDFDataIcon.gif"/>
         </file>
         <!-- Bookmarks Node -->
-        <file name="org-netbeans-modules-url-BookmarksNode.instance"/>
+        <file name="org-netbeans-modules-url-BookmarksNode.settings" url="../url/BookmarksNode.settings">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/url/bookmarks.gif"/>
+        </file>
 
         <!-- Search Services -->
         <folder name="SearchType">
@@ -250,7 +253,7 @@ SystemFileSystem
                 </folder>
                 <folder name="System">
                     <file name="org-netbeans-modules-url-BookmarksNode.shadow">
-<![CDATA[Services/org-netbeans-modules-url-BookmarksNode.instance
+<![CDATA[Services/org-netbeans-modules-url-BookmarksNode.settings
 SystemFileSystem
 ]]>
                     </file>
