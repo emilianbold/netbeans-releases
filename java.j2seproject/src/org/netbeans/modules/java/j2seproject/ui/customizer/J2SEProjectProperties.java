@@ -500,13 +500,14 @@ public class J2SEProjectProperties {
                 // add property to project.properties pointing to relativized 
                 // library jar(s) if possible
                 String prop = vcpi.getRaw();
-                prop = prop.substring(2, prop.length()-1);
+                prop = prop.substring(2, prop.length()-1); // XXX make a PropertyUtils method for this!
                 String value = relativizeLibraryClasspath(prop, projDir);
                 if (value != null) {
                     ep.setProperty(prop, value);
                     ep.setComment(prop, new String[]{
-                        "# Property "+prop+" is set here just to make sharing of project simpler.", // NOI18N
-                        "# The library definition has always preference over this property."}, false); // NOI18N
+                        // XXX this should be I18N! Not least because the English is wrong...
+                        "# Property "+prop+" is set here just to make sharing of project simpler.",
+                        "# The library definition has always preference over this property."}, false);
                     changed = true;
                 }
             }
