@@ -16,8 +16,7 @@ package com.netbeans.developer.modules.loaders.form;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 
-import org.openide.explorer.propertysheet.editors.ConstrainedModifiersEditor;
-import org.openide.src.nodes.ConstrainedModifiers;
+import org.openide.explorer.propertysheet.editors.ModifierEditor;
 import org.openide.options.SystemOption;
 import org.openide.util.HelpCtx;
 
@@ -105,9 +104,7 @@ public class FormLoaderSettings extends SystemOption {
   /** True if grid should be applied to size of components, false otherwise. */
   private static boolean applyGridToSize = true;
   /** The modifiers of variables generated for component in Form Editor */
-  private static ConstrainedModifiers variablesModifier = new ConstrainedModifiers (
-    Modifier.PRIVATE,
-    Modifier.PUBLIC | Modifier.PROTECTED | Modifier.PRIVATE | Modifier.STATIC | Modifier.FINAL | Modifier.TRANSIENT | Modifier.VOLATILE);
+  private static int variablesModifier = Modifier.PRIVATE;
 
   /** If true, only editable properties are displayed in the ComponentInspector */
   private static boolean displayWritableOnly = true;
@@ -339,15 +336,15 @@ public class FormLoaderSettings extends SystemOption {
   }
 
   /** Getter for the variablesModifier option */
-  public ConstrainedModifiers getVariablesModifier () {
+  public int getVariablesModifier () {
     return variablesModifier;
   }
 
   /** Setter for the variablesModifier option */
-  public void setVariablesModifier (ConstrainedModifiers value) {
-    ConstrainedModifiers oldValue = variablesModifier;
+  public void setVariablesModifier (int value) {
+    int oldValue = variablesModifier;
     variablesModifier = value;
-    firePropertyChange (PROP_VARIABLES_MODIFIER, oldValue, variablesModifier);
+    firePropertyChange (PROP_VARIABLES_MODIFIER, new Integer(oldValue), new Integer(variablesModifier));
   }
 
   /** Getter for the displayWritableOnly option */
@@ -402,6 +399,8 @@ public class FormLoaderSettings extends SystemOption {
 
 /*
  * Log
+ *  13   Gandalf   1.12        7/13/99  Petr Hamernik   ConstrainedModifiers 
+ *       removed
  *  12   Gandalf   1.11        7/2/99   Jesse Glick     More help IDs.
  *  11   Gandalf   1.10        6/30/99  Ian Formanek    Variables modifier 
  *       property improved

@@ -13,10 +13,9 @@
 
 package com.netbeans.developer.modules.loaders.form;
 
-import org.openide.explorer.propertysheet.editors.ConstrainedModifiersEditor;
+import org.openide.explorer.propertysheet.editors.ModifierEditor;
 import org.openide.filesystems.*;
 import org.openide.nodes.*;
-import org.openide.src.nodes.ConstrainedModifiers;
 import org.openide.text.IndentEngine;
 import org.openide.util.Utilities;
 import com.netbeans.developer.modules.loaders.java.JavaEditor;
@@ -140,7 +139,7 @@ public class JavaCodeGenerator extends CodeGenerator {
             if (useDefaultModifiers) {
               component.setAuxValue (AUX_VARIABLE_MODIFIER, null);
             } else {
-              component.setAuxValue (AUX_VARIABLE_MODIFIER, FormEditor.getFormSettings ().getVariablesModifier ());
+              component.setAuxValue (AUX_VARIABLE_MODIFIER, new Integer(FormEditor.getFormSettings ().getVariablesModifier ()));
             }
             regenerateVariables ();
           }
@@ -150,10 +149,10 @@ public class JavaCodeGenerator extends CodeGenerator {
           }
           
         },
-        new PropertySupport.ReadWrite ("modifiers", ConstrainedModifiers.class, "Variable Modifiers",  // [PENDING - localize]
+        new PropertySupport.ReadWrite ("modifiers", Integer.class, "Variable Modifiers",  // [PENDING - localize]
                                        "The modifiers of the global variable generated for this component") {
           public void setValue (Object value) {
-            if (!(value instanceof ConstrainedModifiers)) {
+            if (!(value instanceof Integer)) {
               throw new IllegalArgumentException ();
             }
             component.setAuxValue (AUX_VARIABLE_MODIFIER, value);
@@ -169,7 +168,7 @@ public class JavaCodeGenerator extends CodeGenerator {
           }
   
           public PropertyEditor getPropertyEditor () {
-            return new ConstrainedModifiersEditor ();
+            return new ModifierEditor ();
           }
           
         },
@@ -674,11 +673,9 @@ public class JavaCodeGenerator extends CodeGenerator {
     RADComponent[] children = cont.getSubBeans ();
     
     for (int i = 0; i < children.length; i++) {
-      ConstrainedModifiers modifiers = (ConstrainedModifiers)children[i].getAuxValue (AUX_VARIABLE_MODIFIER);
-      if (modifiers == null) {
-        modifiers = FormEditor.getFormSettings ().getVariablesModifier ();
-      }
-      variablesWriter.write (java.lang.reflect.Modifier.toString (modifiers.getModifiers ()));
+      Integer m = (Integer) children[i].getAuxValue (AUX_VARIABLE_MODIFIER);
+      int modifiers = (m == null) ? m.intValue() : FormEditor.getFormSettings ().getVariablesModifier ();
+      variablesWriter.write (java.lang.reflect.Modifier.toString (modifiers));
       variablesWriter.write (" ");
       variablesWriter.write (children[i].getBeanClass ().getName ());
       variablesWriter.write (" ");
@@ -1119,6 +1116,8 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  37   Gandalf   1.36        7/13/99  Petr Hamernik   ConstrainedModifiers 
+ *       removed
  *  36   Gandalf   1.35        7/11/99  Ian Formanek    Some synthetic 
  *       properties on RADComponents are available only if 
  *       supportsAdvancedFeatures of current persistence manager returns true

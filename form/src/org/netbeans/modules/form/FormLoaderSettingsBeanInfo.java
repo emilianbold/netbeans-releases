@@ -15,6 +15,7 @@ package com.netbeans.developer.modules.loaders.form;
 
 import java.awt.Image;
 import java.beans.*;
+import java.lang.reflect.Modifier;
 
 /** A BeanInfo for FormLoaderSettings.
 * @author Ian Formanek
@@ -146,7 +147,7 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
       desc[12].setExpert (true);
       desc[13].setDisplayName (formBundle.getString ("PROP_VARIABLES_MODIFIER"));
       desc[13].setShortDescription (formBundle.getString ("HINT_VARIABLES_MODIFIER"));
-      desc[13].setPropertyEditorClass (org.openide.explorer.propertysheet.editors.ConstrainedModifiersEditor.class);
+      desc[13].setPropertyEditorClass (FieldModifierPropertyEditor.class);
       desc[14].setDisplayName (formBundle.getString ("PROP_EDITOR_SEARCH_PATH"));
       desc[14].setShortDescription (formBundle.getString ("HINT_EDITOR_SEARCH_PATH"));
       desc[15].setDisplayName (formBundle.getString ("PROP_REGISTERED_EDITORS"));
@@ -179,6 +180,17 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
     }
   }
 
+  /** Property editor for variables modifiers.
+  */
+  final public static class FieldModifierPropertyEditor extends org.openide.explorer.propertysheet.editors.ModifierEditor {
+    /** Construct new editor with mask for fields. */
+    public FieldModifierPropertyEditor() {
+      super(Modifier.PUBLIC | Modifier.PROTECTED | Modifier.PRIVATE | Modifier.STATIC |
+            Modifier.FINAL | Modifier.TRANSIENT | Modifier.VOLATILE);
+    }
+  }
+
+  
   final public static class ModifierPropertyEditor extends java.beans.PropertyEditorSupport {
     /** Display Names for alignment. */
     private static final String[] names = {
@@ -220,6 +232,8 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
 
 /*
  * Log
+ *  11   Gandalf   1.10        7/13/99  Petr Hamernik   ConstrainedModifiers 
+ *       removed
  *  10   Gandalf   1.9         6/30/99  Ian Formanek    Variables modifier 
  *       property improved
  *  9    Gandalf   1.8         6/10/99  Ian Formanek    loadedBeans -> 
