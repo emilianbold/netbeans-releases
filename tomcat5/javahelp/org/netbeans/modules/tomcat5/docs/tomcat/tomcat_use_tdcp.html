@@ -23,17 +23,11 @@
 <p>There are many ways of using a <a href="tomcat_setup_tdcp.html">data source</a> in a web application. The simplest 
 way is to access your data source directly from a JSP file using the JSTL 1.1 tag library. You are recommended
  to use this method for
- testing purposes and in small web applications only.
- <p><b>To add the JSTL 1.1 tag library to your web project:</b></p>
- <ol>
- <li>Right-click the project node in the Projects window and choose Properties.</li>
- <li>Select Compiling Sources and click Add Library. Your libraries, as well as those that are bundled with NetBeans 4.0 are displayed. JSTL 1.1 is one of the bundled libraries.</li>
-  <li>Select JSTL 1.1 and click Add Library. Your newly selected library is displayed in the Project Properties dialog box. This means that the JSTL library is in the classpath. You need to package JSTL with your web application, therefore leave the check box selected. The IDE copies the library to the web application's WEB-INF/lib folder.</li>
-  <li>Click OK to close the Project Properties dialog box.</li>
-</ol>
+ testing purposes and in small web applications only.</p>
 <p><b>To set up a JSP to use the JSTL 1.1 tag library to access a data source:</b></p>
 <ol>
-        <li>Expand the project node and the Web Pages node. </li>
+	<li>Ensure that the JSTL 1.1 tag library is <a href="nbdocs:/org/netbeans/modules/usersguide/web/taglibUI/addfilesys.html">correctly added</a> to the web project.
+	<li>Expand the project node and the Web Pages node. </li>
 	<li>Double-click the index.jsp node. The JSP file opens in the Source Editor. </li>
 <li>You need to let the web server know that the JSP page uses tags from JSTL's <tt>CORE</tt> 
   component and JSTL's <tt>SQL</tt> component. Paste or type the following <tt>taglib</tt> 
@@ -64,7 +58,7 @@ way is to access your data source directly from a JSP file using the JSTL 1.1 ta
 </li>
 	    
 </ol>
-<p><b>To access a data source:</b></p>
+<p><b>To access a data source from a JSP:</b></p>
 <ol>
 <li><a href="tomcat_setup_tdcp.html">Set up a Tomcat Database Connection Pool</a>.</li>
 <li>Modify the JSP file to enable the selection of database records. 
