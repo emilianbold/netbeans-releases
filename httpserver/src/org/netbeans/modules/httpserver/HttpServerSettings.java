@@ -85,7 +85,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   private static Properties mappedServlets = new Properties();
 
   /** http settings */
-  public static HttpServerSettings OPTIONS;
+  public static HttpServerSettings OPTIONS = new HttpServerSettings();
                                       
   /** last used servlet name */                                    
   private static int lastUsedName = 0;
@@ -98,16 +98,6 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   static final long serialVersionUID =7387407495740535307L;
   
   public HttpServerSettings() {
-    // set the writer
-    if (OPTIONS == null) {
-      OPTIONS = this;  
-      // register the server
-      try {
-        org.openide.util.HttpServer.registerServer(OPTIONS);
-      }
-      catch (SecurityException e) {}
-    }  
-    
   }
 
   /** human presentable name */
@@ -469,6 +459,8 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
 
 /*
  * Log
+ *  22   Gandalf   1.21        10/6/99  Petr Jiricka    Changes caused by module
+ *       (de)serialization
  *  21   Gandalf   1.20        10/6/99  Petr Jiricka    Fixed bug causing the 
  *       server to start at IDE shutdown (after the first start of the IDE)
  *  20   Gandalf   1.19        9/30/99  Petr Jiricka    Jetty -> JSWDK
