@@ -57,6 +57,19 @@ public class JspLoader extends UniFileLoader {
 
     public static final String TAG_MIME_TYPE  = "text/x-tag"; // NOI18N
     
+    public static String getMimeType(JspDataObject data) {
+        if ((data == null) || !(data instanceof JspDataObject)) {
+            return "";          // NOI18N
+        }
+        String ext = data.getPrimaryFile().getExt();
+        if (ext.equals(TAG_FILE_EXTENSION) || ext.equals(TAGF_FILE_EXTENSION)
+            || ext.equals(TAGX_FILE_EXTENSION)) {
+            return TAG_MIME_TYPE;
+        } else {
+            return JSP_MIME_TYPE;
+        }
+    }
+    
     protected void initialize () {
         super.initialize();
         ExtensionList ext = new ExtensionList();

@@ -89,20 +89,12 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
      */
     private static String defaulEncoding = "UTF-8"; // NOI18N
     
-    
-    
     public BaseJspEditorSupport(JspDataObject obj) {
         super(obj, new BaseJspEnv(obj));
-        
-        String ext = getDataObject().getPrimaryFile().getExt();
-        
-        if (ext.equals(JspLoader.TAG_FILE_EXTENSION)
-        || ext.equals(JspLoader.TAGF_FILE_EXTENSION)
-        || ext.equals(JspLoader.TAGX_FILE_EXTENSION))
-            setMIMEType(JspLoader.TAG_MIME_TYPE);
-        else
-            setMIMEType(JspLoader.JSP_MIME_TYPE);
-        
+        DataObject data = getDataObject();
+        if ((data!=null) && (data instanceof JspDataObject)) {
+            setMIMEType(JspLoader.getMimeType((JspDataObject)data));
+        }
         initialize();
     }
     
@@ -409,9 +401,11 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
             public boolean isEnabled() {
                 DataObject data = ((BaseJspEditorSupport)cloneableEditorSupport()).getDataObject();
                 if ((data instanceof JspDataObject) && (data != null)) {
-                    DataObject module = ((JspDataObject)data).getModule();
-                    if ((module instanceof WebContextObject) && (module != null)) {
-                        return true;
+                    if (JspLoader.getMimeType((JspDataObject)data).equals(JspLoader.JSP_MIME_TYPE)) {
+                        DataObject module = ((JspDataObject)data).getModule();
+                        if ((module instanceof WebContextObject) && (module != null)) {
+                            return true;
+                        }
                     }
                 }
                 return false;
