@@ -45,25 +45,13 @@ public class FormDataLoader extends JavaDataLoader {
 
     /** Gets default actions. Overrides superclass method. */
     protected SystemAction[] defaultActions() {
-        return new SystemAction[] {
-            SystemAction.get(OpenAction.class),
-            SystemAction.get(EditAction.class),
-            null,
-            SystemAction.get(FileSystemAction.class),
-            null,
-            SystemAction.get(CutAction.class),
-            SystemAction.get(CopyAction.class),
-            SystemAction.get(PasteAction.class),
-            null,
-            SystemAction.get(NewAction.class),
-            SystemAction.get(DeleteAction.class),
-            SystemAction.get(RenameAction.class),
-            null,
-            SystemAction.get(SaveAsTemplateAction.class),
-            null,
-            SystemAction.get(ToolsAction.class),
-            SystemAction.get(PropertiesAction.class),
-        };
+        SystemAction[] javaActions = super.defaultActions();
+        SystemAction[] formActions = new SystemAction[javaActions.length+2];
+        formActions[0] = javaActions[0]; // OpenAction            
+        formActions[1] = SystemAction.get(EditAction.class);
+        formActions[2] = null;
+        System.arraycopy(javaActions, 1, formActions, 3, javaActions.length-1);
+        return formActions;
     }
 
     /** For a given file finds a primary file.
