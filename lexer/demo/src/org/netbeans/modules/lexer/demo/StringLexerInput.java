@@ -16,6 +16,9 @@ package org.netbeans.modules.lexer.demo;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.LexerInput;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.spi.lexer.util.AbstractCharSequence;
+import org.netbeans.spi.lexer.util.CharSubSequence;
+import org.netbeans.spi.lexer.util.Compatibility;
 
 /**
  * Token iterator that works over the given char sequence.
@@ -39,6 +42,12 @@ public class StringLexerInput implements LexerInput {
     
     /** 1 if lookahead reached EOF or 0 if not */
     private int eof;
+
+    /**
+     * Lazily created character sequence representing subsequence of text read 
+     * from the lexer input by read() operations.
+     */
+    private CharSubSequence subReadText;
     
     public StringLexerInput(String text) {
         this.text = text;
@@ -62,6 +71,10 @@ public class StringLexerInput implements LexerInput {
         return inputIndex - tokenIndex;
     }
     
+    public boolean isEOFLookahead() {
+        return (eof != 0);
+    }
+    
     public void backup(int count) {
         lookaheadIndex = Math.max(lookaheadIndex, inputIndex + eof);
         inputIndex -= count;
@@ -69,6 +82,11 @@ public class StringLexerInput implements LexerInput {
             inputIndex += count;
             throw new IllegalArgumentException("count=" + count
                 + " > " + (inputIndex - tokenIndex));
+            
+        } else if (inputIndex > lookaheadIndex - eof) {
+            inputIndex += count;
+            throw new IllegalArgumentException("count=" + count
+                + " < " + (inputIndex + eof - lookaheadIndex));
         }
     }
     
@@ -93,6 +111,41 @@ public class StringLexerInput implements LexerInput {
     
     public Token createToken(TokenId id) {
         return createToken(id, inputIndex - tokenIndex);
+    }
+
+    public CharSequence getReadText(int start, int end) {
+        if (subReadText == null) {
+            subReadText = new CharSubSequence(new ReadText());
+        }
+
+        subReadText.setBounds(start, end);
+
+        return subReadText;
+    }    
+    
+    char readTextCharAt(int index) {
+        if (index < 0) {
+            throw  new IndexOutOfBoundsException("index=" + index + " < 0");
+        }
+
+        if (index >= getReadLength()) {
+            throw new IndexOutOfBoundsException("index=" + index
+                + " >= getReadLength()=" + getReadLength());
+        }
+
+        return text.charAt(tokenIndex + index);
+    }
+    
+    private class ReadText extends AbstractCharSequence {
+        
+        public int length() {
+            return getReadLength();
+        }
+
+        public char charAt(int index) {
+            return readTextCharAt(index);
+        }
+        
     }
 
 }

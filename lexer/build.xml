@@ -20,6 +20,7 @@ Microsystems, Inc. All Rights Reserved.
   <property name="license.file" location="../nbbuild/standard-nbm-license.txt"/>
   <property name="nbroot" location=".."/>
   <!-- <property name="build.compiler.debug" value="on"/> -->
+  <!-- <property name="build.compiler.deprecation" value="on"/> -->
 
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../nbbuild/nbantext.jar"/>

@@ -1,38 +1,54 @@
 <?xml version="1.0"?>
-<!DOCTYPE Language SYSTEM "../../../../../../../../src/org/netbeans/modules/lexer/language.dtd">
-<Language mimeType="text/x-calc">
+<!DOCTYPE Language SYSTEM "../../../../../../../../gen/src/org/netbeans/modules/lexer/gen/language.dtd">
+<Language>
+    <HiddenTokenType name="EOF"/>
+    <HiddenTokenType name="FLOAT"/>
+    <HiddenTokenType name="INTEGER"/>
+    <HiddenTokenType name="DIGIT"/>
+
     <TokenId name="whitespace">
-        <SampleText value=" "/>
+        <SampleText> </SampleText>
+        <Category name="whitespace"/>
     </TokenId>
+
     <TokenId name="ml-comment">
         <Category name="comment"/>
     </TokenId>
+
     <TokenId name="plus">
         <Category name="operator"/>
     </TokenId>
+
     <TokenId name="minus">
         <Category name="operator"/>
     </TokenId>
+
     <TokenId name="mul">
         <Category name="operator"/>
     </TokenId>
+
     <TokenId name="div">
         <Category name="operator"/>
     </TokenId>
+
     <TokenId name="lparen">
         <Category name="separator"/>
     </TokenId>
+
     <TokenId name="rparen">
         <Category name="separator"/>
     </TokenId>
-    <TokenId name="mul3"
-             comment="Special token for testing extra lookahead and lookback">
+
+    <TokenId name="mul3">
         <Category name="operator"/>
+        <Comment>Special token for testing extra lookahead and lookback</Comment>
     </TokenId>
-    <TokenId name="plus5"
-             comment="Special token for testing extra lookahead and lookback">
+
+    <TokenId name="plus5">
         <Category name="operator"/>
+        <Comment>Special token for testing extra lookahead and lookback</Comment>
     </TokenId>
+
     <TokenId name="constant">
         <Category name="literal"/>
     </TokenId>
@@ -42,17 +58,14 @@
     <TokenId name="ml-comment-end">
         <Category name="error"/>
     </TokenId>
+
     <TokenId name="error">
         <Category name="error"/>
     </TokenId>
 
-    <!-- Extra tokens that are not present in xxxConstants
-         must be at the end so that the default id
-         is assigned correctly.
-         Incomplete tokens belong to "incomplete" category
-      -->
-    <TokenId name="incomplete-ml-comment">
+    <TokenId name="incomplete-ml-comment" resetSamples="true">
         <Category name="comment"/>
         <Category name="incomplete"/>
+        <Category name="error"/>
     </TokenId>
 </Language>

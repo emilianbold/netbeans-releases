@@ -1,0 +1,48 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="link-build" default="compile" basedir=".">
+    <property name="lexer.module.root" location="../../../../../../../../.."/>
+    <property name="handcoded.support" location="${lexer.module.root}/gen/src/org/netbeans/modules/lexer/gen/handcoded"/>
+    <property name="handcoded.support.antfile" location="${handcoded.support}/handcodedLangBuild.xml"/>
+
+    <property name="grammar.name" value="Link"/>
+    <property name="grammar.pkg" value="org.netbeans.modules.lexer.demo.handcoded.link"/>
+    <property name="grammar.root" location="${lexer.module.root}/demo/src"/>
+
+  <!-- Please read http://lexer.netbeans.org/doc/handcoded.html before uncommenting
+    <property name="lang.description.xml.ignore" value="true"/>
+  -->
+
+    <target name="compile">
+        <ant antfile="${handcoded.support.antfile}" target="compile"/>
+    </target>
+
+    <target name="demo">
+        <ant antfile="${handcoded.support.antfile}" target="demo"/>
+    </target>
+
+    <target name="test">
+        <ant antfile="${handcoded.support.antfile}" target="test"/>
+    </target>
+
+    <target name="clean">
+        <ant antfile="${handcoded.support.antfile}" target="clean"/>
+    </target>
+
+    <target name="rebuild" depends="clean, compile">
+    </target>
+
+</project>
+

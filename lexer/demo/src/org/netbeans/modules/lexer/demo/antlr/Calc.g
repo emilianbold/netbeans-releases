@@ -6,7 +6,28 @@ package org.netbeans.modules.lexer.demo.antlr;
 }
 
 class CalcScanner extends Lexer;
-options { k=3; }
+options {
+    k = 3;
+    charVocabulary = '\0'..'\ufffe';
+}
+
+{
+
+    /**
+     * State variable used to hold current lexer state.
+     * In this case it's used for incomplete tokens only.
+     */
+    private int state;
+
+    int getState() {
+        return state;
+    }
+
+    void resetState() {
+        state = 0;
+    }
+
+}
 
 WHITESPACE  : (' '
             | '\t'
@@ -20,15 +41,9 @@ PLUS        : '+'
 MINUS       : '-'
             ;
 
-MUL         : ("***") => MUL3 { $setType(MUL3); }
-            | ("**" ~('*')) => '*'
-            | '*'
+MUL         : '*'
             ;
             
-protected 
-MUL3        : "***"  
-            ; 
-
 DIV         : '/'
             ;
 
@@ -38,10 +53,20 @@ LPAREN      : '('
 RPAREN      : ')'
             ;
 
+ABC         : "abc"
+            ;
 
 CONSTANT    : FLOAT (('e' | 'E') ('+' | '-')? INTEGER )?
             ;
 
+ML_COMMENT  : INCOMPLETE_ML_COMMENT { state = CalcScannerTokenTypes.INCOMPLETE_ML_COMMENT; }
+            (  { LA(2) != '/' }? '*'
+               | ~('*')
+            )*
+            "*/" { state = 0; }
+            ;
+
+/* Protected tokens are used internally by the scanner only */
 protected
 FLOAT       : (INTEGER ('.' INTEGER)?
             | '.' INTEGER)
@@ -55,5 +80,6 @@ protected
 DIGIT       : '0'..'9'
             ;
 
-ERROR       : '\u0000'..'\ufffe' /* \uffff is EOF representation */
-            ;
+protected
+INCOMPLETE_ML_COMMENT   : "/*"
+                        ;

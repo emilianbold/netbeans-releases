@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<!DOCTYPE Language SYSTEM "../../../../../../../../../gen/src/org/netbeans/modules/lexer/gen/language.dtd">
+<Language>
+    <TokenId name="text">
+        <Comment>A line of text</Comment>
+    </TokenId>
+
+</Language>

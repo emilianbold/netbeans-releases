@@ -21,14 +21,23 @@ import java.util.AbstractList;
 import java.util.ArrayList;
 
 /**
- * Unique identifier of a particular token.
- * It is not a token, because in general it does not contain
+ * Identifier of a token (could also be called a token-type).
+ * <BR>It is not a token, because in general it does not contain
  * the text (also called image) of the token.
- * <BR>The tokenIds are typically defined
+ * <BR>For example "var1", "var2" aret tokens (token instances)
+ * that occur in a file or document
+ * while JavaLanguage.IDENTIFIER is tokenId for the above
+ * token instances.
+ * 
+ *
+ * <P>TokenIds are typically defined
  * as public static final constants in subtypes
  * of {@link Language}.
- * <BR>All the tokenIds in a language must have both
+ * <BR>All tokenIds in a language must have both
  * unique intId and name.
+ *
+ * <P>Detailed information and rules for naming can be found
+ * in <A href="http://lexer.netbeans.org/doc/token-id-naming.html">TokenId Naming</A>.
  *
  * @author Miloslav Metelka
  * @version 1.00
@@ -101,10 +110,13 @@ public final class TokenId {
         this.sampleTextMatcher = sampleTextMatcher;
     }
     
-    /** @return the unique name of the TokenId. The name must be unique
-     * among other TokenId instances inside the language where
+    /**
+     * Get name of this tokenId.
+     * @return the unique name of the TokenId. The name must be unique
+     * among other TokenId instances of the language where
      * it is defined. The name should consist of
-     * lowercase letters and hyphens only.
+     * lowercase alphanumeric letters and hyphens only.
+     *
      * <P>It can serve for several purposes such as finding
      * a possible style information for the given token.
      * The name is always non-null.
@@ -113,35 +125,39 @@ public final class TokenId {
         return name;
     }
 
-    /** @return the unique numeric identification of this TokenId.
-     * IntId must be a non-negative
-     * integer unique among all the tokenIDs inside the language
-     * where it is declared.
-     * <BR>The intIds are usually defined and adopted from the lexer
-     * generator tool that generates the lexer for the given language.
-     * <BR>The ids do not have to be consecutive but the ids should
-     * not be unnecessarily high (e.g. 1000) because
-     * indexing arrays are constructed based on the ids
-     * so the length of the indexing arrays corresponds
-     * to the highest intId of all the tokenIDs declared
-     * for the particular language.
-     * <BR>The intIds allow more efficient use
-     * of the tokenIds in switch-case statements.
+    /**
+     * Get integer identification of this tokenId.
+     * @return unique numeric identification of this TokenId.
+     *  <BR>IntId must be a non-negative
+     *  integer unique among all the tokenIDs inside the language
+     *  where it is declared.
+     *  <BR>The intIds are usually defined and adopted from lexer
+     *  generator tool that generates the lexer for the given language.
+     *  <BR>The ids do not have to be consecutive and they should
+     *  not be unnecessarily high (e.g. 1000) because
+     *  indexing arrays are constructed based on the id values
+     *  so the length of the indexing array corresponds
+     *  to the highest intId of all the tokenIDs declared
+     *  for the particular language.
+     *  <BR>The intIds allow more efficient use
+     *  of the tokenIds in switch-case statements.
      */
     public int getIntId() {
         return intId;
     }
 
-    /** @return non-null list of category names to which this token belongs.
+    /**
+     * Get names of all categories to which this tokenId belongs.
+     * @return non-null list of category names to which this token belongs.
      * They can be e.g. "operator", "separator" etc.
-     * The "error" category marks the errorneous lexical construction.
-     * The "incomplete" category marks the unclosed tokens such
-     * as unclosed string literal or multi-line comment.
+     * "error" category marks errorneous lexical construction.
+     * "incomplete" category marks incomplete tokens such
+     * as unclosed string-literal or block-comment.
      * <BR>If the token belongs to no categories
-     * the empty array will be returned.
-     * <BR>As the list is returned the order
-     * of the token categories is preserved.
-     * Although there is no strict rule the first
+     * an empty list will be returned.
+     * <BR>The order or the list items corresponds
+     * to the order of the items given in TokenId's constructor.
+     * <BR>Although there is no strict rule the first
      * token category in the list should be
      * the most "natural" one for the given tokenId.
      */
@@ -150,6 +166,8 @@ public final class TokenId {
     }
     
     /**
+     * Get matcher that allows to match text found by lexer
+     * to a set of sample texts.
      * @return a valid matcher if the tokens with this tokenId
      * have some sample text(s) (e.g. keywords or operators)
      * or null if the text of the tokens always varies.
@@ -158,8 +176,7 @@ public final class TokenId {
         return sampleTextMatcher;
     }
     
-    /** Get the possibly reused copy of the categoryNames list.
-     */
+    /** Get possibly reused copy of the categoryNames list. */
     private List internCategoryNames(String[] categoryNames) {
         List ret = EMPTY_CATEGORY_NAMES_LIST;
         
@@ -198,6 +215,10 @@ public final class TokenId {
         return sb.toString();
     }
     
+    /**
+     * Dump current cateogory lists cache into string
+     * for debugging purposes.
+     */
     public static String categoryCacheToString() {
         return categoryCache.toString();
     }

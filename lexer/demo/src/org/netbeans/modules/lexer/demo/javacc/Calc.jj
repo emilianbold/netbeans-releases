@@ -1,76 +1,58 @@
 
-/* Javacc grammar file for the Calc demo. */
+/*
+ * Javacc grammar file for the Calc demo.
+ * Copy this grammar and modify the [MODIFY] sections as necessary.
+ */
 
 options {
+    // do not remove or modify the following 5 lines:
     STATIC = false; // more instances of the token manager will be allowed
     USER_CHAR_STREAM = true; // user provided CharStream
     BUILD_PARSER = false; // do not build parser
     BUILD_TOKEN_MANAGER = true; // build token manager
-    UNICODE_INPUT = true;
+    UNICODE_INPUT = true; // input will be unicode characters
 }
 
-/* The following section is necessary in order to add the proper imports
-   to the generated token manager.
-*/
-PARSER_BEGIN(Calc)
+/*
+ * The following "PARSER" section is necessary in order to add the proper
+ * header section to generated token manager.
+ */
+PARSER_BEGIN(Calc) // [MODIFY] Change the "Calc" to the target name of the language e.g. "MyLang".
 
-package org.netbeans.modules.lexer.demo.javacc;
+package org.netbeans.modules.lexer.demo.javacc; // [MODIFY] Target package of the generated classes:
 
-import org.netbeans.spi.lexer.javacc.CharStream;
-import org.netbeans.spi.lexer.javacc.Token;
-import org.netbeans.spi.lexer.javacc.TokenMgrError;
+import org.netbeans.spi.lexer.javacc.CharStream; // do not remove or modify this line
+import org.netbeans.spi.lexer.javacc.Token; // do not remove or modify this line
+import org.netbeans.spi.lexer.javacc.TokenMgrError; // do not remove or modify this line
 
-
-/* The definition of the parser class must be present
-   otherwise the javacc will not continue.
-*/
-public class Calc {
-
-}
-
-PARSER_END(Calc)
-
-/* Declarations that will be added into the token manager class. */
-TOKEN_MGR_DECLS:
-{
-
-    /** Shared token instance used instead Token.newToken()
-     * after postprocessing the generated token manager.
-     */
-    private Token sharedTokenInstance = new Token();
-
-    CharStream getCharStream() {
-        return input_stream;
-    }
+/*
+ * The definition of the parser class must be present
+ * otherwise the javacc will not continue.
+ */
+class Calc { // [MODIFY] Change the "Calc" to the target name of the language e.g. "MyLang".
 
 }
 
+PARSER_END(Calc) // [MODIFY] Change the "Calc" to the target name of the language e.g. "MyLang".
 
-/* The token definitions folow: */
-
+/* 
+ * The token definitions of the lexer for the target language folow.
+ */
 TOKEN:
 {
     <WHITESPACE: (" " | "\t" | "\r" | "\n")+>
 }
 
+
 TOKEN: // Multi-line (traditional) comment start
 {
-    <ML_COMMENT_START: "/*" > : IN_ML_COMMENT
+    <INCOMPLETE_ML_COMMENT: "/*" > : IN_ML_COMMENT
 }
 
 <IN_ML_COMMENT> // Inside multi-line comment
 TOKEN:
 {
-    <ML_COMMENT: <ML_COMMENT_RE1> "/" > : DEFAULT
-
-  | <INCOMPLETE_ML_COMMENT:
-        <ML_COMMENT_RE1>
-      | <ML_COMMENT_RE1> ~["*","/"] (~["*"])*
-      | (~["*"])*
-    > : DEFAULT
-
-  | <#ML_COMMENT_RE1: (~["*"])* "*" ("*" | (~["*","/"] (~["*"])* "*"))* >
-    
+    <ML_COMMENT: (~["*"])* "*" ("*" | (~["*","/"] (~["*"])* "*"))* "/" > : DEFAULT
 }
 
 TOKEN: // Operators

@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.lexer.demo;
 
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.Segment;
 import javax.swing.text.Document;
 import javax.swing.text.BadLocationException;
@@ -24,6 +26,7 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Lexer;
 import org.netbeans.spi.lexer.util.Compatibility;
 import org.netbeans.spi.lexer.inc.TextTokenUpdater;
+import org.netbeans.spi.lexer.util.LexerUtilities;
 
 /**
  * Token updater working over a swing document.
@@ -36,11 +39,15 @@ public class DemoTokenUpdater extends TextTokenUpdater {
     
     private Segment seg = new Segment(); // shared segment instance
 
-    protected final Document doc;
+    private final Document doc;
     
-    protected final Language language;
+    private final Language language;
 
-    protected final boolean maintainLookbacks;
+    private final boolean maintainLookbacks;
+    
+    private boolean debugTokenChanges;
+    
+    private Lexer sharedLexer; // shared lexer instance
     
     public DemoTokenUpdater(Document doc, Language language) {
         this(doc, language, true);
@@ -50,8 +57,60 @@ public class DemoTokenUpdater extends TextTokenUpdater {
         this.doc = doc;
         this.language = language;
         this.maintainLookbacks = maintainLookbacks;
+
+        doc.addDocumentListener(
+            new DocumentListener() {
+                public void insertUpdate(DocumentEvent evt) {
+                    if (debugTokenChanges) {
+                        try {
+                            System.out.println("\nDocument-insert \""
+                                + LexerUtilities.toSource(
+                                    (evt.getDocument()).getText(evt.getOffset(), 
+                                        evt.getLength()))
+                                + "\""
+                            );
+                        } catch (BadLocationException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    
+                    update(evt.getOffset(), evt.getLength());
+                }
+
+                public void removeUpdate(DocumentEvent evt) {
+                    if (debugTokenChanges) {
+                        System.out.println("\nDocument-remove at offset="
+                            + evt.getOffset()
+                            + ", length="
+                            + evt.getLength()
+                        );
+                    }
+                    
+                    update(evt.getOffset(), -evt.getLength());
+                }
+
+                public void changedUpdate(DocumentEvent evt) {
+                }
+            }
+        );
+    }
+    
+    public boolean getDebugTokenChanges() {
+        return debugTokenChanges;
+    }
+    
+    public void setDebugTokenChanges(boolean debugTokenChanges) {
+        this.debugTokenChanges = debugTokenChanges;
+    }
+    
+    protected final Document getDocument() {
+        return doc;
     }
 
+    protected final Language getLanguage() {
+        return language;
+    }
+    
     public char textCharAt(int index) {
         synchronized (seg) {
             try {
@@ -104,7 +163,11 @@ public class DemoTokenUpdater extends TextTokenUpdater {
     }
     
     protected Lexer createLexer() {
-        return language.createLexer();
+        if (sharedLexer == null) {
+            sharedLexer = language.createLexer();
+        }
+        
+        return sharedLexer;
     }
     
     protected void add(Token token, int lookahead, Object state) {
@@ -119,6 +182,23 @@ public class DemoTokenUpdater extends TextTokenUpdater {
             dt.setLookahead(lookahead);
             dt.setState(state);
         }
+        
+        if (debugTokenChanges) {
+            System.out.println("Added token: ["
+                + (getNextIndex() - 1) + "]="
+                + tokenToString(token, false)
+            );
+        }
+    }
+    
+    protected void remove() {
+        if (debugTokenChanges) {
+            System.out.println("Removed token at index="
+                + (getNextIndex() - 1)
+            );
+        }
+
+        super.remove();
     }
     
     public int getLookahead() {
@@ -169,11 +249,49 @@ public class DemoTokenUpdater extends TextTokenUpdater {
     public int relocate(int index) {
         return super.relocate(index);
     }
+    
+    public String tokenToString(Token token, boolean extraInfo) {
+        StringBuffer sb = new StringBuffer();
+        
+        int length = org.netbeans.spi.lexer.util.Compatibility.getLength(token);
+        String text = org.netbeans.spi.lexer.util.Compatibility.toString(token);
+        sb.append("\""
+            + org.netbeans.spi.lexer.util.LexerUtilities.toSource(text)
+            + "\", " + token.getId()
+        );
 
-    public String tokensToString() {
+        if (token instanceof DemoToken) {
+            DemoToken dt = (DemoToken)token;
+
+            sb.append(", off=");
+            sb.append(getOffset(dt.getRawOffset()));
+
+            sb.append(", type=regular");
+            if (extraInfo) {
+                sb.append(", la=" + dt.getLookahead()
+                    + ", lb=" + dt.getLookback()
+                    + ", st=" + dt.getState()
+                );
+            }
+
+        } else {
+            DemoSampleToken dft = (DemoSampleToken)token;
+            sb.append(", type=sample");
+            if (extraInfo) {
+                sb.append(", la=" + dft.getLookahead()
+                    + ", lb=" + dft.getLookback()
+                    + ", st=" + dft.getState()
+                );
+            }
+        }
+        
+        return sb.toString();
+    }        
+
+    public String allTokensToString() {
         StringBuffer sb = new StringBuffer();
         int cnt = getTokenCount();
-        sb.append("Token count: " + cnt + "\n");
+        sb.append("Dump of tokens (tokenCount=" + cnt + ") in token updater:\n");
         int offset = 0;
         try {
             for (int i = 0; i < cnt; i++) {

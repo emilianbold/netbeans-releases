@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!DOCTYPE Language SYSTEM "../../../../../../../../../gen/src/org/netbeans/modules/lexer/gen/language.dtd">
+<Language>
+    <TokenId name="text">
+        <Comment>Either whole line of text or a part of a line if a link is present on it</Comment>
+    </TokenId>
+
+    <TokenId name="http-uri">
+        <Category name="uri"/>
+        <Comment>HTTP absolute URI</Comment>
+    </TokenId>
+
+    <TokenId name="ftp-uri">
+        <Category name="uri"/>
+        <Comment>FTP absolute URI</Comment>
+    </TokenId>
+
+    <TokenId name="uri">
+        <Category name="uri"/>
+        <Comment>Other URI type</Comment>
+    </TokenId>
+
+</Language>

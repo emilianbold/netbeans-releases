@@ -20,23 +20,21 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
- * Languages are identified by mimeType
- * and they represent a set of token ids.
- * They also provide a method to instnatiate a lexer
- * that recognizes the language.
- * <BR>The subclass must define the {@link #createLexer()} method
- * and assign the language reasonable mimeType and token ids.
- * <P>The token ids are typically defined as public static final constants
- * in the target language class together with their corresponding
+ * Language represents an unmodifiable set of {@link TokenId}s that can be retrieved by {@link #getIds()}.
+ * <BR>Subclasses must implement {@link #createIds()} to define tokenIds that
+ * belong to the language and {@link #createLexer()} to provide a lexer that
+ * recognizes tokens of the language.
+ *
+ * <P>TokenIds are typically defined as public static final constants
+ * in the target language class together with their related
  * interger constants.
- * <P>The language classes are usually generated from the underlying
- * xml description.
- * <P>Initially the language objects contains no token ids.
- * The {@link #getDeclaredIds()} helps to find all the static final
- * fields of TokenId type and {@link #setIds(TokenId[])}
- * allows to override the current ids.
- * <P>The target language classes should be immutable singletons.
- * The set of tokens can be retrieved by {@link #ids()}.
+ *
+ * <P>Target language classes should be immutable singletons
+ * defining <CODE>MyLanguage.get()</CODE> static method
+ * to obtain the singleton instance.
+ *
+ * <P>Language classes can be generated as described
+ * in <A href="http://lexer.netbeans.org/doc/language.html">language.html</A>.
  *
  * @see TokenId
  *
@@ -48,9 +46,6 @@ public abstract class Language {
     
     private static final Object LOCK = new Object();
 
-    /** Mime type identification of this language */
-    private final String mimeType;
-
     private Set ids;
 
     private Map idName2id;
@@ -59,36 +54,41 @@ public abstract class Language {
     
     private Map lang2isSubset;
     
-    protected Language(String mimeType) {
-        if (mimeType == null) {
-            throw new NullPointerException("Null name for language "
-                + getClass().getName());
-        }
-
-        this.mimeType = mimeType;
+    protected Language() {
     }
     
-    /** Get the mimeType of this language.
-     */
-    public final String getMimeType() {
-        return mimeType;
-    }
-    
-    /** Create the lexer that recognizes this language.
-     * @return created instance of the lexer for this language.
+    /**
+     * Create lexer that recognizes this language.
+     * @return instance of the lexer recognizing this language.
      */
     public abstract Lexer createLexer();
 
-    /** Create the set of tokenIds that belong to this language.
-     * The method is called only once during the language instance lifetime.
+    /**
+     * Create set of tokenIds that belong to this language.
+     *
+     * <P>This method can be called multiple times for a single language instance
+     * due to intentional lack of synchronization in the <CODE>getIds()</CODE>.
+     * <BR>Possible creation of several instances of <CODE>Set</CODE>s
+     * (made by several competing threads)
+     * should not make any harm assuming they will all contain the same references
+     * to tokenIds.
+     * <BR>It should be fine to compose the set
+     * by non-synchronized collecting of references
+     * to <CODE>static final</CODE> fields of tokenIds
+     * in the target language class because
+     * AFAIK initialization of static final fields of a class should
+     * be done synchronously by JVM before making the whole class public
+     * to threads and there should be no DCL or other locking issues.
      */
     protected abstract Set createIds();
 
-    /** Return unmodifiable set of token-ids contained in this language.
+    /**
+     * Get unmodifiable set of tokenIds contained in this language.
+     * @return unmodifiable set of tokenIds contained in this language.
      */
-    public final Set ids() {
+    public final Set getIds() {
         /* There is no extra synchronization to ensure that only one
-         * ids will be created. The clients operate on the contents
+         * set of ids will be created. The clients should operate on the contents
          * of the set rather than storing the reference to the set itself.
          */
         if (ids == null) {
@@ -99,25 +99,26 @@ public abstract class Language {
         return ids;
     }
     
-    /** Get the tokenId for the given intId. This method
-     * should be used by the lexers to quickly translate the intId
-     * to target tokenId.
+    /**
+     * Get tokenId for the given intId. This method
+     * can be used by lexers to quickly translate intId
+     * to tokenId.
      * @param intId intId to be translated to corresponding tokenId.
      * @return valid tokenId or null if there's no corresponding
      *  tokenId for the given int-id. It's possible because intIds
      *  of the language's tokenIds do not need to be continuous.
      *  If the intId is &lt;0 or higher than the highest
      *  intId of all the tokenIds of this language the method
-     *  throws {@link ArrayIndexOutOfBoundsException}.
-     * @throws ArrayIndexOutOfBoundsException if the intId is
-     *  &lt;0 or higher than the highest
-     *  intId of all the tokenIds of this language.
+     *  throws {@link IndexOutOfBoundsException}.
+     * @throws IndexOutOfBoundsException if the intId is
+     *  &lt;0 or higher than {@link #getMaxIntId()}.
      */
     public final TokenId getId(int intId) {
-        return ((TokenCategory.TokenIdSet)ids()).getIndexedIds()[intId];
+        return ((TokenCategory.TokenIdSet)getIds()).getIndexedIds()[intId];
     }
     
-    /** This method is similar to {@link #getId(int)} however it guarantees
+    /**
+     * This method is similar to {@link #getId(int)} however it guarantees
      * that it will always return non-null tokenId. Typically for a lexer 
      * just being developed it's possible that there are some integer
      * token ids defined in the generated lexer for which there is
@@ -126,11 +127,14 @@ public abstract class Language {
      * counterpart for given integer id.
      * @param intId integer id to translate.
      * @return always non-null tokenId that corresponds to the given integer id.
+     * @throws IndexOutOfBoundsException if the intId is
+     *  &lt;0 or higher than {@link #getMaxIntId()}.
      */
     public final TokenId getValidId(int intId) {
         TokenId id = getId(intId);
         if (id == null) {
-            throw new IllegalStateException("No valid tokenId for intId=" + intId);
+            throw new IllegalStateException("No valid tokenId for intId=" + intId
+                + " in language " + this);
         }
         return id;
     }
@@ -142,19 +146,27 @@ public abstract class Language {
     public final TokenId getId(String name) {
         return (TokenId)idName2id.get(name);
     }
+    
+    /**
+     * Get maximum integer id of all the token ids that this language contains.
+     * @return maximum integer id of all the token ids that this language contains.
+     */
+    public final int getMaxIntId() {
+        return ((TokenCategory.TokenIdSet)getIds()).getIndexedIds().length - 1;
+    }
 
-    /** Get the token categories of this language.
-     * @return set containing all the {@link TokenCategory}
+    /** Get token categories of this language.
+     * @return unmodifiable set containing all {@link TokenCategory}
      *  instances created for this language.
      */
-    public final Set categories() {
+    public final Set getCategories() {
         /* Sync to ensure creation of only one set of categories.
          * It could be patological to have several sets of token category
          * instances from competing threads.
          */
         synchronized (LOCK) {
             if (categories == null) {
-                categories = new TokenCategory.CategorySet(ids());
+                categories = new TokenCategory.CategorySet(getIds(), getMaxIntId());
             }
             
             return categories;
@@ -162,20 +174,23 @@ public abstract class Language {
     }
     
     /**
+     * Get category with given name.
      * @return category with the given name or null if it does not exist.
      */
     public final TokenCategory getCategory(String name) {
-        return ((TokenCategory.CategorySet)categories).getCategory(name);
+        return ((TokenCategory.CategorySet)getCategories()).getCategory(name);
     }
     
     /** 
      * Check whether this language is subset of the given language.
-     * @param language language to which this one is compared.
-     * @return true if this language contains the subset
-     *  of tokenIDs (same instances) of the target language
-     *  or false otherwise. The target language can possibly contain
-     *  more tokenIds (e.g. JDK13 is subset of JDK14 and the JDK14 contains
-     *  one more keyword "assert").
+     * @param language language to which this language is being compared.
+     * @return true if tokenIds of this language are subset of the tokenIds
+     *  of the compared language. False if this language contains
+     *  one or more tokenIds not contained in compared language.
+     *  <BR><I>Example:</I><pre>
+     *    Java13Language.get().isSubsetOf(Java14Language.get())
+     *  </pre>is true assuming that Java14Language contains "assert" keyword
+     *  tokenId in addition to Java13Language's tokenIds.
      */
     public final boolean isSubsetOf(Language language) {
         if (language == this) {
@@ -189,7 +204,7 @@ public abstract class Language {
             
             Boolean isSub = (Boolean)lang2isSubset.get(language);
             if (isSub == null) {
-                isSub = isIdsSubsetOf(language) ? Boolean.TRUE : Boolean.FALSE;
+                isSub = isSubsetOfImpl(language) ? Boolean.TRUE : Boolean.FALSE;
                 lang2isSubset.put(language, isSub);
             }
 
@@ -197,11 +212,13 @@ public abstract class Language {
         }
     }
     
-    /** Check whether tokenIDs of this language
+    /**
+     * Check whether tokenIDs of this language
      * are subset of tokenIDs of the given language.
+     * @param language language to which this language is being compared
      */
-    private boolean isIdsSubsetOf(Language language) {
-        return language.ids().containsAll(this.ids());
+    private boolean isSubsetOfImpl(Language language) {
+        return language.getIds().containsAll(this.getIds());
     }
     
     private static Map createName2IdMap(Iterator idsIterator) {
@@ -217,23 +234,23 @@ public abstract class Language {
         return ret;
     }
 
-    /** The languages are equal only if they are the same instances. */
+    /** The languages are equal only if they are the same objects. */
     public final boolean equals(Object obj) {
         return super.equals(obj);
     }
     
-    /** The hashCode of the language is the system identity hashCode. */
+    /** The hashCode of the language is the identity hashCode. */
     public final int hashCode() {
         return super.hashCode();
     }
         
-    public String toString() {
-        return getMimeType();
-    }
-
+    /**
+     * Dump list of tokenIds for this language into string.
+     * @return list of tokenIds of this language as <CODE>java.lang.String</CODE>.
+     */
     public String idsToString() {
         StringBuffer sb = new StringBuffer();
-        for (Iterator it = ids().iterator(); it.hasNext();) {
+        for (Iterator it = getIds().iterator(); it.hasNext();) {
             sb.append(((TokenId)it.next()).toStringDetail());
             sb.append("\n");
         }
