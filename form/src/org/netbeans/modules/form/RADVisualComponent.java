@@ -191,6 +191,11 @@ public class RADVisualComponent extends RADComponent {
 //            catch (IntrospectionException ex) {} // should not happen
     }
 
+    protected void clearProperties() {
+        super.clearProperties();
+        constraintsProperties = null;
+    }
+
     public Node.Property[] getConstraintsProperties() {
         if (constraintsProperties == null)
             createConstraintsProperties();

@@ -556,18 +556,6 @@ public class RADComponent implements FormDesignValue {
         });
     }
 
-    private void clearProperties() {
-        if (nameToProperty != null)
-            nameToProperty.clear();
-        else nameToProperty = new HashMap();
-
-        syntheticProperties = null;
-        beanProperties = null;
-        beanProperties2 = null;
-        eventsList = null;
-        beanEvents = null;
-    }
-
     /** Provides access to the Node which represents this RADComponent
      * @return the RADComponentNode which represents this RADComponent
      */
@@ -633,6 +621,19 @@ public class RADComponent implements FormDesignValue {
 
     // -----------------------------------------------------------------------------
     // Properties
+
+    protected void clearProperties() {
+        if (nameToProperty != null)
+            nameToProperty.clear();
+        else nameToProperty = new HashMap();
+
+        beanPropertySets = null;
+        syntheticProperties = null;
+        beanProperties = null;
+        beanProperties2 = null;
+        eventsList = null;
+        beanEvents = null;
+    }
 
     protected Node.Property[] createSyntheticProperties() {
         return formModel.getCodeGenerator().getSyntheticProperties(this);

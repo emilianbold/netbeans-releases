@@ -145,7 +145,7 @@ class ComponentDragger
                     parentCont.remove(metacomp);
 
                 changedContainers.add(parentCont);
-                metacomp.resetConstraintsProperties();
+//                metacomp.resetConstraintsProperties();
             }
             else { // remove empty space
                 newComponents.remove(i);
@@ -171,12 +171,13 @@ class ComponentDragger
                 constr = layoutSupport.getConstraints(metacomp);
 
             layoutSupport.addComponent(metacomp, constr);
+            metacomp.resetConstraintsProperties();
         }
 
         // fire changes
         for (Iterator it=changedContainers.iterator(); it.hasNext(); ) {
-            RADVisualContainer cont = (RADVisualContainer) it.next();
-            formDesigner.getModel().fireContainerLayoutChanged(cont,
+            RADVisualContainer metacont = (RADVisualContainer) it.next();
+            formDesigner.getModel().fireContainerLayoutChanged(metacont,
                                                                null, null);
         }
 
