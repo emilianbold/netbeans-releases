@@ -527,9 +527,9 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
              packages="org.openide"/>
       <group title="&lt;a href=&quot;@TOP@org/openide/doc-files/services-api.html&quot;&gt;Services &amp;amp; Lookup API&lt;/a&gt;"
              packages="org.openide.util.lookup"/>
-      <group title="&lt;a href=&quot;@TOP@org/openide/filesystems/doc-files/api.html&quot;&gt;FileSystems API&lt;/a&gt;"
+      <group title="&lt;a href=&quot;@TOP@org/openide/filesystems/doc-files/api.html&quot;&gt;Filesystems API&lt;/a&gt;"
              packages="org.openide.filesystems"/>
-      <group title="&lt;a href=&quot;@TOP@org/openide/loaders/doc-files/api.html&quot;&gt;DataSystems API&lt;/a&gt;"
+      <group title="&lt;a href=&quot;@TOP@org/openide/loaders/doc-files/api.html&quot;&gt;Datasystems API&lt;/a&gt;"
              packages="org.openide.cookies:org.openide.loaders:org.openide.util.datatransfer"/>
       <group title="&lt;a href=&quot;@TOP@org/openide/nodes/doc-files/api.html&quot;&gt;Nodes API&lt;/a&gt;"
              packages="org.openide.nodes"/>
@@ -839,7 +839,7 @@ Set jmf.home to the location of your JMF installation to continue."/>
 
     <target name="standalone-fs-prepare" depends="lib-util,lib-fs">
         <mkdir dir="standalone"/>
-        <echo file="standalone/README-FS.txt"><![CDATA[FileSystems Library
+        <echo file="standalone/README-FS.txt"><![CDATA[Filesystems Library
 ===================
 
 Please visit the documentation at http://openide.netbeans.org/fs/
