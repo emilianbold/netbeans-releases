@@ -157,6 +157,13 @@ public class InnerTablePanel extends SectionNodeInnerPanel {
             setColumnEditors(innerTableModel);
         }
         scheduleRefreshView();
+        final TableColumnModel columnModel = table.getColumnModel();
+        for (int i = 0, n = columnModel.getColumnCount(); i < n; i++) {
+            final TableCellEditor tableCellEditor = model.getTableCellEditor(i);
+            if (tableCellEditor != null) {
+                columnModel.getColumn(i).setCellEditor(tableCellEditor);
+            }
+        }
     }
 
     private void setColumnEditors(InnerTableModel model) {

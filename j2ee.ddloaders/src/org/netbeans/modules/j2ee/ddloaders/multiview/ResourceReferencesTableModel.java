@@ -17,12 +17,16 @@ import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 
+import javax.swing.table.TableCellEditor;
+
 /**
  * @author pfiala
  */
 class ResourceReferencesTableModel extends InnerTableModel {
 
     private Ejb ejb;
+    private static final int COLUMN_AUTHENTICATION = 2;
+    private static final int COLUMN_SHAREABLE = 3;
     private static final String[] COLUMN_NAMES = {Utils.getBundleMessage("LBL_Name"),
                                                   Utils.getBundleMessage("LBL_ResourceType"),
                                                   Utils.getBundleMessage("LBL_Authentication"),
@@ -90,5 +94,15 @@ class ResourceReferencesTableModel extends InnerTableModel {
     public void removeRow(int row) {
         ejb.removeResourceRef(ejb.getResourceRef(row));
         modelUpdatedFromUI();
+    }
+
+    public TableCellEditor getTableCellEditor(int column) {
+        if (column == COLUMN_AUTHENTICATION) {
+            return createComboBoxCellEditor(new Object[]{"Application", "Container"});
+        } else if (column == COLUMN_SHAREABLE) {
+            return createComboBoxCellEditor(new Object[]{"Shareable", "Unshareable"});
+        } else {
+            return null;
+        }
     }
 }

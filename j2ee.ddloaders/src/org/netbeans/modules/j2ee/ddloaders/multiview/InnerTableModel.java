@@ -17,6 +17,7 @@ import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
+import javax.swing.*;
 
 /**
  * @author pfiala
@@ -96,5 +97,19 @@ public abstract class InnerTableModel extends AbstractTableModel {
         if (dataObject!= null) {
             dataObject.modelUpdatedFromUI();
         }
+    }
+
+    public TableCellEditor getTableCellEditor(int column) {
+        return null;
+    }
+
+    protected TableCellEditor createComboBoxCellEditor(Object[] items) {
+        return createComboBoxCellEditor(items, false);
+    }
+
+    private static TableCellEditor createComboBoxCellEditor(Object[] items, final boolean editable) {
+        final JComboBox comboBox = new JComboBox(items);
+        comboBox.setEditable(editable);
+        return new DefaultCellEditor(comboBox);
     }
 }
