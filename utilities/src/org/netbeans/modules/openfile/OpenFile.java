@@ -111,17 +111,25 @@ public class OpenFile extends Object {
      * @param port port to send reply to, valid only if wait set
      * @param line line number to try to open to (starting at zero), or <code>-1</code> to ignore
      */
-    static void open (final File file, final boolean wait, InetAddress address, int port, int line) {
+    static void open (File file, final boolean wait, InetAddress address, int port, int line) {
+        try {
+            file = file.getCanonicalFile();
+        } catch (IOException exc) {
+            // ignore it -- use original File instance
+            em.log (exc.getMessage());
+        }
+
         em.log ("    file: " + file);
         em.log ("    file.exists: " + file.exists());
         em.log ("    file.isFile: " + file.isFile());
 
         if ( ( file.exists() == false ) ||
              ( file.isFile() == false ) ) {
+            final String fileName = file.toString();
             new Thread (new Runnable () {
                     public void run () {
                         TopManager.getDefault().notify (new NotifyDescriptor.Message
-                            (SettingsBeanInfo.getString ("MSG_fileNotFound", file.toString())));
+                            (SettingsBeanInfo.getString ("MSG_fileNotFound", fileName)));
                     }
                 }).start();
             return;
