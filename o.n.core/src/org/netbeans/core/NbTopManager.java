@@ -69,7 +69,7 @@ public class NbTopManager extends TopManager {
   static private ShortcutContext shortcutContext;
 
   /** currently used debugger or null if none is in use */
-  static Debugger debugger;
+  private static Debugger debugger;
 
   /** ExecutionMachine */
   private com.netbeans.ide.execution.ExecutionEngine execEngine;
@@ -184,11 +184,24 @@ public class NbTopManager extends TopManager {
   *  DebuggerException (when no debugger is installed)
   * @return currently installed  debugger.
   */
-  public Debugger getDebugger () {
-    //throw new DebuggerException(NbBundle.getBundle(this).
-    //                            getString("MSG_NoDebugger"));
-    // just testing
-    return com.netbeans.developer.modules.debugger.JavaDebugger.getDebugger();
+  public Debugger getDebugger () throws DebuggerException {
+    Debugger d = debugger;
+    if (d == null) {
+      throw new DebuggerException(
+        NbBundle.getBundle(this).getString("MSG_NoDebugger")
+      );
+    }
+    return d;
+  }
+
+  /** Setter for debugger.
+  */
+  static synchronized void setDebugger (Debugger d) {
+    if (debugger == null || d == null) {
+      debugger = d;
+    } else {
+      throw new SecurityException ();
+    }
   }
 
   /**
