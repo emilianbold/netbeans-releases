@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+    <folder name="Services">
+        <file name="httpserver.settings">
+            <![CDATA[<?xml version="1.0"?>
+<!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+<settings version="1.0">
+    <module name="org.netbeans.modules.httpserver/1" spec="1.7"/>
+    <instanceof class="org.openide.util.SharedClassObject"/>
+    <instanceof class="java.lang.Object"/>
+    <instanceof class="org.openide.util.HttpServer$Impl"/>
+    <instanceof class="org.openide.options.SystemOption"/>
+    <instanceof class="java.io.Externalizable"/>
+    <instanceof class="org.netbeans.modules.httpserver.HttpServerSettings"/>
+    <instanceof class="java.io.Serializable"/>
+    <instance class="org.netbeans.modules.httpserver.HttpServerSettings"/>
+</settings>
+            ]]>
+        </file>
+    </folder>
+</filesystem>
