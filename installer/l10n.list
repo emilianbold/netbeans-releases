@@ -1,3 +1,6 @@
 installer/coreide/src/org/netbeans/installer/Bundle.properties
+installer/coreide/resources/bcl.html
 installer/cluster/src/org/netbeans/installer/Bundle.properties
+installer/cluster/resources/bcl.html
 installer/jdkbundle/src/org/netbeans/installer/Bundle.properties
+installer/jdkbundle/resources/bcl.html
