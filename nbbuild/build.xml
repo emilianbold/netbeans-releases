@@ -1619,10 +1619,18 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <arg file="${test.user.dir}"/>
       <arg line="${tryme.args}"/>
     </exec>
-    <exec os="Linux SunOS Solaris Mac OS X" dir="." executable="sh" failonerror="yes">
+    <exec os="Linux SunOS Solaris" dir="." executable="sh" failonerror="yes">
       <arg value="${netbeans.dest}/bin/netbeans"/>
       <arg value="-jdkhome"/>
       <arg file="${jdkhome}"/>
+      <arg value="-userdir"/>
+      <arg file="${test.user.dir}"/>
+      <arg line="${tryme.args}"/>
+    </exec>
+    <exec os="Mac OS X" dir="." executable="sh" failonerror="yes">
+      <arg value="${netbeans.dest}/bin/netbeans"/>
+      <arg value="-jdkhome"/>
+      <arg file="/Library/Java/Home"/>
       <arg value="-userdir"/>
       <arg file="${test.user.dir}"/>
       <arg line="${tryme.args}"/>
