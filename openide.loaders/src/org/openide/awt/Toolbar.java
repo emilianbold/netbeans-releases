@@ -167,7 +167,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
                    b,
                    new EmptyBorder (TOP, LEFT, BOTTOM, RIGHT))
                    );  
-        }
+        } 
         if (!"Aqua".equals(UIManager.getLookAndFeel().getID())) {
             putClientProperty("JToolBar.isRollover", Boolean.TRUE); // NOI18N
         }
@@ -193,6 +193,23 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
             }
         }
         super.updateUI();
+    }
+    
+    public Dimension getPreferredSize() {
+        String lf = UIManager.getLookAndFeel().getName();
+        String lfid = UIManager.getLookAndFeel().getID();
+        int minheight;
+        if ("Aqua".equals(lfid)) {
+            minheight = 29;
+        } else if ("Metal".equals(lf)) {
+            minheight = 36;
+        } else {
+            minheight = 28;
+        }
+        
+        Dimension result = super.getPreferredSize();
+        result.height = Math.max (result.height, minheight);
+        return result;
     }
 
     /** Removes all ACTION components. */
