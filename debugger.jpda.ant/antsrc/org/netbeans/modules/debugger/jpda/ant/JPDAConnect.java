@@ -27,6 +27,8 @@ import org.openide.util.RequestProcessor;
  */
 public class JPDAConnect extends Task {
     
+    private static final boolean startVerbose = System.getProperty ("netbeans.debugger.start") != null;
+    
     private String host = "localhost";
 
     private String address;
@@ -100,6 +102,8 @@ public class JPDAConnect extends Task {
     }
     
     public void execute () throws BuildException {
+        if (startVerbose)
+            System.out.println("\nS JPDAConnect ***************");
 
         if (name == null)
             throw new BuildException ("name attribute must specify name of this debugging session", getLocation ());
@@ -122,9 +126,12 @@ public class JPDAConnect extends Task {
                 public void run() {
                     synchronized(lock) {
                         try {
-                            //System.err.println("TG: " + Thread.currentThread().getThreadGroup());
+                            if (startVerbose)
+                                System.out.println("\nS JPDAConnect2");
                             // VirtualMachineManagerImpl can be initialized here, so needs
                             // to be inside RP thread.
+                            if (startVerbose)
+                                System.out.println("\nS JPDADebugger.attach: host = " + host + " port = " + address + " transport = " + transport);
                             if (transport.equals ("dt_socket"))
                                 try {
                                     JPDADebugger.attach (

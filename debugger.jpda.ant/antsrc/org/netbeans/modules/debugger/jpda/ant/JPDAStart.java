@@ -50,6 +50,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 public class JPDAStart extends Task implements Runnable {
 
     private static final boolean verbose = System.getProperty ("netbeans.debugger.debug") != null;
+    private static final boolean startVerbose = System.getProperty ("netbeans.debugger.start") != null;
 
     /** Name of the property to which the JPDA address will be set.
      * Target VM should use this address and connect to it
@@ -129,6 +130,8 @@ public class JPDAStart extends Task implements Runnable {
 
     public void execute () throws BuildException {
         try {
+            if (startVerbose)
+                System.out.println("\nS JPDAStart ***************");
             debug ("Execute started");
             if (name == null)
                 throw new BuildException ("name attribute must specify name of this debugging session", getLocation ());
@@ -159,6 +162,8 @@ public class JPDAStart extends Task implements Runnable {
     }
     
     public void run () {
+        if (startVerbose)
+            System.out.println("\nS JPDAStart2 ***************");
         debug ("Entering synch lock");
         synchronized (lock) {
             debug("Entered synch lock");
@@ -177,9 +182,9 @@ public class JPDAStart extends Task implements Runnable {
                 // This is NOT a clean solution to the problem but it SHOULD work in 99% cases
                 Map args = lc.defaultArguments ();
                 String address = lc.startListening (args);
-                try
-                {
-                    int port = Integer.parseInt (address.substring (address.indexOf (':') + 1));
+                int port = -1;
+                try {
+                    port = Integer.parseInt (address.substring (address.indexOf (':') + 1));
                     getProject ().setNewProperty (getAddressProperty (), "localhost:" + port);
                     Connector.IntegerArgument portArg = (Connector.IntegerArgument) args.get("port");
                     portArg.setValue (port);
@@ -197,6 +202,9 @@ public class JPDAStart extends Task implements Runnable {
                 );
                 
                 if (stopClassName != null && stopClassName.length() > 0) {
+                    if (startVerbose)
+                        System.out.println("\nS create method breakpoint, class name = " + stopClassName);
+                    
                     MethodBreakpoint breakpoint = MethodBreakpoint.create (
                         stopClassName,
                         ""
@@ -206,6 +214,9 @@ public class JPDAStart extends Task implements Runnable {
                 }                
                 
                 debug ("Debugger started");
+                if (startVerbose)
+                    System.out.println("\nS start listening on port " + port);
+                
                 JPDADebugger.startListening (lc, args, new Object[] {sourcePath, getName ()});
             } catch (Throwable e) {
                 lock [1] = e;
@@ -247,6 +258,13 @@ public class JPDAStart extends Task implements Runnable {
 //                    convertToSourcePath (project, bootclasspath)
 //            }
 //        );
+        if (startVerbose) {
+            System.out.println("\nS Crete sourcepath: ***************");
+            System.out.println ("    classpath : " + classpath);
+            System.out.println ("    sourcepath : " + sourcepath);
+            System.out.println ("    bootclasspath : " + bootclasspath);
+            System.out.println ("    >> sourcePath : " + sourcePath);
+        }
         return sourcePath;
     }
     
