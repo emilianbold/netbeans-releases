@@ -58,7 +58,9 @@ import org.openide.util.NbBundle;
  * @author   Jan Jancura, Ian Formanek
  */
 public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
+    
     // static .....................................................................................
+    
     /** Color chooser instance. */
     private static JColorChooser staticChooser;
 
@@ -119,6 +121,7 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
 
     
     // static initializer .........................................
+    
     static {
         UIManager.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -132,9 +135,7 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
     }
 
     // variables ..................................................................................
-    // XXX Who uses this field and when it is changed?
-    /** Used palette type. */
-    public int palette = AWT_PALETTE;
+    
     /** Selected color. */
     private SuperColor color;
     /** Property change support. Helper field. */
@@ -271,32 +272,32 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
     }
 
     /** Gets java inititalization string. Implements <code>PropertyEditor</code> interface. */
-    public String getJavaInitializationString () {
+    public String getJavaInitializationString() {
         if (color == null)
             return "null"; // NOI18N
-        if (color.getID () == null)
-            return "new java.awt.Color(" + color.getRed () + ", " + color.getGreen () + // NOI18N
-                   ", " + color.getBlue () + ")"; // NOI18N
+        if (color.getID() == null)
+            return "new java.awt.Color(" + color.getRed() + ", " + color.getGreen() + // NOI18N
+                   ", " + color.getBlue() + ")"; // NOI18N
 
-        switch (color.getPalette ()) {
+        switch (color.getPalette()) {
         default:
         case AWT_PALETTE:
-            return "java.awt.Color." + color.getID (); // NOI18N
+            return "java.awt.Color." + color.getID(); // NOI18N
         case SYSTEM_PALETTE:
-            return "java.awt.SystemColor." + systemGenerate [getIndex (getSystemColorNames(), color.getID ())]; // NOI18N
+            return "java.awt.SystemColor." + systemGenerate [getIndex (getSystemColorNames(), color.getID())]; // NOI18N
         case SWING_PALETTE:
             initSwingConstants();
-            int i = getIndex (swingColorNames, color.getID ());
-            if (i < 0) return "new java.awt.Color(" + color.getRed () + ", " + color.getGreen () + // NOI18N
-                                  ", " + color.getBlue () + ")"; // NOI18N
+            int i = getIndex (swingColorNames, color.getID());
+            if (i < 0) return "new java.awt.Color(" + color.getRed() + ", " + color.getGreen() + // NOI18N
+                                  ", " + color.getBlue() + ")"; // NOI18N
             return "(java.awt.Color) javax.swing.UIManager.getDefaults().get(\"" + // NOI18N
-                   color.getID () + "\")"; // NOI18N
+                   color.getID() + "\")"; // NOI18N
         }
     }
 
     /** Get tags possible for choosing value. Implements <code>PropertyEditor</code> interface. */
-    public String[] getTags () {
-        switch (palette) {
+    public String[] getTags() {
+        switch (color.getPalette()) {
             case AWT_PALETTE:
                 return getAWTColorNames();
             case SYSTEM_PALETTE:
