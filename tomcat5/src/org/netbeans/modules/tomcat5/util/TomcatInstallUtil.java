@@ -61,10 +61,16 @@ public class TomcatInstallUtil {
     private static final String ATTR_URI_ENCODING = "URIEncoding"; // NOI18N
     private static final String ATTR_PORT = "port"; // NOI18N
     private static final String ATTR_PROTOCOL = "protocol"; // NOI18N
-    private static final String ATTR_AUTO_DEPLOY = "autoDeploy"; // NOI18N
+    private static final String ATTR_AUTO_DEPLOY = "autoDeploy";    // NOI18N
+    private static final String ATTR_SCHEME = "scheme";             // NOI18N
+    private static final String ATTR_SECURE = "secure";             // NOI18N
     
     private static final String PROP_CONNECTOR = "Connector"; // NOI18N
-
+    
+    private static final String HTTP    = "http";   // NOI18N
+    private static final String HTTPS   = "https";  // NOI18N
+    private static final String TRUE    = "true";   // NOI18N
+    
     /** Creates a new instance of TomcatInstallUtil */
     public TomcatInstallUtil() {
     }    
@@ -158,11 +164,13 @@ public class TomcatInstallUtil {
         int defCon = -1;
         boolean[] connectors = service.getConnector();
         String port;
-                
         for (int i=0; i<service.sizeConnector(); i++) {
-            String protocol = service.getAttributeValue("Connector",i,"protocol"); // NOI18N
-            if ((protocol == null) || (protocol.toLowerCase().indexOf("http") > -1)) { // NOI18N
+            String protocol = service.getAttributeValue(PROP_CONNECTOR, i, ATTR_PROTOCOL);
+            String scheme = service.getAttributeValue(PROP_CONNECTOR, i, ATTR_SCHEME);
+            String secure = service.getAttributeValue(PROP_CONNECTOR, i, ATTR_SECURE);
+            if (isHttpConnector(protocol, scheme, secure)) {
                 defCon = i;
+                break;
             }
         }
         
@@ -170,7 +178,7 @@ public class TomcatInstallUtil {
             defCon=0;
         }
         
-        port = service.getAttributeValue("Connector",defCon,"port");            //NOI18N
+        port = service.getAttributeValue(PROP_CONNECTOR, defCon, ATTR_PORT);
 
         if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
             TomcatFactory.getEM ().log ("T5Util.getPort: " + port);             // NOI18N
@@ -286,9 +294,14 @@ public class TomcatInstallUtil {
          org.openide.util.NbBundle.getMessage(TomcatInstallUtil.class,"MSG_TomcatIsRunning")));
     }
     
+    private static boolean isHttpConnector(String protocol, String scheme, String secure) {
+        return (protocol == null || protocol.length() == 0 || protocol.toLowerCase().equals(HTTP))
+                && (scheme == null || !scheme.toLowerCase().equals(HTTPS))
+                && (secure == null || !secure.toLowerCase().equals(TRUE));
+    }
+    
     public static boolean setServerPort(Integer port, FileObject tomcatConf) {
         FileObject fo = tomcatConf;
-        boolean success=false;
         try {
             XMLDataObject dobj = (XMLDataObject)DataObject.find(fo);
             org.w3c.dom.Document doc = dobj.getDocument();
@@ -297,14 +310,16 @@ public class TomcatInstallUtil {
             int size=list.getLength();
             if (size>0) {
                 org.w3c.dom.Element service=(org.w3c.dom.Element)list.item(0);
-                org.w3c.dom.NodeList cons = service.getElementsByTagName("Connector"); //NOI18N
+                org.w3c.dom.NodeList cons = service.getElementsByTagName(PROP_CONNECTOR);
                 for (int i=0;i<cons.getLength();i++) {
                     org.w3c.dom.Element con=(org.w3c.dom.Element)cons.item(i);
-                    String protocol = con.getAttribute("protocol"); //NOI18N
-                    if ((protocol == null) || protocol.length()==0 || (protocol.toLowerCase().indexOf("http") > -1)) { //NOI18N
-                        con.setAttribute("port", String.valueOf(port)); //NOI18N
+                    String protocol = con.getAttribute(ATTR_PROTOCOL);
+                    String scheme = con.getAttribute(ATTR_SCHEME);
+                    String secure = con.getAttribute(ATTR_SECURE);
+                    if (isHttpConnector(protocol, scheme, secure)) {
+                        con.setAttribute(ATTR_PORT, String.valueOf(port));
                         updateDocument(dobj,doc);
-                        success=true;
+                        return true;
                     }
                 }
             }
@@ -317,7 +332,7 @@ public class TomcatInstallUtil {
         } catch(java.io.IOException ex){
             org.openide.ErrorManager.getDefault ().notify(ex);
         }
-        return success;
+        return false;
     }
     
     private static void setServerAttributeValue(Server server, String attribute, String value) {
@@ -325,13 +340,16 @@ public class TomcatInstallUtil {
     }
     
     private static void setHttpConnectorAttributeValue(Server server, String attribute, String value) {
-        Service service[] = server.getService();
-        if (service != null && service.length > 0) {
-            int sizeConnector = service[0].sizeConnector();
+        Service services[] = server.getService();
+        if (services != null && services.length > 0) {
+            Service service = services[0];
+            int sizeConnector = service.sizeConnector();
             for(int i = 0; i < sizeConnector; i++) {
-                String protocol = service[0].getAttributeValue(PROP_CONNECTOR, i, ATTR_PROTOCOL);
-                if ((protocol == null) || protocol.length() == 0 || (protocol.toLowerCase().indexOf("http") > -1)) { // NOI18N
-                    service[0].setAttributeValue(PROP_CONNECTOR, i, attribute, value);
+                String protocol = service.getAttributeValue(PROP_CONNECTOR, i, ATTR_PROTOCOL);
+                String scheme   = service.getAttributeValue(PROP_CONNECTOR, i, ATTR_SCHEME);
+                String secure   = service.getAttributeValue(PROP_CONNECTOR, i, ATTR_SECURE);
+                if (isHttpConnector(protocol, scheme, secure)) {
+                    service.setAttributeValue(PROP_CONNECTOR, i, attribute, value);
                     return;
                 }
             }
