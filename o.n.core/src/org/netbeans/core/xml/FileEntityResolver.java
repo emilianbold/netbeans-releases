@@ -38,6 +38,7 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileAttributeEvent;
+import java.net.URL;
 
 
 /** 
@@ -82,7 +83,21 @@ public class FileEntityResolver extends EntityCatalog implements Environment.Pro
         
         FileObject fo = Repository.getDefault ().getDefaultFileSystem ().findResource (sb.toString ());
         if (fo != null) {
-            return new InputSource (fo.getInputStream ());
+            
+            // fill in InputSource instance
+            
+            InputSource in = new InputSource (fo.getInputStream ());
+            try {
+                Object myPublicID = fo.getAttribute("hint.originalPublicID");  //NOI18N
+                if (myPublicID instanceof String) {
+                    in.setPublicId((String)myPublicID);
+                }                
+                URL url = fo.getURL();
+                in.setSystemId(url.toString());  // we get nasty nbfs: instead nbres: but it is enough                
+            } catch (IOException ex) {
+                // do no care just no system id
+            }
+            return in;
         } else {
             return null;
         }
