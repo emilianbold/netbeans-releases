@@ -137,7 +137,8 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
                    SystemAction.get (org.netbeans.core.actions.MountAction.class),
                    null,
                    SystemAction.get (org.openide.actions.ToolsAction.class),
-                   SystemAction.get (org.openide.actions.PropertiesAction.class),
+                   //SystemAction.get (org.openide.actions.PropertiesAction.class), // #12072
+                   SystemAction.get (org.openide.actions.CustomizeAction.class),
                };
     }
 
