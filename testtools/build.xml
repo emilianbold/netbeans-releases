@@ -45,8 +45,8 @@ Microsystems, Inc. All Rights Reserved.
         <fileset dir="${nbroot}/ant/netbeans/modules">
           <include name="ant.jar" />
         </fileset>
-        <fileset dir="${nbroot}/utilities/netbeans/modules">
-          <include name="utilities.jar" />
+        <fileset dir="${nbroot}/utilities/group/netbeans/modules"> <!-- XXX: depends on Group -->
+          <include name="group.jar" />
         </fileset>
         <fileset dir="${nbroot}/jemmy">
           <include name="jemmy.jar" />

@@ -429,7 +429,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module tasklist..."/>
     <ant dir="../tasklist" target="netbeans"/>
   </target>
-  <target name="all-testtools" depends="all-ant,all-openide,all-core,all-java,all-jemmysupport,all-junit,all-utilities">
+  <target name="all-testtools" depends="all-ant,all-openide,all-core,all-java,all-jemmysupport,all-junit,all-utilities/group">
     <echo message="Building module testtools..."/>
     <ant dir="../testtools" target="netbeans"/>
   </target>
@@ -457,9 +457,13 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module usersguide..."/>
     <ant dir="../usersguide" target="netbeans"/>
   </target>
-  <target name="all-utilities" depends="all-openide,all-openidex,all-core/settings,all-openide/deprecated">
+  <target name="all-utilities" depends="all-openide,all-openide/deprecated">
     <echo message="Building module utilities..."/>
     <ant dir="../utilities" target="netbeans"/>
+  </target>
+  <target name="all-utilities/group" depends="all-openide,all-openidex,all-core/settings,all-openide/deprecated">
+    <echo message="Building module utilities/group..."/>
+    <ant dir="../utilities/group" target="netbeans"/>
   </target>
   <target name="all-vcscvs" depends="all-openide,all-openidex,all-editor,all-vcscore">
     <echo message="Building module vcscvs..."/>
@@ -647,7 +651,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
 
   <target name="all-utilities/loaderswitcher" depends="all-openide">
-      <echo message="Building module utilitiesx/loaderswitcher..."/>
+      <echo message="Building module utilities/loaderswitcher..."/>
       <ant dir="../utilities/loaderswitcher" target="netbeans"/>
   </target>
   

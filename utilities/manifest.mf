@@ -13,12 +13,6 @@ OpenIDE-Module-Requires: org.openide.TopManager
 OpenIDE-Module-Package-Dependencies: org.apache.regexp[RE]
 Main-Class: org.netbeans.modules.openfile.Main
 
-Name: org/netbeans/modules/group/GroupShadowLoader.class
-OpenIDE-Module-Class: Loader
-
-Name: org/netbeans/modules/group/CreateGroupAction.class
-OpenIDE-Module-Class: Action
-
 Name: org/netbeans/modules/url/URLDataLoader.class
 OpenIDE-Module-Class: Loader
 
