@@ -264,7 +264,7 @@
     
     <tocitem text="Designing Java GUIs with the Form Editor" target="gui.designing" />
     <tocitem text="Creating a New Form" target="gui.creatingforms" />
-    <tocitem text="Designing Containers" target="gui.containers.designing" />
+    <tocitem text="Working with Containers" target="gui.containers.designing" />
     <tocitem text="Adding a Component to a Form" target="gui.components.adding" />
     <tocitem text="Selecting Components in a Form" target="gui.components.selecting" />
     <tocitem text="Editing Component Properties" target="gui.components.editing" />      
