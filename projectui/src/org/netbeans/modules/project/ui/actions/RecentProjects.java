@@ -17,6 +17,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.*;
@@ -26,7 +28,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.project.ui.ProjectTab;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -34,6 +38,7 @@ import org.openide.util.actions.Presenter;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 
 public class RecentProjects extends AbstractAction implements Presenter.Menu, PropertyChangeListener, PopupMenuListener {
     
@@ -41,7 +46,7 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
     
     /** Key for remembering project in JMenuItem
      */
-    private static final String PROJECT_KEY = "org.netbeans.modules.project.ui.RecentProjectItem"; // NOI18N
+    private static final String PROJECT_URL_KEY = "org.netbeans.modules.project.ui.RecentProjectItem.Project_URL"; // NOI18N
     private final ProjectDirListener prjDirListener = new ProjectDirListener(); 
     
     private JMenu subMenu;
@@ -100,16 +105,22 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
         for ( Iterator it = projects.iterator(); it.hasNext(); ) {
             Project p = (Project)it.next();
             FileObject prjDir = p.getProjectDirectory();
-            if (prjDir == null || !prjDir.isValid()) {
-                continue;
+            try { 
+                URL prjDirURL = prjDir.getURL();
+                if ( prjDirURL == null || prjDir == null || !prjDir.isValid()) {
+                    continue;
+                }
+                prjDir.removeFileChangeListener(prjDirListener);            
+                prjDir.addFileChangeListener(prjDirListener);
+                ProjectInformation pi = ProjectUtils.getInformation(p);
+                JMenuItem jmi = new JMenuItem(pi.getDisplayName(), pi.getIcon());
+                subMenu.add( jmi );            
+                jmi.putClientProperty( PROJECT_URL_KEY, prjDirURL );
+                jmi.addActionListener( jmiActionListener );
             }
-            prjDir.removeFileChangeListener(prjDirListener);            
-            prjDir.addFileChangeListener(prjDirListener);
-            ProjectInformation pi = ProjectUtils.getInformation(p);
-            JMenuItem jmi = new JMenuItem(pi.getDisplayName(), pi.getIcon());
-            subMenu.add( jmi );
-            jmi.putClientProperty( PROJECT_KEY, p );
-            jmi.addActionListener( jmiActionListener );
+            catch( FileStateInvalidException ex ) {
+                // Don't put the project into the menu
+            }
         }
         
         recreate = false;
@@ -152,7 +163,20 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
             
             if ( e.getSource() instanceof JMenuItem ) {
                 JMenuItem jmi = (JMenuItem)e.getSource();
-                Project project = (Project)jmi.getClientProperty( PROJECT_KEY );
+                
+                URL url = (URL)jmi.getClientProperty( PROJECT_URL_KEY );                
+                Project project = null;
+
+                FileObject dir = URLMapper.findFileObject( url );
+                if ( dir != null && dir.isFolder() ) {
+                    try {
+                        project = ProjectManager.getDefault().findProject( dir );
+                    }       
+                    catch ( IOException ioEx ) {
+                        // Ignore invalid folders
+                    }
+                }
+                
                 if ( project != null ) {
                     OpenProjectList.getDefault().open( project );
                     ProjectTab ptLogial  = ProjectTab.findDefault (ProjectTab.ID_LOGICAL);
