@@ -153,17 +153,6 @@ public class Server implements Node.Cookie {
         return (ConfigBeanDescriptor) configMap.get(className);
     }
     
-    public ConfigBeanCustomizer getCustomizer(String xpath) {
-        if(customMap == null) {
-            Customizer[] beans = dep.getCustomizer();
-            customMap = new HashMap();
-            for(int i = 0; i < beans.length; i++)
-                customMap.put(beans[i].getXpath(),beans[i].getClassName());
-        }
-            String className = (String) customMap.get(xpath);
-            return (ConfigBeanCustomizer) getClassFromPlugin(className);
-    }
-    
     private Object getClassFromPlugin(String className) {
         if (className == null) return null;
         try {
