@@ -18,7 +18,6 @@ import org.netbeans.modules.form.codestructure.CodeGroup;
 /**
  * This class is used internally to provide basic support for containers
  * with unknown layout. Used when no suitable LayoutSupportDelegate is found.
- * (Note: never initialized from code - it results from its purpose.)
  *
  * @author Tomas Pavek
  */
