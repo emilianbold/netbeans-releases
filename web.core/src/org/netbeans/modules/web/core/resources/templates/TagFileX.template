@@ -20,8 +20,8 @@
 Tag files with XML syntax can be used in XML documents similarly as normal JSP tags in JSP pages.
 Use urn:jsptagdir namespace prefix instead of taglib directive.
 
-This is an example (books.jspx):
-********************************************************
+This is an example of tag file usage in JSP document (books.jspx):
+**********************************************************************
 <jsp:root xmlns:jsp="http://java.sun.com/JSP/Page"
           xmlns:tags="urn:jsptagdir:/WEB-INF/tags"
           version="2.0">
@@ -33,5 +33,5 @@ This is an example (books.jspx):
     </jsp:element>
 
 </jsp:root>
-********************************************************
+**********************************************************************
 -->
