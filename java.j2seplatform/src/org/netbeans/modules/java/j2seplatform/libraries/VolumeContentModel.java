@@ -17,8 +17,11 @@ import javax.swing.AbstractListModel;
 import java.util.List;
 import java.util.ArrayList;
 import java.net.URL;
+import java.net.MalformedURLException;
+
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileUtil;
+import org.openide.ErrorManager;
 
 class VolumeContentModel extends AbstractListModel/*<String>*/ {
 
@@ -52,6 +55,13 @@ class VolumeContentModel extends AbstractListModel/*<String>*/ {
     public void addResource (URL resource) {
         if (FileUtil.isArchiveFile(resource)) {
             resource = FileUtil.getArchiveRoot(resource);
+        }
+        else if (!resource.toExternalForm().endsWith("/")){
+            try {
+                resource = new URL (resource.toExternalForm()+"/");
+            } catch (MalformedURLException mue) {
+                ErrorManager.getDefault().notify(mue);
+            }
         }
         this.content.add (resource);
         int index = this.content.size()-1;

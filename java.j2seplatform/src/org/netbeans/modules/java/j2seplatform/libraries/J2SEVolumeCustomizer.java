@@ -350,7 +350,17 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
 
     private void addFiles (File[] files) throws MalformedURLException {
         for (int i = 0; i < files.length; i++) {
-            URL url = files[i].toURI().toURL();
+            File f = files[i];
+            //XXX: JFileChooser workaround, double click on folder returns wrong file
+            // E.g. for /foo/src it returns /foo/src/src
+            // Try to convert it back by removing last invalid name component
+            if (!f.exists()) {
+                File parent = f.getParentFile();
+                if (parent != null && f.getName().equals(parent.getName()) && parent.exists()) {
+                    f = parent;
+                }
+            }
+            URL url = f.toURI().toURL();
             this.model.addResource(url);
         }
         this.content.setSelectedIndex(this.model.getSize()-1);

@@ -29,6 +29,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
 import org.openide.NotifyDescriptor;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -324,6 +325,15 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                 int firstIndex = this.resources.getModel().getSize();
                 for (int i = 0; i < fs.length; i++) {
                     File f = fs[i];
+                    //XXX: JFileChooser workaround, double click on folder returns wrong file
+                    // E.g. for /foo/src it returns /foo/src/src
+                    // Try to convert it back by removing last invalid name component
+                    if (!f.exists()) {
+                        File parent = f.getParentFile();
+                        if (parent != null && f.getName().equals(parent.getName()) && parent.exists()) {
+                            f = parent;
+                        }
+                    }
                     addingFailed|=!model.addPath (f);
                 }
                 if (addingFailed) {
@@ -475,6 +485,13 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
         private boolean addPath (URL url) {
             if (FileUtil.isArchiveFile(url)) {
                 url = FileUtil.getArchiveRoot (url);
+            }
+            else if (!url.toExternalForm().endsWith("/")){
+                try {
+                    url = new URL (url.toExternalForm()+"/");
+                } catch (MalformedURLException mue) {
+                    ErrorManager.getDefault().notify(mue);
+                }
             }
             java.util.List data = getData();
             int oldSize = data.size ();
