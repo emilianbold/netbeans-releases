@@ -175,19 +175,6 @@ public final class PropertyPanelTest extends NbTestCase {
         assertGC ("Panel should disappear even if we have reference to property editor", weak);
     }
     
-    /** Assert GC.
-     */
-    private static void assertGC (String text, java.lang.ref.Reference ref) {
-        for (int i = 0; i < 10; i++) {
-            if (ref.get () == null) {
-                return;
-            }
-            System.gc ();
-            System.runFinalization();
-        }
-        fail (text + " " + ref.get ());
-    }
-    
     /** Listener that counts changes.
      */
     private static final class Listener 
