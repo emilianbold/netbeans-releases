@@ -68,7 +68,6 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-openide-actions-ViewAction.instance"/>
             <file name="org-openide-actions-NewTemplateAction.instance"/>
             <file name="org-netbeans-core-actions-SetupWizardAction.instance"/>
-            <file name="org-netbeans-core-actions-MemoryMeterAction.instance"/>
             <file name="org-netbeans-core-actions-RefreshAllFilesystemsAction.instance"/>
         </folder>
         
@@ -253,10 +252,6 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         <folder name="Memory">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <!-- Suppress old memory meter action for now as it seems to be redundant. Can revisit.
-            <file name="org-netbeans-core-actions-MemoryMeterAction.instance"/>
-            <attr name="org-netbeans-core-actions-MemoryMeterAction.instance/org-openide-actions-GarbageCollectAction.instance" boolvalue="true" />
-            -->
             <file name="org-openide-actions-GarbageCollectAction.instance"/>
         </folder>
 
