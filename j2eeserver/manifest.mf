@@ -9,7 +9,8 @@ OpenIDE-Module-Module-Dependencies: org.openide.src > 1.0,
  org.openide.deprecated > 1.0,
  org.openide.execution > 1.0,
  org.openide.debugger > 1.0,
- org.netbeans.modules.schema2beans/1
-Class-Path: autoload/ext/jsr88javax.jar autoload/ext/javax77.jar autoload/ext/jmxri.jar
+ org.netbeans.modules.schema2beans/1,
+ com.sun.tools.j2ee.editor/1
+Class-Path: autoload/ext/jsr88javax.jar autoload/ext/javax77.jar autoload/ext/jmxri.jar 
 OpenIDE-Module-Requires: org.openide.compiler.CompilationEngine, org.openide.execution.ExecutionEngine
 
