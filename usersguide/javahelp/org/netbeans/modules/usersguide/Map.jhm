@@ -732,12 +732,22 @@
    <mapID target="org.netbeans.modules.projects.MainClassHelper" url="run/mainclass.html" />
    <mapID target="org.openide.awt.MenuBar$MenuFolder.Project" url="pending.html" /> 
 
-
-   <mapID target="org.netbeans.modules.form.editors2.BorderEditor$BorderPanel" url="pending.html" />
+<!--Explorer Node CSH-->
+   <mapID target="org.openide.src.nodes.MethodNode" url="java/nodes/methods.html" />
+   <mapID target="org.openide.src.nodes.ElementCategory.Methods" url="java/nodes/methods.html" />
+   <mapID target="org.openide.src.ConstructorNode" url="java/nodes/constructors.html" />
+   <mapID target="org.openide.src.nodes.ElementCategory.Constructors" url="java/nodes/constructors.html" />
+   <mapID target="org.openide.src.nodes.FieldNode" url="java/nodes/fields.html" />
+   <mapID target="org.openide.src.nodes.ElementCategory.Fields" url="java/nodes/fields.html" />
+   <mapID target="org.openide.src.nodes.ClassNode" url="java/nodes/class.html" /> 
+   <mapID target="org.netbeans.modules.java.JavaDataObject" url="java/nodes/source.html" /> 
+   <mapID target="org.netbeans.modules.form.FormDataObject" url="java/nodes/form.html" /> 
+   <mapID target="org.netbeans.modules.clazz.SerDataObject" url="java/nodes/prototype.html" /> 
+   <mapID target="org.openide.src.nodes.InterfaceNode" url="java/nodes/interface.html" /> 
    <mapID target="org.netbeans.modules.text.TXTDataObject" url="pending.html" />
    <mapID target="org.netbeans.modules.beans.EventSetPatternNode" url="pending.html" />
-   <mapID target="org.netbeans.modules.beans.IdxPropertyPatternNode" url="pending.html" />
-   <mapID target="org.netbeans.modules.beans.PatternGroupNode" url="pending.html" />
+   <mapID target="org.netbeans.modules.beans.IdxPropertyPatternNode" url="java/nodes/beanprop.html" />
+   <mapID target="org.netbeans.modules.beans.PatternGroupNode" url="java/nodes/beanprop.html" />
    <mapID target="org.netbeans.modules.beans.PatternGroupNode.MENU_CREATE_IDXPROPERTY" url="pending.html" /> 
    <mapID target="org.netbeans.modules.beans.PatternGroupNode.MENU_CREATE_MULTICASTSE" url="pending.html" />
    <mapID target="org.netbeans.modules.beans.PatternGroupNode.MENU_CREATE_UNICASTSE" url="pending.html" />
@@ -751,7 +761,8 @@
    <mapID target="org.netbeans.modules.beans.PatternGroupNode.dialogUniCastES" url="pending.html" />
    <mapID target="org.netbeans.modules.beans.PatternGroupNode.dialogMultiCastES" url="pending.html" />
    <mapID target="org.netbeans.modules.beans.PatternNode" url="pending.html" />
-   <mapID target="org.netbeans.modules.beans.PropertyPatternNode" url="pending.html" />
+   <mapID target="org.netbeans.modules.beans.PropertyPatternNode" url="java/nodes/beanprop.html" />
+   
    <mapID target="org.netbeans.modules.debugger.core.CoreDebugger.dialog" url="pending.html" />
    <mapID target="org.netbeans.modules.debugger.session.actions.StartSessionAction" url="pending.html" />
    <mapID target="org.netbeans.modules.debugger.support.actions.SuspendDebuggerAction" url="pending.html" />
@@ -795,9 +806,6 @@
    <mapID target="org.netbeans.modules.beans.GenerateBeanInfoAction.dialog" url="pending.html" /> 
    <mapID target="org.netbeans.modules.beans.beaninfo.GenerateBeanInfoAction" url="pending.html" /> 
    <mapID target="org.netbeans.modules.beans.beaninfo.GenerateBeanInfoAction.dialog" url="pending.html" /> 
-   <mapID target="org.netbeans.modules.clazz.ClassDataObject" url="pending.html" />
-   <mapID target="org.netbeans.modules.clazz.SerDataObject" url="pending.html" />
-   <mapID target="org.netbeans.modules.form.FormDataObject" url="pending.html" />
    <mapID target="org.netbeans.modules.form.FormLoaderSettings" url="pending.html"/> 
    <mapID target="org.netbeans.modules.form.actions.ComponentInspectorAction" url="pending.html"/>
    <mapID target="org.netbeans.modules.form.actions.DesignModeAction" url="pending.html" />
@@ -820,7 +828,6 @@
    <mapID target="org.netbeans.modules.form.palette.PaletteNode" url="pending.html" />
    <mapID target="org.netbeans.modules.form.ParametersPicker" url="pending.html"/>
    <mapID target="org.netbeans.modules.java.JavaConnections.dialog" url="pending.html"/>
-   <mapID target="org.netbeans.modules.java.JavaDataObject" url="pending.html" />
    <mapID target="org.netbeans.modules.url.BookmarksNode" url="webbrowser/bookmark.html" />
    <mapID target="org.netbeans.modules.html.HtmlLoader.Obj" url="pending.html" /> 
    <mapID target="org.netbeans.modules.image.ImageViewer" url="pending.html" /> 
