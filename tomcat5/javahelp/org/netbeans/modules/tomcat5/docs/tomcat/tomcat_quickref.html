@@ -33,19 +33,72 @@
      </ol>
      For more information, see <a href="tomcat_addinstall.html">Registering an External Tomcat Web Server</a>.</td>
   </tr>
+ <tr valign="top"> 
+    <td> Set a project's target server.</td>
+    <td><ol>
+  <li>Right-click the project node in the Projects window and choose Properties.</li>
+  <li>Select Run in the Project Properties dialog box.</li>
+  <li>Select the target server from the Server drop-down 
+    and click OK.</li>
+</ol>
+  </tr>
   <tr valign="top"> 
+    <td> Customize the server.</td>
+    <td>
+	    <ol><li>In the Runtime window, right-click the Tomcat Web Server node and choose Properties.</li>
+		    <li>Change the server's <a href="tomcat_internal_props.html">properties</a>.</li></ol>
+    </tr>
+ <tr valign="top"> 
+    <td> Set up and test a connection pool.</td>
+    <td>
+	    <ol><li><a href="tomcat_admin_access.html">Access the Tomcat Web Server Administration Tool</a>.</li>
+		    <li><a href="tomcat_setup_tdcp.html">Set up a connection pool</a>.</li>
+	     <li><a href="tomcat_use_tdcp.html">Test a connection pool</a>.</li></ol>
+  </tr>
+<tr valign="top"> 
     <td> Start or stop the server.</td>
     <td>
+	    The server starts automatically when you 
+	    <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/web/deploy/deploy_webapp.html">deploy a web application</a>. Do the 
+	    following to start the server manually:
       <ol>
         <li>In the Runtime window, right-click the Tomcat Web Server node and choose Start/Stop Server.</li>
 	<li>Click Start Server, Start Server (Debug), or Stop Server in the dialog box.</li>
      </ol>
   </tr>
+<tr valign="top"> 
+    <td> Authenticate the server.</td>
+    <td>
+	   <ol>
+  <li>In your system, go to Tomcat's base directory and then to its 
+  <tt>\conf</tt> subfolder.
+<table cellpadding="3" cellspacing="0" border="0">
+  <tr valign="top">
+      <td><img src="../images/tip.gif" alt="tip">&nbsp;</td>
+      <td>
+   If you don't know where Tomcat's base directory is,
+   right-click
+   the Tomcat Web Server instance node in the Runtime window and select Properties.
+   In the Properties
+   dialog box, the Base Directory property points to the
+   base directory.
+      </td>
+   </tr>
+</table></li>
+  <li>Open the <tt>tomcat-users.xml</tt> file and make a note of the password
+  that is defined for the ide username.</li>
+  <li>Right-click
+   the Tomcat Web Server instance node in the Runtime window and select Properties.
+   In the Properties
+   dialog box, type the username and password.</li>
+</ol>
+ For more information, see <a href="tomcat_edit_tomcatuser.html">Authenticating the Tomcat Web Server</a>.
+  </tr>
  <tr valign="top"> 
     <td> Undeploy an application.</td>
     <td> 
       <ol>
-	      <li>Expand the Tomcat Web Server instance and the Web Applications node in the Runtime window.</li>
+	      <li>In the Runtime window, expand the Tomcat Web Server instance and the Web Applications node in the Runtime window.</li>
 	      <li>Expand the node which contains the type of application to undeploy.</li>
 	      <li>Right-click the application and choose Undeploy from the contextual menu.</li>
       </ol>

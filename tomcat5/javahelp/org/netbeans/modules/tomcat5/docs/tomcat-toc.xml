@@ -33,8 +33,8 @@
 	<tocitem text="Accessing a Tomcat Connection Pool from a JSP Page" target="tomcat_use_tdcp" />
         </tocitem>
         <tocitem text="Deploying to the Tomcat Web Server">
-	<tocitem text="Authenticating the Tomcat Web Server" target="tomcat_edit_tomcatuser" />
 	<tocitem text="Deploying a Web Application" target="tomcat_setup_registered" />
+	<tocitem text="Authenticating the Tomcat Web Server" target="tomcat_edit_tomcatuser" />
 	<tocitem text="Writing Ant Targets to Deploy to Tomcat Web Server 4" target="tomcat_setup_unsupported" />
         </tocitem>
    </tocitem>
