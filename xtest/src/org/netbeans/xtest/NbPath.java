@@ -33,16 +33,10 @@ public class NbPath extends Task {
         System.out.println("System:"+NbPath.isJDK14AndOver());
     }
     
-    public void setNbHome(String home) {
-        this.nbhome = checkPath(home);
-    }
+      
     
-    public void setXTHome(String home) {
-        this.xthome = checkPath(home);
-    }
-    
-    public void setXTexHome(String exhome) {
-        this.xtexhome = checkPath(exhome);
+    public void setXTestHome(String xtesthome) {
+        this.xtesthome = checkPath(xtesthome);
     }
 
     public void setAntHome(String home) {
@@ -69,35 +63,11 @@ public class NbPath extends Task {
     public void execute () throws BuildException {
         File jar;
         
-        if (null == nbhome || null == xthome)
-            throw new BuildException("Use nbhome attribute to set up the netbeans home directory.");
-  
-        // prepare netbeans.test.... path
+        if (null == xtesthome)
+            throw new BuildException("Use xtesthome attribute to set xtest.home directory.");  
+        
+        
         StringBuffer list = new StringBuffer(1024);
-        if (null == getProject().getProperty(NB_LIBRARY_PATH)) {
-            listJars(nbhome, "lib/patches", list);
-            listJars(nbhome, "lib", list);
-            listJars(nbhome, "lib/ext", list);
-            listJars(nbhome, "modules", list);
-            listJars(nbhome, "modules/ext", list);
-            getProject().setProperty(NB_LIBRARY_PATH, list.toString());
-        }
-        
-        if (null == getProject().getProperty(NB_CLASS_PATH)) {
-            list.setLength(0);
-            listJars(nbhome, "lib/patches", list);
-            listJars(nbhome, "lib", list);
-            listJars(nbhome, "lib/ext", list);
-            listJars(System.getProperty("java.home"), "lib", list);
-            getProject().setProperty(NB_CLASS_PATH, list.toString());
-        }
-        
-        if (null == getProject().getProperty(NB_BOOTCLASS_PATH)) {
-            list.setLength(0);
-            listJars(System.getProperty("java.home"), "lib", list);
-            listJars(System.getProperty("Env-JAVA_HOME"), "lib", list);
-            getProject().setProperty(NB_BOOTCLASS_PATH, list.toString());
-        }
         
         // prepare ant.class.path property
         String ant_path = getProject().getProperty(ANT_PATH);
@@ -108,11 +78,7 @@ public class NbPath extends Task {
 
             if (null == ant_path && null != System.getProperty("ant.home"))
                 ant_path = lookupAnt(System.getProperty("ant.home"));
-
-            if (null == ant_path)
-                // will find both optional.jar & ant-optional.jar
-                ant_path = lookupJarsFromPath(getProject().getProperty(NB_LIBRARY_PATH), 
-                                              new String [] { "ext/ant.jar", "optional.jar" });
+    
 
             if (null == ant_path)
                 ant_path = lookupJarsFromPath(System.getProperty("java.class.path", ""), 
@@ -128,13 +94,11 @@ public class NbPath extends Task {
         String junit_jar = getProject().getProperty(JUNIT_JAR);
         if (null == junit_jar) {
             String junit_jars [] = new String [] { "junit.jar" };
-            File f = new File(xtexhome, "lib/junit.jar");
+            File f = new File(xtesthome, "lib/junit.jar");
             if (f.exists())
                 junit_jar = f.getAbsolutePath().replace(File.separatorChar, '/');
             if (null == junit_jar)
                 junit_jar = lookupJarsFromPath(System.getProperty("java.class.path", ""), junit_jars);
-            if (null == junit_jar)
-                junit_jar = lookupJarsFromPath(getProject().getProperty(NB_LIBRARY_PATH), junit_jars);
             if (null == junit_jar)
                 junit_jar = "";
             getProject().setProperty(JUNIT_JAR, junit_jar);
@@ -144,7 +108,7 @@ public class NbPath extends Task {
         String junit_path = getProject().getProperty(JUNIT_PATH);
         if (null == junit_path) {
             list.setLength(0);
-            addPath(list, appendSlash(xthome) + "lib/nbjunit.jar");
+            addPath(list, appendSlash(xtesthome) + "lib/nbjunit.jar");
             addPath(list, junit_jar);
             junit_path = list.toString();
             getProject().setProperty(JUNIT_PATH, junit_path);
@@ -153,8 +117,8 @@ public class NbPath extends Task {
         // prepare xtest.path property
         if (null == getProject().getProperty(XTEST_PATH)) {
             list.setLength(0);
-            addPath(list, appendSlash(xthome) + "lib/xtest.jar");
-            addPath(list, appendSlash(xtexhome) + "lib/xtest-junit-testrunner.jar");
+            addPath(list, appendSlash(xtesthome) + "lib/xtest.jar");
+            addPath(list, appendSlash(xtesthome) + "lib/xtest-junit-testrunner.jar");
             getProject().setProperty(XTEST_PATH, list.toString());
         }
 
@@ -285,14 +249,10 @@ public class NbPath extends Task {
         }
     }
     
-    private String nbhome = null;
-    private String xthome = null;
-    private String xtexhome = null;
+    
+    private String xtesthome = null;
     private String anthome = null;
     
-    private static String NB_LIBRARY_PATH     = "netbeans.test.library.path";
-    private static String NB_CLASS_PATH       = "netbeans.test.class.path";
-    private static String NB_BOOTCLASS_PATH   = "netbeans.test.bootclass.path";
     private static String XTEST_PATH          = "xtest.path";
     private static String ANT_PATH            = "ant.path";
     private static String JUNIT_JAR           = "junit.jar";

@@ -113,15 +113,21 @@ Microsystems, Inc. All Rights Reserved.
             excludesfile="../nbbuild/standard-jar-excludes.txt"
             compress="false">
 	<include name="org/netbeans/xtest/**"/>
+        <exclude name="org/netbeans/xtest/ide/**"/>
         <exclude name="org/netbeans/xtest/pe/server*/**"/>
         <exclude name="org/netbeans/xtest/testrunner/**"/>
-	<!--
-	<exclude name="org/netbeans/xtest/ide/**"/>
-	-->
-	<!-- XTestErrorManager has problems - temporarily disabling it
+    </jar>	    
+    
+    <jar jarfile="lib/xtest-ide-plugin.jar"
+            manifest="manifest-subst.mf"
+            basedir="src"
+            excludesfile="../nbbuild/standard-jar-excludes.txt"
+            compress="false">
+	<include name="org/netbeans/xtest/ide/**"/>
+    	<!-- XTestErrorManager has problems - temporarily disabling it
 	<include name="META-INF/services/org.openide.ErrorManager"/>
 	-->
-    </jar>	    
+   </jar>        
 
     <jar jarfile="lib/xtest-junit-testrunner.jar"
             manifest="manifest-subst.mf"
@@ -161,7 +167,8 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="manifest-subst.mf"/>
     <delete file="module-manifest-subst.mf"/>
     <delete dir="lib/patches"/>
-    <delete file="lib/xtest.jar"/>    
+    <delete file="lib/xtest.jar"/>
+    <delete file="lib/xtest-ide-plugin.jar"/>
     <delete file="lib/junit.jar"/>
     <delete file="lib/xalan.jar"/>
     <delete file="lib/xerces.jar"/>
