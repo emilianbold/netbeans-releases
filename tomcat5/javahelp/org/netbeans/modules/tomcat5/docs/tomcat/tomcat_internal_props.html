@@ -30,13 +30,15 @@
     server listens to.</li>
   <li><b>User.</b> The user name that the IDE uses to log into the server's manager 
     application. The user must be associated with the manager role. The first 
-    time the IDE starts the server, such as through the Start/Stop Server menu 
+    time the IDE starts the bundled Tomcat server, such as through the Start/Stop Server menu 
     action or by executing a web component from the IDE, the IDE adds an admin 
     user with a randomly-generated password to the <i>tomcat-base-path</i><tt>/conf/tomcat-users.xml</tt> 
-    file. The entry looks similar to the following: 
+    file. (The <i>tomcat-base-path</i> is your User Dir. Select Help 
+    <img src="../images/arrow.gif" alt="and choose">&nbsp;About and choose
+    the Details tab to identify your User Dir.) The admin user entry looks similar to the following: 
     <PRE>  &lt;user username=&quot;ide&quot; password=&quot;woiehh&quot; roles=&quot;manager&quot;/&gt;</PRE>
   </li>
-  <li><b>Password.</b> The user's password.</li>
+  <li><b>Password.</b> The user's password. See the "User" explanation above for details.</li>
   <li><b>Home Directory.</b> The home directory for the server on your local system. 
     This property is set when you add a Tomcat server to the Server Registry. 
     This location is where Tomcat expects to find its own binaries and any libraries 
@@ -78,6 +80,23 @@
     type a name, and click OK.</li>
 </ul>
 
+<table>
+
+  <tr> 
+
+    <th colspan=2 align=left><a name="seealso">See Also</a></th>
+
+  </tr>
+
+  <tr> 
+
+    <td width="23"></td>
+
+    <td> <a href="tomcat_plugintro.html">About the Tomcat Server</a></td>
+
+  </tr>
+
+</table>
 
 
 <hr>
