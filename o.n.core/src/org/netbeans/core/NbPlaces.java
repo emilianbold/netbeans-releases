@@ -49,11 +49,13 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
     }
     /** serialization */
     public Node.Handle getHandle () {
-      return new Node.Handle () {
-        public Node getNode () {
-          return TopManager.getDefault ().getPlaces ().nodes (). session();          
-        }
-      };
+      return new SessionHandle ();
+    }
+    
+    static final class SessionHandle implements Node.Handle {
+      public Node getNode () {
+        return TopManager.getDefault ().getPlaces ().nodes (). session();          
+      }
     }
   }
   static {
@@ -264,6 +266,8 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
 
 /*
 * Log
+*  27   Gandalf   1.26        7/30/99  David Simonek   again serialization of 
+*       nodes repaired
 *  26   Gandalf   1.25        7/30/99  David Simonek   serialization fixes
 *  25   Gandalf   1.24        7/21/99  Ian Formanek    Fixed starup 
 *       NullPointerException

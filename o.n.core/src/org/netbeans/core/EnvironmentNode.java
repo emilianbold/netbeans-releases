@@ -79,13 +79,15 @@ final class EnvironmentNode extends AbstractNode {
   
   /** For deserialization */
   public Node.Handle getHandle () {
-    System.out.println("A tady?");
-    return new Node.Handle () {
-      public Node getNode () {
-        return EnvironmentNode.getDefault();
-      }
-    };
+    return new EnvironmentHandle();
   }
+
+  static final class EnvironmentHandle implements Node.Handle {
+    public Node getNode () {
+      return EnvironmentNode.getDefault();
+    }
+  };
+  
 
   /** Getter for set of actions that should be present in the
   * popup menu of this node. This set is used in construction of
@@ -104,6 +106,8 @@ final class EnvironmentNode extends AbstractNode {
 
 /*
  * Log
+ *  19   Gandalf   1.18        7/30/99  David Simonek   again serialization of 
+ *       nodes repaired
  *  18   Gandalf   1.17        7/30/99  David Simonek   serialization fixes
  *  17   Gandalf   1.16        7/8/99   Jesse Glick     Context help.
  *  16   Gandalf   1.15        6/9/99   Ian Formanek    ToolsAction
