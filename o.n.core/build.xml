@@ -71,6 +71,9 @@ Microsystems, Inc. All Rights Reserved.
     <copy todir="netbeans" includeEmptyDirs="false">
       <fileset dir="release"/>
     </copy>
+    <copy todir="netbeans">
+      <fileset dir="${binroot}/core/release"/>
+    </copy>
     <!-- [PENDING] may according to wishes give another attribute: eof="add" -->
     <fixcrlf srcdir="netbeans/bin" cr="add">
       <include name="**/*.bat"/>

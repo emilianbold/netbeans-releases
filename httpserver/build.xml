@@ -56,6 +56,9 @@ Microsystems, Inc. All Rights Reserved.
     <copy todir="netbeans" includeEmptyDirs="false">
       <fileset dir="release"/>
     </copy>
+    <copy todir="netbeans">
+      <fileset dir="${binroot}/httpserver/release"/>
+    </copy>
   </target>
 
   <target name="nbm" depends="netbeans">
