@@ -43,8 +43,8 @@ class PaletteItemDataObject extends MultiDataObject {
     static final String ATTR_TYPE = "type"; // NOI18N
 //    static final String ATTR_IS_CONTAINER = "is-container"; // NOI18N
     static final String TAG_CLASSPATH = "classpath"; // NOI18N
-    static final String TAG_CLASSPATH_SOURCE= "classpath_source"; // NOI18N
-    static final String ATTR_LOCATION = "location"; // NOI18N
+    static final String TAG_RESOURCE= "resource"; // NOI18N
+    static final String ATTR_NAME = "name"; // NOI18N
     static final String TAG_DESCRIPTION = "description"; // NOI18N
     static final String ATTR_BUNDLE = "localizing-bundle"; // NOI18N
     static final String ATTR_DISPLAY_NAME_KEY = "display-name-key"; // NOI18N
@@ -53,7 +53,7 @@ class PaletteItemDataObject extends MultiDataObject {
     static final String ATTR_URL = "urlvalue"; // NOI18N
     static final String TAG_ICON32 = "icon32"; // NOI18N
     // component types: "visual", "menu", "layout", "border"
-    // classpath source types: "jar", "library", "project"
+    // classpath resource types: "jar", "library", "project"
 
     private static SystemAction[] staticActions;
 
@@ -178,11 +178,11 @@ class PaletteItemDataObject extends MultiDataObject {
                     attr = cpNodes.item(j).getAttributes();
                     nodeName = cpNodes.item(j).getNodeName();
 
-                    if (TAG_CLASSPATH_SOURCE.equals(nodeName)) {
+                    if (TAG_RESOURCE.equals(nodeName)) {
                         node = attr.getNamedItem(ATTR_TYPE);
                         if (node != null) {
                             String type = node.getNodeValue();
-                            node = attr.getNamedItem(ATTR_LOCATION);
+                            node = attr.getNamedItem(ATTR_NAME);
                             if (node != null) {
                                 cpList.add(type);
                                 cpList.add(node.getNodeValue());
@@ -245,9 +245,12 @@ class PaletteItemDataObject extends MultiDataObject {
         throws IOException
     {
         int idx = classname.lastIndexOf('.');
-        String shortName = idx >= 0 ? classname.substring(idx+1) : classname;
+        String fileName = FileUtil.findFreeFileName(
+            folder,
+            idx >= 0 ? classname.substring(idx+1) : classname,
+            PaletteItemDataLoader.ITEM_EXT);
 
-        FileObject itemFile = folder.createData(shortName,
+        FileObject itemFile = folder.createData(fileName,
                                                 PaletteItemDataLoader.ITEM_EXT);
 
         StringBuffer buff = new StringBuffer(512);
@@ -258,9 +261,9 @@ class PaletteItemDataObject extends MultiDataObject {
         buff.append("\" />\n"); // NOI18N
         buff.append("  <classpath>\n"); // NOI18N
         for (int i=0; i < classpath.length; i++) {
-            buff.append("      <classpath_source type=\""); // NOI18N
+            buff.append("      <resource type=\""); // NOI18N
             buff.append(source);
-            buff.append("\" location=\""); // NOI18N
+            buff.append("\" name=\""); // NOI18N
             buff.append(classpath[i]);
             buff.append("\" />\n"); // NOI18N
             buff.append("  </classpath>\n"); // NOI18N
@@ -274,6 +277,7 @@ class PaletteItemDataObject extends MultiDataObject {
         }
         finally {
             os.close();
+            lock.releaseLock();
         }
     }
 

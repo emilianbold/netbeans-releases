@@ -21,6 +21,15 @@ import java.beans.*;
 
 import org.openide.WizardDescriptor;
 
+/**
+ * The first panel in the wizard for adding new components to the palette from
+ * a JAR. In this panel (as the first step) the user chooses the JAR file.
+ * The alternative first steps are ChooseLibraryWizardPanel and
+ * ChooseProjectWizardPanel.
+ *
+ * @author Tomas Pavek
+ */
+
 class ChooseJARWizardPanel implements WizardDescriptor.Panel {
 
     private JFileChooser fileChooser;
@@ -34,7 +43,7 @@ class ChooseJARWizardPanel implements WizardDescriptor.Panel {
     // WizardDescriptor.Panel implementation
 
     public java.awt.Component getComponent() {
-        if (fileChooser == null) {
+        if (fileChooser == null) { // create the UI component for the wizard step
             fileChooser = new JFileChooser(lastDirectoryUsed);
 
             // wizard API: set the caption and index of this panel
@@ -76,7 +85,7 @@ class ChooseJARWizardPanel implements WizardDescriptor.Panel {
     }
 
     public org.openide.util.HelpCtx getHelp() {
-        // TBD
+        // PENDING
         return new org.openide.util.HelpCtx("beans.adding"); // NOI18N
     }
 

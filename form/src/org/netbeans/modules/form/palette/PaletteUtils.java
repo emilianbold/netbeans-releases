@@ -23,6 +23,8 @@ import org.openide.util.NbBundle;
 
 /**
  * Class providing various useful methods for palette classes.
+ *
+ * @author Tomas Pavek
  */
 
 public final class PaletteUtils {

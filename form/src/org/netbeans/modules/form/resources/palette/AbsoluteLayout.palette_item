@@ -6,4 +6,7 @@
   <description localizing-bundle="org.netbeans.modules.form.resources.Bundle"
                display-name-key="NAME_org-netbeans-lib-awtextra-AbsoluteLayout"
                tooltip-key="HINT_org-netbeans-lib-awtextra-AbsoluteLayout" />
+  <classpath>
+      <resource type="library" name="absolutelayout" />
+  </classpath>
 </palette_item>

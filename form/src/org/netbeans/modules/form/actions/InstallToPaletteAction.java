@@ -13,11 +13,10 @@
 
 package org.netbeans.modules.form.actions;
 
-import org.openide.cookies.InstanceCookie;
-import org.openide.loaders.DataObject;
+import org.openide.cookies.*;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.actions.*;
+import org.openide.util.actions.CookieAction;
 import org.netbeans.modules.form.palette.BeanInstaller;
 
 /**
@@ -30,56 +29,14 @@ public class InstallToPaletteAction extends CookieAction {
 
     private static String name;
 
-    /** @return the mode of action. Possible values are disjunctions of MODE_XXX
-     * constants. */
     protected int mode() {
         return MODE_ALL;
     }
 
-    /** Creates new set of classes that are tested by the cookie.
-     *
-     * @return list of classes the that the cookie tests
-     */
     protected Class[] cookieClasses() {
-        return new Class[] { InstanceCookie.class };
+        return new Class[] { SourceCookie.class };
     }
 
-    /** Test for enablement based on the cookies of selected nodes.
-     * Generally subclasses should not override this except for strange
-     * purposes, and then only calling the super method and adding a check.
-     * Just use {@link #cookieClasses} and {@link #mode} to specify
-     * the enablement logic.
-     * @param activatedNodes the set of activated nodes
-     * @return <code>true</code> to enable
-     */
-    protected boolean enable(Node[] activatedNodes) {
-        if (super.enable(activatedNodes)) {
-            for (int i = 0; i < activatedNodes.length; i++) {
-                InstanceCookie ic = (InstanceCookie)
-                                    activatedNodes[i].getCookie(InstanceCookie.class);
-                if (ic == null)
-                    return false;
-                DataObject dobj = (DataObject)
-                                  activatedNodes[i].getCookie(DataObject.class);
-                try {
-                    if (dobj == null
-                          || dobj.getPrimaryFile().getFileSystem().isDefault())
-                        return false;
-                }
-                catch (Exception ex) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        return false;
-    }
-
-    /** Human presentable name of the action. This should be
-     * presented as an item in a menu.
-     * @return the name of the action
-     */
     public String getName() {
         if (name == null)
             name = org.openide.util.NbBundle.getBundle(InstallToPaletteAction.class)
@@ -87,16 +44,10 @@ public class InstallToPaletteAction extends CookieAction {
         return name;
     }
 
-    /** Help context where to find more about the action.
-     * @return the help context for this action
-     */
     public HelpCtx getHelpCtx() {
         return new HelpCtx("beans.adding"); // NOI18N
     }
 
-    /** Icon resource.
-     * @return name of resource for icon
-     */
     protected String iconResource() {
         return "org/netbeans/modules/form/resources/addToPalette.gif"; // NOI18N
     }
@@ -105,18 +56,8 @@ public class InstallToPaletteAction extends CookieAction {
         return false;
     }
 
-    /**
-     * Standard perform action extended by actually activated nodes.
-     *
-     * @param activatedNodes gives array of actually activated nodes.
-     */
     protected void performAction(Node[] activatedNodes) {
-        InstanceCookie[] cookies = new InstanceCookie[activatedNodes.length];
-        for (int i = 0; i < activatedNodes.length; i++) {
-            cookies[i] =(InstanceCookie)activatedNodes[i].getCookie(InstanceCookie.class);
-        }
-        //XXX BeanInstaller.installBeans(cookies);
-        BeanInstaller.installBeans(activatedNodes);// XXX(-tdt)
+        BeanInstaller.installBeans(activatedNodes);
     }
 
 }

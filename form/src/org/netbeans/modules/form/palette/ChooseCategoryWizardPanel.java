@@ -22,6 +22,14 @@ import org.openide.nodes.Node;
 import org.openide.explorer.*;
 import org.openide.explorer.view.ListView;
 
+/**
+ * The third panel in the wizard for adding new components to the palette.
+ * Lets the user choose the palette category where to add the selected
+ * components.
+ *
+ * @author Tomas Pavek
+ */
+
 class ChooseCategoryWizardPanel implements WizardDescriptor.FinishablePanel {
 
     private CategorySelector categorySelector;
@@ -32,7 +40,7 @@ class ChooseCategoryWizardPanel implements WizardDescriptor.FinishablePanel {
     // WizardDescriptor.Panel implementation
 
     public java.awt.Component getComponent() {
-        if (categorySelector == null) {
+        if (categorySelector == null) { // create the UI component for the wizard step
             categorySelector = new CategorySelector();
 
             // wizard API: set the caption and index of this panel
@@ -53,7 +61,7 @@ class ChooseCategoryWizardPanel implements WizardDescriptor.FinishablePanel {
     }
 
     public org.openide.util.HelpCtx getHelp() {
-        // TBD
+        // PENDING
         return new org.openide.util.HelpCtx("beans.adding"); // NOI18N
     }
 
@@ -101,54 +109,5 @@ class ChooseCategoryWizardPanel implements WizardDescriptor.FinishablePanel {
                 ((ChangeListener)listeners[i+1]).stateChanged(e);
             }
         }
-    }
-
-    // ---------
-
-    static class CategorySelector extends JPanel
-                                  implements ExplorerManager.Provider
-    {
-        private ExplorerManager explorerManager;
-
-        CategorySelector() {
-            explorerManager = new ExplorerManager();
-            explorerManager.setRootContext(PaletteNode.getPaletteNode());
-
-            ListView listView = new ListView();
-            listView.getAccessibleContext().setAccessibleDescription(
-                PaletteUtils.getBundleString("ACSD_CTL_PaletteCategories")); // NOI18N
-
-            JLabel categoryLabel = new JLabel();
-            org.openide.awt.Mnemonics.setLocalizedText(categoryLabel, 
-                    PaletteUtils.getBundleString("CTL_PaletteCategories")); // NOI18N
-            categoryLabel.setLabelFor(listView);
-
-            getAccessibleContext().setAccessibleDescription(
-                PaletteUtils.getBundleString("ACSD_PaletteCategoriesSelector"));
-
-            setBorder(new javax.swing.border.EmptyBorder(12, 12, 0, 11));
-            setLayout(new java.awt.BorderLayout(0, 5));
-            add(categoryLabel, java.awt.BorderLayout.NORTH);
-            add(listView, java.awt.BorderLayout.CENTER);
-//            add(new JScrollPane(list), java.awt.BorderLayout.CENTER);
-        }
-
-        String getSelectedCategory() {
-            Node[] selected = explorerManager.getSelectedNodes();
-            return selected.length == 1 ? selected[0].getName() : null;
-//            int i = list.getSelectedIndex();
-//            return i >= 0 ? catNames[i] : null;
-        }
-
-        // ExplorerManager.Provider
-        public ExplorerManager getExplorerManager() {
-            return explorerManager;
-        }
-//        public java.awt.Dimension getPreferredSize() {
-//            java.awt.Dimension ret = super.getPreferredSize();
-//            ret.width = Math.max(ret.width, 350);
-//            ret.height = Math.max(ret.height, 250);
-//            return ret;
-//        }
     }
 }

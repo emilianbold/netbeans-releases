@@ -61,14 +61,9 @@ public final class PaletteItem implements Node.Cookie {
     private static final int TYPE_MASK = 15;
 
     // classpath source attributes
-    static final String JAR_SOURCE = "jar"; // NOI18N
-    static final String LIBRARY_SOURCE = "library"; // NOI18N
-    static final String PROJECT_SOURCE = "project"; // NOI18N
-
-//    // type of classpath source
-//    static final int FROM_JAR = 1;
-//    static final int FROM_LIBRARY = 2;
-//    static final int FROM_PROJECT = 3;
+    public static final String JAR_SOURCE = "jar"; // NOI18N
+    public static final String LIBRARY_SOURCE = "library"; // NOI18N
+    public static final String PROJECT_SOURCE = "project"; // NOI18N
 
     // -------
 
@@ -225,18 +220,6 @@ public final class PaletteItem implements Node.Cookie {
                     if (FileUtil.isArchiveFile(rootURL))
                         rootURL = FileUtil.getArchiveRoot(rootURL);
                     urlList.add(rootURL);
-    //                Project project = ProjectManager.getDefault().findProject(
-    //                    FileUtil.toFileObject(new File(originLocation)));
-    //                if (project != null) {
-    //                    AntArtifact[] artifacts =
-    //                        AntArtifactQuery.findArtifactsByType(project, "jar"); // NOI18N
-    //                    roots = new URL[artifacts.length];
-    //                    for (int i=0; i < artifacts.length; i++) {
-    //                        File jarFile = new File(
-    //                            originLocation + artifacts[i].getArtifactLocation().toString());
-    //                        roots[i] = FileUtil.getArchiveRoot(jarFile.toURI().toURL());
-    //                    }
-    //                }
                 }
             }
 
@@ -335,7 +318,7 @@ public final class PaletteItem implements Node.Cookie {
     // -------
 
     /** For debugging purposes only. */
-    private static final boolean TRACE = true;
+    private static final boolean TRACE = false;
     
     /** For debugging purposes only. */
     private static void t(String str) {
@@ -353,5 +336,4 @@ public final class PaletteItem implements Node.Cookie {
             Thread.dumpStack();
         }
     }
-
 }

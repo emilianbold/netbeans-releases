@@ -13,3 +13,6 @@ Install-Before: org.netbeans.modules.java.JavaDataObject
 
 Name: org/netbeans/modules/form/palette/PaletteItemDataObject$PaletteItemDataLoader.class
 OpenIDE-Module-Class: Loader
+
+Name: org/netbeans/modules/form/actions/InstallToPaletteAction.class
+OpenIDE-Module-Class: Action
