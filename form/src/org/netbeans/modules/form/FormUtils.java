@@ -34,6 +34,8 @@ import com.netbeans.developer.modules.loaders.form.FormBCObjectInputStream;
 */
 public class FormUtils extends Object {
 
+  private static final boolean debug = true; // (System.getProperty ("netbeans.debug.form") != null);
+
   /** The IDESettings - useed for output details level */
   private static final IDESettings ideSettings = new IDESettings ();
 
@@ -425,6 +427,21 @@ public class FormUtils extends Object {
   }
 
 // -----------------------------------------------------------------------------
+// DEBUG utilities
+
+  public static void DEBUG () {
+    if (debug) {
+      Thread.dumpStack();
+    }
+  }
+  
+  public static void DEBUG (String s) {
+    if (debug) {
+      System.out.println(s);
+    }
+  }
+  
+// -----------------------------------------------------------------------------
 // Safe Serialization
 
   public static void writeSafely (ObjectOutput oo, Object obj)
@@ -457,6 +474,7 @@ public class FormUtils extends Object {
 
 /*
  * Log
+ *  4    Gandalf   1.3         3/29/99  Ian Formanek    Added DEBUG methods
  *  3    Gandalf   1.2         3/28/99  Ian Formanek    
  *  2    Gandalf   1.1         3/24/99  Ian Formanek    
  *  1    Gandalf   1.0         3/17/99  Ian Formanek    
