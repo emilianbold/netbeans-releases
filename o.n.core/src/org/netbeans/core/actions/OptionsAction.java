@@ -15,6 +15,7 @@ package org.netbeans.core.actions;
 
 import java.io.ObjectStreamException;
 import java.text.MessageFormat;
+import java.awt.BorderLayout;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -22,9 +23,16 @@ import org.openide.util.actions.ActionPerformer;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.TopManager;
 import org.openide.nodes.Node;
+import org.openide.nodes.FilterNode;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerPanel;
+import org.openide.explorer.propertysheet.PropertySheetView;
+import org.openide.explorer.view.TreeView;
+import org.openide.explorer.view.BeanTreeView;
+import org.openide.explorer.view.TreeTableView;
+import org.openide.awt.SplittedPanel;
 
+import org.netbeans.core.projects.SettingChildren;
 import org.netbeans.core.NbMainExplorer;
 
 /** Action that opens explorer view which displays global
@@ -72,7 +80,7 @@ public class OptionsAction extends CallableSystemAction {
 
         public OptionsPanel () {
             super();
-            setRootContext(TopManager.getDefault().getPlaces().nodes().session());
+            setRootContext (initRC ());
         }
         
         public HelpCtx getHelpCtx () {
@@ -90,6 +98,36 @@ public class OptionsAction extends CallableSystemAction {
             return singleton;
         }
 
+        protected TreeView initGui () {
+            TreeView view;
+
+            if (Boolean.getBoolean ("netbeans.options.new")) {
+                view = new TreeTableView();
+                ((TreeTableView)view).setProperties ( new Node.Property [] { 
+                    new SettingChildren.IndicatorProperty () ,
+                    new SettingChildren.FileStateProperty (SettingChildren.PROP_LAYER_PROJECT),
+                    new SettingChildren.FileStateProperty (SettingChildren.PROP_LAYER_SESSION),
+                    new SettingChildren.FileStateProperty (SettingChildren.PROP_LAYER_MODULES)
+                });
+            } else {
+                view = new BeanTreeView();
+            }
+
+            SplittedPanel split = new SplittedPanel();
+            PropertySheetView propertyView = new PropertySheetView();
+            split.add(view, SplittedPanel.ADD_LEFT);
+            split.add(propertyView, SplittedPanel.ADD_RIGHT);
+            // add to the panel
+            setLayout(new BorderLayout());
+            add(split, BorderLayout.CENTER);
+            return view;
+        }
+
+        protected void validateRootContext () {
+            Node n = initRC ();
+            setRootContext (n);
+        }
+        
         /** Resolves to the singleton instance of options panel. */
         public Object readResolve ()
         throws ObjectStreamException {
@@ -98,11 +136,40 @@ public class OptionsAction extends CallableSystemAction {
             }
             return singleton;
         }
+        
+        private Node initRC () {
+            Node rc;
+            if (Boolean.getBoolean ("netbeans.options.new"))
+                rc = new OptionsFilterNode ();
+            else
+                rc = TopManager.getDefault().getPlaces().nodes().session();
+            
+            return rc;
+        }
+
+        private static class OptionsFilterNode extends FilterNode {
+            public OptionsFilterNode () {
+                super (
+                    TopManager.getDefault().getPlaces().nodes().session(),
+                    new SettingChildren (TopManager.getDefault().getPlaces().nodes().session())
+                );
+            }
+            
+            public Node.Handle getHandle () {
+                return new H ();
+            }
+            
+            private static class H implements Node.Handle {
+                
+                private static final long serialVersionUID = -5158460093499159177L;
+                
+                public Node getNode () throws java.io.IOException {
+                    return new OptionsFilterNode ();
+                }
+            }
+        }
 
     } // end of inner class OptionsPanel
-
-
-
 }
 
 /*
