@@ -96,9 +96,6 @@ public class JavadocModule extends ModuleInstall implements java.beans.PropertyC
         // 2: first restore as actual user
         // 3: next restore (project settings incl. Repository loaded)
         notify ("JavadocModule: numberOfStarts=" + icount); // NOI18N
-        if (icount <= 2) {
-            installJavadocDirectories();    //std directories
-        }
 
         TopManager.getDefault().addPropertyChangeListener(this);
         
@@ -119,6 +116,10 @@ public class JavadocModule extends ModuleInstall implements java.beans.PropertyC
             }
         }
         
+        if (icount <= 2) {
+            installJavadocDirectories();    //std directories
+        }
+
         // Install the factory for adding JavaDoc property to nodes
         invokeDynamic( "org.netbeans.modules.java.JavaDataObject", // NOI18N
                        "addExplorerFilterFactory", // NOI18N
