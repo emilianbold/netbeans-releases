@@ -17,9 +17,11 @@ import java.util.Enumeration;
 import java.io.*;
 import java.net.URL;
 import java.net.MalformedURLException;
+import java.net.InetAddress;
 
 import org.openide.modules.ModuleInstall;
 import org.openide.execution.Executor;
+import org.openide.execution.NbClassPath;
 import org.openide.util.NbBundle;
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
@@ -31,6 +33,7 @@ import com.sun.web.core.Container;
 import com.sun.web.core.Context;
 import com.sun.web.core.HttpServletRequestFacade;
 import com.sun.web.core.SecurityModule;
+import com.sun.web.server.EndpointManager;
 import com.sun.web.server.HttpServer;
 import com.sun.web.server.HttpServerException;
 
@@ -176,7 +179,11 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
   
   private static HttpServer buildServer() {
     HttpServerSettings op = HttpServerSettings.OPTIONS;
-    HttpServer server = new HttpServer(op.getPort(), null, null);
+
+/*System.out.println("cl " + HttpServer.class.getClassLoader());
+System.out.println("is " + MyHttpServer.class.getResourceAsStream("server.properties"));*/
+
+    HttpServer server = new NbHttpServer(op.getPort(), null, null);
 
     try {
       server.setDocumentBase(new URL("file:///nonexistingdirectory"));
@@ -198,8 +205,38 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
     
     return server;
   }
+  
+  static class NbHttpServer extends HttpServer {
+    
+    public NbHttpServer(int i, InetAddress inetaddress, String s) {
+      super(i, inetaddress, s);
+    }
+    
+    public void start() throws HttpServerException {
+      File wd = NbClassPath.toFile(
+        TopManager.getDefault().getRepository().getDefaultFileSystem().getRoot());
+        
+      try {
+        java.lang.reflect.Field ff = HttpServer.class.getDeclaredField("isWorkDirPersistent");
+        ff.setAccessible(true);
+        boolean bb = ff.getBoolean(this);
+        
+        getDefaultContext().setWorkDir(wd, bb /*isWorkDirPersistent*/);
+        getDefaultContext().init();
+        EndpointManager endpointmanager = EndpointManager.getManager();
 
-
+        // endpointmanager.startServer(this);
+        java.lang.reflect.Method mm = EndpointManager.class.getDeclaredMethod("startServer", new Class[] {HttpServer.class});
+        mm.setAccessible(true);
+        mm.invoke(endpointmanager, new Object[] { this });
+      }
+      catch (Exception e) {
+        TopManager.getDefault().notifyException(e);
+      }  
+    }
+      
+  }
+    
   static class NbSecurityModule implements SecurityModule {
 
     public NbSecurityModule (Context context1) {
@@ -227,10 +264,17 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
       if(i > -1) lookupPath = lookupPath.substring(0, i);
       if(lookupPath.length() < 1) lookupPath = "/";
       String s = lookupPath.toLowerCase();
+System.out.println("s :" + s);
+System.out.println("rep :" + op.getRepositoryBaseURL());
+      if(s.startsWith("/servlet/")) {
+System.out.println("security check OK 1");
+        return true;
+      }  
       if(s.startsWith("/web-inf")) {
         httpservletresponse.sendError(403);
         return false;
-      } if (s.startsWith(op.getRepositoryBaseURL()) || s.startsWith(op.getClasspathBaseURL())) {
+      } if (s.startsWith(op.getRepositoryBaseURL() + "/") || s.startsWith(op.getClasspathBaseURL() + "/")) {
+System.out.println("security check OK 2");
         return true;
       } else {
         httpservletresponse.sendError(404);
@@ -246,6 +290,10 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
 
 /*
  * Log
+ *  32   Gandalf   1.31        11/25/99 Petr Jiricka    - Another 
+ *       security-related fix - for URLs starting with an allowed substring but 
+ *       continuing further on.  - Relaxed security to allow executing arbitrary
+ *       servlets  - Fixed undesirable creation of "work" directory
  *  31   Gandalf   1.30        11/24/99 Ian Formanek    Fixed bug 4767 - 
  *       Security problem:  Internal HTTP Server allows access to directories 
  *       including and below root directory under NT.  Could default Project 
