@@ -79,7 +79,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="netbeans" depends="jars,release">
     <mkdir dir="netbeans/lib/patches"/>
-    <!-- <mkdir dir="netbeans/modules/patches"/> -->
+    <mkdir dir="netbeans/modules"/>
   </target>
 
   <target name="clean">
