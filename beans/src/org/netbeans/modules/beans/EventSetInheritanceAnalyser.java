@@ -70,7 +70,7 @@ class EventSetInheritanceAnalyser extends Object {
             MethodElement methods[] = parent.getMethods();
             for( int i = 0; i < methods.length; i++ ) {
                 if( !Modifier.isPrivate(methods[i].getModifiers()) && methods[i].getParameters().length == 0 ){
-                    if( !methods[i].getReturn().isPrimitive() && methods[i].getReturn().getClassName().compareTo(propertyChangeField, false )  ){
+                    if( !methods[i].getReturn().isPrimitive() && !methods[i].getReturn().isArray() && methods[i].getReturn().getClassName().compareTo(propertyChangeField, false )  ){
                         return methods[i];
                     }
                 }            
@@ -78,7 +78,7 @@ class EventSetInheritanceAnalyser extends Object {
             FieldElement fields[] = parent.getFields();
             for( int i = 0; i < fields.length; i++ ) {
                 if( !Modifier.isPrivate(fields[i].getModifiers()) ){                    
-                    if( !fields[i].getType().isPrimitive() && fields[i].getType().getClassName().compareTo(propertyChangeField, false )  ){
+                    if( !fields[i].getType().isPrimitive() && !fields[i].getType().isArray() && fields[i].getType().getClassName().compareTo(propertyChangeField, false )  ){
                         return fields[i];
                     }
                 }            
