@@ -65,6 +65,12 @@ public class ClasspathsTest extends TestBase {
         super(name);
     }
     
+    protected void setUp() throws Exception {
+        super.setUp();
+        assertNotNull("Must have built ant/freeform unit tests first, INCLUDING copying non-*.java resources to the classes build directory",
+            ClasspathsTest.class.getResource("/META-INF/services/org.openide.modules.InstalledFileLocator"));
+    }
+    
     public void testSourcePath() throws Exception {
         ClassPath cp = ClassPath.getClassPath(myAppJava, ClassPath.SOURCE);
         assertNotNull("have some SOURCE classpath for src/", cp);
