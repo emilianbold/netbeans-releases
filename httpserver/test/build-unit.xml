@@ -35,13 +35,12 @@ Microsystems, Inc. All Rights Reserved.
           -->
     	<!-- this classpath will be used for compiling tests against jars -->
 	<path id="compiletest.classpath">        
-	    <pathelement location="../netbeans/modules/httpserver.jar"/>
-	    <pathelement location="../servletapi/netbeans/modules/autoload/ext/servlet-2.2.jar"/>
-	        <fileset dir="../../openide/netbeans/lib">
+	    <pathelement location="${netbeans.home}/modules/httpserver.jar"/>
+	    <pathelement location="${netbeans.home}/modules/autoload/ext/servlet-2.2.jar"/>
+	        <fileset dir="${netbeans.home}/lib">
                     <include name="openide*.jar"/>
                 </fileset>
 	    <pathelement path="${junit.path}"/>
-	    <pathelement path="${xerces.path}"/>
 	</path>
         <property name="xtest.extra.jars" refid="compiletest.classpath"/>
 
