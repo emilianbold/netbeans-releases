@@ -31,6 +31,7 @@ import org.netbeans.jellytools.actions.SaveAction;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
@@ -140,7 +141,12 @@ public class EditorOperator extends TopComponentOperator {
      * documents and no block further execution.
      */
     public static void closeDiscardAll() {
-        ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode("editor"); //NOI18N
+        // run in dispatch thread
+        ModeImpl mode = (ModeImpl)new QueueTool().invokeSmoothly(new QueueTool.QueueAction("findMode") {    // NOI18N
+            public Object launch() {
+                return WindowManagerImpl.getInstance().findMode("editor"); //NOI18N
+            }
+        });        
         Iterator iter = mode.getOpenedTopComponents().iterator();
         while(iter.hasNext()) {
             EditorOperator.close((TopComponent)iter.next(), false);
