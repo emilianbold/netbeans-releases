@@ -209,9 +209,14 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
      */        
     private class Status implements Runnable {
         
-        /** Message printed when invocation fails. */
-        private static final String FAILURE_MSG = "No running window found.";   // NOI18N
+        /** Message printed when invocation fails even though the 
+         * application runs, but there's no browser window (only mail client, e.g.).
+         */
+        private static final String FAILURE_MSG_BADWINDOW = "BadWindow";   // NOI18N
         
+        /** Message printed when invocation fails because the application does not run. */
+        private static final String FAILURE_MSG = "No running window found.";   // NOI18N
+
         /** Originally executed command. */
         private NbProcessDescriptor cmd;
         
@@ -264,6 +269,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
                     }
                 }
             }
+
             // hack : Netscape exits with 0 on Linux even if there is no window
             if (exitStatus == 0 && org.openide.util.Utilities.getOperatingSystem() == org.openide.util.Utilities.OS_LINUX) {
                 final int LEN = 2048;
@@ -280,12 +286,35 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
                         }
                         exitStatus = 2;
                     }
-                }
-                catch (java.io.IOException ioe) {
+                } catch (java.io.IOException ioe) {
                     // suppose it was executed
                     ExtWebBrowser.getEM ().notify(ErrorManager.WARNING, ioe);
                 }
             }
+            
+            // mozilla & netscape exits with 1 on Linux if there's mail window present, 
+            // but there's no browser window - the URL is shown correctly, though
+            if (exitStatus == 1 && org.openide.util.Utilities.getOperatingSystem() == org.openide.util.Utilities.OS_LINUX) {
+                final int LEN = 2048;
+                char [] buff = new char [LEN];
+                int l;
+                StringBuffer sb = new StringBuffer ();
+                try {
+                    while ((l = r.read (buff, 0, LEN)) != -1) {
+                        sb.append (buff, 0, l);
+                    }
+                    if (sb.toString ().indexOf (FAILURE_MSG_BADWINDOW) >= 0) {
+                        if (ExtWebBrowser.getEM().isLoggable (ErrorManager.INFORMATIONAL)) {
+                            ExtWebBrowser.getEM().log (ErrorManager.INFORMATIONAL, "Browser output: \""+FAILURE_MSG_BADWINDOW+"\""); // NOI18N
+                        }
+                        exitStatus = 0;
+                    }
+                } catch (java.io.IOException ioe) {
+                    // suppose it was executed
+                    ExtWebBrowser.getEM ().notify(ErrorManager.WARNING, ioe);
+                }
+            }
+            
             if (exitStatus == 2) {
                 try {
                     NbProcessDescriptor startCmd = UnixBrowserImpl.createPatchedExecutable(cmd);
@@ -304,6 +333,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
                     ExtWebBrowser.getEM ().notify(ErrorManager.WARNING, ioe);
                 }
             }
+            
             if (exitStatus != 0 && !retried) {
                 DialogDisplayer.getDefault().notify(
                     new NotifyDescriptor.Message (
