@@ -43,6 +43,7 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
      * InstanceDataNode's help (which is really of no use to the user).
      */
     private static final HelpCtx INSTANCE_DEFAULT_HELP = new HelpCtx("org.openide.loaders.InstanceDataObject"); // NOI18N
+    private static final String PREFIX_SETTING_CATEGORIES = "UI"; // NOI18N
 
     /** Constructs this node with given node to filter.
     */
@@ -51,6 +52,15 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
 //        setShortDescription(bundle.getString("CTL_Lookup_hint"));
 //        super.setIconBase ("/org/netbeans/modules/url/Lookup"); // NOI18N
         getCookieSet ().add (this);
+    }
+    
+    /** is this node representing a setting ui category? */
+    private boolean isUISettingCategoryNode() {
+        DataFolder df = (DataFolder) super.getCookie (DataFolder.class);
+        if (df != null) {
+            String name = df.getPrimaryFile ().getPackageNameExt ('/', '.');
+            return name.startsWith(PREFIX_SETTING_CATEGORIES);
+        } else return false;
     }
     
     public HelpCtx getHelpCtx () {
@@ -77,41 +87,24 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
 
 
     public final SystemAction[] createActions () {
-        DataFolder df = (DataFolder) super.getCookie (DataFolder.class);
-        if (df != null) {
-            String name = df.getPrimaryFile ().getPackageNameExt ('/', '.');
-            // if it is node representing a setting ui category hide New action
-            // otherwise settings will be created under system/UI/... folder
-            // and will be unreachable with the System Lookup
-            if (name.startsWith("UI")) {
-                return new SystemAction[] {
-                    SystemAction.get(FileSystemAction.class),
-                    null,
-                    SystemAction.get(PasteAction.class),
-                    null,
-                    SystemAction.get(MoveUpAction.class),
-                    SystemAction.get(MoveDownAction.class),
-                    SystemAction.get(ReorderAction.class),
-                    null,
-                    SystemAction.get(ToolsAction.class),
-                    SystemAction.get(PropertiesAction.class),
-                };
-            }
+        if (isUISettingCategoryNode()) {
+            return new SystemAction[0];
+        } else {
+            return new SystemAction[] {
+                SystemAction.get(FileSystemAction.class),
+                null,
+                SystemAction.get(PasteAction.class),
+                null,
+                SystemAction.get(MoveUpAction.class),
+                SystemAction.get(MoveDownAction.class),
+                SystemAction.get(ReorderAction.class),
+                null,
+                SystemAction.get(NewTemplateAction.class),
+                null,
+                SystemAction.get(ToolsAction.class),
+                SystemAction.get(PropertiesAction.class),
+            };
         }
-        return new SystemAction[] {
-            SystemAction.get(FileSystemAction.class),
-            null,
-            SystemAction.get(PasteAction.class),
-            null,
-            SystemAction.get(MoveUpAction.class),
-            SystemAction.get(MoveDownAction.class),
-            SystemAction.get(ReorderAction.class),
-            null,
-            SystemAction.get(NewTemplateAction.class),
-            null,
-            SystemAction.get(ToolsAction.class),
-            SystemAction.get(PropertiesAction.class),
-        };
     }
 
     /** @return empty property sets. *
@@ -126,6 +119,7 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
     *    is not supported
     */
     public final Node.Cookie getCookie (Class type) {
+        if (isUISettingCategoryNode()) return null;
         // no index for reordering toolbars, just for toolbar items
         if (type.isAssignableFrom(DataFolder.Index.class)) {
             // search for data object
@@ -239,6 +233,26 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
     */
     public final void refreshKey (Node node) {
         ((Ch)getChildren ()).refreshKey (node);
+    }
+    
+    public boolean canDestroy() {
+        return false;
+    }
+    
+    public boolean canCut() {
+        return false;
+    }
+    
+    public boolean canCopy() {
+        return false;
+    }
+    
+    protected Sheet createSheet() {
+        return new Sheet();
+    }
+    
+    public boolean canRename() {
+        return false;
     }
     
     private static final class Leaf extends FilterNode {
