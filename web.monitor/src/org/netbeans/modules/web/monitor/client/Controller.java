@@ -66,6 +66,7 @@ import org.openide.nodes.Children.SortedArray;
 import org.openide.options.SystemOption;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 import org.netbeans.modules.web.monitor.server.Constants;
 import org.netbeans.modules.web.monitor.data.*;
@@ -794,7 +795,7 @@ class Controller  {
      * Invoked by DeleteAction.  Deletes a saved transaction 
      */
 
-    void deleteTransaction(Node[] nodes) {
+    void deleteTransaction(final Node[] nodes) {
 
 	if(!haveDirectories()) {
 	    // PENDING - report the error property
@@ -805,51 +806,63 @@ class Controller  {
 
 	// PENDING
 	if((nodes == null) || (nodes.length == 0)) return;
-
-	TransactionNode n = null;
-	for(int i=0; i < nodes.length; ++i) {
-	    
-	    n = (TransactionNode)nodes[i];
-	    if(debug) 
-		log("Deleting :" + n.toString()); //NOI18N 
-	    
-	    if(n.isCurrent()) delete(n, currTrans, currBeans, true); 
-	    else delete(n, savedTrans, saveBeans, false); 
-	} 
-    }
-
-    private void delete(TransactionNode node, 
-			Children.SortedArray transactions, 
-			Hashtable beans,
-			boolean current) { 
-
-	FileObject fold = null;
-	FileLock lock = null;
-
-	try { 
-	    if(current) 
-		fold = currDir.getFileObject(node.getID(), "xml"); //NOI18N
-	    else 
-		fold = saveDir.getFileObject(node.getID(), "xml"); //NOI18N
-	    lock = fold.lock();
-	    if(debug) log("Deleting: " + fold.getName()); //NOI18N 
-	    fold.delete(lock); 
-	    // We only do this if we could delete the file. 
-	    Node[] nodes = { node };
-	    transactions.remove(nodes);
-	    beans.remove(node.getID());
-	}
-	catch(FileAlreadyLockedException ex) {
-	    // PENDING report properly
-	    if(debug) log("Couldn't lock file:" + node.getID()); //NOI18N 
-	}
-	catch(IOException ex) {
-	    // PENDING report properly
-	    if(debug) log("Couldn't delete file:" + node.getID()); //NOI18N 
-	}
-	finally { 
-	    if(lock != null) lock.releaseLock();
-	}
+        
+        final ProgressMonitor progressMonitor = new ProgressMonitor();
+        
+        RequestProcessor.getDefault().post(new Runnable () {
+            public void run() {
+                // give awt thread chance to draw the progress monitor
+                Thread.yield();
+                // remove nodes
+                currTrans.remove(nodes);
+                savedTrans.remove(nodes);
+                
+                int oldValue = 0;
+                for(int i=0; i < nodes.length; i++) {
+                    TransactionNode node = (TransactionNode)nodes[i];
+                    FileObject fileObject = null;
+                    if (node.isCurrent()) {
+                        String id = node.getID();
+                        fileObject = currDir.getFileObject(id, "xml");
+                        currBeans.remove(id);
+                    } else {
+                        String id = node.getID();
+                        fileObject = saveDir.getFileObject(id, "xml");
+                        saveBeans.remove(id);
+                    }
+                    // delete the file
+                    FileLock lock = null;
+                    try {
+                        lock = fileObject.lock();
+                        fileObject.delete(lock);
+                    } catch(FileAlreadyLockedException falex) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, falex);
+                    } catch(IOException IOex) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, IOex);
+                    } finally { 
+                        if(lock != null) {
+                            lock.releaseLock();
+                        }
+                    }
+                    // update the progress monitor if needed
+                    final int newValue = 100*(i+1)/nodes.length;
+                    if (newValue > oldValue) {
+                        oldValue = newValue;
+                        SwingUtilities.invokeLater(new Runnable () {
+                            public void run (){
+                                progressMonitor.setValue(newValue);
+                            }
+                        });
+                    }
+                }
+                SwingUtilities.invokeLater(new Runnable () {
+                    public void run (){
+                        progressMonitor.close();
+                    }
+                });
+            }
+        });
+        progressMonitor.setVisible(true);
     }
 
     void deleteDirectory(String dir) {
@@ -861,7 +874,7 @@ class Controller  {
 	    return;
 	}
 
-	FileObject directory = null;
+	final FileObject directory;
 	if(dir.equals(saveDirStr)) {
 	    directory = saveDir;
 	    savedTrans.remove(savedTrans.getNodes());
@@ -873,27 +886,51 @@ class Controller  {
 	    currTrans.remove(currTrans.getNodes());
 	    currBeans.clear();
 	}
-	
-	FileLock lock = null;
-	Enumeration e = directory.getData(false);
-	while(e.hasMoreElements()) {
-	    FileObject fo = (FileObject) e.nextElement();
-	    lock = null;
-	    try {
-		lock = fo.lock();
-		fo.delete(lock);
-	    }
-	    catch(FileAlreadyLockedException falex) {
-		// PENDING report properly
-	    }
-	    catch(IOException IOex) {
-		// PENDING report properly
-	    }
-	    finally { 
-		if(lock != null) lock.releaseLock();
-	    }
-	    
-	}
+
+        final ProgressMonitor progressMonitor = new ProgressMonitor();
+        
+        RequestProcessor.getDefault().post(new Runnable () {
+            public void run() {
+                Thread.yield();
+
+                int number = directory.getChildren().length;
+                int oldValue = -1;
+                int i = 0;
+                
+                for(Enumeration e = directory.getData(false); e.hasMoreElements(); ++i) {
+                    FileObject fo = (FileObject) e.nextElement();
+                    FileLock lock = null;
+                    try {
+                        lock = fo.lock();
+                        fo.delete(lock);
+                    } catch(FileAlreadyLockedException falex) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, falex);
+                    } catch(IOException IOex) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, IOex);
+                    } finally { 
+                        if(lock != null) {
+                            lock.releaseLock();
+                        }
+                    }
+                    // update the progress monitor if needed
+                    final int newValue = 100 * i/number;
+                    if (newValue > oldValue) {
+                        oldValue = newValue;
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                progressMonitor.setValue(newValue);
+                            }
+                        });
+                    }
+                }
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        progressMonitor.close();
+                    }
+                });
+            }
+        });
+        progressMonitor.setVisible(true);
     }
 
     void deleteTransactions() {
