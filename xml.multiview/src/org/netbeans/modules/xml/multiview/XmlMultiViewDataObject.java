@@ -273,4 +273,14 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
             }
         }
     }
+    /** provides renaming of super top component */
+    protected FileObject handleRename(String name) throws IOException {
+        FileObject retValue = super.handleRename(name);
+        org.openide.windows.TopComponent mvtc = getEditorSupport().getMVTC();
+        if (mvtc!=null) {
+            mvtc.setDisplayName(getDisplayName());
+            mvtc.setToolTipText(getPrimaryFile().getPath());
+        }
+        return retValue;
+    }
 }

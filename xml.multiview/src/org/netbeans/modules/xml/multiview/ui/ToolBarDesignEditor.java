@@ -91,11 +91,10 @@ public class ToolBarDesignEditor extends AbstractDesignEditor {
         errorPanel = new ErrorPanel(this);
         return errorPanel;
     }
-    
+    /*
     public void componentActivated() {
         super.componentActivated();
-    }
-
+    }*/
     public void componentClosed() {
         super.componentClosed();
     }
@@ -105,6 +104,10 @@ public class ToolBarDesignEditor extends AbstractDesignEditor {
     public void componentShowing() {
         super.componentShowing();
     }
+    public void componentHidden() {
+        super.componentShowing();
+    }
+    
     /**
      * Used to create an instance of the JComponent used for the structure component. Usually a subclass of BeanTreeView.
      * @return the JComponent
@@ -113,14 +116,6 @@ public class ToolBarDesignEditor extends AbstractDesignEditor {
     public JComponent createStructureComponent() {
         JToolBar toolbar = new ToolBarView(getExplorerManager(),getContentView().getRoot());
         return toolbar;
-    }
-    
-    /**
-     * Used to create an instance of the JComponent used for the properties component. Usually a subclass of PropertySheetView.
-     * @return JComponent
-     */
-    public JComponent createPropertiesComponent(){
-        return null;
     }
  
     private static class ToolBarView extends JToolBar implements ExplorerManager.Provider, Lookup.Provider {

@@ -377,7 +377,10 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
     void addListener() {
         if (xmlDocListener==null) {
             xmlDocListener = new XmlDocumentListener();
-            getDocument().addDocumentListener(xmlDocListener);
+            try {
+                openDocument().addDocumentListener(xmlDocListener);
+            } catch (java.io.IOException ex){}
+            //getDocument().addDocumentListener(xmlDocListener);
         }
     }
     

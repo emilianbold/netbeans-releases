@@ -114,7 +114,6 @@ public abstract class PanelView extends javax.swing.JPanel {
         }
         
         protected void showPopup(MouseEvent e) {
-            System.out.println("showPopup");
             JPopupMenu popup = getRoot().getContextMenu();
             popup.show(PanelView.this,e.getX(), e.getY());
             

@@ -54,7 +54,7 @@ public class XmlMultiViewElement implements MultiViewElement, java.io.Serializab
         //}
     }
 
-    public void componentActivated() {
+    public void componentOpened() {
         XmlMultiViewEditorSupport support = dObj.getEditorSupport();
         if (support!=null) support.addListener();
     }
@@ -70,7 +70,7 @@ public class XmlMultiViewElement implements MultiViewElement, java.io.Serializab
     public void componentHidden() {
     }
 
-    public void componentOpened() {
+    public void componentActivated() {
     }
 
     public void componentShowing() {
@@ -117,7 +117,10 @@ public class XmlMultiViewElement implements MultiViewElement, java.io.Serializab
         observer=callback;
         if (dObj!=null) {
             TopComponent tc = callback.getTopComponent();
-            if (tc.getDisplayName()==null) tc.setDisplayName(dObj.getDisplayName());
+            if (tc.getDisplayName()==null) {
+                tc.setDisplayName(dObj.getDisplayName());
+                tc.setToolTipText(dObj.getPrimaryFile().getPath());
+            }
             XmlMultiViewEditorSupport support = dObj.getEditorSupport();
             if (support!=null) {
                 if (undoRedo==null) undoRedo = support.getUndoRedo0();

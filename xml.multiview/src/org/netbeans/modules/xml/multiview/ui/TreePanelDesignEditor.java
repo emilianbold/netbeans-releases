@@ -39,21 +39,12 @@ public class TreePanelDesignEditor extends AbstractDesignEditor {
     /** The default percents of the splitting of the ComponentInspector */
     public static final int DEFAULT_CONTENT_SPLIT = 150;
     
-    protected static EmptyInspectorNode emptyInspectorNode;
-    
     /** Default icon base for control panel. */
     private static final String EMPTY_INSPECTOR_ICON_BASE =
     "/org/netbeans/modules/form/resources/emptyInspector"; // NOI18N
     
-    
-    
     protected JSplitPane split;
     protected int panelOrientation;
-    
-    /** The icon for ComponentInspector */
-    protected static String iconURL = "/org/netbeans/modules/form/resources/inspector.gif"; // NOI18N
-    
-    protected static final long serialVersionUID =1L;
     
     /**
      * Creates a new instance of ComponentPanel
@@ -105,7 +96,6 @@ public class TreePanelDesignEditor extends AbstractDesignEditor {
         
     }
    
-    
     protected JComponent createDesignPanel() {
         if (panelOrientation == CONTENT_LEFT)
             split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,getContentView(), getStructureView());
@@ -138,7 +128,6 @@ public class TreePanelDesignEditor extends AbstractDesignEditor {
         return new BeanTreeView();
     }
     
- 
      /**
      * Used to create an instance of the JComponent used for the properties component. Usually a subclass of PropertySheetView.
      * @return JComponent

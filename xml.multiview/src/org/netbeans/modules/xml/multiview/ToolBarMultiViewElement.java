@@ -61,10 +61,11 @@ public abstract class ToolBarMultiViewElement implements MultiViewElement {
     }
     
     public void componentDeactivated() {
-        editor.componentClosed();
+        editor.componentDeactivated();
     }
     
     public void componentHidden() {
+        editor.componentHidden();
     }
     
     public void componentOpened() {
@@ -97,7 +98,10 @@ public abstract class ToolBarMultiViewElement implements MultiViewElement {
         observer=callback;
         if (dObj!=null) {
             TopComponent tc = callback.getTopComponent();
-            if (tc.getDisplayName()==null) tc.setDisplayName(dObj.getDisplayName());
+            if (tc.getDisplayName()==null) {
+                tc.setDisplayName(dObj.getDisplayName());
+                tc.setToolTipText(dObj.getPrimaryFile().getPath());
+            }
         }
     }
 

@@ -40,20 +40,7 @@ import org.openide.actions.SaveAction;
 
 public abstract class AbstractDesignEditor extends TopComponent implements ExplorerManager.Provider {
     
-    
-    /** The default width of the AbstractComponentEditor */
-    public static final int DEFAULT_WIDTH = 400;
-    /** The default height of the AbstractComponentEditor */
-    public static final int DEFAULT_HEIGHT = 400;
-    
-    protected static EmptyInspectorNode emptyInspectorNode;
-    
-    /** Default icon base for control panel. */
-    private static final String EMPTY_INSPECTOR_ICON_BASE =
-    "/org/netbeans/modules/form/resources/emptyInspector"; // NOI18N
-    
     protected JComponent structureView;
-    protected JComponent propertiesView;
     protected PanelView contentView;
     
     private ExplorerManager manager;
@@ -98,22 +85,13 @@ public abstract class AbstractDesignEditor extends TopComponent implements Explo
         return manager;
     }
     
-    protected void componentActivated() {
+    public void componentActivated() {
         ExplorerUtils.activateActions(manager, true);
     }
     
-    protected void componentDeactivated() {
+    public void componentDeactivated() {
         ExplorerUtils.activateActions(manager, false);
     }
-    
-    
-    /**
-     * Creates a new instance of ComponentPanel
-     * @param panel The PanelView which will provide the node tree for the structure view
-     *              and the set of panels the nodes map to.
-     * @param structure The JComponent that will be used in the structure pane. Should follow the
-     *			ExplorerManager protocol. Will usually be some subclass of BeanTreeView.
-     */
     
     public AbstractDesignEditor(PanelView panel, JComponent structure){
         this(panel);
@@ -130,17 +108,6 @@ public abstract class AbstractDesignEditor extends TopComponent implements Explo
     }
     
     protected void initComponents() {
-        /*
-        ExplorerManager manager = getExplorerManager();
-        emptyInspectorNode = new EmptyInspectorNode();
-        manager.setRootContext(emptyInspectorNode);
-        */
-        setIcon(Utilities.loadImage(iconURL));
-        setName("CTL_ComponentPanelTitle");
-        
-        // Force winsys to not show tab when this comp is alone
-        putClientProperty("TabPolicy", "HideWhenAlone");
-        setToolTipText("HINT_ComponentPanel");
         manager.addPropertyChangeListener(new NodeSelectedListener());
         setLayout(new BorderLayout());
     }
@@ -171,26 +138,7 @@ public abstract class AbstractDesignEditor extends TopComponent implements Explo
      * @return the JComponent
      */
     abstract public JComponent createStructureComponent() ;
-    
-    /**
-     * Used to get the JComponent used for the properties pane. Usually a subclass of PropertySheetView.
-     * @return the JComponent
-     */
-    
-    public JComponent getPropertiesView(){
-        if (propertiesView == null){
-            propertiesView = createPropertiesComponent();
-            propertiesView.addPropertyChangeListener(new PropertiesDisplayListener());
-        }
-        return propertiesView;
-    }
-    
-    /**
-     * Used to create an instance of the JComponent used for the properties component. Usually a subclass of PropertySheetView.
-     * @return JComponent
-     */
-    abstract public JComponent createPropertiesComponent();
-    
+
     abstract public ErrorPanel getErrorPanel();
     
     /**
@@ -201,17 +149,6 @@ public abstract class AbstractDesignEditor extends TopComponent implements Explo
         if (contentView!=null)
             ((PanelView)contentView).open();
     }
-    /**
-     * A parent TopComponent can use this method to notify the ComponentPanel and it PanelView children it is about to close.
-     * and lets them determine if they are ready. Default implementation just delegates to the PanelView.
-     * @return boolean True if the ComponentPanel is ready to close, false otherwise.
-     */
-    public boolean canClose(){
-        if (contentView!=null)
-            return  ((PanelView)contentView).canClose();
-        else
-            return true;
-    }
     
     /**
      * returns the HelpCtx for this component.
@@ -219,15 +156,6 @@ public abstract class AbstractDesignEditor extends TopComponent implements Explo
      */
     public HelpCtx getHelpCtx() {
         return new HelpCtx("ComponentPanel"); // NOI18N
-    }
-    
-    /**
-     * returns the preferred size for this component.
-     * @return the Dimension
-     */
-    
-    public Dimension getPreferredSize() {
-        return new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT);
     }
     
     class NodeSelectedListener implements PropertyChangeListener {
@@ -244,29 +172,5 @@ public abstract class AbstractDesignEditor extends TopComponent implements Explo
                 contentView.showSelection(selectedNodes);
         }
     }
-    
-    class PropertiesDisplayListener implements PropertyChangeListener {
-        public void propertyChange(PropertyChangeEvent evt) {
-            /*
-            if (PropertySheet.PROPERTY_DISPLAY_WRITABLE_ONLY.equals(
-            evt.getPropertyName())) {
-                //
-                //
-            }
-             */
-        }
-    }
-    
-    static class EmptyInspectorNode extends AbstractNode {
-        public EmptyInspectorNode() {
-            super(Children.LEAF);
-            setIconBase(EMPTY_INSPECTOR_ICON_BASE);
-        }
-        
-        public boolean canRename() {
-            return false;
-        }
-    }
-    
     
 }
