@@ -67,6 +67,7 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="${parserimpl}"/> <!-- JAXP and SAX dependency -->
                 <pathelement location="${core_root}/src/"/>
                 <pathelement location="${tax_lib_root}/src/"/>
+                <pathelement location="${binroot}/xml/core/jaxp/release/modules/ext/jaxp-transform-1.1.2.jar"/>
             </classpath>
         </javac>
     </target>
