@@ -68,14 +68,28 @@ public class NbPerformanceTestCase extends NbTestCase implements NbPerformanceTe
      * @param value measured perofrmance value
      * @param unit unit name of measured value
      * @param runOrder order in which the data was measured (1st, 2nd, ...)
-     */    
+    */
     public void reportPerformance(String name, long value, String unit, int runOrder) {
+        reportPerformance(name, value, unit, runOrder, PerformanceData.NO_THRESHOLD);
+    }
+    
+    /** method for storing and reporting measured performance value
+     * @param name measured value name
+     * @param value measured perofrmance value
+     * @param unit unit name of measured value
+     * @param runOrder order in which the data was measured (1st, 2nd, ...)
+     * @param threshold - measure threshold
+     */    
+    public void reportPerformance(String name, long value, String unit, int runOrder, long threshold) {
         NbPerformanceTest.PerformanceData d = new NbPerformanceTest.PerformanceData();
         d.name = name==null? getName() : name;
         d.value = value;
         d.unit = unit;
         d.runOrder = runOrder;
+        d.threshold = threshold;
         data.add(d);
     }
+    
+    
     
 }
