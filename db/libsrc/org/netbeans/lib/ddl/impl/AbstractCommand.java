@@ -7,22 +7,31 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.lib.ddl.impl;
 
-import java.util.*;
-import java.sql.*;
 import java.io.Serializable;
-import java.text.ParseException;
-import org.openide.*;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ResourceBundle;
+
+import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
-import org.netbeans.lib.ddl.*;
-import org.netbeans.lib.ddl.util.*;
 import org.openide.windows.OutputWriter;
+
+import org.netbeans.lib.ddl.DatabaseSpecification;
+import org.netbeans.lib.ddl.DDLCommand;
+import org.netbeans.lib.ddl.DDLException;
+import org.netbeans.lib.ddl.util.CommandFormatter;
 
 /**
 * Basic implementation of DDLCommand. This class can be used for really simple
@@ -51,8 +60,7 @@ public class AbstractCommand implements Serializable, DDLCommand {
     private String quoteStr;
 
     /** Returns specification (DatabaseSpecification) for this command */
-    public DatabaseSpecification getSpecification()
-    {
+    public DatabaseSpecification getSpecification() {
         return spec;
     }
 
@@ -61,8 +69,7 @@ public class AbstractCommand implements Serializable, DDLCommand {
     * in relevant createXXX method.
     * @param specification New specification object.
     */
-    public void setSpecification(DatabaseSpecification specification)
-    {
+    public void setSpecification(DatabaseSpecification specification) {
         spec = specification;
     }
 
@@ -71,22 +78,19 @@ public class AbstractCommand implements Serializable, DDLCommand {
     * method.
     * @param fmt New format.
     */
-    public void setFormat(String fmt)
-    {
+    public void setFormat(String fmt) {
         format = fmt;
     }
 
     /** Returns name of modified object */
-    public String getObjectName()
-    {
+    public String getObjectName() {
         return name;
     }
 
     /** Sets name to be used in command
     * @param nam New name.
     */
-    public void setObjectName(String nam)
-    {
+    public void setObjectName(String nam) {
         name = nam;
     }
 
@@ -107,15 +111,14 @@ public class AbstractCommand implements Serializable, DDLCommand {
     }
 
     /** Returns general property */
-    public Object getProperty(String pname)
-    {
+    public Object getProperty(String pname) {
         return addprops.get(pname);
     }
 
     /** Sets general property */
-    public void setProperty(String pname, Object pval)
-    {
-        if (addprops == null) addprops = new HashMap();
+    public void setProperty(String pname, Object pval) {
+        if (addprops == null)
+            addprops = new HashMap();
         addprops.put(pname, pval);
     }
 
@@ -155,9 +158,7 @@ public class AbstractCommand implements Serializable, DDLCommand {
         try {
             fcmd = getCommand();
         } catch (Exception e) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                e.printStackTrace();
-
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
             executionWithException = true;
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("EXC_UnableToFormat")+"\n" + format + "\n" + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
             return;
@@ -176,10 +177,8 @@ public class AbstractCommand implements Serializable, DDLCommand {
                     throw new Exception();
 
             } catch (Exception e) {
-                if (Boolean.getBoolean("netbeans.debug.exceptions")) { // NOI18N
-                    e.printStackTrace();
-                    System.out.println(fcmd);
-                }
+                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+                ErrorManager.getDefault().log(ErrorManager.WARNING, fcmd);
             }
         }
 
@@ -194,8 +193,7 @@ public class AbstractCommand implements Serializable, DDLCommand {
             stat.execute(fcmd);
             stat.close();
         } catch (Exception e) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                e.printStackTrace();
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
 
             executionWithException = true;
             if (opened && fcon != null)
@@ -216,9 +214,7 @@ public class AbstractCommand implements Serializable, DDLCommand {
     * can't format it (it uses MapFormat to process entire lines and can solve []
     * enclosed expressions as optional.
     */
-    public String getCommand()
-    throws DDLException
-    {
+    public String getCommand() throws DDLException {
         if (format == null)
             throw new DDLException(bundle.getString("EXC_NoFormatSpec")); // NOI18N
         try {
@@ -264,9 +260,7 @@ public class AbstractCommand implements Serializable, DDLCommand {
     }
 
     /** Reads object from stream */
-    public void readObject(java.io.ObjectInputStream in)
-    throws java.io.IOException, ClassNotFoundException
-    {
+    public void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
         format = (String)in.readObject();
         owner = (String)in.readObject();
         name = (String)in.readObject();
@@ -274,9 +268,7 @@ public class AbstractCommand implements Serializable, DDLCommand {
     }
 
     /** Writes object to stream */
-    public void writeObject(java.io.ObjectOutputStream out)
-    throws java.io.IOException
-    {
+    public void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
         //System.out.println("Writing command "+name);
         out.writeObject(format);
         out.writeObject(owner);

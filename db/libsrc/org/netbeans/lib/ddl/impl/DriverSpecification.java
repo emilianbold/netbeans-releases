@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -69,8 +69,8 @@ public class DriverSpecification {
                 list.add(rs.getString(1).trim());
             rs.close();
         } catch (SQLException exc) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                exc.printStackTrace();
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, exc);
+            
 //            this.catalog = catalog;
             this.catalog = null;  //hack for IBM ODBC driver
             rs = null;
@@ -100,8 +100,7 @@ public class DriverSpecification {
             tableNamePattern = quoteString(tableNamePattern);
             rs = dmd.getTables(catalog, schema, tableNamePattern, types);
         } catch (SQLException exc) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                exc.printStackTrace();
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, exc);
             rs = null;
         }
     }
@@ -111,8 +110,7 @@ public class DriverSpecification {
             procedureNamePattern = quoteString(procedureNamePattern);
             rs = dmd.getProcedures(catalog, schema, procedureNamePattern);
         } catch (SQLException exc) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                exc.printStackTrace();
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, exc);
             rs = null;
         }
     }
@@ -122,8 +120,7 @@ public class DriverSpecification {
             table = quoteString(table);
             rs = dmd.getPrimaryKeys(catalog, schema, table);
         } catch (SQLException exc) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                exc.printStackTrace();
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, exc);
             rs = null;
         }
     }
@@ -133,8 +130,7 @@ public class DriverSpecification {
             table = quoteString(table);
             rs = dmd.getIndexInfo(catalog, schema, table, unique, approximate);
         } catch (SQLException exc) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                exc.printStackTrace();
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, exc);
             rs = null;
         }
     }
@@ -145,8 +141,7 @@ public class DriverSpecification {
             columnNamePattern = quoteString(columnNamePattern);
             rs = dmd.getColumns(catalog, schema, tableNamePattern, columnNamePattern);
         } catch (SQLException exc) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                exc.printStackTrace();
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, exc);
             rs = null;
         }
     }
@@ -157,8 +152,7 @@ public class DriverSpecification {
             columnNamePattern = quoteString(columnNamePattern);
             rs = dmd.getProcedureColumns(catalog, schema, procedureNamePattern, columnNamePattern);
         } catch (SQLException exc) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                exc.printStackTrace();
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, exc);
             rs = null;
         }
     }
@@ -168,8 +162,7 @@ public class DriverSpecification {
             table = quoteString(table);
             rs = dmd.getExportedKeys(catalog, schema, table);
         } catch (SQLException exc) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                exc.printStackTrace();
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, exc);
             rs = null;
         }
     }
@@ -179,8 +172,7 @@ public class DriverSpecification {
             table = quoteString(table);
             rs = dmd.getImportedKeys(catalog, schema, table);
         } catch (SQLException exc) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                exc.printStackTrace();
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, exc);
             rs = null;
         }
     }
@@ -202,18 +194,14 @@ public class DriverSpecification {
                     value = rs.getString(i);
 //                    value = rs.getObject(i); //cannot use getObject() because of problems with MSSQL ODBC driver
                 }  catch (SQLException exc) {
-                    if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                        exc.printStackTrace();
-
+                    ErrorManager.getDefault().notify(ErrorManager.WARNING, exc);
                     rset = null;
                     break;
                 }
                 rset.put(new Integer(i), value);
             }
         } catch (SQLException exc) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                exc.printStackTrace();
-
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, exc);
             rset = null;
         }
 
@@ -234,10 +222,7 @@ public class DriverSpecification {
             String productName = dmd.getDatabaseProductName().trim();
             if (list.contains(productName))
                 if (productName.equalsIgnoreCase("PointBase"))
-                    if ((dmd.getDriverMajorVersion() == 4 && dmd.getDriverMinorVersion() >= 1) || dmd.getDriverMajorVersion() > 4)
-                        return true;
-                    else
-                        return false;
+                    return ((dmd.getDriverMajorVersion() == 4 && dmd.getDriverMinorVersion() >= 1) || dmd.getDriverMajorVersion() > 4);
                 else
                     return false;
             else

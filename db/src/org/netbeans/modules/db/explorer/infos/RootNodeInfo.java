@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -92,8 +92,7 @@ public class RootNodeInfo extends DatabaseNodeInfo implements ConnectionOwnerOpe
             else
                 ((ConnectionNodeInfo) cnode.getInfo()).connect(cinfo);
         } catch (Exception e) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) //NOI18N
-                e.printStackTrace();
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
             throw new DatabaseException(e.getMessage());
         }
     }
