@@ -44,8 +44,8 @@ public class MeasureActions  {
         suite.addTest(new OpenFilesWithOpenedEditor("testOpening20kBXmlFile", "Open Xml file (20kB) if Editor opened"));
 
         
-//TODO still rises exception issue 46453       suite.addTest(new OpenJspFile("testOpening20kBJSPFile", "Open JSP file"));
-//TODO still rises exception issue 46453       suite.addTest(new OpenJspFileWithOpenedEditor("testOpening20kBJSPFile", "Open JSP file if Editor opened"));
+       suite.addTest(new OpenJspFile("testOpening20kBJSPFile", "Open JSP file"));
+       suite.addTest(new OpenJspFileWithOpenedEditor("testOpening20kBJSPFile", "Open JSP file if Editor opened"));
         
         suite.addTest(new OpenFilesNoCloneableEditor("testOpening20kBPropertiesFile", "Open Properties file (20kB)"));
         suite.addTest(new OpenFilesNoCloneableEditorWithOpenedEditor("testOpening20kBPropertiesFile", "Open Properties file (20kB) if Editor opened"));
