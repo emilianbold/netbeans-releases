@@ -19,7 +19,26 @@ import com.sun.jdi.event.*;
 import com.sun.jdi.request.EventRequest;
 
 /**
-* Operator listens on debugger events and redirects them to the proper Executor.
+ * Listens for events coming from a remove VM and notifies registered objects.
+ * <P>
+ * Any object implementing interface {@link Executor} can bind itself
+ * with an {@link EventRequest}. Each time an {@link Event} corresponding
+ * to the request comes from the virtual machine the <TT>Operator</TT>
+ * notifies the registered object by calling its <TT>exec()</TT> method.
+ * <P>
+ * The only exceptions to the above rule are <TT>VMStartEvent</TT>,
+ * <TT>VMDeathEvent</TT> and <TT>VMDisconnectEvent</TT> that cannot be
+ * bound to any request. To listen for these events, specify <EM>starter</EM>
+ * and <EM>finalizer</EM> in the constructor.
+ * <P>
+ * The operator is not active until it is started - use method <TT>start()</TT>.
+ * The operator stops itself when either <TT>VMDeathEvent</TT> or <TT>VMDisconnectEvent</TT>
+ * is received; it can be started again.
+ * <P>
+ * Use method {@link #register} to bind a requst with an object.
+ * The object can be unregistered - use method {@link #unregister}.
+ * <P>
+ * There should be only one <TT>Operator</TT> per remote VM.
 *
 * @author Jan Jancura
 */
@@ -31,7 +50,15 @@ public class Operator {
     private Thread            thread;
 
     /**
-    * Creates operator for given event queue.
+     * Creates an operator for a given virtual machine. The operator will listen
+     * to the VM's event queue.
+     *
+     * @param  virtualMachine  remote VM this operator will listen to
+     * @param  starter  thread to be started upon start of the remote VM
+     *                  (may be <TT>null</TT>)
+     * @param  finalizer  thread to be started upon death of the remote VM
+     *                    or upon disconnection from the VM
+     *                    (may be <TT>null</TT>)
     */
     public Operator (
         final VirtualMachine virtualMachine,
@@ -101,10 +128,26 @@ public class Operator {
         thread.start ();
     }
 
+    /**
+     * Binds the specified object with the event request.
+     * If the request is already bound with another object,
+     * the old binding is removed.
+     *
+     * @param  req  request
+     * @param  e  object to be bound with the request
+     *            (if <TT>null</TT>, the binding is removed - the same as <TT>unregister()</TT>)
+     * @see  #unregister
+     */
     public void register (EventRequest req, Executor e) {
         req.putProperty ("executor", e); // NOI18N
     }
 
+    /**
+     * Removes binding between the specified event request and a registered object.
+     *
+     * @param  req  request
+     * @see  #register
+     */
     public void unregister (EventRequest req) {
         req.putProperty ("executor", null); // NOI18N
     }
