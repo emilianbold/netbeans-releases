@@ -351,7 +351,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
     private void addFiles (File[] files) throws MalformedURLException {
         for (int i = 0; i < files.length; i++) {
             File f = files[i];
-            //XXX: JFileChooser workaround, double click on folder returns wrong file
+            //XXX: JFileChooser workaround (JDK bug #5075580), double click on folder returns wrong file
             // E.g. for /foo/src it returns /foo/src/src
             // Try to convert it back by removing last invalid name component
             if (!f.exists()) {
