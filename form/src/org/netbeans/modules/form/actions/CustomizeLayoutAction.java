@@ -41,6 +41,10 @@ public class CustomizeLayoutAction extends CookieAction {
         return new Class[] { RADComponentCookie.class };
     }
 
+    protected boolean asynchronous() {
+        return false;
+    }
+
     /** Human presentable name of the action. This should be
      * presented as an item in a menu.
      * @return the name of the action
