@@ -38,29 +38,18 @@ public class EditorModule implements ModuleInstall {
 
   /** Module installed again. */
   public void restored () {
-    JEditorPane tmpPane = new JEditorPane(); // getEditorKitForContentType is not static
     for (int i = 0; i < replacements.length; i++) {
-      // store old kit
-      EditorKit kit = tmpPane.getEditorKitForContentType(
-          replacements[i].contentType);
-      if (kit != null) {
-        replacements[i].oldKitClassName = kit.getClass().getName();
-      }
       // install new kit
-      JEditorPane.registerEditorKitForContentType(replacements[i].contentType,
-          replacements[i].newKitClassName);
+      JEditorPane.registerEditorKitForContentType(
+        replacements[i].contentType,
+        replacements[i].newKitClassName,
+        getClass ().getClassLoader ()
+      );
     }
   }
 
   /** Module was uninstalled. */
   public void uninstalled () {
-    for (int i = 0; i < replacements.length; i++) {
-      // restore old kit
-      if (replacements[i].oldKitClassName != null) {
-        JEditorPane.registerEditorKitForContentType(replacements[i].contentType,
-            replacements[i].oldKitClassName);
-      }
-    }
   }
 
   /** Module is being closed. */
@@ -72,9 +61,6 @@ public class EditorModule implements ModuleInstall {
 
     /** Content type for which the kits will be switched */
     String contentType;
-
-    /** Class name of the previously registered editor kit */
-    String oldKitClassName;
 
     /** Class name of the kit that will be registered */
     String newKitClassName;
@@ -91,6 +77,8 @@ public class EditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  6    Gandalf   1.5         3/11/99  Jaroslav Tulach Works with plain 
+ *       document.
  *  5    Gandalf   1.4         3/10/99  Jaroslav Tulach body of install moved to
  *       restored.
  *  4    Gandalf   1.3         3/9/99   Ian Formanek    Fixed last change
