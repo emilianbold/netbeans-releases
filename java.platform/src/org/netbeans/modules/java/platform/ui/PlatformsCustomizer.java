@@ -66,7 +66,6 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
     /** Creates new form PlatformsCustomizer */
     public PlatformsCustomizer() {
         initComponents();
-        postInitComponents ();
     }
 
 
@@ -101,12 +100,6 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         this.expandPlatforms (JavaPlatformManager.getDefault().getDefaultPlatform());
     }
 
-
-    private void postInitComponents () {
-        platforms.setPopupAllowed (false);
-        platforms.setDefaultActionAllowed(false);
-        platforms.setRootVisible (false);
-    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -372,6 +365,9 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         
         public PlatformsView () {
             super ();
+            this.setPopupAllowed (false);
+            this.setDefaultActionAllowed(false);
+            this.setRootVisible (false);
             this.tree.setEditable(false);
             this.tree.setShowsRootHandles(false);
         }

@@ -42,6 +42,8 @@ import java.util.ResourceBundle;
 import java.util.MissingResourceException;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -163,10 +165,7 @@ public final class LibrariesCustomizer extends javax.swing.JPanel implements Exp
 
 
     private void postInitComponents () {
-        this.libraries = new BeanTreeView ();        
-        this.libraries.setRootVisible(false);
-        this.libraries.setPopupAllowed(false);
-        this.libraries.setDefaultActionAllowed(false);
+        this.libraries = new LibrariesView ();        
         GridBagConstraints c = new GridBagConstraints ();
         c.gridx = GridBagConstraints.RELATIVE;
         c.gridy = GridBagConstraints.RELATIVE;
@@ -471,6 +470,19 @@ public final class LibrariesCustomizer extends javax.swing.JPanel implements Exp
 
     }
     
+    private static class LibrariesView extends BeanTreeView {
+        
+        public LibrariesView () {
+            super ();
+            this.setRootVisible(false);
+            this.setPopupAllowed(false);
+            this.setDefaultActionAllowed(false);
+            this.tree.setEditable (false);
+            this.tree.setShowsRootHandles (false);
+        }
+        
+    }
+    
     
     private static class RootChildren extends Children.Keys {        
         
@@ -501,15 +513,15 @@ public final class LibrariesCustomizer extends javax.swing.JPanel implements Exp
     }
     
     private static class CategoryNode extends AbstractNode {
-        
-        private static final String ICON = "org/netbeans/modules/project/libraries/resources/libraryCategory";  //NOI18N
+                
         
         private LibraryTypeProvider provider;
+        private Node iconDelegate;
                 
         public CategoryNode (LibraryTypeProvider provider, LibrariesModel model) {
             super (new CategoryChildren(provider, model));
-            this.provider = provider;
-            this.setIconBase(ICON);
+            this.provider = provider;       
+            this.iconDelegate = DataFolder.findFolder (Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
         }
         
         public String getName () {
@@ -519,6 +531,15 @@ public final class LibrariesCustomizer extends javax.swing.JPanel implements Exp
         public String getDisplayName() {
             return this.provider.getDisplayName();
         }
+        
+        public Image getIcon(int type) {            
+            return this.iconDelegate.getIcon (type);
+        }        
+        
+        public Image getOpenedIcon(int type) {
+            return this.iconDelegate.getOpenedIcon (type);
+        }        
+                        
     }    
     
     private static class CategoryChildren extends Children.Keys implements ListDataListener {

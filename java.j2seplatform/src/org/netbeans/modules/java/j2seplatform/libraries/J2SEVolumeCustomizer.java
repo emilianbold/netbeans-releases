@@ -101,7 +101,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
             c.gridheight = 1;
             c.fill = GridBagConstraints.HORIZONTAL;
             c.anchor = GridBagConstraints.NORTHWEST;
-            c.insets = new Insets (5,6,6,6);
+            c.insets = new Insets (0,6,5,6);
             ((GridBagLayout)this.getLayout()).setConstraints(this.addURLButton,c);
             this.add (this.addURLButton);
         }
@@ -184,8 +184,8 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(3, 6, 5, 6);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 6, 6, 6);
         add(addButton, gridBagConstraints);
 
         removeButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/libraries/Bundle").getString("CTL_RemoveContent"));
@@ -201,8 +201,8 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 6);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 6, 6, 6);
         add(removeButton, gridBagConstraints);
 
         upButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/libraries/Bundle").getString("CTL_UpContent"));
@@ -218,8 +218,8 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 6, 0, 6);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 6, 6, 6);
         add(upButton, gridBagConstraints);
 
         downButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/libraries/Bundle").getString("CTL_DownContent"));
@@ -235,8 +235,8 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
         gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 6, 6, 6);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(downButton, gridBagConstraints);
 
     }//GEN-END:initComponents
