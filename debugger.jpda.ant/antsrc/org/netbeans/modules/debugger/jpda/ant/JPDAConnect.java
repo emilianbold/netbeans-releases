@@ -126,12 +126,12 @@ public class JPDAConnect extends Task {
                 AttachingDICookie info = null;
                 if (transport.equals ("dt_socket"))
                     try {
-                        AttachingDICookie.create (host, Integer.parseInt (address));
+                        info = AttachingDICookie.create (host, Integer.parseInt (address));
                     } catch (NumberFormatException e) {
                         throw new BuildException ("address attribute must specify port number for dt_socket connection", getLocation ());
                     }
                 else
-                    AttachingDICookie.create (address);
+                    info = AttachingDICookie.create (address);
                 DebuggerInfo di = DebuggerInfo.create (
                     AttachingDICookie.ID, 
                     new Object [] {
