@@ -17,6 +17,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.URLMapper;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -49,9 +50,24 @@ public final class MasterURLMapper extends URLMapper {
         File f = (hfo != null) ? hfo.getResource().getFile() : null;
 
         try {
-            return (f != null) ? f.toURI().toURL() : null;
+            return (f != null) ? fileToURL(f) : null;
         } catch (MalformedURLException mfx) {
             return null;
         }
     }
+    
+    private static boolean isWindowsDriveRoot(File file) {
+        return Utilities.isWindows() && file.getParent() == null;
+    }
+    
+    static URL fileToURL(File file) throws MalformedURLException {        
+        URL retVal = null;
+        if (isWindowsDriveRoot(file)) {
+            retVal = new URL ("file:/"+file.getAbsolutePath ());//NOI18N            
+        } else {
+            retVal = file.toURI().toURL();                        
+        }        
+        return retVal;
+    }
+    
 }
