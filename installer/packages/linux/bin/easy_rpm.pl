@@ -256,7 +256,7 @@ sub build_rpm {
 
   local( $script, *OUTFILE, $ret, $rpm_exec) ;
 
-  if( -f "/usr/bin/rpmbuild" || -f "/bin/rpmbuild") {
+  if( -f "/usr/bin/rpmbuild" || -f "/bin/rpmbuild" | -f "/opt/sfw/bin/rpmbuild") {
     $rpm_exec = "rpmbuild --target noarch" ;
   }
   else {
