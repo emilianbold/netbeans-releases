@@ -582,18 +582,23 @@ public abstract class NbTopManager /*extends TopManager*/ {
                         } catch (IOException ioe) {
                             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
                         }
+                        boolean isWinsysSaved = false;
                         // save project, if applicable
                         try {
                             ((TrivialProjectManager)Lookup.getDefault().lookup(TrivialProjectManager.class)).store();
+                            isWinsysSaved = true;
                         } catch (IOException ioe) {
                             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
                         }
                         // save window system, [PENDING] remove this after the winsys will
-                        // persist its state automatically
-                        try {
-                            ((WindowManagerImpl)getDefaultWindowManager()).persistenceManager ().writeXML ();
-                        } catch (IOException ioe) {
-                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+                        // persist its state automaticaly
+                        if (!isWinsysSaved) {
+                            try {
+                                //Winsys was not saved yet, save now
+                                ((WindowManagerImpl)getDefaultWindowManager()).persistenceManager ().writeXMLWaiting ();
+                            } catch (IOException ioe) {
+                                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+                            }
                         }
                         org.netbeans.core.projects.XMLSettingsHandler.saveOptions();
                         org.netbeans.core.projects.SessionManager.getDefault().close();
