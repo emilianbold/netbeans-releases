@@ -16,14 +16,14 @@ package org.netbeans.beaninfo.editors;
 import java.beans.*;
 
 /**
- * Editor for property of type java.lang.Character
+ * Editor for property of type java.lang.Double
  *
  * @author  Josef Kozak
  */
-public class CharacterEditor extends WrappersEditor {
+public class DoubleEditor extends WrappersEditor {
     
-    public CharacterEditor() {
-        super(java.lang.Character.TYPE);
+    public DoubleEditor() {
+        super(java.lang.Double.TYPE);
     }
 
     
@@ -42,7 +42,7 @@ public class CharacterEditor extends WrappersEditor {
      *   	current value.
      */
     public String getJavaInitializationString() {
-	return "new java.lang.Character('" + getAsText() + "')";
+	return "new java.lang.Double(" + getAsText() + ")";
     }
 
 }

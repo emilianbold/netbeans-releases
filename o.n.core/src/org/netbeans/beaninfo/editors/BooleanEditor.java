@@ -16,14 +16,14 @@ package org.netbeans.beaninfo.editors;
 import java.beans.*;
 
 /**
- * Editor for property of type java.lang.Character
+ * Editor for property of type java.lang.Boolean
  *
  * @author  Josef Kozak
  */
-public class CharacterEditor extends WrappersEditor {
+public class BooleanEditor extends WrappersEditor {
     
-    public CharacterEditor() {
-        super(java.lang.Character.TYPE);
+    public BooleanEditor() {
+        super(java.lang.Boolean.TYPE);
     }
 
     
@@ -42,7 +42,9 @@ public class CharacterEditor extends WrappersEditor {
      *   	current value.
      */
     public String getJavaInitializationString() {
-	return "new java.lang.Character('" + getAsText() + "')";
+        String gat = getAsText();
+        if (gat.equals("True")) return "new java.lang.Boolean(true)";
+        else return "new java.lang.Boolean(false)";
     }
 
 }

@@ -16,14 +16,14 @@ package org.netbeans.beaninfo.editors;
 import java.beans.*;
 
 /**
- * Editor for property of type java.lang.Character
+ * Editor for property of type java.lang.Integer
  *
  * @author  Josef Kozak
  */
-public class CharacterEditor extends WrappersEditor {
+public class IntegerEditor extends WrappersEditor {
     
-    public CharacterEditor() {
-        super(java.lang.Character.TYPE);
+    public IntegerEditor() {
+        super(java.lang.Integer.TYPE);
     }
 
     
@@ -42,7 +42,7 @@ public class CharacterEditor extends WrappersEditor {
      *   	current value.
      */
     public String getJavaInitializationString() {
-	return "new java.lang.Character('" + getAsText() + "')";
+	return "new java.lang.Integer(" + getAsText() + ")";
     }
 
 }

@@ -16,14 +16,14 @@ package org.netbeans.beaninfo.editors;
 import java.beans.*;
 
 /**
- * Editor for property of type java.lang.Character
+ * Editor for property of type java.lang.Float
  *
  * @author  Josef Kozak
  */
-public class CharacterEditor extends WrappersEditor {
+public class FloatEditor extends WrappersEditor {
     
-    public CharacterEditor() {
-        super(java.lang.Character.TYPE);
+    public FloatEditor() {
+        super(java.lang.Float.TYPE);
     }
 
     
@@ -42,7 +42,7 @@ public class CharacterEditor extends WrappersEditor {
      *   	current value.
      */
     public String getJavaInitializationString() {
-	return "new java.lang.Character('" + getAsText() + "')";
+	return "new java.lang.Float(" + getAsText() + ")";
     }
 
 }
