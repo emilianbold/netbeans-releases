@@ -103,6 +103,7 @@ public class ArtifactProviderTest extends TestBase {
         assertNotNull("some artifact found", aa);
         assertEquals("one artifact found", 1, aa.length);
         assertEquals("the artifact has two locations", 2, aa[0].getArtifactLocations().length);
+        // XXX test ordering perhaps? not critical
     }
 
     private static void putExports(AntProjectHelper helper, List/*<Export>*/ exports) {

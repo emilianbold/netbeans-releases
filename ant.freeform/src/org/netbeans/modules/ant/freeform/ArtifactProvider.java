@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.project.Project;
@@ -111,7 +112,7 @@ final class ArtifactProvider implements AntArtifactProvider {
         
         private final Element export;
         private String id = null;
-        private Set locations = new HashSet();
+        private final Set/*<URI>*/ locations = new LinkedHashSet();
         
         public FreeformArtifact(Element export) {
             this.export = export;
