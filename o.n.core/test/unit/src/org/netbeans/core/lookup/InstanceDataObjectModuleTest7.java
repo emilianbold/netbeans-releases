@@ -131,7 +131,7 @@ public class InstanceDataObjectModuleTest7 extends InstanceDataObjectModuleTestH
         DataObject obj3 = findIt("Services/Misc/inst-2.settings");
         assertTrue("same data object", (obj1 == obj3));
         InstanceCookie inst3 = (InstanceCookie)obj3.getCookie(InstanceCookie.class);
-        assertNotNull("Had no instance", inst3);
+        assertNull("Had instance", inst3);
     }
     
 }
