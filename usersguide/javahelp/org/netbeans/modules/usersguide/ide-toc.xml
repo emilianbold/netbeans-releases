@@ -367,7 +367,7 @@
    <tocitem text="Web Application Tasks: Quick Reference" target="mod_quickref"/>
    <tocitem text="How the IDE Supports Web Application Development" target="webmod_idesupport" />
    <tocitem text="Which Technology Versions Are Supported" target="webmod_techsupport" />
-   <tocitem text="How to Structure Web Applications" target="webmod_struct" />
+   <tocitem text="How to Structure a Web Application" target="webmod_struct" />
    <tocitem text="Where to Put Web Application Files" target="webmod_placefiles" />
 </tocitem> <!-- About Web Applications -->
 
@@ -380,9 +380,8 @@
       <tocitem text="Upgrading to the J2EE 1.4 Specification" target="spec_version" />
       <tocitem text="Creating a JSP File" target="jsp_create" />
       <tocitem text="Editing a JSP File" target="jsp_edit" />
-      <tocitem text="Encoding a JSP File" target="jsp_encode" />
       <tocitem text="Using a Tag Library in a JSP File" target="webmod_usetags"/>
-      <tocitem text="Using a Tomcat Database Connection Pool" target="use_dbcp_in_jsp"/>
+      <tocitem text="Connection Pooling from a JSP File" target="use_dbcp_in_jsp"/>
       <tocitem text="Compiling a JSP File" target="jsp_validate" />
       <tocitem text="Viewing a JSP's Servlet" target="jsp_servletview" />
   </tocitem> <!-- Working With JSP Pages -->
