@@ -790,13 +790,17 @@ final class PersistenceHandler implements PersistenceObserver {
     
     // Projects>>
     public void loadProjectData() {
-        // TODO
-//        System.err.println("\nloading project winsys data"); // TEMP
+        //System.err.println("Loading project winsys data"); // TEMP
+        PersistenceManager.getDefault().resetAllTCPairs();
+        PersistenceManager.getDefault().resetWindowManagerParser();
+        PersistenceManager.getDefault().copySettingsFiles();
+        PersistenceManager.getDefault().restoreAllTCPairs();
+        load();
     }
     
     public void saveProjectData() {
-        // TODO
-//        System.err.println("\nsaving project winsys data"); // TEMP
+        //System.err.println("Saving project winsys data"); // TEMP
+        save();
     }
     // Projects<<
 

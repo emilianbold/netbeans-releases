@@ -22,8 +22,22 @@ Microsystems, Inc. All Rights Reserved.
     desktop layout, modes and groups.
     -->
     <folder name="Windows2">
+        <attr name="SystemFileSystem.layer" stringvalue="project"/>
         <file name="WindowManager.wswmgr" url="nbres:/org/netbeans/core/windows/resources/windowmanager/windowmanager.wswmgr"/>
     </folder>
+
+    <folder name="Windows2Local">
+        <attr name="SystemFileSystem.layer" stringvalue="project"/>
+    </folder>
+
+    <!-- Folders of old window system are defined here to simplify ImportManager
+         code. Handling of missing reference folders. -->
+    <folder name="Windows">
+        <attr name="SystemFileSystem.layer" stringvalue="project"/>
+        <folder name="WindowManager"/>
+        <folder name="Components"/>
+    </folder>
+
 
     <folder name="Actions">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />

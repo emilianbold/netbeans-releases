@@ -35,6 +35,8 @@ import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
 
+import org.netbeans.core.projects.SessionManager;
+import org.netbeans.core.projects.SystemFileSystem;
 import org.netbeans.core.windows.Debug;
 
 /**
@@ -67,6 +69,8 @@ class TCRefParser {
     private boolean inModuleFolder;
     /** true if wstcref file is present in local folder */
     private boolean inLocalFolder;
+    /** true if wstcref file is present in session layer */
+    private boolean inSessionLayer = false;
     
     public TCRefParser (String tc_id) {
         this.tc_id = tc_id;
@@ -137,6 +141,14 @@ class TCRefParser {
         this.inLocalFolder = inLocalFolder;
     }
     
+    boolean isInSessionLayer () {
+        return inSessionLayer;
+    }
+    
+    void setInSessionLayer (boolean inSessionLayer) {
+        this.inSessionLayer = inSessionLayer;
+    }
+    
     void setModuleParentFolder (FileObject moduleParentFolder) {
         this.moduleParentFolder = moduleParentFolder;
     }
@@ -169,18 +181,25 @@ class TCRefParser {
         private FileObject getConfigFOInput () {
             FileObject tcRefConfigFO;
             if (isInLocalFolder()) {
-                //log("-- TCRefParser.getConfigFOInput" + " looking for LOCAL");
+                //log("getConfigFOInput" + " looking for LOCAL");
                 tcRefConfigFO = localParentFolder.getFileObject
                 (TCRefParser.this.getName(), PersistenceManager.TCREF_EXT);
             } else if (isInModuleFolder()) {
-                //log("-- TCRefParser.getConfigFOInput" + " looking for MODULE");
+                //log("getConfigFOInput" + " looking for MODULE");
                 tcRefConfigFO = moduleParentFolder.getFileObject
                 (TCRefParser.this.getName(), PersistenceManager.TCREF_EXT);
+                //Check layer attribute and if it is session copy it to create
+                //local file at session layer too.
+                //Valid only till winsys is in project layer.
+                Object attr = tcRefConfigFO.getAttribute("SystemFileSystem.layer"); // NOI18N
+                if ((attr instanceof String) && "session".equals(attr)) { // NOI18N
+                    TCRefParser.this.setInSessionLayer(true);
+                }
             } else {
                 //XXX should not happen
                 tcRefConfigFO = null;
             }
-            //log("-- TCRefParser.getConfigFOInput" + " tcRefConfigFO:" + tcRefConfigFO);
+            //log("getConfigFOInput" + " tcRefConfigFO:" + tcRefConfigFO);
             return tcRefConfigFO;
         }
 
@@ -197,8 +216,14 @@ class TCRefParser {
                 buffer.append('.');
                 buffer.append(PersistenceManager.TCREF_EXT);
                 //XXX should be improved localParentFolder can be null
+                if (TCRefParser.this.isInSessionLayer()) {
+                    SystemFileSystem.setLayerForNew(localParentFolder.getPath(),SessionManager.LAYER_SESSION);
+                }
                 tcRefConfigFO = FileUtil.createData(localParentFolder, buffer.toString());
                 //log("-- TCRefParser.getConfigFOOutput" + " LOCAL not found CREATE");
+                if (TCRefParser.this.isInSessionLayer()) {
+                    SystemFileSystem.setLayerForNew(localParentFolder.getPath(),null);
+                }
 
                 return tcRefConfigFO;
             }

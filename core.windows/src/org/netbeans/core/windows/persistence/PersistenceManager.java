@@ -99,8 +99,6 @@ public final class PersistenceManager implements PropertyChangeListener {
     
     /** Components module folder */
     private FileObject compsModuleFolder;
-    /** Components local folder */
-    private FileObject compsLocalFolder;
     
     /** Window manager module folder */
     private FileObject wmModuleFolder;
@@ -146,12 +144,15 @@ public final class PersistenceManager implements PropertyChangeListener {
      * owning tc is disabled. */
     private final Map dataobjectToTopComponentMap = new WeakHashMap(30);
     
+    /** A set of invalid Ids */
+    private Set invalidIds = new HashSet(10);
+    
     /** A set of used TcIds. Used to clean unused settings files
      * (ie. not referenced from tcRef or tcGroup). Cleaning is performed
      * when window system is loaded. */
     private final Set usedTcIds = new HashSet(10); // <String>
     
-    /** Lock for synchronyzing access to IDs. */
+    /** Lock for synchronizing access to IDs. */
     private final Object LOCK_IDS = new Object();
     
     /** true when read from xml was processed */
@@ -241,14 +242,13 @@ public final class PersistenceManager implements PropertyChangeListener {
         return null;
     }
     
-    /** @return Local folder for TopComponents */
+    /** @return Local folder for TopComponents. Do not cache ti because it can change
+     * during project switch. */
     public FileObject getComponentsLocalFolder () {
         try {
-            if (compsLocalFolder == null) {
-                compsLocalFolder = FileUtil.createFolder(
-                    getRootLocalFolder(), COMPS_FOLDER
-                );
-            }
+            FileObject compsLocalFolder = FileUtil.createFolder(
+                getRootLocalFolder(), COMPS_FOLDER
+            );
             return compsLocalFolder;
         } catch (IOException exc) {
             String annotation = NbBundle.getMessage(PersistenceManager.class,
@@ -414,6 +414,9 @@ public final class PersistenceManager implements PropertyChangeListener {
             //First check caches
             String result = (String) topComponent2IDMap.get(tc);
             if (result != null) {
+                if (isInvalidId(result)) {
+                    restorePair(tc, result);
+                }
                 return result;
             }
             result = (String) topComponentNonPersistent2IDMap.get(tc);
@@ -440,6 +443,9 @@ public final class PersistenceManager implements PropertyChangeListener {
             //Search in cache
             String result = (String) topComponent2IDMap.get(tc);
             if (result != null) {
+                if (isInvalidId(result)) {
+                    restorePair(tc, result);
+                }
                 return result;
             }
         }
@@ -700,6 +706,11 @@ public final class PersistenceManager implements PropertyChangeListener {
                         SaveCookie sc = (SaveCookie)ido.getCookie(SaveCookie.class);
                         if (sc != null) {
                             sc.save();
+                        } else {
+                            ido.delete();
+                            InstanceDataObject.create(
+                            compsFolder, (String)curEntry.getKey(), curTC, null
+                            );
                         }
                     }
                 } catch(java.io.NotSerializableException nse) {
@@ -801,7 +812,6 @@ public final class PersistenceManager implements PropertyChangeListener {
     }
     
     private String createTopComponentPersistentID (TopComponent tc, String preferredID) {
-        DataFolder compsFolder = DataFolder.findFolder(getComponentsLocalFolder());
         String compName = preferredID;
         // be prepared for null names, empty names and convert to filesystem friendly name
         if ((compName == null) || (compName.length() == 0)) {
@@ -816,7 +826,7 @@ public final class PersistenceManager implements PropertyChangeListener {
             while (isUsed) {
                 isUsed = false;
                 String uniqueName = FileUtil.findFreeFileName(
-                    compsFolder.getPrimaryFile(), srcName, "settings" // NOI18N
+                    getComponentsLocalFolder(), srcName, "settings" // NOI18N
                 );
 
                 if (!srcName.equals(uniqueName) || globalIDSet.contains(uniqueName)) {
@@ -842,6 +852,89 @@ public final class PersistenceManager implements PropertyChangeListener {
             compName, tc, null);
         
         return compName;
+    }
+    
+    /** Must be called during Project switch */
+    public void resetAllTCPairs () {
+        synchronized(LOCK_IDS) {
+            invalidIds = new HashSet(topComponent2IDMap.values());
+            /*System.out.println("-- PM.resetAllTCPairs ENTER");
+            for (Iterator it = invalidIds.iterator(); it.hasNext(); ) {
+                System.out.println("-- item:" + it.next());
+            }*/
+            
+            id2TopComponentMap.clear();
+        }
+    }
+    
+    /** Must be called during Project switch */
+    public void restoreAllTCPairs () {
+        synchronized(LOCK_IDS) {
+            //System.out.println("-- PM.restoreAllTCPairs ENTER");
+            
+            for (Iterator it = topComponent2IDMap.keySet().iterator(); it.hasNext(); ) {
+                TopComponent tc = (TopComponent) it.next();
+                String id = (String) topComponent2IDMap.get(tc);
+                //System.out.println("-- PM.restoreAllTCPairs id:" + id);
+                if (isInvalidId(id)) {
+                    restorePair(tc, id);
+                }
+            }
+            
+            /*for (Iterator it = id2TopComponentMap.keySet().iterator(); it.hasNext(); ) {
+                System.out.println("-- item:" + it.next());
+            }*/
+            
+            Set toRemove = new HashSet();
+            for (Iterator it = topComponent2IDMap.keySet().iterator(); it.hasNext(); ) {
+                TopComponent tc = (TopComponent) it.next();
+                String id = (String) topComponent2IDMap.get(tc);
+                if (!id2TopComponentMap.containsKey(id)) {
+                    //System.out.println("-- PM.restoreAllTCPairs REMOVE tc:" + tc.getName());
+                    toRemove.add(tc);
+                } /*else {
+                    System.out.println("-- PM.restoreAllTCPairs KEEP tc:" + tc.getName());
+                }*/
+            }
+            
+            for (Iterator it = toRemove.iterator(); it.hasNext(); ) {
+                topComponent2IDMap.remove(it.next());
+            }
+            
+            /*System.out.println("-- PM.restoreAllTCPairs topComponent2IDMap.size:"
+            + topComponent2IDMap.size());
+            System.out.println("-- PM.restoreAllTCPairs id2TopComponentMap.size:"
+            + id2TopComponentMap.size());*/
+        }
+    }
+    
+    /** Reuses existing settings files */
+    private String restorePair (TopComponent tc, String id) {
+        //System.out.println("++ PM.restorePair ENTER"
+        //+ " tc:" + tc.getName() + " id:" + id);
+        FileObject fo = getComponentsLocalFolder().getFileObject(id, "settings");
+        if (fo != null) {
+            //System.out.println("++ PM.restorePair tc:" + tc.getName()
+            //+ " id:" + id);
+            //Thread.dumpStack();
+            synchronized(LOCK_IDS) {
+                id2TopComponentMap.put(id, new WeakReference(tc));
+                validateId(id);
+            }
+            return id;
+        } else {
+            return null;
+        }
+    }
+    
+    private boolean isInvalidId (String id) {
+        return invalidIds.contains(id);
+    }
+    
+    private void validateId (String id) {
+        if (invalidIds != null) {
+            invalidIds.remove(id);
+        }
     }
     
     /** map of exceptions to names of badly persistenced top components,
@@ -958,11 +1051,17 @@ public final class PersistenceManager implements PropertyChangeListener {
         return isSaveInProgress;
     } // TEMP
     
+    /** Accessor to WindowManagerParser instance. */
     public WindowManagerParser getWindowManagerParser () {
         if (windowManagerParser == null) {
             windowManagerParser = new WindowManagerParser(this, WINDOWMANAGER_FOLDER);
         }
         return windowManagerParser;
+    }
+    
+    /** Reset WindowManagerParser instance. Called during project switch. */
+    public void resetWindowManagerParser() {
+        windowManagerParser = null;
     }
     
     /** Adds TopComponent Id to set of used Ids. Called from ModeParser and
@@ -1027,7 +1126,7 @@ public final class PersistenceManager implements PropertyChangeListener {
         //long start = System.currentTimeMillis();
         
         //Clear set of used tc_id
-        synchronized(LOCK_IDS) {
+        synchronized (LOCK_IDS) {
             usedTcIds.clear();
         }
         
@@ -1104,7 +1203,7 @@ public final class PersistenceManager implements PropertyChangeListener {
 //    } // TEMP
     
     /** Copy all settings files from module folder to local folder. */
-    private void copySettingsFiles () {
+    public void copySettingsFiles () {
         //long start, end, diff;
         //start = System.currentTimeMillis();
         log("copySettingsFiles ENTER");

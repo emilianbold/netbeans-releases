@@ -42,6 +42,8 @@ import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
 
+import org.netbeans.core.projects.SessionManager;
+import org.netbeans.core.projects.SystemFileSystem;
 import org.netbeans.core.windows.Debug;
 
 /**
@@ -70,10 +72,12 @@ class GroupParser {
     /** Unique group name from file name */
     private String groupName;
     
-    /** true if wsmode file is present in module folder */
+    /** true if wsgrp file is present in module folder */
     private boolean inModuleFolder;
-    /** true if wsmode file is present in local folder */
+    /** true if wsgrp file is present in local folder */
     private boolean inLocalFolder;
+    /** true if wsgrp file is present in session layer */
+    private boolean inSessionLayer = false;
     
     public GroupParser(String name) {
         this.groupName = name;
@@ -399,6 +403,14 @@ class GroupParser {
         this.inLocalFolder = inLocalFolder;
     }
     
+    boolean isInSessionLayer () {
+        return inSessionLayer;
+    }
+    
+    void setInSessionLayer (boolean inSessionLayer) {
+        this.inSessionLayer = inSessionLayer;
+    }
+    
     void log (String s) {
         Debug.log(GroupParser.class, s);
     }
@@ -430,6 +442,13 @@ class GroupParser {
                 //log("-- GroupParser.getConfigFOInput" + " looking for MODULE");
                 groupConfigFO = moduleParentFolder.getFileObject
                 (GroupParser.this.getName(), PersistenceManager.GROUP_EXT);
+                //Check layer attribute and if it is session copy it to create
+                //local file at session layer too.
+                //Valid only till winsys is in project layer.
+                Object attr = groupConfigFO.getAttribute("SystemFileSystem.layer"); // NOI18N
+                if ((attr instanceof String) && "session".equals(attr)) { // NOI18N
+                    GroupParser.this.setInSessionLayer(true);
+                }
             } else {
                 //XXX should not happen
                 groupConfigFO = null;
@@ -451,7 +470,13 @@ class GroupParser {
                 buffer.append('.');
                 buffer.append(PersistenceManager.GROUP_EXT);
                 //XXX should be improved localParentFolder can be null
+                if (GroupParser.this.isInSessionLayer()) {
+                    SystemFileSystem.setLayerForNew(localParentFolder.getPath(),SessionManager.LAYER_SESSION);
+                }
                 groupConfigFO = FileUtil.createData(localParentFolder, buffer.toString());
+                if (GroupParser.this.isInSessionLayer()) {
+                    SystemFileSystem.setLayerForNew(localParentFolder.getPath(),null);
+                }
                 //log("-- GroupParser.getConfigFOOutput" + " LOCAL not found CREATE");
 
                 return groupConfigFO;
