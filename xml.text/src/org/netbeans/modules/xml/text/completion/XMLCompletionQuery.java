@@ -146,7 +146,7 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
                              if (nextElement instanceof EndTag) {
                                  EndTag endtag = (EndTag) nextElement;
                                  String nodename = endtag.getNodeName();
-                                 if (nodename != null) {
+                                 if (nodename != null && startTags.isEmpty() == false) {
                                      ElementResultItem item = (ElementResultItem)startTags.get(0);
                                      if (("/" + nodename).equals(item.getItemText())) {  // NOI18N
                                          addEndTag = false;
