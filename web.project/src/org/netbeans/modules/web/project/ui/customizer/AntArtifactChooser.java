@@ -14,6 +14,8 @@
 package org.netbeans.modules.web.project.ui.customizer;
 
 import java.awt.Dialog;
+import java.awt.Dimension;
+
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -33,7 +35,7 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 
-
+import org.openide.NotifyDescriptor;
 
 /** Accessory component used in the ProjectChooser for choosing project
  * artifacts.
@@ -45,7 +47,7 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
     // XXX to become an array later
     private String artifactType;
     
-    /** Creates new form JarArtifactChooser */
+    /** Creates new form AntArtifactChooser */
     public AntArtifactChooser( String artifactType, JFileChooser chooser ) {
         this.artifactType = artifactType;
         
@@ -70,7 +72,6 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabelName.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_AACH_ProjectName_LabelMnemonic").charAt(0));
         jLabelName.setText(org.openide.util.NbBundle.getMessage(AntArtifactChooser.class, "LBL_AACH_ProjectName_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -86,9 +87,7 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 6, 0);
         add(jTextFieldName, gridBagConstraints);
-        jTextFieldName.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACS_AACH_ProjectName_A11YDesc"));
 
-        jLabelJarFiles.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_AACH_ProjectJarFiles_LabelMnemonic").charAt(0));
         jLabelJarFiles.setText(org.openide.util.NbBundle.getMessage(AntArtifactChooser.class, "LBL_AACH_ProjectJarFiles_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -97,7 +96,6 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
         add(jLabelJarFiles, gridBagConstraints);
 
         jScrollPane1.setViewportView(jListArtifacts);
-        jListArtifacts.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACS_AACH_ProjectJarFiles_A11YDesc"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -117,6 +115,7 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
             // We have to update the Accessory
             JFileChooser chooser = (JFileChooser)e.getSource();
             File dir = chooser.getSelectedFile();
+            dir = FileUtil.normalizeFile (dir);
             DefaultListModel spListModel = (DefaultListModel)jListArtifacts.getModel();
             
             Project project = getProject( dir );
@@ -127,10 +126,11 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
     private Project getProject( File projectDir ) {
         
         try {            
-            FileObject projectRoot = FileUtil.toFileObject ( projectDir );
+            projectDir = FileUtil.normalizeFile (projectDir);
+            FileObject fo = FileUtil.toFileObject(projectDir);
             
-            if ( projectRoot != null ) {
-                Project project = ProjectManager.getDefault().findProject( projectRoot );
+            if (fo != null) {
+                Project project = ProjectManager.getDefault().findProject(fo);
                 return project;
             }
         }
@@ -172,7 +172,7 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
     /** Shows dialog with the artifact chooser 
      * @return null if canceled selected jars if some jars selected
      */
-    public static AntArtifact[] showDialog( String artifactType ) {
+    public static AntArtifact[] showDialog( String artifactType, Project master ) {
         
         JFileChooser chooser = ProjectChooser.projectChooser();
         chooser.setDialogTitle( NbBundle.getMessage( AntArtifactChooser.class, "LBL_AACH_Title" ) ); // NOI18N
@@ -181,18 +181,39 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
         AntArtifactChooser accessory = new AntArtifactChooser( artifactType, chooser );
         chooser.setAccessory( accessory );
         
-
+        chooser.setPreferredSize( new Dimension( 650, 380 ) );
+        
         int option = chooser.showOpenDialog( null ); // Show the chooser
               
         if ( option == JFileChooser.APPROVE_OPTION ) {
+            
+            File dir = chooser.getSelectedFile();
+            dir = FileUtil.normalizeFile (dir);
+            Project selectedProject = accessory.getProject( dir );
 
+            if ( selectedProject == null ) {
+                return null;
+            }
+            
+            if ( selectedProject.getProjectDirectory().equals( master.getProjectDirectory() ) ) {
+                DialogDisplayer.getDefault().notify( new NotifyDescriptor.Message( 
+                    NbBundle.getMessage( AntArtifactChooser.class, "MSG_AACH_RefToItself" ),
+                    NotifyDescriptor.INFORMATION_MESSAGE ) );
+                return null;
+            }
+            
+            if ( ProjectUtils.hasSubprojectCycles( master, selectedProject ) ) {
+                DialogDisplayer.getDefault().notify( new NotifyDescriptor.Message( 
+                    NbBundle.getMessage( AntArtifactChooser.class, "MSG_AACH_Cycles" ),
+                    NotifyDescriptor.INFORMATION_MESSAGE ) );
+                return null;
+            }
+            
             DefaultListModel model = (DefaultListModel)accessory.jListArtifacts.getModel();
             
             AntArtifact artifacts[] = new AntArtifact[ model.size() ];
             
-            // XXX Adding references twice
-            
-            // XXX What about adding reference to itself            
+            // XXX Adding references twice            
             for( int i = 0; i < artifacts.length; i++ ) {
                 artifacts[i] = ((ArtifactItem)model.getElementAt( i )).getArtifact();
             }
@@ -205,8 +226,7 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
         }
                 
     }
-        
-    
+       
     private static class ArtifactItem {
         
         private AntArtifact artifact;
