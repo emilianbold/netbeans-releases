@@ -18,7 +18,6 @@ import org.netbeans.api.project.ProjectUtils;
 
 // XXX testAuxiliaryConfiguration
 // XXX testCacheProvider
-// XXX testSubprojectProvider
 // XXX testAntArtifact
 
 /**
