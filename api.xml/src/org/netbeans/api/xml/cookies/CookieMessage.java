@@ -22,7 +22,6 @@ import org.openide.util.lookup.Lookups;
  *
  * @author  Petr Kuzel
  * @since   0.8
- * @deprecated XML tools API candidate
  */
 public final class CookieMessage {
     

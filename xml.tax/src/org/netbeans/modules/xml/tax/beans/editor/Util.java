@@ -12,7 +12,7 @@
  */
 package org.netbeans.modules.xml.tax.beans.editor;
 
-import org.netbeans.spi.xml.utils.AbstractUtil;
+import org.netbeans.modules.xml.tax.util.AbstractUtil;
 
 /**
  *

@@ -28,7 +28,6 @@ import org.openide.nodes.Node;
  * representing XML documents.
  *
  * @author     Libor Kramolis
- * @deprecated XML tools API candidate
  * @see        javax.xml.transform.Transformer
  */
 public interface TransformableCookie extends Node.Cookie {

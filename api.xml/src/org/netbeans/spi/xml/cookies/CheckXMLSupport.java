@@ -33,7 +33,6 @@ import org.netbeans.api.xml.cookies.*;
  * primary use case.
  *
  * @author Petr Kuzel
- * @deprecated XML tools SPI candidate
  */
 public class CheckXMLSupport extends SharedXMLSupport implements CheckXMLCookie {
         

@@ -33,7 +33,6 @@ import org.openide.nodes.Node;
  * </ul>
  *
  * @author      Petr Kuzel
- * @deprecated  XML tools API candidate
  * @see         CheckXMLCookie
  * @see         <a href="http://www.w3.org/TR/REC-xml#proc-types">XML 1.0</a>     
  */

@@ -35,14 +35,13 @@ import org.openide.xml.EntityCatalog;
  * @author  Libor Kramolis
  * @author  Petr Kuzel
  * @since   0.5
- * @deprecated XML tools API candidate
  */
 public abstract class UserCatalog {
     
     // abstract to avoid instantionalization by API clients
     
     /**
-     * Utility method looking up for the first instance in default Lookup.
+     * Utility method looking up for an instance in default Lookup.
      * @return UserCatalog registered in default Lookup or <code>null</code>.
      */
     public static UserCatalog getDefault() {

@@ -23,7 +23,6 @@ import org.xml.sax.*;
  *
  * @author  Petr Kuzel
  * @since   0.5
- * @deprecated XML tools API candidate
  */
 public abstract class XMLProcessorDetail {
 

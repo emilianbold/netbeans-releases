@@ -31,7 +31,6 @@ import org.openide.util.Lookup;
  * Let it look like {@link InputSource}.
  *
  * @author  Petr Kuzel
- * @deprecated XML tools API candidate
  */
 public final class DocumentInputSource extends InputSource {
     

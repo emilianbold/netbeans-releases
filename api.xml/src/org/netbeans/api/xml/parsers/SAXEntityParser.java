@@ -39,7 +39,6 @@ import org.xml.sax.*;
  * <b>Warning:</b> Implementation gurantees only proper ErrorHandler callbacks.
  *
  * @author  Petr Kuzel
- * @deprecated XML tools API candidate
  */
 public class SAXEntityParser implements XMLReader {
     

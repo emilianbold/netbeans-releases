@@ -1,34 +1,36 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.api.xml.parsers;
+package org.netbeans.modules.xml.core.lib;
 
 import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
+ * This provides package scope utilities for debugging and code
+ * internationalization. It is designed to have a subclass,
+ * <code>ErrorManager</code> instance and bundle in each client's package.
+ * <p>
+ * It ensures localized strings will be loaded from <code>Bundle.properties</code>
+ * (branded) in same package as subclass belongs.
+ * <p>
+ * Debugging methods use {@link org.openide.ErrorManager} to log messages.
+ * <code>ErrorManager</code> instance also belongs to sub-class's package.
  *
- * @author Libor Kramolis
+ * @author     Libor Kramolis
  */
-class Util  {
-
-    /** Default and only one instance of this class. */
-    public static final Util THIS = new Util();
-
-    /** Nobody can create instance of it, just me. */
-    private Util () {
-    }
-
+public abstract class AbstractUtil {
+    
     /** Cached package name. */
     private String packageName;
     /** Instance package ErrorManager. */
@@ -155,5 +157,5 @@ class Util  {
         }
         return packageErrorManager;
     }
-    
+
 }

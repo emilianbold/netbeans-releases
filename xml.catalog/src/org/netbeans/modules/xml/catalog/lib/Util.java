@@ -23,7 +23,7 @@ import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
-import org.netbeans.spi.xml.utils.AbstractUtil;
+import org.netbeans.modules.xml.core.lib.AbstractUtil;
 
 /**
  * Utility methods.

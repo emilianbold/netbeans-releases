@@ -41,7 +41,6 @@ import org.netbeans.api.xml.services.UserCatalog;
  * Adapt <code>DataObject</code> to other common XML interfaces.
  *
  * @author      Petr Kuzel
- * @deprecated  XML tools SPI candidate
  * @since       0.9
  */
 public final class DataObjectAdapters {

@@ -18,7 +18,6 @@ package org.netbeans.api.xml.cookies;
  * are insterested in progress of their request.
  *
  * @author      Petr Kuzel
- * @deprecated  XML Tools API candidate
  * @since       0.3
  */
 public interface CookieObserver {

@@ -48,7 +48,6 @@ import org.netbeans.api.xml.services.UserCatalog;
  * Default implementation of {@link TransformableCookie} cookie.
  *
  * @author     Libor Kramolis
- * @deprecated XML tools SPI candidate
  */
 public final class TransformableSupport implements TransformableCookie {
 

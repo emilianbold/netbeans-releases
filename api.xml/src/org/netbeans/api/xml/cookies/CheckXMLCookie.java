@@ -25,7 +25,6 @@ import org.openide.nodes.Node;
  * representing non-validateable XML resources.
  *
  * @author      Petr Kuzel
- * @deprecated  XML tools API candidate
  * @see         ValidateXMLCookie
  * @see         <a href="http://www.w3.org/TR/REC-xml#proc-types">XML 1.0</a>     
  */

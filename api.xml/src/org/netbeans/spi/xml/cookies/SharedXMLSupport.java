@@ -40,7 +40,6 @@ import org.netbeans.api.xml.parsers.*;
  * <code>InputSource</code>s representing XML documents and entities.
  *
  * @author      Petr Kuzel
- * @deprecated  XML tools SPI candidate
  * @see         CheckXMLSupport
  * @see         ValidateXMLSupport
  */
