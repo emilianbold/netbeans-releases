@@ -62,6 +62,8 @@ aspect ListenerCount
             return false;
         }
     }
+
+    private static final boolean DONT_REPORT_FAILED_REMOVE = Boolean.getBoolean("ListenerCount.dont_report_failed_remove");
         
     private ThreadLocal lastFailedRemovedListener = new ThreadLocal();
     private ThreadLocal lastFailedRemoveStackTrace = new ThreadLocal();
@@ -125,7 +127,7 @@ aspect ListenerCount
 
     private void checkLastFailedRemove(Object addedListener) {
         Object listener = lastFailedRemovedListener.get();
-        if (listener != null && listener != addedListener) {
+        if (! DONT_REPORT_FAILED_REMOVE && listener != null && listener != addedListener) {
             System.err.println("listenerCount> WARNING: attempt to remove unregistered listener, may or may not be okay");
             ((Throwable)lastFailedRemoveStackTrace.get()).printStackTrace(System.err);
         }
@@ -161,6 +163,8 @@ aspect ListenerCount
             counts.add(count);
         }
 
+        System.out.println("listenerCount> --%<----%<----%<----%<----%<----%<----%<----%<----%<----%<----%<----%<----%<----%<--");
+
         iter = sclcounts.entrySet().iterator();
         while (iter.hasNext()) {
             Map.Entry entry = (Map.Entry) iter.next();
@@ -168,7 +172,7 @@ aspect ListenerCount
             
             List counts = (List) entry.getValue();
             Collections.sort(counts);
-            
+
             int num = -1;
             int occur = 0;
             
@@ -193,6 +197,7 @@ aspect ListenerCount
             if (num > 0 && occur > 0)
                 System.out.println("listenerCount: " + num + "\t" + occur + "\t" + scl.getSourceClass().getName() + "\t" + scl.getListenerType());
         }
+        System.out.println("listenerCount> --%<----%<----%<----%<----%<----%<----%<----%<----%<----%<----%<----%<----%<----%<--");
     }
 
     private static class SourceClassListener {
