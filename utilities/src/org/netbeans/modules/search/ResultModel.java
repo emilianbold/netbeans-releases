@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package src_modules.com.netbeans.developer.modules.search;
+package com.netbeans.developer.modules.search;
 
 import javax.swing.event.*;
 
@@ -86,6 +86,7 @@ public class ResultModel implements NodeAcceptor, TaskListener {
 
 /* 
 * Log
+*  2    Gandalf   1.1         12/14/99 Petr Kuzel      Minor enhancements
 *  1    Gandalf   1.0         12/14/99 Petr Kuzel      
 * $ 
 */ 
