@@ -6,3 +6,5 @@
 **/src/**/*.txt
 **/src/**/*.properties
 **/src/META-INF/**
+**/nbproject/**
+**/build.xml

@@ -32,6 +32,9 @@ import org.openide.util.*;
 import org.openide.util.actions.*;
 
 import org.netbeans.TopSecurityManager;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.project.ui.OpenProjectList;
 
 // native kill stuff
 import org.netbeans.xtest.util.JNIKill;
@@ -214,6 +217,11 @@ public class Main extends Object {
     private static final String IDE_MOUNTS = "xtest.ide.mounts";
     private static final String IDE_UMOUNT_DEFAULTS="xtest.ide.umount.defaults";
     
+    // properties used for new project infrastructure
+    private static final String IDE_CREATE_PROJECT = "xtest.ide.create.project";
+    private static final String IDE_OPEN_PROJECT = "xtest.ide.open.project";
+    private static final String XTEST_USERDIR  = "xtest.userdir";
+    
     private static void doTestPart() {
         
         
@@ -236,6 +244,14 @@ public class Main extends Object {
             handle.setRedirect();
         }
          */
+
+        final MainWithProjectsInterface projectsHandle;
+        try {
+            projectsHandle = (MainWithProjectsInterface)new WithProjectsClassLoader().loadClass("org.netbeans.xtest.plugin.ide.MainWithProjects").newInstance();
+        } catch (Exception e) {
+            errMan.notify(e);
+            return;
+        }
         
         long testTimeout;
         
@@ -277,6 +293,15 @@ public class Main extends Object {
                         
                         if (!System.getProperty(IDE_MOUNTS,"").equals("")) {
                             mountFileSystems();
+                        }
+
+                        // create an empty Java project
+                        if (System.getProperty(IDE_CREATE_PROJECT,"false").equals("true")) {
+                            projectsHandle.createProject(System.getProperty(XTEST_USERDIR));
+                        }
+                        // open project at specified location
+                        if (!System.getProperty(IDE_OPEN_PROJECT,"").equals("")) {
+                            projectsHandle.openProject(System.getProperty(IDE_OPEN_PROJECT));
                         }
                     }
                         
@@ -375,7 +400,6 @@ public class Main extends Object {
            System.exit(1);
         }
     }
-    
     
     private static void umountFileSystems() {
         Repository repo = Repository.getDefault();
@@ -582,5 +606,30 @@ public class Main extends Object {
         //void setRedirect();
     }
 
+
+    /** ClassLoader to load projects API calls. */
+    private static class WithProjectsClassLoader extends URLClassLoader {
+        public WithProjectsClassLoader() {
+            super(new URL[] {Main.class.getProtectionDomain().getCodeSource().getLocation()},
+                  Thread.currentThread().getContextClassLoader());
+        }
+        protected Class loadClass(String n, boolean r) throws ClassNotFoundException {
+            if (n.startsWith("org.netbeans.xtest.plugin.ide.MainWithProjects")) { // NOI18N
+                // Do not proxy to parent!
+                Class c = findLoadedClass(n);
+                if (c != null) return c;
+                c = findClass(n);
+                if (r) resolveClass(c);
+                return c;
+            } else {
+                return super.loadClass(n, r);
+            }
+        }
+    }
+    
+    public static interface MainWithProjectsInterface {
+        void openProject(String projectPath);
+        void createProject(String projectDir);
+    }
 }
 
