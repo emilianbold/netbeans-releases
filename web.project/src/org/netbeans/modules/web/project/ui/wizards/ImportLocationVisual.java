@@ -174,6 +174,9 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
                 else if ("build".equals(childName)) {    //NOI18N
                     file = NbBundle.getMessage (ImportLocationVisual.class,"TXT_BuildFolder");                                        
                 }
+                else if ("WEB-INF".equals(childName)) {    //NOI18N
+                    file = NbBundle.getMessage (ImportLocationVisual.class,"TXT_WebInfFolder");
+                }
                 else if ("dist".equals(childName)) {   //NOI18N
                     file = NbBundle.getMessage (ImportLocationVisual.class,"TXT_DistFolder");                    
                 }
@@ -403,7 +406,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
     }//GEN-LAST:event_jButtonPrjLocationActionPerformed
 
     private void jButtonSrcLocationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSrcLocationActionPerformed
-        JFileChooser chooser = createChooser(moduleLocationTextField.getText());    
+        JFileChooser chooser = createChooser(moduleLocationTextField.getText());
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File projectDir = chooser.getSelectedFile();
             moduleLocationTextField.setText( projectDir.getAbsolutePath());
@@ -430,7 +433,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         FileUtil.preventFileChooserSymlinkTraversal(chooser, new File(path));
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         chooser.setAcceptAllFileFilterUsed(false);
-        
+
         if (path.length() > 0) {
             File f = new File(path);
             if (f.exists())
@@ -439,7 +442,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
 
         return chooser;
     }
-    
+
     /** Handles changes in the project name and project directory
      */
     private void dataChanged(DocumentEvent e) {

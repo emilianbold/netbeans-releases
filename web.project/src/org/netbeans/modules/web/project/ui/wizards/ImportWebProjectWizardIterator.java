@@ -487,8 +487,16 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
                 setErrorMessage("MSG_WebPagesMandatory"); //NOI18N
                 return false;
             }
-            if(!new File(webPages).exists()) {
+            final File webPagesDir = new File(webPages);
+            if (!webPagesDir.exists()) {
                 setErrorMessage("MSG_WebPagesFolderDoesNotExist"); //NOI18N
+                return false;
+            }
+            final FileObject webPagesFO = FileUtil.toFileObject(webPagesDir);
+            FileObject projectFO =
+                    FileUtil.toFileObject((File) wizardDescriptor.getProperty(WizardProperties.PROJECT_DIR));
+            if(webPagesFO.equals(projectFO) || FileUtil.isParentOf(webPagesFO, projectFO)) {
+                setErrorMessage("MSG_WebPagesFolderOverlapsProjectFolder"); //NOI18N
                 return false;
             }
             final String javaSources = panel.jTextFieldJavaSources.getText().trim();
