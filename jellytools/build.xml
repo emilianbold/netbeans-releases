@@ -68,7 +68,7 @@ Microsystems, Inc. All Rights Reserved.
       </tstamp>
     </target>
 
-    <target name="jars" depends="compile" description="timestamp,Create jars">
+    <target name="jars" depends="timestamp,compile" description="Create jars">
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
 
         <!-- Create jelly1 jar -->
