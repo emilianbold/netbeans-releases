@@ -86,7 +86,6 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <dirset  dir="..">
         <include name="*/external"/>
         <exclude name="nbbuild/external"/>
-        <exclude name="xml/external"/>
       </dirset>
     </subant>
   </target>
