@@ -67,6 +67,8 @@ public final class MultiViewCloneableTopComponent extends CloneableTopComponent
         peer = new MultiViewPeer(this, this);
         // initializes the multiview component.
         peer.initComponents();
+        setFocusCycleRoot(false);
+//        setFocusable(false);
     }
     
     
@@ -197,6 +199,9 @@ public final class MultiViewCloneableTopComponent extends CloneableTopComponent
     }    
     
     public javax.swing.JEditorPane getEditorPane() {
+        if (peer == null || peer.model == null) {
+            return null;
+        }
         MultiViewElement el = peer.model.getActiveElement();
         if (el.getVisualRepresentation() instanceof CloneableEditorSupport.Pane) {
             CloneableEditorSupport.Pane pane = (CloneableEditorSupport.Pane)el.getVisualRepresentation();
