@@ -179,8 +179,7 @@ public abstract class Tag extends SyntaxNode implements Element, XMLTokenIDs {
             
             // Decrese if it is closed element of the form <blu/> 
             try {
-                System.out.println("Text at insertStart: " + doc.getText(insertStart - 1, 1));
-                if (doc.getText(insertStart - 1, 1).equals("/")) {
+               if (doc.getText(insertStart - 1, 1).equals("/")) {
                     insertStart--;
                 }
             } catch( BadLocationException e) {} // Will never been thrown
