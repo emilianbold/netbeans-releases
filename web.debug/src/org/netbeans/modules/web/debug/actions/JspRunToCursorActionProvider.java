@@ -74,21 +74,41 @@ public class JspRunToCursorActionProvider extends ActionsProviderSupport {
             getMainProject().getLookup().lookup(
                 ActionProvider.class
             )).invokeAction (
-                "debug", MainProjectManager.getDefault ().getMainProject ().getLookup ()
+                ActionProvider.COMMAND_DEBUG, 
+                MainProjectManager.getDefault ().getMainProject ().getLookup ()
             );
     }
     
     private boolean shouldBeEnabled () {
-        Project p = MainProjectManager.getDefault().getMainProject ();
-        if (p == null) return false;
-        
-        ActionProvider ap = ((ActionProvider)p.getLookup().lookup(ActionProvider.class));
-        if (ap == null) return false;
-        
-        if (ap.isActionEnabled("debug", MainProjectManager.getDefault().getMainProject().getLookup())) {
-            return Utils.isJsp(contextProvider.getCurrentURL());
+
+        if (!Utils.isJsp(contextProvider.getCurrentURL())) {
+            return false;
         }
-        return false;
+        
+        // check if current project supports this action
+        Project p = MainProjectManager.getDefault ().getMainProject ();
+        if (p == null) return false;
+        ActionProvider actionProvider = (ActionProvider)p.getLookup ().lookup (ActionProvider.class);
+        if (actionProvider == null) return false;
+
+        String[] sa = actionProvider.getSupportedActions ();
+        int i, k = sa.length;
+        for (i = 0; i < k; i++) {
+            if (ActionProvider.COMMAND_DEBUG.equals (sa [i])) {
+                break;
+            }
+        }
+        if (i == k) {
+            return false;
+        }
+
+        // check if this action should be enabled
+        return ((ActionProvider) p.getLookup ().lookup (
+                ActionProvider.class
+            )).isActionEnabled (
+                ActionProvider.COMMAND_DEBUG, 
+                MainProjectManager.getDefault ().getMainProject ().getLookup ()
+            );        
     }
     
     
