@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * 
+ *     Copyright © 2004 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+ * 
+-->
+<html>
+<head>
+<title>Working with Unknown File Extensions</title>
+<link rel="stylesheet" href="../ide.css" type="text/css"></head>
+<body>
+
+<h2>Working with Unknown File Extensions</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>If you have a file of a type that the IDE does not recognize, you can have 
+  register it as a known file type or have the IDE treat the file as a text file. 
+  If the IDE treats a file as text, the file can be opened in the Source Editor. 
+  Asking the IDE to treat a file as text does not alter the file itself in any 
+  way.</p>
+<p><b>To convert a file to text:</b></p>
+<ul>
+  <li>Right-click the filein the Projects window and choose Treat as Text.</li>
+<p>You can then double-click that file's node to open the file in the Source Editor.</p>
+</ul>
+
+<p><b>To stop treating a file as text:</b></p>
+<ul>
+  <li>Right-click the file and choose Tools <img src="../images/arrow.gif" alt="and choose">&nbsp;Convert 
+    to Default.</li>
+</ul>
+
+<p><b>To register a file extension as belonging to a file type:</b></p>
+<ol>
+  <li>Choose Tools <img src="../images/arrow.gif" alt="and choose">&nbsp;Options.</li>
+  <li>In the Options window, expand IDE Configuration <img src="../images/expand.gif" alt="and expand">&nbsp;System 
+    <img src="../images/expand.gif" alt="and expand">&nbsp;Object Types.</li>
+  <li>Select the node of the object type you want to add the file extension to.</li>
+  <li>Select the Extensions and MIME Types property and add your extension to 
+    the list.</li>
+</ol>
+<table>
+  <tr> 
+    <td valign="top"><img src="../images/tip.gif" alt="Tip"></td>
+    <td valign=top align=left> 
+      <p>When the IDE parses a file to identify its object type, it goes through 
+        the list of object types in the order in which it appears in the Option 
+        window until it finds a match. For example, since Ant scripts are also 
+        XML documents, the IDE treats them as XML documents unless the Ant Scripts 
+        object type appears before the XML Objects object type.</p>
+      <p>Typically, it is best to leave the object types in their default order. 
+        However, you may need to change the order to make the IDE correctly handle 
+        your files. You can change the order of object type nodes by right-clicking 
+        the Object Types node in the Options window and choosing Change Order.</p>
+    </td>
+  </tr>
+</table>
+<table>
+<tr>
+<th colspan=2 align=left><a name="seealso">See Also</a></th>
+</tr>
+<tr>
+<td width="23"></td>
+    <td>&nbsp; </td>
+  </tr>
+</table>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="20">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * 
+ *     Copyright © 2004 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+ * 
+-->
+<html>
+<head>
+<title>Specifying Files to Ignore in a Filesystem</title>
+<link rel="stylesheet" href="../ide.css" type="text/css"></head>
+<body>
+
+<h2>Specifying Files to Ignore</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>If you have files in a filesystem that you do not want to be recognized by the IDE, 
+you can configure the IDE to ignore these files. Ignored files are neither displayed in the IDE 
+nor accessed by the IDE. However, ignored files are accessible to external commands called by the 
+IDE, such as compiling commands.</p>
+<p><b>To specify files to be ignored in a filesystem:</b></p>
+<ol><li>Right-click the filesystem's root node and choose Properties.</li>
+<li>Select the Ignored Files property. Enter a POSIX-style regular expression to specify the 
+files you want ignored.</li></ol>
+
+<p>The following are some useful characters for regular expressions.</p>
+
+<table border="1" cellpadding="5" cellspacing="0">
+<tr>
+<th scope="col"><b>Character</b></th>
+<th scope="col"><b>Description</b></th>
+</tr>
+<tr><td><tt>|</tt></td><td>Or.</td></tr>
+<tr><td><tt>^</tt></td><td>Matches all file or directory names beginning with the subsequent characters.</td></tr>
+<tr><td><tt>$</tt></td><td>Matches all file or directory names ending with the preceding characters.</td></tr>
+<tr><td><tt>\</tt></td><td>Escape character. Necessary if you want to match to a period (.) or other 
+special character.</td></tr>
+<tr><td><tt>.*</tt></td><td>Wildcard.</td></tr>
+</table>
+
+<p>For example, if you want to ignore all files with the <tt>.bak</tt> extension, type <tt>\.bak$</tt>
+in the Ignored Files property.</p>
+<p>You can also use more complex regular expressions. For example, if you have a CVS directory 
+mounted in the IDE as a local directory instead of as a 
+CVS filesystem, you can use the following regular expression to ignore files that are created by CVS:
+<pre>^CVS$|^\.#|^\.cvsignore$|\.rej$</pre>
+All files or directories named <tt>CVS</tt> or <tt>.cvsignore</tt>, all files or 
+directories beginning with <tt>.#</tt>, and all files ending with <tt>.rej</tt> are ignored if 
+you use this regular expression.<p></p>
+
+<table>
+<tr>
+<th colspan=2 align=left><a name="seealso">See Also</a></th>
+</tr>
+<tr>
+<td width="23"></td>
+    <td>&nbsp; </td>
+  </tr>
+</table>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+
+<table border="0" cellpadding="20">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>

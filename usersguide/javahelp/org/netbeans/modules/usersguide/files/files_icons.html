@@ -1,0 +1,201 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * 
+ *     Copyright © 2004 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+ * 
+-->
+<html>
+<head>
+<title>Node Icons in the Filesystems Window</title>
+<link rel="stylesheet" href="../ide.css" type="text/css"></head>
+<body>
+
+<h2>Node Icons in the Filesystems Window</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+
+<p>In general, you can find out what an icon in the Filesystems window represents by holding your
+cursor over the icon to display the node's tool tip.</p>
+
+<p>The following tables show some of the icons used in the Filesystems window to indicate what type of item 
+a node represents. Other icons might be installed by 
+IDE extension modules.</p>
+<p>This page shows icons for:
+<ul><li><a href="#highlevel">High-level nodes</a></li>
+<li><a href="#badges">Badges</a> that provide additional information about files</li>
+<li><a href="#elements">Java elements and bean patterns</a></li>
+<li><a href="#properties"><tt>.properties</tt> files</a></li></ul><p></p>
+
+<a name="highlevel"></a><h3>High-Level Nodes</h3>
+
+<p>The following table lists some of the icons used to represent entire filesystems or entire
+objects.</p>
+
+<table border="1" cellpadding="5" cellspacing="0">
+<tr>
+<th scope="col"><b>Icon</b></th>
+<th scope="col"><b>Description</b></th>
+</tr>
+
+<tr>
+    <td><img src="images/repository.gif" alt=" "></td>
+    <td>The root Filesystems node. You can right-click this node to mount new filesystems 
+in the IDE.</td></tr>
+
+<!--TODO? document this on Projects window page?
+<tr><td><img src="images/projectDesktop.gif" alt="root Project node"></td><td>The root Project node.</td></tr>
+-->
+
+<tr><td><img src="images/localFS.gif" alt=" "></td><td>Local directory. For Java hierarchies, this node represents the default Java package.</td></tr>
+<tr><td><img src="images/jarFS.gif" alt=" "></td><td>Archive filesystem. JAR files and zip files are examples of archives 
+that can be represented by this node. This node can be expanded 
+to display the hierarchy of files in the archive, though the files cannot be edited.</td></tr>
+<tr><td><img src="images/jar_recipe.gif" alt=" "></td><td>JAR recipe file. A JAR recipe file contains  
+information necessary to create a JAR file. The contextual menu for this node includes commands that enable you to 
+create, modify, and run the JAR file.</td></tr>
+<tr><td><img src="images/jar.gif" alt=" "></td><td>A JAR file created from the JAR recipe. The location of the file 
+is given next to the icon.</td></tr>
+<tr><td><img src="images/greyjar.gif" alt=" "></td><td>Indicator that a JAR file has not yet been created from the JAR recipe. 
+The location given next to the icon is where the JAR file is created when the JAR recipe is compiled.</td></tr>
+<tr><td><img src="images/content.gif" alt=" "></td><td>The subnodes of this node are items included in the JAR recipe file. 
+These items can be either files or directories.</td></tr>
+<!--<tr><td><img src="images/defaultFolder.gif" alt=" "></td><td>Folder. 
+This icon represents folders, directories, and Java packages.</td></tr>-->
+
+
+<tr><td><img src="images/class_source.gif" alt=" "></td><td>Java source file.</td></tr>
+
+<tr><td><img src="images/form.gif" alt=" "></td><td>Java form object.</td></tr>
+<tr><td><img src="images/ser.gif" alt=" "></td><td>Serialized prototype.</td></tr>
+
+<tr><td><img src="images/class.gif" alt=" "></td><td>Java class or inner class.</td></tr>
+<tr><td><img src="images/interface.gif" alt=" "></td><td>Java interface or inner interface.</td></tr>
+<!--<tr><td><img src="images/instanceObject.gif" alt=" "></td><td>Instance of a Java class.</td></tr>-->
+
+<tr><td><img src="images/formDesigner.gif" alt=" "></td><td>Root Form node. If you have the Form Editor module 
+installed, this node appears in a form object's hierarchy when that 
+object is open in the Form Editor. The node and its subnodes are mirrored in the Form Editor itself.</td></tr>
+
+<tr><td><img src="images/formobje.gif" alt=" "></td><td>Top Form Component node. If you have the Form Editor module 
+installed, this node appears as a subnode of the Root Form node. The Top Form
+Component node contains the
+form's main hierarchy.</td></tr>
+
+<tr><td><img src="images/formNonVisual.gif" alt=" "></td><td>Other Components node. If you have the Form Editor module 
+installed, this node appears as a subnode of the root form node. The Other
+Components node contains the components that are not in the form's main hierarchy.</td></tr>
+
+<tr><td><img src="images/jspObject.gif" alt=" "></td><td>Page created with the
+JavaServer Pages technology.</td></tr>
+<tr><td><img src="images/groupShadow.gif" alt=" "></td><td>Cluster of aliases used for related files.</td></tr>
+<tr><td><img src="images/htmlEdit.gif" alt=" "></td><td>HTML file.</td></tr>
+<tr><td><img src="images/imageObject.gif" alt=" "></td><td>Image file.</td></tr>
+<tr><td><img src="images/urlObject.gif" alt=" "></td><td>Web bookmark.</td></tr>
+</table>
+
+<a name="badges"><h3>Badges</h3></a>
+<p>Badge icons can be affixed to other icons to indicate a particular state of the object. The following 
+table lists some of the badges used in the IDE.</p>
+<table border="1" cellpadding="5" cellspacing="0">
+<tr>
+<th scope="col"><b>Icon</b></th>
+<th scope="col"><b>Description</b></th>
+</tr>
+<tr><td><img src="images/needs-compile.gif" alt=" "></td><td>The file needs to be compiled. Either
+the file has not been compiled or the source 
+has changed since the last compilation.</td></tr>
+<tr><td><img src="images/executable-badge.gif" alt=" "></td><td>The file is a runnable object.</td></tr>
+<tr><td><img src="images/error-badge.gif" alt=" "></td>
+    <td>The file cannot be parsed. The file might contain an unrecoverable syntactic 
+      error, or there might have been a problem reading the file.</td>
+  </tr>
+</table>
+
+<a name="elements"><h3>Java Elements and Bean Patterns</h3></a>
+<p>The icons in the following table represent elements within the Java hierarchy. These elements include methods, 
+fields, and bean patterns.</p>
+<table border="1" cellpadding="5" cellspacing="0">
+<tr>
+<th scope="col"><b>Icon</b></th>
+<th scope="col"><b>Description</b></th>
+</tr>
+
+
+<tr><td><img src="images/constructor.gif" alt=" "></td><td>Category node for constructors.</td></tr>
+<tr><td><img src="images/constructorPackage.gif" alt=" "></td><td>Constructor with default access.</td></tr>
+<tr><td><img src="images/constructorPrivate.gif" alt=" "></td><td>Private constructor.</td></tr>
+<tr><td><img src="images/constructorPublic.gif" alt=" "></td><td>Public constructor or nonstatic initializer.</td></tr>
+<tr><td><img src="images/constructorProtected.gif" alt=" "></td><td>Constructor with protected access.</td></tr>
+<tr><td><img src="images/initializerSt.gif" alt=" "></td><td>Static initializer.</td></tr>
+
+<tr>
+    <td><img src="images/method.gif" alt=" "></td>
+    <td>Category node for methods.</td></tr>
+<tr><td><img src="images/methodPackage.gif" alt=" "></td><td>Method with default access (nonstatic).</td></tr>
+<tr><td><img src="images/methodPrivate.gif" alt=" "></td><td>Private method (nonstatic).</td></tr>
+<tr><td><img src="images/methodPublic.gif" alt=" "></td><td>Public method (nonstatic).</td></tr>
+<tr><td><img src="images/methodProtected.gif" alt=" "></td><td>Method with protected access (nonstatic).</td></tr>
+
+<tr><td><img src="images/methodStPackage.gif" alt=" "></td><td>Method with default access (static).</td></tr>
+<tr><td><img src="images/methodStPrivate.gif" alt=" "></td><td>Private method (static).</td></tr>
+<tr><td><img src="images/methodStPublic.gif" alt=" "></td><td>Public method (static).</td></tr>
+<tr><td><img src="images/methodStProtected.gif" alt=" "></td><td>Method with protected access (static).</td></tr>
+
+<tr><td><img src="images/variables.gif" alt=" "></td><td>Category node for fields.</td></tr>
+<tr><td><img src="images/variablePackage.gif" alt=" "></td><td>Field with default access (nonstatic).</td></tr>
+<tr><td><img src="images/variablePrivate.gif" alt=" "></td><td>Private field (nonstatic).</td></tr>
+<tr><td><img src="images/variablePublic.gif" alt=" "></td><td>Public field (nonstatic).</td></tr>
+<tr><td><img src="images/variableProtected.gif" alt=" "></td><td>Field with protected access (nonstatic).</td></tr>
+
+<tr><td><img src="images/variableStPackage.gif" alt=" "></td><td>Field with default access (static).</td></tr>
+<tr><td><img src="images/variableStPrivate.gif" alt=" "></td><td>Private field (static).</td></tr>
+<tr><td><img src="images/variableStPublic.gif" alt=" "></td><td>Public field (static).</td></tr>
+<tr><td><img src="images/variableStProtected.gif" alt=" "></td><td>Field with protected access (static).</td></tr>
+
+<tr><td><img src="images/patternGroup.gif" alt=" "></td><td>Bean Patterns node. Subnodes represent bean properties and event sets.
+You can right-click Bean Patterns to add bean properties 
+and bean event sets to your code or to generate BeanInfo for the class.</td></tr>
+<tr><td><img src="images/propertyRO.gif" alt=" "></td><td>Read-only bean property.</td></tr>
+<tr><td><img src="images/propertyRW.gif" alt=" "></td><td>Read/write bean property.</td></tr>
+<tr><td><img src="images/propertyWO.gif" alt=" "></td><td>Write-only bean property.</td></tr>
+<tr><td><img src="images/propertyIndexedRO.gif" alt=" "></td><td>Read-only indexed bean property.</td></tr>
+<tr><td><img src="images/propertyIndexedRW.gif" alt=" "></td><td>Read/write indexed bean property.</td></tr>
+<tr><td><img src="images/propertyIndexedWO.gif" alt=" "></td><td>Write-only indexed bean property.</td></tr>
+<tr><td><img src="images/eventSetMulticast.gif" alt=" "></td><td>Multicast bean event set.</td></tr>
+<tr><td><img src="images/eventSetUnicast.gif" alt=" "></td><td>Unicast bean event set.</td></tr>
+</table>
+
+<a name="properties"><h3>Properties Files</h3></a>
+<p>The following table lists icons used to represent Java <tt>.properties</tt> files in the IDE:</p>
+
+<table border="1" cellpadding="5" cellspacing="0">
+<tr>
+<th scope="col"><b>Icon</b></th>
+<th scope="col"><b>Description</b></th>
+</tr>
+<tr><td><img src="images/propertiesObject.gif" alt=" "></td><td>Properties object</td></tr>
+<tr><td><img src="images/propertiesLocale.gif" alt=" "></td><td>Properties locale</td></tr>
+<tr><td><img src="images/propertiesKey.gif" alt=" "></td><td>Properties key</td></tr>
+
+</table>
+
+
+
+
+<table>
+<tr>
+<th colspan=2 align=left><a name="seealso">See Also</a></th>
+</tr>
+<tr>
+<td width="23"></td>
+    <td>&nbsp; </td>
+  </tr>
+</table>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="20">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>
