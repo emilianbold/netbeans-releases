@@ -5,19 +5,12 @@
 # Author: mk <martin.krauskopf at sun.com>
 # Editor: VIM - Vi IMproved 6.3 (2004 June 7, compiled Jun 26 2004 15:03:59)
 #
-# Helps with building NetBeans RPMs. Customize following variables to your
-# environment.
+# Helps with building NetBeans RPMs for JDS. Customize following variables to
+# your environment.
 
 # Enter value that apply to your environment
 
-# netbeans binary distribution archive
-#NB_BIN_ZIP=/usr/share/java/0_netbeans-latest/netbeans-4_1-daily-bin-latest.zip
-# mobility cluster archive
-#MOBILITY_ZIP=/usr/share/java/0_netbeans-latest/mobility-latest.zip
-# wtk emulator archive
-#WTK_LIN_ZIP=/usr/share/java/0_netbeans-latest/wtk_lin-latest.zip
-
-# where to store final RPMs
+# default where to store final RPMs (can be overrided by parameter)
 TARGET_DIR="$PWD/nbrpm"
 
 # storage used for unzipped distribution(s)
@@ -38,6 +31,19 @@ CREATE_MOBILITY=true
 
 # functions ================================================================== #
 
+function cleanUp()
+{
+  pinfo "Deleting tmp directory \"$NB_BLD_TMP\"...."
+  rm -r "$NB_BLD_TMP"
+}
+
+function cleanExit()
+{
+  cleanUp
+  pinfo "Exiting with code $1"
+  exit $1
+}
+
 function usage()
 {
   echo "Usage: `basename $0` [-h|--help] [-n nb_distibution|--nbdist nb_distibution] [-m|--mobility mobility_pack] [-t|--wtk wtk_archive_zip] [-w|--work work_dir]"
@@ -51,7 +57,7 @@ function usage()
   echo "  --wtk      |-w wtk_archive_zip  ZIP file containing wtk emulator archive"
   echo "                                  (something like wtk_lin-latest.zip)"
   echo "  --target   |-t work_dir         the target directory where the packages will be placed. Default is the current directory."
-  exit 1
+  cleanExit 2
 }
 
 function pinfo()
@@ -68,7 +74,7 @@ function exitIfNotDir()
 {
   if [ ! -d "$1" ]; then
     pinfo "Directory \"$1\" doesn't exist!";
-    exit 1
+    cleanExit 3
   fi
 }
 
@@ -77,11 +83,19 @@ function unzipNB()
 {
   if [ $unzipped -ne 1 ]; then
     mkdir -p $NB_BLD_TMP
-    pinfo "Unzipping $NB_BIN_ZIP..."
-    unzip -q $NB_BIN_ZIP -d $NB_BLD_TMP || exit 1
+    pinfo "Unzipping \"$NB_BIN_ZIP\" to \"$NB_BLD_TMP\"..."
+    unzip -q $NB_BIN_ZIP -d $NB_BLD_TMP || cleanExit 4
     unzipped=1
     NB_BIN=$NB_BLD_TMP/netbeans
     exitIfNotDir "$NB_BIN"
+    # remove files which are not acceptable or needed by JDS
+    rm $NB_BIN/platform5/lib/nbexec.cmd \
+       $NB_BIN/platform5/lib/nbexec.exe \
+       $NB_BIN/platform5/update_tracking/* \
+       $NB_BIN/enterprise1/update_tracking/* \
+       $NB_BIN/ide5/update_tracking/* \
+       $NB_BIN/nb4.1/update_tracking/* \
+       $NB_BIN/platform5/modules/ext/jh-2.0_02.jar || cleanExit 5
   fi
 }
 
@@ -136,7 +150,7 @@ function checkFile()
 {
   if [ ! -f "$1" ]; then
     perror "\"$1\" doesn't exist or is not a regular file.\n"
-    exit 1
+    cleanExit 6
   fi
 }
 
@@ -150,7 +164,7 @@ function checkParams()
   checkFile "$WTK_LIN_ZIP"
   if [ -d "$TARGET_DIR" ]; then
     perror "Directory \"$TARGET_DIR\" must not exist."
-    exit 1
+    cleanExit 7
   fi
 }
 
@@ -172,7 +186,7 @@ EOPTIONS="$NOCLEAN $NOBUILD"
 
 if [ ! -d $SPEC_DIR ]; then
   perror "The \"$SPEC_DIR\" directory doesn't exist. Be sure you are running the script directly from it's directory.";
-  exit 1
+  cleanExit 8
 fi
 
 # perl script must be run from the 'spec' dir - because of 'erpm_common.spec' file
@@ -250,12 +264,15 @@ if [ "$CREATE_MOBILITY" = "true" ]; then
 
   # decompressing archives
   echo "Unzipping $MOBILITY_ZIP..."
-  unzip -q $MOBILITY_ZIP -d $NB_BLD_TMP || exit 1
+  unzip -q $MOBILITY_ZIP -d $NB_BLD_TMP || cleanExit 9
   echo "Unzipping $WTK_LIN_ZIP..."
-  unzip -q $WTK_LIN_ZIP -d $NB_BLD_TMP || exit 1
+  unzip -q $WTK_LIN_ZIP -d $NB_BLD_TMP || cleanExit 10
 
   MOBILITY=$NB_BLD_TMP/mobility
   exitIfNotDir "$MOBILITY"
+  # remove files which are not acceptable or needed by JDS
+  rm $MOBILITY/update_tracking/* || cleanExit 11
+
   WTK_LIN=$NB_BLD_TMP/wtk_lin
   exitIfNotDir "$WTK_LIN"
 
@@ -273,8 +290,7 @@ fi
 
 # clean up
 
-pinfo "Deleting tmp directory \"$NB_BLD_TMP\"...."
-rm -r "$NB_BLD_TMP"
+cleanUp
 
 echo
 pinfo "Produced RPMs are stored in \"$TARGET_DIR\". Listing follows..."
