@@ -15,38 +15,62 @@ package org.apache.tools.ant.module.spi;
 
 import java.io.File;
 import java.net.URL;
+import org.apache.tools.ant.module.run.LoggerTrampoline;
 import org.openide.windows.OutputListener;
 
 /**
  * Represents one Ant build session, possibly consisting of multiple targets,
  * subprojects, and so on.
  * A session may be shared by several {@link AntLogger}s.
- * SPI clients are forbidden to implement this interface; new methods may
- * be added in the future.
  * @author Jesse Glick
  * @since org.apache.tools.ant.module/3 3.12
  */
-public interface AntSession {
+public final class AntSession {
+    
+    static {
+        LoggerTrampoline.ANT_SESSION_CREATOR = new LoggerTrampoline.Creator() {
+            public AntSession makeAntSession(LoggerTrampoline.AntSessionImpl impl) {
+                return new AntSession(impl);
+            }
+            public AntEvent makeAntEvent(LoggerTrampoline.AntEventImpl impl) {
+                throw new AssertionError();
+            }
+            public TaskStructure makeTaskStructure(LoggerTrampoline.TaskStructureImpl impl) {
+                throw new AssertionError();
+            }
+        };
+    }
+    
+    private final LoggerTrampoline.AntSessionImpl impl;
+    private AntSession(LoggerTrampoline.AntSessionImpl impl) {
+        this.impl = impl;
+    }
     
     /**
      * Get the Ant script originally invoked.
      * Note that due to subproject support some events may come from other scripts.
      * @return the Ant script which was run to start with
      */
-    File getOriginatingScript();
+    public File getOriginatingScript() {
+        return impl.getOriginatingScript();
+    }
     
     /**
      * Get the Ant targets originally run.
      * @return a list of one or more targets (but may be empty during {@link AntLogger#buildInitializationFailed})
      */
-    String[] getOriginatingTargets();
+    public String[] getOriginatingTargets() {
+        return impl.getOriginatingTargets();
+    }
     
     /**
      * Get optional data stored by the logger in this session.
      * @param logger the logger which wishes to retrieve data
      * @return any optional data, or null initially
      */
-    Object getCustomData(AntLogger logger);
+    public Object getCustomData(AntLogger logger) {
+        return impl.getCustomData(logger);
+    }
     
     /**
      * Store custom data associated with this session.
@@ -55,7 +79,9 @@ public interface AntSession {
      * @param logger the logger which wishes to store data
      * @param data some custom data to retain
      */
-    void putCustomData(AntLogger logger, Object data);
+    public void putCustomData(AntLogger logger, Object data) {
+        impl.putCustomData(logger, data);
+    }
     
     /**
      * Print a line of text to the Ant output.
@@ -64,7 +90,9 @@ public interface AntSession {
      * @param listener an output listener suitable for hyperlinks, or null for a plain print
      * @see #createStandardHyperlink
      */
-    void println(String message, boolean err, OutputListener listener);
+    public void println(String message, boolean err, OutputListener listener) {
+        impl.println(message, err, listener);
+    }
     
     /**
      * Deliver a message logged event to all matching loggers.
@@ -88,7 +116,9 @@ public interface AntSession {
      * @param message a message to log (see {@link AntEvent#getMessage})
      * @param level the level to log it at (see {@link AntEvent#getLogLevel})
      */
-    void deliverMessageLogged(AntEvent originalEvent, String message, int level);
+    public void deliverMessageLogged(AntEvent originalEvent, String message, int level) {
+        impl.deliverMessageLogged(originalEvent, message, level);
+    }
     
     /**
      * Marks an exception as having been processed by a logger.
@@ -107,7 +137,9 @@ public interface AntSession {
      * @param t an exception to mark as consumed
      * @throws IllegalStateException if it was already consumed
      */
-    void consumeException(Throwable t) throws IllegalStateException;
+    public void consumeException(Throwable t) throws IllegalStateException {
+        impl.consumeException(t);
+    }
     
     /**
      * Tests whether a given exception has already been consumed by some logger.
@@ -121,20 +153,26 @@ public interface AntSession {
      * @param t an exception
      * @return true if it (or a nested exception) has already been consumed by {@link #consumeException}
      */
-    boolean isExceptionConsumed(Throwable t);
+    public boolean isExceptionConsumed(Throwable t) {
+        return impl.isExceptionConsumed(t);
+    }
 
     /**
      * Get the (user-requested) verbosity level for this session.
      * Generally only messages logged at this or lesser level (higher priority) should be displayed.
      * @return the verbosity, e.g. {@link AntEvent#LOG_INFO}
      */
-    int getVerbosity();
+    public int getVerbosity() {
+        return impl.getVerbosity();
+    }
     
     /**
      * Get a display name used for the session as a whole.
      * @return a user-presentable display name appropriate for session-scope messaging
      */
-    String getDisplayName();
+    public String getDisplayName() {
+        return impl.getDisplayName();
+    }
     
     /**
      * Convenience method to create a standard hyperlink implementation.
@@ -153,6 +191,12 @@ public interface AntSession {
      *                (must be -1 if either line2 or column1 is -1)
      * @return a standard hyperlink suitable for {@link #println}
      */
-    OutputListener createStandardHyperlink(URL file, String message, int line1, int column1, int line2, int column2);
+    public OutputListener createStandardHyperlink(URL file, String message, int line1, int column1, int line2, int column2) {
+        return impl.createStandardHyperlink(file, message, line1, column1, line2, column2);
+    }
+    
+    public String toString() {
+        return impl.toString();
+    }
     
 }

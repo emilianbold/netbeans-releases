@@ -15,6 +15,7 @@ package org.apache.tools.ant.module.spi;
 
 import java.io.File;
 import java.util.Set;
+import org.apache.tools.ant.module.run.LoggerTrampoline;
 
 /**
  * One event delivered to an {@link AntLogger}.
@@ -28,77 +29,104 @@ import java.util.Set;
  * or whatever the documented fallback value is. For example, Ant 1.5 does
  * not permit details of task structure to be introspected, but 1.6 does.
  * </p>
- * <p>
- * SPI clients are forbidden to implement this interface;
- * new methods may be added in the future.
- * </p>
  * @author Jesse Glick
  * @since org.apache.tools.ant.module/3 3.12
  */
-public interface AntEvent {
+public final class AntEvent {
+
+    static {
+        LoggerTrampoline.ANT_EVENT_CREATOR = new LoggerTrampoline.Creator() {
+            public AntSession makeAntSession(LoggerTrampoline.AntSessionImpl impl) {
+                throw new AssertionError();
+            }
+            public AntEvent makeAntEvent(LoggerTrampoline.AntEventImpl impl) {
+                return new AntEvent(impl);
+            }
+            public TaskStructure makeTaskStructure(LoggerTrampoline.TaskStructureImpl impl) {
+                throw new AssertionError();
+            }
+        };
+    }
+    
+    private final LoggerTrampoline.AntEventImpl impl;
+    private AntEvent(LoggerTrampoline.AntEventImpl impl) {
+        this.impl = impl;
+    }
     
     /**
      * Error log level.
      */
-    int LOG_ERR = 0;
+    public static final int LOG_ERR = 0;
     
     /**
      * Warning log level.
      */
-    int LOG_WARN = 1;
+    public static final int LOG_WARN = 1;
     
     /**
      * Information log level.
      */
-    int LOG_INFO = 2;
+    public static final int LOG_INFO = 2;
     
     /**
      * Verbose log level.
      */
-    int LOG_VERBOSE = 3;
+    public static final int LOG_VERBOSE = 3;
     
     /**
      * Debugging log level.
      */
-    int LOG_DEBUG = 4;
+    public static final int LOG_DEBUG = 4;
     
     /**
      * Get the associated session.
      * @return the session object
      */
-    AntSession getSession();
+    public AntSession getSession() {
+        return impl.getSession();
+    }
     
     /**
      * Mark an event as consumed to advise other loggers not to handle it.
      * @throws IllegalStateException if it was already consumed
      */
-    void consume() throws IllegalStateException;
+    public void consume() throws IllegalStateException {
+        impl.consume();
+    }
     
     /**
      * Test whether this event has already been consumed by some other logger.
      * @return true if it has already been consumed
      */
-    boolean isConsumed();
+    public boolean isConsumed() {
+        return impl.isConsumed();
+    }
     
     /**
      * Get the location of the Ant script producing this event.
      * @return the script location, or null if unknown
      */
-    File getScriptLocation();
+    public File getScriptLocation() {
+        return impl.getScriptLocation();
+    }
     
     /**
      * Get the line number in {@link #getScriptLocation} corresponding to this event.
      * Line numbers start at one.
      * @return the line number, or -1 if unknown
      */
-    int getLine();
+    public int getLine() {
+        return impl.getLine();
+    }
     
     /**
      * Get the name of the target in {@link #getScriptLocation} producing this event.
      * Some events occur outside targets and so there will be no target name.
      * @return the target name (never empty), or null if unknown or inapplicable
      */
-    String getTargetName();
+    public String getTargetName() {
+        return impl.getTargetName();
+    }
     
     /**
      * Get the name of the task producing this event.
@@ -106,21 +134,27 @@ public interface AntEvent {
      * Some events occur outside of tasks and so there will be no name.
      * @return the task name (never empty), or null if unknown or inapplicable
      */
-    String getTaskName();
+    public String getTaskName() {
+        return impl.getTaskName();
+    }
     
     /**
      * Get the configured XML structure of the task producing this event.
      * Some events occur outside of tasks and so there will be no information.
      * @return the task structure, or null if unknown or inapplicable
      */
-    TaskStructure getTaskStructure();
+    public TaskStructure getTaskStructure() {
+        return impl.getTaskStructure();
+    }
     
     /**
      * Get the name of the message being logged.
      * Applies only to {@link AntLogger#messageLogged}.
      * @return the message, or null if inapplicable
      */
-    String getMessage();
+    public String getMessage() {
+        return impl.getMessage();
+    }
     
     /**
      * Get the log level of the message.
@@ -128,7 +162,9 @@ public interface AntEvent {
      * Note that lower numbers are higher priority.
      * @return the log level (e.g. LOG_INFO), or -1 if inapplicable
      */
-    int getLogLevel();
+    public int getLogLevel() {
+        return impl.getLogLevel();
+    }
     
     /**
      * Get a terminating exception.
@@ -136,20 +172,26 @@ public interface AntEvent {
      * and {@link AntLogger#buildInitializationFailed}.
      * @return an exception ending the build, or null for normal completion or if inapplicable
      */
-    Throwable getException();
+    public Throwable getException() {
+        return impl.getException();
+    }
     
     /**
      * Get a property set on the current Ant project.
      * @param name the property name
      * @return its value, or null
      */
-    String getProperty(String name);
+    public String getProperty(String name) {
+        return impl.getProperty(name);
+    }
     
     /**
      * Get a set of property names defined on the current Ant project.
      * @return a set of property names; may be empty but not null
      */
-    Set/*<String>*/ getPropertyNames();
+    public Set/*<String>*/ getPropertyNames() {
+        return impl.getPropertyNames();
+    }
     
     /**
      * Evaluate a string with possible substitutions according to defined properties.
@@ -158,6 +200,12 @@ public interface AntEvent {
      * @see TaskStructure#getAttribute
      * @see TaskStructure#getText
      */
-    String evaluate(String text);
+    public String evaluate(String text) {
+        return impl.evaluate(text);
+    }
+    
+    public String toString() {
+        return impl.toString();
+    }
     
 }

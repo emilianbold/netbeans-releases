@@ -13,15 +13,40 @@
 
 package org.apache.tools.ant.module.bridge.impl;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.util.*;
-import java.util.regex.*;
-import org.apache.tools.ant.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.apache.tools.ant.BuildEvent;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.BuildListener;
+import org.apache.tools.ant.Location;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.RuntimeConfigurable;
+import org.apache.tools.ant.Target;
+import org.apache.tools.ant.Task;
 import org.apache.tools.ant.module.bridge.AntBridge;
 import org.apache.tools.ant.module.run.Hyperlink;
-import org.apache.tools.ant.module.spi.*;
+import org.apache.tools.ant.module.run.LoggerTrampoline;
+import org.apache.tools.ant.module.spi.AntEvent;
+import org.apache.tools.ant.module.spi.AntLogger;
+import org.apache.tools.ant.module.spi.AntSession;
+import org.apache.tools.ant.module.spi.TaskStructure;
 import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 import org.openide.util.WeakSet;
@@ -37,13 +62,15 @@ import org.openide.windows.OutputWriter;
  * dynamic overlaps.
  * @author Jesse Glick
  */
-final class NbBuildLogger implements BuildListener, AntSession {
+final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionImpl {
     
     private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(NbBuildLogger.class.getName());
     /** hack for debugging unit tests */
     private static final int EM_LEVEL = Boolean.getBoolean(NbBuildLogger.class.getName() + ".LOG_AT_WARNING") ? // NOI18N
         ErrorManager.WARNING : ErrorManager.INFORMATIONAL;
     private static final boolean LOGGABLE = ERR.isLoggable(EM_LEVEL);
+    
+    private final AntSession thisSession;
     
     private final File origScript;
     private String[] targets = null;
@@ -82,6 +109,7 @@ final class NbBuildLogger implements BuildListener, AntSession {
     private String currentlyParsedImportedScript = null;
     
     public NbBuildLogger(File origScript, OutputWriter out, OutputWriter err, int verbosity, String displayName) {
+        thisSession = LoggerTrampoline.ANT_SESSION_CREATOR.makeAntSession(this);
         this.origScript = origScript;
         this.out = out;
         this.err = err;
@@ -105,7 +133,7 @@ final class NbBuildLogger implements BuildListener, AntSession {
             Iterator it = Lookup.getDefault().lookup(new Lookup.Template(AntLogger.class)).allInstances().iterator();
             while (it.hasNext()) {
                 AntLogger l = (AntLogger)it.next();
-                if (l.interestedInSession(this)) {
+                if (l.interestedInSession(thisSession)) {
                     interestedLoggers.add(l);
                 }
             }
@@ -164,7 +192,7 @@ final class NbBuildLogger implements BuildListener, AntSession {
             Iterator it = interestedLoggers.iterator();
             while (it.hasNext()) {
                 AntLogger l = (AntLogger)it.next();
-                if (l.interestedInAllScripts(this) || (script != null && l.interestedInScript(script, this))) {
+                if (l.interestedInAllScripts(thisSession) || (script != null && l.interestedInScript(script, thisSession))) {
                     c.add(l);
                 }
             }
@@ -184,7 +212,7 @@ final class NbBuildLogger implements BuildListener, AntSession {
             Iterator it = interestedLoggers.iterator();
             while (it.hasNext()) {
                 AntLogger l = (AntLogger)it.next();
-                String[] targets = l.interestedInTargets(this);
+                String[] targets = l.interestedInTargets(thisSession);
                 if (targets == AntLogger.ALL_TARGETS ||
                         (target != null && Arrays.asList(targets).contains(target)) ||
                         (target == null && targets == AntLogger.NO_TARGETS)) {
@@ -207,7 +235,7 @@ final class NbBuildLogger implements BuildListener, AntSession {
             Iterator it = interestedLoggers.iterator();
             while (it.hasNext()) {
                 AntLogger l = (AntLogger)it.next();
-                String[] tasks = l.interestedInTasks(this);
+                String[] tasks = l.interestedInTasks(thisSession);
                 if (tasks == AntLogger.ALL_TASKS ||
                         (task != null && Arrays.asList(tasks).contains(task)) ||
                         (task == null && tasks == AntLogger.NO_TASKS)) {
@@ -234,7 +262,7 @@ final class NbBuildLogger implements BuildListener, AntSession {
                 if (level == -1) {
                     c.add(l);
                 } else {
-                    int[] levels = l.interestedInLogLevels(this);
+                    int[] levels = l.interestedInLogLevels(thisSession);
                     for (int j = 0; j < levels.length; j++) {
                         if (levels[j] == level) {
                             c.add(l);
@@ -256,7 +284,7 @@ final class NbBuildLogger implements BuildListener, AntSession {
     
     synchronized void buildInitializationFailed(BuildException be) {
         initInterestedLoggers();
-        AntEvent ev = new Event(be);
+        AntEvent ev = LoggerTrampoline.ANT_EVENT_CREATOR.makeAntEvent(new Event(be));
         if (LOGGABLE) {
             ERR.log(EM_LEVEL, "buildInitializationFailed: " + ev);
         }
@@ -271,7 +299,7 @@ final class NbBuildLogger implements BuildListener, AntSession {
         AntBridge.suspendDelegation();
         try {
             initInterestedLoggers();
-            AntEvent e = new Event(ev, false);
+            AntEvent e = LoggerTrampoline.ANT_EVENT_CREATOR.makeAntEvent(new Event(ev, false));
             if (LOGGABLE) {
                 ERR.log(EM_LEVEL, "buildStarted: " + e);
             }
@@ -293,7 +321,7 @@ final class NbBuildLogger implements BuildListener, AntSession {
         AntBridge.suspendDelegation();
         try {
             initInterestedLoggers(); // just in case
-            AntEvent e = new Event(ev, false);
+            AntEvent e = LoggerTrampoline.ANT_EVENT_CREATOR.makeAntEvent(new Event(ev, false));
             if (LOGGABLE) {
                 ERR.log(EM_LEVEL, "buildFinished: " + e);
                 if (e.getException() != null) {
@@ -317,7 +345,7 @@ final class NbBuildLogger implements BuildListener, AntSession {
     public synchronized void targetStarted(BuildEvent ev) {
         AntBridge.suspendDelegation();
         try {
-            Event e = new Event(ev, false);
+            AntEvent e = LoggerTrampoline.ANT_EVENT_CREATOR.makeAntEvent(new Event(ev, false));
             if (LOGGABLE) {
                 ERR.log(EM_LEVEL, "targetStarted: " + e);
             }
@@ -338,7 +366,7 @@ final class NbBuildLogger implements BuildListener, AntSession {
     public synchronized void targetFinished(BuildEvent ev) {
         AntBridge.suspendDelegation();
         try {
-            Event e = new Event(ev, false);
+            AntEvent e = LoggerTrampoline.ANT_EVENT_CREATOR.makeAntEvent(new Event(ev, false));
             if (LOGGABLE) {
                 ERR.log(EM_LEVEL, "targetFinished: " + e);
             }
@@ -359,7 +387,7 @@ final class NbBuildLogger implements BuildListener, AntSession {
     public synchronized void taskStarted(BuildEvent ev) {
         AntBridge.suspendDelegation();
         try {
-            Event e = new Event(ev, false);
+            AntEvent e = LoggerTrampoline.ANT_EVENT_CREATOR.makeAntEvent(new Event(ev, false));
             if (LOGGABLE) {
                 ERR.log(EM_LEVEL, "taskStarted: " + e);
             }
@@ -380,7 +408,7 @@ final class NbBuildLogger implements BuildListener, AntSession {
     public synchronized void taskFinished(BuildEvent ev) {
         AntBridge.suspendDelegation();
         try {
-            Event e = new Event(ev, false);
+            AntEvent e = LoggerTrampoline.ANT_EVENT_CREATOR.makeAntEvent(new Event(ev, false));
             if (LOGGABLE) {
                 ERR.log(EM_LEVEL, "taskFinished: " + e);
             }
@@ -434,7 +462,7 @@ final class NbBuildLogger implements BuildListener, AntSession {
     public synchronized void messageLogged(BuildEvent ev) {
         AntBridge.suspendDelegation();
         try {
-            Event e = new Event(ev, true);
+            AntEvent e = LoggerTrampoline.ANT_EVENT_CREATOR.makeAntEvent(new Event(ev, true));
             if (LOGGABLE) {
                 ERR.log(EM_LEVEL, "messageLogged: " + e);
             }
@@ -543,7 +571,7 @@ final class NbBuildLogger implements BuildListener, AntSession {
         if (LOGGABLE) {
             ERR.log(EM_LEVEL, "deliverMessageLogged: level=" + level + " message=" + message);
         }
-        AntEvent newEvent = new RepostedEvent(originalEvent, message, level);
+        AntEvent newEvent = LoggerTrampoline.ANT_EVENT_CREATOR.makeAntEvent(new RepostedEvent(originalEvent, message, level));
         Iterator it = getInterestedLoggersByEvent(newEvent);
         while (it.hasNext()) {
             AntLogger l = (AntLogger)it.next();
@@ -771,7 +799,7 @@ final class NbBuildLogger implements BuildListener, AntSession {
     /**
      * Standard event implemention, delegating to the Ant BuildEvent and Project.
      */
-    private final class Event implements AntEvent {
+    private final class Event implements LoggerTrampoline.AntEventImpl {
         
         private boolean consumed = false;
         private final BuildEvent e;
@@ -805,7 +833,7 @@ final class NbBuildLogger implements BuildListener, AntSession {
         }
         
         public AntSession getSession() {
-            return NbBuildLogger.this;
+            return thisSession;
         }
 
         public void consume() throws IllegalStateException {
@@ -920,7 +948,7 @@ final class NbBuildLogger implements BuildListener, AntSession {
         public TaskStructure getTaskStructure() {
             Task task = e.getTask();
             if (task != null) {
-                return new TaskStructureImpl(task.getRuntimeConfigurableWrapper());
+                return LoggerTrampoline.TASK_STRUCTURE_CREATOR.makeTaskStructure(new TaskStructureImpl(task.getRuntimeConfigurableWrapper()));
             } else {
                 return null;
             }
@@ -984,7 +1012,7 @@ final class NbBuildLogger implements BuildListener, AntSession {
      * Reposted event delegating to an original one except for message and level.
      * @see #deliverMessageLogged
      */
-    private static final class RepostedEvent implements AntEvent {
+    private static final class RepostedEvent implements LoggerTrampoline.AntEventImpl {
         
         private final AntEvent originalEvent;
         private final String message;
@@ -1066,7 +1094,7 @@ final class NbBuildLogger implements BuildListener, AntSession {
      * Implementation of TaskStructure based on an Ant Task.
      * @see Event#getTaskStructure
      */
-    private static final class TaskStructureImpl implements TaskStructure {
+    private static final class TaskStructureImpl implements LoggerTrampoline.TaskStructureImpl {
         
         private final RuntimeConfigurable rc;
         
@@ -1107,7 +1135,7 @@ final class NbBuildLogger implements BuildListener, AntSession {
             Enumeration/*<RuntimeConfigurable>*/ children = getChildrenOfRuntimeConfigurable(rc);
             while (children.hasMoreElements()) {
                 RuntimeConfigurable subrc = (RuntimeConfigurable) children.nextElement();
-                structures.add(new TaskStructureImpl(subrc));
+                structures.add(LoggerTrampoline.TASK_STRUCTURE_CREATOR.makeTaskStructure(new TaskStructureImpl(subrc)));
             }
             return (TaskStructure[]) structures.toArray(new TaskStructure[structures.size()]);
         }

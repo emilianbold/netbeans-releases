@@ -14,23 +14,43 @@
 package org.apache.tools.ant.module.spi;
 
 import java.util.Set;
+import org.apache.tools.ant.module.run.LoggerTrampoline;
 
 /**
  * Describes the structure of a task.
  * Each instance corresponds to one task or nested element in a build script.
- * SPI clients are forbidden to implement this interface;
- * new methods may be added in the future.
  * @author Jesse Glick
  * @since org.apache.tools.ant.module/3 3.12
  */
-public interface TaskStructure {
+public final class TaskStructure {
+    
+    static {
+        LoggerTrampoline.TASK_STRUCTURE_CREATOR = new LoggerTrampoline.Creator() {
+            public AntSession makeAntSession(LoggerTrampoline.AntSessionImpl impl) {
+                throw new AssertionError();
+            }
+            public AntEvent makeAntEvent(LoggerTrampoline.AntEventImpl impl) {
+                throw new AssertionError();
+            }
+            public TaskStructure makeTaskStructure(LoggerTrampoline.TaskStructureImpl impl) {
+                return new TaskStructure(impl);
+            }
+        };
+    }
+    
+    private final LoggerTrampoline.TaskStructureImpl impl;
+    private TaskStructure(LoggerTrampoline.TaskStructureImpl impl) {
+        this.impl = impl;
+    }
     
     /**
      * Get the element name.
      * XXX precise behavior w.r.t. namespaces etc.
      * @return a name, never null
      */
-    String getName();
+    public String getName() {
+        return impl.getName();
+    }
     
     /**
      * Get a single attribute.
@@ -40,13 +60,17 @@ public interface TaskStructure {
      * @param name the attribute name
      * @return the raw value of that attribute, or null
      */
-    String getAttribute(String name);
+    public String getAttribute(String name) {
+        return impl.getAttribute(name);
+    }
     
     /**
      * Get a set of all defined attribute names.
      * @return a set of names suitable for {@link #getAttribute}; may be empty but not null
      */
-    Set/*<String>*/ getAttributeNames();
+    public Set/*<String>*/ getAttributeNames() {
+        return impl.getAttributeNames();
+    }
     
     /**
      * Get configured nested text.
@@ -55,12 +79,20 @@ public interface TaskStructure {
      * use {@link AntEvent#evaluate}.
      * @return the raw text contained in the element, or null
      */
-    String getText();
+    public String getText() {
+        return impl.getText();
+    }
 
     /**
      * Get any configured child elements.
      * @return a list of child structure elements; may be empty but not null
      */
-    TaskStructure[] getChildren();
+    public TaskStructure[] getChildren() {
+        return impl.getChildren();
+    }
+    
+    public String toString() {
+        return impl.toString();
+    }
     
 }
