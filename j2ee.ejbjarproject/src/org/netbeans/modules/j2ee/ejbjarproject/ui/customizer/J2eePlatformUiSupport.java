@@ -22,6 +22,7 @@ import javax.swing.ComboBoxModel;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -29,6 +30,9 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
  */
 public class J2eePlatformUiSupport {
     
+    private static final String J2EE_1_4_DISPLAY_NAME = NbBundle.getMessage(J2eePlatformUiSupport.class, "J2EE_1_4_displayName"); // NOI18N 
+    private static final String J2EE_1_3_DISPLAY_NAME = NbBundle.getMessage(J2eePlatformUiSupport.class, "J2EE_1_3_displayName"); // NOI18N  
+
     private J2eePlatformUiSupport() {
     }
     
@@ -57,7 +61,7 @@ public class J2eePlatformUiSupport {
     }
     
     public static String getSpecVersion(Object j2eeSpecVersionModelObject) {
-        return (String)j2eeSpecVersionModelObject;
+        return ((J2eePlatformComboBoxItem)j2eeSpecVersionModelObject).getCode();
     }
     
     private static final class J2eePlatformComboBoxModel extends AbstractListModel implements ComboBoxModel {
@@ -113,23 +117,23 @@ public class J2eePlatformUiSupport {
             }
             return j2eePlatforms;
         }
-    }
+     }
     
     private static final class J2eeSpecVersionComboBoxModel extends AbstractListModel implements ComboBoxModel {
-        private String[] j2eeSpecVersions;
+        private J2eePlatformComboBoxItem[] j2eeSpecVersions;
         
-        private String initialJ2eeSpecVersion;
-        private String selectedJ2eeSpecVersion;
+        private J2eePlatformComboBoxItem initialJ2eeSpecVersion;
+        private J2eePlatformComboBoxItem selectedJ2eeSpecVersion;
     
         public J2eeSpecVersionComboBoxModel(String j2eeSpecVersion) {
-            initialJ2eeSpecVersion = j2eeSpecVersion;
+            initialJ2eeSpecVersion = new J2eePlatformComboBoxItem(j2eeSpecVersion);
             
-            List orderedNames = new ArrayList();
-            orderedNames.add(EjbJarProjectProperties.J2EE_1_4);
-            if (!initialJ2eeSpecVersion.equals(EjbJarProjectProperties.J2EE_1_4))
-                orderedNames.add(0, EjbJarProjectProperties.J2EE_1_3);
+            List orderedListItems = new ArrayList();
+            orderedListItems.add(new J2eePlatformComboBoxItem(EjbJarProjectProperties.J2EE_1_4));
+            if (!initialJ2eeSpecVersion.getCode().equals(EjbJarProjectProperties.J2EE_1_4))
+                orderedListItems.add(0, new J2eePlatformComboBoxItem(EjbJarProjectProperties.J2EE_1_3));
             
-            j2eeSpecVersions = (String[])orderedNames.toArray(new String[orderedNames.size()]);
+            j2eeSpecVersions = (J2eePlatformComboBoxItem[])orderedListItems.toArray(new J2eePlatformComboBoxItem[orderedListItems.size()]);
             selectedJ2eeSpecVersion = initialJ2eeSpecVersion;
         }
         
@@ -146,10 +150,38 @@ public class J2eePlatformUiSupport {
         }
         
         public void setSelectedItem(Object obj) {
-            selectedJ2eeSpecVersion = (String)obj;
+            selectedJ2eeSpecVersion = (J2eePlatformComboBoxItem)obj;
         }
     }
     
+    private static final class J2eePlatformComboBoxItem{
+        private String code;
+        private String displayName;
+
+        public J2eePlatformComboBoxItem (String code, String displayName){
+            this.code = code;
+            this.displayName = displayName;        
+        }
+
+        public J2eePlatformComboBoxItem (String code){
+             this(code, findDisplayName(code));        
+        }
+
+        private static String findDisplayName(String code){
+            if(code.equals(EjbJarProjectProperties.J2EE_1_4)) return J2EE_1_4_DISPLAY_NAME;
+            if(code.equals(EjbJarProjectProperties.J2EE_1_3)) return J2EE_1_3_DISPLAY_NAME;
+            return code; //version display name not found, use the version code for display name        
+        }
+
+        public String getCode(){
+            return code;        
+        }
+
+        public String toString(){
+            return displayName;        
+        }
+    }
+
     public static boolean getJ2eePlatformAndSpecVersionMatch(Object j2eePlatformModelObject, Object j2eeSpecVersionModelObject) {
         if (!(j2eePlatformModelObject instanceof J2eePlatformAdapter && j2eeSpecVersionModelObject instanceof String))
             return false;
