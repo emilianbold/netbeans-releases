@@ -818,14 +818,15 @@ public class XSLGrammarQuery implements GrammarQuery{
     
     /**
      * @param enum the Enumeration which the element should be added to
-     * @param set a set containing strings which should be added (with prefix) to the enum
+     * @param elements a set containing strings which should be added (with prefix) to the enum or <code>null</null>
      * @param namespacePrefix a prefix at the form "xsl:" which should be added in front
-     *          of the names in the set.
+     *          of the names in the elements.
      * @param startWith Elements should only be added to enum if they start with this string
      */
-    private static void addXslElementsToEnum(QueueEnumeration enum, Set set, String namespacePrefix, String startWith) {
+    private static void addXslElementsToEnum(QueueEnumeration enum, Set elements, String namespacePrefix, String startWith) {
+        if (elements == null) return;
         if (startWith.startsWith(namespacePrefix) || namespacePrefix.startsWith(startWith)) {
-            Iterator it = set.iterator();
+            Iterator it = elements.iterator();
             while ( it.hasNext()) {
                 Object next = it.next();
                 if (next != resultElements) {
