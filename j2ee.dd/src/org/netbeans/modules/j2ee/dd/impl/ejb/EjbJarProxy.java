@@ -54,12 +54,12 @@ public class EjbJarProxy implements EjbJar {
     }
 
     public void setProxyVersion(java.lang.String value) {
-        if ((version==null && value!=null) || !version.equals(value)) {
-            java.beans.PropertyChangeEvent evt = 
-                new java.beans.PropertyChangeEvent(this, PROPERTY_VERSION, version, value);
-            version=value;
-            for (int i=0;i<listeners.size();i++) {
-                ((java.beans.PropertyChangeListener)listeners.get(i)).propertyChange(evt);
+        if ((version == null && value != null) || (version != null && !version.equals(value))) {
+            java.beans.PropertyChangeEvent evt =
+                    new java.beans.PropertyChangeEvent(this, PROPERTY_VERSION, version, value);
+            version = value;
+            for (int i = 0; i < listeners.size(); i++) {
+                ((java.beans.PropertyChangeListener) listeners.get(i)).propertyChange(evt);
             }
         }
     }
