@@ -60,20 +60,24 @@ import java.io.File;
  * which take a single parameter of type {@link AntEvent} or which have a name beginning
  * with the string <code>interested</code>.
  * </p>
- * <p class="nonnormative">
+ * <div class="nonnormative">
+ * <p>
  * The Ant module registers one logger at position 100 in META-INF/services lookup
  * which may or may not handle any events which have not already been consumed
  * (marking them consumed itself) and will typically process message logged events
  * by printing them to the output somehow, using hyperlinks for common file error
  * patterns such as <samp>/path/to/File.java:34: some message</samp>. It may also
  * handle sequences of messages logged within a task in the format
+ * </p>
  * <pre>
  * &nbsp;/path/to/File.java:34: you cannot throw a bogus exception here
  * &nbsp;        throw new Exception("bogus!");
  * &nbsp;                            ^
  * </pre>
+ * <p>
  * by linking to the column number indicated by the caret (<samp>^</samp>).
  * </p>
+ * </div>
  * @author Jesse Glick
  * @see "#42525"
  * @since org.apache.tools.ant.module/3 3.12
