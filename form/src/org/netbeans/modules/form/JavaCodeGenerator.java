@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Map;
 import java.util.Iterator;
 
@@ -178,7 +179,8 @@ public class JavaCodeGenerator extends CodeGenerator {
           }
   
           public PropertyEditor getPropertyEditor () {
-            return new ModifierEditor ();
+            return new ModifierEditor (Modifier.PUBLIC | Modifier.PROTECTED | Modifier.PRIVATE | Modifier.STATIC |
+            Modifier.FINAL | Modifier.TRANSIENT | Modifier.VOLATILE);
           }
           
         },
@@ -1455,6 +1457,8 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  64   Gandalf   1.63        1/10/00  Ian Formanek    Fixed bug 2880 - I can 
+ *       change variable modifier in component to abstract or native
  *  63   Gandalf   1.62        1/10/00  Pavel Buzek     refreshing property sets
  *  62   Gandalf   1.61        1/5/00   Ian Formanek    NOI18N
  *  61   Gandalf   1.60        12/16/99 Pavel Buzek     #3612
