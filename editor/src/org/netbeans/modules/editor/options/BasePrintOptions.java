@@ -75,11 +75,12 @@ public class BasePrintOptions extends OptionSupport {
 
     public Map getPrintColoringMap() {
         Map cm = SettingsUtil.getColoringMap(getKitClass(), true, true);
-        cm.put(null, getKitClass()); // add kit class
+        cm.put(null, getKitClass().getName() ); // add kit class
         return cm;
     }
     public void setPrintColoringMap(Map coloringMap) {
         coloringMap.remove(null); // remove kit class
+        SettingsUtil.setColoringMap( getKitClass(), coloringMap, true );
 // !!!        SettingsUtil.updateColoringSettings(getKitClass(), coloringMap, true);
     }
 
