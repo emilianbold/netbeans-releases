@@ -14,8 +14,10 @@
 package org.netbeans.modules.web.project.ui.wizards;
 
 import java.awt.Component;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.Collections;
@@ -37,6 +39,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 
 import org.netbeans.modules.web.project.WebProjectGenerator;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.NbBundle;
 
 /**
@@ -68,8 +72,15 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         File dirSrcF = (File) wiz.getProperty (WizardProperties.SOURCE_ROOT);
         String codename = (String) wiz.getProperty(WizardProperties.CODE_NAME);
         String displayName = (String) wiz.getProperty(WizardProperties.DISPLAY_NAME);
-        WebProjectGenerator.importProjectWAR (dirF, codename, displayName, dirSrcF, WizardProperties.J2EE_14_LEVEL); //PENDING detect spec level
-        FileObject dir = FileUtil.fromFile(dirF)[0];
+        
+        FileObject wmFO = FileUtil.toFileObject (dirSrcF);
+        assert wmFO != null : "No such dir on disk: " + dirSrcF;
+        assert wmFO.isFolder() : "Not really a dir: " + dirSrcF;
+        FileObject javaRoot = guessJavaRoot (wmFO);
+        FileObject docBase = guessDocBase (wmFO);
+        FileObject libFolder = guessLibrariesFolder (wmFO);
+        WebProjectGenerator.importProject (dirF, codename, displayName, wmFO, javaRoot, docBase, libFolder, WizardProperties.J2EE_14_LEVEL); //PENDING detect spec level
+        FileObject dir = FileUtil.toFileObject (dirF);
         Project p = ProjectManager.getDefault().findProject(dir);
         // Returning set of DataObject of project diretory. 
         // Project will be open and set as main
@@ -165,16 +176,96 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
     }
      */
 
+    private FileObject guessDocBase (FileObject dir) {
+        Enumeration ch = dir.getChildren (true);
+        while (ch.hasMoreElements ()) {
+            FileObject f = (FileObject) ch.nextElement ();
+            if (f.isFolder () && f.getName ().equals ("WEB-INF")) {
+                if (f.getFileObject ("web.xml").isData ()) {
+                    return f.getParent ();
+                }
+            }
+        }
+        return null;
+    }
+    
+    private FileObject guessLibrariesFolder (FileObject dir) {
+        FileObject docBase = guessDocBase (dir);
+        if (docBase != null) {
+            FileObject lib = docBase.getFileObject ("WEB-INF/lib"); //NOI18N
+            if (lib != null) {
+                return lib;
+            }
+        }
+        Enumeration ch = dir.getChildren (true);
+        while (ch.hasMoreElements ()) {
+            FileObject f = (FileObject) ch.nextElement ();
+            if (f.getExt ().equals ("jar")) { //NOI18N
+                return f.getParent ();
+            }
+        }
+        return null;
+    }
+    
+    private FileObject guessJavaRoot (FileObject dir) {
+        Enumeration ch = dir.getChildren (true);
+        try {
+            while (ch.hasMoreElements ()) {
+                FileObject f = (FileObject) ch.nextElement ();
+                if (f.getExt ().equals ("java")) { //NOI18N
+                    String pckg = guessPackageName (f);
+                    String pkgPath = f.getParent ().getPath (); 
+                    if (pckg != null && pkgPath.endsWith (pckg.replace ('.', '/'))) {
+                        String rootName = pkgPath.substring (0, pkgPath.length () - pckg.length ());
+                        return f.getFileSystem ().findResource (rootName);
+                    }
+                }
+            }
+        } catch (FileStateInvalidException fsie) {
+            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, fsie);
+        }
+        return null;
+    }
+    
+    private String guessPackageName (FileObject f) {
+        java.io.Reader r = null;
+        try {
+            r = new BufferedReader (new InputStreamReader (f.getInputStream (), "utf-8")); // NOI18N
+            StringBuffer sb = new StringBuffer ();
+            final char[] BUFFER = new char[4096];
+            int len;
+
+            for (;;) {
+                len = r.read (BUFFER);
+                if (len == -1) break;
+                sb.append (BUFFER, 0, len);
+            }
+            int idx = sb.indexOf ("package"); // NOI18N
+            if (idx >= 0) {
+                int idx2 = sb.indexOf (";", idx);  // NOI18N
+                if (idx2 >= 0) {
+                    return sb.substring (idx + "package".length (), idx2).trim ();
+                }
+            }
+        } catch (java.io.IOException ioe) {
+            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ioe);
+        } finally {
+            try { if (r != null) r.close (); } catch (java.io.IOException ioe) { // ignore this 
+            }
+        }
+        return null;
+    }
+    
     public final class ThePanel implements WizardDescriptor.FinishPanel {
 
-        private TestPanel panel;
+        private ImportLocationVisual panel;
         
         private ThePanel () {
         }
         
         public java.awt.Component getComponent () {
             if (panel == null) {
-                panel = new TestPanel (this);
+                panel = new ImportLocationVisual (this);
             }
             return panel;
         }
@@ -184,7 +275,8 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         }
         
         public boolean isValid () {
-            return WebProjectGenerator.isWebModuleWAR (new File (panel.jTextField1.getText ()));
+            File f = new File (panel.moduleLocationTextField.getText ());
+            return f.isDirectory () && isWebModule (FileUtil.toFileObject (f));
         }
         
         private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
@@ -213,13 +305,25 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         
         public void storeSettings (Object settings) {
             WizardDescriptor d = (WizardDescriptor)settings;
-            String name = panel.jTextField3.getText().trim();
+            String name = panel.projectNameTextField.getText().trim();
 
             d.putProperty(WizardProperties.PROJECT_DIR, new File(panel.createdFolderTextField.getText()));
-            d.putProperty(WizardProperties.SOURCE_ROOT, new File(panel.jTextField1.getText()));
+            d.putProperty(WizardProperties.SOURCE_ROOT, new File(panel.moduleLocationTextField.getText()));
             d.putProperty(WizardProperties.DISPLAY_NAME, name);
             d.putProperty(WizardProperties.CODE_NAME, name.replace(' ', '-')); //NOI18N
         }
         
+        private boolean isWebModule (FileObject dir) {
+            return guessDocBase (dir) != null && guessJavaRoot (dir) != null;
+        }
+    
+        //use it as a project root iff it is not sources or document root
+        public boolean isSuitableProjectRoot (FileObject dir) {
+            FileObject docRoot = guessDocBase (dir);
+            FileObject srcRoot = guessJavaRoot (dir);
+            return (docRoot == null || FileUtil.isParentOf (dir, docRoot))
+                && (srcRoot == null || FileUtil.isParentOf (dir, srcRoot));
+        }
+    
     }
 }

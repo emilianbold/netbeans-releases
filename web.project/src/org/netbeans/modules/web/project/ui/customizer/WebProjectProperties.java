@@ -66,10 +66,10 @@ public class WebProjectProperties {
     // Properties stored in the PROJECT.PROPERTIES    
     /** root of external web module sources (full path), ".." if the sources are within project folder */
     public static final String SOURCE_ROOT = "source.root";
+    public static final String LIBRARIES_DIR = "lib.dir";
     public static final String DIST_DIR = "dist.dir";
-    public static final String DIST_JAR = "dist.jar";
+    public static final String DIST_WAR = "dist.war";
     public static final String JAVAC_CLASSPATH = "javac.classpath";
-    public static final String RUN_CLASSPATH = "run.classpath";
     public static final String DEBUG_CLASSPATH = "debug.classpath";    
     public static final String JAR_COMPRESS = "jar.compress";
     public static final String CONTEXT_PATH = "context.path";
@@ -124,13 +124,13 @@ public class WebProjectProperties {
         new PropertyDescriptor( J2EE_PLATFORM, PROJECT, STRING_PARSER ),
                 
         new PropertyDescriptor( SOURCE_ROOT, PROJECT, STRING_PARSER ),
+        new PropertyDescriptor( LIBRARIES_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( DIST_DIR, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( DIST_JAR, PROJECT, STRING_PARSER ),
+        new PropertyDescriptor( DIST_WAR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( JAVAC_CLASSPATH, PROJECT, PATH_PARSER ),
         new PropertyDescriptor( JSPC_CLASSPATH, PRIVATE, PATH_PARSER ),
         new PropertyDescriptor( COMPILE_JSPS, PROJECT, BOOLEAN_PARSER ),
         //new PropertyDescriptor( JSP_COMPILER_CLASSPATH, PRIVATE, PATH_PARSER ),
-        new PropertyDescriptor( RUN_CLASSPATH, PROJECT, PATH_PARSER ),
         new PropertyDescriptor( DEBUG_CLASSPATH, PROJECT, PATH_PARSER ),
         new PropertyDescriptor( JAR_COMPRESS, PROJECT, BOOLEAN_PARSER ),
         new PropertyDescriptor( CONTEXT_PATH, PROJECT, STRING_PARSER ),
@@ -370,7 +370,7 @@ public class WebProjectProperties {
      */
     private void resolveProjectDependencies() {
     
-        String allPaths[] = { JAVAC_CLASSPATH,  RUN_CLASSPATH, DEBUG_CLASSPATH };
+        String allPaths[] = { JAVAC_CLASSPATH,  DEBUG_CLASSPATH };
         
         // Create a set of old and new artifacts.
         Set oldArtifacts = new HashSet();
@@ -548,7 +548,6 @@ public class WebProjectProperties {
     // Contains well known paths in the J2SEProject
     private static final String[][] WELL_KNOWN_PATHS = new String[][] {
         { JAVAC_CLASSPATH, NbBundle.getMessage( WebProjectProperties.class, "LBL_JavacClasspath_DisplayName" ) },
-        { RUN_CLASSPATH, NbBundle.getMessage( WebProjectProperties.class, "LBL_RunClasspath_DisplayName" ) },
         { BUILD_CLASSES_DIR, NbBundle.getMessage( WebProjectProperties.class, "LBL_BuildClassesDir_DisplayName" ) }
     };
     
@@ -594,12 +593,12 @@ public class WebProjectProperties {
                     AntArtifact artifact = refHelper.getForeignFileReferenceAsArtifact( pe[i] );                     
                     if ( artifact != null ) {
                         // Sub project artifact
-                        String eval = antProjectHelper.evaluate( getAntPropertyName( pe[i] ) );
+                        String eval = antProjectHelper.getStandardPropertyEvaluator ().evaluate (pe[i]);
                         cpItem = new VisualClassPathItem( artifact, VisualClassPathItem.TYPE_ARTIFACT, pe[i], eval, VisualClassPathItem.PATH_IN_WAR_NONE );
                     }
                     else {
                         // Standalone jar or property
-                        String eval = antProjectHelper.evaluate( getAntPropertyName( pe[i] ) );
+                        String eval = antProjectHelper.getStandardPropertyEvaluator ().evaluate (pe[i]);
                         String[] tokenizedPath = PropertyUtils.tokenizePath( raw );                                                
                         cpItem = new VisualClassPathItem( tokenizedPath, VisualClassPathItem.TYPE_JAR, pe[i], eval, VisualClassPathItem.PATH_IN_WAR_NONE );
                     }
@@ -705,7 +704,7 @@ public class WebProjectProperties {
         
     }
     
-    public static List readJavacClasspath (AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {
+    private static List readJavacClasspath (AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {
         Element data = antProjectHelper.getPrimaryConfigurationData (true);
         Element webModuleLibs = (Element) data.getElementsByTagNameNS (WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "web-module-libraries").item (0); //NOI18N
         NodeList ch = webModuleLibs.getChildNodes ();
@@ -752,12 +751,12 @@ public class WebProjectProperties {
                 AntArtifact artifact = refHelper.getForeignFileReferenceAsArtifact( file );                     
                 if ( artifact != null ) {
                     // Sub project artifact
-                    String eval = antProjectHelper.evaluate( getAntPropertyName( file ) );
+                    String eval = antProjectHelper.getStandardPropertyEvaluator ().evaluate (file);
                     cpItem = new VisualClassPathItem( artifact, VisualClassPathItem.TYPE_ARTIFACT, file, eval, pathInWar );
                 }
                 else {
                     // Standalone jar or property
-                    String eval = antProjectHelper.evaluate( getAntPropertyName( file ) );
+                    String eval = antProjectHelper.getStandardPropertyEvaluator ().evaluate (file);
                     cpItem = new VisualClassPathItem( file, VisualClassPathItem.TYPE_JAR, file, eval, pathInWar );
                 }
             }
@@ -769,7 +768,7 @@ public class WebProjectProperties {
         return cpItems;
     }
 
-    public static void writeJavacClasspath ( List value, AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {
+    private static void writeJavacClasspath ( List value, AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {
         Element data = antProjectHelper.getPrimaryConfigurationData (true);
         org.w3c.dom.Document doc = data.getOwnerDocument ();
         Element webModuleLibs = (Element) data.getElementsByTagNameNS (WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "web-module-libraries").item (0); //NOI18N

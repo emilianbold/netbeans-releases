@@ -34,6 +34,7 @@ import org.netbeans.modules.web.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.web.project.queries.CompiledSourceForBinaryQuery;
 import org.netbeans.modules.web.project.ui.WebCustomizerProvider;
 import org.netbeans.modules.web.project.ui.WebPhysicalViewProvider;
+import org.netbeans.modules.web.project.ui.customizer.VisualClassPathItem;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -48,9 +49,11 @@ import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -61,9 +64,9 @@ import org.openide.util.lookup.Lookups;
 
 /**
  * Represents one plain Web project.
- * @author Jesse Glick, et al.
+ * @author Jesse Glick, et al., Pavel Buzek
  */
-final class WebProject implements Project, AntProjectListener {
+final class WebProject implements Project, AntProjectListener, FileChangeListener {
     
     private static final Icon WEB_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif")); // NOI18N
     
@@ -72,6 +75,7 @@ final class WebProject implements Project, AntProjectListener {
     private final GeneratedFilesHelper genFilesHelper;
     private final Lookup lookup;
     private final ProjectWebModule webModule;
+    private FileObject libFolder = null;
     
     WebProject(AntProjectHelper helper) throws IOException {
         this.helper = helper;
@@ -133,6 +137,7 @@ final class WebProject implements Project, AntProjectListener {
 
     public void propertiesChanged(AntProjectEvent ev) {
         // currently ignored
+        //TODO: should not be ignored!
     }
     
     // Package private methods -------------------------------------------------
@@ -146,7 +151,43 @@ final class WebProject implements Project, AntProjectListener {
         return helper.resolveFileObject(srcDir);
     }
     
+    public void fileAttributeChanged (org.openide.filesystems.FileAttributeEvent fe) {
+    }    
     
+    public void fileChanged (org.openide.filesystems.FileEvent fe) {
+    }
+    
+    public void fileDataCreated (org.openide.filesystems.FileEvent fe) {
+        FileObject fo = fe.getFile ();
+        checkLibraryFolder (fo);
+    }
+    
+    public void fileDeleted (org.openide.filesystems.FileEvent fe) {
+    }
+    
+    public void fileFolderCreated (org.openide.filesystems.FileEvent fe) {
+    }
+    
+    public void fileRenamed (org.openide.filesystems.FileRenameEvent fe) {
+        FileObject fo = fe.getFile ();
+        checkLibraryFolder (fo);
+    }
+    
+    private void checkLibraryFolder (FileObject fo) {
+        if (fo.getParent ().equals (libFolder)) {
+            WebProjectProperties wpp = new WebProjectProperties (this, helper, refHelper);
+            List cpItems = (List) wpp.get (WebProjectProperties.JAVAC_CLASSPATH);
+            if (addLibrary (cpItems, fo)) {
+                wpp.put (WebProjectProperties.JAVAC_CLASSPATH, cpItems);
+                wpp.store ();
+                try {
+                    ProjectManager.getDefault ().saveProject (this);
+                } catch (IOException e) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                }
+            }
+        }
+    }
     // Private innerclasses ----------------------------------------------------
     
     private final class Info implements ProjectInformation {
@@ -202,20 +243,62 @@ final class WebProject implements Project, AntProjectListener {
         
     }
     
+    private boolean addLibrary (List cpItems, FileObject lib) {
+        boolean needsAdding = true;
+        for (Iterator vcpsIter = cpItems.iterator (); vcpsIter.hasNext ();) {
+            VisualClassPathItem vcpi = (VisualClassPathItem) vcpsIter.next ();
+
+            if (vcpi.getType () != VisualClassPathItem.TYPE_JAR) {
+                continue;
+            }
+            FileObject fo = FileUtil.toFileObject (new File(helper.getStandardPropertyEvaluator ().evaluate (vcpi.getEvaluated ())));
+            if (lib.equals (fo)) {
+                needsAdding = false;
+                break;
+            }
+        }
+        if (needsAdding) {
+            String file = "${"+WebProjectProperties.LIBRARIES_DIR+"}/"+lib.getNameExt ();
+            String eval = helper.getStandardPropertyEvaluator ().evaluate (file);
+            VisualClassPathItem cpItem = new VisualClassPathItem( file, VisualClassPathItem.TYPE_JAR, file, eval, VisualClassPathItem.PATH_IN_WAR_LIB);
+            cpItems.add (cpItem);
+        }
+        return needsAdding;
+    }
+    
     private final class ProjectOpenedHookImpl extends ProjectOpenedHook {
         
         ProjectOpenedHookImpl() {}
         
         protected void projectOpened() {
-            // Check up on build scripts.
             try {
-                String externalRoot = (String) new WebProjectProperties (WebProject.this, helper, refHelper).get (WebProjectProperties.SOURCE_ROOT);
+                //Check if external source root needs to be registered
+                String externalRoot = helper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.SOURCE_ROOT);
                 if (externalRoot != null && !(externalRoot.equals ("") || externalRoot.equals ("."))) { //NOI18N
                     FileObject root [] = FileUtil.fromFile (FileUtil.normalizeFile (new java.io.File (externalRoot)));
                     if (root != null && root.length == 1) {
                         FileOwnerQuery.markExternalOwner (root [0], WebProject.this, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
                     }
                 }
+                //Check libraries and add them to classpath automatically
+                String libFolderName = helper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.LIBRARIES_DIR);
+                WebProjectProperties wpp = new WebProjectProperties (WebProject.this, helper, refHelper);
+                if (libFolderName != null && new File (libFolderName).isDirectory ()) {
+                    List cpItems = (List) wpp.get (WebProjectProperties.JAVAC_CLASSPATH);
+                    FileObject libFolder = FileUtil.toFileObject (new File (libFolderName));
+                    FileObject libs [] = libFolder.getChildren ();
+                    boolean anyChanged = false;
+                    for (int i = 0; i < libs.length; i++) {
+                        anyChanged = addLibrary (cpItems, libs [i]) || anyChanged;
+                    }
+                    if (anyChanged) {
+                        wpp.put (WebProjectProperties.JAVAC_CLASSPATH, cpItems);
+                        wpp.store ();
+                        ProjectManager.getDefault ().saveProject (WebProject.this);
+                    }
+                    libFolder.addFileChangeListener (WebProject.this);
+                }
+                // Check up on build scripts.
                 genFilesHelper.refreshBuildScript(
                     GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                     WebProject.class.getResource("resources/build-impl.xsl"),
@@ -255,8 +338,8 @@ final class WebProject implements Project, AntProjectListener {
 
         public AntArtifact[] getBuildArtifacts() {
             return new AntArtifact[] {
-                // XXX probably this is nonsense:
-                helper.createSimpleAntArtifact(JavaProjectConstants.ARTIFACT_TYPE_JAR, "dist.jar", "jar", "clean"), // NOI18N
+                // XXX provide WAR as an artifact (for j2ee application?):
+//                helper.createSimpleAntArtifact(JavaProjectConstants.ARTIFACT_TYPE_JAR, "dist.war", "war", "clean"), // NOI18N
             };
         }
 
