@@ -78,6 +78,26 @@ public class PropertyBundleEvent extends EventObject {
     return itemName;
   }
   
+  public String toString() {
+    try {
+      String doIdent = (getSource() instanceof BundleStructure) ? 
+        ((BundleStructure)getSource()).obj.getPrimaryFile().getName() : "";
+      String ct = "?";
+      switch (getChangeType()) {
+        case CHANGE_STRUCT : ct = "STRUCT"; break;
+        case CHANGE_ALL    : ct = "ALL"; break;
+        case CHANGE_FILE   : ct = "FILE"; break;
+        case CHANGE_ITEM   : ct = "ITEM"; break;
+      }
+    
+      return "PropertyBundleEvent: bundle " + doIdent + ", changeType " + ct + 
+        ", entry " + getEntryName() + ", item " + getItemName();
+    }
+    catch (Exception e) {               
+      return "some PropertyBundleEvent (" + e.toString() + ") occurred";
+    }    
+  }
+  
 }
 
 /*
