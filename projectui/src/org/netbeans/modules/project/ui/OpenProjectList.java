@@ -35,6 +35,7 @@ import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.modules.project.uiapi.ProjectOpenedTrampoline;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
+import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -67,8 +68,8 @@ public final class OpenProjectList {
     /** List of recently closed projects */
     RecentProjectList recentProjects;
 
-    /** LRUs of templates for projects */
-    Map /*<String,List<String>*/ lrusAsString;
+    /** LRU List of recently used templates */
+    private List /*<String>*/ recentTemplates;
     
     /** Property change listeners */
     private PropertyChangeSupport pchSupport;
@@ -231,8 +232,7 @@ public final class OpenProjectList {
         List templates = new ArrayList();
         FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
         for( Iterator it = pLRU.iterator(); it.hasNext(); ) {
-            String path = (String)it.next();
-            FileObject fo = sfs.findResource( path );
+            FileObject fo = (FileObject)it.next();
             if ( fo != null ) {
                 try {
                     DataObject dobj = DataObject.find( fo );                    
@@ -253,22 +253,20 @@ public final class OpenProjectList {
         
     
     // Used from NewFile action    
-    public void updateTemplatesLRU( Project project, FileObject template ) {
-        List pLRU = getTemplateNamesLRU( project );        
-        
+    public void updateTemplatesLRU( FileObject template ) {
         
         String templateName = template.getPath();
         
-        if ( pLRU.contains( templateName ) ) {
-            pLRU.remove( templateName );
+        if ( recentTemplates.contains( templateName ) ) {
+            recentTemplates.remove( templateName );
         }
-        pLRU.add( 0, templateName );
+        recentTemplates.add( 0, templateName );
         
-        if ( pLRU.size() > 10 ) {
-            pLRU.remove( 10 );
+        if ( recentTemplates.size() > 100 ) {
+            recentTemplates.remove( 100 );
         }
         
-        OpenProjectListSettings.getInstance().setTemplateUsageLRUs( lrusAsString );
+        OpenProjectListSettings.getInstance().setRecentTemplates( recentTemplates );
     }
     
     
@@ -389,30 +387,67 @@ public final class OpenProjectList {
         
     }
     
-    private ArrayList /*<String>*/ getTemplateNamesLRU( Project project ) {
-        if ( lrusAsString == null ) {
-            lrusAsString = OpenProjectListSettings.getInstance().getTemplateUsageLRUs();
-            if ( lrusAsString == null ) {
-                lrusAsString = new HashMap();                                
+    private ArrayList /*<FileObject>*/ getTemplateNamesLRU( Project project ) {
+        if ( recentTemplates == null ) {
+            recentTemplates = OpenProjectListSettings.getInstance().getRecentTemplates();
+            if ( recentTemplates == null ) {
+                recentTemplates = new ArrayList( 100 );
+                OpenProjectListSettings.getInstance().setRecentTemplates( recentTemplates );
             }            
         }
 
-        String projectPath = project.getProjectDirectory().getPath();
+        // First take recently used templates and try to find those which
+        // are supported by the project.
         
-        ArrayList pLRU = (ArrayList)lrusAsString.get( projectPath );
-        if ( pLRU == null ) {
-            // Needs init from the project API            
-            PrivilegedTemplates pt = (PrivilegedTemplates)project.getLookup().lookup( PrivilegedTemplates.class );
-            String ptNames[] = pt == null ? null : pt.getPrivilegedTemplates();
-            pLRU = new ArrayList( Arrays.asList( pt == null ? new String[0]: ptNames ) );
-            lrusAsString.put( projectPath, pLRU );
+        ArrayList result = new ArrayList( 10 );        
+        
+        RecommendedTemplates rt = (RecommendedTemplates)project.getLookup().lookup( RecommendedTemplates.class );
+        String rtNames[] = rt.getRecommendedTypes();
+        PrivilegedTemplates pt = (PrivilegedTemplates)project.getLookup().lookup( PrivilegedTemplates.class );
+        String ptNames[] = pt == null ? null : pt.getPrivilegedTemplates();
+        ArrayList privilegedTemplates = new ArrayList( Arrays.asList( pt == null ? new String[0]: ptNames ) );
+        FileSystem sfs = Repository.getDefault().getDefaultFileSystem();            
+                
+        Iterator it = recentTemplates.iterator();
+        for( int i = 0; i < 10 && it.hasNext(); i++ ) {
+            String templateName = (String)it.next();
+            FileObject fo = sfs.findResource( templateName );
+            if ( fo == null ) {
+                it.remove(); // Does not exists remove
+            }
+            else if ( isRecommended( fo, rtNames ) ) {
+                result.add( fo );
+                privilegedTemplates.remove( templateName ); // Not to have it twice
+            }
+            else {
+                continue;
+            }
         }
-
-        return pLRU;
+        
+        // If necessary fill the list with the rest of privileged templates
+        it = privilegedTemplates.iterator();
+        for( int i = result.size(); i < 10 && it.hasNext(); i++ ) {
+            String path = (String)it.next();
+            FileObject fo = sfs.findResource( path );
+            if ( fo != null ) {
+                result.add( fo );
+            }
+        }
+                
+        return result;
                
     }
     
-    
+    private static boolean isRecommended( FileObject fo, String rtNames[] ) {
+        
+        for (int i = 0; i < rtNames.length; i++) {
+            if ( Boolean.TRUE.equals( fo.getAttribute( rtNames[i] ) ) ) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
     
     // Private innerclasses ----------------------------------------------------
     
