@@ -51,9 +51,9 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="openide-13javac-workaround.jar"/>
       </bootclasspath>
       <classpath>
-        <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
-        <pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
-        <pathelement location="${binroot}/core/release/lib/ext/parser.jar"/>
+        <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>        
+	<pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
+<!--    <pathelement location="${binroot}/core/release/lib/ext/parser.jar"/> -->
         <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
       </classpath>
     </javac>
@@ -86,7 +86,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="src"/>
         <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
         <pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
-        <pathelement location="${binroot}/core/release/lib/ext/parser.jar"/>
+<!--    <pathelement location="${binroot}/core/release/lib/ext/parser.jar"/> -->
       </classpath>
     </javac>
     <postprocess file="compatkit-work/org/openide/util/actions/SystemAction.class"
