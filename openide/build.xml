@@ -715,199 +715,6 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
     </apply>
   </target>
 
-  <!-- API examples. -->
-
-  <target name="examplemodules" depends="example-scripts,example-minicomposer-nodice,example-minicomposer,example-globalactions,example-audioloader-nodice,example-audioloader"/>
-
-  <target name="example-init">
-    <available property="javasound" classname="javax.sound.sampled.AudioSystem"/>
-    <property name="jmf.home" location="/space/JMF2.1"/>
-<!-- Unused:
-    <available property="jmf" classname="javax.media.ControllerAdapter">
-      <classpath>
-        <pathelement location="${jmf.home}/lib/jmf.jar"/>
-      </classpath>
-    </available>
--->
-    <available property="mediaplayer" classname="javax.media.bean.playerbean.MediaPlayer">
-      <classpath>
-        <pathelement location="${jmf.home}/lib/jmf.jar"/>
-        <pathelement location="${jmf.home}/lib/mediaplayer.jar"/>
-      </classpath>
-    </available>
-  </target>
-
-  <target name="example-scripts" depends="jars">
-    <javac srcdir="api/examples" destdir="api/examples">
-      <include name="**/org/netbeans/examples/scripts/"/>
-      <classpath>
-        <fileset dir="../openide/netbeans/lib">
-          <include name="openide*.jar" />
-        </fileset>
-      </classpath>
-    </javac>
-  </target>
-
-  <target name="example-minicomposer-nodice" depends="example-init" unless="javasound">
-    <fail message="Sorry, minicomposer example requires JavaSound to be built.
-Included in JDK 1.3, else you may need to download it separately."/>
-  </target>
-  <target name="example-minicomposer" depends="example-init,jars" if="javasound">
-    <javac srcdir="api/examples" destdir="api/examples">
-      <include name="**/org/netbeans/examples/modules/minicomposer/"/>
-      <classpath>
-        <fileset dir="../openide/netbeans/lib">
-          <include name="openide*.jar" />
-        </fileset>
-      </classpath>
-    </javac>
-    <mkdir dir="examplemodules"/>
-    <!-- Note: compression on, because these things are frequently emailed, -->
-    <!-- and performance is irrelevant. -->
-    <!-- Note also that sources are intentionally included. -->
-    <!-- filesystem.attributes OK too, since people may want to unpack & fool with source. -->
-    <jar jarfile="examplemodules/minicomposer.jar"
-         manifest="api/examples/org/netbeans/examples/modules/minicomposer.mf"
-	 basedir="api/examples"
-	 includes="org/netbeans/examples/modules/minicomposer/"
-	 compress="true"/>
-  </target>
-
-  <target name="example-minicomposer-reload-build" description="Build minicomposer for testing purposes.">
-    <javac srcdir="api/examples" destdir="api/examples">
-      <include name="org/netbeans/examples/modules/minicomposer/"/>
-      <classpath>
-        <pathelement location="netbeans/lib/openide.jar"/>
-        <pathelement location="compiler/netbeans/modules/autoload/openide-compiler.jar"/>
-        <pathelement location="execution/netbeans/modules/autoload/openide-execution.jar"/>
-        <pathelement location="io/netbeans/modules/autoload/openide-io.jar"/>
-        <pathelement location="deprecated/netbeans/modules/autoload/openide-deprecated.jar"/>
-      </classpath>
-    </javac>
-    <mkdir dir="examplemodulereload/minicomposer-test"/>
-    <jar jarfile="examplemodulereload/minicomposer-test/minicomposer.jar"
-         manifest="api/examples/org/netbeans/examples/modules/minicomposer.mf"
-	 basedir="api/examples"
-	 includes="org/netbeans/examples/modules/minicomposer/"
-	 compress="false">
-      <exclude name="**/*.java"/>
-    </jar>
-  </target>
-  <target name="example-minicomposer-reload" depends="example-minicomposer-reload-build" description="Try installing minicomposer into running IDE.">
-    <nbinstaller action="reinstall" module="examplemodulereload/minicomposer-test/minicomposer.jar"/>
-  </target>
-
-  <target name="example-globalactions-reload-build" description="Build globalactions for testing purposes.">
-    <javac srcdir="api/examples" destdir="api/examples">
-      <include name="org/netbeans/examples/modules/globalactions/"/>
-      <classpath>
-        <fileset dir="../openide/netbeans/lib">
-          <include name="openide*.jar" />
-        </fileset>
-      </classpath>
-    </javac>
-    <mkdir dir="examplemodulereload/globalactions-test"/>
-    <jar jarfile="examplemodulereload/globalactions-test/globalactions.jar"
-         manifest="api/examples/org/netbeans/examples/modules/globalactions.mf"
-	 basedir="api/examples"
-	 includes="org/netbeans/examples/modules/globalactions/"
-	 compress="false"/>
-  </target>
-  <target name="example-globalactions-reload" depends="example-globalactions-reload-build" description="Try installing globalactions into running IDE.">
-    <nbinstaller action="reinstall" module="examplemodulereload/globalactions-test/globalactions.jar"/>
-  </target>
-
-  <target name="example-explservlet-reload-build" description="Build explservlet for testing purposes.">
-    <javac srcdir="api/examples" destdir="api/examples">
-      <include name="org/netbeans/examples/modules/explservlet/"/>
-      <classpath>
-        <pathelement location="netbeans/lib/openide.jar"/>
-        <pathelement location="../httpserver/external/servlet-2.2.jar"/>
-      </classpath>
-    </javac>
-    <mkdir dir="examplemodulereload/explservlet-test"/>
-    <jar jarfile="examplemodulereload/explservlet-test/explservlet.jar"
-         manifest="api/examples/org/netbeans/examples/modules/explservlet.mf"
-	 basedir="api/examples"
-	 includes="org/netbeans/examples/modules/explservlet/"
-	 compress="false"/>
-  </target>
-  <target name="example-explservlet-reload" depends="example-explservlet-reload-build" description="Try installing explservlet into running IDE.">
-    <nbinstaller action="reinstall" module="examplemodulereload/explservlet-test/explservlet.jar"/>
-  </target>
-
-  <target name="example-globalactions" depends="jars">
-    <javac srcdir="api/examples" destdir="api/examples">
-      <include name="org/netbeans/examples/modules/globalactions/"/>
-      <classpath>
-        <fileset dir="../openide/netbeans/lib">
-          <include name="openide*.jar" />
-        </fileset>
-      </classpath>
-    </javac>
-    <mkdir dir="examplemodules"/>
-    <jar jarfile="examplemodules/globalactions.jar"
-         manifest="api/examples/org/netbeans/examples/modules/globalactions.mf"
-	 basedir="api/examples"
-	 includes="org/netbeans/examples/modules/globalactions/"
-	 compress="true"/>
-  </target>
-
-  <!-- [PENDING] ideally would test all of javasound, jmf, mediaplayer properties -->
-  <target name="example-audioloader-nodice" depends="example-init" unless="mediaplayer">
-    <fail message="Sorry, audioloader example requires to be built: JavaSound; JMF 2.0 or greater; JMF's mediaplayer.
-JavaSound is included in JDK 1.3, else you may need to download it separately.
-The Java Media Framework is separately downloadable.
-Set jmf.home to the location of your JMF installation to continue."/>
-  </target>
-  <target name="example-audioloader" depends="example-init,jars" if="mediaplayer">
-    <javac srcdir="api/examples" destdir="api/examples">
-      <include name="**/org/netbeans/examples/modules/audioloader/"/>
-      <classpath>
-        <fileset dir="../openide/netbeans/lib">
-          <include name="openide*.jar" />
-        </fileset>
-        <pathelement location="${jmf.home}/lib/jmf.jar"/>
-        <pathelement location="${jmf.home}/lib/mediaplayer.jar"/>
-      </classpath>
-    </javac>
-    <mkdir dir="examplemodules"/>
-    <jar jarfile="examplemodules/audioloader.jar"
-         manifest="api/examples/org/netbeans/examples/modules/audioloader.mf"
-	 basedir="api/examples"
-	 includes="org/netbeans/examples/modules/audioloader/"
-	 compress="true"/>
-  </target>
-
-  <target name="apiexamples" depends="netbeans,examplemodules"
-          description="Build all API code examples.">
-    <ant dir="../sysprops"/>
-    <mkdir dir="examplemodules/apiexamples"/>
-    <copy todir="examplemodules/apiexamples">
-      <fileset dir="api/examples">
-        <include name="org/netbeans/examples/modules/minicomposer/"/>
-        <include name="org/netbeans/examples/modules/audioloader/"/>
-        <include name="org/netbeans/examples/modules/globalactions/"/>
-        <include name="org/netbeans/examples/scripts/"/>
-      </fileset>
-      <fileset dir="../sysprops/src"/>
-    </copy>
-    <mkdir dir="examplemodules/apiexamples/manifests"/>
-    <filter token="BUILD_NUMBER_SUBST" value="(demo module)"/>
-    <copy file="api/examples/org/netbeans/examples/modules/minicomposer.mf"
-          tofile="examplemodules/apiexamples/manifests/minicomposer.mf"/>
-    <copy file="api/examples/org/netbeans/examples/modules/audioloader.mf"
-          tofile="examplemodules/apiexamples/manifests/audioloader.mf"/>
-    <copy file="api/examples/org/netbeans/examples/modules/globalactions.mf"
-          tofile="examplemodules/apiexamples/manifests/globalactions.mf"/>
-    <copy file="../sysprops/manifest.mf"
-          tofile="examplemodules/apiexamples/manifests/sysprops.mf"
-	  filtering="true"/>
-    <zip zipfile="examplemodules/apiexamples.zip"
-         basedir="examplemodules/apiexamples"
-	 compress="true"/>
-  </target>
-
   <target name="nb-api-tutorial" description="Make Open APIs Getting Started Tutorial.">
     <zip zipfile="nb-api-tutorial.zip">
       <fileset dir="api/doc/tutorial">
@@ -924,9 +731,6 @@ Set jmf.home to the location of your JMF installation to continue."/>
       <fileset dir="compat/src">
         <include name="**/*.class"/>
       </fileset>
-      <fileset dir="api/examples">
-        <include name="**/*.class"/>
-      </fileset>
       <fileset dir=".">
         <include name="*-subst.mf"/>
       </fileset>
@@ -935,13 +739,10 @@ Set jmf.home to the location of your JMF installation to continue."/>
     <delete file="openide-13javac-workaround.jar"/>
     <delete dir="javadoc"/>
     <delete file="nb-api-tutorial.zip"/>
-    <delete dir="examplemodules"/>
     <delete dir="standalone"/>
     <delete dir="Info"/>
     <delete file="openide.nbm"/>
-  </target>
-  <target name="real-clean" depends="clean" description="As for clean, but also remove example module reload area.">
-    <delete dir="examplemodulereload"/>
+    <ant dir="api/examples" target="clean"/>
   </target>
 
     <target  name="standalone-fs" depends="standalone-fs-prepare" description="Creates ZIP file suitable for download. ZIP file contains all JARs necessary for using standalone filesystems (excluding a JAXP implementation).">
