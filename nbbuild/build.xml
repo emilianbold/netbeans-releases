@@ -1123,7 +1123,7 @@ the ${netbeans.dest}/bin/ directory.
         <include name="bin/fastjavac/fastjavac.linux"/>
         <include name="bin/fastjavac/fastjavac.sun"/>
         <include name="bin/fastjavac/fastjavac.sun.intel"/>
-        <include name="jakarta-tomcat-5.0.16/bin/*.sh"/>
+        <include name="jakarta-tomcat-5.0.18/bin/*.sh"/>
       </fileset>
     </chmod>
   </target>
