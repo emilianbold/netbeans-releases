@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -31,6 +31,7 @@ Microsystems, Inc. All Rights Reserved.
             <include name="ant/lib/**"/>
             <include name="ant/bin/**"/>
             <include name="ant/etc/**"/>
+            <include name="ant/patches/**"/>
         </patternset>
     </target>
 
@@ -69,6 +70,9 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="*.bat"/>
             </fileset>
         </chmod>
+        <!-- #47708: temporarily patch Ant to accept console input from forked Java processes: -->
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/ant/patches"/>
+        <copy file="external/24918.jar" tofile="${netbeans.dest.dir}/${cluster.dir}/ant/patches/ant162-24918.jar"/>
     </target>
 
     <target name="netbeans-extra" depends="jar-bridge,release"/>

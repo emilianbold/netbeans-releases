@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="ant/external" default="unscramble" basedir=".">
@@ -21,6 +21,8 @@ Microsystems, Inc. All Rights Reserved.
             <binary clear="ant-docs-1.6.2.zip" scrambled="ant-docs-1.6.2.zip.scrambled" license="${extnl}/apache-license-2.0.txt"/>
             <binary clear="ant-libs-1.6.2.zip" scrambled="ant-libs-1.6.2.zip.scrambled" license="${extnl}/apache-license-2.0.txt"/>
             <binary clear="ant-misc-1.6.2.zip" scrambled="ant-misc-1.6.2.zip.scrambled" license="${extnl}/apache-license-2.0.txt"/>
+            <!-- No LFI; simple patch against Apache Ant sources; cf. http://issues.apache.org/bugzilla/show_bug.cgi?id=24918 -->
+            <binary clear="24918.jar" scrambled="24918.jar.scrambled" license="${extnl}/apache-license-2.0.txt"/>
         </unscramble>
         <mkdir dir="lib"/>
         <unzip src="ant-libs-1.6.2.zip" dest="lib"/>
@@ -32,6 +34,7 @@ Microsystems, Inc. All Rights Reserved.
             <binary clear="ant-docs-1.6.2.zip.master" scrambled="ant-docs-1.6.2.zip.scrambled" license="${extnl}/apache-license-2.0.txt"/>
             <binary clear="ant-libs-1.6.2.zip.master" scrambled="ant-libs-1.6.2.zip.scrambled" license="${extnl}/apache-license-2.0.txt"/> 
             <binary clear="ant-misc-1.6.2.zip.master" scrambled="ant-misc-1.6.2.zip.scrambled" license="${extnl}/apache-license-2.0.txt"/>
+            <binary clear="24918.jar.master" scrambled="24918.jar.scrambled" license="${extnl}/apache-license-2.0.txt"/>
        </scramble>
     </target>
     <target name="clean">
@@ -39,6 +42,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete file="ant-docs-1.6.2.zip"/>
         <delete file="ant-libs-1.6.2.zip"/>
         <delete file="ant-misc-1.6.2.zip"/>
+        <delete file="24918.jar"/>
         <delete dir="lib"/>
     </target>
 </project>
