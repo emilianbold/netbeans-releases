@@ -1347,7 +1347,7 @@ public class BaseOptions extends OptionSupport {
     }
     
     /** Save changes to XML files.
-     * @see updateSettings(Class, Map, boolean) for details
+     * @see #updateSettings(java.lang.Class, java.util.Map, boolean )
      */
     private void updateSettings(Class processor, Map settings){
         updateSettings(processor, settings, true);
