@@ -29,7 +29,7 @@ public class Installer extends ModuleInstall {
     private final static long serialVersionUID = 1;
 
     /** Holds hooking code. */
-    private SearchHook hook;
+    private static SearchHook hook;
 
 
     // NOTE: It would be nice in installed method will be needed to set initial order of
