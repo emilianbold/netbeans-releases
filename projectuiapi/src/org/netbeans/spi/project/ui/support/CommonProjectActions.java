@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -27,7 +27,7 @@ public class CommonProjectActions {
     /**
      * Create an action "Set As Main Project".
      * It should be invoked with an action context containing
-     * one {@link Project}.
+     * one {@link org.netbeans.api.project.Project}.
      * <p class="nonnormative">
      * You might include this in the context menu of a logical view.
      * </p>
@@ -40,7 +40,7 @@ public class CommonProjectActions {
     /**
      * Create an action "Customize Project".
      * It should be invoked with an action context containing
-     * one {@link Project}.
+     * one {@link org.netbeans.api.project.Project}.
      * <p class="nonnormative">
      * You might include this in the context menu of a logical view.
      * </p>
@@ -53,7 +53,7 @@ public class CommonProjectActions {
     /**
      * Create an action "Open Subprojects".
      * It should be invoked with an action context containing
-     * one or more {@link Project}s.
+     * one or more {@link org.netbeans.api.project.Project}s.
      * <p class="nonnormative">
      * You might include this in the context menu of a logical view.
      * </p>
@@ -67,7 +67,7 @@ public class CommonProjectActions {
     /**
      * Create an action "Close Project".
      * It should be invoked with an action context containing
-     * one or more {@link Project}s.
+     * one or more {@link org.netbeans.api.project.Project}s.
      * <p class="nonnormative">
      * You might include this in the context menu of a logical view.
      * </p>

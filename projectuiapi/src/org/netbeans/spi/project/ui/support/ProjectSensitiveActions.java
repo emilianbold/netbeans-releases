@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -27,7 +27,7 @@ public class ProjectSensitiveActions {
         
     /**
      * Creates an action sensitive to the set of currently selected projects.
-     * When performed the action will call the given command on the {@link ActionProvider} of
+     * When performed the action will call the given command on the {@link org.netbeans.spi.project.ActionProvider} of
      * the selected project(s). The action will only be enabled when the exactly one
      * project is selected and the command is enabled in the project's action provider.<BR>
      * Shortcuts for actions are shared according to command, i.e. actions based on the same command
@@ -35,7 +35,7 @@ public class ProjectSensitiveActions {
      * @param command the command which should be invoked when the action is
      *        performed (see e.g. constants in {@link org.netbeans.spi.project.ActionProvider})
      * @param namePattern a pattern which should be used for determining the action's
-     *        name (label). It takes two parameters a la {@link MessageFormat}: <code>{0}</code> - number of selected projects;
+     *        name (label). It takes two parameters a la {@link java.text.MessageFormat}: <code>{0}</code> - number of selected projects;
      *        <code>{1}</code> - name of the first project.
      * @param icon icon of the action (or null)
      * @return an action sensitive to the current project
@@ -56,7 +56,7 @@ public class ProjectSensitiveActions {
      * listeningon the action or explicitely asks for some of the action's values.
      * @param performer an action performer. 
      * @param namePattern pattern which should be used for determining the action's
-     *        name (label). It takes two parameters a la {@link MessageFormat}: <code>{0}</code> - number of selected projects;
+     *        name (label). It takes two parameters a la {@link java.text.MessageFormat}: <code>{0}</code> - number of selected projects;
      *        <code>{1}</code> - name of the first project.
      * @param icon icon of the action (XXX or null?)
      * @return an action sensitive to the current project

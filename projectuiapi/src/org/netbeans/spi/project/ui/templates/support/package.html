@@ -7,7 +7,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <html>
@@ -58,11 +58,12 @@ The optional attributes are: <br>
 which instantiates the new file in specified target folder.</li>
 <blockquote>
 <b>Note:</b> a project type can declare own custom iterator with some project-specific customization,
-it's <b>recommended</b> to use the standardized target chooser exposed in {@link org.netbeans.spi.project.ui.templates.support.Templates.createSimpleTargetChooser}, 
-a similar target chooser offers {@link <a href="@JAVA/PROJECT@/org/netbeans/spi/java/project/support/ui/templates/JavaTemplates.html"><code>JavaTemplates.createPackageChooser</code></a>}
+it's <b>recommended</b> to use the standardized target chooser exposed in {@link org.netbeans.spi.project.ui.templates.support.Templates#createSimpleTargetChooser(org.netbeans.api.project.Project,org.netbeans.api.project.SourceGroup[]) Templates.createSimpleTargetChooser(...)},
+a similar target chooser offers
+<a href="@JAVA/PROJECT@/org/netbeans/spi/java/project/support/ui/templates/JavaTemplates.html#createPackageChooser(org.netbeans.api.project.Project,%20org.netbeans.api.project.SourceGroup[])"><code>JavaTemplates.createPackageChooser(...)</code></a>
 for Java-oriented projects.
 The project type also can use a <code>InstantiatingIterator</code> published by other module,
-i.e. <code>org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator</code>
+i.e. <a href="@JAVA/PROJECT@/org/netbeans/spi/java/project/support/ui/templates/JavaTemplates.html#createJavaTemplateIterator()"><code>JavaTemplates.createJavaTemplateIterator()</code></a>
 useful for Java-oriented templates in case of no needs to own customization.
 The last possibility is declaration no iterator, in this case will be used a generic iterator
 useful for simple file types without any specific needs, i.e. <code>properties file</code>.<br>
@@ -74,17 +75,18 @@ For file templates the <code>instantiate()</code> method should return Set of Fi
 automaticaly opened in the editor. Path of coresponding nodes will be
 expanded in the project or files tab.<br>
 </blockquote>
-<li><code><b>template-category</b></code> files the template to some category. The template's categories
-helps to filter the templates according to type of project.</li>
+<li><code><b>templateCategory</b></code> files the template to some category. The template's categories
+helps to filter the templates according to type of project.
+You may specify multiple categories separated by commas, e.g.: <samp>some-type,some-other-type</samp></li>
 <p>
 There are two importatnt interfaces affecting the behavior of the templates. Implementation of these interfaces should
 reside in the project's lookup.
 <p>
-First one is the <a href="@PROJECTS/PROJECTUIAPI@/org/netbeans/spi/project/ui/PriviledgedTemplates.html"><code>ProviledgedTemplates</code></a>.
+The first one is {@link org.netbeans.spi.project.ui.PrivilegedTemplates}.
 It is used for the initial content of the popup menu of <b>New File...</b>. It simply should return names of file tempolates from system
 filesystem which should be contained in the popup menu. Example implementation follows:
 <pre><code>
-private static final class PriviledgedTemplatesImpl implements PrivilegedTemplates {
+private static final class PrivilegedTemplatesImpl implements PrivilegedTemplates {
 
     private static final String[] PRIVILEGED_NAMES = new String[] {
         "Templates/Classes/Class.java",
@@ -101,10 +103,10 @@ private static final class PriviledgedTemplatesImpl implements PrivilegedTemplat
 }
 </code></pre>
 <p>
-Second interface is the <a href="@PROJECTS/PROJECTUIAPI@/org/netbeans/spi/project/ui/RecommendedTemplates.html"><code>RecommendedTemplates</code></a>,
+The second interface is {@link org.netbeans.spi.project.ui.RecommendedTemplates},
 which infulences the apperance of templates in the New File wizard according to project types. The implementation of the interface has to return 
-array of Strings which corresponds to names of template categories listed in the <code>template-category</code> attribute of template files. All templates 
-which list at least one recommended category in the <code>template-category</code> attribute will be listed for given project type.<br>
+array of Strings which corresponds to names of template categories listed in the <code>templateCategory</code> attribute of template files. All templates 
+which list at least one recommended category in the <code>templateCategory</code> attribute will be listed for given project type.<br>
 <b>Note:</b> if no <code>templateCategory</code> is declared then this template will be visible for each project regardless its type.<br>
 <p>
 Example implementation of <code>RecommendedTemplates</code> interface:

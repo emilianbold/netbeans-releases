@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -91,7 +91,7 @@ public abstract class ProjectOpenedHook {
      * {@link org.netbeans.api.project.ProjectManager#saveProject}
      * as a precaution in case the project was modified in an unusual
      * way (e.g. using
-     * {@link org.netbeans.spi.project.ExtensibleMetadataProvider}).
+     * {@link org.netbeans.spi.project.AuxiliaryConfiguration}).
      * </p></li>
      * <li><p>Call <a href="@JAVA/API@/org/netbeans/api/java/classpath/GlobalPathRegistry.html#unregister"><code>GlobalPathRegistry.unregister(...)</code></a>
      * with the same paths are were previously registered.</p></li>
