@@ -1037,7 +1037,7 @@ class JavaCodeGenerator extends CodeGenerator {
         if (exceptions != null)
             for (int i=0; i < exceptions.length; i++)
                 if (Exception.class.isAssignableFrom(exceptions[i])
-                    && RuntimeException.class.isAssignableFrom(exceptions[i]))
+                    && !RuntimeException.class.isAssignableFrom(exceptions[i]))
                 {
                     initCodeWriter.write("try {\n"); // NOI18N
                     return true;
