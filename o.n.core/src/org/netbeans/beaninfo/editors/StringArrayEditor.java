@@ -50,9 +50,7 @@ public class StringArrayEditor implements XMLPropertyEditor, StringArrayCustomiz
 
     public void setValue (Object value) {
         strings = (String[]) value;
-        if (editable) { // XXX cf. #35983
-            support.firePropertyChange("", null, null); // NOI18N
-        }
+        support.firePropertyChange("", null, null); // NOI18N
     }
 
     // -----------------------------------------------------------------------------
