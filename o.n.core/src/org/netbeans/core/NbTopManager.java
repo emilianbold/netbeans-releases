@@ -30,6 +30,7 @@ import com.netbeans.ide.util.datatransfer.ExClipboard;
 import com.netbeans.ide.*;
 import com.netbeans.ide.loaders.*;
 import com.netbeans.ide.actions.*;
+import com.netbeans.ide.cookies.SaveCookie;
 import com.netbeans.ide.debugger.Debugger;
 import com.netbeans.ide.debugger.DebuggerException;
 import com.netbeans.ide.filesystems.*;
@@ -280,14 +281,15 @@ public class NbTopManager extends TopManager {
     while (ee.hasNext ()) {
       try {
         dobj = (DataObject) ee.next ();
-        if (dobj.isModified ()) {
+        SaveCookie sc = (SaveCookie)dobj.getCookie(SaveCookie.class);
+        if (sc != null) {
           TopManager.getDefault().setStatusText (
             java.text.MessageFormat.format (
               NbBundle.getBundle (this).getString ("CTL_FMT_SavingMessage"),
               new Object[] { dobj.getName () }
             )
           );
-          dobj.save (true);
+          sc.save();
         }
       } catch (IOException ex) {
         bad.add (dobj);
