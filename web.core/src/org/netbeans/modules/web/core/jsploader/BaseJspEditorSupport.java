@@ -159,9 +159,20 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
         }
     }
     
+    private boolean isSupportedEncoding(String encoding){
+        boolean supported;
+        try{
+            supported = java.nio.charset.Charset.isSupported(encoding);
+        }
+        catch (java.nio.charset.IllegalCharsetNameException e){
+            supported = false;
+        }
+        return supported;
+    }
+    
     public void open(){
         encoding = getObjectEncoding(false);
-        if (!java.nio.charset.Charset.isSupported(encoding)){
+        if (!isSupportedEncoding(encoding)){
             NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
                 NbBundle.getMessage (BaseJspEditorSupport.class, "MSG_BadEncodingDuringLoad", //NOI18N
                     new Object [] { getDataObject().getPrimaryFile().getNameExt(),
@@ -179,7 +190,7 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
 
         Reader reader = null;
         encoding = getObjectEncoding(false);
-        if (!java.nio.charset.Charset.isSupported(encoding)){
+        if (!isSupportedEncoding(encoding)){
             encoding = defaulEncoding;
         }
         try {
@@ -195,7 +206,7 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
     protected void saveFromKitToStream(StyledDocument doc, EditorKit kit, OutputStream stream) throws IOException, BadLocationException {
         Writer wr = null;
         try {
-            if (!java.nio.charset.Charset.isSupported(encoding)){
+            if (!isSupportedEncoding(encoding)){
                 encoding = defaulEncoding;
             }
             wr = new OutputStreamWriter(stream, encoding);
@@ -277,14 +288,7 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
     private void saveDocument(boolean parse, boolean forceSave) throws IOException {
         if (forceSave || isModified()) {
             encoding = getObjectEncoding(true);
-            boolean supported;
-            try{
-                supported = java.nio.charset.Charset.isSupported(encoding);
-            }
-            catch (java.nio.charset.IllegalCharsetNameException e){
-                supported = false;
-            }
-            if (!supported){
+            if (!isSupportedEncoding(encoding)){
                 NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
                 NbBundle.getMessage (BaseJspEditorSupport.class, "MSG_BadEncodingDuringSave", //NOI18N
                     new Object [] { getDataObject().getPrimaryFile().getNameExt(),
