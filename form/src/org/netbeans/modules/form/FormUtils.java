@@ -96,6 +96,15 @@ public class FormUtils extends Object {
     w.setLocation((screenSize.width-dialogSize.width)/2,(screenSize.height-dialogSize.height)/2);
   }
   
+  /** Finds a top-level window containing given component.
+  * @return the window found or null if the component has not been added to any window.
+  */
+  public static Window findWindow (Component comp) {
+    while ((comp != null) && (!(comp instanceof Window))) comp = comp.getParent ();
+    if (comp instanceof Window) return (Window)comp;
+    return null;
+  }
+
   public static void notifyPropertyException (Class beanClass, String propertyName, String displayName, Throwable t, boolean reading) {
     boolean dontPrint = false;
     // if it is a subclass of Applet, we ignore InvocationTargetException
@@ -314,6 +323,7 @@ public class FormUtils extends Object {
 
 /*
  * Log
+ *  16   Gandalf   1.15        7/19/99  Ian Formanek    pack () in test mode
  *  15   Gandalf   1.14        7/4/99   Ian Formanek    aded menuBar ignored 
  *       property to JInternalFrame
  *  14   Gandalf   1.13        6/27/99  Ian Formanek    method 
