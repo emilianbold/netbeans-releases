@@ -229,7 +229,7 @@ public class NonGui extends NbTopManager implements Runnable {
             try {
                 File u = new File (userDirFile, SYSTEM_FOLDER);
                 File h = new File (homeDirFile, SYSTEM_FOLDER);
-                systemFileSystem = ModuleLayeredFileSystem.create (u, h);
+                systemFileSystem = org.netbeans.core.projects.SessionManager.getDefault().create(u, h);
             } catch (IOException ex) {
                 exc = ex;
             } catch (java.beans.PropertyVetoException ex) {

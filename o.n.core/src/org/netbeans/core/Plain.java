@@ -40,11 +40,11 @@ public class Plain extends NbTopManager implements Runnable {
     /** Creates defalt file system.
     */
     protected FileSystem createDefaultFileSystem () {
-        String systemDir = System.getProperty("system.dir");
+        String systemDir = System.getProperty("system.dir"); // NOI18N
 
         try {
             File f = systemDir == null ? null : new File (systemDir);
-            return ModuleLayeredFileSystem.create (f, f);
+            return org.netbeans.core.projects.SessionManager.getDefault().create(f, f);
         } catch (java.io.IOException ex) {
             ex.printStackTrace();
             throw new InternalError ();
@@ -92,7 +92,7 @@ public class Plain extends NbTopManager implements Runnable {
      */
     public void run() {
         XML.init();
-        String userDir = System.getProperty("modules.dir");
+        String userDir = System.getProperty("modules.dir"); // NOI18N
         FileSystem fs = getRepository().getDefaultFileSystem();
         try {
             moduleSystem = new ModuleSystem(fs, userDir == null ? null : new File(userDir), null);
