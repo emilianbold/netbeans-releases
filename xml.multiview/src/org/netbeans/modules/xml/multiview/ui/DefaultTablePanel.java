@@ -49,10 +49,7 @@ public class DefaultTablePanel extends javax.swing.JPanel {
         this.model=model;
         this.reordable=reordable;
         initComponents();
-        setBackground(SectionVisualTheme.getDocumentBackgroundColor());
-        buttonPanel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
-        jTable1.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
-        //table = new SortableTable(new SortableTableModel(model));
+
         jTable1.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         jTable1.setModel(model);
         javax.swing.table.JTableHeader header = jTable1.getTableHeader();
@@ -121,6 +118,8 @@ public class DefaultTablePanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.BorderLayout());
 
+        setOpaque(false);
+        buttonPanel.setOpaque(false);
         addButton.setMnemonic(org.openide.util.NbBundle.getMessage(DefaultTablePanel.class, "LBL_Add_mnem").charAt(0));
         addButton.setText(org.openide.util.NbBundle.getBundle(DefaultTablePanel.class).getString("LBL_Add"));
         addButton.setMargin(new java.awt.Insets(0, 14, 0, 14));

@@ -47,7 +47,6 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
      */
     public SectionInnerPanel(SectionView sectionView) {
         this.sectionView = sectionView;
-        setBackground(SectionVisualTheme.documentBackgroundColor);
     }
 
     public synchronized void addFocusListener(FocusListener l) {

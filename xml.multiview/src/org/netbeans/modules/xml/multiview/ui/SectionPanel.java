@@ -105,6 +105,7 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
@@ -113,6 +114,8 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         innerPanel.addFocusListener(sectionFocusListener);
         add(innerPanel, gridBagConstraints);
         Utils.scrollToVisible(this);
+        innerPanel.setBackground(
+            active ? SectionVisualTheme.getSectionActiveBackgroundColor() : SectionVisualTheme.getDocumentBackgroundColor());
     }
 
     protected SectionInnerPanel createInnerpanel() {
@@ -168,8 +171,10 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
     public void setActive(boolean active) {
         //System.out.println("setActive = "+active +":"+node.getDisplayName());
         titleButton.setBackground(
-                active ? SectionVisualTheme.getSectionHeaderActiveColor() : SectionVisualTheme.getSectionHeaderColor());
+            active ? SectionVisualTheme.getSectionHeaderActiveColor() : SectionVisualTheme.getSectionHeaderColor());
         //headerSeparator.setVisible(!active);
+        if (innerPanel!=null) innerPanel.setBackground(
+            active ? SectionVisualTheme.getSectionActiveBackgroundColor() : SectionVisualTheme.getDocumentBackgroundColor());
         if (headerButtons!=null) {
             for (int i=0;i<headerButtons.length;i++) headerButtons[i].setEnabled(active);
         }
