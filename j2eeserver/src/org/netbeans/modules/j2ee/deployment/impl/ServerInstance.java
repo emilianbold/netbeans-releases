@@ -39,6 +39,10 @@ import org.openide.util.RequestProcessor;
 
 public class ServerInstance implements Node.Cookie {
     
+    private static final String EMPTY_STRING = ""; //NOI18N
+    private String displayName = null;
+    private String state = EMPTY_STRING; 
+
     private final String url;
     private final Server server;
     private DeploymentManager manager;
@@ -58,19 +62,24 @@ public class ServerInstance implements Node.Cookie {
         this.server = server; this.url = url; this.manager = manager;
     }
     
-    private String _getDisplayName() {
+    public void setDisplayName(String name) {
         InstanceProperties props = InstanceProperties.getInstanceProperties(getUrl());
         if (props != null)
-            return props.getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
-        else
-            return null;
+            props.setProperty(InstanceProperties.DISPLAY_NAME_ATTR, name);
+        displayName = name;
     }
-    
     public String getDisplayName() {
-        String displayName = _getDisplayName();
-        if (displayName == null)
-            displayName = server.getDisplayName() + "(" + url + ")";
+        if (displayName == null) {
+            InstanceProperties props = InstanceProperties.getInstanceProperties(getUrl());
+            if (props != null)
+                displayName = props.getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
+        }
+        if (displayName == null) 
+            displayName = url;
         return displayName;
+    }
+    public String getDisplayNameWithState() {
+        return getDisplayName() + state;
     }
     
     public Server getServer() {
@@ -102,8 +111,10 @@ public class ServerInstance implements Node.Cookie {
     
     public void refresh(boolean running) {
         if (running) {
+            state = NbBundle.getMessage(ServerInstance.class, "LBL_StateRunning");
             initCoTarget();
         } else {        
+            state = NbBundle.getMessage(ServerInstance.class, "LBL_StateStopped");
             reset();
         }
         fireInstanceRefreshed(running);
@@ -695,5 +706,9 @@ public class ServerInstance implements Node.Cookie {
             ErrorManager.getDefault().log(ErrorManager.EXCEPTION, ex.getMessage());
         }
         return null;
+    }
+    
+    public boolean isDefault() {
+        return url.equals(ServerRegistry.getInstance().getDefaultInstance().getUrl());
     }
 }

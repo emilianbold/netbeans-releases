@@ -50,6 +50,10 @@ public class InstanceTargetXNode extends FilterXNode implements ServerInstance.R
         this.instance = instance;
     }
     
+    public String getDisplayName() {
+        return instance.getDisplayNameWithState();
+    }
+    
     private ServerTarget getServerTarget() {
         if (instanceTarget != null)
             return instanceTarget;
@@ -152,7 +156,7 @@ public class InstanceTargetXNode extends FilterXNode implements ServerInstance.R
             resetDelegateTargetNode();
             setChildren(new InstanceTargetChildren(Node.EMPTY, instance));
         //}
-        
+        this.setDisplayName(instance.getDisplayNameWithState());
         ((InstanceTargetChildren)getChildren()).updateKeys();
     }
 }

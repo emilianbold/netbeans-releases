@@ -60,6 +60,10 @@ public class RegistryNodeProvider {
         if (factory != null) {
             Node original = factory.getManagerNode(createLookup(instance));
             if (original != null) {
+                instance.setDisplayName(original.getDisplayName());
+                if (instance.isDefault()) {
+                    ServerRegistryNode.getServerRegistryNode().setDisplayNameWithDefaultServer(instance);
+                }
                 return new FilterXNode(original, xnode, true, new FilterXNode.XChildren(xnode));
             }
         }

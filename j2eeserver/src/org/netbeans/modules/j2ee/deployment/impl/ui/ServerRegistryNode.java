@@ -56,18 +56,7 @@ implements ServerRegistry.PluginListener, ServerRegistry.InstanceListener {
         setDisplayName(msg);
         setIconBase(REGISTRY_ICON_BASE);
     }
-    
-    void displayNameWithDefaultServer() {
-        ServerString defaultInstance = ServerRegistry.getInstance().getDefaultInstance();
-        if (defaultInstance != null) {
-            ServerInstance si = defaultInstance.getServerInstance();
-            String msg = NbBundle.getMessage(ServerRegistryNode.class,
-            "SERVER_REGISTRY_NODE_DEFAULT",
-            ((si == null) ? defaultInstance.getUrl() : si.getDisplayName()));//NOI18N
-            setDisplayName(msg);
-        }
-    }
-    
+
     public void serverAdded(Server server) {
         updateKeys();
     }
@@ -91,7 +80,7 @@ implements ServerRegistry.PluginListener, ServerRegistry.InstanceListener {
         refreshServerNode(instance);
     }
     public void changeDefaultInstance(ServerString oldInstance, ServerString instance) {
-        setInstance(instance == null ? null : instance.getServerInstance());
+        setDisplayNameWithDefaultServer(instance == null ? null : instance.getServerInstance());
     }
     private void refreshServerNode(ServerString instance) {
         Server server = instance.getServer();
@@ -120,7 +109,11 @@ implements ServerRegistry.PluginListener, ServerRegistry.InstanceListener {
         }
         return node;
     }
-    
+    private void initDefaultServerChildrenNodes() {
+        Server s = ServerRegistry.getInstance().getDefaultInstance().getServer();
+        Node node = getServerNode(s);
+        node.getChildren().getNodes();
+    }
     public SystemAction[] createActions() {
         return new SystemAction[] {
             SystemAction.get(FindDeploymentManagerAction.class),
@@ -134,12 +127,22 @@ implements ServerRegistry.PluginListener, ServerRegistry.InstanceListener {
         return helpCtx;
     }
     
-    public void setInstance(ServerInstance inst) {
-        String message = NbBundle.getMessage(ServerRegistryNode.class,"SERVER_REGISTRY_NODE_NO_DEFAULT");//NOI18N
-        if(inst != null) {
-            message = NbBundle.getMessage(ServerRegistryNode.class,"SERVER_REGISTRY_NODE_DEFAULT", inst.getDisplayName());//NOI18N
+    private void displayNameWithDefaultServer() {
+        ServerString server = ServerRegistry.getInstance().getDefaultInstance();
+        ServerInstance inst = null;
+        if (server != null)
+            inst = server.getServerInstance();
+        setDisplayNameWithDefaultServer(inst);
+    }
+    
+    void setDisplayNameWithDefaultServer(ServerInstance inst) {
+        String name = NbBundle.getMessage(ServerRegistryNode.class,"SERVER_REGISTRY_NODE_NO_DEFAULT");//NOI18N
+        if (inst != null) {
+            String instanceName = inst.getDisplayName();
+            String serverName = inst.getServer().getShortName();
+            name = NbBundle.getMessage(ServerRegistryNode.class, "SERVER_REGISTRY_NODE_DEFAULT", instanceName, serverName);
         }
-        setDisplayName(message);
+        setDisplayName(name);
     }
     
     private static class ServerChildren extends Children.Keys {
@@ -157,6 +160,7 @@ implements ServerRegistry.PluginListener, ServerRegistry.InstanceListener {
                 ServerRegistryNode parent = (ServerRegistryNode) getNode();
                 ServerRegistry.getInstance().addPluginListener(parent);
                 ServerRegistry.getInstance().addInstanceListener(parent);
+                parent.initDefaultServerChildrenNodes();
                 parent.displayNameWithDefaultServer();
                 listenersAdded = true;
             }
