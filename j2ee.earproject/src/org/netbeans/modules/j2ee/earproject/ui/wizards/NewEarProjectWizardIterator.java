@@ -88,7 +88,7 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.Instantiati
             //PENDING
         }
         
-        FileObject dir = FileUtil.toFileObject(dirF);
+        FileObject dir = FileUtil.toFileObject(FileUtil.normalizeFile(dirF));
         Project p = ProjectManager.getDefault().findProject(dir);
         
         Integer index = (Integer) wiz.getProperty(PROP_NAME_INDEX);

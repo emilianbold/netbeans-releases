@@ -79,10 +79,10 @@ public class EarProjectGenerator {
         while (rootF.getParentFile() != null) {
             rootF = rootF.getParentFile();
         }
-        FileObject fo = FileUtil.toFileObject (rootF);
+        FileObject fo = FileUtil.toFileObject (FileUtil.normalizeFile(rootF));
         assert fo != null : "At least disk roots must be mounted! " + rootF;
         fo.getFileSystem().refresh(false);
-        fo = FileUtil.toFileObject (dir);
+        fo = FileUtil.toFileObject (FileUtil.normalizeFile(dir));
         assert fo != null : "No such dir on disk: " + dir;
         assert fo.isFolder() : "Not really a dir: " + dir;
         assert fo.getChildren().length == 0 : "Dir must have been empty: " + dir;
@@ -147,9 +147,9 @@ public class EarProjectGenerator {
         FileObject fo = FileUtil.toFileObject (rootF);
         assert fo != null : "At least disk roots must be mounted! " + rootF;
         fo.getFileSystem().refresh(false);
-        fo = FileUtil.toFileObject (pDir);
-        FileObject docBase = FileUtil.toFileObject (metaInf);
-        FileObject appRootFO = FileUtil.toFileObject (top);
+        fo = FileUtil.toFileObject (FileUtil.normalizeFile(pDir));
+        FileObject docBase = FileUtil.toFileObject (FileUtil.normalizeFile(metaInf));
+        FileObject appRootFO = FileUtil.toFileObject (FileUtil.normalizeFile(top));
         assert fo != null : "No such dir on disk: " + pDir;
         assert fo.isFolder() : "Not really a dir: " + pDir;
         AntProjectHelper h = setupProject (fo, name, j2eeLevel, serverInstanceID);
@@ -218,6 +218,7 @@ public class EarProjectGenerator {
                     subprojectRoot.getFileObject("src/conf/ejb-jar.xml");
                 AntProjectHelper subProjHelper = null;
                 File subProjDir = new File(pDir,subprojectRoot.getName());
+                subProjDir = FileUtil.normalizeFile(subProjDir);
                 if (null != webDotXml) {
                     subProjHelper = WebProjectGenerator.importProject(subProjDir,
                         subprojectRoot.getName(), subprojectRoot, javaRoot, 
