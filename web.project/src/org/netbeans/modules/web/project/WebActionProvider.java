@@ -40,6 +40,8 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.NbBundle;
+import org.openide.src.*;
+import org.openide.cookies.SourceCookie;
 import org.netbeans.modules.j2ee.deployment.impl.projects.*;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.modules.j2ee.deployment.execution.*;
@@ -114,8 +116,10 @@ class WebActionProvider implements ActionProvider {
             commands.put(COMMAND_BUILD, new String[] {"dist"}); // NOI18N
             commands.put(COMMAND_CLEAN, new String[] {"clean"}); // NOI18N
             commands.put(COMMAND_REBUILD, new String[] {"clean", "dist"}); // NOI18N
+            // the target name is compile-single, except for JSPs, where it is compile-single-jsp
             commands.put(COMMAND_COMPILE_SINGLE, new String[] {"compile-single"}); // NOI18N
             commands.put(COMMAND_RUN, new String[] {"run"}); // NOI18N
+            // the target name is run, except for Java files with main method, where it is run-main
             commands.put(COMMAND_RUN_SINGLE, new String[] {"run"}); // NOI18N
             commands.put(WebProjectConstants.COMMAND_REDEPLOY, new String[] {"run"}); // NOI18N
             commands.put(COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
@@ -172,6 +176,7 @@ class WebActionProvider implements ActionProvider {
                 p.setProperty("forceRedeploy", "false"); //NOI18N
             }
             if (command.equals (COMMAND_RUN_SINGLE)) {
+                // run a JSP
                 FileObject[] files = findJsps( context );
                 if (files!=null && files.length>0) {
                     try {
@@ -193,6 +198,7 @@ class WebActionProvider implements ActionProvider {
                         return;
                     }
                 } else {
+                    // run HTML file
                     FileObject[] htmlFiles = findHtml(context);
                     if ((htmlFiles != null) && (htmlFiles.length>0)) {
                         String url = "/" + FileUtil.getRelativePath(WebModule.getWebModule (htmlFiles[0]).getDocumentBase (), htmlFiles[0]); // NOI18N
@@ -203,33 +209,53 @@ class WebActionProvider implements ActionProvider {
                             return;
                         }
                     } else {
+                        // run Java
                         FileObject[] javaFiles = findJavaSources(context);
                         if ((javaFiles != null) && (javaFiles.length>0)) {
-                            FileObject servlet = javaFiles[0];
-                            String executionUri = (String)servlet.getAttribute(SetExecutionUriAction.ATTR_EXECUTION_URI);
-                            if (executionUri!=null) {
-                                p.setProperty("client.urlPart", executionUri); //NOI18N
-                            } else {
-                                WebModule webModule = WebModule.getWebModule(servlet);
-                                String[] urlPatterns = SetExecutionUriAction.getServletMappings(webModule,servlet);
-                                if (urlPatterns!=null && urlPatterns.length>0) {
-                                    ServletUriPanel uriPanel = new ServletUriPanel(urlPatterns,null,true);
-                                    DialogDescriptor desc = new DialogDescriptor(uriPanel,
-                                        NbBundle.getMessage (SetExecutionUriAction.class, "TTL_setServletExecutionUri"));
-                                    Object res = DialogDisplayer.getDefault().notify(desc);
-                                    if (res.equals(NotifyDescriptor.YES_OPTION)) {
-                                        p.setProperty("client.urlPart", uriPanel.getServletUri()); //NOI18N
-                                        try {
-                                            servlet.setAttribute(SetExecutionUriAction.ATTR_EXECUTION_URI,uriPanel.getServletUri());
-                                        } catch (IOException ex){}
-                                    } else return;
+                            FileObject javaFile = javaFiles[0];
+                            
+                            if (hasMainMethod(javaFile)) {
+                                // run Java with Main method
+                                String clazz = FileUtil.getRelativePath(project.getSourceDirectory(), javaFile);
+                                p = new Properties();
+                                p.setProperty("javac.includes", clazz); // NOI18N
+                                // Convert foo/FooTest.java -> foo.FooTest
+                                if (clazz.endsWith(".java")) { // NOI18N
+                                    clazz = clazz.substring(0, clazz.length() - 5);
+                                }
+                                clazz = clazz.replace('/','.');
+                                
+                                p.setProperty("run.class", clazz); // NOI18N
+                                targetNames = new String [] {"run-main"};
+                            }
+                            else {
+                                // run servlet
+                                // PENDING - what about servlets with main method? servlet should take precedence
+                                String executionUri = (String)javaFile.getAttribute(SetExecutionUriAction.ATTR_EXECUTION_URI);
+                                if (executionUri!=null) {
+                                    p.setProperty("client.urlPart", executionUri); //NOI18N
                                 } else {
-                                    String mes = java.text.MessageFormat.format (
-                                            NbBundle.getMessage (SetExecutionUriAction.class, "TXT_missingServletMappings"),
-                                            new Object [] {servlet.getName()});
-                                    NotifyDescriptor desc = new NotifyDescriptor.Message(mes,NotifyDescriptor.Message.ERROR_MESSAGE);
-                                    DialogDisplayer.getDefault().notify(desc);
-                                    return;
+                                    WebModule webModule = WebModule.getWebModule(javaFile);
+                                    String[] urlPatterns = SetExecutionUriAction.getServletMappings(webModule,javaFile);
+                                    if (urlPatterns!=null && urlPatterns.length>0) {
+                                        ServletUriPanel uriPanel = new ServletUriPanel(urlPatterns,null,true);
+                                        DialogDescriptor desc = new DialogDescriptor(uriPanel,
+                                            NbBundle.getMessage (SetExecutionUriAction.class, "TTL_setServletExecutionUri"));
+                                        Object res = DialogDisplayer.getDefault().notify(desc);
+                                        if (res.equals(NotifyDescriptor.YES_OPTION)) {
+                                            p.setProperty("client.urlPart", uriPanel.getServletUri()); //NOI18N
+                                            try {
+                                                javaFile.setAttribute(SetExecutionUriAction.ATTR_EXECUTION_URI,uriPanel.getServletUri());
+                                            } catch (IOException ex){}
+                                        } else return;
+                                    } else {
+                                        String mes = java.text.MessageFormat.format (
+                                                NbBundle.getMessage (SetExecutionUriAction.class, "TXT_missingServletMappings"),
+                                                new Object [] {javaFile.getName()});
+                                        NotifyDescriptor desc = new NotifyDescriptor.Message(mes,NotifyDescriptor.Message.ERROR_MESSAGE);
+                                        DialogDisplayer.getDefault().notify(desc);
+                                        return;
+                                    }
                                 }
                             }
                         }
@@ -392,6 +418,53 @@ class WebActionProvider implements ActionProvider {
         return b.toString();
     }
     
+    // THIS METHOD IS COPIED FROM org.netbeans.modules.java.j2seproject.ui.customizer.MainClassChooser
+    private static String getMainMethod (Object obj, String expectedName) {
+        if (obj == null || !(obj instanceof SourceCookie)) {
+            return null;
+        }
+        SourceCookie cookie = (SourceCookie) obj;
+        // check the main class
+        String fullName = null;
+        SourceElement source = cookie.getSource ();
+        ClassElement[] classes = source.getClasses();
+        boolean hasMain = false;
+        for (int i = 0; i < classes.length; i++) {
+          if (expectedName == null || classes[i].getName().getName().equals (expectedName)) {
+            if (classes[i].hasMainMethod()) {
+                hasMain = true;
+                fullName = classes[i].getName ().getFullName ();
+                break;
+            }
+          }
+        }
+        if (hasMain) {
+            return fullName;
+        }
+        return null;
+    }
+    
+    // THIS METHOD IS COPIED FROM org.netbeans.modules.java.j2seproject.ui.customizer.MainClassChooser
+    /** Checks if given file object contains the main method.
+     *
+     * @param classFO file object represents java 
+     * @return false if parameter is null or doesn't contain SourceCookie
+     * or SourceCookie doesn't contain the main method
+     */    
+    public static boolean hasMainMethod (FileObject classFO) {
+        if (classFO == null) {
+            return false;
+        }
+        try {
+            DataObject classDO = DataObject.find (classFO);
+            return getMainMethod (classDO.getCookie (SourceCookie.class), null) != null;
+        } catch (DataObjectNotFoundException ex) {
+            // can ignore it, classFO could be wrongly set
+            return false;
+        }
+        
+    }
+
     public boolean isActionEnabled( String command, Lookup context ) {
         
         if ( findBuildXml() == null ) {
@@ -422,7 +495,7 @@ class WebActionProvider implements ActionProvider {
                         javaFiles[0].setAttribute("org.netbeans.modules.web.IsServletFile",Boolean.TRUE); //NOI18N
                     } catch (IOException ex){}
                     return true;
-                } else return false;
+                } else return true; /* because of java main classes, otherwise we would return false */
             } else return false;
         }
         else {

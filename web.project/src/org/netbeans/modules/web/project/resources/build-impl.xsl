@@ -210,6 +210,37 @@ is divided into following sections:
                     </sequential>
                  </macrodef>
             </target>
+            
+            <target name="-init-macrodef-java">
+                <macrodef>
+                    <xsl:attribute name="name">java</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/web-project/1</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">classname</xsl:attribute>
+                        <xsl:attribute name="default">${main.class}</xsl:attribute>
+                    </attribute>
+                    <element>
+                        <xsl:attribute name="name">customize</xsl:attribute>
+                        <xsl:attribute name="optional">true</xsl:attribute>
+                    </element>
+                    <sequential>
+                        <java fork="true" classname="@{{classname}}">
+                            <xsl:if test="/p:project/p:configuration/web:data/web:explicit-platform">
+                                <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
+                            </xsl:if>
+                            <jvmarg line="${{runmain.jvmargs}}"/>
+                            <classpath>
+                                <path path="${{build.classes.dir}}:${{javac.classpath}}"/>
+                            </classpath>
+                            <syspropertyset>
+                                <propertyref prefix="run-sys-prop."/>
+                                <mapper type="glob" from="run-sys-prop.*" to="*"/>
+                            </syspropertyset>
+                            <customize/>
+                        </java>
+                    </sequential>
+                </macrodef>
+            </target>
 
             <target name="-init-macrodef-nbjpda">
                 <macrodef>
@@ -290,7 +321,7 @@ is divided into following sections:
             </target>
             
             <target name="init">
-                <xsl:attribute name="depends">-pre-init,-init-private,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-nbjpda,-init-macrodef-debug,-init-taskdefs</xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-init-private,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-java,-init-macrodef-nbjpda,-init-macrodef-debug,-init-taskdefs</xsl:attribute>
             </target>
 
             <xsl:comment>
@@ -483,6 +514,14 @@ is divided into following sections:
                 <xsl:attribute name="depends">run-deploy</xsl:attribute>
                 <nbbrowse url="${{client.url}}"/>
             </target>
+            
+            <target name="run-main">
+                <xsl:attribute name="depends">init,compile-single</xsl:attribute>
+                <fail unless="run.class">Must select one file in the IDE or set run.class</fail>
+                <webproject:java classname="${{run.class}}"/>
+            </target>
+
+            
             <xsl:comment>
     =================
     DEBUGGING SECTION
