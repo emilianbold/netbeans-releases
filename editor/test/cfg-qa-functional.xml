@@ -25,6 +25,7 @@ Microsystems, Inc. All Rights Reserved.
                <include name="org/netbeans/test/editor/suites/smart_enter/SmartEnter*"/>
                <include name="smart_bracket/SmartBracketTestSuite.class"/>
                <include name="code_folding/CodeFoldingTestSuite.class"/>
+               <include name="general/GeneralTestSuite.class"/>
 
              </patternset>
          </testset>
