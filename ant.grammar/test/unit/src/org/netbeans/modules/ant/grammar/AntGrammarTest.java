@@ -169,23 +169,76 @@ public class AntGrammarTest extends NbTestCase {
         assertTrue("matched property ${bar} used after another prop: " + l, l.contains("${bar}"));
     }
     
+    public void testAddedProperties() throws Exception {
+        String p = "<project default='x'><property name='foo' value='whatever'/><target><echo message='${HERE'/></target></project>";
+        List l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
+        assertTrue("matched defined property ${foo}: " + l, l.contains("${foo}"));
+    }
+    
+    public void testImpliedProperties() throws Exception {
+        String p = "<project default='x'><target if='someprop'><echo message='${HERE'/></target></project>";
+        List l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
+        assertTrue("matched property ${someprop} from <target if>: " + l, l.contains("${someprop}"));
+        p = "<project default='x'><target><junit errorproperty='failed'/><echo message='${HERE'/></target></project>";
+        l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
+        assertTrue("matched property ${failed} from <junit errorproperty>: " + l, l.contains("${failed}"));
+        // XXX could also test other standard names
+    }
+    
+    public void testImplicitProperties() throws Exception {
+        String p = "<project default='x'><target><buildnumber/><echo message='${HERE'/></target></project>";
+        List l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
+        assertTrue("matched property ${build.number} from <buildnumber>: " + l, l.contains("${build.number}"));
+        // XXX could also test other standard names
+    }
+    
+    public void testIndirectProperties() throws Exception {
+        String p = "<project default='x'><target><property name='${foo}' value='bar'/><echo message='${HERE'/></target></project>";
+        List l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
+        assertFalse("did not match non-property ${${foo}}: " + l, l.contains("${${foo}}"));
+    }
+    
+    public void testNonProperties() throws Exception {
+        String p = "<project default='x'><target><echo>${foo</echo><echo message='${HERE'/></target></project>";
+        List l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
+        assertFalse("did not match broken property ref '${foo': " + l, l.contains("${foo}"));
+        p = "<project default='x'><target><echo>$${foo}</echo><echo message='${HERE'/></target></project>";
+        l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
+        assertFalse("did not match escaped property nonref '$${foo}': " + l, l.contains("${foo}"));
+        p = "<project default='x'><target><echo>${}</echo><echo message='${HERE'/></target></project>";
+        l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
+        assertFalse("did not match empty property name: " + l, l.contains("${}"));
+        p = "<project default='x'><target><echo>$$${foo}</echo><echo message='${HERE'/></target></project>";
+        l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
+        assertTrue("but '$$${foo}' is a property ref after an escaped shell: " + l, l.contains("${foo}"));
+    }
+    
+    public void testNonCompletingProperties() throws Exception {
+        String p = "<project default='x'><target><echo message='$${baseHERE'/></target></project>";
+        List l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
+        assertFalse("did not match property non-ref $${basedir}: " + l, l.contains("$${basedir}"));
+        assertEquals("in fact there are no completions here", Collections.EMPTY_LIST, l);
+        p = "<project default='x'><target><echo message='$$${baseHERE'/></target></project>";
+        l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
+        assertTrue("but did match property ref $$${basedir}: " + l, l.contains("$$${basedir}"));
+        p = "<project default='x'><target><echo message='${basedir}HERE'/></target></project>";
+        l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
+        assertFalse("${basedir} is already complete: " + l, l.contains("${basedir}"));
+        assertEquals("in fact there are no completions here", Collections.EMPTY_LIST, l);
+    }
+    
+    public void testCompleteImpliedProperties() throws Exception {
+        String p = "<project default='x'><target if='baseHERE'/></project>";
+        List l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
+        assertTrue("completing <target if>: " + l, l.contains("basedir"));
+        p = "<project default='x'><target><condition><isset property='baseHERE'/></condition></target></project>";
+        l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
+        assertTrue("completing <isset property>: " + l, l.contains("basedir"));
+        // XXX could also test other standard names
+    }
+    
     // XXX tests needed:
     // - testSpecials
     // adding <target> and <description> (esp. that <description> appears only once!)
-    // - testAddedProperties
-    // <property name='foo' .../> produces ${foo} etc.
-    // - testImpliedProperties
-    // <target if='foo'>, <junit errorproperty='foo'>, etc. produce ${foo}
-    // - testImplicitProperties
-    // <buildnumber> produces ${build.number} etc.
-    // - testIndirectProperties
-    // <property name='${foo}' .../> does not produce ${${foo}}
-    // - testNonProperties
-    // '${foo', '$${foo}', etc. do not produce ${foo}, and '${}' does not produce ${}
-    // - testNonCompleting
-    // '$${base' should not complete to $${basedir}
-    // '${basedir}' is already completed, no more completions allowed
-    // - testCompleteImpliedProperties
-    // "<target if='base", "<isset property='base", etc. complete just name
 
 }
