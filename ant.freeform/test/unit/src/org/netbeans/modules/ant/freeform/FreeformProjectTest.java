@@ -15,6 +15,8 @@ package org.netbeans.modules.ant.freeform;
 
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
@@ -37,6 +39,20 @@ public class FreeformProjectTest extends TestBase {
         ProjectInformation info = ProjectUtils.getInformation(simple);
         assertEquals("correct name", "Simple Freeform Project", info.getName());
         assertEquals("same display name", "Simple Freeform Project", info.getDisplayName());
+    }
+    
+    public void testSources() throws Exception {
+        Sources s = ProjectUtils.getSources(simple);
+        SourceGroup[] groups = s.getSourceGroups(Sources.TYPE_GENERIC);
+        assertEquals("one generic group", 1, groups.length);
+        assertEquals("right root folder", simple.getProjectDirectory(), groups[0].getRootFolder());
+        assertEquals("right display name", "Simple Freeform Project", groups[0].getDisplayName());
+        groups = s.getSourceGroups("java");
+        assertEquals("two Java groups", 2, groups.length);
+        assertEquals("right root folder #1", simple.getProjectDirectory().getFileObject("src"), groups[0].getRootFolder());
+        assertEquals("right display name #1", "Main Sources", groups[0].getDisplayName());
+        assertEquals("right root folder #2", simple.getProjectDirectory().getFileObject("antsrc"), groups[1].getRootFolder());
+        assertEquals("right display name #2", "Ant Task Sources", groups[1].getDisplayName());
     }
     
 }
