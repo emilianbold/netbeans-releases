@@ -494,19 +494,19 @@ public class EventSetPattern extends Pattern {
     void generateAddListenerMethod ( String body, boolean javadoc ) throws SourceException {
         ClassElement declaringClass = getDeclaringClass();
         MethodElement newMethod = new MethodElement();
-
+        int modifiers = Modifier.PUBLIC | Modifier.SYNCHRONIZED;
         MethodParameter[] newParameters = { new MethodParameter( "listener", type, false ) }; // NOI18N
 
         newMethod.setName( Identifier.create( "add" + capitalizeFirstLetter( getName() ) ) ); // NOI18N
         newMethod.setReturn( Type.VOID );
-        newMethod.setModifiers( Modifier.PUBLIC | Modifier.SYNCHRONIZED );
         newMethod.setParameters( newParameters );
 
-        if ( declaringClass.isInterface() )
+        if ( declaringClass.isInterface() ) {
             newMethod.setBody( null );
-        else if ( body != null )
+            modifiers &= ~Modifier.SYNCHRONIZED;    // synchronized modifier is not allowed in interface
+        } else if ( body != null )
             newMethod.setBody( body );
-
+        newMethod.setModifiers( modifiers );
         if ( isUnicast )
             newMethod.setExceptions( new Identifier[] { Identifier.create( "java.util.TooManyListenersException" ) } ); // NOI18N
         if ( javadoc ) {
@@ -530,19 +530,19 @@ public class EventSetPattern extends Pattern {
     void generateRemoveListenerMethod( String body, boolean javadoc ) throws SourceException {
         ClassElement declaringClass = getDeclaringClass();
         MethodElement newMethod = new MethodElement();
-
+        int modifiers = Modifier.PUBLIC | Modifier.SYNCHRONIZED;
         MethodParameter[] newParameters = { new MethodParameter( "listener", type, false ) }; // NOI18N
 
         newMethod.setName( Identifier.create( "remove" + capitalizeFirstLetter( getName() ) ) ); // NOI18N
         newMethod.setReturn( Type.VOID );
-        newMethod.setModifiers( Modifier.PUBLIC | Modifier.SYNCHRONIZED );
         newMethod.setParameters( newParameters );
 
-        if ( declaringClass.isInterface() )
+        if ( declaringClass.isInterface() ) {
             newMethod.setBody( null );
-        else if ( body != null )
+            modifiers &= ~Modifier.SYNCHRONIZED;    // synchronized modifier is not allowed in interface
+        } else if ( body != null )
             newMethod.setBody( body );
-
+        newMethod.setModifiers( modifiers );
         if ( javadoc ) {
             String comment = MessageFormat.format( PatternNode.getString( "COMMENT_RemoveListenerMethod" ),
                                                    new Object[] { type.getClassName().getName() } );
