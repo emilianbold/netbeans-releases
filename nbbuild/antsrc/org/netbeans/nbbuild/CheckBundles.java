@@ -36,7 +36,8 @@ public class CheckBundles extends Task {
         "OpenIDE-Module-Name",
         "OpenIDE-Module-Display-Category",
         "OpenIDE-Module-Long-Description",
-        "OpenIDE-Module-Short-Description"
+        "OpenIDE-Module-Short-Description",
+        "OpenIDE-Module-Package-Dependency-Message"
     };
     
     private File srcdir;
