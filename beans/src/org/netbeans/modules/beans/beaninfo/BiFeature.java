@@ -798,6 +798,7 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
             if (PRIMITIVE_2_CLASS == null) {
                 Map m = new HashMap();
                 m.put("int", "Integer.TYPE"); // NOI18N
+                m.put("boolean", "Boolean.TYPE"); // NOI18N
                 m.put("char", "Character.TYPE"); // NOI18N
                 m.put("long", "Long.TYPE"); // NOI18N
                 m.put("short", "Short.TYPE"); // NOI18N
