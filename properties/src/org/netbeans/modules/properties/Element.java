@@ -107,7 +107,7 @@ implements Serializable {
   * @return the string
   */
   public String toString() {
-    return "(" + bounds.getBegin().getOffset() + ", " + bounds.getEnd().getOffset() + ")";
+    return (bounds == null) ? "(no bounds)" : "(" + bounds.getBegin().getOffset() + ", " + bounds.getEnd().getOffset() + ")";
   }
   
   // -------------------- INNER CLASSES ----------------------
@@ -400,6 +400,7 @@ implements Serializable {
 
 /*
  * <<Log>>
+ *  9    Gandalf   1.8         8/18/99  Petr Jiricka    Nothing
  *  8    Gandalf   1.7         8/9/99   Petr Jiricka    Removed debug prints
  *  7    Gandalf   1.6         6/16/99  Petr Jiricka    
  *  6    Gandalf   1.5         6/10/99  Petr Jiricka    

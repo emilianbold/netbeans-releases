@@ -50,7 +50,7 @@ public class PropertyBundleSupport implements Serializable {
      * @param	l		the PropertyBundleListener
      */
     public void addPropertyBundleListener(PropertyBundleListener l) {
-	listenerList.add(PropertyBundleListener.class, l);
+      listenerList.add(PropertyBundleListener.class, l);
     }
 
     /**
@@ -60,7 +60,7 @@ public class PropertyBundleSupport implements Serializable {
      * @param	l		the PropertyBundleListener
      */
     public void removePropertyBundleListener(PropertyBundleListener l) {
-	listenerList.remove(PropertyBundleListener.class, l);
+      listenerList.remove(PropertyBundleListener.class, l);
     }
                                      
     /** Fires a global change event - structure may have changed. */
@@ -91,15 +91,15 @@ public class PropertyBundleSupport implements Serializable {
      * @see EventListenerList
      */
     public void fireBundleChanged(PropertyBundleEvent e) {
-	// Guaranteed to return a non-null array
-	Object[] listeners = listenerList.getListenerList();
-	// Process the listeners last to first, notifying
-	// those that are interested in this event
-	for (int i = listeners.length-2; i>=0; i-=2) {
-	    if (listeners[i]==PropertyBundleListener.class) {
-		((PropertyBundleListener)listeners[i+1]).bundleChanged(e);
-	    }
-	}
+      // Guaranteed to return a non-null array
+      Object[] listeners = listenerList.getListenerList();
+      // Process the listeners last to first, notifying
+      // those that are interested in this event
+      for (int i = listeners.length-2; i>=0; i-=2) {
+        if (listeners[i]==PropertyBundleListener.class) {
+          ((PropertyBundleListener)listeners[i+1]).bundleChanged(e);
+        }
+      }
     }
                           
 } // End of class PropertyBundleSupport
