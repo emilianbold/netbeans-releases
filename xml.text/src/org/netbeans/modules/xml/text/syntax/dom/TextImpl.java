@@ -44,7 +44,7 @@ public class TextImpl extends SyntaxNode implements Text {
      */
     TextImpl(XMLSyntaxSupport syntax, TokenItem from, AttrImpl parent) {
         super( syntax, from, 0);
-        if (parent == null) throw new IllegalArgumentException(null);
+        if (parent == null) throw new IllegalArgumentException();
         this.parent = parent;
     }
     
