@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -189,7 +189,7 @@ public class MakeUpdateDesc extends MatchingTask {
                     }
                     desc_ent = new File(ent_name);               
                     desc_ent.delete();
-                    pw.println ("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.2//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_2.dtd\" ["); //NOI18N
+                    pw.println ("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.3//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_3.dtd\" ["); //NOI18N
                     // Would be better to follow order of groups and includes
                     pw.println ("    <!ENTITY entity SYSTEM \"" + xmlEscape(desc_ent.getName()) + "\">"); //NOI18N
                     int inc_num=0;
