@@ -1273,6 +1273,21 @@ class JavaCodeGenerator extends CodeGenerator {
         }
     }
 
+    /**
+    * Returns whether the specified event handler is empty (with no user
+    * code). Empty handlers can be deleted without user confirmation.
+    * @return true if the event handler exists and is empty
+    */
+    public boolean isEventHandlerEmpty(String handlerName) {
+        JavaEditor.InteriorSection section = getEventHandlerSection(handlerName);
+        if (section != null) {
+            String tx = section.getText();
+            tx = tx.substring(tx.indexOf("{")+1, tx.lastIndexOf("}")).trim();
+            return tx.equals("") || tx.equals(getDefaultEventBody().trim());
+        }
+        return false;
+    }
+
     // ------------------------------------------------------------------------------------------
     // Private methods
 

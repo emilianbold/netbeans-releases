@@ -176,8 +176,13 @@ public class EventCustomEditor extends javax.swing.JPanel {
                     changes.getAdded().set(ii,newName);
                 }
                 else {
-                    changes.getRenamedOldNames().add(oldName);
-                    changes.getRenamedNewNames().add(newName);
+                    ii = changes.getRenamedNewNames().indexOf(oldName);
+                    if (ii >= 0) // this handler has been already renamed
+                        changes.getRenamedNewNames().set(ii, newName);
+                    else {
+                        changes.getRenamedOldNames().add(oldName);
+                        changes.getRenamedNewNames().add(newName);
+                    }
                 }
 
                 handlersModel.set(i,newName);

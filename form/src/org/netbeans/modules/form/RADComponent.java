@@ -1491,7 +1491,9 @@ public class RADComponent {
                     eventCombo.getEditor().addActionListener(new java.awt.event.ActionListener() {
                         public void actionPerformed(java.awt.event.ActionEvent e) {
                             String selected =(String) eventCombo.getEditor().getItem();
+                            String oldname = lastSelectedHandler;
                             lastSelectedHandler = selected;
+                            boolean removed = false;
                             boolean isNew = true;
                             String items[] = new String[eventCombo.getItemCount()];
                             for (int i=0, n=eventCombo.getItemCount(); i<n; i++) {
@@ -1502,11 +1504,23 @@ public class RADComponent {
                             }
                             if (isNew) {
                                 HandlerSetChange change = new HandlerSetChange();
-                                change.getAdded().add(selected);
+                                if (eventCombo.getItemCount()==0) {     // event added
+                                    change.getAdded().add(selected);
+                                    eventCombo.addItem(selected);
+                                }
+                                else {
+                                    if (selected.equals("")) {          // event deleted
+                                        change.getRemoved().add(oldname);
+                                        removed = true;
+                                    }
+                                    else {                              // event renamed
+                                        change.getRenamedOldNames().add(oldname);
+                                        change.getRenamedNewNames().add(selected);
+                                    }
+                                }
                                 EventEditor.this.setValue(change);
-                                eventCombo.addItem(selected);
                             }
-                            event.gotoEventHandler(selected);
+                            if (!removed) event.gotoEventHandler(selected);
                         }
                     }
                                                              );
