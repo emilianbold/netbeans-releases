@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -308,6 +308,7 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/> <!-- for the manifest -->
                 <pathelement location="${core.dir}/${nb.lib.dir}/ext/boot.jar"/>
                 <pathelement location="${core/windows.dir}/${nb.modules.dir}/core-windows.jar"/>
+                <pathelement location="${core/settings.dir}/${nb.modules/autoload.dir}/core-settings.jar"/>
 
                 <fileset dir="../../libs/external">
                     <include name="xerces-*.jar"/>
@@ -336,6 +337,7 @@ Microsystems, Inc. All Rights Reserved.
              <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/> 
              <pathelement location="${core.dir}/${nb.modules/autoload.dir}/terminalemulator.jar"/>
              <pathelement location="${core.dir}/${nb.modules/autoload.dir}/terminalemulator.jar"/>
+             <pathelement location="${core/settings.dir}/${nb.modules/autoload.dir}/core-settings.jar"/>
                 
              <fileset dir="${libs/xerces.dir}/${nb.modules/autoload.dir}/ext">
                   <include name="xerces-*.jar"/>
