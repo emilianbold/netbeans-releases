@@ -16,6 +16,7 @@
 
 
 <tocitem text="Servers and Databases">
+<tocitem text="Web Servers">
 <tocitem text="Tomcat Server">
 	<tocitem text="About the Tomcat Server" target="tomcat_plugin" />
 	<tocitem text="Setting Up the Tomcat Server">
@@ -35,5 +36,6 @@
         <tocitem text="Running a JSP File Using a Tomcat Server" target="jsp_run" />
         <tocitem text="Running a Servlet Using a Tomcat Server" target="servlet_run" />
 	<tocitem text="Removing a Web Application from a Tomcat Server" target="tomcat_context_delete" />	
+</tocitem>
 </tocitem>
 </toc>
