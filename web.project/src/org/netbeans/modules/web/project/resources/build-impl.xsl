@@ -420,7 +420,6 @@ is divided into following sections:
                     </taskdef>
 
                     <mkdir dir="${{build.web.dir}}/WEB-INF/wsdl"/>
-                    <mkdir dir="${{web.docbase.dir}}/WEB-INF/wsdl"/>
                     <mkdir dir="${{build.classes.dir}}"/>
                     <mkdir dir="${{build.generated.dir}}/wssrc"/>
                 </target>
@@ -430,40 +429,22 @@ is divided into following sections:
               <xsl:variable name="wsname">
                 <xsl:value-of select="webproject2:web-service-name"/>
               </xsl:variable>
-              <xsl:choose>
-              <xsl:when test="webproject2:from-wsdl">
-                <target name="{$wsname}_wscompile" depends="init, wscompile-init">
-                  <wscompile import="true" 
-                     config="${{src.dir}}/${{{$wsname}.config.name}}"
-                     features="norpcstructures" 
-                     mapping="${{web.docbase.dir}}/WEB-INF/wsdl/${{{$wsname}.mapping}}"
-                     classpath="${{wscompile.classpath}}" 
-                     nonClassDir="${{build.web.dir}}/WEB-INF/wsdl" 
-                     verbose="true" 
-                     xPrintStackTrace="true" 
-                     base="${{src.dir}}" 
-                     sourceBase="${{src.dir}}" 
-                     keep="true" 
-                     fork="true" />
-                </target>  
-              </xsl:when>
-              <xsl:otherwise>
-                 <target name="{$wsname}_wscompile" depends="wscompile-init">
-                  <wscompile
-                     server="true"
-                     fork="true"
-                     keep="true"
-                     base="${{build.generated.dir}}/wssrc"
-                     xPrintStackTrace="true"
-                     verbose="true"
-                     nonClassDir="${{build.web.dir}}/WEB-INF/wsdl"
-                     classpath="${{wscompile.classpath}}:build/web/WEB-INF/classes"
-                     mapping="${{build.web.dir}}/WEB-INF/wsdl/${{{$wsname}.mapping}}"
-                     config="${{src.dir}}/${{{$wsname}.config.name}}">
-                  </wscompile>
-                </target>
-              </xsl:otherwise>
-              </xsl:choose> 
+
+              <target name="{$wsname}_wscompile" depends="wscompile-init">
+                <wscompile
+                   server="true"
+                   fork="true"
+                   keep="true"
+                   base="${{build.generated.dir}}/wssrc"
+                   xPrintStackTrace="true"
+                   verbose="true"
+                   nonClassDir="${{build.web.dir}}/WEB-INF/wsdl"
+                   classpath="${{wscompile.classpath}}:build/web/WEB-INF/classes"
+                   mapping="${{build.web.dir}}/WEB-INF/wsdl/${{{$wsname}.mapping}}"
+                   config="${{src.dir}}/${{{$wsname}.config.name}}">
+                   <!-- HTTPProxy="${http.proxyHost}:${http.proxyPort}" -->
+                </wscompile>
+              </target>
             </xsl:for-each>
 
             <xsl:for-each select="/p:project/p:configuration/webproject2:data/webproject2:web-service-clients/webproject2:web-service-client">
@@ -578,13 +559,11 @@ is divided into following sections:
 				<xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:web-services/webproject2:web-service">
 					<xsl:attribute name="depends">
 						<xsl:for-each select="/p:project/p:configuration/webproject2:data/webproject2:web-services/webproject2:web-service">
-                           <xsl:if test="not(webproject2:from-wsdl)">
-							<xsl:if test="position()!=1 and not(preceding-sibling::webproject2:web-service/webproject2:from-wsdl)"><xsl:text>, </xsl:text></xsl:if>
+							<xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
 							<xsl:variable name="wsname2">
 								<xsl:value-of select="webproject2:web-service-name"/>
 							</xsl:variable>
 							<xsl:value-of select="webproject2:web-service-name"/><xsl:text>_wscompile</xsl:text>
-                           </xsl:if> 
 						</xsl:for-each>
 					</xsl:attribute>
 				</xsl:if>

@@ -38,15 +38,6 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 
-import java.lang.reflect.Modifier;
-import org.openide.src.ClassElement;
-import org.openide.src.FieldElement;
-import org.openide.src.Identifier;
-import org.openide.src.MethodElement;
-import org.openide.src.MethodParameter;
-import org.openide.src.SourceException;
-import org.openide.src.Type;
-
 /**
  *
  * @author  rico
@@ -71,7 +62,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
         return sessionGenerator.generateWebServiceImplBean(wsName, pkg, project, delegateData);
     }
     
-    public void addServiceImpl(String serviceName, FileObject configFile, boolean fromWSDL) {
+    public void addServiceImpl(String serviceName, FileObject configFile) {
         
         //Add properties to project.properties file
         EditableProperties ep =  helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -98,10 +89,6 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
         Element webserviceName = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, WEB_SERVICE_NAME); //NOI18N
         webservice.appendChild(webserviceName);
         webserviceName.appendChild(doc.createTextNode(serviceName));
-        if(fromWSDL) {
-            Element fromWSDLElem = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "from-wsdl");
-            webservice.appendChild(fromWSDLElem);
-        }
         helper.putPrimaryConfigurationData(data, true);
         
         // Update wscompile related properties.  boolean return indicates whether
@@ -112,7 +99,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
             ProjectManager.getDefault().saveProject(project);
         }catch(java.io.IOException ioe){
             throw new RuntimeException(ioe.getMessage());
-        }
+        }       
     }
     
     public  void addServiceEntriesToDD(String serviceName, String serviceEndpointInterface, String servantClassName) {
@@ -219,7 +206,29 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
         return null;
     }
     
-    public void removeProjectEntries(String serviceName) {
+    public void removeServiceEntry(String serviceName, String linkName) {
+        //remove ejb  entry in ejb-jar.xml
+        EjbJarImplementation ejbJarImpl = (EjbJarImplementation)project.getLookup().lookup(EjbJarImplementation.class);
+        EjbJar ejbJar = getEjbJar();
+        EnterpriseBeans beans = ejbJar.getEnterpriseBeans();
+        Session[] sessionBeans = beans.getSession();
+        for(int i = 0; i < sessionBeans.length; i++) {
+            Session sessionBean = sessionBeans[i];
+            if(sessionBean.getEjbName().equals(linkName)) {
+                beans.removeSession(sessionBean);
+                break;
+            }
+        }
+        try {
+            ejbJar.write(ejbJarImpl.getDeploymentDescriptor());
+        }
+        catch(java.io.IOException e) {
+            NotifyDescriptor ndd =
+            new NotifyDescriptor.Message(NbBundle.getMessage(this.getClass(), "MSG_Unable_WRITE_EJB_DD"),
+            NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(ndd);
+        }
+        
         boolean needsSave = false;
         
         //Remove entries in the project.properties file
@@ -286,33 +295,6 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
                 Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(desc);			}
         }
-    }
-    
-    
-    public void removeServiceEntry(String linkName) {
-        //remove ejb  entry in ejb-jar.xml
-        EjbJarImplementation ejbJarImpl = (EjbJarImplementation)project.getLookup().lookup(EjbJarImplementation.class);
-        EjbJar ejbJar = getEjbJar();
-        EnterpriseBeans beans = ejbJar.getEnterpriseBeans();
-        Session[] sessionBeans = beans.getSession();
-        for(int i = 0; i < sessionBeans.length; i++) {
-            Session sessionBean = sessionBeans[i];
-            if(sessionBean.getEjbName().equals(linkName)) {
-                beans.removeSession(sessionBean);
-                break;
-            }
-        }
-        try {
-            ejbJar.write(ejbJarImpl.getDeploymentDescriptor());
-        }
-        catch(java.io.IOException e) {
-            NotifyDescriptor ndd =
-            new NotifyDescriptor.Message(NbBundle.getMessage(this.getClass(), "MSG_Unable_WRITE_EJB_DD"),
-            NotifyDescriptor.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(ndd);
-        }
-        
-        
     }
     
     public AntProjectHelper getAntProjectHelper() {
@@ -396,62 +378,6 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
         }
         return globalPropertiesChanged || projectPropertiesChanged;
-    }
-    
-    public void addInfrastructure(ClassElement clazz) throws SourceException {
-        //remove java.rmi.Remote interface
-        Identifier remote = Identifier.create("java.rmi.Remote");
-        clazz.removeInterface(remote);
-        
-        //add javax.ejb.SessionBean interface
-        Identifier session = Identifier.create("javax.ejb.SessionBean");
-        clazz.addInterface(session);
-        
-        //add javax.ejb.SessionContext field
-        Identifier sessionCtx = Identifier.create("javax.ejb.SessionContext");
-        Type sessionCtxType = Type.createClass(sessionCtx);
-        FieldElement field = new FieldElement();
-        field.setType(sessionCtxType);
-        field.setName(Identifier.create("context"));
-        clazz.addField(field);
-        
-        //add setSessionContext(javax.ejb.SessionContext aContext) method
-        MethodElement sessionCtxMethod = new MethodElement();
-        sessionCtxMethod.setName(Identifier.create("setSessionContext"));
-        MethodParameter ctxParam = new MethodParameter("aContext", sessionCtxType, false);
-        sessionCtxMethod.setParameters(new MethodParameter[] {ctxParam});
-        sessionCtxMethod.setReturn(Type.VOID);
-        sessionCtxMethod.setModifiers(Modifier.PUBLIC);
-        sessionCtxMethod.setBody("context = aContext;");
-        clazz.addMethod(sessionCtxMethod);
-        
-        //add ejbActivate method
-        MethodElement ejbActivateMethod = new MethodElement();
-        ejbActivateMethod.setName(Identifier.create("ejbActivate"));
-        ejbActivateMethod.setReturn(Type.VOID);
-        ejbActivateMethod.setModifiers(Modifier.PUBLIC);
-        clazz.addMethod(ejbActivateMethod);
-        
-        //add ejbPassivate method
-        MethodElement ejbPassivateMethod = new MethodElement();
-        ejbPassivateMethod.setName(Identifier.create("ejbPassivate"));
-        ejbPassivateMethod.setReturn(Type.VOID);
-        ejbPassivateMethod.setModifiers(Modifier.PUBLIC);
-        clazz.addMethod(ejbPassivateMethod);
-        
-        //add ejbRemove method
-        MethodElement ejbRemoveMethod = new MethodElement();
-        ejbRemoveMethod.setName(Identifier.create("ejbRemove"));
-        ejbRemoveMethod.setReturn(Type.VOID);
-        ejbRemoveMethod.setModifiers(Modifier.PUBLIC);
-        clazz.addMethod(ejbRemoveMethod);
-        
-        //add ejbCreate method
-        MethodElement ejbCreateMethod = new MethodElement();
-        ejbCreateMethod.setName(Identifier.create("ejbCreate"));
-        ejbCreateMethod.setReturn(Type.VOID);
-        ejbCreateMethod.setModifiers(Modifier.PUBLIC);
-        clazz.addMethod(ejbCreateMethod);
     }
     
     private EjbJar getEjbJar() {
