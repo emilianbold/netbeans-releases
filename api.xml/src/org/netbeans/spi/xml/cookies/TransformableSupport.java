@@ -20,6 +20,8 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -48,6 +50,9 @@ import org.netbeans.api.xml.services.UserCatalog;
  * @deprecated XML tools SPI candidate
  */
 public final class TransformableSupport implements TransformableCookie {
+    /** SAX feature: Perform namespace processing. */
+    private static final String SAX_FEATURES_NAMESPACES = "http://xml.org/sax/features/namespaces"; // NOI18N
+
     // associated data object
     private final DataObject dataObject;
     /** cached TransformerFactory instance. */
@@ -75,10 +80,16 @@ public final class TransformableSupport implements TransformableCookie {
      */
     public void transform (Source transformSource, Result outputResult, CookieObserver notifier) throws TransformerException {
         try {
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TransformableSupport.transform");
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("   transformSource = " + transformSource.getSystemId());
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("   outputResult = " + outputResult.getSystemId());
+
             URL url = dataObject.getPrimaryFile().getURL();
             Source xmlSource = createSource (url.toExternalForm());
 
-            // prepare transformer == parse stylesheet, errors may occure
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("   xmlSource = " + xmlSource.getSystemId());
+
+            // prepare transformer == parse stylesheet, errors may occur
             Transformer transformer = newTransformer (transformSource);
             
             // transform
@@ -156,9 +167,10 @@ public final class TransformableSupport implements TransformableCookie {
     }
 
 
-    private static SAXParserFactory getSAXParserFactory () {
+    private static SAXParserFactory getSAXParserFactory () throws ParserConfigurationException, SAXNotRecognizedException, SAXNotSupportedException {
         if ( saxParserFactory == null ) {
             saxParserFactory = SAXParserFactory.newInstance();
+            saxParserFactory.setFeature (SAX_FEATURES_NAMESPACES, true);
         }
         return saxParserFactory;
     }
