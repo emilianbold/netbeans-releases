@@ -47,12 +47,9 @@ public class FormEditorModule implements ModuleInstall {
 
   /** Module installed again. */
   public void restored () {
-/*    String[] paths = java.beans.PropertyEditorManager.getEditorSearchPath ();
-    String[] newPaths = new String[paths.length+1];
-    System.arraycopy (paths, 0, newPaths, 0, paths.length);
-    newPaths[newPaths.length - 1] = "com.netbeans.developer.explorer.propertysheet.editors";
-    java.beans.PropertyEditorManager.setEditorSearchPath (newPaths); */
 //    System.out.println("FormEditorModule: restored");
+    // [PENDING - ugly workaround so that borders editor works - ideally, a FormPropertyEditorManager would be used for finding border's properties editors]
+    java.beans.PropertyEditorManager.registerEditor (javax.swing.border.Border.class, com.netbeans.developer.explorer.propertysheet.editors.BorderEditor.class);
   }
 
   /** Module was uninstalled. */
@@ -299,7 +296,7 @@ public class FormEditorModule implements ModuleInstall {
   
   /** The default Swing Borders */
   private final static String[] defaultBordersIcons = new String[] {
-    "/com/netbeans/developer/modules/loaders/form/resources/palette/emptyBorder.gif",
+    "/com/netbeans/developer/modules/loaders/form/resources/palette/border.gif",
     "/com/netbeans/developer/modules/loaders/form/resources/palette/lineBorder.gif",
     "/com/netbeans/developer/modules/loaders/form/resources/palette/matteIconBorder.gif",
     "/com/netbeans/developer/modules/loaders/form/resources/palette/matteColorBorder.gif",
@@ -313,6 +310,8 @@ public class FormEditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  17   Gandalf   1.16        5/30/99  Ian Formanek    Minor property editors 
+ *       tweaks, fixed problem with empty border's icon
  *  16   Gandalf   1.15        5/14/99  Ian Formanek    
  *  15   Gandalf   1.14        5/14/99  Ian Formanek    
  *  14   Gandalf   1.13        5/11/99  Ian Formanek    Build 318 version
