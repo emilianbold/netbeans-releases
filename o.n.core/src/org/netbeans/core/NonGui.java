@@ -322,8 +322,10 @@ public class NonGui extends NbTopManager implements Runnable {
         // -----------------------------------------------------------------------------------------------------
         // Upgrade
         try {
-            if (!handleImportOfUserDir ()) {
-                TopSecurityManager.exit(0);
+            if ((System.getProperty ("netbeans.full.hack") == null) && (System.getProperty ("netbeans.close") == null)) {
+                if (!handleImportOfUserDir ()) {
+                    TopSecurityManager.exit(0);
+                }
             }
         } catch (Exception e) {
             ErrorManager.getDefault().notify(e);
