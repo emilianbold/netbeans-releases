@@ -143,7 +143,7 @@ public class CmdlineDiffProvider extends DiffProvider {
      * @return the list of differences found, instances of {@link Difference};
      *        or <code>null</code> when some error occured.
      */
-    public List createDiff(FileObject fo1, FileObject fo2) {
+    public List createDiff(FileObject fo1, FileObject fo2) throws IOException {
         File f1 = FileUtil.toFile(fo1);
         File f2 = FileUtil.toFile(fo2);
         if (f1 != null && f2 != null) {
@@ -153,7 +153,15 @@ public class CmdlineDiffProvider extends DiffProvider {
         }
     }
     
-    private List createDiff(File f1, File f2) {
+    private List createDiff(File f1, File f2) throws IOException {
+        if (pattern == null) {
+            try {
+                pattern = new RE(DIFF_REGEXP);
+            } catch (RESyntaxException resex) {
+                throw (IOException) TopManager.getDefault().getErrorManager().annotate(
+                    new IOException(), resex.getLocalizedMessage());
+            }
+        }
         String cmd = java.text.MessageFormat.format(diffCmd,
             new Object[] { f1.getAbsolutePath(), f2.getAbsolutePath() });
         try {
@@ -178,10 +186,8 @@ public class CmdlineDiffProvider extends DiffProvider {
             if (outBuffer.length() > 0) stdoutNextLine(outBuffer.toString(), differences);
             return differences;
         } catch (IOException ioex) {
-            TopManager.getDefault().notifyException(
-                TopManager.getDefault().getErrorManager().annotate(ioex,
-                    NbBundle.getMessage(CmdlineDiffProvider.class, "runtimeError", cmd)));
-            return null;
+            throw (IOException) TopManager.getDefault().getErrorManager().annotate(ioex,
+                    NbBundle.getMessage(CmdlineDiffProvider.class, "runtimeError", cmd));
         }
     }
     
@@ -332,5 +338,5 @@ public class CmdlineDiffProvider extends DiffProvider {
             //else diffOutRev2 = rev;
         }
     }
-
+    
 }
