@@ -119,8 +119,9 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
         Font f = g.getFont ();
         FontMetrics fm = g.getFontMetrics (font);
         g.setFont (font);
-        g.drawString (fontName, rectangle.x, rectangle.y +
-                      (rectangle.height - fm.getHeight ()) / 2 + fm.getAscent ());
+        g.drawString (fontName,
+                      rectangle.x + (rectangle.width - fm.stringWidth(fontName)) / 2,
+                      rectangle.y + (rectangle.height - fm.getHeight ()) / 2 + fm.getAscent ());
         g.setFont (f);
     }
 
@@ -160,6 +161,7 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
         JList lFont, lStyle, lSize;
 
         static final long serialVersionUID =8377025140456676594L;
+        
         FontPanel () {
             setLayout (new BorderLayout ());
 
@@ -171,16 +173,22 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             c.weightx = 1.0;
             c.insets = new Insets (3, 3, 3, 3);
             c.anchor = GridBagConstraints.WEST;
-            JLabel l = new JLabel (bundle.getString ("CTL_Font"));
+            JLabel l = new JLabel (bundle.getString ("CTL_Font"));                    //NoI18N
+            l.setDisplayedMnemonic(bundle.getString ("CTL_Font_mnemonic").charAt(0)); //NoI18N
+            l.setLabelFor(lFont);
             la.setConstraints (l, c);
             add (l);
 
-            l = new JLabel (bundle.getString ("CTL_FontStyle"));
+            l = new JLabel (bundle.getString ("CTL_FontStyle"));                           //NoI18N  
+            l.setDisplayedMnemonic(bundle.getString ("CTL_FontStyle_mnemonic").charAt(0)); //NoI18N
+            l.setLabelFor(lStyle);
             la.setConstraints (l, c);
             add (l);
 
             c.gridwidth = GridBagConstraints.REMAINDER;
-            l = new JLabel (bundle.getString ("CTL_Size"));
+            l = new JLabel (bundle.getString ("CTL_Size"));                           //NoI18N
+            l.setDisplayedMnemonic(bundle.getString ("CTL_Size_mnemonic").charAt(0)); //NoI18N
+            l.setLabelFor(tfSize);
             la.setConstraints (l, c);
             add (l);
 
@@ -269,7 +277,7 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
 
             c.gridwidth = GridBagConstraints.REMAINDER;
             c.weighty = 2.0;
-            JPanel p = new JPanel (new BorderLayout ());
+            JPanel p = new JPanel (new BorderLayout());
             p.setBorder (new TitledBorder (bundle.getString ("CTL_Preview")));
 
             JPanel pp = new JPanel () {
@@ -279,7 +287,7 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
 
                             public void paint (Graphics g) {
                                 //          super.paint (g);
-                                FontEditor.this.paintValue (g, new Rectangle (0, 0, this.getSize ().width - 1, this.getSize ().height - 1));
+                                FontEditor.this.paintValue (g, new Rectangle (0, 0, this.getSize().width - 1, this.getSize().height - 1));
                             }
                         };
             p.add ("Center", pp); // NOI18N
