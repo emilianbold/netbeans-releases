@@ -316,9 +316,8 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
             createdFolderTextField.setText (folder.toString());
         }
 
-        if (e.getDocument() == nameDocument && !contextModified) {
-            jTextFieldContextPath.setText("/" + projectNameTextField.getText());
-        }
+        if (e.getDocument() == nameDocument && !contextModified)
+            jTextFieldContextPath.setText("/" + projectNameTextField.getText().replace(' ', '_'));
 
         panel.fireChangeEvent ();
     }
