@@ -25,8 +25,6 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.DocumentEvent;
 
 import org.w3c.dom.*;
 import org.xml.sax.*;
@@ -45,11 +43,9 @@ import org.netbeans.modules.xml.text.syntax.dom.*;
 import org.netbeans.modules.xml.spi.model.*;
 import org.netbeans.modules.xml.text.completion.xsl.XSLGrammarQuery;
 
-import org.netbeans.modules.xml.core.lib.Convertors;
 import javax.swing.Icon;
-import org.openide.util.Task;
+import org.netbeans.modules.xml.text.syntax.dom.SyntaxNode;
 import org.openide.TopManager;
-import org.openide.util.RequestProcessor;
 
 /**
  * Consults grammar and presents list of possible choices
@@ -504,7 +500,7 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
     // Grammar binding ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     /**
-     * Obtain reqistered query, cache results in document property 
+     * Obtain grammar manager, cache results in document property 
      * <code>PROP_DOCUMENT_QUERY</code>. It is always called from single
      * thread.
      */
@@ -513,235 +509,10 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
         Object grammarBindingObj = doc.getProperty(DOCUMENT_GRAMMAR_BINDING_PROP);
         
         if (grammarBindingObj == null) {
-            // Check if this is an XSL document by looking at the mimetype of the FileLoader
-            boolean useXslGrammar = false;
-            Object obj = doc.getProperty(Document.StreamDescriptionProperty);        
-            if (obj instanceof DataObject) {
-                DataLoader loader = ((DataObject)obj).getLoader();
-                if (loader instanceof UniFileLoader) {
-                    ExtensionList extensions = ((UniFileLoader)loader).getExtensions();
-                    Enumeration mimeEnum = extensions.mimeTypes();
-                    while(mimeEnum.hasMoreElements()) {
-                        if (((String)mimeEnum.nextElement()).equals("application/xslt+xml")) { // NOI18N
-                            useXslGrammar = true;
-                        }
-                    }
-                }
-            }
-
-            if (useXslGrammar) {
-                grammarBindingObj = new XSLGrammarQuery();
-            } else {
-                grammarBindingObj = new GrammarCache();
-                ((GrammarCache)grammarBindingObj).attach(doc, sup);
-            }
-            
+            grammarBindingObj = new GrammarManager(doc, sup);            
             doc.putProperty(DOCUMENT_GRAMMAR_BINDING_PROP, grammarBindingObj);
         }
         
-        if (grammarBindingObj instanceof XSLGrammarQuery) {
-            return (GrammarQuery)grammarBindingObj;
-        } else {
-            return ((GrammarCache)grammarBindingObj).getGrammar(300);
-        }
-    }
-    
-
-    static class GrammarCache {
-
-        // last invalidation time
-        private long timestamp = System.currentTimeMillis();
-        private int  delay = 0;
-
-        // current cache state
-        private int state = INVALID;
-        
-        static final int VALID = 1;
-        static final int LOADING = 2;
-        static final int INVALID = 3;
-        
-        // cache entry
-        private GrammarQuery grammar;  
-
-        // noop loader
-        private static final RequestProcessor.Task EMPTY_LOADER =
-            RequestProcessor.createRequest(Task.EMPTY);
-        
-        // current loader
-        private RequestProcessor.Task loader = EMPTY_LOADER;
-
-        //!!! REMOVE document that is needed just by DTD parser
-        private Document doc;
-        
-        /**
-         * Return any suitable grammar that you can get 
-         * till expires given timeout.
-         */
-        public synchronized GrammarQuery getGrammar(int timeout) {
-            
-            switch (state) {
-                case VALID:
-                    return grammar;
-                                                        
-                case INVALID:
-                    state = LOADING;
-                    loadGrammar();  // async
-                    
-                case LOADING:
-                    waitLoaded(timeout); // possible thread switch !!!
-                    
-                    //??? return last loaded grammar (use option?)
-                    if (grammar != null) return grammar;
-                   
-                default:                    
-                    return EmptyQuery.INSTANCE;
-            }
-        }
-        
-
-        /**
-         * Start listening at internal DTD invalidating grammar on its change
-         */
-        public void attach(final javax.swing.text.Document doc, final XMLSyntaxSupport sup) {
-            this.doc = doc;
-            doc.addDocumentListener( new DocumentListener() {
-                
-                public void insertUpdate(DocumentEvent e) {
-                    try {
-                        SyntaxElement el = sup.getElementChain(e.getOffset() + 1);  // it returns in or previous so +1
-                        if (isDoctype(el)) {
-                            invalidateGrammar();
-                        }
-                    } catch (BadLocationException ex) {
-                        ex.printStackTrace();
-                    }
-                }
-              
-                public void removeUpdate(DocumentEvent e) {
-                    try {
-                        // ignore removal at document end
-                        if (e.getOffset() >= e.getDocument().getLength()) return;
-                        SyntaxElement el = sup.getElementChain(e.getOffset() + 1);  // it returns in or previous so +1
-                        if (isDoctype(el)) {
-                            invalidateGrammar();
-                        }                  
-                    } catch (BadLocationException ex) {                        
-                        ex.printStackTrace();
-                    }
-                }
-              
-                public void changedUpdate(DocumentEvent e) {
-                    // not interested
-                }
-                
-                private boolean isDoctype(SyntaxElement el) {
-                    return el instanceof SyntaxElement.Declaration;
-                }
-            });
-        }
-
-        /**
-         * Notification from invalidator thread, the grammar need to be reloaded.
-         */
-        public synchronized void invalidateGrammar() {
-            
-            // make current loader a zombie
-            loader.cancel();
-            loader = EMPTY_LOADER;
-            if (state == LOADING || state == VALID) {
-                notifyProgress(loader, Util.THIS.getString("MSG_loading_cancel"));
-            }
-            
-            // optimalize reload policy
-            delay = (System.currentTimeMillis() - timestamp) < 1000 ? 500 : 0;
-            timestamp = System.currentTimeMillis();
-            
-            state = INVALID;
-        }
-
-
-        /**
-         * Nofification from grammar loader thread, new valid grammar.
-         * @param grammar grammar or <code>null</code> if cannot load.
-         */
-        private synchronized void grammarLoaded(Task loader, GrammarQuery grammar) {
-
-            try {
-                // eliminate zombie loader
-                if (this.loader != loader) return;
-
-                String status = (grammar != null) ? Util.THIS.getString("MSG_loading_done") 
-                    : Util.THIS.getString("MSG_loading_failed");
-
-                this.grammar = grammar == null ? EmptyQuery.INSTANCE : grammar;
-                state = VALID;
-
-                notifyProgress(loader, status);            
-            } finally {
-                notifyAll();
-            }
-        }
-
-        /**
-         * Notify loader progress filtering out messages from zombies
-         */
-        private void notifyProgress(Task loader, String msg) {
-            if (this.loader != loader) return;
-            TopManager.getDefault().setStatusText(msg);
-        }
-        
-        /**
-         * Async grammar fetching
-         */
-        private void loadGrammar() {
-
-            class LoaderTask extends Task {
-                
-                // my represenetation in RQ as others see it
-                private RequestProcessor.Task self;
-                
-                public void run() {
-                    
-                    GrammarQuery loaded = null;                    
-                    try {
-                    
-                        String status = Util.THIS.getString("MSG_loading");
-                        notifyProgress(self, status);
-
-                        //!!! hardcoded DTD grammar, replace with lookup
-
-                        InputSource in = Convertors.documentToInputSource(doc);
-                        loaded = new org.netbeans.modules.xml.text.completion.dtd.DTDParser().parse(in);
-
-                    } finally {
-                        grammarLoaded(self, loaded);
-                        notifyFinished();
-                    }
-
-                }
-            }
-                        
-            // we need a fresh thread per loader (it some request blocks)
-            RequestProcessor rp = new RequestProcessor("tmp/XML grammar fetching"); //NOI18N
-            LoaderTask task = new LoaderTask();
-            loader = rp.create(task);
-            task.self = loader;
-            
-            // do not allow too many loaders if just editing invalidation
-            // area
-            loader.schedule(delay);
-        }
-
-        /**
-         * Wait till grammar is loaded or given timeout expires
-         */
-        private void waitLoaded(int timeout) {
-            try {
-                if (state == LOADING) wait(timeout);
-            } catch (InterruptedException ex) {
-            }
-        }
-
-    }
-                
+        return ((GrammarManager)grammarBindingObj).getGrammar(300);
+    }                    
 }

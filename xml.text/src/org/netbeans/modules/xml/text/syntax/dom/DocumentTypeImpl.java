@@ -22,34 +22,26 @@ import org.netbeans.editor.*;
  *
  * @author Petr Kuzel
  */
-public class DocumentTypeImpl extends SyntaxNode implements DocumentType {
+public class DocumentTypeImpl extends SyntaxNode implements DocumentType, XMLTokenIDs {
         
-    DocumentTypeImpl(XMLSyntaxSupport syntax, TokenItem first, int to) {
+    public DocumentTypeImpl(XMLSyntaxSupport syntax, TokenItem first, int to) {
         super (syntax, first, to);
     }
     
     public short getNodeType() {
         return Node.DOCUMENT_TYPE_NODE;
     }
-    
-    public Node getPreviousSibling() {
-        return null;  //??? we may miss comment or PI
-    }
-
-    //!!! skip internal DTD
-    public Node getNextSibling() {
-        SyntaxElement next = getNext();
-
-        // skip internal DTD
-        while (next != null && next instanceof Declaration);
-
-        if (next instanceof SyntaxNode) return (Node) next;
-        if (next != null) return findNext(next);
-        return null;
-    }        
-    
+        
     public String getPublicId() {
-        return null;  //!!! parse for it
+        String doctype = first.getImage();
+        if (doctype.indexOf("PUBLIC") != -1) {                                  // NOI18N
+            TokenItem next = first.getNext();
+            if (next != null && next.getTokenID() == VALUE) {
+                String publicId = next.getImage();
+                return publicId.substring(1, publicId.length() - 1);
+            }
+        }
+        return null;
     }
     
     public org.w3c.dom.NamedNodeMap getNotations() {
@@ -65,7 +57,26 @@ public class DocumentTypeImpl extends SyntaxNode implements DocumentType {
     }
     
     public String getSystemId() {
-        return null;  //!!! parse for it
+        String doctype = first.getImage();
+        if (doctype.indexOf("PUBLIC") != -1) {                                  // NOI18N
+            TokenItem next = first.getNext();
+            if (next != null && next.getTokenID() == VALUE) {
+                next = next.getNext();
+                if (next == null) return null;
+                next = next.getNext();
+                if (next != null && next.getTokenID() == VALUE) {
+                    String system = next.getImage();
+                    return system.substring(1, system.length() -1);
+                }
+            }
+        } else if (doctype.indexOf("SYSTEM") != -1) {                           // NOI18N
+            TokenItem next = first.getNext();
+            if (next != null && next.getTokenID() == VALUE) {
+                String system = next.getImage();
+                return system.substring(1, system.length() - 1);
+            }
+        }        
+        return null;
     }
     
     public String getInternalSubset() {

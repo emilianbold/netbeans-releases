@@ -156,5 +156,16 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
 
     </folder> <!-- Services -->          
-        
+
+    <!-- Registrations accesible with dedicated FolderLookups -->        
+    <folder name="Plugins">
+        <folder name="XML">
+            <folder name="GrammarQueryManagers">
+                <file name="semantics-grammar-to-generic-grammar-separator"/>
+                <attr name="semantics-grammar-to-generic-grammar-separator/generic-grammar-to-universal-grammar-separator" boolvalue="true"/>
+                <file name="generic-grammar-to-universal-grammar-separator"/>
+            </folder>
+        </folder>
+    </folder>
+    
 </filesystem>

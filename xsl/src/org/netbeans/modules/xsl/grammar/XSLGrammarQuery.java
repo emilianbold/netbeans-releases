@@ -66,7 +66,10 @@ public class XSLGrammarQuery implements GrammarQuery{
     // Those attributes are in the xsl namespace
     private static final String[] aResultElementsAttr = {"extension-element-prefixes",
         "exclude-result-prefixes","use-attribute-sets","version"};
-        
+
+    // !!! this static block is too eager, this initalization
+    // should be defered by using static methods like
+    // getTemplate(), getIntructions(), etc.
     static {
         Set tmpSet;
         
@@ -401,6 +404,10 @@ public class XSLGrammarQuery implements GrammarQuery{
      */    
     public Enumeration queryNotations(String prefix) {
         return EmptyEnumeration.EMPTY;
+    }
+    
+    public String toString() {
+        return "XSLT grammar";
     }
     
     // Result classes ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

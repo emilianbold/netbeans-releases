@@ -82,4 +82,13 @@ Microsystems, Inc. All Rights Reserved.
         </folder> <!-- text -->
     </folder> <!-- Editors -->
     
+    <folder name="Plugins">
+        <folder name="XML">
+            <folder name="GrammarQueryManagers">
+                <!-- register semantics grammar -->
+                <file name="org-netbeans-modules-xsl-grammar-XSLGrammarQueryProvider.instance"/>
+                <attr name="org-netbeans-modules-xsl-grammar-XSLGrammarQueryProvider.instance/semantics-grammar-to-generic-grammar-separator" boolvalue="true"/>
+            </folder>
+        </folder>
+    </folder>    
 </filesystem>

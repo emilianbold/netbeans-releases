@@ -33,7 +33,7 @@ public final class ReloadActionPerformer implements XMLUpdateDocumentAction.Perf
         if (editor == null) return;
         Document doc = editor.getDocument();
         if (doc == null) return;
-        XMLCompletionQuery.GrammarCache cache = (XMLCompletionQuery.GrammarCache)
+        GrammarManager cache = (GrammarManager)
             doc.getProperty(XMLCompletionQuery.DOCUMENT_GRAMMAR_BINDING_PROP);        
         if (cache == null) return;
         

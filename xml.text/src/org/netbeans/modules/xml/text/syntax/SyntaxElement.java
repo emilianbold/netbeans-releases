@@ -136,22 +136,6 @@ public abstract class SyntaxElement {
     
         
     // Particular non-DOM syntax elements ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            
-
-    /** 
-     * doctype and all follow ups 
-     */
-    public static class Declaration extends SyntaxElement {
-        
-        public Declaration( XMLSyntaxSupport support, TokenItem from, int to) {
-            super( support, from, to);
-        }
-       
-        public String toString() {
-            return "Declaration" + super.toString();                            // NOI18N
-        }                
-    }
-
 
     /**
      * It may stop some DOM traversing.  //!!!

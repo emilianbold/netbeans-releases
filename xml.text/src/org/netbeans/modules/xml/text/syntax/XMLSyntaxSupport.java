@@ -253,15 +253,25 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
         
             case XMLDefaultTokenContext.DECLARATION_ID:
                 
+                // we treat internal DTD as one syntax element
+                boolean seekforDTDEnd = false;;
                 while( id == XMLDefaultTokenContext.DECLARATION 
-                    || id == XMLDefaultTokenContext.VALUE)
-                {
+                    || id == XMLDefaultTokenContext.VALUE
+                    || seekforDTDEnd)
+                {                                        
                     lastOffset = getTokenEnd( item );
+                    if (seekforDTDEnd) {
+                        if (item.getImage().endsWith("]>")) {
+                            break;
+                        }
+                    } else if (id == DECLARATION) {
+                        seekforDTDEnd = item.getImage().endsWith("[");
+                    }
                     item = item.getNext();
                     if( item == null ) break; //EoD
-                    id = item.getTokenID();
+                    id = item.getTokenID();                    
                 }
-                return new SyntaxElement.Declaration( this, first, lastOffset);
+                return new DocumentTypeImpl( this, first, lastOffset);
         
             case XMLDefaultTokenContext.ERROR_ID:
                 
@@ -358,22 +368,22 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
     /**
      * Locate DOCTYPE from the start of document.
      */
-    public SyntaxElement.Declaration getDeclarationElement(){
-        int offset = 5;
-        SyntaxElement elem = null;
-        
-        try {
-            while(true){  //??? optimalize stop on first element
-                elem = getElementChain(offset);
-                if(elem instanceof SyntaxElement.Declaration || elem == null)
-                    break;
-                offset += elem.getElementLength()+1;
-            }
-        } catch (BadLocationException ble) {
-            org.openide.TopManager.getDefault().notifyException(ble);
-        }
-        return elem != null ? (SyntaxElement.Declaration)elem : null;
-    }
+//    public SyntaxElement.Declaration getDeclarationElement(){
+//        int offset = 5;
+//        SyntaxElement elem = null;
+//        
+//        try {
+//            while(true){  //??? optimalize stop on first element
+//                elem = getElementChain(offset);
+//                if(elem instanceof SyntaxElement.Declaration || elem == null)
+//                    break;
+//                offset += elem.getElementLength()+1;
+//            }
+//        } catch (BadLocationException ble) {
+//            org.openide.TopManager.getDefault().notifyException(ble);
+//        }
+//        return elem != null ? (SyntaxElement.Declaration)elem : null;
+//    }
 
 
     /**
