@@ -1,1 +1,1 @@
-This folder contains the source code for AbsoluteLayout and TimerBean.
+This folder contains the source code for AbsoluteLayout.

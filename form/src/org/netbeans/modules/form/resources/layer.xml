@@ -247,7 +247,6 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
 
         <folder name="Beans">
-            <file name="org-netbeans-examples-lib-timerbean-Timer.instance_hidden"/>
         </folder>
 
         <attr name="Swing/AWT" boolvalue="true" />

@@ -39,13 +39,4 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
 
-    <folder name="Palette">
-        <folder name="Beans">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.usersguide.Bundle"/>
-            <file name="org-netbeans-examples-lib-timerbean-Timer.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.usersguide.Bundle"/>
-            </file>
-        </folder>
-    </folder>
-
 </filesystem>
