@@ -49,6 +49,10 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
+import javax.swing.JMenuItem;
+import javax.swing.JMenu;
+import javax.swing.ImageIcon;
+import org.openide.util.Utilities;
 
 
 /** Action sensitive to some cookie that does something useful.
@@ -94,9 +98,9 @@ public class CreateTestAction extends CookieAction {
         putProperty(Action.SHORT_DESCRIPTION, NbBundle.getMessage(CreateTestAction.class, "HINT_Action_CreateTest"));
     }
     
-    protected String iconResource() {
-        return "org/netbeans/modules/junit/resources/CreateTestActionIcon.gif";
-    }
+//      protected String iconResource() {
+//          return "org/netbeans/modules/junit/resources/CreateTestActionIcon.gif";
+//     }
     
     protected int mode() {
         return MODE_ANY;    // allow creation of tests for multiple selected nodes (classes, packages)
