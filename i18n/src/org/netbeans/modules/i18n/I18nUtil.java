@@ -181,7 +181,7 @@ public final class I18nUtil {
     /** Gets <code>regExpHelpItems</code>. */
     public static List getRegExpHelpItems() {
         if(regExpHelpItems == null) {
-            regExpHelpItems = new ArrayList(15);
+            regExpHelpItems = new ArrayList(13);
             regExpHelpItems.add("{hardString} - " + getBundle().getString("TXT_HardString")); // NOI18N
             regExpHelpItems.add("[:alnum:] - " + getBundle().getString("TXT_Alnum")); // NOI18N
             regExpHelpItems.add("[:alpha:] - " + getBundle().getString("TXT_Alpha")); // NOI18N
@@ -195,8 +195,8 @@ public final class I18nUtil {
             regExpHelpItems.add("[:space:] - " + getBundle().getString("TXT_Space")); // NOI18N
             regExpHelpItems.add("[:upper:] - " + getBundle().getString("TXT_Upper")); // NOI18N
             regExpHelpItems.add("[:xdigit:] - " + getBundle().getString("TXT_Xdigit")); // NOI18N
-            regExpHelpItems.add("[:javastart:] - " + getBundle().getString("TXT_Javastart")); // NOI18N
-            regExpHelpItems.add("[:javapart:] - " + getBundle().getString("TXT_Javapart")); // NOI18N
+            //regExpHelpItems.add("[:javastart:] - " + getBundle().getString("TXT_Javastart")); // NOI18N
+            //regExpHelpItems.add("[:javapart:] - " + getBundle().getString("TXT_Javapart")); // NOI18N
         }
         
         return regExpHelpItems;

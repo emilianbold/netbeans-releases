@@ -41,9 +41,6 @@ Microsystems, Inc. All Rights Reserved.
       <pathelement location="../core/netbeans/lib/core.jar"/>
       <pathelement location="../core/javahelp/netbeans/modules/autoload/javahelp-api.jar"/>
       <pathelement location="../properties/netbeans/modules/properties.jar"/>
-      <fileset dir="../libs/external">
-        <include name="regexp*.jar" />
-      </fileset>
     </path>
     <path id="i18n-form-cp">
       <pathelement location="../openide/openide-13javac-workaround.jar"/>
@@ -61,7 +58,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="compile" depends="init">
-    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
       <exclude name="org/netbeans/modules/i18n/form/"/>
       <classpath refid="i18n-cp"/>
     </javac>
@@ -136,7 +133,7 @@ Microsystems, Inc. All Rights Reserved.
          add it to packagenames attribut if you need it
      -->
     <javadoc destdir="javadoc"
-             packagenames="org.netbeans.modules.i18n,org.netbeans.modules.i18n.form,org.netbeans.modules.i18n.java,org.netbeans.modules.i18n.jsp,org.netbeans.modules.i18n.wizard"
+             packagenames="org.netbeans.modules.i18n,org.netbeans.modules.i18n.form,org.netbeans.modules.i18n.java,org.netbeans.modules.i18n.jsp,org.netbeans.modules.i18n.wizard,org.netbeans.modules.i18n.regexp"
              doctitle="NetBeans i18n module APIs"
              windowtitle="NetBeans i18n module APIs"
              bottom="${apis-footer}"
@@ -146,6 +143,7 @@ Microsystems, Inc. All Rights Reserved.
              version="false"
              maxmemory="384m"
              additionalparam="-breakiterator"
+             source="1.4"
              private="${javadoc.private}"
     >
       <sourcepath>

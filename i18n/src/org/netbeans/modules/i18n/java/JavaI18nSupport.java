@@ -20,14 +20,13 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import javax.swing.JPanel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
-
-import org.apache.regexp.RE;
-import org.apache.regexp.RESyntaxException;
 
 import org.netbeans.modules.i18n.HardCodedString;
 import org.netbeans.modules.i18n.InfoPanel;
@@ -36,6 +35,8 @@ import org.netbeans.modules.i18n.I18nSupport;
 import org.netbeans.modules.i18n.I18nUtil;
 import org.netbeans.modules.i18n.PropertyPanel;
 import org.netbeans.modules.i18n.ResourceHolder;
+import org.netbeans.modules.i18n.regexp.ParseException;
+import org.netbeans.modules.i18n.regexp.Translator;
 import org.netbeans.modules.properties.UtilConvert; // PENDING
 
 import org.openide.cookies.SourceCookie;
@@ -689,77 +690,76 @@ public class JavaI18nSupport extends I18nSupport {
          * @return <code>true<code> if string is internationalized and <code>i18nSearch</code> flag is <code>true</code>
          *   or if if string is non-internationalized and <code>i18nSearch</code> flag is <code>false</code> */
         protected boolean isSearchedString(String partHardLine, String hardString) {
-            String regExp = createRegularExpression(hardString);
+            String lineToMatch = UtilConvert.unicodesToChars(partHardLine);
             
+            Exception ex = null;
             try {
-                if(new RE(regExp).match(UtilConvert.unicodesToChars(partHardLine))) {
-                    return i18nSearch;
-                }
-            } catch(RESyntaxException rse) {
-                if(I18nUtil.isDebug()) // NOI18N
-                    rse.printStackTrace();
-
-                // Indicate error, but allow user what to do with the found hard coded string to be able go thru
-                // this problem.
-                // Note: All this shouldn't happen. The reason is 1) bad set reg exp format (in options) or 
-                // 2) it's error in this code.
-                String msg = MessageFormat.format(
-                    Util.getString("MSG_RegExpCompileError"),
-                    new Object[] {hardString}
-                );
-                
-                NotifyDescriptor.Confirmation confirmation = new NotifyDescriptor.Confirmation(msg,
-                    NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.ERROR_MESSAGE);
-                
-                if(NotifyDescriptor.YES_OPTION.equals(DialogDisplayer.getDefault().notify(confirmation)))
-                    return true;
-                else
-                    return false;
+                String regexp = createRegularExpression(hardString);
+                return Pattern.compile(regexp).matcher(lineToMatch).find()
+                       == i18nSearch;
+            } catch (ParseException ex1) {
+                ex = ex1;
+            } catch (PatternSyntaxException ex2) {
+                ex = ex2;
             }
 
-            return !i18nSearch;
-        }
-
-        /** Creates regular expression. Helper method.
-         * @param hardString found hard coded string used by reg exp creation */
-        private String createRegularExpression(String hardString) {
-            // It's necessary to escape parenthises in hardString so reg exp will be compiled.
-            hardString = escapeMetaCharacters(hardString);
-            
-            Map map = new HashMap(2);
-            map.put("key", hardString); // Older form of reg exp format. // NOI18N
-            map.put("hardString", hardString); // NOI18N
-
-            return MapFormat.format(
-                i18nSearch ? I18nUtil.getOptions().getI18nRegularExpression() : I18nUtil.getOptions().getRegularExpression(),
-                map
+            /*
+             * Handle the situation that some syntax error has been detected:
+             */
+            if (I18nUtil.isDebug()) {
+                ex.printStackTrace();
+            }
+            // Indicate error, but allow user what to do with the found hard coded string to be able go thru
+            // this problem.
+            // Note: All this shouldn't happen. The reason is 1) bad set reg exp format (in options) or 
+            // 2) it's error in this code.
+            String msg = MessageFormat.format(
+                Util.getString("MSG_RegExpCompileError"),
+                new Object[] {hardString}
             );
+            
+            Object answer = DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Confirmation(
+                            msg,
+                            NotifyDescriptor.YES_NO_OPTION, 
+                            NotifyDescriptor.ERROR_MESSAGE));
+            return NotifyDescriptor.YES_OPTION.equals(answer);
         }
 
-        /** Escapes some reg exp meta charcters.
-         * @param source source string
-         * @return string with escaped paranthases and ? char or null if source is null */
-        private static String escapeMetaCharacters(String source) {
-            if(source == null) return null;
-            StringBuffer result = new StringBuffer();
-            for (int i=0; i<source.length(); i++) {
-                char ch = source.charAt(i);
-                
-                if(ch == '(' 
-                    || ch == ')'
-                    || ch == '{'
-                    || ch == '}'
-                    || ch == '['
-                    || ch == ']'
-                    || ch == '?') {
-                    
-                    result.append('\\');
-                }
-                
-                result.append(ch);
+         /**
+          * Creates a regular expression matching the pattern specified in the
+          * module options.
+          * The pattern specified in the options contains a special token
+          * <code>{hardString}</code>. This token is replaced with a regular
+          * expression matching exactly the string passed as a parameter
+          * and a result of this substitution is returned.
+          *
+          * @param  hardString  hard-coded string whose regexp-equivalent is
+          *                     to be put in place of token
+          *                     <code>{hardString}</code>
+          * @return  regular expression matching the pattern specified
+          *          in the module options
+          */
+        private String createRegularExpression(String hardString)
+                throws ParseException {
+            String regexpForm;
+            if (i18nSearch) {
+                regexpForm = I18nUtil.getOptions().getI18nRegularExpression();
+            } else {
+                regexpForm = I18nUtil.getOptions().getRegularExpression();
             }
-            return result.toString();
+
+            /*
+             * Translate the regexp form to the JDK's java.util.regex syntax
+             * and replace tokens "{key}" and "{hardString}" with the passed
+             * hard-coded string.
+             */
+            Map map = new HashMap(3);
+            map.put("key", hardString);  //older form of regexp format  //NOI18N
+            map.put("hardString", hardString);                          //NOI18N
+            return Translator.translateRegexp(regexpForm, map);
         }
+
     } // End of JavaI18nFinder nested class.
     
     
