@@ -17,7 +17,12 @@ import java.io.File;
 import java.io.IOException;
 import java.beans.*;
 import java.awt.Image;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Enumeration;
 import java.lang.reflect.Method;
 import javax.swing.event.*;
@@ -34,6 +39,7 @@ import org.openide.TopManager;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.util.SharedClassObject;
+import org.openide.windows.TopComponent;
 
 import org.netbeans.modules.javadoc.settings.StdDocletSettingsService;
 import org.netbeans.modules.javadoc.comments.JavaDocPropertySupportFactory;
@@ -51,16 +57,41 @@ public class JavadocModule extends ModuleInstall {
 
     /** serialVersionUID */
     private static final long serialVersionUID = 984124010415492146L;
+    
+    private static Collection floatingTopComponents;
 
     protected Object writeReplace(){
         return null;
     }
-    
+
     public static Boolean isDisabledForJDK14() {
         return new Boolean(Dependency.JAVA_SPEC.compareTo(
                                new SpecificationVersion("1.4")) >= 0); // NOI18N
     }
-
+    
+    public synchronized static void registerTopComponent(TopComponent tc) {
+        if (floatingTopComponents == null)
+            floatingTopComponents = new java.util.LinkedList();
+        floatingTopComponents.add(tc);
+    }
+    
+    public synchronized static void unregisterTopComponent(TopComponent tc) {
+        if (floatingTopComponents == null)
+            return;
+        floatingTopComponents.remove(tc);
+    }
+    
+    public void uninstalled() {
+        Collection c;
+        synchronized (JavadocModule.class) {
+            c = new ArrayList(floatingTopComponents);
+        }
+        for (Iterator it = c.iterator(); it.hasNext();) {
+            TopComponent tc = (TopComponent)it.next();
+            tc.close();
+        }
+    }
+    
     /** Exists only for the sake of its bean info.
      * @deprecated Exists only for compability reasons
      */    
