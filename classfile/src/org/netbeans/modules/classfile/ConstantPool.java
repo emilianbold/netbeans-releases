@@ -20,7 +20,7 @@
 package org.netbeans.modules.classfile;
 
 import java.io.*;
-import java.util.Vector;
+import java.util.ArrayList;
 
 /**
  * Class representing a Java class file constant pool.
@@ -99,18 +99,16 @@ public class ConstantPool {
      *
      * @param type   the constant pool type to return.
      */
-    public final Object[] getAllConstants(Class classType) {
-        Vector v = new Vector();
+    public final Object[] getAllConstants(Class classType) {        
         int n = cpEntries.length;
+        ArrayList v = new ArrayList(n);
         for (int i = CONSTANT_POOL_START; i < n; i++) {
             if (cpEntries[i] != null && 
                 cpEntries[i].getClass().equals(classType)) {
-                v.addElement(cpEntries[i]);
+                v.add(cpEntries[i]);
             }
         }
-        Object[] result = new Object[v.size()];
-        v.copyInto(result);
-        return result;
+        return v.toArray();
     }
 
     /* Return an array of all class references in pool.
@@ -119,12 +117,12 @@ public class ConstantPool {
         /* Collect all class references.  The safest way to do this
          * is to combine the ClassInfo constants with any UTF8Info
          * constants which match the pattern "L*;".
-         */
-        Vector v = new Vector();
+         */        
         Object[] oa = getAllConstants(CPClassInfo.class);
+        ArrayList v = new ArrayList(oa.length);        
         for (int i = 0; i < oa.length; i++) {
             CPClassInfo ci = (CPClassInfo)oa[i];
-            v.addElement(ci.getName());
+            v.add(ci.getName());
         }
 
         oa = getAllConstants(CPUTF8Info.class);
@@ -135,15 +133,11 @@ public class ConstantPool {
                 name.charAt(name.length() - 1) == ';') {
                 String clsName = name.substring(1, name.length() - 1);
                 if (!v.contains(clsName)) {
-                    v.addElement(clsName);
+                    v.add(clsName);
                 }
             }
         }
-        String[] result = new String[v.size()];
-        for (int i = 0; i < result.length; i++) {
-            result[i] = (String)v.elementAt(i);
-        }
-        return result;
+        return (String[])v.toArray(new String[1]);
     }
 
     final String getString(int index) {

@@ -40,16 +40,20 @@ public class ClassFile {
     boolean deprecated = false;
     boolean synthetic = false;
     InnerClass[] innerClasses;
-
+    private HashMap attributes;
+    
+    /** size of buffer in buffered input streams */
+    private static final int BUFFER_SIZE = 4096;
+    
     /**
      * Create a new ClassFile object.
-     * @param classData  an InputStream from which the defining bytes of this
-     * class or interface are read.
+     * @param classData   an InputStream from which the defining bytes of this
+     *                    class or interface are read.
      * @param includeCode true if this classfile should support operations
      *                    at the bytecode level.  Specify false to conserve
      *                    memory if code access isn't needed.
      * @throws IOException if InputStream can't be read, or if the class data
-     * is malformed.
+     *         is malformed.
      */
     public ClassFile(InputStream classData) throws IOException {
 	this(classData, true);
@@ -64,6 +68,27 @@ public class ClassFile {
 	this(classFileName, true);
     }
     
+    /**
+     * Create a new ClassFile object.
+     * @param file a File instance of a class file.
+     * @param includeCode true if this classfile should support operations
+     *                    at the bytecode level.  Specify false to conserve
+     *                    memory if code access isn't needed.
+     * @throws IOException if file cannot be opened or read.
+     **/
+    public ClassFile(File file, boolean  includeCode) throws IOException {
+	InputStream is = null;
+        if( file == null || !file.exists() )
+            throw new IllegalArgumentException("File name is invalid or file not exists");
+        try {
+            is = new BufferedInputStream( new FileInputStream( file ), BUFFER_SIZE);
+            load(is, includeCode);
+        } finally {
+            if (is != null)
+                is.close();
+        }                
+    }
+
     /**
      * Create a new ClassFile object.
      * @param classData  an InputStream from which the defining bytes of this
@@ -93,7 +118,7 @@ public class ClassFile {
         try {
             if (classFileName == null)
                 throw new IllegalArgumentException("input stream not specified");
-            in = new BufferedInputStream(new FileInputStream(classFileName), 4096);
+            in = new BufferedInputStream(new FileInputStream(classFileName), BUFFER_SIZE);
             load(in, includeCode);
         } finally {
             if (in != null)
@@ -152,25 +177,33 @@ public class ClassFile {
     }
     
     private void loadAttributes(DataInputStream in, ConstantPool pool) 
-      throws IOException {
+      throws IOException {        
         int count = in.readUnsignedShort();
+        attributes = new HashMap(count + 1, (float)1.0);
         for (int i = 0; i < count; i++) {
             CPUTF8Info entry = (CPUTF8Info)pool.get(in.readUnsignedShort());
             int len = in.readInt();
             String name = entry.getName();
-            if (name.equals("Deprecated"))
+            if (name.equals("Deprecated")){
+                attributes.put(name, null);
                 deprecated = true;
-            else if (name.equals("Synthetic"))
+            }
+            else if (name.equals("Synthetic")){
+                attributes.put(name, null);
                 synthetic = true;
+            }
             else if (name.equals("SourceFile")) { //NOI18N
                 entry = (CPUTF8Info)pool.get(in.readUnsignedShort());
                 sourceFileName = entry.getName();
-            } else if (name.equals("InnerClasses"))
+                attributes.put(name, sourceFileName);
+            } else if (name.equals("InnerClasses")){
                 innerClasses = InnerClass.loadInnerClasses(in, pool);
+                attributes.put(name, innerClasses);
+            }
             else {
-                System.out.println("skipped unknown class attribute: " + 
-                                   entry.getName());
+                System.out.println("skipped unknown class attribute: " + name);
 		skip(in, len);
+                attributes.put(name, null);
             }
         }
         if (innerClasses == null)
@@ -249,29 +282,31 @@ public class ClassFile {
     }
     
     /**
-     * @return an iterator to a collection of Strings describing this class's interfaces.
+     * @return a collection of Strings describing this class's interfaces.
      * @throws IOException if the classfile can't be read.
      */    
-    public final Iterator getInterfaces() throws IOException {
+    public final Collection getInterfaces() throws IOException {
         List l = new ArrayList();
         int n = interfaces.length;
         for (int i = 0; i < n; i++)
             l.add(externalizeClassName(interfaces[i].getName()));
-        return l.iterator();
+        return l;
     }
     
     /**
-     * @return an iterator to a set of Variable objects representing the fields defined by this class.
+     * @return a Collection of Variable objects representing the fields 
+     *         defined by this class.
      */    
-    public final Iterator getVariables() {
-        return Arrays.asList(variables).iterator();
+    public final Collection getVariables() {
+        return Arrays.asList(variables);
     }
     
     /**
-     * @return an iterator to a set of Method objects representing the methods defined by this class.
+     * @return a Collection of Method objects representing the methods 
+     *         defined by this class.
      */    
-    public final Iterator getMethods() {
-        return Arrays.asList(methods).iterator();
+    public final Collection getMethods() {
+        return Arrays.asList(methods);
     }
     
     /**
@@ -295,10 +330,17 @@ public class ClassFile {
     public final boolean isSynthetic() {
         return synthetic;
     }
+            
+    public final Map getAttributes(){
+        return attributes;
+    }
+    
+    public final Collection getInnerClasses(){
+        return Arrays.asList(innerClasses);
+    }
     
     static String externalizeClassName(String s) {
-        String s2 = s.replace('/', '.');
-        return s2.replace('$', '.');
+        return s.replace('/', '.').replace('$', '.');
     }
     
     public String toString() {
