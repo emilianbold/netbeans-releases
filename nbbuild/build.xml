@@ -303,7 +303,7 @@ to make the first user start faster and better.)
     <delete file="firststart/beans/libs.properties"/>
     <mkdir dir="firststart/lib/patches"/>
     <echo file="firststart/build_info">NetBeans dev build
-Build number: ${buildnumber}
+Number: ${buildnumber}
 </echo>
   </target>
 
