@@ -92,19 +92,16 @@ public class ImageOpenSupport extends OpenSupport implements OpenCookie {
         Object ret = TopManager.getDefault().notify(nd);
 
         if (NotifyDescriptor.YES_OPTION.equals(ret)) {
+            // due to compiler 1.2 bug only
+            final ImageDataObject imageObj = (ImageDataObject)entry.getDataObject();
+            final CloneableTopComponent.Ref editors = allEditors;
+
             RequestProcessor.postRequest(new Runnable() {
                 // load icon from file
                 public void run() {
-                    /*Icon icon1; // accessory vraiable cause javac don't compile following code with final icon variable
-                    try {
-                        icon1 = new NBImageIcon((ImageDataObject)entry.getDataObject());
-                    } catch (IOException ioe) {
-                        icon1 = new ImageIcon(new byte[0]); // empty icon
-                    }*/
+                    final Icon icon = new NBImageIcon(imageObj);
 
-                    final Icon icon = new NBImageIcon((ImageDataObject)entry.getDataObject());
-
-                    Enumeration e = allEditors.getComponents();
+                    Enumeration e = editors.getComponents();
                     while(e.hasMoreElements()) {
                         final Object pane = e.nextElement();
                         SwingUtilities.invokeLater(new Runnable() {
