@@ -35,24 +35,24 @@ import org.openide.util.NbBundle;
 * @author Jaroslav Tulach
 */
 public final class LookupNode extends DataFolder.FolderNode implements NewTemplateAction.Cookie {
-    /** names of folders - the root prefix of the directory displayed to user */
-    private static final String PREF_SERVICES = "Services"; // NOI18N
-    /** names of folders - the prefix of templates */
-    private static final String PREF_TEMPLATES = "ServiceTemplates"; // NOI18N
     /** extended attribute that signals that this object should not be visible to the user */
     private static final String EA_HIDDEN = "hidden"; // NOI18N
-    
-    
-    
+
 //    private static final Node.PropertySet[] NO_PROPERTIES = new Node.PropertySet[0];
     public LookupNode () {
-        this (findFolder ("", false)); // NOI18N
+        this ("Services"); // NOI18N
+    }
+
+    /** Constructor to be used with different directories.
+    */
+    private LookupNode (String root) {
+        this (findFolder (root, "", false), root); // NOI18N
     }
 
     /** Constructs this node with given node to filter.
     */
-    LookupNode (DataFolder folder) {
-        folder.super(new Ch(folder));
+    LookupNode (DataFolder folder, String root) {
+        folder.super(new Ch(folder, root));
 //        setShortDescription(bundle.getString("CTL_Lookup_hint"));
 //        super.setIconBase ("/org/netbeans/modules/url/Lookup"); // NOI18N
         getCookieSet ().add (this);
@@ -110,9 +110,28 @@ public final class LookupNode extends DataFolder.FolderNode implements NewTempla
     public TemplateWizard getTemplateWizard () {
         TemplateWizard templateWizard = new TemplateWizard ();
         
-        templateWizard.setTemplatesFolder (findFolder (findName (), true));
-        templateWizard.setTargetFolder (findFolder (findName (), false));
+        templateWizard.setTemplatesFolder (findFolder (root (), findName (), true));
+        templateWizard.setTargetFolder (findFolder (root (), findName (), false));
         return templateWizard;
+    }
+
+    /** Gets the root from children.
+    */
+    private String root () {
+        return ((Ch)getChildren ()).root;
+    }
+
+    /** Finds a prefix for templates.
+    * @return prefix 
+    */
+    private static String prefTemplates (String root) {
+        return "Templates/" + root; // NOI18N
+    }
+
+    /** Finds a prefix for objects.
+    */
+    private static String prefObjects (String root) {
+        return root;
     }
     
     /** Finds name of the node by extracting the begin of nodes.
@@ -121,8 +140,8 @@ public final class LookupNode extends DataFolder.FolderNode implements NewTempla
     private String findName () {
         DataFolder df = (DataFolder)getCookie (DataFolder.class);
         String name = df.getPrimaryFile ().getPackageNameExt ('/', '.');
-        if (name.startsWith (PREF_SERVICES)) {
-            name = name.substring (PREF_SERVICES.length ());
+        if (name.startsWith (prefObjects (root ()))) {
+            name = name.substring (prefObjects (root ()).length ());
         }
         return name;
     }
@@ -132,20 +151,20 @@ public final class LookupNode extends DataFolder.FolderNode implements NewTempla
      * @param template folder for templates or for instances?
      * @return the folder
      */
-    private static DataFolder findFolder (String name, boolean template) {
+    private static DataFolder findFolder (String root, String name, boolean template) {
         try {
             FileSystem fs = TopManager.getDefault ().getRepository ().getDefaultFileSystem ();
             if (template) {
-                name = '/' + PREF_TEMPLATES + name;
+                name = '/' + prefTemplates (root) + name;
             } else {
-                name = '/' + PREF_SERVICES + name;
+                name = '/' + prefObjects (root) + name;
             }
             FileObject fo = fs.findResource (name);
             
             if (fo == null && template) {
                 // we do not create template directories, if it is missing
                 // we use the root services template directory 
-                name = PREF_TEMPLATES;
+                name = prefTemplates (root);
             }
             
             if (fo == null) {
@@ -167,10 +186,14 @@ public final class LookupNode extends DataFolder.FolderNode implements NewTempla
     * LookupItemNodes as filter subnodes...
     */
     static final class Ch extends FilterNode.Children {
+        /** the directory to use as a root of objects to display
+        */
+        final String root;
 
         /** @param or original node to take children from */
-        public Ch (DataFolder folder) {
+        public Ch (DataFolder folder, String root) {
             super(folder.getNodeDelegate ());
+            this.root = root;
         }
 
         /** Overriden, returns LookupNode filters of original nodes.
@@ -192,7 +215,7 @@ public final class LookupNode extends DataFolder.FolderNode implements NewTempla
             }
             
             if (obj instanceof DataFolder && n.equals (obj.getNodeDelegate ())) {
-                return new Node[] { new LookupNode((DataFolder)obj) };
+                return new Node[] { new LookupNode((DataFolder)obj, root) };
             }
 
             return new Node[] { node.cloneNode () }; 

@@ -36,12 +36,14 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
   </folder>
 
-  <folder name="ServiceTemplates">
-    <folder name="Browsers">
-      <file name="SimpleExtBrowser[org-netbeans-modules-extbrowser-SimpleExtBrowser].instance">
-        <attr name="template" boolvalue="true"/>
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.extbrowser.Bundle"/>
-      </file>
+  <folder name="Templates">
+    <folder name="Services">
+      <folder name="Browsers">
+        <file name="SimpleExtBrowser[org-netbeans-modules-extbrowser-SimpleExtBrowser].instance">
+          <attr name="template" boolvalue="true"/>
+          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.extbrowser.Bundle"/>
+        </file>
+      </folder>
     </folder>
   </folder>
 </filesystem>
