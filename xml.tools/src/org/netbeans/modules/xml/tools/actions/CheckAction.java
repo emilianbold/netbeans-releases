@@ -86,7 +86,8 @@ public class CheckAction extends CookieAction implements CollectXMLAction.XMLAct
 
         public void run() {
             InputOutputReporter console = new InputOutputReporter();
-        
+            console.message(Util.THIS.getString("MSG_XML_check_start"));
+            console.moveToFront();
             for (int i = 0; i<nodes.length; i++) {
                 Node node = nodes[i];
                 CheckXMLCookie cake = (CheckXMLCookie) node.getCookie(CheckXMLCookie.class);

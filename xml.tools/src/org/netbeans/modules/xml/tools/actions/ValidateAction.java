@@ -86,7 +86,8 @@ public class ValidateAction extends CookieAction implements CollectXMLAction.XML
 
         public void run() {
             InputOutputReporter console = new InputOutputReporter();
-
+            console.message(Util.THIS.getString("MSG_XML_valid_start"));
+            console.moveToFront();
             for (int i = 0; i<nodes.length; i++) {
                 Node node = nodes[i];
                 ValidateXMLCookie cake = (ValidateXMLCookie) node.getCookie(ValidateXMLCookie.class);
