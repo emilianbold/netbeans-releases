@@ -122,7 +122,7 @@
 
 //  ********************************************************************************
 //
-//  SYBASE SQL ANYWHERE
+//  SYBASE SQL ANYWHERE (JDBC type 4)
 //
 //  ********************************************************************************/
 
@@ -316,22 +316,217 @@
 
 //  ********************************************************************************
 //
-//  ORACLE7
+//  SYBASE SQL ANYWHERE (JDBC-ODBC)
+//
+//  ********************************************************************************/
+
+  "Adaptive Server Anywhere" = {
+    DatabaseProductName = "Adaptive Server Anywhere";
+    DatabaseProductVersion = 6;
+    TriggerEventListDelimiter = ", ";
+    TypeMap = {
+      java.sql.Types.BIGINT = BIGINT;
+      java.sql.Types.BINARY = BINARY;
+      java.sql.Types.BIT = BIT;
+      java.sql.Types.BLOB = IMAGE;  //JDBC 2.0 A type representing an SQL Binary Large Object
+      java.sql.Types.CHAR = CHAR;
+      java.sql.Types.CLOB = TEXT;  //JDBC 2.0 A type representing an SQL Character Large Object
+      java.sql.Types.DATE = DATE;
+      java.sql.Types.DECIMAL = DECIMAL;
+      java.sql.Types.DOUBLE = DOUBLE;
+      java.sql.Types.FLOAT = FLOAT;
+      java.sql.Types.INTEGER = INT;
+      java.sql.Types.LONGVARBINARY = "LONG BINARY";
+      java.sql.Types.LONGVARCHAR = "LONG VARCHAR";
+      java.sql.Types.NUMERIC = NUMERIC;
+      java.sql.Types.REAL = REAL;
+      java.sql.Types.SMALLINT = SMALLINT;
+      java.sql.Types.TIME = TIME;
+      java.sql.Types.TIMESTAMP = TIMESTAMP;
+      java.sql.Types.TINYINT = TINYINT;
+      java.sql.Types.VARBINARY = VARBINARY;
+      java.sql.Types.VARCHAR = VARCHAR;
+    };
+    ProcedureArgumentMap = {
+      IN = IN;
+      OUT = OUT;
+      INOUT = INOUT;
+    };
+    TriggerEventMap = {
+      INSERT = INSERT;
+      UPDATE = UPDATE;
+      DELETE = DELETE;
+    };
+    SizelessTypes = (BIGINT,BINARY,BIT,IMAGE,DATE,INT,"LONG VARCHAR","LONG BINARY",REAL,SMALLINT,TIME,TIMESTAMP,TINYINT,VARBINARY);
+    DecimalTypes = (DECIMAL,FLOAT);
+    CharacterTypes = (CHAR);
+
+//
+// Definice sloupcu
+//
+    ColumnTypeless = {
+      Class = com.netbeans.ddl.impl.TableColumn;
+      Format = "{column.name} [{column.notnull}not null][ default {default.value}]";
+    };
+    
+    UniqueColumn = {
+      Class = com.netbeans.ddl.impl.TableColumn;
+      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] unique";
+    };
+
+    UniqueColumnTypeless = {
+      Class = com.netbeans.ddl.impl.TableColumn;
+      Format = "{column.name} [{column.notnull}not null][ default {default.value}] unique";
+    };
+
+    PrimaryKeyColumn = {
+      Class = com.netbeans.ddl.impl.TableColumn;
+      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] primary key";
+    };
+
+    ForeignKeyColumn = {
+      Class = com.netbeans.ddl.impl.TableColumn;
+      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] references {fkobject.name}[({fkcolumn.name})]";
+    };
+
+    CheckColumn = {
+      Class = com.netbeans.ddl.impl.TableColumn;
+      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] check ({check.condition})";
+    };      
+
+    CheckColumnTypeless = {
+      Class = com.netbeans.ddl.impl.TableColumn;
+      Format = "{column.name} [{column.notnull}not null][ default {default.value}] check ({check.condition})";
+    };      
+
+    UniqueConstraint = {
+      Class = com.netbeans.ddl.impl.TableColumn;
+      Format = "unique {column.name}";
+    };
+
+    PrimaryKeyConstraint = {
+      Class = com.netbeans.ddl.impl.TableColumn;
+      Format = "primary key {column.name}";
+    };
+
+    ForeignKeyConstraint = {
+      Class = com.netbeans.ddl.impl.TableColumn;
+      Format = "foreign key {column.name} references {fkobject.name}[({fkcolumn.name})]";
+    };
+
+    CheckConstraint = {
+      Class = com.netbeans.ddl.impl.TableColumn;
+      Format = "check ({check.condition})";
+    };      
+
+//
+// Definice prikazu
+//
+
+    CommentTableCommand = {
+      Class = com.netbeans.ddl.impl.CommentTable;
+      Format = "comment on table [{object.owner}.]{object.name} is {comment}";
+    };
+
+    RenameColumnCommand = {
+      Class = com.netbeans.ddl.impl.RenameColumn;
+      Format = "alter table [{object.owner}.]{object.name} rename {column} to {column.newname}";
+      Binding = {
+        COLUMN = ColumnName;
+      };
+    };
+
+    ModifyColumnCommand = {
+      Class = com.netbeans.ddl.impl.ModifyColumn;
+      Format = "alter table [{object.owner}.]{object.name} modify {column}";
+      Binding = {
+        COLUMN = ColumnTypeless;
+        UNIQUE = UniqueColumnTypeless;
+        CHECK = CheckColumnTypeless;
+      };
+    };
+
+    RemoveColumnCommand = {
+      Class = com.netbeans.ddl.impl.RemoveColumn;
+      Format = "alter table [{object.owner}.]{object.name} delete {column}";
+      Binding = {
+        COLUMN = ColumnName;
+        UNIQUE = UniqueColumnName;
+        PRIMARY_KEY = PrimaryKey;
+        FOREIGN_KEY = ForeignKeyColumnName;
+      };
+    };    
+
+    CommentViewCommand = {
+      Class = com.netbeans.ddl.impl.CommentView;
+      Format = "comment on view [{object.owner}.]{object.name} is {comment}";
+    };
+
+    RenameTableCommand = {
+      Class = com.netbeans.ddl.impl.RenameTable;
+      Format = "alter table [{object.owner}.]{object.name} rename {object.newname}";
+    
+    };
+
+    CreateProcedureCommand = {
+      Class = com.netbeans.ddl.impl.CreateProcedure;
+      Format = "create procedure [{object.owner}.]{object.name} [({arguments})] as\n{body}";
+      Binding = {
+        ARGUMENT = ProcedureArgument;
+      };
+    };
+
+    DropProcedureCommand = {
+      Class = com.netbeans.ddl.impl.AbstractCommand;
+      Format = "drop procedure [{object.owner}.]{object.name}";
+    };
+
+    CreateFunctionCommand = {
+      Class = com.netbeans.ddl.impl.CreateFunction;
+      Format = "create function [{object.owner}.]{object.name} [({arguments})] returns {return.type} as\n{body}";
+      Binding = {
+        ARGUMENT = ProcedureArgument;
+      };
+    };
+
+    DropFunctionCommand = {
+      Class = com.netbeans.ddl.impl.AbstractCommand;
+      Format = "drop function [{object.owner}.]{object.name}";
+    };
+  
+    CreateTriggerCommand = {
+      Class = com.netbeans.ddl.impl.CreateTrigger;
+      Format = "create trigger [{object.owner}.]{object.name}\n{trigger.timing} {trigger.events}\non {table.name}\nreferencing old as old_{object.name} new as new_{object.name}[\n{each.row}for each row][\nwhen {trigger.condition}\n{trigger.body}";
+      Binding = {
+        EVENT = TriggerEvent;
+      };
+    };
+
+    DropTriggerCommand = {
+      Class = com.netbeans.ddl.impl.AbstractCommand;
+      Format = "drop trigger [{object.owner}.]{object.name}";
+    };
+  };
+
+//  ********************************************************************************
+//
+//  ORACLE 8i //7
 //
 //  ********************************************************************************/
 
   "Oracle" = {
     DatabaseProductName = "Oracle";
-    DatabaseProductVersion = 6;
+    DatabaseProductVersion = 8;
     TriggerEventListDelimiter = " OR ";
     TypeMap = {
-      java.sql.Types.BIGINT = INTEGER;
+      java.sql.Types.BIGINT = BIGINT;
       java.sql.Types.BLOB = BLOB;  //JDBC 2.0 A type representing an SQL Binary Large Object
       java.sql.Types.CHAR = CHAR;
-      java.sql.Types.DATE = DATE;
       java.sql.Types.DECIMAL = DECIMAL;
+      java.sql.Types.DATE = DATE;
       java.sql.Types.FLOAT = FLOAT;
       java.sql.Types.INTEGER = INT;
+      java.sql.Types.BIGINT = INTEGER;
       java.sql.Types.NUMERIC = NUMERIC;
       java.sql.Types.REAL = REAL;
       java.sql.Types.SMALLINT = SMALLINT;
@@ -347,9 +542,9 @@
       UPDATE = UPDATE;
       DELETE = DELETE;
     };
-    SizelessTypes = ();
-    DecimalTypes = (NUMBER);
-    CharacterTypes = (VARCHAR2);
+    SizelessTypes = (BIGINT,BLOB,DATE,FLOAT,INT,INTEGER,REAL,SMALLINT);
+    DecimalTypes = (DECIMAL,NUMERIC);
+    CharacterTypes = (CHAR,VARCHAR2);
 
 //
 // Definice sloupcu
