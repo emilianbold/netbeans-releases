@@ -24,13 +24,13 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-import org.openide.DialogDescriptor;
-import org.openide.TopManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.WeakListener;
+import org.openide.util.Lookup;
+import org.netbeans.api.javahelp.Help;
 
 
 /**
@@ -263,8 +263,9 @@ public class I18nPanel extends JPanel {
       
       if("true".equals(sysprop) || "full".equals(sysprop)) // NOI18N
           System.err.println ("I18n module: Help button showing: " + help); // NOI18N, please do not comment out
-      
-      TopManager.getDefault().showHelp(help);      
+
+      Help helpSystem = (Help)Lookup.getDefault().lookup(Help.class);
+      helpSystem.showHelp(help);
   }//GEN-LAST:event_helpButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

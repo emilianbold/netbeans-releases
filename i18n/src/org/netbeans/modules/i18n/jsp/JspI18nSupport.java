@@ -26,7 +26,7 @@ import org.netbeans.modules.i18n.I18nSupport;
 import org.netbeans.modules.i18n.java.JavaI18nSupport;
 
 import org.openide.loaders.DataObject;
-import org.openide.TopManager;
+import org.openide.util.Lookup;
 
 
 /** 
@@ -238,7 +238,7 @@ public class JspI18nSupport extends JavaI18nSupport {
                 return Class.forName(
                     "org.netbeans.modules.web.core.jsploader.JspDataObject", // NOI18N
                     false,
-                    TopManager.getDefault().systemClassLoader()
+                    (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class)
                 );
             } catch(ClassNotFoundException cnfe) {
                 return null;

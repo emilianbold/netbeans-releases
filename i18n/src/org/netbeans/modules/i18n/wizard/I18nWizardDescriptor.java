@@ -29,11 +29,11 @@ import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
 
 import org.openide.NotifyDescriptor;
-import org.openide.TopManager;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListener;
 import org.openide.WizardDescriptor;
+import org.openide.DialogDisplayer;
 
 
 /**
@@ -229,7 +229,7 @@ final class I18nWizardDescriptor extends WizardDescriptor {
                 updateState ();
             } catch(IllegalStateException ise) {
                 panels.previousPanel();
-                TopManager.getDefault().notify(new NotifyDescriptor.Message(ise.getMessage()));
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ise.getMessage()));
                 updateState();
             }
         }

@@ -20,9 +20,8 @@ import java.io.IOException;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.options.SystemOption;
-import org.openide.TopManager;
 import org.openide.util.HelpCtx;
-
+import org.openide.filesystems.Repository;
 
 /**
  * Options for i18n module.
@@ -195,10 +194,10 @@ public class I18nOptions extends SystemOption {
 
         DataObject lastResource = null;
         
-        FileObject fileObject = TopManager.getDefault().getRepository().findResource(resourceName);
+        FileObject fileObject = Repository.getDefault().findResource(resourceName);
         if(fileObject != null) {
             try {
-                lastResource = TopManager.getDefault().getLoaderPool().findDataObject(fileObject);
+                lastResource = DataObject.find(fileObject);
             } catch (IOException ioe) {
                 org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ioe);
             }

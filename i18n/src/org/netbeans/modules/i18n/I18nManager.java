@@ -35,7 +35,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.DialogDescriptor;
 import org.openide.loaders.DataObject;
 import org.openide.NotifyDescriptor;
-import org.openide.TopManager;
+import org.openide.DialogDisplayer;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
@@ -135,7 +135,7 @@ public class I18nManager {
         } else {
             NotifyDescriptor.Message message = new NotifyDescriptor.Message(
                 I18nUtil.getBundle().getString("MSG_NoInternationalizableString"), NotifyDescriptor.INFORMATION_MESSAGE); // to info message
-            TopManager.getDefault().notify(message);
+            DialogDisplayer.getDefault().notify(message);
         }
     }
 
@@ -145,7 +145,7 @@ public class I18nManager {
         if(panes == null) {
             NotifyDescriptor.Message message = new NotifyDescriptor.Message(
                 I18nUtil.getBundle().getString("MSG_CouldNotOpen"), NotifyDescriptor.ERROR_MESSAGE);
-            TopManager.getDefault().notify(message);
+            DialogDisplayer.getDefault().notify(message);
 
             return;
         }
@@ -204,7 +204,7 @@ public class I18nManager {
         } catch (IllegalStateException e) {
             NotifyDescriptor.Message nd = new NotifyDescriptor.Message(
                 I18nUtil.getBundle().getString("EXC_BadKey"), NotifyDescriptor.ERROR_MESSAGE);
-            TopManager.getDefault().notify(nd);
+            DialogDisplayer.getDefault().notify(nd);
             return;
         }
 
@@ -244,7 +244,7 @@ public class I18nManager {
         dd.setAdditionalOptions(new Object[0]);
 
         
-        Dialog infoDialog = TopManager.getDefault().createDialog(dd);
+        Dialog infoDialog = DialogDisplayer.getDefault().createDialog(dd);
         infoDialog.setVisible(true);
     }
     

@@ -28,7 +28,7 @@ import org.netbeans.modules.i18n.I18nUtil;
 import org.netbeans.modules.i18n.PropertyPanel;
 
 import org.openide.DialogDescriptor;
-import org.openide.TopManager;
+import org.openide.DialogDisplayer;
 
 
 /**
@@ -106,8 +106,8 @@ public class JavaPropertyPanel extends PropertyPanel {
                         dialogs[0].dispose();
                     }
                 }
-        });
-        dialogs[0] = TopManager.getDefault().createDialog(dd);
+           });
+        dialogs[0] = DialogDisplayer.getDefault().createDialog(dd);
         dialogs[0].setVisible(true);
     }
 

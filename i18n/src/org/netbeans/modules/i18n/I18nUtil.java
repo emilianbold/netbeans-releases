@@ -24,26 +24,19 @@ import java.io.ObjectStreamException;
 import java.net.URL;
 
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.TreeMap;
 import javax.swing.JPanel;
 
-import org.netbeans.modules.properties.PropertiesDataObject;
-import org.openide.TopManager;
- // PENDING
 
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.Workspace;
+import org.openide.windows.WindowManager;
 
 
 /**
@@ -294,7 +287,7 @@ public final class I18nUtil {
         topComponent.putClientProperty("TabPolicy", "HideWhenAlone");           // NOI18N
 
          // dock into I18N mode if possible
-        Workspace[] currentWs = TopManager.getDefault().getWindowManager().getWorkspaces();
+        Workspace[] currentWs = WindowManager.getDefault().getWorkspaces();
         for (int i = currentWs.length; --i >= 0; ) {
             Mode i18nMode = currentWs[i].findMode(I18nManager.I18N_MODE);
             if (i18nMode == null) {

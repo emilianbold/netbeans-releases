@@ -20,7 +20,6 @@ import java.awt.Component;
 import java.awt.event.KeyEvent;
 import java.awt.SystemColor;
 import java.util.List;
-import java.util.Map;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;

@@ -28,12 +28,12 @@ import org.netbeans.modules.i18n.I18nUtil;
 
 import org.openide.cookies.SourceCookie;
 import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.loaders.DataObject;
 import org.openide.src.ClassElement;
 import org.openide.src.FieldElement;
 import org.openide.src.Identifier;
 import org.openide.src.SourceElement;
-import org.openide.TopManager;
 
 
 /**
@@ -457,8 +457,8 @@ public class JavaReplacePanel extends JPanel {
                         dialogs[0].dispose();
                     }
                 }
-        });
-        dialogs[0] = TopManager.getDefault().createDialog(dd);
+       });
+       dialogs[0] = DialogDisplayer.getDefault().createDialog(dd);
         dialogs[0].setVisible(true);
     }//GEN-LAST:event_initButtonActionPerformed
 

@@ -27,7 +27,7 @@ import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 import org.openide.NotifyDescriptor;
-import org.openide.TopManager;
+import org.openide.DialogDisplayer;
 import org.openide.loaders.DataObject;
 import org.openide.text.NbDocument;
 import org.openide.util.HelpCtx;
@@ -144,9 +144,9 @@ public class InsertI18nStringAction extends CookieAction {
             NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
                 I18nUtil.getBundle().getString("EXC_BadKey"),
                 NotifyDescriptor.ERROR_MESSAGE);
-            TopManager.getDefault().notify(msg);
+            DialogDisplayer.getDefault().notify(msg);
         } catch (BadLocationException e) {
-            TopManager.getDefault().notify(
+            DialogDisplayer.getDefault().notify(
                 new NotifyDescriptor.Message(
                     I18nUtil.getBundle().getString("MSG_CantInsertInGuarded"),
                     NotifyDescriptor.INFORMATION_MESSAGE
@@ -193,7 +193,7 @@ public class InsertI18nStringAction extends CookieAction {
             new HelpCtx(InsertI18nStringAction.class),
             null
         );
-        Dialog dialog = TopManager.getDefault().createDialog(dd);
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
         dialog.show();
         if (dd.getValue() == NotifyDescriptor.OK_OPTION) {
             insertI18nString();

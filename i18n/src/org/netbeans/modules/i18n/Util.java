@@ -14,7 +14,6 @@
 package org.netbeans.modules.i18n;
 
 import org.openide.ErrorManager;
-import org.openide.TopManager;
 import org.openide.util.*;
 
 /**
@@ -36,7 +35,7 @@ final class Util {
      * Write the exception into log.
      */
     public static void debug(Throwable t) {
-        ErrorManager err = TopManager.getDefault().getErrorManager();
+        ErrorManager err = ErrorManager.getDefault();
         err.notify(err.INFORMATIONAL, t);
     }
 
@@ -44,7 +43,7 @@ final class Util {
      * Write annotated exception into log.
      */
     public static void debug(String annotation, Throwable t) {
-        ErrorManager err = TopManager.getDefault().getErrorManager();
+        ErrorManager err = ErrorManager.getDefault();
         err.annotate(t, err.INFORMATIONAL, annotation, null, null, null);
         err.notify(err.INFORMATIONAL, t);
     }

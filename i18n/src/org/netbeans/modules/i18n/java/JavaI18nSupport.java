@@ -41,6 +41,7 @@ import org.netbeans.modules.properties.UtilConvert; // PENDING
 import org.openide.cookies.SourceCookie;
 import org.openide.loaders.DataObject;
 import org.openide.NotifyDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.src.ClassElement;
 import org.openide.src.FieldElement;
 import org.openide.src.Identifier;
@@ -48,8 +49,8 @@ import org.openide.src.SourceElement;
 import org.openide.src.SourceException;
 import org.openide.src.Type;
 import org.openide.text.NbDocument;
-import org.openide.TopManager;
 import org.openide.util.MapFormat;
+import org.openide.util.Lookup;
 
 
 /** 
@@ -710,7 +711,7 @@ public class JavaI18nSupport extends I18nSupport {
                 NotifyDescriptor.Confirmation confirmation = new NotifyDescriptor.Confirmation(msg,
                     NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.ERROR_MESSAGE);
                 
-                if(NotifyDescriptor.YES_OPTION.equals(TopManager.getDefault().notify(confirmation)))
+                if(NotifyDescriptor.YES_OPTION.equals(DialogDisplayer.getDefault().notify(confirmation)))
                     return true;
                 else
                     return false;
@@ -796,7 +797,7 @@ public class JavaI18nSupport extends I18nSupport {
                     } catch(BadLocationException ble) {
                         NotifyDescriptor.Message message = new NotifyDescriptor.Message(
                             Util.getString("MSG_CouldNotReplace"), NotifyDescriptor.ERROR_MESSAGE);
-                        TopManager.getDefault().notify(message);
+                        DialogDisplayer.getDefault().notify(message);
                     }
                 }
             });
@@ -862,7 +863,7 @@ public class JavaI18nSupport extends I18nSupport {
                 return Class.forName(
                     "org.netbeans.modules.java.JavaDataObject", // NOI18N
                     false,
-                    TopManager.getDefault().systemClassLoader());
+                    (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class));
             } catch(ClassNotFoundException cnfe) {
                 return null;
             }

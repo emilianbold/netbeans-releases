@@ -20,7 +20,6 @@ import java.util.Arrays;
 
 import org.openide.loaders.DataObject;
 
-
 /**
  * Abstract class which implementation's are wrappers for holders of properties resources. 
  * Typically such object is <code>PropertiesDataObject</code> which represents bundle

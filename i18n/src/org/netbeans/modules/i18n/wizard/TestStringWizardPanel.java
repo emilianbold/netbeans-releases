@@ -52,10 +52,10 @@ import org.netbeans.modules.i18n.PropertyPanel;
 
 import org.openide.DialogDescriptor;
 import org.openide.loaders.DataObject;
-import org.openide.TopManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.WizardDescriptor;
+import org.openide.DialogDisplayer;
 
 
 /**
@@ -425,7 +425,7 @@ final class TestStringWizardPanel extends JPanel {
                     dd.setAdditionalOptions(new Object[0]);
                     dd.setButtonListener(CustomizeCellEditor.this);
 
-                    Dialog dialog = TopManager.getDefault().createDialog(dd);
+                    Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
                     dialog.setVisible(true);
                 }
             });

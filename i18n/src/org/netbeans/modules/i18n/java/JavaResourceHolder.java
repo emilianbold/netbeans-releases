@@ -30,13 +30,11 @@ import org.netbeans.modules.properties.UtilConvert;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.NotifyDescriptor;
-import org.openide.TopManager;
 
-
-/** 
+/**
  * Resource holder java sources. Now supports .properties bundle files only.
  *
  * @author  Peter Zavadsky
@@ -86,13 +84,8 @@ public class JavaResourceHolder extends ResourceHolder {
         // Get item from the first file entry which contains the key.
         // Is looks in default (=primary) entry first.
         for(int i=0; i<bundleStructure.getEntryCount(); i++) {
-            int keyIndex = bundleStructure.getKeyIndexByName(key);
-            if(keyIndex == -1)
-                return null;
-
-            Element.ItemElem item = bundleStructure.getItem(i, keyIndex);
-            if(item != null)
-                return item;
+            Element.ItemElem item = bundleStructure.getItem(i, key);
+            if(item != null) return item;
         }
 
         return null;            
@@ -129,7 +122,7 @@ public class JavaResourceHolder extends ResourceHolder {
     /** Implements superclass abstract method. Creates template of type clazz 
      * which have to be of <code>PropertiesDataObject</code> type in our case. */
     protected DataObject createTemplate(Class clazz) throws IOException {
-        FileSystem defaultFS = TopManager.getDefault().getRepository().getDefaultFileSystem();
+        FileSystem defaultFS = Repository.getDefault().getDefaultFileSystem();
 
         FileObject fileObject = defaultFS.findResource("Templates/Other/properties.properties"); // NOI18N
 

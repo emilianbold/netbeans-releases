@@ -36,14 +36,15 @@ import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.RepositoryNodeFactory;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAcceptor;
-import org.openide.TopManager;
+import org.openide.nodes.NodeOperation;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.UserCancelException;
+import org.openide.util.Lookup;
 import org.openide.WizardDescriptor;
-
 
 /**
  * First panel used in I18N (test) Wizard.
@@ -236,12 +237,12 @@ final class SourceWizardPanel extends JPanel {
                  || FactoryRegistry.hasFactory(dataObject.getClass()));
             }
         };
-      
-        Node repositoryNode = TopManager.getDefault().getPlaces().nodes().repository(dataFilter);
-      
+
+        Node repositoryNode = RepositoryNodeFactory.getDefault().repository(dataFilter);
+
         // Selects source data objects which could be i18n-ized.
         try {
-            Node[] selectedNodes= TopManager.getDefault().getNodeOperation().select(
+            Node[] selectedNodes= NodeOperation.getDefault().select(
                 Util.getString("LBL_SelectSources"),
                 Util.getString("LBL_Filesystems"),
                 repositoryNode,

@@ -22,11 +22,11 @@ import java.util.ArrayList;
 import org.netbeans.modules.i18n.I18nUtil;
 
 import org.openide.nodes.Node;
-import org.openide.TopManager;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.WizardDescriptor;
+import org.openide.DialogDisplayer;
 
 /**
  * Action which runs i18n wizard.
@@ -71,7 +71,7 @@ public class I18nWizardAction extends NodeAction {
 
         initWizard(wizardDesc);
         
-        dialog = TopManager.getDefault().createDialog(wizardDesc);
+        dialog = DialogDisplayer.getDefault().createDialog(wizardDesc);
         dialogWRef = new WeakReference(dialog);
         dialog.show();
     }

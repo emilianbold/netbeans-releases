@@ -46,12 +46,14 @@ import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.RepositoryNodeFactory;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAcceptor;
-import org.openide.TopManager;
+import org.openide.nodes.NodeOperation;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.UserCancelException;
+import org.openide.util.Lookup;
 import org.openide.WizardDescriptor;
 
 
@@ -283,12 +285,12 @@ final class ResourceWizardPanel extends JPanel {
                  || dataObject.getClass().equals(PropertiesDataObject.class)); // PENDING has to be more sophisticated
             }
         };
-      
-        Node repositoryNode = TopManager.getDefault().getPlaces().nodes().repository(dataFilter);
-      
+
+        Node repositoryNode = RepositoryNodeFactory.getDefault().repository(dataFilter);
+
         // Selects sources data object.
         try {
-            Node[] selectedNodes= TopManager.getDefault().getNodeOperation().select(
+            Node[] selectedNodes= NodeOperation.getDefault().select(
                 NbBundle.getBundle(ResourceWizardPanel.class).getString("LBL_SelectResource"),
                 NbBundle.getBundle(ResourceWizardPanel.class).getString("LBL_Filesystems"),
                 repositoryNode,

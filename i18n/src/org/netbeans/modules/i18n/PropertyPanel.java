@@ -22,7 +22,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 
 import org.openide.DialogDescriptor;
-import org.openide.TopManager;
+import org.openide.DialogDisplayer;
 
 
 /**
@@ -329,8 +329,8 @@ public class PropertyPanel extends JPanel {
                         dialogs[0].dispose();
                     }
                 }
-        });
-        dialogs[0] = TopManager.getDefault().createDialog(dd);
+                       });
+                       dialogs[0] = DialogDisplayer.getDefault().createDialog(dd);
         dialogs[0].setVisible(true);
     }//GEN-LAST:event_replaceFormatButtonActionPerformed
 
