@@ -18,6 +18,7 @@ import java.sql.Connection;
 import java.text.MessageFormat;
 import java.util.*;
 
+import javax.swing.JButton;
 import javax.swing.JFileChooser;
 
 import org.netbeans.lib.ddl.impl.*;
@@ -70,17 +71,39 @@ public class GrabTableAction extends DatabaseAction {
                                   });
 
             java.awt.Component par = TopManager.getDefault().getWindowManager().getMainWindow();
-            if (chooser.showSaveDialog(par) == JFileChooser.APPROVE_OPTION) {
-                File file = chooser.getSelectedFile();
-                if (file != null) {
-                    FileOutputStream fstream = new FileOutputStream(file);
-                    ObjectOutputStream ostream = new ObjectOutputStream(fstream);
-                    cmd.setSpecification(null);
-                    ostream.writeObject(cmd);
-                    ostream.flush();
-                    ostream.close();
+            boolean noResult = true;
+            File file = null;
+            while(noResult) {
+                if (chooser.showSaveDialog(par) == JFileChooser.APPROVE_OPTION) {
+                    file = chooser.getSelectedFile();
+                    if (file != null) {
+                        if(file.exists()) {
+                            Object yesOption = new JButton(bundle.getString("Yes"));
+                            Object noOption = new JButton (bundle.getString("No"));
+                            Object result = TopManager.getDefault ().notify (new NotifyDescriptor
+                                            (MessageFormat.format(bundle.getString("MSG_ReplaceFileOrNot"), // NOI18N
+                                                new String[] {file.getName()}), //question
+                                             bundle.getString("GrabTableFileSaveDialogTitle"), // title
+                                             NotifyDescriptor.YES_NO_OPTION, // optionType
+                                             NotifyDescriptor.QUESTION_MESSAGE, // messageType
+
+                                             new Object[] { yesOption, noOption }, // options
+                                             yesOption // initialValue
+                                            ));
+                            if (result.equals(yesOption)) {
+                                // the file can be replaced
+                                noResult = false;
+                            }
+                        } else noResult = false;
+                    }
                 }
             }
+            FileOutputStream fstream = new FileOutputStream(file);
+            ObjectOutputStream ostream = new ObjectOutputStream(fstream);
+            cmd.setSpecification(null);
+            ostream.writeObject(cmd);
+            ostream.flush();
+            ostream.close();
 
         } catch(Exception exc) {
             String message = MessageFormat.format(bundle.getString("ERR_UnableToGrabTable"), new String[] {exc.getMessage()}); // NOI18N
