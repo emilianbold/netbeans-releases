@@ -551,6 +551,8 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie, 
         
         /** Default constructor for deserialization. */
         public PropertiesCloneableTopComponent() {
+            // instruct winsys to save state of this top component only if opened
+            putClientProperty("PersistenceType", "OnlyOpened"); //NOI18N
         }
 
         /** Constructor.
@@ -558,6 +560,10 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie, 
         public PropertiesCloneableTopComponent (PropertiesDataObject propDataObject) {
             super(propDataObject);
             this.propDataObject  = propDataObject;
+
+            // instruct winsys to save state of this top component only if opened
+            putClientProperty("PersistenceType", "OnlyOpened"); //NOI18N
+            
             initialize();
         }
 
