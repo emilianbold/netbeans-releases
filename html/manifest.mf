@@ -1,0 +1,8 @@
+Netbeans-Module: Html module
+Netbeans-Module-Name: Html module
+
+
+Name: com/netbeans/developer/modules/loaders/html/HtmlLoader.class
+Netbeans-Module-Class: Loader
+
+
