@@ -12,24 +12,19 @@
 
 
 <tocitem text="Core IDE Help">
-    <tocitem text="About the Tomcat Plugin" target="tomcat_plugin">
+   <tocitem text="Tomcat Server">
+        <tocitem text="About the Tomcat Plugin" target="tomcat_plugin"/>
 	<tocitem text="About the Bundled Tomcat Server" target="tomcat_internal" />
-	<tocitem text="Setting Tomcat as the Default Server" target="tomcat_default" />
-	<tocitem text="Starting and Restarting Tomcat" target="tomcat_start" />
+	<tocitem text="Targeting Tomcat Server for Running Web Modules" target="tomcat_default" />
+	<tocitem text="Starting and Stopping a Tomcat Server" target="tomcat_start" />
 	<tocitem text="Editing the Tomcat Server Configuration File" target="tomcat_edit_config" />
-	<tocitem text="Tomcat Node and Properties" target="tomcat_top_node" /> 
-	<tocitem text="Tomcat Installation Node" target="tomcat_internal_node" >
-		<tocitem text="Adding a Tomcat Server" target="tomcat_addinstall" />
-		<tocitem text="Setting Tomcat Installation Properties" target="tomcat_internal_props">
-        </tocitem>
-	<tocitem text="Tomcat Instance (Host) Node" target="tomcat_instance_node" >
-		<tocitem text="Setting Tomcat Instance (Host) Properties" target="tomcat_instance_props">
-        </tocitem>
-	<tocitem text="Tomcat Web Module Context Node" target="tomcat_context_node" >
-		<tocitem text="Setting a Web Module Context for the Tomcat Server" target="tomcat_context_add">
-		<tocitem text="Removing a Web Module from the Tomcat Server" target="tomcat_context_delete">
-		<tocitem text="Setting Context Properties" target="tomcat_context_props">
-        </tocitem>
+	<tocitem text="Tomcat 5 Servers Node" target="tomcat_top_node" /> 
+	<tocitem text="Tomcat Server Node" target="tomcat_internal_node" />
+	<tocitem text="Adding a Tomcat Server" target="tomcat_addinstall" />
+	<tocitem text="Tomcat Server Property Sheet" target="tomcat_internal_props"/>
+	<tocitem text="Tomcat Context Node" target="tomcat_context_node" />
+	<tocitem text="Setting a Web Module Context for the Tomcat Server" target="tomcat_context_add" />
+	<tocitem text="Removing a Web Module from the Tomcat Server" target="tomcat_context_delete" />
     </tocitem>
 </tocitem>
 </toc>
