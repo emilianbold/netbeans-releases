@@ -61,6 +61,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
     private String antScript;
 
     private String projectType;
+    private static String WEB_TYPE = "webapps"; //NOI18N
     
     /** Any change in standard tasks which needs to be persisted? */
     private boolean dirtyRegular;
@@ -83,8 +84,11 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         
         link.setCursor(Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
         
-        jLabel3.setVisible(projectType.equals("webapps")); // NOI18N
-        redeployCombo.setVisible(projectType.equals("webapps")); // NOI18N
+        jLabel3.setVisible(projectType.equals(WEB_TYPE));
+        redeployCombo.setVisible(projectType.equals(WEB_TYPE));
+        if (projectType.equals(WEB_TYPE))
+            org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(TargetMappingPanel.class, "LBL_TargetMappingPanel_jLabel5_web")); //NOI18N
+
         showAdvancedPart(advancedPart);
     }
     
@@ -140,7 +144,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         runCombo.removeAllItems();
         debugCombo.removeAllItems();
         testCombo.removeAllItems();
-        if (projectType.equals("webapps")) { // NOI18N
+        if (projectType.equals(WEB_TYPE)) {
             redeployCombo.removeAllItems();
         }
         Iterator it = targetNames.iterator();
@@ -152,7 +156,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
             runCombo.addItem(name);
             debugCombo.addItem(name);
             testCombo.addItem(name);
-            if (projectType.equals("webapps")) { // NOI18N
+            if (projectType.equals(WEB_TYPE)) {
                 redeployCombo.addItem(name);
             }
         }
@@ -163,7 +167,9 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
             selectItem(runCombo, "run", false); // NOI18N
             selectItem(debugCombo, "debug", false); // NOI18N
             selectItem(testCombo, "test", false); // NOI18N
-            if (projectType.equals("webapps")) { // NOI18N
+            if (projectType.equals(WEB_TYPE)) {
+                //if deploy target exists, prefer it instead of run target
+                selectItem(runCombo, "deploy", false); // NOI18N
                 selectItem(redeployCombo, "run-deploy", false); // NOI18N
             }
         }
@@ -312,7 +318,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         }
         storeTarget(CLEAN_ACTION, cleanCombo);
         storeTarget(JAVADOC_ACTION, javadocCombo);
-        if (projectType.equals("webapps")) { // NOI18N
+        if (projectType.equals(WEB_TYPE)) {
             storeTarget(REDEPLOY_ACTION, redeployCombo);
         }
         // XXX should have separator here, when that is permitted
@@ -411,7 +417,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         org.openide.awt.Mnemonics.setLocalizedText(jLabel7, org.openide.util.NbBundle.getMessage(TargetMappingPanel.class, "LBL_TargetMappingPanel_jLabel7"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         add(jLabel7, gridBagConstraints);
@@ -461,7 +467,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         testCombo.setEditable(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -472,6 +478,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(TargetMappingPanel.class, "LBL_TargetMappingPanel_jLabel3"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         add(jLabel3, gridBagConstraints);
@@ -480,6 +487,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         redeployCombo.setEditable(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -490,6 +498,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         org.openide.awt.Mnemonics.setLocalizedText(jLabel9, org.openide.util.NbBundle.getMessage(TargetMappingPanel.class, "LBL_TargetMappingPanel_jLabel9"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         add(jLabel9, gridBagConstraints);
@@ -498,6 +507,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         debugCombo.setEditable(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -816,7 +826,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
     
     // For UI testing purposes.
     public static void main(String[] ignore) {
-        String[] types = {"j2se", "webapps"}; // NOI18N
+        String[] types = {"j2se", WEB_TYPE}; // NOI18N
         boolean[] adv = {false, true};
         for (int i = 0; i < types.length; i++) {
             for (int j = 0; j < adv.length; j++) {
