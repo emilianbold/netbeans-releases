@@ -81,7 +81,7 @@ public class EntityCatalogImpl extends EntityCatalog {
 
         private XMLDataObject peer;
         private Map map;
-        private RequestProcessor.Task parsingTask = catalogRP.createRequest(this);
+        private RequestProcessor.Task parsingTask = catalogRP.create(this);
         private EntityCatalogImpl instance = null;
 
         // Processor impl
@@ -136,11 +136,10 @@ public class EntityCatalogImpl extends EntityCatalog {
                 
             } catch (IOException ex) {
                 // ignore
-                ErrorManager err = 
+               ErrorManager err = 
                     (ErrorManager) Lookup.getDefault().lookup(ErrorManager.class);
                 err.notify(err.INFORMATIONAL, ex);
-
-            }
+           }
         }
 
         // InstanceCookie impl
@@ -179,7 +178,7 @@ public class EntityCatalogImpl extends EntityCatalog {
                 }
             }
             
-            if (XMLDataObject.PROP_DOCUMENT.equals(e.getPropertyName())) {            
+            if (XMLDataObject.PROP_DOCUMENT.equals(e.getPropertyName())) {
                 System.err.println("XML file have changed. reparsing " + peer.getPrimaryFile() );
                 //update it sync
                 run();
