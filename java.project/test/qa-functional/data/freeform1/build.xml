@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="FreeForm_1" default="default" basedir=".">
+
+    <description>Builds, tests, and runs the project freeform2.</description>
+    
+    <target name="-pre-compile">
+        <mkdir dir="classes"/>
+    </target>
+    
+    <target name="compile" depends="-pre-compile">
+        <javac srcdir="src" destdir="classes"/>
+        <antcall target="-post-compile"/>
+    </target>
+    
+    <target name="-post-compile">
+    </target>
+    
+    <target name="jar" depends="compile">
+        <jar basedir="classes" destfile="freeform2.jar"/>
+    </target>
+    
+    <target name="clean">
+        <delete dir="classes"/>
+        <delete file="freeform2.jar"/>
+    </target>
+    
+    <target name="clean-javadoc">
+        <delete dir="javadoc"/>
+    </target>
+    
+    <target name="-pre-javadoc">
+        <mkdir dir="javadoc"/>
+    </target>
+    
+    <target name="javadoc" depends="-pre-javadoc">
+        <javadoc private="false" windowtitle="My Javadoc" version="1.2.3" 
+                author="Frantisek Dobrota" splitindex="false" noindex="false" 
+                nonavbar="false" use="true" notree="false" destdir="javadoc">
+            <classpath>
+                <path path="classes"/>
+            </classpath>
+            <sourcepath>
+                <pathelement location="src"/>
+            </sourcepath>
+            <fileset dir="src"/>
+        </javadoc>
+    </target>
+    
+    <target name="run" depends="jar">
+        <java classname="org.netbeans.test.FreeFormMain" classpath="freeform2.jar"/>
+    </target>
+    
+    <target name="test">
+        
+    </target>
+    
+</project>
