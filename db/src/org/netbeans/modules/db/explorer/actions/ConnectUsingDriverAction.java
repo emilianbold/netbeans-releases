@@ -35,6 +35,7 @@ import org.openide.nodes.Node;
 import org.netbeans.modules.db.DatabaseException;
 import org.netbeans.modules.db.ExceptionListener;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.nodes.RootNode;
 
 //commented out for 3.6 release, need to solve for next Studio release
 //import org.netbeans.modules.db.explorer.PointbasePlus;
@@ -119,6 +120,7 @@ public class ConnectUsingDriverAction extends DatabaseAction {
 
                     try {
                         nfo.addConnection(cinfo);
+                        RootNode.getOption().save();
                     } catch (DatabaseException exc) {
                         String message = MessageFormat.format(bundle.getString("ERR_UnableToAddConnection"), new String[] {exc.getMessage()}); //NOI18N
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
@@ -165,6 +167,7 @@ public class ConnectUsingDriverAction extends DatabaseAction {
                         else {
                             cinfo.setSchema(schemaPanel.getSchema());
                             nfo.addConnection(cinfo);
+                            RootNode.getOption().save();
                             if(dlg != null)
                                 dlg.close();
                         }

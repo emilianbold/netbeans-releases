@@ -28,11 +28,6 @@ import org.openide.nodes.Node;
 public class DatabaseModule extends ModuleInstall {
     static final long serialVersionUID =5426465356344170725L;
         
-    public boolean closing() {
-        org.netbeans.modules.db.explorer.nodes.RootNode.getOption().save();
-        return true;
-    }
-    
     public void close () {
         FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("UI/Runtime"); //NOI18N
         final DataFolder df;
@@ -41,7 +36,7 @@ public class DatabaseModule extends ModuleInstall {
         } catch (DataObjectNotFoundException exc) {
             return;
         }
-        // closing all open connection
+        //close all opened connection
         Children.MUTEX.writeAccess (new Runnable () {
             public void run () {
                 try {

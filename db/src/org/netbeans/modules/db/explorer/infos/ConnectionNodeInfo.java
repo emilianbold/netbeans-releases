@@ -18,7 +18,6 @@ import java.sql.Connection;
 import java.text.MessageFormat;
 import java.util.Vector;
 
-
 import org.netbeans.lib.ddl.DBConnection;
 import org.netbeans.lib.ddl.DatabaseProductNotFoundException;
 import org.netbeans.lib.ddl.impl.DriverSpecification;
@@ -171,8 +170,10 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
         try {
             Vector cons = RootNode.getOption().getConnections();
             DatabaseConnection cinfo = (DatabaseConnection) getDatabaseConnection();
-            if (cons.contains(cinfo))
+            if (cons.contains(cinfo)) {
                 cons.remove(cinfo);
+                RootNode.getOption().save(); //serialize connection
+            }
         } catch (Exception e) {
             throw new IOException(e.getMessage());
         }
@@ -204,6 +205,8 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
             }
         }
         setName(infoConn.getName());
+        
+        RootNode.getOption().save();
     }
     
 }
