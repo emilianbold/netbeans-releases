@@ -46,7 +46,7 @@ public class URLEditor extends PropertyEditorSupport implements org.openide.expl
 
     public String getJavaInitializationString () {
         URL url = (URL) getValue ();
-        return "\""+url.toString ()+"\""; // NOI18N
+        return "new java.net.URL(\""+url.toString ()+"\")"; // NOI18N
     }
 
     public boolean supportsCustomEditor () {
