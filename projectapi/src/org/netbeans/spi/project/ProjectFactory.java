@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -44,6 +44,9 @@ public interface ProjectFactory {
      * If this factory does not
      * in fact recognize the directory, it should just return null.
      * <p>Will be called inside read access.
+     * <p>Do not do your own caching! The project manager caches projects for you, properly.
+     * <p>Do not attempt to recognize subdirectories of your project directory (just return null),
+     * unless they are distinct nested projects.
      * @param projectDirectory some directory on disk
      * @param state a callback permitting the project to indicate when it is modified
      * @return a matching project implementation, or null if this factory does not recognize it
