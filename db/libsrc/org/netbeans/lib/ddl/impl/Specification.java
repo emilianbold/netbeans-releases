@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -133,15 +133,8 @@ public class Specification implements DatabaseSpecification {
                 if (jdbccon != null) {
                     String adc = getMetaDataAdaptorClassName();
                     if (adc != null) {
-                        ClassLoader loader;
-                        try {
-                            loader = TopManager.getDefault().currentClassLoader();
-                        } catch (Exception ex) {
-                            loader = null;
-                        }
-
-                        //						System.out.println("Metadata adaptor class name = "+adc);
-                        dmdAdaptor = (DatabaseMetaData)Beans.instantiate(loader, adc);
+                        ClassLoader loader = Class.forName(adc).getClassLoader();
+                        dmdAdaptor = (DatabaseMetaData) Beans.instantiate(loader, adc);
                         if (dmdAdaptor instanceof DatabaseMetaDataAdaptor) {
                             ((DatabaseMetaDataAdaptor)dmdAdaptor).setConnection(jdbccon);
                         } else throw new ClassNotFoundException(bundle.getString("EXC_AdaptorInterface"));

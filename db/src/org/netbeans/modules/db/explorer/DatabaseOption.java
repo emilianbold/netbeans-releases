@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -22,6 +22,9 @@ import java.util.ResourceBundle;
 
 import org.openide.*;
 import org.openide.actions.*;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.filesystems.*;
 import org.openide.nodes.*;
 import org.openide.options.SystemOption;
@@ -162,8 +165,15 @@ public class DatabaseOption extends SystemOption {
     
     private void closeConnections() {
         try {
-//            Node n[] = TopManager.getDefault().getPlaces().nodes().environment().getChildren().findChild(bundle.getString("Databases")).getChildren().getNodes(); //NOI18N
-            Node n[] = TopManager.getDefault().getPlaces().nodes().environment().getChildren().findChild("Databases").getChildren().getNodes(); //NOI18N
+            FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("UI/Runtime"); //NOI18N
+            DataFolder df;
+            try {
+                df = (DataFolder) DataObject.find(fo);
+            } catch (DataObjectNotFoundException exc) {
+                return;
+            }
+            Node[] n = df.getNodeDelegate().getChildren().findChild("Databases").getChildren().getNodes(); //NOI18N
+            
             for (int i = 0; i < n.length; i++)
                 if (n[i] instanceof ConnectionNode)
                     ((ConnectionNodeInfo)((ConnectionNode)n[i]).getInfo()).disconnect();

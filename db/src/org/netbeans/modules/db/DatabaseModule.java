@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -19,6 +19,8 @@ import java.util.ResourceBundle;
 import org.openide.*;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.InstanceDataObject;
 import org.openide.modules.*;
 import org.openide.util.NbBundle;
@@ -87,13 +89,20 @@ public class DatabaseModule extends ModuleInstall {
     }
     
     public void close () {
-        final Node environment = org.openide.TopManager.getDefault().getPlaces().nodes().environment();
+        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("UI/Runtime"); //NOI18N
+        DataFolder df;
+        try {
+            df = (DataFolder) DataObject.find(fo);
+        } catch (DataObjectNotFoundException exc) {
+            return;
+        }
+        final Node environment = df.getNodeDelegate();
         
         // closing all open connection
         Children.MUTEX.writeAccess (new Runnable () {
             public void run () {
                 try {
-                    Node n[] = environment.getChildren().findChild("Databases").getChildren().getNodes(); //NOI18N
+                    Node[] n = environment.getChildren().findChild("Databases").getChildren().getNodes(); //NOI18N
                     for (int i = 0; i < n.length; i++)
                         if (n[i] instanceof ConnectionNode)
                             ((ConnectionNodeInfo)((ConnectionNode)n[i]).getInfo()).disconnect();

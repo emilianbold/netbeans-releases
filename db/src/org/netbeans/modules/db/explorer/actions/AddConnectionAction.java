@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -20,6 +20,11 @@ import java.text.MessageFormat;
 import java.util.*;
 
 import org.openide.*;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.*;
 import org.openide.util.actions.*;
 import org.openide.nodes.*;
@@ -35,8 +40,14 @@ public class AddConnectionAction extends DatabaseAction {
     public void performAction (Node[] activatedNodes) {
         
         try {
-
-            Node n[] = TopManager.getDefault().getPlaces().nodes().environment().getChildren().findChild("Databases").getChildren().findChild("Drivers").getChildren().getNodes(); //NOI18N
+            FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("UI/Runtime"); //NOI18N
+            DataFolder df;
+            try {
+                df = (DataFolder) DataObject.find(fo);
+            } catch (DataObjectNotFoundException exc) {
+                return;
+            }
+            Node[] n = df.getNodeDelegate().getChildren().findChild("Databases").getChildren().findChild("Drivers").getChildren().getNodes(); //NOI18N
             Node node;
             if (n != null && n.length>0)
                 node = n[0];

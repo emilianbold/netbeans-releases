@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -20,7 +20,6 @@ import javax.swing.event.*;
 import javax.swing.JTabbedPane;
 import java.sql.*;
 
-import org.openide.TopManager;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.*;
@@ -69,8 +68,7 @@ public class ConnectUsingDriverAction extends DatabaseAction {
                     dlg.setException(null);
                     basePanel.setConnectionInfo();
                     try {
-                        ClassLoader syscl = TopManager.getDefault().currentClassLoader();
-                        syscl.loadClass(basePanel.getDriver());
+                        Class.forName(basePanel.getDriver());
                         if(schemaPanel.getSchema()==null)
                             dlg.setSelectedComponent(schemaPanel);
                         if(dlg.isException()) {
@@ -104,8 +102,7 @@ public class ConnectUsingDriverAction extends DatabaseAction {
                     DBConnection con = basePanel.getConnection();
 
                     try {
-                        ClassLoader syscl = TopManager.getDefault().currentClassLoader();
-                        syscl.loadClass(basePanel.getDriver());
+                        Class.forName(basePanel.getDriver());
                         Connection connection = con.createJDBCConnection();
                         if (connection != null) {
                             ResultSet rs;

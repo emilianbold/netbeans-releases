@@ -4,7 +4,7 @@ OpenIDE-Module-Specification-Version: 1.7
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Layer: org/netbeans/modules/db/resources/mf-layer.xml
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 3.17
-OpenIDE-Module-Module-Dependencies: org.openide.deprecated > 1.0, org.openide.io > 1.0
-OpenIDE-Module-Requires: org.openide.TopManager, org.openide.windows.IOProvider, org.netbeans.api.javahelp.Help
+OpenIDE-Module-Module-Dependencies: org.openide.io > 1.0
+OpenIDE-Module-Requires: org.openide.windows.IOProvider, org.netbeans.api.javahelp.Help
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/db/resources/Bundle.properties
 Class-Path: ext/ddl.jar docs/db.jar
