@@ -411,7 +411,7 @@ ToDo:
     <echo message="Building module vcscvs compat..."/>
     <ant dir="../vcscvs/compat" target="netbeans"/>
   </target>
-  <target name="all-vcsgeneric" depends="all-openide,all-openidex,all-vcscore">
+  <target name="all-vcsgeneric" depends="all-openide,all-openidex,all-vcscore,all-diff">
     <echo message="Building module vcsgeneric..."/>
     <ant dir="../vcsgeneric" target="netbeans"/>
   </target>
