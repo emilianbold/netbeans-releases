@@ -111,6 +111,7 @@ public class NbExecutor extends Task {
             while(tests.hasMoreElements()) {
               MConfig.Test test = (MConfig.Test) tests.nextElement();
               File outputfile = null;
+              String debug_level = "";
               try {  
                 Java  callee = (Java) getProject().createTask( "java" );
                 
@@ -133,6 +134,13 @@ public class NbExecutor extends Task {
                     callee.createArg().setLine("-logfile " + "\"" + outputfile + "\"");
                 }
                 
+                debug_level = project.getProperty("xtest.debug.level");
+                if (debug_level != null) {
+                    if (debug_level.equals("debug") || debug_level.equals("verbose")) {
+                        callee.createArg().setValue("-" + debug_level);
+                    }
+                }
+
                 callee.createArg().setValue(targetName);
 
                 callee.createArg().setValue("-D"  +targetParamModule + "=" + test.getModule());
