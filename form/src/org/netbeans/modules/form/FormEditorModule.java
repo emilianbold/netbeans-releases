@@ -17,6 +17,7 @@ import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataFolder;
 import org.openide.util.NbBundle;
@@ -42,13 +43,20 @@ public class FormEditorModule implements ModuleInstall {
 //    System.out.println("FormEditorModule: installed");
 
   // -----------------------------------------------------------------------------
-  // 1. create Component Palette under system
+  // 1. create FormEditor actions
+    createActions ();
+
+  // -----------------------------------------------------------------------------
+  // 2. copy FormEditor templates
+    copyTemplates ();
+
+  // -----------------------------------------------------------------------------
+  // 3. create Component Palette under system
     createComponentPalette ();
   }
 
   /** Module installed again. */
   public void restored () {
-//    System.out.println("FormEditorModule: restored");
     // [PENDING - ugly workaround so that borders editor works - ideally, a FormPropertyEditorManager would be used for finding border's properties editors]
     java.beans.PropertyEditorManager.registerEditor (javax.swing.border.Border.class, com.netbeans.developer.explorer.propertysheet.editors.BorderEditor.class);
     BeanInstaller.autoLoadBeans ();
@@ -57,6 +65,8 @@ public class FormEditorModule implements ModuleInstall {
   /** Module was uninstalled. */
   public void uninstalled () {
     // [PENDING - ask and delete ComponentPalette]
+    // [PENDING - ask and delete Form templates]
+    // [PENDING - delete actions]
   }
 
   /** Module is being closed. */
@@ -67,6 +77,21 @@ public class FormEditorModule implements ModuleInstall {
 // -----------------------------------------------------------------------------
 // Private methods
   
+  private void createActions () {
+    // [PENDING]
+  }
+
+  private void copyTemplates () {
+    try {
+      FileUtil.extractJar (
+        TopManager.getDefault ().getPlaces ().folders().templates ().getPrimaryFile (),
+        getClass ().getClassLoader ().getResourceAsStream ("com/netbeans/developer/modules/loaders/form/resources/templates.jar")
+      );
+    } catch (java.io.IOException e) {
+      TopManager.getDefault ().notifyException (e);
+    }
+  }
+
   private void createComponentPalette () {
     FileObject root = TopManager.getDefault ().getRepository ().getDefaultFileSystem ().getRoot ();
     FileObject paletteFolder;
@@ -312,6 +337,8 @@ public class FormEditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  21   Gandalf   1.20        6/10/99  Ian Formanek    copy templates on 
+ *       install
  *  20   Gandalf   1.19        6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  19   Gandalf   1.18        6/7/99   Ian Formanek    AutoLoad beans enabled 
