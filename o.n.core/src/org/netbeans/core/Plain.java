@@ -16,6 +16,7 @@ package com.netbeans.developer.impl;
 import java.io.File;
 
 import org.openide.filesystems.*;
+import org.openide.filesystems.FileSystem;
 
 /** Default implementation of TopManager that is used when 
 * the system is used without initialization.
@@ -70,6 +71,8 @@ public class Plain extends NbTopManager implements Runnable {
 
 /* 
 * Log
+*  2    Jaga      1.1         3/17/00  Jaroslav Tulach Compiles with 1.2 
+*       compiler
 *  1    Jaga      1.0         3/17/00  Jaroslav Tulach 
 * $ 
 */ 

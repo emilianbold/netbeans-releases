@@ -37,6 +37,7 @@ import org.openide.cookies.ProjectCookie;
 import org.openide.debugger.Debugger;
 import org.openide.debugger.DebuggerNotFoundException;
 import org.openide.filesystems.*;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.JarFileSystem;
 import org.openide.options.ControlPanel;
 import org.openide.windows.WindowManager;
