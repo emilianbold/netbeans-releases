@@ -42,7 +42,6 @@ public class StringCustomEditor extends javax.swing.JPanel implements EnhancedCu
         textArea.setText (s);
         setBorder (new javax.swing.border.EmptyBorder (new java.awt.Insets(8, 8, 8, 8)));
         setPreferredSize (new java.awt.Dimension(500, 300));
-        HelpCtx.setHelpIDString (this, StringCustomEditor.class.getName ());
     }
 
     /**
