@@ -15,8 +15,9 @@ package com.netbeans.developer.modules.text;
 
 import javax.swing.text.EditorKit;
 import javax.swing.JEditorPane;
-
+import com.netbeans.editor.view.DialogSupport;
 import com.netbeans.ide.modules.ModuleInstall;
+
 /**
 * Module installation class for editor
 *
@@ -26,7 +27,7 @@ public class EditorModule implements ModuleInstall {
 
   /** Kit replacements that will be installed into JEditorPane */
   KitInfo[] replacements = new KitInfo[] {
-    new KitInfo("text/plain", "com.netbeans.developer.modules.text.NbEditorBaseKit"),
+    new KitInfo("text/plain", "com.netbeans.developer.modules.text.NbEditorPlainKit"),
     new KitInfo("text/x-java", "com.netbeans.developer.modules.text.NbEditorJavaKit")
   };
 
@@ -37,6 +38,10 @@ public class EditorModule implements ModuleInstall {
 
   /** Module installed again. */
   public void restored () {
+
+    DialogSupport.init();
+    DialogSupport.setDialogCreator(new NbDialogCreator());
+
     for (int i = 0; i < replacements.length; i++) {
       // install new kit
       JEditorPane.registerEditorKitForContentType(
@@ -76,6 +81,7 @@ public class EditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  11   Gandalf   1.10        5/5/99   Miloslav Metelka 
  *  10   Gandalf   1.9         4/23/99  Miloslav Metelka Differrent document 
  *       constructor
  *  9    Gandalf   1.8         4/13/99  Ian Formanek    Fixed bug #1518 - 

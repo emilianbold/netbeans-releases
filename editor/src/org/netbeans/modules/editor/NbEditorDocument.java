@@ -26,9 +26,12 @@ import com.netbeans.ide.text.NbDocument;
 */
 
 public class NbEditorDocument extends GuardedDocument
-implements NbDocument.PositionBiasable, NbDocument.WriteLockable {
+implements NbDocument.PositionBiasable, NbDocument.WriteLockable,
+NbDocument.Printable {
 
-  NbEditorDocument(Class kitClass, Syntax syntax) {
+  PrintSupport printSupport;
+
+  public NbEditorDocument(Class kitClass, Syntax syntax) {
     super(kitClass, syntax);
     addStyleToLayerMapping(NbDocument.BREAKPOINT_STYLE_NAME,
         NbDocument.BREAKPOINT_STYLE_NAME + "Layer:5000");
@@ -56,12 +59,22 @@ implements NbDocument.PositionBiasable, NbDocument.WriteLockable {
     }
   }
 
+  protected PrintSupport getPrintSupport() {
+    if (printSupport == null) {
+      printSupport = new PrintSupport(this);
+    }
+    return printSupport;
+  }
 
+  public java.text.AttributedCharacterIterator[] createPrintIterators() {
+    return getPrintSupport().createPrintIterators();
+  }
   
 }
 
 /*
  * Log
+ *  5    Gandalf   1.4         5/5/99   Miloslav Metelka 
  *  4    Gandalf   1.3         4/22/99  Miloslav Metelka 
  *  3    Gandalf   1.2         4/8/99   Miloslav Metelka 
  *  2    Gandalf   1.1         3/23/99  Miloslav Metelka 
