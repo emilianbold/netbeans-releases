@@ -16,6 +16,7 @@ package com.netbeans.developer.modules.loaders.form;
 import java.io.*;
 import java.util.Iterator;
 
+import org.openide.awt.UndoRedo;
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -36,6 +37,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
   private FormDataObject formObject;
   /** True, if the design form has been loaded from the form file */
   transient private boolean formLoaded;
+
+  private UndoRedo.Manager undoManager;
 
   private RADComponentNode formRootNode;
 
@@ -138,6 +141,23 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
     return formRootNode;
   }
   
+  /** Create an undo/redo manager.
+  * This manager is then attached to the document, and listens to
+  * all changes made in it.
+  * <P>
+  * The default implementation simply uses <code>UndoRedo.Manager</code>.
+  *
+  * @return the undo/redo manager
+  */
+  protected UndoRedo.Manager createUndoRedoManager () {
+    undoManager = super.createUndoRedoManager ();
+    return undoManager;
+  }
+
+  UndoRedo.Manager getUndoManager () {
+    return undoManager;
+  }
+
   /** @returns the FormManager2 of this form */
   FormManager2 getFormManager () {
     return formManager;
@@ -307,6 +327,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  26   Gandalf   1.25        7/27/99  Ian Formanek    Fixed bug 2638 - Undo in
+ *       an editor pane with guarded blocks screws up the guards.
  *  25   Gandalf   1.24        7/24/99  Ian Formanek    Fixed bug with opening 
  *       form via class element nodes.
  *  24   Gandalf   1.23        7/14/99  Ian Formanek    supportsAdvancedFeatures

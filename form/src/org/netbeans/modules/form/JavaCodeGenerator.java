@@ -320,6 +320,7 @@ public class JavaCodeGenerator extends CodeGenerator {
       // set the text into the guarded block
       synchronized (GEN_LOCK) {
         initComponentsSection.setText (initCodeBuffer.toString ());
+        clearUndo ();
       }
     } catch (IOException e) {
       throw new InternalError (); // cannot happen
@@ -345,6 +346,7 @@ public class JavaCodeGenerator extends CodeGenerator {
       variablesWriter.close ();
       synchronized (GEN_LOCK) {
         variablesSection.setText (variablesBuffer.toString ());
+        clearUndo ();
       }
     } catch (IOException e) {
       throw new InternalError (); // cannot happen
@@ -743,7 +745,7 @@ public class JavaCodeGenerator extends CodeGenerator {
         sec.setBottom (getEventHandlerFooter (handlerName, paramTypes));
       } catch (javax.swing.text.BadLocationException e) {
       }
-//      clearUndo (); // [PENDING]
+      clearUndo ();
     }
 
     return true;
@@ -764,6 +766,7 @@ public class JavaCodeGenerator extends CodeGenerator {
       sec.setHeader (getEventHandlerHeader (handlerName, paramTypes));
       sec.setBody (getEventHandlerBody (handlerName, paramTypes, bodyText));
       sec.setBottom (getEventHandlerFooter (handlerName, paramTypes));
+      clearUndo ();
     }
     return true;
   }
@@ -777,6 +780,7 @@ public class JavaCodeGenerator extends CodeGenerator {
       if (section == null)
         return false;    
       section.deleteSection ();
+      clearUndo ();
     }
     
     return true;
@@ -841,7 +845,7 @@ public class JavaCodeGenerator extends CodeGenerator {
       sec.setBottom (getEventHandlerFooter (newHandlerName, paramTypes));
       try {
         sec.setName(getEventSectionName(newHandlerName));
-//        clearUndo ();
+        clearUndo ();
       } catch (java.beans.PropertyVetoException e) {
         return false;
       }
@@ -860,6 +864,11 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 // ------------------------------------------------------------------------------------------
 // Private methods
+
+  /** Clears undo buffer after code generation */
+  private void clearUndo () {
+    formManager.getFormEditorSupport ().getUndoManager ().discardAllEdits ();
+  }
 
   // sections acquirement
 
@@ -1186,6 +1195,8 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  42   Gandalf   1.41        7/27/99  Ian Formanek    Fixed bug 2638 - Undo in
+ *       an editor pane with guarded blocks screws up the guards.
  *  41   Gandalf   1.40        7/27/99  Ian Formanek    getAdapterForListener ->
  *       BeanSupport
  *  40   Gandalf   1.39        7/23/99  Ian Formanek    Fixed work with 
