@@ -8,7 +8,7 @@
 
 <api-answers
   question-version="1.23"
-  module="projects/projectui"
+  module="projects/projectuiapi"
   author="jglick@netbeans.org"
 >
 
