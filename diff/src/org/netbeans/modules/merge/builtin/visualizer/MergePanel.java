@@ -1156,7 +1156,11 @@ public class MergePanel extends javax.swing.JPanel {
         //System.out.println("insertNumbers("+line3+", "+resultLine+", "+numLines+")");
         linesComp3.insertNumbers(line3 - 1, resultLine, numLines);
         linesComp3.changedAll();
-        for (int i = 0; i < numLines; i++) resultLineNumbers[line3 + i] = resultLine + i;
+        try{
+            for (int i = 0; i < numLines; i++) resultLineNumbers[line3 + i] = resultLine + i;
+        }catch(IndexOutOfBoundsException exp){
+            //simply ignore - doesn't affect anything
+        }
     }
     
     /**
