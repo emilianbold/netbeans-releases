@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<?xml-stylesheet href="../../nbbuild/javadoctools/apichanges.xsl" type="text/xsl"?>
+<!DOCTYPE apichanges PUBLIC "-//NetBeans//DTD API changes list 1.0//EN" "../../nbbuild/javadoctools/apichanges.dtd">
+
+<!-- INFO FOR PEOPLE ADDING CHANGES: 
+[most of contents snipped - see openide's apichanges for how-to instructions]
+<change>
+    <api name="compiler"/>
+    <summary>Some brief description here, can use <b>XHTML</b></summary>
+    <version major="1" minor="99"/>
+    <date day="13" month="6" year="2001"/>
+    <author login="jrhacker"/>
+    <compatibility addition="yes"/>
+    <description>
+        The main description of the change here.
+        Again can use full <b>XHTML</b> as needed.
+    </description>
+    <class package="org.openide.compiler" name="DoWhatIWantCompiler"/>
+    <issue number="14309"/>
+</change>
+-->
+
+<apichanges>
+
+<!-- First, a list of API names you may use: -->
+<apidefs>
+        <apidef name="JPDADebuggerAPI">Debugger JPDA API</apidef>
+</apidefs>
+
+<!-- ACTUAL CHANGES BEGIN HERE: -->
+
+<changes>
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>JPDADebugger.getException() method added.</summary>
+        <date day="20" month="4" year="2004"/>
+        <author login="jjancura"/>
+        <compatibility>
+            <p>
+                Compatile change.
+            </p>
+        </compatibility>
+        <description>
+            JPDADebugger.getException() method added to. This is support for notifications about 
+            problems during start of debugger.
+        </description>
+    </change>
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>Support for synchronouous start of JPDADebugger added.</summary>
+        <date day="3" month="5" year="2004"/>
+        <author login="jjancura"/>
+        <compatibility>
+            <p>
+                Compatile change.
+            </p>
+        </compatibility>
+        <description>
+            <p>
+                Methods starting debugger has been modified to support synchronous start of debugging.
+            </p>
+        </description>
+    </change>
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>Breakpoint Listener added.</summary>
+        <date day="4" month="5" year="2004"/>
+        <author login="jjancura"/>
+        <compatibility>
+            <p>
+                Compatile change.
+            </p>
+        </compatibility>
+        <description>
+            <p>
+                JPDABreakpointEvent and JPDABreakpointListener classes added.
+                JPDABreakpoint.addJPDABreakpointListener (...) and JPDABreakpoint.removeJPDABreakpointListener (...)
+                methods added.
+            </p>
+        </description>
+    </change>
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>Support methods for various new features added.</summary>
+        <date day="9" month="5" year="2004"/>
+        <author login="jjancura"/>
+        <compatibility>
+            <p>
+                Compatile change.
+            </p>
+        </compatibility>
+        <description>
+            <p>
+                Support for Fix Action improved. Support for Pop Frame action added. Support for static and
+                inherited fields added. New methods:
+            </p>
+            <ul>
+                <li>CallStackFrame.isObsolete ()</li>
+                <li>CallStackFrame.popFrame ()</li>
+                <li>JPDADebugger.canFixClasses ()</li>
+                <li>JPDADebugger.fixClasses(java.util.Map)</li>
+                <li>ObjectVariable.getAllStaticFields(int,int)</li>
+                <li>ObjectVariable.getInheritedFields(int,int)</li>
+            </ul>
+        </description>
+    </change>
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>Definition of various breakpoints has been generalized.</summary>
+        <date day="10" month="5" year="2004"/>
+        <author login="jjancura"/>
+        <compatibility>
+            <p>
+                Incompatile change.
+            </p>
+        </compatibility>
+        <description>
+            <p>
+                We have changed ClassLoadUnloadBreakpoint to support class exclusion filters, and
+                more than one class filter. The same change was done for MethodBreakpoints too.
+            </p>
+        </description>
+    </change>
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>JPDABreakpointEvent improvements.</summary>
+        <date day="11" month="5" year="2004"/>
+        <author login="jjancura"/>
+        <compatibility>
+            <p>
+                Incompatile change.
+            </p>
+        </compatibility>
+        <description>
+            <p>
+                We have added several new properties to JPDABreakpointEvent:
+            </p>
+            <ul>
+                <li>ReferenceType</li>
+                <li>resume</li>
+                <li>Thread</li>
+                <li>Variable</li>
+            </ul>
+        </description>
+    </change>
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>Improvements of SmartStepping implementation.</summary>
+        <date day="16" month="5" year="2004"/>
+        <author login="jjancura"/>
+        <compatibility>
+            <p>
+                Compatile change.
+            </p>
+        </compatibility>
+        <description>
+            <p>
+                We have added several new methods to fix issues in smart stepping implementation:
+            </p>
+            <ul>
+                <li>PropertyChangeListener added to SmartSteppingFilter.</li>
+                <li>JPDADebugger.getSmartSteppingFilter ()</li>
+                <li>SmartSteppingFilter.getExclusionPatterns ()</li>
+                <li>PropertyChangeListener added to EngineContextProvider.</li>
+                <li>EngineContextProvider.getOriginalSourceRoots()</li>
+                <li>EngineContextProvider.getSourceRoots()</li>
+                <li>EngineContextProvider.setSourceRoots()</li>
+            </ul>
+        </description>
+    </change>
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>JPDADebugger.SESSION_ID.</summary>
+        <date day="17" month="5" year="2004"/>
+        <author login="jjancura"/>
+        <compatibility>
+            <p>
+                Compatile change.
+            </p>
+        </compatibility>
+        <description>
+            <p>
+                JPDADebugger.SESSION_ID constant has been added.
+            </p>
+        </description>
+    </change>
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>Firing of exceptions during watches evaluation fixed.</summary>
+        <date day="25" month="5" year="2004"/>
+        <author login="jjancura"/>
+        <compatibility>
+            <p>
+                Incompatile change.
+            </p>
+        </compatibility>
+        <description>
+            <p>
+                InvalidExpressionException is fired from folowing methods now:
+            </p>
+            <ul>
+                <li>JPDAWatch.getToStringValue()</li>
+                <li>ObjectVariable.getToStringValue()</li>
+                <li>ObjectVariable.invokeMethod()</li>
+            </ul>
+        </description>
+    </change>
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>InvalidExpressionException can encapsulate other exceptions.</summary>
+        <date day="1" month="6" year="2004"/>
+        <author login="jjancura"/>
+        <compatibility>
+            <p>
+                Compatile change.
+            </p>
+        </compatibility>
+        <description>
+            <p>
+                Mew constructor added (InvalidExpressionException(java.lang.Throwable)), 
+                and InvalidExpressionException.getTargetException() method added to support firing of
+                nested exceptions.
+            </p>
+            <ul>
+                <li>JPDAWatch.getToStringValue()</li>
+                <li>ObjectVariable.getToStringValue()</li>
+                <li>ObjectVariable.invokeMethod()</li>
+            </ul>
+        </description>
+    </change>
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>ContextProvider.getFieldLineNumber() method added.</summary>
+        <date day="1" month="6" year="2004"/>
+        <author login="jjancura"/>
+        <compatibility>
+            <p>
+                Compatile change.
+            </p>
+        </compatibility>
+        <description>
+            <p>
+                ContextProvider.getFieldLineNumber() method added.
+            </p>
+        </description>
+    </change>
+
+</changes>
+
+  <!-- Now the surrounding HTML text and document structure: -->
+
+  <htmlcontents>
+<!--
+
+                            NO NO NO NO NO!
+
+         ==============>    DO NOT EDIT ME!  <======================
+
+          AUTOMATICALLY GENERATED FROM APICHANGES.XML, DO NOT EDIT
+
+                SEE xml/api/doc/changes/apichanges.xml
+
+-->
+    <head>
+      <title>Debugger JPDA API changes by date</title>
+      <link rel="stylesheet" href="prose.css" type="text/css"/>
+    </head>
+    <body>
+
+<p class="overviewlink"><a href="overview-summary.html">Overview</a></p>
+
+<h1>Introduction</h1>
+
+<p>This document lists changes made to the Debugger JPDA APIs. Please ask on the 
+    <code>nbdev@netbeans.org</code>
+    mailing list if you have any questions about the details of a
+    change, or are wondering how to convert existing code to be compatible.
+</p>
+
+      <hr/><h1><a name="list-all-apis">Index of APIs</a></h1>
+      <changelist style="list-all-apis"/>
+
+      <h1><a name="incompat-by-date">Incompatible changes by date</a></h1>
+      <p>Not all deprecations are listed here, assuming that the deprecated
+        APIs continue to essentially work.
+      </p>
+      <changelist style="incompat-by-date"/>
+
+      <h1><a name="all-by-date">All changes by date</a></h1>
+      <changelist style="all-by-date"/>
+
+      <h1><a name="all-by-version">Changes by version</a></h1>
+      <p>
+        These API specification versions may be used to indicate that a module
+        requires a certain API feature in order to function. For example, if you
+        see here a feature you need which is labelled <samp>0.4</samp>, your
+        manifest should contain in its main attributes the line:
+      </p>
+      <pre>OpenIDE-Module-Module-Dependencies: org.netbeans.api.debugger.jpda/1 &gt; 0.4</pre>
+      <changelist style="all-by-version"/>
+
+      <h1><a name="all-by-class">Changes by affected class</a></h1>
+      <changelist style="all-by-class"/>
+
+      <hr/><h1><a name="details-by-api">Details of all changes by API and date</a></h1>
+      <changelist style="details-by-api"/>
+
+      <hr/><p>@FOOTER@</p>
+
+    </body>
+  </htmlcontents>
+</apichanges>
