@@ -12,6 +12,7 @@
  */
 package org.netbeans.modules.openfile;
 
+import java.awt.Container;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -22,6 +23,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Enumeration;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.openfile.cli.Callback;
@@ -46,6 +48,7 @@ import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.windows.TopComponent;
 
 
 /**
@@ -59,6 +62,20 @@ public class DefaultOpenFileImpl implements OpenFileImpl {
     static final String JAVA_EXT = ".JAVA";                             //NOI18N
     /** extension for .txt files (including the dot) */
     static final String TXT_EXT = ".TXT";                               //NOI18N
+    /**
+     * if opening file using non-observable <code>EditorCookie</code>,
+     * how long should we wait (in milliseconds) between tries?
+     *
+     * @see  #openDocAtLine
+     */
+    private static final int OPEN_EDITOR_WAIT_PERIOD_MS = 100;
+    /**
+     * if opening file using non-observable <code>EditorCookie</code>,
+     * how long should we wait (in milliseconds) in total before giving up?
+     *
+     * @see  #openDocAtLine
+     */
+    private static final int OPEN_EDITOR_TOTAL_TIMEOUT_MS = 1000;
 
     private static final String ZIP_EXT = "zip"; //NOI18N
     private static final String JAR_EXT = "jar"; //NOI18N
@@ -128,6 +145,202 @@ public class DefaultOpenFileImpl implements OpenFileImpl {
     }
     
     /**
+     * Opens an editor using <code>EditorCookie</code>.
+     * If non-negative line number is passed, it also places cursor at the given
+     * line.
+     *
+     * @param  cookie  cookie to use for opening an editor
+     * @param  observable  whether the cookie is
+     *                     <code>EditorCookie.Observable</code>
+     * @param  line  line number to place cursor to (starting at <code>0</code>)
+     * @return  <code>true</code> if the cookie was successfully activated,
+     *          <code>false</code> if some error occured
+     */
+    private boolean openEditor(final EditorCookie editorCookie,
+                               final int line) {
+        
+        /* if the editor is already open, just set the cursor and activate it */
+        JEditorPane[] openPanes = editorCookie.getOpenedPanes();
+        if (openPanes != null) {
+            if (line >= 0) {
+                int cursorOffset = getCursorOffset(editorCookie.getDocument(),
+                                                   line);
+                openPanes[0].setCaretPosition(cursorOffset);
+            }
+            Container c = SwingUtilities.getAncestorOfClass(TopComponent.class,
+                                                            openPanes[0]);
+            final TopComponent tc = (TopComponent) c;
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    tc.requestActive();
+                }
+            });
+            return true;
+        }
+        
+        /* get the document: */
+        final StyledDocument doc;
+        try {
+            doc = editorCookie.openDocument();
+        } catch (IOException ex) {
+            String msg = NbBundle.getMessage(
+                    OpenFileImpl.class,
+                    "MSG_cannotOpenWillClose");                     //NOI18N
+            ErrorManager.getDefault().notify(
+                    ErrorManager.EXCEPTION,
+                    ErrorManager.getDefault().annotate(ex, msg));
+            clearStatusLine();
+            return false;
+        }
+
+        if (line < 0) {
+            editorCookie.open();
+            
+            /*
+             * editorCookie.open() may return before the editor is actually
+             * open. But since the document was successfully open,
+             * the editor should be opened quite quickly and no problem
+             * should occur.
+             */
+        } else {
+            openDocAtLine(editorCookie, doc, line);
+        }
+        return true;
+    }
+    
+    /**
+     * Opens a document in the editor at a given line.
+     * This method is used in the case that the editor is not opened yet
+     * (<code>EditorCookie.getOpenedPanes()</code> returned <code>null</code>)
+     * and is to be opened at a specific line.
+     *
+     * @param  editorCookie  editor cookie to use for opening the document
+     * @param  doc  document already loaded using the editor cookie
+     * @param  line  line to open the document at (first line = <code>0</code>);
+     *               must be non-negative
+     */
+    private void openDocAtLine(final EditorCookie editorCookie,
+                               final StyledDocument doc,
+                               final int line) {
+        assert line >= 0;
+        assert editorCookie.getDocument() == doc;
+        
+        /* offset must be computed here so that it is available to the task: */
+        final int offset = getCursorOffset(doc, line);
+        
+        class SetCursorTask implements Runnable {
+            private boolean completed = false;
+            private PropertyChangeListener listenerToUnregister;
+            private boolean perform() {
+                if (EventQueue.isDispatchThread()) {
+                    run();
+                } else {
+                    try {
+                        EventQueue.invokeAndWait(this);
+                    } catch (Exception ex) {
+                        ErrorManager.getDefault().notify(ex);
+                        
+                        completed = true; //so that only one exception is thrown
+                    }
+                }
+                return completed;
+            }
+            public void run() {
+                assert EventQueue.isDispatchThread();
+
+                if (completed) {
+                    return;
+                }
+
+                JEditorPane[] panes = editorCookie.getOpenedPanes();
+                if (panes != null) {
+                    panes[0].setCaretPosition(offset);
+                    if (listenerToUnregister != null) {
+                        ((EditorCookie.Observable) editorCookie)
+                        .removePropertyChangeListener(listenerToUnregister);
+                    }
+                    completed = true;
+                }
+            }
+            private void setListenerToUnregister(PropertyChangeListener l) {
+                listenerToUnregister = l;
+            }
+        }
+
+        final SetCursorTask setCursorTask = new SetCursorTask();
+        
+        editorCookie.open();
+        if (setCursorTask.perform()) {
+            return;
+        }
+        if (editorCookie instanceof EditorCookie.Observable) {
+            if (!setCursorTask.perform()) {
+                PropertyChangeListener openPanesListener
+                        = new PropertyChangeListener() {
+                            public void propertyChange(PropertyChangeEvent e) {
+                                if (EditorCookie.Observable.PROP_OPENED_PANES
+                                        .equals(e.getPropertyName())) {
+                                    setCursorTask.perform();
+                                }
+                            }
+                        };
+                setCursorTask.setListenerToUnregister(openPanesListener);
+                ((EditorCookie.Observable) editorCookie)
+                        .addPropertyChangeListener(openPanesListener);
+                setCursorTask.perform();
+            }
+        } else {
+            final int numberOfTries = OPEN_EDITOR_TOTAL_TIMEOUT_MS
+                                      / OPEN_EDITOR_WAIT_PERIOD_MS;
+            for (int i = 0; i < numberOfTries; i++) {
+                try {
+                    Thread.currentThread().sleep(OPEN_EDITOR_WAIT_PERIOD_MS);
+                } catch (InterruptedException ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION,
+                                                     ex);
+                }
+                if (setCursorTask.perform()) {
+                    break;
+                }
+            }
+            if (!setCursorTask.completed) {
+                setStatusLine(NbBundle.getMessage(
+                        OpenFileImpl.class,
+                        "MSG_couldNotOpenAt"));                         //NOI18N
+            }
+        }
+    }
+    
+    /**
+     * Computes cursor offset of a given line of a document.
+     * The line number must be non-negative.
+     * If the line number is greater than number of the last line,
+     * the returned offset corresponds to the last line of the document.
+     *
+     * @param  doc  document to computer offset for
+     * @param  line  line number (first line = <code>0</code>)
+     * @return  cursor offset of the beginning of the given line
+     */
+    private int getCursorOffset(StyledDocument doc, int line) {
+        assert line >= 0;
+        
+        try {
+            return NbDocument.findLineOffset(doc, line);
+        } catch (IndexOutOfBoundsException ex) {
+            /* probably line number out of bounds */
+
+            Element lineRootElement
+                    = NbDocument.findLineRootElement(doc);
+            int lineCount = lineRootElement.getElementCount();
+            if (line >= lineCount) {
+                return NbDocument.findLineOffset(doc, lineCount - 1);
+            } else {
+                throw ex;
+            }
+        }
+    }
+    
+    /**
      * Activates the specified cookie, thus opening a file.
      * The file is specified by the cookie, because the cookie was obtained
      * from it. The cookie must be one of <code>EditorCookie</code>
@@ -152,111 +365,8 @@ public class DefaultOpenFileImpl implements OpenFileImpl {
                                    Class cookieClass,
                                    final int line) {
         if ((cookieClass == EditorCookie.Observable.class)
-                || (cookieClass == EditorCookie.class)) {
-            final EditorCookie editorCookie = (EditorCookie) cookie;
-            editorCookie.open();
-            final StyledDocument doc;
-            
-            /* get the document: */
-            try {
-                doc = editorCookie.openDocument();
-            } catch (IOException ex) {
-                String msg = NbBundle.getMessage(
-                        OpenFileImpl.class,
-                        "MSG_cannotOpenWillClose");                     //NOI18N
-                ErrorManager.getDefault().notify(
-                        ErrorManager.EXCEPTION,
-                        ErrorManager.getDefault().annotate(ex, msg));
-                clearStatusLine();
-                return false;
-            }
-            
-            /* get the target cursor offset: */
-            int lineOffset;
-            try {
-                lineOffset = (line >= 0) ? NbDocument.findLineOffset(doc, line)
-                                         : 0;
-            } catch (IndexOutOfBoundsException ex) {
-                /* probably line number out of bounds */
-                
-                Element lineRootElement
-                        = NbDocument.findLineRootElement(doc);
-                int lineCount = lineRootElement.getElementCount();
-                if (line >= lineCount) {
-                    lineOffset = NbDocument.findLineOffset(doc, lineCount - 1);
-                } else {
-                    throw ex;
-                }
-            }
-            final int offset = lineOffset;
-            
-            class OpenDocAtLineTask implements Runnable {
-                private boolean completed = false;
-                private PropertyChangeListener listenerToUnregister;
-                private boolean perform() {
-                    if (EventQueue.isDispatchThread()) {
-                        run();
-                    } else {
-                        try {
-                            EventQueue.invokeAndWait(this);
-                        } catch (InterruptedException ex) {
-                            ErrorManager.getDefault().notify(ex);
-                        } catch (InvocationTargetException ex) {
-                            ErrorManager.getDefault().notify(
-                                    ex.getTargetException());
-                        }
-                    }
-                    return completed;
-                }
-                public void run() {
-                    assert EventQueue.isDispatchThread();
-                    
-                    if (completed) {
-                        return;
-                    }
-                    
-                    JEditorPane[] panes = editorCookie.getOpenedPanes();
-                    if (panes != null) {
-                        panes[0].setCaretPosition(offset);
-                        if (listenerToUnregister != null) {
-                            ((EditorCookie.Observable) editorCookie)
-                            .removePropertyChangeListener(listenerToUnregister);
-                        }
-                        completed = true;
-                    }
-                }
-                private void setListenerToUnregister(PropertyChangeListener l) {
-                    listenerToUnregister = l;
-                }
-            }
-            
-            final OpenDocAtLineTask openTask = new OpenDocAtLineTask();
-            if (openTask.perform()) {
-                return true;
-            }
-            
-            if (cookieClass != EditorCookie.Observable.class) {
-                setStatusLine(NbBundle.getMessage(
-                        OpenFileImpl.class,
-                        "MSG_couldNotOpenAt"));                         //NOI18N
-                return true;
-            }
-            
-            final EditorCookie.Observable obEdCookie
-                                          = (EditorCookie.Observable) cookie;
-            PropertyChangeListener openPanesListener
-                    = new PropertyChangeListener() {
-                        public void propertyChange(PropertyChangeEvent e) {
-                            if (EditorCookie.Observable.PROP_OPENED_PANES
-                                    .equals(e.getPropertyName())) {
-                                openTask.perform();
-                            }
-                        }
-                    };
-            openTask.setListenerToUnregister(openPanesListener);
-
-            obEdCookie.addPropertyChangeListener(openPanesListener);
-            openTask.perform();
+                || (cookieClass == EditorCookie.Observable.class)) {
+            return openEditor((EditorCookie) cookie, line);
         } else if (cookieClass == OpenCookie.class) {
             ((OpenCookie) cookie).open();
         } else if (cookieClass == EditCookie.class) {
