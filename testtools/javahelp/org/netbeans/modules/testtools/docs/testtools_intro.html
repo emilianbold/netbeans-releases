@@ -11,23 +11,78 @@
 <title>TestTools Module Help</title>
 <link rel="stylesheet" href="../../usersguide/ide.css" type="text/css"></HEAD>
 <body>
+<h2>Test Tools Module</h2>
+...<b> is XTest, Jemmy and JellyTools technology preview module.</b><br>
+Module is intended to show the way to all <a href="http://xtest.netbeans.org">XTest</a>, <a href="http://jemmy.netbeans.org">Jemmy</a>
+and <a href="http://jellytools.netbeans.org">JellyTools</a> beginners and help them to create automated tests from scratch.<br>
+It provides documentation of used technologies. It makes easy to create proper test harness directory structures, build scripts, 
+configuration files, GUI test components and test suites for API or GUI testing.<br> 
+Test Tools Module takes full advantage of other IDE modules (<a href="http://junit.netbeans.org">JUnit</a>,
+ <a href="http://jemmysupport.netbeans.org">JemmySupport</a>, <a href="http://ant.netbeans.org">Ant</a>, 
+ <a href="http://xml.netbeans.org">XML</a>, <a href="http://java.netbeans.org">Java</a>, <a href="http://editor.netbeans.org">Editor</a>).<br> 
 
-<h2>some title</h2>
-<p>
-some text
-</p>
-<p>
-some text
-</p>
-<p>
-...., see:
-</p>
-<blockquote>
-<a href="">some link</a>
-<br>
-<a href="">some link</a>
-</blockquote>
+<h2>Embedded Documentation</h2>
+Module itself provides Jemmy and JellyTools documentation. JUnit module provides NbJUnit documentation.<br> 
+Test Tools Module mounts all these docs into Javadoc repository to be available for Javadoc Search and for user.   
 
+<h2>Parser Databases for Code Completion</h2>
+Module contains Jemmy, JellyTools and JUnit Parser Databases for Code Completion in Source Editor.<p>
+Following picture shows documentation mounted in Javadoc repository and Code Completion for JellyTools class in Source Editor.<p>
+
+<h2><a href="testtools_wizards.html">Templates and Wizards</a></h2>
+Module contains several templates and associated wizards. All templates are available in folder <code>Templates/Test Tools</code>.
+
+<h3><a href="testtools_wizards.html#SpaceSet">Test Workspace</a></h3>
+All the code needed for testing one module is stored in directory called "<code>test</code>". 
+This directory with its content is called Test Workspace.<p>  
+<b>Test Workspace Template</b> with associated <b>Test Workspace Wizard</b> helps you to create this directory and main build.xml script.
+
+<h3><a href="testtools_wizards.html#TypeTemp">Test Type</a></h3>
+Test Workspace can contain several Test Types. 
+Each Test Type is represented by configuration script, build script and separate subdirectory.
+Scripts determine the way of compilation and execution of tests, subdirectory contains data and sources of the tests.<p>  
+<b>QA Functional Test Type Template</b> and  <b>Unit Test Type Template</b> are two templates of most common Test Types.<br>
+Associated <b>Test Type Wizard</b> helps you to create a new build script, configuration file and relevant subdirectory structure.
+Created subdirectory for test sources is finally mounted into filesystems repository.
+
+<h3><a href="testtools_wizards.html#SuiteTarg">Test Suite</a></h3>
+Test Suite is represented by single source file with several Test Case Methods. 
+For more informations see <a href="http://xtest.netbeans.org/docs.html">http://xtest.netbeans.org/docs.html</a>.<p>
+<b>Simple Test Suite Template</b>, <b>Jemmy Test Suite Template</b> and <b>Jelly Test Suite Template</b> are three offered templates.<br>
+Associated <b>Test Suite Wizard</b> helps you to create a new test suite with defined list of test cases.
+In addition it creates proper data directory structure and empty golden file for each "golden" test case type.<p>     
+
+<br><br>
+All wizards are piped together but you can finish at the end of each. 
+Following picture shows Test Tools Wizards schema.<p>
+<img src="schema.gif" border="0"> 
+ 
+
+<h2><a href="testtools_services.html">Test Workspace Data Object</a></h2>
+Test Workspace build.xml file is represented in IDE by special data object based on Ant Project.<br> 
+This data object offers special Cleaning, Compilation, Building, Execution and Results Cleaning in addition to functionality provided by AntProject
+(like tree browsing, source editing, etc...).<br>
+XTest Compiler and XTest Executor are default for this data object.<p>
+Following picture shows XTest Build Script, all its actions available under pop up menu and its default compiler and executor.<p>  
+
+
+<h2><a href="testtools_services.html">Compiler and Executor</a></h2>
+<code>XTest Compiler</code> and <code>XTest Executor</code> are used for compilation and execution of XTest tests directly from IDE.<br>
+Each contains several important properties for XTest execution and compilation.<p>
+Following picture shows XTest Executor properties.<p>
+<p>
+
+<i>Warning: XTest tests could not be compiled or executed against current running IDE but another IDE directory must be selected.</i>  
+
+<h2>Jemmy Component Generator Extensions</h2>
+Test Tools Module plugs Jelly Operators to Jemmy Component Generator and extends it to generate full-featured Jelly Components.<br>
+When Test Tools module is active, Jelly Operators are included in generation process.<br>
+If you want to eliminate Jelly dependency of generated components, simple disable Test Tools Module.<p> 
+
+<h2><a href="testtools_generator.html">Jelly Nodes'n'Actions Generator</a></h2>
+<a href="http://jellytools.netbeans.org">JellyTools</a> library supports custom test-nodes and test-action.<br> 
+This feature enables automated generation of source code for these Jelly nodes and actions.<br>
+Start <code>Jelly Nodes'n'Actions Generator</code> from <code>Tools</code> menu and follow instructions.
 <hr>
 <small><a href="credits.html">Legal Notices</a></small>
 </body>
