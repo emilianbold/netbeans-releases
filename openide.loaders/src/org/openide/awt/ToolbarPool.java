@@ -15,6 +15,7 @@ package org.openide.awt;
 
 import java.awt.Component;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.FlowLayout;
 import java.awt.event.*;
@@ -112,11 +113,14 @@ public final class ToolbarPool extends JComponent implements Accessible {
         getAccessibleContext().setAccessibleName(instance.instanceName());
         getAccessibleContext().setAccessibleDescription(instance.instanceName());
 
-        // XXX(-ttran) special quick hack for XP LookAndFeel, otherwise the
-        // line under the menubar is missing
-        
         if (UIManager.getLookAndFeel() instanceof com.sun.java.swing.plaf.windows.WindowsLookAndFeel) {
-            setBorder(BorderFactory.createEtchedBorder (EtchedBorder.LOWERED));
+            //Set up custom borders for XP
+            setBorder(BorderFactory.createCompoundBorder(
+                upperBorder, 
+                BorderFactory.createCompoundBorder(
+                    BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("controlShadow")),
+                    BorderFactory.createMatteBorder(0, 0, 1, 0, mid))
+            )); //NOI18N
         }
     }
     
@@ -140,12 +144,30 @@ public final class ToolbarPool extends JComponent implements Accessible {
                 return super.getBorder();
             }
         }
-        return BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(1, 0, 0, 0, 
-            UIManager.getColor("controlShadow")),
-            BorderFactory.createMatteBorder(1, 0, 0, 0, 
-            UIManager.getColor("controlLtHighlight"))); //NOI18N
+        return lowerBorder;
     }
+
+    private static Color mid;
+    static {
+        Color lo = UIManager.getColor("controlShadow"); //NOI18N
+        Color hi = UIManager.getColor("control"); //NOI18N
+        int r = (lo.getRed() + hi.getRed()) / 2;
+        int g = (lo.getGreen() + hi.getGreen()) / 2;
+        int b = (lo.getBlue() + hi.getBlue()) / 2;
+        mid = new Color(r, g, b);
+    }
+    
+    private static final Border lowerBorder = BorderFactory.createCompoundBorder(
+        BorderFactory.createMatteBorder(0, 0, 1, 0, 
+        UIManager.getColor("controlShadow")),
+        BorderFactory.createMatteBorder(0, 0, 1, 0, mid)); //NOI18N
+
+    private static final Border upperBorder = BorderFactory.createCompoundBorder(
+        BorderFactory.createMatteBorder(1, 0, 0, 0,
+        UIManager.getColor("controlShadow")),
+        BorderFactory.createMatteBorder(1, 0, 0, 0,
+        UIManager.getColor("controlLtHighlight"))); //NOI18N
+     
     
     /** Allows to wait till the content of the pool is initialized. */
     public final void waitFinished () {
