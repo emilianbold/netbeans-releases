@@ -735,6 +735,7 @@ final class Services extends ServiceType.Registry {
 
 /*
 * Log
+*  19   Jaga      1.16.2.1    2/24/00  Ian Formanek    Jaga changes
 *  18   Jaga      1.16.2.0    2/24/00  Ian Formanek    Changes for Jaga
 *  17   Gandalf   1.16        1/14/00  Martin Ryzl     bug in setting new 
 *       services fixed
