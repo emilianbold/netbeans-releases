@@ -21,6 +21,7 @@ import org.apache.tools.ant.Task;
 
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Copy;
+import org.apache.tools.ant.types.FileSet;
 
 /**
  * Ant task that copies multiple files specified by one property (separated by ';').
@@ -43,7 +44,13 @@ public class CopyFiles extends Task {
                 File f = getProject().resolveFile(tokenizer.nextToken());
                 Copy cp = (Copy) getProject ().createTask ("copy");
                 cp.setTodir (getToDir ());
-                cp.setFile (f);
+                if (f.isDirectory ()) {
+                    FileSet fset = new FileSet ();
+                    fset.setDir (f);
+                    cp.addFileset (fset);
+                } else {
+                    cp.setFile (f);
+                }
                 cp.execute ();
             }
     }
