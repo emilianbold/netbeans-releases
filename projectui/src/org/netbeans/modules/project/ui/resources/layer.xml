@@ -355,12 +355,6 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             
             <attr name="SeparatorCompileSingle.instance/org-netbeans-core-output2-NextOutJumpAction.instance" boolvalue="true" />
-            
-            <file name="org-netbeans-core-output2-NextOutJumpAction.instance"/>
-
-            <attr name="org-netbeans-core-output2-NextOutJumpAction.instance/org-netbeans-core-output2-PreviousOutJumpAction.instance" boolvalue="true" />
-            <file name="org-netbeans-core-output2-PreviousOutJumpAction.instance"/>
-            
         </folder>
         
         <attr name="BuildProject/RunProject" boolvalue="true" />        

@@ -25,6 +25,13 @@ Microsystems, Inc. All Rights Reserved.
                         <release-version>1</release-version>
                     </run-dependency>
                 </dependency>                                
+                <!-- needed as we override its layer file -->
+                <dependency>
+                    <code-name-base>org.netbeans.core.execution</code-name-base>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                    </run-dependency>
+                </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.masterfs</code-name-base>
                     <run-dependency>

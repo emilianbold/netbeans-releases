@@ -14,6 +14,7 @@
 package org.netbeans.core.projects;
 
 import java.io.InputStream;
+import java.util.Iterator;
 import junit.framework.*;
 import org.netbeans.junit.*;
 import org.openide.cookies.InstanceCookie;
@@ -21,6 +22,9 @@ import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.*;
 
 import org.openide.loaders.DataObject;
+import org.openide.modules.Dependency;
+import org.openide.modules.ModuleInfo;
+import org.openide.util.Lookup;
 
 /** Checks the consistence of System File System content.
  *
@@ -147,6 +151,81 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         
         if (!errors.isEmpty()) {
             fail ("Some instances cannot be created " + errors);
+        }
+    }
+    
+    public void testIfOneFileIsDefinedTwiceByDifferentModulesTheyNeedToHaveMutualDependencyBetweenEachOther () throws Exception {
+        ClassLoader l = (ClassLoader)org.openide.util.Lookup.getDefault ().lookup (ClassLoader.class);
+        assertNotNull ("In the IDE mode, there always should be a classloader", l);
+        
+        // String -> List<Modules>
+        java.util.HashMap files = new java.util.HashMap ();
+        
+        boolean atLeastOne = false;
+        java.util.Enumeration en = l.getResources ("META-INF/MANIFEST.MF");
+        while (en.hasMoreElements ()) {
+            java.net.URL u = (java.net.URL)en.nextElement ();
+            java.util.jar.Manifest mf = new java.util.jar.Manifest (u.openStream ());
+            String module = mf.getMainAttributes ().getValue ("OpenIDE-Module");
+            if (module == null) continue;
+            String layer = mf.getMainAttributes ().getValue ("OpenIDE-Module-Layer");
+            if (layer == null) continue;
+            
+            atLeastOne = true;
+            java.net.URL layerURL = new java.net.URL (u, "../" + layer);
+            org.openide.filesystems.XMLFileSystem fs = new org.openide.filesystems.XMLFileSystem (layerURL);
+            
+            java.util.Enumeration all = fs.getRoot ().getChildren (true);
+            while (all.hasMoreElements ()) {
+                FileObject fo = (FileObject)all.nextElement ();
+                if (!fo.isData ()) continue;
+                
+                java.util.List list = (java.util.List)files.get (fo.getPath ());
+                if (list == null) {
+                    list = new java.util.ArrayList ();
+                    files.put (fo.getPath (), list);
+                }
+                list.add (module);
+            }
+        }
+        
+        java.util.Iterator it = files.entrySet ().iterator ();
+        StringBuffer sb = new StringBuffer ();
+        while (it.hasNext ()) {
+            java.util.Map.Entry e = (java.util.Map.Entry)it.next ();
+            java.util.List list = (java.util.List)e.getValue ();
+            if (list.size () == 1) continue;
+            
+            Lookup.Result res = Lookup.getDefault ().lookup (new Lookup.Template (ModuleInfo.class));
+            assertFalse ("Some modules found", res.allInstances ().isEmpty ());
+            
+            java.util.Iterator names = new java.util.ArrayList (list).iterator ();
+            while (names.hasNext ()) {
+                String name = (String)names.next ();
+                java.util.Iterator modules = res.allInstances ().iterator ();
+                while (modules.hasNext ()) {
+                    ModuleInfo info = (ModuleInfo)modules.next ();
+                    if (name.equals (info.getCodeName ())) {
+                        Iterator deps = info.getDependencies ().iterator ();
+                        while (deps.hasNext ()) {
+                            Dependency d = (Dependency)deps.next ();
+                            list.remove (d.getName ());
+                        }
+                        // remove dependencies
+                        list.removeAll (info.getDependencies ());
+                    }
+                }
+            }
+            // ok, modules depend on each other
+            if (list.size () <= 1) continue;
+            
+            sb.append (e.getKey () + " is provided by: " + list + "\n");
+        }        
+        
+        assertTrue ("At least one layer file is usually used", atLeastOne);
+        
+        if (sb.length () > 0) {
+            fail ("Some modules override their files and do not depend on each other\n" + sb);
         }
     }
     
