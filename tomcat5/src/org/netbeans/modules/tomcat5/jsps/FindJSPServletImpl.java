@@ -102,7 +102,7 @@ public class FindJSPServletImpl implements FindJSPServlet {
     // copied from org.apache.jasper.JspCompilationContext
     private String getDerivedPackageName(String jspUri) {
         int iSep = jspUri.lastIndexOf('/');
-        return (iSep > 0) ? JspNameUtil.makeJavaPackage(jspUri.substring(1,iSep)) : "";
+        return (iSep > 0) ? JspNameUtil.makeJavaPackage(jspUri.substring(0,iSep)) : "";
     }
     
     // copied from org.apache.jasper.JspCompilationContext
