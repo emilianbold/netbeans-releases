@@ -28,6 +28,8 @@ Microsystems, Inc. All Rights Reserved.
   <!-- QA TESTS -->
   <!-- ======== -->
   
+  <!-- VALIDATION -->
+  
   <!-- QA functional tests for Netbeans -->
   <config name="qa-functional-nb">
       <module name="ant"    	testtypes="qa-functional"  attributes="validation"/>
@@ -77,6 +79,59 @@ Microsystems, Inc. All Rights Reserved.
       <module name="xml/tax/lib"	testtypes="qa-functional"  attributes="validation"/>
       <module name="xml/tree-edit"	testtypes="qa-functional"  attributes="validation"/>
       <module name="autoupdate" testtypes="gui"  	   attributes="validation"/>
+  </config>
+
+  <!-- FULL -->
+  
+  <!-- QA functional tests for Netbeans -->
+  <config name="qa-functional-nb-full">
+      <module name="ant"    	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="beans"  	testtypes="qa-func"        attributes="validation,full"/>
+      <module name="clazz"  	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="core"   	testtypes="qa-functional"  attributes="validation,full"/>  
+      <module name="editor" 	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="i18n"   	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="java"   	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="javacvs"   	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="openide"  	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="projects" 	testtypes="qa-functional"  attributes="validation,full,jdk14"/>
+      <module name="qa"       	testtypes="serialization"  attributes="validation,full"/>
+      <module name="qa"       	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="vcsgeneric"	testtypes="qa-functional"  attributes="validation,full"/>      
+      <module name="xml"	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="xml/catalog"	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="xml/core"		testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="xml/text-edit"	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="xml/tools"		testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="xml/tax/lib"	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="xml/tree-edit"	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="autoupdate" testtypes="gui"  	   attributes="validation,full"/>
+  </config>
+  
+  <!-- QA functional tests for Netbeans on jdk 1.3 -->
+  <config name="qa-functional-nb-full-jdk13">
+      <module name="ant"    	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="beans"  	testtypes="qa-func"        attributes="validation,full"/>
+      <module name="clazz"  	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="core"   	testtypes="qa-functional"  attributes="validation,full"/>  
+      <module name="editor" 	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="i18n"   	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="java"   	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="javacvs"   	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="openide"  	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="projects" 	testtypes="qa-functional"  attributes="validation,full,jdk13"/> 
+      <module name="qa"       	testtypes="serialization"  attributes="validation,full"/>
+      <module name="qa"       	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="rmi" 	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="vcsgeneric"	testtypes="qa-functional"  attributes="validation,full"/>      
+      <module name="xml"	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="xml/catalog"	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="xml/core"		testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="xml/text-edit"	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="xml/tools"		testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="xml/tax/lib"	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="xml/tree-edit"	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="autoupdate" testtypes="gui"  	   attributes="validation,full"/>
   </config>
   
   <!-- QA functional tests for FFJ CE -->
