@@ -25,7 +25,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Utilities;
 import org.openide.TopManager;
 import org.openide.loaders.XMLDataObject;
-import org.openide.util.io.NbObjectInputStream;
+import org.openide.src.*;
 
 import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.layoutsupport.delegates.*;
@@ -289,25 +289,35 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         // 1. check the top-level element name
         if (!XML_FORM.equals(mainElement.getTagName()))
-            throw new IOException(FormEditor.getFormBundle().getString("ERR_BadXMLFormat"));
+            throw new IOException(FormEditor.getFormBundle().getString("ERR_BadXMLFormat")); // NOI18N
 
         // 2. check the form version
         String version = mainElement.getAttribute(ATTR_FORM_VERSION);
         if (!NB32_VERSION.equals(version) && !CURRENT_VERSION.equals(version))
-            throw new IOException(FormEditor.getFormBundle().getString("ERR_BadXMLVersion"));
+            throw new IOException(FormEditor.getFormBundle().getString("ERR_BadXMLVersion")); // NOI18N
 
         // [what is this check good for ??]
         org.w3c.dom.NodeList childNodes = mainElement.getChildNodes();
         if (childNodes == null)
-            throw new IOException(FormEditor.getFormBundle().getString("ERR_BadXMLFormat"));
+            throw new IOException(FormEditor.getFormBundle().getString("ERR_BadXMLFormat")); // NOI18N
 
         formInfoName = mainElement.getAttribute(ATTR_FORM_TYPE);
+        if ("".equals(formInfoName))
+            formInfoName = null;
 
         this.formModel = formModel;
         formModel.setName(formObject.getName());
 
+        Class formBaseClass = null;
         try {
-            formModel.initialize(formObject.getSource());
+            Identifier superClass =
+                formObject.getSource().getClasses()[0].getSuperclass();
+            if (superClass != null)
+                formBaseClass = TopManager.getDefault().currentClassLoader()
+                                           .loadClass(superClass.getFullName());
+            else formBaseClass = Object.class;
+
+            formModel.setFormBaseClass(formBaseClass);
         }
         catch (Throwable ex) {
             if (ex instanceof ThreadDeath)
@@ -317,14 +327,16 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
 
         if (formModel.getFormBaseClass() == null) {
-            // Declared superclass cannot be used as the form base class,
-            // try to derive it from the FormInfo type saved in form file.
-            // [user should be warned that the form type is not taken from java]
-            Class formClass = getCompatibleFormClass(formInfoName);
-            if (formClass != null) {
+            // declared superclass cannot be used as the form base class,
+            // try to use some "standard" superclass (like JPanel, JFrame, etc)
+            if (formInfoName == null && formBaseClass != null)
+                formInfoName = getFormInfoForKnownClass(formBaseClass);
+
+            Class substClass = getCompatibleFormClass(formInfoName);
+            if (substClass != null) {
                 try {
-                    System.err.println("[WARNING] Form type detection falls back to FormInfo type."); // NOI18N
-                    formModel.setFormBaseClass(formClass);
+                    System.err.println("[WARNING] Form type falls back to: "+substClass.getName()); // NOI18N
+                    formModel.setFormBaseClass(substClass);
                 }
                 catch (Throwable ex) {
                     if (ex instanceof ThreadDeath)
@@ -333,13 +345,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
                         ex.printStackTrace();
                 }
             }
-            else { // no FormInfo type, form cannot be created
-                org.openide.src.ClassElement ce =
-                    formObject.getSource().getClasses()[0];
-                if (ce != null)
-                    throw new IOException(java.text.MessageFormat.format(
-                        FormEditor.getFormBundle().getString("FMT_ERR_FormBaseClass"), // NOI18N
-                        new Object[] { ce.getSuperclass().getFullName() }));
+            else if (formBaseClass != null) { // declared base class cannot be used
+                throw new IOException(java.text.MessageFormat.format(
+                    FormEditor.getFormBundle().getString("FMT_ERR_FormBaseClass"), // NOI18N
+                    new Object[] { formBaseClass.getName() }));
             }
 
             if (formModel.getFormBaseClass() == null) {
@@ -4096,7 +4105,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
      * @return class corresponding to given FormInfo class name
      */
     private static Class getCompatibleFormClass(String formInfoName) {
-        if (formInfoName == null || "".equals(formInfoName))
+        if (formInfoName == null)
             return null; // no FormInfo name found in form file
 
         Class formClass = getClassForKnownFormInfo(formInfoName);

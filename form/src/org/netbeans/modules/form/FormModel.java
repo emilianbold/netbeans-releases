@@ -15,7 +15,6 @@ package org.netbeans.modules.form;
 
 import java.util.*;
 import javax.swing.event.EventListenerList;
-import org.openide.src.*;
 import org.netbeans.modules.form.layoutsupport.*;
 
 import org.netbeans.modules.form.codestructure.CodeStructure;
@@ -93,27 +92,6 @@ public class FormModel
 
     public Class getFormBaseClass() {
         return formBaseClass;
-    }
-
-    /** Initializes the form from SourceElement (representing a source file).
-     */
-    public void initialize(SourceElement source) throws Exception {
-        initialize(source.getClasses()[0]);
-    }
-
-    /** Initializes the form from a ClassElement (representing one class
-     * in a source file).
-     */
-    public void initialize(ClassElement cle) throws Exception {
-        Class formClass;
-        Identifier superClass = cle.getSuperclass();
-
-        if (superClass != null)
-            formClass = org.openide.TopManager.getDefault().currentClassLoader()
-                                           .loadClass(superClass.getFullName());
-        else formClass = Object.class;
-
-        setFormBaseClass(formClass);
     }
 
     void setName(String name) {
@@ -570,39 +548,8 @@ public class FormModel
         return codeGenerator;
     }
 
-    // [only for compatibility with old DesignLayout classes, should be removed]
-    public int getMode() {
-        return 1;//DesignLayout.DESIGN_MODE;
-    }
-    
-    // [only for compatibility with old DesignLayout classes, should be removed]
-    public void setMode(int mode) {
-    }
-    
     void initializeCodeGenerator() {
         getCodeGenerator().initialize(this);
-    }
-
-    // [only for compatibility with old DesignLayout classes, should be removed]
-    public boolean isTestMode() {
-        return false;
-    }
-
-    // [only for compatibility with old DesignLayout classes, should be removed]
-    public void setTestMode(boolean test) {
-    }
-
-    // [only for compatibility with old DesignLayout classes, should be removed]
-    public java.awt.Component getVisualRepresentation(RADComponent radComp) {
-        if (radComp instanceof RADVisualComponent) {
-//            Component comp =(Component)radToSelection.get(radComp);
-//            if (comp == null) {
-                return((RADVisualComponent)radComp).getComponent(); // [PENDING - this should not be necessary]
-//            }
-//            return comp;
-        } else {
-            return new javax.swing.JButton();
-        }
     }
 
     // ---------------
