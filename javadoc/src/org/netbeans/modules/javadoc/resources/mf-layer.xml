@@ -148,5 +148,22 @@ Microsystems, Inc. All Rights Reserved.
             </file>
           </folder>  
       </folder>
-   </folder>   
+   </folder>
+
+<!-- XML Workspace Layout part -->
+
+    <folder name="windows">
+        <folder name="windowmanager">
+            <folder name="Editing">
+                <folder name="explorer">
+                    <attr name="filesystems.wstcref/Javadoc.wstcref" boolvalue="true" />
+                    <file name="Javadoc.wstcref" url="windowmanager/Editing/explorer/Javadoc.wstcref" />
+                </folder>
+            </folder>
+        </folder>
+        <folder name="components">
+            <file name="Javadoc.settings" url="components/Javadoc.settings" />
+        </folder>
+    </folder>
+
 </filesystem>
