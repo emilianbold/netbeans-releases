@@ -1,0 +1,56 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!-- ToDo: create TimerBean.jar and src/ from source, rather than have them in release/ -->
+<!-- Ditto AbsoluteLayout.jar (and move the sources into libsrc/ where they belong). -->
+<!-- Also should beans/beans.properties really be there, since firststart removes them afterwards? -->
+
+<project name="form" default="nbm" basedir=".">
+  <target name="compile">
+    <!-- Bizarrely, compiling all classes together under 1.3 gives symbol-not-found -->
+    <!-- errors for org.openide.awt.ToolbarToggleButton from most palette classes. -->
+    <!-- But compiling the packages separately it works. Go figure. -->
+    <javac srcdir="src"
+           destdir="src"
+	   includes="**/form/palette/**"
+           classpath="../core/netbeans/lib/developer.jar:release/lib/ext/AbsoluteLayout.jar:../openide/netbeans/lib/openide.jar:../openidex/netbeans/modules/openidex.jar:../java/netbeans/modules/java.jar:../clazz/netbeans/modules/clazz.jar:../core/release/lib/ext/parser.jar:../core/release/lib/ext/jaxp.jar"/>
+    <!-- XXX illegally uses org.netbeans.beaninfo classes: -->
+    <javac srcdir="src"
+           destdir="src"
+	   excludes="**/form/palette/**"
+           classpath="../core/netbeans/lib/developer.jar:release/lib/ext/AbsoluteLayout.jar:../openide/netbeans/lib/openide.jar:../openidex/netbeans/modules/openidex.jar:../java/netbeans/modules/java.jar:../clazz/netbeans/modules/clazz.jar:../core/release/lib/ext/parser.jar:../core/release/lib/ext/jaxp.jar"/>
+  </target>
+  <target name="tojar">
+    <taskdef name="tojar" classname="org.netbeans.nbbuild.ToJar"/>
+    <tojar srcdir="src"
+           unpackeddir="tojar"/>
+  </target>
+  <target name="jars" depends="compile,tojar">
+    <mkdir dir="netbeans/modules"/>
+    <jar jarfile="netbeans/modules/form.jar"
+         manifest="manifest.mf"
+         basedir="src"
+	 excludesfile="../nbbuild/standard-jar-excludes.txt"
+	 compress="false"/>
+  </target>
+  <target name="release">
+    <copydir src="release"
+             dest="netbeans"/>
+  </target>
+  <target name="nbm" depends="jars,release">
+    <zip zipfile="form.nbm"
+         includes="netbeans/"
+	 basedir="."/>
+  </target>
+</project>

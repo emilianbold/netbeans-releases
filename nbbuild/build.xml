@@ -1,0 +1,218 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!--
+ToDo:
+- test on Ant 1.1
+- use nested classpath tags in javac
+- handle Japanese sanely
+- substitute @BUILDNUMBER@ in manifests, Versioning.properties
+- proper NBM task (with .xml, info, etc.)
+- build validator DTD for this build system
+Modules:
+(ant)
+crosscompile
+emacs
+innertesters
+javacvs
+makefile
+multicompile
+scripting
+serialversion
+sysprops
+treefs
+-->
+
+<project name="nbbuild" default="depucelee" basedir=".">
+
+  <!-- Override this with the Ant command, e.g. -Dmodules=... -->
+  <property name="modules" value="apisupport,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,jarpackager,java,javadoc,objectbrowser,openidex,projects,properties,text,usersguide,utilities,vcscvs,web"/>
+
+  <!-- Ditto: -->
+  <property name="buildnumber" value="123"/>
+
+  <!-- Best to leave this alone, though, unless you know what you are doing: -->
+  <property name="firststart.args" value=" -J-Dnetbeans.close=true -J-Dnetbeans.debug.exceptions=true"/>
+
+  <!-- How to build the IDE core: -->
+  <target name="all-openide">
+    <echo message="Building Open APIs..."/>
+    <ant dir="../openide"/>
+  </target>
+  <target name="all-core" depends="all-openide">
+    <echo message="Building IDE core implementation..."/>
+    <ant dir="../core"/>
+  </target>
+
+  <!-- And the modules: -->
+  <target name="all-apisupport" depends="all-openide,all-openidex,all-core">
+    <echo message="Building module apisupport..."/>
+    <ant dir="../apisupport"/>
+  </target>
+  <target name="all-applet" depends="all-openide,all-debuggercore">
+    <echo message="Building module applet..."/>
+    <ant dir="../applet"/>
+  </target>
+  <target name="all-autoupdate" depends="all-openide,all-core,all-openidex">
+    <echo message="Building module autoupdate..."/>
+    <ant dir="../autoupdate"/>
+  </target>
+  <target name="all-beans" depends="all-openide,all-java">
+    <echo message="Building module beans..."/>
+    <ant dir="../beans"/>
+  </target>
+  <target name="all-clazz" depends="all-openide">
+    <echo message="Building module clazz..."/>
+    <ant dir="../clazz"/>
+  </target>
+  <target name="all-debuggercore" depends="all-openide,all-openidex">
+    <echo message="Building module debuggercore..."/>
+    <ant dir="../debuggercore"/>
+  </target>
+  <target name="all-debuggerjpda" depends="all-openide,all-debuggercore">
+    <echo message="Building module debuggerjpda..."/>
+    <ant dir="../debuggerjpda"/>
+  </target>
+  <target name="all-debuggertools" depends="all-openide,all-debuggercore">
+    <echo message="Building module debuggertools..."/>
+    <ant dir="../debuggertools"/>
+  </target>
+  <!-- XXX illegal dependence on core! -->
+  <target name="all-editor" depends="all-openide,all-openidex,all-core">
+    <echo message="Building module editor..."/>
+    <ant dir="../editor"/>
+  </target>
+  <!-- XXX illegal dependence on core! -->
+  <target name="all-form" depends="all-openide,all-openidex,all-java,all-clazz,all-core">
+    <echo message="Building module form..."/>
+    <ant dir="../form"/>
+  </target>
+  <target name="all-html" depends="all-openide">
+    <echo message="Building module html..."/>
+    <ant dir="../html"/>
+  </target>
+  <target name="all-httpserver" depends="all-openide">
+    <echo message="Building module httpserver..."/>
+    <ant dir="../httpserver"/>
+  </target>
+  <target name="all-i18n" depends="all-openide,all-properties,all-form,all-editor">
+    <echo message="Building module i18n..."/>
+    <ant dir="../i18n"/>
+  </target>
+  <target name="all-icebrowser" depends="all-openide">
+    <echo message="Building module icebrowser..."/>
+    <ant dir="../icebrowser"/>
+  </target>
+  <target name="all-image" depends="all-openide">
+    <echo message="Building module image..."/>
+    <ant dir="../image"/>
+  </target>
+  <target name="all-jarpackager" depends="all-openide,all-openidex">
+    <echo message="Building module jarpackager..."/>
+    <ant dir="../jarpackager"/>
+  </target>
+  <target name="all-java" depends="all-openide,all-openidex">
+    <echo message="Building module java..."/>
+    <ant dir="../java"/>
+  </target>
+  <target name="all-javadoc" depends="all-openide,all-openidex,all-java">
+    <echo message="Building module javadoc..."/>
+    <ant dir="../javadoc"/>
+  </target>
+  <target name="all-objectbrowser" depends="all-openide,all-openidex">
+    <echo message="Building module objectbrowser..."/>
+    <ant dir="../objectbrowser"/>
+  </target>
+  <target name="all-openidex" depends="all-openide">
+    <echo message="Building module openidex..."/>
+    <ant dir="../openidex"/>
+  </target>
+  <target name="all-projects" depends="all-openide,all-openidex,all-java">
+    <echo message="Building module projects..."/>
+    <ant dir="../projects"/>
+  </target>
+  <target name="all-properties" depends="all-openide,all-editor">
+    <echo message="Building module properties..."/>
+    <ant dir="../properties"/>
+  </target>
+  <target name="all-text" depends="all-openide">
+    <echo message="Building module text..."/>
+    <ant dir="../text"/>
+  </target>
+  <target name="all-usersguide" depends="all-openide">
+    <echo message="Building module usersguide..."/>
+    <ant dir="../usersguide"/>
+  </target>
+  <target name="all-utilities" depends="all-openide,all-openidex,all-editor">
+    <echo message="Building module utilities..."/>
+    <ant dir="../utilities"/>
+  </target>
+  <target name="all-vcscvs" depends="all-openide,all-openidex,all-editor,all-utilities">
+    <echo message="Building module vcscvs..."/>
+    <ant dir="../vcscvs"/>
+  </target>
+  <!-- XXX illegal dependence on core! -->
+  <target name="all-web" depends="all-openide,all-openidex,all-java,all-core,all-editor">
+    <echo message="Building module web..."/>
+    <ant dir="../web"/>
+  </target>
+
+  <!-- Use of nbmerge target has the effect of automatically depending on all-X for every module. -->
+  <!-- It also runs deltree(dir=netbeans) and expand(src=../X/X.nbm,dest=.) to create the IDE install. -->
+  <target name="netbeans-messaging">
+    <echo message="Starting a build for NetBeans (build ${buildnumber}) ..."/>
+    <echo message="Selected modules: ${modules}"/>
+  </target>
+  <target name="netbeans" depends="netbeans-messaging">
+    <taskdef name="nbmerge" classname="org.netbeans.nbbuild.NbMerge"/>
+    <!-- Automatically include openide and core, these are mandatory -->
+    <nbmerge upperdir="." topdir=".." modules="openide,core,${modules}" targetprefix="all-"/>
+  </target>
+
+  <target name="virgin" depends="netbeans">
+    <zip zipfile="NetBeans-${buildnumber}-virgin.zip" basedir="netbeans"/>
+  </target>
+
+  <target name="firststart" depends="netbeans">
+    <deltree dir="firststart"/>
+    <copydir src="netbeans" dest="firststart"/>
+    <chmod file="firststart/bin/ffj.sh" perm="ugo+x"/>
+    <chmod file="firststart/bin/ffj_multiuser.sh" perm="ugo+x"/>
+    <echo message="Starting the IDE..."/>
+    <echo message="(This both acts as a test, and primes some files"/>
+    <echo message="to make the first user start faster and better.)"/>
+    <!-- XXX check these OS names... -->
+    <exec os="Windows" dir="firststart/bin" command="forte4j.exe ${firststart.args}" output="firststart.log" failonerror="yes"/>
+    <!-- XXX chmod does not work reliably...investigate -->
+    <exec os="Linux" dir="firststart/bin" command="sh ffj.sh ${firststart.args}" output="firststart.log" failonerror="yes"/>
+    <exec os="Solaris" dir="firststart/bin" command="sh ffj.sh ${firststart.args}" output="firststart.log" failonerror="yes"/>
+    <echo message="Successfully started, cleaning up detritus..."/>
+    <delete file="firststart/system/forte4j.log"/>
+    <delete file="firststart/system/project.basic"/>
+    <delete file="firststart/system/project.last"/>
+    <delete file="firststart/beans/libs.properties"/>
+    <!-- XXX would be nice to dump firststart.log to stdout at this point -->
+    <!-- Even better would be to scan it for stacktraces and just show those; -->
+    <!-- possibly after filtering for duplicates or something like this. -->
+    <echo message="Check firststart.log in nbbuild/ to see if everything went OK."/>
+  </target>
+
+  <target name="depucelee" depends="firststart">
+    <zip zipfile="NetBeans-${buildnumber}.zip" basedir="firststart"/>
+    <echo message="Build created; see NetBeans-${buildnumber}.zip (in nbbuild/)."/>
+    <echo message="If you like, you may run the IDE straight from"/>
+    <echo message="the nbbuild/firststart/bin/ directory."/>
+  </target>
+
+</project>
