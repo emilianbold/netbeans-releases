@@ -39,7 +39,7 @@ public class NewProject extends BasicAction {
     private static final Icon ICON = new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/newProject.gif" ) ); //NOI18N    
     private static final String NAME = NbBundle.getMessage( NewProject.class, "LBL_NewProjectAction_Name" ); // NOI18N
     
-    private boolean isWelcome = false;
+    private boolean isPreselect = false;
     
     private RequestProcessor.Task bodyTask;
 
@@ -56,7 +56,7 @@ public class NewProject extends BasicAction {
     public static NewProject newSample() {
         NewProject np = new NewProject();
         np.setDisplayName( "New Sample" ); 
-        np.isWelcome = true;
+        np.isPreselect = true;
         return np;
     }
 
@@ -73,11 +73,14 @@ public class NewProject extends BasicAction {
         FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource( "Templates/Project" ); //NOI18N                
         NewProjectWizard wizard = new NewProjectWizard(fo);
             
-        if ( isWelcome ) {
-            wizard.putProperty( "PRESELECT_CATEGORY", "Samples/Standard"); 
+        if ( isPreselect ) {
+            // XXX make the properties public ?
+            wizard.putProperty( "PRESELECT_CATEGORY", getValue ("PRESELECT_CATEGORY")); 
+            wizard.putProperty( "PRESELECT_TEMPLATE", getValue ("PRESELECT_TEMPLATE")); 
         }
         else {
             wizard.putProperty( "PRESELECT_CATEGORY", null ); 
+            wizard.putProperty( "PRESELECT_TEMPLATE", null ); 
         }
 
         
