@@ -40,6 +40,9 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
     this.radComponent = radComponent;
     this.propertyType = propertyType;
     currentEditor = defaultEditor;
+    if (currentEditor instanceof FormAwareEditor) {
+      ((FormAwareEditor)currentEditor).setRADComponent (radComponent);
+    }
     currentEditor.addPropertyChangeListener (this);
   }
 
@@ -276,6 +279,8 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
 
 /*
  * Log
+ *  5    Gandalf   1.4         6/22/99  Ian Formanek    Fixed setting 
+ *       FormAwareEditor
  *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  3    Gandalf   1.2         5/31/99  Ian Formanek    Removed dumpStack
