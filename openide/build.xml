@@ -536,7 +536,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
     <property name="javahelp-docs-location" value="${javadoc.web.root}/JavaHelpAPI"/>
     <property name="java-api-docs-location" value="${javadoc.web.root}/JavaSupportAPIs"/>
     <tstamp/>
-    <property name="open-apis-footer" value='&lt;span class="footnote"&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2003 Sun Microsystems, Inc. All rights reserved.&lt;/span&gt;'/>
+    <property name="open-apis-footer" value='&lt;span class="footnote"&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2005 Sun Microsystems, Inc. All rights reserved.&lt;/span&gt;'/>
     <echo message="Build Open API documentation..."/>
     <mkdir dir="javadoc/OpenAPIs"/>
     <javadoc destdir="javadoc/OpenAPIs"
