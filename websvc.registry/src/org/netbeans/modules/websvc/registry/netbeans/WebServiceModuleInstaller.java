@@ -42,7 +42,7 @@ public class WebServiceModuleInstaller extends ModuleInstall implements Instance
             restoreds();
            Deployment.getDefault().addInstanceListener(this);
         
-        if(registryInstalled) {
+      /*  if(registryInstalled) {
             try {
                 PersistenceManagerInterface persistenceManager = (PersistenceManagerInterface)
                 specialLoader.loadClass("org.netbeans.modules.websvc.registry.WebServicePersistenceManager").newInstance(); //NOI18N
@@ -50,7 +50,7 @@ public class WebServiceModuleInstaller extends ModuleInstall implements Instance
             } catch(Exception ex) {
                 ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
             }
-        }
+        }*/
     }
     
     public void close() {
