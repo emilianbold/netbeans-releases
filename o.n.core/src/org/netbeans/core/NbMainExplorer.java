@@ -84,7 +84,6 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
   /** Default constructor
   */
   public NbMainExplorer () {
-    setName ("Explorer"); // [PENDING]
     split = new SplittedPanel();
     
     final JTabbedPane tabs = new JTabbedPane ();
@@ -149,9 +148,6 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
     }
     currentManager = managers[0]; // [PENDING]
 
-    // [PENDING - addIconChangeListener]
-    // [PENDING - addNameChangeListener]
-
     tabs.addChangeListener (new javax.swing.event.ChangeListener () { 
         public void stateChanged (javax.swing.event.ChangeEvent evt) {
           int index = tabs.getSelectedIndex ();
@@ -181,6 +177,7 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
     add(toolbar = createToolbar(), BorderLayout.NORTH);
     // in single by default
     setMode(TopComponent.Mode.SINGLE);
+    updateTitle ();
   }
 
   private Node[] getRoots () {
@@ -351,6 +348,7 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
 
 /*
 * Log
+*  4    Gandalf   1.3         3/16/99  Ian Formanek    Title improved
 *  3    Gandalf   1.2         3/16/99  Ian Formanek    Added listening to icon 
 *       and displayName changes on roots, support for ExplorerActions 
 *       (Cut/Copy/...)
