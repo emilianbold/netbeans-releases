@@ -20,6 +20,8 @@ import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +31,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.queries.FileBuiltQuery;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -46,6 +49,8 @@ import org.openide.util.WeakListeners;
  * @author Jesse Glick
  */
 final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
+    
+    private static final ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.spi.project.support.ant.GlobFileBuiltQuery"); // NOI18N
     
     private final AntProjectHelper helper;
     private final PropertyEvaluator eval;
@@ -153,7 +158,8 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
     private StatusImpl createStatus(FileObject file) {
         String path = FileUtil.getRelativePath(projectDir, file);
         if (path == null) {
-            throw new IllegalArgumentException("Cannot check for status on file " + file + " outside of " + projectDir); // NOI18N
+            // XXX support external source roots
+            return null;
         }
         for (int i = 0; i < fromPrefixes.length; i++) {
             String prefixEval = eval.evaluate(fromPrefixes[i]);
@@ -260,14 +266,23 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
                 fireChange();
             }
             built = Boolean.valueOf(b);
+            if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                err.log("isBuilt: " + b + " from " + this);
+            }
             return b;
         }
         
         private boolean isReallyBuilt() {
             if (!source.isValid()) {
+                if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                    err.log("invalid: " + this);
+                }
                 return false; // whatever
             }
             if (source.isModified()) {
+                if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                    err.log("modified: " + this);
+                }
                 return false;
             }
             if (lastTargetApproximation != null) {
@@ -279,6 +294,9 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
                 FileObject lta2 = lastTargetApproximation.getFileObject(piece);
                 if (lta2 == null) {
                     lastTargetApproximation.addFileChangeListener(weakFileL);
+                    if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                        err.log("did not find " + piece + " in " + lastTargetApproximation + ": " + this);
+                    }
                     return false;
                 }
                 lastTargetApproximation = lta2;
@@ -286,7 +304,14 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
             lastTargetApproximation.addFileChangeListener(weakFileL);
             long targetTime = lastTargetApproximation.lastModified().getTime();
             long sourceTime = source.getPrimaryFile().lastModified().getTime();
-            return targetTime >= sourceTime;
+            if (targetTime >= sourceTime) {
+                return true;
+            } else {
+                if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                    err.log("out of date (target: " + targetTime + " vs. source: " + sourceTime + "): " + this);
+                }
+                return false;
+            }
         }
         
         public synchronized void addChangeListener(ChangeListener l) {
@@ -345,6 +370,10 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
         
         public void fileAttributeChanged(FileAttributeEvent fe) {
             // ignore
+        }
+        
+        public String toString() {
+            return "GFBQ.StatusImpl[" + source.getPrimaryFile() + " -> " + Arrays.asList(targetPath) + "]"; // NOI18N
         }
         
     }
