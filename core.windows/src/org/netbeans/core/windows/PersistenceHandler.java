@@ -790,17 +790,34 @@ final class PersistenceHandler implements PersistenceObserver {
     
     // Projects>>
     public void loadProjectData() {
-        //System.err.println("Loading project winsys data"); // TEMP
-        PersistenceManager.getDefault().resetAllTCPairs();
-        PersistenceManager.getDefault().resetWindowManagerParser();
-        PersistenceManager.getDefault().copySettingsFiles();
-        PersistenceManager.getDefault().restoreAllTCPairs();
+        // Reset persistence manager.
+        PersistenceManager.getDefault().reset();
+        // Load window system.
         load();
     }
     
     public void saveProjectData() {
-        //System.err.println("Saving project winsys data"); // TEMP
+        // Save window system.
         save();
+        // Remove all components from model.
+        removeAll();
+    }
+    
+    private void removeAll() {
+        WindowManagerImpl wm = WindowManagerImpl.getInstance();
+        // Remove all modes.
+        for(Iterator it = wm.getModes().iterator(); it.hasNext(); ) {
+            ModeImpl mode = (ModeImpl)it.next();
+            wm.removeMode(mode);
+        }
+        name2mode.clear();
+        
+        // Remove all groups.
+        for(Iterator it = wm.getTopComponentGroups().iterator(); it.hasNext(); ) {
+            TopComponentGroupImpl group = (TopComponentGroupImpl)it.next();
+            wm.removeTopComponentGroup(group);
+        }
+        name2group.clear();
     }
     // Projects<<
 

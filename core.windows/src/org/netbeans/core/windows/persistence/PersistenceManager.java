@@ -874,8 +874,17 @@ public final class PersistenceManager implements PropertyChangeListener {
         return compName;
     }
     
+    
+    // Called during projects switch before loading the new project.
+    public void reset() {
+        resetAllTCPairs();
+        resetWindowManagerParser();
+        copySettingsFiles();
+        restoreAllTCPairs();
+    }
+    
     /** Must be called during Project switch */
-    public void resetAllTCPairs () {
+    private void resetAllTCPairs () {
         synchronized(LOCK_IDS) {
             invalidIds = new HashSet(topComponent2IDMap.values());
             /*System.out.println("-- PM.resetAllTCPairs ENTER");
@@ -888,7 +897,7 @@ public final class PersistenceManager implements PropertyChangeListener {
     }
     
     /** Must be called during Project switch */
-    public void restoreAllTCPairs () {
+    private void restoreAllTCPairs () {
         synchronized(LOCK_IDS) {
             //System.out.println("-- PM.restoreAllTCPairs ENTER");
             
@@ -1080,7 +1089,7 @@ public final class PersistenceManager implements PropertyChangeListener {
     }
     
     /** Reset WindowManagerParser instance. Called during project switch. */
-    public void resetWindowManagerParser() {
+    private void resetWindowManagerParser() {
         windowManagerParser = null;
     }
     
@@ -1223,7 +1232,7 @@ public final class PersistenceManager implements PropertyChangeListener {
 //    } // TEMP
     
     /** Copy all settings files from module folder to local folder. */
-    public void copySettingsFiles () {
+    private void copySettingsFiles () {
         //long start, end, diff;
         //start = System.currentTimeMillis();
         log("copySettingsFiles ENTER");
