@@ -341,6 +341,13 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
                 //XXX better to do on mouse release
                 performPinAction();
             }
+            if ((i != -1) && e.isPopupTrigger()) {
+                //Post a popup menu show request
+                shouldPerformAction(TabDisplayer.COMMAND_POPUP_REQUEST, i, e);
+                // mkleint need to consume otherwise the evil DefaultTabbedContainerUI.ForwardListener 
+                // causes the menu to disappear immediately
+                e.consume();
+            }
             
             // update pressed state
         }
