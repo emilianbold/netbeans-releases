@@ -40,6 +40,7 @@ import org.netbeans.modules.search.types.ObjectTypeType;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openidex.search.SearchType;
@@ -156,7 +157,9 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
         okButton = new JButton(NbBundle.getBundle(SearchPanel.class).getString("TEXT_BUTTON_SEARCH")); // NOI18N         
         okButton.setEnabled(isCustomized());
 
-        cancelButton = new JButton(NbBundle.getBundle(SearchPanel.class).getString("TEXT_BUTTON_CANCEL")); // NOI18N
+        Mnemonics.setLocalizedText(cancelButton = new JButton(),
+                                   NbBundle.getBundle(SearchPanel.class)
+                                   .getString("TEXT_BUTTON_CANCEL"));   //NOI18N
 
         Object options[] = new Object[] {okButton, cancelButton};
 
