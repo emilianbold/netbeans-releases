@@ -133,7 +133,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
     try {
       formInfo = (FormInfo)TopManager.getDefault ().currentClassLoader ().loadClass (infoClass).newInstance ();
     } catch (Exception e) {
-        e.printStackTrace ();
+      // if (System.getProperty ("netbeans.debug.exceptions") != null) // [PENDING]
+      e.printStackTrace ();
       throw new IOException (java.text.MessageFormat.format (
         FormEditor.getFormBundle ().getString ("FMT_ERR_FormInfoNotFound"),
         new String[] { infoClass }
@@ -255,7 +256,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
   
       return true;
     } catch (Exception e) {
-        e.printStackTrace ();
+      // if (System.getProperty ("netbeans.debug.exceptions") != null) // [PENDING]
+      e.printStackTrace ();
       return false; // [PENDING - undo already processed init?]
     }
   }
@@ -287,6 +289,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
               }
               comp.setConstraints (layoutClass, cd);
             } catch (Exception e) {
+              // if (System.getProperty ("netbeans.debug.exceptions") != null) // [PENDING]
               e.printStackTrace ();
               // ignore and try another constraints // [PENDING - add to errors list]
             }
@@ -372,6 +375,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         ((RADVisualContainer)comp).setDesignLayout (dl);
       } catch (Exception e) {
+        // if (System.getProperty ("netbeans.debug.exceptions") != null) // [PENDING]
         e.printStackTrace ();
         return false; // [PENDING - notify]
       }
@@ -453,6 +457,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
               Object auxValueDecoded = decodeValue (auxValue);
               auxTable.put (auxName, auxValueDecoded);
             } catch (IOException e) {
+              // if (System.getProperty ("netbeans.debug.exceptions") != null) // [PENDING]
               e.printStackTrace ();
               // [PENDING - handle error]
             }
@@ -957,7 +962,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
       return value;
 
     } catch (Exception e) {
-        e.printStackTrace ();
+      // if (System.getProperty ("netbeans.debug.exceptions") != null) // [PENDING]
+      e.printStackTrace ();
       return null; 
     }
   }
@@ -984,7 +990,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
   * @return decoded value or null if specified object is not of supported type
   */
   private Object decodePrimitiveValue (String encoded, Class type) {
-//    System.out.println ("Decode primitive value: "+encoded+", of type: "+type.getName ());
     if (Integer.class.isAssignableFrom (type) || Integer.TYPE.equals (type)) {
       return Integer.valueOf (encoded);
     } else if (Short.class.isAssignableFrom (type) || Short.TYPE.equals (type)) {
@@ -1007,6 +1012,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
       try {
         return TopManager.getDefault ().currentClassLoader ().loadClass (encoded);
       } catch (ClassNotFoundException e) {
+        // if (System.getProperty ("netbeans.debug.exceptions") != null) // [PENDING]
         e.printStackTrace ();
         // will return null as the notification of failure
       }
@@ -1021,8 +1027,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
   * @return String containing encoded value or null if specified object is not of supported type
   */
   private String encodePrimitiveValue (Object value) {
-//    System.out.println ("Encode primitive value: "+value);
-   
     if ((value instanceof Integer) || 
         (value instanceof Short) ||
         (value instanceof Byte) ||
@@ -1047,7 +1051,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
   */
   private Object decodeValue (String value) throws IOException {
      if ((value == null) || (value.length () == 0)) return null;
-//    System.out.println ("Decode value: "+value);
      char[] bisChars = value.toCharArray ();
      byte[] bytes = new byte[bisChars.length];
      String singleNum = "";
@@ -1055,8 +1058,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
      for (int i = 0; i < bisChars.length; i++) {
        if (',' == bisChars[i]) {
          try {
-//           System.out.println ("Parsing int: "+singleNum);
-//           bytes[count++] = (byte)Integer.parseInt (singleNum, 16);
            bytes[count++] = Byte.parseByte (singleNum);
          } catch (NumberFormatException e) {
            e.printStackTrace ();
@@ -1074,7 +1075,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
      try {
        ObjectInputStream ois = new ObjectInputStream (bis);
        Object ret = ois.readObject ();
-//    System.out.println ("Decoded value: "+ret);
        return ret;
      } catch (Exception e) {
        e.printStackTrace ();
@@ -1086,8 +1086,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
   * @return String containing textual representation of the serialized object
   */
   private String encodeValue (Object value) {
-//    System.out.println ("Encode value: "+value);
-
     ByteArrayOutputStream bos = new ByteArrayOutputStream ();
     try {
       ObjectOutputStream oos = new ObjectOutputStream (bos);
@@ -1101,14 +1099,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
     StringBuffer sb = new StringBuffer (bosBytes.length);
     for (int i = 0; i < bosBytes.length; i++) {
       if (i != bosBytes.length - 1) {
-//       sb.append (Integer.toHexString (bosBytes[i])+","); //(int)bosBytes[i] & 0xFF)+",");
          sb.append (bosBytes[i]+",");
       } else {
-//        sb.append (Integer.toHexString (bosBytes[i])); //(int)bosBytes[i] & 0xFF));
         sb.append (""+bosBytes[i]);
       }
     }
-//    System.out.println ("Encoded value: "+sb.toString ());
     return sb.toString ();
   }
   
@@ -1274,6 +1269,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 /*
  * Log
+ *  28   Gandalf   1.27        8/19/99  Ian Formanek    No semantic change
  *  27   Gandalf   1.26        8/9/99   Ian Formanek    Used currentClassLoader 
  *       to fix problems with loading beans only present in repository
  *  26   Gandalf   1.25        8/6/99   Ian Formanek    Survives when storeToXML
