@@ -147,7 +147,6 @@ public class J2SEProjectGenerator {
         ep.setProperty("build.test.results.dir", "${build.dir}/test/results");
         ep.setProperty("build.classes.excludes", "**/*.java,**/*.form");
         ep.setProperty("dist.javadoc.dir", "${dist.dir}/javadoc");
-        ep.setProperty("no.dependencies", "false");
         ep.setProperty("platform.active", "default_platform");
 
         ep.setProperty(J2SEProjectProperties.JAVADOC_PRIVATE, "false"); // NOI18N
