@@ -124,23 +124,27 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="File">
             <attr name="org-netbeans-core-actions-UnmountFSAction.instance/org-netbeans-modules-openfile-OpenFileAction.instance" boolvalue="true"/>
             <file name="org-netbeans-modules-openfile-OpenFileAction.instance"/>
-            <attr name="org-netbeans-modules-openfile-OpenFileAction.instance/Separator2[javax-swing-JSeparator].instance" boolvalue="true"/>
+            <attr name="org-netbeans-modules-openfile-OpenFileAction.instance/Separator2.instance" boolvalue="true"/>
         </folder>
         <folder name="Edit">
-            <attr name="org-openide-actions-GotoAction.instance/sep-before-reposearch[javax-swing-JSeparator].instance" boolvalue="true"/>
-            <file name="sep-before-reposearch[javax-swing-JSeparator].instance"/>
-            <attr name="sep-before-reposearch[javax-swing-JSeparator].instance/org-netbeans-modules-search-RepositorySearchAction.instance" boolvalue="true"/>
+            <attr name="org-openide-actions-GotoAction.instance/sep-before-reposearch.instance" boolvalue="true"/>
+            <file name="sep-before-reposearch.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+	    </file>
+            <attr name="sep-before-reposearch.instance/org-netbeans-modules-search-RepositorySearchAction.instance" boolvalue="true"/>
             <file name="org-netbeans-modules-search-RepositorySearchAction.instance"/>
         </folder>
         <folder name="Help">
-            <attr name="Separator1[javax-swing-JSeparator].instance/netbeans-web-link.url" boolvalue="true"/>
+            <attr name="Separator1.instance/netbeans-web-link.url" boolvalue="true"/>
             <file name="netbeans-web-link.url">
                 <![CDATA[http://www.netbeans.org/]]>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/url/webLink.gif"/>
             </file>
-            <attr name="netbeans-web-link.url/utilities-sep-2[javax-swing-JSeparator].instance" boolvalue="true"/>
-            <file name="utilities-sep-2[javax-swing-JSeparator].instance"/>
+            <attr name="netbeans-web-link.url/utilities-sep-2.instance" boolvalue="true"/>
+            <file name="utilities-sep-2.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+	    </file>
             <attr name="org-netbeans-core-actions-ModuleHelpAction$ShortcutsOnly.instance/submit-feedback-link.url" boolvalue="true"/>
             <!-- [PENDING] this is none too useful... (some bug is filed to this effect) -->
             <file name="submit-feedback-link.url">
@@ -148,9 +152,11 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/url/webLink.gif"/>
             </file>
-            <attr name="submit-feedback-link.url/utilities-sep-3[javax-swing-JSeparator].instance" boolvalue="true"/>
-            <file name="utilities-sep-3[javax-swing-JSeparator].instance"/>
-            <attr name="utilities-sep-3[javax-swing-JSeparator].instance/org-netbeans-modules-url-BookmarksAction.instance" boolvalue="true"/>
+            <attr name="submit-feedback-link.url/utilities-sep-3.instance" boolvalue="true"/>
+            <file name="utilities-sep-3.instance">
+	        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+	    </file>
+            <attr name="utilities-sep-3.instance/org-netbeans-modules-url-BookmarksAction.instance" boolvalue="true"/>
             <file name="org-netbeans-modules-url-BookmarksAction.instance"/>
             <attr name="org-netbeans-modules-url-BookmarksAction.instance/org-netbeans-core-actions-WelcomeAction.instance" boolvalue="true"/>
         </folder>
@@ -163,7 +169,9 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
     <folder name="Shortcuts">
-        <file name="C-O[org.netbeans.modules.openfile.OpenFileAction].instance" />
+        <file name="C-O.instance">
+    	    <attr name="instanceClass" stringvalue="org.netbeans.modules.openfile.OpenFileAction"/>
+	</file>
     </folder>
 
     <folder name="xml">
