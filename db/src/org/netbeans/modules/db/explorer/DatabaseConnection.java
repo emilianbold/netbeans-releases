@@ -35,8 +35,8 @@ import java.lang.reflect.*;
 
 public class DatabaseConnection extends Object implements DBConnection 
 {
-	/** Driver URL */
-	private String drv;
+	/** Driver URL and name */
+	private String drv, drvname;
 	
 	/** Database URL */
 	private String db;
@@ -45,10 +45,10 @@ public class DatabaseConnection extends Object implements DBConnection
 	private String usr;
 	
 	/** User password */
-	private String pwd;
+	private String pwd = "";
 
 	/** Remembers password */
-	private Boolean rpwd;
+	private Boolean rpwd = Boolean.FALSE;
 
 	/** The support for firing property changes */
 	private PropertyChangeSupport propertySupport;
@@ -57,6 +57,7 @@ public class DatabaseConnection extends Object implements DBConnection
 	public static final String PROP_DATABASE = "database";
 	public static final String PROP_USER = "user";
 	public static final String PROP_PASSWORD = "password";
+	public static final String PROP_DRIVERNAME = "drivername";
 
 	/** Default constructor */
 	public DatabaseConnection()
@@ -77,7 +78,6 @@ public class DatabaseConnection extends Object implements DBConnection
 		db = database;	
 		usr = user;
 		pwd = password;
-		rpwd = Boolean.FALSE;
 	}
 	
 	/** Returns driver URL */
@@ -96,6 +96,19 @@ public class DatabaseConnection extends Object implements DBConnection
 		String olddrv = drv;
 		drv = driver;
 		propertySupport.firePropertyChange(PROP_DRIVER, olddrv, drv);
+	}
+
+	public String getDriverName()
+	{
+		return drvname;
+	}
+	
+	public void setDriverName(String name)
+	{
+		if (name == null || name.equals(drvname)) return;
+		String olddrv = drvname;
+		drvname = name;
+		propertySupport.firePropertyChange(PROP_DRIVERNAME, olddrv, drvname);
 	}
 
 	/** Returns database URL */
@@ -180,7 +193,7 @@ public class DatabaseConnection extends Object implements DBConnection
 		dbprops.put("password", pwd);
 		
 		try {
-
+/*
 			ClassLoader syscl = TopManager.getDefault().currentClassLoader();
 			Class cl = syscl.loadClass("java.sql.DriverManager");
 			cl = syscl.loadClass(drv);
@@ -190,7 +203,10 @@ public class DatabaseConnection extends Object implements DBConnection
 			gmet.setAccessible(true);
 			gmet.invoke(DriverManager.class, new Object[] {db, dbprops, syscl});		
 
-	    	Connection connection = (Connection)gmet.invoke(DriverManager.class, new Object[] {db, dbprops, syscl});	
+	    	Connection connection = (Connection)gmet.invoke(DriverManager.class, new Object[] {db, dbprops, syscl});
+*/
+			Class.forName(drv);
+			Connection connection = DriverManager.getConnection(db, dbprops);	
 			return connection;
 
 		} catch (Exception e) {
@@ -226,8 +242,7 @@ public class DatabaseConnection extends Object implements DBConnection
 	{
 		if (obj instanceof DBConnection) {
 			DBConnection con = (DBConnection)obj;
-			return (drv.equals(con.getDriver()) && db.equals(con.getDatabase()) && usr.equals(con.getUser()));	
-		}
+			return (drv.equals(con.getDriver()) && db.equals(con.getDatabase()) && usr.equals(con.getUser()));		}
 		
 		return false;
 	}
@@ -240,7 +255,8 @@ public class DatabaseConnection extends Object implements DBConnection
 		db = (String)in.readObject();
 		usr = (String)in.readObject();
 		pwd = (String)in.readObject();
-		rpwd = (Boolean)in.readObject();
+//		rpwd = (Boolean)in.readObject();
+		rpwd = new Boolean(false);
 	}
 
 	/** Writes object to stream */
@@ -251,12 +267,12 @@ public class DatabaseConnection extends Object implements DBConnection
 		out.writeObject(db);
 		out.writeObject(usr);
 		out.writeObject(pwd);
-		out.writeObject(rpwd);
+//		out.writeObject(rpwd);
 	}
 	
 	public String toString()
 	{
-		return "drv: "+drv+" db: "+db+" usr: "+usr+" pwd: "+pwd+(rpwd.booleanValue() ? " (R)" : "");
+		return "drv: "+drv+" db: "+db+" usr: "+usr;
 	}
 
 }
