@@ -24,8 +24,13 @@ import java.util.*;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.web.project.classpath.ClassPathSupport;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 import org.w3c.dom.Element;
@@ -525,10 +530,41 @@ public final class WebProject implements Project, AntProjectListener, FileChange
         ProjectXmlSavedHookImpl() {}
         
         protected void projectXmlSaved() throws IOException {
-            genFilesHelper.refreshBuildScript(
+            int flags = genFilesHelper.getBuildScriptState(
                 GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                WebProject.class.getResource("resources/build-impl.xsl"),
-                false);
+                WebProject.class.getResource("resources/build-impl.xsl"));
+            if ((flags & GeneratedFilesHelper.FLAG_MODIFIED) != 0) {
+                RequestProcessor.getDefault().post(new Runnable () {
+                    public void run () {
+                        JButton updateOption = new JButton (NbBundle.getMessage(WebProject.class, "CTL_Regenerate"));
+                        if (DialogDisplayer.getDefault().notify(
+                            new NotifyDescriptor (NbBundle.getMessage(WebProject.class,"TXT_BuildImplRegenerate"),
+                                NbBundle.getMessage(WebProject.class,"TXT_BuildImplRegenerateTitle"),
+                                NotifyDescriptor.DEFAULT_OPTION,
+                                NotifyDescriptor.WARNING_MESSAGE,
+                                new Object[] {
+                                    updateOption,
+                                    NotifyDescriptor.CANCEL_OPTION
+                                },
+                                updateOption)) == updateOption) {
+                            try {
+                                genFilesHelper.generateBuildScriptFromStylesheet(
+                                    GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                                    WebProject.class.getResource("resources/build-impl.xsl"));
+                            } catch (IOException e) {
+                                ErrorManager.getDefault().notify(e);
+                            } catch (IllegalStateException e) {
+                                ErrorManager.getDefault().notify(e);
+                            }
+                        }
+                    }
+                });
+            } else {
+                genFilesHelper.refreshBuildScript(
+                    GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                    WebProject.class.getResource("resources/build-impl.xsl"),
+                    false);
+            }
             genFilesHelper.refreshBuildScript(
                 getBuildXmlName (),
                 WebProject.class.getResource("resources/build.xsl"),
@@ -576,10 +612,32 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                 
                 // Check up on build scripts.
                 if (updateHelper.isCurrent()) {
-                    genFilesHelper.refreshBuildScript(
+                    int flags = genFilesHelper.getBuildScriptState(
                         GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                        WebProject.class.getResource("resources/build-impl.xsl"),
-                        true);
+                        WebProject.class.getResource("resources/build-impl.xsl"));
+                    if ((flags & GeneratedFilesHelper.FLAG_MODIFIED) != 0
+                        && (flags & GeneratedFilesHelper.FLAG_OLD_PROJECT_XML) != 0) {
+                        JButton updateOption = new JButton (NbBundle.getMessage(WebProject.class, "CTL_Regenerate"));
+                        if (DialogDisplayer.getDefault().notify(
+                            new NotifyDescriptor (NbBundle.getMessage(WebProject.class,"TXT_BuildImplRegenerate"),
+                                NbBundle.getMessage(WebProject.class,"TXT_BuildImplRegenerateTitle"),
+                                NotifyDescriptor.DEFAULT_OPTION,
+                                NotifyDescriptor.WARNING_MESSAGE,
+                                new Object[] {
+                                    updateOption,
+                                    NotifyDescriptor.CANCEL_OPTION
+                                },
+                                updateOption)) == updateOption) {
+                            genFilesHelper.generateBuildScriptFromStylesheet(
+                                GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                                WebProject.class.getResource("resources/build-impl.xsl"));
+                        }
+                    } else {
+                        genFilesHelper.refreshBuildScript(
+                            GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                            WebProject.class.getResource("resources/build-impl.xsl"),
+                            true);
+                    }
                     genFilesHelper.refreshBuildScript(
                         GeneratedFilesHelper.BUILD_XML_PATH,
                         WebProject.class.getResource("resources/build.xsl"),
