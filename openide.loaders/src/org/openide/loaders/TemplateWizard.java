@@ -632,7 +632,8 @@ public class TemplateWizard extends WizardDescriptor {
      * @return true if file with name and extension exists, false otherwise.
      */    
     static boolean checkCaseInsensitiveName (FileObject folder, String name, String extension) {
-        Enumeration children = folder.getChildren (true);
+        // bugfix #41277, check only direct children
+        Enumeration children = folder.getChildren (false);
         FileObject fo;
         while (children.hasMoreElements ()) {
             fo = (FileObject) children.nextElement ();
