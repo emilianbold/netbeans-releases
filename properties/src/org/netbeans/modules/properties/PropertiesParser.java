@@ -153,15 +153,13 @@ class PropertiesParser {
 
         String comHelp;
         comHelp = comment.toString();
-        
         if(comment.length() > 0)
             if(comment.charAt(comment.length() - 1) == '\n')
                 comHelp = comment.substring(0, comment.length() - 1);
 
-        int endPos = begPos + (comHelp.length() > 0 ? comHelp.length() - 1 : 0);
-        commE = new Element.CommentElem(createBiasBounds(begPos, endPos), comHelp);
-        
+        commE = new Element.CommentElem(createBiasBounds(begPos, keyPos), comHelp);
         // fl now contains the line after the comment or  null if none exists
+
 
         if(fl == null) {
             keyE = null;
@@ -230,7 +228,6 @@ class PropertiesParser {
                     break;
                 valueIndex++;
             }
-            
             String key = line.substring(keyStart, separatorIndex);
             String value = (separatorIndex < len) ? line.substring(valueIndex, len) : ""; // NOI18N
 
@@ -246,11 +243,8 @@ class PropertiesParser {
             catch (ArrayIndexOutOfBoundsException e) {
                 valuePosFile = currentPos;
             }
-            
             keyE   = new Element.KeyElem  (createBiasBounds(keyPos, valuePosFile), key);
-            
-            int endValuePos = valuePosFile + (value.length() > 0 ? value.length() - 1 : 0);
-            valueE = new Element.ValueElem(createBiasBounds(valuePosFile, endValuePos), value);
+            valueE = new Element.ValueElem(createBiasBounds(valuePosFile, currentPos), value);
         }
         return new Element.ItemElem(createBiasBounds(begPos, in.position), keyE, valueE, commE);
     }

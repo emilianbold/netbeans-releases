@@ -144,20 +144,11 @@ public class PropertiesDataNode extends DataNode {
                                                             new PropertiesEditorSupport.NewLineOutputStream(newFile.getOutputStream(lock), entry.getPropertiesEditor().getNewLineType()),
                                                             "8859_1" // NOI18N
                                                         ));
-
-                                                        boolean first = true;
                                                         
                                                         for (Iterator it = structure.allItems(); it.hasNext(); ) {
                                                             Element.ItemElem item1 = (Element.ItemElem)it.next();
                                                             if(item1 != null) {
-                                                                String ps;
-                                                                
-                                                                if(first) {
-                                                                    ps = item1.printString();
-                                                                    first = false;
-                                                                } else
-                                                                    ps = "\n"+item1.printString();
-                                                                
+                                                                String ps = item1.printString();
                                                                 bw.write(ps, 0, ps.length());
                                                             }
                                                         }
