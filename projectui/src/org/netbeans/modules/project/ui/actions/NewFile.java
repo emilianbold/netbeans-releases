@@ -246,6 +246,8 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         
         ActionListener menuListener = new PopupMenuListener();
         
+        boolean canWrite = preselectedFolder( getLookup() ).getPrimaryFile().canWrite();
+        
         DataObject templates[] = NoProjectNew.getTemplates();
         for( int i = 0; i < templates.length; i++ ) {
             Node n = templates[i].getNodeDelegate();
@@ -255,6 +257,7 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
             item.addActionListener( menuListener );
             item.putClientProperty( TEMPLATE_PROPERTY, templates[i] );
             item.putClientProperty( IN_PROJECT_PROPERTY, Boolean.FALSE );
+            item.setEnabled( canWrite );
             menuItem.add( item );
         }
         

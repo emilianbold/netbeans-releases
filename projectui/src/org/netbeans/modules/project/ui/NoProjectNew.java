@@ -237,6 +237,10 @@ public class NoProjectNew extends javax.swing.JPanel implements  ActionListener,
     private void createFile() {
         if ( result != null ) {
             
+            if ( !targetFolder.getPrimaryFile().canWrite() ) {
+                return;
+            }
+            
             DataObject dObj = null;
             
             try {
