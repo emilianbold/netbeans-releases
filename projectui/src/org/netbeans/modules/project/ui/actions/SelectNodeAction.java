@@ -16,6 +16,7 @@ package org.netbeans.modules.project.ui.actions;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.ui.ProjectTab;
 import org.netbeans.modules.project.ui.ProjectUtilities;
@@ -28,12 +29,13 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.actions.Presenter;
 
 /** Action sensitive to current project
  * 
  * @author Pet Hrebejk 
  */
-public class SelectNodeAction extends LookupSensitiveAction {
+public class SelectNodeAction extends LookupSensitiveAction implements Presenter.Menu {
     
     // XXX Better icons
     private static final Icon SELECT_IN_PROJECTS_ICON = new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/projectTab.gif" ) ); //NOI18N
@@ -41,6 +43,9 @@ public class SelectNodeAction extends LookupSensitiveAction {
     
     private static final String SELECT_IN_PROJECTS_NAME = NbBundle.getMessage( CloseProject.class, "LBL_SelectInProjectsAction_Name" ); // NOI18N
     private static final String SELECT_IN_FILES_NAME = NbBundle.getMessage( CloseProject.class, "LBL_SelectInFilesAction_Name" ); // NOI18N
+    
+    private static final String SELECT_IN_PROJECTS_NAME_MENU = NbBundle.getMessage( CloseProject.class, "LBL_SelectInProjectsAction_MenuName" ); // NOI18N
+    private static final String SELECT_IN_FILES_NAME_MENU = NbBundle.getMessage( CloseProject.class, "LBL_SelectInFilesAction_MenuName" ); // NOI18N
     
     private String command;
     private ProjectActionPerformer performer;
@@ -100,7 +105,21 @@ public class SelectNodeAction extends LookupSensitiveAction {
         return namePattern;
     }
     
-    // Private methods ---------------------------------------------------------
+    // Presenter.Menu implementation ------------------------------------------
+    
+    public JMenuItem getMenuPresenter () {
+        JMenuItem menuPresenter = new JMenuItem (this);
+        
+        if (ProjectTab.ID_LOGICAL.equals (this.findIn)) {
+            menuPresenter.setText (SELECT_IN_PROJECTS_NAME_MENU);
+        } else {
+            menuPresenter.setText (SELECT_IN_FILES_NAME_MENU);
+        }
+        
+        return menuPresenter;
+    }
+    
+   // Private methods ---------------------------------------------------------
     
     private FileObject getFileFromLookup( Lookup context ) {
         
