@@ -81,6 +81,8 @@ Microsystems, Inc. All Rights Reserved.
 		<exclude name="org/openide/explorer/propertysheet/PropertyPanelTest.class"/>
                 <exclude name="org/openide/explorer/propertysheet/FindHelpTest.class"/>
                 <include name="org/openide/explorer/view/*.class"/>
+		<!-- excluded because reopened issue #29423  -->
+		<exclude name="org/openide/explorer/view/ListViewTest.class"/>
                 <include name="org/openide/util/UtilProgressCursorTest.class"/>
             </patternset>
         </testset>        
@@ -122,6 +124,7 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="failing" executor="ide" name="testbag_4" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
+		<include name="org/openide/explorer/view/ListViewTest.class"/>
             </patternset>
         </testset>      
     </testbag>
