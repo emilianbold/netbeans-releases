@@ -15,7 +15,9 @@ package com.netbeans.developer.modules.loaders.form;
 
 import java.awt.*;
 import java.beans.*;
+import java.text.MessageFormat;
 
+import org.openide.TopManager;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 
 /**
@@ -35,12 +37,19 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
   public RADConnectionPropertyEditor (Class propertyType) {
     support = new PropertyChangeSupport (this);
     this.propertyType = propertyType;
+/*    if (System.getProperty ("Ahoj") != null) {
+    System.out.println ("&&& &&& &&& >>> RADConn init: "+ this); 
+      Thread.dumpStack ();
+    }  */
   }
 
   /** Called to set the RADComponent for which this property editor was created.
   * @param node the RADComponent for which this property editor was created
   */
   public void setRADComponent (RADComponent rcomp) {
+/*    if (System.getProperty ("Ahoj") != null) {
+    System.out.println ("&&& &&& &&& >>> RADConn setRADCOmponent: "+ this + " , rcomponent : "+rcomponent);
+} */
     rcomponent = rcomp;
   }
 
@@ -66,7 +75,7 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
   public String getAsText () {
     if (currentValue != null)
       return currentValue.getName ();
-    else return "<Not Set>"; // [PENDING]
+    else return FormEditor.getFormBundle ().getString ("CTL_CONNECTION_NOT_SET"); //"<Not Set>"; 
   }
 
 	public String[] getTags () 
@@ -86,6 +95,9 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
   }
 
   public java.awt.Component getCustomEditor () {
+/*    if (System.getProperty ("Ahoj") != null) {
+    System.out.println ("&&& &&& &&& >>> RADConn getCustom: "+ this + ", rcomponent: "+rcomponent);
+}*/
     ParametersPicker pp = new ParametersPicker (rcomponent.getFormManager (), rcomponent, propertyType);
     pp.setPropertyValue (currentValue);
     return pp;
@@ -96,7 +108,7 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
       switch (currentValue.type) {
         case RADConnectionDesignValue.TYPE_VALUE: return currentValue.value;     
         case RADConnectionDesignValue.TYPE_CODE: return currentValue.userCode;
-        case RADConnectionDesignValue.TYPE_PROPERTY: return currentValue.radComponentName + "." + currentValue.property.getReadMethod ().getName () + " ()"; // [PENDING]
+        case RADConnectionDesignValue.TYPE_PROPERTY: return currentValue.radComponentName + "." + currentValue.property.getReadMethod ().getName () + " ()"; // [FUTURE: Handle indexed properties]
         case RADConnectionDesignValue.TYPE_METHOD: return currentValue.radComponentName + "." + currentValue.methodName + " ()";
       }
     }
@@ -145,7 +157,6 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
       radComponentName = radComponent.getName ();
       property = pd;
       propertyName = pd.getName ();
-      // [PENDING - restore on deserialization]
       type = TYPE_PROPERTY;
     }
 
@@ -162,10 +173,10 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
 
     String getName () {
       switch (type) {
-        case TYPE_PROPERTY: return "<"+radComponentName+"."+propertyName+">"; 
-        case TYPE_METHOD: return "<"+radComponentName+"."+methodName+">"; 
-        case TYPE_VALUE: return "<Value: " + value + ">"; // [PENDING localize]
-        case TYPE_CODE: return "<User Code>"; // [PENDING localize]
+        case TYPE_PROPERTY: return MessageFormat.format (FormEditor.getFormBundle ().getString ("FMT_PROPERTY_CONN"), new Object[] { radComponentName, propertyName }); 
+        case TYPE_METHOD: return MessageFormat.format (FormEditor.getFormBundle ().getString ("FMT_METHOD_CONN"), new Object[] { radComponentName, methodName }); 
+        case TYPE_VALUE: return MessageFormat.format (FormEditor.getFormBundle ().getString ("FMT_VALUE_CONN"), new Object[] { value }); 
+        case TYPE_CODE: return FormEditor.getFormBundle ().getString ("CTL_CODE_CONN"); 
       }
       throw new InternalError ();
     }
@@ -180,12 +191,28 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
     */
     public Object getDesignValue (RADComponent radComponent) {
       switch (type) {
-        case TYPE_PROPERTY: return FormDesignValue.IGNORED_VALUE;  // [PENDING]
-        case TYPE_METHOD: return FormDesignValue.IGNORED_VALUE; // [PENDING]
-        case TYPE_VALUE: return FormDesignValue.IGNORED_VALUE; // [PENDING]
-        case TYPE_CODE: return FormDesignValue.IGNORED_VALUE;
+        case TYPE_PROPERTY: 
+            try {
+              Object value = property.getReadMethod ().invoke (radComponent.getBeanInstance (), new Object[0]);
+              return value;
+            } catch (Exception e) {
+              // in case of failure do not provide the value during design time
+              return FormDesignValue.IGNORED_VALUE;
+            }
+        case TYPE_METHOD: 
+            try {
+              Object value = method.getMethod ().invoke (radComponent.getBeanInstance (), new Object[0]);
+              return value;
+            } catch (Exception e) {
+              // in case of failure do not provide the value during design time
+              return FormDesignValue.IGNORED_VALUE;
+            }
+        case TYPE_VALUE: 
+            return FormDesignValue.IGNORED_VALUE; // [PENDING: use the value during design time]
+        case TYPE_CODE: 
+        default:         
+            return FormDesignValue.IGNORED_VALUE; 
       }
-      throw new InternalError ();
     }
   }
 
@@ -199,6 +226,7 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
   public static final String ATTR_NAME = "name";
   public static final String ATTR_CODE = "code";
   public static final String ATTR_VALUE = "value";
+  public static final String ATTR_REQUIRED_TYPE = "valueType";
 
   public static final String VALUE_VALUE = "value";
   public static final String VALUE_PROPERTY = "property";
@@ -221,15 +249,43 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
       int type = RADConnectionDesignValue.TYPE_CODE;
       if (VALUE_VALUE.equals (typeString)) {
         String value = attributes.getNamedItem (ATTR_VALUE).getNodeValue ();
-//        setValue (new RADConnectionDesignValue ()); // [PENDING]
+        String valueType = attributes.getNamedItem (ATTR_REQUIRED_TYPE).getNodeValue ();
+        try {
+          Class reqType = TopManager.getDefault ().systemClassLoader ().loadClass (valueType);
+          setValue (new RADConnectionDesignValue (reqType, value));
+        } catch (Exception e) { 
+          // ignore failures... and use no conn instead
+        }
       } else if (VALUE_PROPERTY.equals (typeString)) {
         String component = attributes.getNamedItem (ATTR_COMPONENT).getNodeValue ();
         String name = attributes.getNamedItem (ATTR_NAME).getNodeValue ();
-//        setValue (new RADConnectionDesignValue (rcomponent, )); // [PENDING]
+        RADComponent connComp = rcomponent.getFormManager ().findRADComponent (component);
+        if (connComp != null) {
+          PropertyDescriptor[] componentsProps = connComp.getBeanInfo ().getPropertyDescriptors ();
+          for (int i = 0; i < componentsProps.length; i++) {
+            if (componentsProps[i].getName ().equals (name)) {
+              setValue (new RADConnectionDesignValue (connComp, componentsProps[i])); // [PENDING]
+              break;
+            }
+          } // if the property of given name cannot be found => ignore
+        } // if the component cannot be found, simply ignore it
+
       } else if (VALUE_METHOD.equals (typeString)) {
         String component = attributes.getNamedItem (ATTR_COMPONENT).getNodeValue ();
         String name = attributes.getNamedItem (ATTR_NAME).getNodeValue ();
-//        setValue (new RADConnectionDesignValue (rcomponent, )); // [PENDING]
+
+        RADComponent connComp = rcomponent.getFormManager ().findRADComponent (component);
+        if (connComp != null) {
+          MethodDescriptor[] componentMethods = connComp.getBeanInfo ().getMethodDescriptors ();
+          for (int i = 0; i < componentMethods.length; i++) {
+            if (componentMethods[i].getName ().equals (name)) {
+              setValue (new RADConnectionDesignValue (connComp, componentMethods[i])); // [PENDING]
+              break;
+            }
+          } // if the property of given name cannot be found => ignore
+        } // if the component cannot be found, simply ignore it
+
+
       } else {
         String code = attributes.getNamedItem (ATTR_CODE).getNodeValue ();
         setValue (new RADConnectionDesignValue (code));
@@ -261,6 +317,7 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
     switch (currentValue.type) {
       case RADConnectionDesignValue.TYPE_VALUE: 
            el.setAttribute (ATTR_VALUE, currentValue.value);
+           el.setAttribute (ATTR_REQUIRED_TYPE, currentValue.requiredTypeName);
            break;
       case RADConnectionDesignValue.TYPE_PROPERTY:
            el.setAttribute (ATTR_COMPONENT, currentValue.radComponentName);
@@ -268,7 +325,7 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
            break;
       case RADConnectionDesignValue.TYPE_METHOD: 
            el.setAttribute (ATTR_COMPONENT, currentValue.radComponentName);
-           el.setAttribute (ATTR_NAME, currentValue.propertyName);
+           el.setAttribute (ATTR_NAME, currentValue.methodName);
            break;
       case RADConnectionDesignValue.TYPE_CODE: 
            el.setAttribute (ATTR_CODE, org.openide.util.Utilities.replaceString (currentValue.userCode, "\n", "\\n"));
