@@ -334,7 +334,7 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         return null;
     }
 
-    SectionInnerPanel getInnerPanel() {
+    public SectionInnerPanel getInnerPanel() {
         return innerPanel;
     }
 

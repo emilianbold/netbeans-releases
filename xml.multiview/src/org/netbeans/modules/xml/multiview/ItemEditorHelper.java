@@ -10,19 +10,12 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.xml.multiview;
 
-import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import javax.swing.text.PlainDocument;
 
 /**
  * The class provides link between editor text component and related data model
@@ -30,7 +23,9 @@ import java.awt.event.KeyListener;
  *
  * @author pfiala
  */
-public class ItemEditorHelper {
+public class ItemEditorHelper implements Refreshable {
+
+    protected ItemEditorHelper.ItemDocument doc;
 
     /**
      * Model of item providing unified interface between text component and item data
@@ -38,15 +33,6 @@ public class ItemEditorHelper {
     public static abstract class ItemEditorModel {
 
         private ItemEditorHelper itemEditorHelper;
-
-        /**
-         * Updates editor text by item value from model
-         */
-        public final void reloadEditorText() {
-            if (itemEditorHelper != null) {
-                itemEditorHelper.reloadEditorText();
-            }
-        }
 
         /**
          * Retrieves edited text from editor component
@@ -96,107 +82,8 @@ public class ItemEditorHelper {
         return editorComponent;
     }
 
-    /**
-     * Listener that handles events related to editing text
-     */
-    private class TextComponentListener implements KeyListener, ActionListener, FocusListener, DocumentListener {
-
-        /**
-         * Invoked when a key has been pressed.
-         * Handles keys Enter and Escape to confirm or cancel editing
-         */
-        public void keyPressed(KeyEvent e) {
-            if (e.getKeyChar() == KeyEvent.VK_ESCAPE) {
-                reloadEditorText();
-            } else if (e.getKeyChar() == KeyEvent.VK_ENTER && (e.getModifiers() & KeyEvent.CTRL_MASK) != 0) {
-                finishEditing();
-                Utils.focusNextComponent(editorComponent);
-            }
-        }
-
-        /**
-         * Invoked when a key has been released.
-         * It is not handled
-         */
-        public void keyReleased(KeyEvent e) {
-
-        }
-
-        /**
-         * Invoked when a key has been typed.
-         * It is not handled
-         */
-        public void keyTyped(KeyEvent e) {
-
-        }
-
-        /**
-         * Invoked when an action occurs.
-         * The action on editor component finishes editing
-         */
-        public void actionPerformed(ActionEvent e) {
-            finishEditing();
-        }
-
-        /**
-         * Invoked when a component gains the keyboard focus.
-         * It is not handled
-         */
-        public void focusGained(FocusEvent e) {
-
-        }
-
-        /**
-         * Invoked when a component loses the keyboard focus.
-         * Losing focus finishes editing
-         */
-        public void focusLost(FocusEvent e) {
-            if (e.isTemporary()) {
-                return;
-            }
-            finishEditing();
-        }
-
-        /**
-         * Gives notification that an attribute or set of attributes changed.
-         * <p/>
-         * Model receives notification that edited text has been changed.
-         *
-         * @param e the document event
-         */
-        public void changedUpdate(DocumentEvent e) {
-            model.documentUpdated();
-        }
-
-        /**
-         * Gives notification that there was an insert into the document.  The
-         * range given by the DocumentEvent bounds the freshly inserted region.
-         * <p/>
-         * Model receives notification that edited text has been changed.
-         *
-         * @param e the document event
-         */
-        public void insertUpdate(DocumentEvent e) {
-            model.documentUpdated();
-        }
-
-        /**
-         * Gives notification that a portion of the document has been
-         * removed.  The range is given in terms of what the view last
-         * saw (that is, before updating sticky positions).
-         * <p/>
-         * Model receives notification that edited text has been changed.
-         *
-         * @param e the document event
-         */
-        public void removeUpdate(DocumentEvent e) {
-            model.documentUpdated();
-        }
-    }
-
     private final JTextComponent editorComponent;
     private ItemEditorModel model;
-    private TextComponentListener textComponentListener = new TextComponentListener();
 
     /**
      * Creates item editor helper for given text component with default implementation of data model.
@@ -218,14 +105,10 @@ public class ItemEditorHelper {
      */
     public ItemEditorHelper(final JTextComponent textComponent, ItemEditorModel model) {
         this.editorComponent = textComponent;
+        doc = new ItemDocument();
         setModel(model);
-        textComponent.setText(this.model.getItemValue());
-        textComponent.getDocument().addDocumentListener(textComponentListener);
-        textComponent.addFocusListener(textComponentListener);
-        textComponent.addKeyListener(textComponentListener);
-        if (textComponent instanceof JTextField) {
-            ((JTextField) textComponent).addActionListener(textComponentListener);
-        }
+        editorComponent.setDocument(doc);
+        refresh();
     }
 
     /**
@@ -238,8 +121,7 @@ public class ItemEditorHelper {
     }
 
     private void setModel(ItemEditorModel model) {
-        this.model = model != null ? model :
-                createDefaultModel();
+        this.model = model != null ? model : createDefaultModel();
         this.model.itemEditorHelper = this;
     }
 
@@ -264,12 +146,8 @@ public class ItemEditorHelper {
     /**
      * Updates editor text by item value from model
      */
-    public void reloadEditorText() {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                editorComponent.setText(model.getItemValue());
-            }
-        });
+    public void refresh() {
+        doc.refresh();
     }
 
     /**
@@ -278,20 +156,47 @@ public class ItemEditorHelper {
      * @return text of editor component
      */
     public String getEditorText() {
-        return editorComponent.getText().trim();
+        return editorComponent.getText();
     }
 
-    /**
-     * Tries to update item value in model
-     *
-     * @return true - success, false - fail
-     */
-    public boolean finishEditing() {
-        final String text = getEditorText();
-        if (text.equals(model.getItemValue())) {
-            return true;
-        } else {
-            return model.setItemValue(text);
+    private class ItemDocument extends PlainDocument {
+
+        public void remove(int offs, int len) throws BadLocationException {
+            super.remove(offs, len);
+            updateModel();
+        }
+
+        public void insertString(int offs, String str, AttributeSet a) throws BadLocationException {
+            super.insertString(offs, str, a);
+            updateModel();
+        }
+
+        private void updateModel() {
+            model.documentUpdated();
+            refresh();
+        }
+
+        public void refresh() {
+            String itemValue = model.getItemValue();
+            String text;
+            try {
+                text = getText(0, getLength());
+            } catch (BadLocationException e) {
+                text = "";
+                e.printStackTrace();
+            }
+            if (!text.equals(itemValue)) {
+                try {
+                    super.remove(0, getLength());
+                } catch (BadLocationException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    insertString(0, itemValue, null);
+                } catch (BadLocationException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 }

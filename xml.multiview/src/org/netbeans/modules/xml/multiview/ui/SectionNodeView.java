@@ -10,13 +10,10 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.xml.multiview.ui;
 
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.Utils;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileEvent;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -28,6 +25,7 @@ import java.util.HashMap;
  * @author pfiala
  */
 public class SectionNodeView extends SectionView {
+
     private final DataObject dataObject;
     private SectionNode rootNode = null;
     private HashMap nodes = new HashMap();
@@ -35,24 +33,12 @@ public class SectionNodeView extends SectionView {
     public SectionNodeView(DataObject dataObject) {
         super();
         this.dataObject = dataObject;
-        dataObject.getPrimaryFile().addFileChangeListener(new FileChangeAdapter() {
-            public void fileChanged(FileEvent fe) {
-                dataFileChanged();
-            }
-        });
-    }
-
-    public void dataFileChanged() {
-        if(rootNode != null) {
-            rootNode.dataFileChanged();
-        }
     }
 
     public void setRootNode(SectionNode rootNode) {
         this.rootNode = rootNode;
         Children root = new Children.Array();
         root.add(new Node[]{rootNode});
-
         AbstractNode mainNode = new AbstractNode(root);
         mainNode.setDisplayName(rootNode.getDisplayName());
         mainNode.setIconBase(rootNode.getIconBase());

@@ -10,7 +10,6 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.xml.multiview.ui;
 
 import javax.swing.*;
@@ -42,8 +41,8 @@ public class BoxPanel extends SectionInnerPanel {
         setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.Y_AXIS));
 
     }//GEN-END:initComponents
-    
-    
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
 
@@ -66,6 +65,9 @@ public class BoxPanel extends SectionInnerPanel {
 
     }
 
+    protected void propertyChanged(Object source, String propertyName, Object oldValue, Object newValue) {
+    }
+
     public void linkButtonPressed(Object ddBean, String ddProperty) {
         final Component[] components = getComponents();
         for (int i = 0; i < components.length; i++) {
@@ -74,6 +76,21 @@ public class BoxPanel extends SectionInnerPanel {
                 SectionInnerPanel panel = (SectionInnerPanel) component;
                 panel.linkButtonPressed(ddBean, ddProperty);
             }
+        }
+    }
+
+    public void setComponents(Component[] components) {
+        int n1 = getComponentCount();
+        for (int i = 0; i < components.length; i++) {
+            Component component = components[i];
+            if (i < n1) {
+                remove(i);
+            }
+            add(component, i);
+        }
+        int n2 = components.length;
+        while (getComponentCount() > n2) {
+            remove(n2);
         }
     }
 }

@@ -16,18 +16,22 @@ package org.netbeans.modules.xml.multiview.ui;
 import org.netbeans.modules.xml.multiview.cookies.LinkCookie;
 import org.netbeans.modules.xml.multiview.cookies.ErrorLocator;
 import org.netbeans.modules.xml.multiview.Error;
+import org.netbeans.modules.xml.multiview.Refreshable;
 
 import javax.swing.text.JTextComponent;
 import javax.swing.*;
 import java.awt.event.FocusListener;
 import java.awt.event.FocusEvent;
 import java.awt.*;
+import java.util.Iterator;
+import java.util.LinkedList;
 
 /**
  * @author mkuchtiak
  */
 public abstract class SectionInnerPanel extends javax.swing.JPanel implements LinkCookie, ErrorLocator {
     private SectionView sectionView;
+    private java.util.List refreshableList = new LinkedList();
 
     private boolean localFocusListenerInitialized = false;
     private FocusListener localFocusListener = new FocusListener() {
@@ -62,35 +66,35 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
             }
         }
     }
-    
+
     /** Getter for section view
      * @return sectionView enclosing SectionView object
      */
     public SectionView getSectionView() {
         return sectionView;
     }
-    
+
     /** Callback method called on focus lost event after the value was checked for correctness.
      * @param source last focused JComponent
      * @param value the value that has been set (typed) in the component
      */
     public abstract void setValue(JComponent source, Object value);
-    
+
     /** Callback method called on document change event. This is called for components that
-     * require just-in-time validation. 
+     * require just-in-time validation.
      * @param source JTextComponent being actually edited
      * @param value the actual value of the component
      */
     public void documentChanged(javax.swing.text.JTextComponent source, String value) {
     }
-    
+
     /** Callback method called on focus lost event after the value was checked for correctness.
      * and the result is that the value is wrong. The value should be rollbacked from the model.
      * @param source last focused JComponent
      */
     public void rollbackValue(javax.swing.text.JTextComponent source) {
     }
-    
+
     /** Adds text component to the set of JTextComponents that modifies the model.
      * After the value in this component is changed the setValue() method is called.
      * @param tc JTextComponent whose content is related to data model
@@ -173,11 +177,23 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
         });
     }
 
-    public void dataFileChanged() {
+    protected void refreshView() {
+        for (Iterator it = refreshableList.iterator(); it.hasNext();) {
+            ((Refreshable) it.next()).refresh();
+        }
+    }
 
+    protected void propertyChanged(Object source, String propertyName, Object oldValue, Object newValue) {
+        System.out.println(getClass().getName() + "@" + System.identityHashCode(this) + ": " + source + " | " +
+                        propertyName + " | " + oldValue + " | " + newValue);
+    }
+
+    protected void addRefreshable(Refreshable refreshable) {
+        refreshableList.add(refreshable);
     }
 
     private class TextListener implements javax.swing.event.DocumentListener {
+
         private JTextComponent tc;
 
         TextListener(JTextComponent tc) {

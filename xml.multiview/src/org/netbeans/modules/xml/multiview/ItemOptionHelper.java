@@ -24,7 +24,7 @@ import java.util.Collections;
  *
  * @author pfiala
  */
-public abstract class ItemOptionHelper implements ActionListener {
+public abstract class ItemOptionHelper implements ActionListener, Refreshable {
 
     private final AbstractButton[] buttons;
     private final AbstractButton unmatchedOption;
@@ -74,17 +74,26 @@ public abstract class ItemOptionHelper implements ActionListener {
      * @param itemValue value of item to be selected in button group
      */
     public void setOption(String itemValue) {
+        AbstractButton matchingButton = getMatchingButton(itemValue);
+        if (matchingButton != null && !matchingButton.isSelected()) {
+            matchingButton.setSelected(true);
+        }
+        return;
+    }
+
+    private AbstractButton getMatchingButton(String itemValue) {
+        AbstractButton matchingButton = null;
         for (int i = 0; i < buttons.length; i++) {
             final AbstractButton button = buttons[i];
             if (getOptionText(button).equals(itemValue)) {
-                button.setSelected(true);
-                return;
+                matchingButton = button;
+                break;
             }
         }
-        if (unmatchedOption != null) {
-            unmatchedOption.setSelected(true);
+        if (matchingButton == null && unmatchedOption != null) {
+            matchingButton = unmatchedOption;
         }
-        return;
+        return matchingButton;
     }
 
     private String getOptionText(AbstractButton button) {
@@ -129,4 +138,7 @@ public abstract class ItemOptionHelper implements ActionListener {
      */
     public abstract void setItemValue(String value);
 
+    public void refresh() {
+        setOption(getItemValue());
+    }
 }
