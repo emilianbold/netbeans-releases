@@ -49,7 +49,7 @@ Microsystems, Inc. All Rights Reserved.
             </fileset>
         </jar>
         <mkdir dir="netbeans/ant/nblib"/>
-        <jar jarfile="netbeans/ant/nblib/nbjpdaconnect.jar" compress="false">
+        <jar jarfile="netbeans/ant/nblib/nbjpda.jar" compress="false">
             <fileset dir="src">
                 <excludesfile name="../../nbbuild/standard-jar-excludes.txt"/>
                 <include name="**/*.class"/>
