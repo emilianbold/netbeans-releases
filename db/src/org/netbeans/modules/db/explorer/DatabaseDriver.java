@@ -25,6 +25,7 @@ public class DatabaseDriver extends Object implements Externalizable
 {
 	private String name;
 	private String url;
+	private String prefix;
 
 	public DatabaseDriver()
 	{
@@ -35,6 +36,14 @@ public class DatabaseDriver extends Object implements Externalizable
 		name = dname;
 		url = durl;
 	}
+
+	public DatabaseDriver(String dname, String durl, String dprefix)
+	{
+		name = dname;
+		url = durl;
+		prefix = dprefix;
+	}
+		
 	
 	public String getName()
 	{
@@ -56,12 +65,23 @@ public class DatabaseDriver extends Object implements Externalizable
 	{
 		url = nurl;
 	}
+
+	public String getDatabasePrefix()
+	{
+		return prefix;
+	}
+	
+	public void setDatabasePrefix(String pref)
+	{
+		prefix = pref;
+	}
 	
 	public boolean equals(Object obj)
 	{
-		if (obj instanceof String) return obj.equals(name); 
-		return ((DatabaseDriver)obj).getURL().equals(url); 
-		
+		if (obj instanceof String) return obj.equals(url); 
+		boolean c1 = ((DatabaseDriver)obj).getURL().equals(url); 
+		boolean c2 = ((DatabaseDriver)obj).getName().equals(name); 
+		return c1 && c2;
 	}
 	
 	public String toString()
@@ -76,6 +96,7 @@ public class DatabaseDriver extends Object implements Externalizable
 	{
 		out.writeObject(name);
 		out.writeObject(url);	
+		out.writeObject(prefix);
 	}
 	
 	/** Reads data
@@ -85,5 +106,6 @@ public class DatabaseDriver extends Object implements Externalizable
 	{
 		name = (String)in.readObject();
 		url = (String)in.readObject();
+		prefix = (String)in.readObject();
 	}	
 }
