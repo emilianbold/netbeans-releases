@@ -137,9 +137,6 @@
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerWSServiceHost" url="web/csh/dbox_projprops/CustomizerWSServiceHost.html" />
 	<!-- The Web Service Clients panel in Project Properties for a Standard Web Application -->
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerWSClientHost" url="web/csh/dbox_projprops/CustomizerWSClientHost.html" />
-        <!-- (Remove this soon:) The Web Service Clients panel in Project Properties for a Standard Web Application -->
-        <mapID target="org.netbeans.modules.web.project.ui.customizer.WebCustomizer" url="web/csh/dbox_projprops/CustomizerWSClientHost.html" />
-
 
         <!-- PROJECT PROPERTIES DIALOG BOX FOR A FREE-FORM WEB APPLICATION: -->
 	<!-- The Web Sources panel in Project Properties for a Free-Form Web Application: -->
