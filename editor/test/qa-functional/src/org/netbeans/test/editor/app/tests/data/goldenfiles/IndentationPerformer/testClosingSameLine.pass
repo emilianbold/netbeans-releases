@@ -1,0 +1,10 @@
+class Xxx {
+    public met1() {
+        System.out.println("Ahoj");}
+    public void test2() { System.out.println("Cuz");}
+    
+    public void test3 () {
+        if () {
+        } }
+    //end
+}

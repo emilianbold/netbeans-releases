@@ -1,0 +1,6 @@
+JButton b;
+b.addActionListener(new ActionListener() {
+    public void actionPerformed(ActionEvent ev) {
+        System.out.println("Source: "+ev.getSource());
+    }});
+System.out.println("Back line");

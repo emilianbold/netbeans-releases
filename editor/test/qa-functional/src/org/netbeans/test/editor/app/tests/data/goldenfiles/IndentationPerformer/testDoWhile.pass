@@ -1,0 +1,25 @@
+public class Xxx {
+    public void xXx () {
+        if (true)
+            do
+                System.out.println("Lets work!");
+            while (true);
+        for ()
+            if ()
+                while ()
+                    do
+                        System.err.println("Bye");
+                    while ();
+        if () {
+            if ()
+            else if ()
+                do
+                    System.err.println("Bye");
+                while ();
+            else
+                do
+                    System.err.println("Bye");
+                while();
+        }
+    }
+}

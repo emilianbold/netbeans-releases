@@ -1,0 +1,21 @@
+public class Xxx {
+    
+    public xXx(){
+        if (1==1){
+            (2+(3*(4-(8/(new String("ddd").length())))));
+            System.err.println("Ahoj.");
+        } else if(2==2){
+            while()
+                if()
+                    do {
+                        System.out.println("Test");
+                    } while (true);
+                else
+                    System.err.println("Test2");
+            for ()
+                do {
+                    System.err.println("");
+                } while (false);
+        }
+    }
+}

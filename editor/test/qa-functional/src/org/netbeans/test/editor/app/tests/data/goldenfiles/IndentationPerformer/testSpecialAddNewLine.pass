@@ -1,0 +1,8 @@
+public class X
+{ public X()
+  {  if (a == a)
+         while (true)
+         { System.err.println("");
+         }
+  }
+}
