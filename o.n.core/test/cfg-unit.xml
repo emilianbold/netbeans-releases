@@ -50,7 +50,6 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/core/modules/ModuleManagerTest.class"/>
                 <include name="org/netbeans/core/modules/ModuleListTest.class"/>
                 <include name="org/netbeans/core/modules/NbInstallerTest?.class"/>
-                <exclude name="org/netbeans/core/modules/NbInstallerTest5.class"/><!-- XXX #23609 -->
                 <include name="org/netbeans/core/projects/SystemFileSystemTest.class"/>
                 <include name="org/netbeans/core/PlainTest.class"/>
                 <include name="org/netbeans/core/AutomountSupportTest.class"/>
