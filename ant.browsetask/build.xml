@@ -26,9 +26,7 @@ Microsystems, Inc. All Rights Reserved.
         <javac srcdir="src" destdir="src">
             <classpath>
                 <pathelement location="../../openide/netbeans/lib/openide.jar"/>
-                <fileset dir="../../ant/external">
-                    <include name="ant-1*.jar"/>
-                </fileset>
+                <pathelement location="../external/lib/ant.jar"/>
             </classpath>
         </javac>
     </target>

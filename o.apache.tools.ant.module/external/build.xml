@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="ant/external" default="unscramble" basedir=".">
@@ -16,25 +16,26 @@ Microsystems, Inc. All Rights Reserved.
     <target name="unscramble">
         <taskdef name="unscramble" classname="org.netbeans.nbbuild.Unscramble" classpath="${extnl}/scrambler.jar"/>
         <unscramble logfile="${extnl}/unscrambling.log">
-            <!-- LFI #105463: -->
-            <binary clear="ant-1.5.3.jar" scrambled="ant-1.5.3.jar.scrambled" license="${extnl}/apache-license.txt"/>
-            <!-- LFI #105463: -->
-            <binary clear="ant-optional-1.5.3.jar" scrambled="ant-optional-1.5.3.jar.scrambled" license="${extnl}/apache-license.txt"/>
-            <!-- LFI #105463: -->
-            <binary clear="ant-docs-1.5.1.zip" scrambled="ant-docs-1.5.1.zip.scrambled" license="${extnl}/apache-license.txt"/>
+            <!-- LFI #105463 for all: -->
+            <binary clear="ant-api-1.6.0.zip" scrambled="ant-api-1.6.0.zip.scrambled" license="${extnl}/apache-license.txt"/>
+            <binary clear="ant-docs-1.6.0.zip" scrambled="ant-docs-1.6.0.zip.scrambled" license="${extnl}/apache-license.txt"/>
+            <binary clear="ant-libs-1.6.0.zip" scrambled="ant-libs-1.6.0.zip.scrambled" license="${extnl}/apache-license.txt"/>
         </unscramble>
+        <mkdir dir="lib"/>
+        <unzip src="ant-libs-1.6.0.zip" dest="lib"/>
     </target>
     <target name="scramble">
         <taskdef name="scramble" classname="org.netbeans.nbbuild.Scramble" classpath="${extnl}/scrambler.jar"/>
         <scramble>
-            <binary clear="ant-1.5.3.jar.master" scrambled="ant-1.5.3.jar.scrambled" license="${extnl}/apache-license.txt"/>
-            <binary clear="ant-optional-1.5.3.jar.master" scrambled="ant-optional-1.5.3.jar.scrambled" license="${extnl}/apache-license.txt"/>
-            <binary clear="ant-docs-1.5.1.zip.master" scrambled="ant-docs-1.5.1.zip.scrambled" license="${extnl}/apache-license.txt"/>
+            <binary clear="ant-api-1.6.0.zip.master" scrambled="ant-api-1.6.0.zip.scrambled" license="${extnl}/apache-license.txt"/>
+            <binary clear="ant-docs-1.6.0.zip.master" scrambled="ant-docs-1.6.0.zip.scrambled" license="${extnl}/apache-license.txt"/>
+            <binary clear="ant-libs-1.6.0.zip.master" scrambled="ant-libs-1.6.0.zip.scrambled" license="${extnl}/apache-license.txt"/>
         </scramble>
     </target>
     <target name="clean">
-        <delete file="ant-1.5.3.jar"/>
-        <delete file="ant-optional-1.5.3.jar"/>
-        <delete file="ant-docs-1.5.1.zip"/>
+        <delete file="ant-api-1.6.0.zip"/>
+        <delete file="ant-docs-1.6.0.zip"/>
+        <delete file="ant-libs-1.6.0.zip"/>
+        <delete dir="lib"/>
     </target>
 </project>

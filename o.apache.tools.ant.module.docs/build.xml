@@ -49,7 +49,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="javahelp" depends="init">
         <mkdir dir="javahelp/org/apache/tools/ant/module/docs/ant-docs"/>
-        <unzip src="../external/ant-docs-1.5.1.zip" dest="javahelp/org/apache/tools/ant/module/docs/ant-docs"/>
+        <unzip src="../external/ant-docs-1.6.0.zip" dest="javahelp/org/apache/tools/ant/module/docs/ant-docs"/>
         <mkdir dir="javahelp/org/apache/tools/ant/module/docs/JavaHelpSearch"/>
         <jhindexer basedir="javahelp/org/apache/tools/ant/module/docs"
                    db="javahelp/org/apache/tools/ant/module/docs/JavaHelpSearch">
