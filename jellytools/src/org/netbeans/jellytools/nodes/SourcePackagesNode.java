@@ -7,25 +7,26 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.jellytools.nodes;
 
-import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.*;
-import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jellytools.actions.ExploreFromHereAction;
+import org.netbeans.jellytools.actions.FindAction;
 
 /** Node representing Source packages node under project node. 
  * @author Jiri.Skrivanek@sun.com
  */
 public class SourcePackagesNode extends Node {
-    
+
     private static final String SOURCE_PACKAGES_LABEL = Bundle.getString(
-                                "org.netbeans.modules.java.j2seproject.ui.Bundle", 
-                                "LBL_Node_Sources");
+                                "org.netbeans.modules.java.j2seproject.Bundle",
+                                "NAME_src.dir");
     static final ExploreFromHereAction exploreFromHereAction = new ExploreFromHereAction();
     static final FindAction findAction = new FindAction();
     
