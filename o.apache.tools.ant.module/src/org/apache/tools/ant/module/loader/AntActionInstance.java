@@ -100,7 +100,6 @@ public class AntActionInstance implements
         RequestProcessor.postRequest(new Runnable() {
             public void run() {
                 TargetExecutor exec = new TargetExecutor (proj, null);
-                exec.setSwitchWorkspace(true);
                 try {
                     exec.execute ();
                 } catch (IOException ioe) {

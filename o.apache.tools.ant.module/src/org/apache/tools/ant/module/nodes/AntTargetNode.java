@@ -67,7 +67,6 @@ public class AntTargetNode extends ElementNode implements ChangeListener {
                     public void start () {
                         try {
                             TargetExecutor te = new TargetExecutor(project, new String[] {targetElem.getAttribute("name")}); // NOI18N
-                            te.setSwitchWorkspace(true);
                             te.execute();
                         } catch (IOException ioe) {
                             AntModule.err.notify(ioe);

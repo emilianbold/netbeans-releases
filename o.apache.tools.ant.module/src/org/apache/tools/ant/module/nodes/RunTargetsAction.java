@@ -120,7 +120,6 @@ public class RunTargetsAction extends CookieAction implements Presenter.Popup {
                     String target = (String) targets.get (index);
                     try {
                         TargetExecutor te = new TargetExecutor(project, new String[] {target});
-                        te.setSwitchWorkspace(true);
                         te.execute();
                     } catch (IOException ioe) {
                         AntModule.err.notify (ioe);
