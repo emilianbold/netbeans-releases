@@ -12,6 +12,9 @@
  */
 package org.netbeans.jellytools.actions;
 
+import java.awt.Container;
+import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
 import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -158,17 +161,29 @@ public class ActionNoBlock extends Action {
     /** performs action through API  
      * @throws UnsupportedOperationException when action does not support API mode */    
     public void performAPI() {
-        if (systemActionClass==null)
+        if (systemActionClass==null) {
             throw new UnsupportedOperationException(getClass().toString()+" does not define SystemAction");
+        }
         new Thread(new Runnable() {
             public void run() {
-                SystemAction.get(systemActionClass).actionPerformed(null);    
+                try {
+                    // Actions have to be invoked in dispatch thread 
+                    // (see http://www.netbeans.org/issues/show_bug.cgi?id=35755)
+                    EventQueue.invokeAndWait(new Runnable() {
+                        public void run() {
+                            SystemAction.get(systemActionClass).actionPerformed(
+                                                        new ActionEvent(new Container(), 0, null));
+                        }
+                    });
+                } catch (Exception e) {
+                    throw new JemmyException("Exception while performing action in dispatch thread", e);
+                }
             }
         }, "thread performing action through API").start();
         try {
             Thread.sleep(AFTER_ACTION_WAIT_TIME);
         } catch (Exception e) {
-            throw new JemmyException("Sleeping interrupted", e);
+            throw new JemmyException("Interrupted", e);
         }
     }
 

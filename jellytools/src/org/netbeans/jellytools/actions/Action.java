@@ -14,6 +14,7 @@ package org.netbeans.jellytools.actions;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import javax.swing.tree.TreePath;
@@ -382,11 +383,17 @@ public class Action {
         if (systemActionClass==null) {
             throw new UnsupportedOperationException(getClass().toString()+" does not define SystemAction");
         }
-        SystemAction.get(systemActionClass).actionPerformed(new ActionEvent(new Container(), 0, null));
         try {
+            // actions has to be invoked in dispatch thread (see http://www.netbeans.org/issues/show_bug.cgi?id=35755)
+            EventQueue.invokeAndWait(new Runnable() {
+                public void run() {
+                    SystemAction.get(systemActionClass).actionPerformed(
+                                                new ActionEvent(new Container(), 0, null));
+                }
+            });
             Thread.sleep(AFTER_ACTION_WAIT_TIME);
         } catch (Exception e) {
-            throw new JemmyException("Sleeping interrupted", e);
+            throw new JemmyException("Interrupted", e);
         }
     }
     
