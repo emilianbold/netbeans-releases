@@ -286,4 +286,8 @@ public class Server implements Node.Cookie {
     public boolean needsFindServerUI() {
         return needsFindServerUI;
     }
+    
+    public String toString () {
+        return getShortName ();
+    }
 }

@@ -63,6 +63,8 @@ public abstract class J2eeModuleProvider {
     /**
      * Configuration support to allow development module code to access well-known 
      * configuration propeties, such as web context root, cmp mapping info...
+     * The setters and getters work with server specific data on the server returned by
+     * {@link getServerID} method.
      */
     public static interface ConfigSupport {
         public void setWebContextRoot(String contextRoot);
@@ -99,11 +101,14 @@ public abstract class J2eeModuleProvider {
     protected final void fireServerChange (String oldServerID, String newServerID) {
         Server oldServer = ServerRegistry.getInstance ().getServer (oldServerID);
 	Server newServer = ServerRegistry.getInstance ().getServer (newServerID);
-        if (oldServer == null || !oldServer.equals (newServer)) {
+        if (oldServer != null && !oldServer.equals (newServer)) {
             ConfigSupportImpl cs = (ConfigSupportImpl) getConfigSupport ();
             String oldCtxPath = cs.getWebContextRoot(oldServer);
             cs.resetStorage ();
-            cs.setWebContextRoot(oldCtxPath);
+            String ctx = cs.getWebContextRoot ();
+            if (ctx == null || ctx.equals ("")) {
+                cs.setWebContextRoot(oldCtxPath);
+            }
         }
     }
     

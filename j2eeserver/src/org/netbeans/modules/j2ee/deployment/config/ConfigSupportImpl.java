@@ -45,19 +45,15 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
     private String webContextRootXpath;
     private String webContextRootPropName;
     private ConfigurationStorage storage;
+    private Server fakeServer = null;
     
     /** Creates a new instance of ConfigSupportImpl */
     public ConfigSupportImpl (J2eeModuleProvider provider) {
         this.provider = provider;
     }
 
-    //the values are not chached, catch can be cached by client or add listening to server change
     private void refresh () {
-        refresh (getServer ());
-    }
-    
-    private void refresh (Server server) {
-        WebContextRoot webContextRoot = server.getWebContextRoot();
+        WebContextRoot webContextRoot = getServer ().getWebContextRoot();
         if (webContextRoot != null) {
             webContextRootXpath = webContextRoot.getXpath();
             webContextRootPropName = webContextRoot.getPropName();
@@ -65,6 +61,9 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
     }
     
     private Server getServer () {
+        if (fakeServer != null) {
+            return fakeServer;
+        }
         return ServerRegistry.getInstance ().getServer (getProvider ().getServerID ());
     }
     
@@ -88,26 +87,21 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         return null;
     }
     
-    /*private java.beans.PropertyDescriptor getBeanProp(DConfigBean configBean) {
-        java.beans.BeanInfo info = ConfigUtils.createBeanInfo(configBean);
-        java.beans.PropertyDescriptor[] descs = info.getPropertyDescriptors();
-        for (int i=0; i<descs.length; i++) {
-            if (webContextRootPropName.equals(descs[i].getName()))
-                return descs[i];
-        }
-        return null;
-    }*/
-    
     /**
      * Get context root
      * @return string value, null if not set or could not find
      */
     public String getWebContextRoot(Server server) {
-        refresh (server);
-        if (webContextRootXpath == null || webContextRootPropName == null)
+        fakeServer = server;
+        refresh ();
+        if (webContextRootXpath == null || webContextRootPropName == null) {
+            ErrorManager.getDefault ().log ("Cannot access configuration for server:"+server);
+            fakeServer = null;
             return null;
+        }
 
         DConfigBean configBean = getWebContextDConfigBean();
+        fakeServer = null;
         if (configBean == null) {
             ErrorManager.getDefault ().log ("ConfigBean for "+webContextRootXpath+" not found"); //NOI18N
             return null;
@@ -202,8 +196,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
     /** Creates the cache if it does not exist for the selected server */
     //PENDIND should not be public!!!
     public ConfigurationStorage getStorage() {
-        if (storage != null)
-            return storage;
+        storage = null; //do not use cache
         
         FileLock lock = null;
         OutputStream out = null;
@@ -224,13 +217,13 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
                 ServerInstance instance = ServerRegistry.getInstance ().getServerInstance (getProvider ().getServerInstanceID ());
                 ModuleDeploymentSupport mds = new ModuleDeploymentSupport(getProvider().getJ2eeModule());
                 DeploymentConfiguration config;
-                if(instance != null) {
+                if(instance != null && fakeServer == null) {
                     config = instance.getDeploymentManagerForConfiguration().createConfiguration(mds.getDeployableObject());
                 } else {
-                    config = getServer().getDeploymentManager().createConfiguration(mds.getDeployableObject());
+                    config = getServer ().getDeploymentManager().createConfiguration(mds.getDeployableObject());
                 }
                 config.getDConfigBeanRoot(mds.getDeployableObject().getDDBeanRoot());
-                DeploymentPlanSplitter dps = getServer().getDeploymentPlanSplitter();
+                DeploymentPlanSplitter dps = getServer ().getDeploymentPlanSplitter();
                 if (dps == null || !hasCustomSupport(dps,mds.getType())) {
                     //standard configuration
                     fo = createPrimaryConfigurationFO();
@@ -276,7 +269,6 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
             getServer (), getProvider().getModuleFolder());
             throw new RuntimeException(msg);
         }
-        
         return storage;
     }
     

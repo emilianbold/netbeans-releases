@@ -712,4 +712,8 @@ public class ServerInstance implements Node.Cookie {
     public boolean isDefault() {
         return url.equals(ServerRegistry.getInstance().getDefaultInstance().getUrl());
     }
+    
+    public String toString () {
+        return getDisplayName ();
+    }
 }
