@@ -34,17 +34,27 @@ import com.netbeans.ddl.*;
 *
 * @author Slavek Psenicka
 */
-public class SpecificationFactory implements DatabaseSpecificationFactory {
+public class SpecificationFactory implements DatabaseSpecificationFactory, DriverSpecificationFactory {
 			
 	/** Database description file
 	* You should use PListReader to parse it.
 	*/		
-	private final String sfile = "com/netbeans/ddl/resources/dbspec.plist";	
+	private final String dbFile = "com/netbeans/ddl/resources/dbspec.plist";	
+			
+	/** Driver description file
+	* You should use PListReader to parse it.
+	*/		
+	private final String drvFile = "com/netbeans/ddl/resources/driverspec.plist";	
 			
 	/** Array of SpecificationFiles, found (but not read) files 
 	* which describes database products.
 	*/
-	private HashMap specs; 
+	private HashMap dbSpecs;
+  
+	/** Array of SpecificationFiles, found (but not read) files 
+	* which describes driver products.
+	*/
+	private HashMap drvSpecs;
 	
 	/** Debug information
 	*/
@@ -58,23 +68,48 @@ public class SpecificationFactory implements DatabaseSpecificationFactory {
 	public SpecificationFactory ()
 	throws DDLException
 	{	
-		String file = System.getProperty("db.specifications.file");
+		String fileDB = System.getProperty("db.specifications.file");
+		String fileDrv = System.getProperty("driver.specifications.file");
+  	SpecificationParser parser;
+    
 		try {
-			SpecificationParser parser;
-			if (file == null) {
+			if (fileDB == null) {
 				ClassLoader cl = getClass().getClassLoader();
-				InputStream stream = cl.getResourceAsStream(sfile);
-				if (stream == null) throw new Exception("unable to open stream "+sfile);
+				InputStream stream = cl.getResourceAsStream(dbFile);
+				if (stream == null)
+          throw new Exception("unable to open stream " + dbFile);
 				parser = new SpecificationParser(stream);
-				specs = parser.getData();
-				stream.close();		
+				dbSpecs = parser.getData();
+				stream.close();
 			} else {
-				parser = new SpecificationParser(file);
-				specs = parser.getData();
+				parser = new SpecificationParser(fileDB);
+				dbSpecs = parser.getData();
 			}
 		} catch (Exception e) {
-			if (file != null) throw new DDLException("unable to read specifications file "+file+", "+e.getMessage());
-			else throw new DDLException("unable to read default specifications file, "+e.getMessage());
+			if (fileDB != null)
+        throw new DDLException("unable to read specifications file " + fileDB + ", " + e.getMessage());
+			else
+        throw new DDLException("unable to read default specifications file, " + e.getMessage());
+		}
+
+		try {
+			if (fileDrv == null) {
+				ClassLoader cl = getClass().getClassLoader();
+				InputStream stream = cl.getResourceAsStream(drvFile);
+				if (stream == null)
+          throw new Exception("unable to open stream " + drvFile);
+				parser = new SpecificationParser(stream);
+				drvSpecs = parser.getData();
+				stream.close();
+			} else {
+				parser = new SpecificationParser(fileDrv);
+				drvSpecs = parser.getData();
+			}
+		} catch (Exception e) {
+			if (fileDrv != null)
+        throw new DDLException("unable to read specifications file " + fileDrv + ", " + e.getMessage());
+			else
+        throw new DDLException("unable to read default specifications file, " + e.getMessage());
 		}
 	}
 	
@@ -84,7 +119,7 @@ public class SpecificationFactory implements DatabaseSpecificationFactory {
 	*/
 	public Set supportedDatabases()
 	{
-		return specs.keySet();
+		return dbSpecs.keySet();
 	}
 	
 	/** Returns true if database (specified by databaseProductName) is 
@@ -92,7 +127,7 @@ public class SpecificationFactory implements DatabaseSpecificationFactory {
 	*/	
 	public boolean isDatabaseSupported(String databaseProductName)
 	{
-		return (specs.containsKey(databaseProductName));
+		return (dbSpecs.containsKey(databaseProductName));
 	}
 	
 	/** Creates instance of DatabaseSpecification class; a database-specification
@@ -149,11 +184,11 @@ public class SpecificationFactory implements DatabaseSpecificationFactory {
 	public DatabaseSpecification createSpecification(DBConnection connection, String databaseProductName, Connection c) 
 	throws DatabaseProductNotFoundException
 	{
-		HashMap product = (HashMap)specs.get(databaseProductName);
+		HashMap product = (HashMap) dbSpecs.get(databaseProductName);
 		
 		if (product == null)
 		  throw new DatabaseProductNotFoundException(databaseProductName);
-		HashMap specmap = deepUnion(product, (HashMap)specs.get("GenericDatabaseSystem"), true);
+		HashMap specmap = deepUnion(product, (HashMap) dbSpecs.get("GenericDatabaseSystem"), true);
 		specmap.put("connection", connection);
 		DatabaseSpecification spec = new Specification(specmap, c);
 		spec.setSpecificationFactory(this);
@@ -170,9 +205,9 @@ public class SpecificationFactory implements DatabaseSpecificationFactory {
 	public DatabaseSpecification createSpecification(String databaseProductName, Connection c) 
 	throws DatabaseProductNotFoundException
 	{
-		HashMap product = (HashMap)specs.get(databaseProductName);
+		HashMap product = (HashMap) dbSpecs.get(databaseProductName);
 		if (product == null) throw new DatabaseProductNotFoundException(databaseProductName);
-		HashMap specmap = deepUnion(product, (HashMap)specs.get("GenericDatabaseSystem"), true);
+		HashMap specmap = deepUnion(product, (HashMap) dbSpecs.get("GenericDatabaseSystem"), true);
 		return new Specification(specmap, c);
 	}
 
@@ -185,9 +220,9 @@ public class SpecificationFactory implements DatabaseSpecificationFactory {
 	public DatabaseSpecification createSpecification(Connection c, String databaseProductName) 
 	throws DatabaseProductNotFoundException
 	{
-		HashMap product = (HashMap)specs.get(databaseProductName);
+		HashMap product = (HashMap) dbSpecs.get(databaseProductName);
 		if (product == null) throw new DatabaseProductNotFoundException(databaseProductName);
-		HashMap specmap = deepUnion(product, (HashMap)specs.get("GenericDatabaseSystem"), true);
+		HashMap specmap = deepUnion(product, (HashMap) dbSpecs.get("GenericDatabaseSystem"), true);
 		DatabaseSpecification spec = new Specification(specmap, c);
 		spec.setSpecificationFactory(this);
 		return spec;
@@ -206,7 +241,39 @@ public class SpecificationFactory implements DatabaseSpecificationFactory {
 	{
 		debug = mode;
 	}
+
+	/** Returns array of driver products supported by system.
+	* It returns string array only, if you need a Specification instance, use 
+	* appropriate createDriverSpecification method.
+	*/
+	public Set supportedDrivers()
+	{
+		return drvSpecs.keySet();
+	}
 	
+	/** Returns true if driver (specified by driverName) is 
+	* supported by system. Does not throw exception if it doesn't.
+	*/	
+	public boolean isDriverSupported(String driverName)
+	{
+		return (drvSpecs.containsKey(driverName));
+	}
+
+	/** Creates instance of DriverSpecification class; a driver-specification
+	* class. This object knows about used driver.
+  */
+	public DriverSpecification createDriverSpecification(String driverName) throws DriverProductNotFoundException {
+		HashMap product = (HashMap) drvSpecs.get(driverName);
+		if (product == null)
+      product = (HashMap) drvSpecs.get("DefaultDriver");
+//    throw new DriverProductNotFoundException(driverName);
+		HashMap specmap = deepUnion(product, (HashMap) drvSpecs.get("DefaultDriver"), true);
+		DriverSpecification spec = (DriverSpecification) new DrvSpecification(specmap);
+		spec.setDriverSpecificationFactory(this);
+    
+		return spec;
+  }
+  
 	/** Creates deep copy of Map.
 	* All items will be cloned. Used internally in this object.
 	*/
@@ -256,10 +323,12 @@ public class SpecificationFactory implements DatabaseSpecificationFactory {
 		
 		return base;	
 	}
+  
 }
 
 /*
 * <<Log>>
+*  11   Gandalf   1.10        12/15/99 Radko Najman    driverspec.plist
 *  10   Gandalf   1.9         11/1/99  Radko Najman    getDatabaseProductName().trim()
 *       
 *  9    Gandalf   1.8         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
