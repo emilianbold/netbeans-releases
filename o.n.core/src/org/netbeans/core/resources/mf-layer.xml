@@ -611,6 +611,9 @@ Microsystems, Inc. All Rights Reserved.
           <file name="runtime.wstcref" url="windowmanager/Editing/explorer/runtime.wstcref" />
           <file name="properties.wstcref" url="windowmanager/Editing/explorer/properties.wstcref" />
         </folder>
+        <file name="editor.wsmode" url="windowmanager/Editing/editor.wsmode" />
+        <folder name="editor">
+        </folder>
         <file name="properties.wsmode" url="windowmanager/Editing/properties.wsmode" />
         <folder name="properties">
           <file name="properties.wstcref" url="windowmanager/Editing/properties/properties.wstcref" />
@@ -631,6 +634,9 @@ Microsystems, Inc. All Rights Reserved.
           <attr name="filesystems.wstcref/runtime.wstcref" boolvalue="true" />
           <file name="filesystems.wstcref" url="windowmanager/Running/explorer/filesystems.wstcref" />
           <file name="runtime.wstcref" url="windowmanager/Running/explorer/runtime.wstcref" />
+        </folder>
+        <file name="editor.wsmode" url="windowmanager/Running/editor.wsmode" />
+        <folder name="editor">
         </folder>
         <file name="properties.wsmode" url="windowmanager/Running/properties.wsmode" />
         <folder name="properties">
