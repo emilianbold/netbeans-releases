@@ -28,10 +28,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
 import javax.swing.AbstractButton;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JMenuItem;
+import org.openide.DialogDisplayer;
 
 import org.openide.awt.Actions;
 import org.openide.awt.HtmlBrowser;
@@ -41,14 +41,14 @@ import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
 import org.openide.NotifyDescriptor;
 import org.openide.ErrorManager;
-import org.openide.TopManager;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.SharedClassObject;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListener;
 import org.openide.util.actions.Presenter;
@@ -163,7 +163,7 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
         if(url == null)
             return;
 
-        TopManager.getDefault().showUrl(url);
+        org.openide.awt.HtmlBrowser.URLDisplayer.getDefault ().showURL (url);
     }
 
     /** Opens the bookamrks in new browser window.
@@ -181,19 +181,13 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
         // hack for finding default browser set in global IDE settings
         HtmlBrowser.Factory fact = null;
         try {
-            FileObject fo = Repository.getDefault ()
-                .getDefaultFileSystem ().findResource ("Services/Browsers");   // NOI18N
-            DataFolder folder = DataFolder.findFolder (fo);
-            DataObject [] dobjs = folder.getChildren ();
-            for (int i = 0; i<dobjs.length; i++) {
-                Boolean flag = (Boolean)dobjs[i].getPrimaryFile ().getAttribute ("DEFAULT_BROWSER");    // NOI18N
-                if ((flag != null) && flag.booleanValue ()) {
-                    Object o = ((InstanceCookie)dobjs[i].getCookie (InstanceCookie.class)).instanceCreate ();
-                    if (o instanceof HtmlBrowser.Factory)
-                        fact = (HtmlBrowser.Factory)o;
-                    break;
-                }
-            }
+            ClassLoader clzL = (ClassLoader)Lookup.getDefault().lookup (ClassLoader.class);
+            Class clz = Class.forName ("org.netbeans.core.IDESettings", true, clzL);    // NOI18N
+            SharedClassObject settings = SharedClassObject.findObject(clz, true);
+            java.lang.reflect.Method m = clz.getMethod ("getWWWBrowser", new Class [] {});    // NOI18N
+            Object o = m.invoke (settings, new Object [] {});
+            if (o instanceof HtmlBrowser.Factory)
+                fact = (HtmlBrowser.Factory)o;
         } catch (Exception ex) {
             // not a big problem: HtmlBrowser will create some browser
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
@@ -219,14 +213,14 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
                 url = new URL ("http://" + urlString); // NOI18N
             } catch (MalformedURLException mue2) {
                 if (urlString.length () > 50) { // too long URL
-                    TopManager.getDefault ().notify (
+                    DialogDisplayer.getDefault ().notify (
                         new NotifyDescriptor.Message (
                             NbBundle.getBundle (URLDataObject.class).getString("MSG_MalformedURLError"),
                             NotifyDescriptor.ERROR_MESSAGE
                         )
                     );
                 } else {
-                    TopManager.getDefault ().notify (
+                    DialogDisplayer.getDefault ().notify (
                         new NotifyDescriptor.Message (
                             MessageFormat.format (
                                 NbBundle.getBundle (URLDataObject.class).getString("MSG_FMT_MalformedURLError"),
@@ -256,7 +250,7 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
         
         urlLine.setInputText(urlString);
         
-        TopManager.getDefault ().notify (urlLine);
+        DialogDisplayer.getDefault ().notify (urlLine);
         if(urlLine.getValue () == NotifyDescriptor.OK_OPTION)
             setURLString (urlLine.getInputText ());
     }
