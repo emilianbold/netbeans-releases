@@ -59,7 +59,7 @@ public final class GenerateDTDSupport implements XMLGenerateCookie  {
         rootQName = null;
         warning = null;
         current = null;
-        elementInfos = new HashMap(101);
+        elementInfos = new LinkedHashMap(101);
     }
 
     /**
