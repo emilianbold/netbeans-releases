@@ -462,10 +462,10 @@ private javax.swing.JCheckBox niSetCheckBox;
         if ( fieldCheckBox.isSelected() )
             result.withField = true;
 
-        if ( returnCheckBox.isSelected() )
+        if ( returnCheckBox.isSelected() && fieldCheckBox.isSelected())
             result.withReturn = true;
 
-        if ( setCheckBox.isSelected() )
+        if ( setCheckBox.isSelected() && fieldCheckBox.isSelected() )
             result.withSet = true;
 
         if ( supportCheckBox.isSelected() )
@@ -474,13 +474,13 @@ private javax.swing.JCheckBox niSetCheckBox;
         if ( niGetterCheckBox.isSelected() )
             result.niGetter = true;
 
-        if ( niReturnCheckBox.isSelected() )
+        if ( niReturnCheckBox.isSelected() && fieldCheckBox.isSelected() )
             result.niWithReturn = true;
 
         if ( niSetterCheckBox.isSelected() )
             result.niSetter = true;
 
-        if ( niSetCheckBox.isSelected() )
+        if ( niSetCheckBox.isSelected() && fieldCheckBox.isSelected() )
             result.niWithSet = true;
 
         return result;
@@ -509,8 +509,8 @@ private javax.swing.JCheckBox niSetCheckBox;
         niGetterCheckBox.setEnabled( !forInterface );
         niSetterCheckBox.setEnabled( !forInterface );
 
-        niReturnCheckBox.setEnabled( result.niGetter && !forInterface );
-        niSetCheckBox.setEnabled( result.niSetter && !forInterface );
+        niReturnCheckBox.setEnabled( fieldCheckBox.isSelected() && result.niGetter && !forInterface );
+        niSetCheckBox.setEnabled( fieldCheckBox.isSelected() && result.niSetter && !forInterface );
     }
 
     void setDialog( Dialog dialog ) {
