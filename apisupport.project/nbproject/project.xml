@@ -19,15 +19,6 @@ Microsystems, Inc. All Rights Reserved.
             <path>apisupport/project</path>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.openide</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>4.16</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.projectapi</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -63,6 +54,21 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.java.project</code-name-base>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>4.16</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.execution</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
                     <run-dependency/>
                 </dependency>
             </module-dependencies>

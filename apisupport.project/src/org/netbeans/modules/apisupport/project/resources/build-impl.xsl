@@ -154,13 +154,10 @@ NOTE: nbbuild/build.xml should contain:
     </target>
 
     <target name="compile-single" depends="init">
-        <fail unless="selected.files">Must select some files in the IDE or set selected.files</fail>
-        <property name="src.dir.absolute" location="${{src.dir}}"/>
-        <pathconvert property="javac.includes" pathsep=",">
-            <path path="${{selected.files}}"/>
-            <map from="${{src.dir.absolute}}${{file.separator}}" to=""/>
-        </pathconvert>
+        <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
         <mkdir dir="${{build.classes.dir}}"/>
+        <!-- XXX consider forcing debug=true and deprecation=true -->
+        <!-- XXX consider deleting the .class file first to force a rebuild -->
         <javac srcdir="${{src.dir}}" destdir="${{build.classes.dir}}"
                debug="${{build.compiler.debug}}" deprecation="${{build.compiler.deprecation}}"
                source="1.4" includes="${{javac.includes}}" includeantruntime="false">
@@ -240,6 +237,7 @@ NOTE: nbbuild/build.xml should contain:
     </target>
 
     <xsl:if test="/p:project/p:configuration/nbm:data/nbm:javadoc">
+    
         <target name="javadoc" depends="init">
             <ant dir="${{nbroot}}/nbbuild/javadoctools" antfile="template.xml" target="javadoc">
                 <property name="javadoc.base" location="."/>
@@ -257,9 +255,11 @@ NOTE: nbbuild/build.xml should contain:
         <target name="javadoc-nb" depends="init,javadoc" if="netbeans.home">
             <nbbrowse file="javadoc/${{javadoc.name}}/index.html"/>
         </target>
+        
     </xsl:if>
 
     <xsl:if test="/p:project/p:configuration/nbm:data/nbm:unit-tests">
+    
         <target name="test-build" depends="init,jar">
             <mkdir dir="${{build.test.classes.dir}}"/>
             <javac srcdir="${{test.src.dir}}" destdir="${{build.test.classes.dir}}"
@@ -274,50 +274,66 @@ NOTE: nbbuild/build.xml should contain:
             </copy>
         </target>
 
+        <target name="compile-test-single" depends="init,jar">
+            <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
+            <mkdir dir="${{build.test.classes.dir}}"/>
+            <!-- XXX consider forcing deprecation=true -->
+            <!-- XXX consider deleting the .class file first to force a rebuild -->
+            <javac srcdir="${{test.src.dir}}" destdir="${{build.test.classes.dir}}"
+                   debug="true" deprecation="${{build.compile.deprecation}}"
+                   source="1.4" includeantruntime="false" includes="${{javac.includes}}">
+                <classpath refid="test.cp"/>
+            </javac>
+        </target>
+
         <target name="test" depends="init,test-build">
             <mkdir dir="${{build.test.results.dir}}"/>
             <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed">
-                <xsl:call-template name="test-junit-body"/>
+                <batchtest todir="${{build.test.results.dir}}">
+                    <fileset dir="${{test.src.dir}}">
+                        <!-- XXX could include only out-of-date tests... -->
+                        <include name="**/*Test.java"/>
+                    </fileset>
+                </batchtest>
+                <classpath refid="test.run.cp"/>
+                <formatter type="brief" usefile="false"/>
             </junit>
             <fail if="tests.failed">Some tests failed; see details above.</fail>
         </target>
 
         <target name="test-single" depends="init,test-build">
-            <fail unless="selected.files">Must select some files in the IDE or set selected.files</fail>
-            <property name="test.src.dir.absolute" location="${{test.src.dir}}"/>
-            <pathconvert property="test.includes" pathsep=",">
-                <path path="${{selected.files}}"/>
-                <map from="${{test.src.dir.absolute}}${{file.separator}}" to=""/>
-            </pathconvert>
+            <fail unless="test.includes">Must set test.includes</fail>
             <mkdir dir="${{build.test.results.dir}}"/>
             <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed">
-                <xsl:call-template name="test-single-junit-body"/>
+                <batchtest todir="${{build.test.results.dir}}">
+                    <fileset dir="${{test.src.dir}}" includes="${{test.includes}}"/>
+                </batchtest>
+                <classpath refid="test.run.cp"/>
+                <formatter type="brief" usefile="false"/>
             </junit>
             <fail if="tests.failed">Some tests failed; see details above.</fail>
         </target>
 
-        <target name="init-test-class" unless="test.class">
-            <fail unless="selected.files">Must set selected.files</fail>
-            <property name="test.src.dir.absolute" location="${{test.src.dir}}"/>
-            <pathconvert property="test.class.tmp" dirsep=".">
-                <path path="${{selected.files}}"/>
-                <map from="${{test.src.dir.absolute}}${{file.separator}}" to=""/>
-            </pathconvert>
-            <basename file="${{test.class.tmp}}" property="test.class" suffix=".java"/>
-        </target>
-
-        <target name="do-debug-test-single" depends="init,init-test-class">
+        <target name="do-debug-test-single">
+            <fail unless="test.class">Must set test.class</fail>
             <java fork="true" classname="junit.textui.TestRunner">
-                <xsl:call-template name="debug-test-single-java-body"/>
+                <jvmarg value="-Xdebug"/>
+                <jvmarg value="-Xnoagent"/>
+                <jvmarg value="-Djava.compiler=none"/>
+                <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${{jpda.address}}"/>
+                <classpath refid="test.run.cp"/>
+                <arg line="${{test.class}}"/>
             </java>
         </target>
 
-        <target name="debug-test-single" depends="init,init-test-class,test-build,do-debug-test-single"/>
+        <target name="debug-test-single" depends="init,test-build,do-debug-test-single"/>
 
-        <target name="debug-test-single-nb" depends="init,init-test-class,test-build" if="netbeans.home">
+        <target name="debug-test-single-nb" depends="init,test-build" if="netbeans.home">
+            <fail unless="test.class">Must set test.class</fail>
             <nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="${{test.class}}"/>
             <antcall target="do-debug-test-single"/>
         </target>
+        
     </xsl:if>
 
     <target name="clean" depends="init">
@@ -333,34 +349,6 @@ NOTE: nbbuild/build.xml should contain:
 
     </xsl:template>
     
-    <xsl:template name="test-junit-body">
-        <batchtest todir="${{build.test.results.dir}}">
-            <fileset dir="${{test.src.dir}}">
-                <!-- XXX could include only out-of-date tests... -->
-                <include name="**/*Test.java"/>
-            </fileset>
-        </batchtest>
-        <classpath refid="test.run.cp"/>
-        <formatter type="brief" usefile="false"/>
-    </xsl:template>
-
-    <xsl:template name="test-single-junit-body">
-        <batchtest todir="${{build.test.results.dir}}">
-            <fileset dir="${{test.src.dir}}" includes="${{test.includes}}"/>
-        </batchtest>
-        <classpath refid="test.run.cp"/>
-        <formatter type="brief" usefile="false"/>
-    </xsl:template>
-
-    <xsl:template name="debug-test-single-java-body">
-        <jvmarg value="-Xdebug"/>
-        <jvmarg value="-Xnoagent"/>
-        <jvmarg value="-Djava.compiler=none"/>
-        <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${{jpda.address}}"/>
-        <classpath refid="test.run.cp"/>
-        <arg line="${{test.class}}"/>
-    </xsl:template>
-
     <xsl:template name="public.packages">
         <xsl:param name="glob"/>
         <xsl:param name="whenempty" select="''"/>

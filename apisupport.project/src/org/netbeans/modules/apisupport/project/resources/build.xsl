@@ -55,22 +55,24 @@ Microsystems, Inc. All Rights Reserved.
         <target name="javadoc" description="Create Javadoc.">
             <ant antfile="nbproject/build-impl.xml" target="javadoc"/>
         </target>
-        <target name="javadoc-nb" description="Create Javadoc and browse it inside the IDE.">
+        <target name="javadoc-nb">
             <ant antfile="nbproject/build-impl.xml" target="javadoc-nb"/>
         </target>
     </xsl:if>
     <xsl:if test="/p:project/p:configuration/nbm:data/nbm:unit-tests">
-        <target name="test" description="Run tests.">
+        <target name="test" description="Run unit tests.">
             <ant antfile="nbproject/build-impl.xml" target="test"/>
         </target>
         <target name="test-single">
             <ant antfile="nbproject/build-impl.xml" target="test-single"/>
         </target>
         <target name="debug-test-single">
-            <ant antfile="nbproject/build-impl.xml" target="debug-test-single"/>
+            <ant antfile="nbproject/build-impl.xml" target="debug-test-single-nb"/>
+        </target>
+        <target name="compile-test-single">
+            <ant antfile="nbproject/build-impl.xml" target="compile-test-single"/>
         </target>
     </xsl:if>
-    <!-- XXX compile-test-single etc. -->
     <target name="clean" description="Clean build products.">
         <ant antfile="nbproject/build-impl.xml" target="clean"/>
     </target>

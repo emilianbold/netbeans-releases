@@ -17,11 +17,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -29,14 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.jar.Manifest;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.Project;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
-import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
@@ -59,7 +48,7 @@ final class NbModuleProject implements Project {
     
     private static final URL BUILD_XSL = NbModuleProject.class.getResource("resources/build.xsl");
     private static final URL BUILD_IMPL_XSL = NbModuleProject.class.getResource("resources/build-impl.xsl");
-    
+
     private final AntProjectHelper helper;
     private final GeneratedFilesHelper genFilesHelper;
     private final Lookup lookup;
@@ -72,7 +61,7 @@ final class NbModuleProject implements Project {
             helper.createExtensibleMetadataProvider(),
             new SavedHook(),
             new OpenedHook(),
-            createActionProvider(),
+            new Actions(this, helper),
             new ClassPathProviderImpl(this),
             new SourceForBinaryImpl(this),
             // XXX need, in rough descending order of importance:
@@ -247,7 +236,7 @@ final class NbModuleProject implements Project {
         return helper.resolveFile(moduleJar);
     }
     
-    private boolean supportsJavadoc() {
+    boolean supportsJavadoc() {
         return supportsFeature("javadoc"); // NOI18N
     }
     
@@ -261,21 +250,6 @@ final class NbModuleProject implements Project {
         int length = nl.getLength();
         assert length < 2;
         return length == 1;
-    }
-    
-    private ActionProvider createActionProvider() {
-        Map/*<String,String[]>*/ commands = new HashMap();
-        commands.put(ActionProvider.COMMAND_BUILD, new String[] {"netbeans"}); // NOI18N
-        commands.put(ActionProvider.COMMAND_CLEAN, new String[] {"clean"}); // NOI18N
-        commands.put(ActionProvider.COMMAND_REBUILD, new String[] {"clean", "netbeans"}); // NOI18N
-        if (supportsJavadoc()) {
-            commands.put("javadoc", new String[] {"javadoc-nb"}); // NOI18N
-        }
-        if (supportsUnitTests()) {
-            commands.put("test", new String[] {"test"}); // NOI18N
-        }
-        // XXX other commands, e.g. reload, nbm, *single*, ...
-        return helper.createActionProvider(commands, /*XXX*/null);
     }
     
     private final class SavedHook extends ProjectXmlSavedHook {
