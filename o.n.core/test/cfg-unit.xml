@@ -37,7 +37,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
   
-    <testbag testattribs="stable" executor="ide" name="Unit tests running in the IDE">
+    <testbag testattribs="stable" executor="platform" name="Unit tests running in the IDE">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/netbeans/core/filesystems/*.class"/>
@@ -53,7 +53,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="stable OR cache" executor="ide" name="Testing lookup in real IDE">
+    <testbag testattribs="stable OR cache" executor="platform" name="Testing lookup in real IDE">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/netbeans/core/lookup/*Test.class"/>
@@ -105,7 +105,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="failing" executor="ide" name="testbag_5">
+    <testbag testattribs="failing" executor="platform" name="testbag_5">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/netbeans/core/filesystems/MIMEResolverImplTest.class"/>
@@ -128,7 +128,7 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="empty" executor="code" name="testbag_empty">
         <testset dir="unit/src"/>
     </testbag>
-    <testbag testattribs="emptyide" executor="ide" name="testbag_emptyide">
+    <testbag testattribs="emptyide" executor="platform" name="testbag_emptyide">
         <testset dir="unit/src"/>
     </testbag>
 
@@ -142,6 +142,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <executor name="code" antfile="build-unit.xml" target="runcodetest"/>
     <executor name="ide" antfile="build-unit.xml" target="runidetest"/>
+    <executor name="platform" antfile="build-unit.xml" target="runplatformtest"/>
 
     <compiler name="unit-compiler" antfile="build-unit.xml" target="unit-compiler" default="true"/>
 

@@ -55,6 +55,13 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Global Executors -->
     <!-- ================ -->
     
+    <target name="runplatformtest">
+        <executeTests  pluginName="ide">
+            <property name="xtest.ide.commandline.suffix" value="--clusters ${core.dir}" />
+            <classpath/>
+        </executeTests>
+    </target>
+    
     <target name="runidetest">
         <executeTests  pluginName="ide">
             <classpath/>
