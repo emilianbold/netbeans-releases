@@ -17,7 +17,7 @@ import java.awt.Component;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.io.StringBufferInputStream;
+import java.io.ByteArrayInputStream;
 import java.util.Iterator;
 import java.util.List;
 
@@ -131,7 +131,7 @@ public class TextDiffVisualizer extends DiffVisualizer {
                     break;
             }
         }
-        return new StringBufferInputStream(content.toString());
+        return new ByteArrayInputStream(content.toString().getBytes());
     }
     
     private static void appendText(StringBuffer buff, String prefix, String text) {
