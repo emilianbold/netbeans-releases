@@ -63,10 +63,6 @@ import org.openide.util.WeakListeners;
 public class ServletEditor extends CloneableEditorSupport 
     implements EditorCookie.Observable, CloseCookie, PrintCookie, PropertyChangeListener {
 
-    /** Gets the lineset. Returns our lineset, which is a hack because the APIs don't handle dataobjects well. */
-    public Line.Set getLineSet() {
-	return new ServletLine.Set(super.getLineSet(), this);
-    }
 
     /** Create a new Editor support for the given Java source.
      * @param entry the (primary) file entry representing the Java source file
