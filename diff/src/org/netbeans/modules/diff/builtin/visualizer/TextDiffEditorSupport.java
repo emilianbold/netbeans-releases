@@ -81,6 +81,8 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.api.diff.Difference;
 
+import org.netbeans.modules.diff.builtin.ShowingNotifier;
+
 /** Support for associating an editor and a Swing {@link Document} to a revision object.
  * This is a modification of org.openide.text.DataEditorSupport
  *
@@ -407,7 +409,7 @@ public class TextDiffEditorSupport extends CloneableEditorSupport implements Edi
         
     } // end of Env
     
-    public static class DiffCloneableEditor extends CloneableEditor {
+    public static class DiffCloneableEditor extends CloneableEditor implements ShowingNotifier {
         
         DiffCloneableEditor(CloneableEditorSupport support) {
             super(support);
@@ -419,8 +421,8 @@ public class TextDiffEditorSupport extends CloneableEditorSupport implements Edi
          * so that DiffPresenter will be able to call it when the component
          * is made visible.
          */
-        public void componentShowing() {
-            super.componentShowing();
+        public void componentShowingNotify() {
+            componentShowing();
         }
 
         public HelpCtx getHelpCtx() {
