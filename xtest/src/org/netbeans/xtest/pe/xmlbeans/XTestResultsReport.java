@@ -20,6 +20,8 @@
 
 package org.netbeans.xtest.pe.xmlbeans;
 
+import java.io.*;
+
 /**
  *
  * @author  mb115822
@@ -264,6 +266,16 @@ public class XTestResultsReport extends XMLBean {
      */
     public void setSystemInfo_id(long systemInfo_id) {
         this.systemInfo_id = systemInfo_id;
+    }
+    
+    
+    // load XTestResultsReport from file
+    public static XTestResultsReport loadReportFromFile(File reportFile) throws IOException, ClassNotFoundException {
+        XMLBean xmlBean = XMLBean.loadXMLBean(reportFile);
+        if (!(xmlBean instanceof XTestResultsReport)) {
+            throw new ClassNotFoundException("Loaded file "+reportFile+" does not contain XTestRestultsReport");
+        }
+        return (XTestResultsReport)xmlBean;
     }
     
 }

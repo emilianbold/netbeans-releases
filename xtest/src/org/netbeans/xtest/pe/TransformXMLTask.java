@@ -65,8 +65,41 @@ public class TransformXMLTask extends Task{
     
     // is this short report ?
     private static boolean truncated = false;
+
+    public static void setTruncated(boolean b) {
+        truncated = b;
+    }
+
+    public static boolean isTruncated() {
+        return truncated;
+    }
+    
+    // include exceptions
+    private static boolean includeExceptions = true;
+    
+    public static void setIncludeExceptions(boolean b) {
+        includeExceptions = b;
+    }
+    
+    public static boolean includeExceptions() {
+        return includeExceptions;
+    }
+    
+    // include ide log
+    private static boolean includeIDELog = true;
+
+    public static void setIncludeIDELog(boolean b) {
+        includeIDELog = b;
+    }
+    
+    public static boolean includeIDELog() {
+        return includeIDELog;
+    }
+   
     
     
+    // if this report will have mapped hostname (real hostname will not be shown)
+    private static String mappedHostname = null;
     
     //private File suiteXSL;
     
@@ -78,14 +111,17 @@ public class TransformXMLTask extends Task{
         this.outputDir = outputDir;
     }
 
-    public static void setTruncated(boolean b) {
-        truncated = b;
+    
+    public static void setMappedHostname(String hostname) {
+        mappedHostname = hostname;
     }
-
-    public static boolean isTruncated() {
-        return truncated;
+    
+    public static String getMappedHostname() {
+        return mappedHostname;
     }
+    
 
+    private static String xtestHome = System.getProperty("xtest.home");
     
     /*
     public void setSuiteXSL(File suiteXSL) {
@@ -95,8 +131,7 @@ public class TransformXMLTask extends Task{
     
     //private static final XSL_PACKAGE = "org.netbeans.xtest.pe.xsls";
     
-    private File getXSLFile(String name) throws IOException {
-      String xtestHome = getProject().getProperty("xtest.home");
+    private static File getXSLFile(String name) throws IOException {
       if (xtestHome == null) {
           debugInfo("getXSLFile(): xtest.home not set !!!!, have to be set to xtest home");
           new IOException("xtest.home not set !!!!, have to be set to xtest home");          
@@ -113,19 +148,10 @@ public class TransformXMLTask extends Task{
     public void execute () throws BuildException {
         try {
             log("Transforming report's XMLs to HTMLs");
-            int inputDirType = ResultsUtils.resolveResultsDir(inputDir);
-            switch (inputDirType) {
-                case ResultsUtils.TESTBAG_DIR:
-                    transformTestBag(inputDir,outputDir);
-                    transformUnitSuites(inputDir,outputDir);
-                    break;                    
-                case ResultsUtils.TESTREPORT_DIR:
-                    transformReport(inputDir,outputDir);
-                    transformSystemInfo(inputDir,outputDir);
-                    transformFailuresReport(inputDir,outputDir);
-                    transformFrameSet(inputDir,outputDir);
-                    transformMainNavigator(inputDir,outputDir);
+            if (xtestHome == null) {
+                xtestHome = getProject().getProperty("xtest.home");
             }
+            transformResults(inputDir,outputDir);
         } catch (Exception te) {
             debugInfo("execute(): Exception !!! : "+te);
             te.printStackTrace();
@@ -135,12 +161,28 @@ public class TransformXMLTask extends Task{
         
 
     
+        
     
     public static Transformer getTransformer(File xsl) throws TransformerConfigurationException {
-        StreamSource xslSource = new StreamSource(xsl);
-        Transformer transformer = XMLFactoryUtil.newTransformer(xslSource);
-        return transformer;
+        
+        // when pes.config system property is specified, we're running PES and it does not run inside Ant
+        boolean runningPES = (System.getProperty("pes.config") == null) ? false : true;
+        
+        if (runningPES) {
+            return org.netbeans.xtest.pe.server.XSLTransformers.getTransformer(xsl);
+        } else {
+            StreamSource xslSource = new StreamSource(xsl);
+            Transformer transformer = XMLFactoryUtil.newTransformer(xslSource);
+            return transformer;
+        }
+
+        
     }
+     
+    
+
+    
+    
     
     public static Document transform(Document xml, Transformer transformer) throws TransformerException {
         DOMSource domSource = new DOMSource(xml);
@@ -163,9 +205,21 @@ public class TransformXMLTask extends Task{
     
     public static void transform(Transformer transformer, Source xmlSource, Result outputTarget) throws TransformerException {
         debugInfo("transform(Transformer,Source,Result) set XTest required XML parser");
-        if (truncated) 
+        
+        // this is not the ideal way ...
+        if (isTruncated()) 
             transformer.setParameter("truncated","true");
+        if (getMappedHostname()!=null) {
+            transformer.setParameter("mappedHostname",getMappedHostname());
+        }
+        if (includeExceptions()) {
+            transformer.setParameter("includeExceptions", "true");
+        }
+        if (includeIDELog()) {
+            transformer.setParameter("includeIDELog","true");
+        }        
         transformer.transform(xmlSource, outputTarget);
+        transformer.clearParameters();
     }
     
     
@@ -182,7 +236,27 @@ public class TransformXMLTask extends Task{
         transform(inputXML,outputXML,xsl);
     }
     
-    public void transformUnitSuites(File inputDir, File outputDir) throws TransformerException, IOException {
+    
+    
+    /* tranform results */
+    public static void transformResults(File inputDir, File outputDir) throws TransformerException, IOException {
+        int inputDirType = ResultsUtils.resolveResultsDir(inputDir);
+        switch (inputDirType) {
+            case ResultsUtils.TESTBAG_DIR:
+                transformTestBag(inputDir,outputDir);
+                transformUnitSuites(inputDir,outputDir);
+                break;
+            case ResultsUtils.TESTREPORT_DIR:
+                transformReport(inputDir,outputDir);
+                transformSystemInfo(inputDir,outputDir);
+                transformFailuresReport(inputDir,outputDir);
+                transformFrameSet(inputDir,outputDir);
+                transformMainNavigator(inputDir,outputDir);
+        }
+    }
+    
+    
+    public static void transformUnitSuites(File inputDir, File outputDir) throws TransformerException, IOException {
         debugInfo("transformUnitSuites(): inputDir="+inputDir+" outputDir="+outputDir);
         File suiteInputDir = new File(inputDir,PEConstants.XMLRESULTS_DIR+File.separatorChar+PEConstants.TESTSUITES_SUBDIR);
         File suiteOutputDir = new File(outputDir,PEConstants.HTMLRESULTS_DIR+File.separatorChar+PEConstants.TESTSUITES_SUBDIR);
@@ -205,13 +279,14 @@ public class TransformXMLTask extends Task{
                 // the case of any problem - so catch the exception
                 // print out some info and get back to work
                 System.out.println("TransformXMLTask:transformUnitSuites: cannot transform this suite:"+inputSuite);
+                te.printStackTrace();
             }
         }
     }
     
     
     // this will create a page full of failures/errors over whole report   
-    public void transformFailuresReport(File inputRoot, File outputRoot) throws TransformerException, IOException {
+    public static void transformFailuresReport(File inputRoot, File outputRoot) throws TransformerException, IOException {
        debugInfo("transformFailuresReport(): inputRoot="+inputRoot+" outputRoot="+outputRoot); 
        
        File failuresInputDir = ResultsUtils.getXMLResultDir(inputRoot);
@@ -232,7 +307,7 @@ public class TransformXMLTask extends Task{
     }
     
     // this will create a page full of failures/errors over whole report   
-    public void transformReport(File inputRoot, File outputRoot) throws TransformerException, IOException {
+    public static void transformReport(File inputRoot, File outputRoot) throws TransformerException, IOException {
        debugInfo("transformReport(): inputRoot="+inputRoot+" outputRoot="+outputRoot); 
        
        File reportInputDir = ResultsUtils.getXMLResultDir(inputRoot);
@@ -252,7 +327,7 @@ public class TransformXMLTask extends Task{
        }       
     }
     
-    public void transformTestBag(File inputRoot, File outputRoot) throws TransformerException, IOException {
+    public static void transformTestBag(File inputRoot, File outputRoot) throws TransformerException, IOException {
        debugInfo("transformTestBag(): inputRoot="+inputRoot+" outputRoot="+outputRoot); 
        
        File testBagInputDir = ResultsUtils.getXMLResultDir(inputRoot);
@@ -272,7 +347,7 @@ public class TransformXMLTask extends Task{
        }       
     }
     
-    public void transformSystemInfo(File inputRoot, File outputRoot) throws TransformerException, IOException {
+    public static void transformSystemInfo(File inputRoot, File outputRoot) throws TransformerException, IOException {
        debugInfo("transformSystemInfo(): inputRoot="+inputRoot+" outputRoot="+outputRoot); 
        
        File siInputDir = ResultsUtils.getXMLResultDir(inputRoot);
@@ -292,7 +367,7 @@ public class TransformXMLTask extends Task{
        }        
     }
     
-    public void transformFrameSet(File inputRoot, File outputRoot) throws TransformerException, IOException {
+    public static void transformFrameSet(File inputRoot, File outputRoot) throws TransformerException, IOException {
        debugInfo("transformFrameSet(): inputRoot="+inputRoot+" outputRoot="+outputRoot); 
        
        File fsInputDir = ResultsUtils.getXMLResultDir(inputRoot);
@@ -317,7 +392,7 @@ public class TransformXMLTask extends Task{
        }         
     }
     
-    public void transformMainNavigator(File inputRoot, File outputRoot) throws TransformerException, IOException {
+    public static void transformMainNavigator(File inputRoot, File outputRoot) throws TransformerException, IOException {
        debugInfo("transformMainNavigator(): inputRoot="+inputRoot+" outputRoot="+outputRoot); 
        
        File mnInputDir = ResultsUtils.getXMLResultDir(inputRoot);

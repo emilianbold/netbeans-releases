@@ -46,6 +46,7 @@ public class PEConstants {
     public static final String XMLRESULTS_DIR = "xmlresults";
     public static final String HTMLRESULTS_DIR = "htmlresults";
     
+    public static final String SYSDIR_LOCATION = "sys";
     public static final String IDE_USERDIR_LOCATION = "sys/ide";
     
     public static final String ANT_LOGDIR_LOCATION = "logs";

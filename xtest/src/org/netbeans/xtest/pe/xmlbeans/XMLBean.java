@@ -19,12 +19,16 @@
 
 package org.netbeans.xtest.pe.xmlbeans;
 
+import org.apache.xml.serialize.*;
 import org.w3c.dom.*;
+import java.io.*;
 import javax.xml.parsers.*;
-import java.util.*;
-
-import java.lang.reflect.*;
 import org.netbeans.xtest.util.XMLFactoryUtil;
+import org.xml.sax.SAXException;
+
+import java.util.*;
+import java.lang.reflect.*;
+
 
 /**
  * name of the class = name of the XML element
@@ -36,9 +40,11 @@ import org.netbeans.xtest.util.XMLFactoryUtil;
 public abstract class XMLBean {
 
     
-    public final static String XMLBEAN_PACKAGE = "org.netbeans.xtest.pe.xmlbeans";
+    public final static String[] XMLBEAN_PACKAGES = {"org.netbeans.xtest.pe.xmlbeans",
+                                                     "org.netbeans.xtest.pe.server.xmlbeans"};
     public final static String XMLBEAN_ATT_PREFIX = "xmlat_";
     public final static String XMLBEAN_ELEM_PREFIX = "xmlel_";
+    public final static String XMLBEAN_FILE_SUFFIX = ".xml";
     
     // debugging flag - should be set to false :-)
     private static final boolean DEBUG = false;
@@ -46,6 +52,7 @@ public abstract class XMLBean {
         if (DEBUG) System.out.println("XMLBean."+message);
     }
     
+    public static final int ALL_ELEMENTS = -1;
     
     // pcdata of the XML element
     public String xml_pcdata = null;
@@ -56,32 +63,79 @@ public abstract class XMLBean {
     private long id;
     
     // utility methods
-    public static Object[] addToArray(Object[] array, Object obj) throws IllegalArgumentException {
-        debugInfo("addToArray(): array = "+array+" object to add = "+obj);
+    public static Object[] addToArray(Object[] array, Object[] objs) throws IllegalArgumentException {
+        debugInfo("addToArray(): array = "+array+" objects to add = "+objs);
+        Object resultingArray;
+        int length = 0;
         if (array == null) {
-            if (obj == null) {
+            if ((objs == null) | ((objs.length > 0) & (objs[0] == null))) {
                 debugInfo("addToArray(): both array and obj are null - there is nothing to do - return null");
                 return null;
             } else {            
-                debugInfo("addToArray(): array is null, but we can construct a new array with just one object");                
-                Object resultingArray = Array.newInstance(obj.getClass(),1);
-                Array.set(resultingArray,0,obj);
-                return (Object[])resultingArray;
-            }      
+                debugInfo("addToArray(): array is null, but we can construct a new array with just one object");
+                resultingArray = Array.newInstance(objs[0].getClass(),objs.length);                
+            } 
+        } else {
+            if (objs == null) {
+                debugInfo("addToArray(): objs is null - there is nothing to do - return the existing array");
+                return array;
+            } else {
+                debugInfo("addToArray(): adding to existing array");
+                Class arrayType = array.getClass().getComponentType();
+                length = array.length;
+                debugInfo("addToArray(): discovered array componennt type = "+arrayType+" and length = "+length);
+                resultingArray = Array.newInstance(arrayType,length+objs.length);
+                debugInfo("addToArray(): copying old array to new one ");
+                for (int i=0; i<length; i++) {
+                    Array.set(resultingArray,i,array[i]);
+                }
+            }
+        }        
+        
+        debugInfo("addToArray(): adding the new objects at the end (position = "+length+")");
+        for (int i=0; i < objs.length; i++) {
+            Array.set(resultingArray,length+i,objs[i]);
         }
-        debugInfo("addToArray(): adding to existing array");
-        Class arrayType = array.getClass().getComponentType();
-        int length = array.length;
-        debugInfo("addToArray(): discovered array componennt type = "+arrayType+" and length = "+length);
-        Object resultingArray = Array.newInstance(arrayType,length+1);
-        debugInfo("addToArray(): copying old array to new one ");
-        for (int i=0; i<length; i++) {
-            Array.set(resultingArray,i,array[i]);
-        }
-        debugInfo("addToArray(): adding the new object at the end (position = "+length+")");
-        Array.set(resultingArray,length,obj);
         return (Object[])resultingArray;
     }
+    
+    // wrapper for a single object
+     public static Object[] addToArray(Object[] array, Object obj) throws IllegalArgumentException {
+         if (obj != null) {
+            Object objArray = Array.newInstance(obj.getClass(),1);
+            Array.set(objArray,0,obj);
+            return addToArray(array,objArray);
+         } else {
+             return array;
+         }
+     }
+     
+     
+     public static Object[] shrinkArray(Object[] array) {
+         if (array == null) {
+             return null;
+         } else {
+             int length = 0;
+             for (int i=0; i<array.length; i++) {
+                 if (array[i]!=null) {
+                     length++;
+                 }
+             }
+             // construct the new array
+             Class arrayType = array.getClass().getComponentType();                
+             Object resultingArray = Array.newInstance(arrayType,length);
+             // now copy the old array to the shrinked one
+             for (int i=0, j=0; i < array.length; i++) {
+                 if (array[i]!=null) {
+                     Array.set(resultingArray,j,array[i]);
+                     j++;
+                 }
+             }
+             // finally - return the array
+             return (Object[])resultingArray;
+         }
+         
+     }
     
     
     public boolean isObjectValid(Object obj) {
@@ -210,14 +264,6 @@ public abstract class XMLBean {
         return aString;
     }
     
-     private static DocumentBuilder getDocumentBuilder() {
-        try {
-            return XMLFactoryUtil.newDocumentBuilder();
-        }
-        catch(Exception e) {
-            throw new ExceptionInInitializerError(e);
-        }
-    }
     
     
     // 
@@ -253,7 +299,8 @@ public abstract class XMLBean {
             return;
         }
         
-        if (fieldTypeName.equals("boolean")) {
+
+        if (fieldTypeName.equals("boolean")) {            
             field.setBoolean(obj,Boolean.valueOf(value).booleanValue());
             return;
         }   
@@ -359,7 +406,7 @@ public abstract class XMLBean {
     
     
     public static XMLBean getXMLBean(Document doc) throws ClassNotFoundException {
-        return getXMLBean(doc,-1);
+        return getXMLBean(doc,ALL_ELEMENTS);
     }
     
     public static XMLBean getXMLBean(Document doc,int depth) throws ClassNotFoundException {
@@ -368,7 +415,7 @@ public abstract class XMLBean {
     }
     
     public static XMLBean getXMLBean(Element element) throws ClassNotFoundException {
-        return getXMLBean(element,-1);
+        return getXMLBean(element,ALL_ELEMENTS);
     }
     
     public static XMLBean getXMLBean(Element element, int depth) throws ClassNotFoundException {
@@ -379,8 +426,20 @@ public abstract class XMLBean {
         Class xmlBeanClass = null;
         XMLBean xmlBean = null;
         // try to load class
-        xmlBeanClass = Class.forName(XMLBEAN_PACKAGE+"."+elName);
-        if (DEBUG) System.out.println("Trying to instintiate "+XMLBEAN_PACKAGE+"."+elName);
+        for (int i=0; i<XMLBEAN_PACKAGES.length;i++) {
+            try {
+                xmlBeanClass = Class.forName(XMLBEAN_PACKAGES[i]+"."+elName);
+                break;
+            } catch (ClassNotFoundException cnfe) {
+                // nothing happened, try next package
+            }
+        }
+        if (xmlBeanClass == null) {
+            // class not found
+            throw new ClassNotFoundException("Cannot find class "+elName+" in all XMLBean specified packages");
+        }
+        
+        if (DEBUG) System.out.println("Trying to instintiate "+elName);
         Object aBean = null;
         try {
             aBean = xmlBeanClass.newInstance();
@@ -405,6 +464,10 @@ public abstract class XMLBean {
                     xmlBean.fillAttributes(atts);
                     if (DEBUG) System.out.println("XMLBean.getXMLBean(): got attributes");
                 } catch (NoSuchFieldException nsfe) {
+                    if (DEBUG) {
+                        System.out.println("Nested Exception:");
+                        nsfe.printStackTrace();
+                    }
                     throw new ClassNotFoundException("Cannot fill defined attributes");
                 }
             }
@@ -427,7 +490,7 @@ public abstract class XMLBean {
     }
     
     public Document toDocument() throws DOMException{
-        return toDocument(-1);
+        return toDocument(ALL_ELEMENTS);
     }
     
     public Document toDocument(int depth) throws DOMException {
@@ -439,14 +502,14 @@ public abstract class XMLBean {
     }
     
     public Element toElement(Document doc) throws DOMException {
-        return toElement(doc,-1);
+        return toElement(doc,ALL_ELEMENTS);
     }
     
     public Element toElement(Document doc, int depth) throws DOMException {
+        if (DEBUG) System.out.println("XMLBean:toElement() begin, this="+this+" depth="+depth);
         // if depth is zero, we don't want serialize anymore, so return null,
         if (depth==0) return null;
-        // otherwise continue with serialization
-        if (DEBUG) System.out.println("XMLBean:toElement() begin, this="+this);
+        // otherwise continue with serialization        
         // get the name of the class - it will be used as the name of the
         String fullClassName = this.getClass().getName();
         if (DEBUG) System.out.println("XMLBean:toElement() fullClassName="+fullClassName);
@@ -514,7 +577,9 @@ public abstract class XMLBean {
                             if (xmlBeanObject!=null) {
                                 if (xmlBeanObject instanceof XMLBean) {
                                     Element childElement = ((XMLBean)xmlBeanObject).toElement(doc, depth - 1);
-                                    element.appendChild(childElement);
+                                    if (childElement != null) {
+                                        element.appendChild(childElement);
+                                    }
                                 } else {
                                     if (DEBUG) System.out.println("XMLBean:toElement() object in the array is not instanceof XMLBean");
                                 }
@@ -544,6 +609,66 @@ public abstract class XMLBean {
     public void setId(long id) {
         this.id = id;
     }    
+    
+    
+    // other utility methods
+    
+    // XMLBean loader ...    
+    public static XMLBean loadXMLBean(File xmlBeanFile) throws IOException, ClassNotFoundException {
+        return loadXMLBean(xmlBeanFile,ALL_ELEMENTS);
+    }
+    
+    // loader which allows to specify depth of elements to be loaded
+    public static XMLBean loadXMLBean(File xmlBeanFile, int depth) throws IOException, ClassNotFoundException {
+        if (xmlBeanFile == null) throw new IllegalArgumentException("parameter cannot be null");
+        if (!xmlBeanFile.isFile()) {
+            throw new IOException("File "+xmlBeanFile+" is not a valid file, cannot load XMLBean");
+        }
+        // parse the file
+        try {
+            Document doc =  getDocumentBuilder().parse(xmlBeanFile);
+            XMLBean xmlBean = XMLBean.getXMLBean(doc, depth);
+            return xmlBean;
+        } catch (SAXException se) {
+            throw new IOException("Cannot parse XML, because of :"+se.getMessage());
+        }               
+    }
+    
+    // save XMLBean
+    public void saveXMLBean(File xmlBeanFile) throws IOException {
+        saveXMLBean(xmlBeanFile,ALL_ELEMENTS);
+    }
+    
+    // save XMLBean which allows to specify depth of XML elements to be saved
+    public void saveXMLBean(File xmlBeanFile, int depth) throws IOException {
+        Document doc = this.toDocument(depth);
+        serializeToFile(doc,xmlBeanFile);
+    }
+    
+    // DocumentBuilder
+    protected static DocumentBuilder getDocumentBuilder() {
+        try {
+            return XMLFactoryUtil.newDocumentBuilder();
+        }
+        catch(Exception e) {
+            throw new ExceptionInInitializerError(e);
+        }
+    }
+         
+    // serialize to File
+    protected static void serializeToStream(Document doc, OutputStream out) throws IOException {
+        XMLSerializer ser = new XMLSerializer(out, new OutputFormat("xml","UTF-8",true));
+        ser.serialize(doc);
+        //out.close();
+    }
+    
+    // serialize to File
+    protected static void serializeToFile(Document doc, File outFile) throws IOException {
+        OutputStream out = new FileOutputStream(outFile);
+        serializeToStream(doc,out);
+        out.close();
+    }
+    
     
     // helper class for storing already instantiated XMLBeans grouped by
     // element types

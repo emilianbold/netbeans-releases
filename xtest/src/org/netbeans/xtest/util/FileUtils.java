@@ -39,19 +39,70 @@ public class FileUtils {
     /** private constructor, since all methods are static  */
     private FileUtils() {
     }
+        
     
     // we depend on ant on for copying a file
-    private static org.apache.tools.ant.util.FileUtils antFileUtils = org.apache.tools.ant.util.FileUtils.newFileUtils();
+    private static org.apache.tools.ant.util.FileUtils antFileUtils;
     
+    
+    /** Normalizes name, so everythinh is in lower case
+     * and spaces are converted to underscored
+     *
+     */
+    public static String normalizeName(String name) {
+        String newName = name.toLowerCase().replace(' ','_');
+        return newName;
+    }
+    
+    
+    // list all subdirectories
+    public static File[] listSubdirectories(File rootDir) {
+        if (rootDir == null) {
+            throw new IllegalArgumentException("rootDir cannot be null");
+        }
+        return rootDir.listFiles(new FileFilter() {
+            public boolean accept(File file) {
+                return file.isDirectory();
+            }
+        });        
+    }
     
     /** Copies files
      * @param fromFile from File object
      * @param toFile to File object
+     * @paran move if move instead of copy
      * @throws IOException when copying is not succesfull
      */    
-    public static void copyFile(File fromFile, File toFile) throws IOException {
+    public static void copyFile(File fromFile, File toFile, boolean move) throws IOException {
+        if (antFileUtils==null) {
+            antFileUtils = org.apache.tools.ant.util.FileUtils.newFileUtils();
+        }
         antFileUtils.copyFile(fromFile,toFile);
+        if (move) {
+            if (!fromFile.delete()) {
+                throw new IOException("cannot delete "+fromFile);
+            }
+        }
     }
+    
+    public static void copyFileToDir(File fromFile, File toDir, boolean move) throws IOException {
+         File toFile = new File(toDir,fromFile.getName());
+         copyFile(fromFile,toFile,move);
+     }
+    
+    /**
+     *
+     *
+     */
+     public static void copyFile(File fromFile, File toFile) throws IOException {
+        copyFile(fromFile,toFile,false);
+    }
+     
+     public static void copyFileToDir(File fromFile, File toFile) throws IOException {
+        copyFileToDir(fromFile,toFile,false);
+    }
+     
+
     
     /** moves directory
      * @param fromDir from Directory
@@ -61,6 +112,15 @@ public class FileUtils {
     public static void moveDir(File fromDir, File toDir) throws IOException {
         copyDir(fromDir, toDir, true);
     }
+    
+    public static void moveFile(File from, File to) throws IOException {
+        copyFile(from, to, true);
+    }
+    
+    public static void moveFileToDir(File fromFile, File toFile) throws IOException {
+        copyFileToDir(fromFile,toFile,true);
+    }
+     
 
     public static void copyDir(File fromDir, File toDir, boolean move) throws IOException {
         if (!fromDir.isDirectory()) {
@@ -84,15 +144,10 @@ public class FileUtils {
             File sourceFile = new File(fromDir,source);
             File outputFile = new File(toDir,source);
             if (!sourceFile.isDirectory()) {
-                copyFile(sourceFile,outputFile);
+                copyFile(sourceFile,outputFile,move);
             } else {
                 copyDir(sourceFile,outputFile,move);
-            }
-            if (move) {
-                if (!sourceFile.delete()) {
-                    throw new IOException("cannot delete "+sourceFile);
-                }
-            }
+            }            
         }
     }
     
@@ -111,7 +166,8 @@ public class FileUtils {
     
     public static boolean unpackZip(File zipFile, File destFile, String fileToUnpack) {
         
-        if (DEBUG) System.out.println("Unpacking zip:"+zipFile);
+        if (DEBUG) System.out.println("Unpacking zip:"+zipFile+" to:"+destFile+" fileToUnpack:"+fileToUnpack);
+        
         
         if (!destFile.exists()) {
             destFile.mkdirs();
@@ -128,13 +184,27 @@ public class FileUtils {
             zis = new ZipInputStream(fis);
             ZipEntry entry = zis.getNextEntry();
             
+            if (entry == null) {
+                if (DEBUG) System.out.println("Not a valid zip file - does not have entry");
+                fis.close();
+                zis.close();
+                return false;
+            }
+                   
+                       
             while (entry != null) {
                 String entryName = entry.getName();
                 if (entryName.startsWith(fileToUnpack)) {
                     String outFilename = destFile.getAbsolutePath()+File.separator+entryName;                    
                     if (DEBUG) System.out.println("Extracting "+outFilename);
                     if (entry.isDirectory()) {
-                        boolean result = (new File(outFilename)).mkdirs();
+                        File dir  = new File(outFilename);
+                        boolean result = false;
+                        if (dir.isDirectory()) {
+                            result = true;
+                        } else {
+                            result = dir.mkdirs();
+                        }
                         if (DEBUG) System.out.println("Making directory");
                         if (result != true) {
                             // we have problem ---
@@ -190,9 +260,9 @@ public class FileUtils {
          * @param dirFile directory to delete (as File) 
          * @return false in the case of any problem
          */        
-        public static boolean deleteDirectory(File dir, boolean onlySubdirectories) throws IOException {
+        public static boolean deleteDirectory(File dir, boolean onlySubdirectories) {
             if (!dir.isDirectory()) {
-		throw new IOException(dir.getName()+" is not a directory.");
+		throw new IllegalArgumentException(dir.getName()+" is not a directory.");
 	    }
             File[] files = dir.listFiles();
             for (int i=0;i<files.length; i++) {
@@ -214,12 +284,18 @@ public class FileUtils {
          * @param dirFile directory to delete (as String) 
          * @return false in the case of any problem
          */        
-        public static boolean deleteFile(File file) throws IOException {           
+        public static boolean deleteFile(File file) {           
             return file.delete();
         }
         
-        public static boolean delete(String filename) throws IOException {
+        
+        public static boolean delete(String filename)  {
             File file = new File(filename);
+            return delete(file);
+        }
+        
+        
+        public static boolean delete(File file)  {            
             if (!file.exists()) {
                 // well, it doesn't exist, so the work is already done :-)
                 return true;
@@ -230,5 +306,29 @@ public class FileUtils {
                 return deleteFile(file);
             }
         }
+        
+        
+        public static void deleteDirContent(File dir) {
+        File subfiles[] = dir.listFiles();
+        boolean warning = false;
+        if (subfiles != null && subfiles.length > 0) {
+            for (int i=0; i<subfiles.length; i++) {
+                if (subfiles[i].isDirectory())
+                    deleteDirContent(subfiles[i]);
+                else {
+                    warning = true;
+                    subfiles[i].delete();
+                }
+            }
+            if (warning) {
+                File warn_file = new File(dir,"content_of_this_directory_was_deleted");
+                try { warn_file.createNewFile(); }
+                catch (IOException e) { e.printStackTrace(); }
+            }
+        }
+    }
+        
+              
+       
     
 }
