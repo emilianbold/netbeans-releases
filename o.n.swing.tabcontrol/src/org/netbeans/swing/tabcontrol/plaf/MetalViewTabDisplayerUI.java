@@ -119,14 +119,13 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
     protected void paintTabContent(Graphics g, int index, String text, int x,
                                    int y, int width, int height) {
         FontMetrics fm = getTxtFontMetrics();
-        String text2Paint = null;
         // setting font already here to compute string width correctly
         g.setFont(getTxtFont());
+        int txtWidth = width;
         if (isSelected(index)) {
             JButton pinButton = getPinButton(index);
             int space4Pin = pinButton != null ? pinButton.getWidth() + 1 : 0;
             int space4Icon = 0;
-            int txtWidth;
             if (displayer.isShowCloseButton()) {
                 // selected one is trickier, paint text, bump and close icon
                 // close icon has the biggest space priority, bump the smallest one
@@ -134,9 +133,7 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
                 Icon icon = closeIcon.obtainIcon(iconPath);
                 int iconWidth = icon.getIconWidth();
                 space4Icon = iconWidth + ICON_X_LEFT_PAD + ICON_X_RIGHT_PAD + space4Pin;
-                text2Paint = stripTextToFit(text,
-                                            width - 2 * TXT_X_PAD - space4Icon, fm);
-                txtWidth = BaseTabLayoutModel.textWidth(text2Paint, getTxtFont());
+                txtWidth = width - 2 * TXT_X_PAD - space4Icon;
                 getCloseIconRect(tempRect, index);
                 icon.paintIcon(getDisplayer(), g, tempRect.x, tempRect.y);
             } else {
@@ -145,11 +142,13 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
                 tempRect.y = pinButton == null ? 0 : ((displayer.getHeight() / 2) -
                     (pinButton.getPreferredSize().height / 2));
                 int pinWidth = pinButton == null ? 0 : pinButton.getPreferredSize().width;
-                text2Paint = stripTextToFit(text,
-                                            (width - 2 * TXT_X_PAD) - pinWidth, fm);                
-                txtWidth = BaseTabLayoutModel.textWidth(text2Paint, getTxtFont());
+                txtWidth = (width - 2 * TXT_X_PAD) - pinWidth;
                 space4Icon = pinWidth + 5;
             }
+            txtWidth = (int)HtmlRenderer.renderString(text, g, x + TXT_X_PAD, height - 
+                    fm.getDescent() - 4, txtWidth, height, getTxtFont(),
+                    UIManager.getColor("textText"),
+                    HtmlRenderer.STYLE_TRUNCATE, true);
             int bumpWidth = width
                     - (TXT_X_PAD + txtWidth + BUMP_X_PAD + space4Icon);
             if (bumpWidth > 0) {
@@ -166,12 +165,12 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
                 }
             }
         } else {
-            text2Paint = stripTextToFit(text, width - 2 * TXT_X_PAD, fm);
+            txtWidth = width - 2 * TXT_X_PAD;
+            HtmlRenderer.renderString(text, g, x + TXT_X_PAD, height - 
+                fm.getDescent() - 4, txtWidth, height, getTxtFont(),
+                UIManager.getColor("textText"),
+                HtmlRenderer.STYLE_TRUNCATE, true);
         }
-        HtmlRenderer.renderString(text2Paint, g, x + TXT_X_PAD, height - 
-            fm.getDescent() - 4, width, height, getTxtFont(),
-            UIManager.getColor("textText"),
-            HtmlRenderer.STYLE_CLIP, true);
     }
 
     protected void paintTabBorder(Graphics g, int index, int x, int y,

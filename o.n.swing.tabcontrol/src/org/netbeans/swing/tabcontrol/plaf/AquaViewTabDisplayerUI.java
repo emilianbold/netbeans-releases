@@ -98,7 +98,7 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
     protected void paintTabContent(Graphics g, int index, String text, int x,
                                    int y, int width, int height) {
         FontMetrics fm = getTxtFontMetrics();
-        String text2Paint = null;
+
         // setting font already here to compute string width correctly
         g.setFont(getTxtFont());
         int textW = width;
@@ -174,7 +174,7 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
 
             }
 
-            textW -= iconWidth + 7 + space4Pin;
+            textW = textW - (iconWidth + 7 + space4Pin);
         }
 
         if (text.length() == 0) {
@@ -184,7 +184,7 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         int textHeight = fm.getHeight();
         int textY;
         int textX = x + 5;
-        textW -= 5;
+        textW = textW -  5;
 
         if (textHeight > height) {
             textY = (-1 * ((textHeight - height) / 2)) + fm.getAscent()

@@ -251,50 +251,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
     protected abstract void paintTabBackground(Graphics g, int index, int x,
                                                int y, int width, int height);
 
-    /**
-     * Strips text to fit given width in actual font metrics. Cuts ands adds
-     * three or less dots if string doesn't fit.
-     *
-     * @return text that fits into given width
-     */
-    protected static final String stripTextToFit(String text, int width,
-                                                 FontMetrics fm) {
-        int dotWidth = fm.charWidth('.');
-        int curWidth = dotWidth;
-        // three or less dots if desired width is really small
-        if (width < curWidth) {
-            return "";
-        }
-        curWidth += dotWidth;
-        if (width < curWidth) {
-            return ".";
-        }
-        curWidth += dotWidth;
-        if (width < curWidth) {
-            return "..";
-        }
-        int threeDotsWidth = curWidth;
-        String replacement = null;
-        curWidth = 0;
-        for (int i = 0; i < text.length(); i++) {
-            curWidth += fm.charWidth(text.charAt(i));
-            if (width < (curWidth + threeDotsWidth) && replacement == null) {
-                // text doesn't fit, include portion of the text and finishing dots
-                if (i == 0) {
-                    replacement = "...";
-                } else {
-                    StringBuffer buf = new StringBuffer(text.substring(0, i));
-                    buf.append("...");
-                    replacement = buf.toString();
-                }
-            }
-            if (width < curWidth) {
-                return replacement;
-            }
-        }
-        // OK, text all fits, no need to modify it
-        return text;
-    }
+
 
     /**
      * Utility to return y-axis centered icon position in given tab

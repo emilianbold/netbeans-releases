@@ -133,10 +133,9 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
         height--;
         y -= 2; //align to center
         FontMetrics fm = getTxtFontMetrics();
-        String text2Paint = null;
         // setting font already here to compute string width correctly
         g.setFont(getTxtFont());
-
+        int txtWidth = width;
         if (isSelected(index)) {
             // paint text and close icon
             // close icon has the bigger space priority then text
@@ -150,9 +149,7 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
                 Icon icon = closeIcon.obtainIcon(iconPath);
                 int iconWidth = icon.getIconWidth();
                 int space4Icon = iconWidth + (2 * ICON_X_PAD) + space4Pin + 4;
-                text2Paint = stripTextToFit(text,
-                                            width - space4Icon, fm);
-                int txtWidth = BaseTabLayoutModel.textWidth(text2Paint, getTxtFont());
+                txtWidth = width - space4Icon;
                 getCloseIconRect(tempRect, index);
                 icon.paintIcon(getDisplayer(), g, tempRect.x, tempRect.y);
             } else {
@@ -160,8 +157,7 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
                 
                 tempRect.y = pinButton == null ? 0 : ((displayer.getHeight() / 2) -
                     (pinButton.getPreferredSize().height / 2));
-                text2Paint = stripTextToFit(text,
-                                            width - 2 * TXT_X_PAD, fm);
+                txtWidth = width - 2 * TXT_X_PAD;
                 
             }
             if (pinButton != null) {
@@ -174,7 +170,7 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
                 }
             }
         } else {
-            text2Paint = stripTextToFit(text, width - 2 * TXT_X_PAD, fm);
+            txtWidth = width - 2 * TXT_X_PAD;
         }
         // draw bump (dragger)
         drawBump(g, index, x + 4, y + 6, BUMP_WIDTH, height - 8);
@@ -182,11 +178,11 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
         // draw text in right color
         Color txtC = UIManager.getColor("TabbedPane.foreground"); //NOI18N
         
-        HtmlRenderer.renderString(text2Paint, g, x + TXT_X_PAD, y + fm.getAscent()
+        HtmlRenderer.renderString(text, g, x + TXT_X_PAD, y + fm.getAscent()
             + TXT_Y_PAD,
-            width, height, getTxtFont(),
+            txtWidth, height, getTxtFont(),
             txtC,
-            HtmlRenderer.STYLE_CLIP, true);
+            HtmlRenderer.STYLE_TRUNCATE, true);
     }
 
     protected void paintTabBorder(Graphics g, int index, int x, int y,

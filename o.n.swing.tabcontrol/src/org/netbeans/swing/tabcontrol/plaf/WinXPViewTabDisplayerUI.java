@@ -109,7 +109,6 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
     protected void paintTabContent(Graphics g, int index, String text, int x,
                                    int y, int width, int height) {
         FontMetrics fm = getTxtFontMetrics();
-        String text2Paint = null;
         // setting font already here to compute string width correctly
         g.setFont(getTxtFont());
         // highlighted one is higher then others
@@ -117,6 +116,7 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             y += HIGHLIGHTED_RAISE;
             height -= HIGHLIGHTED_RAISE;
         }
+        int txtWidth = width;
         if (isSelected(index)) {
             // paint text, dragger and close icon
             // close icon has the biggest space priority, text the smallest one
@@ -130,19 +130,17 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
                 Icon icon = closeIcon.obtainIcon(iconPath);
                 int iconWidth = icon.getIconWidth();
                 int space4Icon = iconWidth + 2 * ICON_X_PAD + space4pin;
-                text2Paint = stripTextToFit(text,
-                                            width - 2 * TXT_X_PAD - space4Icon, fm);
-                int txtWidth = BaseTabLayoutModel.textWidth(text2Paint, getTxtFont());
+                txtWidth = width - 2 * TXT_X_PAD - space4Icon;
                 getCloseIconRect(tempRect, index);
                 icon.paintIcon(getDisplayer(), g, tempRect.x, tempRect.y);
             } else {
-                text2Paint = stripTextToFit(text,
-                                            width - 2 * TXT_X_PAD - space4pin, fm);
+                txtWidth = width - 2 * TXT_X_PAD - space4pin;
                 tempRect.x = x + (width - 2);
                 tempRect.y = pinButton == null ? 0 : ((displayer.getHeight() / 2) -
                     (pinButton.getPreferredSize().height / 2));
                 
             }
+            
             if (pinButton != null) {
                 // don't activate and draw pin button if tab is too narrow
                 if (tempRect.x - space4pin < x + TXT_X_PAD - 1) {
@@ -153,18 +151,16 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
                 }
             }
         } else {
-            text2Paint = stripTextToFit(text, width - 2 * TXT_X_PAD, fm);
+            txtWidth = width - 2 * TXT_X_PAD;
         }
         // draw bump (dragger)
         ColorUtil.paintXpTabDragTexture(getDisplayer(), g, x + BUMP_X_PAD, y
                  + BUMP_Y_PAD_UPPER, height - (BUMP_Y_PAD_UPPER
                  + BUMP_Y_PAD_BOTTOM));
-        // draw text                            
-        HtmlRenderer.renderString(text2Paint, g, x + TXT_X_PAD, y + fm.getAscent()
-            + TXT_Y_PAD,
-            width, height, getTxtFont(),
-            txtC,
-            HtmlRenderer.STYLE_CLIP, true);
+        HtmlRenderer.renderString(text, g, x + TXT_X_PAD, y + fm.getAscent()
+                + TXT_Y_PAD, txtWidth, height, getTxtFont(),
+                txtC,
+                HtmlRenderer.STYLE_TRUNCATE, true);
     }
 
     protected void paintTabBorder(Graphics g, int index, int x, int y,
