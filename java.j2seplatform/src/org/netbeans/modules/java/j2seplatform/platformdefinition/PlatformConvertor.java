@@ -20,12 +20,18 @@ import java.util.*;
 import java.util.List;
 import java.net.URL;
 import java.net.MalformedURLException;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 
 import org.openide.ErrorManager;
 import org.openide.cookies.*;
 import org.openide.filesystems.*;
+import org.openide.filesystems.FileChangeAdapter;
 import org.openide.loaders.*;
 import org.openide.nodes.Node;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.*;
@@ -41,8 +47,7 @@ import org.netbeans.api.java.classpath.ClassPath;
  *
  * @author Svata Dedic
  */
-public class PlatformConvertor 
-implements Environment.Provider, InstanceCookie.Of,
+public class PlatformConvertor implements Environment.Provider, InstanceCookie.Of,
         PropertyChangeListener, Runnable, InstanceContent.Convertor {
     
     private PlatformConvertor() {}
@@ -71,6 +76,35 @@ implements Environment.Provider, InstanceCookie.Of,
     
     private PlatformConvertor(XMLDataObject  object) {
         this.holder = object;
+        this.holder.getPrimaryFile().addFileChangeListener( new FileChangeAdapter () {
+            public void fileDeleted (final FileEvent fe) {
+                if (!defaultPlatform) {
+                    try {
+                    ProjectManager.mutex().writeAccess( new Mutex.ExceptionAction () {
+                        public Object run () throws IOException {
+                            String systemName = fe.getFile().getName();
+                            String propPrefix =  "platforms." + systemName + ".";   //NOI18N
+                            boolean changed = false;
+                            EditableProperties props = PropertyUtils.getGlobalProperties();
+                            for (Iterator it = props.keySet().iterator(); it.hasNext(); ) {
+                                String key = (String) it.next ();
+                                if (key.startsWith(propPrefix)) {
+                                    it.remove();
+                                    changed =true;
+                                }
+                            }
+                            if (changed) {
+                                PropertyUtils.putGlobalProperties(props);
+                            }
+                            return null;
+                        }
+                    });
+                    } catch (MutexException e) {
+                        ErrorManager.getDefault().notify(e);
+                    }
+                }
+            }
+        });
         cookies = new InstanceContent();
         cookies.add(this);
         lookup = new AbstractLookup(cookies);
