@@ -383,7 +383,7 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
             if (properties == null)
                 properties = new Node.Property[] {
                     new FormProperty(
-                            "splitPosition", // NOI18N
+                            "SplitConstraints splitPosition", // NOI18N
                             String.class,
                             getBundle().getString("PROP_splitPos"), // NOI18N
                             getBundle().getString("HINT_splitPos")) // NOI18N

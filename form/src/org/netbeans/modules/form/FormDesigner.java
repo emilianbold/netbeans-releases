@@ -329,7 +329,7 @@ public class FormDesigner extends TopComponent
 
     /** Finds out what component follows after currently selected component
      * when TAB (forward true) or Shift+TAB (forward false) is pressed. 
-     * @returns the next or previous component for selection
+     * @return the next or previous component for selection
      */
     RADVisualComponent getNextVisualComponent(boolean forward) {
         RADVisualComponent currentComp = null;
@@ -346,7 +346,7 @@ public class FormDesigner extends TopComponent
         return getNextVisualComponent(currentComp, forward);
     }
 
-    /** @returns the next or prevoius component to component comp
+    /** @return the next or prevoius component to component comp
      */
     RADVisualComponent getNextVisualComponent(RADVisualComponent comp,
                                               boolean forward)
@@ -549,13 +549,18 @@ public class FormDesigner extends TopComponent
         ConnectionWizard cw = new ConnectionWizard(formModel, source,target);
 
         if (cw.show()) {
-            Event event = cw.getSelectedEvent();
-            String eventName = cw.getEventName();
+            final Event event = cw.getSelectedEvent();
+            final String eventName = cw.getEventName();
             String bodyText = cw.getGeneratedCode();
 
-            formModel.getFormEventHandlers().addEventHandler(event,
-                                                             eventName,
-                                                             bodyText);
+            formModel.getFormEvents().attachEvent(event, eventName, bodyText);
+
+            // hack: after all updates, switch to editor
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    formModel.getFormEvents().attachEvent(event, eventName, null);
+                }
+            });
         }
     }
 
@@ -576,8 +581,9 @@ public class FormDesigner extends TopComponent
             return;
         }
 
-        FormProperty property = metacomp.getPropertyByName("text"); // NOI18N
-        if (property == null) return; // shoul not happen
+        RADProperty property = metacomp.getBeanProperty("text"); // NOI18N
+        if (property == null)
+            return; // should not happen
 
         String editText = null;
         try {

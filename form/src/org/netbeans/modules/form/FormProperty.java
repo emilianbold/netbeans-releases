@@ -19,9 +19,10 @@ import java.lang.reflect.*;
 import org.openide.nodes.Node;
 
 /** 
- * This class provides basic implementation of properties used in form editor.
- * FormProperty can use multiple property editors (by FormPropertyEditor) and
- * special "design values" (FormDesignValue implementations).
+ * This class provides basic implementation of properties used in form module
+ * which are generated in the java code. FormProperty can use multiple property
+ * editors (via FormPropertyEditor) and special "design values" (holding some
+ * additional data - FormDesignValue implementations).
  *
  * FormProperty is an "interface" object that provides general access to one
  * property of some other object (called "target object"). To make it work,
@@ -41,11 +42,12 @@ import org.openide.nodes.Node;
  *
  * NOTE: Properties are created for nodes and presented in property sheet.
  * Node object that owns properties should listen to the CURRENT_EDITOR
- * property change on each property and call firePropertySetsChange(null, null)
+ * property change on each property and call firePropertySetsChange(...)
  * to notify the sheet about changing current property editor of a property.
  *
  * @author Tomas Pavek
  */
+
 public abstract class FormProperty extends Node.Property {
 
     // --------------------
@@ -57,13 +59,13 @@ public abstract class FormProperty extends Node.Property {
     public static final String PROP_PRE_CODE = "preCode"; // NOI18N
     public static final String PROP_POST_CODE = "postCode"; // NOI18N
 
-    // Type of the property in relation to target object ("access type").
-    // There are three levels of restriction here:
+    // "Access type" of the property (in relation to the target object).
+    // There are three levels of restriction possible:
     //   NORMAL_RW - no restriction on both property and target object
-    //   DETACHED_READ, DETACHED_WRITE - no reading or writing (or both) on
-    //       target object (it is "detached"; value is cached by the property)
+    //   DETACHED_READ, DETACHED_WRITE - no reading or writing on the target
+    //       object (it is "detached"; the value is cached by the property)
     //   NO_READ, NO_WRITE - it is not possible to perform read or write on
-    //       property (so neither on target object)
+    //       the property (so neither on the target object)
     public static final int NORMAL_RW = 0;
 
     public static final int DETACHED_READ = 1; // no reading from target (bit 0)
@@ -328,7 +330,7 @@ public abstract class FormProperty extends Node.Property {
     /** Returns a default value of this property.
      * If any subclass provides default value, it should override this
      * and supportsDefaultValue() methods.
-     * @returns the default value (null by default :)
+     * @return the default value (null by default :)
      */
     public Object getDefaultValue() {
         return null;
@@ -982,4 +984,16 @@ public abstract class FormProperty extends Node.Property {
             return null;
         }
     }
+
+    // ------------
+
+    public static interface Filter {
+        public boolean accept(FormProperty property);
+    }
+
+    public static final Filter CHANGED_PROPERTY_FILTER = new Filter() {
+        public boolean accept(FormProperty property) {
+            return property.isChanged();
+        }
+    };
 }

@@ -478,11 +478,27 @@ public class MetaComponentCreator {
         }
 
         // 3rd - copy changed properties
-        RADProperty[] sourceProps = sourceComp.getAllBeanProperties();
-        RADProperty[] newProps = newComp.getAllBeanProperties();
-        int copyMode = FormUtils.CHANGED_ONLY | FormUtils.DISABLE_CHANGE_FIRING;
+        java.util.List sourceList = new ArrayList();
+        java.util.List namesList = new ArrayList();
+
+        Iterator it = sourceComp.getBeanPropertiesIterator(
+                                   FormProperty.CHANGED_PROPERTY_FILTER,
+                                   false);
+        while (it.hasNext()) {
+            RADProperty prop = (RADProperty) it.next();
+            sourceList.add(prop);
+            namesList.add(prop.getName());
+        }
+
+        RADProperty[] sourceProps = new RADProperty[sourceList.size()];
+        sourceList.toArray(sourceProps);
+        String[] propNames = new String[namesList.size()];
+        namesList.toArray(propNames);
+        RADProperty[] newProps = newComp.getBeanProperties(propNames);
+        int copyMode = FormUtils.DISABLE_CHANGE_FIRING;
         if (formModel == sourceComp.getFormModel())
             copyMode |= FormUtils.PASS_DESIGN_VALUES;
+
         FormUtils.copyProperties(sourceProps, newProps, copyMode);
 
         // temporary hack for AWT menus - to update their Swing design parallels
@@ -492,7 +508,7 @@ public class MetaComponentCreator {
         // 4th - copy aux values
         Map auxValues = sourceComp.getAuxValues();
         if (auxValues != null)
-            for (Iterator it = auxValues.keySet().iterator(); it.hasNext(); ) {
+            for (it = auxValues.keySet().iterator(); it.hasNext(); ) {
                 String auxName = (String) it.next();
                 Object auxValue = auxValues.get(auxName);
                 try {
@@ -511,7 +527,7 @@ public class MetaComponentCreator {
             Map constraints = ((RADVisualComponent)sourceComp).getConstraintsMap();
             Map newConstraints = new HashMap();
 
-            for (Iterator it = constraints.keySet().iterator(); it.hasNext(); ) {
+            for (it = constraints.keySet().iterator(); it.hasNext(); ) {
                 Object layoutClassName = it.next();
                 LayoutConstraints clonedConstr =
                     ((LayoutConstraints) constraints.get(layoutClassName))
@@ -781,7 +797,7 @@ public class MetaComponentCreator {
                                    targetComp);
 
             // copy properties additionally to handle design values
-            Node.Property[] sourceProps = sourceComp.getAllBeanProperties();
+            Node.Property[] sourceProps = sourceComp.getKnownBeanProperties();
             Node.Property[] targetProps =
                 targetCont.getLayoutSupport().getAllProperties();
             int copyMode = FormUtils.CHANGED_ONLY
@@ -852,7 +868,7 @@ public class MetaComponentCreator {
             BorderDesignSupport designBorder =
                 new BorderDesignSupport(borderInstance);
 
-            Node.Property[] sourceProps = sourceComp.getAllBeanProperties();
+            Node.Property[] sourceProps = sourceComp.getKnownBeanProperties();
             Node.Property[] targetProps = designBorder.getProperties();
             int copyMode = FormUtils.CHANGED_ONLY | FormUtils.DISABLE_CHANGE_FIRING;
             if (formModel == sourceComp.getFormModel())
@@ -875,7 +891,7 @@ public class MetaComponentCreator {
     private FormProperty getBorderProperty(RADComponent targetComp) {
         FormProperty prop;
         if (JComponent.class.isAssignableFrom(targetComp.getBeanClass())
-                && (prop = targetComp.getPropertyByName("border")) != null) // NOI18N
+                && (prop = targetComp.getBeanProperty("border")) != null) // NOI18N
             return prop;
 
         TopManager.getDefault().notify(new NotifyDescriptor.Message(
@@ -1083,7 +1099,7 @@ public class MetaComponentCreator {
         }
 
         if (propName != null) {
-            FormProperty prop = radComp.getPropertyByName(propName);
+            FormProperty prop = radComp.getBeanProperty(propName);
             if (prop != null) {
                 try {
                     prop.setChangeFiring(false);
@@ -1135,7 +1151,7 @@ public class MetaComponentCreator {
         }
 
         if (propName != null) {
-            FormProperty prop = menuComp.getPropertyByName(propName);
+            RADProperty prop = menuComp.getBeanProperty(propName);
             if (prop != null) {
                 try {
                     prop.setChangeFiring(false);

@@ -54,6 +54,10 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                                        FormLoaderSettings.class,
                                        "getEventVariableName", // NOI18N
                                        "setEventVariableName"), // NOI18N
+                new PropertyDescriptor(FormLoaderSettings.PROP_LISTENER_GENERATION_STYLE,
+                                       FormLoaderSettings.class,
+                                       "getListenerGenerationStyle", // NOI18N
+                                       "setListenerGenerationStyle"), // NOI18N
                 new PropertyDescriptor(FormLoaderSettings.PROP_SELECTION_BORDER_SIZE,
                                        FormLoaderSettings.class,
                                        "getSelectionBorderSize", // NOI18N
@@ -143,72 +147,77 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
             desc[2].setShortDescription(bundle.getString("HINT_EVENT_VARIABLE_NAME")); // NOI18N
             desc[2].setExpert(true);
 
-            desc[3].setDisplayName(bundle.getString("PROP_SELECTION_BORDER_SIZE")); // NOI18N
-            desc[3].setShortDescription(bundle.getString("HINT_SELECTION_BORDER_SIZE")); // NOI18N
+            desc[3].setDisplayName(bundle.getString("PROP_LISTENER_GENERATION_STYLE")); // NOI18N
+            desc[3].setShortDescription(bundle.getString("HINT_LISTENER_GENERATION_STYLE")); // NOI18N
+            desc[3].setPropertyEditorClass(ListenerGenerationStyleEditor.class);
+            desc[3].setExpert(true);
 
-            desc[4].setDisplayName(bundle.getString("PROP_SELECTION_BORDER_COLOR")); // NOI18N
-            desc[4].setShortDescription(bundle.getString("HINT_SELECTION_BORDER_COLOR")); // NOI18N
+            desc[4].setDisplayName(bundle.getString("PROP_SELECTION_BORDER_SIZE")); // NOI18N
+            desc[4].setShortDescription(bundle.getString("HINT_SELECTION_BORDER_SIZE")); // NOI18N
 
-            desc[5].setDisplayName(bundle.getString("PROP_CONNECTION_BORDER_COLOR")); // NOI18N
-            desc[5].setShortDescription(bundle.getString("HINT_CONNECTION_BORDER_COLOR")); // NOI18N
+            desc[5].setDisplayName(bundle.getString("PROP_SELECTION_BORDER_COLOR")); // NOI18N
+            desc[5].setShortDescription(bundle.getString("HINT_SELECTION_BORDER_COLOR")); // NOI18N
 
-            desc[6].setDisplayName(bundle.getString("PROP_DRAG_BORDER_COLOR")); // NOI18N
-            desc[6].setShortDescription(bundle.getString("HINT_DRAG_BORDER_COLOR")); // NOI18N
+            desc[6].setDisplayName(bundle.getString("PROP_CONNECTION_BORDER_COLOR")); // NOI18N
+            desc[6].setShortDescription(bundle.getString("HINT_CONNECTION_BORDER_COLOR")); // NOI18N
 
-            desc[7].setDisplayName(bundle.getString("PROP_GRID_X")); // NOI18N
-            desc[7].setShortDescription(bundle.getString("HINT_GRID_X")); // NOI18N
-            desc[7].setExpert(true);
+            desc[7].setDisplayName(bundle.getString("PROP_DRAG_BORDER_COLOR")); // NOI18N
+            desc[7].setShortDescription(bundle.getString("HINT_DRAG_BORDER_COLOR")); // NOI18N
 
-            desc[8].setDisplayName(bundle.getString("PROP_GRID_Y")); // NOI18N
-            desc[8].setShortDescription(bundle.getString("HINT_GRID_Y")); // NOI18N
+            desc[8].setDisplayName(bundle.getString("PROP_GRID_X")); // NOI18N
+            desc[8].setShortDescription(bundle.getString("HINT_GRID_X")); // NOI18N
             desc[8].setExpert(true);
 
-            desc[9].setDisplayName(bundle.getString("PROP_APPLY_GRID_TO_POSITION")); // NOI18N
-            desc[9].setShortDescription(bundle.getString("HINT_APPLY_GRID_TO_POSITION")); // NOI18N
+            desc[9].setDisplayName(bundle.getString("PROP_GRID_Y")); // NOI18N
+            desc[9].setShortDescription(bundle.getString("HINT_GRID_Y")); // NOI18N
             desc[9].setExpert(true);
 
-            desc[10].setDisplayName(bundle.getString("PROP_APPLY_GRID_TO_SIZE")); // NOI18N
-            desc[10].setShortDescription(bundle.getString("HINT_APPLY_GRID_TO_SIZE")); // NOI18N
+            desc[10].setDisplayName(bundle.getString("PROP_APPLY_GRID_TO_POSITION")); // NOI18N
+            desc[10].setShortDescription(bundle.getString("HINT_APPLY_GRID_TO_POSITION")); // NOI18N
             desc[10].setExpert(true);
 
-            desc[11].setDisplayName(bundle.getString("PROP_VARIABLES_MODIFIER")); // NOI18N
-            desc[11].setShortDescription(bundle.getString("HINT_VARIABLES_MODIFIER")); // NOI18N
-            desc[11].setPropertyEditorClass(FieldModifierPropertyEditor.class);
+            desc[11].setDisplayName(bundle.getString("PROP_APPLY_GRID_TO_SIZE")); // NOI18N
+            desc[11].setShortDescription(bundle.getString("HINT_APPLY_GRID_TO_SIZE")); // NOI18N
             desc[11].setExpert(true);
 
-            desc[12].setDisplayName(bundle.getString("PROP_EDITOR_SEARCH_PATH")); // NOI18N
-            desc[12].setShortDescription(bundle.getString("HINT_EDITOR_SEARCH_PATH")); // NOI18N
+            desc[12].setDisplayName(bundle.getString("PROP_VARIABLES_MODIFIER")); // NOI18N
+            desc[12].setShortDescription(bundle.getString("HINT_VARIABLES_MODIFIER")); // NOI18N
+            desc[12].setPropertyEditorClass(FieldModifierPropertyEditor.class);
             desc[12].setExpert(true);
 
-            desc[13].setDisplayName(bundle.getString("PROP_REGISTERED_EDITORS")); // NOI18N
-            desc[13].setShortDescription(bundle.getString("HINT_REGISTERED_EDITORS")); // NOI18N
+            desc[13].setDisplayName(bundle.getString("PROP_EDITOR_SEARCH_PATH")); // NOI18N
+            desc[13].setShortDescription(bundle.getString("HINT_EDITOR_SEARCH_PATH")); // NOI18N
             desc[13].setExpert(true);
 
-            desc[14].setDisplayName(bundle.getString("PROP_WORKSPACE")); // NOI18N
-            desc[14].setShortDescription(bundle.getString("HINT_WORKSPACE")); // NOI18N
-            desc[14].setPropertyEditorClass(WorkspaceEditor.class);
+            desc[14].setDisplayName(bundle.getString("PROP_REGISTERED_EDITORS")); // NOI18N
+            desc[14].setShortDescription(bundle.getString("HINT_REGISTERED_EDITORS")); // NOI18N
             desc[14].setExpert(true);
 
-            desc[15].setDisplayName(bundle.getString("PROP_SELECTED_PALETTE")); // NOI18N
-            desc[15].setShortDescription(bundle.getString("HINT_SELECTED_PALETTE")); // NOI18N
-            desc[15].setPropertyEditorClass(PalettesEditor.class);
+            desc[15].setDisplayName(bundle.getString("PROP_WORKSPACE")); // NOI18N
+            desc[15].setShortDescription(bundle.getString("HINT_WORKSPACE")); // NOI18N
+            desc[15].setPropertyEditorClass(WorkspaceEditor.class);
+            desc[15].setExpert(true);
 
-            desc[16].setHidden(true);
+            desc[16].setDisplayName(bundle.getString("PROP_SELECTED_PALETTE")); // NOI18N
+            desc[16].setShortDescription(bundle.getString("HINT_SELECTED_PALETTE")); // NOI18N
+            desc[16].setPropertyEditorClass(PalettesEditor.class);
 
-            desc[17].setDisplayName(bundle.getString("PROP_FORMDESIGNER_BACKGROUND_COLOR")); // NOI18N
-            desc[17].setShortDescription(bundle.getString("HINT_FORMDESIGNER_BACKGROUND_COLOR")); // NOI18N
+            desc[17].setHidden(true);
 
-            desc[18].setDisplayName(bundle.getString("PROP_FORMDESIGNER_BORDER_COLOR")); // NOI18N
-            desc[18].setShortDescription(bundle.getString("HINT_FORMDESIGNER_BORDER_COLOR")); // NOI18N
+            desc[18].setDisplayName(bundle.getString("PROP_FORMDESIGNER_BACKGROUND_COLOR")); // NOI18N
+            desc[18].setShortDescription(bundle.getString("HINT_FORMDESIGNER_BACKGROUND_COLOR")); // NOI18N
 
-            desc[19].setDisplayName(bundle.getString("PROP_SHOW_COMPONENT_NAMES")); // NOI18N
-            desc[19].setShortDescription(bundle.getString("HINT_SHOW_COMPONENT_NAMES")); // NOI18N
+            desc[19].setDisplayName(bundle.getString("PROP_FORMDESIGNER_BORDER_COLOR")); // NOI18N
+            desc[19].setShortDescription(bundle.getString("HINT_FORMDESIGNER_BORDER_COLOR")); // NOI18N
 
-            desc[20].setDisplayName(bundle.getString("PROP_VARIABLES_LOCAL")); // NOI18N
-            desc[20].setShortDescription(bundle.getString("HINT_VARIABLES_LOCAL")); // NOI18N
-            desc[20].setExpert(true);
+            desc[20].setDisplayName(bundle.getString("PROP_SHOW_COMPONENT_NAMES")); // NOI18N
+            desc[20].setShortDescription(bundle.getString("HINT_SHOW_COMPONENT_NAMES")); // NOI18N
 
-            desc[21].setHidden(true);
+            desc[21].setDisplayName(bundle.getString("PROP_VARIABLES_LOCAL")); // NOI18N
+            desc[21].setShortDescription(bundle.getString("HINT_VARIABLES_LOCAL")); // NOI18N
+            desc[21].setExpert(true);
+
+            desc[22].setHidden(true);
 
             return desc;
         }
@@ -431,6 +440,25 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                     return i;
             }
             return -1;
+        }
+    }
+
+
+    public final static class ListenerGenerationStyleEditor
+                      extends org.netbeans.modules.form.editors.EnumEditor
+    {
+        public ListenerGenerationStyleEditor() {
+            super(new Object[] {
+                FormUtils.getBundleString("CTL_LISTENER_ANONYMOUS_CLASSES"), // NOI18N
+                new Integer(JavaCodeGenerator.ANONYMOUS_INNERCLASSES),
+                "", // NOI18N
+                FormUtils.getBundleString("CTL_LISTENER_CEDL_INNERCLASS"), // NOI18N
+                new Integer(JavaCodeGenerator.CEDL_INNERCLASS),
+                "", // NOI18N
+                FormUtils.getBundleString("CTL_LISTENER_CEDL_MAINCLASS"), // NOI18N
+                new Integer(JavaCodeGenerator.CEDL_MAINCLASS),
+                "" // NOI18N
+            });
         }
     }
 }

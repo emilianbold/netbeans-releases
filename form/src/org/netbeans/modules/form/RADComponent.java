@@ -42,7 +42,7 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
     public static final String PROP_NAME = "variableName"; // NOI18N
 
     static final NewType[] NO_NEW_TYPES = {};
-    static final FormProperty[] NO_PROPERTIES = {};
+    static final RADProperty[] NO_PROPERTIES = {};
 
     // -----------------------------------------------------------------------------
     // Private variables
@@ -54,12 +54,14 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
 
     private boolean readOnly;
 
-    protected Node.PropertySet[] beanPropertySets;
+    protected Node.PropertySet[] propertySets;
     private Node.Property[] syntheticProperties;
-    private Node.Property[] beanProperties;
-    private Node.Property[] beanProperties2;
-    private Node.Property[] beanEvents;
-    private RADProperty[] allProperties;
+    private RADProperty[] beanProperties1;
+    private RADProperty[] beanProperties2;
+    private EventProperty[] eventProperties;
+
+    private RADProperty[] knownBeanProperties;
+    private Event[] knownEvents; // must be grouped by EventSetDescriptor
 
     private PropertyChangeListener propertyListener;
 
@@ -70,8 +72,6 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
 
     private FormModel formModel;
     private boolean inModel;
-
-    private ComponentEventHandlers eventsList;
 
     private RADComponentNode componentNode;
 
@@ -117,12 +117,15 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
      * @param beanClass the bean class to be represented by this meta component
      */
     public Object initInstance(Class beanClass) throws Exception {
-//    throws InstantiationException, IllegalAccessException
-        // properties and events will be created on first request
-        clearProperties();
+        if (beanClass == null)
+            throw new NullPointerException();
 
-        if (this.beanClass == null || this.beanClass != beanClass)
+        if (this.beanClass != beanClass) {
             beanInfo = null;
+            if (this.beanClass != null)
+                clearProperties();
+        }
+
         this.beanClass = beanClass;
 
         Object bean = createBeanInstance();
@@ -137,25 +140,27 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
      * @param beanInstance the bean to be represented by this meta component
      */
     public void setInstance(Object beanInstance) {
-        // properties and events will be created on first request
+        if (this.beanClass != beanInstance.getClass())
+            beanInfo = null;
         clearProperties();
 
-        if (beanClass == null || beanClass != beanInstance.getClass())
-            beanInfo = null;
-        beanClass = beanInstance.getClass();
+        this.beanClass = beanInstance.getClass();
 
         createCodeExpression();
         setBeanInstance(beanInstance);
 
-        RADProperty[] props = getAllBeanProperties();
-        for (int i = 0; i < props.length; i++) {
-            if (!FormUtils.isIgnoredProperty(beanClass, props[i].getName())) {
+        getAllBeanProperties();
+        for (int i=0; i < knownBeanProperties.length; i++) {
+            if (!FormUtils.isIgnoredProperty(
+                    beanClass,
+                    knownBeanProperties[i].getName()))
+            {
                 try {
-                    props[i].reinstateProperty();
+                    knownBeanProperties[i].reinstateProperty();
                 }
-                catch (Exception e) {
-                    org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
-                    // simply ignore this property
+                catch (Exception ex) {
+                    ErrorManager.getDefault()
+                        .notify(ErrorManager.INFORMATIONAL, ex);
                 }
             }
         }
@@ -298,7 +303,7 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
             return null;
         }
 
-        FormUtils.copyPropertiesToBean(getAllBeanProperties(),
+        FormUtils.copyPropertiesToBean(getKnownBeanProperties(),
                                        clone,
                                        relativeProperties);
         return clone;
@@ -319,18 +324,13 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
      */
     public boolean hasHiddenState() {
         String name = getBeanClass().getName();
-        if (name.startsWith("java"))
+        if (name.startsWith("javax.") // NOI18N
+              || name.startsWith("java.") // NOI18N
+              || name.startsWith("org.openide.")) // NOI18N
             return false;
-        else if (name.startsWith("org.")) {
-            int idx = name.indexOf('.', 4);
-            if (idx < 0) {
-                idx = name.length();
-            }
-            name = name.substring(4, idx);
-            if (name.equals("netbeans") || name.equals("openide"))
-                return false;
-        }
-        return getBeanInfo().getBeanDescriptor().getValue("hidden-state") != null; // NOI18N
+
+        return getBeanInfo().getBeanDescriptor()
+                                .getValue("hidden-state") != null; // NOI18N
     }
 
     public CodeExpression getCodeExpression() {
@@ -391,14 +391,13 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
 
         renameDefaultEventHandlers(oldName, name);
         // [possibility of renaming default event handlers should be probably
-        // configurable in global options]
+        // configurable in options]
 
         formModel.fireSyntheticPropertyChanged(this, PROP_NAME,
                                                oldName, name);
 
-        if (getNodeReference() != null) {
+        if (getNodeReference() != null)
             getNodeReference().updateName();
-        }
     }
 
     void setStoredName(String name) {
@@ -408,37 +407,30 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
     private void renameDefaultEventHandlers(String oldComponentName,
                                             String newComponentName)
     {
-        boolean renamed = false; // whether any defualt handler was renamed
-        EventSet[] esets = getEventHandlers().getEventSets();
-        FormEventHandlers formHandlers = formModel.getFormEventHandlers();
+        boolean renamed = false; // whether any handler was renamed
+        FormEvents formEvents = null;
 
-        for (int i=0; i < esets.length; i++) {
-            Event [] evts = esets[i].getEvents();
-            for (int j=0; j < evts.length; j++) {
-                String defaultName = FormEventHandlers.getDefaultHandlerName(
-                                                    oldComponentName, evts[j]);
-                Iterator iter = evts[j].getHandlers().iterator();
-                while (iter.hasNext()) {
-                    EventHandler handler = (EventHandler) iter.next();
-                    String handlerName = handler.getName();
-                    if (handlerName.startsWith(defaultName)) {
-                        String newName = handlerName.length() > defaultName.length() ?
-                            formHandlers.findFreeHandlerName(
-                                FormEventHandlers.getDefaultHandlerName(evts[j])
-                                  + handlerName.substring(defaultName.length())) :
-                            formHandlers.findFreeHandlerName(evts[j]);
-                        
-                        formModel.getFormEventHandlers()
-                            .renameEventHandler(handler, newName);
-                        renamed = true;
-                    }
+        Event[] events = getKnownEvents();
+        for (int i=0; i < events.length; i++) {
+            String[] handlers = events[i].getEventHandlers();
+            for (int j=0; j < handlers.length; j++) {
+                String handlerName = handlers[j];
+                int idx = handlerName.indexOf(oldComponentName);
+                if (idx >= 0) {
+                    if (formEvents == null)
+                         formEvents = getFormModel().getFormEvents();
+                    String newHandlerName = formEvents.findFreeHandlerName(
+                        handlerName.substring(0, idx)
+                        + newComponentName
+                        + handlerName.substring(idx + oldComponentName.length())
+                    );
+                    formEvents.renameEventHandler(handlerName, newHandlerName);
                 }
             }
         }
 
-        if (renamed && getNodeReference() != null) {
+        if (renamed && getNodeReference() != null)
             getNodeReference().fireComponentPropertySetsChange();
-        }
     }
 
 /*
@@ -517,15 +509,6 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
         inModel = in;
     }
 
-    /** @retrun ComponentEventHandlers object that stores component's events
-     *          and attached event handlers
-     */
-    public ComponentEventHandlers getEventHandlers() {
-        if (eventsList == null)
-            eventsList = new ComponentEventHandlers(this);
-        return eventsList;
-    }
-
     /** @return the map of all component's aux value-pairs of <String, Object>
      */
     public Map getAuxValues() {
@@ -539,76 +522,45 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
         return NO_NEW_TYPES;
     }
 
-    public RADProperty[] getAllBeanProperties() {
-        if (allProperties == null) {
-            if (beanProperties == null)
-                createBeanProperties();
-
-            ArrayList list = new ArrayList(beanProperties.length + beanProperties2.length);
-            list.addAll(Arrays.asList(beanProperties));
-            list.addAll(Arrays.asList(beanProperties2));
-            allProperties = FormEditor.sortProperties(list, beanClass);
-        }
-
-        return allProperties;
-    }
-
     public Node.PropertySet[] getProperties() {
-        if (beanPropertySets == null) {
+        if (propertySets == null) {
             ArrayList propSets = new ArrayList(5);
             createPropertySets(propSets);
-            beanPropertySets = (Node.PropertySet[])propSets.toArray(
-                                        new Node.PropertySet[propSets.size()]);
+            propertySets = new Node.PropertySet[propSets.size()];
+            propSets.toArray(propertySets);
         }
-        return beanPropertySets;
+        return propertySets;
     }
 
-    protected void createPropertySets(List propSets) {
-        if (beanProperties == null)
-            createBeanProperties();
-
-        ResourceBundle bundle = FormUtils.getBundle();
-
-        propSets.add(new Node.PropertySet(
-                "properties", // NOI18N
-                bundle.getString("CTL_PropertiesTab"), // NOI18N
-                bundle.getString("CTL_PropertiesTabHint")) // NOI18N
-        {
-            public Node.Property[] getProperties() {
-                return getComponentProperties();
+    public RADProperty[] getAllBeanProperties() {
+        if (knownBeanProperties == null || beanProperties1 == null) {
+            if (beanProperties1 == null)
+                createBeanProperties();
+            else {
+                knownBeanProperties = new RADProperty[beanProperties1.length
+                                                      + beanProperties2.length];
+                System.arraycopy(beanProperties1, 0,
+                                 knownBeanProperties, 0,
+                                 beanProperties1.length);
+                System.arraycopy(beanProperties2, 0,
+                                 knownBeanProperties, beanProperties1.length,
+                                 beanProperties2.length);
             }
-        });
+        }
 
-        if (beanProperties2.length > 0)
-            propSets.add(new Node.PropertySet(
-                    "properties2", // NOI18N
-                    bundle.getString("CTL_Properties2Tab"), // NOI18N
-                    bundle.getString("CTL_Properties2TabHint")) // NOI18N
-            {
-                public Node.Property[] getProperties() {
-                    return getComponentProperties2();
-                }
-            });
+        return knownBeanProperties;
+    }
 
-        propSets.add(new Node.PropertySet(
-                "events", // NOI18N
-                bundle.getString("CTL_EventsTab"), // NOI18N
-                bundle.getString("CTL_EventsTabHint")) // NOI18N
-        {
-            public Node.Property[] getProperties() {
-                return getComponentEvents();
-            }
-        });
+    public RADProperty[] getKnownBeanProperties() {
+        return knownBeanProperties != null ? knownBeanProperties : NO_PROPERTIES;
+    }
 
-        propSets.add(new Node.PropertySet(
-                "synthetic", // NOI18N
-                bundle.getString("CTL_SyntheticTab"), // NOI18N
-                bundle.getString("CTL_SyntheticTabHint")) // NOI18N
-        {
-            public Node.Property[] getProperties() {
-                return getSyntheticProperties();
-            }
-        });
+    public Iterator getBeanPropertiesIterator(FormProperty.Filter filter,
+                                              boolean fromAll)
+    {
+        return new PropertyIterator(
+                   fromAll ? getAllBeanProperties() : getKnownBeanProperties(),
+                   filter);
     }
 
     /** Provides access to the Node which represents this RADComponent
@@ -627,49 +579,288 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
         return syntheticProperties;
     }
 
-    Node.Property[] getComponentProperties() {
-        if (beanProperties == null)
+    RADProperty[] getBeanProperties1() {
+        if (beanProperties1 == null)
             createBeanProperties();
-        return beanProperties;
+        return beanProperties1;
     }
 
-    Node.Property[] getComponentProperties2() {
+    RADProperty[] getBeanProperties2() {
         if (beanProperties2 == null)
             createBeanProperties();
         return beanProperties2;
     }
 
-    Node.Property[] getComponentEvents() {
-        if (beanEvents == null)
-            beanEvents = createEventsProperties();
-        return beanEvents;
+    EventProperty[] getEventProperties() {
+        if (eventProperties == null)
+            createEventProperties();
+        return eventProperties;
     }
 
-    /** Can be used to obtain RADProperty of property with specified name
-     * @param name the name of the property - the same as returned from
-                   PropertyDescriptor.getName()
-     * @return the RADProperty representing the specified property or null
-               if property with specified name does not exist
+    protected Node.Property getPropertyByName(String name,
+                                              Class propertyType,
+                                              boolean fromAll)
+    {
+        Node.Property prop = (Node.Property) nameToProperty.get(name);
+        if (prop == null && fromAll) {
+            if (beanProperties1 == null && !name.startsWith("$")) // NOI18N
+                createBeanProperties();
+            if (eventProperties == null && name.startsWith("$")) // NOI18N
+                createEventProperties();
+
+            prop = (Node.Property) nameToProperty.get(name);
+        }
+        return prop != null
+                 && (propertyType == null
+                     || propertyType.isAssignableFrom(prop.getClass())) ?
+               prop : null;
+    }
+
+    public Node.Property getPropertyByName(String name) {
+        return getPropertyByName(name, null, true);
+    }
+
+    public final RADProperty getBeanProperty(String name) {
+        return (RADProperty) getPropertyByName(name, RADProperty.class, true);
+    }
+
+    public RADProperty[] getBeanProperties(String[] propNames) {
+        RADProperty[] properties = new RADProperty[propNames.length];
+        PropertyDescriptor[] descriptors = null;
+
+        boolean empty = knownBeanProperties == null;
+        int validCount = 0;
+        List newProps = null;
+
+        int descIndex = 0;
+        for (int i=0; i < propNames.length; i++) {
+            String name = propNames[i];
+            if (name == null)
+                continue;
+
+            RADProperty prop;
+            if (!empty) {
+                Object obj = nameToProperty.get(name);
+                prop = obj instanceof RADProperty ? (RADProperty) obj : null;
+            }
+            else prop = null;
+
+            if (prop == null) {
+                if (descriptors == null) {
+                    descriptors = getBeanInfo().getPropertyDescriptors();
+                    if (descriptors.length == 0)
+                        break;
+                }
+                int j = descIndex;
+                do {
+                    if (descriptors[j].getName().equals(name)) {
+                        prop = createBeanProperty(descriptors[j]);
+                        if (!empty) {
+                            if (newProps == null)
+                                newProps = new ArrayList();
+                            newProps.add(prop);
+                        }
+                        descIndex = j + 1;
+                        if (descIndex == descriptors.length)
+                            descIndex = 0;
+                        break;
+                    }
+                    j++;
+                    if (j == descriptors.length)
+                        j = 0;
+                }
+                while (j != descIndex);
+            }
+            if (prop != null) {
+                properties[i] = prop;
+                validCount++;
+            }
+        }
+
+        if (empty) {
+            if (validCount == properties.length)
+                knownBeanProperties = properties;
+            else if (validCount > 0) {
+                knownBeanProperties = new RADProperty[validCount];
+                for (int i=0,j=0; i < properties.length; i++)
+                    if (properties[i] != null)
+                        knownBeanProperties[j++] = properties[i];
+            }
+        }
+        else if (newProps != null) { // just for consistency, should not occur
+            RADProperty[] knownProps =
+                new RADProperty[knownBeanProperties.length + newProps.size()];
+            System.arraycopy(knownBeanProperties, 0,
+                             knownProps, 0,
+                             knownBeanProperties.length);
+            for (int i=0; i < newProps.size(); i++)
+                knownProps[i + knownBeanProperties.length] = (RADProperty)
+                                                             newProps.get(i);
+
+            knownBeanProperties = knownProps;
+        }
+
+        return properties;
+    }
+
+    public Event getEvent(String name) {
+        Object prop = nameToProperty.get(name);
+        if (prop == null && eventProperties == null) {
+            createEventProperties();
+            prop = nameToProperty.get(name);
+        }
+        return prop instanceof EventProperty ?
+               ((EventProperty)prop).getEvent() : null;
+    }
+
+    public Event[] getEvents(String[] eventNames) {
+        Event[] events = new Event[eventNames.length];
+        EventSetDescriptor[] eventSets = null;
+
+        boolean empty = knownEvents == null;
+        int validCount = 0;
+        List newEvents = null;
+
+        int setIndex = 0;
+        int methodIndex = 0;
+
+        for (int i=0; i < eventNames.length; i++) {
+            String name = eventNames[i];
+            if (name == null)
+                continue;
+
+            boolean fullName = name.startsWith("$"); // NOI18N
+
+            Event event;
+            if (!empty) {
+                Object obj = nameToProperty.get(name);
+                event = obj instanceof EventProperty ?
+                        ((EventProperty)obj).getEvent() : null;
+            }
+            else event = null;
+
+            if (event == null) {
+                if (eventSets == null) {
+                    eventSets = getBeanInfo().getEventSetDescriptors();
+                    if (eventSets.length == 0)
+                        break;
+                }
+                int j = setIndex;
+                do {
+                    Method[] methods = eventSets[j].getListenerMethods();
+                    if (methods.length > 0) {
+                        int k = methodIndex;
+                        do {
+                            String eventFullId =
+                                FormEvents.getEventIdName(methods[k]);
+                            String eventId = fullName ?
+                                eventFullId : methods[k].getName();
+                            if (eventId.equals(name)) {
+                                event = createEventProperty(eventFullId,
+                                                            eventSets[j],
+                                                            methods[k])
+                                                .getEvent();
+                                if (!empty) {
+                                    if (newEvents == null)
+                                        newEvents = new ArrayList();
+                                    newEvents.add(event);
+                                }
+                                methodIndex = k + 1;
+                                break;
+                            }
+                            k++;
+                            if (k == methods.length)
+                                k = 0;
+                        }
+                        while (k != methodIndex);
+                    }
+
+                    if (event != null) {
+                        if (methodIndex == methods.length) {
+                            setIndex = j + 1;
+                            if (setIndex == eventSets.length)
+                                setIndex = 0;
+                            methodIndex = 0;
+                        }
+                        break;
+                    }
+
+                    j++;
+                    if (j == eventSets.length)
+                        j = 0;
+                    methodIndex = 0;
+                }
+                while (j != setIndex);
+            }
+            if (event != null) {
+                events[i] = event;
+                validCount++;
+            }
+        }
+
+        if (empty) {
+            if (validCount == events.length)
+                knownEvents = events;
+            else if (validCount > 0) {
+                knownEvents = new Event[validCount];
+                for (int i=0,j=0; i < events.length; i++)
+                    if (events[i] != null)
+                        knownEvents[j++] = events[i];
+            }
+        }
+        else if (newEvents != null) { // just for consistency, should not occur
+            Event[] known = new Event[knownEvents.length + newEvents.size()];
+            System.arraycopy(knownEvents, 0, known, 0, knownEvents.length);
+            for (int i=0; i < newEvents.size(); i++)
+                known[i + knownEvents.length] = (Event) newEvents.get(i);
+
+            knownEvents = known;
+        }
+
+        return events;
+    }
+
+    /** @return all events of the component grouped by EventSetDescriptor
      */
-    public FormProperty getPropertyByName(String name) {
-        if (beanProperties == null)
-            createBeanProperties();
-        return (FormProperty) nameToProperty.get(name);
+    public Event[] getAllEvents() {
+        if (knownEvents == null || eventProperties == null) {
+            if (eventProperties == null)
+                createEventProperties();
+            else {
+                knownEvents = new Event[eventProperties.length];
+                for (int i=0; i < eventProperties.length; i++)
+                    knownEvents[i] = eventProperties[i].getEvent();
+            }
+        }
+
+        return knownEvents;
     }
 
-    // -----------------------------------------------------------------------------
-    // Protected interface
-
-    protected boolean hasDefaultEvent() {
-        getEventHandlers();
-        return eventsList.getDefaultEvent() != null;
+    // Note: events must be grouped by EventSetDescriptor
+    public Event[] getKnownEvents() {
+        return knownEvents != null ? knownEvents : FormEvents.NO_EVENTS;
     }
 
-    protected void attachDefaultEvent() {
-        getEventHandlers();
-        eventsList.getDefaultEvent().createDefaultEventHandler();
-        // if the event handler already exists, nothing is done, just switched
-        // to the source editor
+    // ---------
+    // events
+
+    void attachDefaultEvent() {
+        Event event = null;
+
+        int eventIndex = getBeanInfo().getDefaultEventIndex();
+        if (eventIndex < getEventProperties().length && eventIndex >= 0)
+            event = eventProperties[eventIndex].getEvent();
+        else
+            for (int i=0; i < eventProperties.length; i++) {
+                Event e = eventProperties[i].getEvent();
+                if ("actionPerformed".equals(e.getListenerMethod().getName())) { // NOI18N
+                    event = e;
+                    break;
+                }
+            }
+
+        if (event != null)
+            getFormModel().getFormEvents().attachEvent(event, null, null);
     }
 
     // -----------------------------------------------------------------------------
@@ -680,19 +871,68 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
             nameToProperty.clear();
         else nameToProperty = new HashMap();
 
-        beanPropertySets = null;
+        propertySets = null;
         syntheticProperties = null;
-        beanProperties = null;
+        beanProperties1 = null;
         beanProperties2 = null;
-        eventsList = null;
-        beanEvents = null;
+        knownBeanProperties = null;
+        eventProperties = null;
+        knownEvents = null;
+    }
+
+    protected void createPropertySets(List propSets) {
+        if (beanProperties1 == null)
+            createBeanProperties();
+
+        ResourceBundle bundle = FormUtils.getBundle();
+
+        propSets.add(new Node.PropertySet(
+                "properties", // NOI18N
+                bundle.getString("CTL_PropertiesTab"), // NOI18N
+                bundle.getString("CTL_PropertiesTabHint")) // NOI18N
+        {
+            public Node.Property[] getProperties() {
+                return getBeanProperties1();
+            }
+        });
+
+        if (beanProperties2.length > 0)
+            propSets.add(new Node.PropertySet(
+                    "properties2", // NOI18N
+                    bundle.getString("CTL_Properties2Tab"), // NOI18N
+                    bundle.getString("CTL_Properties2TabHint")) // NOI18N
+            {
+                public Node.Property[] getProperties() {
+                    return getBeanProperties2();
+                }
+            });
+
+        propSets.add(new Node.PropertySet(
+                "events", // NOI18N
+                bundle.getString("CTL_EventsTab"), // NOI18N
+                bundle.getString("CTL_EventsTabHint")) // NOI18N
+        {
+            public Node.Property[] getProperties() {
+                return getEventProperties();
+            }
+        });
+
+        propSets.add(new Node.PropertySet(
+                "synthetic", // NOI18N
+                bundle.getString("CTL_SyntheticTab"), // NOI18N
+                bundle.getString("CTL_SyntheticTabHint")) // NOI18N
+        {
+            public Node.Property[] getProperties() {
+                return getSyntheticProperties();
+            }
+        });
     }
 
     protected Node.Property[] createSyntheticProperties() {
         return formModel.getCodeGenerator().getSyntheticProperties(this);
     }
 
-    protected void createBeanProperties() {
+    private void createBeanProperties() {
         ArrayList prefProps = new ArrayList();
         ArrayList normalProps = new ArrayList();
         ArrayList expertProps = new ArrayList();
@@ -713,7 +953,9 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
                 listToAdd = expertProps;
             else continue; // PROP_HIDDEN
 
-            Node.Property prop = createProperty(pd);
+            FormProperty prop = (FormProperty) nameToProperty.get(pd.getName());
+            if (prop == null)
+                prop = createBeanProperty(pd);
             if (prop != null)
                 listToAdd.add(prop);
         }
@@ -725,27 +967,100 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
         int expertCount = expertProps.size();
 
         if (prefCount > 0) {
-            beanProperties = new Node.Property[prefCount];
-            prefProps.toArray(beanProperties);
+            beanProperties1 = new RADProperty[prefCount];
+            prefProps.toArray(beanProperties1);
             if (normalCount + expertCount > 0) {
                 normalProps.addAll(expertProps);
-                beanProperties2 = new Node.Property[normalCount + expertCount];
+                beanProperties2 = new RADProperty[normalCount + expertCount];
                 normalProps.toArray(beanProperties2);
             }
-            else beanProperties2 = new Node.Property[0];
+            else beanProperties2 = new RADProperty[0];
         }
         else {
-            beanProperties = new Node.Property[normalCount];
-            normalProps.toArray(beanProperties);
+            beanProperties1 = new RADProperty[normalCount];
+            normalProps.toArray(beanProperties1);
             if (expertCount > 0) {
-                beanProperties2 = new Node.Property[expertCount];
+                beanProperties2 = new RADProperty[expertCount];
                 expertProps.toArray(beanProperties2);
             }
-            else beanProperties2 = new Node.Property[0];
+            else beanProperties2 = new RADProperty[0];
         }
+
+        knownBeanProperties = new RADProperty[beanProperties1.length
+                                              + beanProperties2.length];
+        System.arraycopy(beanProperties1, 0,
+                         knownBeanProperties, 0,
+                         beanProperties1.length);
+        System.arraycopy(beanProperties2, 0,
+                         knownBeanProperties, beanProperties1.length,
+                         beanProperties2.length);
     }
 
-    /** Called to modify original properties obtained from BeanInfo.
+    private void createEventProperties() {
+        EventSetDescriptor[] eventSets = getBeanInfo().getEventSetDescriptors();
+//        Arrays.sort(eventSets, new Comparator() {
+//            public int compare(Object o1, Object o2) {
+//                String n1 =((EventSetDescriptor)o1).getName();
+//                String n2 =((EventSetDescriptor)o2).getName();
+//                return n1.compareTo(n2);
+//            }
+//        });
+
+        List eventPropList = new ArrayList(eventSets.length * 5);
+
+        for (int i=0; i < eventSets.length; i++) {
+            EventSetDescriptor desc = eventSets[i];
+            Method[] methods = desc.getListenerMethods();
+            for (int j=0; j < methods.length; j++) {
+                String eventId = FormEvents.getEventIdName(methods[j]);
+                Object prop = nameToProperty.get(eventId);
+                if (prop == null)
+                    prop = createEventProperty(eventId, desc, methods[j]);
+                eventPropList.add(prop);
+            }
+        }
+
+        EventProperty[] eventProps = new EventProperty[eventPropList.size()];
+        eventPropList.toArray(eventProps);
+
+        knownEvents = new Event[eventProps.length];
+        for (int i=0; i < eventProps.length; i++)
+            knownEvents[i] = eventProps[i].getEvent();
+
+        eventProperties = eventProps;
+    }
+
+    protected RADProperty createBeanProperty(PropertyDescriptor desc) {
+        if (desc.getPropertyType() == null)
+            return null;
+
+        RADProperty prop = new RADProperty(this, desc);
+        setPropertyListener(prop);
+//        prop.addPropertyChangeListener(getPropertyListener());
+        nameToProperty.put(desc.getName(), prop);
+
+        // should or should not values of "visible" and "enabled" properties
+        // be set (tied) to bean instances?
+//        if (("visible".equals(desc.getName()) || "enabled".equals(desc.getName()))
+//              && beanInstance instanceof java.awt.Component)
+//            prop.setAccessType(FormProperty.DETACHED_WRITE);
+
+        return prop;
+    }
+
+    protected EventProperty createEventProperty(String eventId,
+                                                EventSetDescriptor eventDesc,
+                                                Method eventMethod)
+    {
+        EventProperty prop = new EventProperty(new Event(this,
+                                                         eventDesc,
+                                                         eventMethod),
+                                               eventId);
+        nameToProperty.put(eventId, prop);
+        return prop;
+    }
+
+    /** Called to modify original bean properties obtained from BeanInfo.
      * Properties may be added, removed etc. - due to specific needs.
      */
     protected void changePropertiesExplicitly(List prefProps,
@@ -768,40 +1083,6 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
                 else normalProps.add(prop);
             }
             catch (IntrospectionException ex) {} // should not happen
-    }
-
-    protected Node.Property[] createEventsProperties() {
-        getEventHandlers();
-
-        Node.Property[] nodeEvents = new Node.Property[eventsList.getEventCount()];
-        int idx = 0;
-        EventSet[] eventSets = eventsList.getEventSets();
-
-        for (int i = 0; i < eventSets.length; i++) {
-            Event[] events = eventSets[i].getEvents();
-            for (int j = 0; j < events.length; j++) {
-                nodeEvents[idx++] = new EventProperty(events[j]);
-            }
-        }
-        return nodeEvents;
-    }
-
-    protected Node.Property createProperty(PropertyDescriptor desc) {
-        if (desc.getPropertyType() == null)
-            return null;
-
-        RADProperty prop = new RADProperty(this, desc);
-        setPropertyListener(prop);
-//        prop.addPropertyChangeListener(getPropertyListener());
-        nameToProperty.put(desc.getName(), prop);
-
-        // should or should not values of "visible" and "enabled" properties
-        // be set (tied) to bean instances?
-//        if (("visible".equals(desc.getName()) || "enabled".equals(desc.getName()))
-//              && beanInstance instanceof java.awt.Component)
-//            prop.setAccessType(FormProperty.DETACHED_WRITE);
-
-        return prop;
     }
 
     protected PropertyChangeListener createPropertyListener() {
@@ -840,14 +1121,14 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
                               RADComponent.this, propName, oldValue, newValue);
 
                 if (getNodeReference() != null) { // propagate the change to node
-//                    if (FormProperty.PROP_VALUE_AND_EDITOR.equals(eventName)) {
-//                        oldValue = ((FormProperty.ValueWithEditor)oldValue).getValue();
-//                        newValue = ((FormProperty.ValueWithEditor)newValue).getValue();
-//                    } // [does this conversion need to be done??]
+                    if (FormProperty.PROP_VALUE_AND_EDITOR.equals(eventName)) {
+                        oldValue = ((FormProperty.ValueWithEditor)oldValue).getValue();
+                        newValue = ((FormProperty.ValueWithEditor)newValue).getValue();
+                    }
 
                     getNodeReference().firePropertyChangeHelper(
-                                                null, null, null);
-//                                           propName, oldValue, newValue);
+//                                                null, null, null);
+                                           propName, oldValue, newValue);
                 }
             }
             else if (FormProperty.CURRENT_EDITOR.equals(eventName)) {
@@ -857,6 +1138,53 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
                     getNodeReference().firePropertyChangeHelper(
                                             propName, null, null);
             }
+        }
+    }
+
+    // ----------
+
+    private static class PropertyIterator implements java.util.Iterator {
+        private FormProperty[] properties;
+        private FormProperty.Filter filter;
+
+        private FormProperty next;
+        private int index;
+
+        PropertyIterator(FormProperty[] properties,
+                         FormProperty.Filter filter)
+        {
+            this.properties = properties;
+            this.filter = filter;
+        }
+
+        public boolean hasNext() {
+            if (next == null)
+                next = getNextProperty();
+            return next != null;
+        }
+
+        public Object next() {
+            if (next == null)
+                next = getNextProperty();
+            if (next != null) {
+                Object prop = next;
+                next = null;
+                return prop;
+            }
+            throw new NoSuchElementException();
+        }
+
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+
+        private FormProperty getNextProperty() {
+            while (index < properties.length) {
+                FormProperty prop = properties[index++];
+                if (filter.accept(prop))
+                    return prop;
+            }
+            return null;
         }
     }
 
@@ -894,21 +1222,6 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
     }
 
     public void debugChangedValues() {
-/*        if (System.getProperty("netbeans.debug.form.full") != null) { // NOI18N
-            System.out.println("-- debug.form: Changed property values in: "+this+" -------------------------"); // NOI18N
-            for (java.util.Iterator it = nameToProperty.values().iterator(); it.hasNext();) {
-                RADProperty prop =(RADProperty)it.next();
-                if (prop.isChanged()) {
-//                    PropertyDescriptor desc = prop.getPropertyDescriptor();
-                    try {
-                        System.out.println("Changed Property: "+prop.getName()+", value: "+prop.getValue()); // NOI18N
-                    } catch (Exception e) {
-                        // ignore problems
-                    }
-                }
-            }
-            System.out.println("--------------------------------------------------------------------------------------"); // NOI18N
-        } */
     }
 
     // ----------

@@ -149,10 +149,10 @@ public class RADComponentNode extends FormNode
     public SystemAction getDefaultAction() {
         if (component instanceof RADVisualContainer)
             return SystemAction.get(EditContainerAction.class);
-        if (component.getEventHandlers().getDefaultEvent() != null)
-            return SystemAction.get(DefaultRADAction.class);
+//        if (component.getEventHandlers().getDefaultEvent() != null)
+        return SystemAction.get(DefaultRADAction.class);
 
-        return null;
+//        return null;
     }
 
     /** Lazily initialize set of node's actions(overridable).
@@ -165,10 +165,13 @@ public class RADComponentNode extends FormNode
         ArrayList actions = new ArrayList(20);
 
         if (component.isReadOnly()) {
-            if (component.getEventHandlers().getHandlersCount() > 0) {
-                actions.add(SystemAction.get(EventsAction.class));
-                actions.add(null);
-            }
+            Event[] events = component.getKnownEvents();
+            for (int i=0; i < events.length; i++)
+                if (events[i].hasEventHandlers()) {
+                    actions.add(SystemAction.get(EventsAction.class));
+                    actions.add(null);
+                }
+
             actions.add(SystemAction.get(CopyAction.class));
         }
         else {
@@ -360,8 +363,8 @@ public class RADComponentNode extends FormNode
             public void propertyChange(PropertyChangeEvent evt) {
                 FormProperty[] properties;
                 if (evt.getPropertyName() != null) {
-                    FormProperty changedProperty = component.getPropertyByName(
-                                                         evt.getPropertyName());
+                    FormProperty changedProperty =
+                        component.getBeanProperty(evt.getPropertyName());
                     if (changedProperty != null)
                         properties = new FormProperty[] { changedProperty };
                     else return; // non-existing property?
@@ -534,7 +537,10 @@ public class RADComponentNode extends FormNode
     // FormPropertyCookie implementation
 
     public FormProperty getProperty(String name) {
-        return component != null ? component.getPropertyByName(name) : null;
+        return (FormProperty)
+               component.getPropertyByName(name, FormProperty.class, true);
+//        Node.Property prop = component.getPropertyByName(name, true);
+//        return (FormProperty) (prop instanceof FormProperty ? prop : null);
     }
 
     // -----------------------------------------------------------------------------

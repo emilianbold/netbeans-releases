@@ -54,12 +54,12 @@ final public class FormEditor extends Object
      * is a concatenation of this string and the event name.
      * E.g. for mousePressed event, the property is named "__EVENT__mousePressed"
      */
-    public static final String EVENT_PREFIX = "__EVENT__"; // NOI18N
+//    public static final String EVENT_PREFIX = "__EVENT__"; // NOI18N
     /** The prefix for component's layout properties. The name of such property
      * is a concatenation of this string and the component layout property's name.
      * E.g. for Direction layout property, the property is named "__LAYOUT__mousePressed"
      */
-    public static final String LAYOUT_PREFIX = "__LAYOUT__"; // NOI18N
+//    public static final String LAYOUT_PREFIX = "__LAYOUT__"; // NOI18N
 
     /** The resource bundle for the form editor */
 //    private static ResourceBundle formBundle = NbBundle.getBundle(FormEditor.class);

@@ -55,7 +55,7 @@ public class FormModel
     private boolean undoRedoRecording = false;
     private CompoundEdit compoundEdit;
 
-    private FormEventHandlers eventHandlers;
+    private FormEvents formEvents;
 
     // list of listeners registered on FormModel
     private ArrayList listeners;
@@ -181,7 +181,7 @@ public class FormModel
                list.toArray(new RADVisualComponent[list.size()]);
     }
 
-    /** Returns all "other components" (not in the main hierarchy).
+    /** Returns all "other components" (not in the main visual hierarchy).
      * @param recursively whether also all sub-componets should be collected
      */
     public RADComponent[] getOtherComponents(boolean recursively) {
@@ -202,10 +202,10 @@ public class FormModel
                                 new RADComponent[otherComponents.size()]); 
     }
 
-    public FormEventHandlers getFormEventHandlers() {
-        if (eventHandlers == null)
-            eventHandlers = new FormEventHandlers();
-        return eventHandlers;
+    public FormEvents getFormEvents() {
+        if (formEvents == null)
+            formEvents = new FormEvents(this);
+        return formEvents;
     }
 
     private static void collectMetaComponents(ComponentContainer cont,
@@ -309,7 +309,7 @@ public class FormModel
     }
 
     public void removeComponent(RADComponent metacomp) {
-        if (eventHandlers != null)
+        if (formEvents != null)
             removeEventHandlersRecursively(metacomp);
 
         RADComponent parent = metacomp.getParentComponent();
@@ -355,15 +355,10 @@ public class FormModel
                 removeEventHandlersRecursively(subcomps[i]);
         }
 
-        EventSet[] eventSets = comp.getEventHandlers().getEventSets();
-        for (int i = 0; i < eventSets.length; i++) {
-            Event[] events = eventSets[i].getEvents();
-            for (int j = 0; j < events.length; j++) {
-                if (events[j].getHandlers().size() > 0) {
-                    eventHandlers.removeEventHandler(events[j]);
-                }
-            }
-        }
+        Event[] events = comp.getKnownEvents();
+        for (int i=0; i < events.length; i++)
+            if (events[i].hasEventHandlers())
+                getFormEvents().detachEvent(events[i]);
     }
 
     private static void releaseComponent(RADComponent metacomp) {
@@ -747,11 +742,11 @@ public class FormModel
      * (createdNew parameter indicates whether the event handler was created
      * first). An undoable edit is created and registered automatically. */
     public FormModelEvent fireEventHandlerAdded(Event event,
-                                                EventHandler handler,
+                                                String handler,
                                                 String bodyText,
                                                 boolean createdNew)
     {
-        t("event handler added: "+handler.getName()); // NOI18N
+        t("event handler added: "+handler); // NOI18N
 
         FormModelEvent ev =
             new FormModelEvent(this, FormModelEvent.EVENT_HANDLER_ADDED);
@@ -769,10 +764,10 @@ public class FormModel
      * the last event was detached). An undoable edit is created and registered
      * automatically. */
     public FormModelEvent fireEventHandlerRemoved(Event event,
-                                                  EventHandler handler,
+                                                  String handler,
                                                   boolean handlerDeleted)
     {
-        t("firing event handler removed: "+handler.getName()); // NOI18N
+        t("firing event handler removed: "+handler); // NOI18N
 
         FormModelEvent ev =
             new FormModelEvent(this, FormModelEvent.EVENT_HANDLER_REMOVED);
@@ -787,17 +782,17 @@ public class FormModel
 
     /** Fires an event informing about renaming an event handler. An undoable
      * edit is created and registered automatically. */
-    public FormModelEvent fireEventHandlerRenamed(EventHandler handler,
-                                                  String oldName)
+    public FormModelEvent fireEventHandlerRenamed(String oldHandlerName,
+                                                  String newHandlerName)
     {
-        t("event handler renamed: "+handler.getName()); // NOI18N
+        t("event handler renamed: "+oldHandlerName+" to "+newHandlerName); // NOI18N
 
         FormModelEvent ev =
             new FormModelEvent(this, FormModelEvent.EVENT_HANDLER_RENAMED);
-        ev.setEvent(handler, oldName);
+        ev.setEvent(oldHandlerName, newHandlerName);
         sendEvent(ev);
 
-        if (undoRedoRecording && handler != null && oldName != null)
+        if (undoRedoRecording && oldHandlerName != null && newHandlerName != null)
             addUndoableEdit(ev.getUndoableEdit());
 
         return ev;

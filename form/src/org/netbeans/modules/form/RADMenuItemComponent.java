@@ -134,10 +134,13 @@ public class RADMenuItemComponent extends RADComponent {
             });
     }
 
-    public FormProperty getPropertyByName(String name) {
-        if (accessibilityProperties == null)
+    public Node.Property getPropertyByName(String name,
+                                           Class propertyType,
+                                           boolean fromAll)
+    {
+        if (fromAll && accessibilityProperties == null)
             createAccessibilityProperties();
-        return super.getPropertyByName(name);
+        return super.getPropertyByName(name, propertyType, fromAll);
     }
 
     protected void clearProperties() {

@@ -13,102 +13,60 @@
 
 package org.netbeans.modules.form.actions;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.beans.*;
-import java.util.Hashtable;
-import java.util.Iterator;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 import java.util.ResourceBundle;
 import java.text.MessageFormat;
 import javax.swing.*;
 import javax.swing.event.MenuListener;
 import javax.swing.event.MenuEvent;
-import javax.swing.plaf.*;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.*;
 import org.openide.nodes.Node;
 import org.openide.awt.JMenuPlus;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.form.FormEventHandlers;
-import org.netbeans.modules.form.EventHandler;
-import org.netbeans.modules.form.FormEditor;
-import org.netbeans.modules.form.RADComponent;
-import org.netbeans.modules.form.ComponentEventHandlers;
-import org.netbeans.modules.form.EventSet;
-import org.netbeans.modules.form.Event;
-import org.netbeans.modules.form.RADComponentCookie;
+
+import org.netbeans.modules.form.*;
 
 /**
- * Events action - subclass of NodeAction - enabled on RADComponents.
+ * Action class providing popup menu presenter for events of one component.
  *
- * @author   Ian Formanek
+ * @author Tomas Pavek
  */
 
 public class EventsAction extends CookieAction {
-    
-    /**
-     * @return the mode of action. Possible values are disjunctions of MODE_XXX
-     * constants. */
-    
+
     protected int mode() {
-        return MODE_EXACTLY_ONE;
+        return MODE_EXACTLY_ONE; // can be invoked on just one node
     }
 
-    /** Creates new set of classes that are tested by the cookie.
-     *
-     * @return list of classes the that the cookie tests
-     */
     protected Class[] cookieClasses() {
         return new Class[] { RADComponentCookie.class };
     }
-    
-    /**
-     * human presentable name of the action. This should be
-     * presented as an item in a menu.
-     * @return the name of the action
-     */
+
     public String getName() {
         return NbBundle.getBundle(EventsAction.class).getString("ACT_Events"); // NOI18N
     }
 
-    /**
-     * Help context where to find more about the action.
-     * @return the help context for this action
-     */
     public HelpCtx getHelpCtx() {
         return new HelpCtx(EventsAction.class);
     }
 
-    /**
-     * Icon resource.
-     * @return name of resource for icon
-     */
     protected String iconResource() {
         return "org/netbeans/modules/form/resources/events.gif"; // NOI18N
     }
 
-    /**
-     * Standard perform action extended by actually activated nodes.
-     *
-     * @param activatedNodes gives array of actually activated nodes.
-     */
     protected void performAction(Node[] activatedNodes) {
     }
 
-    /**
-     * Returns a JMenuItem that presents the Action, that implements this
-     * interface, in a MenuBar.
-     * @return the JMenuItem representation for the Action
-     */
     public JMenuItem getMenuPresenter() {
         return getPopupPresenter();
     }
 
     /**
-     * Returns a JMenuItem that presents the Action, that implements this
-     * interface, in a Popup Menu.
-     * @return the JMenuItem representation for the Action
+     * Returns a JMenuItem that presents this action in a Popup Menu.
+     * @return the JMenuItem representation for the action
      */
     public JMenuItem getPopupPresenter() {
         JMenu popupMenu = new JMenuPlus(
@@ -119,8 +77,8 @@ public class EventsAction extends CookieAction {
         
         popupMenu.addMenuListener(new MenuListener() {
             public void menuSelected(MenuEvent e) {
-                JMenu menu =(JMenu) e.getSource();
-                generateEventsSubmenu(menu);
+                JMenu menu = (JMenu) e.getSource();
+                createEventSubmenu(menu);
             }
             
             public void menuDeselected(MenuEvent e) {}
@@ -130,18 +88,16 @@ public class EventsAction extends CookieAction {
         return popupMenu;
     }
 
-    private void generateEventsSubmenu(JMenu menu) {
+    private void createEventSubmenu(JMenu menu) {
         if (menu.getMenuComponentCount() > 0)
             menu.removeAll();
-        
+
         Node[] nodes = getActivatedNodes();
         if (nodes.length == 0)
             return;
 
-        Node n = nodes[0]; // we suppose that only one node is activated
-
         RADComponentCookie radCookie =
-            (RADComponentCookie) n.getCookie(RADComponentCookie.class);
+            (RADComponentCookie) nodes[0].getCookie(RADComponentCookie.class);
         if (radCookie == null)
             return;
 
@@ -149,131 +105,126 @@ public class EventsAction extends CookieAction {
         if (metacomp == null)
             return;
 
-        boolean readOnly = metacomp.isReadOnly();
-        ComponentEventHandlers em = metacomp.getEventHandlers();
-        EventSet[] handlerSets = em.getEventSets();
         ResourceBundle bundle = NbBundle.getBundle(EventsAction.class);
 
-        for (int i = 0; i < handlerSets.length; i++) {
-            JMenu m = null;            
-            boolean eventSetHasHandlers = false;
-            Event[] events = handlerSets[i].getEvents();
-            
-            for (int j = 0; j < events.length; j++) {
-                JMenuItem jmi = null;
-                int handlersCount = events[j].getHandlers().size();
-                
-                if (handlersCount == 0) {
-                    if (!readOnly)
-                        jmi = new EventMenuItem(
-                            MessageFormat.format(
-                                bundle.getString("FMT_CTL_EventNoHandlers"), // NOI18N
-                                new Object[] { events[j].getName() }),
-                            events[j],
-                            null);
-                }
-                else if (handlersCount == 1) {
+        boolean readOnly = metacomp.isReadOnly();
+        Event[] events = readOnly ?
+                         metacomp.getKnownEvents() : metacomp.getAllEvents();
+
+        java.beans.EventSetDescriptor lastEventSetDesc = null;
+        JMenu eventSetMenu = null;
+        boolean eventSetHasHandlers = false;
+
+        for (int i=0; i < events.length; i++) {
+            Event event = events[i];
+            String[] handlers = event.getEventHandlers();
+            JMenuItem jmi = null;
+
+            if (handlers.length == 0) {
+                if (!readOnly)
                     jmi = new EventMenuItem(
                         MessageFormat.format(
-                            bundle.getString("FMT_CTL_EventOneHandler"), // NOI18N
-                            new Object[] { events[j].getName(),
-                                           ((EventHandler) events[j].getHandlers().get(0)).getName() }),
-                        events[j],
+                            bundle.getString("FMT_CTL_EventNoHandlers"), // NOI18N
+                            new Object[] { event.getName() }),
+                        event,
                         null);
-                }
-                else if (handlersCount > 1) {
-                    jmi = new JMenuPlus(MessageFormat.format(
-                        bundle.getString("FMT_CTL_EventMultipleHandlers"), // NOI18N
-                        new Object[] { events[j].getName() }));
+            }
+            else if (handlers.length == 1) {
+                jmi = new EventMenuItem(
+                    MessageFormat.format(
+                        bundle.getString("FMT_CTL_EventOneHandler"), // NOI18N
+                        new Object[] { event.getName(), handlers[0] }),
+                    event,
+                    handlers[0]);
+            }
+            else {
+                jmi = new JMenuPlus(MessageFormat.format(
+                    bundle.getString("FMT_CTL_EventMultipleHandlers"), // NOI18N
+                    new Object[] { event.getName() }));
 
-                    Iterator iter = events[j].getHandlers().iterator();
-                    while (iter.hasNext()) {
-                        EventHandler handler = (EventHandler) iter.next();
-                        
-                        JMenuItem handlerItem = new EventMenuItem(
-                            MessageFormat.format(
-                                bundle.getString("FMT_CTL_HandlerFromMultiple"), // NOI18N
-                                new Object[] { handler.getName() }),
-                            events[j],
-                            handler.getName());
+                for (int j=0; j < handlers.length; j++) {
+                    JMenuItem handlerItem = new EventMenuItem(
+                        MessageFormat.format(
+                            bundle.getString("FMT_CTL_HandlerFromMultiple"), // NOI18N
+                            new Object[] { handlers[j] }),
+                        event,
+                        handlers[j]);
 
-                        setBoldFontForMenuText(handlerItem);
-                        
-                        HelpCtx.setHelpIDString(handlerItem, EventsAction.class.getName());
-                        ((JMenu) jmi).add(handlerItem);
-                        
-                        handlerItem.addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent evt) {
-                                Object source = evt.getSource();
-                                if (! (source instanceof EventMenuItem))
-                                    return;
+                    handlerItem.addActionListener(getMenuItemListener());
 
-                                EventMenuItem mi = (EventMenuItem) source;
-                                Event event = mi.getEvent();
-                                String handlerName = mi.getHandlerName();
-                                event.getComponent().getFormModel()
-                                    .getFormEventHandlers().addEventHandler(
-                                        event, handlerName);
-                            }
-                        });
-                    }
-                }
+                    HelpCtx.setHelpIDString(handlerItem, EventsAction.class.getName());
+                    setBoldFontForMenuText(handlerItem);
 
-                if (jmi != null) {
-                    HelpCtx.setHelpIDString(jmi, EventsAction.class.getName());
-                    if (handlersCount > 0) {
-                        eventSetHasHandlers = true;
-                        if (!readOnly)
-                            setBoldFontForMenuText(jmi);
-                    }
-
-                    if (m == null) {
-                        String name = handlerSets[i].getName();
-                        m = new JMenuPlus(name.substring(0, 1).toUpperCase()
-                                    + name.substring(1));
-            
-                        HelpCtx.setHelpIDString(m, EventsAction.class.getName());
-                    }
-                    m.add(jmi);
-
-                    jmi.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent evt) {
-                            Object source = evt.getSource();
-                            if (! (source instanceof EventMenuItem))
-                                return;
-
-                            EventMenuItem mi = (EventMenuItem) source;
-                            mi.getEvent().createDefaultEventHandler();
-                        }
-                    });
+                    ((JMenu)jmi).add(handlerItem);
                 }
             }
-            if (m != null) {
-                if (eventSetHasHandlers && !readOnly)
-                    setBoldFontForMenuText(m);
-                if (eventSetHasHandlers || !readOnly)
-                    menu.add(m);
+
+            if (jmi != null) {
+                if (event.getEventSetDescriptor() != lastEventSetDesc) {
+                    if (eventSetHasHandlers)
+                        setBoldFontForMenuText(eventSetMenu);
+
+                    String name = event.getEventSetDescriptor().getName();
+                    eventSetMenu = new JMenuPlus(name.substring(0,1).toUpperCase()
+                                                 + name.substring(1));
+                    HelpCtx.setHelpIDString(eventSetMenu,
+                                            EventsAction.class.getName());
+                    menu.add(eventSetMenu);
+                    eventSetHasHandlers = false;
+                    lastEventSetDesc = event.getEventSetDescriptor();
+                }
+
+                if (!(jmi instanceof JMenu))
+                    jmi.addActionListener(getMenuItemListener());
+
+                HelpCtx.setHelpIDString(jmi, EventsAction.class.getName());
+
+                if (handlers.length > 0 && !readOnly) {
+                    eventSetHasHandlers = true;
+                    setBoldFontForMenuText(jmi);
+                }
+
+                addSortedMenuItem(eventSetMenu, jmi);
             }
         }
+
+        if (eventSetHasHandlers)
+            setBoldFontForMenuText(eventSetMenu);
     }
 
     private static void setBoldFontForMenuText(JMenuItem mi) {
-        Font font = mi.getFont();
-        mi.setFont(new Font(font.getFontName(),
-                            font.getStyle() | Font.BOLD,
-                            font.getSize()));
+        java.awt.Font font = mi.getFont();
+        mi.setFont(new java.awt.Font(font.getFontName(),
+                                     font.getStyle() | java.awt.Font.BOLD,
+                                     font.getSize()));
     }
-    
 
+    private static void addSortedMenuItem(JMenu menu, JMenuItem menuItem) {
+        int n = menu.getMenuComponentCount();
+        String text = menuItem.getText();
+        for (int i=0; i < n; i++) {
+            String tx = ((JMenuItem)menu.getMenuComponent(i)).getText();
+            if (text.compareTo(tx) < 0) {
+                menu.add(menuItem, i);
+                return;
+            }
+        }
+        menu.add(menuItem);
+    }
 
-    private static class EventMenuItem extends JMenuItem
-    {
+    private ActionListener getMenuItemListener() {
+        if (menuItemListener == null)
+            menuItemListener = new EventMenuItemListener();
+        return menuItemListener;
+    }
+
+    // --------
+
+    private static class EventMenuItem extends JMenuItem {
         private Event event;
         private String handlerName;
-        
-        EventMenuItem(String text,
-                      Event event,
-                      String handlerName) {
+
+        EventMenuItem(String text, Event event, String handlerName) {
             super(text);
             this.event = event;
             this.handlerName = handlerName;
@@ -287,4 +238,31 @@ public class EventsAction extends CookieAction {
             return handlerName;
         }
     }
+
+    private static class EventMenuItemListener implements ActionListener {
+        public void actionPerformed(ActionEvent evt) {
+            Object source = evt.getSource();
+            if (!(source instanceof EventMenuItem))
+                    return;
+
+            EventMenuItem mi = (EventMenuItem) source;
+            Event event = ((EventMenuItem)source).getEvent();
+            Node.Property prop = event.getComponent()
+                                           .getPropertyByName(event.getId());
+            if (prop != null) {
+                String handlerName = mi.getHandlerName();
+                event.getComponent().getFormModel().getFormEvents()
+                    .attachEvent(event, handlerName, null);
+
+                try { // hack to update the property sheet
+                    if (handlerName == null)
+                        handlerName = (String) prop.getValue();
+                    prop.setValue(handlerName);
+                }
+                catch (Exception ex) {}
+            }
+        }
+    }
+
+    private ActionListener menuItemListener;
 }

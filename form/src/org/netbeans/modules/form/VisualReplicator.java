@@ -670,7 +670,7 @@ public class VisualReplicator {
         }
 
         // just try to copy all possible properties
-        FormUtils.copyPropertiesToBean(metacomp.getAllBeanProperties(),
+        FormUtils.copyPropertiesToBean(metacomp.getKnownBeanProperties(),
                                        component,
                                        relativeProperties);
         return component;

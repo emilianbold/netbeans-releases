@@ -38,10 +38,10 @@
             <EventHandler event="valueChanged" listener="javax.swing.event.ListSelectionListener" parameters="javax.swing.event.ListSelectionEvent" handler="handlersListValueChanged"/>
           </Events>
           <AuxValues>
-            <AuxValue name="JavaCodeGenerator_CreateCodePre" type="java.lang.String" value="List l = eventProperty.event.getHandlers();&#xa;for (int i=0, n=l.size (); i &lt; n; i++) {&#xa;    handlersModel.addElement(((EventHandler)l.get(i)).getName());&#xa;}"/>
+            <AuxValue name="JavaCodeGenerator_CreateCodePre" type="java.lang.String" value="String[] handlers = eventProperty.getEventHandlers();&#xa;for (int i=0; i &lt; handlers.length; i++) {&#xa;    handlersModel.addElement(handlers[i]);&#xa;}"/>
             <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value=""/>
             <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value=""/>
-            <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="handlersList.setModel(handlersModel);&#xa;if (l.size() &gt; 0) {&#xa;    handlersList.setSelectedIndex(0);&#xa;}"/>
+            <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="handlersList.setModel(handlersModel);&#xa;if (handlers.length &gt; 0) {&#xa;    handlersList.setSelectedIndex(0);&#xa;}"/>
           </AuxValues>
         </Component>
       </SubComponents>

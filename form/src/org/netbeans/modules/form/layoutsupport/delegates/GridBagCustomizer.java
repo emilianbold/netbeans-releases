@@ -303,8 +303,8 @@ final public class GridBagCustomizer extends JPanel implements Customizer
     }
 
     private void setProperty(GBComponentProxy p, String name, Object value) {
-        FormProperty prop = p.getComponent().getPropertyByName(
-                                             "GridBagLayoutConstraints "+name); // NOI18N
+        Node.Property prop = p.getComponent().getPropertyByName(
+                                        "GridBagLayoutConstraints "+name); // NOI18N
         if (prop != null) {
             try {
                 prop.setValue(value);

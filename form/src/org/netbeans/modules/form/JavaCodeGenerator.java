@@ -17,6 +17,7 @@ import org.openide.*;
 import org.openide.explorer.propertysheet.editors.ModifierEditor;
 import org.openide.filesystems.*;
 import org.openide.nodes.*;
+import org.openide.src.*;
 import org.openide.text.IndentEngine;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
@@ -43,7 +44,6 @@ import java.util.*;
  */
 
 class JavaCodeGenerator extends CodeGenerator {
-    private static Object GEN_LOCK = new Object();
 
     static final String PROP_VARIABLE_MODIFIER = "modifiers"; // NOI18N
     static final String PROP_VARIABLE_LOCAL = "useLocalVariable"; // NOI18N
@@ -74,28 +74,23 @@ class JavaCodeGenerator extends CodeGenerator {
     static final String AUX_INIT_CODE_POST =
         "JavaCodeGenerator_InitCodePost"; // NOI18N
 
-    protected static final String SECTION_INIT_COMPONENTS =
-        "initComponents"; // NOI18N
-    protected static final String SECTION_VARIABLES =
-        "variables"; // NOI18N
-    protected static final String SECTION_EVENT_PREFIX =
-        "event_"; // NOI18N
+    static final Integer VALUE_GENERATE_CODE = new Integer(0);
+    static final Integer VALUE_SERIALIZE = new Integer(1);
 
-    public static final Integer VALUE_GENERATE_CODE = new Integer(0);
-    public static final Integer VALUE_SERIALIZE = new Integer(1);
+    // types of code generation of event listeners
+    static final int ANONYMOUS_INNERCLASSES = 0;
+    static final int CEDL_INNERCLASS = 1;
+    static final int CEDL_MAINCLASS = 2;
 
-    private static final String INIT_COMPONENTS_HEADER =
-        "private void initComponents() {\n"; // NOI18N
-    private static final String INIT_COMPONENTS_FOOTER = "}\n"; // NOI18N
-    private static final String VARIABLES_HEADER =
-        FormUtils.getBundleString("MSG_VariablesBegin"); // NOI18N
-    private static final String VARIABLES_FOOTER =
-        FormUtils.getBundleString("MSG_VariablesEnd"); // NOI18N
-
-    /** The prefix for event handler sections */
+    private static final String SECTION_INIT_COMPONENTS = "initComponents"; // NOI18N
+    private static final String SECTION_VARIABLES = "variables"; // NOI18N
     private static final String EVT_SECTION_PREFIX = "event_"; // NOI18N
 
-    private static final String oneIndent = "  "; // [PENDING - indentation engine] // NOI18N
+    private static final String DEFAULT_LISTENER_CLASS_NAME = "FormListener"; // NOI18N
+
+    private static String variablesHeader;
+    private static String variablesFooter;
+    private static String eventDispatchCodeComment;
 
     /** The FormLoaderSettings instance */
     private static FormLoaderSettings formSettings = (FormLoaderSettings)
@@ -108,16 +103,34 @@ class JavaCodeGenerator extends CodeGenerator {
     private boolean canGenerate = true;
     private boolean codeUpToDate = true;
 
+    private String listenerClassName;
+    private String listenerVariableName;
+
+    // data needed when listener generation style is CEDL_MAINCLASS
+    private ClassElement mainClassElement;
+    private Class[] listenersInMainClass;
+    private Class[] listenersInMainClass_lastSet;
+
     private JavaEditor.SimpleSection initComponentsSection;
     private JavaEditor.SimpleSection variablesSection;
 
     private Map constructorProperties;
     private Map containerDependentProperties;
 
+    private FormProperty.Filter propertyFilter = new FormProperty.Filter() {
+        public boolean accept(FormProperty property) {
+            return (property.isChanged()
+                       && (constructorProperties == null
+                           || constructorProperties.get(property) == null))
+                    || property.getPreCode() != null
+                    || property.getPostCode() != null;
+        }
+    };
+
     /** Creates new JavaCodeGenerator */
 
-    public JavaCodeGenerator() {
-    }
+//    public JavaCodeGenerator() {
+//    }
 
     public void initialize(FormModel formModel) {
         if (!initialized) {
@@ -630,16 +643,18 @@ class JavaCodeGenerator extends CodeGenerator {
             + "_" + component.getName(); // NOI18N
     }
 
-    private void regenerateInitializer() {
+    private void regenerateInitComponents() {
         if (!initialized || !canGenerate)
             return;
 
+        // find indent engine to use or imitate
         IndentEngine indentEngine = IndentEngine.find(
                                         formEditorSupport.getDocument());
 
+        // create Writer for writing the generated code in
         StringWriter initCodeBuffer = new StringWriter(1024);
         Writer initCodeWriter;
-        if (formSettings.getUseIndentEngine())
+        if (formSettings.getUseIndentEngine()) // use original indent engine
             initCodeWriter = indentEngine.createWriter(
                                formEditorSupport.getDocument(),
                                initComponentsSection.getBegin().getOffset(),
@@ -653,7 +668,7 @@ class JavaCodeGenerator extends CodeGenerator {
             containerDependentProperties.clear();
 
         try {
-            initCodeWriter.write(INIT_COMPONENTS_HEADER);
+            initCodeWriter.write("private void initComponents() {\n"); // NOI18N
 
             if (addLocalVariables(initCodeWriter))
                 initCodeWriter.write("\n"); // NOI18N
@@ -665,6 +680,13 @@ class JavaCodeGenerator extends CodeGenerator {
             RADComponent top = formModel.getTopRADComponent();
             addCreateCode(top, initCodeWriter);
             initCodeWriter.write("\n"); // NOI18N
+
+            if (formSettings.getListenerGenerationStyle() == CEDL_INNERCLASS
+                && anyEvents())
+            {
+                addDispatchListenerDeclaration(initCodeWriter);
+                initCodeWriter.write("\n"); // NOI18N
+            }
 
             for (int i = 0; i < nonVisualComponents.length; i++) {
                 addInitCode(nonVisualComponents[i], initCodeWriter, 0);
@@ -688,35 +710,39 @@ class JavaCodeGenerator extends CodeGenerator {
 
                 String sizeText = ""; // NOI18N
 
-                switch (formPolicy) {
-                    case RADVisualFormContainer.GEN_PACK:
-                        sizeText = "pack();\n"; // NOI18N
-                        break;
-                    case RADVisualFormContainer.GEN_BOUNDS:
-                        if (genCenter) {
-                            StringBuffer sizeBuffer = new StringBuffer();
-                            if (genSize) {
-                                sizeBuffer.append("pack();\n"); // NOI18N
-                                sizeBuffer.append("java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();\n"); // NOI18N
-                                sizeBuffer.append("setSize(new java.awt.Dimension("+formSize.width + ", " + formSize.height + "));\n"); // NOI18N
-                                sizeBuffer.append("setLocation((screenSize.width-"+formSize.width+")/2,(screenSize.height-"+formSize.height+")/2);\n"); // NOI18N
-                            } else {
-                                sizeBuffer.append("pack();\n"); // NOI18N
-                                sizeBuffer.append("java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();\n"); // NOI18N
-                                sizeBuffer.append("java.awt.Dimension dialogSize = getSize();\n"); // NOI18N
-                                sizeBuffer.append("setLocation((screenSize.width-dialogSize.width)/2,(screenSize.height-dialogSize.height)/2);\n"); // NOI18N
-                            }
-
-                            sizeText = sizeBuffer.toString();
-
-                        } else if (genPosition && genSize) { // both size and position
-                            sizeText = "setBounds("+formPosition.x + ", " + formPosition.y +", " + formSize.width + ", " + formSize.height + ");\n"; // NOI18N
-                        } else if (genPosition) { // position only
-                            sizeText = "setLocation(new java.awt.Point("+formPosition.x + ", " + formPosition.y + "));\n"; // NOI18N
-                        } else if (genSize) { // size only
-                            sizeText = "setSize(new java.awt.Dimension("+formSize.width + ", " + formSize.height + "));\n"; // NOI18N
+                if (formPolicy == RADVisualFormContainer.GEN_PACK)
+                    sizeText = "pack();\n"; // NOI18N
+                else if (formPolicy == RADVisualFormContainer.GEN_BOUNDS) {
+                    if (genCenter) {
+                        StringBuffer sizeBuffer = new StringBuffer();
+                        if (genSize) {
+//                                sizeBuffer.append("pack();\n"); // NOI18N
+                            sizeBuffer.append("java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();\n"); // NOI18N
+                            sizeBuffer.append("setBounds((screenSize.width-"+formSize.width+")/2, (screenSize.height-"+formSize.height+")/2, "+formSize.width + ", " + formSize.height + ");\n"); // NOI18N
+//                                sizeBuffer.append("setSize(new java.awt.Dimension("+formSize.width + ", " + formSize.height + "));\n"); // NOI18N
+//                                sizeBuffer.append("setLocation((screenSize.width-"+formSize.width+")/2,(screenSize.height-"+formSize.height+")/2);\n"); // NOI18N
                         }
-                        break;
+                        else {
+                            sizeBuffer.append("pack();\n"); // NOI18N
+                            sizeBuffer.append("java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();\n"); // NOI18N
+                            sizeBuffer.append("java.awt.Dimension dialogSize = getSize();\n"); // NOI18N
+                            sizeBuffer.append("setLocation((screenSize.width-dialogSize.width)/2,(screenSize.height-dialogSize.height)/2);\n"); // NOI18N
+                        }
+                        sizeText = sizeBuffer.toString();
+                    }
+                    else if (genPosition && genSize) // both size and position
+                        sizeText = "setBounds("+formPosition.x + ", " // NOI18N
+                                   + formPosition.y +", " // NOI18N
+                                   + formSize.width + ", " // NOI18N
+                                   + formSize.height + ");\n"; // NOI18N
+                    else if (genPosition) // position only
+                        sizeText = "setLocation(new java.awt.Point(" // NOI18N
+                                   + formPosition.x + ", " // NOI18N
+                                   + formPosition.y + "));\n"; // NOI18N
+                    else if (genSize) // size only
+                        sizeText = "setSize(new java.awt.Dimension(" // NOI18N
+                                   + formSize.width + ", " // NOI18N
+                                   + formSize.height + "));\n"; // NOI18N
                 }
 
                 initCodeWriter.write(sizeText);
@@ -727,18 +753,30 @@ class JavaCodeGenerator extends CodeGenerator {
             if (containerDependentProperties != null)
                 containerDependentProperties.clear();
 
-            initCodeWriter.write(INIT_COMPONENTS_FOOTER);
+            initCodeWriter.write("}\n"); // NOI18N
+
+            int listenerCodeStyle = formSettings.getListenerGenerationStyle();
+            if ((listenerCodeStyle == CEDL_INNERCLASS
+                  || listenerCodeStyle == CEDL_MAINCLASS)
+                && anyEvents())
+            {
+                initCodeWriter.write("\n"); // NOI18N
+                initCodeWriter.write(getEventDispatchCodeComment());
+                initCodeWriter.write("\n"); // NOI18N
+
+                generateDispatchListenerCode(initCodeWriter);
+            }
+            else listenersInMainClass = null;
+
             initCodeWriter.close();
 
             // set the text into the guarded block
-            synchronized(GEN_LOCK) {
-                String newText = initCodeBuffer.toString();
-                if (!formSettings.getUseIndentEngine())
-                    newText = indentCode(newText, indentEngine);
+            String newText = initCodeBuffer.toString();
+            if (!formSettings.getUseIndentEngine())
+                newText = indentCode(newText, indentEngine);
 
-                initComponentsSection.setText(newText);
-                clearUndo();
-            }
+            initComponentsSection.setText(newText);
+            clearUndo();
         }
         catch (IOException e) { // should not happen
             e.printStackTrace();
@@ -763,23 +801,21 @@ class JavaCodeGenerator extends CodeGenerator {
             variablesWriter = variablesBuffer;
 
         try {
-            variablesWriter.write(VARIABLES_HEADER);
+            variablesWriter.write(getVariablesHeaderComment());
             variablesWriter.write("\n"); // NOI18N
 
             addVariables(variablesWriter);
 
-            variablesWriter.write(VARIABLES_FOOTER);
+            variablesWriter.write(getVariablesFooterComment());
             variablesWriter.write("\n"); // NOI18N
             variablesWriter.close();
 
-            synchronized(GEN_LOCK) {
-                String newText = variablesBuffer.toString();
-                if (!formSettings.getUseIndentEngine())
-                    newText = indentCode(newText, indentEngine);
+            String newText = variablesBuffer.toString();
+            if (!formSettings.getUseIndentEngine())
+                newText = indentCode(newText, indentEngine);
 
-                variablesSection.setText(newText);
-                clearUndo();
-            }
+            variablesSection.setText(newText);
+            clearUndo();
         }
         catch (IOException e) { // should not happen
             e.printStackTrace();
@@ -788,14 +824,12 @@ class JavaCodeGenerator extends CodeGenerator {
 
     private void regenerateEventHandlers() {
         // only missing handler methods are generated, existing are left intact
-        EventHandler[] handlers = formModel.getFormEventHandlers().getAllHandlers();
-        for (int i=0; i < handlers.length; i++) {
-            EventHandler eh = handlers[i];
-            generateEventHandler(eh.getName(),
-                                 eh.getParameterTypes(),
-                                 eh.getExceptionTypes(),
+        FormEvents formEvents = formModel.getFormEvents();
+        String[] handlers = formEvents.getAllEventHandlers();
+        for (int i=0; i < handlers.length; i++)
+            generateEventHandler(handlers[i],
+                                 formEvents.getOriginalListenerMethod(handlers[i]),
                                  null);
-        }
     }
 
     private void addCreateCode(RADComponent comp, Writer initCodeWriter)
@@ -930,7 +964,7 @@ class JavaCodeGenerator extends CodeGenerator {
             initCodeWriter.write("e.printStackTrace();\n"); // NOI18N
             initCodeWriter.write("}\n"); // NOI18N
         }
-        else { // generate component creation code
+        else { // generate standard component creation code
             StringBuffer varBuf = new StringBuffer();
 
             int declareMask = CodeVariable.SCOPE_MASK
@@ -962,9 +996,12 @@ class JavaCodeGenerator extends CodeGenerator {
                     desc = new ConstructorsDescriptor(comp.getBeanClass());
 
                 CreationDescriptor.Creator creator =
-                    desc.findBestCreator(comp.getAllBeanProperties(),
+                    desc.findBestCreator(comp.getKnownBeanProperties(),
                                          CreationDescriptor.CHANGED_ONLY);
-                
+                if (creator == null) // known properties are not enough...
+                    creator = desc.findBestCreator(comp.getAllBeanProperties(),
+                                               CreationDescriptor.CHANGED_ONLY);
+
                 Class[] exceptions = creator.getExceptionTypes();
                 if (insideMethod && needTryCode(exceptions)) {
                     if ((varType & declareMask) == CodeVariable.LOCAL) {
@@ -990,7 +1027,7 @@ class JavaCodeGenerator extends CodeGenerator {
                     props = new FormProperty[propNames.length];
 
                     for (int i=0; i < propNames.length; i++) {
-                        FormProperty prop = comp.getPropertyByName(propNames[i]);
+                        FormProperty prop = comp.getBeanProperty(propNames[i]);
                         props[i] = prop;
                         constructorProperties.put(prop, prop);
                     }
@@ -1045,36 +1082,32 @@ class JavaCodeGenerator extends CodeGenerator {
         if (!comp.hasHiddenState() 
                 && (genType == null || VALUE_GENERATE_CODE.equals(genType)))
         {   // not serialized
-            FormProperty[] props = comp.getAllBeanProperties();
-            for (int i = 0; i < props.length; i++) {
-                FormProperty prop = props[i];
-                if ((prop.isChanged()
-                     && (constructorProperties == null
-                         || constructorProperties.get(prop) == null))
-                    || prop.getPreCode() != null
-                    || prop.getPostCode() != null)
-                {
-                    if (!FormUtils.isContainerContentDependentProperty(
-                                    comp.getBeanClass(), prop.getName()))
-                        generatePropertySetter(prop, comp, initCodeWriter);
-                    else {
-                        // hack for properties that can't be set until all
-                        // children are added to the container
-                        java.util.List propList;
-                        if (containerDependentProperties != null) {
-                            propList = (java.util.List) containerDependentProperties.get(comp);
-                        }
-                        else {
-                            containerDependentProperties = new HashMap();
-                            propList = null;
-                        }
-                        if (propList == null) {
-                            propList = new LinkedList();
-                            containerDependentProperties.put(comp, propList);
-                        }
+            Iterator it = comp.getBeanPropertiesIterator(propertyFilter, false);
+            while (it.hasNext()) {
+                FormProperty prop = (FormProperty) it.next();
 
-                        propList.add(prop);
+                if (!FormUtils.isContainerContentDependentProperty(
+                                comp.getBeanClass(), prop.getName()))
+                {
+                    generatePropertySetter(prop, comp, initCodeWriter);
+                }
+                else {
+                    // hack for properties that can't be set until all
+                    // children are added to the container
+                    java.util.List propList;
+                    if (containerDependentProperties != null)
+                        propList = (java.util.List)
+                                   containerDependentProperties.get(comp);
+                    else {
+                        containerDependentProperties = new HashMap();
+                        propList = null;
                     }
+                    if (propList == null) {
+                        propList = new LinkedList();
+                        containerDependentProperties.put(comp, propList);
+                    }
+
+                    propList.add(prop);
                 }
             }
         }
@@ -1138,7 +1171,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
         initCodeWriter.write("\n"); // NOI18N
 
-        // hack for properties that can't be set until all children 
+        // hack for properties that can't be set until all child components
         // are added to the container
         java.util.List postProps;
         if (containerDependentProperties != null
@@ -1171,51 +1204,52 @@ class JavaCodeGenerator extends CodeGenerator {
             }
         }
         else if (comp instanceof RADMenuComponent) {
-            String menuText;
+            String menuCode;
             RADMenuComponent menuComp = (RADMenuComponent) comp;
             Class contClass = container.getBeanClass();
 
             if (menuComp.getMenuItemType() == RADMenuItemComponent.T_JMENUBAR
                     && javax.swing.RootPaneContainer.class.isAssignableFrom(contClass))
-                menuText = "setJMenuBar"; // NOI18N
+                menuCode = "setJMenuBar"; // NOI18N
             else if (menuComp.getMenuItemType() == RADMenuItemComponent.T_MENUBAR
                      && java.awt.Frame.class.isAssignableFrom(contClass))
-                menuText = "setMenuBar"; // NOI18N
+                menuCode = "setMenuBar"; // NOI18N
             else
-                menuText = null;
+                menuCode = null;
 
-            if (menuText != null) {
-                initCodeWriter.write(getVariableGenString(container));
-                initCodeWriter.write(menuText);
+            if (menuCode != null) {
+                initCodeWriter.write(getComponentInvokeString(container, true));
+                initCodeWriter.write(menuCode);
                 initCodeWriter.write("("); // NOI18N
-                initCodeWriter.write(menuComp.getName());
+                initCodeWriter.write(getComponentParameterString(menuComp, true));
                 initCodeWriter.write(");\n"); // NOI18N
             }
         }
     }
 
-    private void generateMenuAddCode(RADComponent comp, RADMenuComponent container, Writer initCodeWriter) throws IOException {
-        if ((comp instanceof RADMenuItemComponent) &&(((RADMenuItemComponent)comp).getMenuItemType() == RADMenuItemComponent.T_SEPARATOR)) {
-            // treat AWT Separator specially - it is not a component
-            initCodeWriter.write(container.getName());
-            initCodeWriter.write(".addSeparator();"); // NOI18N
-        } else {
-            initCodeWriter.write(container.getName());
-            initCodeWriter.write(".add("); // NOI18N
-            initCodeWriter.write(comp.getName());
+    private void generateMenuAddCode(RADComponent comp,
+                                     RADMenuComponent container,
+                                     Writer initCodeWriter)
+        throws IOException
+    {
+        if (comp instanceof RADMenuItemComponent
+            && ((RADMenuItemComponent)comp).getMenuItemType()
+                             == RADMenuItemComponent.T_SEPARATOR)
+        {   // treat AWT Separator specially - it is not a regular component
+            initCodeWriter.write(getComponentInvokeString(container, true));
+            initCodeWriter.write("addSeparator();"); // NOI18N
+        }
+        else {
+            initCodeWriter.write(getComponentInvokeString(container, true));
+            initCodeWriter.write("add("); // NOI18N
+            initCodeWriter.write(getComponentParameterString(comp, true));
             initCodeWriter.write(");\n"); // NOI18N
         }
     }
 
-    /*  private void generateIndexedPropertySetter(RADComponent comp, PropertyDescriptor desc, StringBuffer text, String indent) {
-        System.out.println("generateIndexedPropertySetter: NotImplemented...(Property: "+desc.getName()+", Value: "+value+")"); // [PENDING]
-        }
-    */
-
-    // why is this method synchronized??
-    private synchronized void generatePropertySetter(FormProperty prop,
-                                                     RADComponent comp,
-                                                     Writer initCodeWriter)
+    private void generatePropertySetter(FormProperty prop,
+                                        RADComponent comp,
+                                        Writer initCodeWriter)
         throws IOException
     {
         // 1. pre-initialization code
@@ -1251,7 +1285,7 @@ class JavaCodeGenerator extends CodeGenerator {
                     }
                 }
 
-                initCodeWriter.write(getVariableGenString(comp));
+                initCodeWriter.write(getComponentInvokeString(comp, true));
                 initCodeWriter.write(javaStr);
                 initCodeWriter.write(";\n"); // NOI18N
 
@@ -1270,112 +1304,143 @@ class JavaCodeGenerator extends CodeGenerator {
         }
     }
 
-    private void generateComponentEvents(RADComponent comp, Writer initCodeWriter) throws IOException {
-        String variablePrefix = getVariableGenString(comp);
+    // generates code for handling events of one component
+    // (all component.addXXXListener() calls)
+    private void generateComponentEvents(RADComponent component,
+                                         Writer initCodeWriter)
+        throws IOException
+    {
+        EventSetDescriptor lastEventSetDesc = null;
+        java.util.List listenerEvents = null;
 
-        EventSet[] eventSets = comp.getEventHandlers().getEventSets();
+        // we must deal somehow with the fact that for some (pathological)
+        // events only anonymous innerclass listener can be generated
+        // (CEDL cannot be used)
+        int defaultMode = formSettings.getListenerGenerationStyle();
+        int mode = defaultMode;
+        boolean mixedMode = false;
 
-        // go through the event sets - we generate the innerclass for whole
-        // EventSet at once
-        for (int i = 0; i < eventSets.length; i++) {
-            Event events[] = eventSets[i].getEvents();
-            EventSetDescriptor eventSetDesc = eventSets[i].getEventSetDescriptor();
+        Event[] events = component.getKnownEvents();
+        for (int i=0; i < events.length; i++) {
+            Event event = events[i];
+            if (!event.hasEventHandlers())
+                continue;
 
-            // try to find adpater to use instead of the listener
-            Class classToGenerate = BeanSupport.getAdapterForListener(
-                eventSetDesc.getListenerType());
-            boolean adapterUsed = true;
-            if (classToGenerate == null) { // if not found, we must use the listener
-                classToGenerate = eventSetDesc.getListenerType();
-                adapterUsed = false;
+            EventSetDescriptor eventSetDesc = event.getEventSetDescriptor();
+            if (eventSetDesc != lastEventSetDesc) {
+                if (lastEventSetDesc != null) {
+                    // new listener encountered, generate the previous one
+                    generateListenerAddCode(component, lastEventSetDesc, listenerEvents, mode, initCodeWriter);
+                    if (mixedMode)
+                        generateListenerAddCode(component, lastEventSetDesc, listenerEvents, defaultMode, initCodeWriter);
+                    if (listenerEvents != null)
+                        listenerEvents.clear();
+                }
+
+                lastEventSetDesc = eventSetDesc;
             }
 
-            // test if we should generate the addListener for this eventSet
-            boolean shouldGenerate = false;
-            boolean[] shouldGenerateEvent = new boolean[events.length];
-            for (int j = 0; j < events.length; j++) {
-                if (events[j].getHandlers().size() > 0) {
-                    shouldGenerate = true;
-                    shouldGenerateEvent[j] = true;
-                    continue;
+            if (defaultMode != ANONYMOUS_INNERCLASSES)
+                if (mode == defaultMode) {
+                    if (!event.isInCEDL())
+                        mode = ANONYMOUS_INNERCLASSES;
                 }
-                else shouldGenerateEvent[j] = false;
-            }
-            // if we should generate inner class for this listener and we do not
-            // use adapter, we must generate all methods!!!
-            if (shouldGenerate && !adapterUsed)
-                for (int j = 0; j < events.length; j++)
-                    shouldGenerateEvent[j] = true;
+                else if (event.isInCEDL())
+                    mixedMode = true;
 
-            if (shouldGenerate) {
-                Method eventAddMethod = eventSetDesc.getAddListenerMethod();
-                Class[] exceptions = eventAddMethod.getExceptionTypes();
-                if (needTryCode(exceptions)) {
-                    initCodeWriter.write("try {\n"); // NOI18N
-                } else {
-                    exceptions = null;
-                }
-
-                // beginning of the addXXXListener
-                initCodeWriter.write(variablePrefix);
-                initCodeWriter.write(eventSetDesc.getAddListenerMethod().getName());
-                initCodeWriter.write("(new "); // NOI18N
-                initCodeWriter.write(classToGenerate.getName() + "() {\n"); // NOI18N
-
-                // listener innerclass' methods - indented one more indent to the right
-                for (int j = 0; j < events.length; j++) {
-                    if (!shouldGenerateEvent[j])
-                        continue;
-
-                    Method evtMethod = events[j].getListenerMethod();
-                    Class[] evtParams = evtMethod.getParameterTypes();
-                    String[] varNames;
-
-                    if ((evtParams.length == 1) &&
-                        (java.util.EventObject.class.isAssignableFrom(evtParams[0])))
-                        varNames = new String[] {
-                            FormEditor.getFormSettings().getEventVariableName()
-                        };
-                    else {
-                        varNames = new String[evtParams.length];
-                        for (int k = 0; k < evtParams.length; k ++)
-                            varNames[k] = "param" + k; // NOI18N
-                    }
-
-                    // generate the listener's method
-                    initCodeWriter.write(getMethodHeaderText(evtMethod, varNames));
-                    initCodeWriter.write(" {\n"); // NOI18N
-
-                    if (events[j].getHandlers().size() > 0) {
-                        // generate the call to the handlers
-                        for (Iterator it = events[j].getHandlers().iterator(); it.hasNext();) {
-                            EventHandler handler = (EventHandler) it.next();
-                            if (evtMethod.getName().equals(handler.getName()))
-                                initCodeWriter.write(formEditorSupport.getFormDataObject().getName() + ".this."); // NOI18N
-                            initCodeWriter.write(handler.getName());
-                            initCodeWriter.write("("); // NOI18N
-                            for (int k = 0; k < varNames.length; k++) {
-                                initCodeWriter.write(varNames[k]);
-                                if (k != varNames.length - 1)
-                                    initCodeWriter.write(", "); // NOI18N
-                            }
-                            initCodeWriter.write(");"); // NOI18N
-                            initCodeWriter.write("\n"); // NOI18N
-                        }
-                    }
-                    initCodeWriter.write("}\n"); // NOI18N
-                }
-
-                // end of the innerclass
-                initCodeWriter.write("});\n"); // NOI18N
-
-                // generate the catch code for the addXXXListener method
-                if (exceptions != null)
-                    generateCatchCode(exceptions, initCodeWriter);
-
-                initCodeWriter.write("\n"); // NOI18N
+            if (defaultMode == ANONYMOUS_INNERCLASSES || !event.isInCEDL()) {
+                if (listenerEvents == null)
+                    listenerEvents = new ArrayList();
+                listenerEvents.add(event);
             }
         }
+
+        if (lastEventSetDesc != null) {
+            // generate the last listener
+            generateListenerAddCode(component, lastEventSetDesc, listenerEvents, mode, initCodeWriter);
+            if (mixedMode)
+                generateListenerAddCode(component, lastEventSetDesc, listenerEvents, defaultMode, initCodeWriter);
+            initCodeWriter.write("\n"); // NOI18N
+        }
+    }
+
+    // generates complete code for handling one listener
+    // (one component.addXXXListener() call)
+    private void generateListenerAddCode(RADComponent comp,
+                                         EventSetDescriptor eventSetDesc,
+                                         java.util.List eventList,
+                                         int mode,
+                                         Writer codeWriter)
+        throws IOException
+    {
+        Method addListenerMethod = eventSetDesc.getAddListenerMethod();
+        Class[] exceptions = addListenerMethod.getExceptionTypes();
+        if (needTryCode(exceptions))
+            codeWriter.write("try {\n"); // NOI18N
+        else
+            exceptions = null;
+
+        codeWriter.write(getComponentInvokeString(comp, true));
+        codeWriter.write(addListenerMethod.getName());
+        codeWriter.write("("); // NOI18N
+
+        switch (mode) {
+            case ANONYMOUS_INNERCLASSES:
+                codeWriter.write("new "); // NOI18N
+
+                // try to find adpater to use instead of full listener impl
+                Class listenerType = eventSetDesc.getListenerType();
+                Class adapterClass = BeanSupport.getAdapterForListener(
+                                                           listenerType);
+                if (adapterClass != null) { // use listener adapter class
+                    codeWriter.write(adapterClass.getName() + "() {\n"); // NOI18N
+
+                    for (int i=0; i < eventList.size(); i++) {
+                        Event event = (Event) eventList.get(i);
+                        String[] paramNames = generateListenerMethodHeader(
+                                   null, event.getListenerMethod(), codeWriter);
+                        generateEventHandlerCalls(event, paramNames, codeWriter);
+                        generateListenerMethodFooter(codeWriter);
+                    }
+                }
+                else { // generate full listener implementation (all methods)
+                    codeWriter.write(listenerType.getName() + "() {\n"); // NOI18N
+
+                    Method[] methods = eventSetDesc.getListenerMethods();
+                    for (int i=0; i < methods.length; i++) {
+                        Method m = methods[i];
+                        Event event = null;
+                        for (int j=0; j < eventList.size(); j++) {
+                            Event e = (Event) eventList.get(j);
+                            if (m.equals(e.getListenerMethod())) {
+                                event = e;
+                                break;
+                            }
+                        }
+                        String[] paramNames =
+                            generateListenerMethodHeader(null, m, codeWriter);
+                        if (event != null)
+                            generateEventHandlerCalls(event, paramNames, codeWriter);
+                        generateListenerMethodFooter(codeWriter);
+                    }
+                }
+
+                codeWriter.write("}"); // NOI18N
+                break;
+
+            case CEDL_INNERCLASS:
+                codeWriter.write(getListenerVariableName());
+                break;
+
+            case CEDL_MAINCLASS:
+                codeWriter.write("this"); // NOI18N
+                break;
+        }
+
+        if (exceptions != null)
+            generateCatchCode(exceptions, codeWriter);
+
+        codeWriter.write(");\n"); // NOI18N
     }
 
     private void addVariables(Writer variablesWriter)
@@ -1428,15 +1493,48 @@ class JavaCodeGenerator extends CodeGenerator {
             initCodeWriter.write("\n"); // NOI18N
             anyVariable = true;
         }
+
         return anyVariable;
     }
 
-    private String getVariableGenString(RADComponent comp) {
-        if (comp == formModel.getTopRADComponent()) {
-                return ""; // NOI18N
-        } else {
-            return comp.getName() + "."; // NOI18N
-        }
+    private String getComponentParameterString(RADComponent component,
+                                               boolean inMainClass)
+    {
+        if (component == formModel.getTopRADComponent())
+            return inMainClass ?
+                     "this" : // NOI18N
+                     formEditorSupport.getFormDataObject().getName() + ".this"; // NOI18N
+        else
+            return component.getName();
+    }
+
+    private String getComponentInvokeString(RADComponent component,
+                                            boolean inMainClass)
+    {
+        if (component == formModel.getTopRADComponent())
+            return inMainClass ?
+                     "" : // NOI18N
+                     formEditorSupport.getFormDataObject().getName() + ".this."; // NOI18N
+        else
+            return component.getName() + "."; // NOI18N
+    }
+
+    private static String getVariablesHeaderComment() {
+        if (variablesHeader == null)
+            variablesHeader = FormUtils.getBundleString("MSG_VariablesBegin"); // NOI18N
+        return variablesHeader;
+    }
+
+    private static String getVariablesFooterComment() {
+        if (variablesFooter == null)
+            variablesFooter = FormUtils.getBundleString("MSG_VariablesEnd"); // NOI18N
+        return variablesFooter;
+    }
+
+    private static String getEventDispatchCodeComment() {
+        if (eventDispatchCodeComment == null)
+            eventDispatchCodeComment = FormUtils.getBundleString("MSG_EventDispatchCodeComment"); // NOI18N
+        return eventDispatchCodeComment;
     }
 
     private boolean needTryCode(Class[] exceptions) {
@@ -1459,7 +1557,7 @@ class JavaCodeGenerator extends CodeGenerator {
             Class exception = exceptions[i];
             if (!Exception.class.isAssignableFrom(exception)
                     || RuntimeException.class.isAssignableFrom(exception))
-                continue; // needs not be caught
+                continue; // need not be caught
 
             if (i > 0) {
                 int j;
@@ -1475,9 +1573,6 @@ class JavaCodeGenerator extends CodeGenerator {
             initCodeWriter.write(" "); // NOI18N
 
             String varName = "e" + ++exCount; // NOI18N
-//            int varCount = 0;
-//            while (formModel.getVariablePool().isReserved(varName))
-//                varName = "e" + (++varCount); // NOI18N
 
             initCodeWriter.write(varName);
             initCodeWriter.write(") {\n"); // NOI18N
@@ -1489,8 +1584,189 @@ class JavaCodeGenerator extends CodeGenerator {
         initCodeWriter.write("\n"); // NOI18N
     }
 
+    private void addDispatchListenerDeclaration(Writer codeWriter)
+        throws IOException
+    {
+        listenerVariableName = null;
+        codeWriter.write(getListenerClassName());
+        codeWriter.write(" "); // NOI18N
+        codeWriter.write(getListenerVariableName());
+        codeWriter.write(" = new "); // NOI18N
+        codeWriter.write(getListenerClassName());
+        codeWriter.write("();\n"); // NOI18N
+    }
+
+    private void generateDispatchListenerCode(Writer codeWriter)
+        throws IOException
+    {
+        FormEvents formEvents = formModel.getFormEvents();
+        boolean innerclass = formSettings.getListenerGenerationStyle() == CEDL_INNERCLASS;
+        boolean mainclass = formSettings.getListenerGenerationStyle() == CEDL_MAINCLASS;
+
+        Class[] listenersToImplement = formEvents.getCEDLTypes();
+        Arrays.sort(listenersToImplement, new Comparator() {
+            public int compare(Object o1, Object o2) {
+                return ((Class)o1).getName().compareTo(((Class)o2).getName());
+            }
+        });
+
+        listenersInMainClass = mainclass ? listenersToImplement : null;
+
+        if (innerclass) {
+            codeWriter.write("private class "); // NOI18N
+            codeWriter.write(getListenerClassName());
+            codeWriter.write(" implements "); // NOI18N
+            for (int i=0; i < listenersToImplement.length; i++) {
+                codeWriter.write(listenersToImplement[i].getName());
+                if (i + 1 < listenersToImplement.length)
+                    codeWriter.write(", "); // NOI18N
+            }
+            codeWriter.write(" {\n"); // NOI18N
+        }
+
+        for (int i=0; i < listenersToImplement.length; i++) {
+            boolean implementedInSuperclass =
+                mainclass && listenersToImplement[i].isAssignableFrom(
+                                          formModel.getFormBaseClass());
+
+            Method[] methods = listenersToImplement[i].getMethods();
+            Arrays.sort(methods, new Comparator() {
+                public int compare(Object o1, Object o2) {
+                    return ((Method)o1).getName().compareTo(((Method)o2).getName());
+                }
+            });
+
+            for (int j=0; j < methods.length; j++) {
+                Method method = methods[j];
+                Event[] events = formEvents.getEventsForCEDLMethod(method);
+                if (implementedInSuperclass && events.length == 0)
+                    continue;
+
+                String[] paramNames =
+                    generateListenerMethodHeader(null, method, codeWriter);
+
+                for (int k=0; k < events.length; k++) {
+                    Event event = events[k];
+                    if (k + 1 < events.length
+                        || method.getReturnType() == Void.TYPE)
+                    {
+                        codeWriter.write(k == 0 ? "if (" : "else if ("); // NOI18N
+                        codeWriter.write(paramNames[0]);
+                        codeWriter.write(".getSource() == "); // NOI18N
+                        codeWriter.write(getComponentParameterString(
+                                             event.getComponent(), false));
+                        codeWriter.write(") {\n"); // NOI18N
+                        generateEventHandlerCalls(event, paramNames, codeWriter);
+                        codeWriter.write("}\n"); // NOI18N
+                    }
+                    else { // the listener method returns something
+                        if (k > 0)
+                            codeWriter.write("else {\n"); // NOI8N
+                        generateEventHandlerCalls(event, paramNames, codeWriter);
+                        if (k > 0)
+                            codeWriter.write("}\n"); // NOI18N
+                    }
+                }
+                if (implementedInSuperclass)
+                    generateSuperListenerCall(method, paramNames, codeWriter);
+
+                generateListenerMethodFooter(codeWriter);
+
+                if (j+1 < methods.length || i+1 < listenersToImplement.length)
+                    codeWriter.write("\n"); // NOI18N
+            }
+        }
+
+        if (innerclass)
+            codeWriter.write("}\n"); // NOI18N
+    }
+
+    // modifies the form class declaration to implement required listeners
+    // (when event dispatching code is generated as CEDL_MAINCLASS)
+    private void ensureMainClassImplementsListeners() {
+        if (listenersInMainClass == listenersInMainClass_lastSet)
+            return; // no change from last time
+
+        if (listenersInMainClass != null
+            && listenersInMainClass_lastSet != null
+            && listenersInMainClass.length == listenersInMainClass_lastSet.length)
+        {
+            boolean different = false;
+            for (int i=0; i < listenersInMainClass.length; i++)
+                if (listenersInMainClass[i] != listenersInMainClass_lastSet[i]) {
+                    different = true;
+                    break;
+                }
+            if (!different)
+                return; // no change from last time
+        }
+
+        if (mainClassElement == null) {
+            String name = formEditorSupport.getFormDataObject().getName();
+            ClassElement[] topClasses =
+                formEditorSupport.getFormDataObject().getSource().getClasses();
+            for (int i=0; i < topClasses.length; i++)
+                if (topClasses[i].getName().getName().equals(name)) {
+                    mainClassElement = topClasses[i];
+                    break;
+                }
+            if (mainClassElement == null) // still null? hmm...
+                return;
+        }
+
+        java.util.List toRemove = null;
+        if (listenersInMainClass_lastSet != null)
+            for (int i=0; i < listenersInMainClass_lastSet.length; i++) {
+                Class cls = listenersInMainClass_lastSet[i];
+                boolean remains = false;
+                if (listenersInMainClass != null)
+                    for (int j=0; j < listenersInMainClass.length; j++)
+                        if (cls == listenersInMainClass[j]) {
+                            remains = true;
+                            break;
+                        }
+                if (!remains) {
+                    if (toRemove == null)
+                        toRemove = new ArrayList();
+                    toRemove.add(cls.getName());
+                }
+            }
+
+        Identifier[] actualInterfaces = mainClassElement.getInterfaces();
+        java.util.List interfacesToBeSet = new ArrayList();
+
+        // first take the current interfaces and exclude the removed ones
+        for (int i=0; i < actualInterfaces.length; i++)
+            if (toRemove == null
+                    || !toRemove.contains(actualInterfaces[i].getFullName()))
+                interfacesToBeSet.add(actualInterfaces[i]);
+
+        // then ensure all required interfaces are present
+        if (listenersInMainClass != null)
+            for (int i=0; i < listenersInMainClass.length; i++) {
+                String name = listenersInMainClass[i].getName();
+                boolean alreadyIn = false;
+                for (int j=0; j < actualInterfaces.length; j++)
+                    if (name.equals(actualInterfaces[j].getFullName())) {
+                        alreadyIn = true;
+                        break;
+                    }
+                if (!alreadyIn)
+                    interfacesToBeSet.add(Identifier.create(name));
+            }
+
+        Identifier[] newInterfaces = new Identifier[interfacesToBeSet.size()];
+        interfacesToBeSet.toArray(newInterfaces);
+        try {
+            mainClassElement.setInterfaces(newInterfaces);
+        }
+        catch (SourceException ex) {}
+
+        listenersInMainClass_lastSet = listenersInMainClass;
+    }
+
     // ---------
-    // generating general code structure
+    // generating general code structure (metadata from codestructure package)
 
     // java code for a statement
     private static String getStatementJavaString(CodeStatement statement,
@@ -1542,23 +1818,76 @@ class JavaCodeGenerator extends CodeGenerator {
         return origin.getJavaCodeString(parentStr, paramsStr);
     }
 
+    // ---------
+    // Events
+
+    private boolean anyEvents() {
+        return formModel.getFormEvents().hasEventsInCEDL();
+    }
+
+    private String getListenerClassName() {
+        if (listenerClassName == null) {
+            String initText = initComponentsSection.getText();
+            int index = initText.lastIndexOf("private class "); // NOI18N
+            if (index >= 0) {
+                StringBuffer nameBuffer = new StringBuffer(16);
+                index += "private class ".length(); // NOI18N
+
+                int length = initText.length();
+                while (index < length && initText.charAt(index) == ' ')
+                    index++;
+
+                int i = index;
+                while (i < length && initText.charAt(i) != ' ')
+                    nameBuffer.append(initText.charAt(i++));
+
+                if (i < length)
+                    listenerClassName = nameBuffer.toString();
+            }
+
+            if (listenerClassName == null) {
+                javax.swing.text.Document document = formEditorSupport.getDocument();
+                try {
+                    String wholeText = document.getText(0, document.getLength());
+                    listenerClassName = DEFAULT_LISTENER_CLASS_NAME;
+                    while (wholeText.indexOf(listenerClassName) >= 0)
+                        listenerClassName = "_" + listenerClassName; // NOI18N
+                }
+                catch (javax.swing.text.BadLocationException ex) {} // ignore
+            }
+
+            if (listenerClassName == null)
+                listenerClassName = DEFAULT_LISTENER_CLASS_NAME;
+        }
+
+        return listenerClassName;
+    }
+
+    private String getListenerVariableName() {
+        if (listenerVariableName == null) {
+            listenerVariableName = "formListener"; // NOI18N
+            CodeStructure codeStructure = formModel.getCodeStructure();
+            for (int i=1; codeStructure.isVariableNameReserved(listenerVariableName); i++)
+                listenerVariableName = "formListener" + i; // NOI18N
+        }
+        return listenerVariableName;
+    }
+
     // -----------------------------------------------------------------------------
     // Event handlers
 
     /** Generates the specified event handler.
-     * @return whether the event handler has been generated
      */
-    private boolean generateEventHandler(String handlerName,
-                                         String[] paramTypes,
-                                         String[] exceptTypes,
-                                         String bodyText)
+    private void generateEventHandler(String handlerName,
+                                      Method originalMethod,
+                                      String bodyText)
     {
         if (!initialized || !canGenerate)
-            return false;
+            return;
 
         JavaEditor.InteriorSection sec = getEventHandlerSection(handlerName);
         if (sec != null && bodyText == null)
-            return false;
+            return; // already exists, no need to generate
 
         IndentEngine engine = IndentEngine.find(formEditorSupport.getDocument());
         StringWriter buffer = new StringWriter();
@@ -1567,39 +1896,38 @@ class JavaCodeGenerator extends CodeGenerator {
                         initComponentsSection.getPositionAfter().getOffset(),
                         buffer);
 
-        synchronized(GEN_LOCK) {
-            try {
-                if (sec == null)
-                    sec = formEditorSupport.createInteriorSectionAfter(
-                        initComponentsSection, getEventSectionName(handlerName));
-                int i1, i2;
+        try {
+            if (sec == null)
+                sec = formEditorSupport.createInteriorSectionAfter(
+                          initComponentsSection,
+                          getEventSectionName(handlerName));
+            int i1, i2;
 
-                codeWriter.write(getEventHandlerHeader(handlerName, paramTypes, exceptTypes));
-                codeWriter.flush();
-                i1 = buffer.getBuffer().length();
-                if (bodyText == null)
-                    bodyText = getDefaultEventBody();
-                codeWriter.write(bodyText);
-                codeWriter.flush();
-                i2 = buffer.getBuffer().length();
-                codeWriter.write(getEventHandlerFooter());
-                codeWriter.flush();
+            generateListenerMethodHeader(handlerName, originalMethod, codeWriter);
+            codeWriter.flush();
+            i1 = buffer.getBuffer().length();
+            if (bodyText == null)
+                bodyText = getDefaultEventBody();
+            codeWriter.write(bodyText);
+            codeWriter.flush();
+            i2 = buffer.getBuffer().length();
+            generateListenerMethodFooter(codeWriter);
+            codeWriter.flush();
 
-                sec.setHeader(buffer.getBuffer().substring(0,i1));
-                sec.setBody(buffer.getBuffer().substring(i1,i2));
-                sec.setBottom(buffer.getBuffer().substring(i2));
+            sec.setHeader(buffer.getBuffer().substring(0,i1));
+            sec.setBody(buffer.getBuffer().substring(i1,i2));
+            sec.setBottom(buffer.getBuffer().substring(i2));
 
-                codeWriter.close();
-            } 
-            catch (javax.swing.text.BadLocationException e) {
-                return false;
-            }
-            catch (java.io.IOException ioe) {
-                return false;
-            }
-            clearUndo();
+            codeWriter.close();
+        } 
+        catch (javax.swing.text.BadLocationException e) {
+            return;
         }
-        return true;
+        catch (java.io.IOException ioe) {
+            return;
+        }
+
+        clearUndo();
     }
 
     /** Removes the specified event handler - removes the whole method together with the user code!
@@ -1610,54 +1938,10 @@ class JavaCodeGenerator extends CodeGenerator {
         if (section == null || !initialized || !canGenerate)
             return false;
 
-        synchronized(GEN_LOCK) {
-            section.deleteSection();
-            clearUndo();
-        }
+        section.deleteSection();
+        clearUndo();
 
         return true;
-    }
-
-    private String getEventHandlerHeader(String handlerName, String[] paramTypes, String[] exceptTypes) {
-        StringBuffer buf = new StringBuffer();
-
-        buf.append("private void "); // NOI18N
-        buf.append(handlerName);
-        buf.append("("); // NOI18N
-
-        // create variable names
-        String[] varNames = new String [paramTypes.length];
-
-        if (paramTypes.length == 1)
-            varNames [0] = paramTypes [0] + " " + formSettings.getEventVariableName(); // NOI18N
-        else
-            for (int i = 0; i < paramTypes.length; i ++)
-                varNames [i] = paramTypes [0] + " param" + i; // NOI18N
-
-        for (int i = 0; i < paramTypes.length; i++) {
-            buf.append(varNames[i]);
-            if (i != paramTypes.length - 1)
-                buf.append(", "); // NOI18N
-            else
-                buf.append(")"); // NOI18N
-        }
-
-        if (exceptTypes != null && exceptTypes.length > 0) {
-            buf.append(" throws "); // NOI18N
-
-            for (int i=0; i < exceptTypes.length; i++) {
-                buf.append(exceptTypes[i]);
-                if (i != exceptTypes.length - 1)
-                    buf.append(", "); // NOI18N
-            }
-        }
-        buf.append(" {\n"); // NOI18N
-
-        return buf.toString();
-    }
-
-    private String getEventHandlerFooter() {
-        return "}\n"; // NOI18N
     }
 
     private String getDefaultEventBody() {
@@ -1668,43 +1952,51 @@ class JavaCodeGenerator extends CodeGenerator {
      * @param oldHandlerName The old name of the event handler
      * @param newHandlerName The new name of the event handler
      */
-    private boolean renameEventHandler(String oldHandlerName,
-                                       String newHandlerName,
-                                       String[] paramTypes,
-                                       String[] exceptTypes)
+    private void renameEventHandler(String oldHandlerName,
+                                    String newHandlerName)
     {
         JavaEditor.InteriorSection sec = getEventHandlerSection(oldHandlerName);
         if (sec == null || !initialized || !canGenerate)
-            return false;
+            return;
+
+        String header = sec.getHeader();
+
+        // find the old handler name in the handler method header
+        int index = header.indexOf('(');
+        if (index < 0)
+            return; // should not happen unless the handler code is corrupted
+        index = header.substring(0, index).lastIndexOf(oldHandlerName);
+        if (index < 0)
+            return; // old name not found; should not happen
 
         IndentEngine engine = IndentEngine.find(formEditorSupport.getDocument());
         StringWriter buffer = new StringWriter();
         Writer codeWriter = engine.createWriter(formEditorSupport.getDocument(),
                                                 sec.getPositionBefore().getOffset(),
                                                 buffer);
-        synchronized(GEN_LOCK) {
-            try {
-                codeWriter.write(getEventHandlerHeader(newHandlerName, paramTypes, exceptTypes));
-                codeWriter.flush();
-                int i1 = buffer.getBuffer().length();
-                codeWriter.write(getEventHandlerFooter());
-                codeWriter.flush();
+        try {
+            codeWriter.write(header.substring(0, index));
+            codeWriter.write(newHandlerName);
+            codeWriter.write(header.substring(index + oldHandlerName.length()));
+            codeWriter.flush();
+            int i1 = buffer.getBuffer().length();
+            generateListenerMethodFooter(codeWriter);
+            codeWriter.flush();
 
-                sec.setHeader(buffer.getBuffer().substring(0,i1));
-                sec.setBottom(buffer.getBuffer().substring(i1));
-                sec.setName(getEventSectionName(newHandlerName));
+            sec.setHeader(buffer.getBuffer().substring(0, i1));
+            sec.setBottom(buffer.getBuffer().substring(i1));
+            sec.setName(getEventSectionName(newHandlerName));
 
-                codeWriter.close();
-            } 
-            catch (java.beans.PropertyVetoException e) {
-                return false;
-            }
-            catch (IOException e) {
-                return false;
-            }
-            clearUndo();
+            codeWriter.close();
+        } 
+        catch (java.beans.PropertyVetoException e) {
+            return;
         }
-        return true;
+        catch (IOException e) {
+            return;
+        }
+
+        clearUndo();
     }
 
     /** Focuses the specified event handler in the editor. */
@@ -1747,43 +2039,109 @@ class JavaCodeGenerator extends CodeGenerator {
         return EVT_SECTION_PREFIX + handlerName;
     }
 
-    /** A utility method for formatting method header text for specified
-     * method, its name and parameter names.
-     * @param m The method - its modifiers, return type, parameter types and
-     *                       exceptions are used
-     * @param paramNames An array of names of parameters - the length of this
-     *            array MUST be the same as the actual number of method's parameters
-     */
-    private String getMethodHeaderText(Method m, String[] paramNames) {
-        StringBuffer buf = new StringBuffer() ;
-        buf.append("public "); // NOI18N
-        buf.append(m.getReturnType().getName());
-        buf.append(" "); // NOI18N
-        buf.append(m.getName());
-        buf.append("("); // NOI18N
+    private String[] generateListenerMethodHeader(String methodName,
+                                                  Method originalMethod,
+                                                  Writer writer)
+        throws IOException
+    {
+        Class[] paramTypes = originalMethod.getParameterTypes();
+        String[] paramNames;
 
-        Class[] params = m.getParameterTypes();
-        for (int i = 0; i < params.length; i++) {
-            buf.append(params[i].getName());
-            buf.append(" "); // NOI18N
-            buf.append(paramNames[i]);
-            if (i != params.length - 1)
-                buf.append(", "); // NOI18N
+        if (paramTypes.length == 1
+            && EventObject.class.isAssignableFrom(paramTypes[0]))
+        {
+            paramNames = new String[] { formSettings.getEventVariableName() };
         }
-        buf.append(")"); // NOI18N
+        else {
+            paramNames = new String[paramTypes.length];
+            for (int i=0; i < paramTypes.length; i++)
+                paramNames[i] = "param" + i; // NOI18N
+        }
 
-        Class[] exceptions = m.getExceptionTypes();
+        // generate the method
+        writer.write(methodName != null ? "private " : "public "); // NOI18N
+        writer.write(originalMethod.getReturnType().getName());
+        writer.write(" "); // NOI18N
+        writer.write(methodName != null ? methodName : originalMethod.getName());
+        writer.write("("); // NOI18N
+
+        for (int i=0; i < paramTypes.length; i++) {
+            writer.write(paramTypes[i].getName());
+            writer.write(" "); // NOI18N
+            writer.write(paramNames[i]);
+            if (i + 1 < paramTypes.length)
+                writer.write(", "); // NOI18N
+        }
+        writer.write(")"); // NOI18N
+
+        Class[] exceptions = originalMethod.getExceptionTypes();
         if (exceptions.length != 0) {
-            buf.append("\n"); // NOI18N
-            buf.append("throws "); // NOI18N
-        }
-        for (int i = 0; i < exceptions.length; i++) {
-            buf.append(exceptions[i].getName());
-            if (i != exceptions.length - 1)
-                buf.append(", "); // NOI18N
+            writer.write("throws "); // NOI18N
+            for (int i=0; i < exceptions.length; i++) {
+                writer.write(exceptions[i].getName());
+                if (i + 1 < exceptions.length)
+                    writer.write(", "); // NOI18N
+            }
         }
 
-        return buf.toString();
+        writer.write(" {\n"); // NOI18N
+
+        return paramNames;
+    }
+
+    private void generateListenerMethodFooter(Writer writer)
+        throws IOException
+    {
+        writer.write("}\n"); // NOI18N
+    }
+
+    private void generateSuperListenerCall(Method method,
+                                           String[] paramNames,
+                                           Writer codeWriter)
+        throws IOException
+    {
+        if (method.getReturnType() != Void.TYPE)
+            codeWriter.write("return "); // NOI18N
+
+        codeWriter.write("super."); // NOI18N
+        codeWriter.write(method.getName());
+        codeWriter.write("("); // NOI18N
+
+        for (int i=0; i < paramNames.length; i++) {
+            codeWriter.write(paramNames[i]);
+            if (i + 1 < paramNames.length)
+                codeWriter.write(", "); // NOI18N
+        }
+
+        codeWriter.write(");\n"); // NOI18N
+    }
+
+    private void generateEventHandlerCalls(Event event,
+                                           String[] paramNames,
+                                           Writer codeWriter)
+        throws IOException
+    {
+        String mainClassRef = formEditorSupport.getFormDataObject().getName()
+                              + ".this."; // NOI18N
+
+        String[] handlers = event.getEventHandlers();
+        for (int i=0; i < handlers.length; i++) {
+            if (i + 1 == handlers.length
+                    && event.getListenerMethod().getReturnType() != Void.TYPE)
+                codeWriter.write("return "); // NOI18N
+
+            codeWriter.write(mainClassRef);
+            codeWriter.write(handlers[i]);
+            codeWriter.write("("); // NOI18N
+
+            for (int j=0; j < paramNames.length; j++) {
+                codeWriter.write(paramNames[j]);
+                if (j + 1 < paramNames.length)
+                    codeWriter.write(", "); // NOI18N
+            }
+
+            codeWriter.write(");\n"); // NOI18N
+        }
     }
 
     /** Checks whether loaded form needs to be regenerated (code for
@@ -1839,7 +2197,8 @@ class JavaCodeGenerator extends CodeGenerator {
     private static String doIndentation(String code,
                                         int minIndentLevel,
                                         String tab,
-                                        boolean braceOnNewLine) {
+                                        boolean braceOnNewLine)
+    {
         int indentLevel = minIndentLevel;
         boolean lastLineEmpty = false;
         int codeLength = code.length();
@@ -1998,9 +2357,13 @@ class JavaCodeGenerator extends CodeGenerator {
 
                 // form loaded
                 if (ev.getChangeType() == FormModelEvent.FORM_LOADED) {
+                    if (formSettings.getListenerGenerationStyle() == CEDL_MAINCLASS)
+                        listenersInMainClass_lastSet =
+                            formModel.getFormEvents().getCEDLTypes();
+
                     if (needsRegeneration()) {
                         regenerateVariables();
-                        regenerateInitializer();
+                        regenerateInitComponents();
                         regenerateEventHandlers();
                         codeUpToDate = true;
                         FormModel.t("code regenerated");
@@ -2012,39 +2375,31 @@ class JavaCodeGenerator extends CodeGenerator {
                     modifying = true;
 
                 if (ev.getChangeType() == FormModelEvent.EVENT_HANDLER_ADDED) {
-                    EventHandler eh = ev.getEventHandler();
-                    if (eh != null) {
-                        String handlerName = ev.getEventHandlerName();
-                        String bodyText = ev.getNewEventHandlerContent();
-                        if (ev.getCreatedDeleted() || bodyText != null) {
-                            if (!ev.getCreatedDeleted())
-                                ev.setOldEventHandlerContent(
-                                    getEventHandlerText(handlerName));
-                            generateEventHandler(handlerName,
-                                                 eh.getParameterTypes(),
-                                                 eh.getExceptionTypes(),
-                                                 bodyText);
-                        }
-                        if (events.length == 1)
-                            gotoEventHandler(handlerName);
+                    String handlerName = ev.getEventHandler();
+                    String bodyText = ev.getNewEventHandlerContent();
+                    if (ev.getCreatedDeleted() || bodyText != null) {
+                        if (!ev.getCreatedDeleted())
+                            ev.setOldEventHandlerContent(
+                                getEventHandlerText(handlerName));
+
+                        generateEventHandler(handlerName,
+                                             ev.getComponentEvent().getListenerMethod(),
+                                             bodyText);
                     }
+                    if (events.length == 1 && bodyText == null)
+                        gotoEventHandler(handlerName);
                 }
                 else if (ev.getChangeType() == FormModelEvent.EVENT_HANDLER_REMOVED) {
                     if (ev.getCreatedDeleted()) {
-                        String handlerName = ev.getEventHandlerName();
+                        String handlerName = ev.getEventHandler();
                         ev.setOldEventHandlerContent(
                             getEventHandlerText(handlerName));
                         deleteEventHandler(handlerName);
                     }
                 }
                 else if (ev.getChangeType() == FormModelEvent.EVENT_HANDLER_RENAMED) {
-                    EventHandler eh  = ev.getEventHandler();
-                    if (eh != null) {
-                        renameEventHandler(ev.getOldEventHandlerName(),
-                                           ev.getNewEventHandlerName(),
-                                           eh.getParameterTypes(),
-                                           eh.getExceptionTypes());
-                    }
+                    renameEventHandler(ev.getOldEventHandler(),
+                                       ev.getNewEventHandler());
                 }
                 else if (ev.getChangeType() == FormModelEvent.FORM_TO_BE_SAVED)
                     toBeSaved = true;
@@ -2055,13 +2410,15 @@ class JavaCodeGenerator extends CodeGenerator {
             if (modifying)
                 codeUpToDate = false;
 
-            if (!toBeClosed && !codeUpToDate
-                && (toBeSaved || !formSettings.getGenerateOnSave()))
+            if (!codeUpToDate
+                && (toBeSaved
+                    || (!formSettings.getGenerateOnSave() && !toBeClosed))) 
             {
                 regenerateVariables();
-                regenerateInitializer();
+                regenerateInitComponents();
+                ensureMainClassImplementsListeners();
                 codeUpToDate = true;
-                FormModel.t("code regenerated");
+                FormModel.t("code regenerated"); //NOI18N
             }
 
             if (toBeSaved) {

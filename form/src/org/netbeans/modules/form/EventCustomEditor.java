@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -31,13 +31,12 @@ public class EventCustomEditor extends javax.swing.JPanel {
     /** Creates new form EventCustomEditor */
     public EventCustomEditor(EventProperty eventProperty) {
         this.eventProperty = eventProperty;
-        changes = eventProperty.new HandlerSetChange();
 
         initComponents();
         enableButtons();
 
         org.openide.util.HelpCtx.setHelpIDString(this, "gui.csh.handlers"); // NOI18N
-        
+
         addButton.setMnemonic(
             FormUtils.getBundleString("CTL_EE_ADD_Mnemonic").charAt(0)); // NOI18N
         removeButton.setMnemonic(
@@ -69,13 +68,13 @@ public class EventCustomEditor extends javax.swing.JPanel {
 
         handlersListLabel = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        List l = eventProperty.event.getHandlers();
-        for (int i=0, n=l.size (); i < n; i++) {
-            handlersModel.addElement(((EventHandler)l.get(i)).getName());
+        String[] handlers = eventProperty.getEventHandlers();
+        for (int i=0; i < handlers.length; i++) {
+            handlersModel.addElement(handlers[i]);
         }
         handlersList = new javax.swing.JList();
         handlersList.setModel(handlersModel);
-        if (l.size() > 0) {
+        if (handlers.length > 0) {
             handlersList.setSelectedIndex(0);
         }
         addButton = new javax.swing.JButton();
@@ -173,7 +172,7 @@ public class EventCustomEditor extends javax.swing.JPanel {
         }
         editButton.setEnabled(handlersList.getSelectedIndices().length == 1);
     }
-        
+
     private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
         // Add your handling code here:
         int i = handlersList.getSelectedIndex();
@@ -270,7 +269,7 @@ public class EventCustomEditor extends javax.swing.JPanel {
                 TopManager.getDefault().notify(msg);
                 return;
             }
-                
+
             int ir = changes.getRemoved().indexOf(newHandler);
             if (ir >= 0) {
                 changes.getRemoved().remove(ir);
@@ -293,15 +292,15 @@ public class EventCustomEditor extends javax.swing.JPanel {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel handlersListLabel;
     private javax.swing.JButton addButton;
-    private javax.swing.JList handlersList;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JList handlersList;
     private javax.swing.JButton editButton;
     private javax.swing.JButton removeButton;
+    private javax.swing.JLabel handlersListLabel;
     // End of variables declaration//GEN-END:variables
 
     EventProperty eventProperty;
     DefaultListModel handlersModel = new DefaultListModel();
-    EventProperty.HandlerSetChange changes;
+    EventProperty.Change changes = new EventProperty.Change();
 }

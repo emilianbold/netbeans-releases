@@ -16,6 +16,7 @@ package org.netbeans.modules.form;
 import java.util.*;
 import java.beans.*;
 import java.awt.event.*;
+import java.lang.reflect.Method;
 
 import org.openide.*;
 import org.openide.nodes.*;
@@ -25,150 +26,187 @@ import org.openide.util.Utilities;
 /** 
  * Property implementation class for events of metacomponents (RADComponent).
  * (Events are treated as properties on Events tab of Component Inspector.)
+ *
+ * @author Tomas Pavek
  */
 
-public class EventProperty extends PropertySupport.ReadWrite {
+class EventProperty extends PropertySupport.ReadWrite {
 
     private static String NO_EVENT;
 
-    /** Event object holding info about one component's event and
-     * event handlers attached to it.
-     */
-    Event event;
+    private Event event;
 
-    /** Last selected event handler (from those attached to this event).
-     * Name of this handler is displayed in property sheet.
-     */
-    EventHandler lastSelectedHandler;
+    private String selectedEventHandler;
 
-    EventProperty(Event event) {
-        super(FormEditor.EVENT_PREFIX + event.getName(),
+    EventProperty(Event event, String eventId) {
+        super(eventId,
               String.class,
-              event.getName(),
-              event.getName());
-
+              event.getListenerMethod().getName(),
+              event.getListenerMethod().getName());
         this.event = event;
-        setShortDescription(event.getListenerMethod().getDeclaringClass().getName());
+        setShortDescription(
+            event.getEventSetDescriptor().getListenerType().getName());
     }
 
+    Event getEvent() {
+        return event;
+    }
+
+    private FormEvents getFormEvents() {
+        return getComponent().getFormModel().getFormEvents();
+    }
+
+    private RADComponent getComponent() {
+        return event.getComponent();
+    }
+
+    private Method getListenerMethod() {
+        return event.getListenerMethod();
+    }
+
+    String[] getEventHandlers() {
+        return event.getEventHandlers();
+    }
+
+    // -------
+
     /** Getter for the value of the property. It returns name of the last
-     * selected event handler (for property sheet), not the event itself.
+     * selected event handler (for property sheet), not the event.
      * @return String name of the selected event handler attached to the event
      */
     public Object getValue() {
-        List handlers = event.getHandlers();
-
-        if (handlers.size() == 0)
-            lastSelectedHandler = null;
-        else if (lastSelectedHandler == null 
-                 || !handlers.contains(lastSelectedHandler))
-            lastSelectedHandler = (EventHandler) handlers.get(0);
-
-        return lastSelectedHandler != null ? lastSelectedHandler.getName() : null;
+        if (selectedEventHandler == null && event.hasEventHandlers())
+            selectedEventHandler = (String) event.getEventHandlerList().get(0);
+        return selectedEventHandler;
     }
 
     /** Setter for the value of the property. It accepts String (for adding
-     * new or renaming the last selected event handler) or HandlerSetChange
-     * object (describing any changes in attached event handlers).
+     * new or renaming the last selected event handler), or Change object
+     * (describing multiple changes in event handlers), or null (to refresh
+     * property sheet due to a change in handlers made outside).
      */
-    public void setValue(Object val) throws IllegalArgumentException {
-        if (val == null)
-            return;
-
-        HandlerSetChange change = null;
+    public void setValue(Object val) {
+        Change change = null;
         String newSelectedHandler = null;
 
-        if (val instanceof HandlerSetChange)
-            change = (HandlerSetChange) val;
-        else {
-            if (val instanceof String) {
-                change = new HandlerSetChange();
+        if (val instanceof Change) {
+            change = (Change) val;
+        }
+        else if (val instanceof String) {
+            String[] handlers = getEventHandlers();
+            if (handlers.length > 0) {
+                // there are already some handlers attached
+                String current = selectedEventHandler != null ?
+                                 selectedEventHandler : handlers[0];
 
-                List handlers = event.getHandlers();
-                if (handlers.size() > 0) { // there are already some handlers
-                    String current = lastSelectedHandler == null ?
-                        ((EventHandler)handlers.get(0)).getName() :
-                        lastSelectedHandler.getName();
-
-                    if ("".equals(val)) { // empty String => remove current
-                        change.getRemoved().add(current);
-                        for (int i=0, n=handlers.size(); i < n; i++) {
-                            String name = ((EventHandler)handlers.get(i)).getName();
-                            if (!name.equals(current)) {
-                                newSelectedHandler = name;
-                                break;
-                            }
+                if ("".equals(val)) { // NOI18N
+                    // empty String => remove current handler
+                    change = new Change();
+                    change.getRemoved().add(current);
+                    for (int i=0; i < handlers.length; i++)
+                        if (!handlers[i].equals(current)) {
+                            newSelectedHandler = handlers[i];
+                            break;
                         }
-                    }
-                    else { // valid String => rename current (if new name entered)
-                        newSelectedHandler = (String) val;
-
-                        boolean ignoreValue = false;
-                        for (int i=0, n=handlers.size(); i < n; i++)
-                            if (((EventHandler)handlers.get(i)).getName()
-                                                             .equals(val))
-                            {   // do nothing
-                                ignoreValue = true; 
-                                break;
-                            }
-
-                        if (!ignoreValue) { // do rename
-                            change.getRenamedNewNames().add((String)val);
-                            change.getRenamedOldNames().add(current);
-                        }
-                    }
                 }
-                else { // no handlers yet, add a new one
-                    change.getAdded().add((String)val);
+                else { // non-empty String => rename current handler
                     newSelectedHandler = (String) val;
+
+                    boolean ignore = false;
+                    for (int i=0; i < handlers.length; i++)
+                        if (handlers[i].equals(val)) { // not a new name
+                            ignore = true;
+                            break;
+                        }
+
+                    if (!ignore) { // do rename
+                        change = new Change();
+                        change.getRenamedNewNames().add(val);
+                        change.getRenamedOldNames().add(current);
+                    }
                 }
             }
-            else throw new IllegalArgumentException();
-        }
-
-        FormModel formModel = event.getComponent().getFormModel();
-        FormEventHandlers formHandlers = formModel.getFormEventHandlers();
-
-        if (change.hasRemoved()) { // some handlers to remove
-            for (Iterator iter = change.getRemoved().iterator(); iter.hasNext();) {
-                formHandlers.removeEventHandler(event, (String)iter.next());
+            else { // no handlers yet, add a new one
+                change = new Change();
+                change.getAdded().add((String)val);
+                newSelectedHandler = (String) val;
             }
         }
-
-        if (change.hasRenamed()) { // some handlers to rename
-            for (int k=0, n=change.getRenamedOldNames().size(); k < n; k++) {
-                String oldName = (String) change.getRenamedOldNames().get(k);
-                String newName = (String) change.getRenamedNewNames().get(k);
-
-                if (!Utilities.isJavaIdentifier(newName))
-                    continue; // invalid name (checked by EventCustomEditor)
-                if (newName.equals(oldName))
-                    continue; // no change
-
-                formHandlers.renameEventHandler(oldName, newName);
-            }
+        else if (val == null) {
+            if (selectedEventHandler == null)
+                return;
         }
+        else throw new IllegalArgumentException();
 
-        if (change.hasAdded()) { // some handlers to add
-            for (Iterator iter = change.getAdded().iterator(); iter.hasNext();) {
-                String handlerName = (String) iter.next();
-                if (!Utilities.isJavaIdentifier(handlerName)) { // invalid name
-                    TopManager.getDefault().notify(new NotifyDescriptor.Message(
-                        FormUtils.getFormattedBundleString(
-                            "FMT_MSG_InvalidJavaIdentifier", // NOI18N
-                            new Object [] {handlerName} ),
-                        NotifyDescriptor.ERROR_MESSAGE));
-                    continue;
+        if (change != null) {
+            FormEvents formEvents = getFormEvents();
+
+            if (change.hasRemoved()) // some handlers to remove
+                for (Iterator it=change.getRemoved().iterator(); it.hasNext(); )
+                    formEvents.detachEvent(event, (String) it.next());
+
+            if (change.hasRenamed()) // some handlers to rename
+                for (int i=0; i < change.getRenamedOldNames().size(); i++) {
+                    String oldName = (String)change.getRenamedOldNames().get(i);
+                    String newName = (String)change.getRenamedNewNames().get(i);
+
+                    if (!Utilities.isJavaIdentifier(newName))
+                        continue; // invalid name (checked by EventCustomEditor)
+
+                    try {
+                        formEvents.renameEventHandler(oldName, newName);
+
+                        // hack: update all properties using the renamed handler
+                        Event[] events = formEvents.getEventsForHandler(newName);
+                        for (int j=0 ; j < events.length; j++) {
+                            Node.Property prop = events[j].getComponent()
+                                                  .getPropertyByName(getName());
+                            if (prop != null && prop != this) {
+                                try {
+                                    if (oldName.equals(prop.getValue()))
+                                        prop.setValue(newName);
+                                }
+                                catch (Exception ex) { // should not happen
+                                    ex.printStackTrace();
+                                }
+                            }
+                        }
+                    }
+                    catch (IllegalArgumentException ex) { // name already used
+                        ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
+                        newSelectedHandler = null;
+                    }
                 }
 
-                formHandlers.addEventHandler(event, handlerName);
-            }
+            if (change.hasAdded()) // some handlers to add
+                for (Iterator it=change.getAdded().iterator(); it.hasNext(); ) {
+                    String handlerName = (String) it.next();
+
+                    if (!Utilities.isJavaIdentifier(handlerName)) { // invalid name
+                        TopManager.getDefault().notify(
+                            new NotifyDescriptor.Message(
+                                FormUtils.getFormattedBundleString(
+                                    "FMT_MSG_InvalidJavaIdentifier", // NOI18N
+                                    new Object [] {handlerName} ),
+                                NotifyDescriptor.ERROR_MESSAGE));
+                        continue;
+                    }
+
+                    try {
+                        formEvents.attachEvent(event, handlerName, null);
+                    }
+                    catch (IllegalArgumentException ex) { // name already used
+                        ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
+                        newSelectedHandler = null;
+                    }
+                }
         }
 
-        lastSelectedHandler = formHandlers.getEventHandler(newSelectedHandler);
+        selectedEventHandler = newSelectedHandler;
 
-        event.getComponent().getNodeReference().firePropertyChangeHelper(
-                this.getName(), null, null);
+        RADComponentNode node = getComponent().getNodeReference();
+        if (node != null)
+            node.firePropertyChangeHelper(getName(), null, null);
     }
 
     public boolean canWrite() {
@@ -176,64 +214,68 @@ public class EventProperty extends PropertySupport.ReadWrite {
     }
 
     private boolean isReadOnly() {
-        return event.getComponent().isReadOnly();
+        return getComponent().isReadOnly();
     }
 
     /** Returns property editor for this property.
      * @return the property editor for adding/removing/renaming event handlers
      */
-    public java.beans.PropertyEditor getPropertyEditor() {
+    public PropertyEditor getPropertyEditor() {
         return new EventEditor();
     }
 
-    /** Helper class describing changes in event handlers attached to the event.
+    // --------
+
+    /** Helper class describing changes in event handlers attached to an event.
      */
-    public class HandlerSetChange {
+    static class Change {
         boolean hasAdded() {
-            return(added !=null && added.size()>0);
+            return added != null && added.size() > 0;
         }
         boolean hasRemoved() {
-            return(removed !=null && removed.size()>0);
+            return removed != null && removed.size() > 0;
         }
         boolean hasRenamed() {
-            return(renamedOldName !=null && renamedOldName.size()>0);
+            return renamedOldName != null && renamedOldName.size() > 0;
         }
         List getAdded() {
-            if (added == null) added = new ArrayList();
+            if (added == null)
+                added = new ArrayList();
             return added;
         }
         List getRemoved() {
-            if (removed == null) removed = new ArrayList();
+            if (removed == null)
+                removed = new ArrayList();
             return removed;
         }
         List getRenamedOldNames() {
-            if (renamedOldName == null) renamedOldName = new ArrayList();
+            if (renamedOldName == null)
+                renamedOldName = new ArrayList();
             return renamedOldName;
         }
         List getRenamedNewNames() {
-            if (renamedNewName == null) renamedNewName = new ArrayList();
+            if (renamedNewName == null)
+                renamedNewName = new ArrayList();
             return renamedNewName;
         }
-        private ArrayList added;
-        private ArrayList removed;
-        private ArrayList renamedOldName;
-        private ArrayList renamedNewName;
+        private List added;
+        private List removed;
+        private List renamedOldName;
+        private List renamedNewName;
     }
+
+    // --------
 
     /** Property editor class for EventProperty. It provides in-place editor
      * and custom editor for adding/removing/renaming event handlers.
      */
-    class EventEditor extends PropertyEditorSupport
-                      implements EnhancedPropertyEditor
+    private class EventEditor extends PropertyEditorSupport
+                              implements EnhancedPropertyEditor
     {
         ActionListener comboSelectListener = null;
         FocusListener comboEditFocusListener = null;
 
         EventComboBox eventCombo;
-//        javax.swing.JComboBox eventCombo;
-
-        EventEditor() {
-        }
 
         public String getAsText() {
             if (this.getValue() == null) {
@@ -257,26 +299,21 @@ public class EventProperty extends PropertySupport.ReadWrite {
          * the property sheet.
          */
         public java.awt.Component getInPlaceCustomEditor() {
-            List handlers = event.getHandlers();
             eventCombo = new EventComboBox();
-            eventCombo.setEditable(!EventProperty.this.isReadOnly());
+            eventCombo.setEditable(!isReadOnly());
 
-            if (handlers.size() == 0) {
-                FormEventHandlers formHandlers =
-                    event.getComponent().getFormModel().getFormEventHandlers();
-                String suggestName =
-                    FormEventHandlers.getDefaultHandlerName(event);
-                EventHandler handler = formHandlers.getEventHandler(suggestName);
-                if (handler == null || !handler.checkCompatibility(event))
-                    suggestName = formHandlers.findFreeHandlerName(suggestName);
-                eventCombo.getEditor().setItem(suggestName);
+            String[] handlers = getEventHandlers();
+            if (handlers.length == 0) {
+                String newName = getFormEvents().findFreeHandlerName(
+                                                  getListenerMethod().getName(),
+                                                  getComponent().getName());
+                eventCombo.getEditor().setItem(newName);
             }
             else {
-                for (int i=0, n=handlers.size(); i < n; i++) {
-                    eventCombo.addItem(((EventHandler)handlers.get(i)).getName()); // [PENDING]
-                }
-                if (lastSelectedHandler != null)
-                    eventCombo.setSelectedItem(lastSelectedHandler.getName());
+                for (int i=0; i < handlers.length; i++)
+                    eventCombo.addItem(handlers[i]);
+                if (selectedEventHandler != null)
+                    eventCombo.setSelectedItem(selectedEventHandler);
             }
 
             // listening to combobox selection change
@@ -285,8 +322,8 @@ public class EventProperty extends PropertySupport.ReadWrite {
                 comboSelectListener = new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         int i;
-                        if (event.getHandlers().size() == 0
-                                || (i = eventCombo.getSelectedIndex()) < 0)
+                        if (!event.hasEventHandlers()
+                              || (i = eventCombo.getSelectedIndex()) < 0)
                             return;
 
                         eventCombo.getEditor().getEditorComponent()
@@ -296,13 +333,14 @@ public class EventProperty extends PropertySupport.ReadWrite {
                         EventEditor.this.setValue(selected);
 
                         // redundant operation - just switches to the editor
-                        event.getComponent().getFormModel().getFormEventHandlers()
-                            .addEventHandler(event, selected);
+                        getFormEvents().attachEvent(getEvent(),
+                                                    selected,
+                                                    null);
                     }
                 };
             eventCombo.addActionListener(comboSelectListener);
 
-            if (EventProperty.this.isReadOnly())
+            if (isReadOnly())
                 return eventCombo;
 
             // listening to combobox's editor focus lost
@@ -311,9 +349,7 @@ public class EventProperty extends PropertySupport.ReadWrite {
                 comboEditFocusListener = new FocusAdapter() {
                     public void focusLost(FocusEvent evt) {
                         eventCombo.removeActionListener(comboSelectListener);
-
-                        EventEditor.this.setValue(lastSelectedHandler != null ?
-                                      lastSelectedHandler.getName() : null);
+                        EventEditor.this.setValue(selectedEventHandler);
                     }
                     public void focusGained(FocusEvent evt) {
                         eventCombo.getEditor().selectAll();
@@ -331,8 +367,7 @@ public class EventProperty extends PropertySupport.ReadWrite {
                         eventCombo.getEditor().getEditorComponent()
                             .removeFocusListener(comboEditFocusListener);
 
-                        EventEditor.this.setValue(lastSelectedHandler != null ?
-                                      lastSelectedHandler.getName() : null);
+                        EventEditor.this.setValue(selectedEventHandler);
                     }
                     else if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                         eventCombo.removeActionListener(comboSelectListener);
@@ -343,13 +378,14 @@ public class EventProperty extends PropertySupport.ReadWrite {
                         EventEditor.this.setValue(selected);
 
                         if (selected == null || "".equals(selected)) { // NOI18N
-                            if (lastSelectedHandler != null)
-                                EventEditor.this.setValue(
-                                    lastSelectedHandler.getName());
+                            if (selectedEventHandler != null)
+                                EventEditor.this.setValue(selectedEventHandler);
                         }
-                        else // redundant operation - just switches to the editor
-                            event.getComponent().getFormModel().getFormEventHandlers()
-                                .addEventHandler(event, selected);
+                        else if (selectedEventHandler != null)
+                            // redundant operation - just switches to the editor
+                            getFormEvents().attachEvent(getEvent(),
+                                                        selectedEventHandler,
+                                                        null);
                     }
                 }
             });
@@ -367,8 +403,7 @@ public class EventProperty extends PropertySupport.ReadWrite {
          * custom property editor, false otherwise
          */
         public boolean hasInPlaceCustomEditor() {
-            return !EventProperty.this.isReadOnly()
-                   || EventProperty.this.event.getHandlers().size() > 0;
+            return !isReadOnly() || event.hasEventHandlers();
         }
 
         public boolean supportsCustomEditor() {
@@ -379,17 +414,18 @@ public class EventProperty extends PropertySupport.ReadWrite {
          * editing event handlers attached to the event.
          */
         public java.awt.Component getCustomEditor() {
-            if (EventProperty.this.isReadOnly())
+            if (isReadOnly())
                 return null;
 
             final EventCustomEditor ed = new EventCustomEditor(EventProperty.this);
             DialogDescriptor dd = new DialogDescriptor(
                 ed,
-                FormUtils.getFormattedBundleString("FMT_MSG_HandlersFor", // NOI18N
-                                                   new Object [] {event.getName()}),
+                FormUtils.getFormattedBundleString(
+                    "FMT_MSG_HandlersFor", // NOI18N
+                    new Object [] { getListenerMethod().getName() }),
                 true,
-                new java.awt.event.ActionListener() {
-                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                new ActionListener() {
+                    public void actionPerformed(ActionEvent evt) {
                         if (evt.getSource().equals(DialogDescriptor.OK_OPTION)) {
                             ed.doChanges();
                         }
@@ -399,6 +435,8 @@ public class EventProperty extends PropertySupport.ReadWrite {
             return TopManager.getDefault().createDialog(dd);
         }
     }
+
+    // --------
 
     private static class EventComboBox extends javax.swing.JComboBox {
         public void addKeyListener(KeyListener l) {

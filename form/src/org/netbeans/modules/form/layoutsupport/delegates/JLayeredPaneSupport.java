@@ -236,7 +236,7 @@ public class JLayeredPaneSupport extends AbsoluteLayoutSupport {
             Node.Property[] layeredProps = new Node.Property[props.length + 1];
 
             layeredProps[0] =
-                new FormProperty("layer", // NOI18N
+                new FormProperty("LayeredConstraints layer", // NOI18N
                                  Integer.TYPE,
                              getBundle().getString("PROP_layer"), // NOI18N
                              getBundle().getString("HINT_layer")) { // NOI18N

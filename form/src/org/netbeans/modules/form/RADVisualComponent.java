@@ -156,10 +156,13 @@ public class RADVisualComponent extends RADComponent {
             });
     }
 
-    public FormProperty getPropertyByName(String name) {
-        if (accessibilityProperties == null)
+    public Node.Property getPropertyByName(String name,
+                                           Class propertyType,
+                                           boolean fromAll)
+    {
+        if (fromAll && accessibilityProperties == null)
             createAccessibilityProperties();
-        return super.getPropertyByName(name);
+        return super.getPropertyByName(name, propertyType, fromAll);
     }
 
     /** Called to modify original properties obtained from BeanInfo.
@@ -227,7 +230,7 @@ public class RADVisualComponent extends RADComponent {
                 nameToProperty.remove(constraintsProperties[i].getName());
 
             constraintsProperties = null;
-            beanPropertySets = null;
+            propertySets = null;
 
             RADComponentNode node = getNodeReference();
             if (node != null)

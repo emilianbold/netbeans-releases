@@ -36,6 +36,9 @@ public class FormLoaderSettings extends SystemOption {
     /** Property name of the eventVariableName property */
     public static final String PROP_EVENT_VARIABLE_NAME = "eventVariableName"; // NOI18N
 
+    /** Property name of the event listener code generation style option. */
+    public static final String PROP_LISTENER_GENERATION_STYLE = "listenerGenerationStyle"; // NOI18N
+
     /** Property name of the selectionBorderSize property */
     public static final String PROP_SELECTION_BORDER_SIZE = "selectionBorderSize"; // NOI18N
     /** Property name of the selectionBorderColor property */
@@ -91,6 +94,10 @@ public class FormLoaderSettings extends SystemOption {
 
     /** The name of the Event variable generated in the event handlers. */
     private static String eventVariableName = "evt"; // NOI18N
+
+    /** Style of code generation of event listeners. Possible values defined
+     * by JavaCodeGenerator. */
+    private static int listenerGenerationStyle;
 
     /** The size(in pixels) of the border that marks visual components on a form
      * as selected. */
@@ -190,6 +197,19 @@ public class FormLoaderSettings extends SystemOption {
         String oldValue = eventVariableName;
         eventVariableName = value;
         firePropertyChange(PROP_EVENT_VARIABLE_NAME, oldValue, eventVariableName);
+    }
+
+    /** Getter for the event listener code generation style option. */
+    public int getListenerGenerationStyle() {
+        return listenerGenerationStyle;
+    }
+
+    /** Setter for the event listener code generation style option. */
+    public void setListenerGenerationStyle(int style) {
+        int oldValue = listenerGenerationStyle;
+        listenerGenerationStyle = style;
+        firePropertyChange(PROP_LISTENER_GENERATION_STYLE,
+                           new Integer(oldValue), new Integer(style));
     }
 
     /** Getter for the selectionBorderSize option */
