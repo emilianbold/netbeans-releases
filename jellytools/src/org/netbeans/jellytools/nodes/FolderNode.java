@@ -144,7 +144,10 @@ public class FolderNode extends Node {
     }
 
     /** performs NewTemplateAction with this node
-     * @param templatePath String template to use */    
+     * @param templatePath String template to use
+     * @deprecated Popup menu no longer contains sub menu. Use 
+     * {@link org.netbeans.jellytools.ChooseTemplateStepOperator} to select template.
+     */    
     public void newFromTemplate(String templatePath) {
         new NewTemplateAction(templatePath).perform(this);
     }
