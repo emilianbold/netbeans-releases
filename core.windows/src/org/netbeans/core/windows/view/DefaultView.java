@@ -194,7 +194,6 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                 if(DEBUG) {
                     debugLog("Editor area frame state changed"); // NOI18N
                 }
-
                 hierarchy.updateEditorAreaFrameState(wsa.getEditorAreaFrameState());
             } else if(changeType == CHANGE_EDITOR_AREA_BOUNDS_CHANGED) {
                 if(DEBUG) {
@@ -288,6 +287,12 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                 hierarchy.updateDesktop(wsa);
                 hierarchy.setSeparateModesVisible(true);
                 ModeView modeView = hierarchy.getModeViewForAccessor(wsa.findModeAccessor((String)viewEvent.getSource())); // XXX
+                if (modeView != null) {
+                    // #39755 - seems to require to call the updateframestate() in order to have a closed mode to show in the last framestate.
+                    // not 100% sure this is the correct location for the call, for editorarea the relevant change resides in ViewHierarchy.updateDesktop,
+                    // prefer not to call hierarchy.updateframestates() because it's only needed for the currently opened mode..
+                    modeView.updateFrameState();
+                }
                 hierarchy.updateSplits();
             } else if(changeType == CHANGE_MODE_TOPCOMPONENT_REMOVED) {
                 if(DEBUG) {
@@ -700,7 +705,6 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         if(DEBUG) {
             debugLog("User changed frame state editor area"); // NOI18N
         }
-
         controllerHandler.userChangedFrameStateEditorArea(frameState);
     }
     

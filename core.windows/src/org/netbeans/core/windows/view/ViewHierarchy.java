@@ -543,6 +543,8 @@ final class ViewHierarchy {
             setMainWindowDesktop(null);
             if(showEditorFrame) {
                 setEditorAreaDesktop(getDesktopComponent());
+                // #39755 restore the framestate of the previously closed editorArea.
+                updateEditorAreaFrameState(wsa.getEditorAreaFrameState());
             }
         }
     }
