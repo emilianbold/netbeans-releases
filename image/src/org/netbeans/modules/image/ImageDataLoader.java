@@ -23,7 +23,11 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.UniFileLoader;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
+import org.openide.TopManager;
 
+import java.lang.reflect.Method;
+import java.util.Iterator;
+ 
 
 /** 
  * Data loader which recognizes image files.
@@ -34,6 +38,10 @@ public class ImageDataLoader extends UniFileLoader {
     /** Generated serial version UID. */
     static final long serialVersionUID =-8188309025795898449L;
     
+    /** Method from <code>javax.imageio.ImageIO.getImageReadersBySuffix(..)</code><br>
+     * needs to be reflection until NB is built with JDK1.4
+     **/
+    private static Method getImageReadersBySuffix;
     
     /** Creates new image loader. */
     public ImageDataLoader() {
@@ -58,7 +66,31 @@ public class ImageDataLoader extends UniFileLoader {
         
         setExtensions(ext);
     }
-
+    
+    // Michael Wever 11/01/2002
+    protected FileObject findPrimaryFile(FileObject fo){
+        FileObject retValue = super.findPrimaryFile( fo );
+        if( !System.getProperty("java.specification.version").equals("1.3") && retValue == null  && !fo.isFolder() ){
+            /* Check through for new extensions */
+            String ext = fo.getExt();
+            try{
+                if( getImageReadersBySuffix == null ){
+                    Class clazz = Class.forName("javax.imageio.ImageIO");
+                    getImageReadersBySuffix = clazz.getMethod("getImageReadersBySuffix",new Class[]{String.class});
+                }
+                Iterator it = (Iterator)getImageReadersBySuffix.invoke(null, new Object[]{ext});
+                if( it.hasNext() ){
+                    /* Use the first available ImageIO loader */
+                    retValue = fo;
+                    getExtensions().addExtension(ext);
+                }
+            }catch(Exception ex){
+                TopManager.getDefault().getErrorManager().notify(ex);
+            }
+        }
+        return retValue;
+    }
+    
     /** Gets default display name. Overrides superclass method. */
     protected String defaultDisplayName() {
         return NbBundle.getBundle(ImageDataLoader.class).getString("PROP_ImageLoader_Name");

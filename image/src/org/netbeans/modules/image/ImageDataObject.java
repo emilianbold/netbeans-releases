@@ -22,7 +22,7 @@ import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.*;
 import java.net.URL;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -53,7 +53,13 @@ public class ImageDataObject extends MultiDataObject implements CookieSet.Factor
     
     /** Open support for this image data object. */
     private transient ImageOpenSupport openSupport;
-
+    /** Print support for this image data object **/
+    private transient ImagePrintSupport printSupport;
+ 
+    /** Method from <code>javax.imageio.ImageIO.readImage(..)</code><br>
+     * needs to be reflection until NB is built with JDK1.4
+     **/
+    private static Method readImage;
     
     /** Constructor.
      * @param pf primary file object for this data object
@@ -64,6 +70,7 @@ public class ImageDataObject extends MultiDataObject implements CookieSet.Factor
         super(pf, loader);
         
         getCookieSet().add(ImageOpenSupport.class, this);
+        getCookieSet().add(ImagePrintSupport.class, this);
     }
 
 
@@ -71,6 +78,8 @@ public class ImageDataObject extends MultiDataObject implements CookieSet.Factor
     public Node.Cookie createCookie(Class clazz) {
         if(clazz.isAssignableFrom(ImageOpenSupport.class))
             return getOpenSupport();
+        else if( clazz.isAssignableFrom(ImagePrintSupport.class))
+            return getPrintSupport();        
         else
             return null;
     }
@@ -85,6 +94,16 @@ public class ImageDataObject extends MultiDataObject implements CookieSet.Factor
         }
         
         return openSupport;
+    }
+
+    protected ImagePrintSupport getPrintSupport(){
+        if(printSupport == null) {
+            synchronized(this) {
+                if(printSupport == null)
+                    printSupport = new ImagePrintSupport( this );
+            }
+        }
+        return printSupport;
     }
     
     /** Help context for this object.
@@ -106,7 +125,9 @@ public class ImageDataObject extends MultiDataObject implements CookieSet.Factor
     }
 
     /** Gets image data for the image object.
-     * @return the image data */
+     * @return the image data
+     * @deprecated use getImage() instead
+     */
     private byte[] getImageData() {
         try {
             FileObject fo = getPrimaryFile();
@@ -122,13 +143,23 @@ public class ImageDataObject extends MultiDataObject implements CookieSet.Factor
 
     // Michael Wever 26/09/2001
     /** Gets image for the image data 
-     * @return the image */
+     * @return the image or <code>null</code> if image could not be created
+     */
     public Image getImage() {
-        // [PENDING] When support for jdk1.3 is dropped 
-        // the following code can be changed to
-        // return javax.image.ImageIO.read(getPrimaryFile().getIputStream());
-        ImageIcon imageIcon = new ImageIcon(getImageData());
-        return imageIcon.getImage();
+        try{
+            if( System.getProperty("java.specification.version").equals("1.3") ){
+                return new ImageIcon( getImageData() ).getImage();
+            }else{
+                if( readImage == null ){
+                    Class clazz = Class.forName("javax.imageio.ImageIO");
+                    readImage = clazz.getMethod("read",new Class[]{ java.io.InputStream.class });
+                }
+                return (Image)readImage.invoke(null,new Object[]{ getPrimaryFile().getInputStream() });
+            }
+        }catch(Exception ex){
+            TopManager.getDefault().getErrorManager().notify(ex);
+        }
+        return null;
     }
 
 
