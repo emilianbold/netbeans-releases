@@ -88,18 +88,26 @@ public class Util {
      * will access the resource in the run-time.
      */
     public static ClassPath getExecClassPath(FileObject srcFile, FileObject resFile) {
-        // try SOURCE class-path first
+        // try EXECUTE class-path first
         ClassPath ecp = ClassPath.getClassPath( srcFile, ClassPath.EXECUTE );
         if (ecp.getResourceName( resFile, '.',false) != null)
             return ecp;
 
-        
+
+        // if not directly on EXECUTE, might be on SOURCE
         ClassPath scp = ClassPath.getClassPath( srcFile, ClassPath.SOURCE);
         // try to find  the resource on source class path
         if (scp.getResourceName( resFile, '.',false) != null) 
             return scp; 
 
-        else return null;
+        // now try resource owner
+        ClassPath rcp = ClassPath.getClassPath( resFile, ClassPath.SOURCE);
+        // try to find  the resource on source class path
+        if (rcp.getResourceName( resFile, '.',false) != null) 
+            return rcp; 
+
+
+        return null;
     }
         
     /**
@@ -115,7 +123,9 @@ public class Util {
         // or on the execution class-path
         ClassPath ecp = ClassPath.getClassPath( srcFile, ClassPath.EXECUTE);
         ret = scp.findResource(bundleName);
-        return ret;
+        if (ret != null) return ret;
+
+        return null;
     }
 
 
@@ -132,7 +142,14 @@ public class Util {
 
         ClassPath scp = ClassPath.getClassPath( srcFile, ClassPath.SOURCE );
         ret = scp.getResourceName( resFile, separator, bpar);
-        return ret;
+        if (ret!=null) return ret;
+
+        ClassPath rcp = ClassPath.getClassPath( resFile, ClassPath.SOURCE );
+        ret = rcp.getResourceName( resFile, separator, bpar);
+        if (ret!=null) return ret;
+
+        return null;
+        
     }
 
 }
