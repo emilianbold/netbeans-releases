@@ -147,11 +147,8 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
                 beanButton.setSelected(true);
                 selectedComponent = value.getRADComponent();
                 int index = beansList.indexOf(selectedComponent);
-                if (index == -1) {
-                    beanCombo.setSelectedIndex(0);
-                } else {
+                if (index > -1)
                     beanCombo.setSelectedIndex(index+1);
-                }
                 break;
             case RADConnectionPropertyEditor.RADConnectionDesignValue.TYPE_PROPERTY:
                 propertyButton.setSelected(true);
