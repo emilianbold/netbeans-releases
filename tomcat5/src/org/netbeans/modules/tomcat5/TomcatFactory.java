@@ -32,7 +32,7 @@ import org.openide.util.NbBundle;
  */
 public class TomcatFactory implements DeploymentFactory {
     
-    private static final String tomcatUriPrefix = "tomcat:"; // NOI18N
+    public static final String tomcatUriPrefix = "tomcat:"; // NOI18N
     
     private static TomcatFactory instance;
     

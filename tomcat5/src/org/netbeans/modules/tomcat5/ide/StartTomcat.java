@@ -232,20 +232,6 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
     }
     
     public synchronized void run () {
-        /*
-        try {
-            MonitorSupport.synchronizeMonitorWithFlag(tm, true, true);
-        }
-        catch (IOException e) {
-            // fault, but not a critical one
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-        }
-        catch (SAXException e) {
-            // fault, but not a critical one
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-        }
-         */
-        
         // PENDING check whether is runs or not
         String home = tm.getCatalinaHome ();
         String base = tm.getCatalinaBase ();
@@ -279,6 +265,19 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
         }
         // XXX check for null's
 
+        // install the monitor
+        try {
+            MonitorSupport.synchronizeMonitorWithFlag(tm, true, true);
+        }
+        catch (IOException e) {
+            // fault, but not a critical one
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        }
+        catch (SAXException e) {
+            // fault, but not a critical one
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        }
+        
         if (startDebugMode) {
             NbProcessDescriptor pd  = defaultDebugDesc (StartTomcat.TAG_DEBUG_CMD, 
                                                         command == CommandType.START ? StartTomcat.TAG_JPDA_STARTUP : StartTomcat.TAG_JPDA_SHUTDOWN);

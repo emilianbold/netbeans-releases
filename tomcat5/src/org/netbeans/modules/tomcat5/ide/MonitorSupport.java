@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -30,6 +31,7 @@ import org.netbeans.api.web.dd.FilterMapping;
 import org.netbeans.api.web.dd.InitParam;
 import org.netbeans.api.web.dd.WebApp;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.tomcat5.TomcatFactory;
 import org.netbeans.modules.tomcat5.TomcatManager;
 
 import org.openide.filesystems.*;
@@ -76,12 +78,10 @@ public class MonitorSupport {
     }
     
     public static void synchronizeMonitorWithFlag(TomcatManager tm, boolean alsoSetPort, boolean alsoCopyJars) throws IOException, SAXException {
-        String url = tm.getUri();
+        String url = TomcatFactory.tomcatUriPrefix + tm.getUri();
         boolean monitorFlag = getMonitorFlag(url);
-System.out.println("synchronizing monitor with flag " + url + ", flag set to " + url);
         boolean monitorModuleAvailable = isMonitorEnabled();
         boolean shouldInstall = monitorModuleAvailable && monitorFlag;
-System.out.println("synchronizing monitor, shouldInstall " + shouldInstall);
         
         // find the web.xml file
         File webXML = getDefaultWebXML(tm);
@@ -95,14 +95,31 @@ System.out.println("synchronizing monitor, shouldInstall " + shouldInstall);
             return;
         }
         boolean needsSave = false;
+        boolean result;
         if (shouldInstall) {
-            needsSave = changeFilterMonitor(webApp, true);
-            addMonitorJars(tm);
+            result = changeFilterMonitor(webApp, true);
+            needsSave = needsSave || result;
+            if (alsoSetPort) {                  
+                result = specifyFilterPortParameter(webApp);
+                needsSave = needsSave || result;
+            }
+            if (alsoCopyJars) {
+                addMonitorJars(tm);
+            }
         }
-        else {
-            
+        else {                               
+            result = changeFilterMonitor(webApp, false);
+            needsSave = needsSave || result; 
         }
-        // PENDING
+        if (needsSave) {
+            OutputStream os = new FileOutputStream(webXML);
+            try {
+                webApp.write(os);
+            }
+            finally {
+                os.close();
+            }
+        }
     }
     
     private static File getDefaultWebXML(TomcatManager tm) {
@@ -115,7 +132,7 @@ System.out.println("synchronizing monitor, shouldInstall " + shouldInstall);
         return null;
     }
     
-    private static void addMonitorJars(TomcatManager tm)/* throws IOException*/ {
+    private static void addMonitorJars(TomcatManager tm) throws IOException {
         // getting Tomcat4.0 Directory
         File instDir = tm.getCatalinaHomeDir();
         if (instDir==null) return;
@@ -203,17 +220,12 @@ System.out.println("synchronizing monitor, shouldInstall " + shouldInstall);
         return InstalledFileLocator.getDefault().locate(instRelPath, null, false);
     }
     
-    private static void copyFromIDEInstToDir(String sourceRelPath, File copyTo, String targetRelPath) {
+    private static void copyFromIDEInstToDir(String sourceRelPath, File copyTo, String targetRelPath) throws IOException {
         File targetFile = findFileUnderBase(copyTo, targetRelPath);
         if (!targetFile.exists()) {
-            try {
-                File sourceFile = findInstallationFile(sourceRelPath);
-                if ((sourceFile != null) && sourceFile.exists()) {
-                    copy(sourceFile,targetFile);
-                }
-            }
-            catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            File sourceFile = findInstallationFile(sourceRelPath);
+            if ((sourceFile != null) && sourceFile.exists()) {
+                copy(sourceFile,targetFile);
             }
         }
     }
@@ -241,7 +253,7 @@ System.out.println("synchronizing monitor, shouldInstall " + shouldInstall);
      *  @param webApp deployment descriptor in which to do the changes
      *  @return true if the default deployment descriptor was modified
      */
-    boolean specifyFilterPortParameter(WebApp webApp) {
+    private static boolean specifyFilterPortParameter(WebApp webApp) {
         Filter[] filters = webApp.getFilter();
         Filter myFilter = null;
         for(int i=0; i<filters.length; i++) {
