@@ -208,7 +208,7 @@
             <tocitem text="Defining a Select Method" target="define_select_method" />
             <tocitem text="Defining a CMP Field" target="define_cmp_field" />
             <tocitem text="Calling an Enterprise Bean" target="call_ejb" />
-            <tocitem text="Refactoring an Enterprise Bean" target="ejb_refactoring" />
+            <tocitem text="Refactoring an Enterprise Bean" target="refactor_ejb" />
         </tocitem>
         <tocitem text="Configuring EJB Modules" >
             <tocitem text="About Configuring EJB Modules" target="config_ejb_about" />

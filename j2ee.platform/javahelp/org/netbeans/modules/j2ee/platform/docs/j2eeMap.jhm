@@ -291,7 +291,7 @@
     <mapID target="define_finder_method" url="ejb/editing/define_finder_method.html" />
     <mapID target="define_select_method" url="ejb/editing/define_select_method.html" />
     <mapID target="call_ejb" url="ejb/editing/call_ejb.html" />
-    <mapID target="ejb_refactoring" url="ejb/editing/refactor_ejb.html" />
+    <mapID target="refactor_ejb" url="ejb/editing/refactor_ejb.html" />
     <mapID target="generate_cmp_beans" url="ejb/editing/generate_cmp_beans.html" />
 
     <mapID target="build_ejb" url="ejb/deploy/build_ejb.html" />
