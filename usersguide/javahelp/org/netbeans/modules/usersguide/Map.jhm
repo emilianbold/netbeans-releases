@@ -70,7 +70,7 @@
 
 <mapID target="gui.events.managing" url="gui/gui_manageevents.html" />
 <mapID target="gui.connectionwizard" url="gui/gui_connectionwizard.html" />
-<mapID target="gui.mdi" url="gui/gui_mdi.html" />
+<mapID target="gui.mdi" url="gui/gui_creatingmdi.html" />
 
 <!--gui.configuring is also CSH ID for Options | Editing | Form Editor Settings :-->
 <mapID target="gui.configuring" url="gui/gui_configuring.html" />
@@ -381,19 +381,18 @@ the Options window:-->
 <mapID target="org.netbeans.modules.ant.freeform.ui.WebLocationsWizardPanel" url="project/csh/proj_j2sefree_wiz5.html" />
 
 <!-- NEW Standard J2SE Project Properties dialog:-->
-<mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerSources" url="project/csh/proj_j2sestand_sources.html" />
-<mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerLibraries" url="project/csh/proj_j2sestand_libraries.html" />
-<mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerCompile" url="project/csh/proj_j2sestand_compiling.html" />
-<mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerJar" url="project/csh/proj_j2sestand_packaging.html" />
-<mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerJavadoc" url="project/csh/proj_j2sestand_documenting.html" />
-<mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerRun" url="project/csh/proj_j2sestand_run.html" />
+<mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerSources" url="project/csh/proj_j2sestand_props_sources.html" />
+<mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerLibraries" url="project/csh/proj_j2sestand_props_libraries.html" />
+<mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerCompile" url="project/csh/proj_j2sestand_props_compiling.html" />
+<mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerJar" url="project/csh/proj_j2sestand_props_packaging.html" />
+<mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerJavadoc" url="project/csh/proj_j2sestand_props_documenting.html" />
+<mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerRun" url="project/csh/proj_j2sestand_props_run.html" />
 
 <!-- NEW Freeform J2SE and Web Project Properties dialog:-->
-<mapID target="org.netbeans.modules.ant.freeform.ui.SourceFoldersPanel" url="project/csh/proj_j2sefree_props_sources.html" />
-<mapID target="org.netbeans.modules.ant.freeform.ui.ClasspathPanel" url="project/csh/proj_j2sefree_props_classpath.html" />
-<mapID target="org.netbeans.modules.ant.freeform.ui.OutputPanel" url="project/csh/proj_j2sefree_props_output.html" />
-<mapID target="org.netbeans.modules.ant.freeform.ui.TargetMappingPanel" url="project/csh/proj_j2sefree_props_buildrun.html" />
-<mapID target="org.netbeans.modules.ant.freeform.ui.WebLocationsPanel" url="project/csh/proj_j2sefree_props_websources.html" />
+<mapID target="org.netbeans.modules.java.freeform.ui.SourceFoldersPanel" url="project/csh/proj_j2sefree_props_sources.html" />
+<mapID target="org.netbeans.modules.java.freeform.ui.ClasspathPanel" url="project/csh/proj_j2sefree_props_classpath.html" />
+<mapID target="org.netbeans.modules.java.freeform.ui.OutputPanel" url="project/csh/proj_j2sefree_props_output.html" />
+<mapID target="org.netbeans.modules.java.freeform.ui.TargetMappingPanel" url="project/csh/proj_j2sefree_props_buildrun.html" />
 
 
 
