@@ -459,9 +459,11 @@ public final class SourcesHelper {
         
         private void listen(File rootLocation) {
             // #40845. Need to fire changes if a source root is added or removed.
-            if (rootsListenedTo.add(rootLocation)) {
-                FileChangeSupport.DEFAULT.addListener(this, rootLocation);
+            if (rootsListenedTo.contains(rootLocation)) {
+                return;
             }
+            rootsListenedTo.add(rootLocation);
+            FileChangeSupport.DEFAULT.addListener(this, rootLocation);
         }
         
         public void addChangeListener(ChangeListener listener) {
