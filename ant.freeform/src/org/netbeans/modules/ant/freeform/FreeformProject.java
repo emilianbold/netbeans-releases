@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.ant.freeform;
 
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -20,13 +21,17 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
 
@@ -40,10 +45,12 @@ final class FreeformProject implements Project {
     
     private final AntProjectHelper helper;
     private final PropertyEvaluator eval;
+    private final Lookup lookup;
     
     public FreeformProject(AntProjectHelper helper) throws IOException {
         this.helper = helper;
         eval = initEval();
+        lookup = initLookup();
     }
     
     private PropertyEvaluator initEval() throws IOException {
@@ -81,17 +88,54 @@ final class FreeformProject implements Project {
         return PropertyUtils.sequentialPropertyEvaluator(preprovider, (PropertyProvider[]) defs.toArray(new PropertyProvider[defs.size()]));
     }
     
+    private Lookup initLookup() throws IOException {
+        return Lookups.fixed(new Object[] {
+            new Info(),
+        });
+    }
+    
     public FileObject getProjectDirectory() {
         return helper.getProjectDirectory();
     }
     
     public Lookup getLookup() {
-        // XXX
-        return Lookup.EMPTY;
+        return lookup;
     }
     
     public PropertyEvaluator evaluator() {
         return eval;
+    }
+    
+    private final class Info implements ProjectInformation {
+        
+        public Info() {}
+        
+        public String getName() {
+            Element genldata = helper.getPrimaryConfigurationData(true);
+            Element nameEl = Util.findElement(genldata, "name", NS); // NOI18N
+            return Util.findText(nameEl);
+        }
+        
+        public String getDisplayName() {
+            return getName();
+        }
+        
+        public Icon getIcon() {
+            return new ImageIcon(Utilities.loadImage("org/netbeans/modules/ant/freeform/resources/AntIcon.gif", true)); // NOI18N
+        }
+        
+        public Project getProject() {
+            return FreeformProject.this;
+        }
+        
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            // XXX
+        }
+        
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            // XXX
+        }
+        
     }
     
 }

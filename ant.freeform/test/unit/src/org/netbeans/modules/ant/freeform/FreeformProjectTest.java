@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.ant.freeform;
 
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
@@ -29,6 +31,12 @@ public class FreeformProjectTest extends TestBase {
     public void testPropertyEvaluation() throws Exception {
         PropertyEvaluator eval = simple.evaluator();
         assertEquals("right src.dir", "src", eval.getProperty("src.dir"));
+    }
+    
+    public void testProjectInformation() throws Exception {
+        ProjectInformation info = ProjectUtils.getInformation(simple);
+        assertEquals("correct name", "Simple Freeform Project", info.getName());
+        assertEquals("same display name", "Simple Freeform Project", info.getDisplayName());
     }
     
 }
