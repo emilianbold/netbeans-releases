@@ -387,7 +387,8 @@ public final class ModeImpl implements Mode {
     
     /** @return string description of this mode */
     public String toString () {
-        return super.toString () + "[" + getName () + "]"; // NOI18N
+        // #42995 - don't scream when toString called from non-AWT thread
+        return super.toString () + "[" + getCentral().getModeName(this) + "]"; // NOI18N
     }
     
     /** Accessor to central unit. Helper method. */
