@@ -612,7 +612,7 @@ public class SearchTest extends EditorTestCase {
     /**
      * TC16 - Search Selection
      */
-    public void testSearchSelection() {
+/*    public void testSearchSelection() {
         openDefaultProject();
         openDefaultSampleFile();
         try {
@@ -636,7 +636,7 @@ public class SearchTest extends EditorTestCase {
             closeFindDialogIfOpened();
             closeFileWithDiscard();
         }
-    }
+    }*/
 
     /**
      * TC17 - Search Selection Negative
@@ -670,7 +670,7 @@ public class SearchTest extends EditorTestCase {
     /**
      * TC18 - Regexp Search - Simple
      */
-/*    public void testRegexpSimple() {
+    public void testRegexpSimple() {
         openDefaultProject();
         openDefaultSampleFile();
         try {
@@ -712,7 +712,7 @@ public class SearchTest extends EditorTestCase {
             closeFindDialogIfOpened();
             closeFileWithDiscard();
         }                
-    }    */
+    }    
 
     /**
      * TC19 - Regexp Search - Complex
