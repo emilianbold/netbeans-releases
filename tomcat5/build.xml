@@ -149,6 +149,7 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="tomcat5.nbm"/>
     <delete dir="netbeans"/>
     <delete dir="Info"/>
+    <delete dir="javahelp/org/netbeans/modules/tomcat5/docs/JavaHelpSearch2"/>
     <delete dir="javadoc"/>
   </target>
 
