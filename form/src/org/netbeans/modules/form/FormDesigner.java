@@ -483,7 +483,7 @@ public class FormDesigner extends TopComponent
     /** Tests whether top designed container is some parent of given component
      * (whether the component is in the tree under top designed container).
      */
-    public boolean isInDesignedTree(RADVisualComponent metacomp) {
+    public boolean isInDesignedTree(RADComponent metacomp) {
         return topDesignComponent != null
                && (topDesignComponent == metacomp
                    || topDesignComponent.isParentComponent(metacomp));
@@ -711,7 +711,9 @@ public class FormDesigner extends TopComponent
         }
 
         public void componentAdded(FormModelEvent e) {
-            placeUpdateTask(UpdateTask.ADD, e.getComponent());
+            RADComponent metacomp = e.getComponent();
+            if (isInDesignedTree(metacomp))
+                placeUpdateTask(UpdateTask.ADD, metacomp);
         }
 
         public void componentRemoved(FormModelEvent e) {
