@@ -263,9 +263,8 @@ public class ClassFile {
     
     /**
      * @return a collection of Strings describing this class's interfaces.
-     * @throws IOException if the classfile can't be read.
      */    
-    public final Collection getInterfaces() throws IOException {
+    public final Collection getInterfaces() {
         List l = new ArrayList();
         int n = interfaces.length;
         for (int i = 0; i < n; i++)
@@ -274,11 +273,58 @@ public class ClassFile {
     }
     
     /**
+     * Looks up a variable by its name.
+     *
+     * NOTE: this method only looks up variables defined by this class,
+     * and not inherited from its superclass.
+     *
+     * @param name the name of the variable
+     * @return the variable,or null if no such variable in this class.
+     */
+    public final Variable getVariable(String name) {
+        int n = variables.length;
+        for (int i = 0; i < n; i++) {
+            Variable v = variables[i];
+            if (v.getName() == name)
+                return v;
+        }
+        return null;
+    }
+    
+    /**
      * @return a Collection of Variable objects representing the fields 
      *         defined by this class.
      */    
     public final Collection getVariables() {
         return Arrays.asList(variables);
+    }
+
+    /**
+     * @return the number of variables defined by this class.
+     */    
+    public final int getVariableCount() {
+        return variables.length;
+    }
+    
+    /**
+     * Looks up a method by its name and type signature, as defined
+     * by the Java Virtual Machine Specification, section 4.3.3.
+     *
+     * NOTE: this method only looks up methods defined by this class,
+     * and not methods inherited from its superclass.
+     *
+     * @param name the name of the method
+     * @param signature the method's type signature
+     * @return the method, or null if no such method in this class.
+     */
+    public final Method getMethod(String name, String signature) {
+        int n = methods.length;
+        for (int i = 0; i < n; i++) {
+            Method m = methods[i];
+            if (m.getName() == name && m.getDescriptor() == signature)
+                return m;
+        }
+        return null;
     }
     
     /**

@@ -121,7 +121,7 @@ public final class ClassName implements Comparable, Comparator, Serializable {
     /**
      * Returns the type string of this class, as stored in the 
      * classfile (it's "raw" form).  For example, an array of
-     * Floats would have a type of "[java/lang/Float;".
+     * Floats would have a type of "[Ljava/lang/Float;".
      */
     public String getType() {
         return type;
