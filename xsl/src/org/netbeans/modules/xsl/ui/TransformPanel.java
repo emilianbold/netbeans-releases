@@ -456,6 +456,15 @@ public final class TransformPanel extends javax.swing.JPanel {
         return showComboBox.getSelectedIndex();
     }
     
+    /**
+     * Compute preffered dimension for combo with
+     * particulal number of columns
+     */
+    private Dimension comboSize(int columns) {
+        JTextField template = new JTextField();
+        template.setColumns(columns);
+        return template.getPreferredSize();
+    }
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -482,9 +491,10 @@ public final class TransformPanel extends javax.swing.JPanel {
         showLabel.setDisplayedMnemonic (Util.THIS.getChar ("LBL_show_output_mnemonic"));
         showComboBox = new javax.swing.JComboBox();
 
+        FormListener formListener = new FormListener();
+
         setLayout(new java.awt.GridBagLayout());
 
-        setPreferredSize(new java.awt.Dimension(600, 155));
         inputLabel.setLabelFor(inputComboBox);
         inputLabel.setText(Util.THIS.getString ("LBL_XML_input"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -493,25 +503,18 @@ public final class TransformPanel extends javax.swing.JPanel {
         add(inputLabel, gridBagConstraints);
 
         inputComboBox.setEditable(true);
-        inputComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                inputComboBoxActionPerformed(evt);
-            }
-        });
+        inputComboBox.setPreferredSize(comboSize(40));
+        inputComboBox.addActionListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        gridBagConstraints.weightx = 1.0;
         add(inputComboBox, gridBagConstraints);
 
         browseInputButton.setMnemonic(Util.THIS.getChar ("LBL_browse_file_mnemonic"));
         browseInputButton.setText(Util.THIS.getString ("LBL_browse_file"));
-        browseInputButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                browseInputButtonActionPerformed(evt);
-            }
-        });
+        browseInputButton.addActionListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.insets = new java.awt.Insets(12, 5, 0, 11);
@@ -527,27 +530,20 @@ public final class TransformPanel extends javax.swing.JPanel {
         add(transformLabel, gridBagConstraints);
 
         transformComboBox.setEditable(true);
-        transformComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                transformComboBoxActionPerformed(evt);
-            }
-        });
+        transformComboBox.setPreferredSize(comboSize(40));
+        transformComboBox.addActionListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
+        gridBagConstraints.weightx = 1.0;
         add(transformComboBox, gridBagConstraints);
 
         browseXSLTButton.setMnemonic(Util.THIS.getChar ("LBL_browse_xslt_mnemonic"));
         browseXSLTButton.setText(Util.THIS.getString ("LBL_browse_xslt"));
-        browseXSLTButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                browseXSLTButtonActionPerformed(evt);
-            }
-        });
+        browseXSLTButton.addActionListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -565,58 +561,75 @@ public final class TransformPanel extends javax.swing.JPanel {
         add(outputLabel, gridBagConstraints);
 
         outputComboBox.setEditable(true);
-        outputComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                outputComboBoxActionPerformed(evt);
-            }
-        });
+        outputComboBox.setPreferredSize(comboSize(40));
+        outputComboBox.addActionListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
+        gridBagConstraints.weightx = 1.0;
         add(outputComboBox, gridBagConstraints);
 
         overwriteCheckBox.setSelected(true);
         overwriteCheckBox.setText(Util.THIS.getString ("LBL_over_write"));
-        overwriteCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                overwriteCheckBoxActionPerformed(evt);
-            }
-        });
+        overwriteCheckBox.addActionListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(overwriteCheckBox, gridBagConstraints);
 
         showLabel.setText(Util.THIS.getString ("LBL_show_output"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 6, 0);
         add(showLabel, gridBagConstraints);
 
         showComboBox.setModel(new javax.swing.DefaultComboBoxModel (SHOW_NAMES));
-        showComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                showComboBoxActionPerformed(evt);
-            }
-        });
+        showComboBox.addActionListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(11, 12, 6, 0);
+        gridBagConstraints.weightx = 1.0;
         add(showComboBox, gridBagConstraints);
 
+    }
+
+    // Code for dispatching events from components to event handlers.
+
+    private class FormListener implements java.awt.event.ActionListener {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            if (evt.getSource() == inputComboBox) {
+                TransformPanel.this.inputComboBoxActionPerformed(evt);
+            }
+            else if (evt.getSource() == browseInputButton) {
+                TransformPanel.this.browseInputButtonActionPerformed(evt);
+            }
+            else if (evt.getSource() == transformComboBox) {
+                TransformPanel.this.transformComboBoxActionPerformed(evt);
+            }
+            else if (evt.getSource() == browseXSLTButton) {
+                TransformPanel.this.browseXSLTButtonActionPerformed(evt);
+            }
+            else if (evt.getSource() == outputComboBox) {
+                TransformPanel.this.outputComboBoxActionPerformed(evt);
+            }
+            else if (evt.getSource() == overwriteCheckBox) {
+                TransformPanel.this.overwriteCheckBoxActionPerformed(evt);
+            }
+            else if (evt.getSource() == showComboBox) {
+                TransformPanel.this.showComboBoxActionPerformed(evt);
+            }
+        }
     }//GEN-END:initComponents
     
     
@@ -881,17 +894,17 @@ public final class TransformPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_outputComboBoxActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton browseInputButton;
+    private javax.swing.JButton browseXSLTButton;
+    private javax.swing.JComboBox inputComboBox;
+    private javax.swing.JLabel inputLabel;
     private javax.swing.JComboBox outputComboBox;
+    private javax.swing.JLabel outputLabel;
+    private javax.swing.JCheckBox overwriteCheckBox;
     private javax.swing.JComboBox showComboBox;
     private javax.swing.JLabel showLabel;
-    private javax.swing.JLabel outputLabel;
-    private javax.swing.JButton browseInputButton;
     private javax.swing.JComboBox transformComboBox;
     private javax.swing.JLabel transformLabel;
-    private javax.swing.JButton browseXSLTButton;
-    private javax.swing.JCheckBox overwriteCheckBox;
-    private javax.swing.JLabel inputLabel;
-    private javax.swing.JComboBox inputComboBox;
     // End of variables declaration//GEN-END:variables
     
     

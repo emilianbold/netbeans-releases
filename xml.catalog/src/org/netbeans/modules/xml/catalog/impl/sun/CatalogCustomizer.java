@@ -61,26 +61,17 @@ public class CatalogCustomizer extends javax.swing.JPanel implements Customizer 
         preferCheckBox = new javax.swing.JCheckBox();
         descTextArea = new javax.swing.JTextArea();
 
+        FormListener formListener = new FormListener();
+
         setLayout(new java.awt.GridBagLayout());
 
-        locationLabel.setForeground(java.awt.Color.black);
-        locationLabel.setText(Util.THIS.getString ("CatalogCustomizer.locationLabel.text"));
         locationLabel.setLabelFor(locationTextField);
+        locationLabel.setText(Util.THIS.getString ("CatalogCustomizer.locationLabel.text"));
         add(locationLabel, new java.awt.GridBagConstraints());
 
-        locationTextField.setColumns(20);
-        locationTextField.setPreferredSize(new java.awt.Dimension(220, 20));
-        locationTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                locationTextFieldActionPerformed(evt);
-            }
-        });
-
-        locationTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                locationTextFieldFocusLost(evt);
-            }
-        });
+        locationTextField.setColumns(40);
+        locationTextField.addActionListener(formListener);
+        locationTextField.addFocusListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -89,11 +80,7 @@ public class CatalogCustomizer extends javax.swing.JPanel implements Customizer 
         add(locationTextField, gridBagConstraints);
 
         selectButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/catalog/impl/sun/Bundle").getString("PROP_choose_file"));
-        selectButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                selectButtonActionPerformed(evt);
-            }
-        });
+        selectButton.addActionListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -102,11 +89,7 @@ public class CatalogCustomizer extends javax.swing.JPanel implements Customizer 
 
         preferCheckBox.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/catalog/impl/sun/Bundle").getString("LBL_preference"));
         preferCheckBox.setToolTipText(Util.THIS.getString("HINT_pp"));
-        preferCheckBox.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                preferCheckBoxStateChanged(evt);
-            }
-        });
+        preferCheckBox.addChangeListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -116,10 +99,12 @@ public class CatalogCustomizer extends javax.swing.JPanel implements Customizer 
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(preferCheckBox, gridBagConstraints);
 
+        descTextArea.setColumns(40);
         descTextArea.setEditable(false);
         descTextArea.setFont(javax.swing.UIManager.getFont ("Label.font"));
         descTextArea.setForeground(new java.awt.Color(102, 102, 153));
         descTextArea.setLineWrap(true);
+        descTextArea.setRows(4);
         descTextArea.setText(Util.THIS.getString("DESC_catalog_fmts"));
         descTextArea.setWrapStyleWord(true);
         descTextArea.setDisabledTextColor(javax.swing.UIManager.getColor ("Label.foreground"));
@@ -134,6 +119,34 @@ public class CatalogCustomizer extends javax.swing.JPanel implements Customizer 
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(descTextArea, gridBagConstraints);
 
+    }
+
+    // Code for dispatching events from components to event handlers.
+
+    private class FormListener implements java.awt.event.ActionListener, java.awt.event.FocusListener, javax.swing.event.ChangeListener {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            if (evt.getSource() == locationTextField) {
+                CatalogCustomizer.this.locationTextFieldActionPerformed(evt);
+            }
+            else if (evt.getSource() == selectButton) {
+                CatalogCustomizer.this.selectButtonActionPerformed(evt);
+            }
+        }
+
+        public void focusGained(java.awt.event.FocusEvent evt) {
+        }
+
+        public void focusLost(java.awt.event.FocusEvent evt) {
+            if (evt.getSource() == locationTextField) {
+                CatalogCustomizer.this.locationTextFieldFocusLost(evt);
+            }
+        }
+
+        public void stateChanged(javax.swing.event.ChangeEvent evt) {
+            if (evt.getSource() == preferCheckBox) {
+                CatalogCustomizer.this.preferCheckBoxStateChanged(evt);
+            }
+        }
     }//GEN-END:initComponents
 
     private void selectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectButtonActionPerformed
@@ -184,11 +197,11 @@ public class CatalogCustomizer extends javax.swing.JPanel implements Customizer 
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextArea descTextArea;
     private javax.swing.JLabel locationLabel;
     private javax.swing.JTextField locationTextField;
     private javax.swing.JCheckBox preferCheckBox;
     private javax.swing.JButton selectButton;
-    private javax.swing.JTextArea descTextArea;
     // End of variables declaration//GEN-END:variables
 
 }

@@ -154,6 +154,7 @@ public final class SAXGeneratorMethodPanel extends SAXGeneratorAbstractPanel {
         
         public MethodsTable() {
             getTableHeader().setReorderingAllowed(false);
+            setRowHeight(Util.getTextCellHeight(this));
         }
         
         /** 

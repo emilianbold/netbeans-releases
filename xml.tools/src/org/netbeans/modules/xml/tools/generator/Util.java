@@ -12,6 +12,10 @@
  */
 package org.netbeans.modules.xml.tools.generator;
 
+import java.awt.Font;
+import java.awt.FontMetrics;
+import javax.swing.*;
+
 import org.netbeans.modules.xml.core.lib.AbstractUtil;
 
 /**
@@ -44,4 +48,11 @@ class Util extends AbstractUtil {
         }
     }
 
+    /**
+     * Calculate JTable cell height for textual rows.
+     */
+    public static int getTextCellHeight(JTable table) {
+        JComboBox template = new JComboBox();
+        return template.getPreferredSize().height;
+    }
 }

@@ -15,7 +15,6 @@ package org.netbeans.modules.xml.text.syntax;
 import java.util.*;
 import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.editor.options.HTMLOptions;
 
 /**
  * Options for the xml editor kit
@@ -53,7 +52,7 @@ public class XMLOptions extends AbstractBaseOptions {
     }
 
     public void setCompletionAutoPopup(boolean v) {
-        setSettingBoolean(ExtSettingsNames.COMPLETION_AUTO_POPUP, v, HTMLOptions.COMPLETION_AUTO_POPUP_PROP);
+        setSettingBoolean(ExtSettingsNames.COMPLETION_AUTO_POPUP, v, COMPLETION_AUTO_POPUP_PROP);
     }
 
     public int getCompletionAutoPopupDelay() {
@@ -66,7 +65,7 @@ public class XMLOptions extends AbstractBaseOptions {
             return;
         }
         setSettingInteger(ExtSettingsNames.COMPLETION_AUTO_POPUP_DELAY, delay,
-            HTMLOptions.COMPLETION_AUTO_POPUP_DELAY_PROP);
+            COMPLETION_AUTO_POPUP_DELAY_PROP);
     }
 
     public boolean getCompletionInstantSubstitution() {

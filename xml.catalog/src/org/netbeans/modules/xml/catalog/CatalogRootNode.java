@@ -32,6 +32,7 @@ import org.netbeans.modules.xml.catalog.impl.*;
 import org.netbeans.modules.xml.catalog.settings.CatalogSettings;
 import org.openide.util.HelpCtx;
 import java.awt.event.ActionEvent;
+import javax.swing.*;
 
 /**
  * Node representing catalog root in the Runtime tab. It retrieves all
@@ -94,16 +95,23 @@ public final class CatalogRootNode extends AbstractNode implements Node.Cookie {
             dd.setHelpCtx(new HelpCtx(CatalogMounterPanel.class));
             myDialog = DialogDisplayer.getDefault().createDialog(dd);
 
-            // resize dialog on model change
+            // set dialog size to 60x10 characters
             
-//            final Window win = myDialog;            
-//            model.addChangeListener(new ChangeListener() {
-//                public void stateChanged(ChangeEvent e) {
-//                    win.pack();  
-//                }
-//            });
+            JTextArea template = new JTextArea();
+            template.setColumns(60);
+            template.setRows(8 + 2);  // 8 lines, 2 bottom line with buttons
+            Dimension dimension = template.getPreferredSize();
             
-            myDialog.setSize(450, 250);  //^ packing never creates bigger window :-(
+            //#33996 this is insets size as prescribed by UI guidelines            
+            final int insets = 12;
+            
+            // small fonts have problems that insets are times more important
+            // then font size, include also insets
+            int heightInsets = dimension.height + 10 * insets;  // 10 lines * 12 inset size
+            int widthInsets = dimension.width + 4 * insets;
+            Dimension fullDimension = new Dimension(widthInsets, heightInsets);
+            myDialog.setSize(fullDimension);  //^ packing never creates bigger window :-(
+            
             myDialog.show();
         }
 

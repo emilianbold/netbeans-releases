@@ -48,26 +48,17 @@ public class XCatalogCustomizer extends javax.swing.JPanel implements Customizer
         locationTextField = new javax.swing.JTextField();
         descTextArea = new javax.swing.JTextArea();
 
+        FormListener formListener = new FormListener();
+
         setLayout(new java.awt.GridBagLayout());
 
         locationLabel.setText(Util.THIS.getString ("XCatalogCustomizer.locationLabel.text"));
-        locationLabel.setForeground(java.awt.Color.black);
         locationLabel.setLabelFor(locationTextField);
         add(locationLabel, new java.awt.GridBagConstraints());
 
         locationTextField.setColumns(20);
-        locationTextField.setPreferredSize(new java.awt.Dimension(240, 20));
-        locationTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                locationTextFieldActionPerformed(evt);
-            }
-        });
-
-        locationTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                locationTextFieldFocusLost(evt);
-            }
-        });
+        locationTextField.addActionListener(formListener);
+        locationTextField.addFocusListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -95,6 +86,25 @@ public class XCatalogCustomizer extends javax.swing.JPanel implements Customizer
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(descTextArea, gridBagConstraints);
 
+    }
+
+    // Code for dispatching events from components to event handlers.
+
+    private class FormListener implements java.awt.event.ActionListener, java.awt.event.FocusListener {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            if (evt.getSource() == locationTextField) {
+                XCatalogCustomizer.this.locationTextFieldActionPerformed(evt);
+            }
+        }
+
+        public void focusGained(java.awt.event.FocusEvent evt) {
+        }
+
+        public void focusLost(java.awt.event.FocusEvent evt) {
+            if (evt.getSource() == locationTextField) {
+                XCatalogCustomizer.this.locationTextFieldFocusLost(evt);
+            }
+        }
     }//GEN-END:initComponents
 
     //!!! find out whether action performed is not enought
@@ -129,8 +139,8 @@ public class XCatalogCustomizer extends javax.swing.JPanel implements Customizer
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextArea descTextArea;
-    private javax.swing.JTextField locationTextField;
     private javax.swing.JLabel locationLabel;
+    private javax.swing.JTextField locationTextField;
     // End of variables declaration//GEN-END:variables
 
 }

@@ -358,7 +358,7 @@ abstract class ContentModel {
 
         protected boolean eat(Food food) {
 
-            boolean accept = false;
+            boolean accept = current == min;
             while (food.hasNext()) {
                 
                 if (current == max) return true;
@@ -367,6 +367,7 @@ abstract class ContentModel {
                 boolean accepted = peer.eat(food);                
                 
                 if (accepted == false) {
+                    food.reset(store);
                     return accept;
                 } else if (food.hasNext()) {
                     if (++current >= max && max > -1) {

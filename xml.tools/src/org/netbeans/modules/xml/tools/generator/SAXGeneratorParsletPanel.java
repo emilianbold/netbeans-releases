@@ -184,6 +184,7 @@ public final class SAXGeneratorParsletPanel extends SAXGeneratorAbstractPanel {
         
         public ParsletsTable() {
             getTableHeader().setReorderingAllowed(false);
+            setRowHeight(Util.getTextCellHeight(this));
         }
         
         public TableCellEditor getCellEditor(int row, int column) {
