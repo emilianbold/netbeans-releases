@@ -36,7 +36,9 @@ Microsystems, Inc. All Rights Reserved.
     
     <folder name="Templates">
         <folder name="Services">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.platform.resources.Bundle"/>
             <folder name="Platforms">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.platform.resources.Bundle"/>
                 <folder name="org-netbeans-api-java-Platform">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.platform.resources.Bundle"/>
                     <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/platform/resources/templates/javaplatform.html" />

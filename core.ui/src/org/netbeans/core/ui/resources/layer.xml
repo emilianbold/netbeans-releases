@@ -343,6 +343,7 @@ Microsystems, Inc. All Rights Reserved.
 
         <!-- folder for all privileged templates -->
         <folder name="Privileged">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <!-- a value to signal that this folder should not be visible in the simple new from template wizard -->
             <attr name="simple" boolvalue="false" />
 	    <file name="Folder.shadow">
@@ -352,6 +353,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <!-- folder for all recent templates -->
         <folder name="Recent">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <!-- a value to signal that this folder should not be visible in the simple new from template wizard -->
             <attr name="simple" boolvalue="false" />
 	</folder>

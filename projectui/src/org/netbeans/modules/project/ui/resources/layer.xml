@@ -144,18 +144,25 @@ Microsystems, Inc. All Rights Reserved.
     
     <folder name="Templates">
         <folder name="Project">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
             <!-- Project type providers should register their templates here -->
             <attr name="simple" boolvalue="false" /> <!-- do not show this in regular temlate wizard -->
             <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/project/ui/resources/ProjectTemplates.html"/>
-            
+
+            <!-- Samples folder -->
+            <folder name="Samples">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
+            </folder>
+
             <!-- Generic import folder -->
             <folder name="Import">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/project/ui/resources/import.html"/>
-            </folder>            
-        </folder>
+            </folder>
+        </folder>        
+
         <folder name="Folder_hidden"/>
- 
+
         <attr name="XML/Ant" boolvalue="true"/>
         <attr name="JUnit/XML" boolvalue="true"/>
         <attr name="Beans/JUnit" boolvalue="true"/>
@@ -172,7 +179,7 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="JSP_Servlet/Other" boolvalue="true"/>
 
         <folder name="Other">
-        
+
             <attr name="properties.properties/html.html" boolvalue="true"/>
             <attr name="properties.properties/file" boolvalue="true"/>
             <attr name="html.html/bookmark.url" boolvalue="true"/>
@@ -180,7 +187,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="bookmark.url/text.txt" boolvalue="true"/>
             <attr name="text.txt/file" boolvalue="true"/>
             <attr name="file/Folder" boolvalue="true"/>
-            
+
             <folder name="Folder">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle" />
