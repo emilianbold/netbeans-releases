@@ -47,7 +47,6 @@
 		<mapID target="about_jsp_edit" url="web/create/jsp/about_jsp_edit.html" />
 		<mapID target="about_jsp_syntax" url="web/create/jsp/about_jsp_syntax.html" />
 		<mapID target="about_jsp_technology" url="web/create/jsp/about_jsp_technology.html" />
-		<mapID target="about_jsp_encoding" url="web/create/jsp/about_jsp_encoding.html" />
 		<mapID target="jsp_compile" url="web/create/jsp/jsp_compile.html" />
         	<mapID target="jsp_create" url="web/create/jsp/jsp_create.html" />
 		<mapID target="jsp_edit" url="web/create/jsp/jsp_edit.html" />
@@ -56,7 +55,7 @@
 		<mapID target="jsp_servletview" url="web/create/jsp/jsp_servletview.html" />
 		<mapID target="jsp_usetaglib" url="web/create/jsp/jsp_usetaglib.html" />
 		<mapID target="jsp_useapplet" url="web/create/jsp/jsp_useapplet.html" />
-		<mapID target="jsp_encoding" url="web/create/jsp/jsp_encoding.html" />
+		<mapID target="about_jsp_encoding" url="web/create/jsp/about_jsp_encoding.html" />
 		<mapID target="jsp_encoding_page" url="web/create/jsp/jsp_encoding_page.html" />
 		<mapID target="jsp_encoding_request" url="web/create/jsp/jsp_encoding_request.html" />
 		<mapID target="jsp_encoding_response" url="web/create/jsp/jsp_encoding_response.html" />
