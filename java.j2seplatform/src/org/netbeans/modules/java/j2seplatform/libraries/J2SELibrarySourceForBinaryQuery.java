@@ -13,10 +13,13 @@
 
 package org.netbeans.modules.java.j2seplatform.libraries;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 
@@ -27,6 +30,7 @@ import org.openide.ErrorManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
+import org.openide.util.WeakListeners;
 
 /**
  * Finds the locations of sources for various libraries.
@@ -53,7 +57,7 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
                     if (file != null) {
                         try {
                             if (file.getURL().equals(binaryRoot)) {
-                                return new Result (libs[i]);
+                                return new Result (entry, libs[i]);
                             }
                         } catch (FileStateInvalidException e) {
                             ErrorManager.getDefault().notify(e);
@@ -66,33 +70,76 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
     }
     
     
-    private static class Result implements SourceForBinaryQuery.Result {
+    private static class Result implements SourceForBinaryQuery.Result, PropertyChangeListener {
         
         private Library lib;
+        private URL entry;
+        private ArrayList listeners;
+        private FileObject[] cache;
         
-        public Result (Library lib) {
+        public Result (URL queryFor, Library lib) {
+            this.entry = queryFor;
             this.lib = lib;
+            this.lib.addPropertyChangeListener ((PropertyChangeListener)WeakListeners.create(PropertyChangeListener.class,this,this.lib));
         }
         
-        public FileObject[] getRoots () {
-            //TODO: Cache result when listening will be implemented
-            List src = this.lib.getContent("src");              //NOI18N
-            List result = new ArrayList ();
-            for (Iterator sit = src.iterator(); sit.hasNext();) {
-                FileObject sourceRootURL = URLMapper.findFileObject((URL) sit.next());
-                if (sourceRootURL!=null) {
-                    result.add (sourceRootURL);
+        public synchronized FileObject[] getRoots () {
+            if (this.cache == null) {
+                if (this.lib.getContent("classpath").contains (entry)) {
+                    List src = this.lib.getContent("src");              //NOI18N
+                    List result = new ArrayList ();
+                    for (Iterator sit = src.iterator(); sit.hasNext();) {
+                        FileObject sourceRootURL = URLMapper.findFileObject((URL) sit.next());
+                        if (sourceRootURL!=null) {
+                            result.add (sourceRootURL);
+                        }
+                    }
+                    this.cache = (FileObject[]) result.toArray(new FileObject[result.size()]);
+                }
+                else {
+                    this.cache = new FileObject[0];
                 }
             }
-            return (FileObject[]) result.toArray(new FileObject[result.size()]);
+            return this.cache;
         }
         
-        public void addChangeListener (ChangeListener l) {
-            //TODO: Implement this
+        public synchronized void addChangeListener (ChangeListener l) {
+            assert l != null : "Listener can not be null";  //NOI18N
+            if (this.listeners == null) {
+                this.listeners = new ArrayList ();
+            }
+            this.listeners.add (l);
         }
         
-        public void removeChangeListener (ChangeListener l) {
-            //TODO: Implement this
+        public synchronized void removeChangeListener (ChangeListener l) {
+            assert l != null : "Listener can not be null";  //NOI18N
+            if (this.listeners == null) {
+                return;
+            }
+            this.listeners.remove (l);
+        }
+        
+        public void propertyChange (PropertyChangeEvent event) {
+            if (Library.PROP_CONTENT.equals(event)) {
+                synchronized (this) {                    
+                    this.cache = null;
+                }
+                this.fireChange ();
+            }
+        }
+        
+        private void fireChange () {
+            Iterator it = null;
+            synchronized (this) {
+                if (this.listeners == null) {
+                    return;
+                }
+                it = ((ArrayList)this.listeners.clone()).iterator();
+            }
+            ChangeEvent event = new ChangeEvent (this);
+            while (it.hasNext ()) {
+                ((ChangeListener)it.next()).stateChanged(event);
+            }
         }
         
     }

@@ -12,11 +12,14 @@
  */
 package org.netbeans.modules.java.platform.queries;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.util.List;
 import java.util.Iterator;
 import java.util.ArrayList;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.openide.filesystems.FileObject;
@@ -28,6 +31,8 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.openide.util.WeakListeners;
+
 
 /**
  * This implementation of the SourceForBinaryQueryImplementation
@@ -59,25 +64,55 @@ public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImpleme
         return null;
     }
     
-    private static class Result implements SourceForBinaryQuery.Result {
+    private static class Result implements SourceForBinaryQuery.Result, PropertyChangeListener {
                         
         private JavaPlatform platform;
+        private ArrayList listeners;
                         
         public Result (JavaPlatform platform) {
             this.platform = platform;
+            this.platform.addPropertyChangeListener ((PropertyChangeListener)WeakListeners.create(PropertyChangeListener.class,this,this.platform));
         }
                         
-        public FileObject[] getRoots () {
+        public FileObject[] getRoots () {       //No need for caching, platforms does.
             ClassPath sources = this.platform.getSourceFolders();
             return sources.getRoots();
         }
                         
-        public void addChangeListener (ChangeListener l) {
-            //TODO: Implement this
+        public synchronized void addChangeListener (ChangeListener l) {
+            assert l != null : "Listener can not be null";  //NOI18N
+            if (this.listeners == null) {
+                this.listeners = new ArrayList ();
+            }
+            this.listeners.add (l);
         }
                         
-        public void removeChangeListener (ChangeListener l) {
-            //TODO: Implement this
+        public synchronized void removeChangeListener (ChangeListener l) {
+            assert l != null : "Listener can not be null";  //NOI18N
+            if (this.listeners == null) {
+                return;
+            }
+            this.listeners.remove (l);
+        }
+        
+        public void propertyChange (PropertyChangeEvent event) {
+            if (JavaPlatform.PROP_SOURCE_FOLDER.equals(event.getPropertyName())) {
+                this.fireChange ();
+            }
+        }
+        
+        private void fireChange () {
+            Iterator it = null;
+            synchronized (this) {
+                if (this.listeners == null) {
+                    return;
+                }
+                it = ((ArrayList)this.listeners.clone()).iterator ();
+            }
+            ChangeEvent event = new ChangeEvent (this);
+            while (it.hasNext()) {
+                ((ChangeListener)it.next()).stateChanged(event);
+            }
         }
     }
 }

@@ -34,10 +34,7 @@ import org.openide.ErrorManager;
  * bootstrap classpath information.
  */
 public class J2SEPlatformImpl extends JavaPlatform {
-
-    public static final String PROP_DISPLAY_NAME = "displayName";           //NOI18N
-    public static final String PROP_SOURCE_FOLDER = "sourceFolders";         //NOI18N
-    public static final String PROP_JAVADOC_FOLDER ="javadocFolders";        //NOI18N
+    
     public static final String PROP_ANT_NAME = "antName";                   //NOI18N
     public static final String PLATFORM_J2SE = "j2se";                      //NOI18N
 

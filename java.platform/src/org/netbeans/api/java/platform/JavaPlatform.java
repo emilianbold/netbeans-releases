@@ -30,6 +30,26 @@ import org.netbeans.api.java.classpath.ClassPath;
  */
 public abstract class JavaPlatform {
 
+    //List of names of mutable properties
+    /**
+     * Property name for displayName
+     */
+    public static final String PROP_DISPLAY_NAME = "displayName";           //NOI18N
+    
+    /**
+     * Property name for sourceFolders
+     */
+    public static final String PROP_SOURCE_FOLDER = "sourceFolders";         //NOI18N
+    
+    /**
+     * Property name for javadocFolders
+     */
+    public static final String PROP_JAVADOC_FOLDER ="javadocFolders";        //NOI18N
+    
+    /**
+     * Property name for systemProperties
+     */
+    public static final String PROP_SYSTEM_PROPERTIES = "systemProperties";  //NOI18N
 
     private Map sysproperties = Collections.EMPTY_MAP;
     private PropertyChangeSupport supp;
@@ -156,7 +176,7 @@ public abstract class JavaPlatform {
      */
     protected final void setSystemProperties(Map sysproperties) {
         this.sysproperties = Collections.unmodifiableMap(sysproperties);
-        firePropertyChange("systemProperties", null, null); // NOI18N
+        firePropertyChange(PROP_SYSTEM_PROPERTIES, null, null); // NOI18N
     }
 
  }
