@@ -22,7 +22,7 @@ Microsystems, Inc. All Rights Reserved.
       <classpath>
         <pathelement location="../openide/netbeans/lib/openide.jar"/>
         <pathelement location="../openidex/netbeans/lib/ext/openidex.jar"/>
-        <pathelement location="../core/release/lib/ext/regexp.jar"/>
+        <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
       </classpath>
     </javac>
   </target>
