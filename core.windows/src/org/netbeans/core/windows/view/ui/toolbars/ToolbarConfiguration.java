@@ -122,6 +122,10 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
     private String      configDisplayName;
     /** Cached preferred width. */
     private int         prefWidth;
+    /** variable to signal that we are just writing the content of configuration
+     * and we should ignore all changes. In such case set to Boolean.TRUE
+     */
+    private final ThreadLocal WRITE_IN_PROGRESS = new ThreadLocal ();
 
    // private static final ResourceBundle bundle = NbBundle.getBundle (ToolbarConfiguration.class);
 
@@ -914,7 +918,10 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
         final FileObject tbFO = NbPlaces.getDefault().toolbars().getPrimaryFile();
         final FileSystem tbFS = tbFO.getFileSystem();
 
-        tbFS.runAtomicAction (new FileSystem.AtomicAction () {
+        Object prev = WRITE_IN_PROGRESS.get ();
+        try {
+            WRITE_IN_PROGRESS.set (Boolean.TRUE);
+            tbFS.runAtomicAction (new FileSystem.AtomicAction () {
 		public void run () throws IOException {
 		    FileLock lock = null;
 		    OutputStream os = null;
@@ -939,6 +946,9 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
 		    }
 		}
 	    });
+        } finally {
+            WRITE_IN_PROGRESS.set (prev);
+        }
         ERR.log ("writeDocument finished"); // NOI18N
     }
 
@@ -956,6 +966,9 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
     public void propertyChange(PropertyChangeEvent ev) {
         if (!XMLDataObject.PROP_DOCUMENT.equals(ev.getPropertyName ())) {
             // interested only in PROP_DOCUMENT properties
+            return;
+        }
+        if (Boolean.TRUE.equals (WRITE_IN_PROGRESS.get ())) {
             return;
         }
         

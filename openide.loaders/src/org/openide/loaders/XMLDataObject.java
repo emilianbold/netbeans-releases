@@ -1099,6 +1099,14 @@ public class XMLDataObject extends MultiDataObject {
          * Info is then assigned according to it from registry.
          */
         public void waitFinished () {
+            waitFinished (null);
+        }
+        
+        /*
+         * Find out DTD public ID.
+         * Info is then assigned according to it from registry.
+         */
+        private void waitFinished (String ignorePreviousId) {
             if (sharedParserImpl == null) return;
 
             XMLReader parser = sharedParserImpl;
@@ -1205,6 +1213,11 @@ public class XMLDataObject extends MultiDataObject {
                     }
                 }
             
+            }
+            
+            if (ignorePreviousId != null && newID.equals (ignorePreviousId)) {
+                // no updates in lookup
+                return;
             }
             
             // out of any synchronized blocks udpate the lookup
@@ -1370,14 +1383,10 @@ public class XMLDataObject extends MultiDataObject {
                 // the main file changed => invalidate DOM document
                 //resolveInfo (getPrimaryFile ());  //reparse info again
                 clearDocument ();
+                String prevId = parsedId;
                 parsedId = null;
-                if (lookup != null) {
-                    // clear the lookup if any 
-                    lookup = null;
-                    result = null;
-                    QUERY.set (null);
-                    firePropertyChange (PROP_COOKIE, null, null);
-                }
+                // parse update only if the ID is different
+                waitFinished (prevId);
             }
         }
 
