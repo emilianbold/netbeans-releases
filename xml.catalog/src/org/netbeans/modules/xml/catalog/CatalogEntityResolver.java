@@ -92,11 +92,13 @@ public class CatalogEntityResolver extends UserCatalog implements EntityResolver
         if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("CatalogEntityResolver:PublicID: " + publicId + ", " + systemId + " => " + (result == null ? "null" : result.getSystemId())); // NOI18N
 
         //#53710 URL space canonization (%20 form works in most cases)
-        String patchedSystemId = result.getSystemId();
-        if (patchedSystemId != null) {
-            patchedSystemId = patchedSystemId.replaceAll("\\+", "%20"); // NOI18N
-            patchedSystemId = patchedSystemId.replaceAll("\\ ", "%20"); // NOI18N
-            result.setSystemId(patchedSystemId);
+        if (result != null) {
+            String patchedSystemId = result.getSystemId();
+            if (patchedSystemId != null) {
+                patchedSystemId = patchedSystemId.replaceAll("\\+", "%20"); // NOI18N
+                patchedSystemId = patchedSystemId.replaceAll("\\ ", "%20"); // NOI18N
+                result.setSystemId(patchedSystemId);
+            }
         }
         return result;
         
