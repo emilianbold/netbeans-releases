@@ -1180,7 +1180,7 @@ public class EarProjectProperties extends ArchiveProjectProperties {
             //AppDDSegmentProvider seg = (AppDDSegmentProvider) p.getLookup().lookup(AppDDSegmentProvider.class);
             if (null != jmp) {
 //                String path = vcpi.getCompletePathInArchive(); //   computePath(vcpi);
-                //jmp.setServerInstanceID(earProject.getServerInstanceID());
+                jmp.setServerInstanceID(earProject.getServerInstanceID());
                 J2eeModule jm = jmp.getJ2eeModule();
                 if (null != jm) {
                     earProject.getAppModule().addModuleProvider(jmp,path);
