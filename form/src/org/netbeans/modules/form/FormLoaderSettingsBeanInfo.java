@@ -16,6 +16,12 @@ package com.netbeans.developer.modules.loaders.form;
 import java.awt.Image;
 import java.beans.*;
 import java.lang.reflect.Modifier;
+import java.util.ResourceBundle;
+
+import org.openide.TopManager;
+import org.openide.util.NbBundle;
+import org.openide.windows.Workspace;
+import org.openide.windows.WindowManager;
 
 /** A BeanInfo for FormLoaderSettings.
 * @author Ian Formanek
@@ -72,6 +78,8 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                                 "getOutputLevel", "setOutputLevel"),
         new PropertyDescriptor (FormLoaderSettings.PROP_NULL_LAYOUT, FormLoaderSettings.class,
                                 "isNullLayout", "setNullLayout"),
+        new PropertyDescriptor (FormLoaderSettings.PROP_WORKSPACE, FormLoaderSettings.class,
+                                "getWorkspace", "setWorkspace"),
       };
 
       desc[0].setDisplayName (formBundle.getString ("PROP_INDENT_AWT_HIERARCHY"));
@@ -122,6 +130,9 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
       desc[16].setPropertyEditorClass (FormLoaderSettingsBeanInfo.OutputLevelEditor.class);
       desc[17].setDisplayName (formBundle.getString ("PROP_NULL_LAYOUT"));
       desc[17].setShortDescription (formBundle.getString ("HINT_NULL_LAYOUT"));
+      desc[18].setDisplayName (formBundle.getString ("PROP_WORKSPACE"));
+      desc[18].setShortDescription (formBundle.getString ("HINT_WORKSPACE"));
+      desc[18].setPropertyEditorClass (WorkspaceEditor.class);
 
 
     } catch (IntrospectionException ex) {
@@ -134,6 +145,7 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
   * @return array of properties
   */
   public PropertyDescriptor[] getPropertyDescriptors () {
+    System.out.println("FormLoaderSettingsBeanInfo.getPropertyDescriptors ()");
     return desc;
   }
 
@@ -233,10 +245,63 @@ static final long serialVersionUID =7628317154007139777L;
     }
 
   }
+  
+  final public static class WorkspaceEditor extends java.beans.PropertyEditorSupport {
+
+    /*
+    * @return The property value as a human editable string.
+    * <p>   Returns null if the value can't be expressed as an editable string.
+    * <p>   If a non-null value is returned, then the PropertyEditor should
+    *       be prepared to parse that string back in setAsText().
+    */
+    public String getAsText() {
+      return (String) getValue();
+    }
+
+    /* Set the property value by parsing a given String.  May raise
+    * java.lang.IllegalArgumentException if either the String is
+    * badly formatted or if this kind of property can't be expressed
+    * as text.
+    * @param text  The string to be parsed.
+    */
+    public void setAsText (String text) throws java.lang.IllegalArgumentException {
+      setValue(text);
+    }
+
+    /*
+    * If the property value must be one of a set of known tagged values,
+    * then this method should return an array of the tag values.  This can
+    * be used to represent (for example) enum values.  If a PropertyEditor
+    * supports tags, then it should support the use of setAsText with
+    * a tag value as a way of setting the value.
+    *
+    * @return The tag values for this property.  May be null if this
+    *   property cannot be represented as a tagged value.
+    *
+    */
+    public String[] getTags() {
+      WindowManager wm = TopManager.getDefault().getWindowManager();
+      Workspace[] wss = wm.getWorkspaces();
+      String[] names = new String[wss.length + 1];
+      for (int i = wss.length; --i >= 0; ) {
+        names[i] = wss[i].getName();
+      }
+      try {
+        names[wss.length] = NbBundle.getBundle(WorkspaceEditor.class).getString("None");
+      } catch (java.util.MissingResourceException e) {
+        names[wss.length] = "None";
+        e.printStackTrace();
+      }
+      return names;
+    }
+  }
+
 }
 
 /*
  * Log
+ *  17   Gandalf   1.16        12/8/99  Pavel Buzek     "workspace" property 
+ *       added (workspace where forms are opened)
  *  16   Gandalf   1.15        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  15   Gandalf   1.14        9/12/99  Ian Formanek    Fixed bug 3530 - We do 

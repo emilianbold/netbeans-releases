@@ -28,6 +28,8 @@ public class FormLoaderSettings extends SystemOption {
   /** generated Serialized Version UID */
   static final long serialVersionUID = 8949624818164732719L;
 
+  /** Property name of the workspace property */
+  public static final String PROP_WORKSPACE = "workspace";
   /** Property name of the indentAWTHierarchy property */
   public static final String PROP_INDENT_AWT_HIERARCHY = "indentAWTHierarchy";
   /** Property name of the sortEventSets property */
@@ -80,6 +82,7 @@ public class FormLoaderSettings extends SystemOption {
 // ------------------------------------------
 // properties
 
+  private static String workspace = "Visual";
   /** If true, the generated code for AWT components' hierarchy
   * is indented to reflect the hierarchy (i.e. the code for subcomponents of
   * Container is indented to the right).
@@ -157,6 +160,14 @@ public class FormLoaderSettings extends SystemOption {
 // ------------------------------------------
 // property access methods
 
+  public String getWorkspace () {
+    return workspace;
+  }
+  
+  public void setWorkspace (String newWorkspace) {
+    workspace = newWorkspace;
+  }
+  
   public int getEmptyFormType () {
     return emptyFormType;
   }
@@ -452,6 +463,8 @@ public class FormLoaderSettings extends SystemOption {
 
 /*
  * Log
+ *  17   Gandalf   1.16        12/8/99  Pavel Buzek     "workspace" property 
+ *       added (workspace where forms are opened)
  *  16   Gandalf   1.15        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  15   Gandalf   1.14        9/12/99  Ian Formanek    Fixed bug 3530 - We do 
