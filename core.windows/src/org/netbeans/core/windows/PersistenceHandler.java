@@ -353,11 +353,11 @@ final class PersistenceHandler implements PersistenceObserver {
             return null;
         }
         
-        long start = System.currentTimeMillis();
+//        long start = System.currentTimeMillis();
         TopComponent tc = PersistenceManager.getDefault().getTopComponentForID(tc_id);
-        if(DEBUG) {
-            debugLog("***Getting TopComponent for ID=" + tc_id + " in " + (System.currentTimeMillis() - start) + " ms"); // NOI18N
-        }
+//        if(DEBUG) {
+//            debugLog("***Getting TopComponent for ID=" + tc_id + " in " + (System.currentTimeMillis() - start) + " ms"); // NOI18N
+//        }
         
         return tc;
     }
