@@ -395,6 +395,10 @@ final class Services extends ServiceType.Registry {
                 }
             }
 
+            // refresh the nodes because they could be updated by
+            // previous loop
+            refresh ();
+
             // now compute the permutation to be applied
             Node[] current = getNodes ();
             int[] perm = new int[current.length];
