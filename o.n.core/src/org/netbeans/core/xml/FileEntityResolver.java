@@ -122,7 +122,7 @@ public class FileEntityResolver extends EntityCatalog implements Environment.Pro
      * 
      * @param obj the data object that we are looking for environment of
      * @param source the obj that provides the environment
-     * @return lookup provided by the obj or Lookup.EMPTY if none has been found
+     * @return lookup provided by the obj or null if none has been found
      */
     private static Lookup findLookup (XMLDataObject obj, DataObject source) {
         try {
@@ -152,7 +152,7 @@ public class FileEntityResolver extends EntityCatalog implements Environment.Pro
             TopManager.getDefault ().getErrorManager ().notify (ex);
         }
         
-        return Lookup.EMPTY;
+        return null;
     }
         
     
@@ -362,22 +362,26 @@ public class FileEntityResolver extends EntityCatalog implements Environment.Pro
             if (o == obj) {
                 // the data object is still the same as used to be
                 // 
-                if (o != null) {
+                Lookup l = findLookup (xml, o);
+                if (o != null && l != null) {
                     // just update the lookups
-                    setLookups (new Lookup[] { findLookup (xml, o) });
+                    setLookups (new Lookup[] { l });
                     // and exit
                     return;
                 } 
             } else {
                 // data object changed
                 obj = o;
-                if (o != null) {
+                
+                Lookup l = findLookup(xml, o);
+                
+                if (o != null && l != null) {
                     // add listener to changes of the data object
                     o.addPropertyChangeListener (
                         WeakListener.propertyChange (this, o)
                     );
                     // update the lookups
-                    setLookups (new Lookup[] { findLookup (xml, o) });
+                    setLookups (new Lookup[] { l });
                     // and exit
                     return;
                 }
