@@ -309,8 +309,10 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                 TagLibraryInfo tli = (TagLibraryInfo)tagLibData.getTagLibraryInfo();
                 if (tli != null) {
                     TagInfo[] tags = tli.getTags();
-                    for (int i = 0; i < tags.length; i++) {
-                        items.add(tags[i]);
+                    if (tags != null) {
+                        for (int i = 0; i < tags.length; i++) {
+                            items.add(tags[i]);
+                        }
                     }
                 }
             }
