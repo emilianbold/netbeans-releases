@@ -99,6 +99,9 @@ public class NbDialogSupport implements DialogSupport.DialogFactory {
                 JComponent.WHEN_FOCUSED
             );
 
+            //bugfix of #45552, 45555, 45556, 45558
+            ((JDialog)d).getRootPane().setFocusable(false);    
+                
             d.addWindowListener(
                 new WindowAdapter() {
                     public void windowClosing( WindowEvent evt ) {
