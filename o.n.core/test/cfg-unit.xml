@@ -31,6 +31,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/core/windows/*.class"/>
                 <include name="org/netbeans/core/filesystems/*.class"/>
                 <exclude name="org/netbeans/core/filesystems/MIMEResolverImplTest.class"/>
+                <exclude name="org/netbeans/core/windows/LazyLoadingTest.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -71,6 +72,14 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <include name="org/netbeans/core/filesystems/MIMEResolverImplTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
+    <testbag testattribs="stable" executor="ide" name="testbag_6" resultsprocessor="unit">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="org/netbeans/core/windows/LazyLoadingTest.class"/>
             </patternset>
         </testset>
     </testbag>
