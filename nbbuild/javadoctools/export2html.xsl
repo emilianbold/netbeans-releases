@@ -199,7 +199,11 @@ Microsystems, Inc. All Rights Reserved.
                     <xsl:when test="$category='friend'">Friend</xsl:when>
                     <xsl:when test="$category='private'">Private</xsl:when>
                     <xsl:when test="$category='deprecated'">Deprecated</xsl:when>
-                    <xsl:otherwise>WARNING: <xsl:value-of select="$category" /></xsl:otherwise>
+                    <xsl:otherwise>
+                        <xsl:message>
+                            WARNING: <xsl:value-of select="$category"/>
+                        </xsl:message>
+                    </xsl:otherwise>
                 </xsl:choose>
             </td>
 

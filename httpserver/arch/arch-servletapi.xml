@@ -135,7 +135,7 @@ JRE
         </question>
 -->
 <answer id="dep-nb">
-    <api name="Open APIs" type="import" category="official" url="http://openide.netbeans.org"/> 
+    <api name="OpenAPIs" type="import" category="official" url="http://openide.netbeans.org/"/> 
 </answer>
 
 
@@ -154,7 +154,7 @@ JRE
         </question>
 -->
 <answer id="dep-non-nb">
-    <api name="Servlet 2.2 API" type="import" category="standard" url="http://java.sun.com/products/servlet/2.2/"/> 
+    <api name="Servlet-2.2" type="import" category="standard" url="http://java.sun.com/products/servlet/2.2/"/> 
 </answer>
 
 

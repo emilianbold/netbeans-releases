@@ -21,7 +21,6 @@ Microsystems, Inc. All Rights Reserved.
 
     <xsl:template match="/">
         <xsl:variable name="interfaces" select="//api[@type='export']" />
-        <xsl:variable name="all_properties" select="//property" />
 
         <module name="{api-answers/@module}"
                 target="{$arch.target}"
@@ -46,13 +45,6 @@ Microsystems, Inc. All Rights Reserved.
                     <xsl:with-param name="type" select="@type" />
                 </xsl:call-template>
             </xsl:for-each>
-            <xsl:for-each select="$all_properties">
-                <xsl:call-template name="api" >
-                    <xsl:with-param name="group">property</xsl:with-param>
-                    <xsl:with-param name="type">export</xsl:with-param>
-                </xsl:call-template>
-            </xsl:for-each>
-
 
         </module>
     </xsl:template>

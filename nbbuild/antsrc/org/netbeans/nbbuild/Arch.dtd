@@ -20,7 +20,7 @@ Describes format of NetBeans Architecture Answers file
      can occur in HTML
 -->
 <!ENTITY % xhtml PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "../../../../../libs/external/dtds/xhtml1-20020801/DTD/xhtml1-strict.dtd">
-<!ENTITY % special "br | span | bdo | object | img | map | api | property">
+<!ENTITY % special "br | span | bdo | object | img | map | api">
 <!-- Now include normal XHTML DTD: -->
 %xhtml;
 
@@ -39,6 +39,8 @@ Document element.
           author CDATA #REQUIRED
 >
 
+<!-- XXX switch to using e.g. %Block; rather than %Flow; perhaps? -->
+
 <!--
 HTML contents of the document, with substitutions.
 -->
@@ -52,13 +54,6 @@ HTML contents of the document, with substitutions.
           group (java|property|dtd|layer|java.io.File) 'java'
           name NMTOKEN #REQUIRED
           type (import|export) #REQUIRED
-          category %category; #REQUIRED
-          url CDATA #IMPLIED
->
-
-<!ELEMENT property %Flow; >
-<!ATTLIST property
-          name NMTOKEN #REQUIRED
           category %category; #REQUIRED
           url CDATA #IMPLIED
 >

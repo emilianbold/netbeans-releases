@@ -153,19 +153,6 @@ Microsystems, Inc. All Rights Reserved.
         </xsl:call-template>
     </xsl:template>
     
-    <xsl:template match="property">
-        <!-- generates link to given API -->
-        <xsl:variable name="name" select="@name" />
-        
-        <a>
-            <xsl:attribute name="href" >
-                <xsl:text>#property-</xsl:text><xsl:value-of select="$name" />
-            </xsl:attribute>
-            <xsl:value-of select="$name" />
-        </a>
-        
-    </xsl:template>
-    
     <!-- Format random HTML elements as is: -->
     <xsl:template match="@*|node()">
         <xsl:copy>
@@ -194,18 +181,6 @@ Microsystems, Inc. All Rights Reserved.
             </xsl:call-template>
         </xsl:for-each>
 
-        <!-- backward compatibility for property tag, if no 
-            <api group="property" ... /> but <property />
-            call the template
-        -->
-        <xsl:variable name="old_properties" select="//property" />
-        <xsl:variable name="new_properties" select="//api[@group='property']" />
-        <xsl:if test="$old_properties and not($new_properties)" >
-            <xsl:call-template name="jump-to-target">
-                <xsl:with-param name="group">property</xsl:with-param>
-                <xsl:with-param name="target" select="$target" />
-            </xsl:call-template>
-        </xsl:if>
     </xsl:template>    
     <xsl:template name="jump-to-target" >
         <xsl:param name="target" />
@@ -217,7 +192,11 @@ Microsystems, Inc. All Rights Reserved.
                     <xsl:with-param name="group" select="$group" />
                 </xsl:call-template>
             </xsl:when>
-            <xsl:otherwise>WRONG <xsl:value-of select="$target" /></xsl:otherwise>
+            <xsl:otherwise>
+                <xsl:message>
+                    WRONG TARGET: <xsl:value-of select="$target"/>
+                </xsl:message>
+            </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
     
@@ -249,23 +228,6 @@ Microsystems, Inc. All Rights Reserved.
                 <xsl:call-template name="api" />
             </xsl:for-each>
             
-            <!-- backward compat for <property /> tags -->
-            
-            <xsl:if test="$group='property'" >
-                <xsl:variable name="all_properties" select="//property" />
-                
-                <xsl:for-each select="$all_properties">
-                    <tr/>
-                    <xsl:call-template name="api-line" >
-                        <xsl:with-param name="group">property</xsl:with-param>
-                        <xsl:with-param name="name" select="@name" />
-                        <xsl:with-param name="type">export</xsl:with-param>
-                        <xsl:with-param name="category" select="@category" />
-                        <xsl:with-param name="describe.url" select="@url" />
-                        <xsl:with-param name="describe.node" select="./node()" />
-                    </xsl:call-template>
-                </xsl:for-each>
-            </xsl:if>
         </table>
 
         <p/>
@@ -297,7 +259,11 @@ Microsystems, Inc. All Rights Reserved.
                     <xsl:choose>
                         <xsl:when test="$type='import'">Imported</xsl:when>
                         <xsl:when test="$type='export'">Exported</xsl:when>
-                        <xsl:otherwise>WARNING: <xsl:value-of select="$type" /></xsl:otherwise>
+                        <xsl:otherwise>
+                            <xsl:message>
+                                WARNING: <xsl:value-of select="$type"/>
+                            </xsl:message>
+                        </xsl:otherwise>
                     </xsl:choose>
                 </td>
             </xsl:if>
@@ -311,7 +277,11 @@ Microsystems, Inc. All Rights Reserved.
                     <xsl:when test="$category='friend'">Friend private</xsl:when>
                     <xsl:when test="$category='private'">Private</xsl:when>
                     <xsl:when test="$category='deprecated'">Deprecated</xsl:when>
-                    <xsl:otherwise>WARNING: <xsl:value-of select="$category" /></xsl:otherwise>
+                    <xsl:otherwise>
+                        <xsl:message>
+                            WARNING: <xsl:value-of select="$category"/>
+                        </xsl:message>
+                    </xsl:otherwise>
                 </xsl:choose>
             </td>
             
