@@ -35,7 +35,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="../xtest/lib/junit-ext.jar"/>
     </path>
     
-    <target name="all" depends="jars,zipsrc,javadoc" description="Create jars, source zip and javadoc zip">
+    <target name="all" depends="jars,zipsrc,javadoc,javadocWithJemmy" description="Create jars, source zip and javadoc zip">
     </target>
 
     <target name="compile" depends="jemmy">
@@ -83,8 +83,9 @@ Microsystems, Inc. All Rights Reserved.
         <zip zipfile="jelly-nb-src.zip" basedir="src" includes="**/test/oo/**/*.java"/>
         <zip zipfile="jelly2-nb-src.zip" basedir="src" includes="**/jellytools/**/*.java"/>
     </target>
-  
+
     <target name="javadoc" description="Javadoc for jellytools">
+        <delete dir="javadoc"/>
         <mkdir dir="javadoc"/>
         <javadoc destdir="javadoc" packagenames="org.netbeans.test.oo.*" Windowtitle="Jellytools API">
             <sourcepath>
@@ -107,6 +108,21 @@ Microsystems, Inc. All Rights Reserved.
             </classpath>
         </javadoc>
         <zip zipfile="jelly2-nb-javadoc.zip" basedir="javadoc" includes="**"/>
+    </target>
+
+    <target name="javadocWithJemmy" description="Javadoc for Jellytools and Jemmy">
+        <mkdir dir="javadoc"/>
+        <!-- Javadoc both for Jelly2 and Jemmy-->
+        <javadoc destdir="javadoc" packagenames="org.netbeans.jellytools.*, org.netbeans.jemmy.*" Windowtitle="Jellytools and Jemmy API" Protected="yes">
+            <sourcepath>
+                <pathelement location="src"/>
+                <pathelement location="../jemmy/src"/>
+            </sourcepath>
+            <classpath>
+                <path refid="jellytools.classpath"/>
+            </classpath>
+        </javadoc>
+        <zip zipfile="jemmy-jelly2-nb-javadoc.zip" basedir="javadoc" includes="**"/>
     </target>
 
     <target  name="clean" description="Clean all build products">
