@@ -27,9 +27,21 @@ public class ColoringBean implements java.io.Serializable {
   /** example text */
   transient String example;
 
+  /** Default coloring */
+  transient Coloring defaultColoring;
+
+  boolean isDefault;
+
   public ColoringBean() {
   }
   
+  public ColoringBean(Coloring coloring, String example, Coloring defaultColoring, boolean isDefault) {
+    this.coloring = coloring;
+    this.example = example;
+    this.defaultColoring = defaultColoring;
+    this.isDefault = isDefault;
+  }
+
   public ColoringBean changeColoring( Coloring newColoring ) {
     return new ColoringBean( newColoring, example, defaultColoring, isDefault );
   }
@@ -54,6 +66,8 @@ public class ColoringBean implements java.io.Serializable {
 
 /*
  * Log
+ *  7    Gandalf   1.6         12/29/99 Petr Jiricka    Submitting changes done 
+ *       by Mila (fixing compilation errors)
  *  6    Gandalf   1.5         12/28/99 Miloslav Metelka 
  *  5    Gandalf   1.4         11/27/99 Patrik Knakal   
  *  4    Gandalf   1.3         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
