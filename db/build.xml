@@ -66,9 +66,9 @@ Microsystems, Inc. All Rights Reserved.
       <branding name="f4j"/>
       <branding name="f4j_ce"/>
       <branding name="f4j_ie"/>
-    </locjar>	 
+    </locjar>
     <mkdir dir="netbeans/lib/ext"/>
-    <locjar jarfile="netbeans/lib/ext/ddl.jar"         
+    <locjar jarfile="netbeans/lib/ext/ddl.jar"
          basedir="libsrc"
 	 excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"
 	 compress="false">
@@ -131,7 +131,7 @@ Microsystems, Inc. All Rights Reserved.
     </delete>
     <delete>
       <fileset dir="libsrc">
-        <include name="**/*.class"/>        
+        <include name="**/*.class"/>
       </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
@@ -139,6 +139,7 @@ Microsystems, Inc. All Rights Reserved.
     <delete dir="netbeans"/>
     <delete dir="Info"/>
     <delete dir="javahelp/org/netbeans/modules/db/docs/JavaHelpSearch"/>
+    <delete dir="javahelp/org/netbeans/modules/db/docs/ja/JavaHelpSearch"/>
   </target>
 
 </project>
