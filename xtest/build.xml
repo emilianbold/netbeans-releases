@@ -76,13 +76,16 @@ Microsystems, Inc. All Rights Reserved.
     <copy file="${xtest.extra.home}/lib/xerces.jar" todir="lib"/>
     <copy file="${xtest.extra.home}/lib/xalan.jar" todir="lib"/>
     <copy file="${xtest.extra.home}/lib/xtest-ext.jar" todir="lib"/>
-
+    <copy file="${xtest.extra.home}/lib/lib.jnikill.linux.i386.so" todir="lib"/>
+    <copy file="${xtest.extra.home}/lib/lib.jnikill.solaris.sparc.so" todir="lib"/>
+    <copy file="${xtest.extra.home}/lib/lib.jnikill.win32.x86.dll" todir="lib"/>
+    <copy file="${xtest.extra.home}/lib/kill.exe" todir="lib"/>
   </target>
   
   <target name="makedist" depends="jars">
      <zip zipfile="xtest-distribution.zip">
      
-	<zipfileset dir="lib" prefix="lib" includes="**/*.xml,**/*.jar,**/*.xsl"/>
+	<zipfileset dir="lib" prefix="lib" includes="**/*.xml,**/*.jar,**/*.xsl,**/*.exe,**/*.so,**/*.dll"/>
         <zipfileset dir="." includes="dist_build.xml" fullpath="build.xml"/>
         <zipfileset dir="." includes="standard-test-includes.txt,standard-test-excludes.txt"/>
      </zip>
@@ -105,6 +108,10 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="lib/xerces.jar"/>
     <delete file="lib/xalan.jar"/>
     <delete file="lib/xtest-ext.jar"/>
+    <delete file="lib/lib.jnikill.linux.i386.so"/>
+    <delete file="lib/lib.jnikill.solaris.sparc.so"/>
+    <delete file="lib/lib.jnikill.win32.x86.dll"/>
+    <delete file="lib/kill.exe"/>
     <delete file="xtest-distribution.zip"/>
   </target>
 
