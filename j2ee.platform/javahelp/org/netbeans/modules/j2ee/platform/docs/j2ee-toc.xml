@@ -47,7 +47,7 @@
       <tocitem text="Compiling a JSP File" target="jsp_validate" />
       <tocitem text="Viewing a JSP's Servlet" target="jsp_servletview" />
       <tocitem text="Passing Parameters to a JSP File or Servlet" target="jsp_queryparams"/>
-      <tocitem text="Running a JSP File" target="run_jsp_use_tomcat" />
+      <tocitem text="Running a JSP File" target="run_jsp" />
   </tocitem> <!-- Working With JSP Pages -->
 
   <tocitem text="Servlets">
@@ -58,7 +58,7 @@
      <tocitem text="Viewing a JSP's Servlet" target="jsp_servletview" />
      <tocitem text="Adding a Servlet JAR file to a WAR File" target="webmod_addservlet" />
      <tocitem text="Passing Parameters to a JSP File or Servlet" target="jsp_queryparams"/>
-     <tocitem text="Running a Servlet" target="run_servlet_use_tomcat" />
+     <tocitem text="Running a Servlet" target="run_servlet" />
   </tocitem> <!-- Working With Servlets -->
 
   <tocitem text="Filters"> 
