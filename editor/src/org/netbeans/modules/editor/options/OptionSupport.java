@@ -90,6 +90,15 @@ public class OptionSupport extends SystemOption {
     setSettingValue(settingName, newValue ? Boolean.TRUE : Boolean.FALSE);
   }
 
+  int getSettingInteger(String settingName) {
+    Integer val = (Integer)getSettingValue(settingName);
+    return (val != null) ? val.intValue() : 0;
+  }
+
+  void setSettingInteger(String settingName, int newValue) {
+    setSettingValue(settingName, new Integer(newValue));
+  }
+
   public void setColoringsHelper(Object[] value, int[] sets) {
     ColoringManager cm = (ColoringManager) getSettingValue(Settings.COLORING_MANAGER);
     for (int i = 0; i < sets.length; i++) {
@@ -134,6 +143,7 @@ public class OptionSupport extends SystemOption {
 
 /*
  * Log
+ *  8    Gandalf   1.7         11/11/99 Miloslav Metelka 
  *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  6    Gandalf   1.5         9/15/99  Miloslav Metelka 

@@ -66,6 +66,8 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
     BaseOptions.CARET_TYPE_OVERWRITE_MODE_PROP,
     BaseOptions.CARET_COLOR_INSERT_MODE_PROP,
     BaseOptions.CARET_COLOR_OVERWRITE_MODE_PROP,
+    BaseOptions.HIGHLIGHT_CARET_ROW_PROP,
+    BaseOptions.HIGHLIGHT_MATCHING_BRACKET_PROP,
     BaseOptions.LINE_HEIGHT_CORRECTION_PROP,
     BaseOptions.LINE_NUMBER_MARGIN_PROP,
     BaseOptions.MARGIN_PROP,
@@ -73,6 +75,9 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
     BaseOptions.SCROLL_FIND_INSETS_PROP,
     BaseOptions.STATUS_BAR_CARET_DELAY_PROP,
     BaseOptions.STATUS_BAR_VISIBLE_PROP,
+    BaseOptions.TEXT_LIMIT_LINE_COLOR_PROP,
+    BaseOptions.TEXT_LIMIT_LINE_VISIBLE_PROP,
+    BaseOptions.TEXT_LIMIT_WIDTH_PROP,
   };
 
 
@@ -506,6 +511,7 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
 
 /*
 * Log
+*  8    Gandalf   1.7         11/11/99 Miloslav Metelka 
 *  7    Gandalf   1.6         11/5/99  Jesse Glick     Context help jumbo patch.
 *  6    Gandalf   1.5         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
 *       Microsystems Copyright in File Comment

@@ -26,6 +26,7 @@ import com.netbeans.editor.ColoringManager;
 import com.netbeans.editor.BaseKit;
 import com.netbeans.editor.Syntax;
 import com.netbeans.editor.MultiKeyBinding;
+import com.netbeans.editor.ext.ExtSettings;
 
 import org.openide.options.SystemOption;
 import org.openide.util.HelpCtx;
@@ -38,72 +39,45 @@ import org.openide.util.HelpCtx;
 */
 public class BaseOptions extends OptionSupport {
   
-  public static final String BASE = "base";
-  
   public static final String ABBREV_MAP_PROP = "abbrevMap";
-  
+  public static final String BASE = "base";
   public static final String CARET_BLINK_RATE_PROP = "caretBlinkRate";
-  
-  public static final String CARET_ITALIC_INSERT_MODE_PROP = "caretItalicInsertMode";
-  
-  public static final String CARET_ITALIC_OVERWRITE_MODE_PROP = "caretItalicOverwriteMode";
-  
-  public static final String CARET_TYPE_INSERT_MODE_PROP = "caretTypeInsertMode";
-  
-  public static final String CARET_TYPE_OVERWRITE_MODE_PROP = "caretTypeOverwriteMode";
-  
   public static final String CARET_COLOR_INSERT_MODE_PROP = "caretColorInsertMode";
-  
   public static final String CARET_COLOR_OVERWRITE_MODE_PROP = "caretColorOverwriteMode";
-  
+  public static final String CARET_ITALIC_INSERT_MODE_PROP = "caretItalicInsertMode";
+  public static final String CARET_ITALIC_OVERWRITE_MODE_PROP = "caretItalicOverwriteMode";
+  public static final String CARET_TYPE_INSERT_MODE_PROP = "caretTypeInsertMode";
+  public static final String CARET_TYPE_OVERWRITE_MODE_PROP = "caretTypeOverwriteMode";
   public static final String COLORING_ARRAY_PROP = "coloringArray";
-  
   public static final String EXPAND_TABS_PROP = "expandTabs";
-  
-  public static final String KEY_BINDING_LIST_PROP = "keyBindingList";
-  
-  public static final String LINE_HEIGHT_CORRECTION_PROP = "lineHeightCorrection";
-  
-  public static final String LINE_NUMBER_MARGIN_PROP = "lineNumberMargin";
-  
-  public static final String LINE_NUMBER_VISIBLE_PROP = "lineNumberVisible";
-
-  public static final String MARGIN_PROP = "margin";
-  
-  public static final String SCROLL_JUMP_INSETS_PROP = "scrollJumpInsets";
-  
-  public static final String SCROLL_FIND_INSETS_PROP = "scrollFindInsets";
-  
-  public static final String SPACES_PER_TAB_PROP = "spacesPerTab";
-  
-  public static final String STATUS_BAR_CARET_DELAY_PROP = "statusBarCaretDelay";
-
-  public static final String STATUS_BAR_VISIBLE_PROP = "statusBarVisible";
-  
-  public static final String TAB_SIZE_PROP = "tabSize";
-  
   public static final String FIND_HIGHLIGHT_SEARCH = "findHighlightSearch";
-  
-  public static final String FIND_INC_SEARCH_PROP = "findIncSearch";
-
-  public static final String FIND_INC_SEARCH_DELAY_PROP = "findIncSearchDelay";
-
-  public static final String FIND_WRAP_SEARCH_PROP = "findWrapSearch";
-
-  public static final String FIND_MATCH_CASE_PROP = "findMatchCase";
-
-  public static final String FIND_SMART_CASE_PROP = "findSmartCase";
-
-  public static final String FIND_WHOLE_WORDS_PROP = "findWholeWords";
-
-  public static final String FIND_REG_EXP_PROP = "findRegExp";
-
   public static final String FIND_HISTORY_PROP = "findHistory";
-
   public static final String FIND_HISTORY_SIZE_PROP = "findHistorySize";
-  
+  public static final String FIND_INC_SEARCH_DELAY_PROP = "findIncSearchDelay";
+  public static final String FIND_INC_SEARCH_PROP = "findIncSearch";
+  public static final String FIND_MATCH_CASE_PROP = "findMatchCase";
+  public static final String FIND_REG_EXP_PROP = "findRegExp";
+  public static final String FIND_SMART_CASE_PROP = "findSmartCase";
+  public static final String FIND_WHOLE_WORDS_PROP = "findWholeWords";
+  public static final String FIND_WRAP_SEARCH_PROP = "findWrapSearch";
   public static final String FONT_SIZE_PROP = "fontSize";
-  
+  public static final String HIGHLIGHT_CARET_ROW_PROP = "highlightCaretRow";
+  public static final String HIGHLIGHT_MATCHING_BRACKET_PROP = "highlightMatchingBracket";
+  public static final String KEY_BINDING_LIST_PROP = "keyBindingList";
+  public static final String LINE_HEIGHT_CORRECTION_PROP = "lineHeightCorrection";
+  public static final String LINE_NUMBER_MARGIN_PROP = "lineNumberMargin";
+  public static final String LINE_NUMBER_VISIBLE_PROP = "lineNumberVisible";
+  public static final String MARGIN_PROP = "margin";
+  public static final String SCROLL_FIND_INSETS_PROP = "scrollFindInsets";
+  public static final String SCROLL_JUMP_INSETS_PROP = "scrollJumpInsets";
+  public static final String SPACES_PER_TAB_PROP = "spacesPerTab";
+  public static final String STATUS_BAR_CARET_DELAY_PROP = "statusBarCaretDelay";
+  public static final String STATUS_BAR_VISIBLE_PROP = "statusBarVisible";
+  public static final String TAB_SIZE_PROP = "tabSize";
+  public static final String TEXT_LIMIT_LINE_COLOR_PROP = "textLimitLineColor";
+  public static final String TEXT_LIMIT_LINE_VISIBLE_PROP = "textLimitLineVisible";
+  public static final String TEXT_LIMIT_WIDTH_PROP = "textLimitWidth";
+
   private static final int[] COLORING_SETS = new int[] {
     ColoringManager.DEFAULT_SET,
     ColoringManager.DOCUMENT_SET,
@@ -115,26 +89,31 @@ public class BaseOptions extends OptionSupport {
   static final String[] BASE_PROP_NAMES = {
     ABBREV_MAP_PROP,
     CARET_BLINK_RATE_PROP,
+    CARET_COLOR_INSERT_MODE_PROP,
+    CARET_COLOR_OVERWRITE_MODE_PROP,
     CARET_ITALIC_INSERT_MODE_PROP,
     CARET_ITALIC_OVERWRITE_MODE_PROP,
     CARET_TYPE_INSERT_MODE_PROP,
     CARET_TYPE_OVERWRITE_MODE_PROP,
-    CARET_COLOR_INSERT_MODE_PROP,
-    CARET_COLOR_OVERWRITE_MODE_PROP,
     COLORING_ARRAY_PROP,
     EXPAND_TABS_PROP,
     FONT_SIZE_PROP,
+    HIGHLIGHT_CARET_ROW_PROP,
+    HIGHLIGHT_MATCHING_BRACKET_PROP,
     KEY_BINDING_LIST_PROP,
     LINE_HEIGHT_CORRECTION_PROP,
     LINE_NUMBER_MARGIN_PROP,
     LINE_NUMBER_VISIBLE_PROP,
     MARGIN_PROP,
-    SCROLL_JUMP_INSETS_PROP,
     SCROLL_FIND_INSETS_PROP,
+    SCROLL_JUMP_INSETS_PROP,
     SPACES_PER_TAB_PROP,
     STATUS_BAR_CARET_DELAY_PROP,
     STATUS_BAR_VISIBLE_PROP,
     TAB_SIZE_PROP,
+    TEXT_LIMIT_LINE_COLOR_PROP,
+    TEXT_LIMIT_LINE_VISIBLE_PROP,
+    TEXT_LIMIT_WIDTH_PROP
   };
 
 
@@ -153,10 +132,10 @@ public class BaseOptions extends OptionSupport {
   }
   
   public int getTabSize() {
-    return ((Integer)getSettingValue(Settings.TAB_SIZE)).intValue();
+    return getSettingInteger(Settings.TAB_SIZE);
   }
   public void setTabSize(int tabSize) {
-    setSettingValue(Settings.TAB_SIZE, new Integer(tabSize));
+    setSettingInteger(Settings.TAB_SIZE, tabSize);
   }
 
   public boolean getExpandTabs() {
@@ -167,10 +146,10 @@ public class BaseOptions extends OptionSupport {
   }
   
   public int getSpacesPerTab() {
-    return ((Integer) getSettingValue(Settings.SPACES_PER_TAB)).intValue();
+    return getSettingInteger(Settings.SPACES_PER_TAB);
   }
   public void setSpacesPerTab(int i){
-    setSettingValue(Settings.SPACES_PER_TAB, new Integer(i));
+    setSettingInteger(Settings.SPACES_PER_TAB, i);
   }
   
   public Map getAbbrevMap() {
@@ -224,10 +203,10 @@ public class BaseOptions extends OptionSupport {
   }
   
   public int getCaretBlinkRate() {
-    return ((Integer)getSettingValue(Settings.CARET_BLINK_RATE)).intValue();
+    return getSettingInteger(Settings.CARET_BLINK_RATE);
   }
   public void setCaretBlinkRate(int rate) {
-    setSettingValue(Settings.CARET_BLINK_RATE, new Integer(rate));
+    setSettingInteger(Settings.CARET_BLINK_RATE, rate);
   }
 
   public boolean getLineNumberVisible() {
@@ -331,10 +310,10 @@ public class BaseOptions extends OptionSupport {
   }
   
   public int getStatusBarCaretDelay() {
-    return ((Integer)getSettingValue(Settings.STATUS_BAR_CARET_DELAY)).intValue();
+    return getSettingInteger(Settings.STATUS_BAR_CARET_DELAY);
   }
   public void setStatusBarCaretDelay(int delay) {
-    setSettingValue(Settings.STATUS_BAR_CARET_DELAY, new Integer(delay));
+    setSettingInteger(Settings.STATUS_BAR_CARET_DELAY, delay);
   }
 
   public boolean getFindHighlightSearch() {
@@ -354,12 +333,11 @@ public class BaseOptions extends OptionSupport {
   }
   
   public int getFindIncSearchDelay() {
-    Integer i = (Integer)getSettingValue(Settings.FIND_INC_SEARCH_DELAY);
-    return (i != null) ? i.intValue() : 0;
+    return getSettingInteger(Settings.FIND_INC_SEARCH_DELAY);
   }
   
   public void setFindIncSearchDelay(int delay) {
-    setSettingValue(Settings.FIND_INC_SEARCH_DELAY, new Integer(delay));
+    setSettingInteger(Settings.FIND_INC_SEARCH_DELAY, delay);
   }
 
   public boolean getFindWrapSearch() {
@@ -387,18 +365,58 @@ public class BaseOptions extends OptionSupport {
   }
 
   public int getFindHistorySize() {
-    Integer i = (Integer)getSettingValue(Settings.FIND_HISTORY_SIZE);
-    return (i != null) ? i.intValue() : 0;
+    return getSettingInteger(Settings.FIND_HISTORY_SIZE);
   }
   
   public void setFindHistorySize(int size) {
-    setSettingValue(Settings.FIND_HISTORY_SIZE, new Integer(size));
+    setSettingInteger(Settings.FIND_HISTORY_SIZE, size);
+  }
+
+  public Color getTextLimitLineColor() {
+    return (Color)getSettingValue(Settings.TEXT_LIMIT_LINE_COLOR);
+  }
+
+  public void setTextLimitLineColor(Color color) {
+    setSettingValue(Settings.TEXT_LIMIT_LINE_COLOR, color);
+  }
+
+  public int getTextLimitWidth() {
+    return getSettingInteger(Settings.TEXT_LIMIT_WIDTH);
+  }
+
+  public void setTextLimitWidth(int width) {
+    setSettingInteger(Settings.TEXT_LIMIT_WIDTH, width);
+  }
+
+  public boolean getTextLimitLineVisible() {
+    return getSettingBoolean(Settings.TEXT_LIMIT_LINE_VISIBLE);
+  }
+
+  public void setTextLimitLineVisible(boolean visible) {
+    setSettingBoolean(Settings.TEXT_LIMIT_LINE_VISIBLE, visible);
+  }
+
+  public boolean getHighlightMatchingBracket() {
+    return getSettingBoolean(ExtSettings.HIGHLIGHT_MATCHING_BRACKET);
+  }
+
+  public void setHighlightMatchingBracket(boolean highlight) {
+    setSettingBoolean(ExtSettings.HIGHLIGHT_MATCHING_BRACKET, highlight);
+  }
+
+  public boolean getHighlightCaretRow() {
+    return getSettingBoolean(ExtSettings.HIGHLIGHT_CARET_ROW);
+  }
+
+  public void setHighlightCaretRow(boolean highlight) {
+    setSettingBoolean(ExtSettings.HIGHLIGHT_CARET_ROW, highlight);
   }
 
 }
 
 /*
  * Log
+ *  12   Gandalf   1.11        11/11/99 Miloslav Metelka 
  *  11   Gandalf   1.10        11/5/99  Jesse Glick     Context help jumbo 
  *       patch.
  *  10   Gandalf   1.9         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
