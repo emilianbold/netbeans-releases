@@ -17,6 +17,7 @@ import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.status.DeploymentStatus;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
+import org.openide.util.RequestProcessor;
 
 /** 
  * This is a utility class that can be used by ProgressObject's,
@@ -34,6 +35,8 @@ public class ProgressEventSupport {
     
     private DeploymentStatus status;
     
+    private TargetModuleID tmID;
+    
     /**
      * Constructs a <code>ProgressEventSupport</code> object.
      *
@@ -48,10 +51,22 @@ public class ProgressEventSupport {
     
     /** Add a ProgressListener to the listener list. */
     public synchronized void addProgressListener (ProgressListener lsnr) {
+        boolean notify = false;
         if (listeners == null) {
             listeners = new java.util.Vector();
+            if (status != null && !status.isRunning ()) {
+                notify = true;
+            }
         }
         listeners.addElement(lsnr);
+        if (notify) {
+            // not to miss completion event
+            RequestProcessor.getDefault ().post (new Runnable () {
+                public void run () {
+                    fireHandleProgressEvent (tmID, status);
+                }
+            });
+        }
     }
     
     /** Remove a ProgressListener from the listener list. */
@@ -66,6 +81,8 @@ public class ProgressEventSupport {
     public void fireHandleProgressEvent (TargetModuleID targetModuleID, DeploymentStatus sCode) {
         ProgressEvent evt = new ProgressEvent (obj, targetModuleID, sCode);
         status = sCode;
+        tmID = targetModuleID;
+        
 	java.util.Vector targets = null;
 	synchronized (this) {
 	    if (listeners != null) {
