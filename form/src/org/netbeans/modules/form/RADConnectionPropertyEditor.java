@@ -100,7 +100,12 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
   public String getJavaInitializationString () {
     if (currentValue != null) {
       switch (currentValue.type) {
-        case RADConnectionDesignValue.TYPE_VALUE: return currentValue.value;
+        case RADConnectionDesignValue.TYPE_VALUE: 
+            if ("java.lang.String".equals (currentValue.requiredTypeName)) return "\""+currentValue.value+"\"";
+            else if ("long".equals (currentValue.requiredTypeName)) return currentValue.value+"L";
+            else if ("float".equals (currentValue.requiredTypeName)) return currentValue.value+"F";
+            else if ("double".equals (currentValue.requiredTypeName)) return currentValue.value+"D";
+            else return currentValue.value;
         case RADConnectionDesignValue.TYPE_CODE: return currentValue.userCode;
         case RADConnectionDesignValue.TYPE_PROPERTY: 
             PropertyDescriptor pd = currentValue.getProperty ();
@@ -210,6 +215,7 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
 
     RADConnectionDesignValue (Class requiredType, String valueText) {
       this.requiredTypeName = requiredType.getName ();
+ System.out.println ("Required type: "+requiredTypeName);
       this.value = valueText;
       type = TYPE_VALUE;
     }
@@ -310,14 +316,42 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
               // in case of failure do not provide the value during design time
               return FormDesignValue.IGNORED_VALUE;
             } */ // [PENDING]
-        case TYPE_VALUE: 
-            return FormDesignValue.IGNORED_VALUE; // [PENDING: use the value during design time]
+        case TYPE_VALUE:
+            return parseValue (requiredTypeName, value);
         case TYPE_BEAN: 
             return FormDesignValue.IGNORED_VALUE; // [PENDING: use the value during design time]
         case TYPE_CODE: 
         default:         
             return FormDesignValue.IGNORED_VALUE; 
       }
+    }
+  }
+
+  private static Object parseValue (String typeName, String value) {
+    try {
+      if ("java.lang.String".equals (typeName)) {
+        return value;
+      } else if ("int".equals (typeName)) {
+        return Integer.valueOf (value);
+      } else if ("short".equals (typeName)) {
+        return Short.valueOf (value);
+      } else if ("long".equals (typeName)) {
+        return Long.valueOf (value);
+      } else if ("byte".equals (typeName)) {
+        return Byte.valueOf (value);
+      } else if ("float".equals (typeName)) {
+        return Float.valueOf (value);
+      } else if ("double".equals (typeName)) {
+        return Double.valueOf (value);
+      } else if ("boolean".equals (typeName)) {
+        return Boolean.valueOf (value);
+      } else if ("char".equals (typeName)) {
+        if (value.length () > 0) return new Character (value.charAt (0));
+      }
+      return FormDesignValue.IGNORED_VALUE;
+    } catch (Exception e) {
+      // some problem => use ignored value
+      return FormDesignValue.IGNORED_VALUE;
     }
   }
 
