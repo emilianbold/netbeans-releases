@@ -167,7 +167,10 @@ Microsystems, Inc. All Rights Reserved.
 	           <pathelement location="../src"/>
  	      -->
 	     <pathelement location="gensrc"/>
-	     <pathelement location="../../src"/>
+             <pathelement location="../../explorer/src"/>
+             <pathelement location="../../fs/src"/>
+             <pathelement location="../../util/src"/>
+             <pathelement location="../../nodes/src"/>
              <pathelement location="../../loaders/src"/>
 	     <pathelement location="../../compiler/src"/>
 	     <pathelement location="../../execution/src"/>

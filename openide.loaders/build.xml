@@ -27,7 +27,16 @@ Microsystems, Inc. All Rights Reserved.
 
     <path id="cp">
         <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
-        <pathelement location="${nb_all}/openide/src"/>
+        <pathelement location="${nb_all}/openide/fs/netbeans/lib/openide-fs.jar"/>
+        <pathelement location="${nb_all}/openide/util/netbeans/lib/openide-util.jar"/>
+        <pathelement location="${nb_all}/openide/awt/netbeans/lib/openide-awt.jar"/>
+        <pathelement location="${nb_all}/openide/nodes/netbeans/lib/openide-nodes.jar"/>
+        <pathelement location="${nb_all}/openide/windows/netbeans/lib/openide-windows.jar"/>
+        <pathelement location="${nb_all}/openide/text/netbeans/lib/openide-text.jar"/>
+        <pathelement location="${nb_all}/openide/dialogs/netbeans/lib/openide-dialogs.jar"/>
+        <pathelement location="${nb_all}/openide/actions/netbeans/lib/openide-actions.jar"/>
+        <pathelement location="${nb_all}/openide/explorer/netbeans/lib/openide-explorer.jar"/>
+        <pathelement location="${nb_all}/openide/modules/netbeans/lib/openide-modules.jar"/>
     </path>
   
     <target name="compile">
@@ -120,41 +129,6 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="netbeans"/>
         <delete dir="Info"/>
         <delete dir="javadoc"/>
-        <delete dir="gensrc"/>
     </target>
     
-    <target name="openide-compat" 
-        description="Regenerates different classes from openide to make them compatible with pre openide-loaders.jar version. Shall be just a temporary solution" 
-        depends="compile"
-    >
-        <taskdef name="preprocess" classname="org.netbeans.nbbuild.Preprocess" classpath="${nb_all}/nbbuild/nbantext.jar"/>
-        
-        <mkdir dir="gensrc" />
-        <preprocess srcdir="../src" destdir="gensrc" >
-            <switch name="compat.loaders_32143" on="true" />
-            <include name="org/openide/util/WeakListener.java" />
-
-            <include name="org/openide/windows/TopComponent.java" />
-            <include name="org/openide/windows/CloneableTopComponent.java" />
-            
-            <include name="org/openide/text/Line.java" />
-            <include name="org/openide/text/DocumentLine.java" />
-            <include name="org/openide/text/PositionRef.java" />
-        </preprocess>
-        
-        <javac 
-            srcdir="gensrc" destdir="gensrc" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}"
-            classpath="src"
-        >
-            <classpath refid="cp"/>
-        </javac>
-
-        <!-- overrides the original versions in openide.jar -->        
-        <copy todir="../src">
-            <fileset dir="gensrc" >
-                <include name="**/*class" />
-            </fileset>
-        </copy>
-    </target>
-  
 </project>

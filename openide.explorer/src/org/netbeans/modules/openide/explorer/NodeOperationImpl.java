@@ -18,7 +18,6 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.*;
-import org.openide.explorer.ExplorerPanel;
 
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.explorer.view.BeanTreeView;
@@ -52,7 +51,7 @@ public final class NodeOperationImpl extends org.openide.nodes.NodeOperation {
         d.setTitle(n.getDisplayName());
         d.setModal(false);
         d.getContentPane().setLayout(new BorderLayout());
-        ExplorerPanel p = new ExplorerPanel();
+        EP p = new EP();
         p.getExplorerManager().setRootContext(n);
         p.setLayout(new BorderLayout());
         p.add(new JScrollPane(new BeanTreeView()), BorderLayout.CENTER);
@@ -68,7 +67,7 @@ public final class NodeOperationImpl extends org.openide.nodes.NodeOperation {
         d.setTitle(title);
         d.setModal(true);
         d.getContentPane().setLayout(new BorderLayout());
-        ExplorerPanel p = new ExplorerPanel();
+        EP p = new EP();
         p.getExplorerManager().setRootContext(root);
         p.setLayout(new BorderLayout());
         p.add(new JScrollPane(new BeanTreeView()), BorderLayout.CENTER);
@@ -98,5 +97,14 @@ public final class NodeOperationImpl extends org.openide.nodes.NodeOperation {
         d.pack();
         d.show();
         d.dispose();
+    }
+    
+    private static final class EP extends JPanel 
+    implements org.openide.explorer.ExplorerManager.Provider {
+        private org.openide.explorer.ExplorerManager em = new org.openide.explorer.ExplorerManager ();
+        
+        public org.openide.explorer.ExplorerManager getExplorerManager () {
+            return em;
+        }
     }
 }

@@ -265,7 +265,18 @@ Microsystems, Inc. All Rights Reserved.
 	           <pathelement location="../src"/>
  	      -->
                 <pathelement location="../openide-13javac-workaround.jar"/>
-                <pathelement location="../src/"/>
+                <pathelement location="../awt/src/"/>
+                <pathelement location="../util/src/"/>
+                <pathelement location="../explorer/src/"/>
+                <pathelement location="../nodes/src/"/>
+                <pathelement location="../fs/src/"/>
+                <pathelement location="../modules/src/"/>
+                <pathelement location="../actions/src/"/>
+                <pathelement location="../windows/src/"/>
+                <pathelement location="../dialogs/src/"/>
+                <pathelement location="../text/src/"/>
+                <pathelement location="../options/src/"/>
+                
                 <!-- XXX -->
                 <pathelement location="../loaders/src/"/>
                 <pathelement location="../compiler/src/"/>

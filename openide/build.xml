@@ -41,7 +41,11 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="compile-regular" depends="init">
-    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+    <javac destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+      <src path="src" />
+      <src path="util/src" />
+      <src path="awt/src" />
+      
       <bootclasspath refid="openide-boot-cp"/>
       <classpath refid="openide-cp"/>
     </javac>
@@ -59,106 +63,34 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="src" />
       </classpath>
     </javac>
+    <javac srcdir="windows/src" destdir="windows/src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+      <bootclasspath refid="openide-boot-cp"/>
+      <classpath refid="openide-cp"/>
+      <classpath>
+        <pathelement location="src" />
+      </classpath>
+    </javac>
+    <javac srcdir="explorer/src" destdir="explorer/src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+      <bootclasspath refid="openide-boot-cp"/>
+      <classpath refid="openide-cp"/>
+      <classpath>
+        <pathelement location="src" />
+      </classpath>
+    </javac>
   </target>
 
-  <target name="compile-compat" depends="compile-regular">
+  <target name="compile-compat" depends="libs">
     <javac srcdir="compat/src" destdir="compat/src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-      <bootclasspath refid="openide-boot-cp"/>
       <classpath>
-        <pathelement location="src"/>
-        <!-- As needed: <path refid="openide-cp"/> -->
+        <pathelement location="dialogs/netbeans/lib/openide-dialogs.jar"/>
+        <pathelement location="fs/netbeans/lib/openide-fs.jar"/>
+        <pathelement location="nodes/netbeans/lib/openide-nodes.jar"/>
       </classpath>
     </javac>
   </target>
   
-    
-  <target name="compile" depends="13javac-workaround,compile-regular,patchsuper"
+  <target name="compile" depends="13javac-workaround,compile-regular"
           description="Compile all source files but do not package them."/>
-  
-
-  <target name="patchsuper" depends="compile-compat" >
-    <ant antfile="../core/build.xml" dir="../core" target="boot" />
-  
-    <enhanceclass basedir="src">
-      <classpath>
-        <pathelement location="../core/netbeans/lib/ext/boot.jar"/>
-        <!-- See xtest/instance/build-clover.xml for explanation: -->
-        <pathelement location="../core/netbeans/lib/ext/clover.jar"/>
-      </classpath>
-
-            <!-- changes superclass to one that implements Node.Cookie -->
-	    <patch class="org/openide/filesystems/Repository" super="org/openide/filesystems/$$Repository$$Patch$$" /> 
-
-            <!-- renames two methods and makes them public -->
-	    <patch class="org/openide/util/actions/SystemAction" > 
-                <member name="s3tIcon" rename="setIcon" />
-                <member name="g3tIcon" rename="getIcon" />
-            </patch>
-            
-            <!-- just make some class members public -->
-	    <patch class="org/openide/nodes/AbstractNode" > 
-                <!-- make following member public -->
-                <member name="getCookieSet" />
-            </patch>
-	    <patch class="org/openide/explorer/view/BeanTreeView" > 
-                <member name="selectionChanged" />
-            </patch>
-
-
-            <!-- superclass needs to provide refershRoot method with different signature than the one in AbstractFileSystem -->                        
-	    <patch class="org/openide/filesystems/AbstractFileSystem" > 
-                <member name="r3fr3shRoot" rename="refreshRoot" />
-            </patch>
-
-           <!-- superclass implements intefaces AbstractFileSystem.Info, List, Change -->
-	    <patch class="org/openide/filesystems/LocalFileSystem" super="org/openide/filesystems/$$LocalFileSystem$$Patch$$"> 
-                <!-- methods are made public instead of proteted -->
-                <member name="children" />
-                <member name="createData" />
-                <member name="createFolder" />
-                <member name="delete" />
-                <member name="folder" />
-                <member name="inputStream" />
-                <member name="lastModified" />
-                <member name="lock" />
-                <member name="markUnimportant" />
-                <member name="mimeType" />
-                <member name="outputStream" />
-                <member name="readOnly" />
-                <member name="rename" />
-                <member name="size" />
-                <member name="unlock" />
-            </patch>
-            <!-- the same case as LocalFileSystem -->
-	    <patch class="org/openide/filesystems/JarFileSystem" super="org/openide/filesystems/$$JarFileSystem$$Patch$$"> 
-                <member name="attributes" />
-                <member name="deleteAttributes" />
-                <member name="readAttribute" />
-                <member name="renameAttributes" />
-                <member name="writeAttribute" />
-                
-                <member name="children" />
-                <member name="createData" />
-                <member name="createFolder" />
-                <member name="delete" />
-                <member name="folder" />
-                <member name="inputStream" />
-                <member name="lastModified" />
-                <member name="lock" />
-                <member name="markUnimportant" />
-                <member name="mimeType" />
-                <member name="outputStream" />
-                <member name="readOnly" />
-                <member name="rename" />
-                <member name="size" />
-                <member name="unlock" />
-            </patch>
-            
-            <!-- no super change, just be public -->
-	    <patch class="org/openide/explorer/propertysheet/SetDefaultValueAction"  /> 
-
-    </enhanceclass>
-  </target>
 
   <target name="13javac-workaround" unless="usingAjc">
     <!-- JDK 1.3 Javac at least on Linux has a serious bug as regards -->
@@ -216,9 +148,8 @@ Microsystems, Inc. All Rights Reserved.
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
   </target>
   
-  <target name="jars" depends="compile,13javac-workaround,vers-prep,patchsuper,loaders_32143-compat" description="Create JAR files.">
+  <target name="old-jars" depends="compile,13javac-workaround,vers-prep,loaders_32143-compat" description="Create JAR files.">
     <mkdir dir="netbeans/lib"/>
-    <filter token="OpenIDE-Module" value="OpenIDE-Module"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
     <locjar jarfile="netbeans/lib/openide.jar"
             manifest="manifest-subst.mf"
@@ -238,91 +169,24 @@ Microsystems, Inc. All Rights Reserved.
     </locjar>
   </target>
 
-  <target name="loaders_32143-compat" depends="compile" unless="loaders_32143-compat.skip" >
+  <target name="loaders_32143-compat" depends="libs" unless="loaders_32143-compat.skip" >
     <!-- temporary compatibility for API classes that had to be changed due to
          work in loaders_32143 branch. Shall provide enough time to module
          writers using the old code to update to new replacements.
      -->
-     <ant antfile="build.xml" target="openide-compat" dir="loaders" />
+     <ant antfile="build.xml" target="jars" dir="loaders" />
+     <ant antfile="build.xml" target="openide-compat" dir="actions" />
+     <ant antfile="build.xml" target="openide-compat" dir="windows" />
+     <ant antfile="build.xml" target="openide-compat" dir="text" />
   </target>
   
-  <target name="jars-with-lib" depends="libs,compile,13javac-workaround,vers-prep" description="Create JAR files.">
-    <mkdir dir="standalone"/>
-    <filter token="Class-Path" value="Class-Path"/>
-    <filter token="OpenIDE-Module" value="OpenIDE-Module"/>
-    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <locjar jarfile="standalone/openide-remainder.jar"
-            manifest="manifest-subst.mf"
-	    compress="false">
-      <locale name="ja"/>
-      
-      <!-- Exclude libraries included in openide-fs.jar, openide-util, etc. -->
-      <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt">
-           <include name="org/openide/**" />
-      	   <exclude name="org/openide/filesystems/**" />
-           <exclude name="org/openide/util/**"/>
-           <exclude name="org/openide/xml/"/>
-           <exclude name="org/openide/nodes/**"/>
-           <exclude name="org/openide/explorer/**"/>
-           <exclude name="org/openide/resources/propertysheet/**"/>
-
-           <exclude name="org/openide/resources/defaultNode.gif"/>
-           <exclude name="org/openide/resources/defaultNode32.gif"/>
-           <exclude name="org/openide/resources/actions/paste.gif"/>
-           <exclude name="org/openide/resources/actions/copy.gif"/>
-           <exclude name="org/openide/resources/actions/delete.gif"/>   
-           <exclude name="org/openide/resources/actions/cut.gif"/>   
-           <exclude name="org/openide/resources/actions/properties.gif"/>   
-
-           <exclude name="org/openide/cookies/**"/>
-           <exclude name="org/openide/actions/ActionConstants*"/>
-           <exclude name="org/openide/actions/Bundle*"/>
-           <exclude name="org/openide/actions/CopyAction*"/>
-           <exclude name="org/openide/actions/DeleteAction*"/>
-           <exclude name="org/openide/actions/CutAction*"/>
-           <exclude name="org/openide/actions/PasteAction*"/>
-           <exclude name="org/openide/actions/PopupAction*"/>
-           <exclude name="org/openide/actions/PropertiesAction*"/>
-           <exclude name="org/openide/actions/CustomizeAction*"/>
-           <exclude name="org/openide/awt/ToolbarToggleButton*"/>
-           <exclude name="org/openide/awt/ToolbarButton*"/>
-           <exclude name="org/openide/awt/EnabledButtonModel*"/>
-           <exclude name="org/openide/awt/SplittedPanel*"/>
-           <exclude name="org/openide/awt/Bundle*"/>
-           <exclude name="org/openide/awt/JInlineMenu*"/>
-           <exclude name="org/openide/awt/Actions*"/>  
-           <exclude name="org/openide/awt/JMenuPlus*"/>
-           <exclude name="org/openide/awt/JPopupMenuUtils*"/> 
-           <exclude name="org/openide/awt/MouseUtils*"/>
-
-           <!-- Part of openide-util.jar -->
-           <exclude name="org/openide/ErrorManager*class"/> 
-      </fileset>
-      
-      <fileset dir="src">
-           <!-- But include all localized resources -->
-           <include name="org/openide/**/*_*" />
-           
-           <!-- Not this guy: -->
-           <exclude name="org/openide/filesystems/filesystem1_1.dtd"/>
-
-           <!-- Include also editors package (it is not part of explorer library) -->
-           <include name="org/openide/explorer/propertysheet/editors/*.class"/>
-           <include name="org/openide/explorer/propertysheet/editors/*.properties"/>
-           <exclude name="org/openide/explorer/propertysheet/editors/Enhanced*.class"/>
-
-      </fileset>
-    </locjar>
-    
-  </target>
-
   <target name="release">
     <copy todir="netbeans" includeEmptyDirs="false">
       <fileset dir="release" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
     </copy>
   </target>
 
-  <target name="netbeans" depends="jars,release" description="Build everything needed for inclusion in the IDE.">
+  <target name="netbeans" depends="jars-from-libs,release" description="Build everything needed for inclusion in the IDE.">
     <genlist targetname="nbm" outputfiledir="netbeans"/>
   </target>
 
@@ -337,157 +201,251 @@ Microsystems, Inc. All Rights Reserved.
     </makenbm>
   </target>
 
+  <!-- Define the sets of files for various libraries -->
+  <selector id="openide.actions" >
+    <or>
+        <filename name="**/openide/actions/*" />
+
+        <!-- these might one day get deprecated, but until that
+          lets keep them here -->
+        <filename name="**/openide/explorer/ExplorerPanel*" />
+        <filename name="**/openide/explorer/ExplorerActions.java" />
+        <filename name="**/openide/explorer/ExplorerActions.class" />
+        <filename name="**/openide/explorer/ExplorerActions$$*.class" />
+        <filename name="**/openide/util/HttpServer*" />
+        <filename name="**/openide/util/WeakListener.java" />
+        <filename name="**/openide/util/WeakListener.class" />
+        <filename name="**/openide/util/WeakListener$$*.class" />
+    </or>
+  </selector>
+  <selector id="openide.text" >
+    <or>
+      <filename name="**/openide/text/*" />
+      <filename name="**/openide/cookies/LineCookie*" />
+      <filename name="**/openide/cookies/EditorCookie*" />
+    </or>
+  </selector>
+  <selector id="openide.nodes" >
+    <and>
+       <or>
+         <filename name="**/openide/nodes/" />
+         <filename name="**/openide/cookies/*" />
+         <filename name="**/openide/util/actions/NodeAction*" />
+         <filename name="**/openide/util/actions/CookieAction*" />
+       </or>
+       <not>
+         <selector refid="openide.text" />
+       </not>
+    </and>
+  </selector>
+  <selector id="openide.awt" >
+    <filename name="**/openide/awt/*" />
+  </selector>
+  <selector id="openide.util" >
+     <and>
+        <or>
+            <filename name="**/openide/ErrorManager*" />
+            <filename name="**/openide/ServiceType*" />
+            <filename name="**/openide/util/*" />
+            <filename name="**/openide/util/enum/*" />
+            <filename name="**/openide/util/lookup/*" />
+            <filename name="**/openide/util/datatransfer/*" />
+            <filename name="**/openide/util/io/*" />
+            <filename name="**/openide/util/actions/*" />
+            <filename name="**/openide/xml/*" />         
+        </or>
+        
+        <none>
+          <selector refid="openide.actions" />
+          <selector refid="openide.nodes" />
+        </none>
+      </and>
+  </selector>
+  <selector id="openide.dialogs" >
+    <and>
+        <or>
+            <filename name="**/openide/*" />
+        </or>
+        <not>
+            <selector refid="openide.util" />
+        </not>
+    </and>
+  </selector>
+  <selector id="openide.fs" >
+    <filename name="**/openide/filesystems/*" />
+  </selector>
+  <selector id="openide.modules" >
+    <filename name="**/openide/modules/*" />
+  </selector>
+  <selector id="openide.options" >
+    <filename name="**/openide/options/*" />
+  </selector>
+  <selector id="openide.windows" >
+    <filename name="**/openide/windows/*" />
+  </selector>
+  <selector id="openide.explorer" >
+    <and>
+      <filename name="**/openide/explorer/**" />
+      <not>
+        <selector refid="openide.actions" />
+      </not>
+    </and>
+  </selector>
+  
+  <!-- compiles one of the sets of above defines files into 
+    provided directory
+    
+    
+  -->
+  <target name="do-lib-javac" >
+    <mkdir dir="${localdir}" />
+    <javac sourcepath="" destdir="${localdir}" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+      <src path="src" />
+      <src path="${localdir}" />
+      <selector>
+        <or>
+          <selector refid="${selector}" />
+          <filename name="netbeans/**/*java" />
+        </or>
+      </selector>
+      <classpath refid="classpath" />
+    </javac>
+    <!-- copy non-java files into new direction -->
+    <copy todir="${localdir}" >
+      <fileset dir="src" >
+        <selector refid="${selector}" />
+        <exclude name="**/*java" />
+        <exclude name="**/*class" />
+      </fileset>
+    </copy>
+  </target>
+  
+  <!-- Build whole openide.jar from separate libraries -->
+  <target name="jars-from-libs" depends="libs,vers-prep,compile-compat,loaders_32143-compat" description="Create JAR files from copied directories.">
+    <property name="openide.jar" value="netbeans/lib/openide.jar" />
+    <mkdir dir="netbeans/lib"/>
+    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
+    <locjar jarfile="${openide.jar}"
+            manifest="manifest-subst.mf"
+	    compress="false">
+      <locale name="ja"/>
+      
+      <fileset dir="actions/src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+      <fileset dir="awt/src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+      <fileset dir="dialogs/src" excludesfile="../nbbuild/standard-jar-excludes.txt">
+         <!-- will be provided by openide-windows -->
+         <exclude name="org/openide/awt/HtmlBrowser$$BrowserComponent.class" />
+      </fileset>
+      <fileset dir="explorer/src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+      <fileset dir="fs/src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+      <fileset dir="nodes/src" excludesfile="../nbbuild/standard-jar-excludes.txt">
+         <!-- will be provided by openide-actions -->
+         <exclude name="org/openide/cookies/InstanceCookie$$Origin.class" />
+      </fileset>
+      <fileset dir="options/src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+      <fileset dir="text/src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+      <fileset dir="util/src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+      <fileset dir="modules/src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+      <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt" >
+        <include name="org/openide/resources/**" />
+        <include name="META-INF/**" />
+      </fileset>
+      <fileset dir="windows/src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+      <fileset dir="compat/src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+      
+      <!-- include also patches -->
+      <fileset dir="compat/src">
+           <!-- But include patch files -->
+           <include name="**/$$*$$Patch$$.class" />
+      </fileset>
+      
+    </locjar>
+  </target>
+  
   
   <!-- Build separate libraries for the IDE -->
   
-  <target name="libs" depends="lib-util,lib-fs,lib-nodes,lib-explorer,lib-lookup" />
+  <target name="libs" depends="
+    lib-actions, 
+    lib-dialogs,
+    lib-explorer,
+    lib-fs,
+    lib-nodes,
+    lib-modules,
+    lib-options,
+    lib-text,
+    lib-util,
+    lib-windows,
+    lib-awt,
+    lib-lookup" />
+    
+  <target name="libs-clean" >
+        <ant dir="awt" target="clean" />
+        <ant dir="actions" target="clean" />
+        <ant dir="dialogs" target="clean" />
+        <ant dir="explorer" target="clean" />
+        <ant dir="fs" target="clean" />
+        <ant dir="nodes" target="clean" />
+        <ant dir="modules" target="clean" />
+        <ant dir="options" target="clean" />
+        <ant dir="text" target="clean" />
+        <ant dir="util" target="clean" />
+        <ant dir="windows" target="clean" />
+  </target>
+    
   
-  <target name="lib-util" depends="compile,13javac-workaround,vers-prep">
-	<mkdir dir="standalone"/>
-        <copy file="openide-util.mf" tofile="openide-util-subst.mf" filtering="on"/>
-        
-        <!-- include nearly whole org.openide.util, plus some important stuff around -->
-  	<jar jarfile="standalone/openide-util.jar"
-	     manifest="openide-util-subst.mf"
-	     compress="false">
-             <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt" >
-             	  <include name="org/openide/util/io/*"/>
-             	  <include name="org/openide/util/datatransfer/*"/>
-                  <include name="org/openide/util/actions/*"/>
-                  <include name="org/openide/xml/"/>
-                  <include name="org/openide/ErrorManager*class" />
-
-                  <!-- XXX review distribution of JPopupMenuPlus, JPopupMenuUtils, etc. -->
-                  <include name="org/openide/awt/JPopupMenu*class" />
-                  <include name="org/openide/awt/NbPopupMenuUI*class" />
-                  <include name="org/openide/filesystems/RepositoryListener*class" />
-                  <include name="org/openide/filesystems/FileChangeListener*class" />
-                  <include name="org/openide/filesystems/FileStatusListener*class" />
-                  <include name="org/openide/nodes/NodeListener*class" />
-                  
-                  <!-- exlude localized resources, they are part of openide.jar -->
-                  <exclude name="org/openide/**/*_*" />
-             </fileset>
-
-             <!-- Includes of the org/openide/util package -->
-             <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt" >
-             	  <include name="org/openide/util/*"/>
-                  
-                  <!-- Exclude classes already included in lib-lookup -->
-                  <exclude name="org/openide/util/lookup/"/>
-                  <exclude name="org/openide/util/*Lookup*"/>
-                  <exclude name="org/openide/util/WeakSet*"/>
-                  <exclude name="org/openide/util/enum/"/>
-                  
-                  <!-- exlude localized resources, they are part of openide.jar -->
-                  <exclude name="org/openide/util/*_*" />
-                  
-<!--                  <exclude name="org/openide/util/WeakListener$$FileChange.class" />
-                  <exclude name="org/openide/util/WeakListener$$FileStatus.class" />
-                  <exclude name="org/openide/util/WeakListener$$Node.class" />
-                  <exclude name="org/openide/util/WeakListener$$Operation.class" />
-                  <exclude name="org/openide/util/WeakListener$$Repository.class" />
-             	  <exclude name="org/openide/util/HttpServer*" />
--->                  
-             </fileset>
-        </jar>
+  <target name="lib-actions" depends="lib-util,lib-nodes,lib-windows,lib-text,lib-explorer,lib-fs" >
+        <ant dir="actions" />
   </target>        
   
-  <target name="lib-fs" depends="compile,13javac-workaround,vers-prep">
-	<mkdir dir="standalone"/>
-        <copy file="openide-fs.mf" tofile="openide-fs-subst.mf" filtering="on"/>
-        
-  	<jar jarfile="standalone/openide-fs.jar"
-	     manifest="openide-fs-subst.mf"
-	     compress="false">
-             <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt" >
-                  <include name="org/openide/filesystems/*"/>
-                  
-                  <!-- exlude localized resources, they are part of openide.jar -->
-                  <exclude name="org/openide/filesystems/*_*" />
-                  
-<!--                  <exclude name="org/openide/filesystems/RefreshAction.class" /> -->
-             </fileset>
-             <fileset dir="src">
-                 <!-- Make sure this does not get skipped: -->
-                 <include name="org/openide/filesystems/filesystem1_1.dtd"/>
-             </fileset>
-        </jar>
-  </target>        
-             	
-  <target name="lib-nodes" depends="compile,13javac-workaround,vers-prep">
-	<mkdir dir="standalone"/>
-        <copy file="openide-nodes.mf" tofile="openide-nodes-subst.mf" filtering="on"/>
-        
-  	<jar jarfile="standalone/openide-nodes.jar"
-	     manifest="openide-nodes-subst.mf"
-	     compress="false">
-             <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt" >
-                  <include name="org/openide/nodes/*"/>
-                  <include name="org/openide/cookies/*"/>
-                  <include name="org/openide/resources/defaultNode.gif"/>
-                  <include name="org/openide/resources/defaultNode32.gif"/>
-                  
-                  <!-- exclude localized resources, they are part of openide.jar -->
-                  <exclude name="org/openide/nodes/*_*" />
-                  <exclude name="org/openide/cookies/*_*" />
-             </fileset>
-        </jar>
+  <target name="lib-awt" depends="lib-util" >
+        <ant dir="awt" />
   </target>        
 
-  <target name="lib-explorer" depends="compile,13javac-workaround,vers-prep">
-	<mkdir dir="standalone"/>
-        <copy file="openide-explorer.mf" tofile="openide-explorer-subst.mf" filtering="on"/>
-        
-  	<jar jarfile="standalone/openide-explorer.jar"
-	     manifest="openide-explorer-subst.mf"
-	     compress="false">
-             <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt" >
-                  <include name="org/openide/explorer/*"/>
-                  <include name="org/openide/explorer/propertysheet/*"/>
-                  <include name="org/openide/explorer/propertysheet/editors/Enhanced*.class"/>
-                  <include name="org/openide/explorer/view/*"/>
-                  <include name="org/openide/actions/Bundle*"/>
-                  <include name="org/openide/actions/ActionConstants*"/>
-                  <include name="org/openide/actions/CutAction*"/>
-                  <include name="org/openide/actions/CopyAction*"/>
-                  <include name="org/openide/actions/PasteAction*"/>
-                  <include name="org/openide/actions/CustomizeAction*"/>
-                  <include name="org/openide/actions/PopupAction*"/>
-                  <include name="org/openide/actions/PropertiesAction*"/>
-                  <include name="org/openide/actions/DeleteAction*"/>
-                  <include name="org/openide/resources/propertysheet/*"/>
-                  <include name="org/openide/resources/actions/paste.gif"/>
-                  <include name="org/openide/resources/actions/copy.gif"/>
-                  <include name="org/openide/resources/actions/delete.gif"/>   
-                  <include name="org/openide/resources/actions/cut.gif"/>   
-                  <include name="org/openide/resources/actions/properties.gif"/>   
-                  <include name="org/openide/awt/Actions*"/>
-                  <include name="org/openide/awt/JMenuPlus*"/>
-                  <include name="org/openide/awt/JPopupMenuUtils*"/>
-                  <include name="org/openide/awt/MouseUtils*class" />
-                  <include name="org/openide/awt/ToolbarToggleButton*class"/>
-                  <include name="org/openide/awt/ToolbarButton*class"/>
-                  <include name="org/openide/awt/EnabledButtonModel*"/>
-                  <include name="org/openide/awt/SplittedPanel*"/>
-                  <include name="org/openide/awt/Bundle*"/>
-                  <include name="org/openide/awt/JInlineMenu*"/>
-                  <include name="org/openide/windows/TopComponent$Registry.class" />
-                  
-                  <!-- exclude localized resources, they are part of openide.jar -->
-                  <exclude name="org/openide/explorer/*_*" />
-                  <exclude name="org/openide/explorer/propertysheet/*_*" />
-                  <exclude name="org/openide/explorer/propertysheet/editors/*_*" />
-                  <exclude name="org/openide/explorer/view/*_*" />
-             </fileset>
-        </jar>
+  <target name="lib-dialogs" depends="lib-util,lib-awt" >
+        <ant dir="dialogs" />
   </target>        
   
-  <target name="lib-lookup" depends="compile,13javac-workaround,vers-prep,lookup-src">
+  <target name="lib-explorer" depends="lib-nodes" >
+        <ant dir="explorer" />
+  </target>        
+  
+  <target name="lib-fs" depends="lib-util" >
+        <ant dir="fs" />
+  </target>
+
+  <target name="lib-nodes" depends="lib-util,lib-dialogs" >
+        <ant dir="nodes" />
+  </target>        
+
+  <target name="lib-modules" depends="lib-util" >
+        <ant dir="modules" />
+  </target>        
+  
+  <target name="lib-options" depends="lib-util" >
+        <ant dir="options" />
+  </target>        
+
+  <target name="lib-text" depends="lib-windows,lib-options" > <!-- JST-PENDING: Remove somehow dependency on options -->
+        <ant dir="text" />
+  </target>        
+
+  <target name="lib-util" >
+        <ant dir="util" />
+  </target>        
+  
+  <target name="lib-windows" depends="lib-nodes" >
+        <ant dir="windows" />
+  </target>        
+  
+  <!-- JST-PENDING: Separate lookup as well and remove WeakSet, ErrorManager
+        logging
+        -->
+  <target name="lib-lookup" > <!--depends="compile,13javac-workaround,vers-prep,lookup-src" -->
+  <!-- JST-PENDING: Separate lookup or not?
 	<mkdir dir="standalone"/>
         <copy file="openide-lookup.mf" tofile="openide-lookup-subst.mf" filtering="on"/>
         
-        <!-- include only lookup classes + WeakSet -->
   	<jar jarfile="standalone/openide-lookup.jar"
 	     manifest="openide-lookup-subst.mf"
 	     compress="false">
@@ -498,12 +456,14 @@ Microsystems, Inc. All Rights Reserved.
                   <include name="org/openide/util/WeakSet*"/>
                   <include name="org/openide/util/enum/*"/>
                   
-                  <!-- exlude localized resources, they are part of openide.jar -->
+                  <!- exlude localized resources, they are part of openide.jar ->
                   <exclude name="org/openide/**/*_*" />
                   <exclude name="org/openide/util/*_*" />
              </fileset>
         </jar>
+        -->
   </target>        
+  
   
   <target  name="lookup-src" description="Creates zip file with lookup sources.">
     <mkdir dir="standalone"/>
@@ -521,6 +481,25 @@ Microsystems, Inc. All Rights Reserved.
             <exclude name="**/.nbattrs"/>
         </fileset>
     </zip>
+  </target>
+  
+  <!-- dependencies between libraries -->
+  
+  <target name="deplib" description="Generates a file describing dependencies between libraries" >
+      <taskdef name="dep" classname="org.netbeans.nbbuild.GenerateDependencies" classpath="../nbbuild/nbantext.jar"/>
+  
+      <dep destfile="dep.xml" >
+            <include name="actions/manifest.mf" />
+            <include name="dialogs/manifest.mf" />
+            <include name="explorer/manifest.mf" />
+            <include name="fs/manifest.mf" />
+            <include name="nodes/manifest.mf" />
+            <include name="modules/manifest.mf" />
+            <include name="options/manifest.mf" />
+            <include name="text/manifest.mf" />
+            <include name="util/manifest.mf" />
+            <include name="windows/manifest.mf" />
+      </dep>
   </target>
 
   <!-- Open API documentation. -->
@@ -772,7 +751,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
     </zip>
   </target>
 
-  <target name="clean" description="Remove all build products.">
+  <target name="clean" description="Remove all build products." depends="libs-clean">
     <delete>
       <fileset dir="src">
         <include name="**/*.class"/>
