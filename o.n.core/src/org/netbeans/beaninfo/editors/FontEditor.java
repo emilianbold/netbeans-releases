@@ -36,10 +36,6 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
 
     // static .....................................................................................
 
-    // the bundle to use
-    static ResourceBundle bundle = NbBundle.getBundle (
-                                       FontEditor.class);
-
     static final String[] fonts = GraphicsEnvironment.getLocalGraphicsEnvironment ().getAvailableFontFamilyNames();
 
     static final Integer[] sizes = new Integer [] {
@@ -56,10 +52,10 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
                                    };
 
     static final String[] styles = new String [] {
-                                       bundle.getString ("CTL_Plain"),
-                                       bundle.getString ("CTL_Bold"),
-                                       bundle.getString ("CTL_Italic"),
-                                       bundle.getString ("CTL_BoldItalic")
+                                       NbBundle.getMessage(FontEditor.class, "CTL_Plain"),
+                                       NbBundle.getMessage(FontEditor.class, "CTL_Bold"),
+                                       NbBundle.getMessage(FontEditor.class, "CTL_Italic"),
+                                       NbBundle.getMessage(FontEditor.class, "CTL_BoldItalic")
                                    };
 
     // variables ..................................................................................
@@ -153,11 +149,11 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
 
     String getStyleName (int i) {
         if ((i & Font.BOLD) > 0)
-            if ((i & Font.ITALIC) > 0) return bundle.getString ("CTL_BoldItalic");
-            else return bundle.getString ("CTL_Bold");
+            if ((i & Font.ITALIC) > 0) return NbBundle.getMessage(FontEditor.class, "CTL_BoldItalic");
+            else return NbBundle.getMessage(FontEditor.class, "CTL_Bold");
         else
-            if ((i & Font.ITALIC) > 0) return bundle.getString ("CTL_Italic");
-            else return bundle.getString ("CTL_Plain");
+            if ((i & Font.ITALIC) > 0) return NbBundle.getMessage(FontEditor.class, "CTL_Italic");
+            else return NbBundle.getMessage(FontEditor.class, "CTL_Plain");
     }
 
     // innerclasses ............................................................................................
@@ -174,14 +170,14 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             setBorder(new EmptyBorder(12, 12, 0, 11));
 
             lFont = new JList (fonts);
-            lFont.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Font"));
+            lFont.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FontEditor.class, "ACSD_CTL_Font"));
             lStyle = new JList (styles);
-            lStyle.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_FontStyle"));
+            lStyle.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FontEditor.class, "ACSD_CTL_FontStyle"));
             lSize = new JList (sizes);
-            lSize.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Size"));
+            lSize.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FontEditor.class, "ACSD_CTL_Size"));
             tfSize = new JTextField ("" + FontEditor.this.font.getSize ()); // NOI18N
             tfSize.getAccessibleContext().setAccessibleDescription(lSize.getAccessibleContext().getAccessibleDescription());
-            getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_FontCustomEditor"));
+            getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FontEditor.class, "ACSD_FontCustomEditor"));
 
             GridBagLayout la = new GridBagLayout ();
             GridBagConstraints c = new GridBagConstraints ();
@@ -191,23 +187,23 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             c.weightx = 1.0;
             c.insets = new Insets (0, 0, 0, 0);
             c.anchor = GridBagConstraints.WEST;
-            JLabel l = new JLabel (bundle.getString ("CTL_Font"));                    //NoI18N
-            l.setDisplayedMnemonic(bundle.getString ("CTL_Font_mnemonic").charAt(0)); //NoI18N
+            JLabel l = new JLabel (NbBundle.getMessage(FontEditor.class, "CTL_Font"));                    //NoI18N
+            l.setDisplayedMnemonic(NbBundle.getMessage(FontEditor.class, "CTL_Font_mnemonic").charAt(0)); //NoI18N
             l.setLabelFor(lFont);
             la.setConstraints (l, c);
             add (l);
 
             c.insets = new Insets (0, 5, 0, 0);
-            l = new JLabel (bundle.getString ("CTL_FontStyle"));                           //NoI18N
-            l.setDisplayedMnemonic(bundle.getString ("CTL_FontStyle_mnemonic").charAt(0)); //NoI18N
+            l = new JLabel (NbBundle.getMessage(FontEditor.class, "CTL_FontStyle"));                           //NoI18N
+            l.setDisplayedMnemonic(NbBundle.getMessage(FontEditor.class, "CTL_FontStyle_mnemonic").charAt(0)); //NoI18N
             l.setLabelFor(lStyle);
             la.setConstraints (l, c);
             add (l);
 
             c.insets = new Insets (0, 5, 0, 0);
             c.gridwidth = GridBagConstraints.REMAINDER;
-            l = new JLabel (bundle.getString ("CTL_Size"));                           //NoI18N
-            l.setDisplayedMnemonic(bundle.getString ("CTL_Size_mnemonic").charAt(0)); //NoI18N
+            l = new JLabel (NbBundle.getMessage(FontEditor.class, "CTL_Size"));                           //NoI18N
+            l.setDisplayedMnemonic(NbBundle.getMessage(FontEditor.class, "CTL_Size_mnemonic").charAt(0)); //NoI18N
             l.setLabelFor(tfSize);
             la.setConstraints (l, c);
             add (l);
@@ -307,7 +303,7 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             c.gridwidth = GridBagConstraints.REMAINDER;
             c.weighty = 2.0;
             JPanel p = new JPanel (new BorderLayout());
-            p.setBorder (new TitledBorder (" " + bundle.getString ("CTL_Preview") + " "));
+            p.setBorder (new TitledBorder (" " + NbBundle.getMessage(FontEditor.class, "CTL_Preview") + " "));
 
             JPanel pp = new JPanel () {
                             public Dimension getPreferredSize () {
@@ -403,7 +399,7 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             IllegalArgumentException iae = new IllegalArgumentException();
             ErrorManager manager = ErrorManager.getDefault();
             manager.annotate(iae, ErrorManager.EXCEPTION, null, 
-                bundle.getString("MSG_FontIsNotInitialized"), null, null); // NOI18N
+                NbBundle.getMessage(FontEditor.class, "MSG_FontIsNotInitialized"), null, null); // NOI18N
             manager.notify(iae);
             return null;
         }
