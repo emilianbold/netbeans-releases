@@ -28,7 +28,10 @@ way is to access your JDBC resource directly from a JSP file using the JSTL 1.1 
 <p><b>To set up a JSP file to use the JSTL 1.1 tag library to access a data source:</b></p>
 <ol>
 <li><a href="tomcat_setup_tdcp.html">Set up a Tomcat Database Connection Pool</a>.</li>
-<li>Ensure that the JSTL 1.1 tag library is <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/web/create/tag/taglib/taglib_addtowar.html">correctly added</a> to the web project.
+<li>Put the JSTL 1.1 tag library on the web project's 
+<a href="nbdocs:/org/netbeans/modules/usersguide/compile/comp_classpath.html">classpath</a>. When you do so,
+make sure that the Deploy checkbox is selected so that the library is packaged with the web project
+ when you build it.
 <li>Expand the project node and the Web Pages node 
 and double-click the default index.jsp node. (Instead of using the
  default <tt>index.jsp</tt> file, you can 
