@@ -101,11 +101,18 @@ public abstract class PresentableFileEntry extends FileEntry implements Node.Coo
      */
     public final Node getNodeDelegate () {
         if (nodeDelegate == null) {
-            synchronized (this) {
-                if (nodeDelegate == null) {
-                    nodeDelegate = createNodeDelegate ();
+            // Changed like in DataObject.
+            // JST:
+            // changed to require write access because a lot of subclasses
+            // in createNodeDelegate requires it neither, so this should
+            // prevent deadlocks (because it uses only one lock and not two).
+            Children.MUTEX.writeAccess(new Runnable() {
+                public void run () {
+                    if(nodeDelegate == null) {
+                        nodeDelegate = createNodeDelegate();
+                    }
                 }
-            }
+            });
         }
         return nodeDelegate;
     }
