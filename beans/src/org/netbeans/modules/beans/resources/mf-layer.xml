@@ -21,66 +21,50 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Beans">
       <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/beans/resources/Beans.html" />
       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.beans.Bundle"/>
-      <attr name="templateType_JavaBeans" boolvalue="true"/>     
-      <attr name="templateCategorized" boolvalue="true"/>
 
       <file name="Bean.java" url="templates/Bean.template">
          <attr name="template" boolvalue="true" />
          <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/beans/resources/Bean.html" />
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.beans.Bundle"/>
-         <attr name="templateType_JavaBeans" boolvalue="true"/>
-         <attr name="templateCategorized" boolvalue="true"/>
-         <attr name="templateCategory" stringvalue="category_javaBeans"/>
+         <attr name="templateCategory" stringvalue="java-beans"/>
       </file>
       <file name="BeanInfo.java" url="templates/BeanInfo.template">
          <attr name="template" boolvalue="true" />
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.beans.Bundle"/>
          <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/beans/resources/BeanInfo.html" />
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
-         <attr name="templateType_JavaBeans" boolvalue="true"/>
-         <attr name="templateCategorized" boolvalue="true"/>
-         <attr name="templateCategory" stringvalue="category_javaBeans"/>
+         <attr name="templateCategory" stringvalue="java-beans"/>
       </file>
       <file name="BeanInfoNoIcon.java" url="templates/BeanInfoNoIcon.template">
          <attr name="template" boolvalue="true" />
          <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/beans/resources/BeanInfo.html" />
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.beans.Bundle"/>
-         <attr name="templateType_JavaBeans" boolvalue="true"/>
-         <attr name="templateCategorized" boolvalue="true"/>
-         <attr name="templateCategory" stringvalue="category_javaBeans"/>
+         <attr name="templateCategory" stringvalue="java-beans"/>
       </file>
       <file name="Customizer.java" url="templates/Customizer.template">
          <attr name="template" boolvalue="true" />
          <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/beans/resources/Customizer.html" />
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.beans.Bundle"/>
-         <attr name="templateType_JavaBeans" boolvalue="true"/>
-         <attr name="templateCategorized" boolvalue="true"/>
-         <attr name="templateCategory" stringvalue="category_javaBeans"/>
+         <attr name="templateCategory" stringvalue="java-beans"/>
       </file>
       <file name="Customizer.form" url="templates/Customizer.form.template">
          <attr name="template" boolvalue="true" />
          <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/beans/resources/Customizer.html" />
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
-         <attr name="templateType_JavaBeans" boolvalue="true"/>
-         <attr name="templateCategorized" boolvalue="true"/>
-         <attr name="templateCategory" stringvalue="category_javaBeans"/>
+         <attr name="templateCategory" stringvalue="java-beans"/>
       </file>
       <file name="PropertyEditor.java" url="templates/PropertyEditor.template">
          <attr name="template" boolvalue="true" />
          <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/beans/resources/PropertyEditor.html" />
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.beans.Bundle"/>
-         <attr name="templateType_JavaBeans" boolvalue="true"/>
-         <attr name="templateCategorized" boolvalue="true"/>
-         <attr name="templateCategory" stringvalue="category_javaBeans"/>
+         <attr name="templateCategory" stringvalue="java-beans"/>
       </file>
       <file name="Package.shadow">
          <attr name="originalFile" stringvalue="Templates/Classes/Package"/>
-         <attr name="templateCategorized" boolvalue="true"/>
-         <attr name="templateCategory" stringvalue="category_javaBeans"/>
       </file>
     </folder>
   </folder>

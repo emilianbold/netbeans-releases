@@ -24,16 +24,13 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="XML">
             <attr name="emptyDTD.dtd/stylesheet.xsl" boolvalue="true"/>
             <attr name="XMLSchema.xml/stylesheet.xsl" boolvalue="true"/>            
-            <attr name="templateType_XML" boolvalue="true"/>
             
             <file name="stylesheet.xsl" url="nbresloc:/org/netbeans/modules/xsl/resources/templates/stylesheet.xsl">
                 &localize-it;
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xsl/resources/xslObject.gif" />
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xsl/resources/templates/stylesheet.html" />
                 <attr name="template" boolvalue="true" />
-                <attr name="templateType_XML" boolvalue="true"/>
-                <attr name="templateCategory" stringvalue="category_genericXML"/>
-                <attr name="templateCategorized" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="XML"/>
             </file>
 
             <attr name="stylesheet.xsl/XMLCatalog.xml" boolvalue="true"/>

@@ -48,6 +48,7 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.java.j2seproject.ui.FoldersListSettings;
+import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
@@ -149,6 +150,8 @@ final class J2SEProject implements Project, AntProjectListener {
                 sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
             }
         });
+        EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        final boolean isLibrary = ep.getProperty (J2SEProjectProperties.MAIN_CLASS) == null;
         return Lookups.fixed(new Object[] {
             new Info(),
             aux,
@@ -174,7 +177,7 @@ final class J2SEProject implements Project, AntProjectListener {
                 "${build.dir}", // NOI18N
             }),
             fileBuilt,
-            new RecommendedTemplatesImpl(),
+            new RecommendedTemplatesImpl (isLibrary),
             new J2SEProjectClassPathExtender(this, helper, eval,refHelper),
             new AntProjectHelperProvider ()
         });
@@ -358,32 +361,46 @@ final class J2SEProject implements Project, AntProjectListener {
     }
     
     private static final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
+        RecommendedTemplatesImpl (boolean isLibrary) {
+            this.isLibrary = isLibrary;
+        }
+        
+        private boolean isLibrary;
         
         // List of primarily supported templates
         
-        private static final String[] TYPES = new String[] { 
-            "templateType_Java",            // NOI18N
-            "templateType_JavaBeans",       // NOI18N
-            "templateType_JavaForms",       // NOI18N
-            "templateType_JUnit",           // NOI18N
-            "templateType_Ant",             // NOI18N
-            "templateType_XML",             // NOI18N
-            "templateType_Other",           // NOI18N
-            "templateType_J2SE",            // NOI18N
-            "category_genericJava",         // NOI18N
-            "category_javaMainClass",       // NOI18N
-            "category_javaForms",           // NOI18N
-            "category_guiJavaApplication",  // NOI18N
-            "category_javaBeans",           // NOI18N
-            "category_oasisXML",            // NOI18N
-            "category_genericXML",          // NOI18N
-            "category_antScript",           // NOI18N
-            "category_antTask",             // NOI18N
-            "category_servletTypes",        // NOI18N
-            // "category_genericWebTypes",  // NOI18N
-            "category_junitTestType",       // NOI18N
-            // "category_midTypes",         // NOI18N
-            "category_simpleFileTypes"      // NOI18N
+        private static final String[] APPLICATION_TYPES = new String[] { 
+            "java-classes",         // NOI18N
+            "java-main-class",      // NOI18N
+            "java-forms",           // NOI18N
+            "gui-java-application", // NOI18N
+            "java-beans",           // NOI18N
+            "oasis-XML-catalogs",   // NOI18N
+            "XML",                  // NOI18N
+            "ant-script",           // NOI18N
+            "ant-task",             // NOI18N
+            // "servlet-types",     // NOI18N
+            // "web-types",         // NOI18N
+            "junit",                // NOI18N
+            // "MIDP",              // NOI18N
+            "simple-files"          // NOI18N
+        };
+        
+        private static final String[] LIBRARY_TYPES = new String[] { 
+            "java-classes",         // NOI18N
+            "java-main-class",      // NOI18N
+            "java-forms",           // NOI18N
+            //"gui-java-application", // NOI18N
+            "java-beans",           // NOI18N
+            "oasis-XML-catalogs",   // NOI18N
+            "XML",                  // NOI18N
+            "ant-script",           // NOI18N
+            "ant-task",             // NOI18N
+            "servlet-types",        // NOI18N
+            // "web-types",         // NOI18N
+            "junit",                // NOI18N
+            // "MIDP",              // NOI18N
+            "simple-files"          // NOI18N
         };
         
         private static final String[] PRIVILEGED_NAMES = new String[] {
@@ -395,7 +412,7 @@ final class J2SEProject implements Project, AntProjectListener {
         };
         
         public String[] getRecommendedTypes() {
-            return TYPES;
+            return isLibrary ? LIBRARY_TYPES : APPLICATION_TYPES;
         }
         
         public String[] getPrivilegedTemplates() {

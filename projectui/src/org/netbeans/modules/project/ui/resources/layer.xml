@@ -139,9 +139,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle" />
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/project/ui/resources/templatesFolder.html" />
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.project.ui.NewFileIterator.folderIterator" />
-                <attr name="templateType_Other" boolvalue="true"/>
-                <attr name="templateCategory" stringvalue="category_simpleFileTypes"/>
-                <attr name="templateCategorized" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="simple-files"/>
             </folder>
             <file name="file">
                 <![CDATA[]]>
@@ -150,9 +148,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/project/ui/resources/newFile.gif"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/project/ui/resources/templatesFile.html"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.project.ui.NewFileIterator.emptyFileIterator" />
-                <attr name="templateType_Other" boolvalue="true"/>
-                <attr name="templateCategory" stringvalue="category_simpleFileTypes"/>
-                <attr name="templateCategorized" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="simple-files"/>
             </file>
         </folder>
     </folder>

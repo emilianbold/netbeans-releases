@@ -464,21 +464,15 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
         // List of primarily supported templates
         
         private static final String[] TYPES = new String[] { 
-            "templateType_Web",         // NOI18N
-            "templateType_Java",        // NOI18N
-            "templateType_JavaBeans",   // NOI18N
-            "templateType_Ant",         // NOI18N
-            "templateType_XML",         // NOI18N
-            "templateType_Other",       // NOI18N
-            "category_genericJava",         // NOI18N
-            "category_javaBeans",           // NOI18N
-            "category_oasisXML",            // NOI18N
-            "category_genericXML",          // NOI18N
-            "category_antScript",           // NOI18N
-            "category_antTask",             // NOI18N
-            "category_servletTypes",        // NOI18N
-            "category_genericWebTypes",  // NOI18N
-            "category_simpleFileTypes"      // NOI18N
+            "java-classes",         // NOI18N
+            "java-beans",           // NOI18N
+            "oasis-XML-catalogs",   // NOI18N
+            "XML",                  // NOI18N
+            "ant-script",           // NOI18N
+            "ant-task",             // NOI18N
+            "servlet-types",        // NOI18N
+            "web-types",            // NOI18N
+            "simple-files"          // NOI18N
         };
         
         private static final String[] PRIVILEGED_NAMES = new String[] {

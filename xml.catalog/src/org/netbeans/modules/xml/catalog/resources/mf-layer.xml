@@ -23,15 +23,12 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="XMLWizard.xml/XMLCatalog.xml" boolvalue="true"/>
             <attr name="stylesheet.xsl/XMLCatalog.xml" boolvalue="true"/>
             <attr name="emptyDTD.dtd/XMLCatalog.xml" boolvalue="true"/>
-            <attr name="templateType_XML" boolvalue="true"/>
             <file name="XMLCatalog.xml" url="templates/XMLCatalog.xml">
                 <attr name="template" boolvalue="true" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.catalog.resources.Bundle" />
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/xmlObject.gif" />
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/catalog/resources/templates/XMLCatalog.html" />
-                <attr name="templateType_XML" boolvalue="true"/>
-                <attr name="templateCategory" stringvalue="category_oasisTypes"/>
-                <attr name="templateCategorized" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="oasis-XML-catalogs"/>
             </file>                        
             <attr name="XMLCatalog.xml/xml_entity.ent" boolvalue="true"/>
             

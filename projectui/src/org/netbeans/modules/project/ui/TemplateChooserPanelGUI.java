@@ -30,6 +30,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.SortedSet;
+import java.util.StringTokenizer;
 import java.util.TreeSet;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
@@ -208,30 +209,12 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         }
         
         private void updateKeys() {
-            // SortedSet/*<DataObject>*/ l = new TreeSet(this);
             List l = new ArrayList();
             DataObject[] kids = folder.getChildren();
-            String[] recommendedTypes = getRecommendedTypes ( (Project)projectsComboBox.getSelectedItem() );
             for (int i = 0; i < kids.length; i++) {
                 DataObject d = kids[i];
                 FileObject prim = d.getPrimaryFile();
                 if ( acceptTemplate( d, prim ) ) {
-                    // issue 43958, if attr 'templateCategorized' is not set => all is ok
-                    if (isCategorized (prim)) {
-                        if ( recommendedTypes != null) {
-                            // XXX assert recommendedTypes != null;
-                            boolean ok = false;
-                            for (int j = 0; j < recommendedTypes.length; j++) {
-                                if (Boolean.TRUE.equals(prim.getAttribute(recommendedTypes[j]))) {
-                                    ok = true;
-                                    break;
-                                }
-                            }
-                            if (!ok) {
-                                continue;
-                            }
-                        }
-                    }
                     // has children?
                     if (hasChildren ((Project)projectsComboBox.getSelectedItem (), d)) {
                         l.add(d);
@@ -408,35 +391,30 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         return false;
     }
     
-    private static boolean isCategorized (FileObject primaryFile) {
-        Object o = primaryFile.getAttribute ("templateCategorized"); // NOI18N
-        if (o != null) {
-            assert o instanceof Boolean : primaryFile + ", attr templateCategorized = " + o;
-            return ((Boolean)o).booleanValue ();
-        } else {
-            return false;
-        }
-    }
-
     private static boolean isRightCategory (Project p, FileObject primaryFile) {
         if (getRecommendedTypes (p) == null || getRecommendedTypes (p).length == 0) {
             // if no recommendedTypes are supported (i.e. freeform) -> disaply all templates
             return true;
         }
         
-        if (isCategorized (primaryFile)) {
-            Object o = primaryFile.getAttribute ("templateCategory"); // NOI18N
-            if (o != null) {
-                assert o instanceof String : primaryFile + " attr templateCategory = " + o;
-                String category = (String)o;
-                return Arrays.asList (getRecommendedTypes (p)).contains (category);
-            } else {
-                return false;
+        Object o = primaryFile.getAttribute ("templateCategory"); // NOI18N
+        if (o != null) {
+            assert o instanceof String : primaryFile + " attr templateCategory = " + o;
+            Iterator categoriesIt = getCategories ((String)o).iterator ();
+            boolean ok = false;
+            while (categoriesIt.hasNext ()) {
+                String category = (String)categoriesIt.next ();
+                if (Arrays.asList (getRecommendedTypes (p)).contains (category)) {
+                    ok = true;
+                    break;
+                }
             }
+            return ok;
+        } else {
+            // issue 43958, if attr 'templateCategorized' is not set => all is ok
+            // no category set, ok display it
+            return true;
         }
-        
-        // no category set, ok display it
-        return true;
     }
 
     private static String[] getRecommendedTypes (Project project) {
@@ -466,6 +444,15 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         // simplied but more counts
         //return new FileChildren (p, (DataFolder) folder).getNodesCount () > 0;
         
+    }
+    
+    private static List getCategories (String source) {
+        ArrayList categories = new ArrayList ();
+        StringTokenizer cattok = new StringTokenizer (source, ","); // NOI18N
+        while (cattok.hasMoreTokens ()) {
+            categories.add (cattok.nextToken ().trim ());
+        }
+        return categories;
     }
 
 }
