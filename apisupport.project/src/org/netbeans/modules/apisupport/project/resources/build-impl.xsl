@@ -20,6 +20,7 @@ Microsystems, Inc. All Rights Reserved.
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
     
     <xsl:variable name="modules" select="document('modules.xml')/modules"/>
+    <xsl:variable name="deps" select="/p:project/p:configuration/nbm:data/nbm:module-dependencies"/>
     
     <xsl:template match="/">
 
@@ -51,7 +52,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="src.dir" location="src"/>
         <property name="build.classes.dir" location="build/classes"/>
         <path id="cp">
-            <xsl:for-each select="/p:project/p:configuration/nbm:data/nbm:module-dependencies/nbm:dependency[count(nbm:compile-dependency) = 1]">
+            <xsl:for-each select="$deps/nbm:dependency[count(nbm:compile-dependency) = 1]">
                 <xsl:variable name="cnb" select="nbm:code-name-base"/>
                 <xsl:variable name="match" select="$modules/module[cnb = $cnb]"/>
                 <!--
@@ -106,14 +107,52 @@ Microsystems, Inc. All Rights Reserved.
         <tstamp>
             <format property="buildnumber" pattern="manual-yyMMdd" timezone="UTC"/>
         </tstamp>
-        <jar jarfile="netbeans/${{module.jar}}" compress="${{jar.compress}}" manifest="${{manifest.mf}}">
+        <jar jarfile="netbeans/${{module.jar}}" compress="false" manifest="${{manifest.mf}}">
             <manifest>
                 <attribute name="OpenIDE-Module-Public-Packages">
                     <xsl:attribute name="value">
-                        <!-- XXX read from project.xml#packages -->
+                        <xsl:variable name="pkgs" select="/p:project/p:configuration/nbm:data/nbm:public-packages"/>
+                        <xsl:choose>
+                            <xsl:when test="count($pkgs) &gt; 0">
+                                <xsl:for-each select="$pkgs/nbm:package">
+                                    <xsl:if test="position() &gt; 1">
+                                        <xsl:text>, </xsl:text>
+                                    </xsl:if>
+                                    <xsl:value-of select="."/>
+                                </xsl:for-each>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:text>-</xsl:text>
+                            </xsl:otherwise>
+                        </xsl:choose>
                     </xsl:attribute>
                 </attribute>
-                <!-- XXX OpenIDE-Module-IDE-Dependencies and/or OpenIDE-Module-Module-Dependencies -->
+                <xsl:variable name="openide.dep" select="$deps/nbm:dependency[nbm:code-name-base = 'org.openide' and nbm:run-dependency]"/>
+                <xsl:if test="$openide.dep">
+                    <!-- Special-cased. -->
+                    <attribute name="OpenIDE-Module-IDE-Dependencies" value="IDE/{$openide.dep/nbm:run-dependency/nbm:release-version} &gt; {$openide.dep/nbm:run-dependency/nbm:specification-version}"/>
+                </xsl:if>
+                <xsl:variable name="module.deps" select="$deps/nbm:dependency[nbm:code-name-base != 'org.openide' and nbm:run-dependency]"/>
+                <xsl:if test="$module.deps">
+                    <attribute name="OpenIDE-Module-Module-Dependencies">
+                        <xsl:attribute name="value">
+                            <xsl:for-each select="$module.deps">
+                                <xsl:if test="position() &gt; 1">
+                                    <xsl:text>, </xsl:text>
+                                </xsl:if>
+                                <xsl:value-of select="nbm:code-name-base"/>
+                                <xsl:if test="nbm:run-dependency/nbm:release-version">
+                                    <xsl:text>/</xsl:text>
+                                    <xsl:value-of select="nbm:run-dependency/nbm:release-version"/>
+                                </xsl:if>
+                                <xsl:if test="nbm:run-dependency/nbm:specification-version">
+                                    <xsl:text> &gt; </xsl:text>
+                                    <xsl:value-of select="nbm:run-dependency/nbm:specification-version"/>
+                                </xsl:if>
+                            </xsl:for-each>
+                        </xsl:attribute>
+                    </attribute>
+                </xsl:if>
                 <!-- XXX make this conditional so can use OIDE-M-B-V instead -->
                 <attribute name="OpenIDE-Module-Implementation-Version" value="${{buildnumber}}"/>
             </manifest>
