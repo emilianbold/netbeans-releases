@@ -108,6 +108,9 @@ public class EditorModule extends ModuleInstall {
     
     public static void init(){
         if (inited) return;
+
+        inited = true; // moved here to fix #27418
+        
         NbEditorSettingsInitializer.init();
         PrintSettings ps = (PrintSettings) SharedClassObject.findObject(PrintSettings.class, true);
 
@@ -118,7 +121,6 @@ public class EditorModule extends ModuleInstall {
         for (int i = 0; i < printOpts.length; i++) {
             ps.addOption((SystemOption)SharedClassObject.findObject(printOpts[i], true));
         }
-        inited = true;
     }
     
     /** Module installed again. */
@@ -224,8 +226,6 @@ public class EditorModule extends ModuleInstall {
     /** Called when module is uninstalled. Overrides superclass method. */
     public void uninstalled() {
 
-        inited = false;
-        
         TopManager.getDefault().getLoaderPool().removeOperationListener(operationListener);
         operationListener = null;
         
@@ -292,6 +292,7 @@ public class EditorModule extends ModuleInstall {
             }
         }
         
+        inited = false; // moved here as part of fix of #27418
     }
 
     private synchronized RequestProcessor getCCUpdateProcessor() {
