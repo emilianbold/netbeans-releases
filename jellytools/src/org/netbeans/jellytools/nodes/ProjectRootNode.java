@@ -25,6 +25,7 @@ public class ProjectRootNode extends Node {
     
     static final FindAction findAction = new FindAction();
     static final BuildProjectAction buildProjectAction = new BuildProjectAction();
+    static final CleanProjectAction cleanProjectAction = new CleanProjectAction();
     static final PropertiesAction propertiesAction = new PropertiesAction();
    
     /** tests popup menu items for presence */    
@@ -52,6 +53,11 @@ public class ProjectRootNode extends Node {
     /** build project */    
     public void buildProject() {
         buildProjectAction.perform(this);
+    }
+    
+    /** Clean project */    
+    public void cleanProject() {
+        cleanProjectAction.perform(this);
     }
     
     /** opens properties of project */    
