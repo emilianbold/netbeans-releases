@@ -539,20 +539,25 @@ public class RADComponent {
         ArrayList normalProps = new ArrayList();
         ArrayList expertProps = new ArrayList();
 
+        Object[] propsClsf = FormUtils.getPropertiesClassification(getBeanInfo());
         PropertyDescriptor[] props = getBeanInfo().getPropertyDescriptors();
+
         for (int i = 0; i < props.length; i++) {
             PropertyDescriptor pd = props[i];
-            if (!pd.isHidden()) {
-                Node.Property prop = createProperty(pd);
-                if (prop != null)
-                    if (pd.isExpert())
-                        expertProps.add(prop);
-                    else if (pd.isPreferred()
-                             || Boolean.TRUE.equals(pd.getValue("preferred")))
-                        prefProps.add(prop);
-                    else
-                        normalProps.add(prop);
-            }
+            Object propType = FormUtils.getPropertyType(pd, propsClsf);
+            List listToAdd;
+
+            if (propType == FormUtils.PROP_PREFERRED)
+                listToAdd = prefProps;
+            else if (propType == FormUtils.PROP_NORMAL)
+                listToAdd = normalProps;
+            else if (propType == FormUtils.PROP_EXPERT)
+                listToAdd = expertProps;
+            else continue; // PROP_HIDDEN
+
+            Node.Property prop = createProperty(pd);
+            if (prop != null)
+                listToAdd.add(createProperty(pd));
         }
 
         int prefCount = prefProps.size();

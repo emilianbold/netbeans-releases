@@ -50,6 +50,79 @@ public class FormUtils
     private static HashMap jComponentIgnored;
     private static HashMap valuesCache = new HashMap();
 
+    private static final Object CLASS_EXACTLY = new Object();
+    private static final Object CLASS_AND_SUBCLASSES = new Object();
+    private static final Object CLASS_AND_SWING_SUBCLASSES = new Object();
+
+    static final Object PROP_PREFERRED = new Object();
+    static final Object PROP_NORMAL = new Object();
+    static final Object PROP_EXPERT = new Object();
+    static final Object PROP_HIDDEN = new Object();
+
+    private static Object[][] propsClassifications = {
+        { javax.swing.JComponent.class, CLASS_AND_SUBCLASSES,
+                "debugGraphicsOptions", PROP_EXPERT },
+        { javax.swing.JComponent.class, CLASS_AND_SUBCLASSES,
+                "preferredSize", PROP_NORMAL },
+        { javax.swing.text.JTextComponent.class, CLASS_AND_SUBCLASSES,
+                "text", PROP_PREFERRED,
+                "editable", PROP_PREFERRED,
+                "disabledTextColor", PROP_NORMAL,
+                "selectedTextColor", PROP_NORMAL,
+                "selectionColor", PROP_NORMAL,
+                "caretColor", PROP_NORMAL },
+        { javax.swing.JTextField.class, CLASS_AND_SUBCLASSES,
+                "columns", PROP_PREFERRED },
+        { javax.swing.JTextArea.class, CLASS_AND_SUBCLASSES,
+                "columns", PROP_PREFERRED,
+                "rows", PROP_PREFERRED },
+        { javax.swing.JEditorPane.class, CLASS_AND_SUBCLASSES,
+                "border", PROP_PREFERRED,
+                "font", PROP_PREFERRED },
+        { javax.swing.JTree.class, CLASS_AND_SUBCLASSES,
+                "border", PROP_PREFERRED },
+        { javax.swing.AbstractButton.class, CLASS_AND_SUBCLASSES,
+                "mnemonic", PROP_PREFERRED },
+        { javax.swing.JToggleButton.class, CLASS_AND_SUBCLASSES,
+                "icon", PROP_PREFERRED,
+                "selected", PROP_PREFERRED },
+        { javax.swing.JButton.class, CLASS_AND_SUBCLASSES,
+                "icon", PROP_PREFERRED },
+        { javax.swing.JCheckBox.class, CLASS_EXACTLY,
+                "icon", PROP_NORMAL },
+        { javax.swing.JRadioButton.class, CLASS_EXACTLY,
+                "icon", PROP_NORMAL },
+        { javax.swing.JTabbedPane.class, CLASS_EXACTLY,
+                "selectedComponent", PROP_EXPERT },
+        { javax.swing.JSplitPane.class, CLASS_AND_SUBCLASSES,
+                "dividerLocation", PROP_PREFERRED,
+                "dividerSize", PROP_PREFERRED,
+                "orientation", PROP_PREFERRED,
+                "resizeWeight", PROP_PREFERRED },
+        { javax.swing.JSplitPane.class, CLASS_EXACTLY,
+                "leftComponent", PROP_EXPERT,
+                "rightComponent", PROP_EXPERT },
+        { javax.swing.JSlider.class, CLASS_AND_SUBCLASSES,
+                "majorTickSpacing", PROP_PREFERRED,
+                "minorTickSpacing", PROP_PREFERRED,
+                "paintLabels", PROP_PREFERRED,
+                "paintTicks", PROP_PREFERRED,
+                "paintTrack", PROP_PREFERRED,
+                "snapToTicks", PROP_PREFERRED },
+        { javax.swing.JLabel.class, CLASS_AND_SUBCLASSES,
+                "horizontalAlignment", PROP_PREFERRED },
+        { javax.swing.JList.class, CLASS_AND_SUBCLASSES,
+                "model", PROP_PREFERRED,
+                "border", PROP_PREFERRED },
+        { javax.swing.JComboBox.class, CLASS_AND_SUBCLASSES,
+                "model", PROP_PREFERRED },
+        { javax.swing.JTable.class, CLASS_AND_SUBCLASSES,
+                "model", PROP_PREFERRED,
+                "border", PROP_PREFERRED },
+        { javax.swing.JSeparator.class, CLASS_EXACTLY,
+                "font", PROP_NORMAL }
+    };
+
     /** The properties whose changes are ignored in JComponent subclasses */
 
     private static String[] jComponentIgnoredList = new String [] {
@@ -196,6 +269,82 @@ public class FormUtils
         if (javax.swing.JInternalFrame.class.isAssignableFrom(beanClass) && "menuBar".equals(propertyName)) // NOI18N
             return true;
         return false;
+    }
+
+    /** Returns explicit changes in properties classification (preferred, normal,
+     * expert). Used for SWING components to correct default (insufficient)
+     * classification taken from BeanInfo.
+     */
+    static Object[] getPropertiesClassification(BeanInfo beanInfo) {
+        ArrayList reClsf = null;
+        Class beanClass = beanInfo.getBeanDescriptor().getBeanClass();
+
+        if (javax.swing.JComponent.class.isAssignableFrom(beanClass)) {
+            reClsf = new ArrayList(8);
+            Object isContainerValue = beanInfo.getBeanDescriptor().getValue("isContainer"); // NOI18N
+            if (isContainerValue == null || Boolean.TRUE.equals(isContainerValue)) {
+                reClsf.add("font"); // NOI18N
+                reClsf.add(PROP_NORMAL);
+            }
+            else {
+                reClsf.add("border"); // NOI18N
+                reClsf.add(PROP_NORMAL); // NOI18N
+            }
+        }
+
+        for (int i=0; i < propsClassifications.length; i++) {
+            Object[] clsf = propsClassifications[i];
+            Class refClass = (Class)clsf[0];
+            Object subclasses = clsf[1];
+
+            if ((subclasses == CLASS_EXACTLY && refClass == beanClass)
+                ||
+                (subclasses == CLASS_AND_SUBCLASSES
+                         && refClass.isAssignableFrom(beanClass))
+                ||
+                (subclasses == CLASS_AND_SWING_SUBCLASSES
+                         && refClass.isAssignableFrom(beanClass)
+                         && beanClass.getName().startsWith("javax.swing."))) {
+                if (reClsf == null)
+                    reClsf = new ArrayList(8);
+                for (int j=2; j < clsf.length; j++)
+                    reClsf.add(clsf[j]);
+            }
+        }
+
+        if (reClsf != null) {
+            Object[] clsfArray = new Object[reClsf.size()];
+            reClsf.toArray(clsfArray);
+            return clsfArray;
+        }
+        return null;
+    }
+
+    /** Returns type of property (PROP_PREFERRED, PROP_NORMAL, PROP_EXPERT or
+     * PROP_HIDDEN) based on PropertyDescriptor and explicit changes in
+     * properties classification for given bean class (returned from
+     * getPropertiesClassification(BeanInfo beanInfo) method).
+     */
+    static Object getPropertyType(PropertyDescriptor pd,
+                                  Object[] propsClsf) {
+        if (propsClsf != null) {
+            String propName = pd.getName();
+
+            int i = propsClsf.length;
+            while (i > 0) {
+                if (propsClsf[i-2].equals(propName))
+                    return propsClsf[i-1];
+                i -= 2;
+            }
+        }
+
+        if (pd.isHidden())
+            return PROP_HIDDEN;
+        if (pd.isExpert())
+            return PROP_EXPERT;
+        if (pd.isPreferred() || Boolean.TRUE.equals(pd.getValue("preferred"))) // NOI18N
+            return PROP_PREFERRED;
+        return PROP_NORMAL;
     }
 
     /** @return a default name for event handling method - it is a concatenation of
