@@ -24,6 +24,7 @@ import com.sun.jdi.VirtualMachine;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Pattern;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
@@ -121,7 +122,15 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
                     System.out.println("B     cls: " + referenceType);
                 if (i != null) {
                     String name = referenceType.name ();
-                    if (name.startsWith (className)) {
+                    if ( ( className.endsWith ("*") &&
+                           name.startsWith (className.substring 
+                             (0, className.length () - 1))
+                         ) ||
+                         ( className.startsWith ("*") &&
+                           name.endsWith (className.substring (1))
+                         ) ||
+                         className.equals (name)
+                    ) {
                         if (verbose)
                             System.out.println("B       cls loaded! ");
                         classLoaded (referenceType);
