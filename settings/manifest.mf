@@ -1,11 +1,7 @@
 Manifest-Version: 1.0
-OpenIDE-Module-Name: Settings API
 OpenIDE-Module: org.netbeans.modules.settings/1
-OpenIDE-Module-Specification-Version: 1.0
+OpenIDE-Module-Specification-Version: 1.1
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 2.3
-OpenIDE-Module-Short-Description: The module provides the Settings API.
-OpenIDE-Module-Long-Description: The module provides the Settings API and 
- several useful setting format implementations.
-OpenIDE-Module-Layer: org/netbeans/modules/settings/resources/mf-layer
- .xml
+OpenIDE-Module-Layer: org/netbeans/modules/settings/resources/mf-layer.xml
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/settings/resources/Bundle.properties
 
