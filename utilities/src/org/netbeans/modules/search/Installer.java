@@ -118,8 +118,11 @@ public class Installer extends ModuleInstall {
 
 }
 
+
 /* 
 * Log
+*  7    Gandalf   1.6         1/5/00   Petr Kuzel      Margins used. Help 
+*       contexts.
 *  6    Gandalf   1.5         12/23/99 Petr Kuzel      Architecture improved.
 *  5    Gandalf   1.4         12/17/99 Petr Kuzel      Bundling.
 *  4    Gandalf   1.3         12/16/99 Petr Kuzel      
@@ -128,3 +131,4 @@ public class Installer extends ModuleInstall {
 *  1    Gandalf   1.0         12/14/99 Petr Kuzel      
 * $ 
 */ 
+  

@@ -180,6 +180,8 @@ public class ResultModel implements NodeAcceptor, TaskListener {
 
 /* 
 * Log
+*  8    Gandalf   1.7         1/5/00   Petr Kuzel      Margins used. Help 
+*       contexts.
 *  7    Gandalf   1.6         1/4/00   Petr Kuzel      Bug hunting.
 *  6    Gandalf   1.5         12/23/99 Petr Kuzel      Architecture improved.
 *  5    Gandalf   1.4         12/17/99 Petr Kuzel      Bundling.
