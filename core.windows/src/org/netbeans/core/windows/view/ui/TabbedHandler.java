@@ -430,24 +430,30 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
          */
         private void handleActivation(MouseEvent evt) {
             Component comp = (Component) evt.getSource();
-
+            
             if (!(comp instanceof Component)) {
                 return;
             }
 
             while (comp != null && !(comp instanceof ModeComponent)) {
-                if (comp instanceof TopComponent && 
-                    Boolean.TRUE.equals(((TopComponent) comp).getClientProperty(
-                    "dontActivate"))) { //NOI18N
-                        
-                    return;
+                if (comp instanceof TopComponent) {
+                    TopComponent tc = (TopComponent)comp;
+                    // don't activate if requested
+                    if (Boolean.TRUE.equals(tc.getClientProperty("dontActivate"))) { //NOI18N
+                        return;
+                    }
+                    // special way of activation for topcomponents in sliding mode
+                    if (Boolean.TRUE.equals(tc.getClientProperty("isSliding"))) { //NOI18N
+                        tc.requestActive();
+                        return;
+                    }
                 }
                 comp = comp.getParent();
             }
 
             if (comp instanceof ModeComponent) {
                 ModeComponent modeComp = (ModeComponent)comp;
-                // don't activate sliding views, they will activate themselves correctly
+                // don't activate sliding views when user clicked edge bar
                 if (modeComp.getKind() != Constants.MODE_KIND_SLIDING) {
                     ModeView modeView = modeComp.getModeView();
                     modeView.getController().userActivatedModeView(modeView);

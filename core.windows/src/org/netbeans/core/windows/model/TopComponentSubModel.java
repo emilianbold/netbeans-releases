@@ -100,6 +100,13 @@ final class TopComponentSubModel {
             selectedTopComponentID = getID(tc);
         }
         
+        // XXX - should be deleted after TopComponent.isSliding is introduced
+        if (kind == Constants.MODE_KIND_SLIDING) {
+            setSlidingProperty(tc);
+        } else {
+            clearSlidingProperty(tc);
+        }
+        
         return true;
     }
     
@@ -136,6 +143,13 @@ final class TopComponentSubModel {
             selectedTopComponentID = getID(tc);
         }
         
+        // XXX - should be deleted after TopComponent.isSliding is introduced
+        if (kind == Constants.MODE_KIND_SLIDING) {
+            setSlidingProperty(tc);
+        } else {
+            clearSlidingProperty(tc);
+        }
+        
         return true;
     }
     
@@ -155,6 +169,13 @@ final class TopComponentSubModel {
             if(selectedTopComponentID != null && selectedTopComponentID.equals(getID(tc))) {
                 adjustSelectedTopComponent(index);
             }
+        }
+        
+        // XXX - should be deleted after TopComponent.isSliding is introduced
+        if (kind == Constants.MODE_KIND_SLIDING) {
+            setSlidingProperty(tc);
+        } else {
+            clearSlidingProperty(tc);
         }
         
         return true;
@@ -189,6 +210,9 @@ final class TopComponentSubModel {
             res = false;
         }
 
+        // XXX - should be deleted after TopComponent.isSliding is introduced
+        clearSlidingProperty(tc);
+        
         return res;
     }
 
@@ -279,4 +303,19 @@ final class TopComponentSubModel {
     private static String getID(TopComponent tc) {
         return WindowManagerImpl.getInstance().findTopComponentID(tc);
     }
+
+    
+    // XXX - should be deleted after TopComponent.isSliding is introduced
+    private static final String IS_SLIDING = "isSliding";
+    
+    // XXX - should be deleted after TopComponent.isSliding is introduced
+    private void setSlidingProperty(TopComponent tc) {
+        tc.putClientProperty(IS_SLIDING, Boolean.TRUE);
+    }
+
+    // XXX - should be deleted after TopComponent.isSliding is introduced
+    private void clearSlidingProperty(TopComponent tc) {
+        tc.putClientProperty(IS_SLIDING, null);
+    }
+    
 }
