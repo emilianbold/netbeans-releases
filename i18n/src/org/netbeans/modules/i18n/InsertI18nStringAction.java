@@ -104,7 +104,7 @@ public class InsertI18nStringAction extends CookieAction {
         I18nSupport.Factory factory = FactoryRegistry.getFactory(dataObject.getClass().getName());
         
         if(factory == null)
-            throw new InternalError("I18N: No factory registered for data object type="+dataObject.getClass().getName()); // NOI18N
+            throw new IllegalStateException("I18N: No factory registered for data object type="+dataObject.getClass().getName()); // NOI18N
 
         final I18nSupport support = factory.create(dataObject);
         
