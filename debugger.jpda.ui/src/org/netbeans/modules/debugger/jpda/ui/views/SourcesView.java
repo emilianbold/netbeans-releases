@@ -66,9 +66,10 @@ public class SourcesView extends TopComponent {
         return PERSISTENCE_ALWAYS;
     }
         
-    public boolean requestFocusInWindow() {
-        super.requestFocusInWindow();
-        return tree.requestFocusInWindow();
+    public boolean requestFocusInWindow () {
+        super.requestFocusInWindow ();
+        if (tree == null) return false;
+        return tree.requestFocusInWindow ();
     }
     
     public String getName () {

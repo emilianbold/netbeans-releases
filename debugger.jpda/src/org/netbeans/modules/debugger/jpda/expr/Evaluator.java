@@ -18,6 +18,9 @@ import com.sun.jdi.*;
 import java.util.*;
 import java.lang.reflect.InvocationTargetException;
 
+import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+
+
 /**
  * Engine that evaluates a Java expression in a context of a running JVM. The
  * JVM (or at least the current thread) must be suspended. A single instance of this evaluator may
@@ -1443,7 +1446,7 @@ public class Evaluator implements JavaParserVisitor {
     static int INVOKE_TIMEOUT_MILLIS = 5000;
 
     public static Value invokeVirtual(ObjectReference objectReference, Method method, ThreadReference evaluationThread, List args)
-            throws TimeoutException, InvocationTargetException {
+            throws TimeoutException, InvalidExpressionException {
 
         EvaluationThread evalThread = new EvaluationThread(objectReference, evaluationThread, method, args, ObjectReference.INVOKE_SINGLE_THREADED);
         synchronized (evalThread) {
@@ -1456,7 +1459,8 @@ public class Evaluator implements JavaParserVisitor {
               evalThread.interrupt();
               throw new TimeoutException();
             }
-            if (evalThread.getException() != null) throw new InvocationTargetException(evalThread.getException());
+            if (evalThread.getException() != null) 
+                throw new InvalidExpressionException (evalThread.getException ());
             return evalThread.getValue();
         }
     }
@@ -1487,11 +1491,12 @@ public class Evaluator implements JavaParserVisitor {
 
         public void run() {
             synchronized (this) {
-                try {
-                    value = obj.invokeMethod(evaluationThread, method, args, options);
-                } catch (Throwable e) {
-                    exception = e;
-                }
+//                try {
+                    //value = obj.invokeMethod(evaluationThread, method, args, options);
+                    exception = new UnsupportedOperationException ();
+//                } catch (Throwable e) {
+//                    exception = e;
+//                }
                 finished = true;
                 notify();
             }

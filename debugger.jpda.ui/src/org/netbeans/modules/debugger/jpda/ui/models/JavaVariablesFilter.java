@@ -110,6 +110,13 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
                 System.out.println (e.getLocalizedMessage ());
                 e.printStackTrace ();
             } catch (InvalidExpressionException e) {
+                if ( (e.getTargetException () != null) &&
+                     (e.getTargetException () instanceof 
+                       UnsupportedOperationException)
+                ) {
+                    // PATCH for J2ME. see 45543
+                    return original.getChildren (variable, from, to);
+                }
                 System.out.println (e.getLocalizedMessage ());
                 e.printStackTrace ();
             }
@@ -128,6 +135,13 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
                     new Variable [0]
                 )).getFields (from, to);
             } catch (InvalidExpressionException e) {
+                if ( (e.getTargetException () != null) &&
+                     (e.getTargetException () instanceof 
+                       UnsupportedOperationException)
+                ) {
+                    // PATCH for J2ME. see 45543
+                    return original.getChildren (variable, from, to);
+                }
                 System.out.println(e.getLocalizedMessage ());
                 e.printStackTrace ();
             } catch (NoSuchMethodException e) {
@@ -152,6 +166,13 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
                     new Variable [0]
                 )).getFields (from, to);
             } catch (InvalidExpressionException e) {
+                if ( (e.getTargetException () != null) &&
+                     (e.getTargetException () instanceof 
+                       UnsupportedOperationException)
+                ) {
+                    // PATCH for J2ME. see 45543
+                    return original.getChildren (variable, from, to);
+                }
                 System.out.println(e.getLocalizedMessage ());
                 e.printStackTrace ();
             } catch (NoSuchMethodException e) {
@@ -216,6 +237,13 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
             try {
                 return ov.getToStringValue ();
             } catch (InvalidExpressionException ex) {
+                if ( (ex.getTargetException () != null) &&
+                     (ex.getTargetException () instanceof 
+                       UnsupportedOperationException)
+                ) {
+                    // PATCH for J2ME. see 45543
+                    return original.getValueAt (variable, columnID);
+                }
                 return ex.getLocalizedMessage ();
             }
         }
@@ -226,6 +254,13 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
             try {
                 return ov.getToStringValue ();
             } catch (InvalidExpressionException ex) {
+                if ( (ex.getTargetException () != null) &&
+                     (ex.getTargetException () instanceof 
+                       UnsupportedOperationException)
+                ) {
+                    // PATCH for J2ME. see 45543
+                    return original.getValueAt (variable, columnID);
+                }
                 return ex.getLocalizedMessage ();
             }
         }

@@ -111,6 +111,17 @@ public class TreeModelNode extends AbstractNode {
         }
     }
     
+    public String getName () {
+        try {
+            return model.getDisplayName (object);
+        } catch (UnknownTypeException e) {
+            e.printStackTrace ();
+            return object.toString ();
+        } catch (ComputingException e) {
+            return "Computing";
+        }
+    }
+    
     public String getDisplayName () {
         try {
             return model.getDisplayName (object);

@@ -17,13 +17,25 @@ import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
+import java.util.ArrayList;
+import java.util.Enumeration;
+
+
 import java.util.HashMap;
+import java.util.Iterator;
+
+import java.util.List;
+
 import java.util.Map;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.table.TableColumn;
+import javax.swing.tree.TreeNode;
+
+import javax.swing.tree.TreePath;
+
 
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.ColumnModel;
@@ -35,9 +47,15 @@ import org.openide.explorer.view.BeanTreeView;
 
 import org.openide.explorer.view.NodeTableModel;
 import org.openide.explorer.view.TreeTableView;
+import org.openide.explorer.view.Visualizer;
+
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.nodes.NodeNotFoundException;
+
+import org.openide.nodes.NodeOp;
+
 import org.openide.nodes.PropertySupport;
 import org.openide.windows.TopComponent;
 
@@ -50,9 +68,10 @@ import org.openide.windows.TopComponent;
 public class TreeTable extends JPanel implements 
 ExplorerManager.Provider, PropertyChangeListener {
     
-    private ExplorerManager explorerManager;
-    private MyTreeTable treeTable;
-    private Node.Property[] columns;
+    private ExplorerManager     explorerManager;
+    private MyTreeTable         treeTable;
+    private Node.Property[]     columns;
+    private List                expandedPaths = new ArrayList ();
     
     
     public TreeTable () {
@@ -68,6 +87,10 @@ ExplorerManager.Provider, PropertyChangeListener {
     }
     
     public void setModel (CompoundModel model) {
+        
+        List ep = treeTable.getExpandedPaths ();
+        if (ep.size () > 0) expandedPaths = ep;
+        
         saveWidths ();
         
         // 1) no model => set empty root node
@@ -99,6 +122,7 @@ ExplorerManager.Provider, PropertyChangeListener {
         getExplorerManager ().setRootContext (
             new TreeModelRoot (model).getRootNode ()
         );
+        treeTable.expandNodes (expandedPaths);
     }
     
     public ExplorerManager getExplorerManager () {
@@ -205,6 +229,56 @@ ExplorerManager.Provider, PropertyChangeListener {
         
         JTable getTable () {
             return treeTable;
+        }
+                        
+        public List getExpandedPaths () { 
+            List result = new ArrayList ();
+            ExplorerManager em = ExplorerManager.find (this);
+            TreeNode rtn = Visualizer.findVisualizer (
+                em.getRootContext ()
+            );
+            TreePath tp = new TreePath (rtn); // Get the root
+            
+            Enumeration exPaths = tree.getExpandedDescendants (tp); 
+            if (exPaths == null) return result;
+            for (;exPaths.hasMoreElements ();) {
+                TreePath ep = (TreePath) exPaths.nextElement ();
+                Node en = Visualizer.findNode (ep.getLastPathComponent ());
+                String[] path = NodeOp.createPath (en, em.getRootContext ());
+                result.add (path);
+            }
+            System.out.println("");
+            return result;
+        }
+        
+        /** Expands all the paths, when exists
+         */
+        public void expandNodes (List exPaths) {
+            for (Iterator it = exPaths.iterator (); it.hasNext ();) {
+                String[] sp = (String[]) it.next ();
+                TreePath tp = stringPath2TreePath (sp);
+                if (tp != null) showPath (tp);
+            }
+        }
+        
+        /** Converts path of strings to TreePath if exists null otherwise
+         */
+        private TreePath stringPath2TreePath (String[] sp) {
+            ExplorerManager em = ExplorerManager.find (this);
+            try {
+                Node n = NodeOp.findPath (em.getRootContext (), sp); 
+                
+                // Create the tree path
+                TreeNode tns[] = new TreeNode [sp.length + 1];
+                
+                for (int i = sp.length; i >= 0; i--) {
+                    tns[i] = Visualizer.findVisualizer (n);
+                    n = n.getParentNode ();
+                }                
+                return new TreePath (tns);
+            } catch (NodeNotFoundException e) {
+                return null;
+            }
         }
     }
 }

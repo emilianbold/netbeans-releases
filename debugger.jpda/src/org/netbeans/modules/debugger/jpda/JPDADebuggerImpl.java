@@ -468,8 +468,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
             }
         } catch (org.netbeans.modules.debugger.jpda.expr.Evaluator.TimeoutException e) {
             throw new InvalidExpressionException(e.getMessage());
-        } catch (InvocationTargetException e) {
-            throw new InvalidExpressionException(e.getMessage());
         }
     }
 
