@@ -18,12 +18,19 @@ import java.io.*;
 import java.net.InetAddress;
 import java.util.*;
 
+import java.awt.*;
+import java.awt.event.*;
+import java.text.MessageFormat;
+import javax.swing.*;
+import javax.swing.event.*;
+
 import org.openide.*;
 import org.openide.cookies.*;
 import org.openide.filesystems.*;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
+import org.openide.util.HelpCtx;
 
 /** Opens files when requested. Main functionality.
 *
@@ -296,9 +303,98 @@ class OpenFile extends Object {
   * @param mountPackage 0th elt will contain the name of the package (possibly empty, not null) the file will be in
   */
   private static void askForMountPoint (File f, int pkgLevel, File[] dirToMount, String[] mountPackage) {
-    // [PENDING]
+    final JPanel panel = new JPanel ();
+    panel.setLayout (new BorderLayout ());
+    
+    JTextArea textArea = new JTextArea ();
+    textArea.setBackground (Color.lightGray);
+    textArea.setFont (new Font ("SansSerif", Font.PLAIN, 11));
+    textArea.setText (SettingsBeanInfo.getString (pkgLevel == -1 ? "TXT_whereMountNoSuggest" : "TXT_whereMountSuggest", f.getName ()));
+    textArea.setEditable (false);
+    textArea.setLineWrap (true);
+    textArea.setWrapStyleWord (true);
+    panel.add (textArea, BorderLayout.NORTH);
+    
+    Vector dirs = new Vector (); // list of mountable dir names; Vector<File>
+    final Vector pkgs = new Vector (); // list of resulting package names; Vector<String>
+    String pkg = "";
+    for (File dir = f.getParentFile (); dir != null; dir = dir.getParentFile ()) {
+      dirs.add (dir);
+      pkgs.add (pkg);
+      if (! pkg.equals ("")) pkg = "." + pkg;
+      pkg = dir.getName () + pkg;
+    }
+    final JList list = new JList (dirs);
+    list.setVisibleRowCount (5);
+    list.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
+    if (pkgLevel != -1) list.setSelectedIndex (pkgLevel);
+    panel.add (new JScrollPane (list), BorderLayout.CENTER);
+    
+    final JLabel label = new JLabel ();
+    label.setFont (new Font ("Monospaced", Font.PLAIN, 12));
+    updateLabelFromList (label, list, pkgs);
+    panel.add (label, BorderLayout.SOUTH);
+    panel.setPreferredSize (new Dimension (450, 300));
+    
+    WizardDescriptor wiz = new WizardDescriptor (new WizardDescriptor.Panel[] { new WizardDescriptor.Panel () {
+      private final Set listeners = new HashSet (); // Set<ChangeListener>
+      private final WizardDescriptor.Panel _this = this; // WizardDescriptor.Panel.this is a syntax error?!
+      private final ListSelectionListener listener = new ListSelectionListener () {
+        public void valueChanged (ListSelectionEvent ev) {
+          updateLabelFromList (label, list, pkgs);
+          ChangeEvent myEv = new ChangeEvent (_this);
+          Iterator it = listeners.iterator ();
+          while (it.hasNext ())
+            ((ChangeListener) it.next ()).stateChanged (myEv);
+        }
+      };
+      {
+        list.addListSelectionListener (listener);
+      }
+      protected void finalize () throws Exception {
+        list.removeListSelectionListener (listener);
+      }
+      public Component getComponent () {
+        return panel;
+      }
+      public HelpCtx getHelp () {
+        return new HelpCtx (OpenFile.class.getName () + ".dialog"); // [PENDING] add to map
+      }
+      public boolean isValid () {
+        return list.getSelectedIndex () != -1;
+      }
+      public void readSettings (Object settings) {}
+      public void storeSettings (Object settings) {}
+      public void addChangeListener (ChangeListener l) {
+        listeners.add (l);
+      }
+      public void removeChangeListener (ChangeListener l) {
+        listeners.remove (l);
+      }
+    }});
+    wiz.setTitleFormat (new MessageFormat (SettingsBeanInfo.getString ("LBL_wizTitle")));
+    Object result = TopManager.getDefault ().notify (wiz);
+    
+    int idx = list.getSelectedIndex ();
+    if (idx != -1 && ! result.equals (NotifyDescriptor.CANCEL_OPTION)) {
+      dirToMount[0] = (File) dirs.elementAt (idx);
+      mountPackage[0] = (String) pkgs.elementAt (idx);
+    }
   }
 
+  private static void updateLabelFromList (JLabel label, JList list, Vector pkgs) {
+    int idx = list.getSelectedIndex ();
+    if (idx == -1) {
+      label.setText (" ");
+    } else {
+      String pkg = (String) pkgs.elementAt (idx);
+      if (pkg.equals (""))
+        label.setText (SettingsBeanInfo.getString ("LBL_packageWillBeDefault"));
+      else
+        label.setText (SettingsBeanInfo.getString ("LBL_packageWillBe", pkg));
+    }
+  }
+  
   /** Test run of askForMountPoint. */
   public static void main (String[] ign) {
     JFileChooser chooser = new JFileChooser ();
