@@ -76,14 +76,18 @@ implements HelpCtx.Provider, PropertyChangeListener {
         jButtonActivate.setText(NbBundle.getMessage(DocumentsDlg.class, "LBL_Activate"));
         jButtonClose.setText(NbBundle.getMessage(DocumentsDlg.class, "LBL_CloseDocuments"));
         jButtonSave.setText(NbBundle.getMessage(DocumentsDlg.class, "LBL_SaveDocuments"));
-        jLabel1.setText(NbBundle.getMessage(DocumentsDlg.class, "LBL_Documents"));
-        jLabel2.setText(NbBundle.getMessage(DocumentsDlg.class, "LBL_Description"));
+        explorerLabel.setText(NbBundle.getMessage(DocumentsDlg.class, "LBL_Documents"));
+        descriptionLabel.setText(NbBundle.getMessage(DocumentsDlg.class, "LBL_Description"));
         // Mnemonics
         jButtonActivate.setMnemonic(NbBundle.getMessage(DocumentsDlg.class, "LBL_Activate_Mnemonic").charAt(0));
         jButtonClose.setMnemonic(NbBundle.getMessage(DocumentsDlg.class, "LBL_CloseDocuments_Mnemonic").charAt(0));
         jButtonSave.setMnemonic(NbBundle.getMessage(DocumentsDlg.class, "LBL_SaveDocuments_Mnemonic").charAt(0));
-        jLabel1.setDisplayedMnemonic(NbBundle.getMessage(DocumentsDlg.class, "LBL_Documents_Mnemonic").charAt(0));
-        jLabel2.setDisplayedMnemonic(NbBundle.getMessage(DocumentsDlg.class, "LBL_Description_Mnemonic").charAt(0));
+        explorerLabel.setDisplayedMnemonic(NbBundle.getMessage(DocumentsDlg.class, "LBL_Documents_Mnemonic").charAt(0));
+        descriptionLabel.setDisplayedMnemonic(NbBundle.getMessage(DocumentsDlg.class, "LBL_Description_Mnemonic").charAt(0));
+        
+        // Set labels for.
+        explorerLabel.setLabelFor(listView);
+        descriptionLabel.setLabelFor(descriptionArea);
     }
     
 
@@ -108,11 +112,11 @@ implements HelpCtx.Provider, PropertyChangeListener {
     private void initComponents() {//GEN-BEGIN:initComponents
         java.awt.GridBagConstraints gridBagConstraints;
 
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jPanel1 = createListView();
+        explorerLabel = new javax.swing.JLabel();
+        descriptionLabel = new javax.swing.JLabel();
+        explorerPanel = createListView();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
+        descriptionArea = new javax.swing.JTextArea();
         jButtonActivate = new javax.swing.JButton();
         jButtonClose = new javax.swing.JButton();
         jButtonSave = new javax.swing.JButton();
@@ -123,7 +127,7 @@ implements HelpCtx.Provider, PropertyChangeListener {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
-        add(jLabel1, gridBagConstraints);
+        add(explorerLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -131,7 +135,7 @@ implements HelpCtx.Provider, PropertyChangeListener {
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
-        add(jLabel2, gridBagConstraints);
+        add(descriptionLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -141,11 +145,11 @@ implements HelpCtx.Provider, PropertyChangeListener {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
-        add(jPanel1, gridBagConstraints);
+        add(explorerPanel, gridBagConstraints);
 
         jScrollPane1.setPreferredSize(new java.awt.Dimension(3, 60));
-        jTextArea1.setEditable(false);
-        jScrollPane1.setViewportView(jTextArea1);
+        descriptionArea.setEditable(false);
+        jScrollPane1.setViewportView(descriptionArea);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -329,13 +333,13 @@ implements HelpCtx.Provider, PropertyChangeListener {
         // Defined size in #36907.
         panel.setPreferredSize(new Dimension(540, 400));
         panel.setLayout(new BorderLayout());
-        ListView view = new ListView();
+        listView = new ListView();
         // proper border for the view
-        view.setBorder((Border)UIManager.get("Nb.ScrollPane.border")); // NOI18N
-        view.setPopupAllowed(false);
+        listView.setBorder((Border)UIManager.get("Nb.ScrollPane.border")); // NOI18N
+        listView.setPopupAllowed(false);
         //view.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         explorer = new ExplorerPanel();
-        explorer.add(view);
+        explorer.add(listView);
         panel.add(explorer, BorderLayout.CENTER);
         
         return panel;
@@ -406,23 +410,24 @@ implements HelpCtx.Provider, PropertyChangeListener {
             
             // Set description.
             if(selNodes != null && selNodes.length == 1) {
-                jTextArea1.setText(((TopComponentNode)selNodes[0]).getDescription());
+                descriptionArea.setText(((TopComponentNode)selNodes[0]).getDescription());
             } else {
-                jTextArea1.setText(null);
+                descriptionArea.setText(null);
             }
         }
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextArea descriptionArea;
+    private javax.swing.JLabel descriptionLabel;
+    private javax.swing.JLabel explorerLabel;
+    private javax.swing.JPanel explorerPanel;
     private javax.swing.JButton jButtonActivate;
     private javax.swing.JButton jButtonClose;
     private javax.swing.JButton jButtonSave;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextArea jTextArea1;
     // End of variables declaration//GEN-END:variables
+    private ListView listView;
     
     /** Used to display list of TopComponent in ListView. */
     private static class TopComponentNode extends AbstractNode
