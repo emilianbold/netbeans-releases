@@ -1095,41 +1095,45 @@
         url="web/create_jsp/jsp_create.html" /> <!-- TEMP -->
 
 <!-- XML Module CSH -->
-<mapID target="org.netbeans.modules.xml.tools.actions.ValidateAction" url="xml/validatexml.html" />
-<mapID target="org.netbeans.modules.xml.tools.doclet.DocletAction" url="xml/documentdtd.html" />
-<mapID target="org.openide.loaders.XMLDataObject"           url="xml/xmlnodes.html" />
-<mapID target="org.netbeans.modules.xml.core.XMLDataObject" url="xml/xmlnodes.html" />
-<mapID target="org.netbeans.modules.xml.core.DTDDataObject" url="xml/editviewdtd.html" />
-<mapID target="org.netbeans.modules.css.actions.CopyStyleAction$HTML" url="xml/xmlnodes.html" />
-<mapID target="org.netbeans.modules.xsl.XSLDataObject" url="xml/xslnodes.html" />
-<mapID target="org.netbeans.modules.xml.schema.SchemaObject" url="xml/schemanodes.html" />
-<mapID target="org.netbeans.modules.xml.core.EntityDataObject" url="xml/parsedentities.html" />
+<mapID target="org.netbeans.modules.xml.tools.actions.ValidateAction" url="xml/xml_validate.html" />
+<mapID target="org.netbeans.modules.xml.tools.doclet.DocletAction" url="xml/dtd/document.html" />
+
+<!--<mapID target="org.openide.loaders.XMLDataObject"           url="xml/xmlnodes.html" />-->
+<!--<mapID target="org.netbeans.modules.xml.core.XMLDataObject" url="xml/xmlnodes.html" />-->
+<!--<mapID target="org.netbeans.modules.xml.core.DTDDataObject" url="xml/editviewdtd.html" />-->
+<!--<mapID target="org.netbeans.modules.css.actions.CopyStyleAction$HTML" url="xml/xmlnodes.html" />-->
+<!--<mapID target="org.netbeans.modules.xsl.XSLDataObject" url="xml/xslnodes.html" />-->
+<!--<mapID target="org.netbeans.modules.xml.schema.SchemaObject" url="xml/schemanodes.html" />-->
+<!--<mapID target="org.netbeans.modules.xml.core.EntityDataObject" url="xml/parsedentities.html" />-->
 <!--TODO redo wizard pages in new style guidelines -->
-<mapID target="org.netbeans.modules.xml.core.wizard.DocumentPanel"   url="xml/createxml.html" />
-<mapID target="org.netbeans.modules.xml.core.wizard.DTDPanel"   url="xml/createxml.html" />
-<mapID target="org.netbeans.modules.xml.core.wizard.SchemaPanel"   url="xml/createxml.html" />
-<mapID target="org.netbeans.modules.css.actions.CopyStyleAction$XML" url="xml/xmlnodes.html" />
-<mapID target="org.netbeans.modules.xml.core.actions.CollectDTDAction" url="xml/xmlnodes.html" />
-<mapID target="org.netbeans.modules.xml.core.actions.CollectXMLAction" url="xml/xmlnodes.html" />
-<mapID target="org.netbeans.modules.xml.tools.actions.CheckAction" url="xml/xmlnodes.html" />
-<mapID target="org.netbeans.modules.xml.tools.actions.CheckDTDAction" url="xml/xmlnodes.html" />
-<mapID target="org.netbeans.modules.xml.tools.generator.XMLGenerateAction$GenerateDOMScannerAction" url="xml/xmlnodes.html" />
-<mapID target="org.netbeans.modules.xml.tools.generator.XMLGenerateAction$GenerateDTDAction" url="xml/xmlnodes.html" />
-<mapID target="org.netbeans.modules.xml.tools.generator.XMLGenerateAction$GenerateDocumentHandlerAction" url="xml/xmlnodes.html" />
-<mapID target="org.netbeans.modules.xsl.actions.TransformAction" url="xml/xsl_transform.html" />
+
+<mapID target="org.netbeans.modules.xml.core.wizard.DocumentPanel"   url="xml/xml_create.html" />
+<mapID target="org.netbeans.modules.xml.core.wizard.DTDPanel"   url="xml/xml_create.html" />
+<mapID target="org.netbeans.modules.xml.core.wizard.SchemaPanel"   url="xml/xml_create.html" />
+
+<!--<mapID target="org.netbeans.modules.css.actions.CopyStyleAction$XML" url="xml/xmlnodes.html" />-->
+<!--<mapID target="org.netbeans.modules.xml.core.actions.CollectDTDAction" url="xml/xmlnodes.html" />-->
+<!--<mapID target="org.netbeans.modules.xml.core.actions.CollectXMLAction" url="xml/xmlnodes.html" />-->
+<!--<mapID target="org.netbeans.modules.xml.tools.actions.CheckAction" url="xml/xmlnodes.html" />-->
+<!--<mapID target="org.netbeans.modules.xml.tools.actions.CheckDTDAction" url="xml/xmlnodes.html" />-->
+<!--<mapID target="org.netbeans.modules.xml.tools.generator.XMLGenerateAction$GenerateDOMScannerAction" url="xml/xmlnodes.html" />-->
+<!--<mapID target="org.netbeans.modules.xml.tools.generator.XMLGenerateAction$GenerateDTDAction" url="xml/xmlnodes.html" />-->
+<!--<mapID target="org.netbeans.modules.xml.tools.generator.XMLGenerateAction$GenerateDocumentHandlerAction" url="xml/xmlnodes.html" />-->
+
+<mapID target="org.netbeans.modules.xsl.actions.TransformAction" url="xml/xsl/xsl_transform.html" />
 <!--TODO redo wizard pages in new style guidelines -->
-<mapID target="org.netbeans.modules.xml.tools.generator.SAXGeneratorVersionPanel"     url="xml/generatesax.html" />    
-<mapID target="org.netbeans.modules.xml.tools.generator.SAXGeneratorMethodPanel"     url="xml/generatesax.html" />    
-<mapID target="org.netbeans.modules.xml.tools.generator.SAXGeneratorParsletPanel"     url="xml/generatesax.html" />    
-<mapID target="org.netbeans.modules.xml.tools.generator.SAXGeneratorFilePanel"     url="xml/generatesax.html" />    
-<mapID target="org.netbeans.modules.xml.catalog.CatalogMounterPanel"     url="xml/mountcatalog.html" />    
-<mapID target="org.netbeans.modules.xml.core.settings.CoreSettings"     url="xml/xmlsettings.html" />    
-<mapID target="org.netbeans.modules.xml.core.settings"     url="xml/xmlsettings.html" />    
-<mapID target="org.netbeans.modules.xml.catalog.CatalogRootNode" url="xml/xmlcatalogs.html" />
-<mapID target="org.netbeans.modules.xml.catalog.CatalogNode"     url="xml/xmlcatalogs.html" />    
-<mapID target="org.netbeans.modules.xml.catalog.CatalogEntryNode"     url="xml/xmlcatalogs.html" />
-<mapID target="org.netbeans.modules.xml.text.syntax.XMLOptions"     url="xml/xmleditor-props.html" />
-<mapID target="org.netbeans.modules.css.text.syntax.CSSEditorOptions"     url="xml/xmleditor-props.html" />
-<mapID target="org.netbeans.modules.xml.text.syntax.DTDOptions"     url="xml/xmleditor-props.html" />
+<mapID target="org.netbeans.modules.xml.tools.generator.SAXGeneratorVersionPanel"     url="xml/sax/sax_generate.html" />    
+<mapID target="org.netbeans.modules.xml.tools.generator.SAXGeneratorMethodPanel"     url="xml/sax/sax_generate.html" />    
+<mapID target="org.netbeans.modules.xml.tools.generator.SAXGeneratorParsletPanel"     url="xml/sax/sax_generate.html" />    
+<mapID target="org.netbeans.modules.xml.tools.generator.SAXGeneratorFilePanel"     url="xml/sax/sax_generate.html" />    
+<mapID target="org.netbeans.modules.xml.catalog.CatalogMounterPanel"     url="xml/catalog/xmlcatalog_mount.html" />    
+<mapID target="org.netbeans.modules.xml.core.settings.CoreSettings"     url="xml/xml_settings.html" />    
+<mapID target="org.netbeans.modules.xml.core.settings"     url="xml/xml_settings.html" />    
+<mapID target="org.netbeans.modules.xml.catalog.CatalogRootNode" url="xml/catalog/xmlcatalog_mount.html" />
+<mapID target="org.netbeans.modules.xml.catalog.CatalogNode"     url="xml/catalog/xmlcatalog_mount.html" />    
+<mapID target="org.netbeans.modules.xml.catalog.CatalogEntryNode"     url="xml/catalog/xmlcatalog_mount.html" />
+<mapID target="org.netbeans.modules.xml.text.syntax.XMLOptions"     url="xml/xml_editor-props.html" />
+<mapID target="org.netbeans.modules.css.text.syntax.CSSEditorOptions"     url="xml/xml_editor-props.html" />
+<mapID target="org.netbeans.modules.xml.text.syntax.DTDOptions"     url="xml/xml_editor-props.html" />
 
 </map>
