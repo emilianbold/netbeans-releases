@@ -8,35 +8,23 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="Menu">
         <folder name="Help">
             <!-- Replace normal Contents item with our own which shows UG home page. -->
             <file name="master-help.xml_hidden"/>
-            <file name="org-netbeans-modules-usersguide-master.xml">
-                <![CDATA[<?xml version="1.0"?>
-<!DOCTYPE helpctx PUBLIC
-          "-//NetBeans//DTD Help Context 1.0//EN"
-          "http://www.netbeans.org/dtds/helpcontext-1_0.dtd">
-<helpctx id="ide.welcome" showmaster="true"/>
-]]>
+            <file name="org-netbeans-modules-usersguide-master.xml" url="master.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.usersguide.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/usersguide/help.gif"/>
             </file>
             <attr name="org-netbeans-modules-usersguide-master.xml/HelpShortcuts" boolvalue="true"/>
             <folder name="HelpShortcuts">
                 <!-- Shortcut to main page (shows only UG help set). -->
-                <file name="org-netbeans-modules-usersguide-mainpage.xml">
-                    <![CDATA[<?xml version="1.0"?>
-<!DOCTYPE helpctx PUBLIC
-          "-//NetBeans//DTD Help Context 1.0//EN"
-          "http://www.netbeans.org/dtds/helpcontext-1_0.dtd">
-<helpctx id="ide.welcome"/>
-]]>
+                <file name="org-netbeans-modules-usersguide-mainpage.xml" url="mainpage.xml">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.usersguide.Bundle"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/usersguide/helpset.gif"/>
                 </file>
@@ -55,13 +43,7 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     <folder name="Actions">
         <folder name="Help">
-            <file name="org-netbeans-modules-usersguide-mainpage.xml">
-                <![CDATA[<?xml version="1.0"?>
-<!DOCTYPE helpctx PUBLIC
-          "-//NetBeans//DTD Help Context 1.0//EN"
-          "http://www.netbeans.org/dtds/helpcontext-1_0.dtd">
-<helpctx id="ide.welcome"/>
-]]>
+            <file name="org-netbeans-modules-usersguide-mainpage.xml" url="mainpage.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.usersguide.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/usersguide/helpset.gif"/>
             </file>
@@ -70,14 +52,7 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Services">
         <folder name="JavaHelp">
             <!-- Now the help set. -->
-            <file name="org-netbeans-modules-usersguide-helpset.xml">
-                <![CDATA[<?xml version="1.0"?>
-<!DOCTYPE helpsetref PUBLIC
-          "-//NetBeans//DTD JavaHelp Help Set Reference 1.0//EN"
-          "http://www.netbeans.org/dtds/helpsetref-1_0.dtd">
-<helpsetref url="nbdocs:/org/netbeans/modules/usersguide/ide.hs"/>
-]]>
-            </file>
+            <file name="org-netbeans-modules-usersguide-helpset.xml" url="helpset.xml"/>
             <attr name="org-netbeans-modules-usersguide-helpset.xml/org-netbeans-modules-usersguide-above-regular.txt" boolvalue="true"/>
             <file name="org-netbeans-modules-usersguide-above-regular.txt">
                 <![CDATA[Only a marker: above regular helpsets, below IDE help.]]>
@@ -99,5 +74,88 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.usersguide.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/localFS.gif"/>
         </file>
+    </folder>
+    <!-- Cf. #19623: -->
+    <folder name="TipsOfTheDay">
+        <!-- Don't forget to keep ordering constraints intact; and update layer_ja.xml too: -->
+        <file name="get-started.html" url="tips/get-started.html"/>
+        <attr name="get-started.html/update-center.html" boolvalue="true"/>
+        <file name="update-center.html" url="tips/update-center.html"/>
+        <attr name="update-center.html/add-jar-zip.html" boolvalue="true"/>
+        <file name="add-jar-zip.html" url="tips/add-jar-zip.html"/>
+        <attr name="add-jar-zip.html/deflt-comp-exec-dbg.html" boolvalue="true"/>
+        <file name="deflt-comp-exec-dbg.html" url="tips/deflt-comp-exec-dbg.html"/>
+        <attr name="deflt-comp-exec-dbg.html/javahelp-search.html" boolvalue="true"/>
+        <file name="javahelp-search.html" url="tips/javahelp-search.html"/>
+        <attr name="javahelp-search.html/jump-to-source.html" boolvalue="true"/>
+        <file name="jump-to-source.html" url="tips/jump-to-source.html"/>
+        <attr name="jump-to-source.html/code-completion.html" boolvalue="true"/>
+        <file name="code-completion.html" url="tips/code-completion.html"/>
+        <attr name="code-completion.html/jump-to-source-from-explorer.html" boolvalue="true"/>
+        <file name="jump-to-source-from-explorer.html" url="tips/jump-to-source-from-explorer.html"/>
+        <attr name="jump-to-source-from-explorer.html/context-menus.html" boolvalue="true"/>
+        <file name="context-menus.html" url="tips/context-menus.html"/>
+        <attr name="context-menus.html/word-match.html" boolvalue="true"/>
+        <file name="word-match.html" url="tips/word-match.html"/>
+        <attr name="word-match.html/set-executor.html" boolvalue="true"/>
+        <file name="set-executor.html" url="tips/set-executor.html"/>
+        <attr name="set-executor.html/cust-menus-toolbars.html" boolvalue="true"/>
+        <file name="cust-menus-toolbars.html" url="tips/cust-menus-toolbars.html"/>
+        <attr name="cust-menus-toolbars.html/terminate-process.html" boolvalue="true"/>
+        <file name="terminate-process.html" url="tips/terminate-process.html"/>
+        <attr name="terminate-process.html/browse-javadoc.html" boolvalue="true"/>
+        <file name="browse-javadoc.html" url="tips/browse-javadoc.html"/>
+        <attr name="browse-javadoc.html/mdi.html" boolvalue="true"/>
+        <file name="mdi.html" url="tips/mdi.html"/>
+        <attr name="mdi.html/hide-filesystem.html" boolvalue="true"/>
+        <file name="hide-filesystem.html" url="tips/hide-filesystem.html"/>
+        <attr name="hide-filesystem.html/vcs-groups.html" boolvalue="true"/>
+        <file name="vcs-groups.html" url="tips/vcs-groups.html"/>
+        <attr name="vcs-groups.html/editor-bookmark.html" boolvalue="true"/>
+        <file name="editor-bookmark.html" url="tips/editor-bookmark.html"/>
+        <attr name="editor-bookmark.html/cust-workspace-switch.html" boolvalue="true"/>
+        <file name="cust-workspace-switch.html" url="tips/cust-workspace-switch.html"/>
+        <attr name="cust-workspace-switch.html/abbrevs.html" boolvalue="true"/>
+        <file name="abbrevs.html" url="tips/abbrevs.html"/>
+        <attr name="abbrevs.html/select-compiler.html" boolvalue="true"/>
+        <file name="select-compiler.html" url="tips/select-compiler.html"/>
+        <attr name="select-compiler.html/generate-javadoc-auto-comment.html" boolvalue="true"/>
+        <file name="generate-javadoc-auto-comment.html" url="tips/generate-javadoc-auto-comment.html"/>
+        <attr name="generate-javadoc-auto-comment.html/editor-home-end.html" boolvalue="true"/>
+        <file name="editor-home-end.html" url="tips/editor-home-end.html"/>
+        <attr name="editor-home-end.html/editor-select-word-line.html" boolvalue="true"/>
+        <file name="editor-select-word-line.html" url="tips/editor-select-word-line.html"/>
+        <attr name="editor-select-word-line.html/startup-classes.html" boolvalue="true"/>
+        <file name="startup-classes.html" url="tips/startup-classes.html"/>
+        <attr name="startup-classes.html/editor-scrolling-shortcuts.html" boolvalue="true"/>
+        <file name="editor-scrolling-shortcuts.html" url="tips/editor-scrolling-shortcuts.html"/>
+        <attr name="editor-scrolling-shortcuts.html/tab-switch-shortcuts.html" boolvalue="true"/>
+        <file name="tab-switch-shortcuts.html" url="tips/tab-switch-shortcuts.html"/>
+        <attr name="tab-switch-shortcuts.html/dock-view.html" boolvalue="true"/>
+        <file name="dock-view.html" url="tips/dock-view.html"/>
+        <attr name="dock-view.html/sort-properties.html" boolvalue="true"/>
+        <file name="sort-properties.html" url="tips/sort-properties.html"/>
+        <attr name="sort-properties.html/copy-paste-methods-fields.html" boolvalue="true"/>
+        <file name="copy-paste-methods-fields.html" url="tips/copy-paste-methods-fields.html"/>
+        <attr name="copy-paste-methods-fields.html/comment-out-code.html" boolvalue="true"/>
+        <file name="comment-out-code.html" url="tips/comment-out-code.html"/>
+        <attr name="comment-out-code.html/web-bookmarks.html" boolvalue="true"/>
+        <file name="web-bookmarks.html" url="tips/web-bookmarks.html"/>
+        <attr name="web-bookmarks.html/vcs-diff.html" boolvalue="true"/>
+        <file name="vcs-diff.html" url="tips/vcs-diff.html"/>
+        <attr name="vcs-diff.html/javac-command-params.html" boolvalue="true"/>
+        <file name="javac-command-params.html" url="tips/javac-command-params.html"/>
+        <attr name="javac-command-params.html/create-menu-items-from-classes.html" boolvalue="true"/>
+        <file name="create-menu-items-from-classes.html" url="tips/create-menu-items-from-classes.html"/>
+        <attr name="create-menu-items-from-classes.html/editor-indentation.html" boolvalue="true"/>
+        <file name="editor-indentation.html" url="tips/editor-indentation.html"/>
+        <attr name="editor-indentation.html/open-file.html" boolvalue="true"/>
+        <file name="open-file.html" url="tips/open-file.html"/>
+        <attr name="open-file.html/local-vars.html" boolvalue="true"/>
+        <file name="local-vars.html" url="tips/local-vars.html"/>
+        <attr name="local-vars.html/explore-from-here.html" boolvalue="true"/>
+        <file name="explore-from-here.html" url="tips/explore-from-here.html"/>
+        <attr name="explore-from-here.html/edit-html.html" boolvalue="true"/>
+        <file name="edit-html.html" url="tips/edit-html.html"/>
     </folder>
 </filesystem>

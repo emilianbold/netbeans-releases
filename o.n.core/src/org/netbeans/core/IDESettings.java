@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -93,7 +93,7 @@ public class IDESettings extends SystemOption {
     // properties
 
     private static boolean showTips = true;
-    private static int lastTip = 1;
+    private static int lastTip = -1;
     private static boolean confirmDelete = true;
     private static int modulesSortMode = MODULES_SORT_CATEGORY;
 
