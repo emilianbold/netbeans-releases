@@ -22,8 +22,10 @@ import org.netbeans.modules.form.layoutsupport.*;
 
 /**
  * This class replicates the instances from meta-components hierarchy,
- * allowing additional updates. It also maintains mapping from meta
- * components to clones, and viceversa.
+ * allowing additional updates. It also maintains mapping from meta components
+ * to clones, and viceversa.
+ * Note: if some updates are done on replicated components, revalidate() and
+ * repaint() should be called on the top component then.
  *
  * @author Tomas Pavek
  */
@@ -334,7 +336,7 @@ public class VisualReplicator {
         if (targetComp == null)
             return;
 
-        // Scrollbar hack - to change some properties of Scrollbar we
+        // Scrollbar hack - to change some properties of AWT Scrollbar we
         // must create a new instance of Scrollbar (peer must be recreated)
         // [maybe this should be done for all AWT components]
         if (targetComp instanceof java.awt.Scrollbar) {
@@ -381,10 +383,8 @@ public class VisualReplicator {
 
             writeMethod.invoke(targetComp, new Object[] { value });
 
-            // JScrollPane hack - for scrollbars policy properties
-            // [this should be better handled by layout support in the future]
-            if (targetComp instanceof JScrollPane)
-                ((JScrollPane)targetComp).updateUI();
+            if (targetComp instanceof Component)
+                ((Component)targetComp).invalidate();
         }
         catch (Exception ex) {
             if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
