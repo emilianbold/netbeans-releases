@@ -24,6 +24,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.openide.awt.Mnemonics;
+
 import org.openide.awt.MouseUtils;
 import org.openide.cookies.SourceCookie;
 import org.openide.filesystems.FileObject;
@@ -87,7 +89,7 @@ public class MainClassChooser extends JPanel {
             public void mouseExited (MouseEvent e) {}
         });
         if (dialogSubtitle != null) {
-            jLabel1.setText (dialogSubtitle);
+            Mnemonics.setLocalizedText (jLabel1, dialogSubtitle);
         }
     }
     
@@ -192,15 +194,15 @@ public class MainClassChooser extends JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         setPreferredSize(new java.awt.Dimension(400, 270));
-        jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("CTL_AvaialableMainClasses"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("CTL_AvaialableMainClasses"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 2, 12);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 2, 12);
         add(jLabel1, gridBagConstraints);
 
         jScrollPane1.setMinimumSize(new java.awt.Dimension(100, 200));
@@ -212,10 +214,10 @@ public class MainClassChooser extends JPanel {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
         add(jScrollPane1, gridBagConstraints);
 
     }//GEN-END:initComponents

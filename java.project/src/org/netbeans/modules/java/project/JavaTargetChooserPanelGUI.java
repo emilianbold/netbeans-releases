@@ -36,6 +36,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
+import org.openide.awt.Mnemonics;
+
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Children;
@@ -73,8 +75,8 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         if ( isPackage ) {
             packageComboBox.setVisible( false );
             packageLabel.setVisible( false );
-            documentNameLabel.setText( NbBundle.getMessage( JavaTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_PackageName_Label" ) ); // NOI18N
-            fileLabel.setText( NbBundle.getMessage( JavaTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_CreatedFolder_Label" ) ); // NOI18N
+            Mnemonics.setLocalizedText (fileLabel, NbBundle.getMessage (JavaTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_CreatedFolder_Label")); // NOI18N
+            Mnemonics.setLocalizedText (documentNameLabel, NbBundle.getMessage (JavaTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_PackageName_Label")); // NOI18N
         }        
         else {
             packageComboBox.getEditor().addActionListener( this );
@@ -253,6 +255,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
+        documentNameLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/project/Bundle").getString("MNE_JavaTargetChooserPanelGUI_ClassName_Label").charAt(0));
         documentNameLabel.setText(org.openide.util.NbBundle.getMessage(JavaTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_ClassName_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -272,6 +275,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 24, 0);
         add(jPanel1, gridBagConstraints);
 
+        jLabel5.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/project/Bundle").getString("MNE_JavaTargetChooserPanelGUI_jLabel5").charAt(0));
         jLabel5.setText(org.openide.util.NbBundle.getMessage(JavaTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_jLabel5"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -285,6 +289,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
         add(projectTextField, gridBagConstraints);
 
+        jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/project/Bundle").getString("MNE_JavaTargetChooserPanelGUI_jLabel1").charAt(0));
         jLabel1.setText(org.openide.util.NbBundle.getMessage(JavaTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_jLabel1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -298,6 +303,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
         add(rootComboBox, gridBagConstraints);
 
+        packageLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/project/Bundle").getString("MNE_JavaTargetChooserPanelGUI_jLabel2").charAt(0));
         packageLabel.setText(org.openide.util.NbBundle.getMessage(JavaTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_jLabel2"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -312,6 +318,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
         add(packageComboBox, gridBagConstraints);
 
+        fileLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/project/Bundle").getString("MNE_JavaTargetChooserPanelGUI_CreatedFile_Label").charAt(0));
         fileLabel.setText(org.openide.util.NbBundle.getMessage(JavaTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_CreatedFile_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;

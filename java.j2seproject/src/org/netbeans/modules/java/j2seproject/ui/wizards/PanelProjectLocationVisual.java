@@ -64,7 +64,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         projectNameTextField = new javax.swing.JTextField();
         projectLocationLabel = new javax.swing.JLabel();
         projectLocationTextField = new javax.swing.JTextField();
-        Button = new javax.swing.JButton();
+        browseButton = new javax.swing.JButton();
         createdFolderLabel = new javax.swing.JLabel();
         createdFolderTextField = new javax.swing.JTextField();
 
@@ -102,9 +102,10 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
         add(projectLocationTextField, gridBagConstraints);
 
-        Button.setText(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_BrowseLocation_Button"));
-        Button.setActionCommand("BROWSE");
-        Button.addActionListener(new java.awt.event.ActionListener() {
+        browseButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("MNE_NWP1_BrowseLocation_Button").charAt(0));
+        browseButton.setText(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_BrowseLocation_Button"));
+        browseButton.setActionCommand("BROWSE");
+        browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseLocationAction(evt);
             }
@@ -114,7 +115,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 0);
-        add(Button, gridBagConstraints);
+        add(browseButton, gridBagConstraints);
 
         createdFolderLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("LBL_NWP1_CreatedProjectFolder_LablelMnemonic").charAt(0));
         createdFolderLabel.setLabelFor(createdFolderTextField);
@@ -230,7 +231,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton Button;
+    private javax.swing.JButton browseButton;
     private javax.swing.JLabel createdFolderLabel;
     private javax.swing.JTextField createdFolderTextField;
     private javax.swing.JLabel projectLocationLabel;

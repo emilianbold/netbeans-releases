@@ -244,8 +244,8 @@ public class PanelSourceFolders extends SettingsPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 0);
         add(sources, gridBagConstraints);
 
+        jButton1.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("MNE_Browse_Source").charAt(0));
         jButton1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("LBL_NWP1_BrowseLocation_Button"));
-        jButton1.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("MNE_Browse").charAt(0));
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseSourceRoot(evt);
@@ -273,8 +273,8 @@ public class PanelSourceFolders extends SettingsPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 6, 0, 0);
         add(tests, gridBagConstraints);
 
+        jButton2.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("MNE_Browse_Test").charAt(0));
         jButton2.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("LBL_NWP1_BrowseLocation_Button"));
-        jButton2.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("MNE_Browse").charAt(0));
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseTestRoot(evt);
@@ -328,8 +328,8 @@ public class PanelSourceFolders extends SettingsPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 0);
         jPanel2.add(projectLocation, gridBagConstraints);
 
+        jButton3.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("MNE_Browse_Location").charAt(0));
         jButton3.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("LBL_NWP1_BrowseLocation_Button"));
-        jButton3.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("MNE_Browse").charAt(0));
         jButton3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseProjectLocation(evt);
