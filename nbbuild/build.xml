@@ -76,13 +76,20 @@ workspaceswitcher
     <taskdef name="nbmerge" classname="org.netbeans.nbbuild.NbMerge" classpath="nbantext.jar"/>
     <taskdef name="configmods" classname="org.netbeans.nbbuild.ConfigureModules" classpath="nbantext.jar"/>
     <taskdef name="makeupdatedesc" classname="org.netbeans.nbbuild.MakeUpdateDesc" classpath="nbantext.jar"/>
-    <taskdef  name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="nbantext.jar"/>
+    <taskdef name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="nbantext.jar"/>
+    <taskdef name="check" classname="org.netbeans.nbbuild.CheckValue" classpath="nbantext.jar"/>
 
     <!-- Read the user property file at first -->
     <property file="user.build.properties"/>
 
     <!-- Read standard property file -->
     <property file="build.properties"/>
+
+    <!-- Check if we want to build platform -->
+    <check property="moduleconfig" 
+           is="platform" 
+	   set="fixedmodules" 
+	   tovalue="core,openide,core/javahelp,core/compiler,core/execution,core/ui,core/windows"/>
 
     <!-- Overridable. Note: need not necessarily be a number at all): -->
     <property name="buildnum" value="dev-${buildnumber}"/>
