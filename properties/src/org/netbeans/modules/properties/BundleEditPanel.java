@@ -463,9 +463,9 @@ public class BundleEditPanel extends JPanel {
             DialogDescriptor.OK_CANCEL_OPTION,
             DialogDescriptor.OK_OPTION,
             new ActionListener() {
-                public void actionPerformed(ActionEvent evt) {
+                public void actionPerformed(ActionEvent evt2) {
                     // OK pressed
-                    if(evt.getSource() == DialogDescriptor.OK_OPTION) {
+                    if(evt2.getSource() == DialogDescriptor.OK_OPTION) {
                         dialog[0].setVisible(false);
                         dialog[0].dispose();
                         
@@ -496,7 +496,7 @@ public class BundleEditPanel extends JPanel {
                         }
                         
                     // Cancel pressed
-                    } else if (evt.getSource() == DialogDescriptor.CANCEL_OPTION) {
+                    } else if (evt2.getSource() == DialogDescriptor.CANCEL_OPTION) {
                         dialog[0].setVisible(false);
                         dialog[0].dispose();
                     }
