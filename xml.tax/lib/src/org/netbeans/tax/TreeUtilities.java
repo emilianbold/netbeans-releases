@@ -1631,10 +1631,10 @@ public final class TreeUtilities {
         String java = (String) EncodingUtil.getIANA2JavaMap ().get (iana.toUpperCase ());
         return java == null ? iana : java;
     }
-    
-    
+
+
     /**
-     *
+     //!!! this code is copy pasted to xml.core.lib.Convertors!
      */
     static class EncodingUtil {
         

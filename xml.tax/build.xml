@@ -38,6 +38,7 @@ Microsystems, Inc. All Rights Reserved.
         <property file="${xml_root}/spec-vers.properties"/>
         <filter token="API_SPEC_VERS_SUBST" value="${xml.api.specification.version}"/>
         <filter token="TAX_SPEC_VERS_SUBST" value="${xml.tax.specification.version}"/>
+        <filter token="CORE_SPEC_VERS_SUBST" value="${xml.core.specification.version}"/>
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     </target>
 
@@ -51,6 +52,7 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="${nbroot}/openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
                 <pathelement location="${lib_root}/src"/>
                 <pathelement location="${api_root}/src/"/>
+                <pathelement location="../core/src/"/>
             </classpath>
         </javac>
 

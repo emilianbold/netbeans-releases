@@ -13,6 +13,9 @@
 package org.netbeans.modules.xml.tax.util;
 
 import java.io.CharConversionException;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.ByteArrayOutputStream;
 import javax.swing.SwingUtilities;
 
 import org.openide.xml.XMLUtil;
@@ -20,6 +23,8 @@ import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 
 import org.netbeans.tax.*;
+import org.netbeans.tax.io.TreeStreamResult;
+import org.netbeans.tax.io.TreeWriter;
 
 /**
  *
@@ -106,6 +111,53 @@ public final class TAXUtil {
      */
     public static void notifyTreeException (TreeException exc) {
         notifyWarning (exc.getMessage());
+    }
+
+    /*
+     *
+     */
+    public static String treeToString(TreeDocumentRoot doc) throws IOException {
+
+        StringWriter out = new StringWriter();
+        TreeStreamResult result = new TreeStreamResult(out);
+        TreeWriter writer = result.getWriter(doc);
+
+        try {
+            writer.writeDocument();
+            return out.toString();
+        } catch (TreeException ex) {
+            throw new IOException("Cannot read tree " +  ex.getMessage()); // NOI18N
+
+        } finally {
+            try {
+                out.close();
+            } catch (IOException ioex) {
+                // do not know
+            }
+        }
+
+    }
+
+    public static byte[] treeToByteArray(TreeDocumentRoot doc) throws IOException {
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream(1024 * 8);
+        TreeStreamResult result = new TreeStreamResult(out);
+        TreeWriter writer = result.getWriter(doc);
+
+        try {
+            writer.writeDocument();
+            byte[] array = out.toByteArray();
+            return array;
+        } catch (TreeException ex) {
+            throw new IOException("Cannot read tree " +  ex.getMessage()); // NOI18N
+
+        } finally {
+            try {
+                out.close();
+            } catch (IOException ioex) {
+                // do not know
+            }
+        }
     }
 
 }

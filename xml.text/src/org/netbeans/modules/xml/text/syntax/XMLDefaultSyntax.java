@@ -12,10 +12,6 @@
  */
 package org.netbeans.modules.xml.text.syntax;
 
-import java.util.Vector;
-
-import org.netbeans.tax.UnicodeClasses;
-
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.TokenID;
 

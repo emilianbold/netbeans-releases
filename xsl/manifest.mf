@@ -7,7 +7,6 @@ OpenIDE-Module-Public-Packages: org.netbeans.modules.xsl.api.**
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 3.17
 OpenIDE-Module-Module-Dependencies: 
  org.netbeans.api.xml/1 > @API_SPEC_VERS_SUBST@,
- org.netbeans.modules.xml.tax/1 = @BUILD_NUMBER_SUBST@,
  org.netbeans.modules.xml.core/1 = @BUILD_NUMBER_SUBST@,
  org.netbeans.libs.jaxp/1,
  org.netbeans.libs.xalan/1 > 1.1,

@@ -41,6 +41,7 @@ Microsystems, Inc. All Rights Reserved.
         <filter   token="API_SPEC_VERS_SUBST" value="${xml.api.specification.version}"/>
         <filter token="TOOLS_SPEC_VERS_SUBST" value="${xml.tools.specification.version}"/>
         <filter  token="CORE_SPEC_VERS_SUBST" value="${xml.core.specification.version}"/>
+        <filter token="TAX_SPEC_VERS_SUBST" value="${xml.tax.specification.version}"/>
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     </target>
 
@@ -56,6 +57,7 @@ Microsystems, Inc. All Rights Reserved.
                 </fileset>
                 <pathelement location="${core_root}/src/"/>
                 <pathelement location="${tax_lib_root}/src/"/>
+                <pathelement location="${tax_root}/src/"/>
                 <pathelement location="${api_root}/src/"/>
             </classpath>
         </javac>

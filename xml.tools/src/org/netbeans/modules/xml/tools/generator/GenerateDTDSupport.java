@@ -23,6 +23,7 @@ import org.openide.util.UserCancelException;
 import org.netbeans.tax.*;
 import org.netbeans.modules.xml.core.XMLDataObject;
 import org.netbeans.modules.xml.core.lib.GuiUtil;
+import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
 
 /**
  * GenerateDTDSupport class generate a DTD by guessing it from
@@ -64,7 +65,15 @@ public class GenerateDTDSupport implements XMLGenerateCookie {
 //          }
 
         try {
-	    TreeDocument treeDoc = (TreeDocument)((XMLDataObject)DO).getDocumentRoot();
+            TreeDocumentRoot result;
+
+            TreeEditorCookie cake = (TreeEditorCookie) ((XMLDataObject)DO).getCookie(TreeEditorCookie.class);
+            if (cake != null) {
+                result = cake.openDocumentRoot();
+            } else {
+                throw new TreeException("XMLDataObject:INTERNAL ERROR"); // NOI18N
+            }
+            TreeDocument treeDoc = (TreeDocument)result;
             if (treeDoc == null)
                 return;
 
@@ -130,7 +139,7 @@ public class GenerateDTDSupport implements XMLGenerateCookie {
                     document.setDocumentType (newDoctype);
 //    		    ((XMLDataNode)DO.getNodeDelegate()).setDocumentType (newDoctype);
 		} catch (TreeException exc) {
-		    GuiUtil.notifyTreeException (exc);
+		    GuiUtil.notifyWarning (exc.getLocalizedMessage());
 		}
 	    }
 	}

@@ -12,16 +12,10 @@
  */
 package org.netbeans.modules.xml.schema.actions;
 
-import java.util.*;
-
-import org.openide.*;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CookieAction;
-import org.openide.loaders.*;
 
-import org.netbeans.tax.*;
-import org.netbeans.modules.xml.core.*;
 import org.netbeans.modules.xml.core.actions.*;
 
 import org.netbeans.api.xml.cookies.*;

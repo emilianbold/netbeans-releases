@@ -58,7 +58,6 @@ Microsystems, Inc. All Rights Reserved.
                     <include name="xml-apis*.jar"/>
                 </fileset>
                 <pathelement location="${core_root}/src/"/>
-                <pathelement location="${tax_lib_root}/src/"/>
                 <pathelement location="${api_root}/src/"/>
                 <!--Servlet API-->
                 <pathelement location="${nbroot}/httpserver/external/servlet-2.2.jar"/>

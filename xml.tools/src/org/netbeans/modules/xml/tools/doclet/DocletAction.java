@@ -30,6 +30,7 @@ import org.netbeans.tax.*;
 import org.netbeans.modules.xml.core.*;
 import org.netbeans.modules.xml.core.actions.CollectDTDAction;
 import org.netbeans.modules.xml.tools.generator.*;
+import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
 
 /**
  * Creates a documentation upon a standalone DTD. Stores it into html.
@@ -72,8 +73,16 @@ public final class DocletAction extends CookieAction implements CollectDTDAction
         ErrorManager emgr = TopManager.getDefault().getErrorManager();
         
         try {
-            
-            final TreeDTD treeDTD = (TreeDTD) dtdo.getDocumentRoot();
+
+            TreeDocumentRoot result;
+
+            TreeEditorCookie cake = (TreeEditorCookie) dtdo.getCookie(TreeEditorCookie.class);
+            if (cake != null) {
+                result = cake.openDocumentRoot();
+            } else {
+                throw new TreeException("DTDDataObject:INTERNAL ERROR"); // NOI18N
+            }
+            final TreeDTD treeDTD = (TreeDTD) result;
 
             final DTDDoclet doclet = new DTDDoclet();
 

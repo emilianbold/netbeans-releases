@@ -21,7 +21,7 @@ import java.lang.reflect.Constructor;
 import java.net.URL;
 import junit.framework.*;
 import org.netbeans.junit.*;
-import org.netbeans.modules.xml.core.tree.ParserLoader;
+import org.netbeans.modules.xml.tax.parser.ParserLoader;
 import org.w3c.dom.*;
 import org.xml.sax.*;
 import org.netbeans.tax.*;

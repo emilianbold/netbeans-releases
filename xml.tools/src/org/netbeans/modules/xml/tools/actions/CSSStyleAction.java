@@ -32,6 +32,7 @@ import org.netbeans.modules.xml.core.DTDDataObject;
 import org.netbeans.modules.xml.core.lib.GuiUtil;
 import org.netbeans.modules.xml.tools.generator.SelectFileDialog;
 import org.netbeans.modules.xml.core.actions.CollectDTDAction;
+import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
 /**
  * Creates a CSS draft upon a standalone DTD. Stores it into css file.
  * It does work only with standalone DTD (it is feature).
@@ -73,8 +74,16 @@ public final class CSSStyleAction extends CookieAction implements CollectDTDActi
         ErrorManager emgr = TopManager.getDefault().getErrorManager();
             
         try {
-        
-            TreeDTD treeDTD = (TreeDTD) dtdo.getDocumentRoot();
+
+            TreeDocumentRoot result;
+
+            TreeEditorCookie cake = (TreeEditorCookie) dtdo.getCookie(TreeEditorCookie.class);
+            if (cake != null) {
+                result = cake.openDocumentRoot();
+            } else {
+                throw new TreeException("DTDDataObject:INTERNAL ERROR"); // NOI18N
+            }
+            TreeDTD treeDTD = (TreeDTD) result;
 
             Iterator it = treeDTD.getElementDeclarations().iterator();
 

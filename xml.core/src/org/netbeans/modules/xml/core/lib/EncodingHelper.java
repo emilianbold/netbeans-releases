@@ -15,8 +15,6 @@ package org.netbeans.modules.xml.core.lib;
 import java.io.*;
 import javax.swing.text.*;
 
-import org.netbeans.tax.TreeUtilities;
-
 /**
  * XML uses inband encoding detection - this class obtains it.
  * 
@@ -59,7 +57,7 @@ public class EncodingHelper extends Object {
             enc = detectDeclaredEncoding(bytes, enc);
             if (enc == null) return null;
             
-            return TreeUtilities.iana2java (enc);            
+            return Convertors.iana2java (enc);
         } finally {
             in.reset();
         }

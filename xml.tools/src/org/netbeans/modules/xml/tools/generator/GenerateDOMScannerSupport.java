@@ -29,6 +29,7 @@ import org.netbeans.tax.*;
 import org.netbeans.tax.decl.*;
 import org.netbeans.modules.xml.core.DTDDataObject;
 import org.netbeans.modules.xml.core.lib.GuiUtil;
+import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
 
 public class GenerateDOMScannerSupport implements XMLGenerateCookie {
     
@@ -111,7 +112,15 @@ public class GenerateDOMScannerSupport implements XMLGenerateCookie {
 
     private TreeDTDRoot getDTD () throws IOException, TreeException {
 	if (dtd == null) {
-	    dtd = (TreeDTDRoot)((DTDDataObject)DO).getDocumentRoot();
+        TreeDocumentRoot result;
+
+        TreeEditorCookie cake = (TreeEditorCookie) ((DTDDataObject)DO).getCookie(TreeEditorCookie.class);
+        if (cake != null) {
+            result = cake.openDocumentRoot();
+        } else {
+            throw new TreeException("DTDDataObject:INTERNAL ERROR"); // NOI18N
+        }
+        dtd = (TreeDTDRoot)result;
 	}
         return dtd;
     }
