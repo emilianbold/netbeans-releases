@@ -316,7 +316,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	    // This File object must have write permissions
             if (!(dirFile.canWrite())) {
                 dialogMsg = msgPrefix + " "
-		+ resolveString("$L(org.netbeans.installer.Bundle,LocationPanel.directoryNoWritePermissionMessage)");
+		+ resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryNoWritePermissionMessage)");
                 msgDialog = new MessageDialog(parent, dialogMsg, dialogTitle, okString);
                 msgDialog.setVisible(true);
                 return false;
@@ -335,7 +335,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 			}
 		    } catch (Exception e) {
 			dialogMsg = msgPrefix + " "
-		        + resolveString("$L(org.netbeans.installer.Bundle,LocationPanel.directoryNoWritePermissionMessage)");
+		        + resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryNoWritePermissionMessage)");
 			msgDialog = new MessageDialog(parent, dialogMsg, dialogTitle, okString);
 			msgDialog.setVisible(true);
 			return false;
@@ -349,7 +349,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 			}		    
 		    } catch (Exception e) {
 			dialogMsg = msgPrefix + " "
-		        + resolveString("$L(org.netbeans.installer.Bundle,LocationPanel.directoryNoWritePermissionMessage)");
+		        + resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryNoWritePermissionMessage)");
 			msgDialog = new MessageDialog(parent, dialogMsg, dialogTitle, okString);
 			msgDialog.setVisible(true);
 			return false;
