@@ -19,6 +19,7 @@ import java.io.File;
 import java.util.Enumeration;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.JFileChooser;
+import org.netbeans.modules.utilities.Manager;
 import org.openide.DialogDisplayer;
 
 import org.openide.NotifyDescriptor;
@@ -158,17 +159,24 @@ public class OpenFileAction extends CallableSystemAction {
      * and opens the selected files.
      */
     public void performAction() {
-        JFileChooser chooser = prepareFileChooser();
-        File[] files;
-        try {
-            files = chooseFilesToOpen(chooser);
-        } catch (UserCancelException ex) {
+        if (!Manager.actionActivated(this)) {
             return;
         }
-        for (int i = 0; i < files.length; i++) {
-            OpenFile.getDefault().open(files[i].getPath());
+        try {
+            JFileChooser chooser = prepareFileChooser();
+            File[] files;
+            try {
+                files = chooseFilesToOpen(chooser);
+            } catch (UserCancelException ex) {
+                return;
+            }
+            for (int i = 0; i < files.length; i++) {
+                OpenFile.getDefault().open(files[i].getPath());
+            }
+            currDir = chooser.getCurrentDirectory();
+        } finally {
+            Manager.actionFinished(this);
         }
-        currDir = chooser.getCurrentDirectory();
     }
     
 
