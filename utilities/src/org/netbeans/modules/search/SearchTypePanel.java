@@ -59,7 +59,8 @@ import org.openidex.search.SearchType;
  */
 public final class SearchTypePanel extends JPanel
                                    implements PropertyChangeListener,
-                                              ActionListener {
+                                              ActionListener,
+                                              DialogLifetime {
 
     /** Name of customized property. */
     public static final String PROP_CUSTOMIZED = "customized"; // NOI18N
@@ -256,6 +257,18 @@ public final class SearchTypePanel extends JPanel
                     setCustomized (true);
                 }
             }
+        }
+    }
+        
+    public void onOk() {
+        if (customizer instanceof DialogLifetime) {
+            ((DialogLifetime)customizer).onOk();            
+        }
+    }
+    
+    public void onCancel() {
+        if (customizer instanceof DialogLifetime) {
+            ((DialogLifetime)customizer).onCancel();            
         }
     }
     

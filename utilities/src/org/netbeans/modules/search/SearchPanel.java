@@ -294,7 +294,14 @@ public final class SearchPanel extends JPanel
             SearchTypePanel panel = (SearchTypePanel) it.next();
             panel.removePropertyChangeListener(this);
         }
-
+        
+        int selectedIndex = tabbedPane.getSelectedIndex();
+        if (selectedIndex >= 0) {
+            SearchTypePanel panel = getSearchTypePanel(selectedIndex);
+            if (returnStatus == RET_OK) panel.onOk();
+            else panel.onCancel();
+        }
+                          
         this.returnStatus = returnStatus;
 
         dialog.setVisible(false);
