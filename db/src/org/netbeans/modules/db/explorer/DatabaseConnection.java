@@ -19,6 +19,8 @@ import java.beans.PropertyChangeListener;
 import java.lang.String;
 import java.util.Properties;
 import com.netbeans.ddl.*;
+import org.openide.TopManager;
+import java.lang.reflect.*;
 
 /** 
 * Connection information
@@ -178,8 +180,19 @@ public class DatabaseConnection extends Object implements DBConnection
 		dbprops.put("password", pwd);
 		
 		try {
-			Class.forName(drv);	
-			return DriverManager.getConnection(db, dbprops);
+
+			ClassLoader syscl = TopManager.getDefault().currentClassLoader();
+			Class cl = syscl.loadClass("java.sql.DriverManager");
+			cl = syscl.loadClass(drv);
+			DriverManager.registerDriver((Driver)cl.newInstance());
+
+			Method gmet = DriverManager.class.getDeclaredMethod("getConnection", new Class[] {String.class, Properties.class, ClassLoader.class});
+			gmet.setAccessible(true);
+			gmet.invoke(DriverManager.class, new Object[] {db, dbprops, syscl});		
+
+	    	Connection connection = (Connection)gmet.invoke(DriverManager.class, new Object[] {db, dbprops, syscl});	
+			return connection;
+
 		} catch (Exception e) {
 			throw new DDLException("can't establish a connection to "+db+" using "+drv+"("+e+")");
 		}
