@@ -191,15 +191,7 @@ public class PatchAction extends NodeAction {
             else file = findChild(fo, fileDiffs[i].getFileName());//fo.getFileObject(fileDiffs[i].getFileName());
             if (file == null) {
                 String path = null;
-                // XXX should probably be using FileUtil.getFileDisplayName here
-                File ff = FileUtil.toFile(fo);
-                if (ff != null) {
-                    path = ff.getAbsolutePath() + File.separator;
-                }
-                if (path == null) {
-                    path = fo.getPath() + '/';
-                }
-                notFoundFileNames.add(path + fileDiffs[i].getFileName());
+                notFoundFileNames.add(FileUtil.getFileDisplayName(fo) + '/' + fileDiffs[i].getFileName());
             } else {
                 FileObject backup = createFileBackup(file);
                 if (applyDiffsTo(fileDiffs[i].getDifferences(), file)) {

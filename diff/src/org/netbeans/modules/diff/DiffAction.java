@@ -117,26 +117,9 @@ public class DiffAction extends NodeAction {
         }
         Component tp;
         try {
-            String path1 = null;
-            String path2 = null;
-            // XXX should be using FileUtil.getFileDisplayName here
-            File file1 = FileUtil.toFile(fo1);
-            if (file1 != null) {
-                path1 = file1.getAbsolutePath();
-            }
-            if (path1 == null) {
-                path1 = fo1.getPath();
-            }
-            File file2 = FileUtil.toFile(fo2);
-            if (file2 != null) {
-                path2 = file2.getAbsolutePath();
-            }
-            if (path2 == null) {
-                path2 = fo2.getPath();
-            }
-            tp = diff.createDiff(fo1.getNameExt(), path1,
+            tp = diff.createDiff(fo1.getNameExt(), FileUtil.getFileDisplayName(fo1),
                                  new InputStreamReader(fo1.getInputStream()),
-                                 fo2.getNameExt(), path2,
+                                 fo2.getNameExt(), FileUtil.getFileDisplayName(fo2),
                                  new InputStreamReader(fo2.getInputStream()), fo1.getMIMEType());
         } catch (IOException ioex) {
             ErrorManager.getDefault().notify(ioex);
