@@ -33,7 +33,7 @@
       <tocitem text="Creating Dependencies Between Projects" target="comp_dependencies" />
       <tocitem text="Managing the Classpath" target="comp_classpath" />
       <tocitem text="Adding Javadoc to a Project" target="javadoc.add" />
-      <tocitem text="Setting the Target JDK" target="tbd" />
+      <tocitem text="Setting the Target JDK" target="proj_jdk" />
       <tocitem text="Customizing the IDE-Generated Ant Script" target="tbd" />
     </tocitem>
     <tocitem text="Freeform Projects" target="tbd" >
@@ -50,8 +50,6 @@
 
   <tocitem text="Working with Files" >
     <tocitem text="Viewing the Physical Layout of Project Files" target="tbd" />
-    <tocitem text="Creating a New File" target="tbd" />
-    <tocitem text="Creating a Java Package" target="tbd" />
     <tocitem text="Searching Files" target="search" />
     <tocitem text="Specifying an Extension for a Text File" target="objects.specify-extension" />
     <tocitem text="Adding a File Extension to an Object Type" target="objects.file-extensions" />
@@ -599,15 +597,6 @@
       <tocitem text="Setting Keyboard Shortcuts for the Source Editor" target="editing.settingkeybdshorts"/>
       <tocitem text="Window Navigation Shortcuts" target="shortcuts.window" />
       <tocitem text="Help Viewer Shortcuts" target="accessibility.jhshortcuts" />
-    </tocitem>
-
-    <tocitem text="Switching JDK Versions">
-      <tocitem text="About" target="java.jdks.jump"/>
-      <tocitem text="Choosing the IDE's Default JDK Version" target="java.jdks.default" />
-      <tocitem text="Target Java Platform Configuration" target="java.jdks.checklist" />
-      <tocitem text="Cross-Compiling Between Java Platforms" target="compile.crosscompile"/>
-      <tocitem text="Working With Assertions" target="java.assertions" />
-      <tocitem text="Setting the JDK for an Ant Script" target="ant.target-jdk" />
     </tocitem>
 
     <tocitem text="Managing Modules" >

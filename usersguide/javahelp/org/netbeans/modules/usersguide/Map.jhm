@@ -33,6 +33,7 @@
 <mapID target="proj_quickref" url="project/proj_quickref.html" />
 <mapID target="proj_templates" url="project/proj_templates.html" />
 <mapID target="proj_stand_about" url="project/proj_stand_about.html" />
+<mapID target="proj_jdk" url="project/proj_jdk.html" />
 <mapID target="proj_free_about" url="project/proj_free_about.html" />
 <mapID target="proj_free_add" url="project/proj_free_add.html" />
 <mapID target="proj_free_classpath" url="project/proj_free_classpath.html" />
@@ -151,10 +152,6 @@
 <mapID target="java.override" url="java/override.html" />
 <mapID target="java.java_sources" url="java/java_sources.html" />
 <mapID target="java.encoding" url="java/encoding.html" />
-<mapID target="java.assertions" url="java/assertions.html" />
-<mapID target="java.jdks.checklist" url="java/jdks_checklist.html" />
-<mapID target="java.jdks.default" url="java/jdks_default.html" />
-<mapID target="java.jdks.jump" url="java/jdks_jump.html" />
 
 <mapID target="comp_classpath" url="compile/comp_classpath.html" />
 <mapID target="comp_dependencies" url="compile/comp_dependencies.html" />
@@ -466,6 +463,34 @@
 
 <!--CSH-->
 
+<!-- Projects window -->
+<mapID target="ProjectTab_Projects" url="pending.html" />
+
+<!-- New Wizard tempaltes page -->
+<mapID target="org.netbeans.modules.project.ui.TemplatesPanel" url="pending.html" />
+
+<!-- New J2SE lib, J2SE app, and J2SE project from existing sources -->
+<mapID target="org.netbeans.modules.java.j2seproject.ui.wizards.PanelConfigureProject_APP" url="pending.html" />
+<mapID target="org.netbeans.modules.java.j2seproject.ui.wizards.PanelConfigureProject_LIB" url="pending.html" />
+<mapID target="org.netbeans.modules.java.j2seproject.ui.wizards.PanelConfigureProject_EXT" url="pending.html" />
+
+<!-- Freeform J2SE Project wizards -->
+<mapID target="org.netbeans.modules.ant.freeform.ui.BasicProjectInfoWizardPanel" url="pending.html" />
+<mapID target="org.netbeans.modules.ant.freeform.ui.TargetMappingWizardPanel" url="pending.html" />
+<mapID target="org.netbeans.modules.ant.freeform.ui.SourceFoldersWizardPanel" url="pending.html" />
+<mapID target="org.netbeans.modules.ant.freeform.ui.ClasspathWizardPanel" url="pending.html" />
+
+<!-- Freeform J2SE Project Properties dialog-->
+<mapID target="org.netbeans.modules.ant.freeform.ui.GeneralPanel" url="pending.html" />
+
+<!-- Standard J2SE Project Properties dialog-->
+<mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerGeneral" url="pending.html" />
+
+<!-- Add Libraries dialog box (from Project Properties -> Compiling Classes-->
+<mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.LibrariesChooser" url="pending.html" />
+
+<!-- Library Manager -->
+<mapID target="org.netbeans.modules.project.libraries.ui.LibrariesCustomizer" url="pending.html" />
 
 <mapID target="org.netbeans.modules.i18n.InsertI18nStringAction" url="internationalize/manualinsert.html" />
 
