@@ -238,6 +238,7 @@ public final class PropertiesDataObject extends MultiDataObject {
 
 /*
  * <<Log>>
+ *  15   Gandalf   1.14        6/23/99  Petr Jiricka    
  *  14   Gandalf   1.13        6/22/99  Ian Formanek    employed DEFAULT_HELP
  *  13   Gandalf   1.12        6/11/99  Petr Jiricka    
  *  12   Gandalf   1.11        6/9/99   Ian Formanek    ---- Package Change To 

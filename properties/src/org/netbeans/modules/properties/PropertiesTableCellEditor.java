@@ -50,6 +50,7 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
       
       public void setValue(Object x) {
         // PENDING - due to a compiler error explicitly do "super" code instead of calling super
+        //System.out.println("SetValue " +x.toString());
         this.value = x;
         //super.setValue(x);
         PropertiesTableModel.StringPair sp = (PropertiesTableModel.StringPair)x;
@@ -73,6 +74,7 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
       public boolean startCellEditing(EventObject anEvent) {
         if(anEvent == null)
           getEditorComponent().requestFocus();
+        //System.out.println("Editing started");
         return true;
       }
       
@@ -107,7 +109,12 @@ System.out.println("comment : " + commentComponent.getText());
       } */
 
       public boolean stopCellEditing() {
+        //System.out.println("Editing stopped");
         return true;
+      }
+
+      public void cancelCellEditing() {
+        //System.out.println("Editing cancelled");
       }
     }
 

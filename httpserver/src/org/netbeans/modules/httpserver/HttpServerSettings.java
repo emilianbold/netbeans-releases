@@ -17,15 +17,20 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ResourceBundle;
+import java.util.HashSet;
+import java.util.StringTokenizer;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.text.MessageFormat;
 
 import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
 import org.openide.util.HttpServer;
 import org.openide.filesystems.FileObject;
+import org.openide.NotifyDescriptor;
+import org.openide.TopManager;
 
 /** Options for http server
 *
@@ -67,6 +72,9 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   
   /** mapping of classpath to URL */
   private static String classpathBaseURL = "/classpath/";
+                                        
+  /** addresses which have been granted access to the web server */
+  private static String grantedAddresses = "";
                                         
   /** Reflects whether the server is actually running, not the running property */
   static boolean running = false;
@@ -209,7 +217,18 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
     }
     firePropertyChange("classpathBaseURL", null, this.classpathBaseURL);
   }
-
+                           
+  /** Getter for grantedAddresses property */                                            
+  public String getGrantedAddresses() {
+    return grantedAddresses;
+  }
+                                              
+  /** Setter for grantedAccesses property */                                            
+  public void setGrantedAddresses(String grantedAddresses) {
+    this.grantedAddresses = grantedAddresses;
+    firePropertyChange("grantedAddresses", null, this.grantedAddresses);
+  }
+                                              
   /** setter for port */
   public void setPort(int p) {
     synchronized (HttpServerSettings.OPTIONS) {
@@ -287,13 +306,71 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   public URL getResourceRoot() throws MalformedURLException, UnknownHostException {
     setRunning(true);                                                           
     return new URL("http", getLocalHost(), getPort(), getClasspathBaseURL());
-  }
+  }           
     
-                                       
+  /** Requests access for address addr. If necessary asks the user. Returns true it the access 
+  * has been granted. */  
+  public boolean addGrantedAddress(InetAddress addr) {
+    if (getHost().equals(HttpServerSettings.ANYHOST))
+      return true;
+      
+    HashSet hs = getGrantedAddressesSet();
+    if (hs.contains(addr.getHostAddress()))
+      return true;
+    
+    // now ask the user
+    MessageFormat format = new MessageFormat(NbBundle.getBundle(HttpServerSettings.class).getString("MSG_AddAddress"));
+      String msg = format.format(new Object[] { addr.getHostAddress() });
+      NotifyDescriptor nd = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_OPTION);
+      Object ret = TopManager.getDefault().notify(nd);
+  
+      if (NotifyDescriptor.YES_OPTION.equals(ret)) {
+        appendAddressToGranted(addr.getHostAddress());
+        return true;
+      }
+      else
+        return false;
+  }     
+   
+  /** Appends the address to the list of addresses which have been granted access. */
+  private void appendAddressToGranted(String addr) {                                 
+    synchronized (HttpServerSettings.OPTIONS) {
+      String granted = getGrantedAddresses().trim();
+      if ((granted.length() > 0) && 
+          (granted.charAt(granted.length() - 1) != ';') &&
+          (granted.charAt(granted.length() - 1) != ','))
+        granted += ',';
+      granted += addr;
+      setGrantedAddresses(granted);
+    }
+  }
+                                 
+  /** Returns a list of addresses which have been granted access to the web server, 
+  * including the localhost. Addresses are represented as strings. */
+  HashSet getGrantedAddressesSet() {
+    HashSet addr = new HashSet();
+    try {
+      addr.add(InetAddress.getByName("localhost").getHostAddress());
+      addr.add(InetAddress.getLocalHost().getHostAddress());
+    }
+    catch (UnknownHostException e) {}
+    StringTokenizer st = new StringTokenizer(getGrantedAddresses(), ",;");
+    while (st.hasMoreTokens()) {
+      String ipa = st.nextToken();
+      ipa = ipa.trim();
+      try {
+        addr.add(InetAddress.getByName(ipa).getHostAddress());
+      }
+      catch (UnknownHostException e) {}  
+    }
+    return addr;
+  }
+  
 }
 
 /*
  * Log
+ *  10   Gandalf   1.9         6/23/99  Petr Jiricka    
  *  9    Gandalf   1.8         6/22/99  Petr Jiricka    
  *  8    Gandalf   1.7         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----

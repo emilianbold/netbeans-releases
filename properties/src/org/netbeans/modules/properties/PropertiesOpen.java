@@ -243,6 +243,7 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
       add (labelComment);
                                       
       textComment.setRows (2);
+      textComment.setLineWrap(true);
       c.fill = GridBagConstraints.HORIZONTAL;
       c.weightx = 1.0;         
       c.gridwidth = GridBagConstraints.REMAINDER; 
@@ -258,6 +259,7 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
       add (labelValue);
                                       
       textValue.setRows (2);
+      textValue.setLineWrap(true);
       c.fill = GridBagConstraints.HORIZONTAL;
       c.weightx = 1.0;         
       c.gridwidth = GridBagConstraints.REMAINDER; 
@@ -352,6 +354,7 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
         removeButton.setEnabled(true);
       }
     
+      //System.out.println("Selection changed");
       // fields at the bottom
       if (rowSelections.isSelectionEmpty() || columnSelections.isSelectionEmpty() ||
           rowSelections.getMinSelectionIndex()    != rowSelections.getMaxSelectionIndex() ||
@@ -362,6 +365,7 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
         }  
       }
       else {                         
+        //System.out.println("Selection ok " + rowSelections.getMinSelectionIndex() + "," +columnSelections.getMinSelectionIndex());
         if (!theTable.isEditing()) {
           PropertiesTableModel.StringPair sp = 
             (PropertiesTableModel.StringPair)theTable.getModel().getValueAt(rowSelections.getMinSelectionIndex(), 
@@ -369,16 +373,22 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
           textComment.setText(sp.getComment());
           textValue.setText(sp.getValue());
           
-          // edit the field
+/*          boolean edit = theTable.editCellAt(rowSelections.getMinSelectionIndex(), 
+                                             columnSelections.getMinSelectionIndex());*/
+        }
+
+        // the selection is ok - edit, if not already editing this field
+        if (theTable.getEditingRow()    != rowSelections.getMinSelectionIndex() || 
+            theTable.getEditingColumn() != columnSelections.getMinSelectionIndex()) {
+          //System.out.println("Editing invokelater-ing now");
           SwingUtilities.invokeLater(new Runnable() {
             public void run() {                                                       
+              //System.out.println("Calling editCellAt " + rowSelections.getMinSelectionIndex() + "," + columnSelections.getMinSelectionIndex());
               theTable.editCellAt(rowSelections.getMinSelectionIndex(), 
                                   columnSelections.getMinSelectionIndex());
             }
           });
-/*          boolean edit = theTable.editCellAt(rowSelections.getMinSelectionIndex(), 
-                                             columnSelections.getMinSelectionIndex());*/
-        }
+        }  
       }    
     }                                              
     

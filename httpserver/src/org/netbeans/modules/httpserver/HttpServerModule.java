@@ -81,8 +81,8 @@ public class HttpServerModule implements ModuleInstall {
             config = new NbServer(HttpServerSettings.OPTIONS);
             server = new NbHttpServer(config);
             HttpServerSettings.OPTIONS.runSuccess();
-            /*TopManager.getDefault ().getStdOut ().println(java.text.MessageFormat.format(NbBundle.getBundle(HttpServerModule.class).
-              getString("CTL_ServerStarted"), new Object[] {new Integer(HttpServerSettings.OPTIONS.getPort())}));*/
+            System.out.println(java.text.MessageFormat.format(NbBundle.getBundle(HttpServerModule.class).
+              getString("CTL_ServerStarted"), new Object[] {new Integer(HttpServerSettings.OPTIONS.getPort())}));
           } catch (Exception ex) {
             // couldn't start
             //ex.printStackTrace();
@@ -110,8 +110,8 @@ public class HttpServerModule implements ModuleInstall {
         serverThread.stop();
       }
       serverThread = null;
-      /*System.out.println(NbBundle.getBundle(HttpServerModule.class).
-        getString("CTL_ServerStopped"));*/
+      System.out.println(NbBundle.getBundle(HttpServerModule.class).
+        getString("CTL_ServerStopped"));
     }  
   }
 
@@ -120,6 +120,7 @@ public class HttpServerModule implements ModuleInstall {
 
 /*
  * Log
+ *  15   Gandalf   1.14        6/23/99  Petr Jiricka    
  *  14   Gandalf   1.13        6/22/99  Petr Jiricka    
  *  13   Gandalf   1.12        6/11/99  Jaroslav Tulach System.out commented
  *  12   Gandalf   1.11        6/9/99   Ian Formanek    ---- Package Change To 
