@@ -23,7 +23,7 @@ public class HelpAction extends Action {
 
     private static final String helpMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Help")
                                          + "|" 
-                                         + Bundle.getStringTrimmed("org.netbeans.modules.javahelp.resources.Bundle", "Menu/Help/master-help.xml");
+                                         + Bundle.getStringTrimmed("org.netbeans.modules.usersguide.Bundle", "Menu/Help/org-netbeans-modules-usersguide-master.xml");
     private static final String helpSetsMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Help")
                                              + "|" 
                                              + Bundle.getStringTrimmed("org.netbeans.modules.javahelp.resources.Bundle", "Menu/Help/HelpShortcuts")

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -91,12 +91,12 @@ public class Bundle {
         return getString(getBundle(bundle), key);
     }
     
-    /** Gets string from bundle, removes '&' from it and cuts parameters
-     * like {0} from the end.
+    /** Gets string from bundle, removes mnemonic (i.e. '&' or '(&X)') from it
+     * and cuts parameters like {0} from the end.
      * @param bundle path to bundle (e.g. "org.netbeans.core.Bundle")
      * @param key key of requested string
-     * @return string from bundle in current locale. Char '&' is removed and
-     * parameter patterns are also removed starting by first '{'.
+     * @return string from bundle in current locale. Mnemonic (i.e. '&' or '(&X)')
+     * is removed and parameter patterns are also removed starting by first '{'.
      */
     public static String getStringTrimmed(String bundle, String key) {
         return trim(getString(getBundle(bundle), key));
@@ -112,31 +112,71 @@ public class Bundle {
         return java.text.MessageFormat.format(getString(bundle, key), params);
     }
     
-    /** Gets string from bundle and formats it. It removes '&' from it and 
-     * cuts parameters like {0} from the end if any.
+    /** Gets string from bundle and formats it. It removes mnemonic (i.e. '&' or '(&X)') 
+     * from it and cuts parameters like {0} from the end if any.
      * @param bundle path to bundle (e.g. "org.netbeans.core.Bundle")
      * @param key key of requested string
      * @param params parameter to be formatted
-     * @return string from bundle in current locale. Char '&' is removed.
+     * @return string from bundle in current locale. Mnemonic and parameters 
+     * like {0} removed from the end.
      */
     public static String getStringTrimmed(String bundle, String key, Object[] params) {
         return trim(getString(getBundle(bundle), key, params));
     }
     
-    /** Removes '&' and cut parameters like {0} from the end.
+    /** Removes mnemonic (i.e. '&' or '(&X)') and cut parameters like {0} from the end.
      * @param value string to modify
-     * @return string with removed '&' and parameters like {0} from the end.
+     * @return string with removed mnemonic and parameters like {0} from the end.
      */
     private static String trim(String value) {
-        // remove '&'
-        if(value.indexOf('&')!=-1) {
-            value = new StringBuffer(value).deleteCharAt(value.indexOf('&')).toString();
-        }
+        // remove mnemonic, i.e. '&' or '(&X)'
+        value = cutAmpersand(value);
         // cut parameters like {0} from string
         if(value.indexOf('{')!=-1) {
             value = value.substring(0, value.indexOf('{'));
         }
         return value;
     }
-    
+
+    /**
+     * Removes an ampersand from a text string; commonly used to strip out unneeded mnemonics.
+     * Replaces the first occurence of <samp>&amp;?</samp> by <samp>?</samp> or <samp>(&amp;??</samp> by the empty string 
+     * where <samp>?</samp> is a wildcard for any character.
+     * <samp>&amp;?</samp> is a shortcut in English locale.
+     * <samp>(&amp;?)</samp> is a shortcut in Japanese locale.
+     * Used to remove shortcuts from workspace names (or similar) when shortcuts are not supported.
+     * <p>The current implementation behaves in the same way regardless of locale.
+     * In case of a conflict it would be necessary to change the
+     * behavior based on the current locale.
+     * @param text a localized label that may have mnemonic information in it
+     * @return string without first <samp>&amp;</samp> if there was any
+     */
+    private static String cutAmpersand(String text) {
+        // modified code of org.openide.awt.Actions.cutAmpersand
+        // see also org.openide.awt.Mnemonics
+        int i;
+        String result = text;
+        /* First check of occurence of '(&'. If not found check 
+          * for '&' itself.
+          * If '(&' is found then remove '(&??' and rest of line.
+          */
+        i = text.indexOf("(&"); // NOI18N
+        if (i >= 0 && i + 3 < text.length() && /* #31093 */text.charAt(i + 3) == ')') { // NOI18N
+            result = text.substring(0, i);
+        } else {
+            //Sequence '(&?)' not found look for '&' itself
+            i = text.indexOf('&');
+            if (i < 0) {
+                //No ampersand
+                result = text;
+            } else if (i == (text.length() - 1)) {
+                //Ampersand is last character, wrong shortcut but we remove it anyway
+                result = text.substring(0, i);
+            } else {
+                //Remove ampersand from middle of string
+                result = text.substring(0, i) + text.substring(i + 1);
+            }
+        }
+        return result;
+    }
 }

@@ -74,6 +74,7 @@ public class OptionsOperator extends NbFrameOperator {
      */
     public OptionsOperator() {
         super(getTitleToFind());
+        setComparator(oldComparator);
         setDefaultStringComparator(oldComparator);
     }
     
