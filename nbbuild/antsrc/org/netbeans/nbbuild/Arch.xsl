@@ -210,21 +210,20 @@ Microsystems, Inc. All Rights Reserved.
         </a>
         
         <xsl:variable name="all_interfaces" select="//api[@group=$group]" />
-        <table border="1" width="100%" >   
-            <thead>
-                <th valign="bottom" width="25%"><b>Interface Name</b></th>
-                <th valign="bottom" width="10%"><b>In/Out</b></th>
-                <th valign="bottom" width="10%"><b>Stability</b></th>
-                <th valign="bottom" ><b>Specified in What Document?</b></th>
-            </thead>
+        <table cellpadding="1" cellspacing="0" border="0" class="tablebg" width="100%"><tr><td>
+          <table border="0" cellpadding="3" cellspacing="1" width="100%">   
+            <tr class="tablersh">
+                <td align="CENTER" width="25%"><span class="titlectable">Interface Name</span></td>
+                <td align="CENTER" width="10%"><span class="titlectable">In/Out</span></td>
+                <td align="CENTER" width="10%"><span class="titlectable">Stability</span></td>
+                <td align="CENTER" ><span class="titlectable">Specified in What Document?</span></td>
+            </tr>
 
             <xsl:for-each select="$all_interfaces">
-                <tr/>
                 <xsl:call-template name="api" />
             </xsl:for-each>
-            
-        </table>
-
+          </table>
+        </td></tr></table>
         <p/>
     </xsl:template>    
     
@@ -240,7 +239,7 @@ Microsystems, Inc. All Rights Reserved.
        <xsl:param name="describe.url" />
        <xsl:param name="describe.node" />
 
-        <tbody>
+        <tr class="tabler">
             <td>
                 <a>
                     <xsl:attribute name="name" >
@@ -292,7 +291,7 @@ Microsystems, Inc. All Rights Reserved.
                   <xsl:with-param name="describe.node" select="$describe.node" />
                 </xsl:call-template>
             </td>
-        </tbody>
+        </tr>
     </xsl:template>  
     <xsl:template name="describe">
        <xsl:param name="describe.url" />
