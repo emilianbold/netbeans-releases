@@ -344,10 +344,16 @@ public class FormCustomEditor extends JPanel
         if (currentIndex > -1) {
             Object[] nodes = editor.getPropertyEnv().getBeans();
             if (nodes == null || nodes.length <= 1) {
-                editor.getProperty().setPreCode(preCode);
-                editor.getProperty().setPostCode(postCode);
+                FormProperty prop = editor.getProperty();
+                boolean fire = prop.isChangeFiring();
+                prop.setChangeFiring(false);
+
+                prop.setPreCode(preCode);
+                prop.setPostCode(postCode);
 
                 editor.setCurrentEditor(currentEditor);
+
+                prop.setChangeFiring(fire);
             }
             else { // there are more nodes selected
                 String propName = editor.getProperty().getName();
@@ -368,8 +374,12 @@ public class FormCustomEditor extends JPanel
 
                     PropertyEditor pe = prop.getPropertyEditor();
                     if (pe instanceof FormPropertyEditor) {
+                        boolean fire = prop.isChangeFiring();
+                        prop.setChangeFiring(false);
+
                         prop.setPreCode(preCode);
                         prop.setPostCode(postCode);
+
                         // set the current editor for this FormPropertyEditor,
                         // but be sure it matches via currentIndex
                         FormPropertyEditor fpe = (FormPropertyEditor) pe;
@@ -380,6 +390,8 @@ public class FormCustomEditor extends JPanel
                         {
                             fpe.setCurrentEditor(allEds[currentIndex]);
                         }
+
+                        prop.setChangeFiring(fire);
                     }
                 }
             }
