@@ -27,7 +27,7 @@ import org.openide.util.HelpCtx;
  * Panel just asking for basic info.
  * @author Jesse Glick
  */
-final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescriptor.FinishPanel {
+final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel {
     
     private WizardDescriptor wizardDescriptor;
     private int type;
@@ -93,5 +93,9 @@ final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescr
         component.store(d);
         ((WizardDescriptor)d).putProperty ("NewProjectWizard_Title", null); // NOI18N
     }
-    
+
+    public boolean isFinishPanel() {
+        return true;
+    }
+
 }
