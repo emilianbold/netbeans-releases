@@ -1,7 +1,6 @@
 core/src/**/Bundle.properties
 core/src/org/netbeans/core/resources/templatesFolder.html
 core/src/org/netbeans/core/resources/templatesRootDescription.html
-core/release/CREDITS.html
 core/bootstrap/src/**/Bundle.properties
 core/execution/src/**/Bundle.properties
 core/favorites/src/**/Bundle.properties
@@ -13,3 +12,8 @@ core/output2/src/**/Bundle.properties
 core/settings/src/**/Bundle.properties
 core/ui/**/Bundle.properties
 core/windows/src/**/Bundle.properties
+core/multiview/src/**/Bundle.properties
+core/favorites/src/**/Bundle.properties
+core/favorites/src/**/templatesFile.html
+core/swing/plaf/src/**/Bundle.properties
+core/swing/tabcontrol/src/**/Bundle.properties

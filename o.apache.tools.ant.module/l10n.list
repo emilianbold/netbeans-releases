@@ -2,3 +2,5 @@ ant/src/**/Bundle.properties
 ant/src/org/apache/tools/ant/module/resources/*.html
 ant/src-bridge/**/Bundle.properties
 ant/*/src/**/Bundle.properties
+ant/freeform/src/org/netbeans/modules/ant/freeform/resources/j2sefreeform.html
+ant/freeform/src/org/netbeans/modules/ant/freeform/resources/webfreeform.html
