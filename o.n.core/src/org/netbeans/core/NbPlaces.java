@@ -241,6 +241,13 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
         return findSessionFolder ("Welcome"); // NOI18N
     }
 
+     /** Getter for project workplace. A folder that is presented to the
+     * user as project desktop.
+     */
+     public DataFolder workplace () {
+         return (DataFolder) TopManager.getDefault().getPlaces().nodes().projectDesktop().getCookie(DataFolder.class);
+     }
+
     /**
      * Returns a DataFolder subfolder of the session folder.  In the DataFolder
      * folders go first (sorted by name) followed by the rest of objects sorted
