@@ -195,6 +195,36 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
     return super.getCookie (type);
   }
   
+  /** Test whether there is a customizer for this node. If true,
+  * the customizer can be obtained via {@link #getCustomizer}.
+  *
+  * @return <CODE>true</CODE> if there is a customizer
+  */
+  public boolean hasCustomizer () {
+    return component.getBeanInfo ().getBeanDescriptor ().getCustomizerClass () != null;
+  }
+
+  /** Get the customizer component.
+  * @return the component, or <CODE>null</CODE> if there is no customizer
+  */
+  public java.awt.Component getCustomizer () {
+    Class customizerClass = component.getBeanInfo ().getBeanDescriptor ().getCustomizerClass ();
+    if (customizerClass == null) return null;
+    Object customizer;
+    try {
+      customizer = customizerClass.newInstance ();
+    } catch (InstantiationException e) {
+      return null;
+    } catch (IllegalAccessException e) {
+      return null;
+    }
+    if (!(customizer instanceof java.awt.Component) ||
+        !(customizer instanceof java.beans.Customizer)) return null;
+    ((java.beans.Customizer)customizer).setObject (component.getComponentInstance ());
+    // [PENDING - in X2 there is some strange addPropertyChangeListener code here...]
+    return (java.awt.Component)customizer;
+  }
+
 // -----------------------------------------------------------------------------------------
 // Clipboard operations
 
@@ -465,6 +495,7 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
 
 /*
  * Log
+ *  15   Gandalf   1.14        6/6/99   Ian Formanek    Cusomizer support added
  *  14   Gandalf   1.13        6/3/99   Ian Formanek    
  *  13   Gandalf   1.12        6/2/99   Ian Formanek    ToolsAction, Reorder
  *  12   Gandalf   1.11        6/1/99   Ian Formanek    Fixed last change
