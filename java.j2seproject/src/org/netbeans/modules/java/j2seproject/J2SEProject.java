@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.java.j2seproject;
 
-import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -21,6 +20,8 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.util.*;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -38,6 +39,7 @@ import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.ProjectInformation;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.SourceContainers;
@@ -66,13 +68,12 @@ import org.openide.util.lookup.Lookups;
  */
 final class J2SEProject implements Project, AntProjectListener {
     
-    private static final Image J2SE_PROJECT_ICON = Utilities.loadImage( "org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.gif" ); // NOI18N
+    private static final Icon J2SE_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.gif")); // NOI18N
         
     private final AntProjectHelper helper;
     private final ReferenceHelper refHelper;
     private final GeneratedFilesHelper genFilesHelper;
     private final Lookup lookup;
-    private final PropertyChangeSupport pcs;
     
     J2SEProject(AntProjectHelper helper) throws IOException {
         this.helper = helper;
@@ -80,7 +81,6 @@ final class J2SEProject implements Project, AntProjectListener {
         refHelper = new ReferenceHelper(helper, aux);
         genFilesHelper = new GeneratedFilesHelper(helper);
         lookup = createLookup(aux);
-        pcs = new PropertyChangeSupport(this);
         helper.addAntProjectListener(this);
     }
 
@@ -88,16 +88,8 @@ final class J2SEProject implements Project, AntProjectListener {
         return helper.getProjectDirectory();
     }
 
-    public String getName() {
-        return helper.getName();
-    }
-
-    public String getDisplayName() {
-        return helper.getDisplayName();
-    }
-
     public String toString() {
-        return "J2SEProject[" + getName() + "]"; // NOI18N
+        return "J2SEProject[" + getProjectDirectory() + "]"; // NOI18N
     }
     
     public Lookup getLookup() {
@@ -114,6 +106,7 @@ final class J2SEProject implements Project, AntProjectListener {
             "${build.test.classes.dir}/*.class", // NOI18N
         });
         return Lookups.fixed(new Object[] {
+            new Info(),
             aux,
             helper.createCacheDirectoryProvider(),
             spp,
@@ -132,19 +125,12 @@ final class J2SEProject implements Project, AntProjectListener {
         });
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        pcs.addPropertyChangeListener(listener);
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        pcs.removePropertyChangeListener(listener);
-    }
-
     public void configurationXmlChanged(AntProjectEvent ev) {
         if (ev.getPath().equals(AntProjectHelper.PROJECT_XML_PATH)) {
             // Could be various kinds of changes, but name & displayName might have changed.
-            pcs.firePropertyChange(PROP_NAME, null, null);
-            pcs.firePropertyChange(PROP_DISPLAY_NAME, null, null);
+            Info info = (Info)getLookup().lookup(ProjectInformation.class);
+            info.firePropertyChange(ProjectInformation.PROP_NAME);
+            info.firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME);
         }
     }
 
@@ -156,24 +142,65 @@ final class J2SEProject implements Project, AntProjectListener {
     
     FileObject getSourceDirectory() {
         String srcDir = helper.evaluate("src.dir"); // NOI18N
+        if (srcDir == null) {
+            return null;
+        }
         return helper.resolveFileObject(srcDir);
     }
     
     FileObject getTestSourceDirectory() {
         String testSrcDir = helper.evaluate("test.src.dir"); // NOI18N
+        if (testSrcDir == null) {
+            return null;
+        }
         return helper.resolveFileObject(testSrcDir);
     }
     
     File getTestClassesDirectory() {
         String testClassesDir = helper.evaluate("build.test.classes.dir"); // NOI18N
+        if (testClassesDir == null) {
+            return null;
+        }
         return helper.resolveFile(testClassesDir);
     }
     
-    public Image getIcon() {
-        return J2SE_PROJECT_ICON;
-    }
-    
     // Private innerclasses ----------------------------------------------------
+    
+    private final class Info implements ProjectInformation {
+        
+        private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        
+        Info() {}
+        
+        void firePropertyChange(String prop) {
+            pcs.firePropertyChange(prop, null, null);
+        }
+        
+        public String getName() {
+            return helper.getName();
+        }
+        
+        public String getDisplayName() {
+            return helper.getDisplayName();
+        }
+        
+        public Icon getIcon() {
+            return J2SE_PROJECT_ICON;
+        }
+        
+        public Project getProject() {
+            return J2SEProject.this;
+        }
+        
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            pcs.addPropertyChangeListener(listener);
+        }
+        
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            pcs.removePropertyChangeListener(listener);
+        }
+        
+    }
     
     private final class ProjectXmlSavedHookImpl extends ProjectXmlSavedHook {
         
