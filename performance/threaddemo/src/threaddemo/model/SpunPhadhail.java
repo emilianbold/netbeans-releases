@@ -62,7 +62,7 @@ final class SpunPhadhail extends Spin {
         } else if (method.getName().equals("mutex")) {
             return Mutex.EVENT;
         } else {
-            assert method.getName().endsWith("PhadhailListener") || EventQueue.isDispatchThread();
+            assert method.getName().endsWith("PhadhailListener") || EventQueue.isDispatchThread() : method.getName();
             if (args != null) {
                 for (int i = 0; i < args.length; i++) {
                     if (args[i] instanceof PhadhailListener) {
