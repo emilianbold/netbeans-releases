@@ -94,7 +94,7 @@ Microsystems, Inc. All Rights Reserved.
                 <path refid="jellytools.classpath"/>
             </classpath>
         </javadoc>
-        <zip zipfile="jelly-nb-javadoc.zip" basedir="." includes="javadoc/**"/>
+        <zip zipfile="jelly-nb-javadoc.zip" basedir="javadoc" includes="**"/>
         <delete dir="javadoc"/>
         <mkdir dir="javadoc"/>
         <!-- Javadoc for jelly2 -->
@@ -106,7 +106,7 @@ Microsystems, Inc. All Rights Reserved.
                 <path refid="jellytools.classpath"/>
             </classpath>
         </javadoc>
-        <zip zipfile="jelly2-nb-javadoc.zip" basedir="." includes="javadoc/**"/>
+        <zip zipfile="jelly2-nb-javadoc.zip" basedir="javadoc" includes="**"/>
     </target>
 
     <target  name="clean" description="Clean all build products">
