@@ -45,7 +45,8 @@ public class Util {
     public static Element findElement(Element parent, String name, String namespace) {
         Element result = null;
         NodeList l = parent.getChildNodes();
-        for (int i = 0; i < l.getLength(); i++) {
+        int len = l.getLength();
+        for (int i = 0; i < len; i++) {
             if (l.item(i).getNodeType() == Node.ELEMENT_NODE) {
                 Element el = (Element)l.item(i);
                 if (name.equals(el.getLocalName()) && namespace.equals(el.getNamespaceURI())) {
