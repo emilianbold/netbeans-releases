@@ -177,25 +177,28 @@ public class PluginManager implements java.io.Serializable {
     protected PluginDescriptor[] getPluginDescriptors() throws PluginConfigurationException {
         // in each subdirectory of pluginsHome get plugin_descriptor.xml
         File[] subDirs = FileUtils.listSubdirectories(pluginsHome);
-        PluginDescriptor[] descriptors = new PluginDescriptor[subDirs.length];
+        ArrayList descriptors = new ArrayList();
         for (int i=0; i < subDirs.length; i++) {
+            // ignore CVS subdirectory which is created by versioning system
+            if(subDirs[i].getName().equals("CVS")) {
+                continue;
+            }
             try {
                 File pluginDescriptorFile = new File(subDirs[i],PLUGIN_DESCRIPTOR_FILENAME);
                 XMLSerializable xmlSerializable = XMLSerializer.getXMLSerializable(SerializeDOM.parseFile(pluginDescriptorFile));
                 if (xmlSerializable instanceof PluginDescriptor) {
-                    descriptors[i] = (PluginDescriptor)xmlSerializable;
-                    // set the plugin home directory 
-                    descriptors[i].setPluginHomeDirectory(subDirs[i]);
+                    ((PluginDescriptor)xmlSerializable).setPluginHomeDirectory(subDirs[i]);
+                    descriptors.add(xmlSerializable);
                 } else {
                     throw new PluginConfigurationException("Directory "+subDirs[i].getPath()+" does not contain a valid XTest Plugin");
                 }
             } catch (XMLSerializeException xse) {
-                throw new PluginConfigurationException("Unable to parse "+subDirs[i].getPath()+"/"+PLUGIN_DESCRIPTOR_FILENAME+" plugin configuration file",xse);
+                throw new PluginConfigurationException("Unable to parse "+subDirs[i].getPath()+File.separator+PLUGIN_DESCRIPTOR_FILENAME+" plugin configuration file",xse);
             }catch (IOException ioe) {
-                throw new PluginConfigurationException("Unable to load "+subDirs[i].getPath()+"/"+PLUGIN_DESCRIPTOR_FILENAME+" plugin configuration file",ioe);
+                throw new PluginConfigurationException("Unable to load "+subDirs[i].getPath()+File.separator+PLUGIN_DESCRIPTOR_FILENAME+" plugin configuration file",ioe);
             }
         }
-        return descriptors;
+        return (PluginDescriptor[])descriptors.toArray(new PluginDescriptor[0]);
     }
     
     
