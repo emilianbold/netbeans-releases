@@ -646,57 +646,63 @@ the ${netbeans.dest}/bin/ directory.
     <makeupdatedesc desc="../www/www/updates/40_1.1_.xml">
       <!-- Not for now:
       <group name="Standard">
-        <nbm file="../applet/applet.nbm"/>
-        <nbm file="../autoupdate/autoupdate.nbm"/>
-        <nbm file="../beans/beans.nbm"/>
-        <nbm file="../clazz/clazz.nbm"/>
-        <nbm file="../debuggercore/debuggercore.nbm"/>
-        <nbm file="../debuggerjpda/debuggerjpda.nbm"/>
-        <nbm file="../debuggertools/debuggertools.nbm"/>
-        <nbm file="../editor/editor.nbm"/>
-        <nbm file="../form/form.nbm"/>
-        <nbm file="../html/html.nbm"/>
-        <nbm file="../httpserver/httpserver.nbm"/>
-        <nbm file="../i18n/i18n.nbm"/>
-        <nbm file="../icebrowser/icebrowser.nbm"/>
-        <nbm file="../image/image.nbm"/>
-        <nbm file="../jarpackager/jarpackager.nbm"/>
-        <nbm file="../java/java.nbm"/>
-        <nbm file="../javadoc/javadoc.nbm"/>
-        <nbm file="../jndi/jndi.nbm"/>
-        <nbm file="../objectbrowser/objectbrowser.nbm"/>
-        <nbm file="../openidex/openidex.nbm"/>
-        <nbm file="../projects/projects.nbm"/>
-        <nbm file="../properties/properties.nbm"/>
-        <nbm file="../rmi/rmi.nbm"/>
-        <nbm file="../text/text.nbm"/>
-        <nbm file="../usersguide/usersguide.nbm"/>
-        <nbm file="../utilities/utilities.nbm"/>
-        <nbm file="../vcscvs/vcscvs.nbm"/>
-        <nbm file="../vcsgeneric/vcsgeneric.nbm"/>
+        <fileset dir=".">
+          <include name="../applet/applet.nbm"/>
+          <include name="../autoupdate/autoupdate.nbm"/>
+          <include name="../beans/beans.nbm"/>
+          <include name="../clazz/clazz.nbm"/>
+          <include name="../debuggercore/debuggercore.nbm"/>
+          <include name="../debuggerjpda/debuggerjpda.nbm"/>
+          <include name="../debuggertools/debuggertools.nbm"/>
+          <include name="../editor/editor.nbm"/>
+          <include name="../form/form.nbm"/>
+          <include name="../html/html.nbm"/>
+          <include name="../httpserver/httpserver.nbm"/>
+          <include name="../i18n/i18n.nbm"/>
+          <include name="../icebrowser/icebrowser.nbm"/>
+          <include name="../image/image.nbm"/>
+          <include name="../jarpackager/jarpackager.nbm"/>
+          <include name="../java/java.nbm"/>
+          <include name="../javadoc/javadoc.nbm"/>
+          <include name="../jndi/jndi.nbm"/>
+          <include name="../objectbrowser/objectbrowser.nbm"/>
+          <include name="../openidex/openidex.nbm"/>
+          <include name="../projects/projects.nbm"/>
+          <include name="../properties/properties.nbm"/>
+          <include name="../rmi/rmi.nbm"/>
+          <include name="../text/text.nbm"/>
+          <include name="../usersguide/usersguide.nbm"/>
+          <include name="../utilities/utilities.nbm"/>
+          <include name="../vcscvs/vcscvs.nbm"/>
+          <include name="../vcsgeneric/vcsgeneric.nbm"/>
 	<!- Careful! ->
-        <nbm file="../web/web-jsp.nbm"/>
-        <nbm file="../web/web-wizard.nbm"/>
+          <include name="../web/web-jsp.nbm"/>
+          <include name="../web/web-wizard.nbm"/>
+        </fileset>
       </group>
       -->
       <group name="Extensions">
-        <nbm file="../apisupport/apisupport.nbm"/>
-        <nbm file="../innertesters/innertesters.nbm"/>
-        <nbm file="../makefile/makefile.nbm"/>
+        <fileset dir=".">
+          <include name="../apisupport/apisupport.nbm"/>
+          <include name="../innertesters/innertesters.nbm"/>
+          <include name="../makefile/makefile.nbm"/>
+        </fileset>
       </group>
       <group name="Experimental">
-        <nbm file="../ant/ant.nbm"/>
+        <fileset dir=".">
+          <include name="../ant/ant.nbm"/>
         <!--
-        <nbm file="../javaembeddedserver/javaembeddedserver.nbm"/>
+          <include name="../javaembeddedserver/javaembeddedserver.nbm"/>
         -->
-        <nbm file="../jini/jini.nbm"/>
-        <nbm file="../multicompile/multicompile.nbm"/>
-        <nbm file="../remotefs/remotefs.nbm"/>
+          <include name="../jini/jini.nbm"/>
+          <include name="../multicompile/multicompile.nbm"/>
+          <include name="../remotefs/remotefs.nbm"/>
         <!-- Not for now (binary redistribution issues):
-        <nbm file="../scripting/scripting.nbm"/>
+          <include name="../scripting/scripting.nbm"/>
         -->
-        <nbm file="../serialversion/serialversion.nbm"/>
-        <nbm file="../sysprops/sysprops.nbm"/>
+          <include name="../serialversion/serialversion.nbm"/>
+          <include name="../sysprops/sysprops.nbm"/>
+        </fileset>
       </group>
     </makeupdatedesc>
   </target>
@@ -824,79 +830,89 @@ the ${netbeans.dest}/bin/ directory.
     <echo message="Making NBM for module javacvs..."/>
     <ant dir="../javacvs" target="nbm"/>
     <makeupdatedesc desc="../www/www/updates/33me_1.5_.xml">
-      <include file="33_1.5_.ent"/>
+      <entityinclude file="33_1.5_.ent"/>
       <!-- Not for now: -->
       <group name="Standard">
-        <nbm file="../ant/ant.nbm"/>
-        <nbm file="../apisupport/apisupport-lite.nbm"/>
-        <nbm file="../apisupport/apisupport.nbm"/>
-        <nbm file="../applet/applet.nbm"/>
-        <nbm file="../autoupdate/autoupdate.nbm"/>
-        <nbm file="../beans/beans.nbm"/>
-        <nbm file="../classfile/classfile.nbm"/>
-        <nbm file="../clazz/clazz.nbm"/>
-        <nbm file="../debuggercore/debuggercore.nbm"/>
-        <nbm file="../debuggerjpda/debuggerjpda.nbm"/>
-        <nbm file="../debuggertools/debuggertools.nbm"/>
-        <nbm file="../editor/editor.nbm"/>
-        <nbm file="../form/form.nbm"/>
-        <nbm file="../html/html.nbm"/>
-        <nbm file="../httpserver/httpserver.nbm"/>
-        <nbm file="../httpserver/servletapi/servletapi.nbm"/>
-        <nbm file="../i18n/i18n.nbm"/>
-        <nbm file="../extbrowser/extbrowser.nbm"/>
-        <nbm file="../image/image.nbm"/>
-        <nbm file="../j2eeserver/j2eeserver.nbm"/>
-        <nbm file="../jarpackager/jarpackager.nbm"/>
-        <nbm file="../java/java.nbm"/>
-        <nbm file="../javacvs/javacvs.nbm"/>
-        <nbm file="../javadoc/javadoc.nbm"/>
-        <nbm file="../jndi/jndi.nbm"/>
+        <fileset dir=".">
+          <include name="../ant/ant.nbm"/>
+          <include name="../apisupport/apisupport-lite.nbm"/>
+          <include name="../apisupport/apisupport.nbm"/>
+          <include name="../applet/applet.nbm"/>
+          <include name="../autoupdate/autoupdate.nbm"/>
+          <include name="../beans/beans.nbm"/>
+          <include name="../classfile/classfile.nbm"/>
+          <include name="../clazz/clazz.nbm"/>
+          <include name="../debuggercore/debuggercore.nbm"/>
+          <include name="../debuggerjpda/debuggerjpda.nbm"/>
+          <include name="../debuggertools/debuggertools.nbm"/>
+          <include name="../editor/editor.nbm"/>
+          <include name="../form/form.nbm"/>
+          <include name="../html/html.nbm"/>
+          <include name="../httpserver/httpserver.nbm"/>
+          <include name="../httpserver/servletapi/servletapi.nbm"/>
+          <include name="../i18n/i18n.nbm"/>
+          <include name="../extbrowser/extbrowser.nbm"/>
+          <include name="../image/image.nbm"/>
+          <include name="../j2eeserver/j2eeserver.nbm"/>
+          <include name="../jarpackager/jarpackager.nbm"/>
+          <include name="../java/java.nbm"/>
+          <include name="../javacvs/javacvs.nbm"/>
+          <include name="../javadoc/javadoc.nbm"/>
+          <include name="../jndi/jndi.nbm"/>
 <!--
-        <nbm file="../objectbrowser/objectbrowser.nbm"/>
+          <include name="../objectbrowser/objectbrowser.nbm"/>
 -->
-        <nbm file="../openidex/openidex.nbm"/>
-        <nbm file="../projects/projects.nbm"/>
-        <nbm file="../properties/properties.nbm"/>
-        <nbm file="../rmi/rmi.nbm"/>
-        <nbm file="../text/text.nbm"/>
-        <nbm file="../tomcatint/tomcat32/web-jsp-tomcat.nbm"/>
-        <nbm file="../usersguide/usersguide.nbm"/>
-        <nbm file="../utilities/utilities.nbm"/>
-        <nbm file="../vcscore/vcscore.nbm"/>
-        <nbm file="../vcscvs/compat/vcscvscompat.nbm"/>
-        <nbm file="../vcsgeneric/vcsgen.nbm"/>
+          <include name="../openidex/openidex.nbm"/>
+          <include name="../projects/projects.nbm"/>
+          <include name="../properties/properties.nbm"/>
+          <include name="../rmi/rmi.nbm"/>
+          <include name="../text/text.nbm"/>
+          <include name="../tomcatint/tomcat32/web-jsp-tomcat.nbm"/>
+          <include name="../usersguide/usersguide.nbm"/>
+          <include name="../utilities/utilities.nbm"/>
+          <include name="../vcscore/vcscore.nbm"/>
+          <include name="../vcscvs/compat/vcscvscompat.nbm"/>
+          <include name="../vcsgeneric/vcsgen.nbm"/>
 	<!-- Careful! -->
-        <nbm file="../web/core/web-jsp.nbm"/>
-        <nbm file="../web/jspsyntax/web-jspsyntax.nbm"/>
-        <nbm file="../scripting/scripting.nbm"/>
+          <include name="../web/core/web-jsp.nbm"/>
+          <include name="../web/jspsyntax/web-jspsyntax.nbm"/>
+          <include name="../scripting/scripting.nbm"/>
+        </fileset>
       </group>
 <!-- 
       <group name="Extensions">
 <!-
-        <nbm file="../innertesters/innertesters.nbm"/>
-        <nbm file="../makefile/makefile.nbm"/>
+        <fileset dir=".">
+          <include name="../innertesters/innertesters.nbm"/>
+          <include name="../makefile/makefile.nbm"/>
+        </fileset>
 ->
       </group>
 -->
 <!--
       <group name="Experimental">
 <!-
-        <nbm file="../javaembeddedserver/javaembeddedserver.nbm"/>
+        <fileset dir=".">
+          <include name="../javaembeddedserver/javaembeddedserver.nbm"/>
+        </fileset>
 ->
 
 <!-
-        <nbm file="../jini/jini.nbm"/>
-        <nbm file="../multicompile/multicompile.nbm"/>
-        <nbm file="../remotefs/remotefs.nbm"/>
+        <fileset dir=".">
+          <include name="../jini/jini.nbm"/>
+          <include name="../multicompile/multicompile.nbm"/>
+          <include name="../remotefs/remotefs.nbm"/>
+        </fileset>
 ->
 
 <!- Not for now (binary redistribution issues): ->
 <!- ->
 
 <!-
-        <nbm file="../serialversion/serialversion.nbm"/>
-        <nbm file="../sysprops/sysprops.nbm"/>
+        <fileset dir=".">
+          <include name="../serialversion/serialversion.nbm"/>
+          <include name="../sysprops/sysprops.nbm"/>
+        </fileset>
 ->
       </group>
 -->
