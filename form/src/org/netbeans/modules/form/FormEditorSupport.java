@@ -319,7 +319,13 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
   protected boolean loadForm () {
     return loadFormInternal (null);
   }
-
+  
+  protected void reloadDocument() {
+    super.reloadDocument ();
+    FormManager2 fm = getFormManager ();
+    fm.getCodeGenerator ().initialize (fm);
+  }
+  
   /** Loads the DesignForm from the .form file. 
   * @param formTopComponent the top component that the formManager should be initialized with - used during deserialization of workspaces
   * @return true if the form was correcly loaded, false if any error occured 
@@ -475,6 +481,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  45   Gandalf   1.44        1/18/00  Pavel Buzek     #4348
  *  44   Gandalf   1.43        1/12/00  Pavel Buzek     I18N
  *  43   Gandalf   1.42        1/9/00   Pavel Buzek     
  *  42   Gandalf   1.41        1/9/00   Pavel Buzek     

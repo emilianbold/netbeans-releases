@@ -93,12 +93,16 @@ public class JavaCodeGenerator extends CodeGenerator {
   public JavaCodeGenerator () {
   }
 
+  private boolean initialized = false;
+  
   public void initialize (FormManager2 formManager) {
-    listener = new JCGFormListener ();
-    this.formManager = formManager;
-    formManager.addFormListener (listener);
+    if (!initialized) {
+      listener = new JCGFormListener ();
+      this.formManager = formManager;
+      formManager.addFormListener (listener);
+    }
+    initialized = true;
     FormEditorSupport s = formManager.getFormEditorSupport ();
-    
     initComponentsSection = s.findSimpleSection (SECTION_INIT_COMPONENTS); 
     variablesSection = s.findSimpleSection (SECTION_VARIABLES);
 
@@ -1457,6 +1461,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  68   Gandalf   1.67        1/18/00  Pavel Buzek     #4348
  *  67   Gandalf   1.66        1/15/00  Ian Formanek    NOI18N
  *  66   Gandalf   1.65        1/13/00  Ian Formanek    NOI18N #2
  *  65   Gandalf   1.64        1/12/00  Pavel Buzek     I18N
