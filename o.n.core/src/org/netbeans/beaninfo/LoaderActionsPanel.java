@@ -56,6 +56,9 @@ public class LoaderActionsPanel extends javax.swing.JPanel implements EnhancedCu
       }
     });
     HelpCtx.setHelpIDString (this, LoaderActionsPanel.class.getName ());
+    // Form Editor does not permit you to set this, because
+    // it has both int and double params:
+    splitPane.setDividerLocation (300);
   }
 
   /** This method is called from within the constructor to
@@ -79,21 +82,20 @@ public class LoaderActionsPanel extends javax.swing.JPanel implements EnhancedCu
     setLayout (new java.awt.BorderLayout ());
     setPreferredSize (new java.awt.Dimension(600, 500));
 
-    splitPane.setDividerLocation (300);
     splitPane.setDividerSize (5);
     splitPane.setLastDividerLocation (300);
 
   
-        beanTreeView2.setDefaultActionAllowed (false);
         beanTreeView2.setPopupAllowed (false);
+        beanTreeView2.setDefaultActionAllowed (false);
     
         explorerPanel.add (beanTreeView2, java.awt.BorderLayout.CENTER);
     
       splitPane.setLeftComponent (explorerPanel);
   
   
-        list.setCellRenderer (this);
         list.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
+        list.setCellRenderer (this);
         list.addListSelectionListener (new javax.swing.event.ListSelectionListener () {
           public void valueChanged (javax.swing.event.ListSelectionEvent evt) {
             listValueChanged (evt);
@@ -113,8 +115,8 @@ public class LoaderActionsPanel extends javax.swing.JPanel implements EnhancedCu
       java.awt.GridBagConstraints gridBagConstraints1;
       jPanel1.setBorder (new javax.swing.border.EtchedBorder());
   
-        addButton.setToolTipText (java.util.ResourceBundle.getBundle("com/netbeans/developer/impl/beaninfo/Bundle").getString("LoaderActionsPanel.jButton1.toolTipText"));
-        addButton.setText (java.util.ResourceBundle.getBundle("com/netbeans/developer/impl/beaninfo/Bundle").getString("LoaderActionsPanel.jButton1.text"));
+        addButton.setToolTipText (org.openide.util.NbBundle.getBundle(LoaderActionsPanel.class).getString("LoaderActionsPanel.jButton1.toolTipText"));
+        addButton.setText (org.openide.util.NbBundle.getBundle(LoaderActionsPanel.class).getString("LoaderActionsPanel.jButton1.text"));
         addButton.setEnabled (false);
         addButton.addActionListener (new java.awt.event.ActionListener () {
           public void actionPerformed (java.awt.event.ActionEvent evt) {
@@ -127,8 +129,8 @@ public class LoaderActionsPanel extends javax.swing.JPanel implements EnhancedCu
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
         jPanel1.add (addButton, gridBagConstraints1);
     
-        separatorButton.setToolTipText (java.util.ResourceBundle.getBundle("com/netbeans/developer/impl/beaninfo/Bundle").getString("LoaderActionsPanel.jButton2.toolTipText"));
-        separatorButton.setText (java.util.ResourceBundle.getBundle("com/netbeans/developer/impl/beaninfo/Bundle").getString("LoaderActionsPanel.jButton2.text"));
+        separatorButton.setToolTipText (org.openide.util.NbBundle.getBundle(LoaderActionsPanel.class).getString("LoaderActionsPanel.jButton2.toolTipText"));
+        separatorButton.setText (org.openide.util.NbBundle.getBundle(LoaderActionsPanel.class).getString("LoaderActionsPanel.jButton2.text"));
         separatorButton.addActionListener (new java.awt.event.ActionListener () {
           public void actionPerformed (java.awt.event.ActionEvent evt) {
             separatorButtonActionPerformed (evt);
@@ -142,8 +144,8 @@ public class LoaderActionsPanel extends javax.swing.JPanel implements EnhancedCu
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
         jPanel1.add (separatorButton, gridBagConstraints1);
     
-        removeButton.setToolTipText (java.util.ResourceBundle.getBundle("com/netbeans/developer/impl/beaninfo/Bundle").getString("LoaderActionsPanel.jButton3.toolTipText"));
-        removeButton.setText (java.util.ResourceBundle.getBundle("com/netbeans/developer/impl/beaninfo/Bundle").getString("LoaderActionsPanel.jButton3.text"));
+        removeButton.setToolTipText (org.openide.util.NbBundle.getBundle(LoaderActionsPanel.class).getString("LoaderActionsPanel.jButton3.toolTipText"));
+        removeButton.setText (org.openide.util.NbBundle.getBundle(LoaderActionsPanel.class).getString("LoaderActionsPanel.jButton3.text"));
         removeButton.setEnabled (false);
         removeButton.addActionListener (new java.awt.event.ActionListener () {
           public void actionPerformed (java.awt.event.ActionEvent evt) {
@@ -158,8 +160,8 @@ public class LoaderActionsPanel extends javax.swing.JPanel implements EnhancedCu
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
         jPanel1.add (removeButton, gridBagConstraints1);
     
-        upButton.setToolTipText (java.util.ResourceBundle.getBundle("com/netbeans/developer/impl/beaninfo/Bundle").getString("LoaderActionsPanel.jButton4.toolTipText"));
-        upButton.setText (java.util.ResourceBundle.getBundle("com/netbeans/developer/impl/beaninfo/Bundle").getString("LoaderActionsPanel.jButton4.text"));
+        upButton.setToolTipText (org.openide.util.NbBundle.getBundle(LoaderActionsPanel.class).getString("LoaderActionsPanel.jButton4.toolTipText"));
+        upButton.setText (org.openide.util.NbBundle.getBundle(LoaderActionsPanel.class).getString("LoaderActionsPanel.jButton4.text"));
         upButton.setEnabled (false);
         upButton.addActionListener (new java.awt.event.ActionListener () {
           public void actionPerformed (java.awt.event.ActionEvent evt) {
@@ -174,8 +176,8 @@ public class LoaderActionsPanel extends javax.swing.JPanel implements EnhancedCu
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
         jPanel1.add (upButton, gridBagConstraints1);
     
-        downButton.setToolTipText (java.util.ResourceBundle.getBundle("com/netbeans/developer/impl/beaninfo/Bundle").getString("LoaderActionsPanel.jButton5.toolTipText"));
-        downButton.setText (java.util.ResourceBundle.getBundle("com/netbeans/developer/impl/beaninfo/Bundle").getString("LoaderActionsPanel.jButton5.text"));
+        downButton.setToolTipText (org.openide.util.NbBundle.getBundle(LoaderActionsPanel.class).getString("LoaderActionsPanel.jButton5.toolTipText"));
+        downButton.setText (org.openide.util.NbBundle.getBundle(LoaderActionsPanel.class).getString("LoaderActionsPanel.jButton5.text"));
         downButton.setEnabled (false);
         downButton.addActionListener (new java.awt.event.ActionListener () {
           public void actionPerformed (java.awt.event.ActionEvent evt) {
@@ -352,6 +354,9 @@ private void addButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FI
 
 /*
  * Log
+ *  4    Gandalf   1.3         1/19/00  Jesse Glick     Fixing position of split
+ *       pane on 1.2.2. Looks like JSplitPane before 1.3 would not retain a 
+ *       divider location if set before adding components.
  *  3    Gandalf   1.2         1/13/00  Jesse Glick     Much nicer-looking.
  *  2    Gandalf   1.1         1/13/00  Jaroslav Tulach I18N
  *  1    Gandalf   1.0         1/13/00  Jesse Glick     

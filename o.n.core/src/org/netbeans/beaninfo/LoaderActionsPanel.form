@@ -20,7 +20,6 @@
   <SubComponents>
     <Container class="javax.swing.JSplitPane" name="splitPane">
       <Properties>
-        <Property name="dividerLocation" type="int" editor="sun.beans.editors.IntEditor" value="300"/>
         <Property name="dividerSize" type="int" editor="sun.beans.editors.IntEditor" value="5"/>
         <Property name="lastDividerLocation" type="int" editor="sun.beans.editors.IntEditor" value="300"/>
       </Properties>
@@ -43,8 +42,8 @@
           <SubComponents>
             <Container class="org.openide.explorer.view.BeanTreeView" name="beanTreeView2">
               <Properties>
-                <Property name="defaultActionAllowed" type="boolean" editor="sun.beans.editors.BoolEditor" value="false"/>
                 <Property name="popupAllowed" type="boolean" editor="sun.beans.editors.BoolEditor" value="false"/>
+                <Property name="defaultActionAllowed" type="boolean" editor="sun.beans.editors.BoolEditor" value="false"/>
               </Properties>
               <Constraints>
                 <Constraint layoutClass="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignBorderLayout" value="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignBorderLayout$BorderConstraintsDescription">
@@ -70,11 +69,11 @@
           <SubComponents>
             <Component class="javax.swing.JList" name="list">
               <Properties>
-                <Property name="cellRenderer" type="javax.swing.ListCellRenderer" editor="com.netbeans.developer.modules.loaders.form.RADConnectionPropertyEditor">
-                  <Connection code="this" type="code"/>
-                </Property>
                 <Property name="selectionMode" type="int" editor="com.netbeans.developer.modules.loaders.form.RADConnectionPropertyEditor">
                   <Connection code="ListSelectionModel.SINGLE_SELECTION" type="code"/>
+                </Property>
+                <Property name="cellRenderer" type="javax.swing.ListCellRenderer" editor="com.netbeans.developer.modules.loaders.form.RADConnectionPropertyEditor">
+                  <Connection code="this" type="code"/>
                 </Property>
               </Properties>
 
