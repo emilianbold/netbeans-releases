@@ -46,12 +46,12 @@ class TabsComponent extends JPanel {
     private Set alreadyAddedElements;
     private JToolBar bar;
     
-    private static boolean aqua = "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
+    private static final boolean AQUA = "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
     
     /** Creates a new instance of TabsComponent */
     public TabsComponent() {
         super();
-        bar = aqua ? new TB() : new JToolBar();
+        bar = AQUA ? new TB() : new JToolBar();
         Border b = (Border)UIManager.get("Nb.Editor.Toolbar.border"); //NOI18N
         bar.setBorder(b);
         bar.setLayout (new OneLineGridLayout());
@@ -182,7 +182,7 @@ class TabsComponent extends JPanel {
             }
             innerbar.putClientProperty(TOOLBAR_MARKER, "X"); //NOI18N
             // need to set it to null, because CloneableEditor set's the border for the editor bar part only..
-            if (!aqua) {
+            if (!AQUA) {
                 innerbar.setBorder(null);
             } else {
                 innerbar.setBorder (BorderFactory.createEmptyBorder(2, 0, 2, 0));
@@ -478,7 +478,7 @@ class TabsComponent extends JPanel {
                 }
                 cumulatedWidth += h_margin_left + h_margin_right;
                 height += v_margin_top + v_margin_bottom;
-                if (TabsComponent.aqua) {
+                if (TabsComponent.AQUA) {
                     Insets ii = ((JComponent) parent).getInsets();
                     int rowHeight = parent.getHeight() - (ii.top + ii.bottom);
                     if (height < rowHeight) {
@@ -578,12 +578,12 @@ class TabsComponent extends JPanel {
                 }
                 
                 Insets ii = ((JComponent) parent).getInsets();
-                if (aqua) {
+                if (AQUA) {
                     rowHeight = parent.getHeight() - (ii.top + ii.bottom);
                 }
 
 //                System.out.println("column =" + columnWidth);
-                int top = aqua ? ii.top : v_margin_top;
+                int top = AQUA ? ii.top : v_margin_top;
                 int left = h_margin_left;
                 // layout the components
                 for (int i=0, col=0; i < count+1; i++) {
