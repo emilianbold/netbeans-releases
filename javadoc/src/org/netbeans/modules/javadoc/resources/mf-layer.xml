@@ -67,9 +67,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="DTD_JavadocLibrary" url="nbresloc:/org/netbeans/modules/javadoc/search/environment/library.dtd"/>
         </folder>    
     </folder>
-  </folder>
 
-  <folder name="xml">
     <folder name="lookups">
         <folder name="NetBeans_IDE">
             <!-- public ID defined by LibraryProcessor -->
