@@ -50,7 +50,7 @@ public class AddTableColumnDialog
 	Specification spec;
 	Map ixmap;
 	String colname = null;
-	JTextField colnamefield, colsizefield, defvalfield;
+	JTextField colnamefield, colsizefield, colscalefield, defvalfield;
 	JTextArea checkfield;
 	JComboBox coltypecombo, idxcombo;
 	JCheckBox pkcheckbox, ixcheckbox, checkcheckbox, nullcheckbox, uniquecheckbox;
@@ -127,28 +127,69 @@ public class AddTableColumnDialog
       layout.setConstraints(coltypecombo, con);
       pane.add(coltypecombo);
 
+			// Size subpane
+			
+			JPanel subpane = new JPanel();
+			GridBagLayout sublayout = new GridBagLayout();
+			GridBagConstraints subcon = new GridBagConstraints ();
+			subpane.setLayout(sublayout);
+      
 			// Column size
 		
 			label = new JLabel(bundle.getString("AddTableColumnSize"));
-      con.weightx = 0.0;
-			con.anchor = GridBagConstraints.WEST;
-			con.insets = new java.awt.Insets (2, 2, 2, 2);
-      con.gridx = 0;
-      con.gridy = 2;
-			layout.setConstraints(label, con);
-			pane.add(label);
+      subcon.weightx = 0.14;
+			subcon.anchor = GridBagConstraints.WEST;
+			subcon.insets = new java.awt.Insets (2, 2, 2, 2);
+      subcon.gridx = 0;
+      subcon.gridy = 0;
+			sublayout.setConstraints(label, subcon);
+			subpane.add(label);
         
-      con.fill = GridBagConstraints.HORIZONTAL;
-      con.weightx = 1.0;
-      con.gridx = 1;
-      con.gridy = 2;
-			con.insets = new java.awt.Insets (2, 2, 2, 2);
+      subcon.fill = GridBagConstraints.HORIZONTAL;
+      subcon.weightx = 0.36;
+      subcon.gridx = 1;
+      subcon.gridy = 0;
+			subcon.insets = new java.awt.Insets (2, 2, 2, 10);
       colsizefield = new ValidableTextField(new TextFieldValidator.integer());
       colsizefield.setName(ColumnItem.SIZE);
       colsizefield.addFocusListener(intfldlistener);
-      layout.setConstraints(colsizefield, con);
-      pane.add(colsizefield);
+      sublayout.setConstraints(colsizefield, subcon);
+      subpane.add(colsizefield);
 
+			// Column scale
+		
+			label = new JLabel(bundle.getString("AddTableColumnScale"));
+      subcon.weightx = 0.14;
+			subcon.anchor = GridBagConstraints.WEST;
+			subcon.insets = new java.awt.Insets (2, 10, 2, 2);
+      subcon.gridx = 2;
+      subcon.gridy = 0;
+			sublayout.setConstraints(label, subcon);
+			subpane.add(label);
+        
+      subcon.fill = GridBagConstraints.HORIZONTAL;
+      subcon.weightx = 0.36;
+      subcon.gridx = 3;
+      subcon.gridy = 0;
+			subcon.insets = new java.awt.Insets (2, 2, 2, 2);
+      colscalefield = new ValidableTextField(new TextFieldValidator.integer());
+      colscalefield.setName(ColumnItem.SCALE);
+      colscalefield.addFocusListener(intfldlistener);
+      sublayout.setConstraints(colscalefield, subcon);
+      subpane.add(colscalefield);
+
+			// Insert size subpane
+		
+      con.weightx = 1.0;
+      con.weighty = 0.0;
+      con.gridwidth = 2;
+      con.fill = GridBagConstraints.BOTH;
+			con.insets = new java.awt.Insets (0, 0, 0, 0);
+      con.gridx = 0;
+      con.gridy = 2;
+			layout.setConstraints(subpane, con);
+			pane.add(subpane);
+      
 			// Column default value
 		
 			label = new JLabel(bundle.getString("AddTableColumnDefault"));
@@ -173,10 +214,10 @@ public class AddTableColumnDialog
                   
 			// Check subpane
 			
-			JPanel subpane = new JPanel();
+			subpane = new JPanel();
 			subpane.setBorder(new TitledBorder(bundle.getString("AddTableColumnConstraintsTitle")));
-			GridBagLayout sublayout = new GridBagLayout();
-			GridBagConstraints subcon = new GridBagConstraints ();
+			sublayout = new GridBagLayout();
+			subcon = new GridBagConstraints ();
 			subpane.setLayout(sublayout);
 			
 			ActionListener cbxlistener = new CheckBoxListener(dmodel);
@@ -345,6 +386,7 @@ public class AddTableColumnDialog
 								if (citem.isIndexed()) use_idx = true;
 								col.setColumnType(Specification.getType(citem.getType().getType()));
 								col.setColumnSize(citem.getSize());
+								col.setDecimalSize(citem.getScale());
 								col.setNullAllowed(citem.allowsNull());
 								if (citem.hasDefaultValue()) col.setDefaultValue(citem.getDefaultValue());
 								cbuff.add(cmd);								
@@ -480,6 +522,7 @@ public class AddTableColumnDialog
 }
 /*
  * <<Log>>
+ *  12   Gandalf   1.11        3/3/00   Radko Najman    scale field added
  *  11   Gandalf   1.10        2/16/00  Radko Najman    driver adaptor
  *  10   Gandalf   1.9         11/15/99 Radko Najman    MS ACCESS
  *  9    Gandalf   1.8         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
