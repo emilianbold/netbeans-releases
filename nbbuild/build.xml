@@ -3724,6 +3724,18 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
 
   <target name="check-clusters-content" depends="bootstrap,init-tasks"> 
     <taskdef name="checkcontent" classname="org.netbeans.nbbuild.CheckClustersContent" classpath="nbantext.jar"/>
-    <checkcontent clusters="${nb.clusters.list}" trackingPath="${netbeans.dest.dir}" kitDestDir="${netbeans.dest.dir}"/>
+    <checkcontent clusters="${nb.clusters.list}" trackingPath="${netbeans.dest.dir}" kitDestDir="${netbeans.dest.dir}">
+      <exclude name="extra/**"/>
+      <exclude name="testtools/**"/>
+      <exclude name="bin/**"/>
+      <exclude name="README.html"/>
+      <exclude name="CREDITS.html"/>
+      <exclude name="nb.cluster.*"/>
+      <exclude name="etc/netbeans.conf"/>
+      <exclude name="build_info"/>
+      <exclude name="module_tracking.xml"/>
+      <exclude name="moduleCluster.properties"/>
+      <exclude name="netbeans.css"/>
+    </checkcontent>
   </target>
 </project>
