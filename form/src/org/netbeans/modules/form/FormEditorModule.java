@@ -234,6 +234,7 @@ public class FormEditorModule implements ModuleInstall {
     "java.awt.Scrollbar",
     "java.awt.ScrollPane",
     "java.awt.Panel",
+    "java.awt.Canvas",
     "java.awt.MenuBar",
     "java.awt.PopupMenu",
   };
@@ -337,6 +338,8 @@ public class FormEditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  22   Gandalf   1.21        6/22/99  Ian Formanek    Added Canvas to AWT 
+ *       components
  *  21   Gandalf   1.20        6/10/99  Ian Formanek    copy templates on 
  *       install
  *  20   Gandalf   1.19        6/9/99   Ian Formanek    ---- Package Change To 
