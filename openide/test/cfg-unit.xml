@@ -49,7 +49,9 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart5"/>
                 <exclude name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart7"/>
                 <exclude name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart8"/>
-                
+                <!-- #31011 -->
+                <exclude name="org/openide/loaders/DataObjectInvalidationTest.class/testNodeDelegateNotRequestedTillObjReady"/>
+                <exclude name="org/openide/loaders/DataObjectInvalidationTest.class/testDataObjectsCreatedOncePerFile"/>
 		<!-- does not work an nobody knows why -->
 		<exclude name="org/openide/loaders/FolderInstanceTest.class/testFolderInstanceNeverPassesInvObjects"/>
                 
@@ -116,6 +118,9 @@ Microsystems, Inc. All Rights Reserved.
 		<include name="org/openide/loaders/DataFolderTest.class/testPropChildrenFiredAfterInvalidation"/>
                 <!-- #28118 -->
                 <include name="org/openide/loaders/InstanceDataObjectTest.class/testFiringEventWhenDeleted"/>
+                <!-- #31011 -->
+                <include name="org/openide/loaders/DataObjectInvalidationTest.class/testNodeDelegateNotRequestedTillObjReady"/>
+                <include name="org/openide/loaders/DataObjectInvalidationTest.class/testDataObjectsCreatedOncePerFile"/>
 		<!-- Nodes -->
 		<!-- include name="org/openide/nodes/FilterNodeTest.class"/ -->
 		<include name="org/openide/nodes/CookieSetTest*class"/>
