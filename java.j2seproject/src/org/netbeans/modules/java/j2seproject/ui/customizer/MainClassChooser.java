@@ -86,6 +86,7 @@ public class MainClassChooser extends JPanel {
             if (cookie != null) {
                 // check the main class
                 String name = nodes[0].getName ();
+                String fullName = null;
                 SourceElement source = cookie.getSource ();
                 ClassElement[] classes = source.getClasses();
                 boolean hasMain = false;
@@ -93,12 +94,13 @@ public class MainClassChooser extends JPanel {
                   if (classes[i].getName().getName().equals (name)) {
                     if (classes[i].hasMainMethod()) {
                         hasMain = true;
+                        fullName = classes[i].getName ().getFullName ();
                         break;
                     }
                   }
                 }
                 if (hasMain) {
-                    return name;
+                    return fullName;
                 }
             }
         }
