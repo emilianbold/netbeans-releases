@@ -102,6 +102,7 @@ class PDFOpenSupport implements OpenCookie {
     private static File findViewer() {
         File viewer;
         for (int i = 0; i < APP_DIRS.length; i++) {
+            //PENDING/PERFORMANCE: should continue if APP_DIRS[i] does not exist
             for (int j = 0; j < VIEWER_NAMES.length; j++) {
                 String viewerPath;
                 viewerPath = APP_DIRS[i] + File.separatorChar + VIEWER_NAMES[j];
