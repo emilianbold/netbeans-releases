@@ -50,9 +50,10 @@ public class IdeExecWatchdog extends ExecuteWatchdog {
     /** Creates a new instance of IdeExecWatchdog */
     public IdeExecWatchdog(long timeout, Project project) {
         super(timeout);
+        //super(90000);
+        //System.out.println("Got timeout "+timeout+", but using 90 seconds for testing purposes");
         if (project == null) throw new IllegalArgumentException("Ant's Project is not set");
         antProject = project;
-        //System.out.println("Got timeout "+timeout+", but using 90 seconds for testing purposes");
         ideTimeout = timeout;        
         project.log("IdeExecWatchdog created with timeout "+ideTimeout, Project.MSG_VERBOSE);
     }
