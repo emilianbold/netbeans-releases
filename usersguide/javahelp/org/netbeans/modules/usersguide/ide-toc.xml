@@ -621,6 +621,7 @@
     <tocitem text="Menu Shortcuts" target="shortcuts.menus" />
     <tocitem text="Setting Menu Shortcuts" target="shortcuts.menucuts-setting" />
     <tocitem text="Editor Shortcuts" target="shortcuts.editor" />
+    <tocitem text="Window Navigation Shortcuts" target="shortcuts.window" />
     <tocitem text="Help Viewer Shortcuts" target="accessibility.jhshortcuts" />
   </tocitem>
     <tocitem text="IDE Startup Parameters" target="configure.startup-switches" />
