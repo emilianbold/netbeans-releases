@@ -28,7 +28,9 @@ public interface EjbRelationshipRole extends CommonDDBean, DescriptionInterface 
     public static final String CASCADEDELETEID = "CascadeDeleteId";	// NOI18N
     public static final String RELATIONSHIP_ROLE_SOURCE = "RelationshipRoleSource";	// NOI18N
     public static final String CMR_FIELD = "CmrField";	// NOI18N   
-    
+    public static final String MULTIPLICITY_ONE = "One"; // NOI18N  
+    public static final String MULTIPLICITY_MANY = "Many"; // NOI18N  
+        
     public void setEjbRelationshipRoleName(String value);
 
     public String getEjbRelationshipRoleName();

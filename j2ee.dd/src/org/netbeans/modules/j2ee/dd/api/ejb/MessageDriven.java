@@ -25,7 +25,9 @@ public interface MessageDriven extends Ejb {
 	public static final String MESSAGE_DESTINATION_TYPE = "MessageDestinationType";	// NOI18N
 	public static final String MESSAGE_DESTINATION_LINK = "MessageDestinationLink";	// NOI18N
 	public static final String ACTIVATION_CONFIG = "ActivationConfig";	// NOI18N
-       
+        public static final String TRANSACTION_TYPE_BEAN = "Bean"; // NOI18N
+        public static final String TRANSACTION_TYPE_CONTAINER = "Container"; // NOI18N
+    
         public void setTransactionType(String value);
 
         public String getTransactionType();

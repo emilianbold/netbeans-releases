@@ -30,7 +30,11 @@ public interface Entity extends EntityAndSession {
     public static final String PRIMKEY_FIELD = "PrimkeyField";	// NOI18N
     public static final String PRIMKEYFIELDID = "PrimkeyFieldId";	// NOI18N
     public static final String QUERY = "Query";	// NOI18N
-    
+    public static final String PERSISTENCE_TYPE_BEAN = "Bean"; // NOI18N
+    public static final String PERSISTENCE_TYPE_CONTAINER = "Container"; // NOI18N
+    public static final String CMP_VERSION_ONE = "1.x"; // NOI18N
+    public static final String CMP_VERSION_TWO = "2.x"; // NOI18N
+        
     public void setPersistenceType(String value);
     
     public String getPersistenceType();

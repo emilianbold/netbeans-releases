@@ -165,6 +165,7 @@
 		<namespace>http://java.sun.com/xml/ns/j2ee</namespace>
 		<bean-name>Empty</bean-name>
                 <wrapper-class>boolean</wrapper-class>
+                <can-be-empty/>
 	</meta-element>
 	<meta-element>
 		<dtd-name>ejb-relationType</dtd-name>

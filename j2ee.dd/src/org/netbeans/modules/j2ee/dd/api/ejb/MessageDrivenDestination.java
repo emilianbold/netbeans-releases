@@ -23,6 +23,10 @@ public interface MessageDrivenDestination extends org.netbeans.api.web.dd.common
     public static final String DESTINATIONTYPEID = "DestinationTypeId";	// NOI18N
     public static final String SUBSCRIPTION_DURABILITY = "SubscriptionDurability";	// NOI18N
     public static final String SUBSCRIPTIONDURABILITYID = "SubscriptionDurabilityId";	// NOI18N
+    public static final String DESTINATION_TYPE_QUEUE = "javax.jms.Queue";  // NOI18N
+    public static final String DESTINATION_TYPE_TOPIC = "javax.jms.Topic"; // NOI18N
+    public static final String SUBSCRIPTION_DURABILITY_DURABLE = "Durable"; // NOI18N
+    public static final String SUBSCRIPTION_DURABILITY_NONDURABLE = "NonDurable"; // NOI18N
         
     public void setDestinationType(String value);
     

@@ -25,6 +25,8 @@ public interface Query extends CommonDDBean, DescriptionInterface {
     public static final String RESULT_TYPE_MAPPING = "ResultTypeMapping";	// NOI18N
     public static final String EJB_QL = "EjbQl";	// NOI18N
     public static final String EJBQLID = "EjbQlId";	// NOI18N
+    public static final String RESULT_TYPE_MAPPING_REMOTE = "Remote"; // NOI18N
+    public static final String RESULT_TYPE_MAPPING_LOCAL = "Local"; // NOI18N
         
     public void setQueryMethod(QueryMethod value);
     
