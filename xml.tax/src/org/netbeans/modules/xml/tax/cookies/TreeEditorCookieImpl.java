@@ -425,21 +425,24 @@ public class TreeEditorCookieImpl implements TreeEditorCookie, UpdateDocumentCoo
     // it MUST respect synchronization atomicity
     public void updateDocumentRoot() {
 
-        Task task = new Task( new Runnable() {
-            public void run() {
-                try {
-                    parseTree(inputSource(), true);
-                } catch (TreeException ex) {
-                    Util.THIS.debug (ex);
-                } catch (IOException ex) {
-                    Util.THIS.debug (ex);
+        TreeDocumentCookie cookie = (TreeDocumentCookie) xmlDO.getCookie(TreeDocumentCookie.class);
+        if (cookie != null && cookie.getDocumentRoot() != null) {
+            Task task = new Task( new Runnable() {
+                public void run() {
+                    try {
+                        parseTree(inputSource(), true);
+                    } catch (TreeException ex) {
+                        Util.THIS.debug (ex);
+                    } catch (IOException ex) {
+                        Util.THIS.debug (ex);
+                    }
                 }
-            }
-        });
-        
-        xmlDO.getSyncInterface().postRequest(task);
-        task.waitFinished();
-        fireTreeAndStatus();
+            });
+
+            xmlDO.getSyncInterface().postRequest(task);
+            task.waitFinished();
+            fireTreeAndStatus();
+        }
 
     }
 
