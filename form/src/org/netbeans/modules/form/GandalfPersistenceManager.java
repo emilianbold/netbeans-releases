@@ -1053,8 +1053,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     } 
 
     if (value instanceof String) {
-      // [PENDING - encoding newlines and special chars]
-      return (String)str;
+      return (String)value;
     }
      
     if (value instanceof Class) {
@@ -1240,6 +1239,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
     if (text.indexOf ('>') != -1) text = Utilities.replaceString (text, ">", "&gt;");
     if (text.indexOf ('\'') != -1) text = Utilities.replaceString (text, "\'", "&apos;");
     if (text.indexOf ('\"') != -1) text = Utilities.replaceString (text, "\"", "&quot;");
+    if (text.indexOf ('\n') != -1) text = Utilities.replaceString (text, "\n", "&#xa;");
+    if (text.indexOf ('\t') != -1) text = Utilities.replaceString (text, "\t", "&#x9;");
     return text;
   }
 
@@ -1293,6 +1294,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 /*
  * Log
+ *  33   Gandalf   1.32        9/14/99  Ian Formanek    Fixed bug 3287 - Form 
+ *       Editor does not correctly reload forms with multi-line String property 
+ *       values.
  *  32   Gandalf   1.31        9/14/99  Ian Formanek    Fixed bug 3564 - Form 
  *       editor cannot load forms with non-US characters.
  *  31   Gandalf   1.30        9/12/99  Ian Formanek    FormAwareEditor.setRADComponent
