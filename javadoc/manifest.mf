@@ -1,14 +1,11 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.javadoc/1
-OpenIDE-Module-Name: Javadoc
-OpenIDE-Module-Display-Category: Java
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/javadoc/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/javadoc/resources/mf-layer.xml
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.java/1
 OpenIDE-Module-Specification-Version: 1.7
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
-OpenIDE-Module-Short-Description: Supports Javadoc creation and searches.
-OpenIDE-Module-Long-Description: The Javadoc module enables you to search and browse Javadoc
-  documentation from within the IDE and helps you create Javadoc comments in your source code.
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.24
 
 Name: org/netbeans/modules/javadoc/GenerateDocAction.class
 OpenIDE-Module-Class: Action

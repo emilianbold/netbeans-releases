@@ -1,13 +1,10 @@
 OpenIDE-Module: org.netbeans.modules.beans/1
-OpenIDE-Module-Name: Bean Patterns
-OpenIDE-Module-Display-Category: Java
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/beans/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/beans/resources/mf-layer.xml
 OpenIDE-Module-Specification-Version: 1.7
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.java/1
-OpenIDE-Module-Short-Description: Support for creating JavaBeans(TM) components.
-OpenIDE-Module-Long-Description: The Bean Patterns module provides support for developing
-  JavaBeans(TM) components in the IDE, such as generation of properties, event sets, and BeanInfo.
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.24
 
 Name: org/netbeans/modules/beans/AddPropertyAction.class
 OpenIDE-Module-Class: Action
