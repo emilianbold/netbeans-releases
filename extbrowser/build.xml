@@ -75,7 +75,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="clean">
     <delete>
       <fileset dir="src">
-        <include name="**/*.class"/>
+        <include name="org/netbeans/modules/extbrowser/*.class"/>
       </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
