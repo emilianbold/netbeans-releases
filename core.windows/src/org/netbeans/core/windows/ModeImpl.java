@@ -1276,7 +1276,7 @@ public final class ModeImpl implements Comparable, Mode, FrameTypeListener, Comp
     public int getRestoredFrameState () {
         ensureSectionLoaded(PROPERTIES);
         if (frame != null) {
-            // frame exists, return real state or "fake" state if in max mode
+            // Frame exists, return real state or "fake" state if in max mode
             if (WindowTypesManager.INTERNAL_FRAME.equals(frameType)) {
                 DesktopPane desktop = ((WorkspaceImpl)workspace).desktopPane();
                 if (desktop.isMaxMode()) {
@@ -1306,6 +1306,16 @@ public final class ModeImpl implements Comparable, Mode, FrameTypeListener, Comp
             return frameTypeState;
         }
         return FrameType.NORMAL;
+    }
+    
+    /** Used internaly from UIModeManager when switching to SDI #33691 */
+    int getFrameStateVar () {
+        return frameTypeState;
+    }
+    
+    /** Used internaly from UIModeManager when switching to SDI #33691 */
+    void setFrameStateVar (int state) {
+        frameTypeState = state;
     }
     
     /** Shows or hides asociated top component container,
@@ -2134,8 +2144,9 @@ public final class ModeImpl implements Comparable, Mode, FrameTypeListener, Comp
         // when frame will be displayed again, but change minimized
         // frames to normal (bugfix #11202)
         frameTypeState = frame.getState();
-        if (FrameType.ICONIFIED == frameTypeState)
+        if (FrameType.ICONIFIED == frameTypeState) {
             frameTypeState = FrameType.NORMAL;
+        }
         // keep normal bounds, not maximized (if we are in max mode)
         bounds = getNormalBounds();
         // update hidden flag
