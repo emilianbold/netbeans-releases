@@ -291,9 +291,6 @@ Microsystems, Inc. All Rights Reserved.
       <srcfiles dir="src">
         <include name="org/openide/**/*.java"/>
       </srcfiles>
-      <srcfiles dir="../openidex/src">
-        <include name="org/openidex/**/*.java"/>
-      </srcfiles>
       <srcfiles dir="api/doc">
         <include name="org/openide/"/>
         <include name="overview.html"/>
@@ -329,7 +326,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
         <pathelement location="src"/>
       </sourcepath>
       <classpath>
-        <pathelement location="../core/release/lib/ext/parser.jar"/>
+        <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
         <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
       </classpath>
       <link href="${jdk-docs-location}"
