@@ -88,9 +88,19 @@ public class J2SEProjectUtil {
             // ??? maybe better should be thrown IAE
             return false;
         }
-        Resource res = JavaMetamodel.getManager ().getResource (fo);
-        assert res != null : "Resource found for FileObject " + fo;
-        return hasMainMethod (res);
+        
+        boolean has = false;
+        JavaMetamodel.getDefaultRepository ().beginTrans (false);
+        
+        try {
+            Resource res = JavaMetamodel.getManager ().getResource (fo);
+            assert res != null : "Resource found for FileObject " + fo;
+            has = hasMainMethod (res);
+        } finally {
+            JavaMetamodel.getDefaultRepository ().endTrans ();
+        }
+        
+        return has;
     }
     
     /** Returns list of FQN of classes contains the main method.
@@ -99,31 +109,36 @@ public class J2SEProjectUtil {
      * @return list of names of classes, e.g, [sample.project1.Hello, sample.project.app.MainApp]
      */
     final public static List/*<String>*/ getMainClasses (FileObject root) {
-        JavaModelPackage mofPackage = JavaMetamodel.getManager().getJavaExtent(root);
-        ClassIndex index = ClassIndex.getIndex (mofPackage);
-        //Resource[] res = index.findResourcesForIdentifier ("main"); // NOI18N
-        Collection col = index.findResourcesForIdent ("main"); // NOI18N
-        Object[] arr = col.toArray ();
-        
+        JavaMetamodel.getDefaultRepository ().beginTrans (false);
         List/*<String>*/ classes = new ArrayList ();
-        
-        if (arr == null) {
-            // no main classes
-            return classes;
-        }
-        
-        for (int i = 0; i < arr.length; i++) {
-            Resource res = (Resource)arr[i];
-            if (hasMainMethod (res)) {
-                // has main class -> add to list its name.
-                FileObject fo = ((JMManager)JMManager.getManager ()).getFileObject (res);
-                assert fo != null : "FileObject found for the resource " + res;
-                if (res.getPackageName ().length () > 0) {
-                    classes.add (res.getPackageName () + '.' + fo.getName ());
-                } else {
-                    classes.add (fo.getName ());
+
+        try {
+            JavaModelPackage mofPackage = JavaMetamodel.getManager().getJavaExtent(root);
+            ClassIndex index = ClassIndex.getIndex (mofPackage);
+            //Resource[] res = index.findResourcesForIdentifier ("main"); // NOI18N
+            Collection col = index.findResourcesForIdent ("main"); // NOI18N
+            Object[] arr = col.toArray ();
+
+            if (arr == null) {
+                // no main classes
+                return classes;
+            }
+
+            for (int i = 0; i < arr.length; i++) {
+                Resource res = (Resource)arr[i];
+                if (hasMainMethod (res)) {
+                    // has main class -> add to list its name.
+                    FileObject fo = ((JMManager)JMManager.getManager ()).getFileObject (res);
+                    assert fo != null : "FileObject found for the resource " + res;
+                    if (res.getPackageName ().length () > 0) {
+                        classes.add (res.getPackageName () + '.' + fo.getName ());
+                    } else {
+                        classes.add (fo.getName ());
+                    }
                 }
             }
+        } finally {
+            JavaMetamodel.getDefaultRepository ().endTrans (false);
         }
         
         return classes;
@@ -141,12 +156,19 @@ public class J2SEProjectUtil {
         if (MainClassChooser.unitTestingSupport_hasMainMethodResult != null) {
             return MainClassChooser.unitTestingSupport_hasMainMethodResult.booleanValue ();
         }
-        JavaClass clazz = ClassIndex.getClassByFqn (className, JavaMetamodel.getManager ().getClassPath ());
-        if (clazz != null) {
-            return hasMainMethod (clazz.getResource ());
-        } else {
-            return false;
+        
+        JavaMetamodel.getDefaultRepository ().beginTrans (false);
+        boolean isMain = false;
+        
+        try {
+            JavaClass clazz = ClassIndex.getClassByFqn (className, JavaMetamodel.getManager ().getClassPath ());
+            if (clazz != null) {
+                isMain = hasMainMethod (clazz.getResource ());
+            }
+        } finally {
+            JavaMetamodel.getDefaultRepository ().endTrans ();
         }
+        return isMain;
     }
 
     // copied from JavaNode.hasMain
