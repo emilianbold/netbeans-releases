@@ -1664,13 +1664,12 @@ final class Central implements ControllerHandler {
             targetMode = WindowManagerImpl.getInstance().createModeImpl(
                 ModeImpl.getUnusedModeName(), Constants.MODE_KIND_SLIDING, false);
             model.addSlidingMode(targetMode, targetSide);
+            model.setModeBounds(targetMode, new Rectangle(tc.getBounds()));
         }
         moveTCWithoutActivation(targetMode, tc);
-        
         // remember previous mode and constraints for precise de-auto-hide
         model.setModeTopComponentPreviousMode(targetMode, tc, source);
         model.setModeTopComponentPreviousConstraints(targetMode, tc, model.getModeConstraints(source));
-        
         ModeImpl oldActive = getActiveMode();
         ModeImpl newActive;
         if(source == oldActive && source.getOpenedTopComponents().isEmpty()) {

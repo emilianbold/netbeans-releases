@@ -469,7 +469,7 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
     } // end of ActivationManager
     
     /**
-     * proxy slide operation that disables activation reqeuest when throws eoperation comes from the model, not really user action.
+     * proxy slide operation that disables activation reqeuest when the operation comes from the model, not really user action.
      */
     private static class ProxySlideOperation implements SlideOperation {
         

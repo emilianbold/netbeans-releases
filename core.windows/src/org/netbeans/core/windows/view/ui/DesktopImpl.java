@@ -293,14 +293,17 @@ public final class DesktopImpl {
             result.x = viewRect.x + Math.max(viewRect.width, viewPreferred.width);
             result.y = 0;
             result.height = splitRootRect.height;
-            result.width = editorBounds.x - result.x + 6;
+//            result.width = editorBounds.x - result.x + 6;
+            result.width = view.getSlideBounds().width;
             if (result.width < MIN_EDITOR_ALIGN_THICK) {
                 result.width = splitRootRect.width / 3;
             }
         } else if (Constants.RIGHT.equals(side)) {
             int rightLimit = layeredPane.getBounds().x + layeredPane.getBounds().width - Math.max(viewRect.width, viewPreferred.width);
-            result.x = (rightLimit - (editorBounds.x + editorBounds.width) < MIN_EDITOR_ALIGN_THICK)
-                        ? rightLimit - splitRootRect.width / 3 : editorBounds.x + editorBounds.width - 6;
+//            result.x = (rightLimit - (editorBounds.x + editorBounds.width) < MIN_EDITOR_ALIGN_THICK)
+//                        ? rightLimit - splitRootRect.width / 3 : editorBounds.x + editorBounds.width - 6;
+            result.x = (view.getSlideBounds().width < MIN_EDITOR_ALIGN_THICK)
+                        ? rightLimit - splitRootRect.width / 3 : rightLimit - view.getSlideBounds().width;
             result.y = 0;
             result.height = splitRootRect.height;
             result.width = rightLimit - result.x;
@@ -308,8 +311,8 @@ public final class DesktopImpl {
         } else if (Constants.BOTTOM.equals(side)) {
             int lowerLimit = viewRect.y + viewRect.height - Math.max(viewRect.height, viewPreferred.height);
             result.x = splitRootRect.x;
-            result.y = (lowerLimit - (editorBounds.y + editorBounds.height) < MIN_EDITOR_ALIGN_THICK)
-                        ? lowerLimit - splitRootRect.height / 3 : editorBounds.y + editorBounds.height - 6;
+            result.y = (view.getSlideBounds().height < MIN_EDITOR_ALIGN_THICK)
+                        ? lowerLimit - splitRootRect.height / 3 : lowerLimit - view.getSlideBounds().height;
             result.height = lowerLimit - result.y;
             result.width = splitRootRect.width;
         }

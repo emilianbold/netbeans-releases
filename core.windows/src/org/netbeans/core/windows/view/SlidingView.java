@@ -29,7 +29,8 @@ public class SlidingView extends ModeView {
     
     /** Orientation of sliding view, means side where it is located */
     private final String side;
-
+    private Rectangle slideBounds;
+    
     public SlidingView(Controller controller, WindowDnDManager windowDnDManager, 
                         TopComponent[] topComponents, TopComponent selectedTopComponent, String side) {
         super(controller);
@@ -46,6 +47,16 @@ public class SlidingView extends ModeView {
     public Rectangle getTabBounds(int tabIndex) {
         return ((SlideBarContainer)this.container).getTabBounds(tabIndex);
     }
+
+    public Rectangle getSlideBounds() {
+        return slideBounds;
+    }
+
+    public void setSlideBounds(Rectangle slideBounds) {
+        this.slideBounds = slideBounds;
+    }
+    
+    
 
 }
 
