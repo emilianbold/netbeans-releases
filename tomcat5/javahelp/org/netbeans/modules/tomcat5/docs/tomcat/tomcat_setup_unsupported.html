@@ -33,13 +33,13 @@ Ant targets for starting and stopping the Tomcat Web Server
         nbproject node, and double-click the project.properties node. Change the
 	<tt>build.web.dir</tt> property as follows:
 <pre>c:/Program Files/Apache Group/Tomcat 4.1/webapps/<i>MyWebAppProjectName</i></pre>
-	<p>Make sure that the path above points to the unsupported Tomcat Web server's <tt>webapps</tt> folder,
+	<p>Make sure that the path above points to the Tomcat Web server's <tt>webapps</tt> folder,
 	and replace <i>MyWebAppProjectName</i> with the name of your web application project.</li>
 <li>Double-click the <tt>build.xml</tt> file 
 and add the following targets right above the closing &lt;<tt>/project</tt>&gt; tag:
 	
 <ul>
-<li>A target to start an unsupported Tomcat Web Server:	
+	<li>A target to start the server:	
 <pre>  &lt;target name="startcat4" depends="init"&gt;
     &lt;exec executable="c:\Program Files\Apache Group\Tomcat 4.1\bin\startup.bat"&gt;
         &lt;env key="CATALINA_HOME" value="c:\Program Files\Apache Group\Tomcat 4.1"/&gt;
@@ -47,14 +47,14 @@ and add the following targets right above the closing &lt;<tt>/project</tt>&gt; 
     &lt;/exec&gt;
   &lt;/target&gt;</pre></li>
 
-<li>A target to deploy to an unsupported Tomcat Web Server:	
+<li>A target to deploy the application:	
 <pre>  &lt;target name="run" depends="compile"&gt;
     &lt;exec executable="C:\Program Files\mozilla.org\Mozilla\mozilla.exe"&gt;
 	&lt;arg value="http://localhost:8080/<i>MyWebAppProjectName</i>/${client.urlPart}"/&gt;
     &lt;/exec&gt;
   &lt;/target&gt;</pre></li>
 
-<li>A target to stop an unsupported Tomcat Web Server:	
+<li>A target to stop the server:	
 <pre>  &lt;target name="stopcat4" depends="init"&gt;
     &lt;exec executable="c:\Program Files\Apache Group\Tomcat 4.1\bin\shutdown.bat"&gt;
         &lt;env key="CATALINA_HOME" value="c:\Program Files\Apache Group\Tomcat 4.1"/&gt;
