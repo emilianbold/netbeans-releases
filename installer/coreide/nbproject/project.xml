@@ -4,22 +4,22 @@
     <name>NetBeans Installer</name>
     <configuration>
         <general-data xmlns="http://www.netbeans.org/ns/freeform-project/1">
-            <name>NetBeans_Installer</name>
+            <name>NetBeans Installer</name>
             <folders>
                 <source-folder>
                     <label>src</label>
-                    <location>/h/ttran/work/nbsrc/installer/coreide/src</location>
+                    <location>src</location>
                     <type>java</type>
                 </source-folder>
             </folders>
             <view>
                 <items>
                     <source-file>
-                        <location>/h/ttran/work/nbextra/installer/netbeans/build.xml</location>
+                        <location>build.xml</location>
                     </source-file>
                     <source-folder style="packages">
                         <label>src</label>
-                        <location>/h/ttran/work/nbsrc/installer/coreide/src</location>
+                        <location>src</location>
                     </source-folder>
                 </items>
                 <context-menu>
