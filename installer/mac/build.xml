@@ -34,7 +34,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="clean" depends="clean-app,clean-dist,clean-installer,clean-installerimage" description="Clean all build targets (except the IDE)"/>
   <target name="real-clean" depends="clean" description="Runs the netbeans build clean target and cleans the installer">
-      <ant dir="${build.dir}" target="clean"/>
+      <ant dir="${nbbuild.dir}" target="clean"/>
   </target>
   
   <target name="clean-image">
@@ -99,7 +99,7 @@ Microsystems, Inc. All Rights Reserved.
       </copy>
             
       <echo message="Copying ${exename} to ${appdir}/MacOS/${exename}"/>
-      <copy file="${build.dir}/${bin.dir}/${exename}" tofile="${appdir}/MacOS/${exename}"/>
+      <copy file="${nbbuild.dir}/${bin.dir}/${exename}" tofile="${appdir}/MacOS/${exename}"/>
       
       <echo message="Munging shell scripts to point to relocated files" />
       <replace file="${appdir}/MacOS/${exename}" replacefilterfile="resources/runide-sh-filters.properties" summary="yes"/>
