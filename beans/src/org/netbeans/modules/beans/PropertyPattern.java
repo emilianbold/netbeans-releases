@@ -298,13 +298,13 @@ public class PropertyPattern extends Pattern {
         switch ( mode ) {
         case READ_WRITE:
             if ( getterMethod == null )
-                generateGetterMethod();
+                generateGetterMethod(null, true);
             if ( setterMethod == null )
-                generateSetterMethod();
+                generateSetterMethod(null, false, true);
             break;
         case READ_ONLY:
             if ( getterMethod == null )
-                generateGetterMethod();
+                generateGetterMethod(null, true);
             if ( setterMethod != null ) {
                 NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( PatternNode.getString("MSG_Delete_Setter") + PatternNode.getString("MSG_Continue_Confirm"), NotifyDescriptor.YES_NO_OPTION );
                 TopManager.getDefault().notify( nd );
@@ -315,7 +315,7 @@ public class PropertyPattern extends Pattern {
             break;
         case WRITE_ONLY:
             if ( setterMethod == null )
-                generateSetterMethod();
+                generateSetterMethod(null, false, true);
             if ( getterMethod != null ) {
                 NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( PatternNode.getString("MSG_Delete_Getter") + PatternNode.getString("MSG_Continue_Confirm"), NotifyDescriptor.YES_NO_OPTION );
                 TopManager.getDefault().notify( nd );
