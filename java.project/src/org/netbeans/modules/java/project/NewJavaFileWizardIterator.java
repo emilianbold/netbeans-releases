@@ -44,8 +44,7 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 
 /**
- * Wizard to create a new J2SE project.
- * @author Jesse Glick
+ * Wizard to create a new Java file.
  */
 public class NewJavaFileWizardIterator implements WizardDescriptor.InstantiatingIterator {
     
