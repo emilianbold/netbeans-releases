@@ -239,7 +239,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
                 // newly added root -> create new TC and open it on every
                 // workspace where some top compoents from main explorer
                 // are already opened
-                tc = createTC(r);
+                tc = createTC(r, false);
                 
                 for (Iterator iter2 = workspaces.iterator(); iter2.hasNext(); ) {
                     tc.open((Workspace)iter2.next());
@@ -302,18 +302,58 @@ public final class NbMainExplorer extends CloneableTopComponent {
 
     /** Creates a top component dedicated to exploration of
     * specified node, which will serve as root context */
-    private ExplorerTab createTC (Node rc) {
+    private ExplorerTab createTC (Node rc, boolean deserialize) {
         // switch according to the type of the root context
         MainTab panel = null;
         NbPlaces places = NbPlaces.getDefault();
 
         if (rc.equals(RepositoryNodeFactory.getDefault().repository(DataFilter.ALL))) {
-            panel = RepositoryTab.getDefaultRepositoryTab();
+            if (deserialize) {
+                TopComponent tc = WindowManager.getDefault().findTopComponent("filesystems"); // NOI18N
+                if (tc != null) {
+                    if (tc instanceof RepositoryTab) {
+                        panel = (RepositoryTab) tc;
+                    } else {
+                        //Incorrect settings file?
+                        IllegalStateException exc = new IllegalStateException
+                        ("Incorrect settings file. Unexpected class returned." // NOI18N
+                        + " Expected:" + RepositoryTab.class.getName() // NOI18N
+                        + " Returned:" + tc.getClass().getName()); // NOI18N
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+                        panel = RepositoryTab.getDefaultRepositoryTab();
+                    }
+                } else {
+                    panel = RepositoryTab.getDefaultRepositoryTab();
+                }
+            } else {
+                panel = RepositoryTab.getDefaultRepositoryTab();
+            }
         } else if (rc.equals(places.environment())) {
             // default tabs
-            panel = MainTab.getDefaultMainTab();
+            if (deserialize) {
+                TopComponent tc = WindowManager.getDefault().findTopComponent("runtime"); // NOI18N
+                if (tc != null) {
+                    if (tc instanceof MainTab) {
+                        panel = (MainTab) tc;
+                    } else {
+                        //Incorrect settings file?
+                        IllegalStateException exc = new IllegalStateException
+                        ("Incorrect settings file. Unexpected class returned." // NOI18N
+                        + " Expected:" + MainTab.class.getName() // NOI18N
+                        + " Returned:" + tc.getClass().getName()); // NOI18N
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+                        panel = MainTab.getDefaultMainTab();
+                    }
+                } else {
+                    panel = MainTab.getDefaultMainTab();
+                }
+            } else {
+                panel = MainTab.getDefaultMainTab();
+            }
         } else {
             // tabs added by modules
+            //We cannot use findTopComponent here because we do not know unique
+            //TC ID ie. proper deserialization of such TC will not work.
             panel = NbMainExplorer.findModuleTab(rc, null);
         }
         
@@ -760,12 +800,22 @@ public final class NbMainExplorer extends CloneableTopComponent {
             return DEFAULT;
         }
         
-        /** Creator/accessor method for proper initialization of
-         * environment (runtime) top component from xml settings file.
+        /** Creator/accessor method of Runtime tab singleton. Instance is properly
+         * deserialized by winsys.
          */
         public static MainTab createEnvironmentTab () {
             return (MainTab)getExplorer().createTC(
-                NbPlaces.getDefault().environment()
+                NbPlaces.getDefault().environment(), true
+            );
+        }
+        
+        /** Creator/accessor method used ONLY by winsys for first time instantiation
+         * of Runtime tab. Use <code>createEnvironmentTab</code> to properly deserialize
+         * singleton instance.
+         */
+        public static MainTab createEnvironmentTabWinSys() {
+            return (MainTab)getExplorer().createTC(
+            NbPlaces.getDefault().environment(), false
             );
         }
 
@@ -855,12 +905,22 @@ public final class NbMainExplorer extends CloneableTopComponent {
             return DEFAULT;
         }
         
-        /** Creator/accessor method for proper initialization of
-         * filesystems top component from xml settings file.
+        /** Creator/accessor method of Filesystems tab singleton. Instance is properly
+         * deserialized by winsys.
          */
         public static RepositoryTab createRepositoryTab () {
             return (RepositoryTab)getExplorer().createTC(
-                RepositoryNodeFactory.getDefault().repository(DataFilter.ALL)
+                RepositoryNodeFactory.getDefault().repository(DataFilter.ALL), true
+            );
+        }
+        
+        /** Creator/accessor method used ONLY by winsys for first time instantiation
+         * of Filesystems tab. Use <code>createRepositoryTab</code> to properly deserialize
+         * singleton instance.
+         */
+        public static RepositoryTab createRepositoryTabWinSys() {
+            return (RepositoryTab)getExplorer().createTC(
+            RepositoryNodeFactory.getDefault().repository(DataFilter.ALL), false
             );
         }
 
