@@ -27,7 +27,7 @@ import java.io.IOException;
  *
  * @author  Thomas Ball
  */
-public class Code {
+public final class Code {
     
     private int maxStack;
     private int maxLocals;

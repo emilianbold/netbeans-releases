@@ -24,7 +24,7 @@ package org.netbeans.modules.classfile;
  *
  * @author Thomas Ball
  */
-public class CPUTF8Info extends CPName {
+public final class CPUTF8Info extends CPName {
     String name;
     byte[] utf;
 

@@ -27,7 +27,7 @@ import java.io.IOException;
  *
  * @author  Thomas Ball
  */
-public class InnerClass {
+public final class InnerClass {
 
     ClassName name;
     ClassName outerClassName;

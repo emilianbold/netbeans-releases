@@ -19,15 +19,13 @@
 
 package org.netbeans.modules.classfile;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
 
 /**
  * A class representing the CONSTANT_Integer constant pool type.
  *
  * @author Thomas Ball
  */
-public class CPIntegerInfo extends CPEntry {
+public final class CPIntegerInfo extends CPEntry {
 
     CPIntegerInfo(ConstantPool pool, int v) {
 	super(pool);

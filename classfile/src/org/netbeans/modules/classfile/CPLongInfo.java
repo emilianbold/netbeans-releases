@@ -19,15 +19,13 @@
 
 package org.netbeans.modules.classfile;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
 
 /**
  * A class representing the CONSTANT_Long constant pool type.
  *
  * @author Thomas Ball
  */
-public class CPLongInfo extends CPEntry {
+public final class CPLongInfo extends CPEntry {
 
     CPLongInfo(ConstantPool pool, long v) {
 	super(pool);

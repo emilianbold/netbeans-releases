@@ -27,7 +27,7 @@ import java.io.IOException;
  *
  * @author  Thomas Ball
  */
-public class LocalVariableTableEntry extends Object {
+public final class LocalVariableTableEntry {
     
     int startPC;
     int length;

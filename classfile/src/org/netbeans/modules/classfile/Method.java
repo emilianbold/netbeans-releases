@@ -27,7 +27,7 @@ import java.io.IOException;
  *
  * @author  Thomas Ball
  */
-public class Method extends Field {
+public final class Method extends Field {
     
     private boolean includeCode;
     private Code code;

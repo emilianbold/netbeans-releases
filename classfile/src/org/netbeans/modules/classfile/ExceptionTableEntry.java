@@ -27,7 +27,7 @@ import java.io.IOException;
  *
  * @author  Thomas Ball
  */
-public class ExceptionTableEntry extends Object {
+public final class ExceptionTableEntry {
     
     int startPC;
     int endPC;

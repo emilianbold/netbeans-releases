@@ -19,15 +19,13 @@
 
 package org.netbeans.modules.classfile;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
 
 /**
  * A class representing the CONSTANT_String constant pool type.
  *
  * @author Thomas Ball
  */
-public class CPStringInfo extends CPName {
+public final class CPStringInfo extends CPName {
     CPStringInfo(ConstantPool pool,int index) {
 	super(pool, index);
     }

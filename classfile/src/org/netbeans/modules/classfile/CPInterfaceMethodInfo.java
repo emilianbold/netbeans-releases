@@ -19,15 +19,13 @@
 
 package org.netbeans.modules.classfile;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
 
 /**
  * A class representing the CONSTANT_InterfaceMethodref constant pool type.
  *
  * @author Thomas Ball
  */
-public class CPInterfaceMethodInfo extends CPMethodInfo {
+public final class CPInterfaceMethodInfo extends CPMethodInfo {
     CPInterfaceMethodInfo(ConstantPool pool,int iClass,int iNameAndType) {
         super(pool, iClass, iNameAndType);
     }

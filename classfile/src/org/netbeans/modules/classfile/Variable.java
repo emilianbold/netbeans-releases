@@ -28,7 +28,7 @@ import java.io.*;
  *
  * @author  Thomas Ball
  */
-public class Variable extends Field {
+public final class Variable extends Field {
 
     private boolean constant;    // don't initialize to false, as loadAttribute is called by super.<init>
     private Object value;

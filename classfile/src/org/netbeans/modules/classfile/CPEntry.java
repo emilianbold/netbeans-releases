@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.classfile;
 
-import java.io.IOException;
-import java.io.DataOutputStream;
 
 /**
  * A class representing an entry in a ConstantPool.

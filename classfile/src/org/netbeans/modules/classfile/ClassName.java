@@ -39,7 +39,7 @@ public final class ClassName implements Comparable, Comparator, Serializable {
     private transient String packageName;
     private transient int hash = -1;
 
-    private static WeakHashMap cache = new WeakHashMap();
+    private final static WeakHashMap cache = new WeakHashMap();
 
     /**
      * Returns the ClassName object referenced by a class
@@ -88,19 +88,19 @@ public final class ClassName implements Comparable, Comparator, Serializable {
 	    if (cn == null) {
 	        // check for valid class type
 	        int i = classType.indexOf('L');
-		String type;
+		String _type;
 		char lastChar = classType.charAt(classType.length()-1);
 		if (i != -1 && lastChar == ';') {
-		    type = classType.substring(i+1, classType.length()-1);
-		    cn = (ClassName)cache.get(type);
+		    _type = classType.substring(i+1, classType.length()-1);
+		    cn = (ClassName)cache.get(_type);
 		    if (cn != null)
 		        return cn;
 		} else {
-		    type = classType;
+		    _type = classType;
 		}
 
-		cn = new ClassName(type);
-		cache.put(classType, cn);
+		cn = new ClassName(_type);
+		cache.put(_type, cn);
 	    }
 	}
 	return cn;

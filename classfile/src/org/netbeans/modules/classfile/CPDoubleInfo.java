@@ -19,15 +19,13 @@
 
 package org.netbeans.modules.classfile;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
 
 /**
  * A class representing the CONSTANT_Double constant pool type.
  *
  * @author Thomas Ball
  */
-public class CPDoubleInfo extends CPEntry {
+public final class CPDoubleInfo extends CPEntry {
 
     CPDoubleInfo(ConstantPool pool, double v) {
 	super(pool);

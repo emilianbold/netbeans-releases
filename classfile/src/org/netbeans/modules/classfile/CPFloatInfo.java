@@ -19,15 +19,13 @@
 
 package org.netbeans.modules.classfile;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
 
 /**
  * A class representing the CONSTANT_Float constant pool type.
  *
  * @author Thomas Ball
  */
-public class CPFloatInfo extends CPEntry {
+public final class CPFloatInfo extends CPEntry {
 
     CPFloatInfo(ConstantPool pool, float v) {
 	super(pool);

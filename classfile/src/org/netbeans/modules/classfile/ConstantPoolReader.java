@@ -28,17 +28,17 @@ import java.io.*;
  *
  * @author Thomas Ball
  */
-public class ConstantPoolReader extends FilterInputStream implements DataInput {
+public final class ConstantPoolReader extends FilterInputStream implements DataInput {
 
     public ConstantPoolReader(InputStream in) {
 	super(in);
     }
 
-    public void readFully(byte b[]) throws IOException {
+    public void readFully(byte[] b) throws IOException {
 	readFully(b, 0, b.length);
     }
 
-    public void readFully(byte b[], int off, int len) throws IOException {
+    public void readFully(byte[] b, int off, int len) throws IOException {
 	InputStream in = this.in;
 	int n = 0;
 	while (n < len) {
@@ -116,7 +116,6 @@ public class ConstantPoolReader extends FilterInputStream implements DataInput {
     }
 
     public long readLong() throws IOException {
-	InputStream in = this.in;
 	return ((long)(readInt()) << 32) + (readInt() & 0xFFFFFFFFL);
     }
 
@@ -128,7 +127,7 @@ public class ConstantPoolReader extends FilterInputStream implements DataInput {
 	return Double.longBitsToDouble(readLong());
     }
 
-    private char lineBuffer[];
+    private char[] lineBuffer;
 
     public String readLine() throws IOException {
 	InputStream in = this.in;
@@ -176,8 +175,8 @@ loop:	while (true) {
     }
 
     // NOT threadsafe: for performance
-    static char str[] = new char[1024];
-    byte bytearr[] = new byte[1024];
+    static char[] str = new char[1024];
+    byte[] bytearr = new byte[1024];
 
     public String readUTF() throws IOException {
         int utflen = readUnsignedShort();
@@ -206,11 +205,11 @@ loop:	while (true) {
             int b = src[i++] & 0xFF;
             if (b >= 0xE0) {
                 b = (b & 0x0F) << 12;
-                b = b | (src[i++] & 0x3F) << 6;
-                b = b | (src[i++] & 0x3F);
+                b |= (src[i++] & 0x3F) << 6;
+                b |= (src[i++] & 0x3F);
             } else if (b >= 0xC0) {
                 b = (b & 0x1F) << 6;
-                b = b | (src[i++] & 0x3F);
+                b |= (src[i++] & 0x3F);
             }
             str[strlen++] = (char)b;
         }

@@ -19,15 +19,13 @@
 
 package org.netbeans.modules.classfile;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
 
 /**
  * A class representing the CONSTANT_Fieldref constant pool type.
  *
  * @author Thomas Ball
  */
-public class CPFieldInfo extends CPFieldMethodInfo {
+public final class CPFieldInfo extends CPFieldMethodInfo {
     CPFieldInfo(ConstantPool pool,int iClass,int iNameAndType) {
         super(pool, iClass, iNameAndType);
     }

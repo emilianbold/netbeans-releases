@@ -27,7 +27,7 @@ import java.util.*;
  *
  * @author Thomas Ball
  */
-public class ConstantPool {
+public final class ConstantPool {
 
     private static final int CONSTANT_POOL_START = 1;
 
@@ -65,6 +65,15 @@ public class ConstantPool {
     }
     
     /**
+     * Create a new ConstantPool object with no entries.
+     * NOTE: not supported until classfile writing is.
+     */
+    /*public*/ ConstantPool() {
+        constantPoolCount = CONSTANT_POOL_START;
+        cpEntries = new CPEntry[constantPoolCount];
+    }
+
+    /**
      * Get the CPEntry at a specific constant pool index.
      *
      * @param index the constant pool index for the entry
@@ -84,15 +93,6 @@ public class ConstantPool {
         if (index <= 0)
             throw new IndexOutOfBoundsException(Integer.toString(index));
         return (CPClassInfo)get(index);
-    }
-
-    /**
-     * Create a new ConstantPool object with no entries.
-     * NOTE: not supported until classfile writing is.
-     */
-    /*public*/ ConstantPool() {
-        constantPoolCount = CONSTANT_POOL_START;
-        cpEntries = new CPEntry[constantPoolCount];
     }
 
     /* Return an array of all constants of a specified class type.

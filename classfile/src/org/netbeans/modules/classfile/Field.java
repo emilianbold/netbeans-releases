@@ -68,7 +68,7 @@ public abstract class Field {
                 deprecated = true;
             else if (name.equals("Synthetic"))
                 synthetic = true;
-            else if (loadAttribute(name, len, in, pool) == false)  {
+            else if (!loadAttribute(name, len, in, pool))  {
                 // ignore attribute...
 		ClassFile.skip(in, len);
             }
