@@ -177,6 +177,19 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
   */
   public void saveDocument () throws IOException {
     super.saveDocument ();
+    saveForm ();
+  }
+
+  /** Save the document in this thread.
+  * @param parse true if the parser should be started, otherwise false
+  * @exception IOException on I/O error
+  */
+  protected void saveDocumentIfNecessary(boolean parse) throws IOException {
+    super.saveDocumentIfNecessary(parse);
+    saveForm ();
+  }
+
+  private void saveForm () {
     if (formLoaded) {
       TuborgPersistenceManager perMan = new TuborgPersistenceManager ();
       FileObject formFile = formObject.getFormEntry ().getFile ();
@@ -215,6 +228,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  19   Gandalf   1.18        6/10/99  Ian Formanek    Fixed bug which caused 
+ *       that forms saved using "Compile" saved only the source and not the form
  *  18   Gandalf   1.17        6/10/99  Ian Formanek    Patched bug which 
  *       prevented components to be selecteable by mouse before their nodes were
  *       created
