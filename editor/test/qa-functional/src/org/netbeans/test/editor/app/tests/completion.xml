@@ -562,6 +562,7 @@ class Foo {
     <TestStep Name="HTMLEditorSettings">
       <TestSetKitAction Name="setHTMLKit" Kit="HTMLKit" />
       <TestSetIEAction Name="setWrapIE" IndentationEngine="Line Wrapping Indentation Engine" />
+      <TestSetCompletionAction Name="completionSettings" CaseSensitive="false" InstantSubstitution="true" NaturalSort="false" />
     </TestStep>
     <TestStep Name="HTMLActions">
       <TestStringAction Name="string1" String="&lt;" />
@@ -603,6 +604,7 @@ class Foo {
       <TestLogAction Name="caret-end-line" Command="" />
       <TestStringAction Name="string17" String="Text.&lt;/" />
       <TestLogAction Name="completion-show" Command=" " />
+      <TestLogAction Name="page-down" Command="2" />
     </TestStep>
     <TestCallAction Name="BasicHTML" Call="HTMLActions" Set="HTMLEditorSettings" Enable="true" Repeat="1" Delay="400">
       <Input>
@@ -611,7 +613,7 @@ class Foo {
       <Output>
         <![CDATA["<HTML>
 <BODY>
-<A class='aaa' href='file'>Text.</A>
+<A charset='aaa' href='file'>Text.</A>
 </BODY>
 </HTML>"]]>
       </Output>
