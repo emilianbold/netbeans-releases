@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -51,12 +51,15 @@ public abstract class J2eeModuleProvider {
         return new J2eeDeploymentLookup (provider);
     }
     
+    /**
+     * Returns execution support for the given DataObject.
+     */
     public static org.openide.loaders.ExecutionSupport getExecutionSupport (DataObject dobj) {
         return new ServerExecSupport (((MultiDataObject) dobj).getPrimaryEntry ());
     }
 
     /** Returns JSPServletFinder for the project that contains given file.
-     * @returns null if the file is not in any project
+     * @return null if the file is not in any project
      */
     public static JSPServletFinder getJSPServletFinder(FileObject f) {
         Project prj = FileOwnerQuery.getOwner (f);
@@ -64,17 +67,22 @@ public abstract class J2eeModuleProvider {
     }
     
     /**
-     * Returns current configuration value for web context root.
+     * Returns configuration support for the given project.
      */
     public static final ConfigSupport getConfigSupport(Project prj) {
         J2eeDeploymentLookup deployment = (J2eeDeploymentLookup) prj.getLookup ().lookup (J2eeDeploymentLookup.class);
         return new ConfigSupportImpl(deployment);
     }
     
+    /**
+     * Configuration support to allow development module code to access well-known 
+     * configuration propeties, such as web context root, cmp mapping info...
+     */
     public static interface ConfigSupport {
         public void setWebContextRoot(String contextRoot);
         public String getWebContextRoot();
     }
+    
     public static interface ModuleFolderCookie extends Node.Cookie {
         public J2eeModule getJ2eeModule();
     }

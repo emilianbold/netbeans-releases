@@ -1,3 +1,6 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
 <!--
    -                 Sun Public License Notice
    -
@@ -11,41 +14,34 @@ at
    - Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
    - Microsystems, Inc. All Rights Reserved.
   -->
-
-<html>
+</head>
 <body>
-
-There are two separate api/spi sets in j2eeserver.  The devmodules
-api/spi is for j2ee development modules (web, j2ee app, etc).  The
+There are two separate api/spi sets in j2eeserver. The devmodules
+api/spi is for j2ee development modules (web, j2ee app, etc). The
 plugins api/spi is for server plugins.
-
 <h2> devmodules
 </h2>
-    The spi classes are to be subclassed by dev modules and to be
-    provided as cookies on the development nodes.  The api classes are
-    to be used to add actions/properties/additional cookies to those
-    nodes.
-
+The spi classes are to be subclassed by dev modules and to be provided
+as cookies on the development nodes. The api classes are to be used to
+add actions/properties/additional cookies to those nodes.
 <h2> plugins
 </h2>
-    A jsr88 plugin can be installed without using the additional
-    api/spi classes.  It needs to be wrapped as a module with an entry
-    in the /J2EE/Jsr88Plugins/ folder in the default filesystem, so
-    the server registry can pick up the plugin.  Additional
-    functionality outside the deployment spec can be provided by the
-    plugin through use of the api/spi classes.
-
+A jsr88 plugin can be installed without using the additional api/spi
+classes. It needs to be wrapped as a module with an entry in the
+/J2EE/DeploymentPlugins folder in the default filesystem, so the server
+registry can pick up the plugin. Additional functionality outside the
+deployment spec can be provided by the plugin through use of the
+api/spi classes.&nbsp; These additional functionality neeed to be
+declared through the plugin module <a
+ href="http://j2eeserver.netbeans.org/plugin-layer-file.html">layer.xml</a>.
 <h2> test plugin
 </h2>
-    The j2eeserver/test directory contains the source to a sample
-    plugin containing both jsr88 classes and the wrapper to install
-    this into the registry.
-
+The j2eeserver/test directory contains the source to a sample plugin
+containing both jsr88 classes and the wrapper to install this into the
+registry.
 <h2> user view and design
 </h2>
-
-<p>
-Separate <a href="userview.html">user view</a> and <a href="design.html">design</a> documents are also available.
+<p>Documents are available <a href="http://j2eeserver.netbeans.org">online</a>.
 </p>
 </body>
 </html>

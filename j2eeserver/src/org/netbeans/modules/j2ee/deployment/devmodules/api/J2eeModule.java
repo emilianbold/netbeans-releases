@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -67,7 +67,8 @@ public interface J2eeModule {
     public void setUrl (String url);
     
     /** Returns the archive file for the module of null if the archive file 
-     * does not exist (e.g. has not been compiled yet). */
+     * does not exist (for example, has not been compiled yet). 
+     */
     public FileObject getArchive () throws java.io.IOException;
     
     /** Returns the contents of the archive, in copyable form.
@@ -75,15 +76,15 @@ public interface J2eeModule {
      *  Currently uses its own {@link RootedEntry} interface.
      *  If the J2eeModule instance describes a
      *  j2ee application, the result should not contain module archives.
-     *  @returns Iterator through {@link RootedEntry}s
+     *  @return Iterator through {@link RootedEntry}s
      */
     public Iterator getArchiveContents() throws java.io.IOException;
 
     /** This call is used in in-place deployment. 
      *  Returns the directory staging the contents of the archive
      *  This directory is the one from which the content entries returned
-     *  by {@link getArchiveContents} came from.
-     *  @returns FileObject for the content directory
+     *  by {@link #getArchiveContents} came from.
+     *  @return FileObject for the content directory
      */
     public FileObject getContentDirectory() throws java.io.IOException;
     
@@ -107,12 +108,12 @@ public interface J2eeModule {
     /** Add module change listener.
      * @param listener on version change
      */
-    public void addVersionListener(VersionListener ml);
+    public void addVersionListener(VersionListener listener);
     
     /** Remove module version change listener.
      * @param listener on version change
      */
-    public void removeVersionListener(VersionListener ml);
+    public void removeVersionListener(VersionListener listener);
     
     public interface VersionListener {
         void versionChanged(String oldVersion, String newVersion);

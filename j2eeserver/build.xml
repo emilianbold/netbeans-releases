@@ -209,16 +209,19 @@ symbols and copy jar file(s)" depends="debug">
   
   <target name="javadoc" description="Build j2eeserver module API documentation.">
     <echo message="Build j2eeserver module API documentation..."/>
-    <ant dir="${nbroot}/nbbuild/javadoctools" antfile="template.xml" target="javadoc">
+    <copy file="src/org/netbeans/modules/j2ee/deployment/plugins/api/netbeans-deployment.dtd" tofile="api/doc/org/netbeans/modules/j2ee/deployment/plugins/api/doc-files/netbeans-deployment-dtd.txt" />
+    <copy file="www/plugin-layer-file.html" todir="api/doc/org/netbeans/modules/j2ee/deployment/plugins/api/doc-files" />
+    <ant dir="../nbbuild/javadoctools" antfile="template.xml" target="javadoc">
       <property name="javadoc.base" location="."/>
       <property name="javadoc.name" value="J2EEServerAPI"/>
       <property name="javadoc.title" value="NetBeans j2eeserver module APIs"/>
-      <property name="javadoc.packages" value="org.netbeans.modules.j2ee.deployment.devmodules.spi.*,org.netbeans.modules.j2ee.deployment.devmodules.api.*,org.netbeans.modules.j2ee.deployment.plugins.api.*"/>
+      <property name="javadoc.packages" value="org.netbeans.modules.j2ee.deployment.devmodules.spi.*,org.netbeans.modules.j2ee.deployment.devmodules.api.*,org.netbeans.modules.j2ee.deployment.plugins.api.*,org.netbeans.modules.j2ee.deployment.common.api.*"/>
       <property name="javadoc.classpath" refid="cp"/>
       <property name="javadoc.overview" location="api/doc/overview.html"/>
       <property name="javadoc.docfiles" location="api/doc"/>
       <!--<property name="javadoc.apichanges" location="api/doc/changes/apichanges.xml"/>-->
     </ant>
+    <copy file="javadoc/J2EEServerAPI.zip" tofile="www/serverintegration.zip"/>
   </target>
 
 </project>

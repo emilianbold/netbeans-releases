@@ -20,15 +20,16 @@ import javax.enterprise.deploy.spi.exceptions.*;
 import java.util.Iterator;
 
 /**
- * This is an utility implement class to avoid exposing JSR-88
- * ProgressObject to server management SPI: StartServer.
- *
+ * This is an utility class to avoid exposing deployment interface
+ * {@link javax.enterprise.deploy.spi.status.ProgressObject} directly in 
+ * server management SPI {@link StartServer}.
+ * <P>
  * Typical usage is for plugin StartServer implementation to create
  * instance of ServerProgress and return it to caller of 
  * startDeploymentManager, stopDeploymentManager and startDebugging.  
  * Plugin will update caller on progress of the operation through
- * the ServerProgress.setStatus().
- *
+ * method calls to set status.
+ * <P>
  * @author  nn136682
  */
 

@@ -17,7 +17,9 @@ import org.netbeans.modules.j2ee.deployment.common.api.EjbChangeDescriptor;
 
 /** 
  * This interface allows a plugin to receive information about what in a module
- * or application has changed since the last deployment.  
+ * or application has changed since the last deployment.  The change description
+ * is cumulative of change description of each child module.
+ *
  * @author  George Finklang
  */
 public interface AppChangeDescriptor extends EjbChangeDescriptor, ModuleChangeDescriptor {

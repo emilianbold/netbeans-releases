@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -26,7 +26,7 @@ import org.netbeans.modules.j2ee.deployment.impl.ServerString;
 import org.netbeans.modules.j2ee.deployment.impl.InstancePropertiesImpl;
 
 /**
- *  A way for the IDE to store customized information about a server instance
+ *  A way to ask the IDE to store customized information about a server instance
  *  and make it available to a plugin.
  *
  *  Typical usage for create new instance would be like this:
@@ -91,24 +91,23 @@ public abstract class InstanceProperties {
     }
     
     /**
-     * Set instance property
-     * @propname name of property
-     * @value property string value
+     * Set instance properties.
+     * @param props properties to set for this server instance.
      * @exception IllegalStateException when instance already removed or not created yet
      */
     public abstract void setProperties(java.util.Properties props) throws IllegalStateException;
 
     /**
      * Set instance property
-     * @propname name of property
-     * @value property string value
+     * @param propname name of property
+     * @param value property string value
      * @exception IllegalStateException when instance already removed or not created yet
      */
     public abstract void setProperty(String propname, String value) throws IllegalStateException;
     
     /**
      * Get instance property
-     * @propname name of property
+     * @param propname name of property
      * @return property string value
      * @exception IllegalStateException when instance already removed or not created yet
      */
@@ -116,7 +115,6 @@ public abstract class InstanceProperties {
     
     /**
      * Get instance property keys
-     * @propname name of property
      * @return property key enunmeration
      * @exception IllegalStateException when instance already removed or not created yet
      */
@@ -124,8 +122,6 @@ public abstract class InstanceProperties {
     
     /**
      * Is the target server the default J2EE server for deployment?
-     * @param url the URL identifying the admin server
-     * @param targetName name of the target server; null if not target-specific or admin server is also single target.
      * @return true if the target server or admin server is the default.
      */
     public abstract boolean isDefaultInstance();
@@ -142,7 +138,6 @@ public abstract class InstanceProperties {
     
     /**
      * Set the target server the default server.
-     * @param url the url of the admin server
      * @param targetName name of the target server; null if admin server is also single target.
      */
     public abstract void setAsDefaultServer(String targetName);

@@ -19,13 +19,24 @@ package org.netbeans.modules.j2ee.deployment.plugins.api;
  * @author  George Finklang
  */
 public interface ModuleChangeDescriptor {
-    
+    /**
+     * Return true if any of the standard or server specific deployment descriptors have changed.
+     */
     public boolean descriptorChanged();
     
+    /**
+     * Return true if any of the standard or server specific deployment descriptors have changed.
+     */
     public boolean serverDescriptorChanged();
     
+    /**
+     * Return true if any file changes require the module class loader refresh.
+     */
     public boolean classesChanged();
     
+    /**
+     * Return true if the manifest.mf of the module has changed.
+     */
     public boolean manifestChanged();
 
 }
