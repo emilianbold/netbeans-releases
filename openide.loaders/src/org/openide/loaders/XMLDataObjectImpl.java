@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -66,34 +66,10 @@ class XMLDataObjectImpl extends Object {
         return builder;
     }
     
-
-    private static SAXParserFactory makeParserFactory(boolean validating, boolean ns) {
-        SAXParserFactory factory = null;
-
-        //create factory according to javax.xml.parsers.SAXParserFactory property 
-        //or platform default (i.e. com.sun...)
-        try {
-            factory = SAXParserFactory.newInstance();
-            factory.setValidating(validating);
-            factory.setNamespaceAware(ns);
-            
-        } catch (FactoryConfigurationError err) {
-            notifyFactoryErr(err, "javax.xml.parsers.SAXParserFactory"); //NOI18N
-            throw err;
-        }
-        
-        return factory;
-    }
-    
     static Parser makeParser(boolean validate) {
         
-        SAXParserFactory factory = makeParserFactory(validate, false); 
-
         try {
-            return factory.newSAXParser().getParser();
-        } catch (ParserConfigurationException ex) {
-            notifyNewSAXParserEx(ex);
-            return null;
+            return new org.xml.sax.helpers.XMLReaderAdapter (XMLUtil.createXMLReader(validate));
         } catch (SAXException ex) {
             notifyNewSAXParserEx(ex);
             return null;
@@ -104,13 +80,8 @@ class XMLDataObjectImpl extends Object {
     /** Return XML reader or null if no provider exists. */
     static XMLReader makeXMLReader(boolean validating, boolean namespaces) {
 
-        SAXParserFactory factory = makeParserFactory(validating, namespaces); 
-
         try {
-            return factory.newSAXParser().getXMLReader();
-        } catch (ParserConfigurationException ex) {
-            notifyNewSAXParserEx(ex);
-            return null;
+            return XMLUtil.createXMLReader(validating,namespaces);
         } catch (SAXException ex) {
             notifyNewSAXParserEx(ex);
             return null;
