@@ -465,7 +465,7 @@ public class NonGui extends NbTopManager implements Runnable {
         
         // -----------------------------------------------------------------------------------------------------
         // Upgrade
-        /*try {
+        try {
             if ((System.getProperty ("netbeans.full.hack") == null) && (System.getProperty ("netbeans.close") == null)) {
                 System.setProperty("import.canceled", "false"); // NOI18N
                 
@@ -509,8 +509,8 @@ public class NonGui extends NbTopManager implements Runnable {
         finally {
             showSplashAgain();
         }
-        StartLog.logProgress ("Upgrade wizzard consulted"); // NOI18N
-        */
+        StartLog.logProgress ("Upgrade wizard consulted"); // NOI18N
+
         // -----------------------------------------------------------------------------------------------------
         // 9. Modules
 
