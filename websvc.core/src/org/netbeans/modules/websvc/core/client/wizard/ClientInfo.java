@@ -259,7 +259,7 @@ public final class ClientInfo extends JPanel {
     private void jBtnGetWsdlActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnGetWsdlActionPerformed
 //        System.out.println("get WSDL from server...");
         jTxtWsdlURL.setEditable(false);
-        retriever = new WsdlRetriever(this, jTxtWsdlURL.getText());
+        retriever = new WsdlRetriever(this, jTxtWsdlURL.getText().trim());
         new Thread(retriever).start();
     }//GEN-LAST:event_jBtnGetWsdlActionPerformed
 
@@ -300,7 +300,7 @@ public final class ClientInfo extends JPanel {
         // service related fields
         jTxtWsdlURL.setEnabled(fromService);
         String wsdlUrlText = jTxtWsdlURL.getText().trim();
-        jBtnGetWsdl.setEnabled(fromService && wsdlUrlText != null && wsdlUrlText.length() > 0);
+        jBtnGetWsdl.setEnabled(fromService && isValidUrl(wsdlUrlText));
         jBtnProxy.setEnabled(fromService);
         jLblLocalFilename.setEnabled(fromService);
         jTxtLocalFilename.setEnabled(fromService);
@@ -575,7 +575,7 @@ public final class ClientInfo extends JPanel {
         
         // Only enable retrieval button if there is a URL specified.
         String wsdlUrlText = jTxtWsdlURL.getText().trim();
-        jBtnGetWsdl.setEnabled(wsdlUrlText != null && wsdlUrlText.length() > 0);
+        jBtnGetWsdl.setEnabled(isValidUrl(wsdlUrlText));
         
         updateTexts();
     }
@@ -584,6 +584,18 @@ public final class ClientInfo extends JPanel {
         if(!settingFields) {
             descriptorPanel.fireChangeEvent(); // Notify that the panel changed
         }
+    }
+    
+    private boolean isValidUrl(String urlText) {
+        if(urlText == null || urlText.length() == 0) {
+            return false;
+        }
+        
+        // !PW Be very careful adding conditions to this method (such as seeing if
+        // conversion of url text to URL would throw a MalformedURLException and
+        // reporting it to the user early.)  It is a non-trivial change that would
+        // require significant synchronization with code in the retriever object.
+        // as well as the valid() method of this object.  See IZ 52685.
     }
     
     public void setWsdlDownloadMessage(String m) {
