@@ -63,6 +63,14 @@ import org.openide.xml.XMLUtil;
 // 1000 - 6.64Mb, around 12s
 // after adding 23 files to each module's layer:
 // 1000 - 19.00Mb, around 17s
+// with some attributes too, 2 on 1/5 of folders and 1 on 1/3 of files:
+// 1000 - 20.3Mb, around 17.5s
+
+// so about 5.5ms/m for layer parsing, <1ms/m for opening a bigger JAR
+
+// After ModuleList opt to not use Crimson to parse Modules/*.xml:
+// 1000 - 21.1Mb, 16.4s
+// detail timing: now only 3.8ms/m to load manifest + parse XML
 
 /**
  * Benchmark measuring initialization of the module system.
@@ -287,7 +295,6 @@ public class ModuleInitTest extends Benchmark {
             }
             // XML layer:
             Map layer = new HashMap(i * 4 / 3 + 1); // Map<String,byte[]|null>
-            // XXX try to set some attributes, too...
             // Construct a binomial tree, module #i contributing the next 23 files (leaves):
             int start = i * 23;
             int end = (i + 1) * 23;
@@ -339,6 +346,17 @@ public class ModuleInitTest extends Benchmark {
                         if (child == null) {
                             child = doc.createElement("folder");
                             child.setAttribute("name", piece);
+                            // Attributes, on every fifth folder:
+                            if (Math.abs(filename.hashCode()) % 5 == 0) {
+                                Element a = doc.createElement("attr");
+                                a.setAttribute("name", "SystemFileSystem.localizingBundle");
+                                a.setAttribute("stringvalue", name + ".Bundle");
+                                child.appendChild(a);
+                                a = doc.createElement("attr");
+                                a.setAttribute("name", "SystemFileSystem.icon");
+                                a.setAttribute("urlvalue", "nbresloc:/" + nameSlashes + "/resources/" + piece + ".gif");
+                                child.appendChild(a);
+                            }
                             el.appendChild(child);
                         }
                         el = child;
@@ -351,6 +369,13 @@ public class ModuleInitTest extends Benchmark {
                             String contentsName = "resources/layerfile" + Integer.toHexString(filename.hashCode());
                             contents.put(nameSlashes + "/" + contentsName, filebytes);
                             child.setAttribute("url", contentsName);
+                        }
+                        // Attributes, on every third file:
+                        if (Math.abs(filename.hashCode()) % 3 == 0) {
+                            Element a = doc.createElement("attr");
+                            a.setAttribute("name", "instanceOf");
+                            a.setAttribute("stringvalue", name + ".Whatever");
+                            child.appendChild(a);
                         }
                         el.appendChild(child);
                     }
@@ -413,7 +438,6 @@ public class ModuleInitTest extends Benchmark {
             "-Dnetbeans.security.nocheck=true",
             "-Dnetbeans.home=" + homedir.getAbsolutePath(),
             "-Dnetbeans.user=" + userdir.getAbsolutePath(),
-            //"-Dmodules.dir=" + new File(homedir, "modules").getAbsolutePath(),
             //log ? "-Dorg.netbeans.log.startup=print" : "-Dignore=me",
             "-Dnetbeans.suppress.sysprop.warning=true",
             "-Dlog=" + log,
