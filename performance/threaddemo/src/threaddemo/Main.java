@@ -69,8 +69,8 @@ public final class Main extends JFrame {
         ButtonGroup viewGroup = new ButtonGroup();
         nodeButton = new JRadioButton("Node", false);
         lookNodeButton = new JRadioButton("Look Node", false);
-        lookButton = new JRadioButton("Look", false);
-        rawButton = new JRadioButton("Raw", true);
+        lookButton = new JRadioButton("Look", true);
+        rawButton = new JRadioButton("Raw", false);
         viewGroup.add(nodeButton);
         viewGroup.add(lookNodeButton);
         viewGroup.add(lookButton);
