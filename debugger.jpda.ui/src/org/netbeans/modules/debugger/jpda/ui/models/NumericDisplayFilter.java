@@ -77,12 +77,13 @@ NodeActionsProviderFilter {
                 );
             else
             if (type.equals ("short")) {
-                String rv = "0x" + Integer.toHexString (
-                    Short.parseShort (var.getValue ())
-                );
-                if (rv.length () > 6)
-                    rv = rv.substring (0, 6);
-                return rv;
+                String rv = Integer.toHexString(Short.parseShort(var.getValue()));
+                if (rv.length() > 4) rv = rv.substring(rv.length() - 4, rv.length());
+                return "0x" + rv;
+            } else if (type.equals("byte")) {
+                String rv = Integer.toHexString(Byte.parseByte(var.getValue()));
+                if (rv.length() > 2) rv = rv.substring(rv.length() - 2, rv.length());
+                return "0x" + rv;
             } else
                 return "0x" + Long.toHexString (
                     Long.parseLong (var.getValue ())
@@ -93,16 +94,32 @@ NodeActionsProviderFilter {
                     Integer.parseInt (var.getValue ())
                 );
             else
-            if (type.equals ("short"))
-                return "0" + Integer.toOctalString (
-                    Short.parseShort (var.getValue ())
-                );
-            else
+            if (type.equals("short")) {
+                String rv = Integer.toOctalString(Short.parseShort(var.getValue()));
+                if (rv.length() > 5) rv = rv.substring(rv.length() - 5, rv.length());
+                return "0" + (rv.charAt(0) == '0' ? "1" : "") + rv;
+            } else
+            if (type.equals("byte")) {
+                String rv = Integer.toOctalString(Byte.parseByte(var.getValue()));
+                if (rv.length() > 3) rv = "1" + rv.substring(rv.length() - 2, rv.length());
+                return "0" + rv;
+            } else
                 return "0" + Long.toOctalString (
                     Long.parseLong (var.getValue ())
                 );
         case NumericDisplaySettings.BINARY:
-            return Long.toBinaryString (Long.parseLong (var.getValue ()));
+            if (type.equals("int"))
+                return Integer.toBinaryString(Integer.parseInt(var.getValue()));
+            else if (type.equals("short")) {
+                String rv = Integer.toBinaryString(Short.parseShort(var.getValue()));
+                if (rv.length() > 16) rv = rv.substring(rv.length() - 16, rv.length());
+                return rv;
+            } else if (type.equals("byte")) {
+                String rv = Integer.toBinaryString(Byte.parseByte(var.getValue()));
+                if (rv.length() > 8) rv = rv.substring(rv.length() - 8, rv.length());
+                return rv;
+            } else
+                return Long.toBinaryString (Long.parseLong (var.getValue ()));
         case NumericDisplaySettings.CHAR:
             try {
                 return "'" + new Character (
@@ -121,6 +138,7 @@ NodeActionsProviderFilter {
         return type != null && 
             (type.equals ("int") || 
             type.equals ("char") || 
+            type.equals ("byte") || 
             type.equals ("long") || 
             type.equals ("short"));
     }
