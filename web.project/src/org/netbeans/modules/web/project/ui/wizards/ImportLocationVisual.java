@@ -227,7 +227,7 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
 
     private void jButtonPrjLocationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonPrjLocationActionPerformed
         JFileChooser chooser = createChooser();    
-        if (chooser.APPROVE_OPTION == chooser.showDialog(this, NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_SelectProjectLocation"))) { //NOI18N
+        if (chooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File projectDir = chooser.getSelectedFile();
             projectLocationTextField.setText( projectDir.getAbsolutePath());
         }            
@@ -235,7 +235,7 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
 
     private void jButtonSrcLocationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSrcLocationActionPerformed
         JFileChooser chooser = createChooser();    
-        if (JFileChooser.APPROVE_OPTION == chooser.showDialog(this, NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_SelectWebModuleRootLocation"))) { //NOI18N
+        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File projectDir = chooser.getSelectedFile();
             moduleLocationTextField.setText( projectDir.getAbsolutePath());
         }            

@@ -130,7 +130,7 @@ public class PanelProjectLocationVisual extends javax.swing.JPanel implements Do
         String command = evt.getActionCommand();
         
         if ("BROWSE".equals(command)) { //NOI18N
-            if (JFileChooser.APPROVE_OPTION == chooser.showDialog(this, NbBundle.getMessage(PanelConfigureProjectVisual.class, "LBL_NWP1_SelectProjectLocation"))) { //NOI18N
+            if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
                 File projectDir = chooser.getSelectedFile();
                 projectLocationTextField.setText( projectDir.getAbsolutePath());
             }            
