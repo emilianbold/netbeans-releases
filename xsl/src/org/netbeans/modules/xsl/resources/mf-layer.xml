@@ -63,11 +63,11 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
 
-    <!-- folder name="Shortcuts">
-        <file name="A-F6.instance">
+    <folder name="Shortcuts">
+        <file name="C-A-T.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.modules.xsl.actions.TransformAction"/>
         </file>
-    </folder --> <!-- Shortcuts -->
+    </folder> <!-- Shortcuts -->
 
     
     <folder name="Editors">
