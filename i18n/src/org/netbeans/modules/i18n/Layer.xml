@@ -36,12 +36,21 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-i18n-jsp-JspI18nSupportFactory.settings" url="jsp/JspI18nSupportFactory.settings"/>
         </folder>
     
-        <!-- I18N Settings -->
-        <file name="org-netbeans-modules-i18n-I18nOptions.settings" url="I18nOptions.settings"/>
-        
+        <folder name="Editing">
+            <!-- I18N Settings -->
+            <file name="org-netbeans-modules-i18n-I18nOptions.settings" url="I18nOptions.settings">
+                <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.i18n.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlValue="nbres:/org/netbeans/modules/i18n/i18nAction.gif"/>
+            </file>
+        </folder>
+
         <!-- Locale External Execution -->
         <folder name="Executor">
-            <file name="org-netbeans-modules-i18n-LocaleExecutor.settings" url="LocaleExecutor.settings"/>
+            <file name="org-netbeans-modules-i18n-LocaleExecutor.settings" url="LocaleExecutor.settings">
+                <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.i18n.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlValue="nbres:/org/netbeans/core/resources/executionTypes.gif"/>
+                <attr name="SystemFileSystem.layer" stringValue="project"/>
+            </file>
         </folder>
     </folder>
     
@@ -49,6 +58,8 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Services">
             <folder name="Executor">
                 <file name="org-netbeans-modules-i18n-LocaleExecutor.settings" url="LocaleExecutor.settings">
+                    <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.i18n.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlValue="nbres:/org/netbeans/core/resources/executionTypes.gif"/>
                     <attr name="template" boolvalue="true"/>
                 </file>
             </folder>

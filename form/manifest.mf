@@ -12,10 +12,6 @@ Name: org/netbeans/modules/form/FormDataLoader.class
 OpenIDE-Module-Class: Loader
 Install-Before: org.netbeans.modules.java.JavaDataObject
 
-Name: org/netbeans/modules/form/palette/PaletteNode.class
-OpenIDE-Module-Class: Node
-Type: Session
-
 Name: org/netbeans/modules/form/actions/InstallToPaletteAction.class
 OpenIDE-Module-Class: Action
 

@@ -77,25 +77,40 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Services">
         <folder name="IndentEngine">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/indentEngine.gif"/>
-
-            <file name="org-netbeans-modules-editor-java-JavaIndentEngine.settings" url="JavaIndentEngine.settings"/>
-            <file name="org-netbeans-modules-editor-SimpleIndentEngine.settings" url="SimpleIndentEngine.settings"/>
+            <file name="org-netbeans-modules-editor-java-JavaIndentEngine.settings" url="JavaIndentEngine.settings">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/indentEngine.gif"/>
+            </file>
+            <file name="org-netbeans-modules-editor-SimpleIndentEngine.settings" url="SimpleIndentEngine.settings">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/indentEngine.gif"/>
+            </file>
         </folder>
-        <file name="AnnotationTypes.instance">
-            <attr name="instanceCreate" newvalue="org.netbeans.modules.editor.options.AnnotationTypesNode" />
-            <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
-        </file>
+
+        <folder name="Editing">
+            <file name="AnnotationTypes.instance">
+                <attr name="instanceCreate" newvalue="org.netbeans.modules.editor.options.AnnotationTypesNode" />
+                <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
+            </file>
+            <file name="EditorsAllOptions.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.options.AllOptionsNode.getDefault" />
+                <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
+            </file>
+        </folder>
+
     </folder>
 
     <folder name="Templates">
         <folder name="Services">
             <folder name="IndentEngine">
                 <file name="org-netbeans-modules-editor-java-JavaIndentEngine.settings" url="JavaIndentEngine.settings">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/indentEngine.gif"/>
                     <attr name="template" boolvalue="true"/>
                 </file>
                 <file name="org-netbeans-modules-editor-SimpleIndentEngine.settings" url="SimpleIndentEngine.settings">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/indentEngine.gif"/>
                     <attr name="template" boolvalue="true"/>
                 </file>
             </folder>
@@ -136,14 +151,6 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
             </folder>
         </folder>
-    </folder>
-
-
-    <folder name="Services">
-        <file name="EditorsAllOptions.instance">
-            <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.options.AllOptionsNode.getDefault" />
-            <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
-        </file>
     </folder>
 
     <folder name="xml">

@@ -22,6 +22,7 @@ import org.openide.TopManager;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataShadow;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.datatransfer.NewType;
 import org.openide.util.actions.SystemAction;
@@ -46,7 +47,7 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
 //        super.setIconBase ("/org/netbeans/modules/url/Lookup"); // NOI18N
         getCookieSet ().add (this);
     }
-
+    
     public final HelpCtx getHelpCtx () {
         return new HelpCtx (LookupNode.class);
     }
@@ -230,13 +231,28 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
             }
             
             LookupNode parent = (LookupNode)getNode ();
-            if (obj instanceof DataFolder && n.equals (obj.getNodeDelegate ())) {
-                node = parent.createChild ((DataFolder)obj);
-            } else {
-                node = parent.createChild (node);
+            
+            if (obj != null) {
+                if (obj instanceof DataFolder && n.equals (obj.getNodeDelegate ())) {
+                    node = parent.createChild ((DataFolder)obj);
+                    return new Node[] { node };
+                } else if (obj instanceof DataShadow) {
+                    DataObject orig = ((DataShadow) obj).getOriginal();
+                    FileObject fo = orig.getPrimaryFile();
+                    
+                    // if folder referenced by shadow is empty do not show it
+                    if (fo.isFolder() && !fo.getChildren(false).hasMoreElements()) return null;
+                    
+                    if (orig instanceof DataFolder) {
+                        node = parent.createChild ((DataFolder) orig);
+                        return new Node[] { node };
+                    }
+                }
             }
+            
+            node = parent.createChild (node);
 
-            return node == null ? null : new Node[] { node };
+            return new Node[] { node };
         }
 
     }

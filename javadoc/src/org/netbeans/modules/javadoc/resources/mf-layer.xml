@@ -93,58 +93,130 @@ Microsystems, Inc. All Rights Reserved.
 
 <!--  Services part -->
 
-  <folder name="Services">
-    <file name="org.netbeans.modules.javadoc.settings.DocumentationSettings.settings" url="DocumentationSettings.settings"/>
+    <folder name="Services">
+        <folder name="IDEConfiguration">
+            <folder name="System">
+                <file name="org.netbeans.modules.javadoc.settings.DocumentationSettings.settings" url="DocumentationSettings.settings">
+                    <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.javadoc.settings.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlValue="nbres:/org/netbeans/modules/javadoc/resources/JavadocSettings.gif"/>
+                    <attr name="SystemFileSystem.layer" stringValue="project"/>
+                </file>
+            </folder>  
+        </folder>  
 
-      <folder name="JavadocExecutors">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.settings.Bundle"/>
-        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javadoc/resources/JavaDoc.gif"/>
+        <folder name="CodeDocumentation">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.settings.Bundle"/>
 
-        <file name="javadoc_external_executor.settings" url="javadoc_external_executor.settings"/>
-        <file name="javadoc_internal_executor.settings" url="javadoc_internal_executor.settings"/>
-      </folder>  
+            <file name="JavadocExecutors.shadow">
+<![CDATA[Services/JavadocExecutors
+SystemFileSystem
+]]>
+            </file>
+            <file name="JavadocDoclets.shadow">
+<![CDATA[Services/JavadocDoclets
+SystemFileSystem
+]]>
+            </file>
+            <file name="JavadocSearchTypes.shadow">
+<![CDATA[Services/JavadocSearchTypes
+SystemFileSystem
+]]>
+            </file>
+        </folder>
 
-      <folder name="JavadocDoclets">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.settings.Bundle"/>
-        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javadoc/resources/JavaDoclet.gif"/>
+        <folder name="JavadocExecutors">
+            <attr name="hidden" boolvalue="true"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.settings.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javadoc/resources/JavaDoc.gif"/>
 
-        <file name="javadoc_doclets.settings" url="javadoc_doclets.settings"/>
-      </folder>
+            <file name="javadoc_external_executor.settings" url="javadoc_external_executor.settings">
+                <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.javadoc.settings.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlValue="nbres:/org/netbeans/modules/javadoc/resources/JavaDoc.gif"/>
+                <attr name="SystemFileSystem.layer" stringValue="project"/>
+            </file>
+            <file name="javadoc_internal_executor.settings" url="javadoc_internal_executor.settings">
+                <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.javadoc.settings.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlValue="nbres:/org/netbeans/modules/javadoc/resources/JavaDoc.gif"/>
+                <attr name="SystemFileSystem.layer" stringValue="project"/>
+            </file>
+        </folder>  
 
-      <folder name="JavadocSearchTypes">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.search.Bundle"/>
-        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javadoc/resources/searchDoc.gif"/>
+        <folder name="JavadocDoclets">
+            <attr name="hidden" boolvalue="true"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.settings.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javadoc/resources/JavaDoclet.gif"/>
 
-        <file name="javadoc_search.settings" url="javadoc_search.settings"/>
-        <file name="javadoc_japan_search.settings" url="javadoc_japan_search.settings"/>
-      </folder>  
-  </folder>
+            <file name="javadoc_doclets.settings" url="javadoc_doclets.settings">
+                <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.javadoc.settings.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlValue="nbres:/org/netbeans/modules/javadoc/resources/JavaDoclet.gif"/>
+                <attr name="SystemFileSystem.layer" stringValue="project"/>
+            </file>
+        </folder>
+
+        <folder name="JavadocSearchTypes">
+            <attr name="hidden" boolvalue="true"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.search.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javadoc/resources/searchDoc.gif"/>
+
+            <file name="javadoc_search.settings" url="javadoc_search.settings">
+                <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.javadoc.search.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlValue="nbres:/org/netbeans/modules/javadoc/resources/searchDoc.gif"/>
+                <attr name="SystemFileSystem.layer" stringValue="project"/>
+            </file>
+            <file name="javadoc_japan_search.settings" url="javadoc_japan_search.settings">
+                <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.javadoc.search.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlValue="nbres:/org/netbeans/modules/javadoc/resources/searchDoc.gif"/>
+                <attr name="SystemFileSystem.layer" stringValue="project"/>
+            </file>
+        </folder>  
+
+    </folder>
 
 <!--  Templates part -->
 
   <folder name="Templates">
       <folder name="Services">
+
           <folder name="JavadocExecutors">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.settings.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javadoc/resources/JavaDoc.gif"/>
+
             <file name="javadoc_external_executor.settings" url="javadoc_external_executor.settings">
               <attr name="template" boolvalue="true"/>
+              <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.javadoc.settings.Bundle"/>
+              <attr name="SystemFileSystem.icon" urlValue="nbres:/org/netbeans/modules/javadoc/resources/JavaDoc.gif"/>
             </file>    
             <file name="javadoc_internal_executor.settings" url="javadoc_internal_executor.settings">
               <attr name="template" boolvalue="true"/>
+              <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.javadoc.settings.Bundle"/>
+              <attr name="SystemFileSystem.icon" urlValue="nbres:/org/netbeans/modules/javadoc/resources/JavaDoc.gif"/>
             </file>
           </folder>  
 
           <folder name="JavadocDoclets">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.settings.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javadoc/resources/JavaDoclet.gif"/>
+
             <file name="javadoc_doclets.settings" url="javadoc_doclets.settings">
               <attr name="template" boolvalue="true"/>
+              <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.javadoc.settings.Bundle"/>
+              <attr name="SystemFileSystem.icon" urlValue="nbres:/org/netbeans/modules/javadoc/resources/JavaDoclet.gif"/>
             </file>
           </folder>  
 
           <folder name="JavadocSearchTypes">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.search.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javadoc/resources/searchDoc.gif"/>
+
             <file name="javadoc_search.settings" url="javadoc_search.settings">
               <attr name="template" boolvalue="true"/>
+              <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.javadoc.search.Bundle"/>
+              <attr name="SystemFileSystem.icon" urlValue="nbres:/org/netbeans/modules/javadoc/resources/searchDoc.gif"/>
             </file>
             <file name="javadoc_japan_search.settings" url="javadoc_japan_search.settings">
               <attr name="template" boolvalue="true"/>
+              <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.javadoc.search.Bundle"/>
+              <attr name="SystemFileSystem.icon" urlValue="nbres:/org/netbeans/modules/javadoc/resources/searchDoc.gif"/>
             </file>
           </folder>  
       </folder>

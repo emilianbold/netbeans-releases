@@ -167,24 +167,64 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <folder name="Services">
-        <file name="org-netbeans-modules-debugger-support-DebuggerSettings.settings" url="DebuggerSettings.settings"/>
         
         <file name="org-netbeans-modules-debugger-support-DebuggerProjectSettings.settings" url="DebuggerProjectSettings.settings">
-            <attr name="hidden" boolvalue="true" />
+            <attr boolvalue="true" name="hidden"/>
         </file>
 
-        <file name="org-netbeans-modules-debugger-support-java-JavaDebuggerSettings.settings" url="JavaDebuggerSettings.settings"/>
-        
         <file name="org-netbeans-modules-debugger-support-java-JavaProjectSettings.settings" url="JavaProjectSettings.settings">
-            <attr name="hidden" boolvalue="true" />
+            <attr boolvalue="true" name="hidden"/>
         </file>
         
         <folder name="DebuggerType">
-            <file name="DefaultDebuggerType.settings" url="DefaultDebuggerType.settings"/>
+            <file name="org-netbeans-modules-debugger-delegator-DefaultDebuggerType.settings" url="DefaultDebuggerType.settings">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/debugger/resources/jpdaDebugging.gif"/>
+                <attr name="SystemFileSystem.layer" stringvalue="project"/>
+            </file>
         </folder>
-        
+
         <folder name="Executor">
-            <file name="DebuggerExecutor.settings" url="DebuggerExecutor.settings"/>
+            <file name="org-netbeans-modules-debugger-multisession-DebuggerExecutor.settings" url="DebuggerExecutor.settings">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/debugger/resources/debuggerExecution.gif"/>
+                <attr name="SystemFileSystem.layer" stringvalue="project"/>
+            </file>
+        </folder>
+
+        <folder name="DebuggingAndExecuting">
+
+            <file name="org-netbeans-modules-debugger-support-DebuggerSettings.settings" url="DebuggerSettings.settings">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/debugger/resources/debuggerSettings.gif"/>
+            </file>
+
+            <file name="org-netbeans-modules-debugger-support-java-JavaDebuggerSettings.settings" url="JavaDebuggerSettings.settings">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/debugger/resources/debuggerSettings.gif"/>
+            </file>
+
+        </folder>
+    </folder>
+
+    <folder name="Templates">
+        <folder name="Services">
+
+            <folder name="DebuggerType">
+                <file name="org-netbeans-modules-debugger-delegator-DefaultDebuggerType.settings" url="DefaultDebuggerType.settings">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.resources.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/debugger/resources/jpdaDebugging.gif"/>
+                    <attr boolvalue="true" name="template"/>
+                </file>
+            </folder>
+
+            <folder name="Executor">
+                <file name="org-netbeans-modules-debugger-multisession-DebuggerExecutor.settings" url="DebuggerExecutor.settings">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.resources.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/debugger/resources/debuggerExecution.gif"/>
+                    <attr boolvalue="true" name="template"/>
+                </file>
+            </folder>
         </folder>
     </folder>
 

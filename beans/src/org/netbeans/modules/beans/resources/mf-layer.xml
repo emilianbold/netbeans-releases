@@ -71,7 +71,13 @@ Microsystems, Inc. All Rights Reserved.
   </folder>
 
   <folder name="Services">
-    <file name="beans.settings" url="beans.settings"/>
+    <folder name="Editing">
+        <file name="org-netbeans-modules-beans-beans.settings" url="beans.settings">
+            <attr name="SystemFileSystem.layer" stringvalue="project"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.beans.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/beans/resources/beansSetting.gif"/>
+        </file>
+    </folder>
   </folder>
 
 

@@ -46,6 +46,33 @@ Microsystems, Inc. All Rights Reserved.
 		<!-- Folder which should contain the look pool -->
 
 	</folder>
+
+        <folder name="IDEConfiguration">
+            <folder name="System">
+                <file name="SearchType.shadow">
+<![CDATA[Services/SearchType
+SystemFileSystem
+]]>
+                </file>
+            </folder>
+        </folder>
+
+        <folder name="SearchType">
+            <attr name="hidden" boolValue="true"/>
+            <attr name="SystemFileSystem.localizingBundle" stringValue="org.openidex.search.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlValue="nbresloc:/org/openidex/search/res/find.gif"/>
+            <attr name="SystemFileSystem.layer" stringValue="project"/>
+       </folder>
+
    </folder>
        
+    <folder name="Templates">
+        <folder name="Services">
+            <folder name="SearchType">
+                <attr name="SystemFileSystem.localizingBundle" stringValue="org.openidex.search.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlValue="nbresloc:/org/openidex/search/res/find.gif"/>
+            </folder>
+        </folder>
+    </folder>
+
 </filesystem>

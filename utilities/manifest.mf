@@ -27,10 +27,6 @@ OpenIDE-Module-Class: Loader
 Install-Before: org.netbeans.modules.text.TXTDataObject
 Install-After: org.netbeans.modules.java.JavaDataObject
 
-Name: org/netbeans/modules/url/BookmarksNode.class
-OpenIDE-Module-Class: Node
-Type: Session
-
 Name: org/netbeans/modules/pdf/PDFDataLoader.class
 OpenIDE-Module-Class: Loader
 Install-Before: org.netbeans.modules.text.TXTDataObject

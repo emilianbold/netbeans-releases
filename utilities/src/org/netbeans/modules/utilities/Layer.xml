@@ -163,20 +163,50 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     
     <folder name="Services">
-        <!-- Open File Server Settings -->
-        <file name="org-netbeans-modules-openfile-Settings.settings" url="../openfile/Openfile.settings"/>
-        
-        <!-- PDF Settings -->
-        <file name="org-netbeans-modules-pdf-PDFSettings.settings" url="../pdf/PDF.settings"/>
         
         <!-- Search Services -->
+        <folder name="IDEConfiguration">
+            <folder name="ServerAndExternalToolSettings">
+                <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.openfile.Bundle"/>
+                <!-- Open File Server Settings -->
+                <file name="org-netbeans-modules-openfile-Settings.settings" url="../openfile/Openfile.settings">
+                    <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.openfile.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlValue="nbres:/org/netbeans/modules/openfile/openFile.gif"/>
+                </file>
+            </folder>
+            <folder name="System">
+                <!-- Bookmarks Node -->
+                <file name="org-netbeans-modules-url-BookmarksNode.instance"/>
+
+                <!-- PDF Settings -->
+                <file name="org-netbeans-modules-pdf-PDFSettings.settings" url="../pdf/PDF.settings">
+                    <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.pdf.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlValue="nbres:/org/netbeans/modules/pdf/PDFDataIcon.gif"/>
+                </file>
+            </folder>
+        </folder>
+
         <folder name="SearchType">
-            <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.search.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlValue="nbresloc:/org/openidex/search/res/find.gif"/>
-            <file name="org-netbeans-modules-search-FullTextType.settings" url="../search/FullTextType.settings"/>
-            <file name="org-netbeans-modules-search-ModificationDateType.settings" url="../search/ModificationDateType.settings"/>
-            <file name="org-netbeans-modules-search-ObjectTypeType.settings" url="../search/ObjectTypeType.settings"/>
-            <file name="org-netbeans-modules-search-ObjectNameType.settings" url="../search/ObjectNameType.settings"/>
+            <file name="org-netbeans-modules-search-FullTextType.settings" url="../search/FullTextType.settings">
+                <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.search.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlValue="nbres:/org/openidex/search/res/find.gif"/>
+                <attr name="SystemFileSystem.layer" stringValue="project"/>
+            </file>
+            <file name="org-netbeans-modules-search-ModificationDateType.settings" url="../search/ModificationDateType.settings">
+                <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.search.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlValue="nbres:/org/openidex/search/res/find.gif"/>
+                <attr name="SystemFileSystem.layer" stringValue="project"/>
+            </file>
+            <file name="org-netbeans-modules-search-ObjectTypeType.settings" url="../search/ObjectTypeType.settings">
+                <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.search.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlValue="nbres:/org/openidex/search/res/find.gif"/>
+                <attr name="SystemFileSystem.layer" stringValue="project"/>
+            </file>
+            <file name="org-netbeans-modules-search-ObjectNameType.settings" url="../search/ObjectNameType.settings">
+                <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.search.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlValue="nbres:/org/openidex/search/res/find.gif"/>
+                <attr name="SystemFileSystem.layer" stringValue="project"/>
+            </file>
 
             <!-- Defines default order of search types -->
             <attr name="org-netbeans-modules-search-FullTextType.settings/org-netbeans-modules-search-ObjectNameType.settings" boolValue="true"/>
@@ -191,20 +221,24 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="SearchType">
                 <file name="org-netbeans-modules-search-FullTextType.settings" url="../search/FullTextType.settings">
                     <attr name="template" boolValue="true"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.search.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlValue="nbres:/org/openidex/search/res/find.gif"/>
                 </file>
-
                 <file name="org-netbeans-modules-search-ModificationDateType.settings" url="../search/ModificationDateType.settings">
                     <attr name="template" boolValue="true"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.search.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlValue="nbres:/org/openidex/search/res/find.gif"/>
                 </file>
-
                 <file name="org-netbeans-modules-search-ObjectTypeType.settings" url="../search/ObjectTypeType.settings">
                     <attr name="template" boolValue="true"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.search.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlValue="nbres:/org/openidex/search/res/find.gif"/>
                 </file>
-
                 <file name="org-netbeans-modules-search-ObjectNameType.settings" url="../search/ObjectNameType.settings">
                     <attr name="template" boolValue="true"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.search.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlValue="nbres:/org/openidex/search/res/find.gif"/>
                 </file>
-
             </folder>
         </folder>
     </folder>

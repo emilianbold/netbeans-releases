@@ -439,7 +439,37 @@ Microsystems, Inc. All Rights Reserved.
       <!-- templates for services in Lookup, should have the same subdirectory as objects under the -->
 
       <folder name="Services">
-          <attr name="simple" boolvalue="false" />
+        <attr name="simple" boolvalue="false" />
+        <folder name="Browsers">
+          <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/webbrowsercateg.gif" />
+          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+        </folder>
+
+        <folder name="ScriptType">
+          <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/scriptTypes.gif" />
+          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+        </folder>
+
+        <folder name="IndentEngine">
+          <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/indentEngines.gif" />
+          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+        </folder>
+
+        <folder name="CompilerType">
+          <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/compilerTypes.gif" />
+          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+        </folder>
+
+        <folder name="DebuggerType">
+          <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/debuggerTypes.gif" />
+          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+          <attr name="SystemFileSystem.layer" stringvalue="project"/>
+        </folder>
+
+        <folder name="Executor">
+          <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/executionTypes.gif" />
+          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+        </folder>
       </folder>
 
       <!-- folder for all registered filesystem templates -->
@@ -482,11 +512,46 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- folder for HTML browsers and very simple browser -->
     <folder name="Browsers">
+      <attr name="hidden" boolvalue="true" />
       <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/webbrowsercateg.gif" />
       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
       <file name="SwingBrowser.ser" url="SwingBrowser.ser">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.Bundle"/>
       </file>
+    </folder>
+
+    <folder name="ScriptType">
+      <attr name="hidden" boolvalue="true" />
+      <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/scriptTypes.gif" />
+      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+      <attr name="SystemFileSystem.layer" stringvalue="project"/>
+    </folder>
+
+    <folder name="IndentEngine">
+      <attr name="hidden" boolvalue="true" />
+      <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/indentEngines.gif" />
+      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+    </folder>
+
+    <folder name="CompilerType">
+      <attr name="hidden" boolvalue="true" />
+      <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/compilerTypes.gif" />
+      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+      <attr name="SystemFileSystem.layer" stringvalue="project"/>
+    </folder>
+
+    <folder name="DebuggerType">
+      <attr name="hidden" boolvalue="true" />
+      <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/debuggerTypes.gif" />
+      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+      <attr name="SystemFileSystem.layer" stringvalue="project"/>
+    </folder>
+
+    <folder name="Executor">
+      <attr name="hidden" boolvalue="true" />
+      <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/executionTypes.gif" />
+      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+      <attr name="SystemFileSystem.layer" stringvalue="project"/>
     </folder>
 
     <folder name="Hidden">
@@ -511,64 +576,158 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="hidden" boolvalue="true" />
     </folder>
 
-    <!-- nodes for default objects in the IDE -->
+    <folder name="IDEConfiguration">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
 
-    <file name="FileSystems.instance">
-        <attr name="instanceCreate" methodvalue="org.netbeans.core.ui.UINodes.createFileSystems" />
-        <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
-    </file>
+        <folder name="LookAndFeel">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
 
-    <file name="Templates.instance">
-        <attr name="instanceCreate" methodvalue="org.netbeans.core.ui.UINodes.createTemplate" />
-        <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
-    </file>
+            <file name="Actions.instance">
+                <attr name="instanceCreate" newvalue="org.netbeans.core.ActionsPoolNode" />
+                <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
+            </file>
 
-    <file name="Startup.instance">
-        <attr name="instanceCreate" methodvalue="org.netbeans.core.ui.UINodes.createStartup" />
-        <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
-    </file>
+            <file name="org-openide-src-nodes-SourceOptions.settings" url="SourceOptions.settings">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/openide/resources/src/sourceOptions.gif" />
+            </file>
 
-    <file name="ObjectTypes.instance">
-        <attr name="instanceCreate" methodvalue="org.netbeans.core.ui.UINodes.createObjectTypes" />
-        <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
-    </file>
+            <file name="Menu.instance">
+                <attr name="instanceCreate" newvalue="org.netbeans.core.MenuFolderNode" />
+                <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
+            </file>
 
-    <file name="Menu.instance">
-        <attr name="instanceCreate" newvalue="org.netbeans.core.MenuFolderNode" />
-        <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
-    </file>
+            <file name="org-netbeans-core-output-OutputSettings.settings" url="OutputSettings.settings">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/outputSettings.gif" />
+            </file>
 
-    <file name="Toolbar.instance">
-        <attr name="instanceCreate" newvalue="org.netbeans.core.ToolbarFolderNode" />
-        <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
-    </file>
+            <file name="org-openide-explorer-propertysheet-PropertySheetSettings.settings" url="PropertySheetSettings.settings">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/propertysheet/propertySheetSettings.gif" />
+            </file>
 
-    <file name="Actions.instance">
-        <attr name="instanceCreate" newvalue="org.netbeans.core.ActionsPoolNode" />
-        <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
-    </file>
+            <file name="Toolbar.instance">
+                <attr name="instanceCreate" newvalue="org.netbeans.core.ToolbarFolderNode" />
+                <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
+            </file>
 
-    <file name="Modules.instance">
-        <attr name="instanceCreate" newvalue="org.netbeans.core.ui.ModuleNode" />
-        <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
-    </file>
+            <file name="Workspace.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.core.windows.nodes.WorkspacePoolContext.getDefault" />
+                <attr name="instanceClass" stringvalue="org.netbeans.core.windows.nodes.WorkspacePoolContext" />
+            </file>
 
-    <file name="Welcome.instance">
-        <attr name="instanceCreate" newvalue="org.netbeans.core.ui.WelcomeFolderNode" />
-        <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
-    </file>
+        </folder>
 
-    <file name="Workspace.instance">
-        <attr name="instanceCreate" methodvalue="org.netbeans.core.windows.nodes.WorkspacePoolContext.getDefault" />
-        <attr name="instanceClass" stringvalue="org.netbeans.core.windows.nodes.WorkspacePoolContext" />
-    </file>
+        <folder name="System">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
 
-    <file name="IDESettings.settings" url="IDESettings.settings"/>
-    <file name="OutputSettings.settings" url="OutputSettings.settings"/>
-    <file name="ExecutionSettings.settings" url="ExecutionSettings.settings"/>
-    <file name="PropertySheetSettings.settings" url="PropertySheetSettings.settings"/>
-    <file name="SourceOptions.settings" url="SourceOptions.settings"/>
-    <file name="PrintSettings.settings" url="PrintSettings.settings"/>
+            <file name="FileSystems.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.core.ui.UINodes.createFileSystems" />
+                <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
+            </file>
+
+            <file name="Modules.instance">
+                <attr name="instanceCreate" newvalue="org.netbeans.core.ui.ModuleNode" />
+                <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
+            </file>
+
+            <file name="ObjectTypes.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.core.ui.UINodes.createObjectTypes" />
+                <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
+            </file>
+
+            <file name="org-openide-text-PrintSettings.settings" url="PrintSettings.settings">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/printSettings.gif" />
+            </file>
+
+            <file name="Startup.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.core.ui.UINodes.createStartup" />
+                <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
+            </file>
+
+            <file name="org-netbeans-core-IDESettings.settings" url="IDESettings.settings">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/ideSettings.gif" />
+            </file>
+
+            <file name="Welcome.instance">
+                <attr name="instanceCreate" newvalue="org.netbeans.core.ui.WelcomeFolderNode" />
+                <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
+            </file>
+
+        </folder>
+
+        <folder name="ServerAndExternalToolSettings">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+
+            <!-- link to HTML browsers -->
+            <file name="Browsers.shadow">
+<![CDATA[Services/Browsers
+SystemFileSystem
+]]>
+            </file>
+
+            <file name="ScriptTypes.shadow">
+<![CDATA[Services/ScriptType
+SystemFileSystem
+]]>
+            </file>
+        </folder>
+
+    </folder>
+
+    <folder name="SourceCreationAndManagement">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+
+        <file name="Templates.instance">
+            <attr name="instanceCreate" methodvalue="org.netbeans.core.ui.UINodes.createTemplate" />
+            <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
+        </file>
+    </folder>
+
+    <folder name="Editing">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+
+        <file name="IndentationEngines.shadow">
+<![CDATA[Services/IndentEngine
+SystemFileSystem
+]]>
+        </file>
+    </folder>
+
+    <folder name="Building">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+
+        <file name="CompilerTypes.shadow">
+<![CDATA[Services/CompilerType
+SystemFileSystem
+]]>
+        </file>
+    </folder>
+
+    <folder name="DebuggingAndExecuting">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+
+        <file name="DebuggerTypes.shadow">
+<![CDATA[Services/DebuggerType
+SystemFileSystem
+]]>
+        </file>
+
+        <file name="org-netbeans-core-execution-ExecutionSettings.settings" url="ExecutionSettings.settings">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/executionSettings.gif" />
+        </file>
+
+        <file name="Executors.shadow">
+<![CDATA[Services/Executor
+SystemFileSystem
+]]>
+        </file>
+
+    </folder>
 
 
     <!-- Add pretty name and icon -->
@@ -587,7 +746,7 @@ Microsystems, Inc. All Rights Reserved.
   <folder name="Mount">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/repository.gif" />
-        <attr name="global-layer" boolvalue="false" />
+        <attr name="SystemFileSystem.layer" stringvalue="project"/>
 
         <file name="SystemFileSystem.instance">
             <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />

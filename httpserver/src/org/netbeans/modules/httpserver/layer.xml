@@ -15,6 +15,14 @@ Microsystems, Inc. All Rights Reserved.
 
 <filesystem>
     <folder name="Services">
-        <file name="httpserver.settings" url="httpserver.settings"/>
+        <folder name="IDEConfiguration">
+            <folder name="ServerAndExternalToolSettings">
+                <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.httpserver.Bundle"/>
+                <file name="httpserver.settings" url="httpserver.settings">
+                    <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.httpserver.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlValue="nbres:/org/netbeans/modules/httpserver/httpServerSettings.gif"/>
+                </file>
+            </folder>
+        </folder>
     </folder>
 </filesystem>

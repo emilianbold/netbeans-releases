@@ -52,24 +52,52 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- Service templates -->
     <folder name="Services">
-      <folder name="CompilerType">
-        <file name="AntCompiler.settings" url="AntCompiler.settings">
-	  <attr name="template" boolvalue="true"/>
-	</file>
-        <file name="IndirectAntCompiler.settings" url="IndirectAntCompiler.settings">
-	  <attr name="template" boolvalue="true"/>
-        </file>
-      </folder>
-      <folder name="Executor">
-        <file name="AntExecutor.settings" url="AntExecutor.settings">
-	  <attr name="template" boolvalue="true"/>
-        </file>
-      </folder>
+        <folder name="CompilerType">
+            <file name="AntCompiler.settings" url="AntCompiler.settings">
+                <attr boolvalue="true" name="template"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.run.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
+            </file>
+            <file name="IndirectAntCompiler.settings" url="IndirectAntCompiler.settings">
+                <attr boolvalue="true" name="template"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.run.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
+            </file>
+        </folder>
+
+        <folder name="Executor">
+            <file name="AntExecutor.settings" url="AntExecutor.settings">
+                <attr boolvalue="true" name="template"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.run.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
+            </file>
+        </folder>
     </folder>
 
   </folder>
 
   <folder name="Services">
+
+    <folder name="CompilerType">
+        <file name="AntCompiler.settings" url="AntCompiler.settings">
+            <attr name="SystemFileSystem.layer" stringvalue="project"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.run.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
+        </file>
+        <file name="IndirectAntCompiler.settings" url="IndirectAntCompiler.settings">
+            <attr name="SystemFileSystem.layer" stringvalue="project"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.run.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
+        </file>
+    </folder>
+
+    <folder name="Executor">
+        <file name="AntExecutor.settings" url="AntExecutor.settings">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.run.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
+            <attr name="SystemFileSystem.layer" stringvalue="project"/>
+        </file>
+    </folder>
 
     <!-- Recognize text/x-ant+xml: -->
     <folder name="MIMEResolver">
@@ -79,13 +107,11 @@ Microsystems, Inc. All Rights Reserved.
       </file>
     </folder>
 
-    <file name="AntSettings.settings" url="AntSettings.settings"/>
-    <folder name="CompilerType">
-      <file name="AntCompiler.settings" url="AntCompiler.settings"/>
-      <file name="IndirectAntCompiler.settings" url="IndirectAntCompiler.settings"/>
-    </folder>
-    <folder name="Executor">
-      <file name="AntExecutor.settings" url="AntExecutor.settings"/>
+    <folder name="Building">
+        <file name="AntSettings.settings" url="AntSettings.settings">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
+        </file>
     </folder>
 
     <folder name="Hidden">
