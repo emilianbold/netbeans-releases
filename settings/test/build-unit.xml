@@ -1,35 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
 
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
 <project basedir="." default="all" name="build-unit">
-    <import file="../../../nbbuild/default.xml"/>
-    <property file="../../../nbbuild/directories.properties"/>
-
-    <path id="compiletest.classpath">   
-        <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
-        <pathelement location="${core/settings.dir}/${nb.modules.dir}/org-netbeans-modules-settings.jar"/>
-        <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-    </path>
-    
-    <path id="codetest.classpath">
-				
-        <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-        <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
-        <pathelement location="${core/settings.dir}/${nb.modules.dir}/org-netbeans-modules-settings.jar"/>
-        <pathelement location="${core.dir}/${nb.lib.dir}/org-netbeans-swing-plaf.jar"/>
-        <pathelement location="${core.dir}/${nb.modules.dir}/org-netbeans-swing-tabcontrol.jar"/>
-        <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
-        <pathelement location="${core.dir}/${nb.lib/ext.dir}/boot.jar"/>
-    </path>
-    
+    <!-- Imports default default-compiler and run-unit-test executor.
+         Module jar and required jar are on the compile and run classpath by default.
+         Extra classpath can be defined here on in nbproject/project.properties
+         in property ${test.unit.cp.extra} (compilation) and ${test.unit.run.cp.extra}
+         (run).
+      -->
+    <import file="../../../nbbuild/templates/xtest-unit.xml"/>
+   
     <!-- ========= -->
     <!-- Compilers -->
     <!-- ========= -->
     
-    <target name="unit-compiler">
+    <!-- Override if you need something special
+    <target name="default-compiler">
         <buildTests srcDir="unit/src" compileexcludes="**/data/**">
             <classpath refid="compiletest.classpath"/>
         </buildTests>
     </target>
+    -->
     
     <!-- ========= -->
     <!-- Executors -->
@@ -41,10 +42,12 @@
         </executeTests>
     </target>
     
-    <target name="runcodetest">
+    <!-- Override if you need something special
+    <target name="run-unit-test">
         <executeTests pluginName="jvm">
-            <classpath refid="codetest.classpath"/>
+            <classpath/>
         </executeTests>
     </target>
+    -->
     
 </project>

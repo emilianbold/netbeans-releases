@@ -9,7 +9,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -58,17 +58,12 @@ Microsystems, Inc. All Rights Reserved.
                           then call this one. It is handy when some servers (e.g. rmi registry)
                           have to be started before tests are run and stopped after
                           the run. -->
-    <executor name="code" antfile="build-unit.xml" target="runcodetest"/>
+    <executor name="code" antfile="build-unit.xml" target="run-unit-test"/>
     
     <!-- ide executor - use this one if you plan to run your tests inside IDE (internally).
                         Similarly as with code executor, you can create your own to 
                         prepare some neccessary stuff before running tests. -->
     <executor name="ide" antfile="build-unit.xml" target="runidetest"/>
     
-
-    <compiler name="unit-compiler" antfile="build-unit.xml" target="unit-compiler" default="true"/>
-
-    <!-- standard results processor - currently there is only one results processor
-                                      in XTest -->    
-    
+    <compiler name="unit-compiler-new" antfile="build-unit.xml" target="default-compiler" default="true"/>
 </mconfig>
