@@ -27,6 +27,8 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.src.ClassElement;
+import org.openide.src.Identifier;
+import org.openide.src.SourceException;
 
 import java.io.File;
 import java.io.IOException;
@@ -61,10 +63,22 @@ public class Utils {
         if (className == null) {
             return null;
         }
+        FileObject src = getSourceFile(ejbJarFile, className);
+        return ClassElement.forName(className, src);
+    }
+
+    public static FileObject getSourceFile(FileObject ejbJarFile, String className) {
+        return findSourceResource(ejbJarFile, className.replace('.', '/') + ".java");
+    }
+
+    public static FileObject getPackageFile(FileObject ejbJarFile, String packageName) {
+        return findSourceResource(ejbJarFile, packageName.replace('.', '/'));
+    }
+
+    private static FileObject findSourceResource(FileObject ejbJarFile, String resourceName) {
         EjbJarProject enterpriseProject = (EjbJarProject) FileOwnerQuery.getOwner(ejbJarFile);
         ClassPath classPath = enterpriseProject.getEjbModule().getJavaSources();
-        FileObject src = classPath.findResource(className.replace('.', '/') + ".java");
-        return ClassElement.forName(className, src);
+        return classPath.findResource(resourceName);
     }
 
     public static EntityNode createEntityNode(FileObject ejbJarFile, Entity entity) {
@@ -85,5 +99,22 @@ public class Utils {
         ClassElement beanClass = getBeanClass(ejbJarFile, entity);
         EntityMethodController ec = (EntityMethodController) EntityMethodController.createFromClass(beanClass);
         return new CMPFieldNode(field, ec, ejbJarFile);
+    }
+
+    public static void removeInterface(ClassElement beanClass, String interfaceName) {
+        try {
+            beanClass.removeInterface(Identifier.create(interfaceName));
+        } catch (SourceException ex) {
+            notifyError(ex);
+        }
+    }
+
+    public static void removeClassFile(FileObject ejbJarFile, String className) {
+        FileObject sourceFile = org.netbeans.modules.j2ee.ejbjarproject.Utils.getSourceFile(ejbJarFile, className);
+        try {
+            sourceFile.delete();
+        } catch (IOException e) {
+            notifyError(e);
+        }
     }
 }
