@@ -144,6 +144,7 @@ implements ExPropertyEditor, PropertyChangeListener {
         Node[] arr = customEditor.getExplorerManager ().getSelectedNodes ();
         if (arr.length != 1) {
             setValue (null);
+            return;
         }
         
         try {
