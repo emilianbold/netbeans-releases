@@ -89,7 +89,9 @@ import org.openide.util.NbBundle;
 public class EditorModule extends ModuleInstall {
 
     private static final boolean debug = Boolean.getBoolean("netbeans.debug.editor.kits");
+    private RequestProcessor ccUpdateProcessor;
     private RepositListener repoListen;
+    private RepositOperations operationListener;
 
 
     /** PrintOptions to be installed */
@@ -204,8 +206,9 @@ public class EditorModule extends ModuleInstall {
 //            );
 //        }
 
-        TopManager.getDefault().getLoaderPool().addOperationListener(new RepositOperations());
-        
+        operationListener = new RepositOperations();
+        TopManager.getDefault().getLoaderPool().addOperationListener(operationListener);
+
         if (repoListen==null){
             repoListen=new RepositListener();
             Repository repo = TopManager.getDefault().getRepository();
@@ -220,6 +223,9 @@ public class EditorModule extends ModuleInstall {
     public void uninstalled() {
 
         inited = false;
+        
+        TopManager.getDefault().getLoaderPool().removeOperationListener(operationListener);
+        operationListener = null;
         
         // Options
         PrintSettings ps = (PrintSettings) SharedClassObject.findObject(PrintSettings.class, true);
@@ -286,6 +292,13 @@ public class EditorModule extends ModuleInstall {
         
     }
 
+    private synchronized RequestProcessor getCCUpdateProcessor() {
+        if (ccUpdateProcessor == null) {
+            ccUpdateProcessor = new RequestProcessor();
+        }
+        return ccUpdateProcessor;
+    }
+    
     private static class HackMap extends Hashtable {
         
 	private Hashtable delegate;
@@ -441,7 +454,7 @@ public class EditorModule extends ModuleInstall {
 
     /** Listens to repository operations like move, delete and rename of the 
         classes or packages and updates Code Completion DB */
-    private static final class RepositOperations extends OperationAdapter {
+    private final class RepositOperations extends OperationAdapter {
 
         public void operationMove(OperationEvent.Move ev){
             DataObject dobj = ev.getObject();
@@ -472,11 +485,15 @@ public class EditorModule extends ModuleInstall {
             DataObject dobj = ev.getObject();
             if (dobj==null) return;
             
-            DataFolder df = (DataFolder)dobj.getCookie(DataFolder.class);
-            String replacedName = replaceName(dobj.getPrimaryFile().getPackageName('.'), ev.getOriginalName());
+            final DataFolder df = (DataFolder)dobj.getCookie(DataFolder.class);
+            final String replacedName = replaceName(dobj.getPrimaryFile().getPackageName('.'), ev.getOriginalName());
             
             if(df!=null){
-                inspectFolder(df, replacedName);
+                getCCUpdateProcessor().post(new Runnable() {
+                    public void run() {
+                        inspectFolder(df, replacedName, new JCUpdater());
+                    }
+                });
                 return;
             }
             
@@ -493,28 +510,28 @@ public class EditorModule extends ModuleInstall {
             return sb.toString();
         }
         
-        private void inspectFolder(DataFolder df, String oldFolderName) {
+        private void inspectFolder(DataFolder df, String oldFolderName, JCUpdater updater) {
             DataObject[] children = df.getChildren();
             for (int i = 0; i < children.length; i++) {
                 DataObject dob = children[i];
                 if (dob instanceof DataFolder) {
-                    inspectFolder((DataFolder)dob, (oldFolderName+"."+dob.getPrimaryFile().getName())); //NOI18N
+                    inspectFolder((DataFolder)dob, (oldFolderName+"."+dob.getPrimaryFile().getName()), updater); //NOI18N
                 } else if(dob!=null){
                     SourceCookie sc = (SourceCookie)dob.getCookie(SourceCookie.class);
                     if (sc == null) continue;
-                    removeClass(dob.getPrimaryFile(), oldFolderName+"."+dob.getPrimaryFile().getName()); //NOI18N
+                    updater.removeClass(dob.getPrimaryFile(), oldFolderName+"."+dob.getPrimaryFile().getName()); //NOI18N
                 }
             }
         }
                 
         private void removeClass(final FileObject fob, final String oldName){
-            final JCUpdater update = new JCUpdater();
             // Update changes in Code Completion DB on background in thread with minPriority
-            RequestProcessor.postRequest(new Runnable() {
+            getCCUpdateProcessor().post(new Runnable() {
                 public void run() {
+                    JCUpdater update = new JCUpdater();
                     update.removeClass(fob,oldName);
                 }
-            }, 0,Thread.MIN_PRIORITY);        
+            });
         }
     }
     
@@ -533,9 +550,14 @@ public class EditorModule extends ModuleInstall {
                 java.awt.Frame frm = wm.getMainWindow();
                 if(frm!=null && frm.isVisible()){
                     if (ev.getFileSystem() != null){
-                        JCStorage storage = JCStorage.getStorage();
-                        storage.parseFSOnBackground(ev.getFileSystem());
-                    }
+                        final FileSystem fs = ev.getFileSystem();
+                        getCCUpdateProcessor().post(new Runnable() {
+                            public void run() {
+                                JCStorage storage = JCStorage.getStorage();
+                                storage.parseFSOnBackground(fs);
+                            }
+                        });
+                        }
                 }
             
         }
@@ -550,8 +572,13 @@ public class EditorModule extends ModuleInstall {
             java.awt.Frame frm = wm.getMainWindow();
             if(frm!=null && frm.isVisible()){
                 if (ev.getFileSystem() != null){
-                    JCStorage storage = JCStorage.getStorage();
-                    storage.removeParsedFS(ev.getFileSystem());
+                    final FileSystem fs = ev.getFileSystem();
+                    getCCUpdateProcessor().post(new Runnable() {
+                        public void run() {
+                            JCStorage storage = JCStorage.getStorage();
+                            storage.removeParsedFS(fs);
+                        }
+                    });
                 }
             }
         }
