@@ -280,16 +280,20 @@ public class MergeControl extends Object implements ActionListener, VetoableChan
             MergePanel panel = (MergePanel) propertyChangeEvent.getNewValue();
             if (this.panel == panel) {
                 ArrayList unresolvedConflicts = new ArrayList();//java.util.Arrays.asList(diffs));
+                int diffLocationShift = 0;
                 for (int i = 0; i < diffs.length; i++) {
                     if (!resolvedConflicts.contains(diffs[i])) {
+                        int diffLocation = resultDiffLocations[i] - diffLocationShift;
                         Difference conflict = new Difference(diffs[i].getType(),
-                                                             resultDiffLocations[i],
-                                                             resultDiffLocations[i] + diffs[i].getFirstEnd() - diffs[i].getFirstStart(),
-                                                             resultDiffLocations[i],
-                                                             resultDiffLocations[i] + diffs[i].getSecondEnd() - diffs[i].getSecondStart(),
+                                                             diffLocation,
+                                                             diffLocation + diffs[i].getFirstEnd() - diffs[i].getFirstStart(),
+                                                             diffLocation,
+                                                             diffLocation + diffs[i].getSecondEnd() - diffs[i].getSecondStart(),
                                                              diffs[i].getFirstText(),
                                                              diffs[i].getSecondText());
                         unresolvedConflicts.add(conflict);
+                        diffLocationShift += Math.max(diffs[i].getFirstEnd() - diffs[i].getFirstStart() + 1,
+                                                      diffs[i].getSecondEnd() - diffs[i].getSecondStart() + 1);
                     }
                 }
                 try {
