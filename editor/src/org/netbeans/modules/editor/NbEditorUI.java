@@ -23,6 +23,7 @@ import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -48,7 +49,11 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
+import javax.swing.event.ChangeListener;
 import org.netbeans.editor.GlyphGutter;
+import org.openide.text.CloneableEditorSupport;
+import org.openide.util.ContextAwareAction;
+import org.openide.util.Lookup;
 
 /**
 * Editor UI
@@ -61,26 +66,18 @@ public class NbEditorUI extends ExtEditorUI {
 
     private FocusListener focusL;
 
-    private SystemActionUpdater findActionUpdater;
-    private SystemActionUpdater replaceActionUpdater;
-    private SystemActionUpdater gotoActionUpdater;
-    private SystemActionUpdater removeSelectionActionUpdater;
+    private boolean attached = false;
 
+    /**
+     *
+     * @deprecated - use {@link attachSystemActionPerformer(String)} instead
+     */
     protected SystemActionUpdater createSystemActionUpdater(
         String editorActionName, boolean updatePerformer, boolean syncEnabling) {
         return new SystemActionUpdater(editorActionName, updatePerformer, syncEnabling);
     }
 
     public NbEditorUI() {
-        // Start syncing the selected system actions
-        findActionUpdater = createSystemActionUpdater(ExtKit.findAction, true, false);
-        replaceActionUpdater = createSystemActionUpdater(ExtKit.replaceAction, true, false);
-        gotoActionUpdater = createSystemActionUpdater(ExtKit.gotoAction, true, false);
-        
-        // Fixed #25763 - do not sync delete action in the editor
-//        removeSelectionActionUpdater = createSystemActionUpdater(ExtKit.removeSelectionAction,
-//                                       true, true);
-
         focusL = new FocusAdapter() {
                      public void focusGained(FocusEvent evt) {
                          // Refresh file object when component made active
@@ -100,9 +97,33 @@ public class NbEditorUI extends ExtEditorUI {
     }
     
     
+    private static Lookup getContextLookup(java.awt.Component component){
+        Lookup lookup = null;
+        for (java.awt.Component c = component; c != null; c = c.getParent()) {
+            if (c instanceof Lookup.Provider) {
+                lookup = ((Lookup.Provider)c).getLookup ();
+                if (lookup != null) {
+                    break;
+                }
+            }
+        }
+        return lookup;
+    }
+    
+    protected void attachSystemActionPerformer(String editorActionName){
+        new NbEditorUI.SystemActionPerformer(editorActionName);
+    }
+    
     protected void installUI(JTextComponent c) {
         super.installUI(c);
 
+        if (!attached){
+            attachSystemActionPerformer(ExtKit.findAction);
+            attachSystemActionPerformer(ExtKit.replaceAction);
+            attachSystemActionPerformer(ExtKit.gotoAction);
+            attached = true;
+        }
+        
         c.addFocusListener(focusL);
     }
 
@@ -148,6 +169,143 @@ public class NbEditorUI extends ExtEditorUI {
         return new NbEditorToolBar(this);
     }
 
+    private class SystemActionPerformer extends GlobalContextAction implements PropertyChangeListener{
+
+        private String editorActionName;
+
+        private Action editorAction;
+
+        private Action systemAction;
+        
+        
+        SystemActionPerformer(String editorActionName) {
+            this.editorActionName = editorActionName;
+
+            synchronized (NbEditorUI.this.getComponentLock()) {
+                // if component already installed in EditorUI simulate installation
+                JTextComponent component = getComponent();
+                if (component != null) {
+                    propertyChange(new PropertyChangeEvent(NbEditorUI.this,
+                                                           EditorUI.COMPONENT_PROPERTY, null, component));
+                }
+
+                NbEditorUI.this.addPropertyChangeListener(this);
+            }
+        }
+        
+        private void attachSystemActionPerformer(JTextComponent c){
+            if (c == null) return;
+
+            Action editorAction = getEditorAction(c);
+            if (editorAction == null) return;
+
+            Action globalSystemAction = getSystemAction(c);
+            if (globalSystemAction == null) return;
+
+            if (globalSystemAction instanceof CallbackSystemAction){
+                Object key = ((CallbackSystemAction)globalSystemAction).getActionMapKey();
+                c.getActionMap ().put (key, editorAction);
+            }                        
+        }
+        
+        private void detachSystemActionPerformer(JTextComponent c){
+            if (c == null) return;
+
+            Action editorAction = getEditorAction(c);
+            if (editorAction == null) return;
+
+            Action globalSystemAction = getSystemAction(c);
+            if (globalSystemAction == null) return;
+
+            if (globalSystemAction instanceof CallbackSystemAction){
+                Object key = ((CallbackSystemAction)globalSystemAction).getActionMapKey();
+                Object ea = c.getActionMap ().get (key);
+                if (editorAction.equals(ea)){
+                    c.getActionMap ().remove(key);
+                }
+            }                        
+                                
+        }
+        
+        
+        public synchronized void propertyChange(PropertyChangeEvent evt) {
+            String propName = evt.getPropertyName();
+
+            if (EditorUI.COMPONENT_PROPERTY.equals(propName)) {
+                JTextComponent component = (JTextComponent)evt.getNewValue();
+
+                if (component != null) { // just installed
+                    component.addPropertyChangeListener(this);
+                    attachSystemActionPerformer(component);
+                } else { // just deinstalled
+                    component = (JTextComponent)evt.getOldValue();
+                    component.removePropertyChangeListener(this);
+                    detachSystemActionPerformer(component);
+                }
+            }
+        }   
+
+        private synchronized Action getEditorAction(JTextComponent component) {
+            if (editorAction == null) {
+                BaseKit kit = Utilities.getKit(component);
+                if (kit != null) {
+                    editorAction = kit.getActionByName(editorActionName);
+                }
+            }
+            return editorAction;
+        }
+
+        private Action getSystemAction(JTextComponent c) {
+            if (systemAction == null) {
+                Action ea = getEditorAction(c);
+                if (ea != null) {
+                    String saClassName = (String)ea.getValue(NbEditorKit.SYSTEM_ACTION_CLASS_NAME_PROPERTY);
+                    if (saClassName != null) {
+                        Class saClass;
+                        try {
+                            saClass = Class.forName(saClassName);
+                        } catch (Throwable t) {
+                            saClass = null;
+                        }
+
+                        if (saClass != null) {
+                            systemAction = SystemAction.get(saClass);
+                            if (systemAction instanceof ContextAwareAction){
+                                Lookup lookup = getContextLookup(c);
+                                if (lookup!=null){
+                                    systemAction = ((ContextAwareAction)systemAction).createContextAwareInstance(lookup);
+                                }
+                            }
+                            
+                        }
+                    }
+                }
+            }
+            return systemAction;
+        }
+        
+        public void resultChanged(org.openide.util.LookupEvent ev) {
+            // FOR DEBUG PURPOSES
+            /*  
+            ActionMap am = getContextActionMap();
+            Action globalSystemAction = getSystemAction(getComponent());
+            if (am!=null){
+                if (globalSystemAction instanceof CallbackSystemAction){
+                    Object key = ((CallbackSystemAction)globalSystemAction).getActionMapKey();
+                    Action ea = (Action)am.get (key);
+                    System.out.println("editor action:"+ea);
+                }                        
+            }
+             */
+        }
+        
+    }
+    
+
+    /**
+     *
+     * @deprecated use SystemActionPerformer instead
+     */
     public final class SystemActionUpdater
         implements PropertyChangeListener, ActionPerformer {
 
@@ -270,7 +428,7 @@ public class NbEditorUI extends ExtEditorUI {
             if (TopComponent.Registry.PROP_ACTIVATED.equals (propName)) {
                 TopComponent activated = (TopComponent)evt.getNewValue();
 
-                if(activated instanceof CloneableEditor)
+                if(activated instanceof CloneableEditorSupport.Pane)
                     editorActivated();
                 else
                     editorDeactivated();
