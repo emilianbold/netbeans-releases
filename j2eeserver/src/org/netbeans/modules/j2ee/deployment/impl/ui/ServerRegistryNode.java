@@ -115,7 +115,8 @@ public class ServerRegistryNode extends AbstractNode {
     private void removeInstance(ServerInstance instance) {
         Server server = instance.getServer();
         ServerNode node = getServerNode(server);
-        node.removeInstance(instance);
+        //node.removeInstance(instance);
+        node.refreshChildren();
     }
     
     private void updateKeys() {
@@ -165,6 +166,7 @@ class ServerChildren extends Children.Keys {
     protected Node[] createNodes(Object key) {
         //        System.err.println("Creating node for " + key);
         Server s = (Server) key;
+        
         return new Node[] {new FilterNode(((ServerRegistryNode)getNode()).getServerNode(s))};
     }
 }

@@ -89,6 +89,8 @@ public class InitialServerFileDistributor extends ServerProgress {
     private void _distribute(Iterator rootedEntries, File dir, String childModuleUri) {
         LocalFileSystem lfs = null;
         FileLock lock = null;
+        InputStream in = null;
+        OutputStream out = null;
 
         try {
             if (! dir.exists())
@@ -100,13 +102,28 @@ public class InitialServerFileDistributor extends ServerProgress {
             Repository.getDefault().addFileSystem(lfs);
             FileObject destRoot = lfs.findResource(dir.getName());
             
+            FileObject[] garbages = destRoot.getChildren();
+            for (int i=0; i<garbages.length; i++) {
+                garbages[i].delete();
+            }
+            
             while(rootedEntries.hasNext()) {
                 J2eeModule.RootedEntry entry = (J2eeModule.RootedEntry) rootedEntries.next();
                 String relativePath = entry.getRelativePath();
                 FileObject sourceFO = entry.getFileObject();
                 FileObject destFolder = ServerFileDistributor.findOrCreateParentFolder(destRoot, relativePath);
                 if (sourceFO.isData ()) {
-                    FileUtil.copyFile(sourceFO, destFolder, sourceFO.getName());
+                    //try {
+                        FileUtil.copyFile(sourceFO, destFolder, sourceFO.getName());
+                    /*} catch (java.io.SyncFailedException sfe) {
+                        in = sourceFO.getInputStream();
+                        FileObject destFO = destFolder.getFileObject(sourceFO.getName(), sourceFO.getExt());
+                        if (destFO != null) {
+                            lock = destFO.lock();
+                            out = destFO.getOutputStream(lock);
+                            FileUtil.copy(in, out);
+                        }
+                    }*/
                 }
             }
             

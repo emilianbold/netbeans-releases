@@ -454,6 +454,11 @@ public class TargetServer {
                      
                     progressObject = incremental.incrementalDeploy(redeployTargetModules[0].delegate(), acd);
                     progressUI.setProgressObject(progressObject);
+                    
+                    if (progressObject == null) {
+                        progressUI.addMessage(NbBundle.getMessage(TargetServer.class, "MSG_IncrementalDeployNoProgress"));
+                    }
+                    
                     new IncrementalEventHandler(progressObject);
 
                     StateType state = progressObject.getDeploymentStatus().getState();

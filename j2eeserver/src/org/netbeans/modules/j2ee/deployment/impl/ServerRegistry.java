@@ -177,23 +177,18 @@ public final class ServerRegistry implements java.io.Serializable {
     }
     
     public void removeServerInstance(String url) {
+        if (url == null)
+            return;
+        
+        // Make sure defaultInstance cache is reset
+        ServerString def = getDefaultInstance();
+        if (url.equals(def.getUrl()))
+            defaultInstance = null;
+        
         ServerInstance instance = (ServerInstance) instances.remove(url);
         if (instance != null) {
             ServerString ss = new ServerString(instance);
             fireInstanceListeners(ss, false);
-            
-            // case the isntance has target as default
-            defaultInstance = getDefaultInstance();
-            if (defaultInstance != null && instance.getUrl().equals(defaultInstance.getUrl())) {
-                ServerInstance[] remaining = getServerInstances();
-                // the single remaining target server will be promoted
-                if (remaining.length == 1 && remaining[0].getTargets().length == 1) {
-                    ServerString defaultInstance = new ServerString(remaining[0]);
-                    setDefaultInstance(new ServerString(remaining[0]));
-                } else {
-                    setDefaultInstance(null);
-                }
-            }
             removeInstanceFromFile(instance.getUrl());
         }
     }
@@ -329,7 +324,7 @@ public final class ServerRegistry implements java.io.Serializable {
     }
     
     public void setDefaultInstance(ServerString instance) {
-        if ((instance == null && defaultInstance == null) || instance.equals (defaultInstance)) {
+        if ((instance == null && defaultInstance == null) || instance == null || instance.equals (defaultInstance)) {
             return;
         }
         if (ServerStringConverter.writeServerInstance(instance, DIR_INSTALLED_SERVERS, FILE_DEFAULT_INSTANCE)) {
@@ -338,10 +333,11 @@ public final class ServerRegistry implements java.io.Serializable {
             fireDefaultInstance(oldValue, instance);
         }
     }
+    
     public ServerString getDefaultInstance() {
         if (defaultInstance == null) {
             defaultInstance = ServerStringConverter.readServerInstance(DIR_INSTALLED_SERVERS, FILE_DEFAULT_INSTANCE);
-            //System.out.println("getDefaultInstance.1: defaultInstance="+defaultInstance);
+            System.out.println("getDefaultInstance.1: defaultInstance="+defaultInstance);
         }
         
         if (defaultInstance == null) {

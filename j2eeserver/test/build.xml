@@ -24,7 +24,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <!-- These are the primary targets. -->
 
-  <target depends="jars" name="netbeans">
+  <target depends="dev" name="netbeans">
     <genlist targetname="nbm" outputfiledir="${nbext}/netbeans"/>
   </target>
 
@@ -88,7 +88,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="compile">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <patternset>
-          <include name="org/"/>
+          <include name="org/netbeans/tests/"/>
       </patternset>
       <classpath>
         <pathelement location="../netbeans/modules/autoload/j2eeserver.jar"/>
@@ -194,7 +194,8 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Main targets -->
     <!-- ============ -->
     
-    <target depends="runtests" name="all"/>
+    <target depends="f4dev, runtests" name="f4test" />
+    <target depends="dev, runtests" name="all"/>
     
     <!-- This calls target which will call compilers according to cfg file.
          You should not change this target unless you realy know what you are doing -->

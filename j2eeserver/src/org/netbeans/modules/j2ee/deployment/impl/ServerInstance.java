@@ -33,6 +33,8 @@ import org.openide.util.NbBundle;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import javax.management.j2ee.Management;
+import org.openide.util.RequestProcessor;
+
 //import org.netbeans.modules.j2ee.deployment.impl.ui.actions.ShowEventWindowsAction;
 
 public class ServerInstance implements Node.Cookie {
@@ -84,11 +86,15 @@ public class ServerInstance implements Node.Cookie {
     }
     
     public void refresh() {
-        if (manager != null)
+        //PENDING: do i need a new manager instance after (r)estart
+        if (manager != null) {
             manager.release();
-        targets = null;
+            manager = null;
+        }
+        management = null;
         managerWrappers = null;
         targets = null;
+        fireInstanceRefreshed();
     }
     
     public void remove() {
@@ -123,7 +129,7 @@ public class ServerInstance implements Node.Cookie {
                     start();
                 }
                 
-                targs = manager.getTargets();
+                targs = getDeploymentManager().getTargets();
             } catch(IllegalStateException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
@@ -177,7 +183,7 @@ public class ServerInstance implements Node.Cookie {
         ModuleUrlResolver.class
     };
     private Map getManagerWrappers() {
-        if (manager == null)
+        if (getDeploymentManager() == null)
             throw new IllegalStateException("DeployementManager is not ready"); //NOI18N
         
         if (managerWrappers != null)
@@ -188,7 +194,7 @@ public class ServerInstance implements Node.Cookie {
         for (int i=0; i<wrapperClasses.length; i++) {
             DeploymentManagerWrapper wrapper = server.getDeploymentManagerWrapper(wrapperClasses[i]);
             if (wrapper != null) {
-                wrapper.setDeploymentManager(manager);
+                wrapper.setDeploymentManager(getDeploymentManager());
                 managerWrappers.put(wrapperClasses[i].getName(), wrapper);
             }
         }
@@ -205,7 +211,7 @@ public class ServerInstance implements Node.Cookie {
     }
     public boolean isDebuggable() {
         StartServer ss = getStartServer();
-        Target target = manager.getTargets()[0];
+        Target target = getDeploymentManager().getTargets()[0];
         return ss != null && ss.isAlsoTargetServer(target) && ss.isDebuggable(target);
     }
     public boolean isDebuggable(Target target) {
@@ -279,21 +285,34 @@ public class ServerInstance implements Node.Cookie {
         return startTarget(target, ui, true);
     }
     
-    // Note: these 2 state transiont APIs are mainly for registry actions
+    // Note: these 2 state transiont APIs are mainly for registry actions with no existing progress UI
     
     /**
      * Start admin server.
      */
-    public void start() {
+    public boolean start() {
         if (isRunning())
-            return;
+            return true;
         
-        String title = NbBundle.getMessage(ServerInstance.class, "LBL_StartServerProgressMonitor", getUrl());
-        DeployProgressUI ui = new DeployProgressMonitor(title, false, true);  // modeless with stop/cancel buttons
-        ui.startProgressUI(10);
-        _start(ui);
-        ui.recordWork(10);
-        refresh();
+        if (! RequestProcessor.getDefault().isRequestProcessorThread()) {
+            Thread.dumpStack();
+            //PENDING maybe a modal dialog instead of async is needed here
+            RequestProcessor.Task t = RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    _start();
+                }
+            }, 0, Thread.MAX_PRIORITY);
+            return false;
+        } else {
+            String title = NbBundle.getMessage(ServerInstance.class, "LBL_StartServerProgressMonitor", getUrl());
+            final DeployProgressUI ui = new DeployProgressMonitor(title, false, true);  // modeless with stop/cancel buttons
+            ui.startProgressUI(10);
+            if (_start(ui)) {
+                ui.recordWork(10);
+                return true;
+            }
+            return false;
+        }
     }
     
     /**
@@ -304,6 +323,8 @@ public class ServerInstance implements Node.Cookie {
         DeployProgressUI ui = new DeployProgressMonitor(title, false, true);  // modeless with stop/cancel buttons
         ui.startProgressUI(10);
         _stop(ui);
+        //TESTING
+        //_test_stop(getCoTarget().getTarget(), ui);
         ui.recordWork(10);
     }
     
@@ -388,6 +409,31 @@ public class ServerInstance implements Node.Cookie {
             ui.removeCancelHandler(ch);
         }
     }
+
+
+    private synchronized void _start() {
+        StartServer ss = getStartServer();
+        String errorMessage = checkStartDM(ss);
+        if (errorMessage != null) {
+            handleStartServerError(null, errorMessage);
+            return;
+        }
+        
+        showStatusText(NbBundle.getMessage(ServerInstance.class, "MSG_StartingServer", url));
+        ProgressObject po = ss.startDeploymentManager();
+        po.addProgressListener(new StartProgressHandler());
+        
+        // wait until done or cancelled
+        boolean done = sleep();
+        if (! done) {
+            showStatusText(NbBundle.getMessage(ServerInstance.class, "MSG_StartServerTimeout", url));
+        } else {
+            showStatusText(NbBundle.getMessage(ServerInstance.class, "MSG_StartedServer", url));
+            managerStartedByIde = true;
+            refresh();
+        }
+    }
+    
     // startDebugging
     private synchronized boolean _startDebug(Target target, DeployProgressUI ui) {
         DeployProgressUI.CancelHandler ch = getCancelHandler();
@@ -556,6 +602,9 @@ public class ServerInstance implements Node.Cookie {
     }
     
     public ServerTarget getCoTarget() {
+        if (! isRunning() && getStartServer().needsStartForTargetList())
+            return null;
+        
         ServerTarget[] childs = getTargets();
         for (int i=0; i<childs.length; i++) {
             if (getStartServer().isAlsoTargetServer(childs[i].getTarget()))
@@ -584,7 +633,7 @@ public class ServerInstance implements Node.Cookie {
         
         if (getManagementMapper() == null)
             return null;
-        management = getManagementMapper().getManagement(manager);
+        management = getManagementMapper().getManagement(getDeploymentManager());
         return management;
     }
     
@@ -598,4 +647,6 @@ public class ServerInstance implements Node.Cookie {
         }
         return null;
     }
+    
+    
 }
