@@ -14,6 +14,7 @@
 package org.netbeans.modules.debugger.jpda;
 
 import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 
 
@@ -35,7 +36,7 @@ public class JSR45DebuggerEngineProvider extends DebuggerEngineProvider {
     }
 
     public String getEngineTypeID () {
-        return "netbeans-JPDASession/" + language;
+        return JPDADebugger.SESSION_ID + "/" + language;
     }
 
     public Object[] getServices () {

@@ -17,6 +17,7 @@ import java.util.HashSet;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.LaunchingDICookie;
 import org.netbeans.spi.debugger.SessionProvider;
 
@@ -49,7 +50,7 @@ public class LaunchingSessionProvider extends SessionProvider {
     }
     
     public String getTypeID () {
-        return "netbeans-JPDASession";
+        return JPDADebugger.SESSION_ID;
     }
     
     public Object[] getServices () {

@@ -72,7 +72,9 @@ public abstract class JPDADebugger {
     public static final int             STATE_DISCONNECTED = 4;
 
     /** ID of JPDA Debugger Engine. */
-    public static final String          ENGINE_ID = "debuggerjpda.netbeans.org";
+    public static final String          ENGINE_ID = "netbeans-JPDASession/Java";
+    /** ID of JPDA Debugger Engine. */
+    public static final String          SESSION_ID = "netbeans-JPDASession";
     
 
     

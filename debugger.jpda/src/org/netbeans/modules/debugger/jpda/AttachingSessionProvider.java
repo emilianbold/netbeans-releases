@@ -16,6 +16,7 @@ package org.netbeans.modules.debugger.jpda;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.AttachingDICookie;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.spi.debugger.SessionProvider;
 
 
@@ -47,7 +48,7 @@ public class AttachingSessionProvider extends SessionProvider {
     }
     
     public String getTypeID () {
-        return "netbeans-JPDASession";
+        return JPDADebugger.SESSION_ID;
     }
     
     public Object[] getServices () {

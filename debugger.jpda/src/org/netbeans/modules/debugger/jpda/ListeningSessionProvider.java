@@ -17,6 +17,7 @@ import com.sun.jdi.Bootstrap;
 import com.sun.jdi.connect.ListeningConnector;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.ListeningDICookie;
 import org.netbeans.spi.debugger.SessionProvider;
 
@@ -47,7 +48,7 @@ public class ListeningSessionProvider extends SessionProvider {
     }
     
     public String getTypeID () {
-        return "netbeans-JPDASession";
+        return JPDADebugger.SESSION_ID;
     }
     
     public Object[] getServices () {
