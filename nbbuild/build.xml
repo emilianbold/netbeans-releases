@@ -436,6 +436,24 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../contrib/bookmarks" target="netbeans"/>
   </target>
+  <target name="all-contrib/editorhints" depends="all-editor">
+    <echo message="Building module contrib/editorhints ..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../contrib/editorhints" target="netbeans"/>
+  </target>
+  <target name="all-contrib/editorhints/java" depends="all-editor,all-java,all-java/javacore,all-mdr,all-refactoring,all-contrib/editorhints">
+    <echo message="Building module contrib/editorhints/java ..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../contrib/editorhints/java" target="netbeans"/>
+  </target>
   <target name="all-contrib/htmldiff" depends="all-diff">
     <echo message="Building module htmldiff ..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
@@ -739,6 +757,15 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../editor/errorstripe" target="netbeans"/>
   </target>
+  <target name="all-editor/errorstripe/annotations" depends="init,all-editor/lib,all-editor,all-editor/errorstripe">
+    <echo message="Building module editor/errorstripe/annotations..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../editor/errorstripe/annotations" target="netbeans"/>
+  </target>
   <target name="all-editor/fold" depends="init,all-editor/util">
     <echo message="Building module editor/fold..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
@@ -792,6 +819,15 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <param name="one.cluster.name" value="this-cluster"/>
     </antcall>
     <ant dir="../java/editor/lib" target="netbeans"/>
+  </target>
+  <target name="all-java/errorstripe" depends="init,all-editor/errorstripe,all-java">
+    <echo message="Building module java/errorstripe..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../java/errorstripe" target="netbeans"/>
   </target>
   <target name="all-html/editor" depends="init,all-html/editor/lib,all-editor,all-editor/lib,all-editor/util">
     <echo message="Building module html/editor..."/>
@@ -1045,7 +1081,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../latex/auted" target="netbeans"/>
   </target>
-  <target name="all-latex/bibtex" depends="init,all-latex/model">
+  <target name="all-latex/bibtex" depends="init,all-latex/model,all-lexer,all-lexer/editorbridge,all-latex/editor">
     <echo message="Building module latex/bibtex..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
@@ -1080,6 +1116,24 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <param name="one.cluster.name" value="this-cluster"/>
     </antcall>
     <ant dir="../latex/editor" target="netbeans"/>
+  </target>
+  <target name="all-latex/errorstripe" depends="init,all-editor/errorstripe,all-latex/model">
+    <echo message="Building module latex/errorstripe..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../latex/errorstripe" target="netbeans"/>
+  </target>
+  <target name="all-latex/hints" depends="init,all-contrib/editorhints,all-latex/editor">
+    <echo message="Building module latex/hints..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../latex/hints" target="netbeans"/>
   </target>
   <target name="all-latex/loaders" depends="init,all-editor,all-latex/model,all-latex/editor,all-latex/core">
     <echo message="Building module latex/loaders..."/>
@@ -1464,6 +1518,15 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <param name="one.cluster.name" value="this-cluster"/>
     </antcall>
     <ant dir="../tasklist/core" target="netbeans"/>
+  </target>
+  <target name="all-tasklist/errorstripe" depends="init,all-editor/errorstripe,all-tasklist/api,all-tasklist/core,all-tasklist/suggestions">
+    <echo message="Building module tasklist/errorstripe..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../tasklist/errorstripe" target="netbeans"/>
   </target>
   <target name="all-tasklist/usertasks" depends="init,all-tasklist/api,all-tasklist/core">
     <echo message="Building module tasklist/usertasks..."/>
