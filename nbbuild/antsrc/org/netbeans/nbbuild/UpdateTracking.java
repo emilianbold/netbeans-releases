@@ -125,7 +125,7 @@ public class UpdateTracking {
         trackingFileName = trackingFileName.substring(0, trackingFileName.indexOf('/')).replace('.', '-') + ".xml";
         File directory = new File( nbPath + FILE_SEPARATOR + TRACKING_DIRECTORY );
         if (!directory.exists()) {
-            directory.mkdir();
+            directory.mkdirs();
         }
         trackingFile = new File(directory, trackingFileName);
         try {
