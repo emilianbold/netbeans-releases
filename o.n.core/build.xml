@@ -29,16 +29,36 @@ Microsystems, Inc. All Rights Reserved.
 	<pathelement location="${binroot}/core/release/lib/ext/jh.jar"/>
       </classpath>
     </javac>
+
+
+    <javac srcdir="upgradesrc" destdir="upgradesrc" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}"> 
+      <classpath>
+        <pathelement location="../openide/openide-13javac-workaround.jar"/>
+        <pathelement location="../openide/netbeans/lib/openide.jar"/>
+	<pathelement location="../openidex/netbeans/lib/ext/openidex.jar"/>
+	<pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
+	<pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
+	<pathelement location="${binroot}/core/release/lib/ext/parser.jar"/>
+	<pathelement location="${binroot}/core/release/lib/ext/jh.jar"/>
+      </classpath>
+    </javac>
   </target>
 
   <target name="jars" depends="compile">
     <mkdir dir="netbeans/lib/ext"/>
+    <mkdir dir="netbeans/lib/upgrade"/>
     <locjar jarfile="netbeans/lib/core.jar"
             basedir="src"
             excludesfile="../nbbuild/standard-jar-excludes.txt"
 	    compress="false">
       <locale name="ja"/>
     </locjar>
+
+  <jar jarfile="netbeans/lib/upgrade/upgrade.jar"
+	    compress="false">
+      <fileset dir="upgradesrc" excludesfile="../nbbuild/standard-jar-excludes.txt">
+      </fileset>
+    </jar>
   </target>
 
   <target name="release">
