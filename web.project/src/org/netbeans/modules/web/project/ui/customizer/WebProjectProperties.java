@@ -72,7 +72,12 @@ public class WebProjectProperties {
     public static final String DIST_WAR = "dist.war";
     public static final String JAVAC_CLASSPATH = "javac.classpath";
     public static final String DEBUG_CLASSPATH = "debug.classpath";    
-    public static final String JAR_COMPRESS = "jar.compress";
+
+    public static final String WAR_NAME = "war.name";
+    public static final String WAR_COMPRESS = "war.compress";
+    public static final String WAR_CONTENT_EXCLUDES = "war.content.excludes";
+    public static final String WAR_CONTENT_ADDITIONAL = "war.content.additional";
+
     public static final String CONTEXT_PATH = "context.path";
     public static final String LAUNCH_URL_RELATIVE = "launch.url.relative";
     public static final String LAUNCH_URL_FULL = "launch.url.full";
@@ -136,7 +141,12 @@ public class WebProjectProperties {
         new PropertyDescriptor( COMPILE_JSPS, PROJECT, BOOLEAN_PARSER ),
         //new PropertyDescriptor( JSP_COMPILER_CLASSPATH, PRIVATE, PATH_PARSER ),
         new PropertyDescriptor( DEBUG_CLASSPATH, PROJECT, PATH_PARSER ),
-        new PropertyDescriptor( JAR_COMPRESS, PROJECT, BOOLEAN_PARSER ),
+
+        new PropertyDescriptor( WAR_NAME, PROJECT, STRING_PARSER ),
+        new PropertyDescriptor( WAR_COMPRESS, PROJECT, BOOLEAN_PARSER ),
+        new PropertyDescriptor( WAR_CONTENT_EXCLUDES, PROJECT, STRING_PARSER ),
+        new PropertyDescriptor( WAR_CONTENT_ADDITIONAL, PROJECT, PATH_PARSER ),
+        
         new PropertyDescriptor( CONTEXT_PATH, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( LAUNCH_URL_RELATIVE, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( LAUNCH_URL_FULL, PROJECT, STRING_PARSER ),
@@ -787,6 +797,10 @@ public class WebProjectProperties {
             VisualClassPathItem vcpi = (VisualClassPathItem)it.next();
 
             String library_tag_value = "";
+
+            //TODO: prevent NPE from CustomizerCompile - need to investigate
+            if (vcpi == null)
+                return;
 
             switch( vcpi.getType() ) {
 

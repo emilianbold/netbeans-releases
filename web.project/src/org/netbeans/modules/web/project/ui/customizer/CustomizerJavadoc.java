@@ -7,30 +7,14 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.web.project.ui.customizer;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.ListCellRenderer;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.ListDataEvent;
-import javax.swing.event.ListDataListener;
-import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
 
 /** Customizer for general project attributes.
  *
@@ -38,17 +22,17 @@ import org.openide.util.NbBundle;
  */
 public class CustomizerJavadoc extends JPanel implements WebCustomizer.Panel {
     
-        
+    private VisualPropertySupport vps;    
+    
     /** Creates new form CustomizerCompile */
-    public CustomizerJavadoc() {
+    public CustomizerJavadoc(WebProjectProperties webProperties) {
         initComponents();        
+
+        vps = new VisualPropertySupport(webProperties);
     }
     
     
-    public void initValues( WebProjectProperties j2seProperties ) {
-        
-        VisualPropertySupport vps = new VisualPropertySupport( j2seProperties );
-        
+    public void initValues() {
         vps.register( jCheckBoxPrivate, WebProjectProperties.JAVADOC_PRIVATE );
         vps.register( jCheckBoxTree, WebProjectProperties.JAVADOC_NO_TREE );
         vps.register( jCheckBoxUsages, WebProjectProperties.JAVADOC_USE );
@@ -290,36 +274,5 @@ public class CustomizerJavadoc extends JPanel implements WebCustomizer.Panel {
     private javax.swing.JTextField jTextFieldPackage;
     private javax.swing.JTextField jTextFieldWinTitle;
     // End of variables declaration//GEN-END:variables
-        
-    // Storing methods ---------------------------------------------------------
-    
-    /** Stores the value according to the src component into the helper
-     */
-    private void store( JComponent src ) {
-    
-        /*
-        if ( src == jTextFieldSrcDir ) {
-            j2seProperties.put( WebProjectProperties.SRC_DIR, jTextFieldSrcDir.getText() );
-        }
-        else if ( src == jTextFieldBuildDir ) {
-            j2seProperties.put( WebProjectProperties.BUILD_DIR, jTextFieldBuildDir.getText() );
-        }
-        else if ( src == jListClasspath ) {
-            
-            List elements = new ArrayList( classpathModel.size() );
-            
-            for ( Enumeration e = classpathModel.elements(); e.hasMoreElements(); ) {
-                elements.add( e.nextElement() );
-            }
-            j2seProperties.put( WebProjectProperties.JAVAC_CLASSPATH, elements );
-        }
-        
-        assert true : "CustomizerCompile - Unknown component : " + src; // NOI18N
-        */
-    } 
-    
-    
-    
-    // Private methods for classpath data manipulation -------------------------
         
 }

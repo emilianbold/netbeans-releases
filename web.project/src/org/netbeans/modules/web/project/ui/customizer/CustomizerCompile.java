@@ -17,40 +17,17 @@ import org.openide.util.NbBundle;
 
 public class CustomizerCompile extends javax.swing.JPanel implements WebCustomizer.Panel {
 
-    // Helper for storing properties
-    private WebProjectProperties webProperties;
     private VisualPropertySupport vps;
-
+    private VisualClasspathSupport vcs;
+    private String[] jvm;
+    private String[] jvmValues;
+    
     /** Creates new form CustomizerCompile */
-    public CustomizerCompile() {
+    public CustomizerCompile(WebProjectProperties webProperties) {
         initComponents();
-    }
-
-    public void initValues( WebProjectProperties webProperties ) {
-        this.webProperties = webProperties;
-
+        
         vps = new VisualPropertySupport(webProperties);
-        
-        String[] jvm = new String[] {
-            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_JVM_JComboBox_11"),
-            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_JVM_JComboBox_12"),
-            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_JVM_JComboBox_13"),
-            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_JVM_JComboBox_14"),
-            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_JVM_JComboBox_15")
-        };
-        String[] jvmValues = new String[] {
-            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_JVM_JComboBox_11_Value"),
-            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_JVM_JComboBox_12_Value"),
-            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_JVM_JComboBox_13_Value"),
-            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_JVM_JComboBox_14_Value"),
-            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_JVM_JComboBox_15_Value")
-        };
-
-        vps.register(jvmComboBox, jvm, jvmValues, WebProjectProperties.JAVAC_TARGET);
-        vps.register(jCheckBoxDebugInfo, WebProjectProperties.JAVAC_DEBUG);
-        vps.register(jCheckBoxDeprecation, WebProjectProperties.JAVAC_DEPRECATION);
-        
-        VisualClasspathSupport vcs = new VisualClasspathSupport(
+        vcs = new VisualClasspathSupport(
             jTableClasspath,
             jButtonAddJar,
             jButtonAddLibrary,
@@ -58,10 +35,30 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
             jButtonEdit,
             jButtonRemove,
             jButtonMoveUp,
-            jButtonMoveDown );
-        vps.register( vcs, WebProjectProperties.JAVAC_CLASSPATH );
+            jButtonMoveDown);
+        
+        jvm = new String[] {
+            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_JVM_JComboBox_11"),
+            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_JVM_JComboBox_12"),
+            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_JVM_JComboBox_13"),
+            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_JVM_JComboBox_14"),
+            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_JVM_JComboBox_15")
+        };
+        jvmValues = new String[] {
+            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_JVM_JComboBox_11_Value"),
+            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_JVM_JComboBox_12_Value"),
+            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_JVM_JComboBox_13_Value"),
+            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_JVM_JComboBox_14_Value"),
+            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_JVM_JComboBox_15_Value")
+        };
 
-//        jButtonEdit.setVisible( false );
+    }
+
+    public void initValues() {
+        vps.register(jvmComboBox, jvm, jvmValues, WebProjectProperties.JAVAC_TARGET);
+        vps.register(jCheckBoxDebugInfo, WebProjectProperties.JAVAC_DEBUG);
+        vps.register(jCheckBoxDeprecation, WebProjectProperties.JAVAC_DEPRECATION);
+        vps.register(vcs, WebProjectProperties.JAVAC_CLASSPATH);
     }
 
     /** This method is called from within the constructor to

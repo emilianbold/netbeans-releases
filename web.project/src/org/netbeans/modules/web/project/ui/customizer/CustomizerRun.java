@@ -24,20 +24,19 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 public class CustomizerRun extends JPanel implements WebCustomizer.Panel, DocumentListener {
     
     // Helper for storing properties
-    private WebProjectProperties webProperties;
+    private VisualPropertySupport vps;
+    
     String[] serverURLs;
     String[] serverNames;
     
     /** Creates new form CustomizerCompile */
-    public CustomizerRun() {
+    public CustomizerRun(WebProjectProperties webProperties) {
         initComponents();
+
+        vps = new VisualPropertySupport(webProperties);
     }
     
-    public void initValues(WebProjectProperties webProperties) {
-        this.webProperties = webProperties;
-        
-        VisualPropertySupport vps = new VisualPropertySupport(webProperties);
-        
+    public void initValues() {
         serverURLs = InstanceProperties.getInstanceList ();
         serverNames = new String[serverURLs.length];
         for (int i = 0; i < serverURLs.length; i++) {
