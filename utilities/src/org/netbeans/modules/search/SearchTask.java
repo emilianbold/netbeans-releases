@@ -69,7 +69,7 @@ public class SearchTask extends Task {
                 propListener = new PropertyChangeListener() {
                     public void propertyChange(PropertyChangeEvent evt) {
                         if (SearchGroup.PROP_FOUND.equals(evt.getPropertyName())) {
-                            resultModel.acceptFoundObjects(new Object[] {evt.getNewValue()});
+                            resultModel.objectFound(evt.getNewValue());
                         }
                     }
                 }, searchGroup)

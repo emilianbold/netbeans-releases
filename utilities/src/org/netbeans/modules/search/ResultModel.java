@@ -32,7 +32,6 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import org.openide.nodes.NodeAcceptor;
 import org.openide.ErrorManager;
 import org.openide.xml.XMLUtil;
 import org.openide.util.RequestProcessor;
@@ -50,6 +49,7 @@ import org.openide.util.Utilities;
  * Holds search result data.
  * 
  * @author  Petr Kuzel
+ * @author  Marian Petras
  */
 public class ResultModel implements TaskListener {
 
@@ -140,16 +140,15 @@ public class ResultModel implements TaskListener {
         searchGroup = null;
     }
     
-    /** Accept nodes. Some nodes were found by engine. */
-    public synchronized boolean acceptFoundObjects(Object[] foundObjects) {
-        root.addFoundObjects(foundObjects);
-        
-/*        if(useDisp && disp != null) {
-            disp.acceptNodes(nodes);
-        }
- */ // PENDING important
-
-        return true;
+    /**
+     * Notifies ths result model of a newly found matching object.
+     *
+     * @param  object  matching object
+     * @return  <code>true</code> if this result model can accept more objects,
+     *          <code>false</code> if number of found objects reached the limit
+     */
+    synchronized void objectFound(Object object) {
+        root.addFoundObject(object);
     }
 
     /** Getter for search group property. */
@@ -259,7 +258,7 @@ public class ResultModel implements TaskListener {
                         root.removeFoundObject(evt.getOldValue());
                     } else {
                         // New object to add.
-                        root.addFoundObjects(new Object[] {evt.getNewValue()});
+                        root.addFoundObject(evt.getNewValue());
                     }
                 }
             }
@@ -366,9 +365,9 @@ public class ResultModel implements TaskListener {
             children.dispose();
         }
 
-        /** Adds founds objects to root node. */
-        public void addFoundObjects(Object[] foundObjects) {
-            ((ResultRootChildren)getChildren()).addFoundObjects(foundObjects);
+        /** Adds a found object to this root node. */
+        public void addFoundObject(Object foundObject) {
+            ((ResultRootChildren) getChildren()).addFoundObject(foundObject);
              
              ResultModel.this.root.setDisplayName(ResultModel.this.getRootDisplayName());
         }
@@ -394,7 +393,7 @@ public class ResultModel implements TaskListener {
 
         /** Gets number of found nodes. */
         public int getNumberOfFoundNodes() {
-            return getChildren().getNodesCount();
+            return ((ResultRootChildren) getChildren()).size();
         }
         
         
@@ -429,6 +428,7 @@ public class ResultModel implements TaskListener {
         private final int BATCH_INTERVAL_MS = 759;
         private volatile RequestProcessor.Task batchSetKeys;
         private volatile boolean active = false;
+        private int size = 0;
 
         /** Constructor. */
         public ResultRootChildren() {
@@ -467,6 +467,9 @@ public class ResultModel implements TaskListener {
             };
         }
         
+        int size() {
+            return size;
+        }
         
         /** Overrides superclass method. */
         protected void addNotify() {
@@ -499,16 +502,15 @@ public class ResultModel implements TaskListener {
             return new Node[] { createFoundNode(key)};
         }
         
-        public void addFoundObjects(Object[] foundObjects) {
+        public void addFoundObject(Object foundObject) {
             if ( em.isLoggable (ErrorManager.INFORMATIONAL) ) {
-                em.log ("addFoundObjects: " + Arrays.asList (foundObjects));
-                em.notify (/*ErrorManager.INFORMATIONAL, */new RuntimeException ("++ addFoundObjects"));
+                em.log ("addFoundObject: " + foundObject);
+                em.notify (/*ErrorManager.INFORMATIONAL, */new RuntimeException ("++ addFoundObject"));
             }
 
-            int size = 0;
             synchronized(keys) {
-                keys.addAll(Arrays.asList(foundObjects));
-                size = keys.size();
+                keys.add(foundObject);
+                size++;
             }
 
             if (size < BATCH_LEVEL) {
