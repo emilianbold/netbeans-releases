@@ -21,6 +21,7 @@ import org.apache.tools.ant.Task;
 /** Task to check value of any property. If value match than it will set
  * another property to specified value
  * @author Michal Zlamal
+ * @deprecated unused
  */
 public class CheckValue extends Task {
     String property = null;

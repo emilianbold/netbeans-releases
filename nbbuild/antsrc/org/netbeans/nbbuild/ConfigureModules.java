@@ -23,6 +23,7 @@ import org.apache.tools.ant.Task;
  * Ugly implementation because of the poor support for initialization
  * from nested elements in Ant.
  * @author Jesse Glick
+ * @deprecated unused
  */
 public class ConfigureModules extends Task {
 
