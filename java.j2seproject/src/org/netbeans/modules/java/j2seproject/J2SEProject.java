@@ -310,8 +310,8 @@ final class J2SEProject implements Project, AntProjectListener {
             ProjectManager.mutex().writeAccess(new Mutex.Action() {
                 public Object run() {
                     EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                    String userdir = new File(System.getProperty("netbeans.user")).getAbsolutePath();
-                    ep.setProperty("user.properties.file", userdir+File.separatorChar+"build.properties"); //NOI18N
+                    File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
+                    ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N
                     helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
                     try {
                         ProjectManager.getDefault().saveProject(J2SEProject.this);
@@ -373,11 +373,11 @@ final class J2SEProject implements Project, AntProjectListener {
         };
         
         private static final String[] PRIVILEGED_NAMES = new String[] {
-            "Templates/Classes/Class.java",
-            "Templates/Package",
-            "Templates/Classes/Interface.java",
-            "Templates/GUIForms/JPanel.java",
-            "Templates/GUIForms/JFrame.java",
+            "Templates/Classes/Class.java", // NOI18N
+            "Templates/Package", // NOI18N
+            "Templates/Classes/Interface.java", // NOI18N
+            "Templates/GUIForms/JPanel.java", // NOI18N
+            "Templates/GUIForms/JFrame.java", // NOI18N
         };
         
         public String[] getRecommendedTypes() {
