@@ -101,9 +101,16 @@ public class EditorView extends ViewElement {
     public boolean updateAWTHierarchy(Dimension availableSpace) {
 //        System.out.println("EditorView:updateAWTHierarchy=" + availableSpace);
         boolean result = false;
-        getEditorAreaComponent().setPreferredSize(availableSpace);
+        EditorAreaComponent comp = getEditorAreaComponent();
+        Dimension d = (Dimension) comp.getClientProperty ("lastAvailableSpace"); //NOI18N
+        if (!availableSpace.equals(d)) {
+            //We will only return true if we actually did something
+            comp.setPreferredSize(availableSpace);
+            comp.putClientProperty("lastAvailableSpace", availableSpace); //NOI18N
+            result = true;
+        }
         if (editorArea != null) {
-            result = editorArea.updateAWTHierarchy(new Dimension(availableSpace.width - 1, availableSpace.height - 1));
+            result |= editorArea.updateAWTHierarchy(new Dimension(availableSpace.width - 1, availableSpace.height - 1));
         }
         assureComponentInEditorArea();      
         return result;

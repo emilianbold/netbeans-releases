@@ -84,11 +84,15 @@ public final class DesktopImpl {
     }
 
     public Dimension getInnerPaneDimension() {
-        // 40 is magic number..
-        //TODO - figure out he real soze of the central panel.. substract the 
-        // sliding bars from the desptop's size..
-        
-        return new Dimension(desktop.getSize().width - 40, desktop.getSize().height - 40);
+        int width = desktop.getSize().width;
+        int height = desktop.getSize().height;
+        SlidingView view = findView(Constants.LEFT);
+        width = (view != null ? width - view.getComponent().getSize().width : width);
+        view = findView(Constants.RIGHT);
+        width = (view != null ? width - view.getComponent().getSize().width : width);
+        view = findView(Constants.BOTTOM);
+        height = (view != null ? height - view.getComponent().getSize().height : height);
+        return new Dimension(width, height);
     }
     
    public void setSplitRoot (ViewElement splitRoot) {
