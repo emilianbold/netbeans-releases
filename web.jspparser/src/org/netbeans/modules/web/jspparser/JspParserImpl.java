@@ -68,10 +68,6 @@ public class JspParserImpl implements JspParserAPI {
         }*/
     }
     
-    public synchronized JspParserAPI.JspOpenInfo getJspOpenInfo(FileObject jspFile, WebModule wm) {
-        return getJspOpenInfo(jspFile, wm, false);
-    }
-    
     public synchronized JspParserAPI.JspOpenInfo getJspOpenInfo(FileObject jspFile, WebModule wm, boolean useEditor) {
         FileObject wmRoot = wm.getDocumentBase();
         if (wmRoot == null) {
