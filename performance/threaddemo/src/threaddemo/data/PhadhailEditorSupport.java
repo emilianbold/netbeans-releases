@@ -77,6 +77,7 @@ final class PhadhailEditorSupport extends CloneableEditorSupport implements Open
      * a read lock.
      */
     public Task prepareDocument() {
+        // XXX hack no longer works after patch to CES; pD() not called from oD() + gD()
         ((PhadhailEnv)env).preloadInputStream();
         Task t = super.prepareDocument();
         t.addTaskListener(new TaskListener() {
