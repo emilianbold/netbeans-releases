@@ -441,7 +441,7 @@ is divided into following sections:
                      nonClassDir="${{build.web.dir}}/WEB-INF/wsdl" 
                      verbose="true" 
                      xPrintStackTrace="true" 
-                     base="${{src.dir}}" 
+                     base="${{build.generated.dir}}/wssrc"
                      sourceBase="${{src.dir}}" 
                      keep="true" 
                      fork="true" />
