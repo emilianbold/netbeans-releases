@@ -86,6 +86,9 @@ final class IntMap {
         if (last == -1) {
             return new int[0];
         }
+        if (last == keys.length -1) {
+            growArrays();
+        }
         int[] result = new int[last+1];
         try {
             System.arraycopy (keys, 0, result, 0, last+1);
