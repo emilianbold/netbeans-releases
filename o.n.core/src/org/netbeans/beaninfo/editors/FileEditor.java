@@ -16,6 +16,9 @@ package org.netbeans.beaninfo.editors;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dialog;
+import java.awt.KeyboardFocusManager;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
@@ -203,7 +206,7 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
             if (curVal instanceof java.io.File) {
                 info = ((java.io.File)curVal).getAbsolutePath();
             }
-            return new StringCustomEditor(info, false);
+            return new StringCustomEditor(info, false, true, null);
         }
         if (chooser == null) {
             chooser = createHackedFileChooser();
@@ -457,6 +460,41 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
                 });
             }
         }
+        //issue 31605 - make escape work properly
+        //Get the existing action key on ESCAPE
+        final Object key = chooser.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).get(
+            KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0));
+        
+        Action close = new AbstractAction() {
+            public void actionPerformed(ActionEvent ae) {
+                Component comp = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+                if (key != null) {
+                    //if there was an action, do it first
+                    Action a = chooser.getActionMap().get(key);
+                    if (a != null) {
+                        a.actionPerformed(ae);
+                    }
+                }
+                if (comp.getParent() == null) {
+                    //then we were editing a file name, and the editor
+                    //was removed - we don't want to close the dialog
+                    return;
+                }
+                
+                Container c = chooser.getTopLevelAncestor();
+                //The action *may* have already hidden the panel (works
+                //intermittently)
+                if (c instanceof Dialog) {
+                    if (((Dialog) c).isVisible()) {
+                        ((Dialog) c).hide();
+                        ((Dialog) c).dispose();
+                    }
+                }
+            }
+        };
+        chooser.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
+            KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "close");
+        chooser.getActionMap().put("close", close);
     }
     
     /** Wraps java.io.FileFilter to javax.swing.filechooser.FileFilter. */
