@@ -149,7 +149,11 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
         chooser.setFileSelectionMode(selectionMode);
         chooser.addPropertyChangeListener(this);
         
-        //TODO set initial selection
+        //set initial selection
+        if (dObj != null) {
+            String path = findPathTo(filteredRootNode, dObj);
+            chooser.setCurrentDirectory(new NodeFile(path, dObj.getNodeDelegate()));
+        }
         
         add(chooser, BorderLayout.CENTER);
 
@@ -175,6 +179,44 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
                 setOkButtonEnabled(getDataObject() != null);
             }
         }
+    }
+    
+    private static String findPathTo(Node rootNode, DataObject dobj) {
+        Stack st = new Stack();
+        DataObject o = dobj;
+
+        while (o != null) {
+            st.push(o);
+            o = o.getFolder();
+        }
+        
+        Children children = rootNode.getChildren();
+        Node n = null;
+        while (n == null && !st.isEmpty()) {
+            o = (DataObject) st.pop();
+            n = children.findChild(o.getNodeDelegate().getName());
+            
+            if (n == null) {
+                Node [] nodes = children.getNodes(true);
+                for (int i = 0; (i < nodes.length) && (n == null); i++) {
+                    DataObject oo = (DataObject) nodes [i].getCookie(DataObject.class);
+                    if ((oo != null) && oo == o) {
+                        n = nodes [i];
+                    }
+                }
+            }
+        }
+        String path = getFileName(rootNode);
+        if (n != null) {
+            path += File.separator + getFileName(n);
+
+            while (!st.isEmpty()) {
+                Node nn = ((DataObject)st.pop()).getNodeDelegate();
+                path += File.separator + getFileName(nn);
+            }
+        }
+        
+        return path;
     }
     
     /**
