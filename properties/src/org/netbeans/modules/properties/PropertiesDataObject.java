@@ -35,6 +35,11 @@ public final class PropertiesDataObject extends MultiDataObject {
   /** generated Serialized Version UID */
   static final long serialVersionUID = 4795737295255253334L;
 
+
+  /** Icon base for the PropertiesNode node */
+  private static final String PROPERTIES_ICON_BASE =
+    "com/netbeans/developer/modules/resources/propertiesObject";
+  
   public PropertiesDataObject (final FileObject obj, final MultiFileLoader loader)
                        throws DataObjectExistsException {
     super(obj, loader);
@@ -55,7 +60,10 @@ public final class PropertiesDataObject extends MultiDataObject {
   * @see DataNode
   */
   protected Node createNodeDelegate () {
-    return new PropertiesNode(this);
+    DataNode dn = new DataNode(this, Children.LEAF);
+    dn.setIconBase(PROPERTIES_ICON_BASE);
+    dn.setDefaultAction (SystemAction.get(OpenAction.class));
+    return dn;
   }
 
   /** Help context for this object.
@@ -65,36 +73,12 @@ public final class PropertiesDataObject extends MultiDataObject {
     return new com.netbeans.ide.util.HelpCtx ("com.netbeans.developer.docs.Users_Guide.usergd-using-div-12", "USERGD-USING-TABLE-2");
   }
 
-
-  /** Properties Node implementation.
-  * Leaf node, default action opens editor or instantiates template.
-  * Icons redefined.
-  */
-  public static final class PropertiesNode extends DataNode {
-    /** Icon base for the PropertiesNode node */
-    private static final String PROPERTIES_ICON_BASE =
-      "com/netbeans/developer/modules/resources/propertiesObject";
-
-    /** Default constructor, constructs node */
-    public PropertiesNode (final DataObject dataObject) {
-      super(dataObject, Children.LEAF);
-      setIconBase(PROPERTIES_ICON_BASE);
-    }
-
-    /** Overrides default action from DataNode.
-    * Instantiate a template, if isTemplate() returns true.
-    * Opens otherwise.
-    */
-    public SystemAction getDefaultAction () {
-      SystemAction result = super.getDefaultAction();
-      return result == null ? SystemAction.get(OpenAction.class) : result;
-    }
-  } // end of PropertiesNode inner class
-
 }
 
 /*
  * <<Log>>
+ *  3    Gandalf   1.2         2/3/99   Jaroslav Tulach Inner class for node is 
+ *       not needed
  *  2    Gandalf   1.1         1/22/99  Ian Formanek    
  *  1    Gandalf   1.0         1/22/99  Ian Formanek    
  * $
