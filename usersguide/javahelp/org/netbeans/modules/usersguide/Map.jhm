@@ -576,7 +576,7 @@
 <mapID target="org.netbeans.modules.i18n.InsertI18nStringAction" url="internationalize/manualinsert.html" />
 
 <!-- Csh page for the Add Keybinding dialog box... -->
-<mapID target="editing.csh.shortcutseq" url="editing/configuring/shortcut-seq.html" />
+<!--<mapID target="editing.csh.shortcutseq" url="editing/configuring/shortcut-seq.html" />-->
 <!-- Csh page (and help topic) for Tools->Options, Printing node and subnodes -->
 <mapID target="editing.printing" url="editing/configuring/printing.html" />
 <!-- This is a csh mapping for the indentation node in the Options window -->
@@ -625,11 +625,11 @@
 <mapID target="org.apache.tools.ant.module.node-manip" url="ant/add-task.html" />
 <mapID target="org.netbeans.beaninfo.editors.PropertiesCustomEditor" url="ant/settings.html" />
 
-
+<!--
 <mapID target="setupwizard.idesettings" url="configure/setup_1.html" />
 <mapID target="setupwizard.moduleselection" url="configure/setup_2.html" />
 <mapID target="setupwizard.autoupdate" url="configure/setup_3.html" />
-
+-->
 <mapID target="org.netbeans.core.windows.MainWindow" url="pending.html" />
 
 <mapID target="org.netbeans.core.services.Browsers" url="webbrowser/options.html" />
@@ -1035,12 +1035,12 @@
    <mapID target="org.netbeans.modules.editor.java.JCExtension" url="pending.html" />
    <mapID target="org.netbeans.modules.editor.java.JCProviderPanel" url="pending.html" />
    <mapID target="org.netbeans.editor.ext.JCView" url="pending.html" />
-
+<!--
    <mapID target="org.openide.loaders.TemplateWizard1.Templates" url="objects/objects_new.html" />
    <mapID target="org.openide.loaders.TemplateWizard2" url="objects/objects_new.html" />
    <mapID target="org.openide.loaders.NewObjectPanel" url="objects/objects_new.html" />
    <mapID target="org.openide.loaders.ClassNamePanel" url="objects/objects_new.html" />
-
+-->
 
    <mapID target="org.netbeans.modules.vcscore.settings.GeneralVcsSettingsNode" url="vcs-nb/vcs_globalsettings.html" />
 
