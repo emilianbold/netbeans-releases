@@ -69,30 +69,30 @@ public class SharedXMLSupportTest extends TestCase {
         URL wellformedDocument = getClass().getResource("data/WellformedDocument.xml");
         URL namespacesDocument = getClass().getResource("data/NamespacesDocument.xml");
         
-        SharedXMLSupport support;
-        support = new SharedXMLSupport(new InputSource(dtd.toExternalForm()), CheckXMLSupport.CHECK_PARAMETER_ENTITY_MODE);
+        CheckXMLSupport support;
+        support = new CheckXMLSupport(new InputSource(dtd.toExternalForm()), CheckXMLSupport.CHECK_PARAMETER_ENTITY_MODE);
         assertTrue("DTD check failed!", support.checkXML(null));
 
-        support = new SharedXMLSupport(new InputSource(entity.toExternalForm()), CheckXMLSupport.CHECK_ENTITY_MODE);
+        support = new CheckXMLSupport(new InputSource(entity.toExternalForm()), CheckXMLSupport.CHECK_ENTITY_MODE);
         assertTrue("Entity check failed!", support.checkXML(null));
 
-        support = new SharedXMLSupport(new InputSource(invalidDTD.toExternalForm()), CheckXMLSupport.CHECK_PARAMETER_ENTITY_MODE);
+        support = new CheckXMLSupport(new InputSource(invalidDTD.toExternalForm()), CheckXMLSupport.CHECK_PARAMETER_ENTITY_MODE);
         assertTrue("Invalid DTD must not pass!",  support.checkXML(null) == false);
 
-        support = new SharedXMLSupport(new InputSource(invalidDocument.toExternalForm()));
+        support = new CheckXMLSupport(new InputSource(invalidDocument.toExternalForm()));
         assertTrue("Invalid document must not pass", support.checkXML(null) == false);
 
-        support = new SharedXMLSupport(new InputSource(invalidEntity.toExternalForm()), CheckXMLSupport.CHECK_ENTITY_MODE);
+        support = new CheckXMLSupport(new InputSource(invalidEntity.toExternalForm()), CheckXMLSupport.CHECK_ENTITY_MODE);
         assertTrue("Invalid rntity must not pass!", support.checkXML(null) == false);
 
-        support = new SharedXMLSupport(new InputSource(validDocument.toExternalForm()));
+        support = new CheckXMLSupport(new InputSource(validDocument.toExternalForm()));
         assertTrue("Valid document must pass!", support.checkXML(null));
 
-        support = new SharedXMLSupport(new InputSource(wellformedDocument.toExternalForm()));
+        support = new CheckXMLSupport(new InputSource(wellformedDocument.toExternalForm()));
         assertTrue("Wellformed document must pass", support.checkXML(null));
 
         Observer observer = new Observer();
-        support = new SharedXMLSupport(new InputSource(namespacesDocument.toExternalForm()));
+        support = new CheckXMLSupport(new InputSource(namespacesDocument.toExternalForm()));
         assertTrue("Wellformed document with namespaces must pass", support.checkXML(observer));
         assertTrue("Unexpected warnings!", observer.getWarnings() == 0);
         
@@ -113,34 +113,34 @@ public class SharedXMLSupportTest extends TestCase {
         URL conformingNamespacesDocument = getClass().getResource("data/ConformingNamespacesDocument.xml");
         
         SharedXMLSupport support;
-        support = new SharedXMLSupport(new InputSource(dtd.toExternalForm()));
+        support = new ValidateXMLSupport(new InputSource(dtd.toExternalForm()));
         assertTrue("DTD validation must fail!", support.validateXML(null) == false);
 
-        support = new SharedXMLSupport(new InputSource(entity.toExternalForm()));
+        support = new ValidateXMLSupport(new InputSource(entity.toExternalForm()));
         assertTrue("Entity validation must fail!", support.validateXML(null) == false);
 
-        support = new SharedXMLSupport(new InputSource(invalidDTD.toExternalForm()));
+        support = new ValidateXMLSupport(new InputSource(invalidDTD.toExternalForm()));
         assertTrue("Invalid DTD must not pass!",  support.validateXML(null) == false);
 
-        support = new SharedXMLSupport(new InputSource(invalidDocument.toExternalForm()));
+        support = new ValidateXMLSupport(new InputSource(invalidDocument.toExternalForm()));
         assertTrue("Invalid document must not pass", support.validateXML(null) == false);
 
-        support = new SharedXMLSupport(new InputSource(invalidEntity.toExternalForm()));
+        support = new ValidateXMLSupport(new InputSource(invalidEntity.toExternalForm()));
         assertTrue("Invalid rntity must not pass!", support.validateXML(null) == false);
 
-        support = new SharedXMLSupport(new InputSource(validDocument.toExternalForm()));
+        support = new ValidateXMLSupport(new InputSource(validDocument.toExternalForm()));
         assertTrue("Valid document must pass!", support.validateXML(null));
 
-        support = new SharedXMLSupport(new InputSource(wellformedDocument.toExternalForm()));
+        support = new ValidateXMLSupport(new InputSource(wellformedDocument.toExternalForm()));
         assertTrue("Wellformed document must not pass", support.validateXML(null) == false);
 
         Observer observer = new Observer();
-        support = new SharedXMLSupport(new InputSource(validNamespacesDocument.toExternalForm()));
+        support = new ValidateXMLSupport(new InputSource(validNamespacesDocument.toExternalForm()));
         assertTrue("Valid document with namespaces must pass", support.validateXML(observer));
         assertTrue("Unexpected warnings!", observer.getWarnings() == 0);
 
         observer = new Observer();
-        support = new SharedXMLSupport(new InputSource(conformingNamespacesDocument.toExternalForm()));
+        support = new ValidateXMLSupport(new InputSource(conformingNamespacesDocument.toExternalForm()));
         assertTrue("Conforming document must pass", support.validateXML(observer));
         assertTrue("Unexpected warnings!", observer.getWarnings() == 0);
         
