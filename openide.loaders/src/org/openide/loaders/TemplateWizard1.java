@@ -554,7 +554,7 @@ final class TemplateWizard1 extends javax.swing.JPanel implements DataFilter,
         TemplatesTreeView() {
             tree.setEditable(false);
             // install proper border
-            setBorder((Border)UIManager.get("Netbeans.ScrollPane.border")); // NOI18N
+            setBorder((Border)UIManager.get("Nb.ScrollPane.border")); // NOI18N
         }
         
         protected NodeTreeModel createModel() {
