@@ -231,8 +231,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module apisupport/ant..."/>
     <ant dir="../apisupport/ant" target="netbeans"/>
   </target>
-  <!-- #27098: MakeParserDB requires several modules to have been successfully built: -->
-  <target name="all-apisupport/apidocs" depends="all-openide,all-core,all-classfile,all-java,all-java/api,all-editor,all-java/srcmodel,all-openide/loaders">
+  <target name="all-apisupport/apidocs" depends="init,makeparserdb-modules">
     <echo message="Building module apisupport/apidocs..."/>
     <ant dir="../apisupport/apidocs" target="netbeans"/>
   </target>
@@ -769,6 +768,10 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   <target name="all-xtest" depends="all-openide,all-openide/io,all-openide/execution,all-core,all-core/execution,all-core/term,all-core/output">
       <ant dir="../xtest" antfile="build.xml" target="netbeans"/>
   </target>
+
+  <!-- #27098: MakeParserDB requires several modules to have been successfully built. -->
+  <!-- Target all/mmm should depend on makeparserdb-modules if mmm/build.xml uses <makeparserdb>. -->
+  <target name="makeparserdb-modules" depends="all-openide,all-openide/loaders,all-openide/execution,all-openide/io,all-core,all-classfile,all-java/api,all-java/srcmodel,all-java,all-editor,all-debuggercore/oldapi,all-openide/compiler,all-core/windows,all-core/execution,all-core/compiler,all-core/output,all-core/term"/>
   
   <!-- build NBMs for selected modules -->
   <target name="build-nbms" depends="init">
