@@ -112,7 +112,7 @@ public class Editor extends javax.swing.JFrame {
                     int returnVal = fileChooser.showOpenDialog(Editor.this);
                     if (returnVal == JFileChooser.APPROVE_OPTION) {
                         File[] files = fileChooser.getSelectedFiles();
-                        for (int i = 0; i < files.length; i++) openFile(files[i]);
+                        for (int i = 0; i < files.length; i++) openFile(files[i], i == 0);
                     }
                     fileChooser.setMultiSelectionEnabled(false);
                 } else if (src == closeItem) {
@@ -339,7 +339,7 @@ public class Editor extends javax.swing.JFrame {
             return false; // Cancel was pressed - not saved
     }
 
-    private void openFile( File file ) {
+    private void openFile( File file, boolean focus ) {
         KitInfo info = KitInfo.getKitInfoOrDefault( file );
         
         final JEditorPane pane = new JEditorPane( info.getType(), "" );
@@ -350,7 +350,7 @@ public class Editor extends javax.swing.JFrame {
             file.getName() + "'.", "Error", JOptionPane.ERROR_MESSAGE );
             return;
         }
-        addEditorPane( pane, info.getIcon(), file, false );
+        addEditorPane( pane, info.getIcon(), file, false, focus );
 
         removeFromRecent(file.getAbsolutePath());
     }
@@ -435,7 +435,7 @@ public class Editor extends javax.swing.JFrame {
         }
     }
     
-    private void addEditorPane( JEditorPane pane, Icon icon, File file, boolean created ) {
+    private void addEditorPane( JEditorPane pane, Icon icon, File file, boolean created, boolean focus ) {
         final JComponent c = (pane.getUI() instanceof BaseTextUI) ?
         Utilities.getEditorUI(pane).getExtComponent() : new JScrollPane( pane );
         Document doc = pane.getDocument();
@@ -450,8 +450,10 @@ public class Editor extends javax.swing.JFrame {
         
         com2text.put( c, pane );
         tabPane.addTab( file.getName(), icon, c, file.getAbsolutePath() );
-        tabPane.setSelectedComponent( c );
-        pane.requestFocus();
+        if (focus) {
+            tabPane.setSelectedComponent( c );
+            pane.requestFocus();
+        }
     }
     
     
@@ -470,7 +472,7 @@ public class Editor extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog( this, "Can't read template", "Error", JOptionPane.ERROR_MESSAGE );
             }
         }
-        addEditorPane( pane, info.getIcon(), file, true );
+        addEditorPane( pane, info.getIcon(), file, true, true );
     }
     
     
@@ -496,7 +498,7 @@ public class Editor extends javax.swing.JFrame {
 
         for( int i = 0; i < args.length; i++ ) {
             String fileName = args[i];
-            editor.openFile( new File( fileName ) );
+            editor.openFile( new File( fileName ), i == 0 );
         }
     }
     
@@ -549,7 +551,7 @@ public class Editor extends javax.swing.JFrame {
         if (fileName == null)
             return false;
 
-        openFile(new File(fileName));
+        openFile(new File(fileName), true);
 
         return true;
     }
@@ -658,7 +660,7 @@ public class Editor extends javax.swing.JFrame {
         }
 
         for (int cntr = 0; cntr < openedFiles.length; cntr++) {
-            openFile(new File(openedFiles[cntr]));
+            openFile(new File(openedFiles[cntr]), false);
         }
     }
 
