@@ -208,6 +208,8 @@ public final class AntBridge {
      */
     public static ClassLoader createUserClassLoader(FileObject reference) {
         ClassLoader main = getMainClassLoader();
+        // XXX use of a null reference, or a reference which is not a *.java file,
+        // will not work in D - need to find the classpath by some other means...
         ClassPath cp = ClassPath.getClassPath(reference, ClassPath.EXECUTE);
         if (cp != null) {
             try {
