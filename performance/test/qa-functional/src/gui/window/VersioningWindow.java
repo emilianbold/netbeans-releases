@@ -14,7 +14,7 @@
 package gui.window;
 
 import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.modules.vcscore.VersioningFrameOperator;
+import org.netbeans.jellytools.modules.vcscore.VersioningOperator;
 import org.netbeans.jellytools.modules.vcscore.actions.VersioningExplorerAction;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -26,13 +26,13 @@ import org.netbeans.jemmy.operators.JMenuBarOperator;
  */
 public class VersioningWindow extends testUtilities.PerformanceTestCase {
     
-    /** Creates a new instance of ValidateVersioningWindow */
+    /** Creates a new instance of VersioningWindow */
     public VersioningWindow(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
     
-    /** Creates a new instance of ValidateVersioningWindow */
+    /** Creates a new instance of VersioningWindow */
     public VersioningWindow(String testName, String performanceDataName) {
         super(testName,performanceDataName);
         expectedTime = WINDOW_OPEN;
@@ -46,12 +46,12 @@ public class VersioningWindow extends testUtilities.PerformanceTestCase {
         // invoke Versioning from the main menu
         // doesn't work now ?   new VersioningExplorerAction().performMenu();
         new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock("Window|Versioning|Versioning","|");
-        return new VersioningFrameOperator();
+        return new VersioningOperator();
     }
     
     public void close() {
         // close the tab
-        ((VersioningFrameOperator)testedComponentOperator).close();
+        ((VersioningOperator)testedComponentOperator).close();
     }
     
 }
