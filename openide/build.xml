@@ -711,19 +711,18 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
     
     <!-- Warn about incorrect question version, but do not make build fail: -->
     <property name="arch.warn" value="true"/>
-    <property name="arch.xsl" location="../nbbuild/javadoctools/exportInterfaces.xsl" />
     <property name="arch.target" value="OpenAPIs/arch" />
-    <arch answers="arch/arch-openide-modules.xml" output="${export.interfaces}/openide-modules.html" />
-    <arch answers="arch/arch-openide-dialogs.xml" output="${export.interfaces}/openide-dialogs.html" />
-    <arch answers="arch/arch-openide-lookup.xml" output="${export.interfaces}/openide-lookup.html" />
-    <arch answers="arch/arch-openide-filesystems.xml" output="${export.interfaces}/openide-filesystems.html" />
-    <arch answers="arch/arch-openide-nodes.xml" output="${export.interfaces}/openide-nodes.html" />
-    <arch answers="arch/arch-openide-explorer.xml" output="${export.interfaces}/openide-explorer.html" />
-    <arch answers="arch/arch-openide-actions.xml" output="${export.interfaces}/openide-actions.html" />
-    <arch answers="arch/arch-openide-windowsystem.xml" output="${export.interfaces}/openide-windowsystem.html" />
-    <arch answers="arch/arch-openide-utilities.xml" output="${export.interfaces}/openide-utilities.html" />
-    <arch answers="arch/arch-openide-editor.xml" output="${export.interfaces}/openide-editor.html" />
-    <arch answers="arch/arch-openide-propertysheet.xml" output="${export.interfaces}/openide-propertysheet.html" />
+    <arch xsl="../nbbuild/javadoctools/exportInterfaces.xsl" answers="arch/arch-openide-modules.xml" output="${export.interfaces}/openide-modules.html" />
+    <arch xsl="../nbbuild/javadoctools/exportInterfaces.xsl" answers="arch/arch-openide-dialogs.xml" output="${export.interfaces}/openide-dialogs.html" />
+    <arch xsl="../nbbuild/javadoctools/exportInterfaces.xsl" answers="arch/arch-openide-lookup.xml" output="${export.interfaces}/openide-lookup.html" />
+    <arch xsl="../nbbuild/javadoctools/exportInterfaces.xsl" answers="arch/arch-openide-filesystems.xml" output="${export.interfaces}/openide-filesystems.html" />
+    <arch xsl="../nbbuild/javadoctools/exportInterfaces.xsl" answers="arch/arch-openide-nodes.xml" output="${export.interfaces}/openide-nodes.html" />
+    <arch xsl="../nbbuild/javadoctools/exportInterfaces.xsl" answers="arch/arch-openide-explorer.xml" output="${export.interfaces}/openide-explorer.html" />
+    <arch xsl="../nbbuild/javadoctools/exportInterfaces.xsl" answers="arch/arch-openide-actions.xml" output="${export.interfaces}/openide-actions.html" />
+    <arch xsl="../nbbuild/javadoctools/exportInterfaces.xsl" answers="arch/arch-openide-windowsystem.xml" output="${export.interfaces}/openide-windowsystem.html" />
+    <arch xsl="../nbbuild/javadoctools/exportInterfaces.xsl" answers="arch/arch-openide-utilities.xml" output="${export.interfaces}/openide-utilities.html" />
+    <arch xsl="../nbbuild/javadoctools/exportInterfaces.xsl" answers="arch/arch-openide-editor.xml" output="${export.interfaces}/openide-editor.html" />
+    <arch xsl="../nbbuild/javadoctools/exportInterfaces.xsl" answers="arch/arch-openide-propertysheet.xml" output="${export.interfaces}/openide-propertysheet.html" />
     
   </target>
 

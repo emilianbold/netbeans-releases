@@ -72,6 +72,10 @@ public class Arch extends Task implements ErrorHandler {
     public void setFooter(String s) {
         footer = s;
     }
+    private File xsl = null;
+    public void setXSL (File xsl) {
+        this.xsl = xsl;
+    }
     
     
     /** Run the conversion */
@@ -201,7 +205,8 @@ public class Arch extends Task implements ErrorHandler {
         // apply the transform operation
         try {
             javax.xml.transform.stream.StreamSource ss;
-            String file = getProject().getProperty ("arch.xsl");
+            String file = this.xsl != null ? this.xsl.toString() : getProject().getProperty ("arch.xsl");
+            
             if (file != null) {
                 log ("Using " + file + " as the XSL stylesheet");
                 try {
