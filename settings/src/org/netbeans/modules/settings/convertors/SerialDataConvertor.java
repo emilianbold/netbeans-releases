@@ -372,9 +372,18 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
         
         public boolean instanceOf(Class type) {
             try {
-                if (moduleCodeBase != null && ModuleInfoManager.getDefault().isReloaded(moduleCodeBase) &&
-                    type.getClassLoader () != ClassLoader.getSystemClassLoader ()) {
+                if (
+                    moduleCodeBase != null && 
+                    ModuleInfoManager.getDefault().isReloaded(moduleCodeBase) &&
+                    type.getClassLoader () != ClassLoader.getSystemClassLoader ()
+                ) {
                     // special treatment for classes that could be reloaded
+                    ModuleInfo info = ModuleInfoManager.getDefault().getModule (moduleCodeBase);
+                    if (info == null || !info.isEnabled ()) {
+                        // false to disabled modules
+                        return false;
+                    }
+                    // otherwise really try to load
                     Class instanceType = instanceClass ();
                     return type.isAssignableFrom (instanceType);
                 }
