@@ -14,16 +14,10 @@ Microsystems, Inc. All Rights Reserved.
 
 <!--
 ToDo:
-- target to check out repository fresh in a special area (where??)
-  and do a clean build there; should only check out required modules;
-  should it export, or should there be support for updating as well?
-  Updating is complicated by the fact that a root CVS dir must be
-  created specially (CVSROOT/Emptydir).
 - handle Japanese sanely (consider branding too)
 - build validator DTD for this build system
 - see how many JARs can actually be moved from lib/ext/ (or modules/patches/) to modules/ext/
 - delete obsolete jars.cfg (from trunk anyway)
-- tasks to create: source zip
 Modules:
 ant (only provisional integration)
 emacs (currently will conflict with editor if installed)
