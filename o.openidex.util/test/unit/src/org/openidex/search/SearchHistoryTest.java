@@ -53,19 +53,92 @@ public final class SearchHistoryTest extends NbTestCase {
         assertTrue(SearchHistory.getDefault().getSearchPatterns().size() == 50);
     }
     
-    public void testSearchHistoryListener() throws Exception{
+    public void testLastSelectedListener() throws Exception{
         final boolean fired[] = new boolean[1];
         fired[0] = false;
         PropertyChangeListener pcl = new PropertyChangeListener(){
                 public void propertyChange(PropertyChangeEvent evt){
-                    fired[0] = true;
+                    if (evt!=null && SearchHistory.LAST_SELECTED.equals(evt.getPropertyName())){
+                        fired[0] = true;
+                    }
                 }
         };
         SearchHistory.getDefault().addPropertyChangeListener(pcl);
         SearchHistory.getDefault().setLastSelected(SearchPattern.create("searchtext",true,true,false));
         SearchHistory.getDefault().removePropertyChangeListener(pcl);
         assertTrue(fired[0]);
+    }    
+    
+    public void testAddToSearchHistoryListener() throws Exception{
+        final boolean fired[] = new boolean[2];
+        PropertyChangeListener pcl = new PropertyChangeListener(){
+                public void propertyChange(PropertyChangeEvent evt){
+                    if (evt!=null && SearchHistory.ADD_TO_HISTORY.equals(evt.getPropertyName())){
+                        fired[0] = true;
+                    }else{
+                        fired[1] = true;
+                    }
+                }
+        };
+        SearchHistory.getDefault().addPropertyChangeListener(pcl);
+        SearchHistory.getDefault().add(SearchPattern.create("searchtext",true,true,false));
+        SearchHistory.getDefault().removePropertyChangeListener(pcl);
+        assertTrue(fired[0]);
+        assertFalse("Only the expected change is fired", fired[1]);
     }
+    
+    public void testAddIncorrectItemToSearchHistoryListener() throws Exception{
+        final boolean fired[] = new boolean[2];
+        
+        PropertyChangeListener pcl = new PropertyChangeListener(){
+                public void propertyChange(PropertyChangeEvent evt){
+                    if (evt!=null && SearchHistory.ADD_TO_HISTORY.equals(evt.getPropertyName())){
+                        fired[0] = true;
+                    } else {
+                        fired[1] = true;
+                    }
+                }
+        };
+        SearchHistory.getDefault().addPropertyChangeListener(pcl);
+
+        // add valid pattern
+        fired[0] = false;
+        fired[1] = false;
+        SearchHistory.getDefault().add(SearchPattern.create("searchtext2",true,true,false));
+        assertTrue(fired[0]);
+        assertFalse("Only the expected change is fired", fired[1]);
+        
+        // add the same pattern, it shouldn't be added
+        fired[0] = false;
+        fired[1] = false;        
+        SearchHistory.getDefault().add(SearchPattern.create("searchtext2",true,true,false));
+        assertTrue(!fired[0]);
+        assertFalse("Only the expected change is fired", fired[1]);
+        
+        // add null pattern
+        fired[0] = false;
+        fired[1] = false;        
+        SearchHistory.getDefault().add(null);
+        assertTrue(!fired[0]);
+        assertFalse("Only the expected change is fired", fired[1]);
+        
+        // add pattern with null searchExpression
+        fired[0] = false;
+        fired[1] = false;        
+        SearchHistory.getDefault().add(SearchPattern.create(null,true,true,false));
+        assertTrue(!fired[0]);
+        assertFalse("Only the expected change is fired", fired[1]);
+        
+        // add pattern with empty searchExpression
+        fired[0] = false;
+        fired[1] = false;        
+        SearchHistory.getDefault().add(SearchPattern.create("",true,true,false));
+        assertTrue(!fired[0]);
+        assertFalse("Only the expected change is fired", fired[1]);
+        
+        SearchHistory.getDefault().removePropertyChangeListener(pcl);
+    }
+    
     
     public void testEquals() throws Exception{
         SearchPattern pattern_one = SearchPattern.create("one",false, false, false);
