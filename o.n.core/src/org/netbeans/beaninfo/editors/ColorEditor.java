@@ -585,6 +585,7 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
                 objID = ((SuperColor)obj).getID();
                 objPalette = ((SuperColor)obj).getPalette();
             }
+            else return superEquals;
             
             if (objID != null) {
                 return superEquals && objID.equals(getID()) && (objPalette == getPalette());
