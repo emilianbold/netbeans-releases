@@ -126,13 +126,7 @@ public class TargetExecutor implements Runnable {
         }
         final ExecutorTask task;
         synchronized (this) {
-            // OutputWindow
-            io = TopManager.getDefault ().getIO (name, false);
-            // this will delete the output even if a script is still running.
-            io.getOut ().reset ();
-            // #16720:
-            io.select();
-            
+
             if (switchWorkspace) {
                 Mutex.EVENT.readAccess(new Mutex.Action() {
                     public Object run() {
@@ -145,7 +139,15 @@ public class TargetExecutor implements Runnable {
                     }
                 });
             }
-                
+
+            // #17752: do this *after* switching workspace...
+            // OutputWindow
+            io = TopManager.getDefault ().getIO (name, false);
+            // this will delete the output even if a script is still running.
+            io.getOut ().reset ();
+            // #16720:
+            io.select();
+            
             // [PENDING] note that calls to System.exit() from tasks
             // are apparently not trapped! (#9953)
             task = TopManager.getDefault ().getExecutionEngine ().execute (name, this, InputOutput.NULL);
