@@ -109,7 +109,6 @@ public final class MultiViewPeer  {
         initActionMap();
         peer.setLayout(new BorderLayout());
         tabs = new TabsComponent();
-//debug borders        tabs.setBackground(java.awt.Color.MAGENTA);
         peer.add(tabs);
         ActionMap map = peer.getActionMap();
         Action act = new AccessTogglesAction();
@@ -119,6 +118,8 @@ public final class MultiViewPeer  {
         input.put(stroke, "accesstoggles"); //NOI18N
         input = peer.getInputMap(JComponent.WHEN_FOCUSED);
         input.put(stroke, "accesstoggles"); //NOI18N
+        
+        peer.putClientProperty("MultiViewBorderHack.topOffset", new Integer(tabs.getPreferredSize().height));
     }
     
   // It is necessary so the old actions (clone and close from org.openide.actions package) remain working.
@@ -154,7 +155,11 @@ public final class MultiViewPeer  {
     }
     
     void peerComponentShowing() {
-        model.getActiveElement().componentShowing();
+        MultiViewElement el = model.getActiveElement();
+        el.componentShowing();
+        delegatingMap.setDelegateMap(el.getVisualRepresentation().getActionMap());
+        ((MultiViewTopComponentLookup)peer.getLookup()).setElementLookup(el.getLookup());
+        setActivatedNodesAccordingToElement(true);
     }
     
     void peerComponentHidden() {
@@ -205,9 +210,6 @@ public final class MultiViewPeer  {
         MultiViewElement el = model.getActiveElement();
         MultiViewDescription desc = model.getActiveDescription();
 
-        delegatingMap.setDelegateMap(el.getVisualRepresentation().getActionMap());
-        ((MultiViewTopComponentLookup)peer.getLookup()).setElementLookup(el.getLookup());
-        setActivatedNodesAccordingToElement(true);
         // TODO display name is not a good unique id..
         // also consider a usecase where multiple elements point to a single visual component.
         //. eg. property sheet uses same component and only changes model.
@@ -224,6 +226,11 @@ public final class MultiViewPeer  {
         }
         if (peer.isOpened()) {
             el.componentShowing();
+        }
+        if (!calledFromComponentOpened) {
+            delegatingMap.setDelegateMap(el.getVisualRepresentation().getActionMap());
+            ((MultiViewTopComponentLookup)peer.getLookup()).setElementLookup(el.getLookup());
+            setActivatedNodesAccordingToElement(true);
         }
         tabs.setInnerToolBar(el.getToolbarRepresentation());
     }

@@ -77,8 +77,7 @@ class MultiViewModel {
 //                nestedPerspectiveComponents.put(descriptions[i], Accessor.DEFAULT.createPersComponent(element));
             }
         }
-        currentEditor = defaultDescr;
-        assert (nestedElements.containsKey(currentEditor));
+        currentEditor = (defaultDescr == null || !nestedElements.containsKey(defaultDescr) ? descriptions[0] : defaultDescr);
         group = new BtnGroup();
     }
     

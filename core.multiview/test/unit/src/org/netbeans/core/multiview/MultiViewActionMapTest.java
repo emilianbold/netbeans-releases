@@ -182,6 +182,78 @@ public class MultiViewActionMapTest extends NbTestCase {
     }
     
     
+    public void testActionMapChangesForElementsWithComponentShowingInit() throws Exception {
+        Action act1 = new TestAction("MultiViewAction1");
+        Action act2 = new TestAction("MultiViewAction2");
+        MVElemTopComponent elem1 = new ComponentShowingElement("testAction", act1);
+        MVElemTopComponent elem2 = new ComponentShowingElement("testAction", act2);
+        MVElem elem3 = new MVElem();
+        MultiViewDescription desc1 = new MVDesc("desc1", null, 0, elem1);
+        MultiViewDescription desc2 = new MVDesc("desc2", null, 0, elem2);
+        MultiViewDescription desc3 = new MVDesc("desc3", null, 0, elem3);
+        
+        MultiViewDescription[] descs = new MultiViewDescription[] { desc1, desc2, desc3 };
+        TopComponent tc = MultiViewFactory.createMultiView(descs, desc1);
+        Lookup.Result result = tc.getLookup().lookup(new Lookup.Template(ActionMap.class));
+        LookListener2 list = new LookListener2();
+        result.addLookupListener(list);
+        list.setCorrectValues("testAction", act1);
+        // WARNING: as anything else the first element's action map is set only after the tc is opened..
+        tc.open();
+        assertEquals(1, list.getCount());
+        MultiViewHandler handler = MultiViews.findMultiViewHandler(tc);
+        // test related hack, easy establishing a  connection from Desc->perspective
+        Accessor.DEFAULT.createPerspective(desc2);
+        list.setCorrectValues("testAction", act2);
+        handler.requestVisible(Accessor.DEFAULT.createPerspective(desc2));
+        assertEquals(2, list.getCount());
+        Accessor.DEFAULT.createPerspective(desc3);
+        list.setCorrectValues("testAction", null);
+        handler.requestVisible(Accessor.DEFAULT.createPerspective(desc3));
+        assertEquals(3, list.getCount());
+    }  
+    
+    
+    public class ComponentShowingElement extends MVElemTopComponent {
+        private String key;
+        private Action action;
+        
+        public ComponentShowingElement(String actionkey, Action value) {
+            action = value;
+            key = actionkey;
+        }
+        
+        public void componentShowing() {
+            super.componentShowing();
+            getActionMap().put(key, action);
+        }
+        
+    }
+    
+    private class LookListener2 implements LookupListener {
+        private String key;
+        private Action action;
+        int count = 0;
+        
+        public void setCorrectValues(String keyValue, Action actionValue) {
+            action = actionValue;
+            key = keyValue;
+        }
+        
+        public int getCount() {
+            return count;
+        }
+        
+        public void resultChanged (LookupEvent ev) {
+            Lookup.Result res = (Lookup.Result)ev.getSource();
+            assertEquals(1, res.allInstances().size());
+            ActionMap map = (ActionMap)res.allInstances().iterator().next();
+            Action act = map.get(key);
+            assertEquals(action, act);
+            count++;
+        }
+    }
+    
 //   //
 //    // Set of tests for ActionMap and context.. copied from CallbackSystemActionTest
 //    //
