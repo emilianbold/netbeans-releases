@@ -689,8 +689,13 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <echo message="Building module libs/xerces..."/>
       <ant dir="../libs/xerces" target="netbeans"/>
   </target>
+  
+  <target name="all-libs/j2eeeditor" depends="init">
+      <echo message="Building module libs/j2eeeditor..."/>
+      <ant dir="../libs/j2eeeditor" target="netbeans"/>
+  </target>
 
-  <target name="all-libs" depends="all-libs/xalan, all-libs/jaxp, all-libs/xerces"/>
+  <target name="all-libs" depends="all-libs/xalan, all-libs/jaxp, all-libs/xerces, all-libs/j2eeeditor"/>
 
 
   <!-- XML modules -->
