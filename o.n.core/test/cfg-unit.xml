@@ -53,13 +53,6 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="stable" executor="ide" name="testbag_2" resultsprocessor="unit">
-        <testset dir="unit/src">
-            <patternset>
-            </patternset>
-        </testset>
-    </testbag>
-
 	  <!-- should be "stable OR cache one day -->    
     <testbag testattribs="cache" executor="ide" name="Testing lookup in real IDE" resultsprocessor="unit">
         <testset dir="unit/src">
@@ -110,13 +103,6 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <include name="org/netbeans/core/filesystems/MIMEResolverImplTest.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-
-    <testbag testattribs="stable" executor="ide" name="testbag_6" resultsprocessor="unit">
-        <testset dir="unit/src">
-            <patternset>
             </patternset>
         </testset>
     </testbag>
