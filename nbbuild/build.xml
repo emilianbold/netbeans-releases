@@ -1306,8 +1306,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../metrics" target="netbeans"/>
   </target>
-  <!-- XXX remove dep on all-web/servletapi23 when possible (unused at runtime) -->
-  <target name="all-monitor" depends="init,all-web/core,all-web/servletapi23">
+  <target name="all-monitor" depends="init,all-web/core">
     <echo message="Building module monitor..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
@@ -1861,15 +1860,6 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <param name="one.cluster.name" value="this-cluster"/>
     </antcall>
     <ant dir="../javacvs/libmodule" target="netbeans"/>
-  </target>
-  <target name="all-web/servletapi23" depends="init,all-web/core">
-    <echo message="Building module web/servletapi23..."/>
-    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
-    <antcall target="build-one-cluster-dependencies" inheritAll="false">
-      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
-      <param name="one.cluster.name" value="this-cluster"/>
-    </antcall>
-    <ant dir="../web/servletapi23" target="netbeans"/>
   </target>
   <target name="all-web/servletapi24" depends="init">
     <echo message="Building module web/servletapi24..."/>
