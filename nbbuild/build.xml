@@ -1062,8 +1062,10 @@ the ${netbeans.dest}/bin/ directory.
     <taskdef name="printcvsmodules" classname="org.netbeans.nbbuild.PrintCvsModules" classpath="nbantext.jar"/>
     <printcvsmodules modules="${fixedmodules},${modules}" targetprefix="all-" />
   </target>
-  
-  <target name="commitValidation" description="Runs tests to validate IDE before commit.">
+
+  <!-- backward compatible name, delete after a time -->  
+  <target name="commitValidation" depends="commit-validation" />
+  <target name="commit-validation" description="Runs tests to validate IDE before commit.">
     <property name="xtest.home" location="../xtest"/>
     <ant dir="${xtest.home}/instance" target="runtests">
         <property name="xtest.config" value="commit-validation-nb"/>
