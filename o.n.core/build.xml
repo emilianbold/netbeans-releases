@@ -43,11 +43,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${binroot}/core/release/lib/ext/jh.jar"/>
         <pathelement location="libsrc"/>
       </classpath>
-
-      <exclude name="org/netbeans/core/windows/frames/ShortcutAndMenuKeyEventProcessor.java"/>
     </javac>
-    <copy file="src/org/netbeans/core/windows/frames/ShortcutAndMenuKeyEventProcessor.clazz"
-          tofile="src/org/netbeans/core/windows/frames/ShortcutAndMenuKeyEventProcessor.class"/>
   </target>
 
   <target name="jars" depends="compile">
@@ -56,7 +52,6 @@ Microsystems, Inc. All Rights Reserved.
             basedir="src"
             manifest="src/org/netbeans/core/resources/mf-initializer.txt"
             excludesfile="../nbbuild/standard-jar-excludes.txt"
-            excludes="org/netbeans/core/windows/frames/ShortcutAndMenuKeyEventProcessor.clazz"
 	    compress="false">
       <locale name="ja"/>
     </locjar>
