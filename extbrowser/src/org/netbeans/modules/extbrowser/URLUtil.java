@@ -13,18 +13,27 @@
 
 package org.netbeans.modules.extbrowser;
 
+import java.util.Iterator;
 import java.net.URL;
 import java.net.MalformedURLException;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Lookup;
 
 /** Utility class for various useful URL-related tasks.
  *
  * @author Petr Jiricka
  */
 public class URLUtil {
+    
+    /** results with URLMapper instances*/
+    private static Lookup.Result result;            
+    
+    static {
+        result = Lookup.getDefault().lookup(new Lookup.Template (URLMapper.class));
+    }            
     
     /** Creates a URL that is suitable for using in a different process on the 
      * same node, similarly to URLMapper.EXTERNAL. May just return the original 
@@ -35,8 +44,7 @@ public class URLUtil {
             return null;
 
         // return if the protocol is fine
-        if ("http".equals (url.getProtocol ())   // NOI18N
-        ||  "ftp".equals (url.getProtocol ()))   // NOI18N
+        if (isAcceptableProtocol(url.getProtocol().toLowerCase()))
             return url;
         
         // remove the anchor
@@ -56,7 +64,7 @@ public class URLUtil {
                     // re-add the anchor if exists
                     urlString = newUrl.toString();
                     if (ind >=0) {
-                        urlString = urlString + "#" + anchor;
+                        urlString = urlString + "#" + anchor; // NOI18N
                     }
                     return new URL(urlString);
                 }
@@ -71,17 +79,48 @@ public class URLUtil {
     
     /** Returns a URL for the given file object that can be correctly interpreted
      * by usual web browsers (including Netscape 4.71, IE and Mozilla).
-     * First attepts to get an EXTERNAL URL, if that is a file: URL, it is used;
+     * First attempts to get an EXTERNAL URL, if that is a suitable URL, it is used;
      * otherwise a NETWORK URL is used.
      */
     private static URL getURLOfAppropriateType(FileObject fo) {
-        URL myURL = URLMapper.findURL(fo, URLMapper.EXTERNAL);
-        if ((myURL != null) && "file".equals(myURL.getProtocol().toLowerCase())) {
-            return myURL;
+        // PENDING - there is still the problem that the HTTP server will be started 
+        // (because the HttpServerURLMapper.getURL(...) method starts it), 
+        // even when it is not needed
+        URL retVal;
+        URL suitable = null;
+        
+        Iterator instances = result.allInstances ().iterator();                
+        while (instances.hasNext()) {
+            URLMapper mapper = (URLMapper) instances.next();
+            retVal = mapper.getURL (fo, URLMapper.EXTERNAL);
+            if ((retVal != null) && isAcceptableProtocol(retVal.getProtocol().toLowerCase())) {
+                // return if this is a 'file' URL
+                if ("file".equals(retVal.getProtocol().toLowerCase())) { // NOI18N
+                    return retVal;
+                }
+                suitable = retVal;
+            }
         }
+        
+        // if we found a suitable URL, return it
+        if (suitable != null) {
+            return suitable;
+        }
+        
         return URLMapper.findURL(fo, URLMapper.NETWORK);
     }
-    
+        
+    /** Returns true if the protocol is acceptable for usual web browsers.
+     * Specifically, returns true for file, http and ftp protocols.
+     */
+    private static boolean isAcceptableProtocol(String protocol) {
+        if ("http".equals(protocol)          // NOI18N
+        ||  "ftp".equals(protocol)           // NOI18N
+        ||  "file".equals(protocol))         // NOI18N
+            return true;
+        
+        return false;
+    }
 
     /**
      * Returns whether given protocol is internal or not. 
