@@ -195,7 +195,7 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             g.fillRect(x, y, width, height - 3);
         } else {
             g.setColor(getInactBgColor());
-            g.fillRect(x, y, width, height - 4);
+            g.fillRect(x, y, width, height - 3);
         }
     }
 
