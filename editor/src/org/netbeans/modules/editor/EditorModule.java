@@ -62,9 +62,7 @@ public class EditorModule implements ModuleInstall {
     new KitInfo(MIME_PLAIN, "com.netbeans.developer.modules.text.NbEditorPlainKit"),
     new KitInfo(MIME_JAVA, "com.netbeans.developer.modules.text.NbEditorJavaKit"),
     new KitInfo(MIME_HTML, "com.netbeans.developer.modules.text.NbEditorHTMLKit"),
-    new KitInfo(MIME_IDL, "com.netbeans.developer.modules.text.NbEditorIDLKit"),
-    new KitInfo(MIME_PROPERTIES, "com.netbeans.developer.modules.text.NbEditorPropertiesKit"),
-    new KitInfo(MIME_JSP, "com.netbeans.developer.modules.text.NbEditorJSPKit")
+    new KitInfo(MIME_IDL, "com.netbeans.developer.modules.text.NbEditorIDLKit")
   };
 
   private static PropertyChangeListener settingsListener;
@@ -198,6 +196,8 @@ public class EditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  28   Gandalf   1.27        9/13/99  Petr Jiricka    JSP and properties 
+ *       kitinfo removed.
  *  27   Gandalf   1.26        9/2/99   Libor Kramolis  Remove XML and DTD 
  *       settings from editor module
  *  26   Gandalf   1.25        8/17/99  Miloslav Metelka 
