@@ -41,6 +41,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
     public static String JAVADOC_ACTION = "javadoc"; // NOI18N
     public static String RUN_ACTION = "run"; // NOI18N
     public static String TEST_ACTION = "test"; // NOI18N
+    public static String DEBUG_ACTION = "debug"; // NOI18N
     public static String REDEPLOY_ACTION = "redeploy"; // NOI18N
 
     private boolean initialized;
@@ -85,6 +86,8 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         add.setVisible(show);
         remove.setVisible(show);
         remainder.setVisible(!show);
+        jLabel9.setVisible(show);
+        debugCombo.setVisible(show);
     }
     
     private void initAntTargetEditor(List targets) {
@@ -121,6 +124,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
             cleanCombo.addItem(name);
             javadocCombo.addItem(name);
             runCombo.addItem(name);
+            debugCombo.addItem(name);
             if (projectType.equals("j2se")) //NOI18N
                 testCombo.addItem(name);
             else if (projectType.equals("webapps")) //NOI18N
@@ -131,6 +135,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
             selectItem(cleanCombo, "clean", false); //NOI18N
             selectItem(javadocCombo, "javadoc", false); //NOI18N
             selectItem(runCombo, "run", false); //NOI18N
+            selectItem(debugCombo, "debug", false); //NOI18N
             if (projectType.equals("j2se")) //NOI18N
                 selectItem(testCombo, "test", false);
             else if (projectType.equals("webapps")) //NOI18N
@@ -175,6 +180,10 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
             if (tm.name.equals(TEST_ACTION)) {
                 selectItem(testCombo, getListAsString(tm.targets), true);
                 checkAntScript(testCombo, antScript, tm.script);
+            }
+            if (tm.name.equals(DEBUG_ACTION)) {
+                selectItem(debugCombo, getListAsString(tm.targets), true);
+                checkAntScript(debugCombo, antScript, tm.script);
             }
             if (tm.name.equals(REDEPLOY_ACTION)) {
                 selectItem(redeployCombo, getListAsString(tm.targets), true);
@@ -277,6 +286,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         }
         storeTarget(RUN_ACTION, runCombo);
         storeTarget(JAVADOC_ACTION, javadocCombo);
+        storeTarget(DEBUG_ACTION, debugCombo);
         if (projectType.equals("j2se")) //NOI18N
             storeTarget(TEST_ACTION, testCombo);
         else if (projectType.equals("webapps")) //NOI18N
@@ -314,6 +324,8 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         add = new javax.swing.JButton();
         remove = new javax.swing.JButton();
         remainder = new javax.swing.JPanel();
+        jLabel9 = new javax.swing.JLabel();
+        debugCombo = new javax.swing.JComboBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -362,7 +374,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         add(jLabel7, gridBagConstraints);
 
         buildCombo.setEditable(true);
@@ -412,13 +424,14 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(testCombo, gridBagConstraints);
 
         jLabel3.setText("Redeploy:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 6);
         add(jLabel3, gridBagConstraints);
@@ -426,7 +439,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         redeployCombo.setEditable(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -461,7 +474,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -471,7 +484,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         jLabel10.setText("Custom Menu Items:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(jLabel10, gridBagConstraints);
@@ -480,7 +493,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
@@ -496,7 +509,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
@@ -511,7 +524,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
@@ -519,12 +532,29 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridy = 11;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(remainder, gridBagConstraints);
+
+        jLabel9.setText("Debug Project:");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
+        add(jLabel9, gridBagConstraints);
+
+        debugCombo.setEditable(true);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        add(debugCombo, gridBagConstraints);
 
     }//GEN-END:initComponents
 
@@ -625,6 +655,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
     private javax.swing.JComboBox buildCombo;
     private javax.swing.JComboBox cleanCombo;
     private javax.swing.JTable customTargets;
+    private javax.swing.JComboBox debugCombo;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel2;
@@ -634,6 +665,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JComboBox javadocCombo;
