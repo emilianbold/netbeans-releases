@@ -12,14 +12,6 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="html/test" basedir="." default="all" >
-    <property name="xtest.module" value="html"/>
-
-    <import file="../../nbbuild/templates/xtest.xml"/>
-
-    <property name="xtest.testtype" value="unit"/>
-    <property name="xtest.attribs" value="stable"/>
-
+<project name="html/test-unit" basedir="." default="all">
+    <import file="../../nbbuild/templates/xtest-unit.xml"/>
 </project>
-
-

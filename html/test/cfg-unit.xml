@@ -25,7 +25,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="html unit test config">
 
-    <testbag testattribs="stable" executor="code" name="testbag_1" resultsprocessor="unit">
+    <testbag testattribs="stable" executor="unit-executor" name="testbag_1">
         <testset dir="unit/src">
             <patternset> 
                 <include name="org/netbeans/modules/html/*.class"/>
@@ -36,13 +36,18 @@ Microsystems, Inc. All Rights Reserved.
     <!-- If you want to use this testbag you *must* provide xtest.includes property, -->
     <!-- (either on cmd line or in the script) to explicitly define which test       -->
     <!-- you want to run. This will run *only* tests from unit/src folder !!!        -->
-    <testbag testattribs="empty" executor="code" name="testbag_empty" resultsprocessor="unit">
+    <testbag testattribs="empty" executor="unit-executor" name="testbag_empty" resultsprocessor="unit">
         <testset dir="unit/src"/>
     </testbag>
     
-    <!-- <executor name="ide" antfile="build.xml" target="runidetest"/> -->
-    
-    <resultsprocessor name="unit" antfile="build.xml" target="test_report"/>
-    <executor name="code" antfile="build.xml" target="runcodetest"/>
-    
+    <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test"/>
+     
+    <!-- ide executor - use this one if you plan to run your tests inside IDE (internally).
+                        Similarly as with jvm executor, you can create your own to
+                        prepare some neccessary stuff before running tests. -->
+    <executor name="ide" antfile="build-unit.xml" target="runidetest"/>
+     
+    <!-- compiler   - this target will compile tests -->
+    <compiler name="unit-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
+
 </mconfig>

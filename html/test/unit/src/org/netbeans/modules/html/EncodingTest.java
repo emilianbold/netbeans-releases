@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,6 +16,8 @@ package org.netbeans.modules.html;
 import junit.framework.*;
 import junit.textui.TestRunner;
 import org.openide.filesystems.*;
+import org.openide.loaders.DataLoader;
+import org.openide.loaders.DataLoaderPool;
 import org.openide.nodes.Node;
 import org.openide.loaders.DataObject;
 import java.util.Enumeration;
@@ -49,9 +51,9 @@ public class EncodingTest extends NbTestCase {
     
     /**/
     protected void setUp() throws Exception {
-        Lookup.getDefault().lookup(org.openide.modules.ModuleInfo.class);
-        // log (org.openide.loaders.DataLoader.getLoader(HtmlLoader.class).toString());
-        
+        System.setProperty ("org.openide.util.Lookup", "org.netbeans.modules.html.EncodingTest$Lkp");
+        assertEquals ("Our lookup is installed", Lookup.getDefault ().getClass (), Lkp.class);
+
         File f = File.createTempFile (this.getName (), "");
         f.delete ();
         f.mkdirs ();
@@ -109,7 +111,7 @@ public class EncodingTest extends NbTestCase {
      *  @param withCmp should also document content be compared?
      */
     private void checkEncoding (String enc, String res, boolean withCmp) throws Exception {    
-        InputStream is = getClass ().getResourceAsStream (res);
+        InputStream is = getClass ().getResourceAsStream ("data/"+res);
         assertNotNull (res+" should exist", is);
         
         FileObject data = FileUtil.createData (fs.getRoot (), res);
@@ -138,9 +140,9 @@ public class EncodingTest extends NbTestCase {
         
         Reader r;
         if (enc == null) {
-            r = new InputStreamReader (getClass ().getResourceAsStream (res));
+            r = new InputStreamReader (getClass ().getResourceAsStream ("data/"+res));
         } else {
-            r = new InputStreamReader (getClass ().getResourceAsStream (res), enc);
+            r = new InputStreamReader (getClass ().getResourceAsStream ("data/"+res), enc);
         }
            
         if (!withCmp)
@@ -156,7 +158,7 @@ public class EncodingTest extends NbTestCase {
         assertNotNull ("Document is modified", sc);
         sc.save ();
        
-        InputStream i1 = getClass ().getResourceAsStream (res);
+        InputStream i1 = getClass ().getResourceAsStream ("data/"+res);
         InputStream i2 = obj.getPrimaryFile().getInputStream();
         compareStream (i1, i2);
         i2.close ();
@@ -194,4 +196,33 @@ public class EncodingTest extends NbTestCase {
             if (c1 == -1) return;
         }
     }
+    
+    //
+    // Our fake lookup
+    //
+    public static final class Lkp extends org.openide.util.lookup.AbstractLookup {
+        public Lkp () throws Exception {
+            this (new org.openide.util.lookup.InstanceContent ());
+        }
+        
+        private Lkp (org.openide.util.lookup.InstanceContent ic) throws Exception {
+            super (ic);
+            
+            ic.add (new Pool ());
+//            ic.add (new EM ());
+        }
+    }
+    
+    
+    private static final class Pool extends DataLoaderPool {
+        
+        protected java.util.Enumeration loaders () {
+            return new org.openide.util.enum.SingletonEnumeration (
+                DataLoader.getLoader(HtmlLoader.class)
+            );
+        }
+        
+    } // end of Pool
+
+    
 }
