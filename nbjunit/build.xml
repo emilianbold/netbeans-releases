@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="xtest/nbjunit" basedir="." default="netbeans">
@@ -22,12 +22,14 @@ Microsystems, Inc. All Rights Reserved.
             <include name="${nb.docs.dir}/nbjunit-api.zip"/>
             <include name="${nb.modules.dir}/ext/nbjunit.jar"/>
             <include name="${nb.modules.dir}/ext/nbjunit-ide.jar"/>
+            <include name="${nb.modules.dir}/ext/insanelib.jar"/>
         </patternset>
     </target>
 
     <target name="compile" depends="init">
-        <!-- unscramble ../external/junit-3.8.1.jar used in cp.extra -->
+        <!-- unscramble ../external/junit-3.8.1.jar and ../external/insanelib.jar used in cp.extra -->
         <ant dir="../external" target="unscramble"/>
+        <copy file="../external/insanelib.jar" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext"/>
         <antcall target="projectized.compile"/>
     </target>
     
