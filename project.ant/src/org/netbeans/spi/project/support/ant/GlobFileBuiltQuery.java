@@ -132,12 +132,18 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
         String path = FileUtil.getRelativePath(projectDir, file);
         if (path == null) {
             // XXX support external source roots
+            if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                err.log("No relative path to " + file + " in " + projectDir + ", skipping");
+            }
             return null;
         }
         for (int i = 0; i < fromPrefixes.length; i++) {
             String prefixEval = eval.evaluate(fromPrefixes[i]);
             if (prefixEval == null) {
-                return null;
+                if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                    err.log(fromPrefixes[i] + " evaluates to null");
+                }
+                continue;
             }
             if (!path.startsWith(prefixEval)) {
                 continue;
@@ -145,6 +151,9 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
             String remainder = path.substring(prefixEval.length());
             String suffixEval = eval.evaluate(fromSuffixes[i]);
             if (suffixEval == null) {
+                if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                    err.log(fromSuffixes[i] + " evaluates to null");
+                }
                 continue;
             }
             if (!remainder.endsWith(suffixEval)) {
@@ -153,13 +162,26 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
             String particular = remainder.substring(0, remainder.length() - suffixEval.length());
             String toPrefixEval = eval.evaluate(toPrefixes[i]);
             if (toPrefixEval == null) {
+                if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                    err.log(toPrefixes[i] + " evaluates to null");
+                }
                 continue;
             }
             String toSuffixEval = eval.evaluate(toSuffixes[i]);
             if (toSuffixEval == null) {
+                if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                    err.log(toSuffixes[i] + " evaluates to null");
+                }
                 continue;
             }
-            return new StatusImpl(file, toPrefixEval + particular + toSuffixEval);
+            String targetPath = toPrefixEval + particular + toSuffixEval;
+            if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                err.log("Made status object for " + file + ": " + targetPath);
+            }
+            return new StatusImpl(file, targetPath);
+        }
+        if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+            err.log("No match for path " + path + " among " + Arrays.asList(fromPrefixes) + " " + Arrays.asList(fromSuffixes));
         }
         return null;
     }
