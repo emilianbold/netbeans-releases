@@ -21,34 +21,10 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.usersguide.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/usersguide/help.gif"/>
             </file>
-            <attr name="org-netbeans-modules-usersguide-master.xml/HelpShortcuts" boolvalue="true"/>
-            <folder name="HelpShortcuts">
-                <!-- Shortcut to main page (shows only UG help set). -->
-                <file name="org-netbeans-modules-usersguide-mainpage.xml" url="mainpage.xml">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.usersguide.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/usersguide/helpset.gif"/>
-                </file>
-                <!-- Also a separator after that. -->
-                <attr name="org-netbeans-modules-usersguide-mainpage.xml/org-netbeans-modules-usersguide-sep.instance" boolvalue="true"/>
-                <file name="org-netbeans-modules-usersguide-sep.instance">
-                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                </file>
-                <!-- And another below, for "third-party" helpsets (e.g. Ant's): -->
-                <attr name="org-netbeans-modules-usersguide-sep.instance/org-netbeans-modules-usersguide-lower-sep.instance" boolvalue="true"/>
-                <file name="org-netbeans-modules-usersguide-lower-sep.instance">
-                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                </file>
-            </folder>
+            <attr name="org-netbeans-modules-usersguide-master.xml/Separator1.instance" boolvalue="true"/>
         </folder>
     </folder>
-    <folder name="Actions">
-        <folder name="Help">
-            <file name="org-netbeans-modules-usersguide-mainpage.xml" url="mainpage.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.usersguide.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/usersguide/helpset.gif"/>
-            </file>
-        </folder>
-    </folder>
+
     <folder name="Services">
         <folder name="JavaHelp">
             <!-- Now the help set. -->
