@@ -112,7 +112,7 @@ public class JavaHelpDialogTest extends JellyTestCase {
         new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(toolsMenu+"|"+javaPlatformMenu,"|"); 
         //new NbDialogOperator(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.ui.Bundle", "CTL_SetupWizardTitle")).help();    // Setup Wizard
         new NbDialogOperator("Java Platform Manager").help();    // Java Platform Manager
-        new NbDialogOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.core.Bundle", "CTL_Help"));      // Help
+        helpWindow = new HelpOperator();
     }
     
     public void testHelpByButtonNestedModal(){
