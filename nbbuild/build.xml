@@ -247,6 +247,10 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module openide/convertor..."/>
     <ant dir="../openide/convertor" target="netbeans"/>
   </target>
+  <target name="all-openide/masterfs" depends="all-openide">
+    <echo message="Building module openide/masterfs..."/>
+    <ant dir="../openide/masterfs" target="netbeans"/>
+  </target>
 
   <!-- And the modules: -->
   <target name="all-a11y" depends="all-openide,all-openide/io,all-form,all-junit,all-xtest">
