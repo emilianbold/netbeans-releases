@@ -220,6 +220,14 @@ public class TopComponentGetLookupTest extends NbTestCase {
     }
     
     public void testNoChangeWhenSomethingIsChangedOnNotActivatedNode () {
+        doTestNoChangeWhenSomethingIsChangedOnNotActivatedNode (0);
+    }
+    
+    public void testNoChangeWhenSomethingIsChangedOnNotActivatedNode2 () {
+        doTestNoChangeWhenSomethingIsChangedOnNotActivatedNode (50);
+    }
+        
+    private void doTestNoChangeWhenSomethingIsChangedOnNotActivatedNode (int initialSize) {
         Object obj = new org.openide.cookies.OpenCookie () { public void open () {} };
         
         Lookup.Result res = lookup.lookup (new Lookup.Template (org.openide.cookies.OpenCookie.class));
@@ -231,6 +239,9 @@ public class TopComponentGetLookupTest extends NbTestCase {
         org.openide.nodes.AbstractNode ac = new org.openide.nodes.AbstractNode (
             org.openide.nodes.Children.LEAF, cnt
         );
+        for (int i = 0; i < initialSize; i++) {
+            ic.add (new Integer (i));
+        }
         
         top.setActivatedNodes(new org.openide.nodes.Node[] { ac });
         assertEquals ("One node there", 1, top.getActivatedNodes ().length);
