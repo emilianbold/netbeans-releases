@@ -28,6 +28,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.UpdateHelper;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.CustomizerProvider;
@@ -46,6 +47,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     private final UpdateHelper updateHelper;
     private final PropertyEvaluator evaluator;
     private final ReferenceHelper refHelper;
+    private final GeneratedFilesHelper genFileHelper;
     
     private ProjectCustomizer.Category categories[];
     private ProjectCustomizer.CategoryComponentProvider panelProvider;
@@ -60,11 +62,12 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     
     private static Map /*<Project,Dialog>*/project2Dialog = new HashMap(); 
     
-    public CustomizerProviderImpl(Project project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
+    public CustomizerProviderImpl(Project project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper, GeneratedFilesHelper genFileHelper) {
         this.project = project;
         this.updateHelper = updateHelper;
         this.evaluator = evaluator;
         this.refHelper = refHelper;
+        this.genFileHelper = genFileHelper;
     }
             
     public void showCustomizer() {
@@ -84,7 +87,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             return;
         }
         else {
-            J2SEProjectProperties uiProperties = new J2SEProjectProperties( (J2SEProject)project, updateHelper, evaluator, refHelper );        
+            J2SEProjectProperties uiProperties = new J2SEProjectProperties( (J2SEProject)project, updateHelper, evaluator, refHelper, genFileHelper );        
             init( uiProperties );
 
             OptionListener listener = new OptionListener( project, uiProperties );

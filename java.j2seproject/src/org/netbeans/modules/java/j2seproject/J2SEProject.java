@@ -133,7 +133,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             new J2SEActionProvider( this, this.updateHelper ),
             new J2SEPhysicalViewProvider(this, this.updateHelper, evaluator(), spp, refHelper),
             // new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
-            new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper),        
+            new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
             new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
             new CompiledSourceForBinaryQuery(this.helper, evaluator(),getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
             new JavadocForBinaryQueryImpl(this.helper, evaluator()), //Does not use APH to get/put properties/cfgdata

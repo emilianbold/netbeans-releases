@@ -26,6 +26,7 @@ import java.util.Vector;
 import javax.swing.ButtonModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListModel;
+import javax.swing.JButton;
 import javax.swing.ListCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
@@ -39,15 +40,20 @@ import org.netbeans.modules.java.j2seproject.UpdateHelper;
 import org.netbeans.modules.java.j2seproject.classpath.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.support.ant.ui.StoreGroup;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.NbBundle;
 
 /**
  * @author Petr Hrebejk
@@ -180,6 +186,7 @@ public class J2SEProjectProperties {
     private UpdateHelper updateHelper;
     private PropertyEvaluator evaluator;
     private ReferenceHelper refHelper;
+    private GeneratedFilesHelper genFileHelper;
     
     private StoreGroup privateGroup; 
     private StoreGroup projectGroup;
@@ -189,11 +196,12 @@ public class J2SEProjectProperties {
     }
     
     /** Creates a new instance of J2SEUIProperties and initializes them */
-    public J2SEProjectProperties( J2SEProject project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper ) {
+    public J2SEProjectProperties( J2SEProject project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper, GeneratedFilesHelper genFileHelper ) {
         this.project = project;
         this.updateHelper  = updateHelper;
         this.evaluator = evaluator;
         this.refHelper = refHelper;
+        this.genFileHelper = genFileHelper;
         this.cs = new ClassPathSupport( evaluator, refHelper, updateHelper.getAntProjectHelper(), WELL_KNOWN_PATHS, LIBRARY_PREFIX, LIBRARY_SUFFIX, ANT_ARTIFACT_PREFIX );
                 
         privateGroup = new StoreGroup();
@@ -254,16 +262,32 @@ public class J2SEProjectProperties {
     }
     
     public void save() {
-        try {
+        try {                        
             // Store properties 
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+            Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws IOException {
+                    if ((genFileHelper.getBuildScriptState(GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                        J2SEProject.class.getResource("resources/build-impl.xsl")) & GeneratedFilesHelper.FLAG_MODIFIED) == GeneratedFilesHelper.FLAG_MODIFIED) {  //NOI18N
+                        if (showModifiedMessage (NbBundle.getMessage(J2SEProjectProperties.class,"TXT_ModifiedTitle"))) {
+                            //Delete user modified build-impl.xml
+                            FileObject fo = updateHelper.getAntProjectHelper().getProjectDirectory().
+                                getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
+                            if (fo != null) {
+                                fo.delete();
+                            }
+                        }
+                        else {
+                            return Boolean.FALSE;
+                        }
+                    }
                     storeProperties();
-                    return null;
+                    return Boolean.TRUE;
                 }
             });
-            // and save the project        
-            ProjectManager.getDefault().saveProject(project);
+            // and save the project
+            if (result == Boolean.TRUE) {
+                ProjectManager.getDefault().saveProject(project);
+            }
         } 
         catch (MutexException e) {
             ErrorManager.getDefault().notify((IOException)e.getException());
@@ -467,6 +491,16 @@ public class J2SEProjectProperties {
         }
     }
     
-    
+    private static boolean showModifiedMessage (String title) {
+        String message = NbBundle.getMessage(J2SEProjectProperties.class,"TXT_Regenerate");
+        JButton regenerateButton = new JButton (NbBundle.getMessage(J2SEProjectProperties.class,"CTL_RegenerateButton"));
+        regenerateButton.setDefaultCapable(true);
+        regenerateButton.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage(J2SEProjectProperties.class,"AD_RegenerateButton"));
+        NotifyDescriptor d = new NotifyDescriptor.Message (message, NotifyDescriptor.WARNING_MESSAGE);
+        d.setTitle(title);
+        d.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
+        d.setOptions(new Object[] {regenerateButton, NotifyDescriptor.CANCEL_OPTION});        
+        return DialogDisplayer.getDefault().notify(d) == regenerateButton;
+    }
     
 }
