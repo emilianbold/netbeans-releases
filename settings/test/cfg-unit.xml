@@ -70,6 +70,5 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- standard results processor - currently there is only one results processor
                                       in XTest -->    
-    <resultsprocessor name="unit" antfile="build.xml" target="test_report" default="true"/>
     
 </mconfig>
