@@ -191,9 +191,9 @@ public class ImageViewer extends CloneableTopComponent {
         // Definition of toolbar.
         JToolBar toolBar = new JToolBar();
         
-        toolBar.add(new ZoomOutAction());
+        toolBar.add(SystemAction.get(ZoomOutAction.class));
         toolBar.addSeparator(new Dimension(2,2));
-        toolBar.add(new ZoomInAction());
+        toolBar.add(SystemAction.get(ZoomInAction.class));
         toolBar.addSeparator(new Dimension(11,2));
         toolBar.add(getZoomButton(1,1));
         toolBar.addSeparator(new Dimension(11,2));
@@ -209,7 +209,7 @@ public class ImageViewer extends CloneableTopComponent {
         toolBar.addSeparator(new Dimension(2,2));
         toolBar.add(getZoomButton(7,1));
         toolBar.addSeparator(new Dimension(11,2));
-        toolBar.add(new CustomZoomAction());
+        toolBar.add(SystemAction.get(CustomZoomAction.class));
         toolBar.addSeparator(new Dimension(11,2));
         toolBar.add(getGridButton());
         
