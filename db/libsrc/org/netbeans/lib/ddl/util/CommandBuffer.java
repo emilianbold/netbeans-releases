@@ -116,7 +116,7 @@ public class CommandBuffer
 	throws DDLException
 	{
 		boolean opencon = false;
-		DBSpec spec = null;
+		DatabaseSpecification spec = null;
 		Enumeration cmd_e = commands.elements();
 		while (cmd_e.hasMoreElements()) {
 			DDLCommand e_cmd = (DDLCommand)cmd_e.nextElement();
@@ -143,6 +143,7 @@ public class CommandBuffer
 
 /*
 * <<Log>>
+*  4    Gandalf   1.3         9/10/99  Slavek Psenicka 
 *  3    Gandalf   1.2         6/8/99   Ian Formanek    ---- Package Change To 
 *       org.openide ----
 *  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version

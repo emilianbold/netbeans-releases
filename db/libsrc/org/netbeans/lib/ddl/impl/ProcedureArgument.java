@@ -134,7 +134,7 @@ public class ProcedureArgument implements Argument
 	throws DDLException
 	{
 		HashMap args = new HashMap();		
-		DBSpec spec = cmd.getSpecification();
+		DatabaseSpecification spec = cmd.getSpecification();
 		Map typemap = (Map)spec.getProperties().get("ProcedureArgumentMap");
 		String typename = (String)typemap.get(getArgumentTypeName(type));	
 		args.put("argument.name", name);
@@ -162,6 +162,7 @@ public class ProcedureArgument implements Argument
 
 /*
 * <<Log>>
+*  3    Gandalf   1.2         9/10/99  Slavek Psenicka 
 *  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
 *  1    Gandalf   1.0         4/6/99   Slavek Psenicka 
 * $

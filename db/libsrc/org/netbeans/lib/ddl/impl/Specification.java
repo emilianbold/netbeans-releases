@@ -13,14 +13,16 @@
 
 package com.netbeans.ddl.impl;
 
+import java.beans.*;
 import java.sql.*;
 import java.util.*;
 import com.netbeans.ddl.*;
+import com.netbeans.ddl.adaptors.*;
 
 /** 
 * @author Slavek Psenicka
 */
-public class Specification implements DBSpec {
+public class Specification implements DatabaseSpecification {
 
 	/** Used DBConnection */
 	private HashMap desc;
@@ -30,6 +32,9 @@ public class Specification implements DBSpec {
 	
 	/** Owned factory */
 	SpecificationFactory factory;
+	
+	/** Metadata adaptor */
+	DatabaseMetaData dmdAdaptor;
 	
 	public static final String CREATE_TABLE = "CreateTableCommand";
 	public static final String RENAME_TABLE = "RenameTableCommand";
@@ -53,11 +58,19 @@ public class Specification implements DBSpec {
 	public static final String DROP_FUNCTION = "DropFunctionCommand";
 	public static final String CREATE_TRIGGER = "CreateTriggerCommand";
 	public static final String DROP_TRIGGER = "DropTriggerCommand";
+	public static final String ADAPTOR_CLASS = "adaptorClass";
 	
 	/** Constructor */
 	public Specification(HashMap description)
 	{
 		desc = description;
+	}
+
+	/** Constructor */
+	public Specification(HashMap description, Connection c)
+	{
+		desc = description;
+		jdbccon = c;
 	}
 
 	/** Returns all database properties */
@@ -78,14 +91,41 @@ public class Specification implements DBSpec {
 		return (DBConnection)desc.get("connection");
 	}
 
-	public DBSpecFactory getSpecificationFactory()
+	public DatabaseSpecificationFactory getSpecificationFactory()
 	{
 		return factory;
 	}
 	
-	public void setSpecificationFactory(DBSpecFactory fac)
+	public void setSpecificationFactory(DatabaseSpecificationFactory fac)
 	{
 		factory = (SpecificationFactory)fac;
+	}
+
+	
+
+	/** Returns database metadata */
+	public DatabaseMetaData getMetaData() throws SQLException
+	{
+		try {
+			
+			if (dmdAdaptor == null) {
+				if (jdbccon != null) {
+					String adaptorClass = (String)desc.get(ADAPTOR_CLASS);
+					if (adaptorClass != null) {
+						dmdAdaptor = (DatabaseMetaData)Beans.instantiate(null, adaptorClass);
+						if (dmdAdaptor instanceof DatabaseMetaDataAdaptor) {
+							((DatabaseMetaDataAdaptor)dmdAdaptor).setConnection(jdbccon);
+						} else throw new ClassNotFoundException("adaptor should implement DatabaseAdaptor interface");
+					} else throw new SQLException("adaptor requires an existing connection");
+				}
+			}
+				
+			return dmdAdaptor;
+			
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			throw new SQLException(ex.getMessage());
+		}
 	}
 
 	/** Opens JDBC Connection. 
@@ -118,7 +158,7 @@ public class Specification implements DBSpec {
 	{
 		return jdbccon;
 	}
-	
+
 	public void closeJDBCConnection()
 	throws DDLException
 	{
@@ -439,6 +479,7 @@ public class Specification implements DBSpec {
 
 /*
 * <<Log>>
+*  6    Gandalf   1.5         9/10/99  Slavek Psenicka 
 *  5    Gandalf   1.4         5/14/99  Slavek Psenicka new version
 *  4    Gandalf   1.3         4/23/99  Slavek Psenicka Chyba v createSpec pri 
 *       ConnectAs

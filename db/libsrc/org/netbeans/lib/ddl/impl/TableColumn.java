@@ -158,7 +158,7 @@ static final long serialVersionUID =4298150043758715392L;
 	public Map getColumnProperties(AbstractCommand cmd)
 	throws DDLException
 	{
-		DBSpec spec = cmd.getSpecification();
+		DatabaseSpecification spec = cmd.getSpecification();
 		Map args = super.getColumnProperties(cmd);
 		String stype = spec.getType(type);
 		Vector decimaltypes = (Vector)spec.getProperties().get("DecimalTypes");
@@ -212,6 +212,7 @@ static final long serialVersionUID =4298150043758715392L;
 
 /*
 * <<Log>>
+*  5    Gandalf   1.4         9/10/99  Slavek Psenicka 
 *  4    Gandalf   1.3         8/17/99  Ian Formanek    Generated serial version 
 *       UID
 *  3    Gandalf   1.2         5/14/99  Slavek Psenicka new version

@@ -29,17 +29,17 @@ import com.netbeans.ddl.*;
 * description files and is able to specify if system can control 
 * the database (specified by product name or live connection) or not. 
 * It also provides a list of supported databases. Information about databases
-* reads from file com/netbeans/ddl/dbspec.plist. It's possible to replace it
+* reads from file com/netbeans/ddl/DatabaseSpecification.plist. It's possible to replace it
 * by setting db.specifications.file system property pointing to another one.
 *
 * @author Slavek Psenicka
 */
-public class SpecificationFactory implements DBSpecFactory {
+public class SpecificationFactory implements DatabaseSpecificationFactory {
 			
 	/** Database description file
 	* You should use PListReader to parse it.
 	*/		
-	private final String sfile = "com/netbeans/ddl/resources/dbspec.plist";	
+	private final String sfile = "com/netbeans/ddl/resources/DatabaseSpecification.plist";	
 			
 	/** Array of SpecificationFiles, found (but not read) files 
 	* which describes database products.
@@ -80,7 +80,7 @@ public class SpecificationFactory implements DBSpecFactory {
 	
 	/** Returns array of database products supported by system.
 	* It returns string array only, if you need a Specification instance, use 
-	* appropriate createSpec method.
+	* appropriate createSpecification method.
 	*/
 	public Set supportedDatabases()
 	{
@@ -95,17 +95,17 @@ public class SpecificationFactory implements DBSpecFactory {
 		return (specs.containsKey(databaseProductName));
 	}
 	
-	/** Creates instance of DBSpec class; a database-specification
+	/** Creates instance of DatabaseSpecification class; a database-specification
 	* class. This object knows about used database and can be used as
 	* factory for db-manipulating commands. It connects to the database 
 	* and reads database metadata. Throws DatabaseProductNotFoundException if database
 	* (obtained from database metadata) is not supported.
 	*/
-	public DBSpec createSpec(DBConnection dbcon) 
+	public DatabaseSpecification createSpecification(DBConnection dbcon) 
 	throws DatabaseProductNotFoundException, DDLException
 	{
 		Connection con = dbcon.createJDBCConnection();
-		DBSpec spec = createSpec(dbcon, con);
+		DatabaseSpecification spec = createSpecification(dbcon, con);
 		try {
 			con.close();
 		} catch (SQLException ex) {
@@ -114,13 +114,13 @@ public class SpecificationFactory implements DBSpecFactory {
 		return spec;
 	}
 
-	/** Creates instance of DBSpec class; a database-specification
+	/** Creates instance of DatabaseSpecification class; a database-specification
 	* class. This object knows about used database and can be used as
 	* factory for db-manipulating commands. It connects to the database 
 	* and reads database metadata. Throws DatabaseProductNotFoundException if database
 	* (obtained from database metadata) is not supported. Uses given Connection
 	*/
-	public DBSpec createSpec(DBConnection dbcon, Connection jdbccon) 
+	public DatabaseSpecification createSpecification(DBConnection dbcon, Connection jdbccon) 
 	throws DatabaseProductNotFoundException, DDLException
 	{
 		String pn = null;
@@ -129,7 +129,7 @@ public class SpecificationFactory implements DBSpecFactory {
 			Connection con = (jdbccon != null ? jdbccon : dbcon.createJDBCConnection());
 			DatabaseMetaData dmd = con.getMetaData();	
 			pn = dmd.getDatabaseProductName();
-			DBSpec spec = createSpec(dbcon, pn);
+			DatabaseSpecification spec = createSpecification(dbcon, pn);
 			if (close) con.close();
 			return spec;
 		} catch (SQLException e) {
@@ -139,37 +139,54 @@ public class SpecificationFactory implements DBSpecFactory {
 		}
 	}
 	
-	/** Creates instance of DBSpec class; a database-specification
+	/** Creates instance of DatabaseSpecification class; a database-specification
 	* class. This object knows about used database and can be used as
 	* factory for db-manipulating commands. It connects to database and
-	* reads metadata as createSpec(DBConnection connection), but always
+	* reads metadata as createSpecification(DBConnection connection), but always
 	* uses specified databaseProductName. This is not recommended technique.
 	*/
-	public DBSpec createSpec(DBConnection connection, String databaseProductName) 
+	public DatabaseSpecification createSpecification(DBConnection connection, String databaseProductName) 
 	throws DatabaseProductNotFoundException
 	{
 		HashMap product = (HashMap)specs.get(databaseProductName);
 		if (product == null) throw new DatabaseProductNotFoundException(databaseProductName);
 		HashMap specmap = deepUnion(product, (HashMap)specs.get("GenericDatabaseSystem"), true);
 		specmap.put("connection", connection);
-		DBSpec spec = new Specification(specmap);
+		DatabaseSpecification spec = new Specification(specmap);
 		spec.setSpecificationFactory(this);
 		return spec;
 	}
 
-	/** Creates instance of DBSpec class; a database-specification
+	/** Creates instance of DatabaseSpecification class; a database-specification
 	* class. This object knows about used database and can be used as
 	* factory for db-manipulating commands. It connects to database and
-	* reads metadata as createSpec(DBConnection connection), but always
+	* reads metadata as createSpecification(DBConnection connection), but always
 	* uses specified databaseProductName. This is not recommended technique.
 	*/
-	public DBSpec createSpec(String databaseProductName) 
+	public DatabaseSpecification createSpecification(String databaseProductName) 
 	throws DatabaseProductNotFoundException
 	{
 		HashMap product = (HashMap)specs.get(databaseProductName);
 		if (product == null) throw new DatabaseProductNotFoundException(databaseProductName);
 		HashMap specmap = deepUnion(product, (HashMap)specs.get("GenericDatabaseSystem"), true);
 		return new Specification(specmap);
+	}
+
+	public DatabaseSpecification createSpecification(Connection c) 
+	throws DatabaseProductNotFoundException, SQLException
+	{
+		return createSpecification(c, c.getMetaData().getDatabaseProductName());
+	}
+
+	public DatabaseSpecification createSpecification(Connection c, String databaseProductName) 
+	throws DatabaseProductNotFoundException
+	{
+		HashMap product = (HashMap)specs.get(databaseProductName);
+		if (product == null) throw new DatabaseProductNotFoundException(databaseProductName);
+		HashMap specmap = deepUnion(product, (HashMap)specs.get("GenericDatabaseSystem"), true);
+		DatabaseSpecification spec = new Specification(specmap, c);
+		spec.setSpecificationFactory(this);
+		return spec;
 	}
 
 	/** Returns debug-mode flag
@@ -239,6 +256,7 @@ public class SpecificationFactory implements DBSpecFactory {
 
 /*
 * <<Log>>
+*  7    Gandalf   1.6         9/10/99  Slavek Psenicka 
 *  6    Gandalf   1.5         6/15/99  Slavek Psenicka adding support for live 
 *       connection
 *  5    Gandalf   1.4         5/14/99  Slavek Psenicka new version

@@ -19,7 +19,7 @@ import com.netbeans.ddl.impl.*;
 
 /** 
 * Interface of database action command. Instances should remember connection 
-* information of DBSpec and use it in execute() method. This is a base interface
+* information of DatabaseSpecification and use it in execute() method. This is a base interface
 * used heavily for sub-interfacing (it is not subclassing :)
 *
 * @author Slavek Psenicka
@@ -51,6 +51,7 @@ static final long serialVersionUID =-3890617111076632936L;
 
 /*
 * <<Log>>
+*  4    Gandalf   1.3         9/10/99  Slavek Psenicka 
 *  3    Gandalf   1.2         8/17/99  Ian Formanek    Generated serial version 
 *       UID
 *  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version

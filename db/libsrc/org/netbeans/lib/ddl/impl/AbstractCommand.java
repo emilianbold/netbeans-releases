@@ -32,7 +32,7 @@ public class AbstractCommand
 implements Serializable, DDLCommand 
 {
 	/** Command owner */
-	private DBSpec spec;
+	private DatabaseSpecification spec;
 
 	/** Command format */
 	private String format;
@@ -44,18 +44,18 @@ implements Serializable, DDLCommand
 	private Map addprops;
 	
 static final long serialVersionUID =-560515030304320086L;
-	/** Returns specification (DBSpec) for this command */
-	public DBSpec getSpecification()
+	/** Returns specification (DatabaseSpecification) for this command */
+	public DatabaseSpecification getSpecification()
 	{
 		return spec;
 	}
 	
 	/** 
-	* Sets specification (DBSpec) for this command. This method is usually called 
+	* Sets specification (DatabaseSpecification) for this command. This method is usually called 
 	* in relevant createXXX method.
 	* @param specification New specification object.
 	*/
-	public void setSpecification(DBSpec specification)
+	public void setSpecification(DatabaseSpecification specification)
 	{
 		spec = specification;
 	}
@@ -216,6 +216,7 @@ static final long serialVersionUID =-560515030304320086L;
 
 /*
 * <<Log>>
+*  9    Gandalf   1.8         9/10/99  Slavek Psenicka 
 *  8    Gandalf   1.7         8/17/99  Ian Formanek    Generated serial version 
 *       UID
 *  7    Gandalf   1.6         6/8/99   Ian Formanek    ---- Package Change To 
