@@ -15,6 +15,7 @@ package org.openidex.search;
 
 import java.util.Collection;
 import java.util.Iterator;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
@@ -34,43 +35,46 @@ public class Utils {
     /**
      */
     public static boolean hasSearchInfo(Node node) {
+        
+        /* 1st try - is the SearchInfo object in the node's lookup? */
         if (node.getLookup().lookup(SearchInfo.class) != null) {
             return true;
         }
     
+        /* 2nd try - is the SearchInfo object defined externally? */
         if (searchInfoProviders == null) {
             searchInfoProviders = Lookup.getDefault().lookup(
                 new Lookup.Template(SearchInfoProvider.class));
         }
         Collection providers = searchInfoProviders.allInstances();
-        if (providers.isEmpty()) {
-            return false;
-        }
-        
-        for (Iterator i = providers.iterator(); i.hasNext(); ) {
-            SearchInfoProvider infoProvider = (SearchInfoProvider) i.next();
+        if (!providers.isEmpty()) {
+            for (Iterator i = providers.iterator(); i.hasNext(); ) {
+                SearchInfoProvider infoProvider = (SearchInfoProvider) i.next();
 
-            String[] supportedNodeTypes = infoProvider.getSupportedNodeTypes();
-            if (supportedNodeTypes != null
-                    && !isListedString(node.getClass().getName(),
-                                       supportedNodeTypes)) {
-                continue;
-            }
-            //String projectType = getProjectType(node);
-            //if (projectType != null) {
-            //    String[] supportedProjectTypes
-            //            = infoProvider.getSupportedProjectTypes();
-            //    if (supportedProjectTypes != null
-            //            && !isListedString(projectType,
-            //                               supportedProjectTypes))  {
-            //        continue;
-            //    }
-            //}
-            if (infoProvider.hasSearchInfo(node)) {
-                return true;
+                String[] supportedNodeTypes = infoProvider.getSupportedNodeTypes();
+                if (supportedNodeTypes != null
+                        && !isListedString(node.getClass().getName(),
+                                           supportedNodeTypes)) {
+                    continue;
+                }
+                //String projectType = getProjectType(node);
+                //if (projectType != null) {
+                //    String[] supportedProjectTypes
+                //            = infoProvider.getSupportedProjectTypes();
+                //    if (supportedProjectTypes != null
+                //            && !isListedString(projectType,
+                //                               supportedProjectTypes))  {
+                //        continue;
+                //    }
+                //}
+                if (infoProvider.hasSearchInfo(node)) {
+                    return true;
+                }
             }
         }
-        return false;
+
+        /* 3rd try - does the node represent a DataObject.Container? */
+        return node.getLookup().lookup(DataObject.Container.class) != null;
 }
     
     /**
@@ -78,45 +82,50 @@ public class Utils {
     public static SearchInfo getSearchInfo(Node node) {
         SearchInfo info;
 
+        /* 1st try - is the SearchInfo object in the node's lookup? */
         info = (SearchInfo) node.getLookup().lookup(SearchInfo.class);
         if (info != null) {
             return info;
         }
 
+        /* 2nd try - is the SearchInfo object defined externally? */
         if (searchInfoProviders == null) {
             searchInfoProviders = Lookup.getDefault().lookup(
                 new Lookup.Template(SearchInfo.class));
         }
         Collection providers = searchInfoProviders.allInstances();
-        if (providers.isEmpty()) {
-            return null;
-        }
-        
-        for (Iterator i = providers.iterator(); i.hasNext(); ) {
-            SearchInfoProvider infoProvider = (SearchInfoProvider) i.next();
+        if (!providers.isEmpty()) {
+            for (Iterator i = providers.iterator(); i.hasNext(); ) {
+                SearchInfoProvider infoProvider = (SearchInfoProvider) i.next();
 
-            String[] supportedNodeTypes = infoProvider.getSupportedNodeTypes();
-            if (supportedNodeTypes != null
-                    && !isListedString(node.getClass().getName(),
-                                       supportedNodeTypes)) {
-                continue;
-            }
-            //String projectType = getProjectType(node);
-            //if (projectType != null) {
-            //    String[] supportedProjectTypes
-            //            = infoProvider.getSupportedProjectTypes();
-            //    if (supportedProjectTypes != null
-            //            && !isListedString(projectType,
-            //                               supportedProjectTypes))  {
-            //        continue;
-            //    }
-            //}
-            info = infoProvider.getSearchInfo(node);
-            if (info != null) {
-                return info;
+                String[] supportedNodeTypes = infoProvider.getSupportedNodeTypes();
+                if (supportedNodeTypes != null
+                        && !isListedString(node.getClass().getName(),
+                                           supportedNodeTypes)) {
+                    continue;
+                }
+                //String projectType = getProjectType(node);
+                //if (projectType != null) {
+                //    String[] supportedProjectTypes
+                //            = infoProvider.getSupportedProjectTypes();
+                //    if (supportedProjectTypes != null
+                //            && !isListedString(projectType,
+                //                               supportedProjectTypes))  {
+                //        continue;
+                //    }
+                //}
+                info = infoProvider.getSearchInfo(node);
+                if (info != null) {
+                    return info;
+                }
             }
         }
-        return null;
+
+        /* 3rd try - does the node represent a DataObject.Container? */
+        Object container = node.getLookup().lookup(DataObject.Container.class);
+        return (container != null)
+               ? new SimpleSearchInfo((DataObject.Container) container, true)
+               : SimpleSearchInfo.EMPTY_SEARCH_INFO;
     }
 
     ///**
