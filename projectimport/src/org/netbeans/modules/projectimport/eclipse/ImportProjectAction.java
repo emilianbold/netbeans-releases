@@ -13,13 +13,18 @@
 
 package org.netbeans.modules.projectimport.eclipse;
 
+import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Set;
+import javax.swing.JDialog;
 import javax.swing.Timer;
+import javax.swing.WindowConstants;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.projectimport.eclipse.wizard.ProgressDialog;
+import org.netbeans.modules.projectimport.eclipse.wizard.ProgressPanel;
 import org.netbeans.modules.projectimport.eclipse.wizard.ProjectImporterWizard;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
@@ -48,19 +53,25 @@ public class ImportProjectAction extends CallableSystemAction {
         final Importer importer = new Importer(eclProjects, destination);
         
         // prepare progress dialog
-        final ProgressDialog progress = new ProgressDialog(true);
-        progress.setNumberOfSteps(wizard.getNumberOfImportedProject());
+        final ProgressPanel progressPanel = new ProgressPanel();
+        DialogDescriptor desc = new DialogDescriptor(progressPanel,
+                NbBundle.getMessage(ImportProjectAction.class, "CTL_ProgressDialogTitle"),
+                true, new Object[]{}, null, 0, null, null);
+        desc.setClosingOptions(new Object[]{});
+        final Dialog progressDialog = DialogDisplayer.getDefault().createDialog(desc);
+        ((JDialog) progressDialog).setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        progressPanel.setNumberOfSteps(wizard.getNumberOfImportedProject());
         
         // progress timer for periodically update progress
         final Timer progressTimer = new Timer(50, null);
         progressTimer.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                progress.setCurrentStep(importer.getNOfProcessed());
-                progress.setInfo(importer.getProgressInfo());
+                progressPanel.setCurrentStep(importer.getNOfProcessed());
+                progressPanel.setInfo(importer.getProgressInfo());
                 if (importer.isDone()) {
                     progressTimer.stop();
-                    progress.setVisible(false);
-                    progress.dispose();
+                    progressDialog.setVisible(false);
+                    progressDialog.dispose();
                     // open created projects when importing finished
                     OpenProjects.getDefault().open(importer.getProjects(), true);
                 }
@@ -68,7 +79,7 @@ public class ImportProjectAction extends CallableSystemAction {
         });
         importer.startImporting(); // runs importing in separate thread
         progressTimer.start();
-        progress.setVisible(true);
+        progressDialog.setVisible(true);
         //        OpenProjectList.getDefault().open(project, true);
         //        OpenProjectList.getDefault().setMainProject( project );
         //        final ProjectTab ptLogial  = ProjectTab.findDefault(ProjectTab.ID_LOGICAL);
