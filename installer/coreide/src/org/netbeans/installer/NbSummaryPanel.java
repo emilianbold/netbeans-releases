@@ -60,7 +60,13 @@ public class NbSummaryPanel extends TextDisplayPanel
                     ProductService.HTML);
                     setText(summary.getProperty(ProductService.SUMMARY_MSG));
                 } else {
-                    setText(resolveString("$L(org.netbeans.installer.Bundle, SummaryPanel.description)"));
+                    if (Util.isWindowsOS()) {
+                        setText(resolveString
+                        ("$L(org.netbeans.installer.Bundle, SummaryPanel.description,netbeans.exe,uninstaller.exe)"));
+                    } else {
+                        setText(resolveString
+                        ("$L(org.netbeans.installer.Bundle, SummaryPanel.description,netbeans,uninstaller)"));
+                    }
                 }
             } else {
                 Properties summary = service.getProductSummary(
