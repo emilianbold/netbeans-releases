@@ -99,7 +99,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- Abbreviation dialog test -->
 
-    <testbag testattribs="all,full,validation,abbrevs" name="abbrev-gui">
+    <testbag testattribs="all,full,abbrevs" name="abbrev-gui">
         <testset dir="qa-functional/src">
             <patternset>
 		<include name="org/netbeans/test/editor/suites/abbrevs/*Performer.class"/>
