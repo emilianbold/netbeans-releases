@@ -72,7 +72,7 @@ class JavadocSearchEngineImpl extends JavadocSearchEngine {
                 fsEx.printStackTrace();
             }
         }
-        callback.finished();
+        //callback.finished();
     }
     
     /** Stops execution of Javadoc search thread
