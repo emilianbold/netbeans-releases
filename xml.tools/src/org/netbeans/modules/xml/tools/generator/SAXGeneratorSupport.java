@@ -154,6 +154,7 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
     public void generate () {
         
         try {
+            dtd = null;  // invalidate cache #26745
             if (getDTD() == null) {
                 String msg = org.openide.util.NbBundle.getMessage(SAXGeneratorSupport.class, "MSG_invalid_dtd");
                 GuiUtil.notifyWarning(msg);
