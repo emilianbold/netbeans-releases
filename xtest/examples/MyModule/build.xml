@@ -8,19 +8,20 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="MyModule" default="jar" basedir=".">
 
   <target name="compile">
-    <javac srcdir="src" destdir="src">
+    <mkdir dir="build/classes"/>
+    <javac srcdir="src" destdir="build/classes">
     </javac>
   </target>
 
   <target name="jar" depends="compile">
-     <jar jarfile="mymodule.jar" basedir="src"/>
+     <jar jarfile="mymodule.jar" basedir="build/classes"/>
   </target>
 
   <target name="clean">
@@ -29,6 +30,7 @@ Microsystems, Inc. All Rights Reserved.
         <include name="**/*.class"/>
       </fileset>
     </delete>
+    <delete dir="build"/>
     <delete file="mymodule.jar"/>
   </target>
 
