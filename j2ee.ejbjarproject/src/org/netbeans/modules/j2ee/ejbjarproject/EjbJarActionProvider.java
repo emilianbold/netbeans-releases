@@ -51,6 +51,7 @@ class EjbJarActionProvider implements ActionProvider {
     // Definition of commands
     
     private static final String COMMAND_COMPILE = "compile"; //NOI18N
+    private static final String COMMAND_VERIFY = "verify"; //NOI18N
         
     // Commands available from Web project
     private static final String[] supportedActions = {
@@ -67,6 +68,7 @@ class EjbJarActionProvider implements ActionProvider {
         JavaProjectConstants.COMMAND_JAVADOC, 
         JavaProjectConstants.COMMAND_DEBUG_FIX,
         COMMAND_COMPILE,
+        COMMAND_VERIFY,
     };
     
     // Project
@@ -94,6 +96,7 @@ class EjbJarActionProvider implements ActionProvider {
         commands.put(JavaProjectConstants.COMMAND_JAVADOC, new String[] {"javadoc"}); // NOI18N
         commands.put(JavaProjectConstants.COMMAND_DEBUG_FIX, new String[] {"debug-fix"}); // NOI18N
         commands.put(COMMAND_COMPILE, new String[] {"compile"}); // NOI18N
+        commands.put(COMMAND_VERIFY, new String[] {"verify"}); // NOI18N
 
         this.antProjectHelper = antProjectHelper;
         this.project = project;
@@ -197,6 +200,9 @@ class EjbJarActionProvider implements ActionProvider {
         
         if ( findBuildXml() == null ) {
             return false;
+        }
+        if ( command.equals( COMMAND_VERIFY ) ) {
+            return project.getEjbModule().hasVerifierSupport();
         }
         if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
             return true; // findJavaSources( context ) != null || findJsps (context) != null;

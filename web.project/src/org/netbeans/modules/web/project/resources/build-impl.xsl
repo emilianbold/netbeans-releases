@@ -713,6 +713,11 @@ is divided into following sections:
                 <nbdeploy debugmode="false" clientUrlPart="${{client.urlPart}}" forceRedeploy="${{forceRedeploy}}"/>
             </target>
 
+            <target name="verify">
+                <xsl:attribute name="depends">init,dist</xsl:attribute>
+                <nbverify file="${{dist.war}}"/>
+            </target>
+            
             <target name="run-display-browser" if="do.display.browser">
                 <xsl:attribute name="depends">run-deploy</xsl:attribute>
                 <nbbrowse url="${{client.url}}"/>

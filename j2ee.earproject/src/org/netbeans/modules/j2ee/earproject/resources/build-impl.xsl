@@ -396,6 +396,11 @@ is divided into following sections:
         <nbdeploy debugmode="false" forceRedeploy="${{forceRedeploy}}" clientUrlPart="${{client.urlPart}}"/>
     </target>
     
+    <target name="verify">
+        <xsl:attribute name="depends">dist</xsl:attribute>
+        <nbverify file="${{dist.jar}}"/>
+    </target>
+    
             <target name="run-display-browser" if="do.display.browser">
                 <xsl:attribute name="depends">run-deploy</xsl:attribute>
                 <nbbrowse url="${{client.url}}"/>

@@ -20,6 +20,7 @@ import java.util.ResourceBundle;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 
 import org.openide.nodes.*;
 import org.openide.util.*;
@@ -131,33 +132,61 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
 
             ResourceBundle bundle = NbBundle.getBundle(EjbJarLogicalViewProvider.class);
             
-            return new Action[] {
-                CommonProjectActions.newFileAction(),
-                null,                
-                ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_BUILD, bundle.getString( "LBL_BuildAction_Name" ), null ), // NOI18N
-                ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_REBUILD, bundle.getString( "LBL_RebuildAction_Name" ), null ), // NOI18N
-                ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_CLEAN, bundle.getString( "LBL_CleanAction_Name" ), null ), // NOI18N
-                ProjectSensitiveActions.projectCommandAction( JavaProjectConstants.COMMAND_JAVADOC, bundle.getString( "LBL_JavadocAction_Name" ), null ), // NOI18N                
-                null,
-                ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_RUN, bundle.getString( "LBL_RunAction_Name" ), null ), // NOI18N
-                ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_DEBUG, bundle.getString( "LBL_DebugAction_Name" ), null ), // NOI18N
-                //ProjectSensitiveActions.projectCommandAction( J2eeProjectConstants.COMMAND_REDEPLOY, bundle.getString( "LBL_RedeployAction_Name" ), null ), // NOI18N
-                ProjectSensitiveActions.projectCommandAction( J2eeProjectConstants.COMMAND_DEPLOY, bundle.getString( "LBL_DeployAction_Name" ), null ), // NOI18N
-                null,
-                CommonProjectActions.setAsMainProjectAction(),
-                CommonProjectActions.openSubprojectsAction(),
-                CommonProjectActions.closeProjectAction(),
-                null,
-                SystemAction.get( org.openide.actions.FindAction.class ),
-                null,
-//                SystemAction.get( org.openide.actions.DeleteAction.class ),
-//                null,
-                SystemAction.get(org.openide.actions.OpenLocalExplorerAction.class),
-                SystemAction.get( org.openide.actions.ToolsAction.class ),
-                null,
-                brokenLinksAction,
-                CommonProjectActions.customizeProjectAction(),
-            };
+            J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+            if (provider != null && provider.hasVerifierSupport()) {
+                return new Action[] {
+                    CommonProjectActions.newFileAction(),
+                    null,                
+                    ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_BUILD, bundle.getString( "LBL_BuildAction_Name" ), null ), // NOI18N
+                    ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_REBUILD, bundle.getString( "LBL_RebuildAction_Name" ), null ), // NOI18N
+                    ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_CLEAN, bundle.getString( "LBL_CleanAction_Name" ), null ), // NOI18N
+                    ProjectSensitiveActions.projectCommandAction( "verify", bundle.getString( "LBL_VerifyAction_Name" ), null ), // NOI18N
+                    ProjectSensitiveActions.projectCommandAction( JavaProjectConstants.COMMAND_JAVADOC, bundle.getString( "LBL_JavadocAction_Name" ), null ), // NOI18N                
+                    null,
+                    ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_RUN, bundle.getString( "LBL_RunAction_Name" ), null ), // NOI18N
+                    ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_DEBUG, bundle.getString( "LBL_DebugAction_Name" ), null ), // NOI18N
+                    //ProjectSensitiveActions.projectCommandAction( J2eeProjectConstants.COMMAND_REDEPLOY, bundle.getString( "LBL_RedeployAction_Name" ), null ), // NOI18N
+                    ProjectSensitiveActions.projectCommandAction( J2eeProjectConstants.COMMAND_DEPLOY, bundle.getString( "LBL_DeployAction_Name" ), null ), // NOI18N
+                    null,
+                    CommonProjectActions.setAsMainProjectAction(),
+                    CommonProjectActions.openSubprojectsAction(),
+                    CommonProjectActions.closeProjectAction(),
+                    null,
+                    SystemAction.get( org.openide.actions.FindAction.class ),
+                    null,
+                    SystemAction.get(org.openide.actions.OpenLocalExplorerAction.class),
+                    SystemAction.get( org.openide.actions.ToolsAction.class ),
+                    null,
+                    brokenLinksAction,
+                    CommonProjectActions.customizeProjectAction(),
+                };
+            } else {
+                return new Action[] {
+                    CommonProjectActions.newFileAction(),
+                    null,                
+                    ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_BUILD, bundle.getString( "LBL_BuildAction_Name" ), null ), // NOI18N
+                    ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_REBUILD, bundle.getString( "LBL_RebuildAction_Name" ), null ), // NOI18N
+                    ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_CLEAN, bundle.getString( "LBL_CleanAction_Name" ), null ), // NOI18N
+                    ProjectSensitiveActions.projectCommandAction( JavaProjectConstants.COMMAND_JAVADOC, bundle.getString( "LBL_JavadocAction_Name" ), null ), // NOI18N                
+                    null,
+                    ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_RUN, bundle.getString( "LBL_RunAction_Name" ), null ), // NOI18N
+                    ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_DEBUG, bundle.getString( "LBL_DebugAction_Name" ), null ), // NOI18N
+                    //ProjectSensitiveActions.projectCommandAction( J2eeProjectConstants.COMMAND_REDEPLOY, bundle.getString( "LBL_RedeployAction_Name" ), null ), // NOI18N
+                    ProjectSensitiveActions.projectCommandAction( J2eeProjectConstants.COMMAND_DEPLOY, bundle.getString( "LBL_DeployAction_Name" ), null ), // NOI18N
+                    null,
+                    CommonProjectActions.setAsMainProjectAction(),
+                    CommonProjectActions.openSubprojectsAction(),
+                    CommonProjectActions.closeProjectAction(),
+                    null,
+                    SystemAction.get( org.openide.actions.FindAction.class ),
+                    null,
+                    SystemAction.get(org.openide.actions.OpenLocalExplorerAction.class),
+                    SystemAction.get( org.openide.actions.ToolsAction.class ),
+                    null,
+                    brokenLinksAction,
+                    CommonProjectActions.customizeProjectAction(),
+                };
+            }
         }
         
         /** This action is created only when project has broken references.

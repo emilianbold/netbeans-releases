@@ -78,6 +78,7 @@ class WebActionProvider implements ActionProvider {
     // Definition of commands
     
     private static final String COMMAND_COMPILE = "compile"; //NOI18N
+    private static final String COMMAND_VERIFY = "verify"; //NOI18N
         
     // Commands available from Web project
     private static final String[] supportedActions = {
@@ -96,6 +97,7 @@ class WebActionProvider implements ActionProvider {
         COMMAND_DEBUG_TEST_SINGLE, 
         JavaProjectConstants.COMMAND_DEBUG_FIX,
         COMMAND_COMPILE,
+        COMMAND_VERIFY,
     };
     
     // Project
@@ -132,6 +134,7 @@ class WebActionProvider implements ActionProvider {
             commands.put(COMMAND_DEBUG_TEST_SINGLE, new String[] {"debug-test"}); // NOI18N
             commands.put(JavaProjectConstants.COMMAND_DEBUG_FIX, new String[] {"debug-fix"}); // NOI18N
             commands.put(COMMAND_COMPILE, new String[] {"compile"}); // NOI18N
+            commands.put(COMMAND_VERIFY, new String[] {"verify"}); // NOI18N
         
         this.updateHelper = updateHelper;
         this.project = project;
@@ -651,6 +654,9 @@ class WebActionProvider implements ActionProvider {
         }
         if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
             return findJavaSourcesAndPackages( context ) != null || findJsps (context) != null;
+        }
+        if ( command.equals( COMMAND_VERIFY ) ) {
+            return project.getWebModule().hasVerifierSupport();
         }
         if ( command.equals( COMMAND_RUN_SINGLE ) ) {
             // test for jsps

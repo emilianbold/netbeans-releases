@@ -505,6 +505,11 @@ is divided into following sections:
         <nbdeploy debugmode="false" forceRedeploy="${{forceRedeploy}}"/>
     </target>
     
+    <target name="verify">
+        <xsl:attribute name="depends">dist</xsl:attribute>
+        <nbverify file="${{dist.jar}}"/>
+    </target>
+    
     <xsl:comment>
     =================
     DEBUGGING SECTION
