@@ -14,12 +14,10 @@
 package org.netbeans.modules.j2ee.deployment.impl.ui;
 
 import org.openide.nodes.*;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 import org.netbeans.modules.j2ee.deployment.impl.ServerTarget;
-import org.netbeans.modules.j2ee.deployment.impl.ui.actions.SetAsDefaultServerAction;
 import javax.swing.Action;
-import java.util.*;
+
 
 /**
  * @author Nam Nguyen
@@ -35,9 +33,7 @@ public class TargetBaseNode extends AbstractNode {
     }
     
     public Action[] getActions(boolean b) {
-        ArrayList actions = new ArrayList();
-        actions.add(SystemAction.get(SetAsDefaultServerAction.class));
-        return (Action[]) actions.toArray(new Action[actions.size()]);
+        return new Action[] {};
     }
     
     protected ServerTarget getServerTarget() {

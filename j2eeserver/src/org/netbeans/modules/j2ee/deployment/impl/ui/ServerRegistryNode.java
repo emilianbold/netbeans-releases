@@ -80,7 +80,6 @@ implements ServerRegistry.PluginListener, InstanceListener {
         updateKeys();
     }
     public void changeDefaultInstance(String oldInstance, String newInstance) {
-        setDisplayNameWithDefaultServer(newInstance == null ? null : ServerRegistry.getInstance().getServerInstance(newInstance));
     }
     
     private void updateKeys() {
@@ -90,7 +89,6 @@ implements ServerRegistry.PluginListener, InstanceListener {
     public SystemAction[] createActions() {
         return new SystemAction[] {
             //SystemAction.get(FindDeploymentManagerAction.class),
-            SystemAction.get(SetDefaultServerAction.class),
             SystemAction.get(AddServerInstanceAction.class)
         };
     }
@@ -100,24 +98,7 @@ implements ServerRegistry.PluginListener, InstanceListener {
             helpCtx = new HelpCtx(NbBundle.getBundle(ServerRegistryNode.class).getString("nodes_server_registry_node_html"));//NOI18N
         return helpCtx;
     }
-    
-    private void displayNameWithDefaultServer() {
-        ServerString server = ServerRegistry.getInstance().getDefaultInstance();
-        ServerInstance inst = null;
-        if (server != null)
-            inst = server.getServerInstance();
-        setDisplayNameWithDefaultServer(inst);
-    }
-    
-    void setDisplayNameWithDefaultServer(ServerInstance inst) {
-        String name = NbBundle.getMessage(ServerRegistryNode.class,"SERVER_REGISTRY_NODE_NO_DEFAULT");//NOI18N
-        if (inst != null) {
-            String instanceName = inst.getDisplayName();
-            name = NbBundle.getMessage(ServerRegistryNode.class, "SERVER_REGISTRY_NODE_DEFAULT", instanceName);
-        }
-        setDisplayName(name);
-    }
-    
+        
     private static class ServerChildren extends Children.Keys {
         private boolean listenersAdded = false;
         
@@ -131,7 +112,6 @@ implements ServerRegistry.PluginListener, InstanceListener {
                 ServerRegistryNode parent = (ServerRegistryNode) getNode();
                 ServerRegistry.getInstance().addPluginListener(parent);
                 ServerRegistry.getInstance().addInstanceListener(parent);
-                parent.displayNameWithDefaultServer();
                 listenersAdded = true;
             }
         }

@@ -18,16 +18,11 @@
 
 package org.netbeans.modules.j2ee.deployment.impl.ui;
 
-import org.netbeans.modules.j2ee.deployment.impl.ui.actions.SetAsDefaultServerAction;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerState;
 import org.netbeans.modules.j2ee.deployment.impl.ServerTarget;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.nodes.AbstractNode;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 import java.util.List;
 import java.util.Arrays;
@@ -172,8 +167,6 @@ public class InstanceTargetXNode extends FilterXNode implements ServerInstance.R
         if (isRunning != null && isRunning.booleanValue()) {*/
         if (getServerTarget() != null) {
             actions.addAll(Arrays.asList(getDelegateTargetNode().getActions(context)));
-        } else {
-            actions.add(SystemAction.get(SetAsDefaultServerAction.class));
         }
         
         return (javax.swing.Action[]) actions.toArray(new javax.swing.Action[actions.size()]);

@@ -52,9 +52,6 @@ public class RegistryNodeProvider {
                 // the original node
                 if (instance.getDisplayName() == null)
                     instance.setDisplayName(original.getDisplayName());
-                if (instance.isDefault()) {
-                    ServerRegistryNode.getServerRegistryNode().setDisplayNameWithDefaultServer(instance);
-                }
                 return new FilterXNode(original, xnode, true, new FilterXNode.XChildren(xnode));
             }
         }
