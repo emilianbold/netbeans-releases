@@ -294,7 +294,7 @@ public class EditorModule extends ModuleInstall {
 
     private synchronized RequestProcessor getCCUpdateProcessor() {
         if (ccUpdateProcessor == null) {
-            ccUpdateProcessor = new RequestProcessor();
+            ccUpdateProcessor = new RequestProcessor("Code Completion Database Updater"); //NOI18N
         }
         return ccUpdateProcessor;
     }
