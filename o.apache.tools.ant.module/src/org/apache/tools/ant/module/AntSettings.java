@@ -43,6 +43,7 @@ public class AntSettings extends SystemOption implements ChangeListener {
     public static final String PROP_EXECUTOR = "executor"; // NOI18N
     public static final String PROP_REUSE_OUTPUT = "reuseOutput"; // NOI18N
     public static final String PROP_ANT_VERSION = "antVersion"; // NOI18N
+    public static final String PROP_INPUT_HANDLER = "inputHandler"; // NOI18N
     
     private static final String DEF_CLASS_PATH = "netbeans.class.path"; // NOI18N
     private static final String DEF_BOOTCLASS_PATH = "netbeans.bootclass.path"; // NOI18N
@@ -204,6 +205,17 @@ public class AntSettings extends SystemOption implements ChangeListener {
     public void stateChanged(ChangeEvent e) {
         // [PENDING] Should not be necessary, but see #15825.
         firePropertyChange(PROP_CUSTOM_DEFS, null, null);
+    }
+    
+    public String getInputHandler() {
+        String str = (String)getProperty (PROP_INPUT_HANDLER);
+        if (str == null)
+            str = "";
+        return str;
+    }
+
+    public void setInputHandler(String inputHandler) {
+        putProperty (PROP_INPUT_HANDLER, inputHandler, true);
     }
     
 }

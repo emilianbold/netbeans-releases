@@ -102,8 +102,8 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
     <jar jarfile="reload/ant.jar" manifest="manifest-subst.mf" compress="false">
       <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-      <zipfileset src="external/ant-1.4.1.jar" excludes="META-INF/MANIFEST.MF"/>
-      <zipfileset src="external/ant-optional-1.4.1.jar" excludes="META-INF/MANIFEST.MF"/>
+      <zipfileset src="external/ant-1.5.1.jar" excludes="META-INF/MANIFEST.MF"/>
+      <zipfileset src="external/ant-optional-1.5.1.jar" excludes="META-INF/MANIFEST.MF"/>
     </jar>
   </target>
   <target name="test" depends="test-build" description="Test module inside running IDE.">
@@ -146,29 +146,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     <mkdir dir="${useful-sources}"/>
     <copy todir="${useful-sources}">
       <fileset dir="${release-source-root}">
-        <!-- Necessarily chosen according to personal judgement; there is no official guide here: -->
-        <include name="org/apache/tools/ant/*.java"/>
-        <exclude name="org/apache/tools/ant/Launcher.java"/>
-        <exclude name="org/apache/tools/ant/Main.java"/>
-        <include name="org/apache/tools/ant/listener/*.java"/>
-        <include name="org/apache/tools/ant/taskdefs/Ant.java"/>
-        <include name="org/apache/tools/ant/taskdefs/Definer.java"/>
-        <include name="org/apache/tools/ant/taskdefs/Execute.java"/>
-        <include name="org/apache/tools/ant/taskdefs/ExecuteJava.java"/>
-        <include name="org/apache/tools/ant/taskdefs/ExecuteStreamHandler.java"/>
-        <include name="org/apache/tools/ant/taskdefs/ExecuteWatchdog.java"/>
-        <include name="org/apache/tools/ant/taskdefs/Javac.java"/>
-        <include name="org/apache/tools/ant/taskdefs/MatchingTask.java"/>
-        <include name="org/apache/tools/ant/taskdefs/Property.java"/>
-        <include name="org/apache/tools/ant/taskdefs/Rmic.java"/>
-        <include name="org/apache/tools/ant/taskdefs/compilers/CompilerAdapter.java"/>
-        <include name="org/apache/tools/ant/taskdefs/compilers/DefaultCompilerAdapter.java"/>
-        <include name="org/apache/tools/ant/taskdefs/rmic/DefaultRmicAdapter.java"/>
-        <include name="org/apache/tools/ant/taskdefs/rmic/RmicAdapter.java"/>
-        <include name="org/apache/tools/ant/types/*.java"/>
-        <include name="org/apache/tools/ant/util/*.java"/>
-        <include name="org/apache/tools/ant/util/regexp/RegexpMatcher.java"/>
-        <include name="org/apache/tools/ant/util/regexp/RegexpMatcherFactory.java"/>
+        <include name="org/apache/tools/**/*.java"/>
         <!-- Do not forget about the package list for Javadoc below... -->
       </fileset>
     </copy>
@@ -178,7 +156,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     <delete dir="${javadoc-out}"/>
     <mkdir dir="${javadoc-out}"/>
     <javadoc
-      packagenames="org.apache.tools.ant.*,org.apache.tools.ant.listener.*,org.apache.tools.ant.taskdefs.*,org.apache.tools.ant.taskdefs.compilers.*,org.apache.tools.ant.taskdefs.rmic.*,org.apache.tools.ant.types.*,org.apache.tools.ant.util.*,org.apache.tools.ant.util.regexp.*"
+      packagenames="org.apache.tools.ant.*,org.apache.tools.bzip2.*,org.apache.tools.mail.*,org.apache.tools.tar.*,org.apache.tools.zip.*,org.apache.tools.ant.filters.*,org.apache.tools.ant.helper.*,org.apache.tools.ant.input.*,org.apache.tools.ant.listener.*,org.apache.tools.ant.taskdefs.*,org.apache.tools.ant.types.*,org.apache.tools.ant.util.*,org.apache.tools.ant.filters.util.*,org.apache.tools.ant.taskdefs.compilers.*,org.apache.tools.ant.taskdefs.condition.*,org.apache.tools.ant.taskdefs.cvslib.*,org.apache.tools.ant.taskdefs.email.*,org.apache.tools.ant.taskdefs.optional.*,org.apache.tools.ant.taskdefs.rmic.*,org.apache.tools.ant.taskdefs.optional.ccm.*,org.apache.tools.ant.taskdefs.optional.clearcase.*,org.apache.tools.ant.taskdefs.optional.depend.*,org.apache.tools.ant.taskdefs.optional.dotnet.*,org.apache.tools.ant.taskdefs.optional.ejb.*,org.apache.tools.ant.taskdefs.optional.extension.*,org.apache.tools.ant.taskdefs.optional.i18n.*,org.apache.tools.ant.taskdefs.optional.ide.*,org.apache.tools.ant.taskdefs.optional.j2ee.*,org.apache.tools.ant.taskdefs.optional.javacc.*,org.apache.tools.ant.taskdefs.optional.jdepend.*,org.apache.tools.ant.taskdefs.optional.jlink.*,org.apache.tools.ant.taskdefs.optional.jsp.*,org.apache.tools.ant.taskdefs.optional.junit.*,org.apache.tools.ant.taskdefs.optional.metamata.*,org.apache.tools.ant.taskdefs.optional.net.*,org.apache.tools.ant.taskdefs.optional.perforce.*,org.apache.tools.ant.taskdefs.optional.pvcs.*,org.apache.tools.ant.taskdefs.optional.scm.*,org.apache.tools.ant.taskdefs.optional.sitraka.*,org.apache.tools.ant.taskdefs.optional.sos.*,org.apache.tools.ant.taskdefs.optional.sound.*,org.apache.tools.ant.taskdefs.optional.splash.*,org.apache.tools.ant.taskdefs.optional.starteam.*,org.apache.tools.ant.taskdefs.optional.vss.*,org.apache.tools.ant.taskdefs.optional.depend.constantpool.*,org.apache.tools.ant.taskdefs.optional.extension.resolvers.*,org.apache.tools.ant.taskdefs.optional.jsp.compilers.*,org.apache.tools.ant.taskdefs.optional.sitraka.bytecode.*,org.apache.tools.ant.taskdefs.optional.sitraka.bytecode.attributes.*,org.apache.tools.ant.types.optional.*,org.apache.tools.ant.types.selectors.*,org.apache.tools.ant.types.optional.depend.*,org.apache.tools.ant.util.depend.*,org.apache.tools.ant.util.facade.*,org.apache.tools.ant.util.optional.*,org.apache.tools.ant.util.regexp.*,org.apache.tools.ant.util.depend.bcel.*"
       destdir="${javadoc-out}"
       protected="true"
       windowtitle="Ant ${release-version} Javadoc - Essential Classes"
@@ -191,7 +169,6 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
       notree="true"
       nohelp="true"
       failonerror="true"
-      bottom="&lt;font size=&quot;-2&quot; color=&quot;gray&quot;&gt;Includes only those classes commonly used by task writers. The Ant ${release-version} distribution includes complete Javadoc for all classes included in Ant, though in most cases these are not intended as APIs.&lt;/font&gt;"
       >
       <sourcepath>
         <pathelement location="${useful-sources}"/>
@@ -252,6 +229,8 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     - src/org/apache/tools/ant/module/resources/SampleProject.xml_
     - src/org/apache/tools/ant/module/resources/CustomTask_java
     - ../usersguide/javahelp/org/netbeans/modules/usersguide/ant/*.html
+    - manifest.mf
+    - build.xml
 8.  Update ${ParserDB} with sources from ${useful-sources}
 9.  Update ${features.xml}
 10. Refresh these files with the prebuilt binaries from an Ant download:

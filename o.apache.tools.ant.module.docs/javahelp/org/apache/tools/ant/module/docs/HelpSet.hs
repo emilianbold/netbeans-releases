@@ -13,7 +13,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE helpset PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp HelpSet Version 1.0//EN" "http://java.sun.com/products/javahelp/helpset_1_0.dtd">
 <helpset version="1.0">
-    <title>Ant 1.4.1 Manual</title>
+    <title>Ant 1.5.1 Manual</title>
     <maps>
         <homeID>org.apache.tools.ant.module.ant-docs</homeID>
         <mapref location="Map.jhm"/>

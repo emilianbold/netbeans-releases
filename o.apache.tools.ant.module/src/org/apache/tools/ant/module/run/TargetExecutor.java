@@ -31,6 +31,7 @@ import org.openide.windows.*;
 import org.w3c.dom.Element;
 
 import org.apache.tools.ant.*;
+import org.apache.tools.ant.input.InputHandler;
 import org.apache.tools.ant.taskdefs.Taskdef;
 
 import org.apache.tools.ant.module.AntModule;
@@ -38,6 +39,7 @@ import org.apache.tools.ant.module.AntSettings;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.api.DefinitionRegistry;
 import org.apache.tools.ant.module.api.IntrospectedInfo;
+import org.apache.tools.ant.module.run.NBInputHandler;
 
 /** Executes an Ant Target asynchronously in the IDE.
  */
@@ -252,6 +254,21 @@ public class TargetExecutor implements Runnable {
             project.addBuildListener (logger);
             ProjectHelper.configureProject(project, buildFile);
             //writer.println("#3"); // NOI18N
+            
+            String inputHandlerName = AntSettings.getDefault().getInputHandler();
+            InputHandler inputHandler = null;
+            if (inputHandlerName != null && inputHandlerName.length() > 0) {
+                try {
+                    Class clazz = Class.forName(inputHandlerName, true, TopManager.getDefault().currentClassLoader());
+                    inputHandler = (InputHandler)clazz.newInstance();
+                } catch (Exception ex) {
+                    throw new BuildException(NbBundle.getMessage (TargetExecutor.class, "MSG_input_handler_exception", inputHandlerName), ex);  //NOI18N
+                }
+            }
+            if (inputHandler == null) {
+                inputHandler = new NBInputHandler();
+            }
+            project.setInputHandler(inputHandler);
         }
         catch (BuildException be) {
             // Write errors to the output window, since 
