@@ -98,7 +98,7 @@ final class InstanceNode extends DataNode {
                 }
             }
         };
-        obj.addPropertyChangeListener(WeakListener.propertyChange(dobjListener, obj));
+        obj.addPropertyChangeListener(org.openide.util.WeakListeners.propertyChange(dobjListener, obj));
     }
     
     /** initialize the icon base according to state of the settings instance (valid/broken) */
@@ -184,7 +184,7 @@ final class InstanceNode extends DataNode {
                 if (setter != null && setter.getName().equals("addPropertyChangeListener")) { // NOI18N
                     Object bean = ic.instanceCreate();
                     propertyChangeListener = new PropL();
-                    setter.invoke(bean, new Object[] {WeakListener.propertyChange(propertyChangeListener, bean)});
+                    setter.invoke(bean, new Object[] {org.openide.util.WeakListeners.propertyChange(propertyChangeListener, bean)});
                 }
             }
         } catch (Exception ex) {
@@ -863,7 +863,7 @@ final class InstanceNode extends DataNode {
         protected void addNotify () {
             super.addNotify();
             
-            PropertyChangeListener p = WeakListener.propertyChange(this, dobj);
+            PropertyChangeListener p = org.openide.util.WeakListeners.propertyChange(this, dobj);
             dobjListener = new java.lang.ref.WeakReference(p);
             dobj.addPropertyChangeListener(p);
             // attaches a listener to the bean

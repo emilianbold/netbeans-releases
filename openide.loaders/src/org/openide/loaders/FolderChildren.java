@@ -18,7 +18,6 @@ import java.util.*;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.util.WeakListener;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.nodes.Children;
@@ -65,7 +64,7 @@ implements PropertyChangeListener {
     public FolderChildren (DataFolder f, DataFilter filter) {
         this.folder = f;
         this.filter = filter;
-        this.listener = WeakListener.propertyChange (this, folder);
+        this.listener = org.openide.util.WeakListeners.propertyChange (this, folder);
         err = ErrorManager.getDefault().getInstance("org.openide.loaders.FolderChildren." + f.getPrimaryFile().getPath().replace('/','.')); // NOI18N
         if (!err.isLoggable(ErrorManager.INFORMATIONAL)) {
             err = null;

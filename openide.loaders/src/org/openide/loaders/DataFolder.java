@@ -34,7 +34,6 @@ import org.openide.nodes.*;
 import org.openide.util.Lookup;
 import org.openide.util.enum.QueueEnumeration;
 import org.openide.util.NbBundle;
-import org.openide.util.WeakListener;
 import org.openide.util.RequestProcessor;
 
 /** A folder containing data objects.
@@ -159,7 +158,7 @@ implements Serializable, DataObject.Container {
 
         if (attach) {
             pcl = new ListPCL ();
-            list.addPropertyChangeListener (WeakListener.propertyChange (pcl, list));
+            list.addPropertyChangeListener (org.openide.util.WeakListeners.propertyChange (pcl, list));
         }
         
         return list;

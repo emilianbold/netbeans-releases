@@ -27,7 +27,6 @@ import java.util.WeakHashMap;
 import org.openide.filesystems.*;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.CloneableOpenSupport;
-import org.openide.util.WeakListener;
 import org.openide.util.WeakSet;
 import org.openide.util.NbBundle;
 
@@ -132,7 +131,7 @@ public abstract class OpenSupport extends CloneableOpenSupport {
         }
         
         private void init() {
-            obj.addPropertyChangeListener(WeakListener.propertyChange(this, obj));
+            obj.addPropertyChangeListener(org.openide.util.WeakListeners.propertyChange(this, obj));
 
             // XXX #25400. Ugly patch for being able to react
             // on change of root directory of filesystem, see more in the issue.

@@ -32,7 +32,6 @@ Microsystems, Inc. All Rights Reserved.
   
   <target name="compile" >
     <ant dir="${nbroot}/openide" target="do-lib-javac" inheritRefs="true" >
-      <property name="include" value="org/openide/awt/HtmlBrowser$$BrowserComponent.java" />
       <property name="localdir" location="src" />
       <property name="selector" value="openide.windows" />
     </ant>

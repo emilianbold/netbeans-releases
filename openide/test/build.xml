@@ -272,6 +272,7 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="../fs/src/"/>
                 <pathelement location="../modules/src/"/>
                 <pathelement location="../actions/src/"/>
+                <pathelement location="../compat/src/"/>
                 <pathelement location="../windows/src/"/>
                 <pathelement location="../dialogs/src/"/>
                 <pathelement location="../text/src/"/>

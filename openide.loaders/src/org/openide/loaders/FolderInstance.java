@@ -23,7 +23,6 @@ import org.openide.filesystems.*;
 import org.openide.cookies.InstanceCookie;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
-import org.openide.util.WeakListener;
 import org.openide.util.RequestProcessor;
 
 /** Support class for creation of an object from the content
@@ -173,7 +172,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
 
         this.container = container;
         container.addPropertyChangeListener (
-            WeakListener.propertyChange (listener, container)
+            org.openide.util.WeakListeners.propertyChange (listener, container)
         );
     }
     
@@ -652,7 +651,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
                 
                     // register for changes of PROP_COOKIE property
                     obj.addPropertyChangeListener (
-                        WeakListener.propertyChange (listener, obj)
+                        org.openide.util.WeakListeners.propertyChange (listener, obj)
                     );
                     
                     cookies.add (hold);
@@ -681,7 +680,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
                 
                 // register for changes of PROP_COOKIE property
                 obj.addPropertyChangeListener (
-                    WeakListener.propertyChange (listener, obj)
+                    org.openide.util.WeakListeners.propertyChange (listener, obj)
                 );
                 
             }
@@ -900,7 +899,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
                 // in the cookie
                 Task t = (Task)cookie;
                 t.addTaskListener (
-                    (TaskListener)WeakListener.create (TaskListener.class, this, t)
+                    (TaskListener)org.openide.util.WeakListeners.create (TaskListener.class, this, t)
                 );
             }
         }

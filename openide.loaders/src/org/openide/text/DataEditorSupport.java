@@ -31,7 +31,6 @@ import org.openide.nodes.NodeAdapter;
 import org.openide.nodes.NodeListener;
 import org.openide.loaders.*;
 import org.openide.windows.*;
-import org.openide.util.WeakListener;
 import org.openide.util.NbBundle;
 
 /** Support for associating an editor and a Swing {@link Document} to a data object.

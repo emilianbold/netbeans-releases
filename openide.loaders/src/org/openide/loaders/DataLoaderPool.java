@@ -141,7 +141,7 @@ implements java.io.Serializable {
      * @param s the source the new listener will be attached to
      */
     public static OperationListener createWeakOperationListener (OperationListener l, Object s) {
-        return (OperationListener)org.openide.util.WeakListener.create (OperationListener.class, l, s);
+        return (OperationListener)org.openide.util.WeakListeners.create (OperationListener.class, l, s);
     }
     
     /** Add a listener for operations on data objects.

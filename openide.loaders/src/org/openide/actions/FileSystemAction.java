@@ -235,7 +235,7 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
                 Registry r = WindowManager.getDefault ().getRegistry ();
 
                 r.addPropertyChangeListener (
-                    org.openide.util.WeakListener.propertyChange (this, r)
+                    org.openide.util.WeakListeners.propertyChange (this, r)
                 );
             }
         }

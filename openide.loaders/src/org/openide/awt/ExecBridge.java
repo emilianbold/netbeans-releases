@@ -23,7 +23,6 @@ import org.openide.ErrorManager;
 
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.WeakListener;
 
 /** Menu item associated with data object. When
 * pressed it executes the data object.
@@ -58,7 +57,7 @@ class ExecBridge extends Object implements ActionListener, PropertyChangeListene
         this.button = button;
 
         button.addActionListener (this);
-        node.addPropertyChangeListener (WeakListener.propertyChange (this, node));
+        node.addPropertyChangeListener (org.openide.util.WeakListeners.propertyChange (this, node));
 
         updateState ();
     }

@@ -74,16 +74,6 @@ Microsystems, Inc. All Rights Reserved.
     </javac>
   </target>
 
-  <target name="compile-compat" depends="libs">
-    <javac srcdir="compat/src" destdir="compat/src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-      <classpath>
-        <pathelement location="dialogs/netbeans/lib/openide-dialogs.jar"/>
-        <pathelement location="fs/netbeans/lib/openide-fs.jar"/>
-        <pathelement location="nodes/netbeans/lib/openide-nodes.jar"/>
-      </classpath>
-    </javac>
-  </target>
-  
   <target name="compile" depends="13javac-workaround,compile-regular"
           description="Compile all source files but do not package them."/>
 
@@ -146,7 +136,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="old-jars" depends="compile,13javac-workaround,vers-prep,loaders_32143-compat" description="Create JAR files.">
     <mkdir dir="netbeans/lib"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <jar jarfile="netbeans/lib/openide.jar" manifest="manifest-subst.mf" compress="false">
+    <jar jarfile="netbeans/lib/openide.jar" manifest="manifest-subst.mf" compress="false" duplicate="preserve" >
       
       <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
       <fileset dir="windows/src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
@@ -167,7 +157,7 @@ Microsystems, Inc. All Rights Reserved.
          writers using the old code to update to new replacements.
      -->
      <ant antfile="build.xml" target="jars" dir="loaders" />
-     <ant antfile="build.xml" target="openide-compat" dir="actions" />
+     <ant antfile="build.xml" target="openide-compat" dir="compat" />
      <ant antfile="build.xml" target="openide-compat" dir="windows" />
      <ant antfile="build.xml" target="openide-compat" dir="text" />
   </target>
@@ -178,7 +168,7 @@ Microsystems, Inc. All Rights Reserved.
     </copy>
   </target>
 
-  <target name="netbeans" depends="jars-from-libs,release,libs,compile-compat,loaders_32143-compat" description="Build everything needed for inclusion in the IDE.">
+  <target name="netbeans" depends="jars-from-libs,release,libs,loaders_32143-compat" description="Build everything needed for inclusion in the IDE.">
 <!--    <genlist targetname="nbm" outputfiledir="netbeans"/> -->
   </target>
 
@@ -196,16 +186,9 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <!-- Define the sets of files for various libraries -->
-  <selector id="openide.actions" >
+  <selector id="openide.compat" >
     <or>
-        <filename name="**/openide/actions/*" />
-        
-        <!-- resource -->
-        <filename name="**/openide/resources/actions/*" />
-        <filename name="**/openide/resources/propertysheet/customize.gif" />
-
-        <!-- these might one day get deprecated, but until that
-          lets keep them here -->
+        <!-- this is equal to deprecation of the stuff -->
         <filename name="**/openide/explorer/ExplorerPanel*" />
         <filename name="**/openide/explorer/ExplorerActions.java" />
         <filename name="**/openide/explorer/ExplorerActions.class" />
@@ -214,6 +197,17 @@ Microsystems, Inc. All Rights Reserved.
         <filename name="**/openide/util/WeakListener.java" />
         <filename name="**/openide/util/WeakListener.class" />
         <filename name="**/openide/util/WeakListener$$*.class" />
+    </or>
+  </selector>
+  
+  
+  <selector id="openide.actions" >
+    <or>
+        <filename name="**/openide/actions/*" />
+        
+        <!-- resource -->
+        <filename name="**/openide/resources/actions/*" />
+        <filename name="**/openide/resources/propertysheet/customize.gif" />
     </or>
   </selector>
   <selector id="openide.text" >
@@ -273,6 +267,7 @@ Microsystems, Inc. All Rights Reserved.
         </or>
         
         <none>
+          <selector refid="openide.compat" />
           <selector refid="openide.actions" />
           <selector refid="openide.nodes" />
         </none>
@@ -327,6 +322,7 @@ Microsystems, Inc. All Rights Reserved.
         <filename name="**/openide/resources/columnsSortedDesc.gif" />
       </or>
       <none>
+        <selector refid="openide.compat" />
         <selector refid="openide.actions" />
         <selector refid="openide.nodes" />
       </none>
@@ -375,45 +371,35 @@ Microsystems, Inc. All Rights Reserved.
     </ant>
   </target>
   <!-- Build whole openide.jar from separate libraries -->
-  <target name="jars-from-libs" depends="libs,vers-prep,compile-compat,loaders_32143-compat" description="Create JAR files from copied directories." unless="no-openide.jar">
+  <target name="jars-from-libs" depends="libs,vers-prep,loaders_32143-compat" description="Create JAR files from copied directories." unless="no-openide.jar">
     <property name="openide.jar" value="netbeans/lib/openide.jar" />
     <mkdir dir="netbeans/lib"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <jar jarfile="${openide.jar}" manifest="manifest-subst.mf" compress="false">
+    <jar jarfile="${openide.jar}" manifest="manifest-subst.mf" compress="false" duplicate="fail" >
       
       <fileset dir="actions/src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
       <fileset dir="awt/src" excludesfile="../nbbuild/standard-jar-excludes.txt">
-        <!-- Bogus version, already supplied by windows/src/: -->
+        <!-- Bogus version, already supplied by openide-compat -->
         <exclude name="org/openide/awt/HtmlBrowser$BrowserComponent.class"/>
         <!-- To find others, use: zipinfo netbeans/lib/openide.jar|fgrep stor|cut -c21-29,54-|sort -k2|uniq|uniq -d -s9 -->
       </fileset>
-      <fileset dir="dialogs/src" excludesfile="../nbbuild/standard-jar-excludes.txt">
-         <!-- will be provided by openide-windows -->
-         <exclude name="org/openide/awt/HtmlBrowser$$BrowserComponent.class" />
-      </fileset>
+      <fileset dir="dialogs/src" excludesfile="../nbbuild/standard-jar-excludes.txt" />
       <fileset dir="explorer/src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
       <fileset dir="fs/src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
       <fileset dir="nodes/src" excludesfile="../nbbuild/standard-jar-excludes.txt">
-         <!-- will be provided by openide-actions -->
+         <!-- will be provided by openide-compat -->
          <exclude name="org/openide/cookies/InstanceCookie$$Origin.class" />
       </fileset>
       <fileset dir="options/src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
       <fileset dir="text/src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-      <fileset dir="util/src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-      <fileset dir="modules/src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-      <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt" >
-        <include name="org/openide/resources/**" />
-        <include name="META-INF/**" />
+      <fileset dir="util/src" excludesfile="../nbbuild/standard-jar-excludes.txt">
+         <!-- will be provided by openide-compat -->
+         <exclude name="org/openide/cookies/WeakListener.class" />
+         <exclude name="org/openide/cookies/WeakListener$$*.class" />
       </fileset>
+      <fileset dir="modules/src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
       <fileset dir="windows/src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
       <fileset dir="compat/src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-      
-      <!-- include also patches -->
-      <fileset dir="compat/src">
-           <!-- But include patch files -->
-           <include name="**/$$*$$Patch$$.class" />
-      </fileset>
-      
     </jar>
   </target>
   
@@ -432,7 +418,7 @@ Microsystems, Inc. All Rights Reserved.
     lib-util,
     lib-windows,
     lib-awt,
-    lib-lookup" />
+    lib-compat" />
     
   <target name="libs-clean" >
         <ant dir="awt" target="clean" />
@@ -493,6 +479,11 @@ Microsystems, Inc. All Rights Reserved.
   <target name="lib-windows" depends="lib-nodes" >
         <ant dir="windows" />
   </target>        
+  
+  <target name="lib-compat" depends="lib-awt,lib-util,lib-nodes,lib-windows,lib-text,lib-explorer,lib-fs,lib-actions" >
+        <ant dir="compat" />
+  </target>        
+  
   
   <!-- JST-PENDING: Separate lookup as well and remove WeakSet, ErrorManager
         logging

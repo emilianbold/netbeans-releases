@@ -538,7 +538,7 @@ public class NewTemplateAction extends NodeAction {
          */
         public RootChildren () {
             TopComponent.Registry reg = WindowManager.getDefault ().getRegistry ();
-            reg.addPropertyChangeListener (org.openide.util.WeakListener.propertyChange (this, reg));
+            reg.addPropertyChangeListener (org.openide.util.WeakListeners.propertyChange (this, reg));
             
             updateWizard (getWizard (null));
         }

@@ -35,7 +35,6 @@ import org.openide.loaders.*;
 import org.openide.nodes.NodeAdapter;
 import org.openide.windows.*;
 import org.openide.util.Task;
-import org.openide.util.WeakListener;
 import org.openide.util.actions.SystemAction;
 import org.openide.nodes.NodeListener;
 import org.openide.nodes.Node;

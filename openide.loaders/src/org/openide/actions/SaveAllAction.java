@@ -21,7 +21,6 @@ import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.WeakListener;
 import org.openide.util.actions.CallableSystemAction;
 
 /** Save all open objects.
@@ -47,7 +46,7 @@ public final class SaveAllAction extends CallableSystemAction {
         // listen to the changes
         chl = new ModifiedListL();
         DataObject.getRegistry().addChangeListener(
-            (ChangeListener)(WeakListener.change(chl, DataObject.getRegistry ())));
+            (ChangeListener)(org.openide.util.WeakListeners.change(chl, DataObject.getRegistry ())));
     }
 
     public String getName() {

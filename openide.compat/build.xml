@@ -23,16 +23,23 @@ Microsystems, Inc. All Rights Reserved.
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbroot}/nbbuild/nbantext.jar"/>
   <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nbroot}/nbbuild/nbantext.jar"/>
   
+  <path id="classpath" >
+    <pathelement location="${nbroot}/openide/util/netbeans/lib/openide-util.jar" />
+    <pathelement location="${nbroot}/openide/fs/netbeans/lib/openide-fs.jar" />
+    <pathelement location="${nbroot}/openide/nodes/netbeans/lib/openide-nodes.jar" />
+    <pathelement location="${nbroot}/openide/windows/netbeans/lib/openide-windows.jar" />
+    <pathelement location="${nbroot}/openide/explorer/netbeans/lib/openide-explorer.jar" />
+    <pathelement location="${nbroot}/openide/dialogs/netbeans/lib/openide-dialogs.jar" />
+    <pathelement location="${nbroot}/openide/actions/netbeans/lib/openide-actions.jar" />
+    <pathelement location="${nbroot}/openide/awt/netbeans/lib/openide-awt.jar" />
+  </path>
+  
   <target name="compile" >
-    <path id="classpath" >
-      <pathelement location="${nbroot}/openide/util/netbeans/lib/openide-util.jar" />
-      <pathelement location="${nbroot}/openide/fs/netbeans/lib/openide-fs.jar" />
-      <pathelement location="${nbroot}/openide/nodes/netbeans/lib/openide-nodes.jar" />
-    </path>
-    <javac sourcepath="" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
-      <src path="src" />
-      <classpath refid="classpath" />
-    </javac>
+    <ant dir="${nbroot}/openide" target="do-lib-javac" inheritRefs="true" >
+      <property name="include" value="**/*$$*.java" />
+      <property name="localdir" location="src" />
+      <property name="selector" value="openide.compat" />
+    </ant>
   </target>
   
   <target name="jars" depends="compile">
@@ -73,6 +80,48 @@ Microsystems, Inc. All Rights Reserved.
     </makenbm>
     -->
   </target>
+  
+    <target name="openide-compat" 
+        description="Regenerates different classes from openide to make them compatible with pre openide-loaders.jar version. Shall be just a temporary solution" 
+        depends="compile"
+    >
+        <taskdef name="preprocess" classname="org.netbeans.nbbuild.Preprocess" classpath="${nbroot}/nbbuild/nbantext.jar"/>
+        
+        <mkdir dir="gensrc" />
+        <preprocess srcdir="../src" destdir="gensrc" >
+            <switch name="compat.loaders_32143" on="true" />
+
+            <!-- JST-PENDING: move WeakListener into openide-deprecated and
+              re-add operationListener method there
+              -->
+            <include name="org/openide/util/WeakListener.java" />
+        </preprocess>
+        
+        <javac 
+            srcdir="gensrc" destdir="gensrc" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}"
+            classpath="src"
+        >
+          <classpath>
+                <pathelement location="${nbroot}/openide/util/netbeans/lib/openide-util.jar"/>
+                <pathelement location="${nbroot}/openide/nodes/netbeans/lib/openide-nodes.jar"/>
+                <pathelement location="${nbroot}/openide/windows/netbeans/lib/openide-windows.jar"/>
+                <pathelement location="${nbroot}/openide/dialogs/netbeans/lib/openide-dialogs.jar"/>
+                <pathelement location="${nbroot}/openide/text/netbeans/lib/openide-text.jar"/>
+                <pathelement location="${nbroot}/openide/options/netbeans/lib/openide-options.jar"/>
+                <pathelement location="${nbroot}/openide/explorer/netbeans/lib/openide-explorer.jar"/>
+                <pathelement location="${nbroot}/openide/fs/netbeans/lib/openide-fs.jar"/>
+                <pathelement location="${nbroot}/openide/loaders/netbeans/lib/openide-loaders.jar"/>
+           </classpath>
+        </javac>
+
+        <!-- overrides the original versions in openide.jar -->        
+        <copy todir="src">
+            <fileset dir="gensrc" >
+                <include name="**/*class" />
+            </fileset>
+        </copy>
+    </target>
+  
 
   <target name="clean">
     <delete >

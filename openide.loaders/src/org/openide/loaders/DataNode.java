@@ -62,7 +62,7 @@ public class DataNode extends AbstractNode {
 
         propL = new PropL ();
 
-        obj.addPropertyChangeListener (org.openide.util.WeakListener.propertyChange (propL, obj));
+        obj.addPropertyChangeListener (org.openide.util.WeakListeners.propertyChange (propL, obj));
 
         super.setName (obj.getName ());
         updateDisplayName ();
