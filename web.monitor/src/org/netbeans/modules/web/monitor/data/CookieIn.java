@@ -29,17 +29,19 @@ public class CookieIn extends BaseBean {
     }
 
     public CookieIn(Cookie cookie) {
+	super(comparators, new org.netbeans.modules.schema2beans.Version(1, 0, 5));
 	this.setAttributeValue("name", cookie.getName());//NOI18N
 	this.setAttributeValue("value", cookie.getValue());//NOI18N
     }
 
     public CookieIn(String name, String value) {
+	super(comparators, new org.netbeans.modules.schema2beans.Version(1, 0, 5));
 	this.setAttributeValue("name", name);//NOI18N
 	this.setAttributeValue("value", value);//NOI18N
     }
 
     public CookieIn(int options) {
-	super(CookieIn.comparators, new org.netbeans.modules.schema2beans.Version(1, 0, 6));
+	super(comparators, new org.netbeans.modules.schema2beans.Version(1, 0, 6));
 	// Properties (see root bean comments for the bean graph)
 	this.initialize(options);
     }

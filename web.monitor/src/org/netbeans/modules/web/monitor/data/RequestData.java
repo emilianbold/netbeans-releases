@@ -42,7 +42,7 @@ public class RequestData extends BaseBean {
 
 
     public RequestData(Node doc, int options) {
-	this(Common.NO_DEFAULT_VALUES);
+	super(RequestData.comparators, new org.netbeans.modules.schema2beans.Version(1, 0, 6));
 	if (doc == null) {
 	    doc = GraphManager.createRootElementNode(REQUESTDATA); 
 		

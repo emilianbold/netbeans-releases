@@ -30,6 +30,8 @@ public class CookieOut extends BaseBean
     }
 
     public CookieOut(Cookie cookie) {
+	super(CookieOut.comparators, new
+	org.netbeans.modules.schema2beans.Version(1, 0, 5));
 
 	// Note - the XML beans library does not treat NMTOKENS as
 	// special - they have to be set as strings! 

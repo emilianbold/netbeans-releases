@@ -31,7 +31,7 @@ public class CookiesData extends BaseBean {
     }
 
     public CookiesData(int options) {
-	super(CookiesData.comparators, new org.netbeans.modules.schema2beans.Version(1, 0, 6));
+	super(RequestData.comparators, new org.netbeans.modules.schema2beans.Version(1, 0, 6));
 	// Properties (see root bean comments for the bean graph)
 	this.createProperty("CookieIn", COOKIEIN, // NOI18N
 			    Common.TYPE_0_N | Common.TYPE_BEAN | Common.TYPE_KEY, 
