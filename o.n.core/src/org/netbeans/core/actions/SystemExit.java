@@ -34,7 +34,7 @@ import com.netbeans.ide.loaders.DataObject;
 import com.netbeans.ide.TopManager;
 import com.netbeans.ide.NotifyDescriptor;
 import com.netbeans.developer.impl.CoronaDialog;
-import com.netbeans.ide.awt.ButtonBar;
+import com.netbeans.developer.impl.awt.ButtonBar;
 import com.netbeans.ide.util.HelpCtx;
 import com.netbeans.ide.util.actions.ActionPerformer;
 import com.netbeans.ide.util.actions.CallableSystemAction;
@@ -273,6 +273,7 @@ public class SystemExit extends CallableSystemAction {
 
 /*
  * Log
+ *  8    Gandalf   1.7         3/9/99   Jaroslav Tulach ButtonBar  
  *  7    Gandalf   1.6         3/5/99   Ales Novak      
  *  6    Gandalf   1.5         1/20/99  Jaroslav Tulach 
  *  5    Gandalf   1.4         1/14/99  David Simonek   
