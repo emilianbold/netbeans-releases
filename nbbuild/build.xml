@@ -62,7 +62,7 @@ workspaceswitcher
       <config name="stable" modules="ant,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,jarpackager,java,javadoc,objectbrowser,projects,properties,text,usersguide,utilities,vcscore,vcscvs,web"/>
       <config name="stable-with-apisupport" modules="ant,apisupport,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,jarpackager,java,javadoc,objectbrowser,projects,properties,text,usersguide,utilities,vcscore,vcscvs,web"/>
       <config name="ide-hacker" modules="ant,apisupport,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,i18n,icebrowser,image,jarpackager,java,javadoc,objectbrowser,projects,properties,serialversion,sysprops,text,utilities,vcscore,vcscvs"/>
-      <config name="bloated" modules="ant,apisupport,applet,autoupdate,beans,clazz,crosscompile,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,java,javadoc,javaembeddedserver,makefile,multicompile,objectbrowser,projects,properties,remotefs,serialversion,sysprops,text,usersguide,utilities,vcscore,vcscvs,web"/>
+      <config name="bloated" modules="ant,apisupport,applet,autoupdate,beans,clazz,crosscompile,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,java,javadoc,javaembeddedserver,jini,makefile,multicompile,objectbrowser,projects,properties,remotefs,serialversion,sysprops,text,usersguide,utilities,vcscore,vcscvs,web"/>
       <config name="sandwich" modules="apisupport,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,java,javadoc,objectbrowser,properties,text,utilities,vcscore,vcscvs,web"/>
       <!-- You are on your own for getting the binaries for some of these: -->
       <config name="bloated-plus-extrabins" modules="ant,apisupport,applet,autoupdate,beans,clazz,crosscompile,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,java,javadoc,javaembeddedserver,jini,makefile,multicompile,objectbrowser,projects,properties,remotefs,scripting,serialversion,sysprops,text,usersguide,utilities,vcscore,vcscvs,web"/>
@@ -178,6 +178,10 @@ workspaceswitcher
   <target name="all-javaembeddedserver" depends="all-openide,all-jarpackager,all-form">
     <echo message="Building module javaembeddedserver..."/>
     <ant dir="../javaembeddedserver" target="netbeans"/>
+  </target>
+  <target name="all-jini" depends="all-openide,all-httpserver">
+    <echo message="Building module jini..."/>
+    <ant dir="../jini" target="netbeans"/>
   </target>
   <target name="all-makefile" depends="all-openide">
     <echo message="Building module makefile..."/>
@@ -391,6 +395,8 @@ the nbbuild/firststart/bin/ directory.
     <ant dir="../javadoc" target="nbm"/>
     <echo message="Making NBM for module javaembeddedserver..."/>
     <ant dir="../javaembeddedserver" target="nbm"/>
+    <echo message="Making NBM for module jini..."/>
+    <ant dir="../jini" target="nbm"/>
     <echo message="Making NBM for module makefile..."/>
     <ant dir="../makefile" target="nbm"/>
     <echo message="Making NBM for module multicompile..."/>
@@ -461,6 +467,7 @@ the nbbuild/firststart/bin/ directory.
       <group name="Experimental">
         <nbm file="../ant/ant.nbm"/>
         <nbm file="../javaembeddedserver/javaembeddedserver.nbm"/>
+        <nbm file="../jini/jini.nbm"/>
         <nbm file="../multicompile/multicompile.nbm"/>
         <nbm file="../remotefs/remotefs.nbm"/>
         <!-- Not for now (binary redistribution issues):
