@@ -93,7 +93,9 @@ public class JavadocRegistry {
                     
                 for ( int j = 0; j < jdRoots.length; j++ ) {
                     //System.out.println( "  JDR " + jdRoots[j] );
+                    //System.out.println("Looking for root of: "+jdRoots[j]);
                     FileObject fo = getIndexFolder(URLMapper.findFileObject(jdRoots[j]));
+                    //System.out.println("Found: "+fo);
                     if (fo != null) {                        
                         roots.add(fo);
                     }
@@ -113,7 +115,7 @@ public class JavadocRegistry {
     }
     
     private static FileObject findIndexFolder (FileObject fo, int depth) {
-        if (depth == MAX_DEPTH) {
+        if (depth > MAX_DEPTH) {
             return null;
         }
         if (fo.getFileObject("index-files",null)!=null || fo.getFileObject("index-all.html",null)!=null) {  //NOI18N
