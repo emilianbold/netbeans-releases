@@ -334,6 +334,10 @@ public abstract class FormProperty extends Node.Property {
     public boolean supportsDefaultValue () {
         return false;
     }
+    
+    public boolean isDefaultValue() {
+        return supportsDefaultValue() ? !isChanged() : true;
+    }
 
     /** Returns a default value of this property.
      * If any subclass provides default value, it should override this
