@@ -104,6 +104,9 @@ public class TagLibParseSupport implements Node.Cookie {
     }
 
     private class ParsingRunnable implements Runnable {
+        public ParsingRunnable () {
+        }
+        
         public void run() {
             try {
                 try {
