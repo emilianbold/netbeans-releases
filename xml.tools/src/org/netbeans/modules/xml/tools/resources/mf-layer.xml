@@ -16,49 +16,46 @@ Microsystems, Inc. All Rights Reserved.
 
 <filesystem>
 
-  <!-- register services with Lookup -->
-  
-  <folder name="Services">
-    <folder name="Hidden">
-      <file name="org-netbeans-modules-xml-tools-actions-CheckAction.instance" />
-      <file name="org-netbeans-modules-xml-tools-actions-CheckDTDAction.instance" />
-      <file name="org-netbeans-modules-xml-tools-actions-ValidateAction.instance" />
+    <!-- register services with Lookup -->
+    <folder name="Services">
+        <folder name="Hidden">
+            <file name="org-netbeans-modules-xml-tools-actions-CheckAction.instance" />
+            <file name="org-netbeans-modules-xml-tools-actions-CheckDTDAction.instance" />
+            <file name="org-netbeans-modules-xml-tools-actions-ValidateAction.instance" />
 
-      <file name="org-netbeans-modules-xml-tools-doclet-DocletAction.instance" />
+            <file name="org-netbeans-modules-xml-tools-doclet-DocletAction.instance" />
 
-      <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateSupportFactory$Creator.instance" />
-      <file name="org-netbeans-modules-xml-tools-generator-DTDGenerateSupportFactory$Creator.instance" />
+            <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateSupportFactory$Creator.instance" />
+            <file name="org-netbeans-modules-xml-tools-generator-DTDGenerateSupportFactory$Creator.instance" />
 
-      <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDTDAction.instance" />
-      <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDocumentHandlerAction.instance" />
-      <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDOMScannerAction.instance" />
-    </folder>
-  </folder>
-
-  <!-- register actions to action pool -->
-  
-  <folder name="Actions">
-    <folder name="XML">
-      <file name="org-netbeans-modules-xml-tools-actions-CheckAction.instance" />
-      <file name="org-netbeans-modules-xml-tools-actions-CheckDTDAction.instance" />
-      <file name="org-netbeans-modules-xml-tools-actions-ValidateAction.instance" />
-
-      <file name="org-netbeans-modules-xml-tools-doclet-DocletAction.instance" />
-
-      <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDTDAction.instance" />
-      <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDocumentHandlerAction.instance" />
-      <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDOMScannerAction.instance" />
-    </folder>
-  </folder>
-
-  <!-- register entities with system entity resolver -->
-  
-  <folder name="xml">
-    <folder name="entities">
-        <folder name="XML_Module">
-            <file name="DTD_SAX_Bindings_1_0" url="nbres:/org/netbeans/modules/xml/tools/generator/sax-bindings.dtd"/>
+            <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDTDAction.instance" />
+            <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDocumentHandlerAction.instance" />
+            <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDOMScannerAction.instance" />
         </folder>
     </folder>
-  </folder>
+
+    <!-- register actions to action pool -->
+    <folder name="Actions">
+        <folder name="XML">
+            <file name="org-netbeans-modules-xml-tools-actions-CheckAction.instance" />
+            <file name="org-netbeans-modules-xml-tools-actions-CheckDTDAction.instance" />
+            <file name="org-netbeans-modules-xml-tools-actions-ValidateAction.instance" />
+
+            <file name="org-netbeans-modules-xml-tools-doclet-DocletAction.instance" />
+
+            <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDTDAction.instance" />
+            <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDocumentHandlerAction.instance" />
+            <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDOMScannerAction.instance" />
+        </folder>
+    </folder>
+
+    <!-- register entities with system entity resolver -->
+    <folder name="xml">
+        <folder name="entities">
+            <folder name="XML_Module">
+                <file name="DTD_SAX_Bindings_1_0" url="nbres:/org/netbeans/modules/xml/tools/generator/sax-bindings.dtd"/>
+            </folder>
+        </folder>
+    </folder>
 
 </filesystem>

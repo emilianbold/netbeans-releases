@@ -14,34 +14,33 @@ Microsystems, Inc. All Rights Reserved.
 
 <!ELEMENT XCatalog ANY>
 <!ATTLIST XCatalog
-  Version (0.1|0.2) "0.2"
-  >
+    Version (0.1|0.2) "0.2"
+>
 
 <!ELEMENT Map EMPTY>
 <!ATTLIST Map
-  PublicID CDATA #REQUIRED
-  HRef     CDATA #REQUIRED
-  >
+    PublicID CDATA #REQUIRED
+    HRef     CDATA #REQUIRED
+>
 
 <!ELEMENT Remap EMPTY>
 <!ATTLIST Remap
-  SystemID CDATA #REQUIRED
-  HRef     CDATA #REQUIRED
-  >
+    SystemID CDATA #REQUIRED
+    HRef     CDATA #REQUIRED
+>
 
 <!ELEMENT Delegate EMPTY>
 <!ATTLIST Delegate
-  PublicID CDATA #REQUIRED
-  HRef     CDATA #REQUIRED
-  >
+    PublicID CDATA #REQUIRED
+    HRef     CDATA #REQUIRED
+>
 
 <!ELEMENT Extend EMPTY>
 <!ATTLIST Extend
-  HRef CDATA #REQUIRED
-  >
+    HRef CDATA #REQUIRED
+>
 
 <!ELEMENT Base EMPTY>
 <!ATTLIST Base
-  HRef CDATA #REQUIRED
-  >
-
+    HRef CDATA #REQUIRED
+>

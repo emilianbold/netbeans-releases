@@ -14,124 +14,124 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="xml" default="netbeans" basedir=".">
 
-  <property name="xml_root" location=".."/>
-  <property name="tax_root" location="../tax"/>
-  <property name="core_root" location="../core"/>
+    <property name="xml_root" location=".."/>
+    <property name="tax_root" location="../tax"/>
+    <property name="core_root" location="../core"/>
 
-  <property name="nb_root" location="${xml_root}/.."/>
-  <property name="bin_root" location="${nb_root}/../nbextra"/>
-  <property name="nbext_root" location="${nb_root}/nbbuild"/>
+    <property name="nb_root" location="${xml_root}/.."/>
+    <property name="bin_root" location="${nb_root}/../nbextra"/>
+    <property name="nbext_root" location="${nb_root}/nbbuild"/>
 
-  <property name="license.file" location="${nb_root}/nbbuild/standard-nbm-license.txt"/>
-  <property name="homepage.base" value="netbeans.org"/>
-  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
-  <property name="storepass" value="?"/>
+    <property name="license.file" location="${nb_root}/nbbuild/standard-nbm-license.txt"/>
+    <property name="homepage.base" value="netbeans.org"/>
+    <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
+    <property name="storepass" value="?"/>
 
-  <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="${nbext_root}/nbantext.jar"/>
-  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext_root}/nbantext.jar"/>
-  <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nbext_root}/nbantext.jar"/>
-  <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext_root}/nbantext.jar"/>
-  <taskdef name="genjavadoc" classname="org.netbeans.nbbuild.GenerateJavadoc" classpath="${nbext_root}/nbantext.jar"/>
-
-
-  <target name="init">
-    <tstamp/>
-    <property name="buildnumber" value="${DSTAMP}-${TSTAMP}"/>
-    <echo message="buildnumber = ${buildnumber}"/>
-  </target>
-
-  <target name="xml-core.compile">
-    <ant dir="${core_root}" target="compile"/>
-  </target>
-
-  <target name="compile" depends="xml-core.compile">
-    <echo message="Compiling XML text-edit module classes..."/>
-    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-      <classpath>        
-	<pathelement location="${nb_root}/openide/openide-13javac-workaround.jar"/>
-	<fileset dir="${nb_root}/openide/netbeans/lib">
-	  <include name="openide*.jar"/>
-	</fileset>
-	<pathelement location="${nb_root}/editor/netbeans/modules/ext/nb-editor.jar"/>
-	<pathelement location="${nb_root}/editor/netbeans/modules/editor.jar"/>
-        <pathelement location="${tax_root}/libsrc/"/>
-        <pathelement location="${core_root}/src/"/>
-      </classpath>
-    </javac>
-  </target>
-
-  <target name="jars" depends="init,compile">
-    <mkdir dir="netbeans/modules"/>
-   
-    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <locjar jarfile="netbeans/modules/xml-text-edit.jar"
-            manifest="manifest-subst.mf"
-	    compress="false">
-      <fileset dir="src" excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt"/>
-      <locale name="ja"/>
-    </locjar>    
-  </target>
-
-  <target name="release">
-  </target>
-
-  <target name="javahelp">
-  </target>
-
-  <target name="netbeans" depends="jars,release,javahelp">
-    <copy todir="../netbeans">
-      <fileset dir="netbeans"/>
-    </copy>
-    <genlist targetname="nbm" outputfiledir="${nbext_root}/netbeans"/>
-  </target>
-
-  <target name="nbm" depends="netbeans">
-    <delete dir="Info"/>
-    <makenbm file="../xml-text-edit.nbm"
-             topdir="."
-             module="netbeans/modules/xml-text-edit.jar"
-	     homepage="http://${homepage.base}/xml-text-edit.html"
-	     distribution="${dist.base}/xml-text-edit.nbm">
-      <license file="${license.file}"/>
-      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-    </makenbm>
-  </target>
-
-  <target name="clean">
-    <delete>
-      <fileset dir="src">
-        <include name="**/*.class"/>
-      </fileset>
-    </delete>
-    <delete file="manifest-subst.mf"/>
-    <delete file="../xml-text-edit.nbm"/>
-    <delete dir="netbeans"/>
-    <delete dir="Info"/>
-  </target>
-
-  <target name="all" depends="clean,nbm" />
-
-  <target name="javadoc">
-    <delete dir="javadoc" />
-    <mkdir dir="javadoc" />
-    <genjavadoc destdir="javadoc" modules="openide,xml/text-edit">
-      <topdir path="${nb_root}" />
-    </genjavadoc>
-  </target>
-
-  
-  <!-- This target compile all XML sub-modules. -->
-  <target name="all-xml">
-    <echo message="Compile all XML sub-modules ..."/>
-    <ant dir=".." target="clean"/>
-    <ant dir=".." target="compile"/>
-  </target>
+    <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="${nbext_root}/nbantext.jar"/>
+    <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext_root}/nbantext.jar"/>
+    <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nbext_root}/nbantext.jar"/>
+    <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext_root}/nbantext.jar"/>
+    <taskdef name="genjavadoc" classname="org.netbeans.nbbuild.GenerateJavadoc" classpath="${nbext_root}/nbantext.jar"/>
 
 
-  <!-- Run tests. -->
-  <target name="test">
-    <ant dir="testbase" target="run"/>
-  </target>
+    <target name="init">
+        <tstamp/>
+        <property name="buildnumber" value="${DSTAMP}-${TSTAMP}"/>
+        <echo message="buildnumber = ${buildnumber}"/>
+    </target>
+
+    <target name="xml-core.compile">
+        <ant dir="${core_root}" target="compile"/>
+    </target>
+
+    <target name="compile" depends="xml-core.compile">
+        <echo message="Compiling XML text-edit module classes..."/>
+        <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+            <classpath>        
+                <pathelement location="${nb_root}/openide/openide-13javac-workaround.jar"/>
+                <fileset dir="${nb_root}/openide/netbeans/lib">
+                    <include name="openide*.jar"/>
+                </fileset>
+                <pathelement location="${nb_root}/editor/netbeans/modules/ext/nb-editor.jar"/>
+                <pathelement location="${nb_root}/editor/netbeans/modules/editor.jar"/>
+                <pathelement location="${tax_root}/libsrc/"/>
+                <pathelement location="${core_root}/src/"/>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="jars" depends="init,compile">
+        <mkdir dir="netbeans/modules"/>
+
+        <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
+        <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
+        <locjar jarfile="netbeans/modules/xml-text-edit.jar"
+                manifest="manifest-subst.mf"
+                compress="false">
+            <fileset dir="src" excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt"/>
+            <locale name="ja"/>
+        </locjar>    
+    </target>
+
+    <target name="release">
+    </target>
+
+    <target name="javahelp">
+    </target>
+
+    <target name="netbeans" depends="jars,release,javahelp">
+        <copy todir="../netbeans">
+            <fileset dir="netbeans"/>
+        </copy>
+        <genlist targetname="nbm" outputfiledir="${nbext_root}/netbeans"/>
+    </target>
+
+    <target name="nbm" depends="netbeans">
+        <delete dir="Info"/>
+        <makenbm file="../xml-text-edit.nbm"
+                 topdir="."
+                 module="netbeans/modules/xml-text-edit.jar"
+                 homepage="http://${homepage.base}/xml-text-edit.html"
+                 distribution="${dist.base}/xml-text-edit.nbm">
+            <license file="${license.file}"/>
+            <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
+        </makenbm>
+    </target>
+
+    <target name="clean">
+        <delete>
+            <fileset dir="src">
+                <include name="**/*.class"/>
+            </fileset>
+        </delete>
+        <delete file="manifest-subst.mf"/>
+        <delete file="../xml-text-edit.nbm"/>
+        <delete dir="netbeans"/>
+        <delete dir="Info"/>
+    </target>
+
+    <target name="all" depends="clean,nbm"/>
+
+    <target name="javadoc">
+        <delete dir="javadoc"/>
+        <mkdir dir="javadoc"/>
+        <genjavadoc destdir="javadoc" modules="openide,xml/text-edit">
+            <topdir path="${nb_root}"/>
+        </genjavadoc>
+    </target>
+
+
+    <!-- This target compile all XML sub-modules. -->
+    <target name="all-xml">
+        <echo message="Compile all XML sub-modules ..."/>
+        <ant dir=".." target="clean"/>
+        <ant dir=".." target="compile"/>
+    </target>
+
+
+    <!-- Run tests. -->
+    <target name="test">
+        <ant dir="testbase" target="run"/>
+    </target>
 
 </project>
