@@ -93,13 +93,30 @@ public class PrintSummary extends Task {
                 "  Errors: "+testRun.getTestsError());
                 log(" Total: "+testRun.getTestsTotal()+
                 "  Success Rate: "+formattedRate);
-                // this is JDK 1.4 only :-(
+                log("");
+                boolean anyUnexpectedFailure = false;
+                // check whether there were any unexpectedFailures (e.g. suites not finished, ...)
+                if (testRun.xmlel_TestBag != null) {
+                    for (int i = 0 ; i < testRun.xmlel_TestBag.length; i++) {
+                        TestBag currentTestBag = testRun.xmlel_TestBag[i];
+                        String unexpectedMessage = currentTestBag.xmlat_unexpectedFailure;
+                        if (unexpectedMessage != null) {
+                            // there was some problem
+                            anyUnexpectedFailure = true;
+                            log("TestBag '"+currentTestBag.xmlat_name+"' in module "
+                                +currentTestBag.xmlat_module
+                                +" has encountered an unexpected failure :");
+                            log("  "+unexpectedMessage);
+                        }
+                    }
+                }
+                 
                 File reportIndex = new File(resultsDir, PEConstants.INDEX_HTML_FILE);
                 log("");
-                log(" Report URL: "+reportIndex.toURI().toString());
+                log(" Report URL: "+reportIndex.toURI().toString());               
                 
-                if (failOnFailure()) {                    
-                    if (successRate < 1.0) {
+                if (failOnFailure()) {                   
+                    if ((successRate < 1.0) | (anyUnexpectedFailure)) {
                         throw new BuildException("Some of the tests failed or there were some errors");
                     }
                 }
