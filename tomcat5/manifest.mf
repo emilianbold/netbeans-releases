@@ -3,6 +3,6 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/tomcat/tomcat5/Bundle.pro
 OpenIDE-Module-Layer: org/netbeans/modules/tomcat/tomcat5/resources/layer.xml
 OpenIDE-Module-Specification-Version: 1.1
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
-OpenIDE-Module-Module-Dependencies: org.netbeans.modules.j2eetools/3, org.netbeans.modules.schema2beans/1, org.netbeans.modules.web.core/1
+OpenIDE-Module-Module-Dependencies: org.netbeans.modules.j2eeserver/3, org.netbeans.modules.schema2beans/1
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 2.23
 Class-Path: ext/jsr88javax.jar
