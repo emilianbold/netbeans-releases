@@ -32,12 +32,18 @@ import org.netbeans.modules.xml.catalog.impl.*;
 import org.netbeans.modules.xml.catalog.settings.CatalogSettings;
 
 /**
- * Node representing catalog root in runtime tab.
- * To be placed in manifest file as:
+ * Node representing catalog root in the Runtime tab. It retrieves all
+ * mounted catalogs from current project settings.
+ *
+ * To be registered in manifest file as:
  * <pre>
  * Name: org.netbeans.modules.xml.catalog.CatalogNode.class
- * OpenIDE-Module-Class: Node
+ * OpenIDE-Module-Class: Environment
  * </pre>
+ *
+ * <p><b>Implementation Note:</b>
+ * <p>The node has session lifetime but its model has project lifetime, so there
+ * is implemented a logic for model instance changing (see children).
  *
  * @author  Petr Kuzel
  * @version 1.0
@@ -91,7 +97,8 @@ public class CatalogRootNode extends AbstractNode {
             if (ae.getSource() == DialogDescriptor.OK_OPTION) {
                 
                 Object catalog = model.getCatalog();
-                CatalogSettings.getDefault().addCatalog((CatalogReader)catalog);
+                CatalogSettings mounted = CatalogSettings.getDefault();
+                mounted.addCatalog((CatalogReader)catalog);
                 
             }
             if (myDialog != null) {
@@ -126,24 +133,26 @@ public class CatalogRootNode extends AbstractNode {
      * Kids driven by CatalogSettings. Only one instance may be used
      * since redefined equals() method.
      */
-    public static class RootChildren extends Children.Keys implements Comparator, PropertyChangeListener {
+    private static class RootChildren extends Children.Keys implements Comparator, PropertyChangeListener {
         
         /** Contains CatalogReader instances. */
         private final TreeSet keys = new TreeSet(this);
-
+        
         /**
           * Create new keys, register itself as listener.
           */
-        public void addNotify() {
-            createKeys();                        
-            CatalogSettings.getDefault().addPropertyChangeListener(this);
+        public synchronized void addNotify() {            
+            CatalogSettings mounted = CatalogSettings.getDefault();
+            mounted.addPropertyChangeListener(this);
+            createKeys(mounted);                        
         }
 
         /**
           * Remove listener and keys.
           */
-        public void removeNotify() {
-            CatalogSettings.getDefault().removePropertyChangeListener(this);
+        public synchronized void removeNotify() {
+            CatalogSettings mounted = CatalogSettings.getDefault();
+            if (mounted != null) mounted.removePropertyChangeListener(this);
             keys.clear();
             setKeys(keys);
         }
@@ -163,18 +172,29 @@ public class CatalogRootNode extends AbstractNode {
           * The only instance (see equals) listens on ProvidersRegistry
           * for its state changes.
           */
-        public void propertyChange(PropertyChangeEvent e) {
+        public synchronized void propertyChange(PropertyChangeEvent e) {
             if (CatalogSettings.PROP_MOUNTED_CATALOGS.equals(e.getPropertyName())) {
-                createKeys();
+                createKeys((CatalogSettings)e.getSource());
+            } else if (CatalogSettings.PROP_PRJ_INSTANCE.equals(e.getPropertyName())) {
+                
+                //??? switch model instances it is an ugly hack
+                
+                CatalogSettings mounted = (CatalogSettings) e.getOldValue();
+                if (mounted != null) {
+                    mounted.removePropertyChangeListener(this);
+                }
+                mounted = (CatalogSettings) e.getNewValue();
+                mounted.addPropertyChangeListener(this);
+                createKeys(mounted);
             }
         }
         
         /** 
           * Creates new keys according to CatalogSettings.
           */
-        private void createKeys() {
+        private void createKeys(CatalogSettings mounted) {
             keys.clear();
-            Iterator it = CatalogSettings.getDefault().getCatalogs(new Class[] {CatalogReader.class});
+            Iterator it = mounted.getCatalogs(new Class[] {CatalogReader.class});
             while (it.hasNext()) {
                 keys.add(it.next());
             }                

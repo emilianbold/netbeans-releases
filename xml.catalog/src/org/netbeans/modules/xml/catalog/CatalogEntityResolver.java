@@ -51,7 +51,8 @@ public class CatalogEntityResolver implements ModuleEntityResolver {
         
         // try to use full featured entiry resolvers
         
-        it = CatalogSettings.getDefault().getCatalogs( new Class[] {EntityResolver.class});
+        CatalogSettings mounted = CatalogSettings.getDefault();
+        it = mounted.getCatalogs( new Class[] {EntityResolver.class});
 
         while (it.hasNext()) {
             EntityResolver next = (EntityResolver) it.next();
@@ -63,7 +64,7 @@ public class CatalogEntityResolver implements ModuleEntityResolver {
         
         if (result == null && publicId != null) {
             
-            it = CatalogSettings.getDefault().getCatalogs(new Class[] {CatalogReader.class});
+            it = mounted.getCatalogs(new Class[] {CatalogReader.class});
 
             while (it.hasNext()) {
                 CatalogReader next = (CatalogReader) it.next();

@@ -96,7 +96,8 @@ public class CatalogNode extends BeanNode implements Refreshable, PropertyChange
      * Remove itseld from CatalogSettings,
      */
     public void destroy() throws IOException {
-        CatalogSettings.getDefault().removeCatalog((CatalogReader)getBean());
+        CatalogSettings mounted = CatalogSettings.getDefault();
+        mounted.removeCatalog((CatalogReader)getBean());
         super.destroy();
     }
 
