@@ -624,7 +624,10 @@ nextRoot:   for (int i=0; i<files.length; i++) {
                     for (Iterator it = sourceFolders.iterator(); it.hasNext();) {
                         JavaProjectGenerator.SourceFolder sf = (JavaProjectGenerator.SourceFolder) it.next();
                         if (location.equals(sf.location)) {
-                            invalidRoots.add (sourceLoc);
+                            if ((isTests && !model.isTestSourceFolder(sf)) 
+                                ||  (!isTests && model.isTestSourceFolder(sf))) {
+                                invalidRoots.add (sourceLoc);
+                            }                            
                             continue nextRoot;
                         }                        
                     }                    
