@@ -47,8 +47,6 @@ import org.netbeans.modules.web.monitor.data.*;
 public class EditPanelCookies extends DataDisplay {
 
     private final static boolean debug = false;
-    private static final ResourceBundle msgs =
-	NbBundle.getBundle(TransactionView.class);
     
     private DisplayTable cookieTable = null;    
     private MonitorData monitorData = null;
@@ -87,7 +85,7 @@ public class EditPanelCookies extends DataDisplay {
 	this.removeAll();
 	
 	// Cookies
-	String msg = msgs.getString("MON_Cookies_4"); 
+	String msg = NbBundle.getBundle(EditPanelCookies.class).getString("MON_Cookies_4"); 
 	 
 	int gridy = -1;
 	int fullGridWidth = java.awt.GridBagConstraints.REMAINDER;
@@ -99,7 +97,7 @@ public class EditPanelCookies extends DataDisplay {
 			    topSpacerInsets,
 			    0, 0);
 
-	addGridBagComponent(this, createSortButtonLabel(msg, cookieTable, msgs.getString("MON_Cookies_Mnemonic").charAt(0), msgs.getString("ACS_MON_CookiesA11yDesc")), 0, ++gridy,
+	addGridBagComponent(this, createSortButtonLabel(msg, cookieTable, NbBundle.getBundle(EditPanelCookies.class).getString("MON_Cookies_Mnemonic").charAt(0), NbBundle.getBundle(EditPanelCookies.class).getString("ACS_MON_CookiesA11yDesc")), 0, ++gridy,
 			    1, 1, 0, 0, 
 			    java.awt.GridBagConstraints.WEST,
 			    java.awt.GridBagConstraints.NONE,
@@ -115,12 +113,12 @@ public class EditPanelCookies extends DataDisplay {
 			    tableInsets,
 			    0, 0);
 
-	newCookieB = new JButton(msgs.getString("MON_New_cookie"));
-        newCookieB.setMnemonic(msgs.getString("MON_New_cookie_Mnemonic").charAt(0));
-        newCookieB.setToolTipText(msgs.getString("ACS_MON_New_cookieA11yDesc"));
+	newCookieB = new JButton(NbBundle.getBundle(EditPanelCookies.class).getString("MON_New_cookie"));
+        newCookieB.setMnemonic(NbBundle.getBundle(EditPanelCookies.class).getString("MON_New_cookie_Mnemonic").charAt(0));
+        newCookieB.setToolTipText(NbBundle.getBundle(EditPanelCookies.class).getString("ACS_MON_New_cookieA11yDesc"));
 	newCookieB.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
-		    String title = msgs.getString("MON_New_cookie"); 
+		    String title = NbBundle.getBundle(EditPanelCookies.class).getString("MON_New_cookie"); 
 		    ParamEditor pe = new ParamEditor("", "", //NOI18N
 						     true, true, title);
 
@@ -141,9 +139,9 @@ public class EditPanelCookies extends DataDisplay {
 		    }
 		}});
 
-	deleteCookieB = new JButton(msgs.getString("MON_Delete_cookie"));
-        deleteCookieB.setMnemonic(msgs.getString("MON_Delete_cookie_Mnemonic").charAt(0));
-        deleteCookieB.setToolTipText(msgs.getString("MON_New_cookie_Mnemonic"));
+	deleteCookieB = new JButton(NbBundle.getBundle(EditPanelCookies.class).getString("MON_Delete_cookie"));
+        deleteCookieB.setMnemonic(NbBundle.getBundle(EditPanelCookies.class).getString("MON_Delete_cookie_Mnemonic").charAt(0));
+        deleteCookieB.setToolTipText(NbBundle.getBundle(EditPanelCookies.class).getString("MON_New_cookie_Mnemonic"));
 
 	deleteCookieB.addActionListener(new ActionListener() {
 
@@ -151,7 +149,7 @@ public class EditPanelCookies extends DataDisplay {
 
 		    int numRows = cookieTable.getRowCount();
 		    StringBuffer buf = new StringBuffer
-			(msgs.getString("MON_Confirm_Delete_Cookies")); 
+			(NbBundle.getBundle(EditPanelCookies.class).getString("MON_Confirm_Delete_Cookies")); 
 		    buf.append("\n"); // NOI18N
 
 		    for(int i=0; i<numRows; ++i) {
@@ -222,7 +220,7 @@ public class EditPanelCookies extends DataDisplay {
 	
 	NotifyDescriptor confirmDialog = 
 	    new NotifyDescriptor((Object)msg, 
-				 msgs.getString("MON_Confirmation_Required"),
+				 NbBundle.getBundle(EditPanelCookies.class).getString("MON_Confirmation_Required"),
 				 NotifyDescriptor.OK_CANCEL_OPTION,
 				 NotifyDescriptor.QUESTION_MESSAGE, 
 				 options,
@@ -241,8 +239,8 @@ public class EditPanelCookies extends DataDisplay {
 	Object[] options = { NotifyDescriptor.OK_OPTION };
 	
 	NotifyDescriptor errorDialog = 
-	    new NotifyDescriptor((Object)msgs.getString("MON_Bad_cookie"),
-				 msgs.getString("MON_Invalid_input"),
+	    new NotifyDescriptor((Object)NbBundle.getBundle(EditPanelCookies.class).getString("MON_Bad_cookie"),
+				 NbBundle.getBundle(EditPanelCookies.class).getString("MON_Invalid_input"),
 				 NotifyDescriptor.DEFAULT_OPTION,
 				 NotifyDescriptor.ERROR_MESSAGE, 
 				 options,
@@ -266,8 +264,8 @@ public class EditPanelCookies extends DataDisplay {
 	Param[] params = monitorData.getRequestData().getCookiesAsParams(); 
 	cookieTable = new DisplayTable(params, DisplayTable.COOKIES, true);
 
-        cookieTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_CookiesTableA11yName"));
-        cookieTable.setToolTipText(msgs.getString("ACS_MON_CookiesTableA11yDesc"));
+        cookieTable.getAccessibleContext().setAccessibleName(NbBundle.getBundle(EditPanelCookies.class).getString("ACS_MON_CookiesTableA11yName"));
+        cookieTable.setToolTipText(NbBundle.getBundle(EditPanelCookies.class).getString("ACS_MON_CookiesTableA11yDesc"));
 
 	ListSelectionModel selma = cookieTable.getSelectionModel();
 	selma.addListSelectionListener(new ListSelectionListener() {

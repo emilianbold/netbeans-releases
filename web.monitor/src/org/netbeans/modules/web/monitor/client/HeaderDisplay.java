@@ -43,9 +43,7 @@ import java.util.*;
 public class HeaderDisplay extends DataDisplay {
     
     private final static boolean debug = false;
-    private static final ResourceBundle msgs =
-	NbBundle.getBundle(TransactionView.class);
-    
+
     private DisplayTable dt = null; 
         
     public HeaderDisplay() {
@@ -80,14 +78,14 @@ public class HeaderDisplay extends DataDisplay {
 	DisplayTable headerTable = null;
 
 	if(params == null || params.length == 0) {
-	    msg = msgs.getString("MON_No_headers");
+	    msg = NbBundle.getBundle(HeaderDisplay.class).getString("MON_No_headers");
 	    hLabel = createDataLabel(msg);
 	} else {
-	    msg = msgs.getString("MON_HTTP_Headers");
+	    msg = NbBundle.getBundle(HeaderDisplay.class).getString("MON_HTTP_Headers");
 	    headerTable = new DisplayTable(params, true);
-            headerTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_HTTP_HeadersTableA11yName"));
-            headerTable.setToolTipText(msgs.getString("ACS_MON_HTTP_HeadersTableA11yDesc"));
-	    hLabel = createSortButtonLabel(msg, headerTable, msgs.getString("MON_HTTP_Headers_Mnemonic").charAt(0), msgs.getString("ACS_MON_HTTP_HeadersA11yDesc"));
+            headerTable.getAccessibleContext().setAccessibleName(NbBundle.getBundle(HeaderDisplay.class).getString("ACS_MON_HTTP_HeadersTableA11yName"));
+            headerTable.setToolTipText(NbBundle.getBundle(HeaderDisplay.class).getString("ACS_MON_HTTP_HeadersTableA11yDesc"));
+	    hLabel = createSortButtonLabel(msg, headerTable, NbBundle.getBundle(HeaderDisplay.class).getString("MON_HTTP_Headers_Mnemonic").charAt(0), NbBundle.getBundle(HeaderDisplay.class).getString("ACS_MON_HTTP_HeadersA11yDesc"));
 	}
 
 	addGridBagComponent(this, createTopSpacer(), 0, ++gridy,

@@ -37,26 +37,6 @@ import java.util.ResourceBundle;
 public class CookieDisplay extends DataDisplay {
     
     private final static boolean debug = false;
-    private static final ResourceBundle msgs =
-	NbBundle.getBundle(TransactionView.class);
-    
-    private static final String[] categoriesIn = { 
-	msgs.getString("MON_Name"),
-	msgs.getString("MON_Value"),
-    };
-
-
-    private static final String[] categoriesOut = { 
-	msgs.getString("MON_Name"),
-	msgs.getString("MON_Value"),
-	msgs.getString("MON_Domain"),
-	msgs.getString("MON_Path"),
-	msgs.getString("MON_Max_age"),
-	msgs.getString("MON_Version"),
-	msgs.getString("MON_Secure"),
-	msgs.getString("MON_Comment"),
-    };
-
 
     private DisplayTable dt = null; 
         
@@ -82,12 +62,12 @@ public class CookieDisplay extends DataDisplay {
 	String headerIn;
 	JLabel incomingLabel;
 	if(in == null || in.length == 0) {
-	    headerIn = msgs.getString("MON_No_incoming");
+	    headerIn = NbBundle.getBundle(CookieDisplay.class).getString("MON_No_incoming");
 	    incomingLabel = createDataLabel(headerIn);
 
 	} else {
-	    headerIn = msgs.getString("MON_Incoming_cookie");
-	    incomingLabel = createHeaderLabel(headerIn, msgs.getString("MON_Incoming_cookie_Mnemonic").charAt(0), msgs.getString("ACS_MON_Incoming_cookieA11yDesc"), null);
+	    headerIn = NbBundle.getBundle(CookieDisplay.class).getString("MON_Incoming_cookie");
+	    incomingLabel = createHeaderLabel(headerIn, NbBundle.getBundle(CookieDisplay.class).getString("MON_Incoming_cookie_Mnemonic").charAt(0), NbBundle.getBundle(CookieDisplay.class).getString("ACS_MON_Incoming_cookieA11yDesc"), null);
 	}
 
 	addGridBagComponent(this, createTopSpacer(), 0, ++gridy,
@@ -112,9 +92,15 @@ public class CookieDisplay extends DataDisplay {
 		    in[i].getAttributeValue("name"), //NOI18N
 		    in[i].getAttributeValue("value") //NOI18N
 		};
+
+		String[] categoriesIn = { 
+		    NbBundle.getBundle(CookieDisplay.class).getString("MON_Name"),
+		    NbBundle.getBundle(CookieDisplay.class).getString("MON_Value"),
+		};
+
 		DisplayTable dt = new DisplayTable(categoriesIn, data);
-                dt.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_Incoming_cookieTableA11yName"));
-                dt.setToolTipText(msgs.getString("ACS_MON_Incoming_cookieTableA11yDesc"));
+                dt.getAccessibleContext().setAccessibleName(NbBundle.getBundle(CookieDisplay.class).getString("ACS_MON_Incoming_cookieTableA11yName"));
+                dt.setToolTipText(NbBundle.getBundle(CookieDisplay.class).getString("ACS_MON_Incoming_cookieTableA11yDesc"));
                 incomingLabel.setLabelFor(dt);
 		addGridBagComponent(this, dt, 0, ++gridy,
 			    fullGridWidth, 1, tableWeightX, tableWeightY, 
@@ -128,11 +114,11 @@ public class CookieDisplay extends DataDisplay {
 	String headerOut;
 	JLabel outgoingLabel;
 	if(out == null || out.length == 0) {
-	    headerOut = msgs.getString("MON_No_outgoing");
+	    headerOut = NbBundle.getBundle(CookieDisplay.class).getString("MON_No_outgoing");
 	    outgoingLabel = createDataLabel(headerOut);
 	} else {
-	    headerOut = msgs.getString("MON_Outgoing_cookie");
-	    outgoingLabel = createHeaderLabel(headerOut, msgs.getString("MON_Outgoing_cookie_Mnemonic").charAt(0), msgs.getString("ACS_MON_Outgoing_cookieA11yDesc"), null);
+	    headerOut = NbBundle.getBundle(CookieDisplay.class).getString("MON_Outgoing_cookie");
+	    outgoingLabel = createHeaderLabel(headerOut, NbBundle.getBundle(CookieDisplay.class).getString("MON_Outgoing_cookie_Mnemonic").charAt(0), NbBundle.getBundle(CookieDisplay.class).getString("ACS_MON_Outgoing_cookieA11yDesc"), null);
 	}
 	addGridBagComponent(this, outgoingLabel, 0, ++gridy,
 			    fullGridWidth, 1, 0, 0, 
@@ -147,7 +133,7 @@ public class CookieDisplay extends DataDisplay {
 		String cookieMaxAge =
 		    out[i].getAttributeValue("maxAge"); //NOI18N
 		if(cookieMaxAge.equals("-1")) //NOI18N
-		    cookieMaxAge = msgs.getString("MON_this_session");
+		    cookieMaxAge = NbBundle.getBundle(CookieDisplay.class).getString("MON_this_session");
 		
 		String[] data = {
 		    out[i].getAttributeValue("name"),    //NOI18N
@@ -159,9 +145,21 @@ public class CookieDisplay extends DataDisplay {
 		    out[i].getAttributeValue("secure"),  //NOI18N
 		    out[i].getAttributeValue("comment")  //NOI18N
 		};
+
+		String[] categoriesOut = { 
+		    NbBundle.getBundle(CookieDisplay.class).getString("MON_Name"),
+		    NbBundle.getBundle(CookieDisplay.class).getString("MON_Value"),
+		    NbBundle.getBundle(CookieDisplay.class).getString("MON_Domain"),
+		    NbBundle.getBundle(CookieDisplay.class).getString("MON_Path"),
+		    NbBundle.getBundle(CookieDisplay.class).getString("MON_Max_age"),
+		    NbBundle.getBundle(CookieDisplay.class).getString("MON_Version"),
+		    NbBundle.getBundle(CookieDisplay.class).getString("MON_Secure"),
+		    NbBundle.getBundle(CookieDisplay.class).getString("MON_Comment"),
+		};
+
 		DisplayTable dt = new DisplayTable(categoriesOut, data);
-                dt.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_Outgoing_cookieTableA11yName"));
-                dt.setToolTipText(msgs.getString("ACS_MON_Outgoing_cookieTableA11yDesc"));
+                dt.getAccessibleContext().setAccessibleName(NbBundle.getBundle(CookieDisplay.class).getString("ACS_MON_Outgoing_cookieTableA11yName"));
+                dt.setToolTipText(NbBundle.getBundle(CookieDisplay.class).getString("ACS_MON_Outgoing_cookieTableA11yDesc"));
                 outgoingLabel.setLabelFor(dt);
 		addGridBagComponent(this, dt, 0, ++gridy,
 			    fullGridWidth, 1, tableWeightX, tableWeightY, 

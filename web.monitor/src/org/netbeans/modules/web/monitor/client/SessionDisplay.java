@@ -33,24 +33,6 @@ import java.util.*;
 public class SessionDisplay extends DataDisplay {
     
     private final static boolean debug = false;
-    private static final ResourceBundle msgs =
-	NbBundle.getBundle(TransactionView.class);
-    
-    private final static String[] props = { 
-		msgs.getString("MON_Session_ID"),
-		msgs.getString("MON_Created"),
-		msgs.getString("MON_Last_accessed"),
-		msgs.getString("MON_Max_inactive"),
-	    };
-
-    private final static String[] props2 = { 
-		msgs.getString("MON_Session_ID"),
-		msgs.getString("MON_Created"),
-		msgs.getString("MON_Last_accessed"),
-		msgs.getString("MON_Max_inactive_before"),
-		msgs.getString("MON_Max_inactive_after"),
-	    };
-
 
     public SessionDisplay() {
 	super();
@@ -84,7 +66,7 @@ public class SessionDisplay extends DataDisplay {
 
 	    addGridBagComponent(this, 
 				createDataLabel
-				(msgs.getString("MON_No_session")),
+				(NbBundle.getBundle(SessionDisplay.class).getString("MON_No_session")),
 				0, ++gridy,
 				fullGridWidth, 1, 0, 0, 
 				java.awt.GridBagConstraints.WEST,
@@ -116,8 +98,8 @@ public class SessionDisplay extends DataDisplay {
 	// We need to refer to this label below, don't use the other
 	// createHeader method.
         JLabel sessionHeaderLabel =
-	    createHeaderLabel(msgs.getString("MON_Session_24"));
-	sessionHeaderLabel.getAccessibleContext().setAccessibleDescription(msgs.getString("ACS_MON_Session_24A11yDesc"));
+	    createHeaderLabel(NbBundle.getBundle(SessionDisplay.class).getString("MON_Session_24"));
+	sessionHeaderLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SessionDisplay.class).getString("ACS_MON_Session_24A11yDesc"));
 	
 	addGridBagComponent(this, 
 			    sessionHeaderLabel, 
@@ -130,14 +112,14 @@ public class SessionDisplay extends DataDisplay {
 	
 	String msg;
 	if("true".equals(sd.getAttributeValue("before"))) {  //NOI18N
-	    msg = msgs.getString("MON_Session_existed");
+	    msg = NbBundle.getBundle(SessionDisplay.class).getString("MON_Session_existed");
 	    lastAccessed = 
 		sd.getSessionIn().getAttributeValue("lastAccessed");  //NOI18N
 	    maxInactiveBefore =
 		sd.getSessionIn().getAttributeValue("inactiveInterval");  //NOI18N
 	}
 	else {
-	    msg = msgs.getString("MON_Session_created");
+	    msg = NbBundle.getBundle(SessionDisplay.class).getString("MON_Session_created");
 	    lastAccessed = 
 		sd.getSessionOut().getAttributeValue("lastAccessed"); //NOI18N
 	}
@@ -154,7 +136,7 @@ public class SessionDisplay extends DataDisplay {
 
 
 	if("false".equals(sd.getAttributeValue("after"))) {  //NOI18N
-	    msg = msgs.getString("MON_Session_invalidated");
+	    msg = NbBundle.getBundle(SessionDisplay.class).getString("MON_Session_invalidated");
 	    addGridBagComponent(this, createDataLabel(msg), 0, ++gridy,
 				fullGridWidth, 1, 0, 0, 
 				java.awt.GridBagConstraints.WEST,
@@ -181,9 +163,9 @@ public class SessionDisplay extends DataDisplay {
 	    inactiveChanged = true;
     
 	// Add session properties header
-        JLabel sessionPropertiesLabel = createHeaderLabel(msgs.getString("MON_Session_properties"));
-        sessionPropertiesLabel.setDisplayedMnemonic(msgs.getString("MON_Session_properties_Mnemonic").charAt(0));
-        sessionPropertiesLabel.getAccessibleContext().setAccessibleDescription(msgs.getString("ACS_MON_Session_propertiesA11yDesc"));
+        JLabel sessionPropertiesLabel = createHeaderLabel(NbBundle.getBundle(SessionDisplay.class).getString("MON_Session_properties"));
+        sessionPropertiesLabel.setDisplayedMnemonic(NbBundle.getBundle(SessionDisplay.class).getString("MON_Session_properties_Mnemonic").charAt(0));
+        sessionPropertiesLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SessionDisplay.class).getString("ACS_MON_Session_propertiesA11yDesc"));
 	addGridBagComponent(this, sessionPropertiesLabel, 0, ++gridy,
 			    fullGridWidth, 1, 0, 0, 
 			    java.awt.GridBagConstraints.WEST,
@@ -200,6 +182,14 @@ public class SessionDisplay extends DataDisplay {
 		lastAccessed,
 		maxInactiveBefore,
 	    };
+
+	    String[] props = { 
+		NbBundle.getBundle(SessionDisplay.class).getString("MON_Session_ID"),
+		NbBundle.getBundle(SessionDisplay.class).getString("MON_Created"),
+		NbBundle.getBundle(SessionDisplay.class).getString("MON_Last_accessed"),
+		NbBundle.getBundle(SessionDisplay.class).getString("MON_Max_inactive"),
+	    };
+
 	    dt = new DisplayTable(props, data);
 	}
 	else {
@@ -210,13 +200,21 @@ public class SessionDisplay extends DataDisplay {
 		maxInactiveBefore,
 		maxInactiveAfter,
 	    };
+
+	    String[] props2 = { 
+		NbBundle.getBundle(SessionDisplay.class).getString("MON_Session_ID"),
+		NbBundle.getBundle(SessionDisplay.class).getString("MON_Created"),
+		NbBundle.getBundle(SessionDisplay.class).getString("MON_Last_accessed"),
+		NbBundle.getBundle(SessionDisplay.class).getString("MON_Max_inactive_before"),
+		NbBundle.getBundle(SessionDisplay.class).getString("MON_Max_inactive_after"),
+	    };
 	    dt = new DisplayTable(props2, data);
 	}
 
 
         sessionPropertiesLabel.setLabelFor(dt);
-        dt.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_Session_propertiesTableA11yName"));
-        dt.setToolTipText(msgs.getString("ACS_MON_Session_propertiesTableA11yDesc"));
+        dt.getAccessibleContext().setAccessibleName(NbBundle.getBundle(SessionDisplay.class).getString("ACS_MON_Session_propertiesTableA11yName"));
+        dt.setToolTipText(NbBundle.getBundle(SessionDisplay.class).getString("ACS_MON_Session_propertiesTableA11yDesc"));
  	addGridBagComponent(this, dt, 0, ++gridy,
 			    fullGridWidth, 1, tableWeightX, tableWeightY, 
 			    java.awt.GridBagConstraints.WEST,
@@ -234,16 +232,16 @@ public class SessionDisplay extends DataDisplay {
 	    }
 	    
 	    if(param == null || param.length == 0) {
-		addGridBagComponent(this, createDataLabel(msgs.getString("MON_Session_no_att_before")), 0, ++gridy,
+		addGridBagComponent(this, createDataLabel(NbBundle.getBundle(SessionDisplay.class).getString("MON_Session_no_att_before")), 0, ++gridy,
 				    fullGridWidth, 1, 0, 0, 
 				    java.awt.GridBagConstraints.WEST,
 				    java.awt.GridBagConstraints.NONE,
 				    tableInsets,
 				    0, 0);
 	    } else {
-                JLabel sessionBeforeLabel = createHeaderLabel(msgs.getString("MON_Session_att_before"));
-                sessionBeforeLabel.setDisplayedMnemonic(msgs.getString("MON_Session_att_before_Mnemonic").charAt(0));
-                sessionBeforeLabel.getAccessibleContext().setAccessibleDescription(msgs.getString("ACS_MON_Session_att_beforeA11yDesc"));
+                JLabel sessionBeforeLabel = createHeaderLabel(NbBundle.getBundle(SessionDisplay.class).getString("MON_Session_att_before"));
+                sessionBeforeLabel.setDisplayedMnemonic(NbBundle.getBundle(SessionDisplay.class).getString("MON_Session_att_before_Mnemonic").charAt(0));
+                sessionBeforeLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SessionDisplay.class).getString("ACS_MON_Session_att_beforeA11yDesc"));
 		addGridBagComponent(this, sessionBeforeLabel, 0, ++gridy,
 				    fullGridWidth, 1, 0, 0, 
 				    java.awt.GridBagConstraints.WEST,
@@ -252,8 +250,8 @@ public class SessionDisplay extends DataDisplay {
 				    0, 0);
 		dt = new DisplayTable(param);
                 sessionBeforeLabel.setLabelFor(dt);
-                dt.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_Session_att_beforeTableA11yName"));
-                dt.setToolTipText(msgs.getString("ACS_MON_Session_att_beforeTableA11yDesc"));
+                dt.getAccessibleContext().setAccessibleName(NbBundle.getBundle(SessionDisplay.class).getString("ACS_MON_Session_att_beforeTableA11yName"));
+                dt.setToolTipText(NbBundle.getBundle(SessionDisplay.class).getString("ACS_MON_Session_att_beforeTableA11yDesc"));
 		addGridBagComponent(this, dt, 0, ++gridy,
 				    fullGridWidth, 1, tableWeightX, tableWeightY, 
 				    java.awt.GridBagConstraints.WEST,
@@ -273,16 +271,16 @@ public class SessionDisplay extends DataDisplay {
 	    }
 
 	    if(param == null || param.length == 0) {
-		addGridBagComponent(this, createDataLabel(msgs.getString("MON_Session_no_att_after")), 0, ++gridy,
+		addGridBagComponent(this, createDataLabel(NbBundle.getBundle(SessionDisplay.class).getString("MON_Session_no_att_after")), 0, ++gridy,
 				    fullGridWidth, 1, 0, 0, 
 				    java.awt.GridBagConstraints.WEST,
 				    java.awt.GridBagConstraints.NONE,
 				    tableInsets,
 				    0, 0);
 	    } else {
-                JLabel sessionAfterLabel = createHeaderLabel(msgs.getString("MON_Session_att_after"));
-                sessionAfterLabel.setDisplayedMnemonic(msgs.getString("MON_Session_att_after_Mnemonic").charAt(0));
-                sessionAfterLabel.getAccessibleContext().setAccessibleDescription(msgs.getString("ACS_MON_Session_att_afterA11yDesc"));
+                JLabel sessionAfterLabel = createHeaderLabel(NbBundle.getBundle(SessionDisplay.class).getString("MON_Session_att_after"));
+                sessionAfterLabel.setDisplayedMnemonic(NbBundle.getBundle(SessionDisplay.class).getString("MON_Session_att_after_Mnemonic").charAt(0));
+                sessionAfterLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SessionDisplay.class).getString("ACS_MON_Session_att_afterA11yDesc"));
 		addGridBagComponent(this, sessionAfterLabel, 0, ++gridy,
 				    fullGridWidth, 1, 0, 0, 
 				    java.awt.GridBagConstraints.WEST,
@@ -291,8 +289,8 @@ public class SessionDisplay extends DataDisplay {
 				    0, 0);
 		dt = new DisplayTable(param);
                 sessionAfterLabel.setLabelFor(dt);
-                dt.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_Session_att_afterTableA11yName"));
-                dt.setToolTipText(msgs.getString("ACS_MON_Session_att_afterTableA11yDesc"));
+                dt.getAccessibleContext().setAccessibleName(NbBundle.getBundle(SessionDisplay.class).getString("ACS_MON_Session_att_afterTableA11yName"));
+                dt.setToolTipText(NbBundle.getBundle(SessionDisplay.class).getString("ACS_MON_Session_att_afterTableA11yDesc"));
 		addGridBagComponent(this, dt, 0, ++gridy,
 				    fullGridWidth, 1, tableWeightX, tableWeightY, 
 				    java.awt.GridBagConstraints.WEST,

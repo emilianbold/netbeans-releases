@@ -32,28 +32,24 @@ import java.util.*;
 public class ClientDisplay extends DataDisplay {
     
     private final static boolean debug = false;
-    private static final ResourceBundle msgs =
-	NbBundle.getBundle(TransactionView.class);
-    
-
     private DisplayTable clientTable = null; 
     private DisplayTable engineTable = null;
 
     private String[] categories = { 
-	    msgs.getString("MON_Protocol"), 
-	    msgs.getString("MON_Remote_Address"), 
-	    msgs.getString("MON_Software"), 
-	    msgs.getString("MON_Locale"), 
-	    msgs.getString("MON_Encodings"), 
-	    msgs.getString("MON_Fileformats"), 
-	    msgs.getString("MON_Charsets")
+	    NbBundle.getBundle(ClientDisplay.class).getString("MON_Protocol"), 
+	    NbBundle.getBundle(ClientDisplay.class).getString("MON_Remote_Address"), 
+	    NbBundle.getBundle(ClientDisplay.class).getString("MON_Software"), 
+	    NbBundle.getBundle(ClientDisplay.class).getString("MON_Locale"), 
+	    NbBundle.getBundle(ClientDisplay.class).getString("MON_Encodings"), 
+	    NbBundle.getBundle(ClientDisplay.class).getString("MON_Fileformats"), 
+	    NbBundle.getBundle(ClientDisplay.class).getString("MON_Charsets")
 	};
 
     private static final String[] props = { 
-	msgs.getString("MON_Java_version"),
-	msgs.getString("MON_Platform"),
-	msgs.getString("MON_Server_name"),
-	msgs.getString("MON_Server_port"),
+	NbBundle.getBundle(ClientDisplay.class).getString("MON_Java_version"),
+	NbBundle.getBundle(ClientDisplay.class).getString("MON_Platform"),
+	NbBundle.getBundle(ClientDisplay.class).getString("MON_Server_name"),
+	NbBundle.getBundle(ClientDisplay.class).getString("MON_Server_port"),
 
     };
 
@@ -73,13 +69,13 @@ public class ClientDisplay extends DataDisplay {
 			    0, 0);
 
 	clientTable = new DisplayTable(categories);
-        clientTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_ClientTable_3A11yName"));
-        clientTable.setToolTipText(msgs.getString("ACS_MON_ClientTable_3A11yDesc"));
+        clientTable.getAccessibleContext().setAccessibleName(NbBundle.getBundle(ClientDisplay.class).getString("ACS_MON_ClientTable_3A11yName"));
+        clientTable.setToolTipText(NbBundle.getBundle(ClientDisplay.class).getString("ACS_MON_ClientTable_3A11yDesc"));
 	addGridBagComponent(this, 
 			    createHeaderLabel
-			    (msgs.getString("MON_Client_3"), 
-			     msgs.getString("MON_Client_3_Mnemonic").charAt(0), 
-			     msgs.getString("ACS_MON_Client_3A11yDesc"), 
+			    (NbBundle.getBundle(ClientDisplay.class).getString("MON_Client_3"), 
+			     NbBundle.getBundle(ClientDisplay.class).getString("MON_Client_3_Mnemonic").charAt(0), 
+			     NbBundle.getBundle(ClientDisplay.class).getString("ACS_MON_Client_3A11yDesc"), 
 			     clientTable),
                             0, ++gridy,
 			    fullGridWidth, 1, 0, 0, 
@@ -96,13 +92,13 @@ public class ClientDisplay extends DataDisplay {
 			    0, 0);
 
 	engineTable = new DisplayTable(props);
-        engineTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_Servlet_engineTableA11yName"));
-        engineTable.setToolTipText(msgs.getString("ACS_MON_Servlet_engineTableA11yDesc"));
+        engineTable.getAccessibleContext().setAccessibleName(NbBundle.getBundle(ClientDisplay.class).getString("ACS_MON_Servlet_engineTableA11yName"));
+        engineTable.setToolTipText(NbBundle.getBundle(ClientDisplay.class).getString("ACS_MON_Servlet_engineTableA11yDesc"));
 	addGridBagComponent(this, 
 			    createHeaderLabel
-			    (msgs.getString("MON_Servlet_engine"), 
-			     msgs.getString("MON_Servlet_engine_Mnemonic").charAt(0), 
-			     msgs.getString("ACS_MON_Servlet_engineA11yDesc"),
+			    (NbBundle.getBundle(ClientDisplay.class).getString("MON_Servlet_engine"), 
+			     NbBundle.getBundle(ClientDisplay.class).getString("MON_Servlet_engine_Mnemonic").charAt(0), 
+			     NbBundle.getBundle(ClientDisplay.class).getString("ACS_MON_Servlet_engineA11yDesc"),
 			     engineTable),
                             0, ++gridy,
 			    fullGridWidth, 1, 0, 0, 

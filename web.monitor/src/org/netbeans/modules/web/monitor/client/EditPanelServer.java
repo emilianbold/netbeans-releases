@@ -43,14 +43,7 @@ import org.netbeans.modules.web.monitor.data.*;
 public class EditPanelServer extends DataDisplay {
 
     private final static boolean debug = false;
-    private static final ResourceBundle msgs =
-	NbBundle.getBundle(TransactionView.class);
     
-    private static final String[] servercats = { 
-	msgs.getString("MON_Server_name"),
-	msgs.getString("MON_Server_port"),
-    };
-
     private boolean holdTableChanges = false;
     private DisplayTable serverTable = null; 
 
@@ -79,7 +72,7 @@ public class EditPanelServer extends DataDisplay {
 			    topSpacerInsets,
 			    0, 0);
 
-	addGridBagComponent(this, createHeaderLabel(msgs.getString("MON_Exec_server"), msgs.getString("MON_Exec_server_Mnemonic").charAt(0), msgs.getString("ACS_MON_Exec_serverA11yDesc"), serverTable),
+	addGridBagComponent(this, createHeaderLabel(NbBundle.getBundle(EditPanelServer.class).getString("MON_Exec_server"), NbBundle.getBundle(EditPanelServer.class).getString("MON_Exec_server_Mnemonic").charAt(0), NbBundle.getBundle(EditPanelServer.class).getString("ACS_MON_Exec_serverA11yDesc"), serverTable),
                             0, ++gridy,
 			    fullGridWidth, 1, 0, 0, 
 			    java.awt.GridBagConstraints.WEST,
@@ -117,6 +110,10 @@ public class EditPanelServer extends DataDisplay {
 
     public void setServerTable() {
 
+	String[] servercats = { 
+	    NbBundle.getBundle(EditPanelServer.class).getString("MON_Server_name"),
+	    NbBundle.getBundle(EditPanelServer.class).getString("MON_Server_port"),
+	};
    	serverTable = new DisplayTable(servercats, DisplayTable.SERVER);
 
 	holdTableChanges = true;	 
@@ -135,8 +132,8 @@ public class EditPanelServer extends DataDisplay {
 	
 	holdTableChanges = false;
 	
-        serverTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_Exec_serverTableA11yName"));
-        serverTable.setToolTipText(msgs.getString("ACS_MON_Exec_serverTableA11yDesc"));
+        serverTable.getAccessibleContext().setAccessibleName(NbBundle.getBundle(EditPanelServer.class).getString("ACS_MON_Exec_serverTableA11yName"));
+        serverTable.setToolTipText(NbBundle.getBundle(EditPanelServer.class).getString("ACS_MON_Exec_serverTableA11yDesc"));
 
 	serverTable.addTableModelListener(new TableModelListener() {
 	    public void tableChanged(TableModelEvent evt) {
@@ -195,8 +192,8 @@ public class EditPanelServer extends DataDisplay {
 	Object[] options = { NotifyDescriptor.OK_OPTION };
 	
 	NotifyDescriptor errorDialog = 
-	    new NotifyDescriptor((Object)msgs.getString("MON_Bad_server"),
-				 msgs.getString("MON_Invalid_input"),
+	    new NotifyDescriptor((Object)NbBundle.getBundle(EditPanelServer.class).getString("MON_Bad_server"),
+				 NbBundle.getBundle(EditPanelServer.class).getString("MON_Invalid_input"),
 				 NotifyDescriptor.DEFAULT_OPTION,
 				 NotifyDescriptor.ERROR_MESSAGE, 
 				 options,

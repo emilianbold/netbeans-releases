@@ -71,8 +71,7 @@ public class EditPanel extends javax.swing.JPanel implements
     ActionListener, ChangeListener {
 
     private final static boolean debug = false;
-    private static final ResourceBundle msgs =
-	NbBundle.getBundle(TransactionView.class);
+
     
     //private static final Dimension size = new Dimension(500, 375);
     //private static final Dimension reqSize = new Dimension(450, 100);
@@ -141,12 +140,12 @@ public class EditPanel extends javax.swing.JPanel implements
 
 	JTabbedPane tabs = new JTabbedPane();
 	tabs.setPreferredSize(tabD);
-	tabs.addTab(msgs.getString("MON_Query_Panel_Tab"),   queryPanel);
-	tabs.addTab(msgs.getString("MON_Request_Panel_Tab"),
+	tabs.addTab(NbBundle.getBundle(EditPanel.class).getString("MON_Query_Panel_Tab"),   queryPanel);
+	tabs.addTab(NbBundle.getBundle(EditPanel.class).getString("MON_Request_Panel_Tab"),
 		    requestPanel);
-	tabs.addTab(msgs.getString("MON_Cookies_Panel_Tab"), cookiesPanel);
-	tabs.addTab(msgs.getString("MON_Server_Panel_Tab"),  serverPanel);
-	tabs.addTab(msgs.getString("MON_Headers_Panel_Tab"), headersPanel);
+	tabs.addTab(NbBundle.getBundle(EditPanel.class).getString("MON_Cookies_Panel_Tab"), cookiesPanel);
+	tabs.addTab(NbBundle.getBundle(EditPanel.class).getString("MON_Server_Panel_Tab"),  serverPanel);
+	tabs.addTab(NbBundle.getBundle(EditPanel.class).getString("MON_Headers_Panel_Tab"), headersPanel);
 	tabs.addChangeListener(this);
 
 	this.add(tabs);
@@ -179,7 +178,7 @@ public class EditPanel extends javax.swing.JPanel implements
 	};
 	
 	editDialog = new DialogDescriptor(this, 
-					  msgs.getString("MON_EditReplay"),
+					  NbBundle.getBundle(EditPanel.class).getString("MON_EditReplay"),
 					  false, 
 					  options,
 					  options[1],
@@ -212,7 +211,7 @@ public class EditPanel extends javax.swing.JPanel implements
             str = ((JButton)value).getText();
         else
             str = value.toString();
-	if(str.equals(msgs.getString("MON_Send"))) {
+	if(str.equals(NbBundle.getBundle(EditPanel.class).getString("MON_Send"))) {
 	 
 	    if(debug) log(" got SEND"); //NOI18N
 
@@ -244,7 +243,7 @@ public class EditPanel extends javax.swing.JPanel implements
 
 		Object[] options = {
                     okButton
-//		    msgs.getString("MON_OK"),
+//		    NbBundle.getBundle(EditPanel.class).getString("MON_OK"),
 		};
 
 		Object[] args = {
@@ -252,12 +251,12 @@ public class EditPanel extends javax.swing.JPanel implements
 		};
 		
 		MessageFormat msgFormat = new MessageFormat
-		    (msgs.getString("MON_Exec_server_wrong")); 
+		    (NbBundle.getBundle(EditPanel.class).getString("MON_Exec_server_wrong")); 
 
 		NotifyDescriptor noServerDialog = 
 		    new NotifyDescriptor
 			(msgFormat.format(args),
-			 msgs.getString("MON_Exec_server"),
+			 NbBundle.getBundle(EditPanel.class).getString("MON_Exec_server"),
 			 NotifyDescriptor.DEFAULT_OPTION,
 			 NotifyDescriptor.INFORMATION_MESSAGE,
 			 options,
@@ -269,7 +268,7 @@ public class EditPanel extends javax.swing.JPanel implements
 	    catch(IOException ioe) {
 		// Notify the user that the server is not running
 		Object[] options = {
-		    msgs.getString("MON_OK"),
+		    NbBundle.getBundle(EditPanel.class).getString("MON_OK"),
 		};
 
 		Object[] args = {
@@ -278,12 +277,12 @@ public class EditPanel extends javax.swing.JPanel implements
 		};
 
 		MessageFormat msgFormat = new MessageFormat
-		    (msgs.getString("MON_Exec_server_start")); 
+		    (NbBundle.getBundle(EditPanel.class).getString("MON_Exec_server_start")); 
 
 		NotifyDescriptor noServerDialog = 
 		    new NotifyDescriptor
 			(msgFormat.format(args),
-			 msgs.getString("MON_Exec_server"),
+			 NbBundle.getBundle(EditPanel.class).getString("MON_Exec_server"),
 			 NotifyDescriptor.DEFAULT_OPTION,
 			 NotifyDescriptor.INFORMATION_MESSAGE,
 			 options,
@@ -291,7 +290,7 @@ public class EditPanel extends javax.swing.JPanel implements
 		TopManager.getDefault().notify(noServerDialog);
 	    }
 	}
-	else if(str.equals(msgs.getString("MON_Cancel")))
+	else if(str.equals(NbBundle.getBundle(EditPanel.class).getString("MON_Cancel")))
 	    dialog.dispose();
     }
 
@@ -354,17 +353,17 @@ public class EditPanel extends javax.swing.JPanel implements
     private void createDialogButtons() {
 
 	// Button used by the dialog descriptor
-	sendButton = new JButton(msgs.getString("MON_Send"));
-	sendButton.setMnemonic(msgs.getString("MON_Send_Mnemonic").charAt(0));
-	sendButton.setToolTipText(msgs.getString("ACS_MON_SendA11yDesc"));
+	sendButton = new JButton(NbBundle.getBundle(EditPanel.class).getString("MON_Send"));
+	sendButton.setMnemonic(NbBundle.getBundle(EditPanel.class).getString("MON_Send_Mnemonic").charAt(0));
+	sendButton.setToolTipText(NbBundle.getBundle(EditPanel.class).getString("ACS_MON_SendA11yDesc"));
 
-	okButton = new JButton(msgs.getString("MON_OK"));
-	okButton.setMnemonic(msgs.getString("MON_OK_Mnemonic").charAt(0));
-	okButton.setToolTipText(msgs.getString("ACS_MON_OKA11yDesc"));
+	okButton = new JButton(NbBundle.getBundle(EditPanel.class).getString("MON_OK"));
+	okButton.setMnemonic(NbBundle.getBundle(EditPanel.class).getString("MON_OK_Mnemonic").charAt(0));
+	okButton.setToolTipText(NbBundle.getBundle(EditPanel.class).getString("ACS_MON_OKA11yDesc"));
 
-	cancelButton = new JButton(msgs.getString("MON_Cancel"));
-	cancelButton.setMnemonic(msgs.getString("MON_Cancel_Mnemonic").charAt(0));
-	cancelButton.setToolTipText(msgs.getString("ACS_MON_CancelA11yDesc"));
+	cancelButton = new JButton(NbBundle.getBundle(EditPanel.class).getString("MON_Cancel"));
+	cancelButton.setMnemonic(NbBundle.getBundle(EditPanel.class).getString("MON_Cancel_Mnemonic").charAt(0));
+	cancelButton.setToolTipText(NbBundle.getBundle(EditPanel.class).getString("ACS_MON_CancelA11yDesc"));
     }
     
 
@@ -377,7 +376,7 @@ public class EditPanel extends javax.swing.JPanel implements
 	browserCookieButton = 
 	    new ToolbarToggleButton(TransactionView.browserCookieIcon,
 				    useBrowserCookie); 
-	browserCookieButton.setToolTipText(msgs.getString("MON_Browser_cookie"));
+	browserCookieButton.setToolTipText(NbBundle.getBundle(EditPanel.class).getString("MON_Browser_cookie"));
 	browserCookieButton.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
 		    browserCookieButton.setSelected(true);
@@ -390,7 +389,7 @@ public class EditPanel extends javax.swing.JPanel implements
 	savedCookieButton = 
 	    new ToolbarToggleButton(TransactionView.savedCookieIcon,
 				    !useBrowserCookie); 
-	savedCookieButton.setToolTipText(msgs.getString("MON_Saved_cookie"));
+	savedCookieButton.setToolTipText(NbBundle.getBundle(EditPanel.class).getString("MON_Saved_cookie"));
 	savedCookieButton.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
 		    savedCookieButton.setSelected(true);

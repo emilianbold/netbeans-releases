@@ -47,8 +47,6 @@ import org.netbeans.modules.web.monitor.data.*;
 public class EditPanelHeaders extends DataDisplay {
 
     private final static boolean debug = false;
-    private static final ResourceBundle msgs =
-	NbBundle.getBundle(TransactionView.class);
     
     private DisplayTable headerTable = null;    
     private MonitorData monitorData = null;
@@ -93,8 +91,8 @@ public class EditPanelHeaders extends DataDisplay {
 			    topSpacerInsets,
 			    0, 0);
 
-	String msg = msgs.getString("MON_HTTP_Headers"); 
-	addGridBagComponent(this, createSortButtonLabel(msg, headerTable, msgs.getString("MON_HTTP_Headers_Mnemonic").charAt(0), msgs.getString("ACS_MON_HTTP_HeadersA11yDesc")), 0, ++gridy,
+	String msg = NbBundle.getBundle(EditPanelHeaders.class).getString("MON_HTTP_Headers"); 
+	addGridBagComponent(this, createSortButtonLabel(msg, headerTable, NbBundle.getBundle(EditPanelHeaders.class).getString("MON_HTTP_Headers_Mnemonic").charAt(0), NbBundle.getBundle(EditPanelHeaders.class).getString("ACS_MON_HTTP_HeadersA11yDesc")), 0, ++gridy,
 			    1, 1, 0, 0, 
 			    java.awt.GridBagConstraints.WEST,
 			    java.awt.GridBagConstraints.NONE,
@@ -110,12 +108,12 @@ public class EditPanelHeaders extends DataDisplay {
 			    tableInsets,
 			    0, 0);
 
-	newHeaderB = new JButton(msgs.getString("MON_New_header"));
-        newHeaderB.setMnemonic(msgs.getString("MON_New_header_Mnemonic").charAt(0));
-        newHeaderB.setToolTipText(msgs.getString("ACS_MON_New_headerA11yDesc"));
+	newHeaderB = new JButton(NbBundle.getBundle(EditPanelHeaders.class).getString("MON_New_header"));
+        newHeaderB.setMnemonic(NbBundle.getBundle(EditPanelHeaders.class).getString("MON_New_header_Mnemonic").charAt(0));
+        newHeaderB.setToolTipText(NbBundle.getBundle(EditPanelHeaders.class).getString("ACS_MON_New_headerA11yDesc"));
 	newHeaderB.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
-		    String title = msgs.getString("MON_New_header"); 
+		    String title = NbBundle.getBundle(EditPanelHeaders.class).getString("MON_New_header"); 
 		    ParamEditor pe = new ParamEditor("", "", //NOI18N
 						     true, true, title);
 
@@ -140,9 +138,9 @@ public class EditPanelHeaders extends DataDisplay {
 		    }
 		}});
 
-	deleteHeaderB = new JButton(msgs.getString("MON_Delete_header"));
-        deleteHeaderB.setMnemonic(msgs.getString("MON_Delete_header_Mnemonic").charAt(0));
-        deleteHeaderB.setToolTipText(msgs.getString("MON_New_header_Mnemonic"));
+	deleteHeaderB = new JButton(NbBundle.getBundle(EditPanelHeaders.class).getString("MON_Delete_header"));
+        deleteHeaderB.setMnemonic(NbBundle.getBundle(EditPanelHeaders.class).getString("MON_Delete_header_Mnemonic").charAt(0));
+        deleteHeaderB.setToolTipText(NbBundle.getBundle(EditPanelHeaders.class).getString("MON_New_header_Mnemonic"));
 
 	deleteHeaderB.addActionListener(new ActionListener() {
 
@@ -151,7 +149,7 @@ public class EditPanelHeaders extends DataDisplay {
 		    int numRows = headerTable.getRowCount();
 
 		    StringBuffer buf = new StringBuffer
-			(msgs.getString("MON_Confirm_Delete_Headers")); 
+			(NbBundle.getBundle(EditPanelHeaders.class).getString("MON_Confirm_Delete_Headers")); 
 		    buf.append("\n"); // NOI18N
 
 		    for(int i=0; i<numRows; ++i) {
@@ -229,7 +227,7 @@ public class EditPanelHeaders extends DataDisplay {
 	
 	NotifyDescriptor confirmDialog = 
 	    new NotifyDescriptor((Object)msg, 
-				 msgs.getString("MON_Confirmation_Required"),
+				 NbBundle.getBundle(EditPanelHeaders.class).getString("MON_Confirmation_Required"),
 				 NotifyDescriptor.OK_CANCEL_OPTION,
 				 NotifyDescriptor.QUESTION_MESSAGE, 
 				 options,
@@ -248,8 +246,8 @@ public class EditPanelHeaders extends DataDisplay {
 	Object[] options = { NotifyDescriptor.OK_OPTION };
 	
 	NotifyDescriptor errorDialog = 
-	    new NotifyDescriptor((Object)msgs.getString("MON_Bad_header"),
-				 msgs.getString("MON_Invalid_input"),
+	    new NotifyDescriptor((Object)NbBundle.getBundle(EditPanelHeaders.class).getString("MON_Bad_header"),
+				 NbBundle.getBundle(EditPanelHeaders.class).getString("MON_Invalid_input"),
 				 NotifyDescriptor.DEFAULT_OPTION,
 				 NotifyDescriptor.ERROR_MESSAGE, 
 				 options,
@@ -276,8 +274,8 @@ public class EditPanelHeaders extends DataDisplay {
 	
 	headerTable = 
 	    new DisplayTable(params, DisplayTable.HEADERS, true);
-	headerTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_HTTP_HeadersTableA11yName"));
-        headerTable.setToolTipText(msgs.getString("ACS_MON_HTTP_HeadersTableA11yDesc"));
+	headerTable.getAccessibleContext().setAccessibleName(NbBundle.getBundle(EditPanelHeaders.class).getString("ACS_MON_HTTP_HeadersTableA11yName"));
+        headerTable.setToolTipText(NbBundle.getBundle(EditPanelHeaders.class).getString("ACS_MON_HTTP_HeadersTableA11yDesc"));
 
 
 	ListSelectionModel selma = headerTable.getSelectionModel();

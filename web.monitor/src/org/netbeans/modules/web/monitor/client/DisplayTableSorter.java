@@ -36,9 +36,6 @@ public class DisplayTableSorter extends AbstractTableModel implements
     private int sort = DisplayTable.NEUTRAL; 
     protected TableModel model; 
 
-    private static final ResourceBundle msgs =
-	NbBundle.getBundle(TransactionView.class);  
-
     private static final boolean debug = false;
     
     public DisplayTableSorter(TableModel model) {

@@ -38,20 +38,7 @@ import javax.swing.event.TableModelListener;
 public class RequestDisplay extends DataDisplay {
     
     private final static boolean debug = false;
-    private static final ResourceBundle msgs =
-	NbBundle.getBundle(TransactionView.class);
     
-    private static final String[] requestCategories = { 
-	msgs.getString("MON_Request_URI"),
-	msgs.getString("MON_Method"),
-	msgs.getString("MON_Querystring"),
-	msgs.getString("MON_Protocol"),
-	msgs.getString("MON_Remote_Address"),
-	msgs.getString("MON_Scheme"),
-	msgs.getString("MON_Status"),
-    };
-
-
     private DisplayTable dt = null; 
     DisplayTable paramTable = null;
         
@@ -59,7 +46,6 @@ public class RequestDisplay extends DataDisplay {
 
 	super();
     }
-
 
     // We're treating these as if they are all strings at the
     // moment. In reality they can be of different types, though maybe 
@@ -71,6 +57,16 @@ public class RequestDisplay extends DataDisplay {
 	if (md == null)
 	    return;
 	
+	String[] requestCategories = { 
+	    NbBundle.getBundle(RequestDisplay.class).getString("MON_Request_URI"),
+	    NbBundle.getBundle(RequestDisplay.class).getString("MON_Method"),
+	    NbBundle.getBundle(RequestDisplay.class).getString("MON_Querystring"),
+	    NbBundle.getBundle(RequestDisplay.class).getString("MON_Protocol"),
+	    NbBundle.getBundle(RequestDisplay.class).getString("MON_Remote_Address"),
+	    NbBundle.getBundle(RequestDisplay.class).getString("MON_Scheme"),
+	    NbBundle.getBundle(RequestDisplay.class).getString("MON_Status"),
+	};
+
 	RequestData rd = md.getRequestData();
 	dt = new DisplayTable(requestCategories);
 	dt.setValueAt(rd.getAttributeValue("uri"), 0,1); //NOI18N
@@ -80,8 +76,8 @@ public class RequestDisplay extends DataDisplay {
 	dt.setValueAt(rd.getAttributeValue("ipaddress"), 4,1); //NOI18N
 	dt.setValueAt(rd.getAttributeValue("scheme"), 5,1); //NOI18N
 	dt.setValueAt(rd.getAttributeValue("status"), 6,1); //NOI18N
-        dt.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_RequestTable_19A11yName")); 
-        dt.setToolTipText(msgs.getString("ACS_MON_RequestTable_19A11yDesc"));
+        dt.getAccessibleContext().setAccessibleName(NbBundle.getBundle(RequestDisplay.class).getString("ACS_MON_RequestTable_19A11yName")); 
+        dt.setToolTipText(NbBundle.getBundle(RequestDisplay.class).getString("ACS_MON_RequestTable_19A11yDesc"));
 
 	int gridy = -1;
 	addGridBagComponent(this, createTopSpacer(), 0, ++gridy,
@@ -91,9 +87,9 @@ public class RequestDisplay extends DataDisplay {
 			    topSpacerInsets,
 			    0, 0);
 
-        JLabel requestHeaderLabel = createHeaderLabel(msgs.getString("MON_Request_19"));
-        requestHeaderLabel.setDisplayedMnemonic(msgs.getString("MON_Request_19_Mnemonic").charAt(0));
-        requestHeaderLabel.getAccessibleContext().setAccessibleDescription(msgs.getString("ACS_MON_Request_19A11yDesc"));
+        JLabel requestHeaderLabel = createHeaderLabel(NbBundle.getBundle(RequestDisplay.class).getString("MON_Request_19"));
+        requestHeaderLabel.setDisplayedMnemonic(NbBundle.getBundle(RequestDisplay.class).getString("MON_Request_19_Mnemonic").charAt(0));
+        requestHeaderLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(RequestDisplay.class).getString("ACS_MON_Request_19A11yDesc"));
         requestHeaderLabel.setLabelFor(dt);
 	addGridBagComponent(this, requestHeaderLabel, 0, ++gridy,
 			    fullGridWidth, 1, 0, 0, 
@@ -127,25 +123,25 @@ public class RequestDisplay extends DataDisplay {
 		if(type != null) {
 
 		    if (type.equals("false")) { //NOI18N
-			msg2 = msgs.getString("MON_Unparameterized");
+			msg2 = NbBundle.getBundle(RequestDisplay.class).getString("MON_Unparameterized");
 		    }
 		    else if (type.equals("bad")) { //NOI18N
-			msg2 = msgs.getString("MON_Warning_param"); 
+			msg2 = NbBundle.getBundle(RequestDisplay.class).getString("MON_Warning_param"); 
 			queryDataLabel =
 			    createHeaderLabel(msg2); 
 			bad = true;
 		    }
-		    else msg2 = msgs.getString("MON_No_posted_data");
+		    else msg2 = NbBundle.getBundle(RequestDisplay.class).getString("MON_No_posted_data");
 		}
-		else msg2 = msgs.getString("MON_No_posted_data");
+		else msg2 = NbBundle.getBundle(RequestDisplay.class).getString("MON_No_posted_data");
 	    } else {
-		msg2 = msgs.getString("MON_No_querystring");
+		msg2 = NbBundle.getBundle(RequestDisplay.class).getString("MON_No_querystring");
 	    }
 	    if(queryDataLabel == null) 
 		queryDataLabel = createDataLabel(msg2);
 	    
 	} else {
-	    msg2 = msgs.getString("MON_Parameters");
+	    msg2 = NbBundle.getBundle(RequestDisplay.class).getString("MON_Parameters");
 	    paramTable = new DisplayTable(params2, true);
 	    paramTable.addTableModelListener(new TableModelListener() {
 		public void tableChanged(TableModelEvent evt) {
@@ -153,9 +149,9 @@ public class RequestDisplay extends DataDisplay {
 		}});
 	    
 
-            paramTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_ParametersTableA11yName"));
-            paramTable.setToolTipText(msgs.getString("ACS_MON_ParametersTableA11yDesc"));
-	    queryDataLabel = createSortButtonLabel(msg2, paramTable, msgs.getString("MON_Parameters_Mnemonic").charAt(0), msgs.getString("ACS_MON_ParametersA11yDesc"));
+            paramTable.getAccessibleContext().setAccessibleName(NbBundle.getBundle(RequestDisplay.class).getString("ACS_MON_ParametersTableA11yName"));
+            paramTable.setToolTipText(NbBundle.getBundle(RequestDisplay.class).getString("ACS_MON_ParametersTableA11yDesc"));
+	    queryDataLabel = createSortButtonLabel(msg2, paramTable, NbBundle.getBundle(RequestDisplay.class).getString("MON_Parameters_Mnemonic").charAt(0), NbBundle.getBundle(RequestDisplay.class).getString("ACS_MON_ParametersA11yDesc"));
 	}
 	
 	addGridBagComponent(this, queryDataLabel, 0, ++gridy,
@@ -174,7 +170,7 @@ public class RequestDisplay extends DataDisplay {
 				0, 0);
 	}
 	else if(bad) {
-	    JTextArea ta = new JTextArea(msgs.getString("MON_Unparameterized_bad"));
+	    JTextArea ta = new JTextArea(NbBundle.getBundle(RequestDisplay.class).getString("MON_Unparameterized_bad"));
 	    ta.setEditable(false);
 	    ta.setLineWrap(true);
 	    ta.setBackground(this.getBackground());
@@ -199,9 +195,9 @@ public class RequestDisplay extends DataDisplay {
 	if(param != null && param.length > 0) {
 
 	    JLabel requestAttrBeforeLabel =
-		createHeaderLabel(msgs.getString("MON_Request_att_before")); 
-	    requestAttrBeforeLabel.setDisplayedMnemonic(msgs.getString("MON_Request_att_before_Mnemonic").charAt(0));
-	    requestAttrBeforeLabel.getAccessibleContext().setAccessibleDescription(msgs.getString("ACS_MON_Request_att_beforeA11yDesc"));
+		createHeaderLabel(NbBundle.getBundle(RequestDisplay.class).getString("MON_Request_att_before")); 
+	    requestAttrBeforeLabel.setDisplayedMnemonic(NbBundle.getBundle(RequestDisplay.class).getString("MON_Request_att_before_Mnemonic").charAt(0));
+	    requestAttrBeforeLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(RequestDisplay.class).getString("ACS_MON_Request_att_beforeA11yDesc"));
 	    addGridBagComponent(this, requestAttrBeforeLabel, 0, ++gridy,
 				fullGridWidth, 1, 0, 0, 
 				java.awt.GridBagConstraints.WEST,
@@ -210,8 +206,8 @@ public class RequestDisplay extends DataDisplay {
 				0, 0);
 	    dt = new DisplayTable(param);
 	    requestAttrBeforeLabel.setLabelFor(dt);
-	    dt.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_Request_att_beforeTableA11yName"));
-	    dt.setToolTipText(msgs.getString("ACS_MON_Request_att_beforeTableA11yDesc"));
+	    dt.getAccessibleContext().setAccessibleName(NbBundle.getBundle(RequestDisplay.class).getString("ACS_MON_Request_att_beforeTableA11yName"));
+	    dt.setToolTipText(NbBundle.getBundle(RequestDisplay.class).getString("ACS_MON_Request_att_beforeTableA11yDesc"));
 	    addGridBagComponent(this, dt, 0, ++gridy,
 				fullGridWidth, 1, tableWeightX, tableWeightY, 
 				java.awt.GridBagConstraints.WEST,
@@ -231,9 +227,9 @@ public class RequestDisplay extends DataDisplay {
 	if(param != null && param.length > 0) {
 
 	    JLabel requestAttrAfterLabel =
-		createHeaderLabel(msgs.getString("MON_Request_att_after")); 
-	    requestAttrAfterLabel.setDisplayedMnemonic(msgs.getString("MON_Request_att_after_Mnemonic").charAt(0));
-	    requestAttrAfterLabel.getAccessibleContext().setAccessibleDescription(msgs.getString("ACS_MON_Request_att_afterA11yDesc"));
+		createHeaderLabel(NbBundle.getBundle(RequestDisplay.class).getString("MON_Request_att_after")); 
+	    requestAttrAfterLabel.setDisplayedMnemonic(NbBundle.getBundle(RequestDisplay.class).getString("MON_Request_att_after_Mnemonic").charAt(0));
+	    requestAttrAfterLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(RequestDisplay.class).getString("ACS_MON_Request_att_afterA11yDesc"));
 	    addGridBagComponent(this, requestAttrAfterLabel, 0, ++gridy,
 				fullGridWidth, 1, 0, 0, 
 				java.awt.GridBagConstraints.WEST,
@@ -242,8 +238,8 @@ public class RequestDisplay extends DataDisplay {
 				0, 0);
 	    dt = new DisplayTable(param);
 	    requestAttrAfterLabel.setLabelFor(dt);
-	    dt.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_Request_att_afterTableA11yName"));
-	    dt.setToolTipText(msgs.getString("ACS_MON_Request_att_afterTableA11yDesc"));
+	    dt.getAccessibleContext().setAccessibleName(NbBundle.getBundle(RequestDisplay.class).getString("ACS_MON_Request_att_afterTableA11yName"));
+	    dt.setToolTipText(NbBundle.getBundle(RequestDisplay.class).getString("ACS_MON_Request_att_afterTableA11yDesc"));
 	    addGridBagComponent(this, dt, 0, ++gridy,
 				fullGridWidth, 1, tableWeightX, tableWeightY, 
 				java.awt.GridBagConstraints.WEST,

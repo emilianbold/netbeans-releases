@@ -32,13 +32,6 @@ import java.util.*;
 public class ContextDisplay extends DataDisplay {
     
     private final static boolean debug = false;
-    private static final ResourceBundle msgs =
-	NbBundle.getBundle(TransactionView.class);
-    
-    private static final String[] props = { 
-	msgs.getString("MON_Context_name"),
-	msgs.getString("MON_Absolute_path"),
-    };
     
     DisplayTable contextTable;
 
@@ -73,6 +66,11 @@ public class ContextDisplay extends DataDisplay {
     {
 	if(debug) System.out.println(cd.dumpBeanNode());
 
+	String[] props = { 
+	    NbBundle.getBundle(ClientDisplay.class).getString("MON_Context_name"),
+	    NbBundle.getBundle(ClientDisplay.class).getString("MON_Absolute_path"),
+	};	
+    
 	contextTable = new DisplayTable(props);
 
 	int gridy = -1;
@@ -87,7 +85,7 @@ public class ContextDisplay extends DataDisplay {
 	// context data 
 	addGridBagComponent(this, 
 			    createHeaderLabel
-			    (msgs.getString("MON_Servlet_context"), msgs.getString("MON_Servlet_context_Mnemonic").charAt(0), msgs.getString("ACS_MON_Servlet_contextA11yDesc"), contextTable), 
+			    (NbBundle.getBundle(ClientDisplay.class).getString("MON_Servlet_context"), NbBundle.getBundle(ClientDisplay.class).getString("MON_Servlet_context_Mnemonic").charAt(0), NbBundle.getBundle(ClientDisplay.class).getString("ACS_MON_Servlet_contextA11yDesc"), contextTable), 
 			    0, ++gridy,
 			    fullGridWidth, 1, 0, 0, 
 			    java.awt.GridBagConstraints.WEST,
@@ -98,8 +96,8 @@ public class ContextDisplay extends DataDisplay {
 	
 	contextTable.setValueAt(cd.getAttributeValue("contextName"), 0, 1);  //NOI18N
 	contextTable.setValueAt(cd.getAttributeValue("absPath"), 1, 1);  //NOI18N
-        contextTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_Servlet_contextTableA11yName"));
-        contextTable.setToolTipText(msgs.getString("ACS_MON_Servlet_contextTableA11yDesc"));
+        contextTable.getAccessibleContext().setAccessibleName(NbBundle.getBundle(ClientDisplay.class).getString("ACS_MON_Servlet_contextTableA11yName"));
+        contextTable.setToolTipText(NbBundle.getBundle(ClientDisplay.class).getString("ACS_MON_Servlet_contextTableA11yDesc"));
 	addGridBagComponent(this, contextTable, 0, ++gridy,
 			    fullGridWidth, 1, tableWeightX, tableWeightY, 
 			    java.awt.GridBagConstraints.WEST,
@@ -120,9 +118,9 @@ public class ContextDisplay extends DataDisplay {
 	    DisplayTable dt = new DisplayTable(ctxtparam);
 	    addGridBagComponent(this,
 				createHeaderLabel
-				(msgs.getString("MON_Context_att"),
-				 msgs.getString("MON_Context_att_Mnemonic").charAt(0), 
-				 msgs.getString("ACS_MON_Context_att_A11yDesc"),
+				(NbBundle.getBundle(ClientDisplay.class).getString("MON_Context_att"),
+				 NbBundle.getBundle(ClientDisplay.class).getString("MON_Context_att_Mnemonic").charAt(0), 
+				 NbBundle.getBundle(ClientDisplay.class).getString("ACS_MON_Context_att_A11yDesc"),
 				 dt),
 				0, ++gridy,
 				fullGridWidth, 1, 0, 0, 
@@ -130,8 +128,8 @@ public class ContextDisplay extends DataDisplay {
 				java.awt.GridBagConstraints.NONE,
 				labelInsets,
 				0, 0);
-	    dt.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_Context_att_TableA11yName"));
-	    dt.setToolTipText(msgs.getString("ACS_MON_Context_att_TableA11yDesc"));
+	    dt.getAccessibleContext().setAccessibleName(NbBundle.getBundle(ClientDisplay.class).getString("ACS_MON_Context_att_TableA11yName"));
+	    dt.setToolTipText(NbBundle.getBundle(ClientDisplay.class).getString("ACS_MON_Context_att_TableA11yDesc"));
 	    addGridBagComponent(this, dt, 0, ++gridy,
 				fullGridWidth, 1, tableWeightX, tableWeightY, 
 				java.awt.GridBagConstraints.WEST,
@@ -145,7 +143,7 @@ public class ContextDisplay extends DataDisplay {
 	if(param == null || param.length == 0) 
 	    addGridBagComponent(this, 
 				createDataLabel
-				(msgs.getString("MON_No_init")),
+				(NbBundle.getBundle(ClientDisplay.class).getString("MON_No_init")),
 				0, 
 				++gridy, 
 				fullGridWidth, 
@@ -157,13 +155,13 @@ public class ContextDisplay extends DataDisplay {
 	else {
 
 	    DisplayTable paramTable = new DisplayTable(param); 
-	    paramTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_Init_parametersTableA11yName"));
-	    paramTable.setToolTipText(msgs.getString("ACS_MON_Init_parametersTableA11yDesc"));
+	    paramTable.getAccessibleContext().setAccessibleName(NbBundle.getBundle(ClientDisplay.class).getString("ACS_MON_Init_parametersTableA11yName"));
+	    paramTable.setToolTipText(NbBundle.getBundle(ClientDisplay.class).getString("ACS_MON_Init_parametersTableA11yDesc"));
 	    addGridBagComponent(this, 
 				createHeaderLabel
-				(msgs.getString("MON_Init_parameters"), 
-				 msgs.getString("MON_Init_parameters_Mnemonic").charAt(0),
-				 msgs.getString("ACS_MON_Init_parametersA11yDesc"),
+				(NbBundle.getBundle(ClientDisplay.class).getString("MON_Init_parameters"), 
+				 NbBundle.getBundle(ClientDisplay.class).getString("MON_Init_parameters_Mnemonic").charAt(0),
+				 NbBundle.getBundle(ClientDisplay.class).getString("ACS_MON_Init_parametersA11yDesc"),
 				 paramTable),
 				0, ++gridy,
 				fullGridWidth, 1, 0, 0, 
@@ -194,6 +192,11 @@ public class ContextDisplay extends DataDisplay {
     {
 	if(debug) System.out.println(sd.dumpBeanNode());
 
+	String[] props = { 
+	    NbBundle.getBundle(ClientDisplay.class).getString("MON_Context_name"),
+	    NbBundle.getBundle(ClientDisplay.class).getString("MON_Absolute_path"),
+	};	
+
 	contextTable = new DisplayTable(props);
 	
 	int gridy = -1;
@@ -208,7 +211,7 @@ public class ContextDisplay extends DataDisplay {
 	// context data 
 	addGridBagComponent(this, 
 			    createHeaderLabel
-			    (msgs.getString("MON_Servlet_context"), msgs.getString("MON_Servlet_context_Mnemonic").charAt(0), msgs.getString("ACS_MON_Servlet_contextA11yDesc"), contextTable), 
+			    (NbBundle.getBundle(ClientDisplay.class).getString("MON_Servlet_context"), NbBundle.getBundle(ClientDisplay.class).getString("MON_Servlet_context_Mnemonic").charAt(0), NbBundle.getBundle(ClientDisplay.class).getString("ACS_MON_Servlet_contextA11yDesc"), contextTable), 
 			    0, ++gridy,
 			    fullGridWidth, 1, 0, 0, 
 			    java.awt.GridBagConstraints.WEST,
@@ -219,8 +222,8 @@ public class ContextDisplay extends DataDisplay {
 	
 	contextTable.setValueAt(sd.getAttributeValue("contextName"), 0, 1);  //NOI18N
 	contextTable.setValueAt(sd.getAttributeValue("absPath"), 1, 1);  //NOI18N
-        contextTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_Servlet_contextTableA11yName"));
-        contextTable.setToolTipText(msgs.getString("ACS_MON_Servlet_contextTableA11yDesc"));
+        contextTable.getAccessibleContext().setAccessibleName(NbBundle.getBundle(ClientDisplay.class).getString("ACS_MON_Servlet_contextTableA11yName"));
+        contextTable.setToolTipText(NbBundle.getBundle(ClientDisplay.class).getString("ACS_MON_Servlet_contextTableA11yDesc"));
 	addGridBagComponent(this, contextTable, 0, ++gridy,
 			    fullGridWidth, 1, tableWeightX, tableWeightY, 
 			    java.awt.GridBagConstraints.WEST,

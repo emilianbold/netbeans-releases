@@ -50,8 +50,6 @@ import org.openide.util.NbBundle;
 public class NameValueCellEditor extends DefaultCellEditor  {
 
     private final static boolean debug = false;
-    private static final ResourceBundle msgs =
-	NbBundle.getBundle(TransactionView.class);
     private static String editNameAndValueTitle;
     private static String editValueOnlyTitle;
 
@@ -60,17 +58,17 @@ public class NameValueCellEditor extends DefaultCellEditor  {
     private boolean nameEditable;
     private int row;
     private int type;
-    
+
     public static NameValueCellEditor createCellEditor(JTable table,
 						       Object data [][],
 						       boolean nameEditable,
 						       int row, final int type)  {
 
-	JButton b = new JButton(msgs.getString("MON_Edit_dots")); // NOI18N
+	JButton b = new JButton(NbBundle.getBundle(NameValueCellEditor.class).getString("MON_Edit_dots")); // NOI18N
 	if(type == DisplayTable.UNEDITABLE) 
-	    b.setToolTipText(msgs.getString("MON_DisplayValue")) ;
+	    b.setToolTipText(NbBundle.getBundle(NameValueCellEditor.class).getString("MON_DisplayValue")) ;
 	else 
-	    b.setToolTipText(msgs.getString("MON_EditAttribute")) ;
+	    b.setToolTipText(NbBundle.getBundle(NameValueCellEditor.class).getString("MON_EditAttribute")) ;
 	final NameValueCellEditor ed = new NameValueCellEditor(b,
 							       table,
 							       data,
@@ -110,7 +108,7 @@ public class NameValueCellEditor extends DefaultCellEditor  {
     }
     
     public Object getCellEditorValue() {
-	return msgs.getString("MON_Edit_dots");
+	return NbBundle.getBundle(NameValueCellEditor.class).getString("MON_Edit_dots");
     }
  
     public Component getTableCellEditorComponent(JTable table, 
@@ -138,20 +136,20 @@ public class NameValueCellEditor extends DefaultCellEditor  {
 	    System.out.println("type = " + String.valueOf(type)); //NOI18N
 
 	if(type == DisplayTable.UNEDITABLE) 
-	    title = msgs.getString("MON_ParamValue"); 
+	    title = NbBundle.getBundle(NameValueCellEditor.class).getString("MON_ParamValue"); 
 	else if(type == DisplayTable.HEADERS) 
-	    title = msgs.getString("MON_Edit_header"); 
+	    title = NbBundle.getBundle(NameValueCellEditor.class).getString("MON_Edit_header"); 
 	else if(type == DisplayTable.PARAMS) 
-	    title = msgs.getString("MON_Edit_param"); 
+	    title = NbBundle.getBundle(NameValueCellEditor.class).getString("MON_Edit_param"); 
 	else if(type == DisplayTable.REQUEST) 
-	    title = msgs.getString("MON_Edit_request"); 
+	    title = NbBundle.getBundle(NameValueCellEditor.class).getString("MON_Edit_request"); 
 	else if(type == DisplayTable.COOKIES) 
-	    title = msgs.getString("MON_Edit_cookie"); 
+	    title = NbBundle.getBundle(NameValueCellEditor.class).getString("MON_Edit_cookie"); 
 	else if(type == DisplayTable.SERVER) 
-	    title = msgs.getString("MON_Edit_server"); 
+	    title = NbBundle.getBundle(NameValueCellEditor.class).getString("MON_Edit_server"); 
 	// This should not happen
 	else 
-	    title = msgs.getString("MON_Edit_value"); 
+	    title = NbBundle.getBundle(NameValueCellEditor.class).getString("MON_Edit_value"); 
 	
 
 	String name =  (String)model.getValueAt(currentRow, 0);

@@ -102,7 +102,6 @@ public class TransactionView extends ExplorerPanel implements
     // Data display tables 
     private int displayType = 0;
 
-    ResourceBundle msgs = NbBundle.getBundle(TransactionView.class);
     
     // Button icons
 
@@ -158,7 +157,7 @@ public class TransactionView extends ExplorerPanel implements
     }
 
     public HelpCtx getHelpCtx() {
-	String helpID = msgs.getString("MON_Transaction_View_F1_Help_ID"); // NOI18N
+	String helpID = NbBundle.getBundle(TransactionView.class).getString("MON_Transaction_View_F1_Help_ID"); // NOI18N
 	return new HelpCtx( helpID );
     }
 
@@ -199,7 +198,7 @@ public class TransactionView extends ExplorerPanel implements
 
 	this.add(splitPanel);
 
-	setName(msgs.getString("MON_Title"));
+	setName(NbBundle.getBundle(TransactionView.class).getString("MON_Title"));
     }
 
     /**
@@ -290,7 +289,7 @@ public class TransactionView extends ExplorerPanel implements
 
 	if(debug) log("opening in workspace: " + String.valueOf(w)); //NOI18N
 	super.open(w); 
-	setName(msgs.getString("MON_Title"));	
+	setName(NbBundle.getBundle(TransactionView.class).getString("MON_Title"));	
 	if (!openedOnceAlready) {
 	    openedOnceAlready = true;
 	    controller.getTransactions();
@@ -301,7 +300,7 @@ public class TransactionView extends ExplorerPanel implements
     }
 
     protected void updateTitle() {
-	setName(msgs.getString("MON_Title"));	
+	setName(NbBundle.getBundle(TransactionView.class).getString("MON_Title"));	
     }
     
     /**
@@ -326,7 +325,7 @@ public class TransactionView extends ExplorerPanel implements
 
 	JPanel logPanel = null;
 	JLabel title =
-	    new JLabel(msgs.getString("MON_Transactions_27"), SwingConstants.CENTER);
+	    new JLabel(NbBundle.getBundle(TransactionView.class).getString("MON_Transactions_27"), SwingConstants.CENTER);
 	title.setBorder (new EtchedBorder (EtchedBorder.LOWERED));
 
 	JToolBar buttonPanel = new JToolBar();
@@ -337,14 +336,14 @@ public class TransactionView extends ExplorerPanel implements
 	buttonPanel.setFloatable (false);
 
 	ToolbarButton updateButton = new ToolbarButton(updateIcon);
-	updateButton.setToolTipText(msgs.getString("MON_Reload_all_17"));
+	updateButton.setToolTipText(NbBundle.getBundle(TransactionView.class).getString("MON_Reload_all_17"));
 	updateButton.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
 		    controller.getTransactions();
 		}});
 
 	timeAButton = new ToolbarToggleButton(timesortAIcon, false);
-	timeAButton.setToolTipText(msgs.getString("MON_Order_transactions_15"));
+	timeAButton.setToolTipText(NbBundle.getBundle(TransactionView.class).getString("MON_Order_transactions_15"));
 
 	timeAButton.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
@@ -360,7 +359,7 @@ public class TransactionView extends ExplorerPanel implements
 		}});
 
 	timeDButton = new ToolbarToggleButton(timesortDIcon, true);
-	timeDButton.setToolTipText(msgs.getString("MON_Order_transactions_16"));
+	timeDButton.setToolTipText(NbBundle.getBundle(TransactionView.class).getString("MON_Order_transactions_16"));
 	timeDButton.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
 
@@ -376,7 +375,7 @@ public class TransactionView extends ExplorerPanel implements
 		}});
 
 	alphaButton = new ToolbarToggleButton(a2zIcon, false);
-	alphaButton.setToolTipText(msgs.getString("MON_Order_transactions_14"));
+	alphaButton.setToolTipText(NbBundle.getBundle(TransactionView.class).getString("MON_Order_transactions_14"));
 	alphaButton.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
 
@@ -394,7 +393,7 @@ public class TransactionView extends ExplorerPanel implements
 
 	// Do we use the browser's cookie or the saved cookie? 
 	browserCookieButton = new ToolbarToggleButton(browserCookieIcon, true);
-	browserCookieButton.setToolTipText(msgs.getString("MON_Browser_cookie"));
+	browserCookieButton.setToolTipText(NbBundle.getBundle(TransactionView.class).getString("MON_Browser_cookie"));
 	browserCookieButton.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
 		    browserCookieButton.setSelected(true);
@@ -404,7 +403,7 @@ public class TransactionView extends ExplorerPanel implements
 		}});
 
 	savedCookieButton = new ToolbarToggleButton(savedCookieIcon, false);
-	savedCookieButton.setToolTipText(msgs.getString("MON_Saved_cookie"));
+	savedCookieButton.setToolTipText(NbBundle.getBundle(TransactionView.class).getString("MON_Saved_cookie"));
 	savedCookieButton.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
 		    browserCookieButton.setSelected(false);
@@ -416,7 +415,7 @@ public class TransactionView extends ExplorerPanel implements
 	ToolbarToggleButton timestampButton = new
 	    ToolbarToggleButton(timestampIcon,
 				TransactionNode.showTimeStamp());
-	timestampButton.setToolTipText(msgs.getString("MON_Show_time_25"));
+	timestampButton.setToolTipText(NbBundle.getBundle(TransactionView.class).getString("MON_Show_time_25"));
 	timestampButton.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
 		    TransactionNode.toggleTimeStamp();
@@ -494,7 +493,7 @@ public class TransactionView extends ExplorerPanel implements
 	JPanel dataPanel = null;
 
 	transactionTitle =
-	    new JLabel(msgs.getString("MON_Transaction_data_26"), SwingConstants.CENTER);
+	    new JLabel(NbBundle.getBundle(TransactionView.class).getString("MON_Transaction_data_26"), SwingConstants.CENTER);
 	transactionTitle.setBorder (new EtchedBorder (EtchedBorder.LOWERED));
 
 	JTabbedPane jtp = new JTabbedPane();
@@ -503,32 +502,32 @@ public class TransactionView extends ExplorerPanel implements
 
 	requestDisplay = new RequestDisplay(); 
 	JScrollPane p = new JScrollPane(requestDisplay);
-	jtp.addTab(msgs.getString("MON_Request_19"), p);
+	jtp.addTab(NbBundle.getBundle(TransactionView.class).getString("MON_Request_19"), p);
 
 
 	cookieDisplay = new CookieDisplay(); 
 	p = new JScrollPane(cookieDisplay);
-	jtp.addTab(msgs.getString("MON_Cookies_4"), p);
+	jtp.addTab(NbBundle.getBundle(TransactionView.class).getString("MON_Cookies_4"), p);
 
 	sessionDisplay = new SessionDisplay(); 
 	p = new JScrollPane(sessionDisplay);
-	jtp.addTab(msgs.getString("MON_Session_24"), p); 
+	jtp.addTab(NbBundle.getBundle(TransactionView.class).getString("MON_Session_24"), p); 
 
 	servletDisplay = new ServletDisplay(); 
 	p = new JScrollPane(servletDisplay);
-	jtp.addTab(msgs.getString("MON_Servlet_23"), p);
+	jtp.addTab(NbBundle.getBundle(TransactionView.class).getString("MON_Servlet_23"), p);
 
 	contextDisplay = new ContextDisplay(); 
 	p = new JScrollPane(contextDisplay);
-	jtp.addTab(msgs.getString("MON_Context_23"), p);
+	jtp.addTab(NbBundle.getBundle(TransactionView.class).getString("MON_Context_23"), p);
 
 	clientDisplay = new ClientDisplay(); 
 	p = new JScrollPane(clientDisplay);
-	jtp.addTab(msgs.getString("MON_Client_Server"), p);
+	jtp.addTab(NbBundle.getBundle(TransactionView.class).getString("MON_Client_Server"), p);
 
 	headerDisplay = new HeaderDisplay(); 
 	p = new JScrollPane(headerDisplay);
-	jtp.addTab(msgs.getString("MON_Header_19"), p);
+	jtp.addTab(NbBundle.getBundle(TransactionView.class).getString("MON_Header_19"), p);
 
 	jtp.addChangeListener(this);
 
@@ -606,7 +605,7 @@ public class TransactionView extends ExplorerPanel implements
      */
     public void stateChanged(ChangeEvent e) {
 
-	setName(msgs.getString("MON_Title"));
+	setName(NbBundle.getBundle(TransactionView.class).getString("MON_Title"));
 
 	JTabbedPane p = (JTabbedPane)e.getSource();
 	displayType = p.getSelectedIndex();
@@ -712,7 +711,7 @@ public class TransactionView extends ExplorerPanel implements
      */
     public void propertyChange(PropertyChangeEvent evt) {
 
-	setName(msgs.getString("MON_Title"));
+	setName(NbBundle.getBundle(TransactionView.class).getString("MON_Title"));
 	//updateTitle();
 
 	if(evt.getPropertyName().equals(ExplorerManager.PROP_SELECTED_NODES)) {

@@ -82,26 +82,18 @@ Microsystems, Inc. All Rights Reserved.
  <target name="javahelp">
     <mkdir dir="javahelp/org/netbeans/modules/web/monitor/docs/JavaHelpSearch2"/>
     <jhindexer basedir="javahelp/org/netbeans/modules/web/monitor/docs/"
-               db="javahelp/org/netbeans/modules/web/monitor/docs/JavaHelpSearch2">
-      <classpath>
-        <fileset dir="../nbbuild/external">
-          <include name="jhall*.jar"/>
-        </fileset>
-      </classpath>
+               db="javahelp/org/netbeans/modules/web/monitor/docs/JavaHelpSearch2"
+               jhall="../nbbuild/external/jhall-1.1.2_02.jar">
       <include name="**/*.html"/>
-      <exclude name="JavaHelpSearch2/"/>
+      <exclude name="JavaHelpSearch/"/>
       <exclude name="ja/"/>
       <exclude name="credits.html"/>
     </jhindexer>
     <mkdir dir="javahelp/org/netbeans/modules/web/monitor/docs/ja/JavaHelpSearch2"/>
     <jhindexer basedir="javahelp/org/netbeans/modules/web/monitor/docs/ja/"
                db="javahelp/org/netbeans/modules/web/monitor/docs/ja/JavaHelpSearch2"
-               locale="ja">
-      <classpath>
-        <fileset dir="../nbbuild/external">
-          <include name="jhall*.jar"/>
-        </fileset>
-      </classpath>
+               locale="ja"
+               jhall="../nbbuild/external/jhall-1.1.2_02.jar">
       <include name="**/*.html"/>
       <exclude name="JavaHelpSearch2/"/>
       <exclude name="credits.html"/>

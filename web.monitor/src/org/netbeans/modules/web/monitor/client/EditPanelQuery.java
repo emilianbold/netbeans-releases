@@ -49,9 +49,7 @@ import org.netbeans.modules.web.monitor.data.*;
 public class EditPanelQuery extends DataDisplay {
 
     private final static boolean debug = false;
-    private static final ResourceBundle msgs =
-	NbBundle.getBundle(TransactionView.class);
- 
+
     private DisplayTable paramTable = null; 
 
     private MonitorData monitorData = null;
@@ -121,7 +119,7 @@ public class EditPanelQuery extends DataDisplay {
 		}
 	    });
 
-	    addGridBagComponent(this, createHeaderLabel(msgs.getString("MON_Querystring"), msgs.getString("MON_Querystring_Mnemonic").charAt(0), msgs.getString("ACS_MON_QuerystringA11yDesc"), paramTable),
+	    addGridBagComponent(this, createHeaderLabel(NbBundle.getBundle(EditPanelQuery.class).getString("MON_Querystring"), NbBundle.getBundle(EditPanelQuery.class).getString("MON_Querystring_Mnemonic").charAt(0), NbBundle.getBundle(EditPanelQuery.class).getString("ACS_MON_QuerystringA11yDesc"), paramTable),
                                 0, ++gridy,
 				1, 1, 0, 0, 
 				java.awt.GridBagConstraints.WEST,
@@ -141,7 +139,7 @@ public class EditPanelQuery extends DataDisplay {
 	Component msg2Label;
 
 	if (EditPanel.PUT.equals(method)) {
-	    msg2 = msgs.getString("MON_Upload_File");
+	    msg2 = NbBundle.getBundle(EditPanelQuery.class).getString("MON_Upload_File");
 	    msg2Label = createDataLabel(msg2);
 	    addGridBagComponent(this, msg2Label, 0, ++gridy,
 				fullGridWidth, 1, 0, 0, 
@@ -150,7 +148,7 @@ public class EditPanelQuery extends DataDisplay {
 				labelInsets,
 				0, 0);
 	    
-	    String uploadFileMsg = msgs.getString("MON_Upload_File_Not_Supported");
+	    String uploadFileMsg = NbBundle.getBundle(EditPanelQuery.class).getString("MON_Upload_File_Not_Supported");
 	    uploadFileText = new JTextField(uploadFileMsg);
 	    uploadFileText.setEnabled(false);
 	    addGridBagComponent(this, uploadFileText, 0, ++gridy,
@@ -175,18 +173,18 @@ public class EditPanelQuery extends DataDisplay {
             String ad = null;
 
 	    if(method.equals(EditPanel.GET)) {
-		msg2 = msgs.getString("MON_Query_parameters");
-                mnemonic = msgs.getString("MON_Query_parameters_Mnemonic").charAt(0);
-                ad = msgs.getString("ACS_MON_Query_parametersA11yDesc");
-                paramTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_ParametersTableA11yDesc"));
-                paramTable.setToolTipText(msgs.getString("ACS_MON_ParametersTableA11yDesc"));
+		msg2 = NbBundle.getBundle(EditPanelQuery.class).getString("MON_Query_parameters");
+                mnemonic = NbBundle.getBundle(EditPanelQuery.class).getString("MON_Query_parameters_Mnemonic").charAt(0);
+                ad = NbBundle.getBundle(EditPanelQuery.class).getString("ACS_MON_Query_parametersA11yDesc");
+                paramTable.getAccessibleContext().setAccessibleName(NbBundle.getBundle(EditPanelQuery.class).getString("ACS_MON_ParametersTableA11yDesc"));
+                paramTable.setToolTipText(NbBundle.getBundle(EditPanelQuery.class).getString("ACS_MON_ParametersTableA11yDesc"));
 		
 	    } else if(method.equals(EditPanel.POST)) {
-		msg2 = msgs.getString("MON_Posted_data");
-                mnemonic = msgs.getString("MON_Posted_data_Mnemonic").charAt(0);
-                ad = msgs.getString("ACS_MON_Posted_dataA11yDesc");
-                paramTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_Posted_dataTableA11yName"));
-                paramTable.setToolTipText(msgs.getString("ACS_MON_Posted_dataTableA11yDesc"));
+		msg2 = NbBundle.getBundle(EditPanelQuery.class).getString("MON_Posted_data");
+                mnemonic = NbBundle.getBundle(EditPanelQuery.class).getString("MON_Posted_data_Mnemonic").charAt(0);
+                ad = NbBundle.getBundle(EditPanelQuery.class).getString("ACS_MON_Posted_dataA11yDesc");
+                paramTable.getAccessibleContext().setAccessibleName(NbBundle.getBundle(EditPanelQuery.class).getString("ACS_MON_Posted_dataTableA11yName"));
+                paramTable.setToolTipText(NbBundle.getBundle(EditPanelQuery.class).getString("ACS_MON_Posted_dataTableA11yDesc"));
 	    }
 
 	    msg2Label = createSortButtonLabel(msg2, paramTable, mnemonic, ad);
@@ -221,13 +219,13 @@ public class EditPanelQuery extends DataDisplay {
 			    tableInsets,
 			    0, 0);
 
-	newParamB = new JButton(msgs.getString("MON_New_param"));
-        newParamB.setMnemonic(msgs.getString("MON_New_param_Mnemonic").charAt(0));
-        newParamB.setToolTipText(msgs.getString("ACS_MON_New_paramA11yDesc"));
+	newParamB = new JButton(NbBundle.getBundle(EditPanelQuery.class).getString("MON_New_param"));
+        newParamB.setMnemonic(NbBundle.getBundle(EditPanelQuery.class).getString("MON_New_param_Mnemonic").charAt(0));
+        newParamB.setToolTipText(NbBundle.getBundle(EditPanelQuery.class).getString("ACS_MON_New_paramA11yDesc"));
 	newParamB.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
 
-		    String title = msgs.getString("MON_New_param"); 
+		    String title = NbBundle.getBundle(EditPanelQuery.class).getString("MON_New_param"); 
 		    ParamEditor pe = new ParamEditor("", "", //NOI18N
 						     true, true,
 						     title, false);
@@ -249,9 +247,9 @@ public class EditPanelQuery extends DataDisplay {
 		    }
 		}});
 
-	deleteParamB = new JButton(msgs.getString("MON_Delete_param"));
-        deleteParamB.setMnemonic(msgs.getString("MON_Delete_param_Mnemonic").charAt(0));
-        deleteParamB.setToolTipText(msgs.getString("ACS_MON_Delete_paramA11yDesc"));
+	deleteParamB = new JButton(NbBundle.getBundle(EditPanelQuery.class).getString("MON_Delete_param"));
+        deleteParamB.setMnemonic(NbBundle.getBundle(EditPanelQuery.class).getString("MON_Delete_param_Mnemonic").charAt(0));
+        deleteParamB.setToolTipText(NbBundle.getBundle(EditPanelQuery.class).getString("ACS_MON_Delete_paramA11yDesc"));
 
 	deleteParamB.addActionListener(new ActionListener() {
 
@@ -261,7 +259,7 @@ public class EditPanelQuery extends DataDisplay {
 		    RequestData rd = monitorData.getRequestData();
 		
 		    StringBuffer buf = new StringBuffer
-			(msgs.getString("MON_Confirm_Delete_Params")); 
+			(NbBundle.getBundle(EditPanelQuery.class).getString("MON_Confirm_Delete_Params")); 
 		    buf.append("\n"); //NOI18N
 		
 		    for(int i=0; i<numRows; ++i) {
@@ -341,8 +339,8 @@ public class EditPanelQuery extends DataDisplay {
     public void setParameters(Param[] newParams) {
 
 	paramTable = new DisplayTable(newParams, DisplayTable.PARAMS, true);
-        paramTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_QuerystringTableA11yName"));
-        paramTable.setToolTipText(msgs.getString("ACS_MON_QuerystringTableA11yDesc"));
+        paramTable.getAccessibleContext().setAccessibleName(NbBundle.getBundle(EditPanelQuery.class).getString("ACS_MON_QuerystringTableA11yName"));
+        paramTable.setToolTipText(NbBundle.getBundle(EditPanelQuery.class).getString("ACS_MON_QuerystringTableA11yDesc"));
 
 	ListSelectionModel selma = paramTable.getSelectionModel();
 	selma.addListSelectionListener(new ListSelectionListener() {
@@ -388,7 +386,7 @@ public class EditPanelQuery extends DataDisplay {
 	
 	NotifyDescriptor confirmDialog = 
 	    new NotifyDescriptor((Object)msg, 
-				 msgs.getString("MON_Confirmation_Required"),
+				 NbBundle.getBundle(EditPanelQuery.class).getString("MON_Confirmation_Required"),
 				 NotifyDescriptor.OK_CANCEL_OPTION,
 				 NotifyDescriptor.QUESTION_MESSAGE, 
 				 options,
@@ -406,8 +404,8 @@ public class EditPanelQuery extends DataDisplay {
 	Object[] options = { NotifyDescriptor.OK_OPTION };
 	
 	NotifyDescriptor errorDialog = 
-	    new NotifyDescriptor((Object)msgs.getString("MON_Bad_param"),
-				 msgs.getString("MON_Invalid_input"),
+	    new NotifyDescriptor((Object)NbBundle.getBundle(EditPanelQuery.class).getString("MON_Bad_param"),
+				 NbBundle.getBundle(EditPanelQuery.class).getString("MON_Invalid_input"),
 				 NotifyDescriptor.DEFAULT_OPTION,
 				 NotifyDescriptor.ERROR_MESSAGE, 
 				 options,

@@ -55,9 +55,6 @@ public class DisplayTable extends JTable {
     public static final int A2Z = 1;
     public static final int Z2A = 2;
 
-    private static final ResourceBundle msgs =
-       NbBundle.getBundle(TransactionView.class);  
-
     private int numRows = 0;
     private int numCols = 3;
 
@@ -121,7 +118,7 @@ public class DisplayTable extends JTable {
 	    } else {
 		data[i][1] = values[i];
 	    }
-	    data[i][2] = msgs.getString("MON_Edit_dots"); // NOI18N
+	    data[i][2] = NbBundle.getBundle(DisplayTable.class).getString("MON_Edit_dots"); // NOI18N
 	    cellEditors[i][2] =
 		NameValueCellEditor.createCellEditor((JTable)this, data,
 						     false, i, editable);
@@ -162,7 +159,7 @@ public class DisplayTable extends JTable {
 	for(int i=0; i<numRows; ++i) {
 	    data[i][0] = params[i].getAttributeValue("name");   // NOI18N
 	    data[i][1] = params[i].getAttributeValue("value");  // NOI18N
-	    data[i][2] = msgs.getString("MON_Edit_dots"); // NOI18N
+	    data[i][2] = NbBundle.getBundle(DisplayTable.class).getString("MON_Edit_dots"); // NOI18N
 	    cellEditors[i][2] =
 		NameValueCellEditor.createCellEditor((JTable)this, data,
 						     true, i, editable);
@@ -213,7 +210,7 @@ public class DisplayTable extends JTable {
 
 	// if the table is editable, we should turn off the [...] editor
 	// when there's a choice on the row.
-	data[row][2]=msgs.getString("MON_Editing");
+	data[row][2]=NbBundle.getBundle(DisplayTable.class).getString("MON_Editing");
 	cellEditors[row][2] = null;
 	
 	return box;

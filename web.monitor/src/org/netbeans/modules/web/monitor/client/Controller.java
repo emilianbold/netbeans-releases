@@ -79,10 +79,6 @@ public class Controller  {
     public final static String REPLAY="netbeans.replay"; //NOI18N
     public final static String REPLAYSTATUS="netbeans.replay.status"; //NOI18N
     public final static String REPLAYSESSION="netbeans.replay.session"; //NOI18N
-
-    static java.util.ResourceBundle resBundle =
-	NbBundle.getBundle(TransactionView.class);
-
     public static final boolean debug = false;
     //private transient static boolean starting = true;
 
@@ -475,7 +471,7 @@ public class Controller  {
 	    // Notify the user that there is no host
 
 	    Object[] options = {
-		resBundle.getString("MON_OK"),
+		NbBundle.getBundle(Controller.class).getString("MON_OK"),
 	    };
 
 	    Object[] args = {
@@ -483,10 +479,10 @@ public class Controller  {
 	    };
 	    
 	    MessageFormat msgFormat = new MessageFormat
-		(resBundle.getString("MON_Exec_server_no_host"));  
+		(NbBundle.getBundle(Controller.class).getString("MON_Exec_server_no_host"));  
 	    NotifyDescriptor noServerDialog = 
 		new NotifyDescriptor(msgFormat.format(args),
-				     resBundle.getString("MON_Exec_server"),
+				     NbBundle.getBundle(Controller.class).getString("MON_Exec_server"),
 				     NotifyDescriptor.DEFAULT_OPTION,
 				     NotifyDescriptor.INFORMATION_MESSAGE,
 				     options,
@@ -498,7 +494,7 @@ public class Controller  {
 
 	    // Notify the user that the server is not running
 	    Object[] options = {
-		resBundle.getString("MON_OK"),
+		NbBundle.getBundle(Controller.class).getString("MON_OK"),
 	    };
 
 	    Object[] args = {
@@ -506,11 +502,11 @@ public class Controller  {
 	    };
 
 	    MessageFormat msgFormat = new MessageFormat
-		(resBundle.getString("MON_Exec_server_start")); 
+		(NbBundle.getBundle(Controller.class).getString("MON_Exec_server_start")); 
 
 	    NotifyDescriptor noServerDialog = 
 		new NotifyDescriptor(msgFormat.format(args), 
-				     resBundle.getString("MON_Exec_server"),
+				     NbBundle.getBundle(Controller.class).getString("MON_Exec_server"),
 				     NotifyDescriptor.DEFAULT_OPTION,
 				     NotifyDescriptor.INFORMATION_MESSAGE,
 				     options,
@@ -1247,20 +1243,20 @@ public class Controller  {
 	if(!serverRunning) {
 
 	    Object[] options = {
-		resBundle.getString("MON_OK"),
+		NbBundle.getBundle(Controller.class).getString("MON_OK"),
 	    };
 	    String msg = null;
-	    if(replay) msg = resBundle.getString("MON_CantReplay"); 
+	    if(replay) msg = NbBundle.getBundle(Controller.class).getString("MON_CantReplay"); 
 	    else { 
-		msg = resBundle.getString("MON_NoServer");
+		msg = NbBundle.getBundle(Controller.class).getString("MON_NoServer");
 	    }
 	    
 	    msg = msg.concat(" "); //NOI18N
-	    msg = msg.concat(resBundle.getString("MON_Start_server"));
+	    msg = msg.concat(NbBundle.getBundle(Controller.class).getString("MON_Start_server"));
 		
 	    NotifyDescriptor noServerDialog = 
 		new NotifyDescriptor(msg,
-				     resBundle.getString("MON_NoServerTitle"),
+				     NbBundle.getBundle(Controller.class).getString("MON_NoServerTitle"),
 				     NotifyDescriptor.DEFAULT_OPTION,
 				     NotifyDescriptor.INFORMATION_MESSAGE,
 				     options,

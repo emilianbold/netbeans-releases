@@ -48,8 +48,6 @@ import org.openide.util.NbBundle;
 public class ParamEditor extends javax.swing.JPanel implements ActionListener {
 
     private final static boolean debug = false;
-    private static final ResourceBundle msgs =
-	NbBundle.getBundle(TransactionView.class);
     
     private static final Dimension size = new Dimension(400, 300);
     private static final Dimension valueSize = new Dimension(380, 100);
@@ -149,9 +147,9 @@ public class ParamEditor extends javax.swing.JPanel implements ActionListener {
 	Insets textInsets = new Insets(0,5,0,5);
 	int fullGridWidth = java.awt.GridBagConstraints.REMAINDER;
 
-        JLabel nameLabel = new JLabel(msgs.getString("MON_Name"));
-        nameLabel.setDisplayedMnemonic(msgs.getString("MON_Name_Mnemonic").charAt(0));
-        nameLabel.getAccessibleContext().setAccessibleDescription(msgs.getString("ACS_MON_NameA11yDesc"));
+        JLabel nameLabel = new JLabel(NbBundle.getBundle(ParamEditor.class).getString("MON_Name"));
+        nameLabel.setDisplayedMnemonic(NbBundle.getBundle(ParamEditor.class).getString("MON_Name_Mnemonic").charAt(0));
+        nameLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ParamEditor.class).getString("ACS_MON_NameA11yDesc"));
 	addGridBagComponent(this, nameLabel, 0, ++gridy,
 			    fullGridWidth, 1, 0, 0, 
 			    java.awt.GridBagConstraints.WEST,
@@ -161,8 +159,8 @@ public class ParamEditor extends javax.swing.JPanel implements ActionListener {
 	
 	nameText = new JTextField();
         nameLabel.setLabelFor(nameText);
-        nameText.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_NameTextFieldA11yName"));
-        nameText.setToolTipText(msgs.getString("ACS_MON_NameTextFieldA11yDesc"));
+        nameText.getAccessibleContext().setAccessibleName(NbBundle.getBundle(ParamEditor.class).getString("ACS_MON_NameTextFieldA11yName"));
+        nameText.setToolTipText(NbBundle.getBundle(ParamEditor.class).getString("ACS_MON_NameTextFieldA11yDesc"));
 	nameText.setText(name);
 	nameText.setBackground(java.awt.Color.white);
 	nameText.setEditable(nameEditable);
@@ -173,9 +171,9 @@ public class ParamEditor extends javax.swing.JPanel implements ActionListener {
 			    textInsets,
 			    0, 0);
 
-        JLabel valueLabel = new JLabel(msgs.getString("MON_Value"));
-        valueLabel.setDisplayedMnemonic(msgs.getString("MON_Value_Mnemonic").charAt(0));
-        valueLabel.getAccessibleContext().setAccessibleDescription(msgs.getString("ACS_MON_ValueA11yDesc"));
+        JLabel valueLabel = new JLabel(NbBundle.getBundle(ParamEditor.class).getString("MON_Value"));
+        valueLabel.setDisplayedMnemonic(NbBundle.getBundle(ParamEditor.class).getString("MON_Value_Mnemonic").charAt(0));
+        valueLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ParamEditor.class).getString("ACS_MON_ValueA11yDesc"));
 	addGridBagComponent(this, valueLabel, 0, ++gridy,
 			    fullGridWidth, 1, 0, 0, 
 			    java.awt.GridBagConstraints.WEST,
@@ -185,8 +183,8 @@ public class ParamEditor extends javax.swing.JPanel implements ActionListener {
 
 	valueText = new JTextArea();
 	valueLabel.setLabelFor(valueText);
-        valueText.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_ValueTextAreaA11yName"));
-        valueText.setToolTipText(msgs.getString("ACS_MON_ValueTextAreaA11yDesc"));
+        valueText.getAccessibleContext().setAccessibleName(NbBundle.getBundle(ParamEditor.class).getString("ACS_MON_ValueTextAreaA11yName"));
+        valueText.setToolTipText(NbBundle.getBundle(ParamEditor.class).getString("ACS_MON_ValueTextAreaA11yDesc"));
 	valueText.setText(value);
 	if(!editable) {
 	    valueText.setEditable(false);
@@ -278,13 +276,13 @@ public class ParamEditor extends javax.swing.JPanel implements ActionListener {
     private void notifyBadInput(boolean both) { 
 
 	String msg = null; 
-	if(both) msg = msgs.getString("MON_ParamEditor_NameValue_required"); 
-	else msg = msgs.getString("MON_ParamEditor_Name_required"); 
+	if(both) msg = NbBundle.getBundle(ParamEditor.class).getString("MON_ParamEditor_NameValue_required"); 
+	else msg = NbBundle.getBundle(ParamEditor.class).getString("MON_ParamEditor_Name_required"); 
 
 	Object[] options = { NotifyDescriptor.OK_OPTION };
 	NotifyDescriptor badInputDialog = 
 	    new NotifyDescriptor(msg,
-				 msgs.getString("MON_ParamEditor_Input_required"),
+				 NbBundle.getBundle(ParamEditor.class).getString("MON_ParamEditor_Input_required"),
 				 NotifyDescriptor.DEFAULT_OPTION,
 				 NotifyDescriptor.ERROR_MESSAGE,
 				 options,

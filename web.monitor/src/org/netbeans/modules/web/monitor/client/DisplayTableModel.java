@@ -33,9 +33,6 @@ public class DisplayTableModel extends AbstractTableModel {
     private boolean editable, editableNames; 
     private int numCols = 3; 
 
-    private static final ResourceBundle msgs =
-	NbBundle.getBundle(TransactionView.class);  
-
     private static final boolean debug = false;
     
     public DisplayTableModel(Object[][] data, 

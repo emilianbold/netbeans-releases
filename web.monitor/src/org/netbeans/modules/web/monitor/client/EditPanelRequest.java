@@ -28,7 +28,6 @@
 
 package org.netbeans.modules.web.monitor.client; 
 
-
 import java.awt.event.*;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -40,14 +39,6 @@ import org.netbeans.modules.web.monitor.data.*;
 public class EditPanelRequest extends DataDisplay {
 
     private final static boolean debug = false;
-    private static final ResourceBundle msgs =
-	NbBundle.getBundle(TransactionView.class);
-    
-    private static final String[] requestCategories = { 
-	msgs.getString("MON_Request_URI"),
-	msgs.getString("MON_Method"),
-	msgs.getString("MON_Protocol")
-    };
 
     private static final String [] methodChoices = {
 	EditPanel.GET, 
@@ -93,9 +84,9 @@ public class EditPanelRequest extends DataDisplay {
 
 	addGridBagComponent(this, 
 			    createHeaderLabel
-			    (msgs.getString("MON_Request_19"),
-			     msgs.getString("MON_Request_19_Mnemonic").charAt(0),
-			     msgs.getString("ACS_MON_Request_19A11yDesc"),
+			    (NbBundle.getBundle(EditPanelRequest.class).getString("MON_Request_19"),
+			     NbBundle.getBundle(EditPanelRequest.class).getString("MON_Request_19_Mnemonic").charAt(0),
+			     NbBundle.getBundle(EditPanelRequest.class).getString("ACS_MON_Request_19A11yDesc"),
 			     requestTable),
 			    0, ++gridy,
 			    fullGridWidth, 1, 0, 0, 
@@ -134,6 +125,12 @@ public class EditPanelRequest extends DataDisplay {
 
     public void setRequestTable() {
 	
+	String[] requestCategories = { 
+	    NbBundle.getBundle(EditPanelRequest.class).getString("MON_Request_URI"),
+	    NbBundle.getBundle(EditPanelRequest.class).getString("MON_Method"),
+	    NbBundle.getBundle(EditPanelRequest.class).getString("MON_Protocol")
+	};
+
 	requestTable = 
 	    new DisplayTable(requestCategories, DisplayTable.REQUEST);
 
@@ -143,8 +140,8 @@ public class EditPanelRequest extends DataDisplay {
 	requestTable.setValueAt(rd.getAttributeValue("protocol"), 2,1);  // NOI18N
 
 	requestTable.setChoices(1, 1, methodChoices, false);
-        requestTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_RequestTable_19A11yName"));
-        requestTable.setToolTipText(msgs.getString("ACS_MON_RequestTable_19A11yDesc"));
+        requestTable.getAccessibleContext().setAccessibleName(NbBundle.getBundle(EditPanelRequest.class).getString("ACS_MON_RequestTable_19A11yName"));
+        requestTable.setToolTipText(NbBundle.getBundle(EditPanelRequest.class).getString("ACS_MON_RequestTable_19A11yDesc"));
 
 	requestTable.addTableModelListener(new TableModelListener() {
 		public void tableChanged(TableModelEvent evt) {
