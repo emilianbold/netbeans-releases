@@ -33,7 +33,7 @@ public class URLDataLoader extends UniFileLoader {
     
     /** Creates new URLDataLoader without the extension. */
     public URLDataLoader() {
-        super(URLDataObject.class);
+        super("org.netbeans.modules.url.URLDataObject"); // NOI18N
     }
 
     

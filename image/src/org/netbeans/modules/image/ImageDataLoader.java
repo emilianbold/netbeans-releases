@@ -38,7 +38,8 @@ public class ImageDataLoader extends UniFileLoader {
     /** Creates new image loader. */
     public ImageDataLoader() {
         // Set the representation class.
-        super(ImageDataObject.class);
+        super("org.netbeans.modules.image.ImageDataObject"); // NOI18N
+        
         // List of recognized extensions.
         ExtensionList ext = new ExtensionList();
         ext.addExtension("jpg"); // NOI18N

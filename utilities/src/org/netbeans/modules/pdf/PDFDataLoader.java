@@ -33,14 +33,16 @@ public class PDFDataLoader extends UniFileLoader {
     /** Generated serial version UID. */
     private static final long serialVersionUID = -4354042385752587850L;
 
+    
     /** Creates loader. */
-    public PDFDataLoader () {
-        this (PDFDataObject.class);
+    public PDFDataLoader() {
+        super("org.netbeans.modules.pdf.PDFDataObject"); // NOI18N
     }
 
+    // PENDING who needs this constructor?
     /** Creates loader for specified recognized class. */
-    public PDFDataLoader (Class recognizedObject) {
-        super (recognizedObject);
+    public PDFDataLoader(Class recognizedObject) {
+        super(recognizedObject);
     }
 
     
