@@ -232,7 +232,7 @@
             code, somebody will likely use it. You should describe what it does 
             and the stability category of this API. You may use
             <PRE>
-                &lt;property name="id" category="private" &gt
+                &lt;property name="id" category="private" &gt;
                     description of the property, where it is used, what it influence, etc.
                 &lt;/property&gt;            
             </PRE>
@@ -260,6 +260,23 @@
             </hint>
         </question>
                 
+        <question id="exec-reflection">
+            Does your code uses java.lang.reflect to execute some other code?
+            <hint>
+            This usually indicates a missing or unsufficient API in the other
+            part of the system. If the other side is not aware of your dependency
+            this contract can be easily broken.
+            </hint>
+        </question>
+        
+        <question id="exec-privateaccess">
+            Are you aware of any other part of the system calling some of 
+            your methods by reflection?
+            <hint>
+            If so, describe the "contract" as an API. Likely private or friend one, but
+            still API and consider rewrite of it.
+            </hint>
+        </question>
     </category>
     
     <category id="format" name="Format of files and protocols">

@@ -78,7 +78,7 @@ public class Arch extends Task implements org.xml.sax.EntityResolver {
                 q = builder.parse (questionsFile);
             }
         } catch (Exception ex) {
-            throw new BuildException (ex);
+            throw new BuildException ("File " + questionsFile + " cannot be parsed", ex);
         }
 
         questions = readElements (q, "question");
@@ -88,7 +88,7 @@ public class Arch extends Task implements org.xml.sax.EntityResolver {
         }
         
         if (generateTemplate) {
-            log ("Output file " + questionsFile + " does not exists. Generating it with skeleton answers");
+            log ("Input file " + questionsFile + " does not exists. Generating it with skeleton answers");
             try {
                 TreeSet s = new TreeSet (questions.keySet ());
                 generateTemplateFile (s);
