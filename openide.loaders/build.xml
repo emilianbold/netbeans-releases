@@ -110,7 +110,7 @@ Microsystems, Inc. All Rights Reserved.
             <property name="javadoc.main.page" value="org/openide/loaders/doc-files/api.html"/>
             <property name="javadoc.arch" location="../arch/arch-openide-datasystems.xml"/>
             <property name="javadoc.docfiles" location="api/doc"/>
-            <property name="javadoc.apichanges" location="api/apichanges.xml"/>
+            <!-- XXX uncomment when file is added: <property name="javadoc.apichanges" location="api/apichanges.xml"/> -->
         </ant>
     </target>
   
