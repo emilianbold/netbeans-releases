@@ -86,13 +86,13 @@ Microsystems, Inc. All Rights Reserved.
       <mkdir dir="netbeans/docs"/>
       <zip zipfile="netbeans/docs/jemmy-API.zip"
              basedir="../jemmy/docs"
-             compress="false">
+             compress="true">
       </zip>
 
     <ant dir="../jellytools/" target="javadoc"/>
       <zip zipfile="netbeans/docs/jelly-API.zip"
              basedir="../jellytools/javadoc"
-             compress="false">
+             compress="true">
       </zip>
   </target>
 
