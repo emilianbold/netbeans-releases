@@ -614,6 +614,9 @@ the Options window:-->
    <!--ID used for random windows that F1 is clicked on:-->
    <mapID target="org.openide.windows.TopComponent" url="pending.html" /> 
 
+<!--ID for unmapped options nodes-->
+   <mapID target="org.openide.options.SystemOption" url="pending.html" /> 
+
   <!--ID for action as listed in Options | IDE Configuration | Look and Feel | Actions:--> 
   <mapID target="org.netbeans.modules.j2ee.impl.DeployAction" url="pending.html" />
   
