@@ -25,7 +25,7 @@ package org.netbeans.modules.web.monitor.client;
 
 import javax.swing.table.*;     // widgets
 import org.netbeans.modules.web.monitor.data.*;
-import com.sun.forte4j.modules.dd.BaseBean;
+import org.netbeans.modules.schema2beans.BaseBean;
 import org.openide.util.NbBundle;
 import java.util.*;
 

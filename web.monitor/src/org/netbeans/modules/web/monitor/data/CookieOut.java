@@ -14,7 +14,7 @@
 package org.netbeans.modules.web.monitor.data;
 
 import org.w3c.dom.*;
-import com.sun.forte4j.modules.dd.*;
+import org.netbeans.modules.schema2beans.*;
 import java.beans.*;
 import java.util.*;
 import javax.servlet.http.Cookie;
