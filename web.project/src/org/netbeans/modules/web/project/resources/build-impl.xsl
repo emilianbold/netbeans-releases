@@ -432,9 +432,10 @@ is divided into following sections:
 
             </target> 
 
-            <target name="do-compile-single-jsp">
+            <target name="-do-compile-single-jsp">
                 <xsl:attribute name="depends">compile</xsl:attribute> 
                 <xsl:attribute name="if">jsp.includes</xsl:attribute> 
+                <fail unless="javac.jsp.includes">Must select some files in the IDE or set javac.jsp.includes</fail>
 
                 <mkdir dir="${{build.generated.dir}}/src"/>
                 <java classname="org.netbeans.modules.web.project.ant.JspCSingle"
@@ -454,8 +455,11 @@ is divided into following sections:
                 <webproject:javac xmlns:webproject="http://www.netbeans.org/ns/web-project/1"
                     srcdir="${{build.generated.dir}}/src"
                     destdir="${{build.generated.dir}}/classes"
-                    classpath="${{javac.classpath}}:${{build.classes.dir}}:${{jspc.classpath}}"/>
-
+                    classpath="${{javac.classpath}}:${{build.classes.dir}}:${{jspc.classpath}}">
+                    <customize>
+                        <patternset includes="${{javac.jsp.includes}}"/>
+                    </customize>
+                </webproject:javac>
                 <!--
                 <webproject:javac xmlns:webproject="http://www.netbeans.org/ns/web-project/1">
                     <xsl:with-param name="srcdir" select="'${{build.generated.dir}}/src'"/>
@@ -468,7 +472,7 @@ is divided into following sections:
             
             <target name="compile-single-jsp">
                 <fail unless="jsp.includes">Must select a file in the IDE or set jsp.includes</fail>
-                <antcall target="do-compile-single-jsp"/>
+                <antcall target="-do-compile-single-jsp"/>
             </target>
 
             <xsl:comment>
@@ -513,7 +517,7 @@ is divided into following sections:
             </target>
             
             <target name="run-deploy">
-                <xsl:attribute name="depends">init,compile,compile-jsps,do-compile-single-jsp</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,compile-jsps,-do-compile-single-jsp</xsl:attribute>
                 <nbdeploy debugmode="false" clientUrlPart="${{client.urlPart}}" forceRedeploy="${{forceRedeploy}}"/>
             </target>
             
@@ -536,7 +540,7 @@ is divided into following sections:
     </xsl:comment>
     <target name="debug">
         <xsl:attribute name="description">Debug project in IDE.</xsl:attribute>
-        <xsl:attribute name ="depends">init,compile,compile-jsps,do-compile-single-jsp</xsl:attribute>
+        <xsl:attribute name ="depends">init,compile,compile-jsps,-do-compile-single-jsp</xsl:attribute>
         <xsl:attribute name="if">netbeans.home</xsl:attribute>
         <nbdeploy debugmode="true" clientUrlPart="${{client.urlPart}}"/>
         <nbjpdaconnect name="${{name}}" host="${{jpda.host}}" address="${{jpda.address}}" transport="${{jpda.transport}}">
@@ -557,7 +561,7 @@ is divided into following sections:
     
     <target name="debug-single">
         <xsl:attribute name="if">netbeans.home</xsl:attribute>
-        <xsl:attribute name="depends">init,compile,compile-jsps,do-compile-single-jsp,debug</xsl:attribute>
+        <xsl:attribute name="depends">init,compile,compile-jsps,-do-compile-single-jsp,debug</xsl:attribute>
     </target>
 
     <target name="-debug-start-debugger">

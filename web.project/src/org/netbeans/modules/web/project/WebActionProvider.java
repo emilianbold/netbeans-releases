@@ -187,7 +187,7 @@ class WebActionProvider implements ActionProvider {
                         String raw = antProjectHelper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.COMPILE_JSPS);
                         boolean compile = decodeBoolean(raw);
                         if (!compile) {
-                            p.setProperty("jsp.includes", getBuiltJspFileNamesAsPath(files)); // NOI18N
+                            setAllPropertiesForSingleJSPCompilation(p, files);
                         }
                         
                         URLCookie uc = (URLCookie) DataObject.find (files [0]).getCookie (URLCookie.class);
@@ -311,7 +311,7 @@ class WebActionProvider implements ActionProvider {
                         String raw = antProjectHelper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.COMPILE_JSPS);
                         boolean compile = decodeBoolean(raw);
                         if (!compile) {
-                            p.setProperty("jsp.includes", getBuiltJspFileNamesAsPath(files)); // NOI18N
+                            setAllPropertiesForSingleJSPCompilation(p, files);
                         }
                         
                         URLCookie uc = (URLCookie) DataObject.find (files [0]).getCookie (URLCookie.class);
@@ -400,7 +400,7 @@ class WebActionProvider implements ActionProvider {
             } else {
                 files = findJsps (context);
                 if (files != null) {
-                    p.setProperty("jsp.includes", getBuiltJspFileNamesAsPath(files) /*ActionUtils.antIncludesList(files, project.getWebModule ().getDocumentBase ())*/); // NOI18N
+                    setAllPropertiesForSingleJSPCompilation(p, files);
                     targetNames = new String [] {"compile-single-jsp"};
                 } else {
                     return;
@@ -434,6 +434,34 @@ class WebActionProvider implements ActionProvider {
             
         return false;
     }    
+    
+    private void setAllPropertiesForSingleJSPCompilation(Properties p, FileObject[] files) {
+        p.setProperty("jsp.includes", getBuiltJspFileNamesAsPath(files)); // NOI18N
+         /*ActionUtils.antIncludesList(files, project.getWebModule ().getDocumentBase ())*/
+        
+        p.setProperty("javac.jsp.includes", getCommaSeparatedGeneratedJavaFiles(files)); // NOI18N
+        
+    }
+    
+    public String getCommaSeparatedGeneratedJavaFiles(FileObject[] jspFiles) {
+        StringBuffer b = new StringBuffer();
+        for (int i = 0; i < jspFiles.length; i++) {
+            String jspRes = getJspResource(jspFiles[i]);
+            if (i > 0) {
+                b.append(',');
+            }
+            b.append(Utils.getGeneratedJavaResource(jspRes));
+        }
+        return b.toString();
+    }
+    
+    /** Returns a resource name for a given JSP separated by / (does not start with a /).
+     */
+    private String getJspResource(FileObject jsp) {
+        ProjectWebModule pwm = project.getWebModule ();
+        FileObject webDir = pwm.getDocumentBase ();
+        return FileUtil.getRelativePath(webDir, jsp);
+    }
     
     public File getBuiltJsp(FileObject jsp) {
         ProjectWebModule pwm = project.getWebModule ();
