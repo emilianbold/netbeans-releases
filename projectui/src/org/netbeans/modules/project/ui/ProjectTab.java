@@ -194,8 +194,10 @@ public class ProjectTab extends TopComponent
     }
     
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(ProjectTab.class);
+        return ExplorerUtils.getHelpCtx( manager.getSelectedNodes(),
+                                         new HelpCtx( ProjectTab.class ) );
     }
+
      
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
