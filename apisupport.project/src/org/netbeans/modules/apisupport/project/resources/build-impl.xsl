@@ -25,6 +25,18 @@ Microsystems, Inc. All Rights Reserved.
     
     <xsl:template match="/">
 
+<xsl:comment>
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+</xsl:comment>
 <xsl:comment> *** GENERATED FROM project.xml - DO NOT EDIT *** </xsl:comment>
 
 <xsl:variable name="build.prerequisites">
@@ -74,6 +86,7 @@ NOTE: nbbuild/build.xml should contain:
         <property name="module.jar.dir" value="modules"/>
         <property name="module.jar" value="${{module.jar.dir}}/${{code.name.base.dashes}}.jar"/>
         <property name="nbm" value="${{code.name.base.dashes}}.nbm"/>
+        <property name="nbm.needs.restart" value="false"/>
         <property name="homepage.base" value="netbeans.org"/>
         <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
         <fail unless="nbroot">Must set nbroot</fail>
@@ -218,7 +231,8 @@ NOTE: nbbuild/build.xml should contain:
                  topdir="."
                  module="netbeans/${{module.jar}}"
                  homepage="http://${{domain}}.${{homepage.base}}/"
-                 distribution="http://${{dist.base}}/${{nbm}}">
+                 distribution="http://${{dist.base}}/${{nbm}}"
+                 needsrestart="${{nbm.needs.restart}}">
             <license file="${{license.file}}"/>
             <signature keystore="${{keystore}}" storepass="${{storepass}}" alias="${{nbm_alias}}"/>
         </makenbm>
