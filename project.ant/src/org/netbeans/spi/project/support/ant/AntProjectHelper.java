@@ -185,7 +185,7 @@ public final class AntProjectHelper {
                 String ns = shared ? PROJECT_NS : PRIVATE_NS;
                 xml = XMLUtil.createDocument(element, ns, null, null);
                 // XXX if shared, need to also create <{PROJECT_NS}:configuration/>
-                // to prevent assertion error in getConfigurationDataRoot
+                // to prevent assertion error in getConfigurationDataRoot (#46048)
             }
             if (shared) {
                 projectXml = xml;
