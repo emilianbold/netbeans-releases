@@ -118,6 +118,8 @@ public class FileOwnerQueryTest extends NbTestCase {
         Project p3 = FileOwnerQuery.getOwner(ext3subproj);
         assertNotSame("different project", p, p3);
         assertEquals("but subprojects are not part of it", ProjectManager.getDefault().findProject(ext3subproj), p3);
+        FileOwnerQuery.markExternalOwner(ext3, null, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        assertEquals("unmarking an owner works", null, FileOwnerQuery.getOwner(ext3));
     }
     
     // XXX test URI usage of external owner
@@ -125,7 +127,6 @@ public class FileOwnerQueryTest extends NbTestCase {
     // - the owning Project is not held strongly (just PM's soft cache)
     // - the root is not held strongly (note - FOQ won't be accurate after it is collected)
     // XXX test IAE from illegal calls to FOQ.markExternalOwner
-    // XXX test unmarking an external owner
     // XXX test an owner which is above the project directory
     
 }

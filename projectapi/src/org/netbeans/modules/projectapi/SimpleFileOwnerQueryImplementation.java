@@ -95,7 +95,11 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
     
     /** @see FileOwnerQuery#markExternalOwner */
     public static void markExternalOwnerTransient(FileObject root, Project owner) {
-        externalOwners.put(root, owner.getProjectDirectory());
+        if (owner != null) {
+            externalOwners.put(root, owner.getProjectDirectory());
+        } else {
+            externalOwners.remove(root);
+        }
     }
     
     private static FileObject uri2FileObject(URI u) {
