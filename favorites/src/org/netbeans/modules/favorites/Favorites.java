@@ -288,17 +288,19 @@ final class Favorites extends FilterNode {
             //Find if given node is root
             boolean isRoot = false;
             DataObject dataObject = (DataObject) getCookie(DataObject.class);
-            FileObject fo = dataObject.getPrimaryFile();
-            if (fo != null) {
-                //Check if it is root.
-                File file = FileUtil.toFile(fo);
-                if (file != null) {
-                    if (file.getParent() == null) {
-                        isRoot = true;
+            if (dataObject != null) {
+                FileObject fo = dataObject.getPrimaryFile();
+                if (fo != null) {
+                    //Check if it is root.
+                    File file = FileUtil.toFile(fo);
+                    if (file != null) {
+                        if (file.getParent() == null) {
+                            isRoot = true;
+                        }
                     }
                 }
             }
-        
+            
             if (isRoot) {
                 return createActionsForRoot(arr);
             } else {
