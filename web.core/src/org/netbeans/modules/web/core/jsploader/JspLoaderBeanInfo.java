@@ -40,9 +40,9 @@ public class JspLoaderBeanInfo extends SimpleBeanInfo {
     public Image getIcon(final int type) {
         if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
                 (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
-            return org.openide.util.Utilities.loadImage ("/org/netbeans/modules/web/core/resources/jspObject.gif"); // NOI18N
+            return org.openide.util.Utilities.loadImage ("org/netbeans/modules/web/core/resources/jspObject.gif"); // NOI18N
         } else {
-            return org.openide.util.Utilities.loadImage ("/org/netbeans/modules/web/core/resources/jspObject32.gif"); // NOI18N
+            return org.openide.util.Utilities.loadImage ("org/netbeans/modules/web/core/resources/jspObject32.gif"); // NOI18N
         }
     }
 
