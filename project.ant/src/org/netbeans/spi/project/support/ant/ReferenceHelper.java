@@ -1166,7 +1166,7 @@ public final class ReferenceHelper {
                     l.add(null);
                     return l;
                 }
-                assert index <= aa.getArtifactLocations().length;
+                assert index < aa.getArtifactLocations().length;
                 URI uri = aa.getArtifactLocations()[index];
                 l.add(aa);
                 l.add(uri);
