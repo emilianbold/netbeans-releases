@@ -266,7 +266,10 @@ public class JellyTestCase extends NbTestCase {
         }
         
         private static void distributeShowingEvent(Component c, HierarchyEvent hevt) {
-            HierarchyListener[] hierarchyListeners = c.getHierarchyListeners();
+            //HierarchyListener[] hierarchyListeners = c.getHierarchyListeners();
+            // Need to use component.getListeners because it is not synchronized
+            // and it not cause deadlock
+            HierarchyListener[] hierarchyListeners = (HierarchyListener[])(c.getListeners(HierarchyListener.class));
             if (hierarchyListeners != null) {
                 for (int i = 0; i < hierarchyListeners.length; i++) {
                     hierarchyListeners[i].hierarchyChanged(hevt);
