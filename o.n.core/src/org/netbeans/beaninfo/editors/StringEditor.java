@@ -69,7 +69,7 @@ public class StringEditor extends PropertyEditorSupport implements ExPropertyEdi
                 //        case '\'': buf.append("\\'"); break; // NOI18N
             case '\\': buf.append("\\\\"); break; // NOI18N
             default:
-                if (c >= 0x0020 && c <= 0x007f)
+                if (c >= 0x0020)
                     buf.append(c);
                 else {
                     buf.append("\\u"); // NOI18N
@@ -93,20 +93,3 @@ public class StringEditor extends PropertyEditorSupport implements ExPropertyEdi
     }
 
 }
-
-/*
- * Log
- *  6    Gandalf-post-FCS1.4.1.0     3/10/00  Tran Duc Trung  FIX: 
- *       getJavaInitializationString() properly escapes int'l charaters if 
- *       needed (\u1234)
- *  5    Gandalf   1.4         1/13/00  Petr Jiricka    i18n
- *  4    Gandalf   1.3         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  3    Gandalf   1.2         9/14/99  Ian Formanek    Fixed bug 3875 - The 
- *       code generated for tabs in string properties should be "\t" instead of 
- *       the tab, which is expanded to spaces by the editor.
- *  2    Gandalf   1.1         6/8/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  1    Gandalf   1.0         1/5/99   Ian Formanek    
- * $
- */
