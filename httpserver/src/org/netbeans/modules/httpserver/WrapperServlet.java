@@ -115,10 +115,17 @@ public class WrapperServlet extends NbBaseServlet {
 
         }
         catch (java.net.MalformedURLException ex) {
-            ex.printStackTrace ();
+            try {
+                response.sendError (HttpServletResponse.SC_NOT_FOUND,
+                                   NbBundle.getBundle(NbBaseServlet.class).getString("MSG_HTTP_NOT_FOUND"));
+            }
+            catch (java.io.IOException ex2) {}
         }
         catch (java.io.IOException ex) {
-            ex.printStackTrace ();
+            try {
+                response.sendError (HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            }
+            catch (java.io.IOException ex2) {}
         }
         finally {
             try { out.close(); } catch (Exception ex) {}
