@@ -41,6 +41,8 @@ public class EntityCatalogImpl extends EntityCatalog {
 
     private static final XMLDataObject.Info INFO = new XMLDataObject.Info();
 
+    private static final RequestProcessor catalogRP = new RequestProcessor("EntityCatalog/parser");
+
     public static void init () {
         INFO.addProcessorClass(RegistrationProcessor.class);
 //        INFO.setIconBase("/org/netbeans/core/windows/toolbars/xmlToolbars");  //!!!
@@ -79,7 +81,7 @@ public class EntityCatalogImpl extends EntityCatalog {
 
         private XMLDataObject peer;
         private Map map;
-        private RequestProcessor.Task parsingTask = RequestProcessor.createRequest(this);
+        private RequestProcessor.Task parsingTask = catalogRP.createRequest(this);
         private EntityCatalogImpl instance = null;
 
         // Processor impl
