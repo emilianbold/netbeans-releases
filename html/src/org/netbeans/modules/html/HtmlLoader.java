@@ -46,7 +46,14 @@ import org.openide.windows.CloneableTopComponent;
 public class HtmlLoader extends UniFileLoader {
 
 
-  {
+  public HtmlLoader() {
+    super (MultiDataObject.class);
+    setDisplayName(NbBundle.getBundle(HtmlLoader.class).
+                   getString("PROP_HtmlLoader_Name"));
+    getExtensions ().addExtension ("html");
+    getExtensions ().addExtension ("htm");
+    getExtensions ().addExtension ("shtml");
+
     setActions (new SystemAction[] {
       SystemAction.get (ViewAction.class),
       SystemAction.get (OpenAction.class),
@@ -64,15 +71,6 @@ public class HtmlLoader extends UniFileLoader {
       SystemAction.get (ToolsAction.class),
       SystemAction.get (PropertiesAction.class),
     });
-  }
-
-  public HtmlLoader() {
-    super (MultiDataObject.class);
-    setDisplayName(NbBundle.getBundle(HtmlLoader.class).
-                   getString("PROP_HtmlLoader_Name"));
-    getExtensions ().addExtension ("html");
-    getExtensions ().addExtension ("htm");
-    getExtensions ().addExtension ("shtml");
   }
 
   protected MultiDataObject createMultiObject (final FileObject primaryFile)
@@ -113,6 +111,7 @@ public class HtmlLoader extends UniFileLoader {
 
 /*
 * Log
+*  20   Gandalf   1.19        8/8/99   Ian Formanek    
 *  19   Gandalf   1.18        7/8/99   Jesse Glick     Context help.
 *  18   Gandalf   1.17        7/8/99   Michal Fadljevic FileSystemAction added  
 *  17   Gandalf   1.16        6/10/99  Jan Jancura     Bug 1772
