@@ -13,9 +13,14 @@
 
 package examples.colorpicker;
 
+/** This class is an entry point of the color picker sample application.
+ * It creates and shows the main application frame.
+ */
 public class ColorPicker extends javax.swing.JFrame {
 
-    /** Initializes the Form */
+    /** Color Picker constructor.
+     * It initializes all GUI components.
+     */
     public ColorPicker() {
         initComponents ();
         pack ();
@@ -94,19 +99,33 @@ public class ColorPicker extends javax.swing.JFrame {
 
     }//GEN-END:initComponents
 
+    /** This method is called when blue slider position is changed.
+     * It sets the current blue color value.
+     * @param evt ChangeEvent instance passed from stateChanged event.
+     */
     private void blueSliderStateChanged (javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_blueSliderStateChanged
         colorPreview1.setBlue (blueSlider.getValue ());
     }//GEN-LAST:event_blueSliderStateChanged
 
+    /** This method is called when green slider position is changed.
+     * It sets the current green color value.
+     * @param evt ChangeEvent instance passed from stateChanged event.
+     */
     private void greenSliderStateChanged (javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_greenSliderStateChanged
         colorPreview1.setGreen (greenSlider.getValue ());
     }//GEN-LAST:event_greenSliderStateChanged
 
+    /** This method is called when red slider position is changed.
+     * It sets the current red color value.
+     * @param evt ChangeEvent instance passed from stateChanged event.
+     */
     private void redSliderStateChanged (javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_redSliderStateChanged
         colorPreview1.setRed (redSlider.getValue ());
     }//GEN-LAST:event_redSliderStateChanged
 
-    /** Exit the Application */
+    /** This method is called when the application frame is closed.
+     * @param evt WindowEvent instance passed from windowClosing event.
+     */
     private void exitForm(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_exitForm
         System.exit (0);
     }//GEN-LAST:event_exitForm
@@ -122,6 +141,9 @@ public class ColorPicker extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
 
 
+    /** Starts the application.
+     * @param args Application arguments.
+     */    
     public static void main(java.lang.String[] args) {
         new ColorPicker ().show ();
     }

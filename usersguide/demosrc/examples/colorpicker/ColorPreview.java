@@ -13,6 +13,9 @@
 
 package examples.colorpicker;
 
+/** ColorPreview class is a visual component that sets its background color according to
+ * given red, green and blue values.
+ */
 public class ColorPreview extends javax.swing.JPanel {
 
     private int red;
@@ -20,23 +23,36 @@ public class ColorPreview extends javax.swing.JPanel {
     private int green;
     private int blue;
 
-    /** Creates new ColorPreview */
+    /** ColorPreview constructor.
+     */
     public ColorPreview() {
         propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
     }
 
+    /** Adds new property change listener to be registered with this bean.
+     * @param l PropertyChangeListener to be registered with this bean.
+     */
     public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
         propertyChangeSupport.addPropertyChangeListener( l );
     }
 
+    /** Removes previously added property added listener.
+     * @param l PropertyChangeListener to be unregistered from this bean.
+     */
     public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
         propertyChangeSupport.removePropertyChangeListener( l );
     }
 
+    /** Red value getter.
+     * @return Red value of this bean.
+     */
     public int getRed() {
         return red;
     }
 
+    /** Red value setter.
+     * @param red Red value of this bean.
+     */
     public void setRed(int red) {
         int oldRed = this.red;
         this.red = red;
@@ -45,10 +61,16 @@ public class ColorPreview extends javax.swing.JPanel {
         repaint ();
     }
 
+    /** Green value getter.
+     * @return Green value of this bean.
+     */
     public int getGreen() {
         return green;
     }
 
+    /** Green value setter.
+     * @param green Green value of this bean.
+     */
     public void setGreen(int green) {
         int oldGreen = this.green;
         this.green = green;
@@ -57,10 +79,16 @@ public class ColorPreview extends javax.swing.JPanel {
         repaint ();
     }
 
+    /** Blue value getter.
+     * @return Blue value of this bean.
+     */
     public int getBlue() {
         return blue;
     }
 
+    /** Blue value setter.
+     * @param blue Blue value of this bean.
+     */
     public void setBlue(int blue) {
         int oldBlue = this.blue;
         this.blue = blue;

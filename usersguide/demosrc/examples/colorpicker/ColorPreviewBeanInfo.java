@@ -15,6 +15,8 @@ package examples.colorpicker;
 
 import java.beans.*;
 
+/** BeanInfo for ColorPreview bean.
+ */
 public class ColorPreviewBeanInfo extends SimpleBeanInfo {
 
     // Property identifiers //GEN-FIRST:Properties
@@ -63,10 +65,16 @@ public class ColorPreviewBeanInfo extends SimpleBeanInfo {
     private static String ICON_MONO_32x32 = null; //GEN-END:Icons
 
 
+    /** This methods returns an array of property descriptors.
+     * @return Array of PropertyDescriptor instances associated with this BeanInfo.
+     */
     public PropertyDescriptor[] getPropertyDescriptors() {
         return properties;
     }
 
+    /** This methods returns an array of event set descriptors.
+     * @return Array of EventSetDescriptor instances associated with this BeanInfo.
+     */
     public EventSetDescriptor[] getEventSetDescriptors() {
         return eventSets;
     }
@@ -74,6 +82,10 @@ public class ColorPreviewBeanInfo extends SimpleBeanInfo {
 
     java.awt.Image icon = loadImage ("/tutorial/colorpicker/ColorPreview.gif");
 
+    /** This method returns this bean info icon, depending on given argument.
+     * @param iconKind Type of icon.
+     * @return Icon associated with this BeanInfo.
+     */
     public java.awt.Image getIcon (int iconKind) {
 
         switch (iconKind) {
