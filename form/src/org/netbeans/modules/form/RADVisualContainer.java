@@ -265,4 +265,21 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
         if (!(comp instanceof RADVisualComponent)) throw new IllegalArgumentException();
         return subComponents.indexOf(comp);
     }
+
+    /////
+
+    public boolean isAncestorOf(RADComponent comp) {
+        int index = getIndexOf(comp);
+        if (index >= 0)
+            return true;
+        
+        RADComponent comps[] = getSubBeans();
+        for (int i = 0; i < comps.length; i++) {
+            RADComponent c = comps[i];
+            if (c instanceof RADVisualContainer
+                && ((RADVisualContainer)c).isAncestorOf(comp))
+                return true;
+        }
+        return false;
+    }
 }

@@ -650,6 +650,9 @@ class HandleLayer extends JPanel
                 return;
 
             if (componentDragger == null && lastLeftButtonPressedPoint != null) {
+                if (lastLeftButtonPressedPoint.distance(e.getPoint()) < 5)
+                    return;
+                
                 Point hotspot = lastLeftButtonPressedPoint;
                 lastLeftButtonPressedPoint = null;
                 
@@ -670,8 +673,8 @@ class HandleLayer extends JPanel
                     while (iter2.hasNext()) {
                         RADComponent metacomp2 = (RADComponent) iter2.next();
                         if (metacomp2 != metacomp
-                            && metacomp2 instanceof RADContainer
-                            && ((RADContainer)metacomp2).isAncestorOf(metacomp)
+                            && metacomp2 instanceof RADVisualContainer
+                            && ((RADVisualContainer)metacomp2).isAncestorOf(metacomp)
                             ) {
                             children.add(metacomp);
                         }

@@ -142,7 +142,7 @@ class ComponentDragger
                                                               component);
                 g.translate(contPos.x, contPos.y);
                 boolean drawn = layoutSupport.paintDragFeedback(
-                    cont, posInCont, comp, posInComp, g);
+                    cont, posInCont, component, posInComp, g);
                 g.translate(- contPos.x, - contPos.y);
                 if (drawn)
                     continue;
@@ -171,6 +171,14 @@ class ComponentDragger
                        mousePosition.y - hotspot.y);
         
         g.draw(new Rectangle2D.Double(rect.x, rect.y, rect.width, rect.height));
+
+        if (metacomp instanceof RADVisualContainer) {
+            RADVisualComponent[] children =
+                ((RADVisualContainer)metacomp).getSubComponents();
+            for (int i = 0; i < children.length; i++) {
+                paintDragFeedback(g, children[i]);
+            }
+        }
     }
 
     private void paintTargetContainerFeedback(Graphics2D g, Container cont) {
