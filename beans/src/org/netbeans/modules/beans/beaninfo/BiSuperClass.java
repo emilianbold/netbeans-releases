@@ -45,7 +45,7 @@ class BiSuperClass extends Object {
         int methodsAdded = 0;           // Workaround for getMethd
 
 
-        while ( ce != null ) {
+        while ( ce != null && !ce.getName().getFullName().equals("java.lang.Object")) {
             MethodElement[] methods = ce.getMethods();
 
             for( int i = 0; i < methods.length; i++ )  {
@@ -63,7 +63,7 @@ class BiSuperClass extends Object {
                     }
                 }
             }
-
+            
             ce = ce.getSuperclass() == null ? null : ClassElement.forName( ce.getSuperclass().getFullName() );
         }
 

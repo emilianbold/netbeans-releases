@@ -74,8 +74,11 @@ public class GenerateBeanInfoAction extends NodeAction implements java.awt.event
     protected boolean enable( Node[] activatedNodes ) {
         if (activatedNodes.length != 1 )
             return false;
-        else
-            return true;
+        else {
+            PatternAnalyser pa = (PatternAnalyser)activatedNodes[0].getCookie( PatternAnalyser.class );
+            ClassElement theClass = pa.getClassElement();
+            return !theClass.isInner();
+        }
     }
 
 

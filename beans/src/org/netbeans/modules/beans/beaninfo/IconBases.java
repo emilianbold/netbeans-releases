@@ -46,6 +46,9 @@ interface IconBases {
     public static final String BIF_EVENTSET_UNICAST =
         "/org/netbeans/modules/beans/resources/bifEventSetUC_"; // NOI18N
 
+    public static final String BIF_METHOD =
+        "/org/netbeans/modules/beans/resources/bifPropertyRW_"; // NOI18N
+
 }
 /*
  * Log
