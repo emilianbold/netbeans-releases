@@ -1,0 +1,189 @@
+/*
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package com.netbeans.ddl.impl;
+
+import java.util.*;
+import java.sql.*;
+import java.text.ParseException;
+import com.netbeans.ddl.*;
+
+/** 
+* Implementation of table column.
+*
+* @author Slavek Psenicka
+*/
+public class TableColumn extends AbstractTableColumn 
+implements TableColumnDescriptor, CheckConstraintDescriptor
+{	
+	/** String constant for column type */
+	public static final String COLUMN = "COLUMN";
+	/** String constant for column check */
+	public static final String CHECK = "CHECK";
+	/** String constant for unique column type */
+	public static final String UNIQUE = "UNIQUE";
+	/** String constant for primary key */
+	public static final String PRIMARY_KEY = "PRIMARY_KEY";
+	/** String constant for foreign key */
+	public static final String FOREIGN_KEY = "FOREIGN_KEY";
+	/** String constant for check constraint */
+	public static final String CHECK_CONSTRAINT = "CHECK_CONSTRAINT";
+	/** String constant for unique constraint */
+	public static final String UNIQUE_CONSTRAINT = "UNIQUE_CONSTRAINT";
+	/** String constant for primary key constraint */
+	public static final String PRIMARY_KEY_CONSTRAINT = "PRIMARY_KEY_CONSTRAINT";
+	/** String constant for foreign key constraint */
+	public static final String FOREIGN_KEY_CONSTRAINT = "FOREIGN_KEY_CONSTRAINT";
+
+	/** Column type */
+	int type;
+
+	/** Column size */ 
+	int size;
+
+	/** Column decimal size */ 
+	int decsize;
+
+	/** Null allowed */
+	boolean nullable;
+
+	/** Default value */
+	String defval;
+
+	/** Check expression */
+	String checke;
+
+	/** Constructor */
+	public TableColumn()
+	{
+		size = 0;
+		decsize = 0;
+		nullable = true;
+	}
+
+	/** Returns type of column */
+	public int getColumnType()
+	{
+		return type;
+	}
+	
+	/** Sets type of column */
+	public void setColumnType(int columnType)
+	{
+		type = columnType;
+	}
+	
+	/** Returns column size */
+	public int getColumnSize()
+	{
+		return size;
+	}
+	
+	/** Sets size of column */
+	public void setColumnSize(int csize)
+	{
+		size = csize;
+	}
+
+	/** Returns decimal digits of column */
+	public int getDecimalSize()
+	{
+		return decsize;
+	}
+
+	/** Sets decimal digits of column */
+	public void setDecimalSize(int dsize)
+	{
+		decsize = dsize;
+	}
+
+	/** Nulls allowed? */
+	public boolean isNullAllowed()
+	{
+		return nullable;
+	}
+	
+	/** Sets null property */
+	public void setNullAllowed(boolean flag)
+	{
+		nullable = flag;
+	}
+	
+	/** Returns default value of column */
+	public String getDefaultValue()
+	{
+		return defval;
+	}
+	
+	/** Sets default value of column */
+	public void setDefaultValue(String val)
+	{
+		defval = val;
+	}
+
+	/** Returns column check condition */
+	public String getCheckCondition()
+	{
+		return checke;
+	}
+	
+	/** Sets column check condition */
+	public void setCheckCondition(String val)
+	{
+		checke = val;
+	}
+	
+	/** 
+	* Returns properties and it's values supported by this object.
+	* object.name		Name of the object; use setObjectName() 
+	* object.owner		Name of the object; use setObjectOwner() 
+	* column.size		Size of column 
+	* column.decsize	Deimal size of size 
+	* column.type		Type of column 
+	* default.value		Condition of column 
+	* Throws DDLException if object name is not specified.
+	*/
+	public Map getColumnProperties(AbstractCommand cmd)
+	throws DDLException
+	{
+		DBSpec spec = cmd.getSpecification();
+		Map args = super.getColumnProperties(cmd);
+		String stype = spec.getType(type);
+		Vector decimaltypes = (Vector)spec.getProperties().get("DecimalTypes");
+		Vector charactertypes = (Vector)spec.getProperties().get("CharacterTypes");
+		String strdelim = (String)spec.getProperties().get("StringDelimiter");
+		Vector sizelesstypes = (Vector)spec.getProperties().get("SizelessTypes");
+		
+		// Decimal size for sizeless type
+		if (sizelesstypes != null && size > 0) {
+			if (!sizelesstypes.contains(stype)) {
+				if (size > 0) args.put("column.size", new Integer(size));
+				if (decsize > 0) args.put("column.decsize", new Integer(decsize));
+			}
+		}
+			
+		String qdefval = defval;	
+		if (charactertypes.contains(spec.getType(type))) qdefval = strdelim+defval+strdelim;
+		args.put("column.type", spec.getType(type));
+		if (!nullable) args.put("column.notnull", "");
+		if (defval != null) args.put("default.value", qdefval);
+		if (checke != null) args.put("check.condition", checke);
+		return args;
+	}	
+}
+
+/*
+* <<Log>>
+*  1    Gandalf   1.0         4/6/99   Slavek Psenicka 
+* $
+*/
