@@ -153,7 +153,6 @@ public class ShortcutIterator implements TemplateWizard.Iterator {
 
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
-    private transient WizardDescriptor.Panel[] currentPanels;
     private transient TemplateWizard wiz;
 
     // You can keep a reference to the TemplateWizard which can

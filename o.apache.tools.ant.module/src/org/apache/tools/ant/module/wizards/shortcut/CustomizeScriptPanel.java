@@ -33,11 +33,8 @@ import javax.swing.JEditorPane;
 
 public class CustomizeScriptPanel extends javax.swing.JPanel {
 
-    private CustomizeScriptWizardPanel wiz;
-    
     /** Create the wizard panel component and set up some basic properties. */
     public CustomizeScriptPanel (CustomizeScriptWizardPanel wiz) {
-        this.wiz = wiz;
         initComponents ();
         initAccessibility ();
         // Provide a name in the title bar.
