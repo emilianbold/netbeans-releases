@@ -14,6 +14,10 @@
 package org.netbeans.api.xml.parsers;
 
 import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import org.openide.ErrorManager;
+import org.openide.TopManager;
 
 import org.xml.sax.*;
 
@@ -43,19 +47,11 @@ public class SAXEntityParser implements XMLReader {
     //??? we are not fully bullet proof
     private static final long RANDOM = System.currentTimeMillis();
     
-    private static final String FAKE_SID = "NetBeans:fake-entity:SID" + RANDOM; // NOI18N
+    private static final String FAKE_SYSTEM_ID = 
+        "NetBeans:Fake-System-ID-" + RANDOM;                                    // NOI18N
     
-    private static final String FAKE_PARAMETER_ENTITY_DOCUMENT = 
-        "<!DOCTYPE fakeDocument" + RANDOM + " SYSTEM '" + FAKE_SID + "'>\n" +   // NOI18N
-        "<fakeDocument" + RANDOM + "/>\n";                                      // NOI18N
-
-    private static final String FAKE_ENTITY_DOCUMENT =
-        "<!DOCTYPE fakeDocument" + RANDOM + " [\n" +                            // NOI18N
-        "  <!ENTITY   fakeEntity" + RANDOM + " SYSTEM '" + FAKE_SID + "'>\n" +  // NOI18N
-        "]>\n" +                                                                // NOI18N
-        "<fakeDocument" + RANDOM + ">\n" +                                      // NOI18N
-        "&fakeEntity" + RANDOM + ";\n" +                                        // NOI18N
-        "</fakeDocument" + RANDOM + ">\n";                                      // NOI18N
+    private static final String FAKE_PUBLIC_ID = 
+        "-//NetBeans//Fake Public ID " + RANDOM + "//EN";                       // NOI18N
 
     // we delegate almost everything on it
     private final XMLReader peer;
@@ -92,9 +88,23 @@ public class SAXEntityParser implements XMLReader {
     public void parse( InputSource entity) throws IOException, SAXException {     
         
         if (entity == null) throw new NullPointerException();
+
+        // log warning for common errors
+
+        String originalSID = entity.getSystemId();
+        if (originalSID == null) {
+            ErrorManager err = TopManager.getDefault().getErrorManager();
+            if (err.isLoggable(err.WARNING)) {
+                StringWriter writer = new StringWriter();
+                PrintWriter out = new PrintWriter(writer);
+                new IllegalArgumentException("Missing system ID may cause serious errors while resolving relative references!").printStackTrace(out);  // NOI18N
+                out.flush();
+                err.log(err.WARNING, writer.getBuffer().toString());
+            }
+        }
         
         // provide fake entity resolver and input source
-
+        
         EntityResolver resolver = peer.getEntityResolver();
         peer.setEntityResolver(new ER(resolver, entity));
                 
@@ -103,37 +113,59 @@ public class SAXEntityParser implements XMLReader {
             peer.setErrorHandler( new EH( errorHandler));
         }
         
-        InputSource fakeInput = createInputSource();
+        InputSource fakeInput = wrapInputSource(entity);
         if (fakeInput.getSystemId() == null) {
-            fakeInput.setSystemId(FAKE_SID);
+            fakeInput.setSystemId(originalSID);
+        }
+        if (fakeInput.getPublicId() == null) {
+            fakeInput.setPublicId(FAKE_PUBLIC_ID);
         }
         peer.parse(fakeInput);
         
     }
 
     /**
-     * Create wrapper input source that utilizes fact that the first
-     * <code>EntityResolver</code> query is redirected to client's 
+     * Create wrapper input source. Default implementation utilizes fact that
+     * default <code>EntityResolver</code> redirects the first query to wrapped 
      * <code>InputSource</code>.
+     * @param input InputSource to be wrapped.
      * @return InputSource that hosts of client's one
+     * @since  0.6
      */
-    protected InputSource createInputSource() {
-        InputSource fakeInput = new InputSource(FAKE_SID);
-        String fakeDocument = generalEntity ? FAKE_ENTITY_DOCUMENT : FAKE_PARAMETER_ENTITY_DOCUMENT;
+    protected InputSource wrapInputSource(InputSource input) {
+        String sid = input.getSystemId();
+        InputSource fakeInput = new InputSource(FAKE_SYSTEM_ID);
+        String fakeDocument;
+        if (generalEntity) {
+            StringBuffer buffer = new StringBuffer();
+            buffer.append("<!DOCTYPE fakeDocument" + RANDOM + " [\n");          // NOI18N
+            String entityRef = " PUBLIC '" + FAKE_PUBLIC_ID + "' '" + sid + "'";// NOI18N
+            buffer.append("<!ENTITY fakeEntity" + RANDOM + entityRef + ">\n");  // NOI18N
+            buffer.append("]>\n");                                              // NOI18N
+            buffer.append("<fakeDocument" + RANDOM + ">\n");                    // NOI18N
+            buffer.append("&fakeEntity" + RANDOM + ";\n");                      // NOI18N
+            buffer.append("</fakeDocument" + RANDOM + ">\n");                   // NOI18N
+            fakeDocument = buffer.toString();
+        } else {
+            StringBuffer buffer = new StringBuffer();
+            String extRef = " PUBLIC '" + FAKE_PUBLIC_ID + "' '" + sid + "'";   // NOI18N
+            buffer.append("<!DOCTYPE fakeDocument" + RANDOM + extRef + ">\n");  // NOI18N
+            buffer.append("<fakeDocument" + RANDOM + "/>\n");                   // NOI18N
+            fakeDocument = buffer.toString();
+        }
         fakeInput.setCharacterStream(new StringReader(fakeDocument));        
         return fakeInput;
     }
     
     /**
-     * Examine if the exception should be propagated into client's <code>
-     * ErrorHandler</code>.
+     * Examine if the exception should be propagated into client's <code>ErrorHandler</code>.
      * @param ex examined exception
      * @return <code>true</code> if the exception originates from client's
      * <code>InputSource</code> and should be propagated.
      */
     protected boolean propagateException(SAXParseException ex) {
         if (ex == null) return false;
-        return FAKE_SID != ex.getSystemId();
+        return FAKE_SYSTEM_ID != ex.getSystemId();
     }
     
     public org.xml.sax.ContentHandler getContentHandler() {
@@ -190,7 +222,7 @@ public class SAXEntityParser implements XMLReader {
     
     /**
      * Redirect to entity input source, it is always the first request.
-     * Pure FAKE_SID approach have problems with some parser implementations.
+     * Pure FAKE_SYSTEM_ID approach have problems with some parser implementations.
      */
     private class ER implements EntityResolver {
 
@@ -225,7 +257,7 @@ public class SAXEntityParser implements XMLReader {
                 }
             }
         }
-        
+                
         private synchronized boolean isFirstRequest() {
             if (entityResolved == false) {
                 entityResolved = true;
