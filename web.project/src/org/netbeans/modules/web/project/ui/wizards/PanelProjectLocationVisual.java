@@ -35,8 +35,12 @@ import org.openide.util.NbBundle;
 
 public class PanelProjectLocationVisual extends SettingsPanel implements DocumentListener {
     
-    public static final String PROP_PROJECT_NAME = "projectName";      //NOI18N
+    public static final String PROP_PROJECT_NAME = "projectName"; //NOI18N
+    private static final String PROJECT_NAME_FORMATER = NbBundle.getMessage(PanelProjectLocationVisual.class,"LBL_NPW1_DefaultProjectName"); //NOI18N
     
+    private String generatedProjectName = "";
+    private int generatedProjectNameIndex = 0;
+
     private PanelConfigureProject panel;
         
     /** Creates new form PanelProjectLocationVisual */
@@ -224,14 +228,16 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         return true;
     }
     
-    void store( WizardDescriptor d ) {        
-        
+    void store( WizardDescriptor d ) {                
         String name = projectNameTextField.getText().trim();
         String location = projectLocationTextField.getText().trim();
         String folder = createdFolderTextField.getText().trim();
         
         d.putProperty( /*XXX Define somewhere */ "projdir", new File( folder )); // NOI18N
         d.putProperty( /*XXX Define somewhere */ "name", name ); // NOI18N
+        
+        final Integer nameIndex = projectNameTextField.getText().equals(generatedProjectName) ? new Integer(generatedProjectNameIndex) : null;
+        d.putProperty(NewWebProjectWizardIterator.PROP_NAME_INDEX, nameIndex);
     }
     
     void read (WizardDescriptor settings) {
@@ -311,23 +317,30 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         }
     }
     
-    
     /** Handles changes in the Project name and project directory
      */
     private void updateTexts( DocumentEvent e ) {
-        
         Document doc = e.getDocument();
-                
-        if ( doc == projectNameTextField.getDocument() || doc == projectLocationTextField.getDocument() ) {
-            // Change in the project name
-        
+        if (doc == projectNameTextField.getDocument() || doc == projectLocationTextField.getDocument()) {
             String projectName = projectNameTextField.getText();
-            String projectFolder = projectLocationTextField.getText(); 
-
-            //if ( projectFolder.trim().length() == 0 || projectFolder.equals( oldName )  ) {                
-            createdFolderTextField.setText( projectFolder + File.separatorChar + projectName );
-            //}
             
+            if (doc == projectLocationTextField.getDocument()) {
+                if (projectName.equals(generatedProjectName)) {
+                    File f = new File(projectLocationTextField.getText().trim());
+                    generatedProjectNameIndex = getValidProjectNameIndex(generatedProjectNameIndex, f);
+                } else {
+                    generatedProjectNameIndex = 0;
+                }
+                generatedProjectName = generatedProjectNameIndex > 0 ? getProjectName(generatedProjectNameIndex) : null;
+                if(generatedProjectNameIndex > 0) {
+                    projectName = generatedProjectName;
+                    projectNameTextField.setText(generatedProjectName);
+                    projectNameTextField.selectAll();
+                }
+            }
+            
+            String projectFolder = projectLocationTextField.getText(); 
+            createdFolderTextField.setText(projectFolder + File.separatorChar + projectName);
         }                
         panel.fireChangeEvent(); // Notify that the panel changed        
     }
@@ -338,6 +351,20 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         } catch (IOException e) {
             return null;
         }
+    }
+
+    public static String getProjectName(int index) {
+        return MessageFormat.format(PROJECT_NAME_FORMATER, new Object[] {String.valueOf(index)});
+    }
+
+    private static int getValidProjectNameIndex(int currentIndex, File projectLocation) {
+        int index = currentIndex > 0 ? currentIndex : FoldersListSettings.getDefault().getNewProjectCount() + 1;
+        if(projectLocation != null) {
+            while (new File(projectLocation, getProjectName(index)).exists()) {
+                index++;
+            }
+        }
+        return index;
     }
 
 }
