@@ -23,5 +23,13 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
 
+    <folder name="Services">
+        <folder name="MIMEResolver">
+            <file name="org-netbeans-modules-image-mime-resolver.xml" url="mime-resolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.image.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/image/imageObject.gif"/>
+            </file>
+        </folder>
+    </folder>
 
 </filesystem>
