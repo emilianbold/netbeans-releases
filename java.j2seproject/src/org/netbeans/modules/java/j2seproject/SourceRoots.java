@@ -10,6 +10,7 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.java.j2seproject;
 
 import java.beans.PropertyChangeEvent;
@@ -55,18 +56,18 @@ public final class SourceRoots {
     public static final String PROP_ROOT_PROPERTIES = "rootProperties";    //NOI18N
     public static final String PROP_ROOTS = "roots";   //NOI18N
 
-    public static final String defaultSourceLabel = NbBundle.getMessage(SourceRoots.class,"NAME_src.dir");
-    public static final String defaultTestLabel = NbBundle.getMessage(SourceRoots.class,"NAME_test.src.dir");
+    public static final String DEFAULT_SOURCE_LABEL = NbBundle.getMessage(SourceRoots.class, "NAME_src.dir");
+    public static final String DEFAULT_TEST_LABEL = NbBundle.getMessage(SourceRoots.class, "NAME_test.src.dir");
 
     private final UpdateHelper helper;
     private final PropertyEvaluator evaluator;
     private final ReferenceHelper refHelper;
     private final String elementName;
     private final String newRootNameTemplate;
-    private List sourceRootProperties;
-    private List sourceRootNames;
-    private List sourceRoots;
-    private List sourceRootURLs;
+    private List/*<String>*/ sourceRootProperties;
+    private List/*<String>*/ sourceRootNames;
+    private List/*<FileObject>*/ sourceRoots;
+    private List/*<URL>*/ sourceRootURLs;
     private final PropertyChangeSupport support;
     private final ProjectMetadataListener listener;
 
@@ -138,7 +139,7 @@ public final class SourceRoots {
                         //Local caching
                         if (sourceRoots == null) {
                             String[] srcProps = getRootProperties();
-                            List result = new ArrayList();
+                            List/*<FileObject>*/ result = new ArrayList();
                             for (int i = 0; i<srcProps.length; i++) {
                                 String prop = evaluator.getProperty(srcProps[i]);
                                 if (prop != null) {
@@ -171,7 +172,7 @@ public final class SourceRoots {
                     //Local caching
                     if (sourceRootURLs == null) {
                         String[] srcProps = getRootProperties();
-                        List result = new ArrayList();
+                        List/*<URL>*/ result = new ArrayList();
                         for (int i = 0; i<srcProps.length; i++) {
                             String prop = evaluator.getProperty(srcProps[i]);
                             if (prop != null) {
@@ -229,7 +230,7 @@ public final class SourceRoots {
                         for (int i=0; i<originalProps.length;i++) {
                             oldRoots2props.put (originalRoots[i],originalProps[i]);
                         }
-                        Map newRoots2lab = new HashMap();
+                        Map/*<URL,String>*/ newRoots2lab = new HashMap();
                         for (int i=0; i<roots.length;i++) {
                             newRoots2lab.put (roots[i],labels[i]);
                         }
@@ -286,7 +287,7 @@ public final class SourceRoots {
                             newRootNode.setAttribute("id",rootName);    //NOI18N
                             String label = (String) newRoots2lab.get (newRoot);
                             if (label != null && label.length()>0 &&
-                               !((label.equals(defaultSourceLabel) && "src.dir".equals(rootName))||(label.equals(defaultTestLabel) && "test.src.dir".equals(rootName)))) { //NOI18N
+                               !((label.equals(DEFAULT_SOURCE_LABEL) && "src.dir".equals(rootName))||(label.equals(DEFAULT_TEST_LABEL) && "test.src.dir".equals(rootName)))) { //NOI18N
                                 newRootNode.setAttribute("name",label); //NOI18N
                             }
                             ownerElement.appendChild (newRootNode);
@@ -326,8 +327,8 @@ public final class SourceRoots {
         Element cfgEl = helper.getPrimaryConfigurationData(true);
         NodeList nl = cfgEl.getElementsByTagNameNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, elementName);
         assert nl.getLength() == 0 || nl.getLength() == 1 : "Illegal project.xml"; //NOI18N
-        List rootProps = new ArrayList ();
-        List rootNames = new ArrayList ();
+        List/*<String>*/ rootProps = new ArrayList ();
+        List/*<String>*/ rootNames = new ArrayList ();
         // It can be 0 in the case when the project is created by J2SEProjectGenerator and not yet customized
         if (nl.getLength()==1) {
             NodeList roots = ((Element)nl.item(0)).getElementsByTagNameNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "root");    //NOI18N

@@ -895,10 +895,10 @@ public class J2SEProjectProperties {
                     data[i][1] = rootLabels[i];
                 }
                 else if (!tests && "src.dir".equals(rootProps[i])) {   //NOI18N
-                    data[i][1] = SourceRoots.defaultSourceLabel;
+                    data[i][1] = SourceRoots.DEFAULT_SOURCE_LABEL;
                 }
                 else if (tests && "test.src.dir".equals(rootProps[i])) { //NOI18N
-                    data[i][1] = SourceRoots.defaultTestLabel;
+                    data[i][1] = SourceRoots.DEFAULT_TEST_LABEL;
                 }
                 else {
                     data[i][1] = "";    //NOI18N
