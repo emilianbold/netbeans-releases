@@ -14,29 +14,32 @@
 
 package com.netbeans.enterprise.modules.db.explorer.dataview;
 
-import java.sql.*;
 import java.awt.*;
+import java.awt.datatransfer.*;
+import java.awt.dnd.*;
 import java.awt.event.*;
+import java.sql.*;
+import java.text.MessageFormat;
 import java.util.*;
 import javax.swing.*;
-import java.text.MessageFormat;
-import javax.swing.border.EmptyBorder;
-import org.openide.NotifyDescriptor;
-import com.netbeans.ddl.DBConnection;
-import org.openide.DialogDescriptor;
-import org.openide.TopManager;
-import org.openide.util.NbBundle;
-import org.openide.windows.TopComponent;
-import org.openide.nodes.NodeTransfer;
-import org.openide.nodes.Node;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.event.ListDataEvent;
-import org.openide.awt.SplittedPanel;
 import javax.swing.DefaultComboBoxModel;
-import java.awt.dnd.*;
-import java.awt.datatransfer.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.ListDataEvent;
+import javax.swing.table.AbstractTableModel;
+
+import org.openide.DialogDescriptor;
+import org.openide.NotifyDescriptor;
+import org.openide.TopManager;
+import org.openide.awt.SplittedPanel;
+import org.openide.nodes.Node;
+import org.openide.nodes.NodeTransfer;
+import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.*;
+import org.openide.windows.TopComponent;
+
+import com.netbeans.ddl.DBConnection;
 import com.netbeans.enterprise.modules.db.explorer.infos.ColumnNodeInfo;
+import com.netbeans.enterprise.modules.db.explorer.nodes.RootNode;
 
 public class DataViewWindow extends TopComponent
 {
@@ -46,10 +49,6 @@ public class DataViewWindow extends TopComponent
 	private JComboBox rcmdscombo;
 	private String schema;
 	private ResourceBundle bundle;
-	
-	private static final int FETCH_LIMIT = 100;
-	private static final int FETCH_STEP = 100;
-	private static final int STRING_LIMIT = 50;
 	
 	public DataViewWindow(DBConnection dbcon, String user, String query)
 	throws SQLException
@@ -251,7 +250,6 @@ public class DataViewWindow extends TopComponent
 		
 		public String toString()
 		{
-//			if (command.length() > STRING_LIMIT) return command.substring(0,STRING_LIMIT)+"...";
 			return command;
 		}		 	
 
@@ -455,7 +453,8 @@ public class DataViewWindow extends TopComponent
 	        // Get all rows.
 	        // In future implementations should be more careful
 		        
-			int rcounter = 0, limit = FETCH_LIMIT;
+			int rcounter = 0, limit = RootNode.getOption().getFetchLimit();
+			int step = RootNode.getOption().getFetchStep();
 	        data = new Vector();
 	        while (rset.next()) {
 	            Vector row = new Vector(cols);
@@ -467,15 +466,18 @@ public class DataViewWindow extends TopComponent
 	            // Catch row count
 	            
 	            if (++rcounter >= limit) {
-	            	String[] arr = new String[] {(new Integer(rcounter)).toString()};
+	            	String[] arr = new String[] {
+	            		(new Integer(rcounter)).toString(), 
+	            		(new Integer(step)).toString()
+	            	};
 	            	String cancel = bundle.getString("DataViewCancelButton");
 	            	String nextset = bundle.getString("DataViewNextFetchButton");
 	            	String allset = bundle.getString("DataViewAllFetchButton");
 	            	String message = MessageFormat.format(bundle.getString("DataViewMessage"), arr);
-	            	NotifyDescriptor ndesc = new NotifyDescriptor(message, "", NotifyDescriptor.YES_NO_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE, null, new Object[] {nextset, allset, cancel}, NotifyDescriptor.CANCEL_OPTION);
+	            	NotifyDescriptor ndesc = new NotifyDescriptor(message, "Fetch data", NotifyDescriptor.YES_NO_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE, null, new Object[] {nextset, allset, cancel}, NotifyDescriptor.CANCEL_OPTION);
 	            	String retv = (String)TopManager.getDefault().notify(ndesc);	
 	            	if (retv.equals(allset)) limit = Integer.MAX_VALUE;
-	            	else if (retv.equals(nextset)) limit = limit + FETCH_STEP;
+	            	else if (retv.equals(nextset)) limit = limit + step;
 	            	else break;
 	            }
 	        }
@@ -521,20 +523,22 @@ public class DataViewWindow extends TopComponent
 		*/
 	    public Class getColumnClass(int column) 
 	    {
-			int coltype = ((ColDef)coldef.elementAt(column)).getDataType();
-	    	switch (coltype) {
-				case Types.CHAR:
-				case Types.VARCHAR:
-				case Types.LONGVARCHAR: return String.class;
-				case Types.BIT: return Boolean.class;
-				case Types.TINYINT:
-				case Types.SMALLINT:
-				case Types.INTEGER: return Integer.class;
-				case Types.BIGINT: return Long.class;
-				case Types.FLOAT:
-				case Types.DOUBLE: return Double.class;
-				case Types.DATE: return java.sql.Date.class;
-	    	}
+			if (column < coldef.size()) {
+				int coltype = ((ColDef)coldef.elementAt(column)).getDataType();
+		    	switch (coltype) {
+					case Types.CHAR:
+					case Types.VARCHAR:
+					case Types.LONGVARCHAR: return String.class;
+					case Types.BIT: return Boolean.class;
+					case Types.TINYINT:
+					case Types.SMALLINT:
+					case Types.INTEGER: return Integer.class;
+					case Types.BIGINT: return Long.class;
+					case Types.FLOAT:
+					case Types.DOUBLE: return Double.class;
+					case Types.DATE: return java.sql.Date.class;
+		    	}
+		    }
 	    	
 	    	return Object.class;
 	    }
@@ -568,8 +572,9 @@ public class DataViewWindow extends TopComponent
 		*/
 	    public Object getValueAt(int aRow, int aColumn) 
 	    {
-	        Vector row = (Vector)data.elementAt(aRow);
-	        if (aColumn<row.size()) return row.elementAt(aColumn);
+	    	Vector row = null;
+	        if (aRow < data.size()) row = (Vector)data.elementAt(aRow);
+	        if (row != null && aColumn<row.size()) return row.elementAt(aColumn);
 	        return null;
 	    }
 	    	    

@@ -61,7 +61,7 @@ public class TableNodeInfo extends DatabaseNodeInfo
 			rs = dmd.getIndexInfo(catalog,user,table, true, false);
 			while (rs.next()) {
 				DatabaseNodeInfo iinfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEXED_COLUMN, rs);
-				String iname = (String)iinfo.get("colname");
+				String iname = (String)iinfo.get("name");
 				ixhash.put(iname,iinfo);
 			}
 			rs.close();

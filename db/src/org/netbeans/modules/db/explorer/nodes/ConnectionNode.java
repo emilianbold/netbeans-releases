@@ -16,7 +16,10 @@ package com.netbeans.enterprise.modules.db.explorer.nodes;
 import java.util.*;
 import java.beans.*;
 import java.sql.*;
+
 import org.openide.util.MapFormat;
+import org.openide.nodes.*;
+
 import com.netbeans.ddl.*;
 import com.netbeans.ddl.impl.SpecificationFactory;
 import com.netbeans.ddl.impl.Specification;
@@ -25,11 +28,18 @@ import com.netbeans.enterprise.modules.db.explorer.DatabaseNodeChildren;
 import com.netbeans.enterprise.modules.db.explorer.DatabaseConnection;
 import com.netbeans.enterprise.modules.db.explorer.dlg.ConnectDialog;
 
+/** 
+* Node representing open or closed connection to database.
+*/
+
 public class ConnectionNode extends DatabaseNode
 {
 	public void setInfo(DatabaseNodeInfo nodeinfo)
 	{
 		super.setInfo(nodeinfo);
+		DatabaseNodeInfo info = getInfo();
+		displayFormat = new java.text.MessageFormat((String)info.get("displayname"));
+		setName(info.getName());
 		getInfo().addConnectionListener(new PropertyChangeListener() {
       		public void propertyChange(PropertyChangeEvent evt) {
       			if (evt.getPropertyName().equals(DatabaseNodeInfo.CONNECTION)) {
@@ -48,17 +58,27 @@ public class ConnectionNode extends DatabaseNode
 		String dkey = (connecting ? "activedisplayname" : "displayname");
 		String fmt = (String)info.get(dkey);
 		if (fmt != null) {
-			String dname = MapFormat.format(fmt, info);
-			if (dname != null) setDisplayName(dname);
+//			String dname = MapFormat.format(fmt, info);
+//			if (dname != null) {
+//				info.setName(dname);
+//				setName(dname);
+//				setDisplayName(dname);
+				displayFormat = new java.text.MessageFormat(fmt);
+				setName((String)info.get(DatabaseNodeInfo.DATABASE));
+				System.out.println("name "+getName());
+//			}
 		}
+		
+		Sheet.Set set = getSheet().get(Sheet.PROPERTIES);
+		Node.Property dbprop = set.get(DatabaseNodeInfo.DATABASE);
+		Node.Property drvprop = set.get(DatabaseNodeInfo.DRIVER);
+		Node.Property usrprop = set.get(DatabaseNodeInfo.USER);
+		Node.Property rememberprop = set.get(DatabaseNodeInfo.REMEMBER_PWD);
 		
 		if (!connecting) {
 			children.remove(children.getNodes());
 		} else try {
 			DatabaseMetaData dmd = connection.getMetaData();
-			
-			// Setup properties
-			
 			info.put(DatabaseNodeInfo.DBPRODUCT, dmd.getDatabaseProductName());
 			info.put(DatabaseNodeInfo.DBVERSION, dmd.getDatabaseProductVersion());
 			info.put(DatabaseNodeInfo.READONLYDB, new Boolean(dmd.isReadOnly()));
@@ -66,41 +86,31 @@ public class ConnectionNode extends DatabaseNode
 			info.put(DatabaseNodeInfo.OJOINSUP, new Boolean(dmd.supportsOuterJoins()));
 			info.put(DatabaseNodeInfo.UNIONSUP, new Boolean(dmd.supportsFullOuterJoins()));
 			
-			boolean catalogexist = false;
-			ResultSet rs = dmd.getCatalogs();
-			while (rs.next()) {
-				DatabaseNodeInfo nfo = DatabaseNodeInfo.createNodeInfo(getInfo(), DatabaseNode.CATALOG, rs);
-				children.createSubnode(nfo, true);
-				catalogexist = true;
-			}
-			rs.close();
+			// Create subnodes
 			
-			if (!catalogexist) {
-				DatabaseNodeInfo nfo = DatabaseNodeInfo.createNodeInfo(getInfo(), DatabaseNode.CATALOG);	
-				nfo.put("displayname", "Default catalog");		
-				children.createSubnode(nfo, true);
-			}
+			DatabaseNodeInfo innernfo;
+			innernfo = DatabaseNodeInfo.createNodeInfo(info, DatabaseNode.TABLELIST);
+			children.createSubnode(innernfo, true);
+			innernfo = DatabaseNodeInfo.createNodeInfo(info, DatabaseNode.VIEWLIST);
+			children.createSubnode(innernfo, true);
+			innernfo = DatabaseNodeInfo.createNodeInfo(info, DatabaseNode.PROCEDURELIST);
+			children.createSubnode(innernfo, true);
 			
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
-	}
-
-
-	protected Map createProperty(String name)
-	{
-/*		try {
-			Connection connection = (Connection)getInfo().getConnection();
-			DatabaseMetaData dmd = connection.getMetaData();
 		
-			if (name.equals("readonlydatabase")) return new Boolean(dmd.isReadOnly());
-			if (name.equals("groupbysupport")) return new Boolean(dmd.supportsGroupBy());		
-			if (name.equals("outerjoinsupport")) return new Boolean(dmd.supportsOuterJoins());		
-			if (name.equals("unionsupport")) return new Boolean(dmd.supportsUnion());		
-			if (name.equals("databasename")) return dmd.getDatabaseProductName();
-			if (name.equals("databasever")) return dmd.getDatabaseProductVersion();
-		} catch (Exception e) {}
-*/
-		return super.createProperty(name);
+		PropertySupport newdbprop = createPropertySupport(dbprop.getName(), dbprop.getValueType(), dbprop.getDisplayName(), dbprop.getShortDescription(), info, !connecting);
+		set.put(newdbprop);
+		firePropertyChange("db",dbprop,newdbprop);
+		PropertySupport newdrvprop = createPropertySupport(drvprop.getName(), drvprop.getValueType(), drvprop.getDisplayName(), drvprop.getShortDescription(), info, !connecting);
+		set.put(newdrvprop);
+		firePropertyChange("driver",drvprop,newdrvprop);
+		PropertySupport newusrprop = createPropertySupport(usrprop.getName(), usrprop.getValueType(), usrprop.getDisplayName(), usrprop.getShortDescription(), info, !connecting);
+		set.put(newusrprop);
+		firePropertyChange("user",usrprop,newusrprop);
+		PropertySupport newrememberprop = createPropertySupport(rememberprop.getName(), rememberprop.getValueType(), rememberprop.getDisplayName(), rememberprop.getShortDescription(), info, connecting);
+		set.put(newrememberprop);
+		firePropertyChange("rememberpassword",rememberprop,newrememberprop);
 	}
 }

@@ -33,6 +33,7 @@ public class ViewDataAction extends DatabaseAction
 
 				node = activatedNodes[0];
 				DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
+				String onome = info.getName();
 				if (info instanceof TableNodeInfo || info instanceof ViewNodeInfo) {
 					Enumeration enum = info.getChildren().elements();
 					while (enum.hasMoreElements()) {
@@ -43,6 +44,7 @@ public class ViewDataAction extends DatabaseAction
 						}
 					}
 				} else if (info instanceof ColumnNodeInfo || info instanceof ViewColumnNodeInfo) {
+					onome = info.getTable();
 					for (int i = 0; i<activatedNodes.length; i++) {
 						node = activatedNodes[i];
 						info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
@@ -53,7 +55,7 @@ public class ViewDataAction extends DatabaseAction
 					}
 				} else throw new Exception("unable to view data from "+info.getClass());
 				
-				DataViewWindow win = new DataViewWindow(info.getDatabaseConnection(), info.getUser(), "select "+cols.toString()+" from "+info.getTable());
+				DataViewWindow win = new DataViewWindow(info.getDatabaseConnection(), info.getUser(), "select "+cols.toString()+" from "+onome);
 				win.open();
 				win.fetch();
 				
