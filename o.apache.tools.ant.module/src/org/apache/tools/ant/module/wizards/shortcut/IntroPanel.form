@@ -14,12 +14,20 @@
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="99" green="66" red="66" type="rgb"/>
         </Property>
+        <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="javax.swing.UIManager.getFont (&quot;Label.font&quot;)" type="code"/>
+        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/apache/tools/ant/module/wizards/shortcut/Bundle.properties" key="IP_TEXT_select_how_to_install_shortcut" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
         <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="cc" green="cc" red="cc" type="rgb"/>
         </Property>
+        <Property name="disabledTextColor" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="javax.swing.UIManager.getColor (&quot;Label.foreground&quot;)" type="code"/>
+        </Property>
+        <Property name="enabled" type="boolean" value="false"/>
+        <Property name="opaque" type="boolean" value="false"/>
       </Properties>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
@@ -35,12 +43,15 @@
       </Constraints>
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridLayout">
-        <Property name="rows" type="int" value="5"/>
         <Property name="columns" type="int" value="1"/>
+        <Property name="rows" type="int" value="5"/>
       </Layout>
       <SubComponents>
         <Component class="javax.swing.JCheckBox" name="customizeCheck">
           <Properties>
+            <Property name="mnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="(NbBundle.getMessage(IntroPanel.class, &quot;IP_LBL_cust_code_checkbox_mnem&quot;)).charAt(0)" type="code"/>
+            </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/apache/tools/ant/module/wizards/shortcut/Bundle.properties" key="IP_LBL_cust_code_checkbox" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
@@ -48,6 +59,9 @@
         </Component>
         <Component class="javax.swing.JCheckBox" name="menuCheck">
           <Properties>
+            <Property name="mnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="(NbBundle.getMessage(IntroPanel.class, &quot;IP_LBL_add_menu_item_mnem&quot;)).charAt(0)" type="code"/>
+            </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/apache/tools/ant/module/wizards/shortcut/Bundle.properties" key="IP_LBL_add_menu_item" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
@@ -59,6 +73,9 @@
         </Component>
         <Component class="javax.swing.JCheckBox" name="toolbarCheck">
           <Properties>
+            <Property name="mnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="(NbBundle.getMessage(IntroPanel.class, &quot;IP_LBL_add_toolbar_button_mnem&quot;)).charAt(0)" type="code"/>
+            </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/apache/tools/ant/module/wizards/shortcut/Bundle.properties" key="IP_LBL_add_toolbar_button" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
@@ -70,6 +87,9 @@
         </Component>
         <Component class="javax.swing.JCheckBox" name="projectCheck">
           <Properties>
+            <Property name="mnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="(NbBundle.getMessage(IntroPanel.class, &quot;IP_LBL_add_to_project_mnem&quot;)).charAt(0)&#xa;" type="code"/>
+            </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/apache/tools/ant/module/wizards/shortcut/Bundle.properties" key="IP_LBL_add_to_project" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
@@ -81,6 +101,9 @@
         </Component>
         <Component class="javax.swing.JCheckBox" name="keyboardCheck">
           <Properties>
+            <Property name="mnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="(NbBundle.getMessage(IntroPanel.class, &quot;IP_LBL_add_kbd_shortcut_mnem&quot;)).charAt(0)&#xa;" type="code"/>
+            </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/apache/tools/ant/module/wizards/shortcut/Bundle.properties" key="IP_LBL_add_kbd_shortcut" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
