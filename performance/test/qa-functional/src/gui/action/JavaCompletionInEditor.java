@@ -7,13 +7,15 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package gui.action;
 
 import java.awt.Component;
+
+import org.netbeans.performance.test.guitracker.LoggingRepaintManager.RegionFilter;
 
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.options.BaseOptions;
@@ -99,10 +101,8 @@ public class JavaCompletionInEditor extends org.netbeans.performance.test.utilit
             setAreaToFilter (thebasecaret.x-20, thebasecaret.y-20, thebasecaret.width+40, thebasecaret.height+40);
         }
         */
-        repaintManager().setOnlyEditor(true);
-        
-//        addClassNameToLookFor("JDCPopupPanel");
-//        setPrintClassNames (true);
+                
+        repaintManager().setRegionFilter(COMPLETION_FILTER);
         setJavaEditorCaretFilteringOn();
 
         // scroll to the place where we start
@@ -123,12 +123,21 @@ public class JavaCompletionInEditor extends org.netbeans.performance.test.utilit
     
     public void shutdown() {
         turnBack();
-        repaintManager().setOnlyEditor(false);
+        repaintManager().setRegionFilter(null);
         editorOperator.closeDiscard();
         super.shutdown();
     }
     
+    
+    private static final RegionFilter COMPLETION_FILTER =
+            new RegionFilter() {
+        public boolean accept(javax.swing.JComponent c) {
+            Class clz = null;
+            return c.getClass().getName().equals("org.netbeans.editor.ext.JDCPopupPanel") || c.getClass().getName().equals("org.openide.text.QuietEditorPane");
+        }
+    };
 
+    
     /** SubChooser to determine codecompletion panel
      */
     private static final class CodeCompletionSubchooser implements ComponentChooser {
@@ -141,4 +150,5 @@ public class JavaCompletionInEditor extends org.netbeans.performance.test.utilit
             return "org.netbeans.editor.ext.JDCPopupPanel";
         }
     }
+    
 }
