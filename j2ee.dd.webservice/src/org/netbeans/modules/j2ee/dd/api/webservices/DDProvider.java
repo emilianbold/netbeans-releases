@@ -192,7 +192,9 @@ public final class DDProvider {
             return resolver;
         }        
         public InputSource resolveEntity (String publicId, String systemId) {
-            if ("http://java.sun.com/xml/ns/j2ee/j2ee_web_services_1_1.xsd".equals(systemId)) {
+            if ("http://www.ibm.com/webservices/xsd/j2ee_web_services_1_1.xsd".equals(systemId)) {
+                return new InputSource("nbres:/org/netbeans/modules/j2ee/dd/impl/resources/j2ee_web_services_1_1.xsd"); //NOI18N
+            } else if ("http://java.sun.com/xml/ns/j2ee/j2ee_web_services_1_1.xsd".equals(systemId)) {
                 return new InputSource("nbres:/org/netbeans/modules/j2ee/dd/impl/resources/j2ee_web_services_1_1.xsd"); //NOI18N
             } else {
                 // use the default behaviour
