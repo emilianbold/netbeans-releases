@@ -41,7 +41,6 @@ public class NbDialogSupport implements DialogSupport.DialogFactory {
     
     private static final String HELP_ID_MacroSavePanel = "editing.macros.recording"; // !!! NOI18N
     private static final String HELP_ID_FindPanel = "editing.find"; // !!! NOI18N
-    private static final String HELP_ID_GotoDialogPanel = "editing.goto"; // !!! NOI18N
     private static final String HELP_ID_JavaFastImportPanel = "editing.fastimport"; // !!! NOI18N
     private static final String HELP_ID_JavaFastOpenPanel = "editing.fastopen"; // !!! NOI18N
     private static final String HELP_ID_ScrollCompletionPane = "editing.codecompletion"; // !!! NOI18N
@@ -53,7 +52,6 @@ public class NbDialogSupport implements DialogSupport.DialogFactory {
             helpIDs = new HashMap(7);
             helpIDs.put("org.netbeans.editor.MacroSavePanel", HELP_ID_MacroSavePanel); // NOI18N
             helpIDs.put("org.netbeans.editor.ext.FindDialogSupport$FindPanel", HELP_ID_FindPanel); // NOI18N
-            helpIDs.put("org.netbeans.editor.ext.GotoDialogPanel", HELP_ID_GotoDialogPanel); // NOI18N
             helpIDs.put("org.netbeans.editor.ext.ScrollCompletionPane", HELP_ID_ScrollCompletionPane); // NOI18N
             helpIDs.put("org.netbeans.editor.ext.java.JavaFastImportPanel", HELP_ID_JavaFastImportPanel); // NOI18N
             helpIDs.put("org.netbeans.editor.ext.java.JavaFastOpenPanel", HELP_ID_JavaFastOpenPanel); // NOI18N
@@ -76,11 +74,12 @@ public class NbDialogSupport implements DialogSupport.DialogFactory {
      *   events.
      */
     public Dialog createDialog(String title, JPanel panel,boolean modal,JButton[] buttons,boolean sideButtons,int defaultIndex,int cancelIndex,ActionListener listener) {
+        String helpID = (String)helpIDs.get(panel.getClass().getName());
         Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(
                 new DialogDescriptor( panel, title, modal, buttons,
                 defaultIndex == -1 ? buttons[0] : buttons[defaultIndex],
                     sideButtons ? DialogDescriptor.RIGHT_ALIGN : DialogDescriptor.BOTTOM_ALIGN,
-                    new HelpCtx( (String)helpIDs.get(panel.getClass().getName()) ), listener
+                    helpID != null ? new HelpCtx( helpID ) : null, listener
                 )
         );
 
