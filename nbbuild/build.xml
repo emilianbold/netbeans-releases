@@ -220,7 +220,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building java/srcmodel..."/>
     <ant dir="../java/srcmodel" target="netbeans"/>
   </target>
-  <target name="all-java/javacore" depends="all-java/javamodel,all-classfile,all-java/api,all-java/parser">
+  <target name="all-java/javacore" depends="all-java/javamodel,all-classfile,all-java/api,all-java/parser,all-openide/loaders">
     <echo message="Building module javacore..."/>
     <ant dir="../java/javacore" target="netbeans"/>
   </target>
