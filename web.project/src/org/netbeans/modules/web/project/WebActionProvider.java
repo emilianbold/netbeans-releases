@@ -46,8 +46,12 @@ import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.jpda.*;
 import javax.enterprise.deploy.spi.Target;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.web.dd.DDProvider;
+import org.netbeans.api.web.dd.Servlet;
+import org.netbeans.api.web.dd.WebApp;
 import org.netbeans.modules.j2ee.deployment.impl.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
+import org.netbeans.modules.web.api.webmodule.URLCookie;
 import org.netbeans.modules.web.project.ui.NoSelectedServerWarning;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
@@ -61,7 +65,6 @@ class WebActionProvider implements ActionProvider {
     // Definition of commands
     
     private static final String COMMAND_COMPILE = "compile"; //NOI18N
-    private static final String COMMAND_COMPILE_JSPS = "compile-jsps"; //NOI18N
         
     // Commands available from Web project
     private static final String[] supportedActions = {
@@ -70,11 +73,11 @@ class WebActionProvider implements ActionProvider {
         COMMAND_REBUILD, 
         COMMAND_COMPILE_SINGLE, 
         COMMAND_RUN, 
+        COMMAND_RUN_SINGLE, 
         COMMAND_DEBUG, 
         JavaProjectConstants.COMMAND_JAVADOC, 
         JavaProjectConstants.COMMAND_DEBUG_FIX,
         COMMAND_COMPILE,
-        COMMAND_COMPILE_JSPS,
     };
     
     // Project
@@ -95,11 +98,11 @@ class WebActionProvider implements ActionProvider {
             commands.put(COMMAND_REBUILD, new String[] {"clean", "dist"}); // NOI18N
             commands.put(COMMAND_COMPILE_SINGLE, new String[] {"compile-single"}); // NOI18N
             commands.put(COMMAND_RUN, new String[] {"run"}); // NOI18N
+            commands.put(COMMAND_RUN_SINGLE, new String[] {"run"}); // NOI18N
             commands.put(COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
             commands.put(JavaProjectConstants.COMMAND_JAVADOC, new String[] {"javadoc"}); // NOI18N
             commands.put(JavaProjectConstants.COMMAND_DEBUG_FIX, new String[] {"debug-fix"}); // NOI18N
             commands.put(COMMAND_COMPILE, new String[] {"compile"}); // NOI18N
-            commands.put(COMMAND_COMPILE_JSPS, new String[] {"compile-jsps"}); // NOI18N
         
         this.antProjectHelper = antProjectHelper;
         this.project = project;
@@ -118,7 +121,7 @@ class WebActionProvider implements ActionProvider {
         Properties p;
         String[] targetNames = (String[])commands.get(command);
         
-        if (command.equals (COMMAND_RUN)) {
+        if (command.equals (COMMAND_RUN) || command.equals (COMMAND_RUN_SINGLE)) {
             if (!isSelectedServer ()) {
                 return;
             }
@@ -133,10 +136,24 @@ class WebActionProvider implements ActionProvider {
                 } else {
                     return;
                 }
-            }            
+            }
             p = new Properties();
-            p.setProperty("client.urlPart", project.getWebModule().getUrl());
-            
+            if (command.equals (COMMAND_RUN)) {
+                p.setProperty("client.urlPart", project.getWebModule().getUrl());
+            } else { //COMMAND_RUN_SINGLE
+                FileObject[] files = findJsps( context );
+                try {
+                    URLCookie uc = (URLCookie) DataObject.find (files [0]).getCookie (URLCookie.class);
+                    if (uc != null) {
+                        p.setProperty("client.urlPart", uc.getURL ());
+                    } else {
+                        return;
+                    }
+                } catch (DataObjectNotFoundException e) {
+                    ErrorManager.getDefault ().notify (e);
+                    return;
+                }
+            }
         } else if (command.equals (COMMAND_DEBUG)) {
             if (isDebugged()) {
                 NotifyDescriptor nd;
@@ -204,6 +221,10 @@ class WebActionProvider implements ActionProvider {
         }
         if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
             return findJavaSources( context ) != null || findJsps (context) != null;
+        }
+        if ( command.equals( COMMAND_RUN_SINGLE ) ) {
+            FileObject jsps [] = findJsps (context);
+            return jsps != null && jsps.length == 1;
         }
         else {
             // other actions are global
