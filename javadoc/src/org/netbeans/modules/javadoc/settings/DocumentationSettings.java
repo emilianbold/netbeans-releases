@@ -77,7 +77,7 @@ public class DocumentationSettings extends SystemOption {
     }
 
     public static DocumentationSettings getDefault(){
-        return (DocumentationSettings)Lookup.getDefault().lookup(DocumentationSettings.class);
+        return (DocumentationSettings)DocumentationSettings.findObject(DocumentationSettings.class,true);
     }
 
     /** @return human presentable name */
