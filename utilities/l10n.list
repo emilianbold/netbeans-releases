@@ -1,8 +1,12 @@
 utilities/group/src/**/Bundle.properties
 utilities/group/src/**/*.html
+utilities/group/src/**/*.gif
 utilities/loaderswitcher/src/**/Bundle.properties
 utilities/loaderswitcher/src/**/*.html
+utilities/loaderswitcher/src/**/*.gif
 utilities/src/**/Bundle.properties
 utilities/src/**/*.html
+utilities/src/**/*.gif
 utilities/project/src/**/Bundle.properties
 utilities/project/src/**/*.html
+utilities/project/src/**/*.gif
