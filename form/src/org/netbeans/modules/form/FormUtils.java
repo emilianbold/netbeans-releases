@@ -89,6 +89,14 @@ public class FormUtils extends Object {
 // -----------------------------------------------------------------------------
 // Utility methods
   
+  /** Moves specified window to the center of the screen
+  */
+  public static void centerWindow (Window w) {
+    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+    Dimension dialogSize = w.getSize();
+    w.setLocation((screenSize.width-dialogSize.width)/2,(screenSize.height-dialogSize.height)/2);
+  }
+  
   public static void notifyPropertyException (Class beanClass, String propertyName, String displayName, Throwable t, boolean reading) {
     boolean dontPrint = false;
     // if it is a subclass of Applet, we ignore InvocationTargetException
@@ -376,6 +384,7 @@ public class FormUtils extends Object {
 
 /*
  * Log
+ *  9    Gandalf   1.8         5/13/99  Ian Formanek    
  *  8    Gandalf   1.7         5/10/99  Ian Formanek    
  *  7    Gandalf   1.6         5/4/99   Ian Formanek    Package change
  *  6    Gandalf   1.5         4/29/99  Ian Formanek    
