@@ -202,6 +202,7 @@ final class IntroPanel extends javax.swing.JPanel {
         protected final void fireChangeEvent () {
             // #44409: need to update the PROP_SHOW_* flags before storeSettings is called,
             // because then it will be too late (iterator will already have progressed):
+            // XXX workaround should no longer be necessary...
             storeSettings(wiz);
             Iterator it;
             synchronized (listeners) {

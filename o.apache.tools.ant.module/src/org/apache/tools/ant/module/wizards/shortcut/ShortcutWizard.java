@@ -47,8 +47,6 @@ public final class ShortcutWizard extends WizardDescriptor {
     public static void show(AntProjectCookie project, Element target) {
         final ShortcutWizard wiz = new ShortcutWizard(project, target, new ShortcutIterator());
         DialogDisplayer.getDefault().createDialog(wiz).setVisible(true);
-        // #44351: have to wait for dialog to be closed.
-        // Does *not* work to use a PropertyChangeListener on PROP_VALUE.
         if (wiz.getValue().equals(WizardDescriptor.FINISH_OPTION)) {
             try {
                 wiz.finish();

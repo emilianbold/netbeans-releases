@@ -77,6 +77,7 @@ final class ShortcutIterator implements WizardDescriptor.Iterator {
         index = 0;
         panels = createPanels ();
         // #44409: make sure IntroWizardPanel knows about wiz
+        // XXX workaround should no longer be necessary...
         ((IntroPanel.IntroWizardPanel) panels[0]).initialize(wiz);
         // Make sure list of steps is accurate.
         String[] steps = createSteps ();

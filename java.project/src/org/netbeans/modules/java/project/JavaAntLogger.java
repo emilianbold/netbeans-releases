@@ -43,7 +43,7 @@ import org.openide.filesystems.FileUtil;
 public final class JavaAntLogger extends AntLogger {
     
     // XXX handle Unicode elements as well
-    // XXX handle unknown source too? or don't bother?
+    // XXX handle unknown source too (#17734)? or don't bother?
     
     /**
      * Regexp matching one line (not the first) of a stack trace.

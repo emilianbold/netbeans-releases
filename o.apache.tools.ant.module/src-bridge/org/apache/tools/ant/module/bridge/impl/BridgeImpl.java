@@ -421,6 +421,8 @@ public class BridgeImpl implements BridgeInterface {
         if (!doGutProject) {
             return;
         }
+        // XXX should ideally try to wait for all other threads in this thread group
+        // to finish - see e.g. #51962 for example of what can happen otherwise.
         try {
             String s = p.getName();
             AntModule.err.log("Gutting extra references in project \"" + s + "\"");
