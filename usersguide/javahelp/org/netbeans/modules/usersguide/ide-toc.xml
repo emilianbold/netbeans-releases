@@ -142,7 +142,7 @@
     <tocitem text="Using Code Completion" >
       <tocitem text="About" target="editing.codecompletion" />
       <tocitem text="Completing a Java Expression" target="editing.completing-exp"/>
-      <tocitem text="Completing an HTML Tag" target="editing.completing-tag"/>
+      <tocitem text="Completing a JSP or HTML Tag" target="editing.completing-tag"/>
       <tocitem text="Setting the Completion Box Delay" target="editing.settingdelay"/>
       <tocitem text="Disabling Automatic Completion " target="editing.disablingdelay"/>
       <tocitem text="Setting Code Completion Shortcuts" target="editing.settingccshortcuts"/>
