@@ -331,7 +331,8 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="xml">
         <folder name="entities">
             <folder name="NetBeans" >
-                <file name="DTD_annotation_type_1_0" url="nbresboot:/org/openide/text/annotation-type-1_0.dtd"/>
+                <!-- Annotation type DTD moved to core xml layer
+                <file name="DTD_annotation_type_1_0" url="nbresboot:/org/openide/text/annotation-type-1_0.dtd"/>-->
                 <file name="DTD_Editor_Fonts_and_Colors_settings_1_0" url="nbres:/org/netbeans/modules/editor/resources/DTDs/Options/EditorFontsColors-1_0.dtd" />
                 <file name="DTD_Editor_Properties_settings_1_0" url="nbres:/org/netbeans/modules/editor/resources/DTDs/Options/EditorProperties-1_0.dtd" />
                 <file name="DTD_Editor_KeyBindings_settings_1_0" url="nbres:/org/netbeans/modules/editor/resources/DTDs/Options/EditorKeyBindings-1_0.dtd" />

@@ -245,6 +245,11 @@ Microsystems, Inc. All Rights Reserved.
             	<file name="DTD_MIME_Resolver_XML_Rules_1_0" url="nbresboot:/org/netbeans/core/filesystems/xml-rules.dtd">
                 	<attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD MIME Resolver XML Rules 1.0//EN"/>
             	</file>            
+
+                <!-- Annotation Type -->
+                <file name="DTD_annotation_type_1_0" url="nbresboot:/org/openide/text/annotation-type-1_0.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD annotation type 1.0//EN"/>
+                </file>
         	</folder>
 
         	<!-- folder name="Forte_for_Java">
