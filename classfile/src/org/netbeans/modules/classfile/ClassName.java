@@ -57,16 +57,11 @@ public final class ClassName implements Comparable, Comparator, Serializable {
      * or more left brackets ('[') prepending the class type.
      * For example:
      * <PRE><CODE>
-     *   java.lang.String         java/lang/String
-     *   java.util.HashMap.Entry  java/util/HashMap$Entry
-     *   java.lang.Integer[]      [java/lang/Integer
-     *   java.awt.Point[][]       [[java/awt/Point
+     *   java.lang.String         Ljava/lang/String;
+     *   java.util.HashMap.Entry  Ljava/util/HashMap$Entry;
+     *   java.lang.Integer[]      [Ljava/lang/Integer;
+     *   java.awt.Point[][]       [[Ljava/awt/Point;
      * </CODE><PRE>
-     * <P>
-     * This method also accepts type strings which begin with
-     * 'L' and end with ';' characters.  This format is used
-     * to reference a class in other type names, such as
-     * method arguments.
      * <P>
      * Because ClassNames are immutable, multiple requests to
      * get the same type string may return identical object
@@ -89,21 +84,8 @@ public final class ClassName implements Comparable, Comparator, Serializable {
 	    synchronized (cache) {
 		cn = getCacheEntry(classType);
 		if (cn == null) {
-		    // check for valid class type
-		    int i = classType.indexOf('L');
-		    String _type;
-		    char lastChar = classType.charAt(classType.length()-1);
-		    if (i != -1 && lastChar == ';') {
-			_type = classType.substring(i+1, classType.length()-1);
-			cn = getCacheEntry(_type);
-			if (cn != null)
-			    return cn;
-		    } else {
-			_type = classType;
-		    }
-
-		    cn = new ClassName(_type);
-		    cache.put(_type, new WeakReference(cn));
+		    cn = new ClassName(classType);
+		    cache.put(classType, new WeakReference(cn));
 		}
 	    }
 	return cn;
@@ -120,10 +102,6 @@ public final class ClassName implements Comparable, Comparator, Serializable {
      */
     private ClassName(String type) {
         this.type = type;
-
-	// internal name is a type stripped of any array designators
-	int i = type.lastIndexOf('[');
-	internalName = (i > -1) ? type.substring(i+1) : type;
     }
 
     /**
@@ -145,7 +123,25 @@ public final class ClassName implements Comparable, Comparator, Serializable {
      * stripped; use getType() instead.
      */
     public String getInternalName() {
+        initInternalName();
         return internalName;
+    }
+
+    private synchronized void initInternalName() {
+        if (internalName == null) {
+            /* To create an internal name, strip off the leading 'L' and 
+             * trailing ';' characters, which also strips off any leading 
+             * array designators.  If this is a primitive type, just strip 
+             * off the array designators.
+             */
+            int i = type.lastIndexOf('L');
+            if (i != -1)
+                internalName = type.substring(i+1, type.length()-1);
+            else {
+                i = type.lastIndexOf('[');
+                internalName = (i > -1) ? type.substring(i+1) : type;
+            }
+        }
     }
 
     /**
@@ -181,8 +177,39 @@ public final class ClassName implements Comparable, Comparator, Serializable {
     }
     
     private synchronized void initExternalName() {
-        if (externalName == null) 
-            externalName = externalizeClassName();
+        if (externalName == null) {
+            StringBuffer sb = new StringBuffer(type);
+            int arrays = 0;
+            boolean atBeginning = true;
+            for (int i = 0; i < sb.length(); i++) {
+                char ch = sb.charAt(i);
+                switch (ch) {
+                  case '[': 
+                    if (atBeginning)
+                        arrays++; 
+                    break;
+                  case 'L':
+                    if (atBeginning)
+                        sb.delete(i, i+1);
+                    break;
+                  case '/':
+                  case '$':
+                    sb.setCharAt(i, '.');
+                    atBeginning = false;
+                    break;
+                  case ';':
+                    sb.delete(i, i+1);
+                  default:
+                    atBeginning = false;
+                }
+            }
+            if (arrays > 0) {
+                sb.delete(0, arrays);
+                for (int i = 0; i < arrays; i++)
+                  sb.append("[]");
+            }
+            externalName = sb.toString();
+        }
     }
 
     /**
@@ -190,6 +217,7 @@ public final class ClassName implements Comparable, Comparator, Serializable {
      */
     public synchronized String getPackage() {
         if (packageName == null) {
+            initInternalName();
             int i = internalName.lastIndexOf('/');
             packageName = (i != -1) ? 
                 internalName.substring(0, i).replace('/', '.') : "";
@@ -268,47 +296,13 @@ public final class ClassName implements Comparable, Comparator, Serializable {
     public String toString() {
         return getExternalName();
     }
-
-    // Called from synchronization block, do not call out!
-    private String externalizeClassName() {
-        StringBuffer sb = new StringBuffer(type);
-	int arrays = 0;
-	boolean atBeginning = true;
-	int length = sb.length();
-	for (int i = 0; i < length; i++) {
-	    char ch = sb.charAt(i);
-	    switch (ch) {
-	      case '[': 
-		if (atBeginning)
-		    arrays++; 
-		break;
-
-	      case '/':
-	      case '$':
-		sb.setCharAt(i, '.');
-		atBeginning = false;
-		break;
-
-	      default:
-		atBeginning = false;
-	    }
-	}
-
-	if (arrays > 0) {
-	    sb.delete(0, arrays);
-	    for (int i = 0; i < arrays; i++)
-	      sb.append("[]");
-	}
-
-        return sb.toString();
-    }
-
+    
     /**
      * Suppress multiple instances of the same type, as well as any
      * immutability attacks (unlikely as that might be).  For more information
      * on this technique, check out Effective Java, Item 57, by Josh Bloch.
      */
     private Object readResolve() throws ObjectStreamException {
-        return getClassName(internalName);
+        return getClassName(type);
     }
 }
