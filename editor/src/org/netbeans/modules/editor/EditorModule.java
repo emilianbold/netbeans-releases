@@ -89,7 +89,7 @@ public class EditorModule implements ModuleInstall {
   /** Module installed again. */
   public void restored () {
 
-    LocaleSupport.setLocaleSupport(new NbLocaleSupport());
+    LocaleSupport.addLocalizer(new NbLocalizer(NbEditorSettings.class));
 
     // Initializations
 
@@ -196,6 +196,7 @@ public class EditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  29   Gandalf   1.28        9/30/99  Miloslav Metelka 
  *  28   Gandalf   1.27        9/13/99  Petr Jiricka    JSP and properties 
  *       kitinfo removed.
  *  27   Gandalf   1.26        9/2/99   Libor Kramolis  Remove XML and DTD 
