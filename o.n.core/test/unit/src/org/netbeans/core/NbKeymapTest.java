@@ -215,6 +215,8 @@ public class NbKeymapTest extends NbTestCase {
         
         action = globalMap.getAction (org.openide.util.Utilities.stringToKey ("C-F2"));
         assertEquals ("No action registered", null, action);
+        
+        shadow.delete ();
     }
     
     public void testShortcutsFolderAddAndRemove () throws Exception {
