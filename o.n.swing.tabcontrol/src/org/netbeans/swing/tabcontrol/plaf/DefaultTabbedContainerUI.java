@@ -85,6 +85,13 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
     /** UIManager key for the border of the entire tabbed container in sliding ui type*/
     public static final String KEY_SLIDING_OUTER_BORDER = "TabbedContainer.sliding.outerBorder"; //NOI18N
 
+    /** UIManager key for the border of the tab displayer in toolbar ui type. */
+    public static final String KEY_TOOLBAR_CONTENT_BORDER = "TabbedContainer.toolbar.contentBorder"; //NOI18N
+    /** UIManager key for the border of the tab displayer in toolbar ui type */
+    public static final String KEY_TOOLBAR_TABS_BORDER = "TabbedContainer.toolbar.tabsBorder"; //NOI18N
+    /** UIManager key for the border of the entire tabbed container in toolbar ui type*/
+    public static final String KEY_TOOLBAR_OUTER_BORDER = "TabbedContainer.toolbar.outerBorder"; //NOI18N
+
     /** Component listener which listens on the container, and attaches/detaches listeners.
      * <strong>do not alter the value in this field.  To provide a different implementation,
      * override the appropriate creation method.</strong>
@@ -252,6 +259,11 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
                 contentKey = KEY_SLIDING_CONTENT_BORDER;
                 outerKey = KEY_SLIDING_OUTER_BORDER;
                 break;
+            case TabbedContainer.TYPE_TOOLBAR :
+                tabsKey = KEY_TOOLBAR_TABS_BORDER;
+                contentKey = KEY_TOOLBAR_CONTENT_BORDER;
+                outerKey = KEY_TOOLBAR_OUTER_BORDER;
+                break;
             default :
                 throw new IllegalStateException ("Unknown type: "
                     + container.getType());
@@ -406,10 +418,12 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
      * should probably override <code>installDisplayer()</code> as well.
      */
     protected LayoutManager createLayout() {
-        if (container.getType() != TabbedContainer.TYPE_SLIDING) {
-            return new BorderLayout();
-        } else {
+        if (container.getType() == TabbedContainer.TYPE_SLIDING) {
             return new SlidingTabsLayout();
+        } else if (container.getType() == TabbedContainer.TYPE_TOOLBAR) {
+            return new ToolbarTabsLayout();
+        } else {
+            return new BorderLayout();
         }
     }
 
@@ -885,6 +899,49 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
                 }
                 bug4924561knownShowing = showing;
             }
+        }
+    }
+    
+    private class ToolbarTabsLayout implements LayoutManager {
+        
+        public void layoutContainer(Container container) {
+            Dimension tabSize = tabDisplayer.getPreferredSize();
+            Insets ins = container.getInsets();
+            int w = container.getWidth() - (ins.left + ins.right);
+            tabDisplayer.setBounds (ins.left, ins.top, 
+                w,
+                tabSize.height);
+            contentDisplayer.setBounds(ins.left, 
+                ins.top + tabSize.height, w,
+                container.getHeight() - (ins.top + ins.bottom + tabSize.height));
+        }
+        
+        public Dimension minimumLayoutSize(Container container) {
+            Dimension tabSize = tabDisplayer.getMinimumSize();
+            Dimension contentSize = contentDisplayer.getMinimumSize();
+            Insets ins = container.getInsets();
+            Dimension result = new Dimension(ins.left + ins.top, ins.right + ins.bottom);
+            result.width += Math.max (tabSize.width, contentSize.width);
+            result.height += tabSize.height + contentSize.height;
+            return result;
+        }
+        
+        public Dimension preferredLayoutSize(Container container) {
+            Dimension tabSize = tabDisplayer.getPreferredSize();
+            Dimension contentSize = contentDisplayer.getPreferredSize();
+            Insets ins = container.getInsets();
+            Dimension result = new Dimension(ins.left + ins.top, ins.right + ins.bottom);
+            result.width += Math.max (tabSize.width, contentSize.width);
+            result.height += tabSize.height + contentSize.height;
+            return result;
+        }
+        
+        public void removeLayoutComponent(Component component) {
+            //do nothing
+        }
+        
+        public void addLayoutComponent(String str, Component component) {
+            //do nothing
         }
     }
 

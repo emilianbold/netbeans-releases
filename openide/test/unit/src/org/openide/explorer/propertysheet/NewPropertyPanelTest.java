@@ -526,9 +526,12 @@ public class NewPropertyPanelTest extends NbTestCase {
         
         
         pressKey(tagsPanel, KeyEvent.VK_UP);
-        
+
+        sleep();
+        sleep();
         newOuter = ((EditablePropertyDisplayer) tagsPanel.inner).getInplaceEditor();
-        assertTrue ("After setting a legal value, the outer component should be an IconPanel to show the illegal value mark",
+        sleep();
+        assertTrue ("After setting a legal value, the outer component should be an IconPanel to show the illegal value mark, but it is " + newOuter,
             newOuter instanceof ButtonPanel);
     }
     

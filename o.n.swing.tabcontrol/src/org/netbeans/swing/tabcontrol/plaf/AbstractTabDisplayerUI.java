@@ -161,15 +161,17 @@ public abstract class AbstractTabDisplayerUI extends TabDisplayerUI {
         if (componentListener != null) {
             displayer.addComponentListener(componentListener);
         }
-        displayer.addMouseListener(mouseListener);
         displayer.getModel().addComplexListDataListener(modelListener);
         displayer.getModel().addChangeListener(modelListener);
-        if (mouseListener instanceof MouseMotionListener) {
-            displayer.addMouseMotionListener(
-                    (MouseMotionListener) mouseListener);
-        }
-        if (mouseListener instanceof MouseWheelListener) {
-            displayer.addMouseWheelListener((MouseWheelListener) mouseListener);
+        if (mouseListener != null) {
+            displayer.addMouseListener(mouseListener);
+            if (mouseListener instanceof MouseMotionListener) {
+                displayer.addMouseMotionListener(
+                        (MouseMotionListener) mouseListener);
+            }
+            if (mouseListener instanceof MouseWheelListener) {
+                displayer.addMouseWheelListener((MouseWheelListener) mouseListener);
+            }
         }
         selectionModel.addChangeListener(selectionListener);
     }
@@ -188,7 +190,9 @@ public abstract class AbstractTabDisplayerUI extends TabDisplayerUI {
             displayer.removeMouseWheelListener(
                     (MouseWheelListener) mouseListener);
         }
-        displayer.removeMouseListener(mouseListener);
+        if (mouseListener != null) {
+            displayer.removeMouseListener(mouseListener);
+        }
         if (componentListener != null) {
             displayer.removeComponentListener(componentListener);
         }
@@ -368,7 +372,7 @@ public abstract class AbstractTabDisplayerUI extends TabDisplayerUI {
         }
         
         public void hierarchyChanged(HierarchyEvent e) {
-            if ((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0) {
+            if (e.getChanged() == displayer && (e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0) {
                 if (displayer.isShowing()) {
                     ToolTipManager.sharedInstance().registerComponent(displayer);
                 } else {

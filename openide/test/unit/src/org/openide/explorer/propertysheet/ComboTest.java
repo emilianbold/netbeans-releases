@@ -94,7 +94,7 @@ public class ComboTest extends NbTestCase {
             jf.setLocation (20,20);
             jf.setSize (300, 400);
             new WaitWindow(jf);
-            tb = ps.getTable();
+            tb = ps.table;
 
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {

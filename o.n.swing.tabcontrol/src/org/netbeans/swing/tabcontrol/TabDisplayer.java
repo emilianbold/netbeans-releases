@@ -25,6 +25,7 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.swing.tabcontrol.plaf.ToolbarTabDisplayerUI;
 
 
 /**
@@ -70,6 +71,8 @@ public final class TabDisplayer extends JComponent {
     public static final int TYPE_EDITOR = TabbedContainer.TYPE_EDITOR;
     
     public static final int TYPE_SLIDING = TabbedContainer.TYPE_SLIDING;
+    
+    public static final int TYPE_TOOLBAR = TabbedContainer.TYPE_TOOLBAR;
     
     /**
      * Property indicating the tab displayer should be painted as
@@ -141,6 +144,11 @@ public final class TabDisplayer extends JComponent {
      * UIManager key for the UI delegate to be used in &quot;sliding&quot; style
      * containers */
     public static final String SLIDING_TAB_DISPLAYER_UI_CLASS_ID = "SlidingTabDisplayerUI"; //NOI18N
+
+    /**
+     * UIManager key for the UI delegate to be used for toolbar style tabs
+     */
+    public static final String TOOLBAR_TAB_DISPLAYER_UI_CLASS_ID = "ToolbarTabDisplayerUI"; //NOI18N
     
     /** Client property to indicate the orientation, which determines what
      * side the tabs are displayed on.  Currently this is only honored by
@@ -192,6 +200,7 @@ public final class TabDisplayer extends JComponent {
             case TYPE_VIEW:
             case TYPE_EDITOR:
             case TYPE_SLIDING:
+            case TYPE_TOOLBAR:
                 break;
             default :
                 throw new IllegalArgumentException("Unknown UI type: " + type); //NOI18N
@@ -218,12 +227,19 @@ public final class TabDisplayer extends JComponent {
             return;
         }
         
+        if (type == TYPE_TOOLBAR) {
+            setUI (new ToolbarTabDisplayerUI(this));
+            return;
+        }
+        
         ComponentUI ui = null;
-        try {
-            ui = UIManager.getUI(this);
-        } catch (Error error) {
-            System.err.println("Could not load a UI for " + getUIClassID() + 
-                " - missing class?");
+        if (UIManager.get(getUIClassID()) != null) { //Avoid Error stack trace
+            try {
+                ui = UIManager.getUI(this);
+            } catch (Error error) {
+                System.err.println("Could not load a UI for " + getUIClassID() + 
+                    " - missing class?");
+            }
         }
         if (ui == null) {
             ui = getType() == TYPE_VIEW ?
@@ -240,6 +256,7 @@ public final class TabDisplayer extends JComponent {
             case TYPE_VIEW : return VIEW_TAB_DISPLAYER_UI_CLASS_ID;
             case TYPE_EDITOR : return EDITOR_TAB_DISPLAYER_UI_CLASS_ID;
             case TYPE_SLIDING : return SLIDING_TAB_DISPLAYER_UI_CLASS_ID;
+            case TYPE_TOOLBAR : return TOOLBAR_TAB_DISPLAYER_UI_CLASS_ID;
             default :
                 throw new IllegalArgumentException ("Unknown UI type: " + 
                     getType());
@@ -317,7 +334,7 @@ public final class TabDisplayer extends JComponent {
 
     /** Make a tab visible.  In the case of scrolling UIs, a tab is not
      * always visible.  This call will make it scroll into view */
-    public final void makeTabVisible(int index) { //XXX needed?
+    public final void makeTabVisible(int index) { 
         getUI().makeTabVisible(index);
     }
 

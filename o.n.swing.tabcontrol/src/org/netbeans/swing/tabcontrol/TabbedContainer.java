@@ -136,6 +136,12 @@ public class TabbedContainer extends JComponent {
      * PROP_MANAGE_TAB_POSITION to Boolean.FALSE.
      */
     public static final int TYPE_SLIDING = 2;
+    
+    /**
+     * Creates a Toolbar-style displayer (the style used by the NetBeans Form Editor's
+     * Component Inspector and a few other places in NetBeans).
+     */
+    public static final int TYPE_TOOLBAR = 3;
 
     /**
      * Property fired when <code>setActive()</code> is called
@@ -291,6 +297,7 @@ public class TabbedContainer extends JComponent {
             case TYPE_VIEW:
             case TYPE_EDITOR:
             case TYPE_SLIDING:
+            case TYPE_TOOLBAR:
                 break;
             default :
                 throw new IllegalArgumentException("Unknown UI type: " + type); //NOI18N
@@ -299,7 +306,7 @@ public class TabbedContainer extends JComponent {
             model = new DefaultTabDataModel();
         }
         this.model = model;
-        this.type = Boolean.getBoolean("nb.tabcontrol.allsliding") ? TYPE_SLIDING : type;
+        this.type = Boolean.getBoolean("nb.tabcontrol.alltoolbar") ? TYPE_TOOLBAR : type;
         this.locationInformer = locationInformer;
         initialized = true;
         updateUI();
@@ -314,10 +321,12 @@ public class TabbedContainer extends JComponent {
             return;
         }
         TabbedContainerUI ui = null;
-        try {
-            ui = (TabbedContainerUI) UIManager.getUI(this);
-        } catch (Error e) {
-            //do nothing
+        if (UIManager.get(getUIClassID()) != null) { //Avoid a stack trace
+            try {
+                ui = (TabbedContainerUI) UIManager.getUI(this);
+            } catch (Error e) {
+                //do nothing
+            }
         }
         if (ui != null) {
             setUI(ui);
@@ -364,6 +373,30 @@ public class TabbedContainer extends JComponent {
     /** Get the ui delegate for this component */
     public TabbedContainerUI getUI() {
         return (TabbedContainerUI) ui;
+    }
+    
+    /**
+     * Set the converter that converts user objects in the data model into
+     * components to display.  If set to null (the default), the user object
+     * at the selected index in the data model will be cast as an instance
+     * of JComponent when searching for what to show for a given tab.  
+     * <p>
+     * For use cases where a single component is to be displayed for more
+     * than one tab, just reconfigured when the selection changes, simply
+     * supply a ComponentConverter.Fixed with the component that should be
+     * used for all tabs.
+     */
+    public final void setComponentConverter (ComponentConverter cc) {
+        ComponentConverter old = converter;
+        converter = cc;
+        if (old instanceof ComponentConverter.Fixed && cc instanceof ComponentConverter.Fixed) {
+            List l = getModel().getTabs();
+            if (!l.isEmpty()) {
+                TabData[] td = (TabData[]) l.toArray (new TabData[0]);
+                getModel().setTabs (new TabData[0]);
+                getModel().setTabs(td);
+            }
+        }
     }
     
     /** Get the component converter which is used to fetch a component
@@ -549,7 +582,6 @@ public class TabbedContainer extends JComponent {
      * event is handling performing whatever action is appropriate.
      *
      * @param event The event to be fired
-     * @return Whether or not the event was consumed
      */
     protected final void postActionEvent(TabActionEvent event) {
         List list;

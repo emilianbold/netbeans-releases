@@ -42,7 +42,7 @@ public class TestFrame extends javax.swing.JFrame {
      * Creates new form TestFrame
      */
     public TestFrame() {
-
+        setDefaultCloseOperation (javax.swing.WindowConstants.EXIT_ON_CLOSE);
         initComponents();
         /*
         try {
@@ -130,7 +130,7 @@ public class TestFrame extends javax.swing.JFrame {
         );
          */
         
-        final TabbedContainer tab = new TabbedContainer(mdl, TabbedContainer.TYPE_EDITOR);
+        final TabbedContainer tab = new TabbedContainer(mdl, TabbedContainer.TYPE_TOOLBAR);
         tab.setActive(true);    
         
         jb6.addActionListener(new ActionListener() {
