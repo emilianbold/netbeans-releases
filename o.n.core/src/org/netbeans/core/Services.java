@@ -24,6 +24,10 @@ import org.openide.util.enum.*;
 import org.openide.util.Mutex;
 import org.openide.util.io.NbMarshalledObject;
 
+import com.netbeans.developer.editors.ExecutorEditor;
+import com.netbeans.developer.editors.CompilerTypeEditor;
+import com.netbeans.developer.editors.DebuggerTypeEditor;
+
 /** Work with all service types.
 *
 * @author Jaroslav Tulach
@@ -44,6 +48,30 @@ final class Services extends ServiceType.Registry {
   /** Default instance */  
   public static Services getDefault () {
     return INSTANCE;
+  }
+  
+  /** Override to specially look up no-op services. */
+  public ServiceType find (Class clazz) {
+    if (clazz == ExecutorEditor.NoExecutor.class)
+      return ExecutorEditor.NO_EXECUTOR;
+    else if (clazz == CompilerTypeEditor.NoCompiler.class)
+      return CompilerTypeEditor.NO_COMPILER;
+    else if (clazz == DebuggerTypeEditor.NoDebugger.class)
+      return DebuggerTypeEditor.NO_DEBUGGER;
+    else
+      return super.find (clazz);
+  }
+  
+  /** Override to specially look up no-op services. */
+  public ServiceType find (String name) {
+    if (name.equals (ExecutorEditor.NO_EXECUTOR.getName ()))
+      return ExecutorEditor.NO_EXECUTOR;
+    else if (name.equals (CompilerTypeEditor.NO_COMPILER.getName ()))
+      return CompilerTypeEditor.NO_COMPILER;
+    else if (name.equals (DebuggerTypeEditor.NO_DEBUGGER.getName ()))
+      return DebuggerTypeEditor.NO_DEBUGGER;
+    else
+      return super.find (name);
   }
   
   /** Adds new section.
@@ -641,6 +669,8 @@ final class Services extends ServiceType.Registry {
 
 /*
 * Log
+*  11   Gandalf   1.10        10/29/99 Jesse Glick     Added "(no compiler)" 
+*       etc. to service type selection panel.
 *  10   Gandalf   1.9         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
 *       Microsystems Copyright in File Comment
 *  9    Gandalf   1.8         10/15/99 Jaroslav Tulach Enterprise debugger can 

@@ -37,12 +37,17 @@ public class ServiceTypePanel extends ExplorerPanel {
   /** list of all services */
   private List services;
   
+  /** @see ServiceTypeEditor#none */
+  private ServiceType none;
+  
   /** Creates new Panel PropertyEditor
   * @param clazz the super class of objects that we display
   * @param name string to name the panel with
+  * @param none no-op type, or null
   */
-  public ServiceTypePanel(Class clazz, String name) {
+  public ServiceTypePanel(Class clazz, String name, ServiceType none) {
     this.clazz = clazz;
+    this.none = none;
     update ();
     
     initComponents ();
@@ -83,7 +88,7 @@ public class ServiceTypePanel extends ExplorerPanel {
   public ServiceType getServiceType () {
     Node[] arr = getExplorerManager ().getSelectedNodes ();
     if (arr.length > 0) {
-      return ((MN)arr[0]).getServiceType ();
+      return ((MN) arr[0]).getServiceType ();
     }
     return null;
   }
@@ -122,6 +127,13 @@ public class ServiceTypePanel extends ExplorerPanel {
         services.add (service);
       } catch (java.beans.IntrospectionException ex) {
       }
+    }
+    try {
+      if (none != null) {
+        l.add (new MN (none));
+        services.add (none);
+      }
+    } catch (java.beans.IntrospectionException ex) {
     }
     return l;
   }
@@ -203,6 +215,8 @@ public class ServiceTypePanel extends ExplorerPanel {
 
 /*
  * Log
+ *  4    Gandalf   1.3         10/29/99 Jesse Glick     Added "(no compiler)" 
+ *       etc. to service type selection panel.
  *  3    Gandalf   1.2         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  2    Gandalf   1.1         10/1/99  Jesse Glick     Cleanup of service type 

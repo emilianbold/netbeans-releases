@@ -36,19 +36,24 @@ public class ServiceTypeEditor extends java.beans.PropertyEditorSupport {
   /** message to be used in custom editor */
   private String message;
 
+  /** type which will be used to indicate "none", i.e. a no-op */
+  private ServiceType none;
+  
   /** constructs new property editor.
   */
   public ServiceTypeEditor() {
-    this (ServiceType.class, "");  
+    this (ServiceType.class, "", null);  
   }
 
   /** constructs new property editor.
   * @param clazz the class to use 
   * @param message the message for custom editor
+  * @param none the service type representing "none"; null to not provide this option
   */
-  public ServiceTypeEditor(Class clazz, String message) {
+  public ServiceTypeEditor(Class clazz, String message, ServiceType none) {
     this.clazz = clazz;
     this.message = getString (message);
+    this.none = none;
     update ();
   }
   
@@ -61,6 +66,7 @@ public class ServiceTypeEditor extends java.beans.PropertyEditorSupport {
       ServiceType e = (ServiceType) ee.nextElement();
       names.add(e.getName());
     }
+    if (none != null) names.add (none.getName ());
     names.toArray(tags = new String[names.size()]);
   }
   
@@ -102,7 +108,10 @@ public class ServiceTypeEditor extends java.beans.PropertyEditorSupport {
   * @param text  The string to be parsed.
   */
   public void setAsText(String text) {
-    setValue(TopManager.getDefault ().getServices ().find (text));
+    if (none != null && none.getName ().equals (text))
+      setValue (none);
+    else
+      setValue(TopManager.getDefault ().getServices ().find (text));
   }
 
   /** @return tags */
@@ -116,9 +125,10 @@ public class ServiceTypeEditor extends java.beans.PropertyEditorSupport {
   }
   
   public java.awt.Component getCustomEditor () {
-    final ServiceTypePanel s = new ServiceTypePanel (clazz, message);
+    final ServiceTypePanel s = new ServiceTypePanel (clazz, message, none);
     
     s.setServiceType ((ServiceType)getValue ());
+    // [PENDING] why is this here? Cancel does not work correctly because of this, I think:
     s.addPropertyChangeListener (new PropertyChangeListener () {
       public void propertyChange (PropertyChangeEvent ev) {
         if ("serviceType".equals (ev.getPropertyName ())) {
@@ -138,6 +148,8 @@ public class ServiceTypeEditor extends java.beans.PropertyEditorSupport {
 
 /*
  * Log
+ *  3    Gandalf   1.2         10/29/99 Jesse Glick     Added "(no compiler)" 
+ *       etc. to service type selection panel.
  *  2    Gandalf   1.1         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  1    Gandalf   1.0         9/15/99  Jaroslav Tulach 
