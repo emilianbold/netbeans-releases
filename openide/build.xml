@@ -544,6 +544,8 @@ The Java Media Framework is separately downloadable.
     <delete file="openide-13javac-workaround.jar"/>
     <delete dir="OpenAPIs"/>
     <delete file="OpenAPIs.zip"/>
+    <delete file="OpenAPIs.tar.gz"/>
+    <delete file="OpenAPIs.tar.bz2"/>
     <delete dir="examplemodules"/>
     <delete file="api/examples/org/netbeans/examples/modules/minicomposer/templates.jar"/>
     <delete dir="compatkit-work"/>
