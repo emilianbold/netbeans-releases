@@ -43,6 +43,10 @@ public class AttrImpl extends AbstractNode implements Attr, XMLTokenIDs {
         this.first = first;
         this.syntax = syntax;
     }
+    
+    public TokenItem getFirstToken() {
+        return first;
+    }
 
     /**
      * @return list of child nodes (Text or EntityReference), never <code>null</code>
