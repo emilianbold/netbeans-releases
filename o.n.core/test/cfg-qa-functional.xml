@@ -50,6 +50,18 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 <!-- END Window System testbags -->
+
+
+<!-- Start Property Editors testbag -->
+    <testbag testattribs="pe" executor="ide" name="Property Editors and Customizers tests" resultsprocessor="unit">
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="gui/propertyeditors/PropertyType_*.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+								
+<!-- END Property Editors testbag -->
     
    <!-- 
     <testbag testattribs="stable and ide" executor="code" name="testbag_2" resultsprocessor="unit">
