@@ -330,7 +330,9 @@ NOTE: nbbuild/build.xml should contain:
 
         <target name="debug-test-single-nb" depends="init,test-build" if="netbeans.home">
             <fail unless="test.class">Must set test.class</fail>
-            <nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="${{test.class}}"/>
+            <nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="${{test.class}}">
+                <classpath refid="test.run.cp"/>
+            </nbjpdastart>
             <antcall target="do-debug-test-single"/>
         </target>
         
