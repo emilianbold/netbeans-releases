@@ -51,7 +51,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
     * @param env environment to pass to 
     */
     public DataEditorSupport (DataObject obj, CloneableEditorSupport.Env env) {
-        super (env);
+        super (env, org.openide.util.lookup.Lookups.singleton (obj));
         this.obj = obj;
     }
     
@@ -271,14 +271,6 @@ public class DataEditorSupport extends CloneableEditorSupport {
         return env instanceof Env && ((Env)env).getFileImpl().isReadOnly();
     }
     
-    /** Getter for data object associated with this 
-    * data object.
-    */
-    final org.openide.util.Lookup getDataObjectHack () {
-        // PENDING-JST: Not effective
-        return org.openide.util.lookup.Lookups.singleton (obj);
-    }
-
     /** Needed for EditorSupport */
     final DataObject getDataObjectHack2 () {
         return obj;
