@@ -349,12 +349,24 @@ public class RADComponent implements FormDesignValue {
      */
     public void setName(String value) {
         if (componentName != null && componentName.equals(value))
-            return; // the same name => no change
-        if (formModel.getVariablePool().findVariableType(value) != null)
-            return; // variable of the name already exists => ignore (user??)
-        if (!org.openide.util.Utilities.isJavaIdentifier(value))
-            return; // invalid name => ignore (user??)
+            return;
+        
+        if (formModel.getVariablePool().findVariableType(value) != null) {
+            IllegalArgumentException iae =
+                new IllegalArgumentException("Component name already int use"); // NOI18N
+            TopManager.getDefault ().getErrorManager().annotate(
+                iae, FormEditor.getFormBundle().getString("ERR_COMPONENT_NAME_ALREADY_IN_USE"));
+            throw iae;
+        }
 
+        if (!org.openide.util.Utilities.isJavaIdentifier(value)) {
+            IllegalArgumentException iae =
+                new IllegalArgumentException("Invalid component name"); // NOI18N
+            TopManager.getDefault ().getErrorManager().annotate(
+                iae, FormEditor.getFormBundle().getString("ERR_INVALID_COMPONENT_NAME"));
+            throw iae;
+        }
+        
         String oldName = componentName;
         componentName = value;
 
