@@ -49,28 +49,40 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ============== -->
     
     <!-- this classpath will be used for executing tests against jars -->
-    <path id="jar.codetest.classpath">        
+    <path id="jar.codetest.classpath">
         <pathelement location="../netbeans/modules/autoload/openidex.jar"/>
         <pathelement location="../../openide/netbeans/lib/openide.jar"/>
+        <fileset dir="../../core/netbeans/lib">
+            <include name="core.jar"/>
+            <include name="ext/*.jar"/>
+        </fileset>
     </path>
     
     <!-- this classpath will be used for executing tests against sources -->
-    <path id="src.codetest.classpath">        
+    <path id="src.codetest.classpath">
         <pathelement location="../src"/>
         <pathelement location="../../openide/netbeans/lib/openide.jar"/>
+        <fileset dir="../../core/netbeans/lib">
+            <include name="core.jar"/>
+            <include name="ext/*.jar"/>
+        </fileset>
     </path>
     
     <!-- this classpath will be used for executing tests against installed IDE -->
-    <path id="ide.codetest.classpath">        
+    <path id="ide.codetest.classpath">
         <pathelement location="${netbeans.home}/modules/autoload/openidex.jar"/>
-        <pathelement location="${netbeans.home}/lib/openide.jar"/>        
+        <pathelement location="${netbeans.home}/lib/openide.jar"/>
+        <fileset dir="${netbeans.home}/lib">
+            <include name="core.jar"/>
+            <include name="ext/*.jar"/>
+        </fileset>
     </path>
     
     <!-- =========== -->
     <!-- Init target -->
     <!-- =========== -->
-    <target name="init">
-    
+    <target name="init" depends="prepare-xtest">
+        
         <taskdef name="nbtaskdef" classname="org.netbeans.xtest.NbMultiTaskDef" 
                  classpath="${xtest.home}/lib/xtest.jar"/>
                  
@@ -137,13 +149,17 @@ Microsystems, Inc. All Rights Reserved.
     <target name="buildtests" depends="jars"/>
     <target name="cleantests" depends="clean"/>
     
+    <target name="prepare-xtest">
+        <ant dir="${xtest.home}" antfile="build.xml" target="buildxtest"/>
+    </target>
+    
     <target name="config" depends="init">
         <!-- This task reads config file cfg-${xtest.testtype}.xml and selects all -->
         <!-- testbags, which conforms to ${xtest.attributes} = is subset or equals -->
         <test-configurator testtype="${xtest.testtype}" testattributes="${xtest.attributes}"/>
     </target>
     
-    <target name="runtests" depends="config,cleanresults">
+    <target name="runtests" depends="config,cleanresults,buildtests">
         <echo message="openidex tests, test type: ${xtest.testtype}, test attributes: ${xtest.attributes}"/>
         <test-executor paramClasspathProp="tbag.classpath"
                        paramPatternsetInProp="tbag.patternset.include"
@@ -255,7 +271,7 @@ Microsystems, Inc. All Rights Reserved.
         </property>
 
         <property name="args" value="-jdkhome ${jdkhome} -userdir ${xtest.userdir} -cp:p ${xtest.ide.path} -J-Dtest.class=${test.class} -J-Dtest.classpath=${test.classpath} -J-Dtest.ant.file=${ant.file} -J-Dtest.target=${test.target} -J-Dxtest.home=${xtest.home} -J-Dxtest.includes=${xtest.includes} -J-Dxtest.excludes=${xtest.excludes} -J-Dtbag.classpath=${tbag.classpath} -J-Dtbag.patternset.include=${tbag.patternset.include} -J-Dtbag.patternset.exclude=${tbag.patternset.exclude} -J-Dtbag.testtype=${tbag.testtype} -J-Dtbag.formater=${tbag.formater} -J-Dtest.exit=true -J-Dnetbeans.full.hack=true"/>
-        <echo message="ARUMENTS = ${args}"/>
+        <echo message="ARGUMENTS = ${args}"/>
 
         <copy file="${xtest.home}/lib/patches/testmain.jar" todir="${netbeans.test.home}/lib/patches"/>
         <copy file="${xtest.home}/lib/xtest.jar" todir="${netbeans.test.home}/lib"/>
