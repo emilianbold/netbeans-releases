@@ -74,7 +74,6 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     private static final String ATTR_INSTANTIATING_DESC = "instantiatingWizardURL"; //NOI18N
     
     private Builder firer;
-    private String selectedTemplate = null;
     
     /** Creates new form TemplatesPanelGUI */
     public TemplatesPanelGUI (Builder firer) {
@@ -103,30 +102,27 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     }
     
     public String getSelectedCategoryName () {
-        return ((ExplorerProviderPanel)this.categoriesPanel).getSelectionPath ();
+        return ((ExplorerProviderPanel)this.categoriesPanel).getSelectionPath();
     }
     
     public void setSelectedTemplateByName (final String templateName) {
-        selectedTemplate = templateName;
         final TemplatesPanel tempExplorer = ((TemplatesPanel)this.projectsPanel);
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
                 if (templateName != null) {
                     tempExplorer.setSelectedNode (templateName);
                     if (tempExplorer.getSelectionPath () == null) {
-                        tempExplorer.selectFirstTemplate ();
-                        selectedTemplate = tempExplorer.getSelectionPath ();
+                        tempExplorer.selectFirstTemplate ();                        
                     }
                 } else {
                     tempExplorer.selectFirstTemplate ();
-                    selectedTemplate = tempExplorer.getSelectionPath ();
                 }
             }
         });
     }
     
     public String getSelectedTemplateName () {
-        return selectedTemplate;
+        return ((TemplatesPanel)this.projectsPanel).getSelectionPath();
     }
     
     public FileObject getSelectedTemplate () {
@@ -482,8 +478,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         
         private ListView list;
 
-        protected synchronized JComponent createComponent () {
-            
+        protected synchronized JComponent createComponent () {            
             if (this.list == null) {
                 this.list = new TemplatesListView ();
                 this.list.setPopupAllowed(false);

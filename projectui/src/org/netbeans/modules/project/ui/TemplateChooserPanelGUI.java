@@ -152,7 +152,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     private String getCategory () {
         return ((TemplatesPanelGUI)this.templatesPanel).getSelectedCategoryName ();
     }
-    
+
     public void setCategory (String category) {
         ((TemplatesPanelGUI)this.templatesPanel).setSelectedCategoryByName (category);
     }
@@ -257,9 +257,10 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         
         public void actionPerformed (ActionEvent event) {
             String cat = getCategory ();
-            setKeys (Collections.EMPTY_LIST);
+            String template =  ((TemplatesPanelGUI)TemplateChooserPanelGUI.this.templatesPanel).getSelectedTemplateName();
             this.updateKeys ();
             setCategory (cat);
+            ((TemplatesPanelGUI)TemplateChooserPanelGUI.this.templatesPanel).setSelectedTemplateByName(template);
         }
                 
         
