@@ -16,7 +16,6 @@ package org.netbeans.spi.project.support.ant;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import org.netbeans.api.project.Project;
@@ -29,15 +28,19 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import org.openide.filesystems.FileLock;
+
+import java.io.OutputStream;
+
+import java.util.HashSet;
 
 /* XXX tests needed:
  * - testProjectXmlSavedException
@@ -201,6 +204,74 @@ public class AntProjectHelperTest extends NbTestCase {
         assertEquals("does not have other defs", null, m.get("bogus.prop"));
         assertEquals("correct evaluateString", "value1:value2",
             pev.evaluate("${shared.prop}:${private.prop}"));
+        // #44213: try modifying build.properties.
+        PropertyUtilsTest.TestPCL l = new PropertyUtilsTest.TestPCL();
+        pev.addPropertyChangeListener(l);
+        FileObject buildProperties = scratch.getFileObject("userdir/build.properties");
+        assertNotNull("have build.properties", buildProperties);
+        FileLock lock = buildProperties.lock();
+        OutputStream os = buildProperties.getOutputStream(lock);
+        Properties p = new Properties();
+        p.setProperty("global.prop", "value5a");
+        p.setProperty("global.prop.2", "globalvalue2");
+        p.store(os, null);
+        os.close();
+        lock.releaseLock();
+        assertEquals("two properties fired", new HashSet(Arrays.asList(new String[] {"global.prop", "global.prop.2"})), l.changed);
+        l.reset();
+        assertEquals("global.prop is correct", "value5a", pev.getProperty("global.prop"));
+        assertEquals("global.prop.2 is correct", "globalvalue2", pev.getProperty("global.prop.2"));
+        // XXX try the same when user.properties.file is not defined
+        // #42147: try modifying project.properties and private.properties on disk.
+        FileObject projectProperties = projdir.getFileObject("nbproject/project.properties");
+        assertNotNull("have project.properties", projectProperties);
+        lock = projectProperties.lock();
+        os = projectProperties.getOutputStream(lock);
+        p = new Properties();
+        p.setProperty("overridden.prop", "value3a"); // different, but won't matter
+        p.setProperty("shared.prop", "value1a"); // changed
+        p.setProperty("derived.prop", "${private.prop}:${shared.prop}:${undefined.prop}"); // same literally
+        p.store(os, null);
+        os.close();
+        lock.releaseLock();
+        assertEquals("two properties fired", new HashSet(Arrays.asList(new String[] {"shared.prop", "derived.prop"})), l.changed);
+        l.reset();
+        assertEquals("shared.prop is correct", "value1a", pev.getProperty("shared.prop"));
+        assertEquals("derived.prop correct", "value2:value1a:${undefined.prop}", pev.getProperty("derived.prop"));
+        FileObject privateProperties = projdir.getFileObject("nbproject/private/private.properties");
+        assertNotNull("have private.properties", privateProperties);
+        lock = privateProperties.lock();
+        os = privateProperties.getOutputStream(lock);
+        p = new Properties();
+        p.setProperty("private.prop", "value2a"); // changed
+        p.setProperty("overridden.prop", "value4"); // same
+        p.setProperty("tempdir", "${java.io.tmpdir}/foo"); // same
+        p.setProperty("user.properties.file", "../userdir/build.properties"); // same
+        p.store(os, null);
+        os.close();
+        lock.releaseLock();
+        assertEquals("two properties fired", new HashSet(Arrays.asList(new String[] {"private.prop", "derived.prop"})), l.changed);
+        l.reset();
+        assertEquals("private.prop is correct", "value2a", pev.getProperty("private.prop"));
+        assertEquals("derived.prop correct", "value2a:value1a:${undefined.prop}", pev.getProperty("derived.prop"));
+        // Try deleting project.properties and make sure its values are cleared.
+        projectProperties.delete();
+        assertEquals("two properties fired", new HashSet(Arrays.asList(new String[] {"shared.prop", "derived.prop"})), l.changed);
+        l.reset();
+        assertEquals("shared.prop is gone", null, pev.getProperty("shared.prop"));
+        assertEquals("derived.prop is gone", null, pev.getProperty("derived.prop"));
+        // Now recreate it.
+        projectProperties = projdir.getFileObject("nbproject").createData("project.properties");
+        lock = projectProperties.lock();
+        os = projectProperties.getOutputStream(lock);
+        p = new Properties();
+        p.setProperty("derived.prop", "${private.prop}:${shared.prop}:${undefined.prop.2}"); // restoring w/ changes
+        p.store(os, null);
+        os.close();
+        lock.releaseLock();
+        assertEquals("one property fired", Collections.singleton("derived.prop"), l.changed);
+        l.reset();
+        assertEquals("derived.prop is back", "value2a:${shared.prop}:${undefined.prop.2}", pev.getProperty("derived.prop"));
     }
     
     /**

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -17,7 +17,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -47,6 +46,15 @@ import org.openide.util.MutexException;
 import org.openide.util.TopologicalSortException;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
+import org.netbeans.modules.project.ant.FileChangeSupport;
+import org.netbeans.modules.project.ant.FileChangeSupportListener;
+import org.openide.filesystems.FileLock;
+
+import java.io.FileOutputStream;
+
+import org.netbeans.modules.project.ant.FileChangeSupportEvent;
+
+import java.util.Properties;
 
 /**
  * Support for working with Ant properties and property files.
@@ -82,12 +90,10 @@ public class PropertyUtils {
      * @return user properties (empty if missing or malformed)
      */
     public static EditableProperties getGlobalProperties() {
-        // XXX cache between calls
-        // XXX make more flexible - some way to define other properties files too
         return (EditableProperties)ProjectManager.mutex().readAccess(new Mutex.Action() {
             public Object run() {
                 if (USER_BUILD_PROPERTIES != null && USER_BUILD_PROPERTIES.isFile() &&
-                USER_BUILD_PROPERTIES.canRead()) {
+                        USER_BUILD_PROPERTIES.canRead()) {
                     try {
                         InputStream is = new FileInputStream(USER_BUILD_PROPERTIES);
                         try {
@@ -120,19 +126,23 @@ public class PropertyUtils {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws IOException {
                     if (USER_BUILD_PROPERTIES != null) {
-                        OutputStream os = new FileOutputStream(USER_BUILD_PROPERTIES);
-                        try {
-                            properties.store(os);
-                        } finally {
-                            os.close();
+                        FileObject bp = FileUtil.toFileObject(USER_BUILD_PROPERTIES);
+                        if (bp == null) {
+                            USER_BUILD_PROPERTIES.getParentFile().mkdirs();
+                            new FileOutputStream(USER_BUILD_PROPERTIES).close();
+                            bp = FileUtil.toFileObject(USER_BUILD_PROPERTIES);
+                            assert bp != null : "Could not make " + USER_BUILD_PROPERTIES + "; no masterfs?";
                         }
-                        synchronized (PropertyUtils.class) {
-                            if (globalPropertyProvider != null) {
-                                GlobalPropertyProvider gpp = (GlobalPropertyProvider)globalPropertyProvider.get();
-                                if (gpp != null) {
-                                    gpp.fireChange();
-                                }
+                        FileLock lock = bp.lock();
+                        try {
+                            OutputStream os = bp.getOutputStream(lock);
+                            try {
+                                properties.store(os);
+                            } finally {
+                                os.close();
                             }
+                        } finally {
+                            lock.releaseLock();
                         }
                     } else {
                         throw new IOException("Do not know where to store build.properties; must set netbeans.user!"); // NOI18N
@@ -159,24 +169,60 @@ public class PropertyUtils {
                 return pp;
             }
         }
-        GlobalPropertyProvider gpp = new GlobalPropertyProvider();
+        PropertyProvider gpp;
+        if (USER_BUILD_PROPERTIES != null) {
+            gpp = propertiesFilePropertyProvider(USER_BUILD_PROPERTIES);
+        } else {
+            gpp = fixedPropertyProvider(Collections.EMPTY_MAP);
+        }
         globalPropertyProvider = new SoftReference(gpp);
         return gpp;
     }
+
+    /**
+     * Create a property provider based on a properties file.
+     * The file need not exist at the moment; if it is created or deleted an appropriate
+     * change will be fired. If its contents are changed on disk a change will also be fired.
+     */
+    /* public? */ static PropertyProvider propertiesFilePropertyProvider(File propertiesFile) {
+        assert propertiesFile != null;
+        return new FilePropertyProvider(propertiesFile);
+    }
     
-    private static final class GlobalPropertyProvider implements PropertyProvider {
+    /**
+     * Provider based on a named properties file.
+     */
+    private static final class FilePropertyProvider implements PropertyProvider, FileChangeSupportListener {
         
-        // XXX listen to changes in the file too
-        
+        private final File properties;
         private final List/*<ChangeListener>*/ listeners = new ArrayList();
         
-        public GlobalPropertyProvider() {}
-        
-        public Map getProperties() {
-            return getGlobalProperties();
+        public FilePropertyProvider(File properties) {
+            this.properties = properties;
+            FileChangeSupport.DEFAULT.addListener(this, properties);
         }
         
-        void fireChange() {
+        public Map getProperties() {
+            // XXX does this need to run in PM.mutex.readAccess?
+            if (properties.isFile() && properties.canRead()) {
+                try {
+                    InputStream is = new FileInputStream(properties);
+                    try {
+                        Properties props = new Properties();
+                        props.load(is);
+                        return props;
+                    } finally {
+                        is.close();
+                    }
+                } catch (IOException e) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                }
+            }
+            // Missing or erroneous.
+            return Collections.EMPTY_MAP;
+        }
+        
+        private void fireChange() {
             ChangeListener[] ls;
             synchronized (this) {
                 if (listeners.isEmpty()) {
@@ -197,70 +243,34 @@ public class PropertyUtils {
         public synchronized void removeChangeListener(ChangeListener l) {
             listeners.remove(l);
         }
+
+        public void fileCreated(FileChangeSupportEvent event) {
+            //System.err.println("GP: " + event);
+            fireChange();
+        }
+
+        public void fileDeleted(FileChangeSupportEvent event) {
+            //System.err.println("GP: " + event);
+            fireChange();
+        }
+
+        public void fileModified(FileChangeSupportEvent event) {
+            //System.err.println("GP: " + event);
+            fireChange();
+        }
         
     }
     
     /**
-     * Evaluate an Ant-style property according to a list of property files.
-     * <p>
-     * The earlier maps take precedence if more than one map defines a property.
-     * A property value may include Ant-style <samp>${propname}</samp> substitutions,
-     * where the reference must be defined in this map or an earlier one.
-     * <samp>$$</samp> escapes to <samp>$</samp> and other <samp>$</samp>s are left alone.
-     * <p>
-     * As with Ant, property dereferences that fail just leave the literal reference string;
-     * but the return value of this method will be null if no attempt was made to define
-     * this property at all.
-     * <p>
-     * Cyclic references within one map are not permitted and will result in the return
-     * value of this method being null if a cyclic reference would have been required
-     * to evaluate the property. The implementation may or may not return null in case
-     * some properties in a mapping were cyclically defined but the values of those
-     * properties were not required in order to evaluate the given property.
-     * <p>
-     * The net effect is similar to a sequence of <samp>&lt;property file="..."/&gt;</samp> calls.
-     * <p>
-     * You may wish to start the list with a hand-constructed map containing
-     * any critical built-in properties such as <samp>${basedir}</samp> in case
-     * these are referred to.
-     * <p>
-     * Besides the list of substitutable maps, a single map is passed
-     * (effectively first in the list - none of its definitions can be overridden)
-     * for which no <samp>$</samp> substitutions are performed. This map can be
-     * used for fixed properties which should be considered predefined; for example,
-     * <samp>basedir</samp> to permit file location resolution, or
-     * {@link System#getProperties} to mirror Ant's automatic exposure of system
-     * properties as Ant properties.
-     * @param prop a property name to try to evaluate
-     * @param predefs an unevaluated set of initial definitions
-     * @param defs an ordered list of property mappings, e.g. {@link EditableProperties} instances
-     * @return a value for the property, or null if it was not defined or a circularity error was detected
-     * @deprecated Please use {@link #fixedPropertyProvider} and {@link #sequentialPropertyEvaluator} instead.
-     */
-    public static String evaluate(String prop, Map/*<String,String>*/ predefs, List/*<Map<String,String>>*/ defs) {
-        // XXX could be faster for large mappings by using reverse analysis
-        // (but caching is probably much easier if the entire map is kept)
-        Map m = evaluateAll(predefs, defs);
-        if (m != null) {
-            return (String)m.get(prop);
-        } else {
-            return null;
-        }
-    }
-    
-    /**
      * Evaluate all properties in a list of property mappings.
-     * Similar to {@link #evaluate} but produces all the values
-     * at once.
      * <p>
      * If there are any cyclic definitions within a single mapping,
      * the evaluation will fail and return null.
      * @param defs an ordered list of property mappings, e.g. {@link EditableProperties} instances
      * @param predefs an unevaluated set of initial definitions
      * @return values for all defined properties, or null if a circularity error was detected
-     * @deprecated Please use {@link #fixedPropertyProvider} and {@link #sequentialPropertyEvaluator} instead.
      */
-    public static Map/*<String,String>*/ evaluateAll(Map/*<String,String>*/ predefs, List/*<Map<String,String>>*/ defs) {
+    private static Map/*<String,String>*/ evaluateAll(Map/*<String,String>*/ predefs, List/*<Map<String,String>>*/ defs) {
         Map/*<String,String>*/ m = new HashMap(predefs);
         Iterator it = defs.iterator();
         while (it.hasNext()) {
@@ -308,25 +318,6 @@ public class PropertyUtils {
     }
     
     /**
-     * Evaluate a string that may have some Ant-style property references embedded in it.
-     * See {@link #evaluate} for basic semantics information.
-     * @param text a string with possible embedded property references
-     * @param predefs an unevaluated set of initial definitions
-     * @param defs an ordered list of property mappings, e.g. {@link EditableProperties} instances
-     * @return a value for the text, or null if a circularity error was detected
-     * @deprecated Please use {@link #fixedPropertyProvider} and {@link #sequentialPropertyEvaluator} instead.
-     */
-    public static String evaluateString(String text, Map/*<String,String>*/ predefs, List/*<Map<String,String>>*/ defs) {
-        // XXX could be faster for large mappings; see evaluate(...)
-        Map m = evaluateAll(predefs, defs);
-        if (m != null) {
-            return (String)subst(text, m, Collections.EMPTY_SET);
-        } else {
-            return null;
-        }
-    }
-    
-    /**
      * Try to substitute property references etc. in an Ant property value string.
      * @param rawval the raw value to be substituted
      * @param predefs a set of properties already defined
@@ -336,6 +327,7 @@ public class PropertyUtils {
      *         need to be defined in order to evaluate this one
      */
     private static Object subst(String rawval, Map/*<String,String>*/ predefs, Set/*<String>*/ siblingProperties) {
+        assert rawval != null : "null rawval passed in";
         if (rawval.indexOf('$') == -1) {
             // Shortcut:
             //System.err.println("shortcut");
@@ -664,10 +656,19 @@ public class PropertyUtils {
         }
         
         public String getProperty(String prop) {
+            if (defs == null) {
+                return null;
+            }
             return (String)defs.get(prop);
         }
         
         public String evaluate(String text) {
+            if (text == null) {
+                throw new NullPointerException("Attempted to pass null to PropertyEvaluator.evaluate"); // NOI18N
+            }
+            if (defs == null) {
+                return null;
+            }
             Object result = subst(text, defs, Collections.EMPTY_SET);
             assert result instanceof String : "Unexpected result " + result + " from " + text + " on " + defs;
             return (String)result;
@@ -687,16 +688,19 @@ public class PropertyUtils {
         
         public void stateChanged(ChangeEvent e) {
             Map/*<String,String>*/ newdefs = compose(preprovider, providers);
-            if (!defs.equals(newdefs)) {
-                Set/*<String>*/ props = new HashSet(defs.keySet());
-                props.addAll(newdefs.keySet());
+            // compose() may return null upon circularity errors
+            Map/*<String,String>*/ _defs = defs != null ? defs : Collections.EMPTY_MAP;
+            Map/*<String,String>*/ _newdefs = newdefs != null ? newdefs : Collections.EMPTY_MAP;
+            if (!_defs.equals(_newdefs)) {
+                Set/*<String>*/ props = new HashSet(_defs.keySet());
+                props.addAll(_newdefs.keySet());
                 List/*<PropertyChangeEvent>*/ events = new LinkedList();
                 Iterator it = props.iterator();
                 while (it.hasNext()) {
-                    String prop = (String)it.next();
+                    String prop = (String) it.next();
                     assert prop != null;
-                    String oldval = (String)defs.get(prop);
-                    String newval = (String)newdefs.get(prop);
+                    String oldval = (String) _defs.get(prop);
+                    String newval = (String) _newdefs.get(prop);
                     if (newval != null) {
                         if (newval.equals(oldval)) {
                             continue;

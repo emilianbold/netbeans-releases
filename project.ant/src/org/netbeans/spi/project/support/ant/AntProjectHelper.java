@@ -14,32 +14,18 @@
 package org.netbeans.spi.project.support.ant;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.netbeans.modules.project.ant.Util;
-import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.netbeans.spi.project.ProjectState;
@@ -50,7 +36,6 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
-import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -319,104 +304,6 @@ public final class AntProjectHelper {
     }
     
     /**
-     * Get the configured code name of the project.
-     * @return the code name, or null if it could not be determined (parse error)
-     * @deprecated Better to store whatever kind of name information you need directly
-     *             in your primary configuration data.
-     */
-    public String getName() {
-        Document doc = getConfigurationXml(true);
-        Element project = doc.getDocumentElement();
-        Element name = Util.findElement(project, "name", PROJECT_NS); // NOI18N
-        if (name != null) {
-            return Util.findText(name);
-        } else {
-            return null;
-        }
-    }
-    
-    /**
-     * Change the project code name.
-     * If the new name differs from the old, the project will be marked as modified
-     * and a change will be fired in {@link #PROJECT_XML_PATH}.
-     * @param name the new code name
-     * @deprecated Better to store whatever kind of name information you need directly
-     *             in your primary configuration data.
-     */
-    public void setName(String name) {
-        if (name.equals(getName())) {
-            // Unchanged, do nothing
-            return;
-        }
-        Document doc = getConfigurationXml(true);
-        Element project = doc.getDocumentElement();
-        Element nameEl = Util.findElement(project, "name", PROJECT_NS); // NOI18N
-        if (nameEl == null) {
-            // Missing for some reason.
-            nameEl = doc.createElementNS(PROJECT_NS, "name"); // NOI18N
-            // XXX better to put it right before <display-name>
-            project.appendChild(nameEl);
-        } else {
-            // Clear existing text node child.
-            NodeList l = nameEl.getChildNodes();
-            while (l.getLength() > 0) {
-                nameEl.removeChild(l.item(0));
-            }
-        }
-        nameEl.appendChild(doc.createTextNode(name));
-        modifying(PROJECT_XML_PATH);
-    }
-    
-    /**
-     * Get the configured display name of the project.
-     * @return the display name, or null if it could not be determined (parse error)
-     * @deprecated Better to store whatever kind of name information you need directly
-     *             in your primary configuration data.
-     */
-    public String getDisplayName() {
-        Document doc = getConfigurationXml(true);
-        Element project = doc.getDocumentElement();
-        Element name = Util.findElement(project, "display-name", PROJECT_NS); // NOI18N
-        if (name != null) {
-            return Util.findText(name);
-        } else {
-            return null;
-        }
-    }
-    
-    /**
-     * Change the project display name.
-     * If the new name differs from the old, the project will be marked as modified
-     * and a change will be fired in {@link #PROJECT_XML_PATH}.
-     * @param displayName the new display name
-     * @deprecated Better to store whatever kind of name information you need directly
-     *             in your primary configuration data.
-     */
-    public void setDisplayName(String displayName) {
-        if (displayName.equals(getDisplayName())) {
-            // Unchanged, do nothing
-            return;
-        }
-        Document doc = getConfigurationXml(true);
-        Element project = doc.getDocumentElement();
-        Element name = Util.findElement(project, "display-name", PROJECT_NS); // NOI18N
-        if (name == null) {
-            // Missing for some reason.
-            name = doc.createElementNS(PROJECT_NS, "display-name"); // NOI18N
-            // XXX better to put it right after <name>
-            project.appendChild(name);
-        } else {
-            // Clear existing text node child.
-            NodeList l = name.getChildNodes();
-            while (l.getLength() > 0) {
-                name.removeChild(l.item(0));
-            }
-        }
-        name.appendChild(doc.createTextNode(displayName));
-        modifying(PROJECT_XML_PATH);
-    }
-    
-    /**
      * Get the top-level project directory.
      * @return the project directory beneath which everything in the project lies
      */
@@ -679,11 +566,6 @@ public final class AntProjectHelper {
         return new ExtensibleMetadataProviderImpl(this);
     }
     
-    /** @deprecated Use the variant that accepts a property evaluator instead. */
-    public FileBuiltQueryImplementation createGlobFileBuiltQuery(String[] from, String[] to) throws IllegalArgumentException {
-        return createGlobFileBuiltQuery(getStandardPropertyEvaluator(), from, to);
-    }
-    
     /**
      * Create an implementation of {@link org.netbeans.api.queries.FileBuiltQuery} that works with files
      * within the project based on simple glob pattern mappings.
@@ -732,11 +614,6 @@ public final class AntProjectHelper {
         return new GlobFileBuiltQuery(this, eval, from, to);
     }
 
-    /** @deprecated Use the variant that accepts a PropertyEvaluator instead. */
-    public AntArtifact createSimpleAntArtifact(String type, String locationProperty, String targetName, String cleanTargetName) {
-        return createSimpleAntArtifact(type, locationProperty, getStandardPropertyEvaluator(), targetName, cleanTargetName);
-    }
-    
     /**
      * Create a basic implementation of {@link AntArtifact} which assumes everything of interest
      * is in a fixed location under a standard Ant-based project.
@@ -752,11 +629,6 @@ public final class AntProjectHelper {
      */
     public AntArtifact createSimpleAntArtifact(String type, String locationProperty, PropertyEvaluator eval, String targetName, String cleanTargetName) {
         return new SimpleAntArtifact(this, type, locationProperty, eval, targetName, cleanTargetName);
-    }
-    
-    /** @deprecated Use the variant that takes a property evaluator instead. */
-    public SharabilityQueryImplementation createSharabilityQuery(String[] sourceRoots, String[] buildDirectories) {
-        return createSharabilityQuery(getStandardPropertyEvaluator(), sourceRoots, buildDirectories);
     }
     
     /**
@@ -832,63 +704,6 @@ public final class AntProjectHelper {
         excludes[buildDirectories.length] = "nbproject/private"; // NOI18N
         return new SharabilityQueryImpl(this, eval, includes, excludes);
     }
-        
-    /**
-     * Convenience method to evaluate one Ant property in this project.
-     * Searches in this order, with Ant substitutions as appropriate:
-     * <ol>
-     * <li><code>basedir</code> is set according to the project directory
-     * <li>all system properties in the current VM
-     * <li><code>private.properties</code>
-     * <li><code><i>${netbeans.user}</i>/build.properties</code>
-     *     (may be overridden by the property <code>user.properties.file</code> in private.properties)
-     * <li><code>project.properties</code>
-     * </ol>
-     * @param prop a property name to evaluate
-     * @return its value if known, or null if it cannot be determined
-     * @see PropertyUtils#evaluate
-     * @see System#getProperties
-     * @see #PRIVATE_PROPERTIES_PATH
-     * @see PropertyUtils#getGlobalProperties
-     * @see #PROJECT_PROPERTIES_PATH
-     * @deprecated Please use {@link #getStandardPropertyEvaluator} instead.
-     */
-    public String evaluate(String prop) {
-        return getStandardPropertyEvaluator().getProperty(prop);
-    }
-    
-    /**
-     * Convenience method to evaluate all Ant properties in this project.
-     * Like {@link #evaluate} but produces all the values at once.
-     * @return values for all defined properties, or null if a circularity error was detected
-     * @see PropertyUtils#evaluateAll
-     * @see System#getProperties
-     * @see #PRIVATE_PROPERTIES_PATH
-     * @see PropertyUtils#getGlobalProperties
-     * @see #PROJECT_PROPERTIES_PATH
-     * @deprecated Please use {@link #getStandardPropertyEvaluator} instead.
-     */
-    public Map/*<String,String>*/ evaluateAll() {
-        return getStandardPropertyEvaluator().getProperties();
-    }
-    
-    /**
-     * Convenience method to evaluate a string with substitutions from properties in this project.
-     * Like {@link #evaluate} but works on a block of text rather than a property name.
-     * @param text some string of text possibly containing Ant-style property references
-     * @return the substituted text, or null if a circularity error was detected
-     * @see PropertyUtils#evaluateString
-     * @see System#getProperties
-     * @see #PRIVATE_PROPERTIES_PATH
-     * @see PropertyUtils#getGlobalProperties
-     * @see #PROJECT_PROPERTIES_PATH
-     * @deprecated Please use {@link #getStandardPropertyEvaluator} instead.
-     */
-    public String evaluateString(String text) {
-        return getStandardPropertyEvaluator().evaluate(text);
-    }
-    
-    private PropertyProvider stockPropertyPreprovider = null;
     
     /**
      * Get a property provider which defines <code>basedir</code> according to
@@ -897,20 +712,8 @@ public final class AntProjectHelper {
      * @see PropertyUtils#sequentialPropertyEvaluator
      */
     public PropertyProvider getStockPropertyPreprovider() {
-        if (stockPropertyPreprovider == null) {
-            Map/*<String,String>*/ m = new HashMap();
-            Properties p = System.getProperties();
-            synchronized (p) {
-                m.putAll(p);
-            }
-            m.put("basedir", FileUtil.toFile(dir).getAbsolutePath()); // NOI18N
-            // XXX define ant.home
-            stockPropertyPreprovider = PropertyUtils.fixedPropertyProvider(m);
-        }
-        return stockPropertyPreprovider;
+        return properties.getStockPropertyPreprovider();
     }
-    
-    private PropertyEvaluator standardPropertyEvaluator = null;
     
     /**
      * Get a property evaluator that can evaluate properties according to the default
@@ -923,53 +726,7 @@ public final class AntProjectHelper {
      * @return a standard property evaluator
      */
     public PropertyEvaluator getStandardPropertyEvaluator() {
-        if (standardPropertyEvaluator == null) {
-            PropertyEvaluator findUserPropertiesFile = PropertyUtils.sequentialPropertyEvaluator(
-                getStockPropertyPreprovider(),
-                new PropertyProvider[] {
-                    getPropertyProvider(PRIVATE_PROPERTIES_PATH),
-                }
-            );
-            String userPropertiesFile = findUserPropertiesFile.getProperty("user.properties.file"); // NOI18N
-            PropertyProvider globalProperties;
-            if (userPropertiesFile != null) {
-                // XXX listen to changes in this, maybe...
-                // (both in findUserPropertiesFile and in this file on disk)
-                Properties globprops = new Properties();
-                File f = resolveFile(userPropertiesFile);
-                if (f.isFile() && f.canRead()) {
-                    try {
-                        InputStream is = new FileInputStream(f);
-                        try {
-                            globprops.load(is);
-                        } finally {
-                            is.close();
-                        }
-                    } catch (IOException e) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                    }
-                }
-                globalProperties = PropertyUtils.fixedPropertyProvider(globprops);
-                
-                //#44213 - hotfix till the listening on "user.properties.file" will be implemented.
-                if (!f.exists()) {
-                    // use global properties if user.properties.file file does not exist
-                    globalProperties = PropertyUtils.globalPropertyProvider();
-                }
-                
-            } else {
-                globalProperties = PropertyUtils.globalPropertyProvider();
-            }
-            standardPropertyEvaluator = PropertyUtils.sequentialPropertyEvaluator(
-                getStockPropertyPreprovider(),
-                new PropertyProvider[] {
-                    getPropertyProvider(PRIVATE_PROPERTIES_PATH),
-                    globalProperties,
-                    getPropertyProvider(PROJECT_PROPERTIES_PATH),
-                }
-            );
-        }
-        return standardPropertyEvaluator;
+        return properties.getStandardPropertyEvaluator();
     }
     
     /**

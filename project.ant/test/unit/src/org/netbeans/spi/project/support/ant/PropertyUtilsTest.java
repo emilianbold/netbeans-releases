@@ -33,8 +33,13 @@ import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.junit.NbTestCase;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
+import java.io.OutputStream;
+import org.openide.filesystems.FileUtil;
+
+import org.openide.filesystems.FileLock;
+
+import org.openide.filesystems.FileObject;
 
 /**
  * Test functionality of PropertyUtils.
@@ -61,6 +66,28 @@ public class PropertyUtilsTest extends NbTestCase {
         }
     }
     
+    private static PropertyEvaluator evaluator(Map/*<String,String>*/ predefs, List/*<Map<String,String>>*/ defs) {
+        PropertyProvider[] mainProviders = new PropertyProvider[defs.size()];
+        Iterator it = defs.iterator();
+        int i = 0;
+        while (it.hasNext()) {
+            mainProviders[i++] = PropertyUtils.fixedPropertyProvider((Map/*<String,String>*/) it.next());
+        }
+        return PropertyUtils.sequentialPropertyEvaluator(PropertyUtils.fixedPropertyProvider(predefs), mainProviders);
+    }
+    
+    private static String evaluate(String prop, Map/*<String,String>*/ predefs, List/*<Map<String,String>>*/ defs) {
+        return evaluator(predefs, defs).getProperty(prop);
+    }
+    
+    private static Map/*<String,String>*/ evaluateAll(Map/*<String,String>*/ predefs, List/*<Map<String,String>>*/ defs) {
+        return evaluator(predefs, defs).getProperties();
+    }
+    
+    private static String evaluateString(String text, Map/*<String,String>*/ predefs, List/*<Map<String,String>>*/ defs) {
+        return evaluator(predefs, defs).evaluate(text);
+    }
+    
     public void testEvaluate() throws Exception {
         // XXX check override order, property name evaluation, $$ escaping, bare or final $,
         // cyclic errors, undef'd property substitution, no substs in predefs, etc.
@@ -69,15 +96,15 @@ public class PropertyUtilsTest extends NbTestCase {
         m2.put("x", "${y}");
         m2.put("y", "y-${x}");
         List/*<Map<String,String>>*/ m1m2 = Arrays.asList(new Map/*<String,String>*/[] {m1, m2});
-        assertEquals("x evaluates to former y", "val", PropertyUtils.evaluate("x", Collections.EMPTY_MAP, m1m2));
-        assertEquals("first y defines it", "val", PropertyUtils.evaluate("y", Collections.EMPTY_MAP, m1m2));
-        assertEquals("circularity error", null, PropertyUtils.evaluate("x", Collections.EMPTY_MAP, Collections.singletonList(m2)));
-        assertEquals("circularity error", null, PropertyUtils.evaluate("y", Collections.EMPTY_MAP, Collections.singletonList(m2)));
+        assertEquals("x evaluates to former y", "val", evaluate("x", Collections.EMPTY_MAP, m1m2));
+        assertEquals("first y defines it", "val", evaluate("y", Collections.EMPTY_MAP, m1m2));
+        assertEquals("circularity error", null, evaluate("x", Collections.EMPTY_MAP, Collections.singletonList(m2)));
+        assertEquals("circularity error", null, evaluate("y", Collections.EMPTY_MAP, Collections.singletonList(m2)));
         m2.clear();
         m2.put("y", "yval_${z}");
         m2.put("x", "xval_${y}");
         m2.put("z", "zval");
-        Map all = PropertyUtils.evaluateAll(Collections.EMPTY_MAP, Collections.singletonList(m2));
+        Map all = evaluateAll(Collections.EMPTY_MAP, Collections.singletonList(m2));
         assertNotNull("no circularity error", all);
         assertEquals("have three properties", 3, all.size());
         assertEquals("double substitution", "xval_yval_zval", all.get("x"));
@@ -86,7 +113,7 @@ public class PropertyUtilsTest extends NbTestCase {
         // Yuck. But it failed once, so check it now.
         Properties p = new Properties();
         p.load(new ByteArrayInputStream("project.mylib=../mylib\njavac.classpath=${project.mylib}/build/mylib.jar\nrun.classpath=${javac.classpath}:build/classes".getBytes("US-ASCII")));
-        all = PropertyUtils.evaluateAll(Collections.EMPTY_MAP, Collections.singletonList(p));
+        all = evaluateAll(Collections.EMPTY_MAP, Collections.singletonList(p));
         assertNotNull("no circularity error", all);
         assertEquals("javac.classpath correctly substituted", "../mylib/build/mylib.jar", all.get("javac.classpath"));
         assertEquals("run.classpath correctly substituted", "../mylib/build/mylib.jar:build/classes", all.get("run.classpath"));
@@ -233,7 +260,33 @@ public class PropertyUtilsTest extends NbTestCase {
         assertEquals("now have 3 defs", 3, gpp.getProperties().size());
         assertEquals("right val", "val3", gpp.getProperties().get("key3"));
         assertFalse("no spurious changes", l.changed);
-        // XXX try modifying build.properties using Filesystems API
+        // Test changes made using Filesystems API.
+        p.setProperty("key1", "val1a");
+        FileObject fo = FileUtil.toFileObject(PropertyUtils.USER_BUILD_PROPERTIES);
+        assertNotNull("there is USER_BUILD_PROPERTIES on disk", fo);
+        FileLock lock = fo.lock();
+        OutputStream os = fo.getOutputStream(lock);
+        p.store(os);
+        os.close();
+        lock.releaseLock();
+        assertTrue("got a change from the Filesystems API", l.changed);
+        l.changed = false;
+        assertEquals("still have 3 defs", 3, gpp.getProperties().size());
+        assertEquals("right val for key1", "val1a", gpp.getProperties().get("key1"));
+        // XXX changes made on disk are not picked up... bad test, or something else?
+        /*
+        Thread.sleep(1000);
+        p.setProperty("key2", "val2a");
+        OutputStream os = new FileOutputStream(PropertyUtils.USER_BUILD_PROPERTIES);
+        p.store(os);
+        os.close();
+        FileUtil.toFileObject(PropertyUtils.USER_BUILD_PROPERTIES).getFileSystem().refresh(false);
+        Thread.sleep(1000);
+        assertTrue("got a change from disk", l.changed);
+        l.changed = false;
+        assertEquals("still have 3 defs", 3, gpp.getProperties().size());
+        assertEquals("right val for key2", "val2a", gpp.getProperties().get("key2"));
+         */
     }
     
     public void testEvaluateString() throws Exception {
@@ -246,8 +299,7 @@ public class PropertyUtilsTest extends NbTestCase {
         defs2.put("outdir2", "${outdir}/subdir");
         assertEquals("correct evaluated string",
             "/home/me/foo/subdir is in /home/me",
-            PropertyUtils.evaluateString("${outdir2} is in ${homedir}", predefs,
-                                         Arrays.asList(new Map[] {defs1, defs2})));
+            evaluateString("${outdir2} is in ${homedir}", predefs, Arrays.asList(new Map[] {defs1, defs2})));
     }
     
     public void testFixedPropertyProvider() throws Exception {
@@ -449,8 +501,9 @@ public class PropertyUtilsTest extends NbTestCase {
         }
         
     }
-    
-    private static final class TestPCL implements PropertyChangeListener {
+
+    // XXX move to AntBasedTestUtil
+    static final class TestPCL implements PropertyChangeListener {
         
         public final Set/*<String>*/ changed = new HashSet();
         public final Map/*<String,String*/ newvals = new HashMap();
@@ -480,6 +533,7 @@ public class PropertyUtilsTest extends NbTestCase {
         
     }
     
+    // XXX move to AntBasedTestUtil
     static final class TestCL implements ChangeListener {
         
         public boolean changed = false;

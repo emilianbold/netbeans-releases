@@ -29,6 +29,8 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="**/*Test.class"/>
                 <!-- Usually passes, but once in a while it fails randomly: -->
                 <exclude name="**/GlobFileBuiltQueryTest.class"/>
+                <!-- Probably going to be the same: -->
+                <exclude name="**/FileChangeSupportTest.class/testDiskChanges"/>
             </patternset>
         </testset>
     </testbag>

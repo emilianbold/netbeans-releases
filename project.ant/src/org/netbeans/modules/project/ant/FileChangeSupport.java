@@ -1,0 +1,186 @@
+/*
+ *                 Sun Public License Notice
+ *
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.modules.project.ant;
+
+import java.io.File;
+import java.util.Map;
+import java.util.WeakHashMap;
+import org.openide.filesystems.FileObject;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.HashMap;
+
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
+
+// XXX current implementation is not efficient for listening to a large # of files
+
+/**
+ * Utility class to notify clients of changes in the existence or timestamp
+ * of a named file or directory.
+ * Unlike the Filesystems API, permits you to listen to a file which does not
+ * yet exist, or continue listening to it after it is deleted and recreated, etc.
+ * @author Jesse Glick
+ * @see "Blockers: #44213, #44628, #42147, etc."
+ * @see "#33162: hierarchical listeners"
+ */
+public final class FileChangeSupport {
+    
+    public static FileChangeSupport DEFAULT = new FileChangeSupport();
+    
+    private FileChangeSupport() {}
+    
+    private final Map/*<FileChangeSupportListener,Map<File,Holder>>*/ holders = new WeakHashMap();
+    
+    /**
+     * Add a listener to changes in a given path.
+     * Can only add a given listener x path pair once.
+     * However a listener can listen to any number of paths.
+     * Note that listeners are always held weakly - if the listener is collected,
+     * it is quietly removed.
+     */
+    public void addListener(FileChangeSupportListener listener, File path) {
+        assert path.equals(FileUtil.normalizeFile(path)) : "Need to normalize " + path + " before passing to FCS!";
+        Map/*<File,Holder>*/ f2H = (Map) holders.get(listener);
+        if (f2H == null) {
+            f2H = new HashMap();
+            holders.put(listener, f2H);
+        }
+        if (f2H.containsKey(path)) {
+            throw new IllegalArgumentException("Already listening to " + path); // NOI18N
+        }
+        f2H.put(path, new Holder(listener, path));
+    }
+    
+    /**
+     * Remove a listener to changes in a given path.
+     */
+    public void removeListener(FileChangeSupportListener listener, File path) {
+        assert path.equals(FileUtil.normalizeFile(path)) : "Need to normalize " + path + " before passing to FCS!";
+        Map/*<File,Holder>*/ f2H = (Map) holders.get(listener);
+        if (f2H == null) {
+            throw new IllegalArgumentException("Was not listening to " + path); // NOI18N
+        }
+        if (!f2H.containsKey(path)) {
+            throw new IllegalArgumentException("Was not listening to " + path); // NOI18N
+        }
+        f2H.remove(path);
+    }
+    
+    private static final class Holder extends WeakReference implements FileChangeListener, Runnable {
+        
+        private final File path;
+        private FileObject current;
+        private File currentF;
+        
+        public Holder(FileChangeSupportListener listener, File path) {
+            super(listener, Utilities.activeReferenceQueue());
+            this.path = path;
+            locateCurrent();
+        }
+        
+        private void locateCurrent() {
+            FileObject oldCurrent = current;
+            currentF = path;
+            while (true) {
+                current = FileUtil.toFileObject(currentF);
+                if (current != null) {
+                    break;
+                }
+                currentF = currentF.getParentFile();
+                if (currentF == null) {
+                    throw new AssertionError("No ultimate parent for " + path); // NOI18N
+                }
+            }
+            assert current != null;
+            if (current != oldCurrent) {
+                if (oldCurrent != null) {
+                    oldCurrent.removeFileChangeListener(this);
+                }
+                current.addFileChangeListener(this);
+            }
+        }
+
+        private void someChange(FileObject modified) {
+            FileChangeSupportListener listener;
+            FileObject oldCurrent, nueCurrent;
+            File oldCurrentF, nueCurrentF;
+            synchronized (this) {
+                if (current == null) {
+                    return;
+                }
+                listener = (FileChangeSupportListener) get();
+                if (listener == null) {
+                    return;
+                }
+                oldCurrent = current;
+                oldCurrentF = currentF;
+                locateCurrent();
+                nueCurrent = current;
+                nueCurrentF = currentF;
+            }
+            if (modified != null && modified == nueCurrent) {
+                FileChangeSupportEvent event = new FileChangeSupportEvent(DEFAULT, FileChangeSupportEvent.EVENT_MODIFIED, path);
+                listener.fileModified(event);
+            } else {
+                boolean oldWasCorrect = oldCurrentF.equals(path);
+                boolean nueIsCorrect = nueCurrentF.equals(path);
+                if (oldWasCorrect && !nueIsCorrect) {
+                    FileChangeSupportEvent event = new FileChangeSupportEvent(DEFAULT, FileChangeSupportEvent.EVENT_DELETED, path);
+                    listener.fileDeleted(event);
+                } else if (nueIsCorrect && !oldWasCorrect) {
+                    FileChangeSupportEvent event = new FileChangeSupportEvent(DEFAULT, FileChangeSupportEvent.EVENT_CREATED, path);
+                    listener.fileCreated(event);
+                }
+            }
+        }
+
+        public void fileChanged(FileEvent fe) {
+            someChange(fe.getFile());
+        }
+        
+        public void fileDeleted(FileEvent fe) {
+            someChange(null);
+        }
+
+        public void fileDataCreated(FileEvent fe) {
+            someChange(null);
+        }
+
+        public void fileFolderCreated(FileEvent fe) {
+            someChange(null);
+        }
+
+        public void fileRenamed(FileRenameEvent fe) {
+            someChange(null);
+        }
+        
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            // ignore
+        }
+        
+        public synchronized void run() {
+            if (current != null) {
+                current.removeFileChangeListener(this);
+                current = null;
+            }
+        }
+
+    }
+    
+}

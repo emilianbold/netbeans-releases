@@ -15,7 +15,6 @@ package org.netbeans.spi.project.support.ant;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,10 +22,18 @@ import java.util.Map;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
+import java.io.File;
+import java.util.Properties;
+import java.util.Collections;
+import org.netbeans.modules.project.ant.FileChangeSupport;
+import org.netbeans.modules.project.ant.FileChangeSupportListener;
+import org.netbeans.modules.project.ant.FileChangeSupportEvent;
+import org.openide.filesystems.FileSystem;
+import java.io.OutputStream;
+import org.openide.filesystems.FileLock;
 
 /**
  * Manages the loaded property files for {@link AntProjectHelper}.
@@ -34,6 +41,7 @@ import org.openide.util.Utilities;
  */
 final class ProjectProperties {
     
+    /** Project directory. */
     private final FileObject dir;
     
     /**
@@ -42,6 +50,12 @@ final class ProjectProperties {
      * Values are loaded property providers.
      */
     private final Map/*<String,PP>*/ properties = new HashMap();
+    
+    /** @see #getStockPropertyPreprovider */
+    private PropertyProvider stockPropertyPreprovider = null;
+    
+    /** @see #getStandardPropertyEvaluator */
+    private PropertyEvaluator standardPropertyEvaluator = null;
     
     /**
      * Create a project properties helper object.
@@ -97,7 +111,7 @@ final class ProjectProperties {
         return pp;
     }
     
-    private static final class PP implements PropertyProvider {
+    private static final class PP implements PropertyProvider, FileChangeSupportListener {
         
         // XXX lock any loaded property files while the project is modified, to prevent manual editing,
         // and reload any modified files if the project is unmodified
@@ -111,10 +125,12 @@ final class ProjectProperties {
         public PP(String path, FileObject dir) {
             this.path = path;
             this.dir = dir;
+            FileChangeSupport.DEFAULT.addListener(this, new File(FileUtil.toFile(dir), path.replace('/', File.separatorChar)));
         }
         
         public EditableProperties getEditableProperties() {
             if (!loaded) {
+                properties = null;
                 FileObject fo = dir.getFileObject(path);
                 if (fo != null) {
                     try {
@@ -156,23 +172,33 @@ final class ProjectProperties {
         
         public void write() throws IOException {
             assert loaded;
-            FileObject f = dir.getFileObject(path);
+            final FileObject f = dir.getFileObject(path);
             if (properties != null) {
                 // Supposed to create/modify the file.
-                if (f == null) {
-                    f = FileUtil.createData(dir, path);
-                }
-                FileLock lock = f.lock();
-                try {
-                    OutputStream os = f.getOutputStream(lock);
-                    try {
-                        properties.store(os);
-                    } finally {
-                        os.close();
+                // Need to use an atomic action - otherwise listeners will first
+                // receive an event that the file has been written to zero length
+                // (which for *.properties means no keys), which is wrong.
+                dir.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+                    public void run() throws IOException {
+                        FileObject _f;
+                        if (f == null) {
+                            _f = FileUtil.createData(dir, path);
+                        } else {
+                            _f = f;
+                        }
+                        FileLock lock = _f.lock();
+                        try {
+                            OutputStream os = _f.getOutputStream(lock);
+                            try {
+                                properties.store(os);
+                            } finally {
+                                os.close();
+                            }
+                        } finally {
+                            lock.releaseLock();
+                        }
                     }
-                } finally {
-                    lock.releaseLock();
-                }
+                });
             } else {
                 // We are supposed to remove any existing file.
                 if (f != null) {
@@ -207,6 +233,84 @@ final class ProjectProperties {
             }
         }
         
+        private void diskChange() {
+            // XXX should check for a possible clobber from in-memory data
+            loaded = false;
+            fireChange();
+        }
+
+        public void fileCreated(FileChangeSupportEvent event) {
+            diskChange();
+        }
+
+        public void fileDeleted(FileChangeSupportEvent event) {
+            diskChange();
+        }
+
+        public void fileModified(FileChangeSupportEvent event) {
+            diskChange();
+        }
+        
+    }
+
+    /**
+     * See {@link AntProjectHelper#getStockPropertyPreprovider}.
+     */
+    public PropertyProvider getStockPropertyPreprovider() {
+        if (stockPropertyPreprovider == null) {
+            Map/*<String,String>*/ m = new HashMap();
+            Properties p = System.getProperties();
+            synchronized (p) {
+                m.putAll(p);
+            }
+            m.put("basedir", FileUtil.toFile(dir).getAbsolutePath()); // NOI18N
+            // XXX define ant.home
+            stockPropertyPreprovider = PropertyUtils.fixedPropertyProvider(m);
+        }
+        return stockPropertyPreprovider;
+    }
+    
+    /**
+     * See {@link AntProjectHelper#getStandardPropertyEvaluator}.
+     */
+    public PropertyEvaluator getStandardPropertyEvaluator() {
+        if (standardPropertyEvaluator == null) {
+            PropertyEvaluator findUserPropertiesFile = PropertyUtils.sequentialPropertyEvaluator(
+                getStockPropertyPreprovider(),
+                new PropertyProvider[] {
+                    getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH),
+                }
+            );
+            String userPropertiesFile = findUserPropertiesFile.getProperty("user.properties.file"); // NOI18N
+            // XXX listen to changes in textual value of this property
+            if (userPropertiesFile == null && PropertyUtils.USER_BUILD_PROPERTIES != null) {
+                // Use the in-IDE default.
+                userPropertiesFile = PropertyUtils.USER_BUILD_PROPERTIES.getAbsolutePath();
+            }
+            PropertyProvider globalProperties;
+            if (userPropertiesFile != null) {
+                // Have some defined global properties file, so read it and listen to changes in it.
+                File f = PropertyUtils.resolveFile(FileUtil.toFile(dir), userPropertiesFile);
+                if (f.equals(PropertyUtils.USER_BUILD_PROPERTIES)) {
+                    // Just to share the cache.
+                    globalProperties = PropertyUtils.globalPropertyProvider();
+                } else {
+                    globalProperties = PropertyUtils.propertiesFilePropertyProvider(f);
+                }
+            } else {
+                // Should not normally happen.
+                globalProperties = PropertyUtils.fixedPropertyProvider(Collections.EMPTY_MAP);
+            }
+            standardPropertyEvaluator = PropertyUtils.sequentialPropertyEvaluator(
+                getStockPropertyPreprovider(),
+                new PropertyProvider[] {
+                    getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH),
+                    globalProperties,
+                    getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH),
+                }
+            );
+        }
+        return standardPropertyEvaluator;
     }
     
 }
