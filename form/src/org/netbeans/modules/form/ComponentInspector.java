@@ -379,6 +379,10 @@ public class ComponentInspector extends TopComponent
             c = java.awt.Toolkit.getDefaultToolkit().getSystemClipboard();
         return c;
     }
+    
+    protected String preferredID() {
+        return getClass().getName();
+    }
 
     // ---------------
     // innerclasses
