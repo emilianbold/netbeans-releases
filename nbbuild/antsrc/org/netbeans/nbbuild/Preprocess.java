@@ -58,6 +58,7 @@ import org.apache.tools.ant.taskdefs.MatchingTask;
 * more conservative changes. It should <em>not</em> be used as a general-purpose Java
 * preprocessor, we are not C++ programmers here!
 * @author Jaroslav Tulach, Jesse Glick
+* @deprecated No longer used.
 */
 public class Preprocess extends MatchingTask {
     /** the format of begining of substitution */

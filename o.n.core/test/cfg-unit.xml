@@ -57,6 +57,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/core/lookup/*Test.class"/>
                 <include name="org/netbeans/core/lookup/*Test?.class"/>
                 <exclude name="org/netbeans/core/lookup/InstanceDataObjectModuleTest4.class"/>
+                <include name="org/netbeans/PatchByteCodeTest.class"/>
             </patternset>
         </testset>
     </testbag>

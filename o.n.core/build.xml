@@ -48,18 +48,35 @@ Microsystems, Inc. All Rights Reserved.
       </classpath>
     </javac>
   </target>
+  
+  <target name="boot">
+    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" 
+        includes="org/netbeans/*java"
+    />    
+    
+    <mkdir dir="netbeans/lib/ext" />
+    <jar jarfile="netbeans/lib/ext/boot.jar"
+            basedir="src"
+            excludesfile="../nbbuild/standard-jar-excludes.txt"
+            includes="org/netbeans/*class" 
+	    compress="false">
+    </jar>
+  </target>
 
-  <target name="jars" depends="compile">
-    <mkdir dir="netbeans/lib"/>
+  <target name="jars" depends="compile,boot">
+    <mkdir dir="netbeans/lib/ext" />
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
     <locjar jarfile="netbeans/lib/core.jar"
             basedir="src"
             manifest="manifest-subst.mf"
             excludesfile="../nbbuild/standard-jar-excludes.txt"
+            excludes="org/netbeans/*class"
 	    compress="false">
       <locale name="ja"/>
     </locjar>
+    
+    
     <locjar jarfile="netbeans/lib/ext/terminalemulator.jar"
             basedir="libsrc"
             excludesfile="../nbbuild/standard-jar-excludes.txt"

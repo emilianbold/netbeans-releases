@@ -26,6 +26,7 @@ import org.apache.tools.ant.*;
 * though a little more customized for binary files.
 *
 * @author Jaroslav Tulach
+* @deprecated No longer used.
 */
 public class Postprocess extends Task {
     /** file to post process */
