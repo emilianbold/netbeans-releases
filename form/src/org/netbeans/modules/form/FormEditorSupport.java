@@ -902,6 +902,12 @@ public class FormEditorSupport extends JavaEditor
                     formRootNode.updateName(name);
                     formModel.fireFormChanged();
                 }
+                else if (DataObject.PROP_COOKIE.equals(ev.getPropertyName())) {
+                    Node[] nodes = ComponentInspector.getInstance()
+                                     .getExplorerManager().getSelectedNodes();
+                    for (int i=0; i < nodes.length; i++)
+                        ((FormNode)nodes[i]).updateCookies();
+                }
             }
         };
 

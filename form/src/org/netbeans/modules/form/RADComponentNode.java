@@ -111,21 +111,8 @@ public class RADComponentNode extends FormNode
     }
 
     public HelpCtx getHelpCtx() {
-        HelpCtx help = InstanceSupport.findHelp(new InstanceCookie() {
-            public Object instanceCreate() {
-                return component.getBeanInstance();
-            }
-            public String instanceName() {
-                return component.getName();
-            }
-            public Class instanceClass() {
-                return component.getBeanClass();
-            }
-        });
-        if (help != null)
-            return help;
-        else
-            return new HelpCtx("gui.component-inspector"); // NOI18N
+        HelpCtx help = HelpCtx.findHelp(component.getBeanInstance());
+        return help != null ? help : new HelpCtx("gui.component-inspector"); // NOI18N
     }
 
     public Node.PropertySet[] getPropertySets() {
@@ -155,102 +142,99 @@ public class RADComponentNode extends FormNode
 //        return null;
     }
 
-    /** Lazily initialize set of node's actions(overridable).
-     * The default implementation returns <code>null</code>.
-     * <p><em>Warning:</em> do not call {@link #getActions} within this method.
-     * If necessary, call {@link NodeOp#getDefaultActions} to merge in.
-     * @return array of actions for this node, or <code>null</code> to use the default node actions
-     */
-    protected SystemAction[] createActions() {
-        ArrayList actions = new ArrayList(20);
+    public javax.swing.Action[] getActions(boolean context) {
+        if (systemActions == null) { // from AbstractNode
+            ArrayList actions = new ArrayList(20);
 
-        if (component.isReadOnly()) {
-            if (component == component.getFormModel().getTopRADComponent()) {
-                actions.add(SystemAction.get(TestAction.class));
-                actions.add(null);
-            }
-            Event[] events = component.getKnownEvents();
-            for (int i=0; i < events.length; i++)
-                if (events[i].hasEventHandlers()) {
-                    actions.add(SystemAction.get(EventsAction.class));
-                    actions.add(null);
-                    break;
-                }
-
-            actions.add(SystemAction.get(CopyAction.class));
-        }
-        else {
-            RADComponent topComp = component.getFormModel().getTopRADComponent();
-            if (component instanceof RADVisualContainer) {
-                if (!((RADVisualContainer)component).getLayoutSupport().isDedicated()) {
-                    actions.add(SystemAction.get(SelectLayoutAction.class));
-                    actions.add(SystemAction.get(CustomizeLayoutAction.class));
+            if (component.isReadOnly()) {
+                if (component == component.getFormModel().getTopRADComponent()) {
+                    actions.add(SystemAction.get(TestAction.class));
                     actions.add(null);
                 }
-                actions.add(SystemAction.get(AddAction.class));
-            }
+                Event[] events = component.getKnownEvents();
+                for (int i=0; i < events.length; i++)
+                    if (events[i].hasEventHandlers()) {
+                        actions.add(SystemAction.get(EventsAction.class));
+                        actions.add(null);
+                        break;
+                    }
 
-            actions.add(SystemAction.get(EventsAction.class));
-            actions.add(null);
-            if (component == topComp)
-                actions.add(SystemAction.get(TestAction.class));
-
-            if (component instanceof RADVisualContainer) {
-                actions.add(SystemAction.get(EditContainerAction.class));
-                if (topComp != null && component != topComp)
-                    actions.add(SystemAction.get(EditFormAction.class));
-            }
-            actions.add(null);
-
-            if (InPlaceEditLayer.supportsEditingFor(component.getBeanClass(),
-                                                    false))
-            {
-                actions.add(SystemAction.get(InPlaceEditAction.class));
-                actions.add(null);
-            }
-
-            if (component instanceof ComponentContainer) {
-                if (component != component.getFormModel().getTopRADComponent())
-                    actions.add(SystemAction.get(CutAction.class));
                 actions.add(SystemAction.get(CopyAction.class));
-                actions.add(SystemAction.get(PasteAction.class));
+            }
+            else {
+                RADComponent topComp = component.getFormModel().getTopRADComponent();
+                if (component instanceof RADVisualContainer) {
+                    if (!((RADVisualContainer)component).getLayoutSupport().isDedicated()) {
+                        actions.add(SystemAction.get(SelectLayoutAction.class));
+                        actions.add(SystemAction.get(CustomizeLayoutAction.class));
+                        actions.add(null);
+                    }
+                    actions.add(SystemAction.get(AddAction.class));
+                }
+
+                actions.add(SystemAction.get(EventsAction.class));
                 actions.add(null);
-                if (component != component.getFormModel().getTopRADComponent()) {
+                if (component == topComp)
+                    actions.add(SystemAction.get(TestAction.class));
+
+                if (component instanceof RADVisualContainer) {
+                    actions.add(SystemAction.get(EditContainerAction.class));
+                    if (topComp != null && component != topComp)
+                        actions.add(SystemAction.get(EditFormAction.class));
+                }
+                actions.add(null);
+
+                if (InPlaceEditLayer.supportsEditingFor(component.getBeanClass(),
+                                                        false))
+                {
+                    actions.add(SystemAction.get(InPlaceEditAction.class));
+                    actions.add(null);
+                }
+
+                if (component instanceof ComponentContainer) {
+                    if (component != component.getFormModel().getTopRADComponent())
+                        actions.add(SystemAction.get(CutAction.class));
+                    actions.add(SystemAction.get(CopyAction.class));
+                    actions.add(SystemAction.get(PasteAction.class));
+                    actions.add(null);
+                    if (component != component.getFormModel().getTopRADComponent()) {
+                        actions.add(SystemAction.get(RenameAction.class));
+                        actions.add(SystemAction.get(DeleteAction.class));
+                        actions.add(null);
+                    }
+                    actions.add(SystemAction.get(ReorderAction.class));
+                }
+                else {
+                    actions.add(SystemAction.get(CutAction.class));
+                    actions.add(SystemAction.get(CopyAction.class));
+                    actions.add(null);
                     actions.add(SystemAction.get(RenameAction.class));
                     actions.add(SystemAction.get(DeleteAction.class));
                     actions.add(null);
                 }
-                actions.add(SystemAction.get(ReorderAction.class));
-            }
-            else {
-                actions.add(SystemAction.get(CutAction.class));
-                actions.add(SystemAction.get(CopyAction.class));
-                actions.add(null);
-                actions.add(SystemAction.get(RenameAction.class));
-                actions.add(SystemAction.get(DeleteAction.class));
-                actions.add(null);
+
+                if (component != component.getFormModel().getTopRADComponent()) {
+                    actions.add(SystemAction.get(MoveUpAction.class));
+                    actions.add(SystemAction.get(MoveDownAction.class));
+                }
+
+                if (getNewTypes().length != 0) {
+                    actions.add(null);
+                    actions.add(SystemAction.get(NewAction.class));
+                }
             }
 
-            if (component != component.getFormModel().getTopRADComponent()) {
-                actions.add(SystemAction.get(MoveUpAction.class));
-                actions.add(SystemAction.get(MoveDownAction.class));
-            }
+            actions.add(null);
 
-            if (getNewTypes().length != 0) {
-                actions.add(null);
-                actions.add(SystemAction.get(NewAction.class));
-            }
+            javax.swing.Action[] superActions = super.getActions(context);
+            for (int i=0; i < superActions.length; i++)
+                actions.add(superActions[i]);
+
+            systemActions = new SystemAction[actions.size()];
+            actions.toArray(systemActions);
         }
 
-        actions.add(null);
-
-        SystemAction[] superActions = super.createActions();
-        for (int i=0; i < superActions.length; i++)
-            actions.add(superActions[i]);
-
-        SystemAction[] array = new SystemAction[actions.size()];
-        actions.toArray(array);
-        return array;
+        return systemActions;
     }
 
     /** Set the system name. Fires a property change event.

@@ -378,7 +378,7 @@ public class ComponentInspector extends TopComponent
         private javax.swing.Timer timer;
 
         NodeSelectionListener() {
-            timer = new javax.swing.Timer(200, this);
+            timer = new javax.swing.Timer(150, this);
             timer.setCoalesce(true);
             timer.setRepeats(false);
         }
@@ -392,32 +392,32 @@ public class ComponentInspector extends TopComponent
                     || (designer = focusedForm.getFormDesigner()) == null)
                 return;
 
+            Node[] selectedNodes = getExplorerManager().getSelectedNodes();
+
             if (designer.getDesignerMode() == FormDesigner.MODE_CONNECT) {
                 // specially handle node selection in connection mode
-                Node[] selected = getExplorerManager().getSelectedNodes();
-                if (selected.length == 0)
-                    return;
-
-                RADComponentCookie cookie = (RADComponentCookie)
-                    selected[0].getCookie(RADComponentCookie.class);
-                if (cookie != null
-                    && cookie.getRADComponent() == designer.getConnectionSource()
-                    && selected.length > 1)
-                {
-                    cookie = (RADComponentCookie)
-                        selected[selected.length-1].getCookie(RADComponentCookie.class);
+                if (selectedNodes.length > 0) {
+                    RADComponentCookie cookie = (RADComponentCookie)
+                        selectedNodes[0].getCookie(RADComponentCookie.class);
+                    if (cookie != null
+                        && cookie.getRADComponent() == designer.getConnectionSource()
+                        && selectedNodes.length > 1)
+                    {
+                        cookie = (RADComponentCookie)
+                            selectedNodes[selectedNodes.length-1]
+                                .getCookie(RADComponentCookie.class);
+                    }
+                    if (cookie != null)
+                        designer.connectBean(cookie.getRADComponent(), true);
                 }
-                if (cookie != null)
-                    designer.connectBean(cookie.getRADComponent(), true);
             }
             else if (TopComponent.getRegistry().getActivated()
                      == ComponentInspector.this)
             {   // the change comes from ComponentInspector => synchronize FormDesigner
                 designer.clearSelectionImpl();
-                Node[] selected = getExplorerManager().getSelectedNodes();
-                for (int i=0; i < selected.length; i++) {
+                for (int i=0; i < selectedNodes.length; i++) {
                     FormCookie formCookie = (FormCookie)
-                        selected[i].getCookie(FormCookie.class);
+                        selectedNodes[i].getCookie(FormCookie.class);
                     if (formCookie != null) {
                         Node node = formCookie.getOriginalNode();
                         if (node instanceof RADComponentNode)
@@ -428,18 +428,29 @@ public class ComponentInspector extends TopComponent
                 designer.repaintSelection();
             }
 
-            // set active node and update actions with a delay
+            // refresh nodes' lookup with current set of cookies
+            for (int i=0; i < selectedNodes.length; i++)
+                ((FormNode)selectedNodes[i]).updateCookies();
+
+            // restart waiting for expensive part of the update
             timer.restart();
         }
 
-        public void actionPerformed(ActionEvent evt) {
-            java.awt.EventQueue.invokeLater(this);
+        public void actionPerformed(ActionEvent evt) { // invoked by Timer
+            java.awt.EventQueue.invokeLater(this); // replan to EventQueue thread
         }
 
+        /** Updates activated nodes and actions. It is executed via timer 
+         * restarted each time a new selection change appears - if they come
+         * quickly e.g. due to the user is holding a cursor key, this
+         * (relatively time expensive update) is done only at the end.
+         */
         public void run() {
             if (TopComponent.getRegistry().getActivated() == ComponentInspector.this)
                 setActivatedNodes(getExplorerManager().getSelectedNodes());
+
             updatePasteAction();
+
             timer.stop();
         }
     }

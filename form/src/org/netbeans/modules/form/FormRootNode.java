@@ -47,14 +47,16 @@ class FormRootNode extends FormNode {
         return false;
     }
 
-    protected SystemAction[] createActions() {
-        return new SystemAction[] {
-            SystemAction.get(ReloadAction.class),
-            null,
-            SystemAction.get(GotoEditorAction.class),
-            null,
-            SystemAction.get(PropertiesAction.class) 
-        };
+    public javax.swing.Action[] getActions(boolean context) {
+        if (systemActions == null) // from AbstractNode
+            systemActions = new SystemAction[] {
+                SystemAction.get(ReloadAction.class),
+                null,
+                SystemAction.get(GotoEditorAction.class),
+                null,
+                SystemAction.get(PropertiesAction.class) 
+            };
+        return systemActions;
     }
 
     void updateName(String name) {

@@ -40,25 +40,28 @@ class FormOthersNode extends FormNode {
         setName(FormUtils.getBundleString("CTL_NonVisualComponents")); // NOI18N
     }
 
-    protected SystemAction[] createActions() {
-        ArrayList actions = new ArrayList(10);
+    public javax.swing.Action[] getActions(boolean context) {
+        if (systemActions == null) { // from AbstractNode
+            ArrayList actions = new ArrayList(10);
 
-        if (!getFormModel().isReadOnly()) {
-            actions.add(SystemAction.get(AddAction.class));
-            actions.add(null);
-            actions.add(SystemAction.get(PasteAction.class));
-            actions.add(null);
-            actions.add(SystemAction.get(ReorderAction.class));
-            actions.add(null);
+            if (!getFormModel().isReadOnly()) {
+                actions.add(SystemAction.get(AddAction.class));
+                actions.add(null);
+                actions.add(SystemAction.get(PasteAction.class));
+                actions.add(null);
+                actions.add(SystemAction.get(ReorderAction.class));
+                actions.add(null);
+            }
+
+            javax.swing.Action[] superActions = super.getActions(context);
+            for (int i=0; i < superActions.length; i++)
+                actions.add(superActions[i]);
+
+            systemActions = new SystemAction[actions.size()];
+            actions.toArray(systemActions);
         }
 
-        SystemAction[] superActions = super.createActions();
-        for (int i=0; i < superActions.length; i++)
-            actions.add(superActions[i]);
-
-        SystemAction[] array = new SystemAction[actions.size()];
-        actions.toArray(array);
-        return array;
+        return systemActions;
     }
 
     protected void createPasteTypes(Transferable t, java.util.List s) {

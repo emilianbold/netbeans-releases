@@ -71,12 +71,20 @@ public class FormNode extends AbstractNode implements FormCookie {
         return cookie;
     }
 
-    protected SystemAction[] createActions() {
-        return new SystemAction[] {
-            SystemAction.get(GotoEditorAction.class),
-            null,
-            SystemAction.get(PropertiesAction.class) 
-        };
+    // because delegating cookies to FormDataObject we have a bit complicated
+    // way of updating cookies on node - need fire a change on nodes explicitly
+    void updateCookies() {
+        super.fireCookieChange();
+    }
+
+    public javax.swing.Action[] getActions(boolean context) {
+        if (systemActions == null) // from AbstractNode
+            systemActions = new SystemAction[] {
+                SystemAction.get(GotoEditorAction.class),
+                null,
+                SystemAction.get(PropertiesAction.class) 
+            };
+        return systemActions;
     }
 
     public Component getCustomizer() {
