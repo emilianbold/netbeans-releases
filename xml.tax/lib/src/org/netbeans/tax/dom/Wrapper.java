@@ -43,6 +43,10 @@ public class Wrapper {
         return new DocumentTypeImpl(documentType);
     }
     
+    public static Comment wrap(TreeComment comment) {
+        return new CommentImpl(comment);
+    }
+    
     static NodeList wrap(TreeObjectList list) {
         return new NodeListImpl(list);
     }
@@ -63,6 +67,8 @@ public class Wrapper {
             return wrap((TreeDocumentRoot) object);
         } else if (object instanceof TreeDocumentType) {
             return wrap((TreeDocumentType) object);
+        } else if (object instanceof TreeComment) {
+            return wrap((TreeComment) object);
         } else {
             throw new RuntimeException("Cannot wrap: " + object.getClass());
         }
