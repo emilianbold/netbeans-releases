@@ -15,6 +15,7 @@ package org.netbeans.modules.project.ui;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Font;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -40,6 +41,7 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.ListView;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.*;
+import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
@@ -47,6 +49,7 @@ import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -74,6 +77,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     public static final String TEMPLATES_FOLDER = "templatesFolder";        //NOI18N
     public static final String TARGET_TEMPLATE = "targetTemplate";          //NOI18N
     private static final String ATTR_INSTANTIATING_DESC = "instantiatingWizardURL"; //NOI18N
+    private static final Image PLEASE_WAIT_ICON = Utilities.loadImage ("org/netbeans/modules/project/ui/resources/wait.gif"); // NOI18N
     
     private Builder firer;
 
@@ -228,6 +232,22 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         this.categoriesPanel.addPropertyChangeListener(this);                        
         this.projectsPanel.addPropertyChangeListener(this);
         this.description.setEditorKit(new HTMLEditorKit());
+        
+        // please wait node, see issue 52900
+        Node pleaseWait = new AbstractNode (Children.LEAF) {
+            public Image getIcon (int ignore) {
+                return PLEASE_WAIT_ICON;
+            }
+        };
+        pleaseWait.setName (NbBundle.getBundle (TemplatesPanelGUI.class).getString ("LBL_TemplatesPanel_PleaseWait"));
+        Children ch = new Children.Array ();
+        ch.add (new Node[] {pleaseWait});
+        final Node root = new AbstractNode (ch);
+        SwingUtilities.invokeLater (new Runnable () {
+            public void run () {
+                ((ExplorerProviderPanel)categoriesPanel).setRootNode (root);
+            }
+        });
     }
 
     /** This method is called from within the constructor to
