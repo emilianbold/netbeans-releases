@@ -21,6 +21,7 @@ import java.util.ResourceBundle;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.LogicalViewChildren;
 
 import org.openide.nodes.*;
 import org.openide.util.*;
@@ -106,7 +107,7 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
         
         
         public WebLogicalViewRootNode() {
-            super( new EjbJarViews.LogicalViewChildren( helper, evaluator ), createLookup( project ) ); 
+            super( new LogicalViewChildren( project ), createLookup( project ) ); 
             setIconBase( "org/netbeans/modules/j2ee/ejbjarproject/ui/resources/ejbjarProjectIcon" ); // NOI18N
             setName( ProjectUtils.getInformation( project ).getDisplayName() );            
             if (hasBrokenLinks(helper, resolver)) {
