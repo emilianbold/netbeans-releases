@@ -16,6 +16,7 @@ package org.netbeans.modules.editor.options;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.util.List;
+import org.netbeans.editor.Settings;
 import org.openide.options.ContextSystemOption;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -31,9 +32,13 @@ public class AllOptions extends ContextSystemOption {
 
     static final long serialVersionUID =-5703125420292694573L;
 
-    BaseOptions baseOptions = new BaseOptions(); // base kit settings
+    // Initialize global options
+    BaseOptions baseOptions = (BaseOptions)BaseOptions.findObject(BaseOptions.class, true);
 
     public AllOptions() {
+        // Add the initializer for the base options. It will not be removed
+        Settings.addInitializer(baseOptions.getSettingsInitializer(),
+            Settings.OPTION_LEVEL);
     }
     
     /** Initialization of the options contains adding listener
