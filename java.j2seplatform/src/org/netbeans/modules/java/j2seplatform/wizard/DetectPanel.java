@@ -347,6 +347,7 @@ public class DetectPanel extends javax.swing.JPanel {
 	private J2SEPlatformImpl    platform;
         private boolean             valid;
         private boolean             firstPass=true;
+        private WizardDescriptor    wiz;
 
         WizardPanel(J2SEWizardIterator iterator) {
             this.iterator = iterator;
@@ -385,6 +386,7 @@ public class DetectPanel extends javax.swing.JPanel {
         }
 
         public void readSettings(Object settings) {           
+            this.wiz = (WizardDescriptor) settings;
             JavaPlatform platform = this.iterator.getPlatform();
             String srcPath = null;
             String jdocPath = null;
@@ -524,7 +526,16 @@ public class DetectPanel extends javax.swing.JPanel {
 
         private void checkValid () {
             String name = this.component.getPlatformName ();            
-            boolean validDisplayName = name.length() > 0;           
+            boolean validDisplayName = name.length() > 0;
+            if (!detected) {
+                this.wiz.putProperty( "WizardPanel_errorMessage",NbBundle.getMessage(DetectPanel.class,"ERROR_NoSDKRegistry"));         //NOI18N
+            }
+            else if (!validDisplayName) {
+                this.wiz.putProperty( "WizardPanel_errorMessage",NbBundle.getMessage(DetectPanel.class,"ERROR_InvalidDisplayName"));    //NOI18N
+            }
+            else {
+                this.wiz.putProperty( "WizardPanel_errorMessage", "");                                                                  //NOI18N
+            }
             boolean v = detected && validDisplayName;
             setValid(v);            
         }

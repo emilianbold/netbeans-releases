@@ -40,6 +40,8 @@ import org.openide.util.Utilities;
 public class LocationChooser extends javax.swing.JFileChooser  implements PropertyChangeListener {
         
 
+    private static final Dimension PREFERRED_SIZE = new Dimension (500,300);
+    
     private WizardDescriptor.InstantiatingIterator iterator;
     private LocationChooser.Panel firer;
     private InstallerRegistry regs;
@@ -61,6 +63,9 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
     }
     
     
+    public Dimension getPreferredSize () {
+        return PREFERRED_SIZE;
+    }
     
 
 
@@ -140,6 +145,7 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
             l.setConstraints(label,c);
             this.add (label);
             this.tf = new JTextField();
+            this.tf.setColumns(15);
             this.tf.setEditable(false);
             c = new GridBagConstraints();
             c.gridx = c.gridy = GridBagConstraints.RELATIVE;
