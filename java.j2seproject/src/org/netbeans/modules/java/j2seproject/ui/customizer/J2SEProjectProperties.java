@@ -190,6 +190,10 @@ public class J2SEProjectProperties {
         }
     }
     
+    static boolean isAntProperty (String string) {
+        return string != null && string.startsWith( "${" ) && string.endsWith( "}" ); //NOI18N
+    }
+    
     public void put( String propertyName, Object value ) {
         PropertyInfo pi = (PropertyInfo)properties.get( propertyName );
         assert propertyName != null : "Unknown property " + propertyName; // NOI18N
@@ -706,11 +710,17 @@ public class J2SEProjectProperties {
                     }
                 } else {
                     // Standalone jar or property
-                    String eval = evaluator.getProperty(getAntPropertyName(pe[i]));
+                    String eval;
+                    if (isAntProperty (pe[i])) {
+                        eval = evaluator.getProperty(getAntPropertyName(pe[i]));
+                    }
+                    else {
+                        eval = pe[i];
+                    }                    
                     File f = null;
                     if (eval != null) {
                         f = antProjectHelper.resolveFile(eval);
-                    }
+                    }                    
                     cpItem = new VisualClassPathItem( f, VisualClassPathItem.TYPE_JAR, pe[i], eval );
                 }
                 if (cpItem!=null) {
