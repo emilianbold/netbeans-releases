@@ -197,6 +197,8 @@ final class FileSelector extends CoronaDialog implements PropertyChangeListener 
         tree = new BeanTreeView ();
         tree.setPopupAllowed (false);
         tree.setDefaultActionAllowed (false);
+        // install proper border for tree
+        tree.setBorder((Border)UIManager.get("Nb.ScrollPane.border")); // NOI18N
         tree.getAccessibleContext().setAccessibleName(NbBundle.getBundle(FileSelector.class).getString("ACSN_FileSelectorTreeView"));
         tree.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(FileSelector.class).getString("ACSD_FileSelectorTreeView"));
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(FileSelector.class).getString("ACSD_FileSelectorDialog"));
