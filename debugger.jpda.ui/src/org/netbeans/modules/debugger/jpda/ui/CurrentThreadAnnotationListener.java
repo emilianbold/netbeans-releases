@@ -41,7 +41,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
     // annotation for current line
     private transient Object                currentPC;
     private JPDAThread                      currentThread;
-    private JPDADebugger                    debugger;
+    private JPDADebugger                    currentDebugger;
 
 
 
@@ -53,26 +53,16 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
      * Listens JPDADebuggerEngineImpl and DebuggerManager.
      */
     public void propertyChange (PropertyChangeEvent e) {
-//        if (e.getSource () instanceof JPDAThread) {
-//            annotate ();
-//        } else
         if (e.getPropertyName () == DebuggerManager.PROP_CURRENT_ENGINE) {
-            if (debugger != null)
-                debugger.removePropertyChangeListener (this);
-            DebuggerEngine currentEngine = DebuggerManager.
-                getDebuggerManager ().getCurrentEngine ();
-            debugger = null;
-            if (currentEngine != null)
-                debugger = JPDADebugger.getJPDADebugger (currentEngine);
-            if (debugger != null)
-                debugger.addPropertyChangeListener (this);
-            refreshCurrentThread ();
+            updateCurrentDebugger ();
+            updateCurrentThread ();
+            annotate ();
         } else
         if (e.getPropertyName () == JPDADebugger.PROP_CURRENT_THREAD) {
-            refreshCurrentThread ();
+            updateCurrentThread ();
+            annotate ();
         } else
-        if ( (e.getPropertyName () == JPDADebugger.PROP_STATE) &&
-             (debugger.getState () == debugger.STATE_STOPPED)) {
+        if (e.getPropertyName () == JPDADebugger.PROP_STATE) {
             annotate ();
         }
     }
@@ -80,25 +70,29 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
 
     // helper methods ..........................................................
 
-    private void refreshCurrentThread () {
-        // get current thread
-        JPDAThread t = null;
-        JPDAThread newThread = null;
-        if (debugger != null) newThread = debugger.getCurrentThread ();
-        DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager ().
-            getCurrentEngine ();
-        if ( (currentEngine != null) &&
-             (newThread != null) &&
-             (newThread instanceof JPDAThread) &&
-             (currentEngine.lookupFirst (JPDADebugger.class) != null)
-        )
-            t = newThread;
+    private void updateCurrentDebugger () {
+        JPDADebugger newDebugger = getCurrentDebugger ();
+        if (currentDebugger == newDebugger) return;
+        if (currentDebugger != null)
+            currentDebugger.removePropertyChangeListener (this);
+        if (newDebugger != null)
+            newDebugger.addPropertyChangeListener (this);
+        currentDebugger = newDebugger;
+    }
+    
+    private static JPDADebugger getCurrentDebugger () {
+        DebuggerEngine currentEngine = DebuggerManager.
+            getDebuggerManager ().getCurrentEngine ();
+        if (currentEngine == null) return null;
+        return (JPDADebugger) currentEngine.lookupFirst (JPDADebugger.class);
+    }
 
-        //if (t != currentThread) {
-            // move listeners
-            currentThread = t;
-            annotate ();
-        //}
+    private void updateCurrentThread () {
+        // get current thread
+        if (currentDebugger != null) 
+            currentThread = currentDebugger.getCurrentThread ();
+        else
+            currentThread = null;
     }
 
     /**
@@ -106,7 +100,8 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
      */
     private void annotate () {
         // 1) no current thread => remove annotations
-        if (currentThread == null) {
+        if ( (currentThread == null) ||
+             (currentDebugger.getState () != JPDADebugger.STATE_STOPPED) ) {
             removeAnnotations ();
             return;
         }
@@ -116,6 +111,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
         try {
             stack = currentThread.getCallStack ();
         } catch (NoInformationException ex) {
+            removeAnnotations ();
             return;
         }
         final JPDAThread ct = currentThread;
@@ -190,9 +186,6 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                     String resourceName = Context.getRelativePath
                         (stack [i], language);
                     int lineNumber = stack [i].getLineNumber (language);
-//                    if ( !Context.getContext (currentEngine).canShowLine
-//                           (resourceName, lineNumber))
-//                        continue;
                     String line = resourceName + lineNumber;
 
                     // 2) line already annotated?
@@ -207,7 +200,6 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                             getDebuggerManager ().getCurrentSession ().
                             lookupFirst (EngineContext.class);
                         da = ectx.annotate (stack [i], language);
-//                        da = Context.annotate (stack [i], language);
                     }
 
                     // 4) add new line to hashMap

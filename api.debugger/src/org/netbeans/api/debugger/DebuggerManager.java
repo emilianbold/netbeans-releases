@@ -272,8 +272,9 @@ public final class DebuggerManager {
      * {@link DebuggerEngine}(s).
      *
      * @param info debugger startup info
+     * @return DebuggerEngines started for given info
      */
-    public void startDebugging (DebuggerInfo info) {
+    public DebuggerEngine[] startDebugging (DebuggerInfo info) {
         //S ystem.out.println("@StartDebugging info: " + info);
         
         // init sessions
@@ -367,8 +368,11 @@ public final class DebuggerManager {
                 (ACTION_START);
         }
         
-        if (sessionToStart == null) return;
-        setCurrentSession (sessionToStart);
+        if (sessionToStart != null)
+            setCurrentSession (sessionToStart);
+        
+        DebuggerEngine[] des = new DebuggerEngine [engines.size ()];
+        return (DebuggerEngine[]) engines.toArray (des);
     }
 
     /**
@@ -634,20 +638,21 @@ public final class DebuggerManager {
      */
     private void fireBreakpointCreated (final Breakpoint breakpoint) {
         initDebuggerManagerListeners ();
-        Vector l = (Vector) listener.clone ();
-        Vector l1 = (Vector) listeners.get (PROP_BREAKPOINTS);
         PropertyChangeEvent ev = new PropertyChangeEvent (
             this, PROP_BREAKPOINTS, null, null
         );
-        if (l1 != null)
-            l1 = (Vector) l1.clone ();
+        
+        Vector l = (Vector) listener.clone ();
         int i, k = l.size ();
         for (i = 0; i < k; i++) {
             ((DebuggerManagerListener) l.elementAt (i)).breakpointAdded 
                 (breakpoint);
             ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
         }
+        
+        Vector l1 = (Vector) listeners.get (PROP_BREAKPOINTS);
         if (l1 != null) {
+            l1 = (Vector) l1.clone ();
             k = l1.size ();
             for (i = 0; i < k; i++) {
                 ((DebuggerManagerListener) l1.elementAt (i)).breakpointAdded 
@@ -669,23 +674,24 @@ public final class DebuggerManager {
      */
     private void fireBreakpointRemoved (final Breakpoint breakpoint) {
         initDebuggerManagerListeners ();
-        Vector l = (Vector) listener.clone ();
-        Vector l1 = (Vector) listeners.get (PROP_BREAKPOINTS);
         PropertyChangeEvent ev = new PropertyChangeEvent (
             this, PROP_BREAKPOINTS, null, null
         );
-        if (l1 != null)
-            l1 = (Vector) l1.clone ();
+
+        Vector l = (Vector) listener.clone ();
         int i, k = l.size ();
         for (i = 0; i < k; i++) {
-            ((DebuggerManagerListener)l.elementAt (i)).breakpointRemoved 
+            ((DebuggerManagerListener) l.elementAt (i)).breakpointRemoved 
                 (breakpoint);
             ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
         }
+        
+        Vector l1 = (Vector) listeners.get (PROP_BREAKPOINTS);
         if (l1 != null) {
+            l1 = (Vector) l1.clone ();
             k = l1.size ();
             for (i = 0; i < k; i++) {
-                ((DebuggerManagerListener)l1.elementAt (i)).breakpointRemoved 
+                ((DebuggerManagerListener) l1.elementAt (i)).breakpointRemoved 
                     (breakpoint);
                 ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
             }
@@ -695,13 +701,11 @@ public final class DebuggerManager {
     private void initBreakpoints () {
         breakpointsInitialized = true; 
         initDebuggerManagerListeners ();
-        Vector l = (Vector) listener.clone ();
-        Vector l1 = (Vector) listeners.get (PROP_BREAKPOINTS_INIT);
         PropertyChangeEvent ev = new PropertyChangeEvent (
             this, PROP_BREAKPOINTS_INIT, null, null
         );
-        if (l1 != null)
-            l1 = (Vector) l1.clone ();
+
+        Vector l = (Vector) listener.clone ();
         int i, k = l.size ();
         for (i = 0; i < k; i++) {
             breakpoints.addAll (Arrays.asList (
@@ -709,15 +713,19 @@ public final class DebuggerManager {
             ));
             ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
         }
+
+        Vector l1 = (Vector) listeners.get (PROP_BREAKPOINTS_INIT);
         if (l1 != null) {
+            l1 = (Vector) l1.clone ();
             k = l1.size ();
             for (i = 0; i < k; i++) {
                 breakpoints.addAll (Arrays.asList (
-                    ((DebuggerManagerListener)l1.elementAt (i)).initBreakpoints ()
+                    ((DebuggerManagerListener) l1.elementAt (i)).initBreakpoints ()
                 ));
                 ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
             }
         }
+        
         k = breakpoints.size ();
         for (i = 0; i < k; i++) 
             fireBreakpointCreated ((Breakpoint) breakpoints.get (i));
@@ -735,23 +743,24 @@ public final class DebuggerManager {
      */
     private void fireWatchCreated (final Watch watch) {
         initDebuggerManagerListeners ();
-        Vector l = (Vector) listener.clone ();
-        Vector l1 = (Vector) listeners.get (PROP_WATCHES);
         PropertyChangeEvent ev = new PropertyChangeEvent (
             this, PROP_WATCHES, null, null
         );
-        if (l1 != null)
-            l1 = (Vector) l1.clone ();
+
+        Vector l = (Vector) listener.clone ();
         int i, k = l.size ();
         for (i = 0; i < k; i++) {
-            ((DebuggerManagerListener)l.elementAt (i)).watchAdded 
+            ((DebuggerManagerListener) l.elementAt (i)).watchAdded 
                 (watch);
-                ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
-            }
+            ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
+        }
+
+        Vector l1 = (Vector) listeners.get (PROP_WATCHES);
         if (l1 != null) {
+            l1 = (Vector) l1.clone ();
             k = l1.size ();
             for (i = 0; i < k; i++) {
-                ((DebuggerManagerListener)l1.elementAt (i)).watchAdded 
+                ((DebuggerManagerListener) l1.elementAt (i)).watchAdded 
                     (watch);
                 ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
             }
@@ -770,23 +779,24 @@ public final class DebuggerManager {
      */
     private void fireWatchRemoved (final Watch watch) {
         initDebuggerManagerListeners ();
-        Vector l = (Vector) listener.clone ();
-        Vector l1 = (Vector) listeners.get (PROP_WATCHES);
         PropertyChangeEvent ev = new PropertyChangeEvent (
             this, PROP_WATCHES, null, null
         );
-        if (l1 != null)
-            l1 = (Vector) l1.clone ();
+
+        Vector l = (Vector) listener.clone ();
         int i, k = l.size ();
         for (i = 0; i < k; i++) {
-            ((DebuggerManagerListener)l.elementAt (i)).watchRemoved 
+            ((DebuggerManagerListener) l.elementAt (i)).watchRemoved 
                 (watch);
-            ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
+            ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
         }
+
+        Vector l1 = (Vector) listeners.get (PROP_WATCHES);
         if (l1 != null) {
+            l1 = (Vector) l1.clone ();
             k = l1.size ();
             for (i = 0; i < k; i++) {
-                ((DebuggerManagerListener)l1.elementAt (i)).watchRemoved 
+                ((DebuggerManagerListener) l1.elementAt (i)).watchRemoved 
                     (watch);
                 ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
             }
@@ -796,20 +806,23 @@ public final class DebuggerManager {
     private void initWatches () {
         watchesInitialized = true; 
         initDebuggerManagerListeners ();
-        Vector l = (Vector) listener.clone ();
-        Vector l1 = (Vector) listeners.get (PROP_WATCHES_INIT);
         PropertyChangeEvent ev = new PropertyChangeEvent (
             this, PROP_WATCHES_INIT, null, null
         );
-        if (l1 != null)
-            l1 = (Vector) l1.clone ();
+        
+        Vector l = (Vector) listener.clone ();
         int i, k = l.size ();
-        for (i = 0; i < k; i++)
+        for (i = 0; i < k; i++) {
             ((DebuggerManagerListener) l.elementAt (i)).initWatches ();
+            ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
+        }
+
+        Vector l1 = (Vector) listeners.get (PROP_WATCHES_INIT);
         if (l1 != null) {
+            l1 = (Vector) l1.clone ();
             k = l1.size ();
             for (i = 0; i < k; i++) {
-                ((DebuggerManagerListener)l1.elementAt (i)).initWatches ();
+                ((DebuggerManagerListener) l1.elementAt (i)).initWatches ();
                 ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
             }
         }
@@ -831,21 +844,21 @@ public final class DebuggerManager {
         final Session[] ne
     ) {
         initDebuggerManagerListeners ();
-        //S ystem.out.println("DebuggerManagerImpl:sessionAdded " + session);
-        Vector l = (Vector) listener.clone ();
-        Vector l1 = (Vector) listeners.get (PROP_SESSIONS);
         PropertyChangeEvent ev = new PropertyChangeEvent (
             this, PROP_SESSIONS, old, ne
         );
-        if (l1 != null)
-            l1 = (Vector) l1.clone ();
+        
+        Vector l = (Vector) listener.clone ();
         int i, k = l.size ();
         for (i = 0; i < k; i++) {
             ((DebuggerManagerListener) l.elementAt (i)).sessionAdded 
                 (session);
-            ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
+            ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
         }
+        
+        Vector l1 = (Vector) listeners.get (PROP_SESSIONS);
         if (l1 != null) {
+            l1 = (Vector) l1.clone ();
             k = l1.size ();
             for (i = 0; i < k; i++) {
                 ((DebuggerManagerListener) l1.elementAt (i)).sessionAdded
@@ -871,21 +884,21 @@ public final class DebuggerManager {
         final Session[] ne
     ) {
         initDebuggerManagerListeners ();
-        //S ystem.out.println("DebuggerManagerImpl:sessionRemoved " + session);
-        Vector l = (Vector) listener.clone ();
-        Vector l1 = (Vector) listeners.get (PROP_SESSIONS);
         PropertyChangeEvent ev = new PropertyChangeEvent (
             this, PROP_SESSIONS, old, ne
         );
-        if (l1 != null)
-            l1 = (Vector) l1.clone ();
+
+        Vector l = (Vector) listener.clone ();
         int i, k = l.size ();
         for (i = 0; i < k; i++) {
             ((DebuggerManagerListener) l.elementAt (i)).sessionRemoved 
                 (session);
-            ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
+            ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
         }
+
+        Vector l1 = (Vector) listeners.get (PROP_SESSIONS);
         if (l1 != null) {
+            l1 = (Vector) l1.clone ();
             k = l1.size ();
             for (i = 0; i < k; i++) {
                 ((DebuggerManagerListener) l1.elementAt (i)).sessionRemoved 

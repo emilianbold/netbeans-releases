@@ -132,6 +132,8 @@ public interface JPDAThread {
     /**
      * Returns call stack for this thread.
      *
+     * @throws NoInformationException if the thread is running or not able
+     *         to return callstack
      * @return call stack
      */
     public abstract CallStackFrame[] getCallStack () 

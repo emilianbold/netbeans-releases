@@ -75,17 +75,13 @@ public abstract class DebuggerAction extends AbstractAction {
                 DebuggerManager.PROP_CURRENT_ENGINE,
                 this
             );
+            updateCurrentActionsManager ();
         }
         
         public void propertyChange (PropertyChangeEvent evt) {
             final DebuggerAction da = getDebuggerAction ();
             if (da == null) return;
-            if (currentActionsManager != null)
-                currentActionsManager.removeActionsManagerListener
-                    (ActionsManagerListener.PROP_ACTION_STATE_CHANGED, this);
-            currentActionsManager = getCurrentActionsManager ();
-            currentActionsManager.addActionsManagerListener
-                (ActionsManagerListener.PROP_ACTION_STATE_CHANGED, this);
+            updateCurrentActionsManager ();
             final boolean en = currentActionsManager.isEnabled (da.getAction ());
             SwingUtilities.invokeLater (new Runnable () {
                 public void run () {
@@ -108,6 +104,19 @@ public abstract class DebuggerAction extends AbstractAction {
                     da.setEnabled (enabled);
                 }
             });
+        }
+        
+        private void updateCurrentActionsManager () {
+            ActionsManager newActionsManager = getCurrentActionsManager ();
+            if (currentActionsManager == newActionsManager) return;
+            
+            if (currentActionsManager != null)
+                currentActionsManager.removeActionsManagerListener
+                    (ActionsManagerListener.PROP_ACTION_STATE_CHANGED, this);
+            if (newActionsManager != null)
+                newActionsManager.addActionsManagerListener
+                    (ActionsManagerListener.PROP_ACTION_STATE_CHANGED, this);
+            currentActionsManager = newActionsManager;
         }
         
         private DebuggerAction getDebuggerAction () {

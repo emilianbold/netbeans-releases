@@ -35,6 +35,7 @@ import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.jpda.AbstractDICookie;
 import org.netbeans.api.debugger.jpda.AttachingDICookie;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
+import org.netbeans.api.debugger.jpda.DebuggerStartException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.LaunchingDICookie;
@@ -160,15 +161,22 @@ PropertyChangeListener {
             );
         } else
         if (debugger.getState () == JPDADebugger.STATE_DISCONNECTED) {
-            Exception e = debugger.getException ();
+            Throwable e = null;
+            try {
+                debugger.waitRunning ();
+            } catch (DebuggerStartException ex) {
+                e = ex.getTargetException ();
+            }
             if (e == null)
                 print ("CTL_Debugger_finished", where, null, null);
-            else
+            else {
                 ioManager.println (
                     e.getMessage (),
                     where,
                     null
                 );
+                e.printStackTrace ();
+            }
         } else
         if (debugger.getState () == JPDADebugger.STATE_STOPPED) {
             //DebuggerEngine engine = debugger.getEngine ();

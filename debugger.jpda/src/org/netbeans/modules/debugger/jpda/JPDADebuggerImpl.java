@@ -36,6 +36,7 @@ import org.netbeans.api.debugger.jpda.AbstractDICookie;
 import org.netbeans.api.debugger.jpda.AttachingDICookie;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
+import org.netbeans.api.debugger.jpda.DebuggerStartException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
@@ -74,7 +75,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private VirtualMachine              virtualMachine = null;
     private Exception                   exception;
     private Thread                      startingThread;
-    private int                         state = STATE_DISCONNECTED;
+    private int                         state = 0;
     private ArrayList                   breakpointImpls;
     private Operator                    operator;
     private PropertyChangeSupport       pcs;
@@ -82,6 +83,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private CallStackFrame              currentCallStackFrame;
     private int                         suspend = SUSPEND_EVENT_THREAD;
     public final Object                 LOCK = new Object ();
+    public final Object                 LOCK2 = new Object ();
     private JavaEngineProvider          javaEngineProvider;
     private Set                         languages;
     private String                      lastStratumn;
@@ -175,20 +177,44 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     /**
-     * Returns excerption if initialization of VirtualMachine has failed.
+     * Waits till the Virtual Machine is started and returns 
+     * {@link DebuggerStartException} if any.
      *
-     * @return excerption if initialization of VirtualMachine has failed
-     * @see org.netbeans.api.debugger.jpda.AbstractDICookie#getVirtualMachine()
+     * @throws DebuggerStartException is some problems occurres during debugger 
+     *         start
+     *
+     * @see AbstractDICookie#getVirtualMachine()
      */
-    public Exception getException () {
-        return exception;
+    public void waitRunning () throws DebuggerStartException {
+        synchronized (LOCK2) {
+            if (getState () == STATE_DISCONNECTED) {
+                if (exception != null) 
+                    throw new DebuggerStartException (exception);
+                else 
+                    return;
+            }
+            
+            try {
+                LOCK2.wait ();
+            } catch (InterruptedException e) {
+                 throw new DebuggerStartException (e);
+            }
+            
+            if (exception != null) 
+                throw new DebuggerStartException (exception);
+            else 
+                return;
+        }
     }
 
 
     // other methods ...........................................................
 
     public void setException (Exception e) {
-        exception = e;
+        synchronized (LOCK2) {
+            exception = e;
+            LOCK2.notify ();
+        }
     }
 
     public void setCurrentThread (JPDAThread thread) {
@@ -290,22 +316,28 @@ public class JPDADebuggerImpl extends JPDADebugger {
             if (tr.isSuspended ()) {
                 setState (STATE_RUNNING);
                 virtualMachine.resume ();
+                synchronized (LOCK2) {
+                    LOCK2.notify ();
+                }
                 return;
             }
         }
         setState (STATE_RUNNING);
+        synchronized (LOCK2) {
+            LOCK2.notify ();
+        }
     }
 
     /**
      * Change statefrom stopped or starting to running.
      */
-    public void setRunning () {
-        if (getState () == STATE_RUNNING) {
-            System.err.println("already resumed!!");
-            Thread.dumpStack();
-        }
-        setState (STATE_RUNNING);
-    }
+//    public void setRunning () {
+//        if (getState () == STATE_RUNNING) {
+//            System.err.println("already resumed!!");
+//            Thread.dumpStack();
+//        }
+//        setState (STATE_RUNNING);
+//    }
 
     /**
     * Performs stop action.

@@ -16,9 +16,7 @@ package org.netbeans.modules.debugger.jpda.ant;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.Path;
-import org.netbeans.api.debugger.DebuggerInfo;
-import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.jpda.AttachingDICookie;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.util.RequestProcessor;
 
@@ -127,23 +125,14 @@ public class JPDAConnect extends Task {
                             //System.err.println("TG: " + Thread.currentThread().getThreadGroup());
                             // VirtualMachineManagerImpl can be initialized here, so needs
                             // to be inside RP thread.
-                            AttachingDICookie info = null;
                             if (transport.equals ("dt_socket"))
                                 try {
-                                    info = AttachingDICookie.create (host, Integer.parseInt (address));
+                                    JPDADebugger.attach (host, Integer.parseInt (address), new Object[] {sourcePath});
                                 } catch (NumberFormatException e) {
                                     throw new BuildException ("address attribute must specify port number for dt_socket connection", getLocation ());
                                 }
                             else
-                                info = AttachingDICookie.create (address);
-                            DebuggerInfo di = DebuggerInfo.create (
-                                AttachingDICookie.ID,
-                                new Object [] {
-                                    info,
-                                    sourcePath
-                                }
-                            );
-                            DebuggerManager.getDebuggerManager ().startDebugging (di);
+                                JPDADebugger.attach (address, new Object[] {sourcePath});
                         } catch (Throwable e) {
                             lock[0] = e;
                         } finally {

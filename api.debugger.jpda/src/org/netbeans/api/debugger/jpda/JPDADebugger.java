@@ -77,18 +77,6 @@ public abstract class JPDADebugger {
 
     
     /**
-     * Utility method returns instance of JPDADebugger for given 
-     * {@link org.netbeans.api.debugger.DebuggerEngine}.
-     *
-     * @return instance of JPDADebugger for given 
-     * {@link org.netbeans.api.debugger.DebuggerEngine}
-     */
-    public static JPDADebugger getJPDADebugger (DebuggerEngine engine) {
-        return (JPDADebugger) engine.lookupFirst 
-            (JPDADebugger.class);
-    }
-    
-    /**
      * This utility method helps to start a new JPDA debugger session. 
      * Its implementation use {@link LaunchingDICookie} and 
      * {@link org.netbeans.api.debugger.DebuggerManager#getDebuggerManager}.
@@ -121,46 +109,36 @@ public abstract class JPDADebugger {
     
     /**
      * This utility method helps to start a new JPDA debugger session. 
-     * Its implementation use {@link AttachingDICookie} and 
+     * Its implementation use {@link ListeningDICookie} and 
      * {@link org.netbeans.api.debugger.DebuggerManager#getDebuggerManager}.
      *
      * @param name a name of shared memory block
      */
-    public static void attach (
-        String          name
-    ) {
-        DebuggerManager.getDebuggerManager ().startDebugging (
-            DebuggerInfo.create (
-                AttachingDICookie.ID,
-                new Object[] {
-                    AttachingDICookie.create (
-                        name
-                    )
-                }
-            )
+    public static JPDADebugger listen (
+        ListeningConnector        connector,
+        Map                       args,
+        Object[]                  services
+    ) throws DebuggerStartException {
+        Object[] s = new Object [services.length + 1];
+        System.arraycopy (services, 0, s, 1, services.length);
+        s [0] = ListeningDICookie.create (
+            connector,
+            args
         );
-    }
-    
-    /**
-     * This utility method helps to start a new JPDA debugger session. 
-     * Its implementation use {@link ListeningDICookie} and 
-     * {@link org.netbeans.api.debugger.DebuggerManager#getDebuggerManager}.
-     *
-     * @param portNumber a number of port to listen on
-     */
-    public static void listen (
-        int          portNumber
-    ) {
-        DebuggerManager.getDebuggerManager ().startDebugging (
-            DebuggerInfo.create (
-                ListeningDICookie.ID,
-                new Object[] {
-                    ListeningDICookie.create (
-                        portNumber
-                    )
-                }
-            )
-        );
+        DebuggerEngine[] es = DebuggerManager.getDebuggerManager ().
+            startDebugging (
+                DebuggerInfo.create (
+                    ListeningDICookie.ID,
+                    s
+                )
+            );
+        int i, k = es.length;
+        for (i = 0; i < k; i++) {
+            JPDADebugger d = (JPDADebugger) es [i].lookupFirst (JPDADebugger.class);
+            d.waitRunning ();
+            return d;
+        }
+        throw new DebuggerStartException (new InternalError ());
     }
     
     /**
@@ -170,19 +148,24 @@ public abstract class JPDADebugger {
      *
      * @param name a name of shared memory block
      */
-    public static void listen (
-        String          name
-    ) {
-        DebuggerManager.getDebuggerManager ().startDebugging (
-            DebuggerInfo.create (
-                ListeningDICookie.ID,
-                new Object[] {
-                    ListeningDICookie.create (
-                        name
-                    )
-                }
-            )
+    public static void startListening (
+        ListeningConnector        connector,
+        Map                       args,
+        Object[]                  services
+    ) throws DebuggerStartException {
+        Object[] s = new Object [services.length + 1];
+        System.arraycopy (services, 0, s, 1, services.length);
+        s [0] = ListeningDICookie.create (
+            connector,
+            args
         );
+        DebuggerEngine[] es = DebuggerManager.getDebuggerManager ().
+            startDebugging (
+                DebuggerInfo.create (
+                    ListeningDICookie.ID,
+                    s
+                )
+            );
     }
     
     /**
@@ -193,21 +176,64 @@ public abstract class JPDADebugger {
      * @param hostName a name of computer to attach to
      * @param portNumber a potr number
      */
-    public static void attach (
+    public static JPDADebugger attach (
         String          hostName,
-        int             portNumber
-    ) {
-        DebuggerManager.getDebuggerManager ().startDebugging (
-            DebuggerInfo.create (
-                AttachingDICookie.ID,
-                new Object[] {
-                    AttachingDICookie.create (
-                        hostName,
-                        portNumber
-                    )
-                }
-            )
+        int             portNumber,
+        Object[]        services
+    ) throws DebuggerStartException {
+        Object[] s = new Object [services.length + 1];
+        System.arraycopy (services, 0, s, 1, services.length);
+        s [0] = AttachingDICookie.create (
+            hostName,
+            portNumber
         );
+        DebuggerEngine[] es = DebuggerManager.getDebuggerManager ().
+            startDebugging (
+                DebuggerInfo.create (
+                    AttachingDICookie.ID,
+                    s
+                )
+            );
+        int i, k = es.length;
+        for (i = 0; i < k; i++) {
+            JPDADebugger d = (JPDADebugger) es [i].lookupFirst (JPDADebugger.class);
+            d.waitRunning ();
+            return d;
+        }
+        throw new DebuggerStartException (new InternalError ());
+    }
+    
+    /**
+     * This utility method helps to start a new JPDA debugger session. 
+     * Its implementation use {@link AttachingDICookie} and 
+     * {@link org.netbeans.api.debugger.DebuggerManager#getDebuggerManager}.
+     *
+     * @param hostName a name of computer to attach to
+     * @param portNumber a potr number
+     */
+    public static JPDADebugger attach (
+        String          name,
+        Object[]        services
+    ) throws DebuggerStartException {
+        Object[] s = new Object [services.length + 1];
+        System.arraycopy (services, 0, s, 1, services.length);
+        s [0] = AttachingDICookie.create (
+            name
+        );
+        DebuggerEngine[] es = DebuggerManager.getDebuggerManager ().
+            startDebugging (
+                DebuggerInfo.create (
+                    AttachingDICookie.ID,
+                    s
+                )
+            );
+        int i, k = es.length;
+        for (i = 0; i < k; i++) {
+            JPDADebugger d = (JPDADebugger) es [i].lookupFirst (JPDADebugger.class);
+            d.waitRunning ();
+            return d;
+        }
+        throw new DebuggerStartException (new InternalError ());
     }
 
     /**
@@ -267,12 +293,15 @@ public abstract class JPDADebugger {
     throws InvalidExpressionException;
 
     /**
-     * Returns excerption if initialization of VirtualMachine has failed.
+     * Waits till the Virtual Machine is started and returns 
+     * {@link DebuggerStartException} if any.
      *
-     * @returns excerption if initialization of VirtualMachine has failed
+     * @throws DebuggerStartException is some problems occurres during debugger 
+     *         start
+     *
      * @see AbstractDICookie#getVirtualMachine()
      */
-    public abstract Exception getException ();
+    public abstract void waitRunning () throws DebuggerStartException;
     
     /**
      * Adds property change listener.

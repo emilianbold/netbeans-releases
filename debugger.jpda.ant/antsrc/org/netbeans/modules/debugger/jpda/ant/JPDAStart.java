@@ -27,7 +27,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerInfo;
-import org.netbeans.api.debugger.jpda.ListeningDICookie;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 import org.openide.ErrorManager;
@@ -117,32 +117,33 @@ public class JPDAStart extends Task implements Runnable {
     // main methods ............................................................
 
     public void execute () throws BuildException {
-
-        debug ("Execute started");
-        if (name == null)
-            throw new BuildException ("name attribute must specify name of this debugging session", getLocation ());
-        if (addressProperty == null)
-            throw new BuildException ("addressproperty attribute must specify name of property to which address will be set", getLocation ());
-        if (transport == null)
-            transport = "dt_socket";
-
-        debug ("Entering synch lock");
-        lock = new Object [2];
-        synchronized (lock) {
-            debug ("Entered synch lock");
-            RequestProcessor.getDefault ().post (this);
-            try {
-                debug ("Entering wait");
-                lock.wait ();
-                debug ("Wait finished");
-                if (lock [1] != null) {
-                    throw new BuildException ((Throwable) lock [1]);
+        try {
+            debug ("Execute started");
+            if (name == null)
+                throw new BuildException ("name attribute must specify name of this debugging session", getLocation ());
+            if (addressProperty == null)
+                throw new BuildException ("addressproperty attribute must specify name of property to which address will be set", getLocation ());
+            if (transport == null)
+                transport = "dt_socket";
+            debug ("Entering synch lock");
+            lock = new Object [2];
+            synchronized (lock) {
+                debug ("Entered synch lock");
+                RequestProcessor.getDefault ().post (this);
+                try {
+                    debug ("Entering wait");
+                    lock.wait ();
+                    debug ("Wait finished");
+                    if (lock [1] != null) {
+                        throw new BuildException ((Throwable) lock [1]);
+                    }
+                } catch (InterruptedException e) {
+                    throw new BuildException (e);
                 }
-            } catch (InterruptedException e) {
-                throw new BuildException (e);
             }
+        } catch (Throwable t) {
+            throw new BuildException (t);
         }
-
     }
     
     public void run () {
@@ -182,20 +183,23 @@ public class JPDAStart extends Task implements Runnable {
                     sourcepath, 
                     bootclasspath
                 );
-                debug ("Creating cookie");
-                ListeningDICookie ldic = ListeningDICookie.create (lc, args);
-                debug ("Cookie created");
-                DebuggerInfo di = DebuggerInfo.create (
-                    ListeningDICookie.ID, 
-                    new Object [] {
-                        ldic, 
-                        sourcePath
-                    }
-                );
-
-                debug ("Debugger info created");
-                DebuggerManager.getDebuggerManager ().startDebugging (di);
+//                debug ("Creating cookie");
                 debug ("Debugger started");
+                JPDADebugger.startListening (lc, args, new Object[] {sourcePath});
+                
+//                ListeningDICookie ldic = ListeningDICookie.create (lc, args);
+//                debug ("Cookie created");
+//                DebuggerInfo di = DebuggerInfo.create (
+//                    ListeningDICookie.ID, 
+//                    new Object [] {
+//                        ldic, 
+//                        sourcePath
+//                    }
+//                );
+//
+//                debug ("Debugger info created");
+//                DebuggerManager.getDebuggerManager ().startDebugging (di);
+//                debug ("Debugger started");
             } catch (Throwable e) {
                 lock [1] = e;
             } finally {
