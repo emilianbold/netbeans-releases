@@ -52,6 +52,14 @@ import org.openide.xml.XMLUtil;
  */
 public final class StartTomcat extends StartServer implements ProgressObject
 {
+    public static final String CATALINA_BAT     = "catalina.bat";    // NOI18N
+    public static final String CATALINA_SH      = "catalina.sh";     // NOI18N
+    public static final String CATALINA_50_BAT  = "catalina.50.bat"; // NOI18N
+    public static final String CATALINA_50_SH   = "catalina.50.sh";  // NOI18N
+    
+    public static final String SETCLASSPATH_BAT = "setclasspath.bat"; // NOI18N
+    public static final String SETCLASSPATH_SH  = "setclasspath.sh";  // NOI18N
+        
     public static final String TAG_CATALINA_HOME = "catalina_home"; // NOI18N
     public static final String TAG_CATALINA_BASE = "catalina_base"; // NOI18N
     /** Tag replaced with separator between filename components */
@@ -275,6 +283,19 @@ public final class StartTomcat extends StartServer implements ProgressObject
                 }
             }
             
+            // check whether the startup script - catalina.sh/bat exists
+            String STARTUP_SCRIPT = getStartupScript(homeDir.getAbsolutePath(), tm.getTomcatVersion());
+            if (!new File(homeDir.getAbsolutePath(), "bin/" + STARTUP_SCRIPT).exists()) { // NOI18N
+                final String MSG = NbBundle.getMessage(
+                        StartTomcat.class, 
+                        command == CommandType.START ? "MSG_StartFailedNoStartScript" : "MSG_StopFailedNoStartScript",
+                        STARTUP_SCRIPT);
+                pes.fireHandleProgressEvent(
+                    null,
+                    new Status(ActionType.EXECUTE, command, MSG, StateType.FAILED));
+                return;
+            }
+            
             // install the monitor
             if (command == CommandType.START) {
                 try {
@@ -353,10 +374,10 @@ public final class StartTomcat extends StartServer implements ProgressObject
                     tm.logManager().openServerLog();
                 } catch (java.io.IOException ioe) {
                     if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
-                        TomcatFactory.getEM ().notify (ErrorManager.INFORMATIONAL, ioe);    // NOI18N
+                        TomcatFactory.getEM ().notify (ErrorManager.INFORMATIONAL, ioe);
                     }
-                    fireCmdExecProgressEvent(command == CommandType.START ? "MSG_StartFailed" : "MSG_StopFailed",
-                            StateType.FAILED);
+                    fireCmdExecProgressEvent(command == CommandType.START ? "MSG_StartFailedIOE" : "MSG_StopFailedIOE",
+                            STARTUP_SCRIPT, StateType.FAILED);
                     return;
                 }
             } else {
@@ -396,8 +417,8 @@ public final class StartTomcat extends StartServer implements ProgressObject
                     if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
                         TomcatFactory.getEM ().notify (ErrorManager.INFORMATIONAL, ioe);    // NOI18N
                     }
-                    fireCmdExecProgressEvent(command == CommandType.START ? "MSG_StartFailed" : "MSG_StopFailed",
-                            StateType.FAILED);
+                    fireCmdExecProgressEvent(command == CommandType.START ? "MSG_StartFailedIOE" : "MSG_StopFailedIOE",
+                            STARTUP_SCRIPT, StateType.FAILED);
                     return;
                 }
             }
@@ -425,6 +446,22 @@ public final class StartTomcat extends StartServer implements ProgressObject
                 null,
                 new Status(ActionType.EXECUTE, command, msg, stateType));
         }
+        
+        /**
+         * Fires command progress event of action type <code>ActionType.EXECUTE</code>.
+         *
+         * @param resName event status message from the bundle, specified by the 
+         *        resource name.
+         * @param arg1 the argument to use when formating the message
+         * @param stateType event state type.
+         */
+        private void fireCmdExecProgressEvent(String resName, Object arg1, StateType stateType) {
+            String msg = NbBundle.getMessage(StartTomcat.class, resName, arg1);
+            pes.fireHandleProgressEvent(
+                null,
+                new Status(ActionType.EXECUTE, command, msg, stateType));
+        }
+        
         
         /** For how long should we keep trying to get response from the server. */
         private static final long TIMEOUT_DELAY = 180000;
@@ -510,17 +547,9 @@ public final class StartTomcat extends StartServer implements ProgressObject
         
         private static final long serialVersionUID = 992972967554321415L;
         
-        private static final String CATALINA_STARTUP_SCRIPT_WIN = "catalina.bat";  // NOI18N
-        private static final String CATALINA_STARTUP_SCRIPT_OTHER = "catalina.sh"; // NOI18N
-        private static final String CATALINA_STARTUP_SCRIPT_WIN_JDK15 = "catalina.50.bat";  // NOI18N
-        private static final String CATALINA_STARTUP_SCRIPT_OTHER_JDK15 = "catalina.50.sh"; // NOI18N
-        
-        private final int tomcatVersion;
-        
         public TomcatFormat (String home, int aTomcatVersion) {
             super(new java.util.HashMap ());
-            tomcatVersion = aTomcatVersion;
-            String catalinaStartupScript = getStartupScript(home);
+            String catalinaStartupScript = getStartupScript(home, aTomcatVersion);
             java.util.Map map = getMap ();
             map.put (TAG_EXEC_CMD, catalinaStartupScript);
             map.put (TAG_EXEC_STARTUP, "run"); // NOI18N
@@ -533,29 +562,27 @@ public final class StartTomcat extends StartServer implements ProgressObject
             map.put (TAG_CATALINA_HOME, home); // NOI18N
             map.put (TAG_SEPARATOR, File.separator);
         }
-        
-        /**
-         * Return appropriate catalina startup script.
-         * 
-         * @param home TOMCAT_HOME dir.
-         * @return appropriate catalina startup script.
-         */
-        private String getStartupScript(String home) {
-            String javaVersion = System.getProperty("java.vm.version");  // NOI18N
-            if (tomcatVersion == TomcatManager.TOMCAT_50 
-                 && javaVersion != null && javaVersion.startsWith("1.5")) {  // NOI18N
-                String startupScript = Utilities.isWindows() 
-                                            ? CATALINA_STARTUP_SCRIPT_WIN_JDK15
-                                            : CATALINA_STARTUP_SCRIPT_OTHER_JDK15;
-                if (new File(home + "/bin/" + startupScript).exists()) // NOI18N
-                        return startupScript;
+    }
+    
+    /**
+     * Return appropriate catalina startup script.
+     * 
+     * @param home TOMCAT_HOME dir.
+     * @return appropriate catalina startup script.
+     */
+    public static String getStartupScript(String home, int aTomcatVersion) {
+        String javaVersion = System.getProperty("java.vm.version");  // NOI18N
+        if (aTomcatVersion == TomcatManager.TOMCAT_50 
+             && javaVersion != null && javaVersion.startsWith("1.5")) {  // NOI18N
+            String startupScript = Utilities.isWindows() ? CATALINA_50_BAT : CATALINA_50_SH;
+            if (new File(home + "/bin/" + startupScript).exists()) { // NOI18N
+                return startupScript;
             }
-            return Utilities.isWindows() ? CATALINA_STARTUP_SCRIPT_WIN
-                                         : CATALINA_STARTUP_SCRIPT_OTHER;
         }
+        return Utilities.isWindows() ? CATALINA_BAT: CATALINA_SH;
     }
     
     public String toString () {
-        return "StartTomcat [" + tm + "]";
+        return "StartTomcat [" + tm + "]"; // NOI18N
     }
 }

@@ -129,7 +129,7 @@ public class TomcatManager implements DeploymentManager {
     public static final String WEBXML_PATH = File.separator + "conf" + File.separator + "web.xml";  // NOI18N
     
     /** some bundled tomcat settings are stored here */
-    private static final String BUNDLED_TOMCAT_SETTING = "J2EE/BundledTomcat/Setting"; // NOI18N
+    public static final String BUNDLED_TOMCAT_SETTING = "J2EE/BundledTomcat/Setting"; // NOI18N
     
     /** Tomcat specific Instance property - if this property exists and is set 
        to <code>true</code> web module's context log will be opened on run. */

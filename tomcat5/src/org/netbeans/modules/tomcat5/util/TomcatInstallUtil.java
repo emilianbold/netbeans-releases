@@ -35,6 +35,9 @@ import org.netbeans.modules.tomcat5.TomcatManager;
 
 import org.w3c.dom.Document;
 import org.apache.xml.serialize.*;
+import org.netbeans.modules.tomcat5.ide.StartTomcat;
+import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -136,7 +139,7 @@ public class TomcatInstallUtil {
         }
         return true;
     }
-
+    
     public static String getAdminPort(Server server) {
         String port;
         
@@ -186,6 +189,22 @@ public class TomcatInstallUtil {
             TomcatFactory.getEM ().log ("T5Util.getHost: " + host);             // NOI18N
         }
         return host;
+    }
+    
+    /**
+     * Return the CATALINA_HOME directory of the bundled Tomcat
+     *
+     * @return the CATALINA_HOME directory of the bundled Tomcat, <code>null</code>
+     *         if the CATALINA_HOME directory does not exist which should never happen.
+     */
+    public static File getBundledHome() {
+        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
+        FileObject fo = fs.findResource(TomcatManager.BUNDLED_TOMCAT_SETTING);
+        if (fo != null) {
+            InstalledFileLocator ifl = InstalledFileLocator.getDefault();
+            return ifl.locate(fo.getAttribute("bundled_home").toString(), null, false); // NOI18N
+        }
+        return null;
     }
     
     /** @return text (suitable for printing to XML file) for a given XML document.
