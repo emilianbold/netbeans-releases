@@ -41,10 +41,12 @@ public class AddConnectionAction extends DatabaseAction
 
 			Vector drvs = RootNode.getOption().getAvailableDrivers();
 			DatabaseConnection cinfo = new DatabaseConnection();
-			
-			cinfo.setDatabase("jdbc:sybase:Tds:localhost:2638");
-			cinfo.setUser("dba");
-			
+			if (drvs.size() > 0) {
+				DatabaseDriver drv = (DatabaseDriver)drvs.elementAt(0);
+				cinfo.setDriverName(drv.getName());
+				cinfo.setDriver(drv.getURL());
+			}
+						
 			NewConnectionDialog cdlg = new NewConnectionDialog(drvs, cinfo);
 			if (cdlg.run()) nfo.addConnection((DBConnection)cinfo);
 		} catch(Exception e) {
