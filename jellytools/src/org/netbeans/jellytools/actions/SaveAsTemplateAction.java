@@ -23,7 +23,7 @@ public class SaveAsTemplateAction extends ActionNoBlock {
 
     /** Creates new SaveAsTemplateAction instance. */    
     public SaveAsTemplateAction() {
-        super(null, Bundle.getString("org.openide.actions.Bundle", "SaveAsTemplate"), 
+        super(null, Bundle.getString("org.openide.loaders.Bundle", "SaveAsTemplate"), 
                         "org.openide.actions.SaveAsTemplateAction");
     }
 }

@@ -32,7 +32,7 @@ public class SaveAllAction extends Action {
     private static final String saveAllMenu = 
                        Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/File")
                        + "|"
-                       + Bundle.getStringTrimmed("org.openide.actions.Bundle", "SaveAll");
+                       + Bundle.getStringTrimmed("org.openide.loaders.Bundle", "SaveAll");
     
     private static final String systemActionClassname = "org.openide.actions.SaveAllAction";
     

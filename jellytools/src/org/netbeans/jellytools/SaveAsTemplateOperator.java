@@ -32,7 +32,7 @@ public class SaveAsTemplateOperator extends NbDialogOperator {
      * with title "Save As Template".
      */
     public SaveAsTemplateOperator() {
-        super(Bundle.getString("org.openide.actions.Bundle", "Title_SaveAsTemplate"));
+        super(Bundle.getString("org.openide.loaders.Bundle", "Title_SaveAsTemplate"));
     }
     
     /** Invokes Save As Template dialog on specified nodes.
@@ -68,7 +68,7 @@ public class SaveAsTemplateOperator extends NbDialogOperator {
     public JLabelOperator lblSelectTheCategory() {
         if (_lblSelectTheCategory == null) {
             _lblSelectTheCategory = new JLabelOperator(this,
-                                  Bundle.getString("org.openide.actions.Bundle",
+                                  Bundle.getString("org.openide.loaders.Bundle",
                                                    "CTL_SaveAsTemplate"));
         }
         return _lblSelectTheCategory;
