@@ -164,6 +164,14 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
         }
 
         SerialDataConvertor.SettingsInstance si = createInstance(inst);
+
+        //#34155 - is this already instantiated SystemOption?
+        boolean recreate = false;
+        if (instance.getCachedInstance() != null) {
+            if (instance.getCachedInstance() instanceof org.openide.options.SystemOption) {
+                recreate = true;
+            }
+        }
         if (isModuleEnabled(si)) {
             instance = si;
             lkpContent.set(Arrays.asList(new Object [] { this, si }), null);
@@ -173,6 +181,16 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
         }
         
         lkpContent.add(this, node);
+        
+        //#34155 - if it was instantiated SystemOptions then force its recreation
+        // See issue for more details.
+        if (isModuleEnabled(si) && recreate) {
+            try {
+                instance.instanceCreate();
+            } catch (Exception ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            }
+        }
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
