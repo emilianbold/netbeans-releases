@@ -15,27 +15,19 @@ package org.netbeans.modules.debugger.jpda.ui.models;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.Action;
 
-import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.Field;
-import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
-import org.netbeans.api.debugger.jpda.Variable;
-import org.netbeans.spi.debugger.jpda.VariablesFilter;
 import org.netbeans.spi.viewmodel.ComputingException;
 import org.netbeans.spi.viewmodel.NoInformationException;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
-import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
 import org.netbeans.spi.viewmodel.NodeModel;
-import org.netbeans.spi.viewmodel.NodeModelFilter;
 import org.netbeans.spi.viewmodel.TableModel;
-import org.netbeans.spi.viewmodel.TableModelFilter;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.TreeModelListener;
@@ -135,31 +127,22 @@ NodeModel, TableModel, NodeActionsProvider {
             List l = new ArrayList (Arrays.asList (
                 original.getChildren (parent, from, tto)
             ));
-            if ( (l.size () < to) && 
-                 (variable.getAllStaticFields (0, 0).length > 0)
-            ) l.add (new Object[] {"static", parent});
-            if ( (l.size () < to) && 
-                 (variable.getInheritedFields (0, 0).length > 0)
-            ) l.add (new Object[] {"inherited", parent});
+            if (l.size() < to && variable.getAllStaticFields(0, 0).length > 0)
+                l.add (new StaticNode(variable));
+            if (l.size() < to && variable.getInheritedFields(0, 0).length > 0)
+                l.add (new InheritedNode(variable));
             return l.toArray ();
-        } else
-        if (parent instanceof Object[]) {
-            Object[] os1 = (Object[]) parent;
-            if (os1.length != 2) return original.getChildren (parent, from, to);
-            
-            if ("static".equals (os1 [0])) 
-                return ((ObjectVariable) os1 [1]).getAllStaticFields (0, 0);
-            if ("inherited".equals (os1 [0])) 
-                return ((ObjectVariable) os1 [1]).getInheritedFields (0, 0);
+        } else if (parent instanceof SpecialNode) {
+            return ((SpecialNode) parent).getChildren(0, 0);
         }
         return original.getChildren (parent, from, to);
     }
-    
-    /** 
+
+    /**
      * Returns number of filtered children for given variable.
      *
      * @param   original the original tree model
-     * @param   variable a variable of returned fields
+     * @param   parent a variable of returned fields
      *
      * @throws  NoInformationException if the set of children can not be 
      *          resolved
@@ -183,17 +166,8 @@ NodeModel, TableModel, NodeActionsProvider {
             if (variable.getAllStaticFields (0, 0).length > 0) i++;
             if (variable.getInheritedFields (0, 0).length > 0) i++;
             return i;
-        } else
-        if (parent instanceof Object[]) {
-            Object[] os1 = (Object[]) parent;
-            if (os1.length != 2) return original.getChildrenCount (parent);
-            
-            if ("static".equals (os1 [0])) 
-                return ((ObjectVariable) os1 [1]).getAllStaticFields (0, 0).
-                    length;
-            if ("inherited".equals (os1 [0])) 
-                return ((ObjectVariable) os1 [1]).getInheritedFields (0, 0).
-                    length;
+        } else if (parent instanceof SpecialNode) {
+            return ((SpecialNode) parent).getChildren(0, 0).length;
         }
         return original.getChildrenCount (parent);
     }
@@ -220,12 +194,7 @@ NodeModel, TableModel, NodeActionsProvider {
         TreeModel original, 
         Object node
     ) throws UnknownTypeException {
-        if (! (node instanceof Object[])) return original.isLeaf (node);
-        Object[] os = (Object[]) node;
-        if (os.length != 2) return original.isLeaf (node);
-        if ( (!"static".equals (os [0])) &&
-             (!"inherited".equals (os [0]))) return original.isLeaf (node);
-        return false;
+        return (node instanceof SpecialNode) ? false : original.isLeaf(node);
     }
 
     public void addTreeModelListener (TreeModelListener l) {
@@ -239,31 +208,19 @@ NodeModel, TableModel, NodeActionsProvider {
     
     public String getDisplayName (Object node) 
     throws ComputingException, UnknownTypeException {
-        if (!(node instanceof Object[])) throw new UnknownTypeException (node);
-        Object[] os = (Object[]) node;
-        if (os.length != 2) throw new UnknownTypeException (node);
-        if ("static".equals (os [0])) return "Static";
-        if ("inherited".equals (os [0])) return "Inherited";
+        if (node instanceof SpecialNode) return ((SpecialNode) node).getDisplayName();
         throw new UnknownTypeException (node);
     }
     
     public String getIconBase (Object node) 
     throws ComputingException, UnknownTypeException {
-        if (! (node instanceof Object[])) throw new UnknownTypeException (node);
-        Object[] os = (Object[]) node;
-        if (os.length != 2) throw new UnknownTypeException (node);
-        if ("static".equals (os [0])) return STATIC;
-        if ("inherited".equals (os [0])) return INHERITED;
+        if (node instanceof SpecialNode) return ((SpecialNode) node).getIconBase();
         throw new UnknownTypeException (node);
     }
     
     public String getShortDescription (Object node) 
     throws ComputingException, UnknownTypeException {
-        if (! (node instanceof Object[])) throw new UnknownTypeException (node);
-        Object[] os = (Object[]) node;
-        if (os.length != 2) throw new UnknownTypeException (node);
-        if ("static".equals (os [0])) return null;
-        if ("inherited".equals (os [0])) return null;
+        if (node instanceof SpecialNode) return null;
         throw new UnknownTypeException (node);
     }
     
@@ -273,22 +230,14 @@ NodeModel, TableModel, NodeActionsProvider {
     public Action[] getActions (
         Object node
     ) throws UnknownTypeException {
-        if (! (node instanceof Object[])) throw new UnknownTypeException (node);
-        Object[] os = (Object[]) node;
-        if (os.length != 2) throw new UnknownTypeException (node);
-        if ("static".equals (os [0])) return new Action [0];
-        if ("inherited".equals (os [0])) return new Action [0];
+        if (node instanceof SpecialNode) return new Action [0];
         throw new UnknownTypeException (node);
     }
     
     public void performDefaultAction (
         Object node
     ) throws UnknownTypeException {
-        if (!(node instanceof Object[])) throw new UnknownTypeException (node);
-        Object[] os = (Object[]) node;
-        if (os.length != 2) throw new UnknownTypeException (node);
-        if ("static".equals (os [0])) return;
-        if ("inherited".equals (os [0])) return;
+        if (node instanceof SpecialNode) return;
         throw new UnknownTypeException (node);
     }
     
@@ -299,11 +248,7 @@ NodeModel, TableModel, NodeActionsProvider {
         Object row, 
         String columnID
     ) throws ComputingException, UnknownTypeException {
-        if (!(row instanceof Object[])) throw new UnknownTypeException (row);
-        Object[] os = (Object[]) row;
-        if (os.length != 2) throw new UnknownTypeException (row);
-        if ("static".equals (os [0])) return "";
-        if ("inherited".equals (os [0])) return "";
+        if (row instanceof SpecialNode) return "";
         throw new UnknownTypeException (row);
     }
     
@@ -311,11 +256,7 @@ NodeModel, TableModel, NodeActionsProvider {
         Object row, 
         String columnID
     ) throws UnknownTypeException {
-        if (!(row instanceof Object[])) throw new UnknownTypeException (row);
-        Object[] os = (Object[]) row;
-        if (os.length != 2) throw new UnknownTypeException (row);
-        if ("static".equals (os [0])) return true;
-        if ("inherited".equals (os [0])) return true;
+        if (row instanceof SpecialNode) return true;
         throw new UnknownTypeException (row);
     }
     
@@ -324,14 +265,75 @@ NodeModel, TableModel, NodeActionsProvider {
         String columnID, 
         Object value
     ) throws UnknownTypeException {
-        if (!(row instanceof Object[])) throw new UnknownTypeException (row);
-        Object[] os = (Object[]) row;
-        if (os.length != 2) throw new UnknownTypeException (row);
-        if ("static".equals (os [0])) return;
-        if ("inherited".equals (os [0])) return;
+        if (row instanceof SpecialNode) return;
         throw new UnknownTypeException (row);
     }
     
-    
+    private static class StaticNode extends SpecialNode {
+
+        StaticNode(ObjectVariable parent) {
+            super(parent);
+        }
+
+        Field [] getChildren(int from, int to) {
+            return object.getAllStaticFields(0, 0);
+        }
+
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof StaticNode)) return false;
+            return object.equals(((StaticNode) o).object);
+        }
+
+        String getDisplayName() {
+            return "Static";
+        }
+
+        String getIconBase() {
+            return STATIC;
+        }
+    }
+
+    private static class InheritedNode extends SpecialNode {
+
+        InheritedNode(ObjectVariable object) {
+            super(object);
+        }
+
+        Field [] getChildren(int from, int to) {
+            return object.getInheritedFields(0, 0);
+        }
+
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof InheritedNode)) return false;
+            return object.equals(((InheritedNode) o).object);
+        }
+
+        String getDisplayName() {
+            return "Inherited";
+        }
+
+        String getIconBase() {
+            return INHERITED;
+        }
+    }
+
+    private static abstract class SpecialNode {
+        protected ObjectVariable object;
+
+        protected SpecialNode(ObjectVariable parent) {
+            this.object = parent;
+        }
+
+        public int hashCode() {
+            return object.hashCode();
+        }
+
+        abstract Field [] getChildren(int from, int to);
+        abstract String getDisplayName();
+        abstract String getIconBase();
+    }
+
     // helper methods ..........................................................
 }
