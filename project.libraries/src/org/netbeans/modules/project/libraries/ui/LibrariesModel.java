@@ -199,8 +199,9 @@ class LibrariesModel extends javax.swing.AbstractListModel implements PropertyCh
             for (int i = 0; i < impls.length; i++) {
                 LibraryImplementation lib = impls[i];
                 LibraryImplementation proxy = null;
-                if (removedLibraries.contains(lib))
-                    continue;
+                if (removedLibraries.contains(lib)) {
+                    this.storageByLib.put (lib,storage);
+                }
                 else if ((proxy = findModified (lib))!=null) {
                     libraries.add (proxy);
                     this.storageByLib.put (lib,storage);
