@@ -12,5 +12,22 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project basedir="." default="netbeans" name="i18n">
+
     <import file="../nbbuild/templates/projectized.xml"/>
+
+    <available property="have.bogus.javahelp" file="javahelp/CVS/Entries"/>
+    <fail if="have.bogus.javahelp">
+<![CDATA[
+You seem to have a directory named i18n/javahelp in your sources.
+This probably means you forgot to pass -P to cvs checkout.
+You must use -P or you will get empty directories which may cause problems.
+Read your CVS manual on how to edit .cvsrc, which should look something like
+
+cvs -z3
+update -d -P
+checkout -P
+diff -u
+rdiff -u
+]]></fail>
+
 </project>
