@@ -354,7 +354,7 @@ public final class Actions extends Object {
                     SwingUtilities.invokeLater(new Runnable () {
                         public void run() {
                             try {
-                                projectsTab.getExplorerManager().setSelectedNodes(toSelect);
+                                projectsTab.getExplorerManager().setExploredContextAndSelection(toSelect[0],toSelect);
                             } catch (PropertyVetoException ex) {
                                 //Nothing to do
                             }
