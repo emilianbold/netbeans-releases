@@ -17,9 +17,9 @@ import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbTestCase;
 
 /** Example of golden file approach.
- * Next to this GoldenTest1.java file there should exist GoldenTest1.pass file
- * containing expected output (AKA golden file)
- *
+ * For each test case method there should exist <methodName>.pass file
+ * containing expected output (AKA golden file). It resides in package
+ * data.goldenfiles.GoldenTest1.
  */
 public class GoldenTest1 extends NbTestCase {
     
@@ -46,6 +46,9 @@ public class GoldenTest1 extends NbTestCase {
         log("message to log file testPart1.log");
         log("mySpecialLog.log", "message to log file mySpecialLog.log");
         // here write body of the test
+        // ....
+        // compares created testPart1.ref to testPart1.pass
+        compareReferenceFiles();
     }
     
     
@@ -53,16 +56,12 @@ public class GoldenTest1 extends NbTestCase {
      * golden file will differ.
      */
     public void testPart2() throws Exception {
-        ref("Output to ref file called testPart12.ref");
+        ref("Output to ref file called testPart2.ref");
         log("message to log file testPart2.log");
         // here write body of the test
+        // ....
         log("Finished.");
-    }
-    
-    /* Use tearDown to compare reference files after each test method is finished.
-     *  assertFile() method compares <testname>.ref file againts <testname>.pass
-     */
-    protected void tearDown() {
+        // compares created testPart2.ref to testPart2.pass
         compareReferenceFiles();
     }
     

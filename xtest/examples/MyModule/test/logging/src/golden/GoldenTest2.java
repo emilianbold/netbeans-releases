@@ -18,9 +18,10 @@ import org.netbeans.junit.NbTestCase;
 
 
 /** Example of golden file approach.
- * Next to this GoldenTest1.java file there should exist GoldenTest1.pass file
- * containing expected output (AKA golden file)
- *
+ * For each test case method there should exist <methodName>.pass file
+ * containing expected output (AKA golden file). It resides in package
+ * data.goldenfiles.GoldenTest2.
+
  */
 public class GoldenTest2 extends NbTestCase {
     
