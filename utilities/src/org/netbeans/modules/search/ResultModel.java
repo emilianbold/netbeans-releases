@@ -130,13 +130,20 @@ public class ResultModel implements TaskListener {
         if (searchTypeList != null){
             Iterator it = searchTypeList.iterator();
             while (it.hasNext()) {
-                SearchType criterion = (SearchType) it.next();
-                criterion.clone();  // XXX HACK FullTextType for reason
+                Object searchType = /*(SearchType)*/it.next();
+                /*
+                 * HACK:
+                 * GC should eliminate FullTextType details map but it does not,
+                 * so we force cleaning of the map
+                 */
+                if (searchType instanceof                           //XXX - hack
+                        org.netbeans.modules.search.types.FullTextType) {
+                    ((org.netbeans.modules.search.types.FullTextType)searchType)
+                    .destroy();
+                }
             }
             searchTypeList.clear();
             searchTypeList = null;
-            // GC should eliminate FullTextType details map
-            // It does not so we work it around with above cloning thick (that exploits implementation error)
         }
 
         // kill expensive children structure, again GC should kick it out but it does not

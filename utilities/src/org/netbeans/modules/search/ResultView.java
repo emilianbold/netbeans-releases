@@ -450,16 +450,16 @@ final class ResultView extends TopComponent
             Node repositoryNode = RepositoryNodeFactory.getDefault()
                                   .repository(DataFilter.ALL);
             oldRoots = new Node[] {repositoryNode};
-            List types = SearchPerformer.getTypes(oldRoots);
+            searchTypes = SearchPerformer.getTypes(oldRoots);
+        }
 
-            /* Clone the list (deep copy): */
-            searchTypes = new ArrayList(types.size());
-            for (Iterator it = types.iterator(); it.hasNext(); ) {
-                searchTypes.add(((SearchType) it.next()).clone());
-            }
+        /* Clone the list (deep copy): */
+        List searchTypesClone = new ArrayList(searchTypes.size());
+        for (Iterator it = searchTypes.iterator(); it.hasNext(); ) {
+            searchTypesClone.add(((SearchType) it.next()).clone());
         }
         
-        SearchPanel searchPanel = new SearchPanel(searchTypes, true);
+        SearchPanel searchPanel = new SearchPanel(searchTypesClone, true);
         searchPanel.showDialog();
         
         if (searchPanel.getReturnStatus() == SearchPanel.RET_OK) {
@@ -481,7 +481,8 @@ final class ResultView extends TopComponent
                 searchGroup = groups[0];
             }
             
-            ResultModel newResultModel = new ResultModel(searchTypes, searchGroup);
+            ResultModel newResultModel = new ResultModel(searchTypesClone,
+                                                         searchGroup);
 
             SearchTask task = searchEngine.search(
                 //criteriaModel.getNodes(),
