@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -37,9 +37,9 @@ Microsystems, Inc. All Rights Reserved.
              target="runtests"/>
     </target>
 
-    <target name="runtestsfromdist">
+    <target name="runtestsdist">
         <ant dir="." antfile="${xtest.harness.antfile}"
-             target="runtestsfromdist"/>
+             target="runtestsdist"/>
     </target>
     
     <target name="buildtests">
@@ -64,9 +64,9 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="real-clean" depends="realclean"/>
     
-    <target name="buildtestdist">
+    <target name="buildtestsdist">
         <ant dir="." antfile="${xtest.harness.antfile}"
-             target="buildtestdist"/>
+             target="buildtestsdist"/>
     </target>
     
     <target name="cleantestdist">

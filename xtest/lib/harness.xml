@@ -137,7 +137,7 @@ Microsystems, Inc. All Rights Reserved.
               mailhost="${xtest.mail.mailhost}"/>     
     </target>    
     
-    <target name="runtestsfromdist">
+    <target name="runtestsdist">
         <ant antfile="build.xml" target="runtests">
             <property name="xtest.source.location" value="ide"/>            
             <property name="xtest.distexec" value="true"/>
@@ -178,10 +178,10 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="real-clean" depends="realclean"/>
     
-    <target name="buildtestdist" depends="configuration"
+    <target name="buildtestsdist" depends="configuration"
             description="Builds distribution of tests.">
         <antcall target="executor">
-            <param name="target.name" value="buildtestdist-helper"/>
+            <param name="target.name" value="buildtestsdist-helper"/>
         </antcall>
     </target>
     
@@ -234,7 +234,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <!-- helper can be executed only by target executor -->
-    <target name="buildtestdist-helper">
+    <target name="buildtestsdist-helper">
         <echo message="Building distribution for ${xtest.module}"/>
         <ant dir="${xtest.basedir}/${xtest.module}/test" target="buildtests">
             <property name="xtest.build" 
