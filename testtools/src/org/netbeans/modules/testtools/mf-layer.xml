@@ -163,5 +163,15 @@ Author: <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
         </file>
     </folder>
   </folder>
+    <folder name="Menu">
+        <folder name="Tools">
+                <file name="org-netbeans-modules-testtools-generator-NodeGeneratorAction.instance"/>
+        </folder>
+    </folder>
+    <folder name="Toolbars">
+        <folder name="Jemmy Support">
+                <file name="org-netbeans-modules-testtools-generator-NodeGeneratorAction.instance"/>
+        </folder>
+    </folder>
 
 </filesystem>

@@ -1,5 +1,6 @@
 OpenIDE-Module: org.netbeans.modules.testtools/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/testtools/Bundle.properties
+Class-Path: ext/jemmy.jar ext/jelly2-nb.jar
 OpenIDE-Module-Specification-Version: 1.1.0
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Layer: org/netbeans/modules/testtools/mf-layer.xml
@@ -8,4 +9,3 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.modules.junit/2 > 2.6, org.netb
 Name: org/netbeans/modules/testtools/XTestDataLoader.class
 OpenIDE-Module-Class: Loader
 Install-Before: org.apache.tools.ant.module.loader.AntProjectDataObject
-

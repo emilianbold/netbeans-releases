@@ -40,6 +40,8 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.Icon;
+import javax.swing.JMenuItem;
+import javax.swing.KeyStroke;
 import javax.swing.event.ChangeListener;
 import javax.swing.tree.TreeNode;
 
@@ -188,7 +190,7 @@ public class NodeEditorPanel extends javax.swing.JPanel implements ChangeListene
     }//GEN-END:initComponents
 
     private void treeKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_treeKeyReleased
-        if ((evt.getKeyCode()==KeyEvent.VK_DELETE)&&(evt.getModifiers()==0)&&(tree.getSelectionCount()==1)&&(tree.getSelectionRows()[0]>0)) {
+        if ((evt.getKeyCode()==KeyEvent.VK_DELETE)&&(evt.getModifiers()==0)&&(tree.getSelectionCount()>0)&&!tree.isRowSelected(0)) {
             DeleteActionPerformed();
         }
     }//GEN-LAST:event_treeKeyReleased
@@ -197,11 +199,14 @@ public class NodeEditorPanel extends javax.swing.JPanel implements ChangeListene
         if ((evt.getModifiers()==evt.BUTTON3_MASK)&&(tree.getSelectionCount()>0)&&!tree.isRowSelected(0)) {
             if (popup==null) {
                 popup=new JPopupMenu();
-                popup.add("Delete").addActionListener(new java.awt.event.ActionListener() { // NOI18N
+                JMenuItem del=new JMenuItem("Delete");
+                del.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
+                del.addActionListener(new java.awt.event.ActionListener() {
                     public void actionPerformed(java.awt.event.ActionEvent evt) {
                         DeleteActionPerformed();
                     }
                 });
+                popup.add(del);
             }
             popup.show(tree,evt.getX(),evt.getY());
         } else if (popup!=null) {
