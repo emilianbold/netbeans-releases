@@ -15,12 +15,14 @@ package org.openide.filesystems.multifs;
 import java.io.*;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.Hashtable;
+import java.util.Iterator;
 
 import org.openide.*;
 import org.openide.filesystems.*;
@@ -28,17 +30,22 @@ import org.openide.filesystems.localfs.LocalFSTest;
 import org.openide.filesystems.xmlfs.XMLFSTest;
 import org.openide.filesystems.xmlfs.XMLFSTest.ResourceComposer;
 
+import org.netbeans.performance.DataManager;
+import org.netbeans.performance.DataDescriptor;
+
 /**
  * Base class for simulation of module layers. It creates several layers, each filled
  * with some number of .instance files. Each layer is zipped into one jar. 
  * The jars also contain class files.
  */
-public class MultiXMLFSTest extends FSTest {
+public class MultiXMLFSTest extends FSTest implements DataManager {
     
     public static final String XMLFS_NO_KEY = "XMLFS_NO";
-    private FSWrapper[] wrappers;
+    private FileWrapper[] wrappers;
     private static final String RES_EXT = ".instance";
     private MultiFileSystem mfs;
+    
+    protected List ddescs;
     
     private static final String getResource(int base) {
         return LocalFSTest.getPackage(base).replace('/', '-').concat(LocalFSTest.RES_NAME);
@@ -47,32 +54,51 @@ public class MultiXMLFSTest extends FSTest {
     /** Creates new XMLFSGenerator */
     public MultiXMLFSTest(String name) {
         super(name);
+        init();
     }
 
     /** Creates new XMLFSGenerator */
     public MultiXMLFSTest(String name, Object[] args) {
         super(name, args);
+        init();
+    }
+    
+    /** init */
+    private void init() {
+        ddescs = new ArrayList();
     }
     
     /** Set up given number of FileObjects */
     public FileObject[] setUpFileObjects(int foCount) throws Exception {
-        Map param = (Map) getArgument();
-        int fsCount = ((Integer) param.get(XMLFS_NO_KEY)).intValue();
+        
+        int fsCount = getIntValue(XMLFS_NO_KEY);
         int foChunk = foCount / fsCount;
         int delta = foCount - (foCount / fsCount) * fsCount;
-        wrappers = new FSWrapper[fsCount];
-        int last = wrappers.length;
-        int[] bases = new int[last];
-        for (int i = 1; i < last; i++) {
-            int ibase = i * foChunk;
-            wrappers[i] = createXMLFSinJar(foChunk, ibase);
-            bases[i] = ibase;
-        }
         
-        wrappers[0] = createLocalFS(foChunk + delta, 0);
+        int last = wrappers.length;
         FileSystem[] fss = new FileSystem[last];
+        int[] bases = new int[last];
+        
         for (int i = 0; i < last; i++) {
-            fss[i] = wrappers[i].getFS();
+            if (wrappers[i].isLocal()) {
+                LocalFileSystem lfs = new LocalFileSystem();
+                File mnt = wrappers[i].getMnt();
+                if (mnt == null) {
+                    wrappers[i] = createLocal(wrappers[i].getFoCount(), wrappers[i].getFoBase());
+                }
+                lfs.setRootDirectory(wrappers[i].getMnt());
+                fss[i] = lfs;
+            } else {
+                URLClassLoader cloader = new URLClassLoader(new URL[] { wrappers[i].getMnt().toURL() });
+                URL res = cloader.findResource(wrappers[i].getXResource());
+                XMLFileSystem xmlfs = new XMLFileSystem();
+                xmlfs.setXmlUrl(res, false);
+                fss[i] = xmlfs;
+            }
+            
+            if (i > 0) {
+                bases[i] = wrappers[i - 1].getFoBase() + wrappers[i - 1].getFoCount();
+            }
         }
         
         FileObject[] ret = new FileObject[foCount];
@@ -85,18 +111,10 @@ public class MultiXMLFSTest extends FSTest {
         }        
         
         return ret;
-        //return null;
     }
     
     /** Empty */
     protected void postSetUp() {
-    }
-    
-    /** Free resources */
-    protected void tearDownFileObjects(FileObject[] fos) throws Exception {
-        for (int i = 0; i < wrappers.length; i++) {
-            delete(wrappers[i].getFile());
-        }
     }
     
     /** Creates args for this instance of Benchmark */
@@ -140,36 +158,29 @@ public class MultiXMLFSTest extends FSTest {
     }
     
     /** @return wrappers array */
-    public FSWrapper[] getFSWrappers() {
+    public FileWrapper[] getFileWrappers() {
         return wrappers;
     }
-    
-    private static FSWrapper createLocalFS(int foCount, int foBase) throws Exception {
+
+    /** Creates a FileWrapper suitable for mounting a LocalFileSystem */
+    private static FileWrapper createLocal(int foCount, int foBase) throws Exception {
         File mnt = createTempFolder();
         LocalFSTest.createFiles(foCount, 0, mnt);
-        
-        LocalFileSystem localFS = new LocalFileSystem();
-        localFS.setRootDirectory(mnt);
-        URLClassLoader cloader = new URLClassLoader(new URL[] { mnt.toURL() });
-        
-        return new FSWrapper(cloader, localFS, mnt);
+        return new FileWrapper(mnt, mnt, foCount, foBase, true, null);
     }
     
-    private static FSWrapper createXMLFSinJar(int foCount, int foBase) throws Exception {
+    /** Creates a FileWrapper suitable for mounting an XMLFileSystem */
+    private static FileWrapper createXMLinJar(int foCount, int foBase) throws Exception {
         File tmp = createTempFolder();
         File destFolder = LocalFSTest.createFiles(foCount, foBase, tmp);
         compileFolder(tmp, destFolder);
         File xmlbase = XMLFSTest.generateXMLFile(destFolder, new ResourceComposer(getResource(foBase), RES_EXT, foCount, foBase));
         File jar = Utilities.createJar(tmp, "jarxmlfs.jar");
-        URLClassLoader cloader = new URLClassLoader(new URL[] { jar.toURL() });
         String xres = LocalFSTest.getPackage(foBase) + xmlbase.getName();
-        URL res = cloader.findResource(xres);
-        XMLFileSystem xmlfs = new XMLFileSystem();
-        xmlfs.setXmlUrl(res, false);
-        
-        return new FSWrapper(cloader, xmlfs, tmp);
+        return new FileWrapper(tmp, jar, foCount, foBase, false, xres);
     }
     
+    /** Compiles folder */
     private static void compileFolder(File root, File destFolder) throws Exception {
         File[] files = destFolder.listFiles();
         //StringBuffer sb = new StringBuffer(3000);
@@ -210,6 +221,50 @@ public class MultiXMLFSTest extends FSTest {
         }
     }
     
+    /** Called after tearDown()  */
+    public void tearDownData() throws Exception {
+        for (Iterator it = ddescs.iterator(); it.hasNext(); ) {
+            MFSDataDescriptor dd = (MFSDataDescriptor) it.next();
+            FileWrapper[] wrappers = dd.getFileWrappers();
+            if (wrappers != null) {
+                for (int i = 0; i < wrappers.length; i++) {
+                    delete(wrappers[i].getRootDir());
+                }
+            }
+        }
+    }
+    
+    /** Called before setUp()  */
+    public DataDescriptor createDataDescriptor() {
+        return new MFSDataDescriptor(getIntValue(FILE_NO_KEY), getIntValue(XMLFS_NO_KEY));
+    }
+    
+    /** Called before setUp()  */
+    public void setUpData(DataDescriptor ddesc) throws Exception {
+        MFSDataDescriptor dd = (MFSDataDescriptor) ddesc;
+        ddescs.add(dd);
+        FileWrapper fwrappers[] = dd.getFileWrappers();
+        
+        if (fwrappers == null) {
+            int foCount = dd.getFoCount();
+            int fsCount = dd.getFsCount();
+            int foChunk = foCount / fsCount;
+            int delta = foCount - (foCount / fsCount) * fsCount;
+            wrappers = new FileWrapper[fsCount];
+            int[] bases = new int[fsCount];
+            for (int i = 1; i < fsCount; i++) {
+                int ibase = i * foChunk;
+                wrappers[i] = createXMLinJar(foChunk, ibase);
+                bases[i] = ibase;
+            }
+
+            wrappers[0] = createLocal(foChunk + delta, 0);
+            dd.setFileWrappers(wrappers);
+        } else {
+            wrappers = fwrappers;
+        }
+    }
+    
     static final class CopyMaker implements Runnable {
         InputStream is;
         PrintStream os;
@@ -229,31 +284,68 @@ public class MultiXMLFSTest extends FSTest {
         }
     }
     
-    /** Wrapper for FS and its disk location */
-    public static final class FSWrapper {
-        private FileSystem fs;
-        private File tmp;
-        private URLClassLoader cloader;
+    /** Wraps Files */
+    public static final class FileWrapper implements Serializable {
+        private transient File rootDir;
+        private transient File mnt;
+        private int foCount;
+        private int foBase;
         
-        /** new FSWrapper */
-        public FSWrapper(URLClassLoader cl, FileSystem fs, File tmp) {
-            this.fs = fs;
-            this.tmp = tmp;
-            this.cloader = cl;
+        private boolean isLocal;
+        
+        // xml specific
+        private String xresource;
+        
+        /** New FileWrapper */
+        public FileWrapper(File rootDir, File mnt, int foCount, int foBase, boolean isLocal, String xresource) {
+            this.rootDir = rootDir;
+            this.mnt = mnt;
+            this.foCount = foCount;
+            this.foBase = foBase;
+            this.isLocal = isLocal;
+            this.xresource = xresource;
         }
         
-        public FileSystem getFS() {
-            return fs;
+        public File getRootDir() {
+            return rootDir;
         }
         
-        public File getFile() {
-            return tmp;
+        public File getMnt() {
+            return mnt;
         }
         
-        public URLClassLoader getClassLoader() {
-            return cloader;
+        public int getFoCount() {
+            return foCount;
+        }
+        
+        public int getFoBase() {
+            return foBase;
+        }
+        
+        public boolean isLocal() {
+            return isLocal;
+        }
+        
+        public String getXResource() {
+            return xresource;
+        }
+        
+        private void writeObject(ObjectOutputStream obtos) throws IOException {
+            obtos.defaultWriteObject();
+            if (! isLocal()) {
+                Utilities.writeFile(getMnt(), obtos);
+            }
+        }
+        
+        private void readObject(ObjectInputStream obtis) throws IOException, ClassNotFoundException {
+            obtis.defaultReadObject();
+            if (! isLocal()) {
+                rootDir = createTempFolder();
+                mnt = Utilities.readFile(rootDir, obtis);
+            }
         }
     }
+    
     /*
     public static void main(String[] args) throws Exception {
         MultiXMLFSTest mtest = new MultiXMLFSTest("first test");

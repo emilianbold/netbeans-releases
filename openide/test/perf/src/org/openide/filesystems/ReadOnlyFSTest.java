@@ -193,7 +193,7 @@ public abstract class ReadOnlyFSTest extends MapArgBenchmark {
     }
     
     /** Creates temporary folder with a random name */
-    public static File createTempFolder() throws Exception {
+    public static File createTempFolder() throws IOException {
         File tmp = File.createTempFile("local", "lacol");
         String name = tmp.getName();
         File folder = tmp.getParentFile();
@@ -207,13 +207,18 @@ public abstract class ReadOnlyFSTest extends MapArgBenchmark {
     
     /** Deletes (recursively) a folder */
     public static void delete(File folder) throws Exception {
-        File[] files = folder.listFiles();
+        if (folder == null) {
+            return;
+        }
         
-        for (int i = 0; i < files.length; i++) {
-            if (files[i].isDirectory()) {
-                delete(files[i]);
+        File[] files = folder.listFiles();
+        if (files != null) {
+            for (int i = 0; i < files.length; i++) {
+                if (files[i].isDirectory()) {
+                    delete(files[i]);
+                }
+                files[i].delete();
             }
-            files[i].delete();
         }
         
         folder.delete();

@@ -19,11 +19,14 @@ import org.openide.*;
 import org.openide.filesystems.*;
 import org.openide.filesystems.Utilities.Matcher;
 
+import org.netbeans.performance.DataManager;
+import org.netbeans.performance.DataDescriptor;
+
 /**
  * Test class for LocalFileSystem. All tests are inherited, this class only
  * sets up operation environment - creates files, mounts filesystem, ...
  */
-public class LocalFSTest extends FSTest {
+public class LocalFSTest extends FSTest implements DataManager {
 
     public static final String RES_NAME = "JavaSrc";
     public static final String RES_EXT = ".java";
@@ -48,16 +51,17 @@ public class LocalFSTest extends FSTest {
     
     protected LocalFileSystem localFS;
     protected File mnt;
+    protected List ddescs;
 
     /** Creates new DataGenerator */
     public LocalFSTest(String name) {
         super(name);
+        
+        ddescs = new ArrayList();
     }
    
     /** Set up given number of FileObjects */
     protected FileObject[] setUpFileObjects(int foCount) throws Exception {
-        mnt = createTempFolder();
-        createFiles(foCount, 0, mnt);
         
         localFS = new LocalFileSystem();
         localFS.setRootDirectory(mnt);
@@ -68,8 +72,6 @@ public class LocalFSTest extends FSTest {
     
     /** Delete mnt */
     protected void tearDownFileObjects(FileObject[] fos) throws Exception {
-        delete(mnt);
-        mnt = null;
     }
     
     /** Creates a given number of files in a given folder (actually in a subfolder)
@@ -139,6 +141,34 @@ public class LocalFSTest extends FSTest {
         }
     }
 
+    /** Called after tearDown()  */
+    public void tearDownData() throws Exception {
+        for (Iterator it = ddescs.iterator(); it.hasNext(); ) {
+            LFSDataDescriptor dd = (LFSDataDescriptor) it.next();
+            delete(dd.getRootDir());
+        }
+    }
+    
+    /** Called before setUp()  */
+    public DataDescriptor createDataDescriptor() {
+        LFSDataDescriptor dd = new LFSDataDescriptor(getIntValue(FILE_NO_KEY));
+        ddescs.add(dd);
+        return dd;
+    }
+    
+    /** Called before setUp()  */
+    public void setUpData(DataDescriptor ddesc) throws Exception {
+        LFSDataDescriptor dd = (LFSDataDescriptor) ddesc;
+        File root = dd.getRootDir();
+        if (root == null) {
+            mnt = createTempFolder();
+            createFiles(dd.getFileNo(), 0, mnt);
+            dd.setFile(mnt);
+        } else {
+            mnt = root;
+        }
+    }
+    
     /** Computes padding for a character Stream */
     static final class PaddingMaker {
         private static final String PACKAGE = "package org.openide.filesystems.data";

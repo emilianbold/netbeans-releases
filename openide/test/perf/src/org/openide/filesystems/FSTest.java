@@ -48,9 +48,8 @@ public abstract class FSTest extends ReadOnlyFSTest {
     /** inherited; sets up env */
     protected void setUp() throws Exception {
         super.setUp();
-        Map param = (Map) getArgument();
         if (shouldDefAttrNo()) {
-            attrsCount = ((Integer) param.get(ATTRIBUTES_NO_KEY)).intValue();
+            attrsCount = getIntValue(ATTRIBUTES_NO_KEY);
         }
         postSetup();
     }
@@ -60,6 +59,14 @@ public abstract class FSTest extends ReadOnlyFSTest {
         // setup some attributes
         if (getName().startsWith("testGetAttributes")) {
             testSetOneAttributeSeq(1);
+        }
+    }
+    
+    /** Disposes given FileObjects  */
+    protected void tearDownFileObjects(FileObject[] fos) throws Exception {
+        // setup some attributes
+        if (getName().startsWith("testGetAttributes")) {
+            unsetOneAttributeSeq();
         }
     }
     
@@ -115,6 +122,16 @@ public abstract class FSTest extends ReadOnlyFSTest {
             for (int i = 0; i < files.length; i++) {
                 files[i].setAttribute(pairs[i][0], pairs[i][1]);
             }
+        }
+    }
+    
+    /** Unsets some attributes */
+    private void unsetOneAttributeSeq() throws IOException {
+        FileObject[] files = this.files;
+        String[][] pairs = this.pairs;
+        
+        for (int i = 0; i < files.length; i++) {
+            files[i].setAttribute(pairs[i][0], null);
         }
     }
     

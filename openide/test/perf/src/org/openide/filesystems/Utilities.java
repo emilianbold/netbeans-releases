@@ -14,10 +14,14 @@ package org.openide.filesystems;
 
 import java.io.IOException;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.InputStreamReader;
 import java.io.BufferedReader;
+import java.io.DataOutput;
+import java.io.DataInput;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
@@ -69,6 +73,50 @@ public abstract class Utilities {
         while ((str = reader.readLine()) != null) {
             out.println(str);
         }
+    }
+    
+    /** Writes a file to DataOutput */
+    public static void writeFile(File src, DataOutput dest) throws IOException {
+        FileInputStream fis = new FileInputStream(src);
+        long len = src.length();
+        dest.writeUTF(src.getName());
+        dest.writeLong(len);
+                
+        byte[] buffer = new byte[5000];
+        int read;
+        for (;;) {
+            read = fis.read(buffer);
+            if (read < 0) {
+                break;
+            }
+            dest.write(buffer, 0, read);
+        }
+        
+        fis.close();
+    }
+    
+    /** Reads a file from DataInput */
+    public static File readFile(File dest, DataInput src) throws IOException {
+        File ret = new File(dest, src.readUTF());
+        FileOutputStream fos = new FileOutputStream(ret);
+        long len = src.readLong();
+        final int BUF_SIZE = 5000;
+        byte[] buffer = new byte[BUF_SIZE];
+        
+        int read;
+        int shouldRead;
+        for (;;) {
+            read = (int) Math.min(BUF_SIZE, len);
+            src.readFully(buffer, 0, read);
+            fos.write(buffer, 0, read);
+            len -= read;
+            if (len <= 0) {
+                break;
+            }
+        }
+        
+        fos.close();
+        return ret;
     }
 
     /**
