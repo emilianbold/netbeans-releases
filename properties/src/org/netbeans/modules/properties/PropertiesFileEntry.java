@@ -151,6 +151,94 @@ public class PropertiesFileEntry extends PresentableFileEntry {
     FileObject fo = super.rename(name);
     return fo;
   }
+  
+  public FileObject createFromTemplate (FileObject folder, String name) throws IOException {
+    ResourceBundle bundle = NbBundle.getBundle (PropertiesFileEntry.class);
+    if (! getFile ().getName ().startsWith (basicName))
+      throw new InternalError("Never happens - error in Properties createFromTemplate");
+    String suffix = getFile ().getName ().substring (basicName.length ());
+    String nuename = name + suffix;
+    String ext = getFile ().getExt ();
+    FileObject existing = folder.getFileObject (nuename, ext);
+    if (existing == null) {
+      return super.createFromTemplate (folder, nuename);
+    } else {
+      Object leaveAloneOpt = bundle.getString ("OPT_leave_alone");
+      Object concatOpt = bundle.getString ("OPT_concatenate");
+      Object overwriteOpt = bundle.getString ("OPT_overwrite");
+      String title = bundle.getString ("LBL_ask_how_to_template");
+      String message = MessageFormat.format (bundle.getString ("MSG_ask_how_to_template"),
+                                             new Object[] { nuename });
+      NotifyDescriptor desc = new NotifyDescriptor
+        (message, title, NotifyDescriptor.DEFAULT_OPTION,
+         NotifyDescriptor.QUESTION_MESSAGE,
+         new Object[] { concatOpt, leaveAloneOpt, overwriteOpt },
+         concatOpt); // [PENDING] default option does not seem to work--so make it 1st
+      Object result = TopManager.getDefault ().notify (desc);
+      if (leaveAloneOpt.equals (result) ||
+          NotifyDescriptor.CLOSED_OPTION.equals (result)) {
+        return existing;
+      } else if (concatOpt.equals (result)) {
+        byte[] originalData;
+        byte[] buf = new byte[4096];
+        int count;
+        FileLock lock = existing.lock ();
+        try {
+          InputStream is = existing.getInputStream ();
+          try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream ((int) existing.getSize ());
+            try {
+              while ((count = is.read (buf)) != -1) {
+                baos.write (buf, 0, count);
+              }
+            } finally {
+              originalData = baos.toByteArray ();
+              baos.close ();
+            }
+          } finally {
+            is.close ();
+          }
+          existing.delete (lock);
+        } finally {
+          lock.releaseLock ();
+        }
+        FileObject nue = folder.createData (nuename, ext);
+        lock = nue.lock ();
+        try {
+          OutputStream os = nue.getOutputStream (lock);
+          try {
+            os.write (originalData);
+            InputStream is = getFile ().getInputStream ();
+            try {
+              while ((count = is.read (buf)) != -1) {
+                os.write (buf, 0, count);
+              }
+            } finally {
+              is.close ();
+            }
+          } finally {
+            os.close ();
+          }
+        } finally {
+          lock.releaseLock ();
+        }
+        // Does not appear to have any effect:
+        // ((PropertiesDataObject) getDataObject ()).getBundleStructure ().
+        //   oneFileChanged (getHandler ());
+        return nue;
+      } else if (overwriteOpt.equals (result)) {
+        FileLock lock = existing.lock ();
+        try {
+          existing.delete (lock);
+        } finally {
+          lock.releaseLock ();
+        }
+        return super.createFromTemplate (folder, nuename);
+      } else {
+        throw new IOException ("unrecognized result option: " + result); // NOI18N
+      }
+    }
+  }
 
   /** Test whether the object may be deleted.
   * @return <code>true</code> if it may (primary file can't be deleted)
@@ -166,6 +254,8 @@ public class PropertiesFileEntry extends PresentableFileEntry {
   public boolean isCopyAllowed () {
     return true;
   }
+  // [PENDING] copy should be overridden because e.g. copy and then paste
+  // to the same folder creates a new locale named "1"! (I.e. "foo_1.properties")
 
   /* Getter for move action.
   * @return true if the object can be moved
@@ -295,6 +385,8 @@ public class PropertiesFileEntry extends PresentableFileEntry {
 
 /*
  * <<Log>>
+ *  18   Gandalf-post-FCS1.16.1.0    3/28/00  Jesse Glick     Properties files used as
+ *       templates can merge into one another.
  *  17   Gandalf   1.16        11/27/99 Patrik Knakal   
  *  16   Gandalf   1.15        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
