@@ -90,7 +90,7 @@ public class BeansTemplates extends JellyTestCase {
         tlso.selectLocation(sampleDir);
         tlso.finish();
         
-        new EventTool().waitNoEvent(500);
+        new EventTool().waitNoEvent(1500);
         EditorWindowOperator ewo = new EditorWindowOperator();
         EditorOperator eo = new EditorOperator(ewo, NAME_JAVA_BEAN);
         new EventTool().waitNoEvent(500);
