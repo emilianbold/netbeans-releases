@@ -22,14 +22,26 @@ package threaddemo.util;
  */
 public final class ClobberException extends RuntimeException {
     
-    private final Object delta;
+    private final TwoWaySupport s;
     
-    public ClobberException(Object delta) {
-        this.delta = delta;
+    private final Object oldValue, derivedDelta;
+    
+    ClobberException(TwoWaySupport s, Object oldValue, Object derivedDelta) {
+        this.s = s;
+        this.oldValue = oldValue;
+        this.derivedDelta = derivedDelta;
     }
     
-    public Object getAttemptedDelta() {
-        return delta;
+    public TwoWaySupport getTwoWaySupport() {
+        return s;
+    }
+    
+    public Object getOldValue() {
+        return oldValue;
+    }
+    
+    public Object getDerivedDelta() {
+        return derivedDelta;
     }
     
 }

@@ -20,39 +20,116 @@ import java.util.EventObject;
  * @author Jesse Glick
  * @see TwoWaySupport
  */
-public final class TwoWayEvent extends EventObject {
+public abstract class TwoWayEvent extends EventObject {
     
-    public static final int DERIVED = 0;
-    public static final int INVALIDATED = 1;
-    public static final int RECREATED = 2;
-    public static final int CLOBBERED = 3;
-    
-    private final int type;
-    private final boolean firstDerivation;
-    private final Object delta;
-    
-    TwoWayEvent(TwoWaySupport s, int type, boolean firstDerivation, Object delta) {
+    private TwoWayEvent(TwoWaySupport s) {
         super(s);
-        this.type = type;
-        this.firstDerivation = firstDerivation;
-        this.delta = delta;
     }
     
     public TwoWaySupport getTwoWaySupport() {
         return (TwoWaySupport)getSource();
     }
     
-    public int getType() {
-        return type;
+    public static final class Derived extends TwoWayEvent {
+        
+        private final Object oldValue, newValue, underlyingDelta;
+        
+        Derived(TwoWaySupport s, Object oldValue, Object newValue, Object underlyingDelta) {
+            super(s);
+            this.oldValue = oldValue;
+            this.newValue = newValue;
+            this.underlyingDelta = underlyingDelta;
+        }
+        
+        public Object getOldValue() {
+            return oldValue;
+        }
+        
+        public Object getNewValue() {
+            return newValue;
+        }
+        
+        public Object getUnderlyingDelta() {
+            return underlyingDelta;
+        }
+        
     }
     
-    public boolean isPreviouslyDerived() {
-        if (type != DERIVED && type != CLOBBERED) throw new IllegalArgumentException();
-        return !firstDerivation;
+    public static final class Invalidated extends TwoWayEvent {
+        
+        private final Object oldValue, underlyingDelta;
+        
+        Invalidated(TwoWaySupport s, Object oldValue, Object underlyingDelta) {
+            super(s);
+            this.oldValue = oldValue;
+        }
+        
+        public Object getOldValue() {
+            return oldValue;
+        }
+        
+        public Object getUnderlyingDelta() {
+            return underlyingDelta;
+        }
+        
     }
     
-    public Object getDelta() {
-        return delta;
+    public static final class Recreated extends TwoWayEvent {
+        
+        private final Object oldValue, newValue, derivedDelta;
+        
+        Recreated(TwoWaySupport s, Object oldValue, Object newValue, Object derivedDelta) {
+            super(s);
+            this.oldValue = oldValue;
+            this.newValue = newValue;
+            this.derivedDelta = derivedDelta;
+        }
+        
+        public Object getOldValue() {
+            return oldValue;
+        }
+        
+        public Object getNewValue() {
+            return newValue;
+        }
+        
+        public Object getDerivedDelta() {
+            return derivedDelta;
+        }
+        
+    }
+    
+    public static final class Clobbered extends TwoWayEvent {
+        
+        private final Object oldValue, newValue, derivedDelta;
+        
+        Clobbered(TwoWaySupport s, Object oldValue, Object newValue, Object derivedDelta) {
+            super(s);
+            this.oldValue = oldValue;
+            this.newValue = newValue;
+            this.derivedDelta = derivedDelta;
+        }
+        
+        public Object getOldValue() {
+            return oldValue;
+        }
+        
+        public Object getNewValue() {
+            return newValue;
+        }
+        
+        public Object getDerivedDelta() {
+            return derivedDelta;
+        }
+        
+    }
+    
+    public static final class Forgotten extends TwoWayEvent {
+        
+        Forgotten(TwoWaySupport s) {
+            super(s);
+        }
+        
     }
     
 }

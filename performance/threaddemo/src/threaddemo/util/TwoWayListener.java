@@ -22,12 +22,14 @@ import java.util.EventListener;
  */
 public interface TwoWayListener extends EventListener {
     
-    void derived(TwoWayEvent evt);
+    void derived(TwoWayEvent.Derived evt);
     
-    void invalidated(TwoWayEvent evt);
+    void invalidated(TwoWayEvent.Invalidated evt);
     
-    void recreated(TwoWayEvent evt);
+    void recreated(TwoWayEvent.Recreated evt);
     
-    void clobbered(TwoWayEvent evt);
+    void clobbered(TwoWayEvent.Clobbered evt);
+    
+    void forgotten(TwoWayEvent.Forgotten evt);
     
 }
