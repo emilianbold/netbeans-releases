@@ -98,21 +98,6 @@ Microsystems, Inc. All Rights Reserved.
         </folder>  
     </folder>
 
-    <folder name="UI">
-      <folder name="Services">
-        <folder name="CodeDocumentation">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.settings.Bundle"/>
-
-            <file name="org-netbeans-modules-javadoc-settings-DocumentationSettings.shadow">
-	        <attr name="originalFile" stringvalue="Services/org-netbeans-modules-javadoc-settings-DocumentationSettings.settings"/>
-            </file>
-
-            <file name="JavadocSearchTypes.shadow">
-	      <attr name="originalFile" stringvalue="Services/JavadocSearchType"/>
-            </file>
-        </folder> <!-- CodeDocumentation -->
-      </folder> <!-- Services -->
-    </folder> <!-- UI -->
 
 <!--  Templates part -->
 
