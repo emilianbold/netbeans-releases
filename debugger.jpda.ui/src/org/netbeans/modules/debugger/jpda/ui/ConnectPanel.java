@@ -216,7 +216,7 @@ Controller, ActionListener {
                 tfParam.getAccessibleContext ().setAccessibleDescription (
                     new MessageFormat (NbBundle.getMessage (
                         ConnectPanel.class, "ACSD_CTL_Argument"
-                    )).format (new Object[] { a.label() })
+                    )).format (new Object[] { translate(a.label()) })
                 ); 
                 tfParam.setToolTipText (a.description ());
                 c = new GridBagConstraints ();
@@ -393,7 +393,7 @@ Controller, ActionListener {
                 NotifyDescriptor.InputLine in = null;
                 if ( paramValue.equals ("") && a.mustSpecify ())
                     in = new NotifyDescriptor.InputLine (
-                        a.label () + ": ",
+                        translate(a.label ()),
                         NbBundle.getMessage (
                             ConnectPanel.class, 
                             "CTL_Required_value_title"
@@ -401,7 +401,7 @@ Controller, ActionListener {
                     );
                 else
                     in = new NotifyDescriptor.InputLine (
-                        a.label () + ": ",
+                        translate(a.label ()),
                         NbBundle.getMessage (
                             ConnectPanel.class, 
                             "CTL_Invalid_value_title"
