@@ -840,5 +840,9 @@ public final class AntProjectHelper {
         // XXX consider memoizing results since this is probably called a lot
         return PropertyUtils.resolvePath(FileUtil.toFile(dir), path);
     }
+    
+    public String toString() {
+        return "AntProjectHelper[" + getProjectDirectory() + "]"; // NOI18N
+    }
 
 }
