@@ -135,6 +135,7 @@ public class JavaKit extends NbEditorKit {
      */
     public JavaKit(boolean compatibleCompletion) {
         this.compatibleCompletion = compatibleCompletion;
+        org.netbeans.modules.java.editor.JavaEditorModule.init();        
     }
     
     public String getContentType() {

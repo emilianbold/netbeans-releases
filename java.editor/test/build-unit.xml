@@ -55,6 +55,7 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement location="${openide/io.dir}/${nb.modules.dir}/org-openide-io.jar"/>
             <pathelement location="${core/output2.dir}/${nb.modules.dir}/org-netbeans-core-output2.jar"/>
             <pathelement location="${java.dir}/${nb.modules.dir}/org-netbeans-modules-java.jar"/>
+            <pathelement location="${java.dir}/${nb.modules.dir}/org-netbeans-modules-javacore.jar"/>
             <pathelement location="${classfile.dir}/${nb.modules/autoload.dir}/classfile.jar"/>
             <pathelement location="${clazz.dir}/${nb.modules.dir}/org-netbeans-modules-clazz.jar"/>
             <pathelement location="${projects/queries.dir}/${nb.modules.dir}/org-netbeans-modules-queries.jar"/>

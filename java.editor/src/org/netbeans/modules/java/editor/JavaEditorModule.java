@@ -51,12 +51,19 @@ public class JavaEditorModule extends ModuleInstall {
     private NbLocalizer settingsNamesLocalizer;
     private NbLocalizer optionsLocalizer;
     private JavaIndentationSettingsProvider jisProvider = null;
+    static boolean inited = false;
     
-    /** Module installed again. */
-    public void restored () {
+    public static void init(){
+        if (inited) return;
+        inited = true;
         Settings.addInitializer(new JavaSettingsInitializer(JavaKit.class));
         Settings.addInitializer(new NbJavaSettingsInitializer());
         Settings.reset();
+    }
+    
+    /** Module installed again. */
+    public void restored () {
+        init();
 
         PrintSettings ps = (PrintSettings) SharedClassObject.findObject(PrintSettings.class, true);
         ps.addOption((SystemOption)SharedClassObject.findObject(JavaPrintOptions.class, true));
