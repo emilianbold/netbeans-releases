@@ -166,11 +166,17 @@ public class UpdateHelper {
     /**
      * Request an saving of update. If the project is not of current version the user will be asked to update the project.
      * If the user agrees with an update the project is updated.
+     * @return true if the metadata are of current version or updated
      */
-    public void requestSave () throws IOException{
-        if (!isCurrent() && canUpdate()) {
-            saveUpdate ();
+    public boolean requestSave () throws IOException{
+        if (isCurrent()) {
+            return true;
         }
+        if (!canUpdate()) {
+            return false;
+        }
+        saveUpdate ();
+        return true;
     }
 
     /**

@@ -317,7 +317,6 @@ public class J2SEProjectProperties {
                     
                     // Some properties need special handling e.g. if the 
                     // property changes the project.xml files
-                    updateHelper.requestSave();
                     for( Iterator it = properties.values().iterator(); it.hasNext(); ) {
                         PropertyInfo pi = (PropertyInfo)it.next();
                         PropertyDescriptor pd = pi.getPropertyDescriptor();
