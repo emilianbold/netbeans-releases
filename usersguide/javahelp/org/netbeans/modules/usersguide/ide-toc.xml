@@ -128,9 +128,10 @@
   <tocitem text="Deleting Parser Database Files" target="editing.deleting-pdb"/>
   <tocitem text="Configuring the Source Editor" target="editing.configuring">    
     <tocitem text="Source Editor Properties" target="editing.javaeditor-props"/>
-    <tocitem text="Indentation Properties" target="editing.indentation"/>
     <tocitem text="Annotation Properties" target="editing.configuring.annotations"/>
-    <tocitem text="Setting Source Editor Shortcuts" target="editing.settingkeybdshorts"/>
+    <tocitem text="Indentation Properties" target="editing.indentation"/>
+    <tocitem text="Setting Fonts and Colors" target="editing.fontsandcolors"/>
+    <tocitem text="Setting Keyboard Shortcuts for the Source Editor" target="editing.settingkeybdshorts"/>
     <tocitem text="Key Bindings Property Editor" target="editing.keybindings"/>
   </tocitem>
 </tocitem>

@@ -271,6 +271,7 @@
 <mapID target="editing.tabs" url="editing/tabs.html" />
 <mapID target="editing.linenumbers" url="editing/linenumbers.html" />
 <mapID target="editing.annotations" url="editing/annotations.html" />
+<mapID target="editing.annotations" url="editing/annotations.html" />
 <mapID target="editing.imageview" url="editing/imageview.html" />
 <mapID target="editing.codecompletion" url="editing/codecompletion/intro.html" />
 <mapID target="editing.completing-exp" url="editing/codecompletion/completing-exp.html" />
@@ -298,6 +299,7 @@
 <mapID target="editing.javaeditor-props" url="editing/configuring/javaeditor-props.html" />
 <mapID target="editing.indentation" url="editing/configuring/indentation.html" />
 <mapID target="editing.configuring.annotations" url="editing/configuring/annotations.html" />
+<mapID target="editing.fontsandcolors" url="editing/configuring/fontsandcolors.html" />
 <mapID target="editing.keybindings" url="editing/configuring/keybindings.html" />
 <!-- Need csh page for the Add Shortcut Sequent dialog box... -->
 <mapID target="editing.csh.shortcutseq" url="shortcuts/kybdshortcuts.html" />
@@ -317,7 +319,7 @@
 <mapID target="editing.editor.properties" url="editing/configuring/javaeditor-props.html" />
 <!-- Csh pages for scroll insets and Fonts and Color property editors -->
 <mapID target="editing.scrollinsets" url="pending.html" />
-<mapID target="editing.fonts" url="pending.html" />
+<mapID target="editing.fonts" url="editing/configuring/fontsandcolors.html" />
 
 
 <mapID target="debug.overview" url="debug/debug.html" />
