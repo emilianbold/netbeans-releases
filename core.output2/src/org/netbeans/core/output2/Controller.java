@@ -1123,18 +1123,6 @@ public class Controller { //XXX public only for debug access to logging code
         }
     }
     
-    private static void maybeFocusOrFront (OutputTab comp) {
-        Container c = comp.getTopLevelAncestor();
-        if (c instanceof JFrame) {
-            JFrame frm = (JFrame) c;
-            Dimension size = frm.getSize();
-            Dimension screen = Utilities.getUsableScreenBounds(comp.getGraphicsConfiguration()).getSize();
-            frm.toFront();
-            if (Math.abs (size.width - screen.width) <= 80 && Math.abs (size.height - screen.height) < 80) {
-                comp.requestFocus();
-            }
-        }
-    }
     
     private static boolean isSDI (OutputTab comp) {
         Container c = comp.getTopLevelAncestor();
