@@ -1,6 +1,8 @@
 OpenIDE-Module: org.netbeans.modules.html/1
 OpenIDE-Module-Name: HTML
 OpenIDE-Module-Display-Category: Web
+OpenIDE-Module-Long-Description: Editing of HTML files and viewing them in the internal
+  web browser.
 OpenIDE-Module-Install: org/netbeans/modules/html/HtmlModule.class
 OpenIDE-Module-Layer: org/netbeans/modules/html/mf-layer.xml
 OpenIDE-Module-Specification-Version: 1.6

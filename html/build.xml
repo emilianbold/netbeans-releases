@@ -51,10 +51,6 @@ Microsystems, Inc. All Rights Reserved.
 	     homepage="http://html.netbeans.org/"
 	     distribution="http://www.netbeans.org/download/nbms/40/html.nbm">
       <license file="../nbbuild/standard-nbm-license.txt"/>
-      <description>
-        Editing of HTML files and viewing them in the internal
-	web browser.
-      </description>
       <signature keystore="${keystore}" storepass="${storepass}" alias="nb_ide"/>
     </makenbm>
   </target>

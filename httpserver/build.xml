@@ -62,9 +62,6 @@ Microsystems, Inc. All Rights Reserved.
 	     homepage="http://httpserver.netbeans.org/"
 	     distribution="http://www.netbeans.org/download/nbms/40/httpserver.nbm">
       <license file="../nbbuild/standard-nbm-license.txt"/>
-      <description>
-        Internal HTTP server with servlet support.
-      </description>
       <signature keystore="${keystore}" storepass="${storepass}" alias="nb_ide"/>
     </makenbm>
   </target>
