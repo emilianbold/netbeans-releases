@@ -97,8 +97,6 @@ public class I18nManager {
     
     /** The 'heart' method called by <code>I18nAction</code>. */
     public void internationalize(final DataObject sourceDataObject) {
-        // If there is insert i18n action working on the same document -> cancel it.
-        ((InsertI18nStringAction)SystemAction.get(InsertI18nStringAction.class)).cancel();
 
         // If there is i18n action working -> cancel it.
         closeDialog();
