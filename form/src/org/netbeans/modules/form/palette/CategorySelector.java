@@ -37,6 +37,8 @@ class CategorySelector extends JPanel implements ExplorerManager.Provider {
         ListView listView = new ListView();
         listView.getAccessibleContext().setAccessibleDescription(
             PaletteUtils.getBundleString("ACSD_CTL_PaletteCategories")); // NOI18N
+        listView.setPopupAllowed(false);
+        listView.setTraversalAllowed(false);
 
         JLabel categoryLabel = new JLabel();
         org.openide.awt.Mnemonics.setLocalizedText(categoryLabel, 
