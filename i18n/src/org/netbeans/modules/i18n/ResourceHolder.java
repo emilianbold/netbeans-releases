@@ -25,7 +25,7 @@ import org.openide.loaders.DataObject;
  * Abstract class which implementation's are wrappers for holders of properties resources. 
  * Typically such object is <code>PropertiesDataObject</code> which represents bundle
  * of .properties files. But it can be also some object representing other type of resources
- * e.g. subclass of <code> ListResourceBundle</code> class or in case of i18n-ing JSP pages 
+ * e.g. subclass of <code>ListResourceBundle</code> class or in case of i18n-ing JSP pages 
  * object representing tag library etc.
  * 
  * @author  Peter Zavadsky

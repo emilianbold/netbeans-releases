@@ -381,7 +381,8 @@ public class JavaI18nSupport extends I18nSupport {
         
         /**
          * Implements <code>I18nFinder</code> interface method.
-         * Finds all internationalized hard coded strings in source document. It's used in text tool. */
+         * Finds all internationalized hard coded strings in source document. 
+         * It's used in test tool. */
         public HardCodedString[] findAllI18nStrings() {
             reset();
             i18nSearch = true;
