@@ -15,6 +15,7 @@ package org.netbeans.modules.editor;
 
 import java.io.IOException;
 import javax.swing.JEditorPane;
+import javax.swing.event.ChangeListener;
 
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.DialogSupport;
@@ -41,6 +42,9 @@ import org.openide.loaders.DataFolder;
 import org.openide.util.SharedClassObject;
 import org.openide.options.SystemOption;
 import org.openide.text.PrintSettings;
+import org.openide.loaders.DataObject;
+import org.openide.util.WeakListener;
+
 
 /**
 * Module installation class for editor
@@ -60,6 +64,8 @@ public class EditorModule extends ModuleInstall implements Runnable {
     };
 
     static final long serialVersionUID =-929863607593944237L;
+    
+    private DORegistryListener rl;
 
     public void installed () {
         restored ();
@@ -102,6 +108,12 @@ public class EditorModule extends ModuleInstall implements Runnable {
         }
 
         org.netbeans.modules.editor.options.ProjectHack.restored();
+        
+        // Start listening on DataObject.Registry
+        if (rl == null) {
+            rl = new DORegistryListener();
+            DataObject.getRegistry().addChangeListener((ChangeListener)(WeakListener.change(rl, DataObject.getRegistry())));
+        }
 
     }
 
