@@ -21,6 +21,7 @@ import java.util.*;
 import java.util.Map; // override org.apache.tools.ant.Map
 
 import org.openide.*;
+import org.openide.awt.Actions;
 import org.openide.execution.ExecutorTask;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
@@ -74,47 +75,51 @@ public class TargetExecutor implements Runnable {
     /** Start it going. */
     public ExecutorTask execute () throws IOException {
         //System.err.println("execute #1: " + this);
-        Element projel = pcookie.getProjectElement ();
-        String projectName;
-        if (projel != null) {
-            projectName = projel.getAttribute ("name"); // NOI18N
-        } else {
-            projectName = NbBundle.getMessage (TargetExecutor.class, "LBL_unparseable_proj_name");
-        }
-        String fileName;
-        if (pcookie.getFileObject () != null) {
-            fileName = DataObject.find (pcookie.getFileObject ()).getNodeDelegate ().getDisplayName ();
-        } else {
-            fileName = pcookie.getFile ().getName ();
-        }
         String name;
-        if (targetNames != null) {
-            StringBuffer targetList = new StringBuffer ();
-            Iterator it = targetNames.iterator ();
-            if (it.hasNext ()) {
-                targetList.append ((String) it.next ());
-            }
-            while (it.hasNext ()) {
-                targetList.append (NbBundle.getMessage (TargetExecutor.class, "SEP_output_target"));
-                targetList.append ((String) it.next ());
-            }
-            name = NbBundle.getMessage (TargetExecutor.class, "TITLE_output_target", projectName, fileName, targetList);
+        if (AntSettings.getDefault ().getReuseOutput ()) {
+            name = NbBundle.getMessage (TargetExecutor.class, "TITLE_output_reused");
         } else {
-            name = NbBundle.getMessage (TargetExecutor.class, "TITLE_output_notarget", projectName, fileName);
+            Element projel = pcookie.getProjectElement ();
+            String projectName;
+            if (projel != null) {
+                // remove & if available.
+                projectName = Actions.cutAmpersand(projel.getAttribute("name")); // NOI18N
+            } else {
+                projectName = NbBundle.getMessage (TargetExecutor.class, "LBL_unparseable_proj_name");
+            }
+            String fileName;
+            if (pcookie.getFileObject () != null) {
+                fileName = DataObject.find (pcookie.getFileObject ()).getNodeDelegate ().getDisplayName ();
+            } else {
+                fileName = pcookie.getFile ().getName ();
+            }
+            if (projectName.equals("")) { // NOI18N
+                // No name="..." given, so try the file name instead.
+                projectName = fileName;
+            }
+            if (targetNames != null) {
+                StringBuffer targetList = new StringBuffer ();
+                Iterator it = targetNames.iterator ();
+                if (it.hasNext ()) {
+                    targetList.append ((String) it.next ());
+                }
+                while (it.hasNext ()) {
+                    targetList.append (NbBundle.getMessage (TargetExecutor.class, "SEP_output_target"));
+                    targetList.append ((String) it.next ());
+                }
+                name = NbBundle.getMessage (TargetExecutor.class, "TITLE_output_target", projectName, fileName, targetList);
+            } else {
+                name = NbBundle.getMessage (TargetExecutor.class, "TITLE_output_notarget", projectName, fileName);
+            }
         }
-        // remove & if available.
-        name = org.openide.awt.Actions.cutAmpersand (name);
-
         final ExecutorTask task;
         synchronized (this) {
             // OutputWindow
-            if (AntSettings.getDefault ().getReuseOutput ()) {
-                io = TopManager.getDefault ().getIO (NbBundle.getMessage (TargetExecutor.class, "TITLE_output_reused"), false);
-            } else {
-                io = TopManager.getDefault ().getIO (name, false);
-            }
+            io = TopManager.getDefault ().getIO (name, false);
             // this will delete the output even if a script is still running.
             io.getOut ().reset ();
+            // #16720:
+            io.select();
                 
             // [PENDING] note that calls to System.exit() from tasks
             // are apparently not trapped! (#9953)
