@@ -58,6 +58,7 @@ public class NbModuleProjectTest extends TestBase {
         String[] cp = {
             "ide4/modules/org-apache-tools-ant-module.jar",
             "platform4/core/openide.jar",
+            "platform4/modules/org-openide-execution.jar",
             "platform4/modules/org-openide-io.jar",
             "platform4/core/openide-loaders.jar",
             "ide4/modules/org-netbeans-modules-java-platform.jar",
