@@ -230,7 +230,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 // -----------------------------------------------------------------------------------------------
 // Private Methods
   private String getDefaultSerializedName (RADComponent component) {
-    return component.getFormManager ().getFormObject ().getName () + "_" + component.getName () + ".ser";
+    return component.getFormManager ().getFormObject ().getName () + "_" + component.getName ();
   }
 
   private void regenerateInitializer () {
@@ -409,6 +409,11 @@ public class JavaCodeGenerator extends CodeGenerator {
       initCodeWriter.write (" = (");
       initCodeWriter.write (comp.getBeanClass ().getName ());
       initCodeWriter.write (")java.beans.Beans.instantiate (getClass ().getClassLoader (), \"");
+      // write package name
+      String packageName = formManager.getFormObject ().getPrimaryFile ().getParent ().getPackageName ('.');
+      if (!"".equals (packageName)) {
+        initCodeWriter.write (packageName + ".");
+      }
       initCodeWriter.write (serializeTo);
       initCodeWriter.write ("\");\n");
       initCodeWriter.write ("} catch (ClassNotFoundException e) {\n");
@@ -917,7 +922,58 @@ public class JavaCodeGenerator extends CodeGenerator {
     /** Called when the form is about to be saved
     */
     public void formToBeSaved () {
-      // [PENDING - save all components to be serialized]
+      serializeComponentsRecursively (formManager.getRADForm ().getTopLevelComponent ());
+      RADComponent[] nonVisuals = formManager.getNonVisualComponents ();
+      for (int i = 0; i < nonVisuals.length; i++) {
+        serializeComponentsRecursively (nonVisuals[i]);
+      }
+    }
+
+    private void serializeComponentsRecursively (RADComponent comp) {
+      Object value = comp.getAuxValue (AUX_CODE_GENERATION);
+      if ((value != null) && VALUE_SERIALIZE.equals (value)) {
+        String serializeTo = (String)comp.getAuxValue (AUX_SERIALIZE_TO);
+        if (serializeTo != null) {
+          try {
+            FileObject fo = formManager.getFormObject ().getPrimaryFile ();
+            FileObject serFile = fo.getParent ().getFileObject (serializeTo, "ser");
+            if (serFile == null) {
+              serFile = fo.getParent ().createData (serializeTo, "ser");
+            }
+            if (serFile != null) {
+              FileLock lock = null;
+              java.io.ObjectOutputStream oos = null;
+              try {
+                lock = serFile.lock ();
+                oos = new java.io.ObjectOutputStream (serFile.getOutputStream (lock));
+                oos.writeObject (comp.getBeanInstance ());
+              } finally {
+                if (oos != null) oos.close ();
+                if (lock != null) lock.releaseLock ();
+              }
+            } else {
+              // [PENDING - handle problem]
+            }
+          } catch (java.io.NotSerializableException e) {
+            e.printStackTrace ();
+            // [PENDING - notify error]
+          } catch (java.io.IOException e) {
+            e.printStackTrace ();
+            // [PENDING - notify error]
+          } catch (Exception e) {
+            e.printStackTrace ();
+            // [PENDING - notify error]
+          }
+        } else {
+          // [PENDING - notify error]
+        }
+      }
+      if (comp instanceof ComponentContainer) {
+        RADComponent[] children = ((ComponentContainer)comp).getSubBeans ();
+        for (int i = 0; i < children.length; i++) {
+          serializeComponentsRecursively (children[i]);
+        }
+      }
     }
 
     /** Called when the order of components within their parent changes
@@ -1116,6 +1172,9 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  39   Gandalf   1.38        7/14/99  Ian Formanek    Serialization of 
+ *       components on form save and generation of correct code for 
+ *       instantiating such components
  *  38   Gandalf   1.37        7/13/99  Ian Formanek    Fixed modifiers code 
  *       generation
  *  37   Gandalf   1.36        7/13/99  Petr Hamernik   ConstrainedModifiers 
