@@ -16,11 +16,13 @@ package org.netbeans.modules.editor.options;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.util.List;
+import java.util.HashMap;
 import org.netbeans.editor.Settings;
 import org.openide.options.ContextSystemOption;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.text.PrintSettings;
+import org.netbeans.editor.EditorState;
 
 /**
 * Root node for all available editor options
@@ -73,6 +75,14 @@ public class AllOptions extends ContextSystemOption {
         baseOptions.setKeyBindingList(list);
     }
 
+    public HashMap getEditorState() {
+        return EditorState.getStateObject();
+    }
+    
+    public void setEditorState( HashMap stateObject ) {
+        EditorState.setStateObject( stateObject );
+    }
+    
     public boolean isGlobal() {
         return true;
     }
@@ -84,23 +94,3 @@ public class AllOptions extends ContextSystemOption {
     }
 
 }
-
-/*
- * Log
- *  11   Gandalf   1.10        1/15/00  Miloslav Metelka now global
- *  10   Gandalf   1.9         1/13/00  Miloslav Metelka Localization
- *  9    Gandalf   1.8         11/5/99  Jesse Glick     Context help jumbo 
- *       patch.
- *  8    Gandalf   1.7         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  7    Gandalf   1.6         9/15/99  Miloslav Metelka 
- *  6    Gandalf   1.5         8/27/99  Miloslav Metelka 
- *  5    Gandalf   1.4         8/9/99   Ian Formanek    Generated Serial Version
- *       UID
- *  4    Gandalf   1.3         7/20/99  Miloslav Metelka 
- *  3    Gandalf   1.2         7/9/99   Ales Novak      print options change
- *  2    Gandalf   1.1         7/3/99   Ian Formanek    Changed package 
- *       statement to make it compilable
- *  1    Gandalf   1.0         6/30/99  Ales Novak      
- * $
- */

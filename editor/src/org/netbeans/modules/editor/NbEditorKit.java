@@ -49,9 +49,6 @@ public class NbEditorKit extends ExtKit {
     /** Shared suport for find and replace dialogs */
     private static NbFindDialogSupport nbFindDialogSupport;
 
-    /** Shared support for goto dialogs */
-    private static NbGotoDialogSupport nbGotoDialogSupport;
-
     /** Action property that stores the name of the corresponding nb-system-action */
     public static final String SYSTEM_ACTION_CLASS_NAME_PROPERTY = "systemActionClassName";
 
@@ -70,7 +67,6 @@ public class NbEditorKit extends ExtKit {
                                        new NbBuildPopupMenuAction(),
                                        new NbFindAction(),
                                        new NbReplaceAction(),
-                                       new NbGotoAction(),
                                        new NbUndoAction(),
                                        new NbRedoAction(),
                                    };
@@ -213,16 +209,6 @@ public class NbEditorKit extends ExtKit {
 
     }
 
-    public static class NbGotoAction extends GotoAction {
-
-        public GotoDialogSupport getSupport() {
-            if (nbGotoDialogSupport == null) {
-                nbGotoDialogSupport = new NbGotoDialogSupport();
-            }
-            return nbGotoDialogSupport;
-        }
-
-    }
 
     public static class NbUndoAction extends ActionFactory.UndoAction {
 
@@ -252,13 +238,3 @@ public class NbEditorKit extends ExtKit {
 
 
 }
-
-/*
- * Log
- *  4    Jaga      1.3         4/7/00   Miloslav Metelka 
- *  3    Jaga      1.2         3/24/00  Miloslav Metelka 
- *  2    Jaga      1.1         3/21/00  Miloslav Metelka 
- *  1    Jaga      1.0         3/15/00  Miloslav Metelka 
- * $
- */
-
