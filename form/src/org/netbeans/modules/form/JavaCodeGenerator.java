@@ -511,6 +511,9 @@ public class JavaCodeGenerator extends CodeGenerator {
     if (ed instanceof FormAwareEditor) {
       ((FormAwareEditor)ed).setRADComponent (comp);
     }
+    if (ed instanceof org.openide.explorer.propertysheet.editors.NodePropertyEditor) {
+      ((org.openide.explorer.propertysheet.editors.NodePropertyEditor)ed).attach (new org.openide.nodes.Node[] { comp.getNodeReference () });
+    }
 
     String javaInitializationString = null;
     // null values are generated separately, as most property editors cannot cope with nulls
@@ -1195,6 +1198,8 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  43   Gandalf   1.42        8/1/99   Ian Formanek    NodePropertyEditor 
+ *       employed
  *  42   Gandalf   1.41        7/27/99  Ian Formanek    Fixed bug 2638 - Undo in
  *       an editor pane with guarded blocks screws up the guards.
  *  41   Gandalf   1.40        7/27/99  Ian Formanek    getAdapterForListener ->

@@ -61,6 +61,11 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
       if (allEditors[0] instanceof FormAwareEditor) {
         ((FormAwareEditor)allEditors[0]).setRADComponent (editor.getRADComponent ());
       }
+
+      if (allEditors[0] instanceof org.openide.explorer.propertysheet.editors.NodePropertyEditor) {
+        ((org.openide.explorer.propertysheet.editors.NodePropertyEditor)allEditors[0]).attach (new org.openide.nodes.Node[] { editor.getRADComponent ().getNodeReference () });
+      }
+
       if (allEditors[0].supportsCustomEditor ()) {
         add (allCustomEditors[0] = allEditors[0].getCustomEditor (), BorderLayout.CENTER);
       } else {
@@ -78,6 +83,9 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
         }
         if (allEditors[i] instanceof FormAwareEditor) {
           ((FormAwareEditor)allEditors[i]).setRADComponent (editor.getRADComponent ());
+        }
+        if (allEditors[i] instanceof org.openide.explorer.propertysheet.editors.NodePropertyEditor) {
+          ((org.openide.explorer.propertysheet.editors.NodePropertyEditor)allEditors[i]).attach (new org.openide.nodes.Node[] { editor.getRADComponent ().getNodeReference () });
         }
         if (allEditors[i].supportsCustomEditor ()) {
           tabs.addTab (Utilities.getShortClassName (allEditors[i].getClass ()), allCustomEditors[i] = allEditors[i].getCustomEditor ());
@@ -154,6 +162,8 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
 
 /*
  * Log
+ *  11   Gandalf   1.10        8/1/99   Ian Formanek    NodePropertyEditor 
+ *       employed
  *  10   Gandalf   1.9         8/1/99   Ian Formanek    
  *  9    Gandalf   1.8         7/23/99  Ian Formanek    Fixes problem with 
  *       properties, where the RADConnectionPropertryEditor is the only one 

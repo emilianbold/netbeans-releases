@@ -707,6 +707,9 @@ public class RADComponent {
         if (prEd instanceof FormAwareEditor) {
           ((FormAwareEditor)prEd).setRADComponent (RADComponent.this);
         }
+        if (prEd instanceof org.openide.explorer.propertysheet.editors.NodePropertyEditor) {
+          ((org.openide.explorer.propertysheet.editors.NodePropertyEditor)prEd).attach (new org.openide.nodes.Node[] { getNodeReference () });
+        }
         return prEd;
       }
       // the property editor cannot be reused as it is not reentrant !!! [IAN]
@@ -882,6 +885,9 @@ public class RADComponent {
         if (prEd instanceof FormAwareEditor) {
           ((FormAwareEditor)prEd).setRADComponent (RADComponent.this);
         }
+        if (prEd instanceof org.openide.explorer.propertysheet.editors.NodePropertyEditor) {
+          ((org.openide.explorer.propertysheet.editors.NodePropertyEditor)prEd).attach (new org.openide.nodes.Node[] { getNodeReference () });
+        }
         return prEd;
       }
 
@@ -1052,6 +1058,8 @@ public class RADComponent {
 
 /*
  * Log
+ *  39   Gandalf   1.38        8/1/99   Ian Formanek    NodePropertyEditor 
+ *       employed
  *  38   Gandalf   1.37        8/1/99   Ian Formanek    Fixed bug which caused 
  *       properties and property editors to begave potentially very strangely
  *  37   Gandalf   1.36        7/30/99  Ian Formanek    fixed firing event added

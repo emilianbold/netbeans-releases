@@ -131,6 +131,9 @@ final public class FormEditor extends Object {
     if (ed instanceof FormAwareEditor) {
       ((FormAwareEditor)ed).setRADComponent (radComponent);
     }
+    if (ed instanceof org.openide.explorer.propertysheet.editors.NodePropertyEditor) {
+      ((org.openide.explorer.propertysheet.editors.NodePropertyEditor)ed).attach (new org.openide.nodes.Node[] { radComponent.getNodeReference () });
+    }
     return ed;
   }
 
@@ -588,6 +591,8 @@ final public class FormEditor extends Object {
 
 /*
  * Log
+ *  29   Gandalf   1.28        8/1/99   Ian Formanek    NodePropertyEditor 
+ *       employed
  *  28   Gandalf   1.27        8/1/99   Ian Formanek    createPropertyEditor 
  *       method, fixed title of COmponentInspector after deserialization
  *  27   Gandalf   1.26        7/20/99  Jesse Glick     Context help.

@@ -48,6 +48,9 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
     if (modifiedEditor instanceof FormAwareEditor) {
       ((FormAwareEditor)modifiedEditor).setRADComponent (radComponent);
     }
+    if (modifiedEditor instanceof org.openide.explorer.propertysheet.editors.NodePropertyEditor) {
+      ((org.openide.explorer.propertysheet.editors.NodePropertyEditor)modifiedEditor).attach (new org.openide.nodes.Node[] { radComponent.getNodeReference () });
+    }
     modifiedEditor.addPropertyChangeListener (this);
   }
 
@@ -76,6 +79,9 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
     }
     if (modifiedEditor instanceof FormAwareEditor) {
       ((FormAwareEditor)modifiedEditor).setRADComponent (radComponent);
+    }
+    if (modifiedEditor instanceof org.openide.explorer.propertysheet.editors.NodePropertyEditor) {
+      ((org.openide.explorer.propertysheet.editors.NodePropertyEditor)modifiedEditor).attach (new org.openide.nodes.Node[] { radComponent.getNodeReference () });
     }
     modifiedEditor.addPropertyChangeListener (this);
   }
@@ -305,6 +311,8 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
 
 /*
  * Log
+ *  12   Gandalf   1.11        8/1/99   Ian Formanek    NodePropertyEditor 
+ *       employed
  *  11   Gandalf   1.10        8/1/99   Ian Formanek    cleaned usage of 
  *       modified editor
  *  10   Gandalf   1.9         7/23/99  Ian Formanek    Caching editor classes
