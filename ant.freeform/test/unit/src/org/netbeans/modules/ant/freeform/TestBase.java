@@ -48,6 +48,7 @@ public abstract class TestBase extends NbTestCase {
     }
     
     protected File egdir;
+    protected File datadir;
     protected FileObject egdirFO;
     protected FreeformProject simple;
     protected FreeformProject extsrcroot;
@@ -77,6 +78,8 @@ public abstract class TestBase extends NbTestCase {
         Project _extsrcroot = ProjectManager.getDefault().findProject(projdir);
         assertNotNull("have a project", _extsrcroot);
         extsrcroot = (FreeformProject) _extsrcroot;
+        datadir = FileUtil.normalizeFile(new File(System.getProperty("test.data.dir")));
+        assertTrue("data dir exists", datadir.exists());
     }
     
     /** ChangeListener for tests. */

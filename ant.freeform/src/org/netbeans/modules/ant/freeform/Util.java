@@ -13,26 +13,33 @@
 
 package org.netbeans.modules.ant.freeform;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.Collator;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.StringTokenizer;
 import java.util.TreeSet;
+import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.api.support.TargetLister;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /**
  * XXX copied from ant/project... revisit
@@ -125,6 +132,7 @@ public class Util {
      * @param fo Ant script which name should be returned
      * @return name of the Ant script as specified in name attribute of
      *    project element or null if fo does not represent valid Ant script
+     *    or the script is anonymous
      */
     public static String getAntScriptName(FileObject fo) {
         AntProjectCookie apc = getAntProjectCookie(fo);
@@ -135,7 +143,9 @@ public class Util {
         if (projEl == null) {
             return null;
         }
-        return projEl.getAttribute("name"); //NOI18N
+        String name = projEl.getAttribute("name"); // NOI18N
+        // returns "" if no such attribute
+        return name.length() > 0 ? name : null;
     }
     
     private static AntProjectCookie getAntProjectCookie(FileObject fo) {
@@ -143,10 +153,25 @@ public class Util {
         try {
             dob = DataObject.find(fo);
         } catch (DataObjectNotFoundException ex) {
+            Util.err.notify(ErrorManager.INFORMATIONAL, ex);
             return null;
         }
         assert dob != null;
-        return (AntProjectCookie)dob.getCookie(AntProjectCookie.class);
+        AntProjectCookie apc = (AntProjectCookie) dob.getCookie(AntProjectCookie.class);
+        if (apc == null && fo.getMIMEType().equals("text/xml")) { // NOI18N
+            // Some file that *could* be an Ant script and just wasn't recognized
+            // as such? Cf. also TargetLister.getAntProjectCookie, which has the
+            // advantage of being inside the Ant module and therefore able to
+            // directly instantiate AntProjectSupport.
+            try {
+                apc = forceParse(fo);
+            } catch (IOException e) {
+                err.notify(ErrorManager.INFORMATIONAL, e);
+            } catch (SAXException e) {
+                err.log("Parse error in " + fo + ": " + e);
+            }
+        }
+        return apc;
     }
 
     /**
@@ -165,7 +190,7 @@ public class Util {
         try {
             allTargets = TargetLister.getTargets(apc);
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            err.notify(ErrorManager.INFORMATIONAL, e);
             return null;
         }
         SortedSet targetNames = new TreeSet(Collator.getInstance());
@@ -183,6 +208,67 @@ public class Util {
             targetNames.add(target.getName());
         }
         return new ArrayList(targetNames);
+    }
+    
+    /**
+     * Try to parse a (presumably XML) file even though it is not known to be an Ant script.
+     */
+    private static AntProjectCookie forceParse(FileObject fo) throws IOException, SAXException {
+        Document doc = XMLUtil.parse(new InputSource(fo.getURL().toExternalForm()), false, true, new ErrH(), null);
+        return new TrivialAntProjectCookie(fo, doc);
+    }
+    
+    private static final class ErrH implements ErrorHandler {
+        public ErrH() {}
+        public void fatalError(SAXParseException exception) throws SAXException {
+            throw exception;
+        }
+        public void error(SAXParseException exception) throws SAXException {
+            throw exception;
+        }
+        public void warning(SAXParseException exception) throws SAXException {
+            // ignore that
+        }
+    }
+    
+    private static final class TrivialAntProjectCookie implements AntProjectCookie.ParseStatus {
+        
+        private final FileObject fo;
+        private final Document doc;
+        
+        public TrivialAntProjectCookie(FileObject fo, Document doc) {
+            this.fo = fo;
+            this.doc = doc;
+        }
+
+        public FileObject getFileObject() {
+            return fo;
+        }
+
+        public File getFile() {
+            return FileUtil.toFile(fo);
+        }
+
+        public Document getDocument() {
+            return doc;
+        }
+
+        public Element getProjectElement() {
+            return doc.getDocumentElement();
+        }
+        
+        public boolean isParsed() {
+            return true;
+        }
+
+        public Throwable getParseException() {
+            return null;
+        }
+
+        public void addChangeListener(ChangeListener l) {}
+
+        public void removeChangeListener(ChangeListener l) {}
+
     }
     
 }
