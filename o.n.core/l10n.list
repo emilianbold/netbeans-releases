@@ -12,6 +12,7 @@ core/src/org/netbeans/core/windows/Bundle.properties
 core/src/org/netbeans/core/windows/nodes/Bundle.properties
 core/src/org/netbeans/core/windows/toolbars/Bundle.properties
 core/src/org/netbeans/core/windows/util/Bundle.properties
+core/src/org/netbeans/core/windows/frames/Bundle.properties
 core/src/org/netbeans/core/resources/templatesRootDescription.html
 core/src/org/netbeans/docs/startup/info-NewTemplateAction.html
 core/src/org/netbeans/docs/startup/info-ProxySettingsAction.html
