@@ -253,6 +253,8 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	try {
 	    ProductService service = (ProductService)getService(ProductService.NAME);
 	    service.setRetainedProductBeanProperty(productURL, "beanNB", "installLocation", nbInstallDir);
+            service.setRetainedProductBeanProperty(productURL, "beanAppServer", "installLocation", 
+                nbInstallDir + File.separator + InstallApplicationServerAction.UNINST_DIRECTORY_NAME);
             service.setRetainedProductBeanProperty(productURL, null, "installLocation", nbInstallDir);
             service.setRetainedProductBeanProperty(productURL, null, "absoluteInstallLocation", nbInstallDir);
 	} catch (ServiceException e) {
