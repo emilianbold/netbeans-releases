@@ -49,7 +49,7 @@ Microsystems, Inc. All Rights Reserved.
 	     distribution="http://www.netbeans.org/download/nbms/40/junit.nbm">
       <license file="../nbbuild/standard-nbm-license.txt"/>
       <description>
-        Creates and executes tests suitable for JUnit framework.
+        JUnit module allows you to create and execute test classes suitable for JUnit framework.
       </description>
       <signature keystore="${keystore}" storepass="${storepass}" alias="nb_ide"/>
     </makenbm>
