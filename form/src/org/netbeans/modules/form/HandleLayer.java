@@ -546,7 +546,7 @@ class HandleLayer extends JPanel
             Point p = SwingUtilities.convertPoint(HandleLayer.this,
                                                   e.getPoint(), cont);
             LayoutSupport.ConstraintsDesc constraints =
-                parentCont.getLayoutSupport().getWouldBeConstraints(p, cont);
+                parentCont.getLayoutSupport().getNewConstraints(cont, p, null, null);
 
             formDesigner.getModel().addVisualComponent(newMetacomp, parentCont,
                                                        constraints);
@@ -687,7 +687,7 @@ class HandleLayer extends JPanel
                     Point point = SwingUtilities.convertPoint(
                             HandleLayer.this, p, cont);
                     LayoutSupport.ConstraintsDesc cd =
-                            layoutSupp.getWouldBeConstraints(p, cont);
+                            layoutSupp.getNewConstraints(cont, p, null, null);
                     if (cd != null) {
                         setStatusText("FMT_MSG_AddComponent",
                                       new Object[] {

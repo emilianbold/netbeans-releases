@@ -130,17 +130,21 @@ public abstract class AbstractLayoutSupport implements LayoutSupport
     public Class getCustomizerClass() {
         return null;
     }
-    
-    public int getWouldBeComponentIndex(Point position, Container cont) {
+
+    public ConstraintsDesc getNewConstraints(Container cont, Point posInCont,
+                                             Component comp, Point posInComp) {
+        return null;
+    }
+
+    public int getNewIndex(Container cont, Point posInCont,
+                           Component comp, Point posInComp) {
         return -1;
     }
-    
-    public ConstraintsDesc getWouldBeConstraints(Point position, Container cont) {
-        return getWouldBeConstraints();
-    }
-    
-    public ConstraintsDesc getWouldBeConstraints() {
-        return null;
+
+    public boolean paintDragFeedback(Container cont, Point posInCont,
+                                     Component comp, Point posInComp,
+                                     Graphics g) {
+        return false;
     }
 
     public ConstraintsDesc fixConstraints(ConstraintsDesc constraintsDesc) {

@@ -597,15 +597,19 @@ public class FormDesigner extends TopComponent
 
     static void setContainerLayout(Container cont, LayoutSupport laySup) {
         if (laySup != null) {
-            LayoutManager lm = laySup.cloneLayoutInstance(cont);
-            if (lm != null) cont.setLayout(lm);
+            if (laySup instanceof NullLayoutSupport)
+                cont.setLayout(null);
+            else {
+                LayoutManager lm = laySup.cloneLayoutInstance(cont);
+                if (lm != null) cont.setLayout(lm);
 
-            if (cont instanceof JTabbedPane)
-                ((JTabbedPane)cont).setSelectedIndex(-1);
+                if (cont instanceof JTabbedPane)
+                    ((JTabbedPane)cont).setSelectedIndex(-1);
+            }
         }
     }
 
-    static boolean isContainer(Object instance)  {
+/*    static boolean isContainer(Object instance)  {
         BeanInfo info = BeanSupport.createBeanInfo(instance.getClass());
 
         if (info != null)  {
@@ -620,7 +624,7 @@ public class FormDesigner extends TopComponent
             return true;
         else
             return false;
-    }
+    } */
 
     static void addComponentToContainer(RADVisualContainer radcontainer,
                                         Container container,
@@ -674,20 +678,15 @@ public class FormDesigner extends TopComponent
                 else
                     root.add(comp, constr);
             }
-//              else if (dl instanceof DesignAbsoluteLayout) {
-//                  DesignAbsoluteLayout.AbsoluteConstraintsDescription acd =
-//                      (DesignAbsoluteLayout.AbsoluteConstraintsDescription) constrDesc;
-        
-                
-//                  Point pos = acd.getPosition();
-//                  Dimension size = acd.getSize();
-//                  if (size.width <= 0 || size.height <= 0) {
-//                      size = ((Component) radcomp.getBeanInstance()).getPreferredSize();
-//                  }
-
-//                  root.add(comp);
-//                  comp.setBounds(pos.x, pos.y, size.width, size.height);
-//              }
+            else if (constrDesc instanceof NullLayoutSupport.NullConstraintsDesc) {
+                Rectangle bounds = (Rectangle)constrDesc.getConstraintsObject();
+                if (bounds.width == -1)
+                    bounds.width = comp.getPreferredSize().width;
+                if (bounds.height == -1)
+                    bounds.height = comp.getPreferredSize().height;
+                root.add(comp);
+                comp.setBounds(bounds);
+            }
         }
     }
 

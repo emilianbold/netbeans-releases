@@ -890,8 +890,7 @@ public class RADComponentNode extends AbstractNode
                     }
 
                     RADVisualContainer parentCont = (RADVisualContainer)component;
-                    formModel.addVisualComponent(newComp, parentCont,
-                        parentCont.getLayoutSupport().getWouldBeConstraints());
+                    formModel.addVisualComponent(newComp, parentCont, null);
 
                     // for some components, we initialize their properties with some non-default values
                     // e.g. a label on buttons, checkboxes

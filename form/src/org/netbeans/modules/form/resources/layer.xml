@@ -329,12 +329,17 @@ Microsystems, Inc. All Rights Reserved.
                 name=BoxLayout
                 icon=/org/netbeans/beaninfo/swing/boxLayout.gif
             </file>
+            <file name="org-netbeans-modules-form-layoutsupport-NullLayoutSupport.instance">
+                name=Null Layout
+                icon=/org/netbeans/modules/form/layoutsupport/resources/NullLayout.gif
+            </file>
 
             <attr name="java-awt-FlowLayout.instance/java-awt-BorderLayout.instance" boolvalue="true" />
             <attr name="java-awt-BorderLayout.instance/java-awt-GridLayout.instance" boolvalue="true" />
             <attr name="java-awt-GridLayout.instance/java-awt-GridBagLayout.instance" boolvalue="true" />
             <attr name="java-awt-GridBagLayout.instance/java-awt-CardLayout.instance" boolvalue="true" />
             <attr name="java-awt-CardLayout.instance/javax-swing-BoxLayout.instance" boolvalue="true" />
+            <attr name="javax-swing-BoxLayout.instance/org-netbeans-modules-form-layoutsupport-NullLayoutSupport.instance" boolvalue="true" />
         </folder>
 
         <folder name="Borders">

@@ -64,6 +64,8 @@ public class LayoutSupportRegistry {
                 e.printStackTrace();
             }
         }
+//        else return NullLayoutSupport.class;
+
         return null;
     }
 
