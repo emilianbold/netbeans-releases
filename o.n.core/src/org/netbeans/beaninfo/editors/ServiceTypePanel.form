@@ -31,6 +31,9 @@
         <Component class="org.openide.explorer.view.ListView" name="listView1">
           <Properties>
             <Property name="traversalAllowed" type="boolean" editor="sun.beans.editors.BoolEditor" value="false"/>
+            <Property name="defaultProcessor" type="java.awt.event.ActionListener" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="new java.awt.event.ActionListener() { public void actionPerformed(java.awt.event.ActionEvent e) {} }" type="code"/>
+            </Property>
             <Property name="popupAllowed" type="boolean" editor="sun.beans.editors.BoolEditor" value="false"/>
             <Property name="selectionMode" type="int" editor="sun.beans.editors.IntEditor" value="1"/>
           </Properties>

@@ -170,6 +170,7 @@ public class ServiceTypePanel extends ExplorerPanel {
         );
         
         listView1.setTraversalAllowed(false);
+          listView1.setDefaultProcessor(new java.awt.event.ActionListener() { public void actionPerformed(java.awt.event.ActionEvent e) {} });
           listView1.setPopupAllowed(false);
           listView1.setSelectionMode(1);
           listView1.addComponentListener(new java.awt.event.ComponentAdapter() {
