@@ -24,6 +24,7 @@ import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
 import org.netbeans.modules.xml.text.syntax.XMLOptions;
+import org.netbeans.test.oo.gui.jam.JamController;
 import org.netbeans.tests.xml.JXTest;
 import org.openide.loaders.DataObject;
 import org.openide.options.SystemOption;
@@ -33,29 +34,27 @@ import org.openide.options.SystemOption;
  * <P>
  * <FONT COLOR="#CC3333" FACE="Courier New, Monospaced" SIZE="+1">
  * <B>
- * <BR> XML Module Jemmy Test: NewFromTemplate
+ * <BR> XML Module Jemmy Test: CompletionJTest
  * </B>
  * </FONT>
  * <BR><BR><B>What it tests:</B><BR>
  *
- * This test tests New From Template action on all XML's templates.
+ * - basic functionality of XML code completion<br>
  *
  * <BR><BR><B>How it works:</B><BR>
  *
- * 1) create new documents from template<BR>
- * 2) write the created documents to output<BR>
- * 3) close source editor<BR>
+ * Creates simple XML document by code completion.
  *
  * <BR><BR><B>Settings:</B><BR>
  * none<BR>
  *
  * <BR><BR><B>Output (Golden file):</B><BR>
- * Set XML documents.<BR>
+ * XML documents<BR>
  *
  * <BR><B>To Do:</B><BR>
  * none<BR>
  *
- * <P>Created on Januar 09, 2001, 12:33 PM
+ * <P>Created on April 03, 2003, 12:33 PM
  * <P>
  */
 
@@ -64,8 +63,6 @@ public class CompletionJTest extends JXTest {
     private static int EMPTY = 1;
     private static int NO_EMPTY = 2;
     
-    
-    int counter;
     int col;
     EditorOperator editor;
     JTextComponentOperator text;
@@ -77,8 +74,7 @@ public class CompletionJTest extends JXTest {
     
     public void test() throws Exception {
         String folder = getFilesystemName() + DELIM + getDataPackageName(DELIM);
-        // catalog is only real template in the module :-)
-        String name = "OASIS XML Catalog";
+        String name = "Document";
         String ext = "xml";
         
         XMLOptions options = (XMLOptions) SystemOption.findObject(XMLOptions.class, true);
@@ -86,15 +82,15 @@ public class CompletionJTest extends JXTest {
         
         DataObject dao = TestUtil.THIS.findData(name + "." + ext);
         if (dao != null) dao.delete();
-        NewWizardOperator.create("XML" + DELIM + name, folder, name);
+        // catalog is only real XML template in the module :-(
+        NewWizardOperator.create("XML" + DELIM + "OASIS XML Catalog", folder, name);
         editor = new EditorOperator(name);
         text = new JTextComponentOperator(editor);
 
         clearText();
         insert(""
         + "<?xml version='1.0' encoding='UTF-8'?>\n"
-        + "<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Transitional//EN'\n"
-        + "'http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd'>\n"
+        + "<!DOCTYPE html PUBLIC '-//Test//DTD XHTML 1.0 Subset//EN' 'xhtml.dtd'>\n"
         + "<h");
         save();
         //tml>
@@ -102,7 +98,7 @@ public class CompletionJTest extends JXTest {
         enter();
         insert(">\n");
         //<head>
-        insertTag("<", ">\n", 0);
+        insertTag("<", ">\n", 1);
         //<title>Test page</title>
         insertTag("<t", "Test page", -1);
         end();
@@ -135,6 +131,9 @@ public class CompletionJTest extends JXTest {
         insertTag("</", "\n", -1);
         //</html>
         insertTag("</", "\n", -1);
+        save();
+        ref(editor.getText());
+        compareReferenceFiles();
     }
     
     void insertTag(String pref, String suf, int index) {
@@ -205,7 +204,6 @@ public class CompletionJTest extends JXTest {
         .waitComponent((Container) editor.getWindowContainerOperator().getSource()
         , completionChoser);
         int size = completionView.getModel().getSize();
-        System.out.println(counter + "- Model size: " + size);
     }
     
     private void checkCompletion(int minSize) {
@@ -281,7 +279,7 @@ public class CompletionJTest extends JXTest {
     }
     
     public static void main(String[] args) {
-        //JamController.setFast(true);
+        JamController.setFast(false);
         DEBUG = true;
         TestRunner.run(CompletionJTest.class);
     }
