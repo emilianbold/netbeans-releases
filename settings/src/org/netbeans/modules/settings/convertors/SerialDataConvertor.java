@@ -385,10 +385,11 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
             inst = new SoftReference(o);
         }
         // called by InstanceDataObject to set new object
-        public void setInstance(Object inst) throws IOException {
+        public void setInstance(Object inst, boolean save) throws IOException {
             instanceCookieChanged(inst);
             if (inst != null) {
                 attachToInstance(inst);
+                if (save) getScheduledRequest().runAndWait();                
             }
         }
         
