@@ -174,7 +174,8 @@ public class DefaultOpenFileImpl implements OpenFileImpl {
             /* get the target cursor offset: */
             int lineOffset;
             try {
-                lineOffset = NbDocument.findLineOffset(doc, line);
+                lineOffset = (line >= 0) ? NbDocument.findLineOffset(doc, line)
+                                         : 0;
             } catch (IndexOutOfBoundsException ex) {
                 /* probably line number out of bounds */
                 
