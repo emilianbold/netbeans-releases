@@ -155,11 +155,20 @@ public class XMLFactoryUtil {
         public void setURIResolver(URIResolver uRIResolver) {
             trans.setURIResolver(uRIResolver);
         }
-        
+
         public void transform(Source source, Result result) throws TransformerException {
             String[] oldProperties = setNewProperties();
             ClassLoader contextLoader = Thread.currentThread().getContextClassLoader();
             try {
+                
+                // totally ugly hack of transformation to get work on JDK 1.4.2
+                String val=trans.getOutputProperty("{http://xml.apache.org/xalan}content-handler");
+                if (val!=null) trans.setOutputProperty("{http://xml.apache.org/xslt}content-handler", val);
+                val=trans.getOutputProperty("{http://xml.apache.org/xalan}entities");
+                if (val!=null) trans.setOutputProperty("{http://xml.apache.org/xslt}entities", val);
+                val=trans.getOutputProperty("{http://xml.apache.org/xalan}indent-amount");
+                if (val!=null) trans.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", val);
+                                
                 Thread.currentThread().setContextClassLoader(DocumentBuilderFactoryImpl.class.getClassLoader());
                 trans.transform(source, result);
             } finally {
