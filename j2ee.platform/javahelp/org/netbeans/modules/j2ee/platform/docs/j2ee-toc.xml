@@ -223,7 +223,7 @@
 <tocitem text="Developing Web Services">
          <tocitem text="About Web Services" >
 		<tocitem text="About Web Services" target="about_web_service" />
-		<tocitem text="About the Wscompile Tool" target="about_wscompile" />
+		<tocitem text="About the Web Service Compiler" target="about_wscompile" />
 		<tocitem text="About RPC-Style Web Services" target="about_web_service_rpc" />
 		<tocitem text="About Document-Style Web Services" target="about_web_service_message" />
 		<tocitem text="Working with Web Services" target="ws_process" />
