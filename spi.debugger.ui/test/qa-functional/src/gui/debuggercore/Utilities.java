@@ -50,6 +50,7 @@ public class Utilities {
     public static String runInDebuggerItem = "Debug Main Project";
     //public static String stepIntoItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "???");
     public static String stepIntoItem = "Step Into";
+    public static String continueItem = "Continue";
     public static String killSessionsItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_KillAction_name");
     public static String runToCursorItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Run_to_cursor_action_name");
     

@@ -37,6 +37,7 @@ import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
 
 import org.netbeans.junit.NbTestSuite;
 
@@ -52,7 +53,7 @@ public class Breakpoints extends JellyTestCase {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new Breakpoints("testLineBreakpoint"));
-        //suite.addTest(new Breakpoints("testConditionalLineBreakpoint"));
+        suite.addTest(new Breakpoints("testConditionalLineBreakpoint"));
         suite.addTest(new Breakpoints("testMethodBreakpoint"));
         suite.addTest(new Breakpoints("testClassBreakpoint"));
         suite.addTest(new Breakpoints("testVariableAccessBreakpoint"));
@@ -91,10 +92,9 @@ public class Breakpoints extends JellyTestCase {
         javaNode.performPopupActionNoBlock("Open");
         
         EditorOperator editorOperator = new EditorOperator("MemoryView.java");
-        new EventTool().waitNoEvent(1000);
         editorOperator.setCaretPosition(52, 1);
         
-        new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.toggleBreakpointItem).toString(), null).perform();
+        new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.toggleBreakpointItem).toString(), null).perform();
         
         // test if breakpoint exists in breakpoints view
         Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
@@ -111,15 +111,21 @@ public class Breakpoints extends JellyTestCase {
             rowNumber++;
         }
         assertTrue("Line breakpoint was not created.", found);
-        breakpointsOper.close();
 
         // test if debugger stops at an assumed breakpoint line
         new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runInDebuggerItem).toString(), null).perform();
         MainWindowOperator mwo = MainWindowOperator.getDefault();
         mwo.waitStatusText("Thread main stopped at MemoryView.java:52.");
 
+        // test if debugger stops at an assumed breakpoint line after continue
+        editorOperator.setCaretPosition(103, 1);
+        new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.toggleBreakpointItem).toString(), null).perform();
+        new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.continueItem).toString(), null).perform();
+        mwo = MainWindowOperator.getDefault();
+        mwo.waitStatusText("Thread main stopped at MemoryView.java:103.");
+        
         // finnish bedugging session
-        new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
+        new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
         try {
             JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 5000);
             mwo.waitStatusText("User program finished");
@@ -130,26 +136,21 @@ public class Breakpoints extends JellyTestCase {
     }
     
     public void testConditionalLineBreakpoint() {
-        
-/*        Node repositoryRootNode = RepositoryTabOperator.invoke().getRootNode();
-        JavaNode javaNode = new JavaNode(repositoryRootNode.tree(), 
-            Utilities.getApplicationFileSystem() + "|" + "DebuggerTestApplication"); // NOI18N
-        javaNode.select();
-        javaNode.performPopupActionNoBlock(editAction);
-        
-        EditorOperator editorOperator = new EditorOperator("DebuggerTestApplication"); // NOI18N
-        new EventTool().waitNoEvent(1000); // XXX
-        editorOperator.setCaretPosition(120,1);
+        ProjectsTabOperator projectsTabOper = new ProjectsTabOperator();
+        Node projectNode = new Node(new JTreeOperator(projectsTabOper), Utilities.testProjectName);
+        projectNode.select();
+        projectNode.performPopupAction("Set as Main Project");
 
-        new ActionNoBlock(debuggerItem + "|" + newBreakpointItem, null).perform();
-        NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
-        new JComboBoxOperator(dialog, 1).selectItem("Line");
-        new JTextFieldOperator(dialog, 0).typeText(""); // NOI18N
-        new JTextFieldOperator(dialog, 1).typeText("DebuggerTestApplication"); // NOI18N
-        new JTextFieldOperator(dialog, 2).typeText("120"); // NOI18N
-        new JTextFieldOperator(dialog, 3).typeText("counter==5"); // NOI18N
-        dialog.ok();
+        JavaNode javaNode = new JavaNode(projectNode, "Source Packages|examples.advanced|MemoryView.java");
+        javaNode.select();
+        javaNode.performPopupAction("Open");
         
+        EditorOperator editorOperator = new EditorOperator("MemoryView.java");
+        editorOperator.setCaretPosition(103, 40);
+        
+        new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.toggleBreakpointItem).toString(), null).perform();
+        
+        // test if breakpoint exists in breakpoints view
         Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
         TopComponentOperator breakpointsOper = new TopComponentOperator(Utilities.breakpointsViewTitle);
         JTableOperator jTableOperator = new JTableOperator(breakpointsOper);
@@ -158,23 +159,22 @@ public class Breakpoints extends JellyTestCase {
         boolean found = false;
         
         while ((rowNumber < jTableOperator.getRowCount()) && (!found)) {
-            if ("Line DebuggerTestApplication.java:120".equals(jTableOperator.getValueAt(rowNumber, 0).toString()) ) {
+            if ("Line MemoryView.java:103".equals(jTableOperator.getValueAt(rowNumber, 0).toString()) ) {
                 found = true;
+                new JPopupMenuOperator(jTableOperator.callPopupOnCell(rowNumber, 1)).pushMenuNoBlock("Customize");
+                NbDialogOperator dialog = new NbDialogOperator("Customize Breakpoint");
+                new JTextFieldOperator(dialog, 2).setText("taken > 500000");
+                dialog.ok();
             };
             rowNumber++;
         }
         assertTrue("Line breakpoint was not created.", found);
-        breakpointsOper.close();
-        
+
         // test if debugger stops at an assumed breakpoint line
-        
-        new Action(windowItem + "|Filesystems", null).perform();
-        javaNode.select();
-        new Action(debuggerItem + "|" + startSessionItem + "|" + runInDebuggerItem, null).perform();
+        new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runInDebuggerItem).toString(), null).perform();
         MainWindowOperator mwo = MainWindowOperator.getDefault();
-        mwo.waitStatusText("Breakpoint reached at line 120 in class DebuggerTestApplication by thread counterThread.");
-        
-        new EventTool().waitNoEvent(2000); // XXX
+        mwo.waitStatusText("Thread main stopped at MemoryView.java:103.");
+/*
         
         Utilities.showDebuggerView(Utilities.localVarsViewTitle);
         TopComponentOperator localVarsOper = new TopComponentOperator(Utilities.localVarsViewTitle);
@@ -211,19 +211,17 @@ public class Breakpoints extends JellyTestCase {
             iae.printStackTrace();
         } catch (InvocationTargetException ite) {
             ite.printStackTrace();
-        }
+        }*/
         
-        new ActionNoBlock(debuggerItem + "|" + finishSessionsItem, null).perform();
+        // finnish bedugging session
+        new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
         try {
             JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 5000);
-            dialog = new NbDialogOperator(debuggerFinishedTitle);
-            dialog.ok();
+            mwo.waitStatusText("User program finished");
         } catch (TimeoutExpiredException tee) {
-            System.out.println("Dialog - Finish Debugging Session was not displayed.");
+            System.out.println("Debugging session was not killed.");
             throw(tee);
         }
-        mwo.waitStatusText(debuggerFinishedMsg);*/
-        
     }
 
     public void testMethodBreakpoint() {
@@ -237,7 +235,7 @@ public class Breakpoints extends JellyTestCase {
         javaNode.performPopupActionNoBlock("Open");
         
         EditorOperator editorOperator = new EditorOperator("MemoryView.java");
-        new EventTool().waitNoEvent(1000);
+        //new EventTool().waitNoEvent(1000);
         
         // create new breakpoint and check pre-filled values
         editorOperator.setCaretPosition(90, 1);
@@ -250,7 +248,7 @@ public class Breakpoints extends JellyTestCase {
         dialog.cancel();
 
         editorOperator.setCaretPosition(107, 1);
-        new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
+        new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
         dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
         new JComboBoxOperator(dialog, 0).selectItem("Method");
         assertTrue("Package Name was not set to correct value.", "examples.advanced".equals(new JTextFieldOperator(dialog, 1).getText()));
@@ -273,7 +271,6 @@ public class Breakpoints extends JellyTestCase {
             rowNumber++;
         }
         assertTrue("Method breakpoint was not created.", found);
-        breakpointsOper.close();
 
         // test if debugger stops at an assumed breakpoint line
         new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runInDebuggerItem).toString(), null).perform();
@@ -281,7 +278,7 @@ public class Breakpoints extends JellyTestCase {
         mwo.waitStatusText("Thread main stopped at MemoryView.java:91.");
 
         // finnish bedugging session
-        new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
+        new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
         try {
             JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 5000);
             mwo.waitStatusText("User program finished");
@@ -302,7 +299,7 @@ public class Breakpoints extends JellyTestCase {
         javaNode.performPopupActionNoBlock("Open");
         
         EditorOperator editorOperator = new EditorOperator("MemoryView.java");
-        new EventTool().waitNoEvent(1000);
+        //new EventTool().waitNoEvent(1000);
         
         // create new breakpoint and check pre-filled values
         editorOperator.setCaretPosition(32, 1);
@@ -354,7 +351,6 @@ public class Breakpoints extends JellyTestCase {
             rowNumber++;
         }
         assertTrue("Class breakpoint was not created.", found);
-        breakpointsOper.close();
 
         // test if debugger stops at an assumed breakpoint line
 /*        new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runInDebuggerItem).toString(), null).perform();
@@ -381,7 +377,7 @@ public class Breakpoints extends JellyTestCase {
         javaNode.performPopupActionNoBlock("Open");
         
         EditorOperator editorOperator = new EditorOperator("MemoryView.java");
-        new EventTool().waitNoEvent(1000);
+        //new EventTool().waitNoEvent(1000);
         editorOperator.setCaretPosition(40, 1);
         
         // create new breakpoint and check pre-filled values
@@ -419,7 +415,6 @@ public class Breakpoints extends JellyTestCase {
             rowNumber++;
         }
         assertTrue("Variable breakpoint was not created.", found);
-        breakpointsOper.close();
 
         // test if debugger stops at an assumed breakpoint line
         new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runInDebuggerItem).toString(), null).perform();
@@ -427,7 +422,7 @@ public class Breakpoints extends JellyTestCase {
         mwo.waitStatusText("Thread main stopped at MemoryView.java:70.");
 
         // finnish bedugging session
-        new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
+        new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
         try {
             JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 5000);
             mwo.waitStatusText("User program finished");
@@ -448,7 +443,7 @@ public class Breakpoints extends JellyTestCase {
         javaNode.performPopupActionNoBlock("Open");
         
         EditorOperator editorOperator = new EditorOperator("MemoryView.java");
-        new EventTool().waitNoEvent(1000);
+        //new EventTool().waitNoEvent(1000);
         editorOperator.setCaretPosition(45, 1);
         
         // create new breakpoint and check pre-filled values
@@ -476,7 +471,6 @@ public class Breakpoints extends JellyTestCase {
             rowNumber++;
         }
         assertTrue("Variable breakpoint was not created.", found);
-        breakpointsOper.close();
 
         // test if debugger stops at an assumed breakpoint line
         new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runInDebuggerItem).toString(), null).perform();
@@ -484,7 +478,7 @@ public class Breakpoints extends JellyTestCase {
         mwo.waitStatusText("Thread main stopped at MemoryView.java:45.");
 
         // finnish bedugging session
-        new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
+        new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
         try {
             JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 5000);
             mwo.waitStatusText("User program finished");
@@ -587,12 +581,11 @@ public class Breakpoints extends JellyTestCase {
         boolean found = false;
         
         while ((rowNumber < jTableOperator.getRowCount()) && (!found)) {
-            if ("Exception java.lang.Exception".equals(jTableOperator.getValueAt(rowNumber,0).toString()) ) {
+            if ("Exception Exception".equals(jTableOperator.getValueAt(rowNumber,0).toString()) ) {
                 found = true;
             };
             rowNumber++;
         }
         assertTrue("Exception breakpoint was not created.", found);
-        breakpointsOper.close();
     }
 }
