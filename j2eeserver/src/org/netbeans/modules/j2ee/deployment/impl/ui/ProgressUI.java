@@ -218,10 +218,51 @@ public class ProgressUI extends JPanel {
         });
     }
  
+    /**
+     * Adjustment of height of dialog window dependent on errorText label.
+     * Maximum window height is restricted to double of preferred height.
+     * Error messages, that cannot fit are not completely displayed.
+     */
+    private void adjustWindowHeight() {
+        if (this.modal && (this.dialog == null)) {
+            return;
+        } else if (!this.modal && (this.frame == null)) {
+            return;
+        }
+        FontMetrics fm = errorText.getFontMetrics(errorText.getFont());
+        int textWidth = fm.bytesWidth(errorText.getText().getBytes(), 0, errorText.getText().getBytes().length);
+        int labelWidth = errorText.getWidth();
+        int textLines = 0;
+        if (labelWidth == 0) {
+            return;
+        }
+        textLines = textWidth / labelWidth;
+        textLines += (textWidth % labelWidth) > 0 ? 1 : 0;
+        int delta = textLines * fm.getHeight() - errorText.getHeight();
+        if (delta == 0) {
+            return;
+        } else if (delta < 0) {
+            delta++;
+        }
+        Window window = null;
+        if (frame != null) {
+            window = frame;
+        } else if (dialog != null) {
+            window = dialog;
+        }
+        if (window != null) {
+            int newHeight = window.getHeight() + delta;
+            int maxHeight = (int) window.getPreferredSize().getHeight() * 2;
+            window.setSize(window.getWidth(), (newHeight > maxHeight) ? maxHeight : newHeight);
+            window.validate();
+        }
+    }
+
     public void addError (final String msg) {
 	SwingUtilities.invokeLater (new Runnable () {
 	    public void run () {
-	  	errorText.setText (msg);
+	  	errorText.setText ("<html>" + msg + "</html>");
+                adjustWindowHeight();
 	    }
 	});
     }	
@@ -342,11 +383,11 @@ public class ProgressUI extends JPanel {
 
         errorText.setForeground(java.awt.Color.red);
         errorText.setText(" ");
+        errorText.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 24, 12, 24);
@@ -378,10 +419,10 @@ public class ProgressUI extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox autoCloseCheck;
-    private javax.swing.JLabel taskTitle;
-    private javax.swing.JProgressBar myMonitor;
     private javax.swing.JLabel errorText;
     private javax.swing.JLabel msgText;
+    private javax.swing.JProgressBar myMonitor;
+    private javax.swing.JLabel taskTitle;
     // End of variables declaration//GEN-END:variables
 
     
