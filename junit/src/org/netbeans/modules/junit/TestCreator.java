@@ -716,7 +716,7 @@ public class TestCreator extends java.lang.Object {
         StringBuffer    body = new StringBuffer(200);
         if (JUnitSettings.getDefault().isBodyComments()) {
             body.append(NbBundle.getMessage(TestCreator.class,"TestCreator.methodImpl.bodyComment"));
-            body.append('\n');
+            body.append("\n\n");
         }
         
         newMethod.setType(origMethod.getType());
@@ -732,7 +732,7 @@ public class TestCreator extends java.lang.Object {
             }
             
             if (value != null)
-                body.append("\nreturn "+value+";\n");
+                body.append("return "+value+";\n");
         }
         
         newMethod.setBodyText(body.toString());
