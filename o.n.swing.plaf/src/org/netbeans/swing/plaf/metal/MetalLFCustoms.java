@@ -79,6 +79,9 @@ public final class MetalLFCustoms extends LFCustoms {
             VIEW_TAB_OUTER_BORDER, outerBorder,
 
             EXPLORER_MINISTATUSBAR_BORDER, BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("controlShadow")),
+            
+            //#48951 invisible unfocused selection background in Metal L&F
+            "nb.explorer.unfocusedSelBg", UIManager.getColor("controlShadow"),
 
         }; //NOI18N
         return result;
