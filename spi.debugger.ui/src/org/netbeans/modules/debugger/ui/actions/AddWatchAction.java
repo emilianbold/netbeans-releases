@@ -13,25 +13,11 @@
 
 package org.netbeans.modules.debugger.ui.actions;
 
-import java.awt.BorderLayout;
 import java.awt.Dialog;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.lang.ref.WeakReference;
-import java.util.LinkedList;
-import java.util.Iterator;
 import java.util.ResourceBundle;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
+import javax.swing.*;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.Watch;
-import org.netbeans.modules.debugger.ui.Utils;
+import org.netbeans.modules.debugger.ui.WatchPanel;
 
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -92,36 +78,12 @@ public class AddWatchAction extends CallableSystemAction {
     public void performAction () {
         ResourceBundle bundle = NbBundle.getBundle (AddWatchAction.class);
 
-        JPanel panel = new JPanel();
-        panel.getAccessibleContext ().setAccessibleDescription (bundle.getString ("ACSD_WatchPanel")); // NOI18N
-        JTextField textField;
-        JLabel textLabel = new JLabel (bundle.getString ("CTL_Watch_Name")); // NOI18N
-        textLabel.setBorder (new EmptyBorder (0, 0, 0, 10));
-        panel.setLayout (new BorderLayout ());
-        panel.setBorder (new EmptyBorder (11, 12, 1, 11));
-        panel.add ("West", textLabel); // NOI18N
-        panel.add ("Center", textField = new JTextField (25)); // NOI18N
-        textField.getAccessibleContext ().setAccessibleDescription (bundle.getString ("ACSD_CTL_Watch_Name")); // NOI18N
-        textField.setBorder (
-            new CompoundBorder (textField.getBorder (), 
-            new EmptyBorder (2, 0, 2, 0))
-        );
-        textLabel.setDisplayedMnemonic (
-            bundle.getString ("CTL_Watch_Name_Mnemonic").charAt (0) // NOI18N
-        );
-        String t = Utils.getIdentifier ();
-        if (t != null)
-            textField.setText (t);
-        else
-            textField.setText (watchHistory);
-        textField.selectAll ();
-            
-        textLabel.setLabelFor (textField);
-        textField.requestFocus ();
+        WatchPanel wp = new WatchPanel(watchHistory);
+        JComponent panel = wp.getPanel();
 
         org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor (
             panel, 
-            bundle.getString ("CTL_Watch_Title") // NOI18N
+            bundle.getString ("CTL_WatchDialog_Title") // NOI18N
         );
         dd.setHelpCtx (new HelpCtx ("debug.add.watch"));
         Dialog dialog = DialogDisplayer.getDefault ().createDialog (dd);
@@ -129,7 +91,7 @@ public class AddWatchAction extends CallableSystemAction {
         dialog.dispose ();
 
         if (dd.getValue() != org.openide.DialogDescriptor.OK_OPTION) return;
-        String watch = textField.getText();
+        String watch = wp.getExpression();
         if ((watch == null) || (watch.trim ().length () == 0)) {
             return;
         }

@@ -13,17 +13,23 @@
 
 package org.netbeans.modules.debugger.ui.models;
 
-import java.awt.event.ActionEvent;
-import javax.swing.Action;
+import java.awt.Dialog;
+import java.util.*;
+import javax.swing.*;
+
 import org.netbeans.api.debugger.DebuggerManager;
 
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.modules.debugger.ui.actions.AddWatchAction;
+import org.netbeans.modules.debugger.ui.WatchPanel;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.TreeModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
+import org.openide.util.HelpCtx;
 
 
 /**
@@ -67,6 +73,7 @@ Models.ActionPerformer {
             ((Watch) node).remove ();
         } else
         if (action.equals ("Customize")) {
+            customize((Watch) node);
         } else
         if (action.equals ("Delete All")) {
             DebuggerManager.getDebuggerManager ().removeAllWatches ();
@@ -76,7 +83,26 @@ Models.ActionPerformer {
         }
     }
 
-    
+    private static void customize (Watch w) {
+
+        WatchPanel wp = new WatchPanel(w.getExpression());
+        JComponent panel = wp.getPanel();
+
+        ResourceBundle bundle = NbBundle.getBundle(WatchesActionsProvider.class);
+        org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor(
+            panel,
+            bundle.getString ("CTL_WatchDialog_Title") // NOI18N
+        );
+        dd.setHelpCtx(new HelpCtx("debug.add.watch"));
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        dialog.setVisible(true);
+        dialog.dispose();
+
+        if (dd.getValue() != org.openide.DialogDescriptor.OK_OPTION) return;
+        w.setExpression(wp.getExpression());
+    }
+
+
     // innerclasses ............................................................
     
 //    private static class CustomizeAction extends AbstractAction {

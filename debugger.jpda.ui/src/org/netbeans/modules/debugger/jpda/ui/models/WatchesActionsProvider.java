@@ -13,20 +13,20 @@
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
-import java.awt.event.ActionEvent;
-import java.util.Vector;
-import javax.swing.Action;
+import java.awt.Dialog;
+import java.util.*;
+import javax.swing.*;
 
-import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.api.debugger.jpda.JPDAThread;
-import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.api.debugger.jpda.JPDAWatch;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.TreeModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.netbeans.modules.debugger.jpda.ui.WatchPanel;
+import org.openide.util.NbBundle;
+import org.openide.util.HelpCtx;
+import org.openide.DialogDisplayer;
 
 
 /**
@@ -67,10 +67,29 @@ Models.ActionPerformer {
             ((JPDAWatch) node).remove ();
         } else
         if ("Customize".equals (action)) {
+            customize((JPDAWatch) node);
         }
     }    
 
-    
+    private static void customize (JPDAWatch w) {
+
+        WatchPanel wp = new WatchPanel(w.getExpression());
+        JComponent panel = wp.getPanel();
+
+        ResourceBundle bundle = NbBundle.getBundle(WatchesActionsProvider.class);
+        org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor(
+            panel,
+            bundle.getString ("CTL_WatchDialog_Title") // NOI18N
+        );
+        dd.setHelpCtx(new HelpCtx("debug.add.watch"));
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        dialog.setVisible(true);
+        dialog.dispose();
+
+        if (dd.getValue() != org.openide.DialogDescriptor.OK_OPTION) return;
+        w.setExpression(wp.getExpression());
+    }
+
     // innerclasses ............................................................
     
 //    private static class CustomizeAction extends AbstractAction {
