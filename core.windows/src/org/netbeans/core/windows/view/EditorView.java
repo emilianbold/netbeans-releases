@@ -89,7 +89,7 @@ public class EditorView extends ViewElement {
         return editorArea;
     }
     
-    public void setEditorArea(ViewElement editorArea, boolean addingAllowed) {
+    public void setEditorArea(ViewElement editorArea) {
         this.editorArea = editorArea;
     }
     

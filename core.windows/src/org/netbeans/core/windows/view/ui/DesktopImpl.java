@@ -287,9 +287,10 @@ public final class DesktopImpl {
         Rectangle splitRootRect = viewComponent.getBounds();
         Rectangle result = new Rectangle();
         Rectangle viewRect = view.getComponent().getBounds();
+        Dimension viewPreferred = view.getComponent().getPreferredSize();
         
         if (Constants.LEFT.equals(side)) {
-            result.x = viewRect.x + viewRect.width;
+            result.x = viewRect.x + Math.max(viewRect.width, viewPreferred.width);
             result.y = 0;
             result.height = splitRootRect.height;
             result.width = editorBounds.x - result.x + 6;
@@ -297,20 +298,21 @@ public final class DesktopImpl {
                 result.width = splitRootRect.width / 3;
             }
         } else if (Constants.RIGHT.equals(side)) {
-            result.x = (viewRect.x - (editorBounds.x + editorBounds.width) < MIN_EDITOR_ALIGN_THICK)
-                        ? viewRect.x - splitRootRect.width / 3 : editorBounds.x + editorBounds.width - 6;
+            int rightLimit = layeredPane.getBounds().x + layeredPane.getBounds().width - Math.max(viewRect.width, viewPreferred.width);
+            result.x = (rightLimit - (editorBounds.x + editorBounds.width) < MIN_EDITOR_ALIGN_THICK)
+                        ? rightLimit - splitRootRect.width / 3 : editorBounds.x + editorBounds.width - 6;
             result.y = 0;
             result.height = splitRootRect.height;
-            result.width = viewRect.x - result.x;
+            result.width = rightLimit - result.x;
             
         } else if (Constants.BOTTOM.equals(side)) {
+            int lowerLimit = viewRect.y + viewRect.height - Math.max(viewRect.height, viewPreferred.height);
             result.x = splitRootRect.x;
-            result.y = (viewRect.y - (editorBounds.y + editorBounds.height) < MIN_EDITOR_ALIGN_THICK)
-                        ? viewRect.y - splitRootRect.height / 3 : editorBounds.y + editorBounds.height - 6;
-            result.height = viewRect.y - result.y;
+            result.y = (lowerLimit - (editorBounds.y + editorBounds.height) < MIN_EDITOR_ALIGN_THICK)
+                        ? lowerLimit - splitRootRect.height / 3 : editorBounds.y + editorBounds.height - 6;
+            result.height = lowerLimit - result.y;
             result.width = splitRootRect.width;
         }
-        
         return result;
     }
     
@@ -393,18 +395,18 @@ public final class DesktopImpl {
                     Component slidedComp = curSlideIn.getComponent();
                     Rectangle result = slidedComp.getBounds();
                     Rectangle viewRect = curView.getComponent().getBounds();
+                    Dimension viewPrefSize = curView.getComponent().getPreferredSize();
                     Rectangle splitRootRect = viewComponent.getBounds();
 
                     if (Constants.LEFT.equals(side)) {
                         result.height = splitRootRect.height;
                     } else if (Constants.RIGHT.equals(side)) {
-                        result.x = size.width - viewRect.width - result.width;
+                        result.x = size.width - Math.max(viewRect.width, viewPrefSize.width) - result.width;
                         result.height = splitRootRect.height;
                     } else if (Constants.BOTTOM.equals(side)) {
-                        result.y = size.height - viewRect.height - result.height;
+                        result.y = size.height - Math.max(viewRect.height, viewPrefSize.height) - result.height;
                         result.width = splitRootRect.width;
                     }
-
                     slidedComp.setBounds(result);
                 }
             }

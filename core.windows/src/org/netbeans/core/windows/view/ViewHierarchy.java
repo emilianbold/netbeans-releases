@@ -100,10 +100,9 @@ final class ViewHierarchy {
     }
     
     /** Updates the view hierarchy according to new structure. */
-    public void updateViewHierarchy(ModeStructureAccessor modeStructureAccessor, 
-        boolean addingAllowed) {
+    public void updateViewHierarchy(ModeStructureAccessor modeStructureAccessor) {
         updateAccessors(modeStructureAccessor);
-        currentSplitRoot = updateViewForAccessor(modeStructureAccessor.getSplitRootAccessor(), addingAllowed);
+        currentSplitRoot = updateViewForAccessor(modeStructureAccessor.getSplitRootAccessor());
 //        System.out.println("updateViewHierarchy... elem=" + elem);
 //        if (maximizedModeView == null) {
 ////            System.out.println("updateViewHierarchy...splitoroot=" + elem);
@@ -171,7 +170,7 @@ final class ViewHierarchy {
     }
 
     
-    private ViewElement updateViewForAccessor(ElementAccessor patternAccessor, boolean addingAllowed) {
+    private ViewElement updateViewForAccessor(ElementAccessor patternAccessor) {
         if(patternAccessor == null) {
             return null;
         }
@@ -184,13 +183,13 @@ final class ViewHierarchy {
                 SplitView sv = (SplitView)view;
                 sv.setOrientation(sa.getOrientation());
                 sv.setLocation(sa.getSplitPosition());
-                sv.setFirst(updateViewForAccessor(sa.getFirst(), addingAllowed));
-                sv.setSecond(updateViewForAccessor(sa.getSecond(), addingAllowed));
+                sv.setFirst(updateViewForAccessor(sa.getFirst()));
+                sv.setSecond(updateViewForAccessor(sa.getSecond()));
                 return sv;
             } else if(patternAccessor instanceof EditorAccessor) {
                 EditorAccessor ea = (EditorAccessor)patternAccessor;
                 EditorView ev = (EditorView)view;
-                ev.setEditorArea(updateViewForAccessor(ea.getEditorAreaAccessor(), addingAllowed), addingAllowed);
+                ev.setEditorArea(updateViewForAccessor(ea.getEditorAreaAccessor()));
                 return ev;
             } else if(patternAccessor instanceof SlidingAccessor) {
                 SlidingAccessor sa = (SlidingAccessor)patternAccessor;
@@ -210,8 +209,8 @@ final class ViewHierarchy {
         } else {
             if(patternAccessor instanceof SplitAccessor) {
                 SplitAccessor sa = (SplitAccessor)patternAccessor;
-                ViewElement first = updateViewForAccessor(sa.getFirst(), addingAllowed);
-                ViewElement second = updateViewForAccessor(sa.getSecond(), addingAllowed);
+                ViewElement first = updateViewForAccessor(sa.getFirst());
+                ViewElement second = updateViewForAccessor(sa.getSecond());
                 SplitView sv = new SplitView(controller, sa.getResizeWeight(),
                     sa.getOrientation(), sa.getSplitPosition(), first, second);
                 accessor2view.put(patternAccessor, sv);
@@ -220,7 +219,7 @@ final class ViewHierarchy {
             } else if(patternAccessor instanceof SlidingAccessor) {
                 SlidingAccessor sa = (SlidingAccessor)patternAccessor;
                 SlidingView sv = new SlidingView(controller, windowDnDManager, 
-                            sa.getOpenedTopComponents(), sa.getSelectedTopComponent(),
+                            sa.getOpenedTopComponents(),sa.getSelectedTopComponent(),
                             sa.getSide());
                 accessor2view.put(patternAccessor, sv);
                 view2accessor.put(sv, patternAccessor);
@@ -242,7 +241,7 @@ final class ViewHierarchy {
                 // Editor accesssor indicates there is a editor area (possible split subtree of editor modes).
                 EditorAccessor editorAccessor = (EditorAccessor)patternAccessor;
                 EditorView ev = new EditorView(controller, windowDnDManager, 
-                                editorAccessor.getResizeWeight(), updateViewForAccessor(editorAccessor.getEditorAreaAccessor(), addingAllowed));
+                                editorAccessor.getResizeWeight(), updateViewForAccessor(editorAccessor.getEditorAreaAccessor()));
                 accessor2view.put(patternAccessor, ev);
                 view2accessor.put(ev, patternAccessor);
                 return ev;
@@ -257,7 +256,7 @@ final class ViewHierarchy {
         Map newViews = new HashMap();
         for(int i = 0; i < separateModeAccessors.length; i++) {
             ModeAccessor ma = separateModeAccessors[i];
-            ModeView mv = (ModeView)updateViewForAccessor(ma, true);
+            ModeView mv = (ModeView)updateViewForAccessor(ma);
             newViews.put(mv, ma);
         }
         
@@ -294,7 +293,7 @@ final class ViewHierarchy {
         Map newViews = new HashMap();
         for(int i = 0; i < slidingModeAccessors.length; i++) {
             SlidingAccessor sa = slidingModeAccessors[i];
-            SlidingView sv = (SlidingView)updateViewForAccessor(sa, true);
+            SlidingView sv = (SlidingView)updateViewForAccessor(sa);
             newViews.put(sv, sa);
         }
         
@@ -452,7 +451,7 @@ final class ViewHierarchy {
             return sv;
         } else if(view instanceof EditorView) {
             EditorView ev = (EditorView)view;
-            ev.setEditorArea(removeModeViewFromElement(ev.getEditorArea(), modeView), true);
+            ev.setEditorArea(removeModeViewFromElement(ev.getEditorArea(), modeView));
             return ev;
         }
         

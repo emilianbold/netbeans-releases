@@ -116,8 +116,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
 
         // Update accessors.
         if(wsa != null) { // wsa == null during hiding.
-            hierarchy.updateViewHierarchy(wsa.getModeStructureAccessor(),
-                wsa.getMaximizedModeAccessor() == null || wsa.getEditorAreaState() == Constants.EDITOR_AREA_SEPARATED);
+            hierarchy.updateViewHierarchy(wsa.getModeStructureAccessor());
         }
 
         // Update showing TopComponents.
