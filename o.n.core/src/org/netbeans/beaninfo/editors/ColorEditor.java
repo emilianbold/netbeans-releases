@@ -131,6 +131,7 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
     }
 
     // variables ..................................................................................
+    // XXX Who uses this field and when it is changed?
     /** Used palette type. */
     public int palette = AWT_PALETTE;
     /** Selected color. */
@@ -206,41 +207,63 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
     }
 
     /** Sets value ad text. Implements <code>PropertyEditor</code> interface. */
-    public void setAsText (String string)
-    throws IllegalArgumentException {
-        int i1 = string.indexOf (44);
-        int j1 = string.indexOf (44, i1 + 1);
-        try {
-            if (i1 < 0 || j1 < 0) throw new Exception ();
-            int k = Integer.parseInt (string.substring (0, i1));
-            int i2 = Integer.parseInt (string.substring (i1 + 1, j1));
-            int j2 = Integer.parseInt (string.substring (j1 + 1));
-            setValue (new SuperColor (null, 0, new Color (k, i2, j2)));
-        } catch (Exception e) {
-
-            int i;
-            switch (palette) {
-            default:
-            case AWT_PALETTE:
-                i = getIndex (getAWTColorNames(), string);
-                if (i < 0) break;
-                setValue (new SuperColor (string, AWT_PALETTE, awtColors [i]));
-                return;
-            case SYSTEM_PALETTE:
-                i = getIndex (getSystemColorNames(), string);
-                if (i < 0) break;
-                setValue (new SuperColor (string, SYSTEM_PALETTE, systemColors [i]));
-                return;
-            case SWING_PALETTE:
-                initSwingConstants();
-                i = getIndex (swingColorNames, string);
-                if (i < 0) break;
-                setValue (new SuperColor (string, SWING_PALETTE, swingColors [i]));
-                return;
-            };
-            throw new IllegalArgumentException (string);
+    public void setAsText(String text) throws IllegalArgumentException {
+        if(text == null) {
+            throw new IllegalArgumentException(null);
         }
-        return;
+        
+        if("null".equals(text)) { // NOI18N
+            setValue(null);
+            return;
+        }
+
+        try {
+            if(text.startsWith("[") && text.endsWith("]")) { // NOI18N
+                String string = text.substring(1, text.length() - 2);
+
+                int index1 = string.indexOf(',');
+                int index2 = string.length() > index1 ? string.indexOf(',', index1 + 1) : -1;
+
+                if (index1 >= 0 && index2 >= 0) {
+                    int red = Integer.parseInt(string.substring(0, index1));
+                    int green = Integer.parseInt(string.substring(index1 + 1, index2));
+                    int blue = Integer.parseInt(string.substring(index2 + 1));
+
+                    setValue (new SuperColor (null, 0, new Color (red, green, blue)));
+                    return;
+                }
+            }
+        } catch(NumberFormatException nfe) {
+            // Ignore it and try out from palette's next.
+        }
+ 
+        int index;
+        int palette = 0;
+        Color color = null;
+
+        if((index = getIndex(getAWTColorNames(), text)) >= 0) {
+            palette = AWT_PALETTE;
+            color = awtColors[index];
+        }
+
+        if(index < 0 && ((index = getIndex(getSystemColorNames(), text)) >= 0)) {
+            palette = SYSTEM_PALETTE;
+            color = systemColors[index];
+        }
+
+        if(index < 0) {
+            initSwingConstants();
+            if((index = getIndex(swingColorNames, text)) >= 0) {
+                palette = SWING_PALETTE;
+                color = swingColors[index];
+            }
+        }
+
+        if(index < 0) {
+            throw new IllegalArgumentException(text);
+        }
+
+        setValue(new SuperColor(text, palette, color));
     }
 
     /** Gets java inititalization string. Implements <code>PropertyEditor</code> interface. */
@@ -397,9 +420,12 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
 
     /** Gets index of name from array. */
     private static int getIndex (Object[] names, Object name) {
-        int i, k = names.length;
-        for (i = 0; i < k; i++)
-            if (names [i].equals (name)) return i;
+        for(int i = 0; i < names.length; i++) {
+            if(name.equals(names[i])) {
+                return i;
+            }
+        }
+        
         return -1;
     }
 
