@@ -13,7 +13,6 @@
 
 package org.netbeans.api.debugger;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
@@ -33,9 +32,8 @@ import java.util.List;
  * <b>Functionality</b></font></td><td>
  *
  * <b>Properties:</b>
- *    Session has three standard read only properties - name ({@link #getName}),
- *    location name ({@link #getLocationName}), and type ID 
- *    ({@link #getTypeID}).
+ *    Session has two standard read only properties - name ({@link #getName}) and
+ *    location name ({@link #getLocationName}).
  *
  * <br><br>
  * <b>Management of languages and engines:</b>
@@ -120,7 +118,6 @@ public final class Session implements LookupProvider {
     
     private String              name;
     private String              locationName;
-    private String              id;
     private DebuggerEngine      currentDebuggerEngine;
     private String              currentLanguage;
     private String[]            languages;
@@ -142,7 +139,6 @@ public final class Session implements LookupProvider {
     ) {
         this.name = name;
         this.locationName = locationName;
-        this.id = id;
         this.languages = new String [0];
         this.engines = new DebuggerEngine [0];
         pcs = new PropertyChangeSupport (this);
@@ -258,7 +254,6 @@ public final class Session implements LookupProvider {
         for (i = 0; i < k; i++) {
             if (language.equals (languages [i])) {
                 Object oldL = currentLanguage;
-                Object oldE = currentDebuggerEngine;
                 currentLanguage = language;
                 currentDebuggerEngine = engines [i];
                 pcs.firePropertyChange (
