@@ -146,7 +146,7 @@ public class Main extends java.lang.Object {
         
         JavaOptions opts = (JavaOptions)(SystemOption.findObject(JavaOptions.class));
         if (opts == null) {
-            System.err.println("Didn't find options from SystemOptions. Try Lookup for Base Options...");
+            System.err.println("Didn't find Java options from SystemOptions. Try Lookup for Base Options...");
             BaseOptions bo;
             bo=(BaseOptions)(Lookup.getDefault().lookup(BaseOptions.class));
             opts = (JavaOptions)(bo.getOptions(JavaKit.class));
@@ -161,8 +161,8 @@ public class Main extends java.lang.Object {
         opts.setJavaDocAutoPopup(false);
         
         HTMLOptions hopts = (HTMLOptions)(SystemOption.findObject(HTMLOptions.class));
-        if (opts == null) {
-            System.err.println("Didn't find options from SystemOptions. Try Lookup for Base Options...");
+        if (hopts == null) {
+            System.err.println("Didn't find HTML options from SystemOptions. Try Lookup for Base Options...");
             BaseOptions bo;
             bo=(BaseOptions)(Lookup.getDefault().lookup(BaseOptions.class));
             hopts = (HTMLOptions)(bo.getOptions(HTMLKit.class));

@@ -22,6 +22,7 @@ import org.w3c.dom.Element;
 
 import java.util.Vector;
 import java.util.Collection;
+
 import org.netbeans.test.editor.app.Main;
 import org.netbeans.test.editor.app.core.properties.ArrayProperty;
 import org.netbeans.test.editor.app.core.properties.BadPropertyNameException;

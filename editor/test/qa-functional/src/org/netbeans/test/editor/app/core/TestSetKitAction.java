@@ -126,11 +126,7 @@ public class TestSetKitAction extends TestSetAction {
     
     public void perform() {
         super.perform();
-        Scheduler.getDefault().addTask(new Thread() {
-            public void run() {
-                Main.frame.getEditor().setEditorKit(getKitI());
-            }
-        });
+        Main.frame.getEditor().setEditorKit(getKitI());
     }
     
     public void stop() {

@@ -31,6 +31,7 @@ import java.beans.PropertyChangeSupport;
 import java.lang.reflect.Method;
 import org.netbeans.test.editor.app.util.Scheduler;
 import javax.swing.SwingUtilities;
+import org.netbeans.test.editor.app.Main;
 import org.netbeans.test.editor.app.core.TestAction;
 
 public class Logger implements Serializable {
@@ -253,16 +254,16 @@ public class Logger implements Serializable {
     }
     
     public void performAction(TestCompletionAction act) {
+        if (!editor.getCompletion().isPaneVisible()) {
+            System.err.println("Warrning: Logger cannot perform Completion action: Completion isn't visible.");
+            System.err.println("          I'll try to show it.");
+            editor.getCompletion().setPaneVisible(true);
+        }        
         String c=act.getCommand();
         Action a=editor.getCompletion().getJDCPopupPanel().getActionMap().get(c);
         if (a == null) return;
         editor.grabFocus();
-        int time=20;
-        if (editor.getCompletion().isPaneVisible()) {
-            a.actionPerformed(new ActionEvent(editor,ActionEvent.ACTION_PERFORMED,""));
-        } else {
-            System.err.println("Warrning: Logger cannot perform Completion action: Completion isn't visible.");
-        }
+        a.actionPerformed(new ActionEvent(editor,ActionEvent.ACTION_PERFORMED,""));
     }
     
     public void performAction(TestLogAction act) {
@@ -282,6 +283,9 @@ public class Logger implements Serializable {
             throw new IllegalArgumentException("evt.getSource() != editor!");
         }
         a.actionPerformed(evt);*/
+        if (editor != Main.frame.getEditor()) {
+            System.err.println("Logger Editor isn't same as in MainFrame.");
+        }
         TestAction ta=(TestAction)(testActions.get(index));
         if (ta instanceof TestLogAction)
             performAction((TestLogAction)ta);
@@ -330,8 +334,8 @@ public class Logger implements Serializable {
                     //special timeout for completion-show action
                     if (testActions.get(cntr) instanceof TestLogAction &&
                     ((TestLogAction)(testActions.get(cntr))).getName().compareTo("completion-show") == 0) {
-                        int time=50;
-                        //wait max two second for completion
+                        int time=20;
+                        //wait max two seconds for completion
                         while (!editor.getCompletion().isPaneVisible() && time > 0) {
                             try {
                                 sleep(100);
