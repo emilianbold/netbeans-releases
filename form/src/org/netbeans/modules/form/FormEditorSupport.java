@@ -174,7 +174,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
   protected void notifyClose () {
     super.notifyClose ();
-    getFormTopComponent ().close ();
+    if (getFormTopComponent () != null) getFormTopComponent ().close ();
     FormEditor.getComponentInspector().focusForm (null);
     SourceChildren sc = (SourceChildren)formObject.getNodeDelegate ().getChildren ();
     sc.remove (new RADComponentNode [] { formRootNode });
@@ -327,6 +327,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  27   Gandalf   1.26        8/1/99   Ian Formanek    Fixed potential problem 
+ *       with closing forms which were not loaded
  *  26   Gandalf   1.25        7/27/99  Ian Formanek    Fixed bug 2638 - Undo in
  *       an editor pane with guarded blocks screws up the guards.
  *  25   Gandalf   1.24        7/24/99  Ian Formanek    Fixed bug with opening 
