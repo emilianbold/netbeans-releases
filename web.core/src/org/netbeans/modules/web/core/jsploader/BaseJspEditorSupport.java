@@ -411,7 +411,6 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
                 if ((data instanceof JspDataObject) && (data != null)) {
                     DataObject module = ((JspDataObject)data).getModule();
                     if ((module instanceof WebContextObject) && (module != null)) {
-                        System.err.println("module: " + ((WebContextObject)module).getContextPath());
                         return true;
                     }
                 }
