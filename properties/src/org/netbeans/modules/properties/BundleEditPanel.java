@@ -80,7 +80,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
         textField.getDocument().putProperty("filterNewlines",  Boolean.FALSE); // NOI18N
         textField.setBorder(new LineBorder(Color.black));
         table.setDefaultEditor(PropertiesTableModel.StringPair.class,
-        new PropertiesTableCellEditor(textField, textComment, textValue, valueLabel));
+        new PropertiesTableCellEditor(textField, textComment, textValue, valueLabel, new ModifiedListener()));
         
         // Sets renderer.
         table.setDefaultRenderer(PropertiesTableModel.StringPair.class, new TableViewRenderer());
@@ -125,7 +125,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
     
     
     /** Stops editing if editing is in run. */
-    private void stopEditing() {
+    protected void stopEditing() {
         if (!table.isEditing()) return;
         TableCellEditor cellEdit = table.getCellEditor();
         if (cellEdit != null)
@@ -876,5 +876,25 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
         }        
         
     } // End of BundleTable class.
+    
+    private class ModifiedListener implements DocumentListener {
+        
+        public void changedUpdate(DocumentEvent e) {
+            documentModified();
+        }
+        
+        public void insertUpdate(DocumentEvent e) {
+            documentModified();
+        }
+        
+        public void removeUpdate(DocumentEvent e) {
+            documentModified();
+        }
+        
+        private void documentModified() {
+            obj.setModified(true);
+        }
+        
+    }
     
 }

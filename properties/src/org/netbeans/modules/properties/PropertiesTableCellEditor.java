@@ -21,6 +21,7 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
 import org.openide.util.NbBundle;
@@ -36,15 +37,28 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
 
     /** Generated serial version UID. */
     static final long serialVersionUID =-5292598860635851664L;
+    
+    /** Document listener. */
+    private DocumentListener listener;
+    
+    /** Value component */
+    private JTextComponent valueComponent;
+    
+    /** Comment component */
+    private JTextComponent commentComponent;
 
     
     /** Constructs a PropertiesTableCellEditor that uses a text field.
     * @param x  a JTextField object ...
     */
-    public PropertiesTableCellEditor(JTextField tf, final JTextComponent commentComponent, final JTextComponent valueComponent, final JLabel valueLabel) {
+    public PropertiesTableCellEditor(JTextField tf, final JTextComponent commentComponent,
+        final JTextComponent valueComponent, final JLabel valueLabel, DocumentListener listener) {
         super(tf);
         // Number of clicks needed to edit an editable cell.
         this.clickCountToStart = 1;
+        this.listener = listener;
+        this.valueComponent = valueComponent;
+        this.commentComponent = commentComponent;
         valueComponent.setDocument(tf.getDocument());
         this.delegate = new PropertiesEditorDelegate(commentComponent, valueComponent, valueLabel);
         ((JTextField)editorComponent).addActionListener(delegate);
@@ -63,7 +77,11 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
         // Key or value? Only in the first column are keys.
         isKeyCell = (column == 0) ? true : false;
         
+        valueComponent.getDocument().removeDocumentListener(listener);
+        commentComponent.getDocument().removeDocumentListener(listener);
         final JTextField textField = (JTextField)super.getTableCellEditorComponent(table, value, isSelected, row, column);
+        valueComponent.getDocument().addDocumentListener(listener);
+        commentComponent.getDocument().addDocumentListener(listener);
         Caret caret = textField.getCaret();
         caret.setVisible(true);
         caret.setDot(0);

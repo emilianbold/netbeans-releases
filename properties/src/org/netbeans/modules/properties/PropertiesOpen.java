@@ -100,6 +100,7 @@ public class PropertiesOpen extends CloneableOpenSupport
         if (saveCookie == null) {
             return true;
         }
+        stopEditing();
         if (!shouldAskSave()) {
             return true;
         }
@@ -142,6 +143,17 @@ public class PropertiesOpen extends CloneableOpenSupport
         propDataObject.updateModificationStatus();
 
         return (answer == optionSave || answer == optionDiscard);
+    }
+    
+    private void stopEditing() {
+        Enumeration en = allEditors.getComponents();
+        while (en.hasMoreElements()) {
+            Object o = en.nextElement();
+            if (o instanceof PropertiesCloneableTopComponent) {
+                BundleEditPanel bep = (BundleEditPanel)((PropertiesCloneableTopComponent)o).getComponent(0);
+                bep.stopEditing();
+            }
+        }
     }
     
     /** 
@@ -453,6 +465,7 @@ public class PropertiesOpen extends CloneableOpenSupport
 
         /** Implements <code>SaveCookie</code> interface. */
         public void save() throws IOException {
+            stopEditing();
             // do saving job
             saveDocument();
         }
@@ -568,12 +581,10 @@ public class PropertiesOpen extends CloneableOpenSupport
         /** Default constructor for deserialization. */
         public PropertiesCloneableTopComponent() {
         }
-
+        
         /** Constructor.
         * @param propDataObject data object we belong to */
         public PropertiesCloneableTopComponent (PropertiesDataObject propDataObject) {
-            NodeName.connect (this, propDataObject.getNodeDelegate ());
-            
             this.propDataObject  = propDataObject;
 
             initialize();
@@ -588,13 +599,19 @@ public class PropertiesOpen extends CloneableOpenSupport
             super.open();
         }
         
+        public boolean canClose () {
+            ((BundleEditPanel)getComponent(0)).stopEditing();
+            return super.canClose();
+        }
+        
         /** Initializes this instance. Used by construction and deserialization. */
         private void initialize() {
+            NodeName.connect (this, propDataObject.getNodeDelegate ());
             
             initComponents();
             
             // add to CloneableOpenSupport - patch for a bug in deserialization
-            propDataObject.getOpenSupport().setRef(getReference());
+            // propDataObject.getOpenSupport().setRef(getReference());
 
             setNameInAwtThread(propDataObject.getNodeDelegate().getDisplayName());
             setToolTipText(messageToolTip());
