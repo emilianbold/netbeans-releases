@@ -22,7 +22,7 @@ import java.io.*;
 import java.util.*;
 
 /**
- * Closure:  report all source files which this file references in one
+ * Closure:  report all classes which this file references in one
  * way or another.  Note: this utility won't find classes which are 
  * dynamically loaded.
  *
@@ -36,22 +36,28 @@ public class Closure {
         thisClass = spec;
     }
 
-    void buildClosure(boolean includeJDK) throws IOException {
+    void buildClosure(boolean includeJDK) 
+      throws IOException {
         if (closure != null)
             return;
         closure = new HashSet();
         Set visited = new HashSet();
         Stack stk = new Stack();
-        stk.push(ClassName.getClassName(thisClass.replace('.', '/')));
+        ClassName thisCN = ClassName.getClassName(thisClass.replace('.', '/'));
+        stk.push(thisCN);
+        visited.add(thisCN.getExternalName());
 
         while (!stk.empty()) {
-            // Add class's sourcefile to closure.
+            // Add class to closure.
             ClassName cn = (ClassName)stk.pop();
-            InputStream is = findClassStream(cn.getInternalName());
+            InputStream is = findClassStream(cn.getType());
+	    if (is == null) {
+		System.err.println("couldn't find class: " + 
+                                   cn.getExternalName());
+		continue;
+	    }
             ClassFile cfile = new ClassFile(is);
-            String srcFile = cn.getPackage().replace('.', '/') + '/' +
-                cfile.getSourceFileName();
-            closure.add(srcFile);
+            closure.add(cfile.getName().getExternalName());
             
             ConstantPool pool = cfile.getConstantPool();
             Iterator refs = pool.getAllClassNames().iterator();
@@ -89,11 +95,9 @@ public class Closure {
         return closure.iterator();
     }
 
-    private InputStream findClassStream(String className) throws IOException {
+    private InputStream findClassStream(String className) {
         InputStream is = 
             ClassLoader.getSystemClassLoader().getResourceAsStream(className + ".class");
-        if (is == null)
-            throw new IOException("couldn't find classfile: " + className);
         return is;
     }
 
