@@ -11,7 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.form;
 
 import java.awt.*;
@@ -30,7 +29,7 @@ import org.openide.nodes.Node;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.TopManager;
 
-import org.netbeans.modules.form.util.*;
+import org.netbeans.modules.form.compat2.border.BorderDesignSupport;
 
 /**
  * A class that contains utility methods for the formeditor.
@@ -40,6 +39,11 @@ import org.netbeans.modules.form.util.*;
 public class FormUtils
 {
     // Static variables
+
+    // constants for CopyProperties method
+    public static final int CHANGED_ONLY = 1;
+    public static final int DISABLE_CHANGE_FIRING = 2;
+    public static final int PASS_DESIGN_VALUES = 4;
 
     private static String PROP_NAME = "PropertyName"; // NOI18N
     private static final boolean debug = System.getProperty("netbeans.debug.form") != null;
@@ -361,17 +365,27 @@ public class FormUtils
         return clone;
     }
 
+    /** This method provides copying of property values from one array of
+     * properties to another. The arrays need not be equally sorted. It is
+     * recommended to use arrays of FormProperty, for which the mode parameter
+     * can be used to specify some options (using bit flags):
+     * CHANGED_ONLY (to copy only values of changed properties),
+     * DISABLE_CHANGE_FIRING (to disable firing of changes in target properties),
+     * PASS_DESIGN_VALUES (to pass the same FormDesignValue instances if they
+     *                     cannot or should not be copied),
+     */
     public static void copyProperties(Node.Property[] sourceProperties,
                                       Node.Property[] targetProperties,
-                                      boolean changedOnly, boolean fireChanges)
+                                      int mode)
     {
         for (int i=0; i < sourceProperties.length; i++) {
             Node.Property snProp = sourceProperties[i];
             FormProperty sfProp = snProp instanceof FormProperty ?
                                     (FormProperty)snProp : null;
 
-            FormProperty sprop = (FormProperty)sourceProperties[i];
-            if (sfProp != null && changedOnly && !sfProp.isChanged())
+            if (sfProp != null
+                    && (mode & CHANGED_ONLY) != 0
+                    && !sfProp.isChanged())
                 continue; // copy only changed properties
 
             // find target property
@@ -383,7 +397,8 @@ public class FormUtils
                     if (tnProp.getName().equals(snProp.getName()))
                         break;
                 }
-                if (j == targetProperties.length) continue; // not found
+                if (j == targetProperties.length)
+                    continue; // not found
             }
             FormProperty tfProp = tnProp instanceof FormProperty ?
                                     (FormProperty)tnProp : null;
@@ -392,16 +407,24 @@ public class FormUtils
                 // get and clone property value
                 Object propertyValue = snProp.getValue();
                 if (!(propertyValue instanceof FormDesignValue)) {
-                    try {
+                    try { // clone common property value
                         propertyValue = FormUtils.cloneObject(propertyValue);
                     }
                     catch (CloneNotSupportedException ex) { } // ignore
+                }
+                else { // handle FormDesignValue
+                    Object val = copyFormDesignValue((FormDesignValue)
+                                                     propertyValue);
+                    if (val != null)
+                        propertyValue = val;
+                    else if ((mode & PASS_DESIGN_VALUES) == 0)
+                        continue; // cannot just pass the same design value
                 }
 
                 // set property value
                 if (tfProp != null) {
                     boolean firing = tfProp.isChangeFiring();
-                    tfProp.setChangeFiring(fireChanges);
+                    tfProp.setChangeFiring((mode & DISABLE_CHANGE_FIRING) == 0);
                     tfProp.setValue(propertyValue);
                     tfProp.setChangeFiring(firing);
                 }
@@ -460,6 +483,30 @@ public class FormUtils
                     ex.printStackTrace();
             }
         }
+    }
+
+    static Object copyFormDesignValue(FormDesignValue value) {
+        if (value instanceof RADConnectionPropertyEditor.RADConnectionDesignValue) {
+            RADConnectionPropertyEditor.RADConnectionDesignValue radValue =
+                (RADConnectionPropertyEditor.RADConnectionDesignValue) value;
+            if (radValue.userCode != null)
+                return new RADConnectionPropertyEditor.RADConnectionDesignValue(
+                             radValue.userCode);
+            else if (radValue.value != null)
+                return new RADConnectionPropertyEditor.RADConnectionDesignValue(
+                             radValue.requiredTypeName, radValue.userCode);
+        }
+        else if (value instanceof BorderDesignSupport) {
+            try {
+                return new BorderDesignSupport((BorderDesignSupport)value);
+            }
+            catch (Exception ex) {
+                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                    ex.printStackTrace();
+            }
+        }
+
+        return null;
     }
 
     /**

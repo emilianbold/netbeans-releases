@@ -406,8 +406,11 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
 
         FormProperty[] sourceProperties = getAllProperties();
         FormProperty[] targetProperties = clone.getAllProperties();
-        FormUtils.copyProperties(sourceProperties, targetProperties,
-                                 true, false);
+        FormUtils.copyProperties(sourceProperties,
+                                 targetProperties,
+                                 FormUtils.CHANGED_ONLY
+                                   | FormUtils.DISABLE_CHANGE_FIRING);
+
         clone.layoutChanged();
 
         int compCount = getComponentCount();

@@ -429,7 +429,11 @@ public class MetaComponentCreator {
         // 3rd - copy changed properties
         RADProperty[] sourceProps = sourceComp.getAllBeanProperties();
         RADProperty[] newProps = newComp.getAllBeanProperties();
-        FormUtils.copyProperties(sourceProps, newProps, true, false);
+        int copyMode = FormUtils.CHANGED_ONLY | FormUtils.DISABLE_CHANGE_FIRING;
+        if (formModel == sourceComp.getFormModel())
+            copyMode |= FormUtils.PASS_DESIGN_VALUES;
+        FormUtils.copyProperties(sourceProps, newProps, copyMode);
+
         // temporary hack for AWT menus - to update their Swing design parallels
         if (newComp instanceof RADMenuItemComponent)
             formModel.fireComponentPropertyChanged(newComp, null, null, null);
@@ -659,8 +663,12 @@ public class MetaComponentCreator {
             Node.Property[] sourceProps = sourceComp.getAllBeanProperties();
             Node.Property[] targetProps =
                 targetCont.getLayoutSupport().getAllProperties();
-            FormUtils.copyProperties(sourceProps, targetProps,
-                                     true, false);
+            int copyMode = FormUtils.CHANGED_ONLY
+                           | FormUtils.DISABLE_CHANGE_FIRING;
+            if (formModel == sourceComp.getFormModel())
+                copyMode |= FormUtils.PASS_DESIGN_VALUES;
+
+            FormUtils.copyProperties(sourceProps, targetProps, copyMode);
         }
         catch (Exception ex) { // ignore
             if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
@@ -718,9 +726,11 @@ public class MetaComponentCreator {
 
             Node.Property[] sourceProps = sourceComp.getAllBeanProperties();
             Node.Property[] targetProps = designBorder.getProperties();
+            int copyMode = FormUtils.CHANGED_ONLY | FormUtils.DISABLE_CHANGE_FIRING;
+            if (formModel == sourceComp.getFormModel())
+                copyMode |= FormUtils.PASS_DESIGN_VALUES;
 
-            FormUtils.copyProperties(sourceProps, targetProps,
-                                     true, false);
+            FormUtils.copyProperties(sourceProps, targetProps, copyMode);
 
             setComponentBorderProperty(designBorder, targetComp);
         }

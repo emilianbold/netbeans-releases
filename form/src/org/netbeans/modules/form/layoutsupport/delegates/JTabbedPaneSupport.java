@@ -389,7 +389,9 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport
         public LayoutConstraints cloneConstraints() {
             LayoutConstraints constr = new TabConstraints(title);
             org.netbeans.modules.form.FormUtils.copyProperties(
-                getProperties(), constr.getProperties(), true, false);
+                getProperties(),
+                constr.getProperties(),
+                FormUtils.CHANGED_ONLY | FormUtils.DISABLE_CHANGE_FIRING);
             return constr;
         }
 
