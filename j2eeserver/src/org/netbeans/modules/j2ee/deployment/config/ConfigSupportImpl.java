@@ -16,6 +16,8 @@ package org.netbeans.modules.j2ee.deployment.config;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -425,7 +427,11 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         return (String) getAllRelativePaths().get(configName);
     }
     
-    public static File[] getDeploymentConfigurationFiles (J2eeModuleProvider provider, Server server) throws IOException {
+    public static File[] getDeploymentConfigurationFiles (J2eeModuleProvider provider, Server server) {
+        return getDeploymentConfigurationFiles(provider, server, false);
+    }
+    
+    public static File[] getDeploymentConfigurationFiles (J2eeModuleProvider provider, Server server, boolean existingOnly) {
         if (provider == null || server == null)
             return new File[0];
         
@@ -447,11 +453,24 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
             FileObject fo = provider.findDeploymentConfigurationFile(fname);
             if (fo == null) {
                 files[i] = provider.getDeploymentConfigurationFile(fname);
-            } else {
+            } else if (! existingOnly) {
                 files[i] = FileUtil.toFile(fo);
             }
         }
         return files;
+    }
+    
+    public static FileObject[] getConfigurationFiles(J2eeModuleProvider jmp) {
+        Collection servers = ServerRegistry.getInstance().getServers();
+        ArrayList files = new ArrayList();
+        for (Iterator i=servers.iterator(); i.hasNext();) {
+            Server s  = (Server) i.next();
+            File[] configs = getDeploymentConfigurationFiles(jmp, s, true);
+            for (int j=0; j<configs.length; j++) {
+                files.add(FileUtil.toFileObject(configs[j]));
+            }
+        }
+        return (FileObject[]) files.toArray(new FileObject[files.size()]);
     }
 
     public static void createInitialConfiguration(J2eeModuleProvider provider, ServerString server) {

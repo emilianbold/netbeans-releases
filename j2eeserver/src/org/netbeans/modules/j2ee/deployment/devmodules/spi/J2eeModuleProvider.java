@@ -173,6 +173,13 @@ public abstract class J2eeModuleProvider {
         }
     }
     
+    /**
+     * Returns all configuration files known to this J2EE Module.
+     */
+    protected final FileObject[] getConfigurationFiles() {
+        return ConfigSupportImpl.getConfigurationFiles(this);
+    }
+    
     private final class IL implements ServerRegistry.InstanceListener {
         
         public void changeDefaultInstance (ServerString oldInstance, ServerString newInstance) {
