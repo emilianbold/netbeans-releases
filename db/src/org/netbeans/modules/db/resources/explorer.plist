@@ -110,11 +110,6 @@
 				prefix = "jdbc:JTurbo://<HOST>:<PORT>/<DB>";
 			},
 			{
-				name = "Microsoft SQL Server (SPRINTA driver)";
-				driver = "com.inet.tds.TdsDriver";
-				prefix = "jdbc:inetdae:<HOST>:<PORT>?database=<DB>";
-			},
-			{
 				name = "ODBC Bridge";
 				driver = "sun.jdbc.odbc.JdbcOdbcDriver";
 				prefix = "jdbc:odbc:<DB>";
