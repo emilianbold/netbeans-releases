@@ -8,6 +8,7 @@ package org.netbeans.test.editor;
 
 import org.netbeans.junit.diff.Diff;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.LineNumberReader;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -131,8 +132,8 @@ public class LineDiff implements Diff {
             
             if (missingLines.size() > 0 || newLines.size() > 0) {
                 PrintStream pw=null;
-                //pw=new PrintStream(new FileOutputStream(diffFile));
-                pw=System.out;
+                pw=new PrintStream(new FileOutputStream(diffFile));
+                //pw=System.out;
                 if (missingLines.size() > 0) {
                     pw.println("Missing Lines:");
                     for (int i=0;i < missingLines.size();i++) {
