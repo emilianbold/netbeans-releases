@@ -179,6 +179,10 @@ workspaceswitcher
     <echo message="Building module i18n..."/>
     <ant dir="../i18n" target="netbeans"/>
   </target>
+  <target name="all-itutor" depends="all-openide,all-core">
+    <echo message="Building module itutor..."/>
+    <ant dir="../itutor" target="netbeans"/>
+  </target>
   <target name="all-icebrowser" depends="all-openide">
     <echo message="Building module icebrowser..."/>
     <ant dir="../icebrowser" target="netbeans"/>
