@@ -16,10 +16,9 @@ package org.netbeans;
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.lang.reflect.Method;
-import java.util.Collection;
+import java.util.jar.JarFile;
 
 /** Bootstrap main class.
  * @author Jaroslav Tulach, Jesse Glick
@@ -36,12 +35,6 @@ public class Main extends Object {
             build_cp (new File (home), list);
         }
         
-        java.util.ListIterator it = list.listIterator();
-        while (it.hasNext()) {
-            File f = (File)it.next();
-            it.set(new java.util.jar.JarFile (f));
-        }
-        
         //
         // prepend classpath
         //
@@ -52,7 +45,26 @@ public class Main extends Object {
                 list.add (0, new File (tok.nextToken()));
             }
         }
+
+        // Compute effective dynamic classpath (mostly lib/*.jar) for TopLogging, NbInstaller:
+        StringBuffer buf = new StringBuffer(1000);
+        Iterator it = list.iterator();
+        while (it.hasNext()) {
+            if (buf.length() > 0) {
+                buf.append(File.pathSeparatorChar);
+            }
+            buf.append(((File)it.next()).getAbsolutePath());
+        }
+        System.setProperty("netbeans.dynamic.classpath", buf.toString());
         
+        // JarClassLoader treats a File as a dir; for a ZIP/JAR, needs JarFile
+        ListIterator it2 = list.listIterator();
+        while (it2.hasNext()) {
+            File f = (File)it2.next();
+            if (f.isFile()) {
+                it2.set(new JarFile (f));
+            }
+        }
         
         // XXX separate openide.jar and core*.jar into different classloaders
         ClassLoader loader = new JarClassLoader (list, new ClassLoader[] {
@@ -95,9 +107,6 @@ public class Main extends Object {
         
     
     private static void build_cp(File base, Collection toAdd) {
-        // --> IMPORTANT! <--
-        // Please keep this logic in synch with impl of NbInstaller.getEffectiveClasspath.
-        // Otherwise the "effective classpath" will be displayed inaccurately.
         append_jars_to_cp (new File (base, "lib/patches"), toAdd);
         append_jars_to_cp (new File (base, "lib"), toAdd);
         // XXX a minor optimization: exclude any unused locale JARs
