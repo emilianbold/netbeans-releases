@@ -80,6 +80,8 @@ public class BiChildren extends Children.Keys {
             return createNodesFromFeatures( biAnalyser.getIdxProperties() );
         if ( key == BiFeature.EventSet.class )
             return createNodesFromFeatures( biAnalyser.getEventSets() );
+        if ( key == BiFeature.Method.class )
+            return createNodesFromFeatures( biAnalyser.getMethods() );
 
 
         /*

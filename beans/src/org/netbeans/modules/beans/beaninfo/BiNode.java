@@ -48,6 +48,7 @@ public final class BiNode extends AbstractNode {
 
     private static String PROP_NULL_PROPERTIES = "nullProperties"; // NOI18N
     private static String PROP_NULL_EVENTS = "nullEvents"; // NOI18N
+    private static String PROP_NULL_METHODS = "nullMethods"; // NOI18N
     private static String PROP_BI_ICON_C16 = "iconColor16x16"; // NOI18N
     private static String PROP_BI_ICON_M16 = "iconMono16x16"; // NOI18N
     private static String PROP_BI_ICON_C32 = "iconColor32x32"; // NOI18N
@@ -101,6 +102,27 @@ public final class BiNode extends AbstractNode {
                 }
             };
 
+    private PropertySupport[] methodSubnodeProperties =  new PropertySupport[] {
+                new PropertySupport.ReadWrite (
+                    PROP_NULL_PROPERTIES,
+                    Boolean.TYPE,
+                    bundle.getString ("PROP_Bi_" + PROP_NULL_METHODS ),
+                    bundle.getString ("HINT_Bi_" + PROP_NULL_METHODS )
+                ) {
+                    public Object getValue () {
+                        return new Boolean( biAnalyser.isNullMethods () );
+                    }
+                    public void setValue (Object val) throws
+                        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                        try {
+                            biAnalyser.setNullMethods ( ((Boolean)val).booleanValue() );
+                        } catch (ClassCastException e) {
+                            throw new IllegalArgumentException ();
+                        }
+                    }
+                }
+            };
+
     // constructors ..................................................................................
 
     /**
@@ -133,14 +155,13 @@ public final class BiNode extends AbstractNode {
                                            new Class[] { BiFeature.EventSet.class },
                                            "CTL_NODE_EventSets", // NOI18N
                                            ICON_BASE_PATTERNS,
-                                           eventSubnodeProperties )
+                                           eventSubnodeProperties ),
 
-                              /*
                               new SubNode( biAnalyser, 
                                        new Class[] { BiFeature.Method.class },
                                        "CTL_NODE_Methods",
-                                       ICON_BASE_PATTERNS )
-                              */
+                                       ICON_BASE_PATTERNS,
+                                       methodSubnodeProperties )
                           };
 
         Sheet sheet = Sheet.createDefault();

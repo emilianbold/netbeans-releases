@@ -24,6 +24,7 @@ import java.util.ResourceBundle;
 import org.openide.src.MethodElement;
 import org.openide.src.ClassElement;
 import org.openide.src.Type;
+import org.openide.src.MethodParameter;
 import org.openide.nodes.Node;
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
@@ -78,6 +79,9 @@ public class BiAnalyser extends Object implements Node.Cookie {
     /** Should event sets be obtained from introspection */
     private boolean nullEventSets = false;
 
+    /** Should methods be obtained from introspection */
+    private boolean nullMethods = false;
+
     /* Holds the class for which the bean info is generated */
     ClassElement classElement;
 
@@ -87,13 +91,50 @@ public class BiAnalyser extends Object implements Node.Cookie {
     private String iconM32;
     private int defaultPropertyIndex = -1;
     private int defaultEventIndex = -1;
+    
+    private int getIndexOfMethod(List al, MethodElement method) {
+        if (method == null) return -1;
+        
+        MethodElement method2;
+        MethodParameter[] parameters = method.getParameters();
+        MethodParameter[] parameters2;
+        
+        int j;
+        
+        for (int i = 0; i < al.size(); i ++) {
+            method2 = ((BiFeature.Method) al.get(i)).getElement();
+            if (!method2.getDeclaringClass().getName().getFullName().equals(method.getDeclaringClass().getName().getFullName()))
+                continue;
+            if (!method2.getName().getFullName().equals(method.getName().getFullName()))
+                continue;
+            parameters2 = method2.getParameters();
+            if (parameters.length != parameters2.length)
+                continue;
+            j = 0;
+            while ((j < parameters.length) && (parameters[j].getFullString().equals(parameters2[j].getFullString())))
+                j ++;
+            if (j == parameters.length) {
+                return i;
+            }
+        }
+        
+        return -1;
+    }
     /** Creates Bean Info analyser which contains all patterns from PatternAnalyser
     */
     BiAnalyser ( PatternAnalyser pa, ClassElement classElement ) {
         Collection col;
         Iterator it;
+        int index;
 
         this.classElement = classElement;
+
+        ClassElement superClass = pa.getClassElement();
+        methods = new ArrayList();
+        MethodElement[] meMethods = superClass.getMethods();
+        for (int i = 0; i < meMethods.length; i ++) {
+            methods.add(new BiFeature.Method(meMethods[i]));
+        }
 
         // Fill properties list
 
@@ -104,6 +145,10 @@ public class BiAnalyser extends Object implements Node.Cookie {
             PropertyPattern pp = (PropertyPattern)it.next();
             //if ( pp.isPublic() )
             properties.add( new BiFeature.Property( pp ) );
+            for (int i = 0; i < methods.size(); i ++) {
+                if ((index = getIndexOfMethod(methods, pp.getGetterMethod())) != -1) methods.remove(index);
+                if ((index = getIndexOfMethod(methods, pp.getSetterMethod())) != -1) methods.remove(index);
+            }
         }
 
         // Fill indexed properties list
@@ -113,7 +158,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
         it = col.iterator();
         while( it.hasNext() ) {
             IdxPropertyPattern ipp = (IdxPropertyPattern)it.next();
-            //if ( ipp.isPublic() )
+           //if ( ipp.isPublic() )
 
 
             if ( ipp.getType() != null && ( !ipp.getType().isArray() ||
@@ -123,6 +168,10 @@ public class BiAnalyser extends Object implements Node.Cookie {
 
 
             idxProperties.add( new BiFeature.IdxProperty( ipp ) );
+            if ((index = getIndexOfMethod(methods, ipp.getGetterMethod())) != -1) methods.remove(index);
+            if ((index = getIndexOfMethod(methods, ipp.getSetterMethod())) != -1) methods.remove(index);
+            if ((index = getIndexOfMethod(methods, ipp.getIndexedGetterMethod())) != -1) methods.remove(index);
+            if ((index = getIndexOfMethod(methods, ipp.getIndexedSetterMethod())) != -1) methods.remove(index);
         }
 
         // Fill event sets list
@@ -134,6 +183,8 @@ public class BiAnalyser extends Object implements Node.Cookie {
             EventSetPattern esp = (EventSetPattern)it.next();
             //if ( esp.isPublic() )
             eventSets.add( new BiFeature.EventSet( esp ) );
+            if ((index = getIndexOfMethod(methods, esp.getRemoveListenerMethod())) != -1) methods.remove(index);
+            if ((index = getIndexOfMethod(methods, esp.getAddListenerMethod())) != -1) methods.remove(index);
         }
 
         // Try to find and analyse existing bean info
@@ -210,8 +261,16 @@ public class BiAnalyser extends Object implements Node.Cookie {
         return nullProperties;
     }
 
+    boolean isNullMethods() {
+        return nullMethods;
+    }
+
     void setNullProperties( boolean nullProperties ) {
         this.nullProperties = nullProperties;
+    }
+
+    void setNullMethods( boolean nullMethods ) {
+        this.nullMethods = nullMethods;
     }
 
     boolean isNullEventSets() {
@@ -263,6 +322,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
                                                         bis.open();
                                                         regenerateProperties();
                                                         regenerateEvents();
+                                                        regenerateMethods();
                                                         regenerateIcons();
                                                         regenerateDefaultIdx();
                                                     }
@@ -330,6 +390,68 @@ public class BiAnalyser extends Object implements Node.Cookie {
 
 
         bis.setPropertiesSection( sb.toString(), propertyCount > 0 ? "}\n" : "  \n" ); // NOI18N
+    }
+
+    /** Regenerates the method section of BeanInfo */
+    private void regenerateMethods() {
+        StringBuffer sb = new StringBuffer( 512 );
+        int methodCount = 0;
+
+
+        if ( nullMethods ) {
+            sb.append( TAB + bundle.getString( "COMMENT_NullMethods" ) );
+            sb.append( TAB + "private static MethodDescriptor[] methods = null;\n" ); // NOI18N
+            bis.setMethodsSection( sb.toString(), "  \n" ); // NOI18N
+            return;
+        }
+
+        // Make common list of all methods
+        ArrayList allMethods = new ArrayList( getMethods().size());
+        allMethods.addAll( getMethods() );
+
+        sb.append( TAB + bundle.getString( "COMMENT_MethodIdentifiers" ) );
+
+        Iterator it = allMethods.iterator();
+        while ( it.hasNext() ) {
+            BiFeature bif = ( BiFeature )it.next();
+
+            if ( bif.isIncluded() ) {
+                sb.append( TAB + "private static final int " ); // NOI18N
+                sb.append( "METHOD_" + bif.getName() + methodCount ); // NOI18N
+                sb.append( " = " + (methodCount++) + ";" ); // NOI18N
+                sb.append( "\n" ); // NOI18N
+            }
+        }
+
+        sb.append( "\n" + TAB + bundle.getString("COMMENT_MethodArray" ));
+        sb.append( TAB + "private static MethodDescriptor[] methods = new MethodDescriptor[" + // NOI18N
+                   methodCount + "];\n\n" ); // NOI18N
+
+        if ( methodCount > 0)
+            sb.append( TAB + "static {\n" + TABx2 + "try {\n" ); // NOI18N
+
+        it = allMethods.iterator();
+        for ( int i = 0; it.hasNext(); i++ ) {
+            BiFeature bif = ( BiFeature )it.next();
+
+            if ( bif.isIncluded() ) {
+                sb.append( TABx3 + "methods[METHOD_" ).append( bif.getName() ).append(i + "] = "); // NOI18N
+                sb.append( bif.getCreationString() ).append(";\n"); // NOI18N
+
+                Collection cs = bif.getCustomizationStrings();
+                Iterator csit = cs.iterator();
+                while( csit.hasNext() ) {
+                    sb.append(  TABx3 + "methods[METHOD_" ).append( bif.getName() ).append(i + "]."); // NOI18N
+                    sb.append( (String)csit.next() ).append( ";\n" ); // NOI18N
+                }
+            }
+        }
+
+        if ( methodCount > 0 )
+            sb.append( TABx2 + "}\n" +  TABx2 + "catch( Exception e) {}" ); // NOI18N
+
+
+        bis.setMethodsSection( sb.toString(), methodCount > 0 ? "}\n" : "  \n" ); // NOI18N
     }
 
     /** Regenerates the event set section of BeanInfo */
@@ -441,6 +563,10 @@ public class BiAnalyser extends Object implements Node.Cookie {
         nullProperties = setPropertiesFromBeanInfo( properties, code, "PropertyDescriptor[]" ); // NOI18N
         if ( !nullProperties )
             setPropertiesFromBeanInfo( idxProperties, code, "PropertyDescriptor[]" ); // NOI18N
+        
+        section = bis.getMethodsSection();
+        code = normalizeText(section);
+        nullMethods = setPropertiesFromBeanInfo(methods, code, "MethodDescriptor[]"); // NOI18N
 
 
         section = bis.getEventSetsSection();
@@ -496,6 +622,8 @@ public class BiAnalyser extends Object implements Node.Cookie {
                 break;
             }
         }
+        
+        if (sb.length() > 0) result.add(sb.toString());
         
         return result;
 

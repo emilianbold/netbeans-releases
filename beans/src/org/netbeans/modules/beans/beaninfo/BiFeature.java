@@ -51,7 +51,6 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
     private String shortDescription = null;
     private boolean included = true;
 
-
     /**
     * Creates empty BiFeature.
     */
@@ -59,12 +58,8 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
         name = pattern.getName();
     }
 
-    /*
     public BiFeature( MethodElement me ) {
-      displayName = "\"\""
-      name = me.getName().getName();
-}
-    */
+    }
 
     abstract String getCreationString();
 
@@ -126,8 +121,12 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
     public void setIncluded(boolean included) {
         this.included = included;
     }
+    
+    public String getToolTip() {
+        return this.getName();
+    }
 
-    /** Generates collection of strings which customize the fheature */
+    /** Generates collection of strings which customize the feature */
     Collection getCustomizationStrings () {
         ArrayList col = new ArrayList();
         StringBuffer sb = new StringBuffer( 100 );
@@ -167,7 +166,7 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
     /** Analyzes the bean info code for all customizations */
     void analyzeCustomization ( Collection code ) {
         setIncluded( false );
-
+        
         Iterator it = code.iterator();
 
         String stNew = new String( getName() + "]=new" ); // NOI18N
@@ -558,26 +557,96 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
 
     }
 
-    /*
     static class Method extends BiFeature {
       MethodElement element;
-
+      private String varName;
+      private MethodElement me;
+      
       Method( MethodElement me ) {
         super( me );
         element = me;
+        this.me = me;
+        displayName = "\"\"";
+        name = me.getName().getName();
+      }
+      
+      public String getToolTip() {
+            StringBuffer sb = new StringBuffer( 100 );
+            sb.append( this.element.getName().getFullName() + "("); // NOI18N
+            
+            org.openide.src.MethodParameter[] parameters = this.element.getParameters();
+            
+            for (int i = 0; i < parameters.length; i ++) {
+                sb.append(parameters[i].getType().getFullString());
+                if (i < (parameters.length - 1)) sb.append(", "); // NOI18N
+            }
+            
+            sb.append(")"); // NOI18N
+            return sb.toString();
+      }
+      
+      MethodElement getElement() {
+        return element;
       }
 
       // Returns the call to constructor of MethodDescriptor 
-      String getCreationString () {
-        StringBuffer sb = new StringBuffer( 100 );
+        String getCreationString () {
+            StringBuffer sb = new StringBuffer( 100 );
+            sb.append( "new MethodDescriptor ( " ); // NOI18N
+            sb.append( "Class.forName(\"" + this.element.getDeclaringClass().getName().getFullName() + "\").getMethod(\"" + this.element.getName().getFullName() + "\", "); // NOI18N
+            sb.append( "new Class[] {"); // NOI18N
+            
+            org.openide.src.MethodParameter[] parameters = this.element.getParameters();
+            
+            for (int i = 0; i < parameters.length; i ++) {
+                try {
+                    sb.append("Class.forName(\"" + parameters[i].getType().toClass().getName() + "\")"); // NOI18N
+                } catch (Exception e) {
+                      e.printStackTrace();
+                }
+                if (i < (parameters.length - 1)) sb.append(", "); // NOI18N
+            }
+            
+            sb.append("})"); // NOI18N
+            return sb.toString();
+        }
 
-        return sb.toString();
-      }
+        String getIconBase() {
+            return BIF_METHOD + (this.isIncluded() ? "S" : "N"); // NOI18N
+        }
 
-}
-    */
+        void analyzeCustomizationString( String statement ) {
+        }
 
+        void analyzeCreationString( String statement ) {
+        }
+        
+        /** Analyzes the bean info code for all customizations */
+        void analyzeCustomization ( Collection code ) {
+            if (me != null) {
+                // find the method identifier
+                String creation = (String) BiAnalyser.normalizeText(this.getCreationString()).toArray()[0];
+                Iterator it = code.iterator();
+                int index;
 
+                while( it.hasNext() ) {
+                    String statement = (String) it.next();
+                    if ((index = statement.indexOf(creation)) > -1) {
+                        this.varName = statement.substring(statement.indexOf("methods[METHOD_") + 15, index - 2);
+                        break;
+                    }
+                }
+
+                me = null;
+            }
+            
+            String realName = this.getName();
+            this.setName(varName);
+            super.analyzeCustomization(code);
+            this.setName(realName);
+        }
+
+    }
 }
 /*
  * Log

@@ -101,6 +101,7 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
         super (Children.LEAF);
         this.biFeature = biFeature;
         setDisplayName (getName ());
+        setShortDescription(biFeature.getToolTip());
         setIconBase( biFeature.getIconBase() );
         init ();
     }
