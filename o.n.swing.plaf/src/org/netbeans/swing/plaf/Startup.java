@@ -189,7 +189,7 @@ public final class Startup {
             curCustoms.disposeValues();
 
             Integer in = (Integer) UIManager.get(LFCustoms.CUSTOM_FONT_SIZE); //NOI18N
-            if (UIManager.getLookAndFeel().getClass() == MetalLookAndFeel.class) {
+            if (in == null && UIManager.getLookAndFeel().getClass() == MetalLookAndFeel.class) {
                 in = new Integer (11);
             }
 
