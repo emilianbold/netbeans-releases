@@ -38,6 +38,15 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/CustomTaskDescription.html"/>
       </file>
+      <attr name="CustomTask.java/Shortcut.txt" boolvalue="true"/>
+      <file name="Shortcut.txt">
+        <![CDATA[Contents irrelevant.]]>
+        <attr name="template" boolvalue="true"/>
+        <attr name="templateWizardIterator" newvalue="org.apache.tools.ant.module.wizards.shortcut.ShortcutIterator"/>
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
+        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntShortcut.gif"/>
+        <attr name="templateWizardURL" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntShortcut.html"/>
+      </file>
     </folder>
   </folder>
   <!-- To make the module nicer to debug, list the cookies it provides. -->
