@@ -455,6 +455,22 @@ ToDo:
     <echo message="Building module vcsgeneric..."/>
     <ant dir="../vcsgeneric" target="netbeans"/>
   </target>
+
+  <target name="all-vcsgeneric/profiles/cvsprofiles" depends="all-vcsgeneric">
+    <echo message="Building module vcsgeneric/profiles/cvsprofiles"/>
+    <ant dir="../vcsgeneric/profiles/cvsprofiles" target="netbeans"/>
+  </target>
+
+  <target name="all-vcsgeneric/profiles/pvcs" depends="all-vcsgeneric">
+    <echo message="Building module vcsgeneric/profiles/pvcs"/>
+    <ant dir="../vcsgeneric/profiles/pvcs" target="netbeans"/>
+  </target>
+
+  <target name="all-vcsgeneric/profiles/vss" depends="all-vcsgeneric">
+    <echo message="Building module vcsgeneric/profiles/vss"/>
+    <ant dir="../vcsgeneric/profiles/vss" target="netbeans"/>
+  </target>
+
   <!-- XXX check editor dependecy -->
   <target name="all-vcscore" depends="all-openide,all-openidex,all-editor">
     <echo message="Building module vcscore..."/>
@@ -688,7 +704,7 @@ the ${netbeans.dest}/bin/ directory.
     <delete dir="${netbeans.dest}" />
   </target>
   
-  <target name="merge" depends="init,build-messaging">
+  <target name="merge" depends="build-messaging">
     <mkdir dir="${netbeans.dest}"/>
     <nbmerge dest="${netbeans.dest}" topdir=".." modules="${fixedmodules},${modules}" targetprefix="all-">
       <suppress locale="ja" unless="netbeans.japanese"/>
