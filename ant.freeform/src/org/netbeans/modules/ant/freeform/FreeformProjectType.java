@@ -36,8 +36,8 @@ public final class FreeformProjectType implements AntBasedProjectType {
     }
     
     public String getPrimaryConfigurationDataElementNamespace(boolean shared) {
-        return shared ? "http://www.netbeans.org/ns/freeform-project/1" : // NOI18N
-            "http://www.netbeans.org/ns/freeform-project-private/1"; // NOI18N
+        // No private.xml defined anyway.
+        return shared ? FreeformProject.NS : "http://www.netbeans.org/ns/freeform-project-private/1"; // NOI18N
     }
     
     public String getType() {
