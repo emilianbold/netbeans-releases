@@ -21,10 +21,14 @@ import org.openide.options.SystemOption;
 import org.openide.util.SharedClassObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.ServiceType;
 
 import org.netbeans.modules.javadoc.comments.AutoCommenter;
 import org.netbeans.modules.javadoc.settings.ExternalJavadocSettings;
 import org.netbeans.modules.javadoc.search.Jdk12SearchType;
+import org.netbeans.modules.javadoc.search.JavadocSearchType;
+import org.netbeans.modules.javadoc.*;
+
 /** Options for applets - which applet viewer use ...
 *
 * @author Petr Hrebejk
@@ -51,7 +55,8 @@ public class DocumentationSettings extends SystemOption {
     static final long serialVersionUID =-574331845406968391L;
     
     /** Constructor for DocumentationSettings */
-    public DocumentationSettings () {
+    protected void initialize () {
+        super.initialize ();
         if( getProperty( PROP_SEARCH_PATH ) == null )
             setSearchPath(new String[] {"c:/Jdk1.2/doc" });
         if( getProperty( PROP_SEARCH_SORT ) == null )
@@ -69,9 +74,9 @@ public class DocumentationSettings extends SystemOption {
         if( getProperty( PROP_AUTOCOMENT_ERR_MASK ) == null )
             setAutocommentErrorMask(AutoCommenter.JDC_OK | AutoCommenter.JDC_ERROR | AutoCommenter.JDC_MISSING);
         if( getProperty( PROP_EXECUTOR ) == null )
-            setExecutor(new ExternalJavadocSettings().getName());
+            setExecutor( new ExternalJavadocSettings() );
         if( getProperty( PROP_SEARCH ) == null )
-            setSearchEngine(new Jdk12SearchType().getName());
+            setSearchEngine( new Jdk12SearchType() );
         if( getProperty( PROP_FS_SETTING ) == null )
             setFileSystemSettings( new java.util.HashMap() );
         if( getProperty( PROP_ASK_BEFORE_GEN ) == null )
@@ -215,29 +220,59 @@ public class DocumentationSettings extends SystemOption {
     /** Getter for property executor.
      * @return Value of property executor.
  */
-    public java.lang.String getExecutor() {
-        return (String)getProperty( PROP_EXECUTOR );        
+    public ServiceType getExecutor() {
+        JavadocType.Handle javadocType = (JavadocType.Handle)getProperty( PROP_EXECUTOR );
+        JavadocType type = null;
+        
+        if (javadocType != null) {
+            type = (JavadocType)javadocType.getServiceType();
+        }
+        if (type == null) {
+            return setDefaultJavadocExecutor();
+	}
+        return type;        
     }
+    
+    JavadocType setDefaultJavadocExecutor() {
+        JavadocType javadocType = new ExternalJavadocSettings();
+        setExecutor(javadocType);
+        return javadocType;        
+    }    
     
     /** Setter for property executor.
      * @param executor New value of property executor.
- */
-    public void setExecutor(java.lang.String executor) {
-        putProperty( PROP_EXECUTOR , executor, true );        
+     */
+    public void setExecutor(ServiceType executor) {
+        putProperty( PROP_EXECUTOR , new JavadocType.Handle(executor), true );        
     }
     
     /** Getter for property search.
      * @return Value of property search.
- */
-    public java.lang.String getSearchEngine() {
-        return (String)getProperty( PROP_SEARCH );
-    }
+    */     
+    public ServiceType getSearchEngine() {
+        JavadocSearchType.Handle searchType = (JavadocSearchType.Handle)getProperty( PROP_SEARCH );
+        JavadocSearchType type = null;
+        
+        if (searchType != null) {
+            type = (JavadocSearchType)searchType.getServiceType();
+        }
+        if (type == null) {
+            return setDefaultJavadocSearchType();
+	}
+        return type;        
+    }    
     
+    JavadocSearchType setDefaultJavadocSearchType() {
+        JavadocSearchType searchType = new Jdk12SearchType();
+        setSearchEngine(searchType);
+        return searchType;        
+    }    
+
     /** Setter for property search.
      * @param search New value of property search.
- */
-    public void setSearchEngine(java.lang.String search) {
-        putProperty( PROP_SEARCH , search, true );
+    */
+    public void setSearchEngine(ServiceType search) {
+        putProperty( PROP_SEARCH , new JavadocSearchType.Handle( search ), true );
     }    
     
     public java.util.HashMap getFileSystemSettings(){
