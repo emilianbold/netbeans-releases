@@ -27,7 +27,8 @@ public class XMLFSTest extends ReadOnlyFSTest {
     public static final String PACKAGE = "org/openide/filesystems/data/";
     private static final String MF_NAME = "mf-layer";
     private static final String HEADER = "<?xml version=\"1.0\"?>";//\n<!DOCTYPE filesystem PUBLIC \"-//NetBeans//DTD Filesystem 1.0//EN\" \"http://www.netbeans.org/dtds/filesystem-1_0.dtd\">";
-    private static final String FOLDER_START = "  <folder name=\"org\">\n    <folder name=\"openide\">\n      <folder name=\"filesystems\">\n        <folder name=\"data\">";
+    private static final String FOLDER_START1 = "  <folder name=\"org\">\n    <folder name=\"openide\">\n      <folder name=\"filesystems\">\n        <folder name=\"data";
+    private static final String FOLDER_START2 = "\">";
     private static final String FOLDER_END = "        </folder>\n      </folder>\n    </folder>\n  </folder>\n";
     private static final int FOLDER_INDENT  = FOLDER_END.indexOf('<') / 2;
     private static final String INDENT_STEP  = "  ";
@@ -97,7 +98,12 @@ public class XMLFSTest extends ReadOnlyFSTest {
      * @param buffer - where to place the description
      */
     private static final void generateFolder(StringBuffer buffer, ResourceComposer composer) throws Exception {
-        buffer.append(FOLDER_START);
+        buffer.append(FOLDER_START1);
+        int base = composer.getFileBase();
+        if (base != 0) {
+            buffer.append(base);
+        }
+        buffer.append(FOLDER_START2);
         generateFiles(buffer, composer);
         buffer.append(FOLDER_END);
     }
@@ -197,7 +203,7 @@ public class XMLFSTest extends ReadOnlyFSTest {
         /** new ResourceComposer */
         public ResourceComposer(String resName, String resExt, int foCount, int fileBase) {
             this.foCount = foCount;
-            this.paddingSize = Utilities.expPaddingSize(foCount + fileBase);
+            this.paddingSize = Utilities.expPaddingSize(foCount + fileBase - 1);
             this.fileBase = fileBase;
             this.resName = resName;
             this.resExt = resExt;
@@ -237,7 +243,7 @@ public class XMLFSTest extends ReadOnlyFSTest {
     /*
      public static void main(String[] args) throws Exception {
         XMLFSTest xmlfstest = new XMLFSTest("first test");
-        xmlfstest.setUpFileObjects(2500);
+        xmlfstest.setUpFileObjects(500);
     }
-     */    
+    */    
 }

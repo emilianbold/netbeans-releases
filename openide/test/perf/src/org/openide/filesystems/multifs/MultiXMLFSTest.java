@@ -34,8 +34,11 @@ public class MultiXMLFSTest extends FSTest {
     private FSWrapper[] wrappers;
     private static final int MAGIC = 10;
     private static final String RES_EXT = ".instance";
-    private static final String RES_NAME = LocalFSTest.PACKAGE.replace('/', '-').concat(LocalFSTest.RES_NAME);
     private MultiFileSystem mfs;
+    
+    private static final String getResource(int base) {
+        return LocalFSTest.getPackage(base).replace('/', '-').concat(LocalFSTest.RES_NAME);
+    }
     
     /** Creates new XMLFSGenerator */
     public MultiXMLFSTest(String name) {
@@ -48,18 +51,29 @@ public class MultiXMLFSTest extends FSTest {
         int delta = foCount - (foCount / MAGIC) * MAGIC;
         wrappers = new FSWrapper[MAGIC];
         int last = wrappers.length;
+        int[] bases = new int[last];
         for (int i = 1; i < last; i++) {
-            wrappers[i] = createXMLFSinJar(foChunk, i * foChunk);
+            int ibase = i * foChunk;
+            wrappers[i] = createXMLFSinJar(foChunk, ibase);
+            bases[i] = ibase;
         }
+        
         wrappers[0] = createLocalFS(foChunk + delta, 0);
         FileSystem[] fss = new FileSystem[last];
         for (int i = 0; i < last; i++) {
             fss[i] = wrappers[i].getFS();
         }
         
+        FileObject[] ret = new FileObject[foCount];
         mfs = new MultiFileSystem(fss);
-        FileObject res = mfs.findResource(LocalFSTest.PACKAGE);
-        return res.getChildren();
+        for (int i = 0; i < last; i++) {
+            FileObject res = mfs.findResource(LocalFSTest.getPackage(bases[i]));
+            FileObject[] tmp = res.getChildren();
+            int pos = i * foChunk + Math.min(i, 1) * delta;
+            System.arraycopy(tmp, 0, ret, pos, tmp.length);
+        }        
+        
+        return ret;
         //return null;
     }
     
@@ -99,10 +113,11 @@ public class MultiXMLFSTest extends FSTest {
         File tmp = createTempFolder();
         File destFolder = LocalFSTest.createFiles(foCount, foBase, tmp);
         compileFolder(tmp, destFolder);
-        File xmlbase = XMLFSTest.generateXMLFile(destFolder, new ResourceComposer(RES_NAME, RES_EXT, foCount, foBase));
+        File xmlbase = XMLFSTest.generateXMLFile(destFolder, new ResourceComposer(getResource(foBase), RES_EXT, foCount, foBase));
         File jar = Utilities.createJar(tmp, "jarxmlfs.jar");
         URLClassLoader cloader = new URLClassLoader(new URL[] { jar.toURL() });
-        URL res = cloader.findResource(LocalFSTest.PACKAGE + xmlbase.getName());
+        String xres = LocalFSTest.getPackage(foBase) + xmlbase.getName();
+        URL res = cloader.findResource(xres);
         XMLFileSystem xmlfs = new XMLFileSystem();
         xmlfs.setXmlUrl(res, false);
         
@@ -193,10 +208,13 @@ public class MultiXMLFSTest extends FSTest {
             return cloader;
         }
     }
-    
+    /*
     public static void main(String[] args) throws Exception {
         MultiXMLFSTest mtest = new MultiXMLFSTest("first test");
         mtest.setUpFileObjects(500);
         System.out.println("done");
+        
+        System.out.println(mtest.wrappers[1].getClassLoader().loadClass("org.openide.filesystems.data50.JavaSrc55"));
     }
+     */
 }

@@ -17,6 +17,7 @@ import java.util.*;
 
 import org.openide.*;
 import org.openide.filesystems.*;
+import org.openide.filesystems.Utilities.Matcher;
 
 /**
  * Test class for LocalFileSystem. All tests are inherited, this class only
@@ -24,11 +25,26 @@ import org.openide.filesystems.*;
  */
 public class LocalFSTest extends FSTest {
 
-    public static final String PACKAGE = "org/openide/filesystems/data/";
-    public static final String PACKAGE_SYSDEP = PACKAGE.replace('/', File.separatorChar);
     public static final String RES_NAME = "JavaSrc";
     public static final String RES_EXT = ".java";
-    public static final String RES = PACKAGE + RES_NAME + RES_EXT;
+    
+    public static final String getPackage(int base) {
+        StringBuffer buff = new StringBuffer(100);
+        buff.append("org/openide/filesystems/data");
+        if (base != 0) {
+            buff.append(base);
+        }
+        buff.append("/");
+        return buff.toString();
+    }
+    
+    public static final String getPackageSysDep(int base) {
+        return getPackage(base).replace('/', File.separatorChar);
+    }
+    
+    public static final String getResource(int base) {
+        return getPackage(base) + RES_NAME + RES_EXT;
+    }
     
     protected LocalFileSystem localFS;
     protected File mnt;
@@ -46,7 +62,7 @@ public class LocalFSTest extends FSTest {
         localFS = new LocalFileSystem();
         localFS.setRootDirectory(mnt);
         
-        FileObject folder = localFS.findResource(PACKAGE);
+        FileObject folder = localFS.findResource(getPackage(0));
         return folder.getChildren();
     }
     
@@ -61,18 +77,18 @@ public class LocalFSTest extends FSTest {
      * @retun a folder in which reside the created files (it is a sub folder of destRoot)
      */
     public static File createFiles(int foCount, int foBase, File destRoot) throws Exception {
-        InputStream is = LocalFSTest.class.getClassLoader().getResourceAsStream(RES);
+        InputStream is = LocalFSTest.class.getClassLoader().getResourceAsStream(getResource(0));
         StringResult result = load(is, foCount, foBase);
-        return makeCopies(destRoot, foCount, result);
+        return makeCopies(destRoot, foCount, foBase, result);
     }
     
     /** Copies the content of <tt>result copyNo</tt> times under given <tt>destRoot</tt> */
-    private static File makeCopies(File destRoot, int copyNo, StringResult result) throws Exception {
+    private static File makeCopies(File destRoot, int copyNo, int foBase, StringResult result) throws Exception {
         File folder;
         File targetFolder;
         
         {
-            targetFolder = new File(destRoot, PACKAGE_SYSDEP);
+            targetFolder = new File(destRoot, getPackageSysDep(foBase));
             targetFolder.mkdirs();
         }
         
@@ -96,69 +112,74 @@ public class LocalFSTest extends FSTest {
      */
     private static StringResult load(InputStream is, int foCount, int foBase) throws Exception {
         try {
-            int paddingSize = Utilities.expPaddingSize(foCount + foBase);
+            int paddingSize = Utilities.expPaddingSize(foCount + foBase - 1);
+            int packPaddingSize = Utilities.expPaddingSize(foBase);
             StringResult ret = new StringResult(paddingSize, foBase);
             Reader reader = new BufferedReader(new InputStreamReader(is));
             
-            Matcher matcher = new Matcher();
+            PaddingMaker matcher = new PaddingMaker();
             int c;
             while ((c = reader.read()) >= 0) {
                 char ch = (char) c;
                 ret.append(ch);
                 if (matcher.test(ch)) {
-                    ret.append(matcher.getPadding(paddingSize));
+                    if (matcher.isPackageHit()) {
+                        ret.rawAppend(String.valueOf(foBase));
+                    } else {
+                        ret.append(matcher.getPadding(paddingSize));
+                    }
                 }
             }
             
             return ret;
         } finally {
-            is.close();
+            if (is != null) {
+                is.close();
+            }
         }
     }
-    
-    /** Simple evaluator of regular expressions */
-    static final class Matcher {
-        private int state;
-        private static final char[] table = { 'J', 'a', 'v', 'a', 'S', 'r', 'c' };
+
+    /** Computes padding for a character Stream */
+    static final class PaddingMaker {
+        private static final String PACKAGE = "package org.openide.filesystems.data";
+        
         private int paddingSize;
         private String paddingString;
+        private Matcher.State state;
         
-        
-        /** new Matcher */
-        public Matcher() {
-            state = 0;
+        public PaddingMaker() {
             paddingSize = -1;
             paddingString = null;
+            Matcher matcher = new Matcher(new String[] { "JavaSrc", PACKAGE });
+            state = matcher.getInitState();
         }
         
         /** Tests whether c is the last char in the found char sequence */
         boolean test(char c) {
-            if (table[state] == c) {
-                state++;
-            } else {
-                state = 0;
-            }
-            
-            if (state == table.length) {
-                state = 0;
-                return true;
-            }
-            
-            return false;
+            state = state.getNext(c);
+            return state.isTerminal();
+        }
+        
+        boolean isPackageHit() {
+            return state.getMatches()[0].equals(PACKAGE);
         }
         
         /** @return a String with a given number of '0' chars */
         String getPadding(int paddingSize) {
             if (this.paddingSize != paddingSize) {
-                StringBuffer sbuffer = new StringBuffer(paddingSize);
-                for (int i = 0; i < paddingSize; i++) {
-                    sbuffer.append('0');
-                }
+                paddingString = createPadding(paddingSize);
                 this.paddingSize = paddingSize;
-                paddingString = sbuffer.toString();
             }
             
             return paddingString;
+        }
+        
+        static String createPadding(int paddingSize) {
+            StringBuffer sbuffer = new StringBuffer(paddingSize);
+            for (int i = 0; i < paddingSize; i++) {
+                sbuffer.append('0');
+            }
+            return sbuffer.toString();
         }
     }
     
@@ -186,6 +207,10 @@ public class LocalFSTest extends FSTest {
         
         void append(String s) {
             positions.add(new Integer(buffer.length()));
+            buffer.append(s);
+        }
+        
+        void rawAppend(String s) {
             buffer.append(s);
         }
         
@@ -221,10 +246,10 @@ public class LocalFSTest extends FSTest {
         }
     }
     
-    /*
+/*    
     public static void main(String[] args) throws Exception {
         LocalFSTest lfstest = new LocalFSTest("first test");
         lfstest.setUpFileObjects(500);
     }
-    */
+  */  
 }

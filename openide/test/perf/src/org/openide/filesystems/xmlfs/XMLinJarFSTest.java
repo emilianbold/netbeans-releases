@@ -26,6 +26,8 @@ import org.openide.filesystems.data.SerialData;
  */
 public class XMLinJarFSTest extends XMLFSTest {
     
+    URLClassLoader cloader;
+    
     /** Creates new XMLFSGenerator */
     public XMLinJarFSTest(String name) {
         super(name);
@@ -37,7 +39,7 @@ public class XMLinJarFSTest extends XMLFSTest {
         destFolder = LocalFSTest.createFiles(foCount, 0, tmp);
         File xmlbase = generateXMLFile(destFolder, new ResourceComposer(LocalFSTest.RES_NAME, LocalFSTest.RES_EXT, foCount, 0));
         File jar = Utilities.createJar(tmp, "jarxmlfs.jar");
-        URLClassLoader cloader = new URLClassLoader(new URL[] { jar.toURL() });
+        cloader = new URLClassLoader(new URL[] { jar.toURL() });
         URL res = cloader.findResource(PACKAGE + xmlbase.getName());
         xmlfs = new XMLFileSystem();
         xmlfs.setXmlUrl(res, false);
@@ -45,7 +47,7 @@ public class XMLinJarFSTest extends XMLFSTest {
         FileObject pkg = xmlfs.findResource(PACKAGE);
         return pkg.getChildren();
     }
-    
+
     /*
     public static void main(String[] args) throws Exception {
         XMLinJarFSTest a = new XMLinJarFSTest("test");
