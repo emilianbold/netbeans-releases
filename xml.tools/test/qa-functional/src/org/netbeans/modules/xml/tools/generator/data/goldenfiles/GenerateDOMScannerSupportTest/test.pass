@@ -1,6 +1,7 @@
 /* REMOVED */
 package org.netbeans.modules.xml.tools.generator.data;
 /**
+ *
  * This is a scanner of DOM tree.
  *
  * Example:
@@ -15,18 +16,23 @@ package org.netbeans.modules.xml.tools.generator.data;
  * @see org.w3c.dom.Document
  * @see org.w3c.dom.Element
  * @see org.w3c.dom.NamedNodeMap
- *
  */
 public class BooksScanner {
-    /** org.w3c.dom.Document document */
+    /**
+     * org.w3c.dom.Document document
+     */
     org.w3c.dom.Document document;
     
-    /** Create new BooksScanner with org.w3c.dom.Document. */
+    /**
+     * Create new BooksScanner with org.w3c.dom.Document.
+     */
     public BooksScanner(org.w3c.dom.Document document) {
         this.document = document;
     }
     
-    /** Scan through org.w3c.dom.Document document. */
+    /**
+     * Scan through org.w3c.dom.Document document.
+     */
     public void visitDocument() {
         org.w3c.dom.Element element = document.getDocumentElement();
         if ((element != null) && element.getTagName().equals("Books")) {
@@ -58,7 +64,9 @@ public class BooksScanner {
         }
     }
     
-    /** Scan through org.w3c.dom.Element named Books. */
+    /**
+     * Scan through org.w3c.dom.Element named Books.
+     */
     void visitElement_Books(org.w3c.dom.Element element) { // <Books>
         // element.getValue();
         org.w3c.dom.NamedNodeMap attrs = element.getAttributes();
@@ -101,7 +109,9 @@ public class BooksScanner {
         }
     }
     
-    /** Scan through org.w3c.dom.Element named Product. */
+    /**
+     * Scan through org.w3c.dom.Element named Product.
+     */
     void visitElement_Product(org.w3c.dom.Element element) { // <Product>
         // element.getValue();
         org.w3c.dom.NamedNodeMap attrs = element.getAttributes();
@@ -138,7 +148,9 @@ public class BooksScanner {
         }
     }
     
-    /** Scan through org.w3c.dom.Element named Descript. */
+    /**
+     * Scan through org.w3c.dom.Element named Descript.
+     */
     void visitElement_Descript(org.w3c.dom.Element element) { // <Descript>
         // element.getValue();
         org.w3c.dom.NamedNodeMap attrs = element.getAttributes();
@@ -172,7 +184,9 @@ public class BooksScanner {
         }
     }
     
-    /** Scan through org.w3c.dom.Element named Custom. */
+    /**
+     * Scan through org.w3c.dom.Element named Custom.
+     */
     void visitElement_Custom(org.w3c.dom.Element element) { // <Custom>
         // element.getValue();
         org.w3c.dom.NodeList nodes = element.getChildNodes();
@@ -223,7 +237,9 @@ public class BooksScanner {
         }
     }
     
-    /** Scan through org.w3c.dom.Element named Price. */
+    /**
+     * Scan through org.w3c.dom.Element named Price.
+     */
     void visitElement_Price(org.w3c.dom.Element element) { // <Price>
         // element.getValue();
         org.w3c.dom.NamedNodeMap attrs = element.getAttributes();
@@ -260,7 +276,9 @@ public class BooksScanner {
         }
     }
     
-    /** Scan through org.w3c.dom.Element named Image. */
+    /**
+     * Scan through org.w3c.dom.Element named Image.
+     */
     void visitElement_Image(org.w3c.dom.Element element) { // <Image>
         // element.getValue();
         org.w3c.dom.NamedNodeMap attrs = element.getAttributes();
@@ -324,7 +342,9 @@ public class BooksScanner {
         }
     }
     
-    /** Scan through org.w3c.dom.Element named x-include. */
+    /**
+     * Scan through org.w3c.dom.Element named x-include.
+     */
     void visitElement_x_include(org.w3c.dom.Element element) { // <x-include>
         // element.getValue();
         org.w3c.dom.NodeList nodes = element.getChildNodes();
@@ -348,7 +368,9 @@ public class BooksScanner {
         }
     }
     
-    /** Scan through org.w3c.dom.Element named inc-level-1. */
+    /**
+     * Scan through org.w3c.dom.Element named inc-level-1.
+     */
     void visitElement_inc_level_1(org.w3c.dom.Element element) { // <inc-level-1>
         // element.getValue();
         org.w3c.dom.NodeList nodes = element.getChildNodes();
@@ -372,7 +394,9 @@ public class BooksScanner {
         }
     }
     
-    /** Scan through org.w3c.dom.Element named inc-level-2. */
+    /**
+     * Scan through org.w3c.dom.Element named inc-level-2.
+     */
     void visitElement_inc_level_2(org.w3c.dom.Element element) { // <inc-level-2>
         // element.getValue();
         org.w3c.dom.NodeList nodes = element.getChildNodes();
