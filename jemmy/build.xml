@@ -47,9 +47,6 @@ Microsystems, Inc. All Rights Reserved.
       <patternset id="jemmy.files">
         <!-- All files created for NBM -->
         <include name="${nb.modules.dir}/org-netbeans-modules-jemmy.jar"/>
-        <!--
-        <include name="${nb.system.dir}/ParserDB/Jemmy*"/>
-        -->
         <include name="${nb.docs.dir}/jemmy-api.zip"/>
         <include name="${nb.modules.dir}/ext/jemmy.jar"/>
       </patternset>
@@ -95,16 +92,7 @@ Microsystems, Inc. All Rights Reserved.
     <jar jarfile="${jar}" basedir="${build}" manifest="${build}/org/netbeans/jemmy/version_info"/>
   </target>
 
-  <target name="parser-db" depends="init">
-      <!--
-      <taskdef name="makeparserdb" classname="org.netbeans.nbbuild.MakeParserDB" classpath="../nbbuild/nbantext.jar"/>
-      <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/ParserDB"/>
-      <makeparserdb db="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/ParserDB/Jemmy" sources="${src}" nbroot=".."/>
-      -->
-  </target>
-
-
-  <target name="jars" depends="init,jar,javadoc,parser-db">
+  <target name="jars" depends="init,jar,javadoc">
     <copy file="${javadoc}.zip" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}" filtering="off"/>
     <copy file="${jar}" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext" filtering="off"/>
     <property file="${build}/org/netbeans/jemmy/version_info"/>
