@@ -22,7 +22,10 @@ Microsystems, Inc. All Rights Reserved.
    <property name="ide.installto" location="../ide" />
    <property name="java.path" location="${java.home}"/>
    
-   <property name="xtest.home" location="../../xtest"/>
+   <property name="ide.installator.edition" value="ce"/>
+   <property name="ide.installator.params" value=""/>
+   
+   <property name="xtest.home" location=".."/>
    
    <property name="driver.classpath" location="${xtest.home}/lib/xtest.jar"/>
    <property name="xerces.classpath" location="${xtest.home}/lib/xerces.jar"/>
@@ -155,7 +158,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="install-from-installator" depends="check-ide-param" if="ide.install.type.installator">
     <antcall target="clean-ide"/>
     <exec executable="${ide.install.path}" failonerror="true">
-      <arg value="-a &quot;/edition ce /path ${ide.installto} /jvm ${java.path} &quot;"/>
+      <arg value="-a &quot;/edition ${ide.installator.edition} ${ide.installator.params} /path ${ide.installto} /jvm ${java.path} &quot;"/>
     </exec>
   </target>
   
