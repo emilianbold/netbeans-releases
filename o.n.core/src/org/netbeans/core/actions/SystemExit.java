@@ -41,13 +41,6 @@ public class SystemExit extends CallableSystemAction {
     return new HelpCtx (SystemExit.class);
   }
 
-  /** Name of this action's icon.
-  * @return name of the action's icon
-  */
-  protected String iconResource () {
-    return "/com/netbeans/developer/impl/resources/actions/exit.gif"; // NOI18N
-  }
-
   public void performAction() {
     org.openide.TopManager.getDefault().exit();
   }
@@ -58,6 +51,8 @@ public class SystemExit extends CallableSystemAction {
 
 /*
  * Log
+ *  18   Jaga      1.16.1.0    3/23/00  Jesse Glick     Explicitly marking as 
+ *       not having icons.
  *  17   Gandalf   1.16        1/12/00  Ales Novak      i18n
  *  16   Gandalf   1.15        12/1/99  Petr Hrebejk    Save before exit moved 
  *       to NbTopManager
