@@ -177,23 +177,18 @@ final class NbModuleProject implements Project {
         PropertyProvider predefs = helper.getStockPropertyPreprovider();
         Map/*<String,String>*/ stock = new HashMap();
         stock.put("nb_all", getNbrootRel()); // NOI18N
-        Iterator it = getModuleList().getAllEntries().iterator();
+        ModuleList ml = getModuleList();
+        Iterator it = ml.getAllEntries().iterator();
         while (it.hasNext()) {
-            // XXX this is no longer correct; need to read cluster.properties!
-            stock.put(((ModuleList.Entry)it.next()).getPath() + ".dir", "${nb_all}/nbbuild/netbeans"); // NOI18N
+            ModuleList.Entry e = (ModuleList.Entry)it.next();
+            stock.put(e.getPath() + ".dir", e.getClusterDirectory().getAbsolutePath()); // NOI18N
         }
-        String[] dirs = {
-            "modules", // NOI18N
-            "modules/autoload", // NOI18N
-            "modules/eager", // NOI18N
-            "lib", // NOI18N
-            "lib/ext", // NOI18N
-        };
-        for (int i = 0; i < dirs.length; i++) {
-            stock.put("nb." + dirs[i] + ".dir", dirs[i]); // NOI18N
+        stock.putAll(ml.getDirectoriesProperties());
+        stock.put("netbeans.dest.dir", "${nb_all}/nbbuild/netbeans"); // NOI18N
+        ModuleList.Entry thisEntry = ml.getEntry(helper.getName());
+        if (thisEntry != null) {
+            stock.put("cluster.dir", thisEntry.getCluster()); // NOI18N
         }
-        stock.put("netbeans.dest.dir", "${nb_all}/nbbuild"); // NOI18N
-        stock.put("cluster.dir", "netbeans"); // NOI18N
         Map/*<String,String>*/ defaults = new HashMap();
         defaults.put("code.name.base.dashes", helper.getName().replace('.', '-')); // NOI18N
         defaults.put("module.jar.dir", "${nb.modules.dir}"); // NOI18N
@@ -205,6 +200,7 @@ final class NbModuleProject implements Project {
         defaults.put("test.unit.src.dir", "test/unit/src"); // NOI18N
         defaults.put("test.qa-functional.src.dir", "test/qa-functional/src"); // NOI18N
         defaults.put("build.test.unit.classes.dir", "build/test/unit/classes"); // NOI18N
+        defaults.put("module.classpath", computeModuleClasspath());
         // skip a bunch of properties irrelevant here - NBM stuff, etc.
         return PropertyUtils.sequentialPropertyEvaluator(predefs, new PropertyProvider[] {
             PropertyUtils.fixedPropertyProvider(stock),
@@ -212,6 +208,51 @@ final class NbModuleProject implements Project {
             helper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH),
             PropertyUtils.fixedPropertyProvider(defaults),
         });
+    }
+    
+    /**
+     * Should be similar to impl in ParseProjectXml.
+     */
+    private String computeModuleClasspath() {
+        Element data = getHelper().getPrimaryConfigurationData(true);
+        Element moduleDependencies = Util.findElement(data,
+            "module-dependencies", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+        List/*<Element>*/ deps = Util.findSubElements(moduleDependencies);
+        Iterator it = deps.iterator();
+        StringBuffer cp = new StringBuffer();
+        ModuleList ml = getModuleList();
+        File nbroot = getHelper().resolveFile(getNbrootRel());
+        while (it.hasNext()) {
+            Element dep = (Element)it.next();
+            if (Util.findElement(dep, "compile-dependency", // NOI18N
+                    NbModuleProjectType.NAMESPACE_SHARED) == null) {
+                continue;
+            }
+            Element cnbEl = Util.findElement(dep, "code-name-base", // NOI18N
+                NbModuleProjectType.NAMESPACE_SHARED);
+            String cnb = Util.findText(cnbEl);
+            ModuleList.Entry module = ml.getEntry(cnb);
+            if (module == null) {
+                Util.err.log(ErrorManager.WARNING, "Warning - could not find dependent module " + cnb + " for " + this);
+                continue;
+            }
+            // XXX if that module is projectized, check its public packages;
+            // if it has none, skip it and issue a warning, unless we are
+            // declaring an impl dependency
+            File moduleJar = module.getJarLocation();
+            if (cp.length() > 0) {
+                cp.append(File.pathSeparatorChar);
+            }
+            cp.append(moduleJar.getAbsolutePath());
+            /* Really necessary? Probably not.
+            File[] classPathExtensions = module.getClassPathExtensions(nbroot);
+            for (int i = 0; i < classPathExtensions.length; i++) {
+                cp.append(File.pathSeparatorChar);
+                cp.append(classPathExtensions[i].getAbsolutePath());
+            }
+             */
+        }
+        return cp.toString();
     }
     
     PropertyEvaluator evaluator() {
