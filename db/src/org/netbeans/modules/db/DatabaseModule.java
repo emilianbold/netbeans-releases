@@ -32,14 +32,8 @@ public class DatabaseModule extends ModuleInstall {
 
     static final long serialVersionUID =5426465356344170725L;
     
-    // information about installation database module, it is stored for next use
-    public static boolean isNewlyInstalled = false;
-    
     public void installed() {
 
-        // database module is being installed
-        isNewlyInstalled = true;
-        
         System.setProperty("pointbase.ini", System.getProperty("netbeans.home") + java.io.File.separator + "pointbase" + java.io.File.separator + "pointbase.ini"); //NOI18N
 
         TopManager tm = TopManager.getDefault();
