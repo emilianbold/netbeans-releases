@@ -27,21 +27,21 @@
     <tocitem text="Creating a Java Project" target="proj_creating"/>
     <tocitem text="Java Project Templates" target="proj_templates" />
     <tocitem text="Setting the Main Project" target="proj_main" />
+    <tocitem text="Adding Javadoc to a Project" target="javadoc.add" />
+    <tocitem text="Setting the Target JDK" target="proj_jdk" />
     <tocitem text="Standard Projects" target="tbd" >
       <tocitem text="About Standard Projects" target="proj_stand_about" />
-      <tocitem text="Creating Dependencies Between Projects" target="comp_dependencies" />
       <tocitem text="Managing the Classpath" target="comp_classpath" />
-      <tocitem text="Adding Javadoc to a Project" target="javadoc.add" />
-      <tocitem text="Setting the Target JDK" target="proj_jdk" />
+      <tocitem text="Creating Dependencies Between Projects" target="comp_dependencies" />
       <tocitem text="Customizing the IDE-Generated Ant Script" target="proj_stand_customize" />
     </tocitem>
     <tocitem text="Free-Form Projects" >
       <tocitem text="About Free-Form Projects" target="proj_free_about" />
       <tocitem text="Adding a Source Directory to a Free-Form Project" target="proj_free_add" />
       <tocitem text="Declaring the Classpath in Free-Form Projects" target="proj_free_classpath" />
-      <tocitem text="Setting the Target JDK" target="tbd" />
       <tocitem text="Mapping an Ant Target to an IDE Command" target="proj_free_targets" />
       <tocitem text="Writing A Debug Target for a J2SE Free-Form Project" target="proj_free_debug" />
+      <tocitem text="Writing A Debug Target for a Web Free-Form Project" target="proj_webfree_debug" />
       <tocitem text="Storing IDE Targets in a Separate Ant Script" target="proj_free_nbtargs" />
     </tocitem>
   </tocitem>
@@ -276,7 +276,8 @@
     <tocitem text="Debugging Tasks: Quick Reference" target="debug.quickref"/>
     <tocitem text="Current Context in the Debugger" target="debug.context"></tocitem>
     <tocitem text="Attaching Source Code to Java Class Libraries" target="debug.source"></tocitem>
-    <tocitem text="Writing A Debug Target for a Free-Form Project" target="proj_free_debug" />
+    <tocitem text="Writing A Debug Target for a J2SE Free-Form Project" target="proj_free_debug" />
+    <tocitem text="Writing A Debug Target for a Web Free-Form Project" target="proj_webfree_debug" />
     <tocitem text="Setting Breakpoints">
       <tocitem text="Breakpoints in the IDE" target="breakpoint.about"/>
       <tocitem text="Setting a Java Breakpoint" target="breakpoint.setting"/>
