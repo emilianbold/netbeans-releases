@@ -460,6 +460,13 @@ public abstract class NbTopManager {
         }
     }
     
+    /**
+     * @return True if the IDE is shutting down.
+     */
+    public boolean isExiting() {
+        return doingExit;
+    }
+    
     private void doExit() {
         if (doingExit) {
             return ;

@@ -13,7 +13,6 @@
 
 package org.netbeans.core.windows;
 
-import java.util.Collections;
 import org.netbeans.core.windows.view.ui.RecentViewListDlg;
 import org.openide.actions.ActionManager;
 import org.openide.util.Lookup;
@@ -26,6 +25,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.lang.reflect.Method;
+import org.netbeans.core.NbTopManager;
 
 
 /**
@@ -242,6 +242,12 @@ final class ShortcutAndMenuKeyEventProcessor implements KeyEventDispatcher, KeyE
     }
 
     private boolean processShortcut(KeyEvent ev) {
+        //ignore shortcut keys when the IDE is shutting down
+        if( NbTopManager.get().isExiting() ) {
+            ev.consume();
+            return true;
+        }
+        
         KeyStroke ks = KeyStroke.getKeyStrokeForEvent(ev);
         Window w = SwingUtilities.windowForComponent(ev.getComponent());
         
