@@ -19,6 +19,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.BeanInfo;
 import java.io.File;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -54,6 +55,7 @@ import org.openide.util.Utilities;
 
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
 import org.netbeans.modules.web.project.classpath.ClassPathSupport;
@@ -137,11 +139,21 @@ public class WebClassPathUi {
                 case ClassPathSupport.Item.TYPE_ARTIFACT:
                     if ( item.isBroken() ) {
                         return NbBundle.getMessage( WebClassPathUi.class, "LBL_MISSING_PROJECT", getProjectName( item ) );
+                    } else {
+                        Project p = item.getArtifact().getProject();
+                        String projectName;
+                        ProjectInformation pi = (ProjectInformation) p.getLookup().lookup(ProjectInformation.class);
+                        if (pi != null) {
+                            projectName = pi.getDisplayName();
+                        } else {
+                            projectName = "???";    //NOI18N
+                        }
+                        return MessageFormat.format(NbBundle.getMessage(WebClassPathUi.class,"MSG_ProjectArtifactFormat"), new Object[] {
+                            projectName,
+                                    item.getArtifactURI().toString()
+                        });
                     }
-                    else {
-                        return item.getArtifactURI().toString();
-                    }
-                case ClassPathSupport.Item.TYPE_JAR:
+               case ClassPathSupport.Item.TYPE_JAR:
                     if ( item.isBroken() ) {
                         return NbBundle.getMessage( WebClassPathUi.class, "LBL_MISSING_FILE", getFileRefName( item ) );
                     }
