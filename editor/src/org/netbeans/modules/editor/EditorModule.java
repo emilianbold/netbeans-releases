@@ -147,7 +147,7 @@ public class EditorModule extends ModuleInstall {
             } );
 
         // Settings
-        NbEditorSettingsInitializer.init();
+        //NbEditorSettingsInitializer.init(); moving to NbEditorKit in accordance with the bug #21976
 
 	// defer the rest of initialization, but enable a bit of paralelism
 //        org.openide.util.RequestProcessor.postRequest (this, 0, Thread.MIN_PRIORITY);
