@@ -21,7 +21,6 @@ import javax.swing.text.StyledDocument;
 
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
-import org.openide.util.RequestProcessor;
 
 
 /**

@@ -51,7 +51,6 @@ import org.openide.nodes.NodeAcceptor;
 import org.openide.TopManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.UserCancelException;
 import org.openide.WizardDescriptor;
 
