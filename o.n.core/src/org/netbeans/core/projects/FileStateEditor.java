@@ -58,16 +58,21 @@ class FileStateEditor extends ListImageEditor {
         return null;
     }
 
-    public void setAsText (String str) throws java.lang.IllegalArgumentException {
+    public void setAsText (String str) throws java.lang.IllegalArgumentException {        
         try {
+            Integer value = null;
             if (action_define.equals (str)) {
-                prop.setValue (new Integer (FileStateProperty.ACTION_DEFINE));
+                value  = new Integer (SettingChildren.FileStateProperty.ACTION_DEFINE);
             }
             if (action_revert.equals (str)) {
-                prop.setValue (new Integer (FileStateProperty.ACTION_REVERT));
+                value = new Integer (FileStateProperty.ACTION_REVERT);
             }
             if (action_delete.equals (str)) {
-                prop.setValue (new Integer (FileStateProperty.ACTION_DELETE));
+                value = new Integer (FileStateProperty.ACTION_DELETE);                
+            }
+            if (value != null) {
+                prop.setValue (value);
+                super.setValue(value);                
             }
         } catch (IllegalAccessException e) {
         } catch (InvocationTargetException e) {
