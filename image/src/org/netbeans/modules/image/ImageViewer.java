@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.image;
 
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -27,6 +26,9 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -43,9 +45,7 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.WeakListener;
-import org.openide.windows.CloneableTopComponent;
-import org.openide.windows.Mode;
-import org.openide.windows.Workspace;
+import org.openide.windows.*;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 
@@ -112,6 +112,9 @@ public class ImageViewer extends CloneableTopComponent {
     private void initialize(ImageDataObject obj) {
         storedObject = obj;
         storedImage = new NBImageIcon(storedObject);
+            
+        // force closing panes in all workspaces, default is in current only
+        setCloseOperation(TopComponent.CLOSE_EACH);
         
         panel = new JPanel() {
             protected void paintComponent(Graphics g) {
@@ -236,30 +239,146 @@ public class ImageViewer extends CloneableTopComponent {
         }
         setToolTipText(fullName.toString());
     }
-    
-    /** Show the component on given workspace. If given workspace is
-     * not active, component will be shown only after given workspace
-     * will become visible.
-     * Note that this method only makes it visible, but does not
-     * give it focus.
-     * @param workspace Workspace on which component should be opened.
-     * @see #requestFocus
+
+    /** Docks the table into the workspace if top component is valid.
+     *  (Top component may become invalid after deserialization)
      */
-    public void open (Workspace w) {
-        Workspace realW = (w == null)
-        ? org.openide.TopManager.getDefault().getWindowManager().getCurrentWorkspace()
-        : w;
-        Mode viewerMode = realW.findMode(this);
-        if (viewerMode == null) {
-            Mode editorMode = realW.findMode(CloneableEditorSupport.EDITOR_MODE);
-            if (editorMode != null) editorMode.dockInto(this);
+    public void open(Workspace workspace){
+        if (discard()) return;
+
+        Workspace realWorkspace = (workspace == null)
+                                  ? WindowManager.getDefault().getCurrentWorkspace()
+                                  : workspace;
+        dockIfNeeded(realWorkspace);
+        boolean modeVisible = false;
+        TopComponent[] tcArray = editorMode(realWorkspace).getTopComponents();
+        for (int i = 0; i < tcArray.length; i++) {
+            if (tcArray[i].isOpened(realWorkspace)) {
+                modeVisible = true;
+                break;
+            }
         }
-        super.open (w);
+        if (!modeVisible) {
+            openOtherEditors(realWorkspace);
+        }
+        super.open(workspace);
+        openOnOtherWorkspaces(realWorkspace);
+    }
+
+    private void superOpen(Workspace workspace) {
+        super.open(workspace);
+    }
+
+
+    /** Utility method, opens this top component on all workspaces
+     * where editor mode is visible and which differs from given
+     * workspace.  */
+    private void openOnOtherWorkspaces(Workspace workspace) {
+        Workspace[] workspaces = WindowManager.getDefault().getWorkspaces();
+        Mode curEditorMode = null;
+        Mode tcMode = null;
+        for (int i = 0; i < workspaces.length; i++) {
+            // skip given workspace
+            if (workspaces[i].equals(workspace)) {
+                continue;
+            }
+            curEditorMode = workspaces[i].findMode(CloneableEditorSupport.EDITOR_MODE);
+            tcMode = workspaces[i].findMode(this);
+            if (
+                !isOpened(workspaces[i]) &&
+                curEditorMode != null &&
+                (
+                    tcMode == null ||
+                    tcMode.equals(curEditorMode)
+                )
+            ) {
+                // candidate for opening, but mode must be already visible
+                // (= some opened top component in it)
+                TopComponent[] tcArray = curEditorMode.getTopComponents();
+                for (int j = 0; j < tcArray.length; j++) {
+                    if (tcArray[j].isOpened(workspaces[i])) {
+                        // yep, open this top component on found workspace too
+                        pureOpen(this, workspaces[i]);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    /** Utility method, opens top components which are opened
+     * in editor mode on some other workspace.
+     * This method should be called only if first top component is
+     * being opened in editor mode on given workspace  */
+    private void openOtherEditors(Workspace workspace) {
+        // choose candidates for opening
+        Set topComps = new HashSet(15);
+        Workspace[] wsArray = WindowManager.getDefault().getWorkspaces();
+        Mode curEditorMode = null;
+        TopComponent[] tcArray = null;
+        for (int i = 0; i < wsArray.length; i++) {
+            curEditorMode = wsArray[i].findMode(CloneableEditorSupport.EDITOR_MODE);
+            if (curEditorMode != null) {
+                tcArray = curEditorMode.getTopComponents();
+                for (int j = 0; j < tcArray.length; j++) {
+                    if (tcArray[j].isOpened(wsArray[i])) {
+                        topComps.add(tcArray[j]);
+                    }
+                }
+            }
+        }
+        // open choosed candidates
+        for (Iterator iter = topComps.iterator(); iter.hasNext(); ) {
+            pureOpen((TopComponent)iter.next(), workspace);
+        }
+    }
+        
+    /** Utility method, calls super version of open if given
+     * top component is of Editor type, or calls regular open otherwise.
+     * The goal is to prevent from cycle open call between
+     * Editor top components  */
+    private void pureOpen(TopComponent tc,Workspace workspace) {
+        if (tc instanceof ImageViewer) {
+            ((ImageViewer)tc).dockIfNeeded(workspace);
+            ((ImageViewer)tc).superOpen(workspace);
+        } else {
+            tc.open(workspace);
+        }
+    }
+
+    /** Dock this top component to editor mode if it is not docked
+     * in some mode at this time  */
+    private void dockIfNeeded(Workspace workspace) {
+        // dock into editor mode if possible
+        Mode ourMode = workspace.findMode(this);
+        if (ourMode == null) {
+            editorMode(workspace).dockInto(this);
+        }
+    }
+
+    private Mode editorMode(Workspace workspace) {
+        Mode ourMode = workspace.findMode(this);
+        if (ourMode == null) {
+            ourMode = workspace.createMode(
+                          CloneableEditorSupport.EDITOR_MODE, getName(),
+                          CloneableEditorSupport.class.getResource(
+                              "/org/openide/resources/editorMode.gif" // NOI18N
+                          )
+                      );
+        }
+        return ourMode;
     }
     
     /** Gets HelpContext. */
     public HelpCtx getHelpCtx () {
         return new HelpCtx(ImageViewer.class);
+    }
+        
+    /** This component should be discarded if the associated environment
+     *  is not valid.
+     */
+    private boolean discard () {
+        return storedObject == null;
     }
     
     /** Serialize this top component. Serializes its data object in addition
