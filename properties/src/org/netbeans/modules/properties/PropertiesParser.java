@@ -187,7 +187,7 @@ class PropertiesParser {
       int nowPos;
       while (UtilConvert.continueLine(fl.line)) {
         // do something with the previous line
-        fl.stringValue = fl.stringValue.substring(0, fl.line.length() - 1);
+        fl.stringValue = fl.stringValue.substring(0, fl.stringValue/*fix: was: line*/.length() - 1);
         // now the new line
         nowPos = in.position;                
         fl = in.readLineNoFrills();
