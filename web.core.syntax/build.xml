@@ -29,7 +29,7 @@ Microsystems, Inc. All Rights Reserved.
       <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
       <pathelement location="${web/servletapi24.dir}/${nb.modules/autoload.dir}/ext/servlet-api-2.4.jar"/>
       <pathelement location="${web/jspparser.dir}/${nb.modules/autoload.dir}/ext/jsp-api-2.0.jar"/>
-      <pathelement location="${web/jspparser.dir}/${nb.modules/autoload.dir}/jsp-parser.jar"/>
+      <pathelement location="${web/jspparser.dir}/${nb.modules.dir}/org-netbeans-modules-web-jspparser.jar"/>
       <pathelement location="${openide/execution.dir}/${nb.modules.dir}/org-openide-execution.jar"/>
       <pathelement location="${editor.dir}/${nb.modules.dir}/ext/nb-editor.jar"/>
       <pathelement location="${editor.dir}/${nb.modules.dir}/ext/editor-lib.jar"/>
@@ -39,7 +39,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="compile" depends="init">
-    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="true">
       <classpath refID="cp"/>
     </javac>
 
