@@ -63,7 +63,7 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
   * @param filter the filter to use
   */
   private DataSystem(Children ch, DataFilter filter) {
-    this (ch, NbTopManager.getDefaultRepository (), filter);
+    this (ch, NbTopManager.get ().getRepository (), filter);
   }
 
   public HelpCtx getHelpCtx () {
@@ -235,6 +235,8 @@ static final long serialVersionUID =-2266375092419944364L;
 
 /*
  * Log
+ *  27   Jaga      1.25.1.0    3/16/00  Jaroslav Tulach IDE is initialized 
+ *       immediatelly when somebody calls TopManager.getDefault.
  *  26   Gandalf   1.25        1/13/00  Jaroslav Tulach I18N
  *  25   Gandalf   1.24        12/22/99 Ian Formanek    Fixed order of actions 
  *       in popup menu

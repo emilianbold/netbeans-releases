@@ -189,13 +189,15 @@ final class NbKeymap implements Keymap {
   }
 
   void fireChangeEvent (final ChangeEvent che) {
-    NbTopManager.change.firePropertyChange (NbTopManager.PROP_GLOBAL_KEYMAP, null, null);
+    NbTopManager.get ().firePropertyChange (NbTopManager.PROP_GLOBAL_KEYMAP, null, null);
   }
 
 }
 
 /*
 * Log
+*  12   Jaga      1.10.1.0    3/16/00  Jaroslav Tulach IDE is initialized 
+*       immediatelly when somebody calls TopManager.getDefault.
 *  11   src-jtulach1.10        3/8/00   Jaroslav Tulach Proper synchronization.
 *  10   src-jtulach1.9         1/13/00  Jaroslav Tulach I18N
 *  9    src-jtulach1.8         1/5/00   Ian Formanek    Removed obsoleted field

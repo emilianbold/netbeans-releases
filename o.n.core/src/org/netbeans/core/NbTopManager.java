@@ -45,13 +45,17 @@ import org.openide.windows.InputOutput;
 import org.openide.windows.TopComponent;
 import org.openide.explorer.*;
 import org.openide.explorer.view.BeanTreeView;
+import org.openide.util.*;
+import org.openide.util.io.*;
+import org.openide.nodes.*;
+import org.openide.execution.ExecutionEngine;
+import org.openide.compiler.CompilationEngine;
 
 import com.netbeans.developer.impl.actions.*;
 import com.netbeans.developer.impl.output.OutputTab;
 import com.netbeans.developer.impl.windows.WindowManagerImpl;
-import org.openide.util.*;
-import org.openide.util.io.*;
-import org.openide.nodes.*;
+import com.netbeans.developer.impl.compiler.CompilationEngineImpl;
+
 
 /** This class is a TopManager for Corona environment.
 *
@@ -59,58 +63,86 @@ import org.openide.nodes.*;
 */
 public class NbTopManager extends TopManager {
   /** stores main shortcut context*/
-  static private Keymap shortcutContext;
+  private Keymap shortcutContext;
 
   /** currently used debugger or null if none is in use */
-  private static Debugger debugger;
+  private Debugger debugger;
 
   /** default repository */
-  private static Repository repository;
+  private Repository repository;
 
   /** ExecutionMachine */
-  private org.openide.execution.ExecutionEngine execEngine;
+  private ExecutionEngine execEngine;
 
   /** CompilationMachine */
-  private org.openide.compiler.CompilationEngine compilationEngine;
+  private CompilationEngine compilationEngine;
 
   /** WWW browser window. */
-  static HtmlBrowser.BrowserComponent htmlViewer;
+  private HtmlBrowser.BrowserComponent htmlViewer;
 
 
   /** nodeOperation */
-  static NodeOperation nodeOperation;
+  private NodeOperation nodeOperation;
   /** clipboard */
-  private static ExClipboard clipboard;
+  private ExClipboard clipboard;
 
   /** ProjectOperation main variable */
   static NbProjectOperation projectOperation;
 
   /** support for listeners */
-  static PropertyChangeSupport change;
+  private PropertyChangeSupport change = new PropertyChangeSupport (this);
 
   /** repository */
-  static Repository defaultRepository;
+  private Repository defaultRepository;
+  
+  /** loader pool */
+  private DataLoaderPool loaderPool;
 
   /** the error level code for restarting windows */
   private static final int RESTART_EXIT_CODE = 66;
 
   /** Constructs a new manager.
   */
-  NbTopManager() {
-    change = new PropertyChangeSupport (this);
+  public NbTopManager() {
+  }
+  
+  /** Getter for instance of this manager.
+  */
+  public static NbTopManager get () {
+    return (NbTopManager)TopManager.getDefault ();
+  }
+  
+  //
+  // Protected methods that are provided for subclasses (Main) 
+  // to plug-in better implementation
+  //
+  protected FileSystem createDefaultFileSystem () {
+    return new LocalFileSystem ();
   }
 
+  
+  
+  
+  
+  //
+  // Implementation of methods from TopManager
+  //
+  
   /** Default repository
   */
   public Repository getRepository () {
-    return defaultRepository;
+    if (defaultRepository != null) {
+      return defaultRepository;
+    }
+    
+    synchronized (this) {
+      if (defaultRepository == null) {
+        defaultRepository = new Repository (createDefaultFileSystem ());
+      }
+      return defaultRepository;
+    }
   }
 
-  /** Default repository.
-  */
-  static Repository getDefaultRepository () {
-    return defaultRepository;
-  }
   
   /** Accessor to actions manager.
   */
@@ -203,16 +235,16 @@ public class NbTopManager extends TopManager {
     return WindowManagerImpl.getDefault();
   }
 
-  /** Provides support for www documents.
-  */
-  static HtmlBrowser.BrowserComponent getWWWBrowser () {
-    return htmlViewer;
-  }
-
   /** @return default root of keyboard shortcuts */
   public Keymap getGlobalKeymap () {
-    if (shortcutContext == null) {
-      shortcutContext = new NbKeymap ();
+    if (shortcutContext != null) {
+      return shortcutContext;
+    }
+    
+    synchronized (this) {
+      if (shortcutContext == null) {
+        shortcutContext = new NbKeymap ();
+      }
     }
     return shortcutContext;
   }
@@ -223,8 +255,14 @@ public class NbTopManager extends TopManager {
   * @return the clipboard for whole system
   */
   public ExClipboard getClipboard () {
-    if (clipboard == null) {
-      clipboard = new CoronaClipboard (""); // NOI18N
+    if (clipboard != null) {
+      return clipboard;
+    }
+    
+    synchronized (this) {
+      if (clipboard == null) {
+        clipboard = new CoronaClipboard (""); // NOI18N
+      }
     }
     return clipboard;
   }
@@ -287,6 +325,7 @@ public class NbTopManager extends TopManager {
   * @return currently installed  debugger.
   */
   public Debugger getDebugger () throws DebuggerNotFoundException {
+    
     Debugger d = debugger;
     if (d == null) {
       throw new DebuggerNotFoundException();
@@ -296,29 +335,49 @@ public class NbTopManager extends TopManager {
 
   /** Setter for debugger.
   */
-  static synchronized void setDebugger (Debugger d) {
-    if (debugger == null || d == null) {
-      Debugger old = debugger;
+  final void setDebugger (Debugger d) {
+    Debugger old;
+    
+    synchronized (this) {
+      old = debugger;
+      
+      if (old != null && d != null) {
+        throw new SecurityException ();
+      }
+      
       debugger = d;
-      change.firePropertyChange (PROP_DEBUGGER, old, d);
-    } else {
-      throw new SecurityException ();
     }
+    
+    firePropertyChange (PROP_DEBUGGER, old, d);
   }
 
   /**
   * @return implementation of ExecutionMachine
   */
-  public org.openide.execution.ExecutionEngine getExecutionEngine () {
-    if (execEngine == null) execEngine =
-      com.netbeans.developer.impl.execution.ExecutionEngine.getExecutionEngine();
+  public ExecutionEngine getExecutionEngine () {
+    if (execEngine != null) {
+      return execEngine;
+    }
+    
+    synchronized (this) {
+      if (execEngine == null) {
+        execEngine = com.netbeans.developer.impl.execution.ExecutionEngine.getExecutionEngine ();
+      }
+    }
     return execEngine;
   }
 
   /** @return implementation of CompilationEngine */
-  public org.openide.compiler.CompilationEngine getCompilationEngine() {
-    if (compilationEngine == null) compilationEngine =
-      new com.netbeans.developer.impl.compiler.CompilationEngineImpl();
+  public CompilationEngine getCompilationEngine() {
+    if (compilationEngine != null) {
+      return compilationEngine;
+    }
+    
+    synchronized (this) {
+      if (compilationEngine == null) {
+        compilationEngine = new CompilationEngineImpl();
+      }
+    }
     return compilationEngine;
   }
   
@@ -348,20 +407,17 @@ public class NbTopManager extends TopManager {
   /** Getter for node operations.
   */
   public NodeOperation getNodeOperation () {
-    if (nodeOperation == null) {
-      nodeOperation = new NbNodeOperation ();
+    if (nodeOperation != null) {
+      return nodeOperation;
+    }
+    
+    synchronized (this) {
+      if (nodeOperation == null) {
+        nodeOperation = new NbNodeOperation ();
+      }
     }
     return nodeOperation;
   }
-
-  // [LIGHT]
-  /*
-  static ModuleInstaller.Storage getModulesStorage() {
-    return modules;
-  }*/
-  // [LIGHT END]
-
-
 
   /** saves all opened objects */
   public void saveAll () {
@@ -402,8 +458,6 @@ public class NbTopManager extends TopManager {
       NbBundle.getBundle (NbTopManager.class).getString ("MSG_AllSaved"));
   }    
 
-  
-
   /** The ide is left after calling this method.
   * The method return iff Runtim.getRuntime().exit() fails
   */
@@ -423,11 +477,9 @@ public class NbTopManager extends TopManager {
   * The method return iff Runtim.getRuntime().exit() fails
   * JVM ends with retValue code.
   */
-  public void exit ( int retValue ) {
-    
+  public void exit (int retValue) {
     // save all open files
     if ( System.getProperty ("netbeans.close") != null || ExitDialog.showDialog() ) {
-        
       // save project
       NbProjectOperation.storeLastProject ();
     
@@ -438,39 +490,20 @@ public class NbTopManager extends TopManager {
   }
   
   
-  /** The ide is left after calling this method.
-  * The method return iff Runtim.getRuntime().exit() fails
-  */
-  /*
-  public void exit () {
-    org.openide.actions.SaveProjectAction spa = new org.openide.actions.SaveProjectAction ();
-    if (spa.isEnabled ()) {
-      boolean doSave = true;
-  //    if (new IDESettings ().getConfirmSaveOnExit ()) {
-  //      if (TopManager.notify (...)
-  //    }
-      
-      if (doSave) {
-        try {
-          spa.performAction ();
-          NbProjectOperation.saveLastProjectUsed ();
-        } catch (IOException e) {
-          TopManager.getDefault ().notifyException (e); // [PENDING]
-        }
-      }
-    }
-
-    if (ModuleInstaller.exit ()) {
-      Runtime.getRuntime().exit (0);
-    }
-  }
-  */
-  
   /** Provides access to data loader pool.
   * @return the loader pool for the system
   */
   public DataLoaderPool getLoaderPool () {
-    return LoaderPoolNode.getNbLoaderPool ();
+    if (loaderPool != null) {
+      return loaderPool;
+    }
+    
+    synchronized (this) {
+      if (loaderPool == null) {
+        loaderPool = LoaderPoolNode.getNbLoaderPool ();
+      }
+    }
+    return loaderPool;
   }
 
   /** Obtains current up-to system classloader
@@ -485,6 +518,8 @@ public class NbTopManager extends TopManager {
     return ClassLoaderSupport.currentClassLoader ();
   }
 
+  
+  
   /** Add listener */
   public void addPropertyChangeListener (PropertyChangeListener l) {
     change.addPropertyChangeListener (l);
@@ -494,7 +529,23 @@ public class NbTopManager extends TopManager {
   public void removePropertyChangeListener (PropertyChangeListener l) {
     change.removePropertyChangeListener (l);
   }
+  
+  /** Fires property change
+  */
+  public void firePropertyChange (String p, Object o, Object n) {
+    change.firePropertyChange (p, o, n);
+  }
 
+  
+  
+  /** Provides support for www documents.
+  *
+  static HtmlBrowser.BrowserComponent getWWWBrowser () {
+    return htmlViewer;
+  }
+  
+  
+  
   /**
   * For externalization of HTMLBrowser.
   */
@@ -513,7 +564,7 @@ public class NbTopManager extends TopManager {
     */
     public void readExternal (ObjectInput in) throws IOException, ClassNotFoundException {
       super.readExternal (in);
-      htmlViewer = this;
+      NbTopManager.get ().htmlViewer = this;
     }
   }
 }

@@ -81,14 +81,14 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
   */
   public static void addRoot (Node n) {
     roots.add (n);
-    NbTopManager.change.firePropertyChange (NbTopManager.PROP_PLACES, null, null);
+    NbTopManager.get ().firePropertyChange (NbTopManager.PROP_PLACES, null, null);
   }
   
   /** Removes new root node.
   */
   public static void removeRoot (Node n) {
     if (roots.remove (n)) {
-      NbTopManager.change.firePropertyChange (NbTopManager.PROP_PLACES, null, null);
+      NbTopManager.get ().firePropertyChange (NbTopManager.PROP_PLACES, null, null);
     }
   }
   
@@ -239,11 +239,11 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
    */
   private DataFolder findSessionFolder (String name) {
     try {
-      FileObject fo = NbTopManager.getDefaultRepository().findResource(name);
+      FileObject fo = NbTopManager.get ().getRepository().findResource(name);
 
       if (fo == null) {
         // resource not found, try to create new folder
-        fo = NbTopManager.getDefaultRepository ().getDefaultFileSystem ().getRoot ().createFolder (name);
+        fo = NbTopManager.get ().getRepository ().getDefaultFileSystem ().getRoot ().createFolder (name);
         try {
           fo.setAttribute ("SystemFileSystem.localizingBundle", "com.netbeans.developer.impl.Bundle"); // NOI18N
         } catch (java.io.IOException ioe) {
@@ -263,6 +263,8 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
 
 /*
 * Log
+*  35   Jaga      1.33.1.0    3/16/00  Jaroslav Tulach IDE is initialized 
+*       immediatelly when somebody calls TopManager.getDefault.
 *  34   Gandalf   1.33        1/19/00  Jesse Glick     Localized filenames.
 *  33   Gandalf   1.32        1/13/00  Jaroslav Tulach I18N
 *  32   Gandalf   1.31        11/29/99 Jaroslav Tulach new packages 
