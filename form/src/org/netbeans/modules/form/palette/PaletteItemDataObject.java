@@ -84,6 +84,10 @@ class PaletteItemDataObject extends MultiDataObject {
         super(fo, loader);
     }
 
+    boolean isFileRead() {
+        return fileLoaded;
+    }
+
     boolean isItemValid() {
         return paletteItem != null;
     }
