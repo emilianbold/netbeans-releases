@@ -105,9 +105,6 @@ import org.netbeans.spi.debugger.SessionProvider;
  */
 public final class DebuggerManager {
     
-    /** Action constant for breakpoint hit action. */
-    public static final Object              ACTION_BREAKPOINT_HIT = "breakpointHit";
-    
     /** Action constant for Step Over Action. */
     public static final Object              ACTION_STEP_OVER = "stepOver";
     
@@ -299,7 +296,10 @@ public final class DebuggerManager {
             )
         );
         Session sessionToStart = null;
-        int i, k = sessionProviders.size ();
+        int i, k = sessionProviders.size (); System.out.println("DM: found: " + k + "session");
+        if (k == 0) {
+            info.getLookup();
+        }
         for (i = 0; i < k; i++) {
             Session s = null;
             if (sessionProviders.get (i) instanceof DelegatingSessionProvider) {
@@ -368,7 +368,7 @@ public final class DebuggerManager {
             }
         }
         
-        k = engines.size ();
+        k = engines.size (); System.out.println("DM: found: " + k + "engines");
         for (i = 0; i < k; i++) {
             ((DebuggerEngine) engines.get (i)).getActionsManager ().doAction 
                 (ACTION_START);
