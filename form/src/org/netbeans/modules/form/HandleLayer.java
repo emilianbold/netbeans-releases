@@ -191,10 +191,12 @@ class HandleLayer extends JPanel
                         else if (formDesigner.getDesignerMode() == FormDesigner.MODE_ADD) {
                             // in add mode SPACE adds selected item as component
                             PaletteItem item = CPManager.getDefault().getSelectedItem();
-                            formDesigner.getModel().getComponentCreator()
-                                .createComponent(item.getInstanceCookie(),
-                                                 comp, null);
-                            formDesigner.toggleSelectionMode();
+                            if (item != null) {
+                                formDesigner.getModel().getComponentCreator()
+                                    .createComponent(item.getInstanceCookie(),
+                                                     comp, null);
+                                formDesigner.toggleSelectionMode();
+                            }
                         }
                     }
                 }
@@ -1149,24 +1151,26 @@ class HandleLayer extends JPanel
                             e.isAltDown() ? COMP_SELECTED : COMP_DEEPEST);
 
                         PaletteItem item = CPManager.getDefault().getSelectedItem();
-                        Object constraints;
+                        if (item != null) {
+                            Object constraints;
 
-                        if (!item.isMenu() && item.isVisual()) {
-                            constraints = getConstraintsAtPoint(
-                                            hitMetaComp, lastLeftMousePoint);
-                        }
-                        else constraints = null;
+                            if (!item.isMenu() && item.isVisual()) {
+                                constraints = getConstraintsAtPoint(
+                                                hitMetaComp, lastLeftMousePoint);
+                            }
+                            else constraints = null;
 
-                        if (!mouseOnVisual(lastLeftMousePoint)) {
-                            formDesigner.getModel().getComponentCreator()
-                                .createComponent(item.getInstanceCookie(),
-                                                 null, null);
-                        }
-                        else {
-                            formDesigner.getModel().getComponentCreator()
-                                .createComponent(item.getInstanceCookie(),
-                                                 hitMetaComp,
-                                                 constraints);
+                            if (!mouseOnVisual(lastLeftMousePoint)) {
+                                formDesigner.getModel().getComponentCreator()
+                                    .createComponent(item.getInstanceCookie(),
+                                                     null, null);
+                            }
+                            else {
+                                formDesigner.getModel().getComponentCreator()
+                                    .createComponent(item.getInstanceCookie(),
+                                                     hitMetaComp,
+                                                     constraints);
+                            }
                         }
 
                         if (!e.isShiftDown()) {
