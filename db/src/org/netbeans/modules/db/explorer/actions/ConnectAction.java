@@ -43,13 +43,17 @@ public class ConnectAction extends DatabaseAction {
 
     protected boolean enable(Node[] activatedNodes) {
         Node node;
-        if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
+        if (activatedNodes != null && activatedNodes.length == 1) node = activatedNodes[0];
         else return false;
 
         DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
         DatabaseNodeInfo nfo = info.getParent(DatabaseNode.CONNECTION);
         if (nfo != null) return (nfo.getConnection() == null);
         return false;
+    }
+    
+    protected int mode() {
+        return MODE_ALL;
     }
 
     public void performAction(Node[] activatedNodes) {
