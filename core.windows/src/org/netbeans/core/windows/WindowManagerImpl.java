@@ -841,6 +841,11 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     protected void topComponentOpen(TopComponent tc) {
         assertEventDispatchThreadWeak();
         
+        if (tc == null) {
+            throw new IllegalArgumentException ("Cannot open a null " +
+                "TopComponent"); //NOI18N
+        }
+        
         ModeImpl mode = getMode(tc);
 
         if(mode == null) {
