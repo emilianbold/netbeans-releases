@@ -440,10 +440,6 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
       return new PropertiesCloneableTopComponent (dobj, ptm/*, ptcm*/);
     }
                           
-    /** Mode where properties windows belong by defaut */
-    public TopComponent.Mode getDefaultMode () {    
-      return PropertiesModule.propertiesDefaultMode;
-    }
     /** This method is called when parent window of this component has focus,
     * and this component is preferred one in it.
     * Override this method to perform special action on component activation.
