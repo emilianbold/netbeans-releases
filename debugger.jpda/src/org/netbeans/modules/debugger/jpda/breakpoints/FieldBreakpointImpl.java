@@ -57,6 +57,7 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
             new String[0],
             ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED
         );
+        checkLoadedClasses (breakpoint.getClassName (), true);
     }
     
     protected void classLoaded (ReferenceType referenceType) {
