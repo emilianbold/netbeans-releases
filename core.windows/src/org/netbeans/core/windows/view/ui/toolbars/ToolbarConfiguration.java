@@ -581,7 +581,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
         Toolbar tb;
         ToolbarConstraints tc;
         String name;
-        ToolbarRow newRow = null;
+        ToolbarRow lastRow = null;
         boolean someBarAdded = false;
 
         for (int i = 0; i < tbs.length; i++) {
@@ -589,10 +589,14 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
             name = tb.getName();
             tc = (ToolbarConstraints)allToolbars.get (name);
             if (tc == null) { /* If there is no toolbar constraints description defined yet ... */
-                if (newRow == null)
-                    newRow = createLastRow();
+                if (lastRow == null) {
+                    if( toolbarRows.isEmpty() )
+                        lastRow = createLastRow();
+                    else
+                        lastRow = getRow( toolbarRows.size()-1 );
+                }
                 tc = new ToolbarConstraints (this, name, null, Boolean.TRUE); /* ... there is created a new constraints. */
-                addToolbar (newRow, tc);
+                addToolbar (lastRow, tc);
                 someBarAdded = true;
             }
             toolbarPanel().add (tb, tc);
