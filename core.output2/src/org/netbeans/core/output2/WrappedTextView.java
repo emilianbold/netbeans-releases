@@ -81,7 +81,7 @@ public class WrappedTextView extends View {
     private int charHeight = -1;
     private int charHeight() {
         if (charHeight == -1) {
-            return 12;
+            return 7;
         }
         return charHeight;
     }
@@ -134,6 +134,11 @@ public class WrappedTextView extends View {
 //        }
     }
     private static final Segment SEGMENT = new Segment();
+
+    private int margin() {
+        return 9;
+    }
+
     /**
      * Renders using the given rendering surface and area on that
      * surface.  The view may need to do layout and create child
@@ -174,7 +179,7 @@ public class WrappedTextView extends View {
 
             Segment seg = SwingUtilities.isEventDispatchThread() ? SEGMENT : new Segment();
 
-            int margin = 0;//9;
+            int margin = margin();
 
             int selStart = comp.getSelectionStart();
             int selEnd = comp.getSelectionEnd();
@@ -276,30 +281,6 @@ public class WrappedTextView extends View {
 
     }
 
-    /**
-     * Provides a mapping, for a given character,
-     * from the document model coordinate space
-     * to the view coordinate space.
-     *
-     * @param pos the position of the desired character (>=0)
-     * @param a   the area of the view, which encompasses the requested character
-     * @param b   the bias toward the previous character or the
-     *            next character represented by the offset, in case the
-     *            position is a boundary of two views; <code>b</code> will have one
-     *            of these values:
-     *            <ul>
-     *            <li> <code>Position.Bias.Forward</code>
-     *            <li> <code>Position.Bias.Backward</code>
-     *            </ul>
-     * @return the bounding box, in view coordinate space,
-     *         of the character at the specified position
-     * @throws javax.swing.text.BadLocationException
-     *                                  if the specified position does
-     *                                  not represent a valid location in the associated document
-     * @throws IllegalArgumentException if <code>b</code> is not one of the
-     *                                  legal <code>Position.Bias</code> values listed above
-     * @see javax.swing.text.View#viewToModel
-     */
     private int lastPos = -1;
     public Shape modelToView(int pos, Shape a, Position.Bias b) throws BadLocationException {
         Rectangle result = new Rectangle(0, 0, charWidth(), charHeight());
@@ -322,7 +303,7 @@ public class WrappedTextView extends View {
             result.y = (row * charHeight());
 
 //            result.x = Math.min (od.getLineLength(line), column * charWidth());
-            result.x = column * charWidth();
+            result.x = margin() + (column * charWidth());
               if (pos != lastPos && pos == comp.getCaret().getDot())
                 System.err.println ("m2v: pos=" + pos + "=" + result + " line=" + line + " row= " + row + " start=" + start + " column=" + column + " linesAbove=" + linesAbove);
             lastPos = pos;
@@ -330,26 +311,10 @@ public class WrappedTextView extends View {
         return result;
     }
 
-    /**
-     * Provides a mapping from the view coordinate space to the logical
-     * coordinate space of the model.  The <code>biasReturn</code>
-     * argument will be filled in to indicate that the point given is
-     * closer to the next character in the model or the previous
-     * character in the model.
-     *
-     * @param x the X coordinate >= 0
-     * @param y the Y coordinate >= 0
-     * @param a the allocated region in which to render
-     * @return the location within the model that best represents the
-     *         given point in the view >= 0.  The <code>biasReturn</code>
-     *         argument will be
-     *         filled in to indicate that the point given is closer to the next
-     *         character in the model or the previous character in the model.
-     */
     public int viewToModel(float x, float y, Shape a, Position.Bias[] biasReturn) {
         OutputDocument od = odoc();
         if (od != null) {
-            int ix = (int) x;
+            int ix = (int) x - margin();
             int iy = (int) y;
 
             int charsPerLine = wcharCount();
