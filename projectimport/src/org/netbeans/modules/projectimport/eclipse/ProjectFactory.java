@@ -96,6 +96,7 @@ public final class ProjectFactory {
         } else {
             logger.finer("Project " + project.getName() + // NOI18N
                     " doesn't have java nature."); // NOI18N
+            project.setJavaNature(false);
         }
     }
 }
