@@ -942,6 +942,13 @@ public final class AntProjectHelper {
                     }
                 }
                 globalProperties = PropertyUtils.fixedPropertyProvider(globprops);
+                
+                //#44213 - hotfix till the listening on "user.properties.file" will be implemented.
+                if (!f.exists()) {
+                    // use global properties if user.properties.file file does not exist
+                    globalProperties = PropertyUtils.globalPropertyProvider();
+                }
+                
             } else {
                 globalProperties = PropertyUtils.globalPropertyProvider();
             }
