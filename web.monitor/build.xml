@@ -36,7 +36,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <!-- These are the primary targets. -->
 
-  <target name="netbeans" depends="jars,javahelp,copy-to-tomcat5">
+  <target name="netbeans" depends="jars,javahelp">
     <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/monitor.jar">
       <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
         <patternset refID="monitor.files"/>
@@ -105,31 +105,6 @@ Microsystems, Inc. All Rights Reserved.
         <include name="org/netbeans/modules/web/monitor/docs/monitor.hs"/>
       </fileset>
     </checkhelpsets>
-  </target>
-
-  <target name="copy-to-tomcat5" if="tomcat5-bundled" depends="bundled-tomcat5-check">
-    <!-- Originally added by Radim Kubacki. This target copies the
-    server side component directly to the installed Tomcat server,
-    should such a server exist, for release purposes. This makes sense
-    with the current approach to the bundled server installation,
-    where the shared binaries live under the IDE root and the
-    configuration files in the user directory. If the IDE is installed
-    as shared in a read-only directory, then those jar files cannot be
-    copied when an individual user requires it. 
-    The need for this target will be removed when we move the the
-    projects based deployment of the monitor. 
-    --> 
-    <!--
-    <copy file="${schema2beans/rt.dir}/${nb.modules.dir}/org-netbeans-modules-schema2beans.jar" 
-          tofile="${tomcatint/tomcat5/bundled.dir}/jakarta-tomcat-5.0.19/common/lib/schema2beans.jar"/>
-    <copy file="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/httpmonitor.jar"
-          tofile="${tomcatint/tomcat5/bundled.dir}/jakarta-tomcat-5.0.19/common/lib/httpmonitor.jar"/>
-    -->
-  </target>
-
-  <target name="bundled-tomcat5-check">
-    <available property="tomcat5-bundled" 
-    file="${tomcatint/tomcat5/bundled.dir}/${nb.modules/eager.dir}/tomcat5-bundled.jar"/>
   </target>
 
   <target name="compile"
