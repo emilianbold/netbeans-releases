@@ -33,7 +33,7 @@ implements TableOwnerOperations
  		try {
 //			DatabaseMetaData dmd = getConnection().getMetaData();
 			DatabaseMetaData dmd = getSpecification().getMetaData();
-			String[] filter = new String[] {"TABLE","BASE"};
+			String[] filter = new String[] {"TABLE"};
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			ResultSet rs = dmd.getTables(catalog, getUser(), null, filter);
 			while (rs.next()) {

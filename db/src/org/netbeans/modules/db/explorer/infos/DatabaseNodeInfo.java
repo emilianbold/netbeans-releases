@@ -123,23 +123,22 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 		DatabaseNodeInfo nfo = createNodeInfo(parent, nodecode);
 		Vector rsnames = (Vector)nfo.get(DatabaseNodeInfo.RESULTSET);
 		Iterator rsnames_i = rsnames.iterator();
-		try {
-			Hashtable data = new Hashtable();
-			while (rsnames_i.hasNext()) {
+		Hashtable data = new Hashtable();
+		while (rsnames_i.hasNext()) {
+			try {
 				key = (String)rsnames_i.next();
 				if (!key.equals("unused")) {
 					Object value = rset.getObject(colidx);
 					if (value != null) data.put(key, value);
 				}
 				colidx++;
-			}
-			nfo.putAll(data);
-			nfo.put(nodecode, nfo.getName());
-			if (parent != null && parent.isReadOnly()) nfo.setReadOnly(true);
-		} catch (Exception e) {
-			throw new DatabaseException("unable to read key "+key+" from result set, "+e.getMessage());
+			} catch (SQLException ex) {
+				System.out.println("unable to read key "+key+", "+ex);
+			}	
 		}
-			
+		nfo.putAll(data);
+		nfo.put(nodecode, nfo.getName());
+		if (parent != null && parent.isReadOnly()) nfo.setReadOnly(true);
 		return nfo;
 	}		
 
