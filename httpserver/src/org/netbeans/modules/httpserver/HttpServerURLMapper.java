@@ -24,6 +24,7 @@ import java.util.StringTokenizer;
 import org.openide.ErrorManager;
 import org.openide.util.SharedClassObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileStateInvalidException;
@@ -100,6 +101,10 @@ public class HttpServerURLMapper extends URLMapper {
         
         // fileObject must not be null
         if (fileObject == null)
+            return null;
+        
+        // if the file is on the localhost, don't return URL with HTTP
+        if (FileUtil.toFile(fileObject) != null)
             return null;
         
         try {
