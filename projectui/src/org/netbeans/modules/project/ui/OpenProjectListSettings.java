@@ -19,6 +19,7 @@ import java.util.List;
 import java.io.File;
 import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /** SystemOption to store the list of open projects
  *  XXX Should be removed later and changed either to registry
@@ -102,11 +103,23 @@ public class OpenProjectListSettings extends SystemOption {
     }
 
     public File getProjectsFolder () {
-        String result = (String) this.getProperty (PROP_PROJECTS_FOLDER);
-        if (result == null) {
-            result = System.getProperty("user.home");   //NOI18N
+        String dir = (String) this.getProperty (PROP_PROJECTS_FOLDER);
+        if (dir == null) {
+            dir = System.getProperty("user.home");   //NOI18N
+
+            // don't offer C:\Document and Settings\joeuser as the default starting
+            // point in the file chooser on Windows
+            
+            if (Utilities.isWindows() && dir != null) {
+                if (dir.startsWith(":\\", 1)) { // NOI18N
+                    dir = dir.substring(0, 3);
+                }
+                else if (new File("C:\\").exists()) { // NOI18N
+                    dir = "C:\\"; // NOI18N
+                }
+            }
         }
-        return new File(result);
+        return new File(dir);
     }
 
     public void setProjectsFolder (File folder) {
