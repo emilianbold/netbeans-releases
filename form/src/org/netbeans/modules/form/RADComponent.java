@@ -16,6 +16,7 @@ package com.netbeans.developer.modules.loaders.form;
 import org.openide.explorer.propertysheet.editors.*;
 import org.openide.nodes.*;
 import org.openide.util.Utilities;
+import org.openide.util.datatransfer.NewType;
 
 import java.beans.*;
 import java.lang.reflect.InvocationTargetException;
@@ -43,8 +44,11 @@ public class RADComponent {
   public static final String SYNTHETIC_PREFIX = "synthetic_";
   public static final String PROP_NAME = SYNTHETIC_PREFIX + "Name";
 
+  static final NewType[] NO_NEW_TYPES = {};
+
 // -----------------------------------------------------------------------------
 // Private variables
+
   private RADComponentNode componentNode;
 
   private Class beanClass;
@@ -208,6 +212,13 @@ public class RADComponent {
     return auxValues;
   }
   
+  /** Support for new types that can be created in this node.
+  * @return array of new type operations that are allowed
+  */
+  public NewType[] getNewTypes () {
+    return NO_NEW_TYPES;
+  }
+
   public Node.PropertySet[] getProperties () {
     if (beanPropertySets == null) {
       if (beanExpertProperties.length != 0) {
@@ -956,6 +967,7 @@ public class RADComponent {
 
 /*
  * Log
+ *  29   Gandalf   1.28        7/5/99   Ian Formanek    NewTypes added
  *  28   Gandalf   1.27        7/5/99   Ian Formanek    getComponentInstance->getBeanInstance,
  *        getComponentClass->getBeanClass
  *  27   Gandalf   1.26        7/2/99   Ian Formanek    Fixed bug #2310 - 
