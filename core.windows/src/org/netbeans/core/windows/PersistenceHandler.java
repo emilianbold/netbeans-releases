@@ -780,5 +780,18 @@ final class PersistenceHandler implements PersistenceObserver {
         
         return bounds;
     }
+    
+    
+    // Projects>>
+    public void loadProjectData() {
+        // TODO
+//        System.err.println("\nloading project winsys data"); // TEMP
+    }
+    
+    public void saveProjectData() {
+        // TODO
+//        System.err.println("\nsaving project winsys data"); // TEMP
+    }
+    // Projects<<
 
 }

@@ -437,6 +437,14 @@ public abstract class NbTopManager /*extends TopManager*/ {
         public void hide();
         public void load();
         public void save();
+
+        // Project specific.
+        /** @since 1.20 */
+        public void saveProjectData();
+        /** @since 1.20 */
+        public void loadProjectData();
+        /** @since 1.20 */
+        public void setProjectName(String projectName);
     } // End of WindowSystem interface.
     
     public static boolean isModalDialogPresent() {

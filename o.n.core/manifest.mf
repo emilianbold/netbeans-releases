@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.core/1
-OpenIDE-Module-Specification-Version: 1.19
+OpenIDE-Module-Specification-Version: 1.20
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 4.15
 OpenIDE-Module-Module-Dependencies: org.openide.loaders > 4.11
