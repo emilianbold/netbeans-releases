@@ -190,6 +190,8 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Recognize text/x-jsp -->
     <folder name="MIMEResolver">
       <file name="org-netbeans-modules-web-core-resources-mime-resolver.xml" url="mime-resolver.xml">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle" />
+        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/servletSettings.gif" />
       </file>
     </folder>
 
