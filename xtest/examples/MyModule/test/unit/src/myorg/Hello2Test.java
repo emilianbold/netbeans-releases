@@ -13,6 +13,7 @@
 
 package myorg;
 
+import junit.framework.*;
 import org.netbeans.junit.*;
 
 public class Hello2Test extends NbTestCase {
@@ -25,8 +26,8 @@ public class Hello2Test extends NbTestCase {
         junit.textui.TestRunner.run(suite());
     }
     
-    public static NbTest suite() {
-        NbTestSuite suite = new NbTestSuite(Hello2Test.class);
+    public static Test suite() {
+        TestSuite suite = new NbTestSuite(Hello2Test.class);
         
         return suite;
     }
