@@ -314,9 +314,20 @@ public final class Services extends ServiceType.Registry implements LookupListen
     */
     public Enumeration services (Class clazz) {
         if (clazz == null) new org.openide.util.enum.EmptyEnumeration();
-        Lookup.Result res;
-        res = Lookup.getDefault().lookup(new Lookup.Template(clazz));
-        return Collections.enumeration(res.allInstances());
+        Collection res = Lookup.getDefault().lookup(new Lookup.Template(clazz)).allInstances();
+        if (res.size() == 0) {
+            ArrayList defs = new ArrayList(1);
+            if (org.openide.execution.Executor.class.isAssignableFrom(clazz)) {
+                defs.add(ExecutorEditor.NO_EXECUTOR);
+            } else if (org.openide.compiler.CompilerType.class.isAssignableFrom(clazz)) {
+                defs.add(CompilerTypeEditor.NO_COMPILER);
+            } else if (org.openide.debugger.DebuggerType.class.isAssignableFrom(clazz)) {
+                defs.add(DebuggerTypeEditor.NO_DEBUGGER);
+            }
+            return Collections.enumeration(defs);
+        } else {
+            return Collections.enumeration(res);
+        }
     }
     
     /** Adds a service type.
@@ -535,6 +546,9 @@ public final class Services extends ServiceType.Registry implements LookupListen
 
 /*
 * $Log$
+* Revision 1.53  2001/07/26 21:06:41  jpokorsky
+* Workaround ensuring Executor.getDefault won't return null. Class Services should be rewritten to reflect contemporary implementation of settings.
+*
 * Revision 1.52  2001/07/19 14:23:22  jtulach
 * AbstractLookup enhanced with constructor that takes AbstractLookup.Content and allows any creator of the lookup to control its content. InstanceContent created to provide simple way how to create lookup with plain object instances.
 *
