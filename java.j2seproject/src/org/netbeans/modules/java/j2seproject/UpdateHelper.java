@@ -222,11 +222,13 @@ public class UpdateHelper {
                 Element sourceRoots = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");  //NOI18N
                 Element root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
                 root.setAttribute ("id","src.dir");   //NOI18N
+                root.setAttribute ("name",NbBundle.getMessage(UpdateHelper.class,"NAME_src.dir"));
                 sourceRoots.appendChild(root);
                 newRoot.appendChild (sourceRoots);
                 Element testRoots = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
                 root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
                 root.setAttribute ("id","test.src.dir");   //NOI18N
+                root.setAttribute ("name",NbBundle.getMessage(UpdateHelper.class,"NAME_test.src.dir"));
                 testRoots.appendChild (root);
                 newRoot.appendChild (testRoots);
                 cachedElement = newRoot;
