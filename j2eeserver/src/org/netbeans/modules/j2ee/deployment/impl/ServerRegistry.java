@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.j2ee.deployment.impl;
 
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationException;
 import javax.enterprise.deploy.spi.DeploymentManager;
@@ -367,6 +368,7 @@ public final class ServerRegistry implements java.io.Serializable {
             if(add) pl.serverAdded(server);
             else pl.serverRemoved(server);
         }
+	configNamesByType = null;
     }
     
     private void fireInstanceListeners(ServerString instance, boolean add) {
@@ -513,5 +515,31 @@ public final class ServerRegistry implements java.io.Serializable {
         public void changeDefaultInstance(ServerString oldInstance, ServerString newInstance);
         
     }
-    
+
+    private static HashMap configNamesByType = null;
+    private static final Object[] allTypes = new Object[] {
+        J2eeModule.EAR, J2eeModule.CLIENT, J2eeModule.CONN, J2eeModule.EJB, J2eeModule.WAR };
+        
+    private void initConfigNamesByType() {
+        if (configNamesByType != null) {
+            return;
+        }
+        for (int i=0 ; i<allTypes.length; i++) {
+            Set configNames = new HashSet();
+            for (Iterator j=servers.values().iterator(); j.hasNext();) {
+		Server s = (Server) j.next();
+		String[] paths = s.getDeploymentPlanFiles(allTypes[i]);
+		for (int k=0 ; k<paths.length; k++) {
+		    File path = new File(paths[k]);
+		    configNames.add(path.getName());
+		}
+            }
+	    configNamesByType.put(allTypes[i], configNames);
+        }
+    }
+    public boolean isConfigFileName(String name, Object type) {
+	initConfigNamesByType();
+	Set configNames = (Set) configNamesByType.get(type);
+	return (configNames != null && configNames.contains(name));
+    }
 }
