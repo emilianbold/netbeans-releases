@@ -206,6 +206,11 @@ static final long serialVersionUID =8377025140456676594L;
           setValue ();
         }
       });
+      tfSize.addFocusListener (new java.awt.event.FocusAdapter () {
+        public void focusLost (java.awt.event.FocusEvent evt) {
+          setValue ();
+        }
+      });
       la.setConstraints (tfSize, c);
       add (tfSize);
 
@@ -359,6 +364,7 @@ static final long serialVersionUID =8377025140456676594L;
 
 /*
  * Log
+ *  10   Gandalf   1.9         1/13/00  Pavel Buzek     
  *  9    Gandalf   1.8         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  8    Gandalf   1.7         9/10/99  Ian Formanek    Removed deprecated code
