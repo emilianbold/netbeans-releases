@@ -31,8 +31,8 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="test-preinit" depends="init">
-        <property name="test-unit-sys-prop.test.ant.home" location="${netbeans.dest.dir}/${cluster.dir}/ant"/>
-        <property name="test-unit-sys-prop.test.ant.bridge" location="${netbeans.dest.dir}/${cluster.dir}/ant/nblib/bridge.jar"/>
+        <property name="test-unit-sys-prop.test.ant.home" location="${ant.dir}/ant"/>
+        <property name="test-unit-sys-prop.test.ant.bridge" location="${ant.dir}/ant/nblib/bridge.jar"/>
     </target>
 
 </project>
