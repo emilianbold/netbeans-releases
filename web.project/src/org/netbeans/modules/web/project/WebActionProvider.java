@@ -147,7 +147,7 @@ class WebActionProvider implements ActionProvider {
     }
     
     private FileObject findBuildXml() {
-        return project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
+        return project.getProjectDirectory().getFileObject(project.getBuildXmlName());
     }
     
     public String[] getSupportedActions() {

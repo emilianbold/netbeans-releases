@@ -639,7 +639,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                             true);
                     }
                     genFilesHelper.refreshBuildScript(
-                        GeneratedFilesHelper.BUILD_XML_PATH,
+                        getBuildXmlName(),
                         WebProject.class.getResource("resources/build.xsl"),
                         true);
                     
