@@ -57,9 +57,23 @@ public class ListImageEditor extends PropertyEditorSupport implements ExProperty
             canRead = ((Node.Property)d).canRead ();
         }
         
-        Image imgs [] = (Image [])d.getValue (PROP_IMAGES);
-        Integer vals [] = (Integer [])d.getValue (PROP_VALUES);
-        String descs [] = (String [])d.getValue (PROP_DESCRIPTIONS);
+        Object o;
+        Image imgs [] = null;
+        Integer vals [] = null;
+        String descs [] = null;
+        
+        o = d.getValue (PROP_IMAGES);
+        if (o instanceof Image []) {
+            imgs = (Image [])o;
+        }
+        o = d.getValue (PROP_VALUES);
+        if (o instanceof Integer []) {
+            vals = (Integer [])o;
+        }
+        o = d.getValue (PROP_DESCRIPTIONS);
+        if (o instanceof String []) {
+            descs = (String [])o;
+        }
         
         int length = 0;
         if(imgs != null) {
