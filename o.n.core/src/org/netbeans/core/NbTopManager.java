@@ -359,7 +359,7 @@ public abstract class NbTopManager extends TopManager {
     * @param em explorer manager 
     */
     public void attachExplorer (Runnable run, ExplorerManager em) {
-        WindowManagerImpl.getDefault().attachExplorer (run, em);
+        ((WindowManagerImpl)WindowManager.getDefault()).attachExplorer (run, em);
     }
 
     /** Creates new dialog.
@@ -459,10 +459,12 @@ public abstract class NbTopManager extends TopManager {
         return defaultErrorManager;
     }
 
-    /** Window manager.
+    /** Accessor for window manager implementation. Used in core.lookup.TMLookup
+     * for window manager isntance creation. 
+     * Delegates to windows.WindowManagerImpl.getInstance()
     */
     public WindowManager getWindowManager () {
-        return WindowManagerImpl.getDefault();
+        return WindowManagerImpl.getInstance();
     }
 
     /** @return default root of keyboard shortcuts */

@@ -41,6 +41,7 @@ import org.openide.util.Utilities;
 import org.netbeans.core.windows.TabbedContainerUIManager;
 import org.netbeans.core.windows.UIModeManager;
 import org.netbeans.core.windows.WindowManagerImpl;
+import org.openide.windows.WindowManager;
 
 /** Global IDE settings.
 *
@@ -480,7 +481,8 @@ public class IDESettings extends SystemOption {
 
     private TabbedContainerUIManager getTabbedContainerUIManager () {
         if(tabbedContainerUIManager == null) {
-            tabbedContainerUIManager = WindowManagerImpl.getDefault().tabbedContainerUIManager();
+            tabbedContainerUIManager = ((WindowManagerImpl)WindowManager.getDefault()).
+                                        tabbedContainerUIManager();
         }
         return tabbedContainerUIManager;
     }

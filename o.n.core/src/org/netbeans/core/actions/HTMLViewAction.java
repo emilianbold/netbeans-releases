@@ -22,6 +22,7 @@ import org.openide.util.actions.ActionPerformer;
 import org.openide.util.actions.CallableSystemAction;
 
 import org.netbeans.core.IDESettings;
+import org.openide.windows.WindowManager;
 
 /** Activates last opened HTML browser or opens a HTML Browser on the home URL 
  *  specified in IDESettings using TopManager.showUrl().
@@ -48,7 +49,7 @@ public class HTMLViewAction extends CallableSystemAction {
             boolean notFound = true;
             
             // is browser open on current workspace?
-            Workspace workspace = tm.getWindowManager ().getCurrentWorkspace ();
+            Workspace workspace = WindowManager.getDefault().getCurrentWorkspace ();
             Mode mode = workspace.findMode (HtmlBrowser.BrowserComponent.MODE_NAME);
             if (mode != null) {
                 TopComponent [] comps = mode.getTopComponents ();
@@ -60,7 +61,7 @@ public class HTMLViewAction extends CallableSystemAction {
             }
             // is it open on any workspace?
             if (notFound) {
-                Workspace [] workspaces = tm.getWindowManager ().getWorkspaces ();
+                Workspace [] workspaces = WindowManager.getDefault ().getWorkspaces ();
                 if (workspaces != null) {
                     for (int i=0; i<workspaces.length; i++) {
                         mode = workspaces[i].findMode (HtmlBrowser.BrowserComponent.MODE_NAME);

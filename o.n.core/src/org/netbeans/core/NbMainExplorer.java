@@ -56,6 +56,7 @@ import org.netbeans.core.windows.WellKnownModeNames;
 import org.netbeans.core.windows.DeferredPerformer;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.ModeImpl;
+import org.openide.windows.WindowManager;
 
 /** Main explorer - the class remains here for backward compatibility
 * with older serialization protocol. Its responsibilty is also
@@ -162,7 +163,7 @@ public final class NbMainExplorer extends CloneableTopComponent
 
     /** Open all main explorer's top components on current workspace */
     public void openRoots () {
-        openRoots(TopManager.getDefault().getWindowManager().getCurrentWorkspace());
+        openRoots(WindowManager.getDefault().getCurrentWorkspace());
     }
 
     /** Open all main explorer's top components on given workspace */
@@ -336,8 +337,7 @@ public final class NbMainExplorer extends CloneableTopComponent
     /** Helper method - closes given top component on all workspaces
     * where it is opened */
     private static void closeEverywhere (TopComponent tc) {
-        Workspace[] workspaces =
-            TopManager.getDefault().getWindowManager().getWorkspaces();
+        Workspace[] workspaces = WindowManager.getDefault().getWorkspaces();
         for (int i = 0; i < workspaces.length; i++) {
             if (tc.isOpened(workspaces[i])) {
                 tc.close(workspaces[i]);
@@ -348,8 +348,7 @@ public final class NbMainExplorer extends CloneableTopComponent
     /** Utility method - returns list of workspaces where at least one from
     * given list of top components is opened. */
     private static List whereOpened (TopComponent[] tcs) {
-        Workspace[] workspaces =
-            TopManager.getDefault().getWindowManager().getWorkspaces();
+        Workspace[] workspaces = WindowManager.getDefault().getWorkspaces();
         ArrayList result = new ArrayList(workspaces.length);
         for (int i = 0; i < workspaces.length; i++) {
             for (int j = 0; j < tcs.length; j++) {
@@ -759,7 +758,7 @@ public final class NbMainExplorer extends CloneableTopComponent
         
         public void open (Workspace workspace) {
             Workspace realWorkspace = (workspace == null)
-                                      ? TopManager.getDefault().getWindowManager().getCurrentWorkspace()
+                                      ? WindowManager.getDefault().getCurrentWorkspace()
                                       : workspace;
             Mode ourMode = realWorkspace.findMode(this);
             if (ourMode == null) {

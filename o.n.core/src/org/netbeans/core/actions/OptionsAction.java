@@ -47,6 +47,7 @@ import org.openide.windows.Workspace;
 import org.openide.windows.Mode;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.PersistenceManager;
+import org.openide.windows.WindowManager;
 
 /** Action that opens explorer view which displays global
 * options of the IDE.
@@ -66,7 +67,7 @@ public class OptionsAction extends CallableSystemAction {
         OptionsPanel singleton = OptionsPanel.singleton();
         
         // dock Options into its mode if needed
-        Workspace w = TopManager.getDefault().getWindowManager().getCurrentWorkspace();
+        Workspace w = WindowManager.getDefault().getCurrentWorkspace();
         
         ModeImpl m = (ModeImpl) w.findMode(singleton);
         if (m == null) {
