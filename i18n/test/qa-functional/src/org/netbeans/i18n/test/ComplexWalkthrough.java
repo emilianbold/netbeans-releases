@@ -85,6 +85,7 @@ public class ComplexWalkthrough extends JellyTestCase {
         Action internationalize = new Action(null, toolsMenuItem+dlm+internationalizationMenuItem+dlm+internationalizeMenuItem);
         
         //invoke intern. on java source with form
+        System.out.println("select node "+dataMountPath+dlm+formName);
         Node node1 = new Node(repoTreeOper, dataMountPath+dlm+formName); // NOI18N
         internationalize.perform(node1);
         InternationalizeOperator iop = new InternationalizeOperator();
