@@ -427,6 +427,7 @@ public class RADComponent {
     Object valueToSet = value;
     if (value instanceof FormDesignValue) {
       valueToSet = ((FormDesignValue)value).getDesignValue (RADComponent.this);
+      if (valueToSet == FormDesignValue.IGNORED_VALUE) return; // ignore this value, as it is not value to be reflected during design-time
     }
     writeMethod.invoke (getComponentInstance (), new Object[] { valueToSet });
   }
@@ -657,6 +658,10 @@ public class RADComponent {
     RADIndexedPropertyImpl (IndexedPropertyDescriptor desc) {
       super (desc.getPropertyType (), desc.getIndexedPropertyType ());
       this.desc = desc;
+      PropertyEditor[] allEditors = FormPropertyEditorManager.getAllEditors (desc.getIndexedPropertyType (), false);
+      if ((allEditors != null) && (allEditors.length > 0)) {
+        currentEditor = allEditors[0];
+      }
     }
 
     public PropertyDescriptor getPropertyDescriptor () {
@@ -916,6 +921,8 @@ public class RADComponent {
 
 /*
  * Log
+ *  23   Gandalf   1.22        6/27/99  Ian Formanek    Employed 
+ *       FormDesignValue.IGNORED_VALUE, Indexed properties fixed
  *  22   Gandalf   1.21        6/27/99  Ian Formanek    !!! Caches all changed 
  *       property values !!!
  *  21   Gandalf   1.20        6/24/99  Ian Formanek    Improved 
