@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir=".." default="netbeans" name="OpenAPI_unit_test">
+
+    <taskdef classname="org.netbeans.xtest.NbPath" classpath="${xtest.home}/lib/xtest.jar" name="nbpath"/>
+    <taskdef classname="org.netbeans.xtest.XalanLauncher" classpath="${xtest.home}/lib/xtest.jar" name="xalan"/>
+
+    <!-- test execution -->
+    <target name="test_all">
+        <ant antfile="src/test.xml" target="testAll">
+            <property name="test_type" value="code"/>
+        </ant>
+    </target>
+
+    <target name="test_code">
+        <ant antfile="src/test.xml">
+            <property name="test_type" value="code"/>
+        </ant>
+    </target>
+
+    <target name="test_ins">
+        <ant antfile="src/test.xml">
+            <property name="test_type" value="ins"/>
+        </ant>
+    </target>
+
+    <target name="test_ide">
+        <ant antfile="src/test.xml">
+            <property name="test_type" value="ide"/>
+        </ant>
+    </target>
+
+    <!-- test building -->
+    <target name="build_test">
+        <xalan basedir="src" src="test.def" trg="test.xml" xslt="${xtest.home}/xslt/FunTest2build.xsl"/> 
+        <xalan srcfile="src/test.def" trgfile="results/index.xml" xslt="${xtest.home}/xslt/test2index.xsl"/>
+        <ant antfile="src/test.xml" target="testAll">
+            <property name="test_type" value="empty"/>
+        </ant>
+        <xalan xslt="${xtest.home}/xslt/FunTestIndex2html.xsl" srcfile="results/index.xml" trgfile="results/index.html" />
+    </target>
+
+    <!-- test compilation & packaging -->
+    <target name="compile">
+        <nbpath nbhome="${netbeans.test.home}"/>
+        <javac destdir="src" srcdir="src">
+            <classpath>
+                <pathelement location="../../src"/> <!-- ???? is different for compatibility -->
+                <pathelement path="${netbeans.test.library.path}"/> 
+            </classpath>
+        </javac>
+    </target>
+
+    <target depends="compile" name="jars">
+        <mkdir dir="lib"/>
+        <jar basedir="src" compress="false" excludesfile="${xtest.home}/standard-jar-excludes.txt" jarfile="lib/test.jar">
+        </jar>
+    </target>
+
+    <target depends="jars, test_code" name="netbeans"/>
+
+    <!-- cleanup -->
+    <target name="clean">
+        <delete>
+            <fileset dir="src">
+                <include name="**/*.class"/>
+            </fileset>
+        </delete>
+        <delete file="lib/test.jar"/>
+    </target>
+
+</project>
