@@ -45,11 +45,11 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 
+// XXX This code is stolen from core/ExitDialog.
 /** Dialog which lets the user select which open files to close.
  *
  * @author  Ian Formanek, Petr Hrebejk
  */
-
 public class ExitDialog extends JPanel implements ActionListener {
 
 
