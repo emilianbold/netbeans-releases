@@ -17,6 +17,7 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.net.MalformedURLException;
+import java.security.*;
 
 import org.xml.sax.*;
 import javax.xml.parsers.*;
@@ -26,6 +27,7 @@ import javax.xml.transform.stream.*;
 
 import org.openide.filesystems.*;
 import org.openide.loaders.DataObject;
+import org.openide.execution.*;
 
 import org.netbeans.api.xml.cookies.*;
 import org.netbeans.api.xml.services.UserCatalog;
@@ -239,7 +241,16 @@ public class TransformUtil {
             
                 if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("\n==> transform: param [transformer] = " + transformer.getParameter ("transformer")); // debug
 
+                // Support Xalan java extensions located using context classloader
+                // set the classloader to repository one
+                ClassLoader cl = Thread.currentThread().getContextClassLoader();
+                try {
+                    Thread.currentThread().setContextClassLoader(currentClassLoader()); 
                 transformer.transform (xml, output);
+                } finally {
+                    Thread.currentThread().setContextClassLoader(cl);
+                }
+
             } catch (Exception exc) { // TransformerException, ParserConfigurationException, SAXException, FileStateInvalidException
                 if ( Util.THIS.isLoggable() ) /* then */ {
                     Util.THIS.debug ("    EXCEPTION during transformation: " + exc.getClass().getName(), exc);
@@ -284,6 +295,21 @@ public class TransformUtil {
                 throw transExcept;
             }
         }
+    }
+
+    // C&p from TopManager
+    private static ClassLoader currentClassLoader () {
+        NbClassLoader l = new NbClassLoader();
+        l.setDefaultPermissions(getAllPermissions());
+        return l;
+    }
+    private static PermissionCollection allPermission;
+    static synchronized PermissionCollection getAllPermissions() {
+        if (allPermission == null) {
+            allPermission = new Permissions();
+            allPermission.add(new AllPermission());
+        }
+        return allPermission;
     }
 
     /** Unwrap wrapped cause exception.
