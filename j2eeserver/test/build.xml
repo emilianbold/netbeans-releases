@@ -10,9 +10,7 @@ http://www.sun.com/
 The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
 Microsystems, Inc. All Rights Reserved.
--->
-
-<project basedir="." default="netbeans" name="testplugin">
+--><project basedir="." default="all" name="j2eeserver XTest Workspace Script">
 
   <property name="nbm_alias" value="nb_ide"/>
   <property name="buildroot" value="../../.."/>
@@ -93,7 +91,10 @@ Microsystems, Inc. All Rights Reserved.
           <include name="org/"/>
       </patternset>
       <classpath>
-        <pathelement location="../netbeans/modules/j2ee.jar"/>
+        <pathelement location="../netbeans/modules/autoload/j2eeserver.jar"/>
+        <pathelement location="${nbroot}/debuggercore/api/netbeans/modules/autoload/debugger-api.jar"/>
+        <pathelement location="${nbroot}/schema2beans/rt/netbeans/modules/autoload/schema2beans.jar"/>
+
         <fileset dir="../external">
             <include name="*.jar"/>
         </fileset>
@@ -127,13 +128,24 @@ Microsystems, Inc. All Rights Reserved.
     <nbinstaller action="reinstall" module="netbeans/modules/testplugin.jar"/>
   </target> 
 
-  <target name="dev" description="A development target to compile with
-symbols and copy jar file(s)">
+  <target name="dev" description="A development target to compile with symbols and copy jar file(s)">
+        <antcall target="jars">
+                <param name="build.compiler.debug" value="on"/>
+        </antcall>
+        <property name="devloc" value="${buildroot}/nb_all/nbbuild/netbeans"/>
+        <copy todir="${devloc}">
+            <fileset dir="netbeans">
+              <exclude name="**/locale/*"/>
+              <exclude name="**/*-test.jar" /> 
+            </fileset>
+        </copy>
+  </target>
+
+  <target name="f4dev" description="A development target to compile with symbols and copy jar file(s)">
         <antcall target="jars">
                 <param name="build.compiler.debug" value="on"/>
         </antcall>
         <property name="devloc" value="${buildroot}/f4j_all/f4jbuild/firststart"/>
-        <!--property name="devloc" value="${buildroot}/nb_all/nbbuild/netbeans"/-->
         <copy todir="${devloc}">
             <fileset dir="netbeans">
               <exclude name="**/locale/*"/>
@@ -143,4 +155,84 @@ symbols and copy jar file(s)">
   </target>
 
 
+<!-- ******************************************************************* -->
+<!-- **************************** XTest ******************************** -->
+<!-- ******************************************************************* -->
+
+    <!-- Points to directory with IDE to test-->
+    <property location="../../../nb_all/nbbuild/netbeans" name="netbeans.home"/>
+<!--    <property location="../../../f4j_all/f4jbuild/firststart" name="netbeans.home"/> -->
+    <!-- Name of tested module -->
+    <property name="xtest.module" value="j2eeserver"/>
+    
+    <!-- Home of XTest -->
+    <property location="${nbroot}/xtest" name="xtest.home"/>
+
+    <!-- default testtypes, attributes used when no value is supplied from command line -->
+    <property name="xtest.testtype" value="unit"/>
+    <property name="xtest.attribs" value="ide"/>
+    <!-- Points to antfile with module's harness. 
+         Targets from that antfile is called from this build.xml -->
+    <property location="${xtest.home}/lib/module_harness.xml" name="xtest.module_harness.antfile"/>
+  
+  	<!--
+	******************************************************
+	** You should not change anything after this comment,
+	**    unless you really know what you do
+	******************************************************
+	-->
+    
+    <!-- Ant property. Value 'ignore' means that system classpath is ignored
+         and only classpath specified in build file is used. -->
+    <property name="build.sysclasspath" value="ignore"/>
+
+    
+    <!-- ============ -->
+    <!-- Main targets -->
+    <!-- ============ -->
+    
+    <target depends="runtests" name="all"/>
+    
+    <!-- This calls target which will call compilers according to cfg file.
+         You should not change this target unless you realy know what you are doing -->
+    <target name="buildtests">
+       <!-- <ant antfile="${xtest.module_harness.antfile}" dir="." target="compiler-launcher"/> -->
+       <ant antfile="${xtest.module_harness.antfile}" dir="." target="buildtests"> 
+          <property name="xtest.extra.jars.path" value="../netbeans/modules"/>
+	      <property name="compile.srcdir" value="${xtest.testtype}/src"/>
+          <property name="xtest.extra.jars" value="netbeans/modules/testplugin.jar;netbeans/modules/ext/testjsr88.jar;../netbeans/modules/autoload/j2eeserver.jar;../external/ejb20.jar;../external/javax77.jar;../external/jmxri.jar;../external/jsr88javax.jar;../../openide/netbeans/lib/openide.jar;../../core/settings/netbeans/modules/autoload/core-settings.jar;../../openide/execution/netbeans/modules/autoload/openide-execution.jar;"/>
+	   </ant>
+    </target>
+    
+    <!-- This calls common clean process. -->
+    <!-- You can write your own if you need something special -->
+    <target name="cleantests">
+       <ant antfile="${xtest.module_harness.antfile}" dir="." target="cleantests"/>
+    </target> 
+
+    <!-- This target runs tests. You should not change this --> 
+    <!-- target unless you realy know what you are doing -->
+    <target depends="buildtests" name="runtests">
+        <echo message="Module: Running tests for ${xtest.module}, testtype ${xtest.testtype}, attribs=${xtest.attribs}"/>
+        <ant antfile="${xtest.module_harness.antfile}" dir="." target="runtests"/>
+    </target>
+    
+    <!-- This target is executed from test-executor in newly created Project -->
+    <!-- Name of this task is defined in cfg-xxx.xml -->
+    <target name="test_report">
+        <ant antfile="${xtest.module_harness.antfile}" dir="." target="test_report"/>
+    </target>
+    
+    <target name="cleanresults">
+        <ant antfile="${xtest.module_harness.antfile}" dir="." target="cleanresults"/>
+    </target>
+    
+    <target depends="cleantests,cleanresults" name="realclean">
+        <ant antfile="${xtest.module_harness.antfile}" dir="." target="realclean"/>
+    </target>
+    
+    <target name="printconfig">
+        <echo message="Default config is testtype: ${xtest.testtype}, attributes: ${xtest.attribs}."/>
+    </target>
+    
 </project>
