@@ -203,10 +203,16 @@ final class CommandManager implements ActionListener {
         TabbedContainer container = getSlidedTabContainer();
         TabDataModel containerModel = container.getModel();
         SlideBarDataModel dataModel = slideBar.getModel();
+        // creating new TabData instead of just referencing
+        // to be able to compare and track changes between models of slide bar and 
+        // slided tabbed container
+        TabData origTab = dataModel.getTab(tabIndex);
+        TabData newTab = new TabData(origTab.getUserObject(), origTab.getIcon(), 
+                            new String(origTab.getText()), origTab.getTooltip());
         if (containerModel.size() == 0) {
-            containerModel.addTab(0, dataModel.getTab(tabIndex));
+            containerModel.addTab(0, newTab);
         } else {
-            containerModel.setTab(0, dataModel.getTab(tabIndex));
+            containerModel.setTab(0, newTab);
         }
         container.getSelectionModel().setSelectedIndex(0);
         return container;
@@ -275,13 +281,26 @@ final class CommandManager implements ActionListener {
     }
 
     /** Synchronizes its state with current state of data model. 
-     * Removes currently slided component if it is no longer present in the model.
+     * Removes currently slided component if it is no longer present in the model,
+     * also keeps text up to date.
      */
     void syncWithModel() {
-        if ((curSlidedComp != null) && !slideBar.containsComp(curSlidedComp)) {
+        if (curSlidedComp == null) {
+            return; 
+        }
+        
+        if (!slideBar.containsComp(curSlidedComp)) {
             // TBD - here should be closeSlide operation, which means
             // just remove from desktop
             slideOut(false, false);
+        } else {
+            // keep title text up to date
+            String freshText = slideBar.getModel().getTab(curSlidedIndex).getText();
+            TabDataModel slidedModel = getSlidedTabContainer().getModel();
+            String slidedText = slidedModel.getTab(0).getText();
+            if (slidedText == null || !slidedText.equals(freshText)) {
+                slidedModel.setText(0, freshText);
+            }
         }
     }
 
