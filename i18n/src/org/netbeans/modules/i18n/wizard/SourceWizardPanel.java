@@ -341,6 +341,14 @@ public class SourceWizardPanel extends JPanel {
             ((Map)settings).clear();
             ((Map)settings).putAll(((SourceWizardPanel)getComponent()).getSourceMap());
         }
+        
+        /** Gets help. Implements superclass abstract method. */
+        public HelpCtx getHelp() {
+            if(testWizard)
+                return new HelpCtx(I18nUtil.HELP_ID_TESTING);
+            else
+                return new HelpCtx(I18nUtil.HELP_ID_WIZARD);
+        }
 
     } // End of nested Panel class.
     

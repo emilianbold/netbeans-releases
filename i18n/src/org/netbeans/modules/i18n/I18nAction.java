@@ -38,10 +38,10 @@ public class I18nAction extends CookieAction {
 
     
     /** 
-     * Actually performs the action.
+     * Actually performs the action. Implements superclass abstract method.
      * @param activatedNodes Currently activated nodes.
      */
-    public void performAction(final Node[] activatedNodes) {
+    protected void performAction(final Node[] activatedNodes) {
         // Gets editor cookie.
         EditorCookie editorCookie = (EditorCookie)activatedNodes[0].getCookie(EditorCookie.class);
         
@@ -97,7 +97,7 @@ public class I18nAction extends CookieAction {
 
     /** Gets the action's help context. Implemenst superclass abstract method. */
     public HelpCtx getHelpCtx() {
-        return new HelpCtx (I18nModule.class);
+        return new HelpCtx(I18nUtil.HELP_ID_AUTOINSERT);
     }
 
     /** Gets the action's icon location.

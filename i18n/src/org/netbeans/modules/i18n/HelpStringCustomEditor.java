@@ -29,6 +29,7 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.beaninfo.editors.StringEditor;
 
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
+import org.openide.util.HelpCtx;
 
 
 /**
@@ -56,7 +57,8 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
         comboLabel.setDisplayedMnemonic(comboText.charAt((0))); // so ugly...        
         listLabel.setText(I18nUtil.getBundle().getString("LBL_Arguments"));
         listLabel.setDisplayedMnemonic((I18nUtil.getBundle().getString("LBL_Arguments_Mnem")).charAt(0));
-        
+
+        HelpCtx.setHelpIDString(this, I18nUtil.HELP_ID_CUSTOM);
     }
 
     /**

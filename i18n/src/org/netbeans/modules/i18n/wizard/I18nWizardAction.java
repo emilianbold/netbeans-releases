@@ -61,7 +61,7 @@ public class I18nWizardAction extends NodeAction {
     }
     
     /** Actually performs action. Implements superclass abstract method. */
-    public void performAction(Node[] activatedNodes) {
+    protected void performAction(Node[] activatedNodes) {
         Dialog dialog = (Dialog)dialogWRef.get();
         
         if(dialog != null) {
@@ -137,7 +137,7 @@ public class I18nWizardAction extends NodeAction {
     
     /** Gets the action's help context. Implemenst superclass abstract method. */
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(I18nWizardAction.class);
+        return new HelpCtx(I18nUtil.HELP_ID_WIZARD);
     }
     
     /** Utility method. Gets settings based on selected nodes. Finds all accepted data objects. 

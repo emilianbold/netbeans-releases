@@ -626,5 +626,10 @@ public class TestStringWizardPanel extends JPanel {
             return false;
         }
         
+        /** Gets help. Implements superclass abstract method. */
+        public HelpCtx getHelp() {
+            return new HelpCtx(I18nUtil.HELP_ID_TESTING);
+        }
+        
     } // End of nested PanelDescriptor class.
 }

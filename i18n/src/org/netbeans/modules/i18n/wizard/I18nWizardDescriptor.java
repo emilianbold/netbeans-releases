@@ -335,10 +335,6 @@ public class I18nWizardDescriptor extends WizardDescriptor {
                 changeListener.stateChanged(new ChangeEvent(this));
         }
 
-        /** Gets help context. Implements <code>WizardDescriptor.Panel</code> interface method. */
-        public HelpCtx getHelp() {
-            return new HelpCtx(getClass());
-        }
     } // End of nested class Panel.
     
 }

@@ -528,6 +528,14 @@ public class ResourceWizardPanel extends JPanel {
                 container.add(resourcePanel, constraints);
             }
         }
+        
+        /** Gets help. Implements superclass abstract method. */
+        public HelpCtx getHelp() {
+            if(testWizard)
+                return new HelpCtx(I18nUtil.HELP_ID_TESTING);
+            else
+                return new HelpCtx(I18nUtil.HELP_ID_WIZARD);
+        }
 
     } // End of nested Panel class.
     

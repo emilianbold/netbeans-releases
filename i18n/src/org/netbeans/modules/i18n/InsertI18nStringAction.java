@@ -58,10 +58,10 @@ public class InsertI18nStringAction extends CookieAction {
     
     
     /** 
-     * Actually performs InsertI18nStringAction
+     * Actually performs InsertI18nStringAction. Implements superclass abstract method.
      * @param activatedNodes currently activated nodes
      */
-    public void performAction (final Node[] activatedNodes) {
+    protected void performAction (final Node[] activatedNodes) {
         final EditorCookie editorCookie = (EditorCookie)(activatedNodes[0]).getCookie(EditorCookie.class);
         if(editorCookie == null)
             return;
@@ -308,7 +308,7 @@ public class InsertI18nStringAction extends CookieAction {
 
     /** Gets the action's help context. Implemenst superclass abstract method. */
     public HelpCtx getHelpCtx() {
-        return new HelpCtx (InsertI18nStringAction.class);
+        return new HelpCtx(I18nUtil.HELP_ID_AUTOINSERT);
     }
 
     /** Gets the action's icon location.

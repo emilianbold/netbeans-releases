@@ -33,6 +33,7 @@ import javax.swing.JPanel;
 
 import org.netbeans.modules.i18n.HardCodedString;
 import org.netbeans.modules.i18n.I18nSupport;
+import org.netbeans.modules.i18n.I18nUtil;
 
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
@@ -184,7 +185,7 @@ public class AdditionalWizardPanel extends JPanel {
         
         /** Gets component to display. Implements superclass abstract method. 
          * @return <code>AdditionalPanel</code> instance */
-        public Component createComponent() {
+        protected Component createComponent() {
             JPanel panel = new JPanel();
             
             panel.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(2)); // NOI18N
@@ -286,6 +287,11 @@ public class AdditionalWizardPanel extends JPanel {
                 constraints.fill = GridBagConstraints.BOTH;
                 container.add(additionalPanel, constraints);
             }
+        }
+        
+        /** Gets help. Implements superclass abstract method. */
+        public HelpCtx getHelp() {
+            return new HelpCtx(I18nUtil.HELP_ID_WIZARD);
         }
         
     } // End of nested Panel class.

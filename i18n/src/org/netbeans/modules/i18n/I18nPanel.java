@@ -224,12 +224,14 @@ public class I18nPanel extends JPanel {
     }//GEN-END:initComponents
 
   private void helpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpButtonActionPerformed
-      HelpCtx help = new HelpCtx(I18nPanel.class);
-      String sysprop = System.getProperty ("org.openide.actions.HelpAction.DEBUG"); // NOI18N
-      if ("true".equals (sysprop) || "full".equals (sysprop)) // NOI18N
+      HelpCtx help = new HelpCtx(I18nUtil.HELP_ID_AUTOINSERT);
+      
+      String sysprop = System.getProperty("org.openide.actions.HelpAction.DEBUG"); // NOI18N
+      
+      if("true".equals(sysprop) || "full".equals(sysprop)) // NOI18N
           System.err.println ("I18n module: Help button showing: " + help); // NOI18N, please do not comment out
       
-      TopManager.getDefault ().showHelp (help);
+      TopManager.getDefault().showHelp(help);
       
       return;
   }//GEN-LAST:event_helpButtonActionPerformed

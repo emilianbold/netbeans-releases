@@ -646,5 +646,10 @@ public class HardStringWizardPanel extends JPanel {
             return false;
         }
         
-    } // End of nested PanelDescriptor class.
+        /** Gets help. Implements superclass abstract method. */
+        public HelpCtx getHelp() {
+            return new HelpCtx(I18nUtil.HELP_ID_WIZARD);
+        }
+        
+    } // End of nested Panel class.
 }
