@@ -2,7 +2,7 @@ OpenIDE-Module: com.netbeans.developer.modules.loaders.image/1
 OpenIDE-Module-Name: Image
 OpenIDE-Module-Specification-Version: 1.0
 OpenIDE-Module-Implementation-Version: 1.0
-OpenIDE-Module-Update-Location: update.netbeans.com/eap/developer30/updateInfoEAP.xml
+OpenIDE-Module-Update-Location: http://update.netbeans.com/eap/developer30/updateInfoEAP.xml
 
 Name: com/netbeans/developer/modules/loaders/image/ImageDataLoader.class
 OpenIDE-Module-Class: Loader

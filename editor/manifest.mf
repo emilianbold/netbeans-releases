@@ -3,5 +3,5 @@ OpenIDE-Module-Name: Editor
 OpenIDE-Module-Install: com/netbeans/developer/modules/text/EditorModule.class
 OpenIDE-Module-Specification-Version: 1.0
 OpenIDE-Module-Implementation-Version: 1.0
-OpenIDE-Module-Update-Location: update.netbeans.com/eap/developer30/updateInfoEAP.xml
+OpenIDE-Module-Update-Location: http://update.netbeans.com/eap/developer30/updateInfoEAP.xml
 
