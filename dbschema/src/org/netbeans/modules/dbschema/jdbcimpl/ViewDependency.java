@@ -45,8 +45,11 @@ public class ViewDependency {
 
     public void constructPK() {
         try {
-            String database = dmd.getDatabaseProductName().trim();
-                        
+            String database = dmd.getDatabaseProductName();
+            if (database==null){
+                return;
+            }  
+            database = database.trim();
             if (database.equalsIgnoreCase("Oracle")) {
                 getOraclePKTable(user, view);
                 getOracleViewColumns();

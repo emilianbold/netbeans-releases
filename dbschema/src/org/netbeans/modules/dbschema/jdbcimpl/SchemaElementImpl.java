@@ -409,8 +409,14 @@ public class SchemaElementImpl extends DBElementImpl implements SchemaElement.Im
             TableElement te = new TableElement(tei, (SchemaElement) element);
             tei.initColumns(cp);
 
-            String database = dmd.getDatabaseProductName().trim();
-            if (database.equalsIgnoreCase("Oracle") || database.equalsIgnoreCase("Microsoft SQL Server")) {
+            String database = dmd.getDatabaseProductName();
+            if (database!=null){ //could be null see bug 53887
+                database = database.trim();
+            }
+            else{
+                database=""; //NOI18N
+            }
+            if (database.equalsIgnoreCase("Oracle") || database.equalsIgnoreCase("Microsoft SQL Server")) {  //NOI18N
                 propertySupport.firePropertyChange("FKv", null, name); //NOI18N
                 
                 ViewDependency vd = new ViewDependency(cp, cp.getSchema(), name);

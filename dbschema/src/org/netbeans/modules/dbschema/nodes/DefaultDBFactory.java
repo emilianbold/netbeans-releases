@@ -196,9 +196,13 @@ public class DefaultDBFactory implements DBElementNodeFactory, IconStrings {
 		
 		filter.setOrder(new int[] {TableElementFilter.TABLE, TableElementFilter.VIEW});
 		children.setFilter(filter);
-        
-        String db = element.getDeclaringSchema().getDatabaseProductName().toLowerCase();
-        boolean viewSupport = (db.indexOf("oracle") != -1 || db.indexOf("microsoft sql server") != -1) ? true : false;
+                String db = element.getDeclaringSchema().getDatabaseProductName();
+                boolean viewSupport =false;
+                if (db!=null){
+                    db = db.toLowerCase();
+                    viewSupport = (db.indexOf("oracle") != -1 || db.indexOf("microsoft sql server") != -1) ? true : false;
+                }
+
         if (((TableElement) element).isTableOrView() || viewSupport)
 //		if (element.isTableOrView())
 			children.add(new Node[] {

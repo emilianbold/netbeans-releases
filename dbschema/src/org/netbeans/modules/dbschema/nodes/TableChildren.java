@@ -151,8 +151,7 @@ public class TableChildren extends Children.Keys {
             return new Node[] {factory.createColumnPairNode((ColumnPairElement) key)};
 
         if (element instanceof TableElement) {
-            String db = ((TableElement) element).getDeclaringSchema().getDatabaseProductName().toLowerCase();
-            boolean viewSupport = (db.indexOf("oracle") != -1 || db.indexOf("microsoft sql server") != -1) ? true : false;
+            boolean viewSupport = isViewSupport((TableElement) element);
             if (((TableElement) element).isTableOrView() || viewSupport) {
 //            if (((TableElement) element).isTableOrView()) {
                 if (key instanceof IndexElement)
@@ -216,8 +215,10 @@ public class TableChildren extends Children.Keys {
                     filterModifiers(pairs, keys);
 
         if (element instanceof TableElement) {
-            String db = ((TableElement) element).getDeclaringSchema().getDatabaseProductName().toLowerCase();
-            boolean viewSupport = (db.indexOf("oracle") != -1 || db.indexOf("microsoft sql server") != -1) ? true : false;
+
+            boolean    viewSupport = isViewSupport (((TableElement) element));
+
+                
             if (((TableElement) element).isTableOrView() || viewSupport) {
 //            if (((TableElement) element).isTableOrView()) {
                 if ((elementType & TableElementFilter.INDEX) != 0)
@@ -231,6 +232,19 @@ public class TableChildren extends Children.Keys {
             Collections.sort(keys, comparator);
 
         return keys;    
+    }
+    
+    /* check is view are suppported for this table
+     * database name could be null see bug 53887
+     **/
+    private boolean isViewSupport( TableElement element){ 
+            String db =  element.getDeclaringSchema().getDatabaseProductName();
+            boolean viewSupport =false;
+            if (db!=null){
+                db = db.toLowerCase();
+                viewSupport = (db.indexOf("oracle") != -1 || db.indexOf("microsoft sql server") != -1) ? true : false;
+            }
+            return viewSupport;
     }
   
     /** Filters MemberElements for modifiers, and adds them to the given collection.
