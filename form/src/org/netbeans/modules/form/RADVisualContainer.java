@@ -42,10 +42,19 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
     public void setComponent(Class beanClass) {
         super.setComponent(beanClass);
+        initContainerDelegate();
+    }
+
+    public void setInstance(Object beanInstance) {
+        super.setInstance(beanInstance);
+        initContainerDelegate();
+    }
+
+    private void initContainerDelegate() {
         Object value = getBeanInfo().getBeanDescriptor().getValue("containerDelegate"); // NOI18N
         if ((value != null) &&(value instanceof String) &&((String)value).equals("getContentPane")) { // NOI18N
             try {
-                java.lang.reflect.Method m = beanClass.getMethod("getContentPane", new Class [0]); // NOI18N
+                java.lang.reflect.Method m = getBeanClass().getMethod("getContentPane", new Class [0]); // NOI18N
                 containerDelegate =(Container) m.invoke(getBeanInstance(), new Object [0]);
             } catch (Exception e) { // effectively ignored - simply no containerDelegate
             }
