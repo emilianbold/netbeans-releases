@@ -1,0 +1,230 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+
+<project name="monitor" default="netbeans" basedir=".">
+
+  <property name="f4jroot" location="../../f4j_all"/>
+  <property name="nbroot" location="../../nb_all"/>
+  <property name="nbextra" location="../../nbextra"/>
+  <property name="license.file" location="${f4jroot}/core/release/LICENSE.txt"/>
+
+
+  <taskdef name="jhindexer" 
+           classname="org.netbeans.nbbuild.JHIndexer"
+           classpath="${nbroot}/nbbuild/nbantext.jar"/>
+
+  <taskdef name="makenbm" 
+           classname="org.netbeans.nbbuild.MakeNBM" 
+           classpath="${nbroot}/nbbuild/nbantext.jar"/>
+
+  <taskdef name="locjar"
+           classname="org.netbeans.nbbuild.LocalizedJar" 
+           classpath="${nbroot}/nbbuild/nbantext.jar"/>
+
+  <!-- These are the primary targets. -->
+
+  <target name="netbeans" depends="jars,javahelp"/>
+
+  <target name="nbm" depends="netbeans">
+    <makenbm file="monitor.nbm"
+             topdir="."
+	     manifest="manifest.mf"
+	     homepage="http://${homepage.base}/monitor.html"
+	     distribution="${dist.base}/monitor.nbm">
+      <license file="${license.file}" />
+      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
+      <exclude name="**/nondist/**" />
+    </makenbm>
+  </target>
+
+  <target name="clean">
+    <delete>
+      <fileset dir="src">
+        <include name="**/*.class"/>
+        <include name="**/*.jar"/>
+      </fileset>
+      <fileset dir=".">
+        <include name="*.mf"/>
+      </fileset>
+    </delete>
+    <delete dir="netbeans"/>
+    <delete dir="Info"/>
+   <delete dir="javahelp/org/netbeans/modules/web/monitor/docs/JavaHelpSearch"/>
+   <delete file="monitor.nbm"/>	
+  </target>
+
+  <!-- These are the secondary targets. -->
+
+  <target name="javahelp">
+    <copy todir="netbeans/docs">
+      <fileset dir="javahelp"/>
+    </copy>
+    <mkdir dir="netbeans/docs/org/netbeans/modules/web/monitor/docs/JavaHelpSearch"/>
+    <jhindexer basedir="netbeans/docs/org/netbeans/modules/web/monitor/docs/"
+               db="netbeans/docs/org/netbeans/modules/web/monitor/docs/JavaHelpSearch"
+               jhall="${nbroot}/nbbuild/lib/jhall.jar">
+      <include name="**/*.html"/>
+      <exclude name="JavaHelpSearch/"/>
+      <exclude name="ja/"/>
+      <exclude name="credits.html"/>
+    </jhindexer>
+    <mkdir dir="netbeans/docs/org/netbeans/modules/web/monitor/docs/ja/JavaHelpSearch"/>
+    <jhindexer basedir="netbeans/docs/org/netbeans/modules/web/monitor/docs/ja/"
+               db="netbeans/docs/org/netbeans/modules/web/monitor/docs/ja/JavaHelpSearch"
+               locale="ja"
+	       jhall="${nbroot}/nbbuild/lib/jhall.jar">
+      <include name="**/*.html"/>
+      <exclude name="JavaHelpSearch/"/>
+      <exclude name="credits.html"/>
+    </jhindexer>
+  </target>
+
+  <target name="release">
+    <copy todir="netbeans">
+      <fileset dir="release"/>
+    </copy>
+  </target>
+
+
+  <target name="compile"
+	  depends="compile-view, compile-core,compile-tomcat,compile-iplanet"/>
+
+  <!-- If this is compiled with the rest of the core, it fails to find 
+       openide.jar in the classpath for some reason --> 
+   <target name="compile-view">
+    <javac srcdir="src" destdir="src"
+       deprecation="${build.compiler.deprecation}" 
+       debug="${build.compiler.debug}"
+       includes="org/netbeans/modules/web/monitor/client/TransactionView.java">
+       <classpath>
+         <pathelement location="${nbroot}/openide/netbeans/lib/openide.jar"/>
+         <pathelement location="${nbroot}/httpserver/netbeans/modules/httpserver.jar"/>
+         <pathelement location="${f4jroot}/dd2beans/netbeans/modules/dd2beans.jar"/>
+         <pathelement location="${nbroot}/core/release/lib/ext/parser.jar"/>
+         <pathelement location="extra/servlet.jar"/>	
+         <pathelement location="${nbroot}/web/netbeans/modules/jsp.jar"/>
+      </classpath>
+     </javac>
+  </target>
+
+  <target name="compile-core">
+    <javac srcdir="src" destdir="src"
+       deprecation="${build.compiler.deprecation}" 
+       debug="${build.compiler.debug}"
+       includes="**/MonitorModule.java,**/monitor/data/**,**/monitor/server/**,**/monitor/client/**"
+       excludes="**/SCCS/**, **/CVS/**, **/TransactionView.java">
+
+       <classpath>
+         <pathelement location="${nbroot}/openide/netbeans/lib/openide.jar"/>
+         <pathelement location="${nbroot}/httpserver/netbeans/modules/httpserver.jar"/>
+         <pathelement location="${f4jroot}/dd2beans/netbeans/modules/dd2beans.jar"/>
+         <pathelement location="${nbroot}/core/release/lib/ext/parser.jar"/>
+         <pathelement location="${nbroot}/web/netbeans/modules/jsp.jar"/>
+         <pathelement location="extra/servlet.jar"/>
+       </classpath>
+     </javac>
+  </target>
+
+  <target name="compile-tomcat" depends="compile-core">
+    <javac srcdir="src" destdir="src"
+         deprecation="${build.compiler.deprecation}" 
+	 debug="${build.compiler.debug}"
+	 includes="**/monitor/tomcat/**,**/org/apache/**"
+	 excludes="**/SCCS/**,**/CVS/**">
+       <classpath>
+          <pathelement location="${f4jroot}/dd2beans/netbeans/modules/dd2beans.jar"/>
+          <pathelement location="${nbroot}/core/release/lib/ext/servlet.jar"/> 
+          <pathelement location="${nbextra}/httpserver/release/modules/ext/webserver.jar"/>
+       </classpath>
+     </javac>
+  </target>
+
+  <target name="compile-iplanet" depends="compile-core"> 
+    <javac srcdir="src" destdir="src"
+         deprecation="${build.compiler.deprecation}" 
+	 debug="${build.compiler.debug}"
+         includes="**/iplanet/**"
+	 excludes="**/SCCS/**, **/CVS/**">
+       <classpath>
+          <pathelement location="extra/servlet.jar"/>
+          <pathelement location="extra/NSServletLayer.jar"/>
+       </classpath>
+     </javac>
+  </target>
+
+
+
+  <target name="iplanet-monitor" depends="compile-core,compile-iplanet">
+   <locjar jarfile="netbeans/modules/ext/iplanet-monitor.jar" compress="false">
+      <locale name="ja"/>
+      <fileset dir="src">
+        <patternset excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt">
+          <include name="org/netbeans/modules/web/monitor/data/"/>
+          <include name="org/netbeans/modules/web/monitor/server/"/>
+          <include name="org/netbeans/modules/web/monitor/iplanet/"/>
+        </patternset>
+      </fileset>
+    </locjar>
+  </target>
+
+
+
+  <target name="tomcat-monitor" depends="compile">
+    <locjar jarfile="netbeans/modules/ext/tomcat-monitor.jar"
+            manifest="${nbroot}/web/manifest-jsp-tomcat-subst.mf"
+            compress="false">
+      <locale name="ja"/>
+      <fileset dir="src">
+        <patternset excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt">
+          <include name="org/apache/tomcat/core/"/>
+          <include name="org/netbeans/modules/web/monitor/data/"/>
+          <include name="org/netbeans/modules/web/monitor/server/"/>
+          <include name="org/netbeans/modules/web/monitor/tomcat/"/>
+        </patternset>
+      </fileset>
+    </locjar>
+  </target>
+
+
+
+  <target name="jars" depends="compile,tomcat-monitor, iplanet-monitor">
+    <mkdir dir="netbeans/modules"/>
+    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
+
+    <!-- Create jspie.jar, which includes some stuff from ${nbroot}/web. -->
+
+      <locjar jarfile="netbeans/modules/monitor.jar"
+         manifest="manifest.mf"
+         compress="false">
+      <locale name="ja"/>
+      <branding name="f4j"/>
+      <branding name="f4j_ce"/>
+      <branding name="f4j_ie"/>
+      <fileset dir="src">
+        <patternset excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt">
+          <exclude name="org/netbeans/modules/web/monitor/iplanet/"/>
+          <exclude name="org/netbeans/modules/web/monitor/tomcat/"/>
+          <exclude name="org/netbeans/modules/web/monitor/server/"/>
+        </patternset>
+      </fileset>
+    </locjar>
+  </target>
+</project>
+
+
+
+
+
+
