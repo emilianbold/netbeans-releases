@@ -40,7 +40,7 @@ import org.openide.util.actions.SystemAction;
  * by a different color.
  * @author  Martin Entlicher
  */
-public class DiffPanel extends org.openide.windows.TopComponent {
+public class DiffPanel extends javax.swing.JPanel {
 
     // scroll 4 lines vertically
     private static final double VERTICAL_SCROLL_NUM_LINES = 4.0;
