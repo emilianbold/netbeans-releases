@@ -68,15 +68,6 @@ public abstract class FormInfo {
     return ""; // NOI18N
   }
   
-  /** Allows the FormInfo to provide specific synthetic properties for the form component 
-  * besides what is provided by its BeanInfo.
-  * Default implementation provides empty properties list.
-  * @return array of properties for the top-level form
-  */
-  public Node.Property[] getFormProperties () {
-    return NO_PROPERTIES;
-  }
-  
 // --------------------------------------------------------------------------------------
 
   // FINALIZE DEBUG METHOD
@@ -91,6 +82,7 @@ public abstract class FormInfo {
 
 /*
  * Log
+ *  9    Gandalf   1.8         1/6/00   Ian Formanek    Removed obsoleted method
  *  8    Gandalf   1.7         1/5/00   Ian Formanek    NOI18N
  *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
