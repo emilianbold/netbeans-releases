@@ -771,10 +771,14 @@ public class DiffPanel extends javax.swing.JPanel {
     
     public void setSource1Title(String title) {
         fileLabel1.setText(title);
+        // Set the minimum size in 'x' direction to a low value, so that the splitter can be moved to corner locations
+        fileLabel1.setMinimumSize(new Dimension(3, fileLabel1.getMinimumSize().height));
     }
     
     public void setSource2Title(String title) {
         fileLabel2.setText(title);
+        // Set the minimum size in 'x' direction to a low value, so that the splitter can be moved to corner locations
+        fileLabel2.setMinimumSize(new Dimension(3, fileLabel2.getMinimumSize().height));
     }
     
     public void setMimeType1(String mime) {
