@@ -32,6 +32,8 @@ import java.util.List;
  */
 class ModuleChangeHandler implements FileChangeListener {
     
+    private static final boolean DEBUG = Debug.isLoggable(ModuleChangeHandler.class);
+    
     private boolean started = false;
     
     private FileSystem fs = null;
@@ -92,17 +94,17 @@ class ModuleChangeHandler implements FileChangeListener {
         }
         //Change of mode config file or mode folder
         if (parent.getPath().equals(modesModuleFolder.getPath())) {
-            log("++ MODE ++");
+            if (DEBUG) Debug.log(ModuleChangeHandler.class, "++ MODE ++");
             return true;
         }
         //Change of mode config file or mode folder
         if (parent.getPath().equals(groupsModuleFolder.getPath())) {
-            log("++ GROUP ++");
+            if (DEBUG) Debug.log(ModuleChangeHandler.class, "++ GROUP ++");
             return true;
         }
         
         if (parent.getPath().equals(componentsModuleFolder.getPath())) {
-            log("++ COMPONENT ++");
+            if (DEBUG) Debug.log(ModuleChangeHandler.class, "++ COMPONENT ++");
             return true;
         }
         
@@ -112,12 +114,12 @@ class ModuleChangeHandler implements FileChangeListener {
         }
         //Change of tcRef config file
         if (parent.getPath().equals(modesModuleFolder.getPath())) {
-            log("++ tcRef ++");
+            if (DEBUG) Debug.log(ModuleChangeHandler.class, "++ tcRef ++");
             return true;
         }
         //Change of tcGroup config file
         if (parent.getPath().equals(groupsModuleFolder.getPath())) {
-            log("++ tcGroup ++");
+            if (DEBUG) Debug.log(ModuleChangeHandler.class, "++ tcGroup ++");
             return true;
         }
         return false;
@@ -135,14 +137,16 @@ class ModuleChangeHandler implements FileChangeListener {
         if (!accepted) {
             return;
         }
-        log("-- fileDataCreated fo: " + fo
-        + " isFolder:" + fo.isFolder()
-        + " ACCEPTED"
-        + " th:" + Thread.currentThread().getName());
-        if (accepted && fo.isFolder()) {
-            FileObject [] files = fo.getChildren();
-            for (int i = 0; i < files.length; i++) {
-                System.err.println("fo[" + i + "]: " + files[i]);
+        if (DEBUG) {
+            Debug.log(ModuleChangeHandler.class, "-- fileDataCreated fo: " + fo
+            + " isFolder:" + fo.isFolder()
+            + " ACCEPTED"
+            + " th:" + Thread.currentThread().getName());
+            if (accepted && fo.isFolder()) {
+                FileObject [] files = fo.getChildren();
+                for (int i = 0; i < files.length; i++) {
+                    System.err.println("fo[" + i + "]: " + files[i]);
+                }
             }
         }
         processDataOrFolderCreated(fo);
@@ -154,14 +158,16 @@ class ModuleChangeHandler implements FileChangeListener {
         if (!accepted) {
             return;
         }
-        log("-- fileFolderCreated fo: " + fo
-        + " isFolder:" + fo.isFolder()
-        + " ACCEPTED"
-        + " th:" + Thread.currentThread().getName());
-        if (accepted && fo.isFolder()) {
-            FileObject [] files = fo.getChildren();
-            for (int i = 0; i < files.length; i++) {
-                log("fo[" + i + "]: " + files[i]);
+        if (DEBUG) {
+            Debug.log(ModuleChangeHandler.class, "-- fileFolderCreated fo: " + fo
+            + " isFolder:" + fo.isFolder()
+            + " ACCEPTED"
+            + " th:" + Thread.currentThread().getName());
+            if (accepted && fo.isFolder()) {
+                FileObject [] files = fo.getChildren();
+                for (int i = 0; i < files.length; i++) {
+                    Debug.log(ModuleChangeHandler.class, "fo[" + i + "]: " + files[i]);
+                }
             }
         }
         processDataOrFolderCreated(fo);
@@ -171,17 +177,17 @@ class ModuleChangeHandler implements FileChangeListener {
         FileObject parent1 = fo.getParent();
         if (parent1.getPath().equals(modesModuleFolder.getPath())) {
             if (!fo.isFolder() && PersistenceManager.MODE_EXT.equals(fo.getExt())) {
-                log("++ process MODE ADD ++");
+                if (DEBUG) Debug.log(ModuleChangeHandler.class, "++ process MODE ADD ++");
                 addMode(fo.getName());
             }
         } else if (parent1.getPath().equals(groupsModuleFolder.getPath())) {
             if (!fo.isFolder() && PersistenceManager.GROUP_EXT.equals(fo.getExt())) {
-                log("++ process GROUP ADD ++");
+                if (DEBUG) Debug.log(ModuleChangeHandler.class, "++ process GROUP ADD ++");
                 addGroup(fo.getName());
             }
         } else if (parent1.getPath().equals(componentsModuleFolder.getPath())) {
             if (!fo.isFolder() && PersistenceManager.COMPONENT_EXT.equals(fo.getExt())) {
-                log("++ process COMPONENT ADD ++");
+                if (DEBUG) Debug.log(ModuleChangeHandler.class, "++ process COMPONENT ADD ++");
                 addComponent(fo);
             }
         }
@@ -190,12 +196,12 @@ class ModuleChangeHandler implements FileChangeListener {
         FileObject parent2 = parent1.getParent();
         if (parent2.getPath().equals(modesModuleFolder.getPath())) {
             if (!fo.isFolder() && PersistenceManager.TCREF_EXT.equals(fo.getExt())) {
-                log("++ process tcRef ADD ++");
+                if (DEBUG) Debug.log(ModuleChangeHandler.class, "++ process tcRef ADD ++");
                 processTCRef(parent1.getName(), fo);
             }
         } else if (parent2.getPath().equals(groupsModuleFolder.getPath())) {
             if (!fo.isFolder() && PersistenceManager.TCGROUP_EXT.equals(fo.getExt())) {
-                log("++ process tcGroup ADD ++");
+                if (DEBUG) Debug.log(ModuleChangeHandler.class, "++ process tcGroup ADD ++");
                 addTCGroup(parent1.getName(), fo.getName());
             }
         }
@@ -208,7 +214,7 @@ class ModuleChangeHandler implements FileChangeListener {
             return;
         }
         
-        log("-- fileDeleted fo: " + fo
+        if (DEBUG) Debug.log(ModuleChangeHandler.class, "-- fileDeleted fo: " + fo
         + " isFolder:" + fo.isFolder()
         + " isValid:" + fo.isValid()
         + " ACCEPTED"
@@ -217,24 +223,24 @@ class ModuleChangeHandler implements FileChangeListener {
         FileObject parent1 = fo.getParent();
         if (parent1.getPath().equals(modesModuleFolder.getPath())) {
             if (!fo.isFolder() && PersistenceManager.MODE_EXT.equals(fo.getExt())) {
-                log("++ process MODE REMOVE ++");
+                if (DEBUG) Debug.log(ModuleChangeHandler.class, "++ process MODE REMOVE ++");
                 removeMode(fo.getName());
             }
         } else if (parent1.getPath().equals(groupsModuleFolder.getPath())) {
             if (!fo.isFolder() && PersistenceManager.GROUP_EXT.equals(fo.getExt())) {
-                log("++ process GROUP REMOVE ++");
+                if (DEBUG) Debug.log(ModuleChangeHandler.class, "++ process GROUP REMOVE ++");
                 removeGroup(fo.getName());
             }
         }
         FileObject parent2 = parent1.getParent();
         if (parent2.getPath().equals(modesModuleFolder.getPath())) {
             if (!fo.isFolder() && PersistenceManager.TCREF_EXT.equals(fo.getExt())) {
-                log("++ process tcRef REMOVE ++");
+                if (DEBUG) Debug.log(ModuleChangeHandler.class, "++ process tcRef REMOVE ++");
                 removeTCRef(fo.getName());
             }
         } else if (parent2.getPath().equals(groupsModuleFolder.getPath())) {
             if (!fo.isFolder() && PersistenceManager.TCGROUP_EXT.equals(fo.getExt())) {
-                log("++ process tcGroup REMOVE ++");
+                if (DEBUG) Debug.log(ModuleChangeHandler.class, "++ process tcGroup REMOVE ++");
                 removeTCGroup(parent1.getName(), fo.getName());
             }
         }
@@ -244,7 +250,7 @@ class ModuleChangeHandler implements FileChangeListener {
     }
     
     private void addMode (String modeName) {
-        log("addMode" + " mo:" + modeName);
+        if (DEBUG) Debug.log(ModuleChangeHandler.class, "addMode" + " mo:" + modeName);
         WindowManagerParser wmParser = PersistenceManager.getDefault().getWindowManagerParser();
         final ModeConfig modeConfig = wmParser.addMode(modeName);
         if (modeConfig != null) {
@@ -258,7 +264,7 @@ class ModuleChangeHandler implements FileChangeListener {
     }
     
     private void addGroup (String groupName) {
-        log("addGroup group:" + groupName);
+        if (DEBUG) Debug.log(ModuleChangeHandler.class, "addGroup group:" + groupName);
         WindowManagerParser wmParser = PersistenceManager.getDefault().getWindowManagerParser();
         final GroupConfig groupConfig = wmParser.addGroup(groupName);
         if (groupConfig != null) {
@@ -291,8 +297,7 @@ class ModuleChangeHandler implements FileChangeListener {
     }
     
     private void addTCRef (final String modeName, String tcRefName) {
-        log("addTCRef modeName:" + modeName
-        + " tcRefName:" + tcRefName);
+        if (DEBUG) Debug.log(ModuleChangeHandler.class, "addTCRef modeName:" + modeName + " tcRefName:" + tcRefName);
         WindowManagerParser wmParser = PersistenceManager.getDefault().getWindowManagerParser();
         List tcRefNameList = new ArrayList(10);
         final TCRefConfig tcRefConfig = wmParser.addTCRef(modeName, tcRefName, tcRefNameList);
@@ -308,8 +313,7 @@ class ModuleChangeHandler implements FileChangeListener {
     }
     
     private void addTCGroup (final String groupName, String tcGroupName) {
-        log("addTCGroup groupName:" + groupName
-        + " tcGroupName:" + tcGroupName);
+        if (DEBUG) Debug.log(ModuleChangeHandler.class, "addTCGroup groupName:" + groupName + " tcGroupName:" + tcGroupName);
         WindowManagerParser wmParser = PersistenceManager.getDefault().getWindowManagerParser();
         final TCGroupConfig tcGroupConfig = wmParser.addTCGroup(groupName, tcGroupName);
         if (tcGroupConfig != null) {
@@ -326,7 +330,7 @@ class ModuleChangeHandler implements FileChangeListener {
      * related tc ref adding if needed (if tc ref was "waiting")
      */
     private void addComponent(FileObject fo) {
-        log("addComponent settingsName:" + fo.getNameExt());
+        if (DEBUG) Debug.log(ModuleChangeHandler.class, "addComponent settingsName:" + fo.getNameExt());
         PersistenceManager.getDefault().copySettingsFileIfNeeded(fo);
         // now process tc ref if it is waiting for us
         FileObject waitingTcRef = findWaitingTcRef(fo);
@@ -355,7 +359,7 @@ class ModuleChangeHandler implements FileChangeListener {
     }
     
     private void removeMode (final String modeName) {
-        log("removeMode mo:" + modeName);
+        if (DEBUG) Debug.log(ModuleChangeHandler.class, "removeMode mo:" + modeName);
         WindowManagerParser wmParser = PersistenceManager.getDefault().getWindowManagerParser();
         wmParser.removeMode(modeName);
         //Mode is not removed from model because it can already contain TCs added
@@ -369,7 +373,7 @@ class ModuleChangeHandler implements FileChangeListener {
     }
     
     private void removeGroup (final String groupName) {
-        log("removeGroup group:" + groupName);
+        if (DEBUG) Debug.log(ModuleChangeHandler.class, "removeGroup group:" + groupName);
         WindowManagerParser wmParser = PersistenceManager.getDefault().getWindowManagerParser();
         wmParser.removeGroup(groupName);
         // #37529 WindowsAPI to be called from AWT thread only.
@@ -381,7 +385,7 @@ class ModuleChangeHandler implements FileChangeListener {
     }
     
     private void removeTCRef (final String tcRefName) {
-        log("removeTCRef tcRefName:" + tcRefName);
+        if (DEBUG) Debug.log(ModuleChangeHandler.class, "removeTCRef tcRefName:" + tcRefName);
         WindowManagerParser wmParser = PersistenceManager.getDefault().getWindowManagerParser();
         if (wmParser.removeTCRef(tcRefName)) {
             // #37529 WindowsAPI to be called from AWT thread only.
@@ -394,8 +398,7 @@ class ModuleChangeHandler implements FileChangeListener {
     }
     
     private void removeTCGroup (final String groupName, final String tcGroupName) {
-        log("removeTCGroup groupName:" + groupName
-        + " tcGroupName:" + tcGroupName);
+        if (DEBUG) Debug.log(ModuleChangeHandler.class, "removeTCGroup groupName:" + groupName + " tcGroupName:" + tcGroupName);
         WindowManagerParser wmParser = PersistenceManager.getDefault().getWindowManagerParser();
         if (wmParser.removeTCGroup(groupName, tcGroupName)) {
             // #37529 WindowsAPI to be called from AWT thread only.
@@ -407,7 +410,7 @@ class ModuleChangeHandler implements FileChangeListener {
         }
     }
     
-    void log (String s) {
+    private void log (String s) {
         Debug.log(ModuleChangeHandler.class, s);
     }
     

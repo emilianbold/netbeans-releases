@@ -119,10 +119,8 @@ class GroupParser {
                     //if (DEBUG) Debug.log(GroupParser.class, "-- MODULE fo[" + i + "]: " + files[i]);
                     if (!files[i].isFolder() && PersistenceManager.TCGROUP_EXT.equals(files[i].getExt())) {
                         //wstcgrp file
-                        TCGroupParser tcGroupParser;
-                        if (tcGroupParserMap.containsKey(files[i].getName())) {
-                            tcGroupParser = (TCGroupParser) tcGroupParserMap.get(files[i].getName());
-                        } else {
+                        TCGroupParser tcGroupParser = (TCGroupParser) tcGroupParserMap.get(files[i].getName());
+                        if (tcGroupParser == null) {
                             tcGroupParser = new TCGroupParser(files[i].getName());
                             tcGroupParserMap.put(files[i].getName(), tcGroupParser);
                         }
@@ -669,7 +667,6 @@ class GroupParser {
          */
         private StringBuffer fillBuffer (GroupConfig gc, InternalConfig ic) throws IOException {
             StringBuffer buff = new StringBuffer(800);
-            String curValue = null;
             // header
             buff.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n"); // NOI18N
             /*buff.append("<!DOCTYPE group PUBLIC\n"); // NOI18N

@@ -341,10 +341,8 @@ public class WindowManagerParser {
                 //if (DEBUG) Debug.log(WindowManagerParser.class, "fo[" + i + "]: " + files[i]);
                 if (!files[i].isFolder() && PersistenceManager.MODE_EXT.equals(files[i].getExt())) {
                     //wsmode file
-                    ModeParser modeParser;
-                    if (modeParserMap.containsKey(files[i].getName())) {
-                        modeParser = (ModeParser) modeParserMap.get(files[i].getName());
-                    } else {
+                    ModeParser modeParser = (ModeParser) modeParserMap.get(files[i].getName());
+                    if (modeParser == null) {
                         modeParser = new ModeParser(files[i].getName(),tcRefNameLocalSet);
                         modeParserMap.put(files[i].getName(), modeParser);
                     }

@@ -168,10 +168,8 @@ class ModeParser {
                     //if (DEBUG) Debug.log(ModeParser.class, "-- -- LOCAL fo[" + i + "]: " + files[i]);
                     if (!files[i].isFolder() && PersistenceManager.TCREF_EXT.equals(files[i].getExt())) {
                         //wstcref file
-                        TCRefParser tcRefParser;
-                        if (tcRefParserMap.containsKey(files[i].getName())) {
-                            tcRefParser = (TCRefParser) tcRefParserMap.get(files[i].getName());
-                        } else {
+                        TCRefParser tcRefParser = (TCRefParser) tcRefParserMap.get(files[i].getName());
+                        if (tcRefParser== null) {
                             tcRefParser = new TCRefParser(files[i].getName());
                             tcRefParserMap.put(files[i].getName(), tcRefParser);
                         }
