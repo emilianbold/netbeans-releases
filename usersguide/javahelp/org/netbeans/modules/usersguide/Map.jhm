@@ -835,7 +835,7 @@
   <mapID target="org.openide.actions.ViewAction" url="pending.html" />
   <mapID target="org.openide.actions.UndockAction" url="pending.html" />
   <mapID target="org.openide.actions.WorkspaceSwitchAction" url="pending.html" />
-  <mapID target="org.openide.awt.HtmlBrowser$BrowserComponent" url="pending.html" />
+  <mapID target="org.openide.awt.HtmlBrowser$BrowserComponent" url="webbrowser/swingbrowser.html" />
   <mapID target="org.openide.execution.ProcessExecutor" url="run/external.html" />
   <mapID target="org.openide.execution.ThreadExecutor" url="run/internal.html" />
   <mapID target="org.netbeans.modules.java.JavaProcessExecutor" url="run/external.html" />
@@ -1569,6 +1569,10 @@
    <mapID target="org.netbeans.core.JavaHelp$HelpComponent" url="pending.html" />  
    <mapID target="org.openide.actions.OpenLocalExplorerAction" url="pending.html" />
    <mapID target="org.openide.actions.PrintAction" url="pending.html" />
+   <mapID target="org.netbeans.core.actions.EmptyAction" url="pending.html" />
+   <mapID target="org.openide.actions.NewAction" url="pending.html" />   
+
+<!--Swing and AWT components - could conceivably eventually be mapped to JDK docs-->      
    <mapID target="java.awt.Button" url="pending.html" />
    <mapID target="java.awt.Label" url="pending.html" />
    <mapID target="java.awt.TextField" url="pending.html" /> 
@@ -1611,7 +1615,6 @@
    <mapID target="javax.swing.JLayeredPane" url="pending.html" />
    <mapID target="javax.swing.JDesktopPane" url="pending.html" />
    <mapID target="javax.swing.JOptionPane" url="pending.html" />
-   <mapID target="org.netbeans.core.actions.EmptyAction" url="pending.html" />
-   <mapID target="org.openide.actions.NewAction" url="pending.html" />
+
  
 </map>
