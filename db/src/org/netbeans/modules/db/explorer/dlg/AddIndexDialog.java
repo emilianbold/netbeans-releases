@@ -24,13 +24,7 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.modules.db.explorer.*;
 
-/**
-* xxx
-*
-* @author Slavek Psenicka
-*/
-public class AddIndexDialog
-{
+public class AddIndexDialog {
     boolean result = false;
     Dialog dialog = null;
     JTextField namefld;
@@ -39,7 +33,7 @@ public class AddIndexDialog
     public AddIndexDialog(Collection columns)
     {
         try {
-            ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
+            ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
             JPanel pane = new JPanel();
             pane.setBorder(new EmptyBorder(new Insets(5,5,5,5)));
             GridBagLayout layout = new GridBagLayout();
@@ -48,7 +42,7 @@ public class AddIndexDialog
 
             // Index name
 
-            JLabel label = new JLabel(bundle.getString("AddIndexName"));
+            JLabel label = new JLabel(bundle.getString("AddIndexName")); //NOI18N
             con.anchor = GridBagConstraints.WEST;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
             con.gridx = 0;
@@ -69,7 +63,7 @@ public class AddIndexDialog
 
             // Items list title
 
-            label = new JLabel(bundle.getString("AddIndexLabel"));
+            label = new JLabel(bundle.getString("AddIndexLabel")); //NOI18N
             con.weightx = 0.0;
             con.anchor = GridBagConstraints.WEST;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
@@ -124,7 +118,7 @@ public class AddIndexDialog
                                           }
                                       };
 
-            DialogDescriptor descriptor = new DialogDescriptor(pane, bundle.getString("AddIndexTitle"), true, listener);
+            DialogDescriptor descriptor = new DialogDescriptor(pane, bundle.getString("AddIndexTitle"), true, listener); //NOI18N
             dialog = TopManager.getDefault().createDialog(descriptor);
             dialog.setResizable(true);
         } catch (MissingResourceException e) {
@@ -176,15 +170,3 @@ public class AddIndexDialog
         }
     }
 }
-/*
- * <<Log>>
- *  6    Gandalf   1.5         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  5    Gandalf   1.4         9/8/99   Slavek Psenicka adaptor changes
- *  4    Gandalf   1.3         6/15/99  Slavek Psenicka debug prints
- *  3    Gandalf   1.2         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  2    Gandalf   1.1         5/21/99  Slavek Psenicka new version
- *  1    Gandalf   1.0         5/14/99  Slavek Psenicka 
- * $
- */

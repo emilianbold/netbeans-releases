@@ -17,6 +17,7 @@ import java.sql.*;
 import java.util.*;
 
 import org.openide.util.NbBundle;
+
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.adaptors.*;
 import org.netbeans.lib.ddl.impl.*;
@@ -31,8 +32,6 @@ import org.openide.nodes.Node;
 public class TableListNodeInfo extends DatabaseNodeInfo implements TableOwnerOperations {
     static final long serialVersionUID =-6156362126513404875L;
     
-    static ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); // NOI18N
-
     protected void initChildren(Vector children) throws DatabaseException {
         try {
             DatabaseMetaData dmd = getSpecification().getMetaData();

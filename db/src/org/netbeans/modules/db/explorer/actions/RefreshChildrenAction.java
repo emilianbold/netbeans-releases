@@ -13,41 +13,32 @@
 
 package org.netbeans.modules.db.explorer.actions;
 
-import java.util.ResourceBundle;
-import org.openide.util.NbBundle;
-import org.netbeans.lib.ddl.impl.*;
+import java.text.MessageFormat;
+
 import org.openide.*;
 import org.openide.nodes.Node;
+
+import org.netbeans.lib.ddl.impl.*;
 import org.netbeans.modules.db.explorer.*;
 import org.netbeans.modules.db.explorer.nodes.*;
 import org.netbeans.modules.db.explorer.infos.*;
 
-public class RefreshChildrenAction extends DatabaseAction
-{
+public class RefreshChildrenAction extends DatabaseAction {
     static final long serialVersionUID =-2858583720506557569L;
-    public void performAction (Node[] activatedNodes)
-    {
+    
+    public void performAction (Node[] activatedNodes) {
         Node node;
-        if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
-        else return;
+        if (activatedNodes != null && activatedNodes.length>0)
+            node = activatedNodes[0];
+        else
+            return;
 
-        ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
         try {
             DatabaseNodeInfo nfo = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
             nfo.refreshChildren();
-        } catch(Exception e) {
-            TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("RefreshChildrenErrorPrefix")+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+        } catch(Exception exc) {
+            String message = MessageFormat.format(bundle.getString("RefreshChildrenErrorPrefix"), new String[] {exc.getMessage()}); // NOI18N
+            TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
         }
     }
 }
-/*
- * <<Log>>
- *  5    Gandalf   1.4         11/27/99 Patrik Knakal   
- *  4    Gandalf   1.3         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  3    Gandalf   1.2         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  2    Gandalf   1.1         5/21/99  Slavek Psenicka new version
- *  1    Gandalf   1.0         5/14/99  Slavek Psenicka 
- * $
- */

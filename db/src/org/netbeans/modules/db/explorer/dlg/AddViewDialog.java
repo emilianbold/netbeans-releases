@@ -24,13 +24,7 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.modules.db.explorer.*;
 
-/**
-* xxx
-*
-* @author Slavek Psenicka
-*/
-public class AddViewDialog
-{
+public class AddViewDialog {
     boolean result = false;
     Dialog dialog = null;
     JTextField namefld;
@@ -39,7 +33,7 @@ public class AddViewDialog
     public AddViewDialog()
     {
         try {
-            ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
+            ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
             JPanel pane = new JPanel();
             pane.setBorder(new EmptyBorder(new Insets(5,5,5,5)));
             GridBagLayout layout = new GridBagLayout();
@@ -48,7 +42,7 @@ public class AddViewDialog
 
             // Index name
 
-            JLabel label = new JLabel(bundle.getString("AddViewName"));
+            JLabel label = new JLabel(bundle.getString("AddViewName")); //NOI18N
             con.anchor = GridBagConstraints.WEST;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
             con.gridx = 0;
@@ -69,7 +63,7 @@ public class AddViewDialog
 
             // Items list title
 
-            label = new JLabel(bundle.getString("AddViewLabel"));
+            label = new JLabel(bundle.getString("AddViewLabel")); //NOI18N
             con.weightx = 0.0;
             con.anchor = GridBagConstraints.WEST;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
@@ -109,7 +103,7 @@ public class AddViewDialog
                                           }
                                       };
 
-            DialogDescriptor descriptor = new DialogDescriptor(pane, bundle.getString("AddViewTitle"), true, listener);
+            DialogDescriptor descriptor = new DialogDescriptor(pane, bundle.getString("AddViewTitle"), true, listener); //NOI18N
             dialog = TopManager.getDefault().createDialog(descriptor);
             dialog.setResizable(true);
         } catch (MissingResourceException e) {
@@ -138,14 +132,3 @@ public class AddViewDialog
         return tarea.getText();
     }
 }
-/*
- * <<Log>>
- *  5    Gandalf   1.4         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  4    Gandalf   1.3         9/8/99   Slavek Psenicka 
- *  3    Gandalf   1.2         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  2    Gandalf   1.1         5/21/99  Slavek Psenicka new version
- *  1    Gandalf   1.0         5/14/99  Slavek Psenicka 
- * $
- */

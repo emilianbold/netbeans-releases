@@ -16,14 +16,12 @@ package org.netbeans.modules.db.explorer.actions;
 import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Iterator;
-import java.util.ResourceBundle;
 import java.util.Vector;
 
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.impl.*;
 import org.openide.*;
 import org.openide.nodes.*;
-import org.openide.util.NbBundle;
 import org.netbeans.lib.ddl.adaptors.*;
 import org.netbeans.modules.db.explorer.*;
 import org.netbeans.modules.db.explorer.dlg.*;
@@ -32,8 +30,6 @@ import org.netbeans.modules.db.explorer.infos.*;
 
 public class AddIndexAction extends DatabaseAction {
     public void performAction (Node[] activatedNodes) {
-        ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); // NOI18N
-        
         Node node;
         if (activatedNodes != null && activatedNodes.length>0)
             node = activatedNodes[0];

@@ -15,11 +15,9 @@ package org.netbeans.modules.db.explorer.actions;
 
 import java.sql.*;
 import java.text.MessageFormat;
-import java.util.ResourceBundle;
 
 import org.netbeans.lib.ddl.impl.*;
 import org.openide.*;
-import org.openide.util.NbBundle;
 import org.openide.nodes.*;
 import org.netbeans.modules.db.explorer.nodes.*;
 import org.netbeans.modules.db.explorer.dlg.*;
@@ -29,8 +27,6 @@ public class CreateViewAction extends DatabaseAction {
     static final long serialVersionUID =-1640355770860785644L;
     
     public void performAction(Node[] activatedNodes) {
-        ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); // NOI18N
-        
         Node node;
         if (activatedNodes != null && activatedNodes.length>0)
             node = activatedNodes[0];

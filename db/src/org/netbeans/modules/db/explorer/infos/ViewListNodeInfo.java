@@ -28,8 +28,6 @@ import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 public class ViewListNodeInfo extends DatabaseNodeInfo {
     static final long serialVersionUID =2854540580610981370L;
     
-    static ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); // NOI18N
-
     public void initChildren(Vector children) throws DatabaseException {
         try {
             DatabaseMetaData dmd = getSpecification().getMetaData();

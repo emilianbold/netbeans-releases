@@ -36,50 +36,49 @@ import org.openide.nodes.Node;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
 
-public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
-{
-    public static final String SPECIFICATION_FACTORY = "specfactory";
-    public static final String SPECIFICATION = "spec";
-    public static final String DRIVER_SPECIFICATION = "drvspec";
-    public static final String DBPRODUCT = "dbproduct";
-    public static final String DBVERSION = "dbversion";
-    public static final String SUPPORTED_DBS = "suppdbs";
-    public static final String DRIVER = "driver";
-    public static final String DBDRIVER = "dbdriver";
-    public static final String DATABASE = "db";
-    public static final String URL = "url";
-    public static final String PREFIX = "prefix";
-    public static final String CONNECTION = "connection";
-    public static final String CODE = "code";
-    public static final String NODE = "node";
-    public static final String CLASS = "class";
-    public static final String INFOCLASS = "infoclass";
-    public static final String NAME = "name";
-    public static final String USER = "user";
-    public static final String PASSWORD = "password";
-    public static final String CHILDREN = "children";
-    public static final String ACTIONS = "actions";
-    public static final String ICONBASE = "iconbase";
-    public static final String PROPERTIES = "properties";
-    public static final String RESULTSET = "resultset";
-    public static final String REMEMBER_PWD = "rememberpwd";
-    public static final String WRITABLE = "writable";
-    public static final String DELETABLE = "deletable";
-    public static final String DESCRIPTION = "description";
-    public static final String READONLYDB = "readonlydatabase";
-    public static final String GROUPSUP = "groupbysupport";
-    public static final String OJOINSUP = "outerjoinsupport";
-    public static final String UNIONSUP = "unionsupport";
-    public static final String SYSTEM_ACTION = "system";
-    public static final String CHILDREN_ORDERING = "children_ordering";
-    public static final String READONLY = "readOnly";
-    public static final String PERM = "perm";
-    public static final String ADAPTOR = "adaptor";
-    public static final String ADAPTOR_CLASSNAME = "adaptorClass";
+public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
+    public static final String SPECIFICATION_FACTORY = "specfactory"; //NOI18N
+    public static final String SPECIFICATION = "spec"; //NOI18N
+    public static final String DRIVER_SPECIFICATION = "drvspec"; //NOI18N
+    public static final String DBPRODUCT = "dbproduct"; //NOI18N
+    public static final String DBVERSION = "dbversion"; //NOI18N
+    public static final String SUPPORTED_DBS = "suppdbs"; //NOI18N
+    public static final String DRIVER = "driver"; //NOI18N
+    public static final String DBDRIVER = "dbdriver"; //NOI18N
+    public static final String DATABASE = "db"; //NOI18N
+    public static final String URL = "url"; //NOI18N
+    public static final String PREFIX = "prefix"; //NOI18N
+    public static final String CONNECTION = "connection"; //NOI18N
+    public static final String CODE = "code"; //NOI18N
+    public static final String NODE = "node"; //NOI18N
+    public static final String CLASS = "class"; //NOI18N
+    public static final String INFOCLASS = "infoclass"; //NOI18N
+    public static final String NAME = "name"; //NOI18N
+    public static final String USER = "user"; //NOI18N
+    public static final String PASSWORD = "password"; //NOI18N
+    public static final String CHILDREN = "children"; //NOI18N
+    public static final String ACTIONS = "actions"; //NOI18N
+    public static final String ICONBASE = "iconbase"; //NOI18N
+    public static final String PROPERTIES = "properties"; //NOI18N
+    public static final String RESULTSET = "resultset"; //NOI18N
+    public static final String REMEMBER_PWD = "rememberpwd"; //NOI18N
+    public static final String WRITABLE = "writable"; //NOI18N
+    public static final String DELETABLE = "deletable"; //NOI18N
+    public static final String DESCRIPTION = "description"; //NOI18N
+    public static final String READONLYDB = "readonlydatabase"; //NOI18N
+    public static final String GROUPSUP = "groupbysupport"; //NOI18N
+    public static final String OJOINSUP = "outerjoinsupport"; //NOI18N
+    public static final String UNIONSUP = "unionsupport"; //NOI18N
+    public static final String SYSTEM_ACTION = "system"; //NOI18N
+    public static final String CHILDREN_ORDERING = "children_ordering"; //NOI18N
+    public static final String READONLY = "readOnly"; //NOI18N
+    public static final String PERM = "perm"; //NOI18N
+    public static final String ADAPTOR = "adaptor"; //NOI18N
+    public static final String ADAPTOR_CLASSNAME = "adaptorClass"; //NOI18N
 
     private static Map gtab = null;
-    private static final String gtabfile = "org/netbeans/modules/db/resources/explorer.plist";
-    private static ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); // NOI18N
+    static final String gtabfile = "org/netbeans/modules/db/resources/explorer.plist"; //NOI18N
+    static final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); // NOI18N
 
     public static Map getGlobalNodeInfo()
     {
@@ -111,21 +110,26 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
         DatabaseNodeInfo e_ni = null;
         try {
             String nodec = (String)((Map)DatabaseNodeInfo.getGlobalNodeInfo().get(nodecode)).get(INFOCLASS);
-            if (nodec != null) e_ni = (DatabaseNodeInfo)Class.forName(nodec).newInstance();
-            else throw new Exception("unable to find class information for "+nodecode);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new DatabaseException(e.getMessage());
+            if (nodec != null)
+                e_ni = (DatabaseNodeInfo)Class.forName(nodec).newInstance();
+            else {
+                String message = MessageFormat.format(bundle.getString("EXC_UnableToFindClassInfo"), new String[] {nodecode}); // NOI18N
+                throw new Exception(message);
+            }
+        } catch (Exception exc) {
+            throw new DatabaseException(exc.getMessage());
         }
 
-        if (e_ni != null) e_ni.setParentInfo(parent, nodecode);
-        else throw new DatabaseException("unable to create node information "+nodecode);
+        if (e_ni != null)
+            e_ni.setParentInfo(parent, nodecode);
+        else {
+            String message = MessageFormat.format(bundle.getString("EXC_UnableToCreateNodeInfo"), new String[] {nodecode}); // NOI18N
+            throw new DatabaseException(message);
+        }
         return e_ni;
     }
 
-    public static DatabaseNodeInfo createNodeInfo(DatabaseNodeInfo parent, String nodecode, ResultSet rset)
-    throws DatabaseException
-    {
+    public static DatabaseNodeInfo createNodeInfo(DatabaseNodeInfo parent, String nodecode, ResultSet rset) throws DatabaseException {
         int colidx = 1;
         String key = null;
         DatabaseNodeInfo nfo = createNodeInfo(parent, nodecode);
@@ -135,7 +139,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
         while (rsnames_i.hasNext())
             try {
                 key = (String)rsnames_i.next();
-                if (!key.equals("unused")) {
+                if (!key.equals("unused")) { //NOI18N
                     Object value = rset.getObject(colidx);
                     if (value != null) data.put(key, value);
                 }
@@ -182,8 +186,12 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
             this.parent = parent;
         }
         Map ltab = (Map)getGlobalNodeInfo(sname);
-        if (ltab != null) putAll(ltab);
-        else throw new DatabaseException("unable to read information for "+sname);
+        if (ltab != null)
+            putAll(ltab);
+        else {
+            String message = MessageFormat.format(bundle.getString("EXC_UnableToReadInfo"), new String[] {sname}); // NOI18N
+            throw new DatabaseException(message);
+        }
         put(CODE, sname);
         if (parent != null && parent.isReadOnly()) setReadOnly(true);
     }
@@ -219,7 +227,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
     {
         if (isReadOnly()) return false;
         String wflag = (String)propmap.get(DatabaseNodeInfo.WRITABLE);
-        if (wflag != null) return wflag.toUpperCase().equals("YES");
+        if (wflag != null) return wflag.toUpperCase().equals("YES"); //NOI18N
         return defa;
     }
 
@@ -351,7 +359,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
             if (driver.getURL().equals(drv)) adac = driver.getDatabaseAdaptor();
         }
 
-        if (adac == null) adac = "org.netbeans.lib.ddl.adaptors.DefaultAdaptor";
+        if (adac == null) adac = "org.netbeans.lib.ddl.adaptors.DefaultAdaptor"; //NOI18N
         return adac;
     }
 
@@ -481,58 +489,58 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 
     public String getTable()
     {
-        return (String)get("table");
+        return (String)get("table"); //NOI18N
     }
 
     public void setTable(String nam)
     {
-        put("table", nam);
+        put("table", nam); //NOI18N
     }
 
     public String getIconBase() {
-        if (getCode().equals("driver"))
+        if (getCode().equals("driver")) //NOI18N
             try {
                 Class.forName(getURL());
-                if (getName().startsWith("Microsoft SQL Server (Weblogic driver)") || getName().startsWith("Oracle thin") || getName().startsWith("PointBase"))
-                    return (String) get("iconbaseprefered");
+                if (getName().startsWith("Microsoft SQL Server (Weblogic driver)") || getName().startsWith("Oracle thin") || getName().startsWith("PointBase")) //NOI18N
+                    return (String) get("iconbaseprefered"); //NOI18N
                 else
-                    return (String) get("iconbase");
+                    return (String) get("iconbase"); //NOI18N
             } catch (ClassNotFoundException exc) {
-                if (getName().startsWith("Microsoft SQL Server (Weblogic driver)") || getName().startsWith("Oracle thin") || getName().startsWith("PointBase"))
-                    return (String) get("iconbasepreferednotinstalled");
+                if (getName().startsWith("Microsoft SQL Server (Weblogic driver)") || getName().startsWith("Oracle thin") || getName().startsWith("PointBase")) //NOI18N
+                    return (String) get("iconbasepreferednotinstalled"); //NOI18N
                 else
-                    return (String) get("iconbasenotinstalled");
+                    return (String) get("iconbasenotinstalled"); //NOI18N
             }
         else
-            return (String) get("iconbase");
+            return (String) get("iconbase"); //NOI18N
     }
 
     public void setIconBase(String base) {
-        if (getCode().equals("driver"))
+        if (getCode().equals("driver")) //NOI18N
             try {
                 Class.forName(getURL());
-                if (getName().startsWith("Microsoft SQL Server (Weblogic driver)") || getName().startsWith("Oracle thin") || getName().startsWith("PointBase"))
-                    put("iconbaseprefered", base);
+                if (getName().startsWith("Microsoft SQL Server (Weblogic driver)") || getName().startsWith("Oracle thin") || getName().startsWith("PointBase")) //NOI18N
+                    put("iconbaseprefered", base); //NOI18N
                 else
-                    put("iconbase", base);
+                    put("iconbase", base); //NOI18N
             } catch (ClassNotFoundException exc) {
-                if (getName().startsWith("Microsoft SQL Server (Weblogic driver)") || getName().startsWith("Oracle thin") || getName().startsWith("PointBase"))
-                    put("iconbasepreferednotinstalled", base);
+                if (getName().startsWith("Microsoft SQL Server (Weblogic driver)") || getName().startsWith("Oracle thin") || getName().startsWith("PointBase")) //NOI18N
+                    put("iconbasepreferednotinstalled", base); //NOI18N
                 else
-                    put("iconbasenotinstalled", base);
+                    put("iconbasenotinstalled", base); //NOI18N
             }
         else
-            put("iconbase", base);
+            put("iconbase", base); //NOI18N
     }
 
     public String getDisplayname()
     {
-        return (String)get("displayname");
+        return (String)get("displayname"); //NOI18N
     }
 
     public void setDisplayname(String name)
     {
-        put("displayname", name);
+        put("displayname", name); //NOI18N
     }
 
     public String getURL()
@@ -552,8 +560,8 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
     {
         Properties props = new Properties();
         try {
-            props.put("user", getUser());
-            props.put("password", getPassword());
+            props.put("user", getUser()); //NOI18N
+            props.put("password", getPassword()); //NOI18N
         } catch (Exception e) { props = null; }
 
         return props;
@@ -586,8 +594,9 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
             children = chalt;
             put(CHILDREN, children);
 
-        } catch (Exception e) {
-            throw new DatabaseException("unable to create children, "+e.getMessage());
+        } catch (Exception exc) {
+            String message = MessageFormat.format(bundle.getString("EXC_UnableToCreateChildren"), new String[] {exc.getMessage()}); // NOI18N
+            throw new DatabaseException(message);
         }
 
         return children;
@@ -607,7 +616,6 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
         }
 
         if (actions.size() == 0) return actions;
-        ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
         Object xaction = actions.elementAt(0);
         if (xaction != null && xaction instanceof DatabaseAction) return actions;
         boolean ro = isReadOnly();
@@ -622,14 +630,14 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
                     // Try permissions
 
                     String perm = (String)e_action.get(PERM);
-                    if (ro && perm != null && perm instanceof String && perm.indexOf("write") != -1) {
+                    if (ro && perm != null && perm instanceof String && perm.indexOf("write") != -1) { //NOI18N
                         actions.setElementAt(null, i);
                         continue;
                     }
 
                     boolean systemact = false;
                     String sysactstr = (String)e_action.get(SYSTEM_ACTION);
-                    if (sysactstr != null) systemact = sysactstr.toUpperCase().equals("YES");
+                    if (sysactstr != null) systemact = sysactstr.toUpperCase().equals("YES"); //NOI18N
                     String actnode = (String)e_action.get(NODE);
                     String actcn = (String)e_action.get(CLASS);
 
@@ -639,7 +647,9 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
                             locname = bundle.getString(xname);
                         } catch (MissingResourceException e) {
                             locname = xname;
-                            System.out.println("unable to locate localized menu item "+xname);
+                            
+                            String message = MessageFormat.format(bundle.getString("ERR_UnableToLocateLocalizedMenuItem"), new String[] {xname}); // NOI18N
+                            System.out.println(message);
                         }
 
                         action = (SystemAction)Class.forName(actcn).newInstance();
@@ -660,11 +670,11 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 
     public String toString()
     {
-        String result = "";
+        String result = ""; //NOI18N
         Enumeration keys = keys();
         while (keys.hasMoreElements()) {
             Object key = keys.nextElement();
-            result = result + key+": "+get(key)+ "\n";
+            result = result + key+": "+get(key)+ "\n"; //NOI18N
         }
 
         return result;

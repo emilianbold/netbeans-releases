@@ -13,31 +13,30 @@
 
 package org.netbeans.modules.db.explorer.actions;
 
-import java.util.ResourceBundle;
-import org.openide.*;
-import org.openide.util.NbBundle;
-import java.util.*;
 import java.io.*;
+import java.util.*;
 import java.sql.Connection;
 import java.text.MessageFormat;
+
+import javax.swing.JFileChooser;
+
+import org.openide.*;
+import org.netbeans.lib.ddl.impl.*;
+import org.openide.util.NbBundle;
 import org.openide.nodes.*;
+
 import org.netbeans.modules.db.explorer.nodes.*;
 import org.netbeans.modules.db.explorer.infos.*;
 import org.netbeans.modules.db.explorer.dlg.*;
-import javax.swing.JFileChooser;
-import org.netbeans.lib.ddl.impl.*;
 
-public class RecreateTableAction extends DatabaseAction
-{
+public class RecreateTableAction extends DatabaseAction {
     static final long serialVersionUID =6992569917995229492L;
-    public void performAction (Node[] activatedNodes)
-    {
+    
+    public void performAction (Node[] activatedNodes) {
         Node node;
         if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
         else return;
         try {
-
-            final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
             DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
             TableListNodeInfo nfo = (TableListNodeInfo)info.getParent(nodename);
             Specification spec = (Specification)nfo.getSpecification();
@@ -48,13 +47,13 @@ public class RecreateTableAction extends DatabaseAction
 
             JFileChooser chooser = new JFileChooser();
             chooser.setDialogType(JFileChooser.OPEN_DIALOG);
-            chooser.setDialogTitle(bundle.getString("RecreateTableFileOpenDialogTitle"));
+            chooser.setDialogTitle(bundle.getString("RecreateTableFileOpenDialogTitle")); //NOI18N
             chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
                                       public boolean accept(File f) {
-                                          return (f.isDirectory() || f.getName().endsWith(".grab"));
+                                          return (f.isDirectory() || f.getName().endsWith(".grab")); //NOI18N
                                       }
                                       public String getDescription() {
-                                          return bundle.getString("GrabTableFileTypeDescription");
+                                          return bundle.getString("GrabTableFileTypeDescription"); //NOI18N
                                       }
                                   });
 
@@ -71,8 +70,8 @@ public class RecreateTableAction extends DatabaseAction
             } else return;
 
             String newtab = cmd.getObjectName();
-            String msg = MessageFormat.format(bundle.getString("RecreateTableRenameNotes"), new String[] {cmd.getCommand()});
-            LabeledTextFieldDialog dlg = new LabeledTextFieldDialog(bundle.getString("RecreateTableRenameTable"), bundle.getString("RecreateTableNewName"), msg);
+            String msg = MessageFormat.format(bundle.getString("RecreateTableRenameNotes"), new String[] {cmd.getCommand()}); //NOI18N
+            LabeledTextFieldDialog dlg = new LabeledTextFieldDialog(bundle.getString("RecreateTableRenameTable"), bundle.getString("RecreateTableNewName"), msg); //NOI18N
             dlg.setStringValue(newtab);
             if (dlg.run()) {
                 newtab = dlg.getStringValue();
@@ -81,23 +80,9 @@ public class RecreateTableAction extends DatabaseAction
                 nfo.addTable(newtab);
             }
 
-        } catch(Exception e) {
-            TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to recreate, "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+        } catch(Exception exc) {
+            String message = MessageFormat.format(bundle.getString("ERR_UnableToRecreateTable"), new String[] {exc.getMessage()}); // NOI18N
+            TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
         }
     }
 }
-/*
- * <<Log>>
- *  8    Gandalf   1.7         11/27/99 Patrik Knakal   
- *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  6    Gandalf   1.5         6/22/99  Ian Formanek    employed DEFAULT_HELP
- *  5    Gandalf   1.4         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  4    Gandalf   1.3         5/21/99  Slavek Psenicka new version
- *  3    Gandalf   1.2         5/14/99  Slavek Psenicka new version
- *  2    Gandalf   1.1         4/23/99  Slavek Psenicka oprava activatedNode[0] 
- *       check
- *  1    Gandalf   1.0         4/23/99  Slavek Psenicka 
- * $
- */

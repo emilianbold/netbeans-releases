@@ -41,13 +41,11 @@ import org.netbeans.modules.form.RADComponent;
 * Node representing open or closed connection to database.
 */
 
-public class ConnectionNode extends DatabaseNode implements InstanceCookie
-{
-    public void setInfo(DatabaseNodeInfo nodeinfo)
-    {
+public class ConnectionNode extends DatabaseNode implements InstanceCookie {
+    public void setInfo(DatabaseNodeInfo nodeinfo) {
         super.setInfo(nodeinfo);
         DatabaseNodeInfo info = getInfo();
-        displayFormat = new java.text.MessageFormat((String)info.get("displayname"));
+        displayFormat = new java.text.MessageFormat((String)info.get("displayname")); //NOI18N
 
         String url = info.getDatabase();
         DatabaseOption option = RootNode.getOption();
@@ -63,43 +61,38 @@ public class ConnectionNode extends DatabaseNode implements InstanceCookie
         }
 
         info.addConnectionListener(new PropertyChangeListener() {
-                                       public void propertyChange(PropertyChangeEvent evt) {
-                                           if (evt.getPropertyName().equals(DatabaseNodeInfo.CONNECTION))
-                                               update((Connection)evt.getNewValue());
-                                           if (evt.getPropertyName().equals(DatabaseNodeInfo.DATABASE))
-                                               setDisplayName((String)evt.getNewValue());
-                                       }
-                                   });
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getPropertyName().equals(DatabaseNodeInfo.CONNECTION))
+                    update((Connection)evt.getNewValue());
+                if (evt.getPropertyName().equals(DatabaseNodeInfo.DATABASE))
+                    setDisplayName((String)evt.getNewValue());
+            }
+        });
 
         getCookieSet().add(this);
     }
 
-    public void setName(String name)
-    {
+    public void setName(String name) {
         String url = getInfo().getDatabase();
         DatabaseOption option = RootNode.getOption();
         Vector cons = option.getConnections();
         Enumeration enu = cons.elements();
         while (enu.hasMoreElements()) {
             DatabaseConnection dburl = (DatabaseConnection)enu.nextElement();
-            if (dburl.getDatabase().equals(url)) {
+            if (dburl.getDatabase().equals(url))
                 dburl.setName(name);
-            }
         }
     }
 
-    public String instanceName()
-    {
-        return "org.netbeans.lib.sql.ConnectionSource";
+    public String instanceName() {
+        return "org.netbeans.lib.sql.ConnectionSource"; //NOI18N
     }
 
-    public Class instanceClass() throws IOException, ClassNotFoundException
-    {
-        return Class.forName("org.netbeans.lib.sql.ConnectionSource", true, org.openide.TopManager.getDefault ().currentClassLoader ());
+    public Class instanceClass() throws IOException, ClassNotFoundException {
+        return Class.forName("org.netbeans.lib.sql.ConnectionSource", true, org.openide.TopManager.getDefault ().currentClassLoader ()); //NOI18N
     }
 
-    public Object instanceCreate()
-    {
+    public Object instanceCreate() {
         DatabaseNodeInfo info = getInfo();
         try {
             Method met;
@@ -110,13 +103,13 @@ public class ConnectionNode extends DatabaseNode implements InstanceCookie
             String pwd = info.getPassword();
             Object obj =  objclass.newInstance();
 
-            met = objclass.getMethod("setDriver", new Class[] {String.class});
+            met = objclass.getMethod("setDriver", new Class[] {String.class}); //NOI18N
             if (met != null) met.invoke(obj, new String[] {drv});
-            met = objclass.getMethod("setDatabase", new Class[] {String.class});
+            met = objclass.getMethod("setDatabase", new Class[] {String.class}); //NOI18N
             if (met != null) met.invoke(obj, new String[] {db});
-            met = objclass.getMethod("setUsername", new Class[] {String.class});
+            met = objclass.getMethod("setUsername", new Class[] {String.class}); //NOI18N
             if (met != null) met.invoke(obj, new String[] {usr});
-            met = objclass.getMethod("setPassword", new Class[] {String.class});
+            met = objclass.getMethod("setPassword", new Class[] {String.class}); //NOI18N
             if (met != null) met.invoke(obj, new String[] {pwd});
 
             return obj;
@@ -127,13 +120,12 @@ public class ConnectionNode extends DatabaseNode implements InstanceCookie
         }
     }
 
-    private void update(Connection connection)
-    {
+    private void update(Connection connection) {
         boolean connecting = (connection != null);
         DatabaseNodeChildren children = (DatabaseNodeChildren)getChildren();
         DatabaseNodeInfo info = getInfo();
-        setIconBase((String)info.get(connecting ? "activeiconbase" : "iconbase"));
-        String dkey = (connecting ? "activedisplayname" : "displayname");
+        setIconBase((String)info.get(connecting ? "activeiconbase" : "iconbase")); //NOI18N
+        String dkey = (connecting ? "activedisplayname" : "displayname"); //NOI18N
         String fmt = (String)info.get(dkey);
         if (fmt != null) {
             //      String dname = MapFormat.format(fmt, info);
@@ -153,31 +145,29 @@ public class ConnectionNode extends DatabaseNode implements InstanceCookie
             Node.Property dbprop = set.get(DatabaseNodeInfo.DATABASE);
             PropertySupport newdbprop = createPropertySupport(dbprop.getName(), dbprop.getValueType(), dbprop.getDisplayName(), dbprop.getShortDescription(), info, !connecting);
             set.put(newdbprop);
-            firePropertyChange("db",dbprop,newdbprop);
+            firePropertyChange("db",dbprop,newdbprop); //NOI18N
 
             Node.Property drvprop = set.get(DatabaseNodeInfo.DRIVER);
             PropertySupport newdrvprop = createPropertySupport(drvprop.getName(), drvprop.getValueType(), drvprop.getDisplayName(), drvprop.getShortDescription(), info, !connecting);
             set.put(newdrvprop);
-            firePropertyChange("driver",drvprop,newdrvprop);
+            firePropertyChange("driver",drvprop,newdrvprop); //NOI18N
 
             Node.Property usrprop = set.get(DatabaseNodeInfo.USER);
             PropertySupport newusrprop = createPropertySupport(usrprop.getName(), usrprop.getValueType(), usrprop.getDisplayName(), usrprop.getShortDescription(), info, !connecting);
             set.put(newusrprop);
-            firePropertyChange("user",usrprop,newusrprop);
+            firePropertyChange("user",usrprop,newusrprop); //NOI18N
 
             Node.Property rememberprop = set.get(DatabaseNodeInfo.REMEMBER_PWD);
             PropertySupport newrememberprop = createPropertySupport(rememberprop.getName(), rememberprop.getValueType(), rememberprop.getDisplayName(), rememberprop.getShortDescription(), info, connecting);
             set.put(newrememberprop);
-            firePropertyChange("rememberpassword",rememberprop,newrememberprop);
+            firePropertyChange("rememberpassword",rememberprop,newrememberprop); //NOI18N
 
-            if (!connecting) {
+            if (!connecting)
                 children.remove(children.getNodes());
-            } else {
-
+            else {
                 DatabaseMetaData dmd = info.getSpecification().getMetaData();
 
                 try {
-
                     info.put(DefaultAdaptor.PROP_PRODUCTNAME, dmd.getDatabaseProductName());
 
                     info.put(DefaultAdaptor.PROP_MIXEDCASE_IDENTIFIERS, new Boolean(dmd.supportsMixedCaseIdentifiers()));
@@ -298,26 +288,3 @@ public class ConnectionNode extends DatabaseNode implements InstanceCookie
         }
     }
 }
-/*
- * <<Log>>
- *  16   Gandalf   1.15        11/8/99  Radko Najman    ConnectionNode name 
- *       refresh
- *  15   Gandalf   1.14        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  14   Gandalf   1.13        9/17/99  Slavek Psenicka 
- *  13   Gandalf   1.12        9/15/99  Slavek Psenicka 
- *  12   Gandalf   1.11        9/13/99  Slavek Psenicka 
- *  11   Gandalf   1.10        9/13/99  Slavek Psenicka 
- *  10   Gandalf   1.9         9/13/99  Slavek Psenicka 
- *  9    Gandalf   1.8         9/8/99   Slavek Psenicka 
- *  8    Gandalf   1.7         8/19/99  Slavek Psenicka English
- *  7    Gandalf   1.6         8/18/99  Slavek Psenicka debug logs removed
- *  6    Gandalf   1.5         8/5/99   Slavek Psenicka InstanceCookie support
- *  5    Gandalf   1.4         7/21/99  Slavek Psenicka 
- *  4    Gandalf   1.3         6/15/99  Slavek Psenicka debug prints
- *  3    Gandalf   1.2         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  2    Gandalf   1.1         5/21/99  Slavek Psenicka new version
- *  1    Gandalf   1.0         4/23/99  Slavek Psenicka 
- * $
- */

@@ -13,12 +13,15 @@
 
 package org.netbeans.modules.db.explorer.infos;
 
+import java.io.IOException;
 import java.sql.*;
 import java.util.*;
+import java.text.MessageFormat;
+
 import org.openide.*;
-import java.io.IOException;
-import org.netbeans.lib.ddl.*;
 import org.openide.nodes.Node;
+
+import org.netbeans.lib.ddl.*;
 import org.netbeans.modules.db.DatabaseException;
 import org.netbeans.lib.ddl.impl.*;
 import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
@@ -26,13 +29,12 @@ import org.netbeans.modules.db.explorer.infos.*;
 import org.netbeans.modules.db.explorer.nodes.*;
 import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 
-public class ColumnNodeInfo extends DatabaseNodeInfo
-{
+public class ColumnNodeInfo extends DatabaseNodeInfo {
     static final long serialVersionUID =-1470704512178901918L;
-    public boolean canAdd(Map propmap, String propname)
-{
-        if (propname.equals("decdigits")) {
-            int type = ((Integer)get("datatype")).intValue();
+    
+    public boolean canAdd(Map propmap, String propname) {
+        if (propname.equals("decdigits")) { //NOI18N
+            int type = ((Integer)get("datatype")).intValue(); //NOI18N
             if (type == java.sql.Types.FLOAT || type == java.sql.Types.REAL || type == java.sql.Types.DOUBLE) return true;
             else return false;
         }
@@ -40,10 +42,9 @@ public class ColumnNodeInfo extends DatabaseNodeInfo
         return super.canAdd(propmap, propname);
     }
 
-    public Object getProperty(String key)
-    {
-        if (key.equals("isnullable")) {
-            boolean eq = ((String)get(key)).toUpperCase().equals("YES");
+    public Object getProperty(String key) {
+        if (key.equals("isnullable")) { //NOI18N
+            boolean eq = ((String)get(key)).toUpperCase().equals("YES"); //NOI18N
             return new Boolean(eq);
         }
         return super.getProperty(key);
@@ -61,10 +62,11 @@ public class ColumnNodeInfo extends DatabaseNodeInfo
             cmd.execute();
             // refresh list of columns after column drop
             getParent().refreshChildren();
-        } catch(DatabaseException e) {
-            TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to delete column, "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
-        } catch (Exception e) {
-            throw new IOException(e.getMessage());
+        } catch(DatabaseException exc) {
+            String message = MessageFormat.format(bundle.getString("ERR_UnableToDeleteColumn"), new String[] {exc.getMessage()}); // NOI18N
+            TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+        } catch (Exception exc) {
+            throw new IOException(exc.getMessage());
         }
     }
 
@@ -75,7 +77,7 @@ public class ColumnNodeInfo extends DatabaseNodeInfo
 
         try {
             Specification spec = (Specification)getSpecification();
-            CreateTable cmd = (CreateTable)spec.createCommandCreateTable("DUMMY");
+            CreateTable cmd = (CreateTable)spec.createCommandCreateTable("DUMMY"); //NOI18N
             String code = getCode();
             DatabaseMetaData dmd = getSpecification().getMetaData();
 
@@ -85,7 +87,10 @@ public class ColumnNodeInfo extends DatabaseNodeInfo
                 col = null;
             } else if (code.equals(DatabaseNode.COLUMN)) {
                 col = (TableColumn)cmd.createColumn(getName());
-            } else throw new DatabaseException("unknown code "+code);
+            } else {
+                String message = MessageFormat.format(bundle.getString("EXC_UnknownCode"), new String[] {code}); // NOI18N
+                throw new DatabaseException(message);
+            }
 
             DriverSpecification drvSpec = getDriverSpecification();
             drvSpec.getColumns((String)get(DatabaseNode.CATALOG), dmd, (String)get(DatabaseNode.TABLE), (String)get(code));
@@ -94,8 +99,8 @@ public class ColumnNodeInfo extends DatabaseNodeInfo
 
                 col.setColumnType(drvSpec.rs.getInt(5));
                 col.setColumnSize(drvSpec.rs.getInt(7));
-                col.setNullAllowed(drvSpec.rs.getString(18).toUpperCase().equals("YES"));
-                col.setDefaultValue(drvSpec.rs.getString("COLUMN_DEF"));
+                col.setNullAllowed(drvSpec.rs.getString(18).toUpperCase().equals("YES")); //NOI18N
+                col.setDefaultValue(drvSpec.rs.getString("COLUMN_DEF")); //NOI18N
 
                 drvSpec.rs.close();
             }
@@ -113,14 +118,14 @@ public class ColumnNodeInfo extends DatabaseNodeInfo
     public void setProperty(String key, Object obj)
     {
         try {
-            if (key.equals("remarks")) setRemarks((String)obj);
-            else if (key.equals("isnullable")) {
+            if (key.equals("remarks")) setRemarks((String)obj); //NOI18N
+            else if (key.equals("isnullable")) { //NOI18N
                 setNullAllowed(((Boolean)obj).booleanValue());
-                obj = (((Boolean)obj).equals(Boolean.TRUE) ? "YES" : "NO");
-            } else if (key.equals("columnsize")) setColumnSize((Integer)obj);
-            else if (key.equals("decdigits")) setDecimalDigits((Integer)obj);
-            else if (key.equals("coldef")) setDefaultValue((String)obj);
-            else if (key.equals("datatype")) setDataType((Integer)obj);
+                obj = (((Boolean)obj).equals(Boolean.TRUE) ? "YES" : "NO"); //NOI18N
+            } else if (key.equals("columnsize")) setColumnSize((Integer)obj); //NOI18N
+            else if (key.equals("decdigits")) setDecimalDigits((Integer)obj); //NOI18N
+            else if (key.equals("coldef")) setDefaultValue((String)obj); //NOI18N
+            else if (key.equals("datatype")) setDataType((Integer)obj); //NOI18N
             super.setProperty(key, obj);
         } catch (Exception e) {
             e.printStackTrace();
@@ -215,26 +220,3 @@ public class ColumnNodeInfo extends DatabaseNodeInfo
         }
     }
 }
-
-/*
- * <<Log>>
- *  14   Gandalf   1.13        1/25/00  Radko Najman    new driver adaptor 
- *       version
- *  13   Gandalf   1.12        12/15/99 Radko Najman    driver adaptor
- *  12   Gandalf   1.11        11/27/99 Patrik Knakal   
- *  11   Gandalf   1.10        11/15/99 Radko Najman    MS ACCESS
- *  10   Gandalf   1.9         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  9    Gandalf   1.8         10/8/99  Radko Najman    getUser() method 
- *       replaced by dmd.getUserName()
- *  8    Gandalf   1.7         9/13/99  Slavek Psenicka 
- *  7    Gandalf   1.6         9/8/99   Slavek Psenicka adaptor changes
- *  6    Gandalf   1.5         7/21/99  Slavek Psenicka column type
- *  5    Gandalf   1.4         6/15/99  Slavek Psenicka debug prints
- *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  3    Gandalf   1.2         5/21/99  Slavek Psenicka new version
- *  2    Gandalf   1.1         5/14/99  Slavek Psenicka new version
- *  1    Gandalf   1.0         4/23/99  Slavek Psenicka 
- * $
- */

@@ -13,24 +13,29 @@
 
 package org.netbeans.modules.db.explorer.actions;
 
-import java.io.*;
 import java.beans.*;
-import java.util.*;
+import java.io.*;
 import java.sql.*;
+import java.util.*;
+
 import org.openide.*;
 import org.openide.util.*;
 import org.openide.util.actions.*;
 import org.openide.nodes.*;
+import org.openide.util.NbBundle;
+
 import org.netbeans.modules.db.explorer.*;
 import org.netbeans.modules.db.explorer.infos.*;
 import org.netbeans.modules.db.explorer.nodes.*;
 
-public class DatabaseAction extends CookieAction
-{
+public class DatabaseAction extends CookieAction {
+    
+    static final long serialVersionUID =2711301279685474175L;
+    static final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
+    
     protected String aname;
     protected String nodename;
 
-    static final long serialVersionUID =2711301279685474175L;
     public String getName()
     {
         return aname;
@@ -79,7 +84,3 @@ public class DatabaseAction extends CookieAction
     {
     }
 }
-
-/*
- * <<Log>>
- */

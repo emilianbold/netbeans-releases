@@ -39,11 +39,11 @@ public class AddDriverDialog {
             GridBagLayout layout = new GridBagLayout();
             GridBagConstraints con = new GridBagConstraints ();
             pane.setLayout (layout);
-            ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
+            ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
 
             // Driver name
 
-            label = new JLabel(bundle.getString("AddDriverDriverName"));
+            label = new JLabel(bundle.getString("AddDriverDriverName")); //NOI18N
             con.anchor = GridBagConstraints.WEST;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
             con.gridx = 0;
@@ -62,7 +62,7 @@ public class AddDriverDialog {
 
             // Driver label and field
 
-            label = new JLabel(bundle.getString("AddDriverDriverURL"));
+            label = new JLabel(bundle.getString("AddDriverDriverURL")); //NOI18N
             con.anchor = GridBagConstraints.WEST;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
             con.gridx = 0;
@@ -81,7 +81,7 @@ public class AddDriverDialog {
 
             // Database prefix title and field
 
-            label = new JLabel(bundle.getString("AddDriverDatabasePrefix"));
+            label = new JLabel(bundle.getString("AddDriverDatabasePrefix")); //NOI18N
             con.anchor = GridBagConstraints.WEST;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
             con.gridx = 0;
@@ -100,7 +100,7 @@ public class AddDriverDialog {
 
             // Blah blah about driver accessibility
 
-            JTextArea notes = new JTextArea(bundle.getString("AddDriverURLNotes"), 2, 50);
+            JTextArea notes = new JTextArea(bundle.getString("AddDriverURLNotes"), 2, 50); //NOI18N
             notes.setLineWrap(true);
             notes.setWrapStyleWord(true);
             notes.setFont(label.getFont());
@@ -123,7 +123,7 @@ public class AddDriverDialog {
                                                   name = namefield.getText();
                                                   drv = drvfield.getText();
                                                   prefix = prefixfield.getText();
-                                                  if (prefix == null) prefix = "";
+                                                  if (prefix == null) prefix = ""; //NOI18N
                                                   dispcond = (drv != null && drv.length() > 0 && name != null && name.length() > 0);
                                               } else result = false;
 
@@ -134,7 +134,7 @@ public class AddDriverDialog {
                                           }
                                       };
 
-            DialogDescriptor descriptor = new DialogDescriptor(pane, bundle.getString("AddDriverDialogTitle"), true, listener);
+            DialogDescriptor descriptor = new DialogDescriptor(pane, bundle.getString("AddDriverDialogTitle"), true, listener); //NOI18N
             dialog = TopManager.getDefault().createDialog(descriptor);
             dialog.setResizable(false);
         } catch (MissingResourceException e) {

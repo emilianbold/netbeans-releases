@@ -13,10 +13,11 @@
 
 package org.netbeans.modules.db.explorer.actions;
 
-import java.util.ResourceBundle;
+import java.text.MessageFormat;
+
 import org.openide.*;
-import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
+
 import org.netbeans.modules.db.explorer.DatabaseDriver;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
@@ -28,29 +29,17 @@ public class CreateProcedureAction extends DatabaseAction
     public void performAction(Node[] activatedNodes)
     {
         Node node;
-        if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
-        else return;
+        if (activatedNodes != null && activatedNodes.length>0)
+            node = activatedNodes[0];
+        else
+            return;
 
-        ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
         try {
             DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
             TableOperations nfo = (TableOperations)info.getParent(nodename);
-        } catch(Exception e) {
-            TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("DropTableErrorPrefix")+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+        } catch(Exception exc) {
+            String message = MessageFormat.format(bundle.getString("ERR_UnableToCreateProcedure"), new String[] {exc.getMessage()}); // NOI18N
+            TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
         }
     }
 }
-/*
- * <<Log>>
- *  7    Gandalf   1.6         11/27/99 Patrik Knakal   
- *  6    Gandalf   1.5         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  5    Gandalf   1.4         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  4    Gandalf   1.3         5/21/99  Slavek Psenicka new version
- *  3    Gandalf   1.2         5/14/99  Slavek Psenicka new version
- *  2    Gandalf   1.1         4/23/99  Slavek Psenicka oprava activatedNode[0] 
- *       check
- *  1    Gandalf   1.0         4/23/99  Slavek Psenicka 
- * $
- */

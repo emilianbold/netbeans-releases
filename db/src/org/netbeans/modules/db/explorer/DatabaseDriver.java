@@ -93,8 +93,8 @@ public class DatabaseDriver extends Object implements Externalizable
     public void setDatabaseAdaptor(String name)
     {
         if (name == null || name.length() == 0) adaptor = null;
-        else if (name.startsWith("Database.Adaptors.")) adaptor = name;
-        else adaptor = "Database.Adaptors."+name;
+        else if (name.startsWith("Database.Adaptors.")) adaptor = name; //NOI18N
+        else adaptor = "Database.Adaptors."+name; //NOI18N
         //		System.out.println("Metadata adaptor class set = "+adaptor);
     }
 
@@ -133,16 +133,3 @@ public class DatabaseDriver extends Object implements Externalizable
         adaptor = (String)in.readObject();
     }
 }
-/*
- * <<Log>>
- *  8    Gandalf   1.7         11/27/99 Patrik Knakal   
- *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  6    Gandalf   1.5         10/12/99 Radko Najman    debug messages removed
- *  5    Gandalf   1.4         9/27/99  Slavek Psenicka setAdaptor changed
- *  4    Gandalf   1.3         9/8/99   Slavek Psenicka adaptor changes
- *  3    Gandalf   1.2         7/21/99  Slavek Psenicka database prefix
- *  2    Gandalf   1.1         5/21/99  Slavek Psenicka new version
- *  1    Gandalf   1.0         4/23/99  Slavek Psenicka 
- * $
- */

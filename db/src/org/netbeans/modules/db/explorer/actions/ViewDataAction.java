@@ -13,8 +13,9 @@
 
 package org.netbeans.modules.db.explorer.actions;
 
+import java.text.MessageFormat;
 import java.util.*;
-//import java.sql.Connection;
+
 import org.openide.*;
 import org.openide.nodes.*;
 import org.openide.util.NbBundle;
@@ -23,26 +24,27 @@ import org.netbeans.modules.db.explorer.nodes.*;
 import org.netbeans.modules.db.explorer.infos.*;
 import org.netbeans.modules.db.explorer.dataview.*;
 
-public class ViewDataAction extends DatabaseAction
-{
+public class ViewDataAction extends DatabaseAction {
     static final long serialVersionUID =-894644054833609687L;
-    protected boolean enable(Node[] activatedNodes)
-    {
+    
+    protected boolean enable(Node[] activatedNodes) {
         Node node;
-        if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
-        else return false;
+        if (activatedNodes != null && activatedNodes.length>0)
+            node = activatedNodes[0];
+        else
+            return false;
 
         ConnectionNodeInfo info = (ConnectionNodeInfo)node.getCookie(ConnectionNodeInfo.class);
-        if (info != null) return (info.getConnection() != null);
+        if (info != null)
+            return (info.getConnection() != null);
+        
         return true;
     }
 
-    public void performAction (Node[] activatedNodes)
-    {
-        String expression = "";
+    public void performAction (Node[] activatedNodes) {
+        String expression = ""; //NOI18N
         StringBuffer cols = new StringBuffer();
         Node node;
-        ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
 
         if (activatedNodes != null && activatedNodes.length>0) {
             try {
@@ -55,12 +57,12 @@ public class ViewDataAction extends DatabaseAction
                     while (enum.hasMoreElements()) {
                         DatabaseNodeInfo nfo = (DatabaseNodeInfo)enum.nextElement();
                         if (nfo instanceof ColumnNodeInfo || nfo instanceof ViewColumnNodeInfo) {
-                            if (cols.length()>0) cols.append(", ");
+                            if (cols.length()>0) cols.append(", "); //NOI18N
                             cols.append(nfo.getName());
                         }
                     }
 
-                    expression = "select "+cols.toString()+" from "+onome;
+                    expression = "select "+cols.toString()+" from "+onome; //NOI18N
 
                 } else if (info instanceof ColumnNodeInfo || info instanceof ViewColumnNodeInfo) {
                     onome = info.getTable();
@@ -68,35 +70,22 @@ public class ViewDataAction extends DatabaseAction
                         node = activatedNodes[i];
                         info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
                         if (info instanceof ColumnNodeInfo || info instanceof ViewColumnNodeInfo) {
-                            if (cols.length()>0) cols.append(", ");
+                            if (cols.length()>0) cols.append(", "); //NOI18N
                             cols.append(info.getName());
                         }
                     }
 
-                    expression = "select "+cols.toString()+" from "+onome;
+                    expression = "select "+cols.toString()+" from "+onome; //NOI18N
 
                 }
 
                 DataViewWindow win = new DataViewWindow(info, expression);
                 win.open();
                 win.executeCommand();
-            } catch(Exception e) {
-                TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("ShowDataError") + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+            } catch(Exception exc) {
+                String message = MessageFormat.format(bundle.getString("ShowDataError"), new String[] {exc.getMessage()}); // NOI18N
+                TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
             }
         }
     }
 }
-/*
- * <<Log>>
- *  8    Gandalf-post-FCS1.6.1.0     4/10/00  Radko Najman    
- *  7    Gandalf   1.6         2/10/00  Radko Najman    
- *  6    Gandalf   1.5         11/27/99 Patrik Knakal   
- *  5    Gandalf   1.4         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  4    Gandalf   1.3         9/8/99   Slavek Psenicka adaptor changes
- *  3    Gandalf   1.2         7/21/99  Slavek Psenicka 
- *  2    Gandalf   1.1         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  1    Gandalf   1.0         5/21/99  Slavek Psenicka 
- * $
- */

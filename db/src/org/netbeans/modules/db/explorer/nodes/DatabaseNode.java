@@ -26,8 +26,9 @@ import org.netbeans.modules.db.explorer.actions.*;
 import org.netbeans.modules.db.DatabaseException;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 
-public class DatabaseNode extends AbstractNode implements Node.Cookie
-{
+public class DatabaseNode extends AbstractNode implements Node.Cookie {
+    static final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
+    
     /** Cookie */
     private DatabaseNodeInfo info;
 
@@ -36,26 +37,26 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie
     private boolean cutflag = false, copyflag = false, delflag = false;
 
     /** Properties */
-    public static final String ROOT = "root";
-    public static final String DRIVER_LIST = "driverlist";
-    public static final String DRIVER = "driver";
-    public static final String CONNECTION = "connection";
-    public static final String CATALOG = "catalog";
-    public static final String TABLELIST = "tablelist";
-    public static final String TABLE = "table";
-    public static final String VIEW = "view";
-    public static final String VIEWLIST = "viewlist";
-    public static final String VIEWCOLUMN = "viewcolumn";
-    public static final String INDEX = "index";
-    public static final String COLUMN = "column";
-    public static final String INDEXCOLUMN = "indexcolumn";
-    public static final String PRIMARY_KEY = "pcolumn";
-    public static final String INDEXED_COLUMN = "icolumn";
-    public static final String FOREIGN_KEY = "fcolumn";
-    public static final String EXPORTED_KEY = "ekey";
-    public static final String PROCEDURE = "procedure";
-    public static final String PROCEDURELIST = "procedurelist";
-    public static final String PROCEDURE_COLUMN = "procedurecolumn";
+    public static final String ROOT = "root"; //NOI18N
+    public static final String DRIVER_LIST = "driverlist"; //NOI18N
+    public static final String DRIVER = "driver"; //NOI18N
+    public static final String CONNECTION = "connection"; //NOI18N
+    public static final String CATALOG = "catalog"; //NOI18N
+    public static final String TABLELIST = "tablelist"; //NOI18N
+    public static final String TABLE = "table"; //NOI18N
+    public static final String VIEW = "view"; //NOI18N
+    public static final String VIEWLIST = "viewlist"; //NOI18N
+    public static final String VIEWCOLUMN = "viewcolumn"; //NOI18N
+    public static final String INDEX = "index"; //NOI18N
+    public static final String COLUMN = "column"; //NOI18N
+    public static final String INDEXCOLUMN = "indexcolumn"; //NOI18N
+    public static final String PRIMARY_KEY = "pcolumn"; //NOI18N
+    public static final String INDEXED_COLUMN = "icolumn"; //NOI18N
+    public static final String FOREIGN_KEY = "fcolumn"; //NOI18N
+    public static final String EXPORTED_KEY = "ekey"; //NOI18N
+    public static final String PROCEDURE = "procedure"; //NOI18N
+    public static final String PROCEDURELIST = "procedurelist"; //NOI18N
+    public static final String PROCEDURE_COLUMN = "procedurecolumn"; //NOI18N
 
     /** Constructor */
     public DatabaseNode()
@@ -91,14 +92,14 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie
         // Read options
         // Cut, copy and delete flags
 
-        Map opts = (Map)info.get("options");
+        Map opts = (Map)info.get("options"); //NOI18N
         if (opts != null) {
-            String str = (String)opts.get("cut");
-            if (str != null) cutflag = str.toUpperCase().equals("YES");
-            str = (String)opts.get("copy");
-            if (str != null) copyflag = str.toUpperCase().equals("YES");
-            str = (String)opts.get("delete");
-            if (str != null) delflag = str.toUpperCase().equals("YES");
+            String str = (String)opts.get("cut"); //NOI18N
+            if (str != null) cutflag = str.toUpperCase().equals("YES"); //NOI18N
+            str = (String)opts.get("copy"); //NOI18N
+            if (str != null) copyflag = str.toUpperCase().equals("YES"); //NOI18N
+            str = (String)opts.get("delete"); //NOI18N
+            if (str != null) delflag = str.toUpperCase().equals("YES"); //NOI18N
         }
 
         try {
@@ -107,7 +108,7 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie
             while (prop_i.hasMoreElements()) {
                 Map propmap = (Map)prop_i.nextElement();
                 if (((String)propmap.get(DatabaseNodeInfo.CODE)).equals(DatabaseNodeInfo.NAME)) {
-                    writable = ((String)propmap.get(DatabaseNodeInfo.WRITABLE)).toUpperCase().equals("YES");
+                    writable = ((String)propmap.get(DatabaseNodeInfo.WRITABLE)).toUpperCase().equals("YES"); //NOI18N
                 }
             }
         } catch (Exception e) {}
@@ -200,13 +201,12 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie
         Sheet.Set ps = sheet.get(Sheet.PROPERTIES);
         Vector prop = (Vector)info.get(DatabaseNodeInfo.PROPERTIES);
         Enumeration prop_i = prop.elements();
-        ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
         while (prop_i.hasMoreElements()) {
             boolean canWrite, expert = false;
             Map propmap = (Map)prop_i.nextElement();
             String key = (String)propmap.get(DatabaseNodeInfo.CODE);
-            String expkey = (String)propmap.get("expert");
-            if (expkey != null) expert = expkey.toUpperCase().equals("YES");
+            String expkey = (String)propmap.get("expert"); //NOI18N
+            if (expkey != null) expert = expkey.toUpperCase().equals("YES"); //NOI18N
 
             try {
 
@@ -217,7 +217,7 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie
                     if (propmap != null) info.put(key, propmap);
                 }
 
-                if (key.equals("name")) {
+                if (key.equals("name")) { //NOI18N
                     if (!info.isReadOnly()) psitem = new PropertySupport.Name(this);
                 } else {
                     Class pc = null;
@@ -225,14 +225,14 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie
                     if (info.canAdd(propmap, pname)) {
                         pclass = (String)propmap.get(DatabaseNodeInfo.CLASS);
                         canWrite = info.canWrite(propmap, pname, writable);
-                        if (pclass.equals("java.lang.Boolean")) pc = Boolean.TYPE;
-                        else if (pclass.equals("java.lang.Integer")) pc = Integer.TYPE;
+                        if (pclass.equals("java.lang.Boolean")) pc = Boolean.TYPE; //NOI18N
+                        else if (pclass.equals("java.lang.Integer")) pc = Integer.TYPE; //NOI18N
                         else pc = Class.forName(pclass);
 
                         try {
                             pname = bundle.getString(pname);
                         } catch (MissingResourceException e) {
-                            pdesc = "<untitled>";
+                            pdesc = bundle.getString("DatabaseNodeUntitled"); //NOI18N
                         }
 
                         psitem = createPropertySupport(key, pc, pname, pdesc, info, canWrite, expert);
@@ -281,24 +281,3 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie
         }
     }
 }
-/*
- * <<Log>>
- *  15   Gandalf   1.14        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  14   Gandalf   1.13        10/1/99  Radko Najman    comments
- *  13   Gandalf   1.12        9/23/99  Slavek Psenicka Bug #3311
- *  12   Gandalf   1.11        9/17/99  Slavek Psenicka 
- *  11   Gandalf   1.10        9/15/99  Slavek Psenicka 
- *  10   Gandalf   1.9         9/13/99  Slavek Psenicka 
- *  9    Gandalf   1.8         9/13/99  Slavek Psenicka 
- *  8    Gandalf   1.7         9/8/99   Slavek Psenicka 
- *  7    Gandalf   1.6         9/2/99   Slavek Psenicka ReadOnly feature
- *  6    Gandalf   1.5         8/18/99  Slavek Psenicka debug logs removed
- *  5    Gandalf   1.4         7/21/99  Slavek Psenicka nodes
- *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  3    Gandalf   1.2         5/21/99  Slavek Psenicka new version
- *  2    Gandalf   1.1         5/14/99  Slavek Psenicka new version
- *  1    Gandalf   1.0         4/23/99  Slavek Psenicka 
- * $
- */

@@ -13,14 +13,16 @@
 
 package org.netbeans.modules.db.explorer.infos;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
-import java.sql.*;
-import org.netbeans.lib.ddl.impl.*;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeListener;
+import java.io.InputStream;
+import java.io.IOException;
+import java.util.*;
+import java.sql.*;
+
 import org.openide.nodes.Node;
+
+import org.netbeans.lib.ddl.impl.*;
 import org.netbeans.lib.ddl.util.PListReader;
 import org.netbeans.modules.db.*;
 import org.netbeans.modules.db.explorer.*;
@@ -29,8 +31,7 @@ import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 import org.netbeans.modules.db.explorer.DatabaseDriver;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
 
-public class ProcedureNodeInfo extends DatabaseNodeInfo
-{
+public class ProcedureNodeInfo extends DatabaseNodeInfo {
     static final long serialVersionUID =-5984072379104199563L;
 
     /*
@@ -59,36 +60,36 @@ public class ProcedureNodeInfo extends DatabaseNodeInfo
                     DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.PROCEDURE_COLUMN, drvSpec.rs);
                     if (info != null) {
                         Object ibase = null;
-                        String itype = "unknown";
-                        int type = ((Number)info.get("type")).intValue();
+                        String itype = "unknown"; //NOI18N
+                        int type = ((Number)info.get("type")).intValue(); //NOI18N
                         switch (type) {
                         case DatabaseMetaData.procedureColumnIn:
-                            ibase = info.get("iconbase_in");
-                            itype = "in";
+                            ibase = info.get("iconbase_in"); //NOI18N
+                            itype = "in"; //NOI18N
                             break;
                         case DatabaseMetaData.procedureColumnOut:
-                            ibase = info.get("iconbase_out");
-                            itype = "out";
+                            ibase = info.get("iconbase_out"); //NOI18N
+                            itype = "out"; //NOI18N
                             break;
                         case DatabaseMetaData.procedureColumnInOut:
-                            ibase = info.get("iconbase_inout");
-                            itype = "in/out";
+                            ibase = info.get("iconbase_inout"); //NOI18N
+                            itype = "in/out"; //NOI18N
                             break;
                         case DatabaseMetaData.procedureColumnReturn:
-                            ibase = info.get("iconbase_return");
-                            itype = "return";
+                            ibase = info.get("iconbase_return"); //NOI18N
+                            itype = "return"; //NOI18N
                             break;
                         case DatabaseMetaData.procedureColumnResult:
-                            ibase = info.get("iconbase_result");
-                            itype = "result";
+                            ibase = info.get("iconbase_result"); //NOI18N
+                            itype = "result"; //NOI18N
                             break;
                         }
                         if (ibase != null)
-                            info.put("iconbase", ibase);
-                        info.put("type", itype);
+                            info.put("iconbase", ibase); //NOI18N
+                        info.put("type", itype); //NOI18N
                         children.add(info);
                     } else
-                        throw new Exception("unable to create node information for procedure column");
+                        throw new Exception(bundle.getString("EXC_UnableToCreateProcedureColumnNodeInfo"));
                 }
                 drvSpec.rs.close();
             }
@@ -109,29 +110,4 @@ public class ProcedureNodeInfo extends DatabaseNodeInfo
             throw new IOException(e.getMessage());
         }
     }
-
 }
-
-/*
- * <<Log>>
- *  14   Gandalf-post-FCS1.12.1.0    4/10/00  Radko Najman    
- *  13   Gandalf   1.12        1/25/00  Radko Najman    new driver adaptor 
- *       version
- *  12   Gandalf   1.11        12/22/99 Radko Najman    Integer type -> Number 
- *       type
- *  11   Gandalf   1.10        12/15/99 Radko Najman    driver adaptor
- *  10   Gandalf   1.9         11/27/99 Patrik Knakal   
- *  9    Gandalf   1.8         11/15/99 Radko Najman    MS ACCESS
- *  8    Gandalf   1.7         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  7    Gandalf   1.6         10/8/99  Radko Najman    getUser() method 
- *       replaced by dmd.getUserName()
- *  6    Gandalf   1.5         9/13/99  Slavek Psenicka 
- *  5    Gandalf   1.4         9/8/99   Slavek Psenicka adaptor changes
- *  4    Gandalf   1.3         8/19/99  Slavek Psenicka English
- *  3    Gandalf   1.2         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  2    Gandalf   1.1         5/21/99  Slavek Psenicka new version
- *  1    Gandalf   1.0         4/23/99  Slavek Psenicka 
- * $
- */

@@ -15,14 +15,18 @@ package org.netbeans.modules.db.explorer;
 
 import java.beans.*;
 import java.io.*;
-import java.io.IOException;
-import java.util.*;
+import java.text.MessageFormat;
 import java.sql.SQLException;
+import java.util.*;
+import java.util.ResourceBundle;
+
 import org.openide.*;
 import org.openide.actions.*;
 import org.openide.filesystems.*;
 import org.openide.nodes.*;
 import org.openide.options.SystemOption;
+import org.openide.util.NbBundle;
+
 import org.netbeans.modules.db.explorer.*;
 import org.netbeans.modules.db.explorer.infos.*;
 import org.netbeans.modules.db.explorer.nodes.*;
@@ -30,20 +34,20 @@ import org.netbeans.modules.db.explorer.nodes.*;
 /** Root system option. It stores a list of available drivers and open connections.
 * These connections will be restored at startup, drivers will be placed in Drivers
 * directory owned by Database node.
-*
-* @author Slavek Psenicka
 */
-public class DatabaseOption extends SystemOption
-{
+public class DatabaseOption extends SystemOption {
+    
+    static final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
+
     private static boolean debugMode;
     private static Vector drivers;
     private static Vector connections;
     private static int fetchlimit = 100;
     private static int fetchstep = 200;
 
-    public static final String PROP_DEBUG_MODE = "debugMode";
-    public static final String PROP_FETCH_LIMIT = "fetchLimit";
-    public static final String PROP_FETCH_STEP = "fetchStep";
+    public static final String PROP_DEBUG_MODE = "debugMode"; //NOI18N
+    public static final String PROP_FETCH_LIMIT = "fetchLimit"; //NOI18N
+    public static final String PROP_FETCH_STEP = "fetchStep"; //NOI18N
 
     static final long serialVersionUID =-13629330831657810L;
     public DatabaseOption()
@@ -60,16 +64,16 @@ public class DatabaseOption extends SystemOption
         Vector rvec = null;
         if (drivers.size() == 0) {
             Map xxx = (Map)DatabaseNodeInfo.getGlobalNodeInfo(DatabaseNode.DRIVER_LIST);
-            Vector def = (Vector)xxx.get("defaultdriverlist");
+            Vector def = (Vector)xxx.get("defaultdriverlist"); //NOI18N
             if (def != null && def.size()>0) {
                 rvec = new Vector(def.size());
                 Enumeration defe = def.elements();
                 while(defe.hasMoreElements()) {
                     Object rit = defe.nextElement();
-                    String name = (String)((Map)rit).get("name");
-                    String drv = (String)((Map)rit).get("driver");
-                    String prefix = (String)((Map)rit).get("prefix");
-                    String adaptor = (String)((Map)rit).get("adaptor");
+                    String name = (String)((Map)rit).get("name"); //NOI18N
+                    String drv = (String)((Map)rit).get("driver"); //NOI18N
+                    String prefix = (String)((Map)rit).get("prefix"); //NOI18N
+                    String adaptor = (String)((Map)rit).get("adaptor"); //NOI18N
                     rit = new DatabaseDriver(name, drv, prefix, adaptor);
                     if (rit != null) rvec.add(rit);
                 }
@@ -143,20 +147,18 @@ public class DatabaseOption extends SystemOption
     }
 
     /** Name of the option */
-    public String displayName()
-    {
-        return "Database Explorer";
+    public String displayName() {
+        return bundle.getString("OptionName"); //NOI18N
     }
 
     /** Description of object */
-    public String toString()
-    {
-        return drivers.size()+" drivers, "+connections.size()+" connections";
+    public String toString() {
+        return drivers.size()+" drivers, "+connections.size()+" connections"; //NOI18N
     }
     
     private void closeConnections() {
         try {
-            Node n[] = TopManager.getDefault().getPlaces().nodes().environment().getChildren().findChild("Databases").getChildren().getNodes();
+            Node n[] = TopManager.getDefault().getPlaces().nodes().environment().getChildren().findChild(bundle.getString("Databases")).getChildren().getNodes(); //NOI18N
             for (int i = 0; i < n.length; i++)
                 if (n[i] instanceof ConnectionNode)
                     ((ConnectionNodeInfo)((ConnectionNode)n[i]).getInfo()).disconnect();
@@ -190,7 +192,3 @@ public class DatabaseOption extends SystemOption
         fetchlimit = in.readInt();
     }
 }
-
-/*
- * <<Log>>
- */

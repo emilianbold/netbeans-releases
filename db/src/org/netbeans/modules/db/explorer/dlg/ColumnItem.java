@@ -26,26 +26,19 @@ import org.netbeans.modules.db.explorer.*;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeListener;
 
-/**
-* xxx
-*
-* @author Slavek Psenicka
-*/
-
-public class ColumnItem extends Hashtable
-{
-    public static final String NAME = "name";
-    public static final String TYPE = "type";
-    public static final String SIZE = "size";
-    public static final String SCALE = "scale";
-    public static final String PRIMARY_KEY = "pkey";
-    public static final String INDEX = "idx";
-    public static final String NULLABLE = "nullable";
-    public static final String COMMENT = "comment";
-    public static final String DEFVAL = "defval";
-    public static final String UNIQUE = "unique";
-    public static final String CHECK = "check";
-    public static final String CHECK_CODE = "checkcode";
+public class ColumnItem extends Hashtable {
+    public static final String NAME = "name"; //NOI18N
+    public static final String TYPE = "type"; //NOI18N
+    public static final String SIZE = "size"; //NOI18N
+    public static final String SCALE = "scale"; //NOI18N
+    public static final String PRIMARY_KEY = "pkey"; //NOI18N
+    public static final String INDEX = "idx"; //NOI18N
+    public static final String NULLABLE = "nullable"; //NOI18N
+    public static final String COMMENT = "comment"; //NOI18N
+    public static final String DEFVAL = "defval"; //NOI18N
+    public static final String UNIQUE = "unique"; //NOI18N
+    public static final String CHECK = "check"; //NOI18N
+    public static final String CHECK_CODE = "checkcode"; //NOI18N
 
     private PropertyChangeSupport propertySupport;
 
@@ -56,7 +49,7 @@ public class ColumnItem extends Hashtable
 
     public static final Vector getProperties()
     {
-        return (Vector)CreateTableDialog.getProperties().get("columns");
+        return (Vector)CreateTableDialog.getProperties().get("columns"); //NOI18N
     }
 
     public static final Vector getProperties(String pname)
@@ -73,17 +66,17 @@ public class ColumnItem extends Hashtable
 
     public static final Vector getColumnNames()
     {
-        return getProperties("name");
+        return getProperties("name"); //NOI18N
     }
 
     public static final Vector getColumnTitles()
     {
-        return getProperties("columntitle");
+        return getProperties("columntitle"); //NOI18N
     }
 
     public static final Vector getColumnClasses()
     {
-        return getProperties("columnclass");
+        return getProperties("columnclass"); //NOI18N
     }
 
     static final long serialVersionUID =-6638535249384813829L;
@@ -94,11 +87,11 @@ public class ColumnItem extends Hashtable
         propertySupport = new PropertyChangeSupport(this);
         while (evec.hasMoreElements()) {
             Map pmap = (Map)evec.nextElement();
-            Object pdv = pmap.get("default");
+            Object pdv = pmap.get("default"); //NOI18N
             if (pdv != null) {
-                String pclass = (String)pmap.get("columnclass");
-                if (pclass.equals("java.lang.Boolean")) pdv = new Boolean((String)pdv);
-                put(pmap.get("name"), pdv);
+                String pclass = (String)pmap.get("columnclass"); //NOI18N
+                if (pclass.equals("java.lang.Boolean")) pdv = new Boolean((String)pdv); //NOI18N
+                put(pmap.get("name"), pdv); //NOI18N
             }
         }
     }
@@ -232,18 +225,3 @@ public class ColumnItem extends Hashtable
         return ((Integer)get(SCALE)).intValue();
     }
 }
-
-/*
- * <<Log>>
- *  8    Gandalf   1.7         3/3/00   Radko Najman    added scale property
- *  7    Gandalf   1.6         11/27/99 Patrik Knakal   
- *  6    Gandalf   1.5         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  5    Gandalf   1.4         9/8/99   Slavek Psenicka 
- *  4    Gandalf   1.3         6/15/99  Slavek Psenicka debug prints
- *  3    Gandalf   1.2         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  2    Gandalf   1.1         5/21/99  Slavek Psenicka new version
- *  1    Gandalf   1.0         5/14/99  Slavek Psenicka 
- * $
- */

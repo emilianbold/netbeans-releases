@@ -15,11 +15,9 @@ package org.netbeans.modules.db.explorer.actions;
 
 import java.sql.Connection;
 import java.text.MessageFormat;
-import java.util.ResourceBundle;
 
 import org.openide.*;
 import org.openide.nodes.*;
-import org.openide.util.NbBundle;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.nodes.*;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
@@ -28,8 +26,6 @@ import org.netbeans.modules.db.explorer.dlg.CreateTableDialog;
 
 public class CreateTableAction extends DatabaseAction {
     static final long serialVersionUID =-7008851466327604724L;
-    
-    static ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); // NOI18N
     
     public void performAction (Node[] activatedNodes) {
         Node node;

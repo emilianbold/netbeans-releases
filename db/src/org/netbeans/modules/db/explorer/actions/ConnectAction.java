@@ -13,25 +13,26 @@
 
 package org.netbeans.modules.db.explorer.actions;
 
-import java.io.*;
 import java.beans.*;
-import java.util.*;
+import java.io.*;
 import java.sql.*;
-import org.netbeans.lib.ddl.impl.*;
+import java.text.MessageFormat;
+import java.util.*;
+
 import org.openide.*;
+import org.openide.nodes.*;
 import org.openide.util.*;
 import org.openide.util.actions.*;
-import org.openide.nodes.*;
+
+import org.netbeans.lib.ddl.impl.*;
 import org.netbeans.modules.db.explorer.*;
 import org.netbeans.modules.db.explorer.nodes.*;
 import org.netbeans.modules.db.explorer.infos.*;
 import org.netbeans.modules.db.explorer.dlg.*;
 
-public class ConnectAction extends DatabaseAction
-{
+public class ConnectAction extends DatabaseAction {
     static final long serialVersionUID =-6822218300035053411L;
-    protected boolean enable(Node[] activatedNodes)
-    {
+    protected boolean enable(Node[] activatedNodes) {
         Node node;
         if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
         else return false;
@@ -42,8 +43,7 @@ public class ConnectAction extends DatabaseAction
         return false;
     }
 
-    public void performAction(Node[] activatedNodes)
-    {
+    public void performAction(Node[] activatedNodes) {
         Node node;
         if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
         else return;
@@ -93,25 +93,9 @@ public class ConnectAction extends DatabaseAction
 
             nfo.connect();
 
-        } catch (Exception e) {
-            TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to connect, "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+        } catch (Exception exc) {
+            String message = MessageFormat.format(bundle.getString("ERR_UnableToConnect"), new String[] {exc.getMessage()}); // NOI18N
+            TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
         }
     }
 }
-/*
- * <<Log>>
- *  10   Gandalf   1.9         11/27/99 Patrik Knakal   
- *  9    Gandalf   1.8         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  8    Gandalf   1.7         7/21/99  Slavek Psenicka update option off
- *  7    Gandalf   1.6         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  6    Gandalf   1.5         5/21/99  Slavek Psenicka new version
- *  5    Gandalf   1.4         5/14/99  Slavek Psenicka new version
- *  4    Gandalf   1.3         4/23/99  Slavek Psenicka oprava activatedNode[0] 
- *       check
- *  3    Gandalf   1.2         4/23/99  Slavek Psenicka Debug mode
- *  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
- *  1    Gandalf   1.0         3/22/99  Slavek Psenicka 
- * $
- */

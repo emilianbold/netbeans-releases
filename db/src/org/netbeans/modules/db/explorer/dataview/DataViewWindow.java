@@ -58,9 +58,9 @@ public class DataViewWindow extends TopComponent {
         node = info.getNode();
 
         try {
-            bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
+            bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
 
-            setName(bundle.getString("CommandEditorTitle"));
+            setName(bundle.getString("CommandEditorTitle")); //NOI18N
             setBorder(new EmptyBorder(new Insets(5,5,5,5)));
             GridBagLayout layout = new GridBagLayout();
             GridBagConstraints con = new GridBagConstraints ();
@@ -120,7 +120,7 @@ public class DataViewWindow extends TopComponent {
             subcon.insets = new java.awt.Insets (0, 0, 5, 0);
             subcon.fill = GridBagConstraints.HORIZONTAL;
             subcon.anchor = GridBagConstraints.SOUTH;
-            JButton fetchbtn = new JButton(bundle.getString("ExecuteButton"));
+            JButton fetchbtn = new JButton(bundle.getString("ExecuteButton")); //NOI18N
             sublayout.setConstraints(fetchbtn, subcon);
             subpane.add(fetchbtn);
             fetchbtn.addActionListener(new ActionListener() {
@@ -180,7 +180,7 @@ public class DataViewWindow extends TopComponent {
             RecentCommand rcmd = new RecentCommand(command);
             ((ComboModel)rcmdscombo.getModel()).addElement(rcmd);
         } catch (Exception e) {
-            TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("DataViewFetchErrorPrefix") + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+            TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("DataViewFetchErrorPrefix") + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE)); //NOI18N
         }
     }
 
@@ -372,8 +372,8 @@ public class DataViewWindow extends TopComponent {
 
             try {
                 DataFlavor multiFlavor = new DataFlavor (
-                                             NbBundle.getBundle(ExTransferable.class).getString("MultiNodeMimeType"),
-                                             NbBundle.getBundle (ExTransferable.class).getString ("transferFlavorsMultiFlavorName")
+                                             NbBundle.getBundle(ExTransferable.class).getString("MultiNodeMimeType"), //NOI18N
+                                             NbBundle.getBundle (ExTransferable.class).getString ("transferFlavorsMultiFlavorName") //NOI18N
                                          );
 
                 if (t.isDataFlavorSupported(multiFlavor)) {
@@ -387,8 +387,8 @@ public class DataViewWindow extends TopComponent {
                             String tablename = nfo.getTable();
                             Integer tableidx = (Integer)tabidxmap.get(tablename);
                             if (tableidx == null) tabidxmap.put(tablename, tableidx = new Integer(tabidx++));
-                            if (buff.length()>0) buff.append(", ");
-                            buff.append("t"+tableidx+"."+nfo.getName());
+                            if (buff.length()>0) buff.append(", "); //NOI18N
+                            buff.append("t"+tableidx+"."+nfo.getName()); //NOI18N
                         }
                     }
 
@@ -396,15 +396,15 @@ public class DataViewWindow extends TopComponent {
                     Iterator iter = tabidxmap.keySet().iterator();
                     while (iter.hasNext()) {
                         String tab = (String)iter.next();
-                        if (frombuff.length()>0) frombuff.append(", ");
-                        frombuff.append(tab + " t"+tabidxmap.get(tab));
+                        if (frombuff.length()>0) frombuff.append(", "); //NOI18N
+                        frombuff.append(tab + " t"+tabidxmap.get(tab)); //NOI18N
                     }
 
-                    query = "select "+buff.toString()+" from "+frombuff.toString();
+                    query = "select "+buff.toString()+" from "+frombuff.toString(); //NOI18N
 
                 } else {
                     ColumnNodeInfo nfo = getNodeInfo(t);
-                    if (nfo != null) query = "select "+nfo.getName()+" from "+nfo.getTable();
+                    if (nfo != null) query = "select "+nfo.getName()+" from "+nfo.getTable(); //NOI18N
                 }
 
                 if (query != null)
@@ -440,7 +440,7 @@ public class DataViewWindow extends TopComponent {
             Statement stat = con.createStatement();
             ResultSet rs;
 
-            if (command.toLowerCase().startsWith("select")) {
+            if (command.toLowerCase().startsWith("select")) { //NOI18N
                 rs = stat.executeQuery(command);
 
                 ResultSetMetaData mdata = rs.getMetaData();
@@ -471,11 +471,11 @@ public class DataViewWindow extends TopComponent {
                                            (new Integer(rcounter)).toString(),
                                            (new Integer(step)).toString()
                                        };
-                        String cancel = bundle.getString("DataViewCancelButton");
-                        String nextset = bundle.getString("DataViewNextFetchButton");
-                        String allset = bundle.getString("DataViewAllFetchButton");
-                        String message = MessageFormat.format(bundle.getString("DataViewMessage"), arr);
-                        NotifyDescriptor ndesc = new NotifyDescriptor(message, bundle.getString("FetchDataTitle"), NotifyDescriptor.YES_NO_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE, new Object[] {nextset, allset, cancel}, NotifyDescriptor.CANCEL_OPTION);
+                        String cancel = bundle.getString("DataViewCancelButton"); //NOI18N
+                        String nextset = bundle.getString("DataViewNextFetchButton"); //NOI18N
+                        String allset = bundle.getString("DataViewAllFetchButton"); //NOI18N
+                        String message = MessageFormat.format(bundle.getString("DataViewMessage"), arr); //NOI18N
+                        NotifyDescriptor ndesc = new NotifyDescriptor(message, bundle.getString("FetchDataTitle"), NotifyDescriptor.YES_NO_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE, new Object[] {nextset, allset, cancel}, NotifyDescriptor.CANCEL_OPTION); //NOI18N
                         String retv = (String)TopManager.getDefault().notify(ndesc);
                         if (retv.equals(allset))
                             limit = Integer.MAX_VALUE;
@@ -505,7 +505,7 @@ public class DataViewWindow extends TopComponent {
                 rs.close();
                 fireTableChanged(null);
             } else {
-                if (command.toLowerCase().startsWith("delete") || command.toLowerCase().startsWith("insert") || command.toLowerCase().startsWith("update"))
+                if (command.toLowerCase().startsWith("delete") || command.toLowerCase().startsWith("insert") || command.toLowerCase().startsWith("update")) //NOI18N
                     stat.executeUpdate(command);
                 else {
                     stat.execute(command);
@@ -518,7 +518,7 @@ public class DataViewWindow extends TopComponent {
                         ((DatabaseNodeInfo)((Node)nodes.nextElement()).getCookie(DatabaseNodeInfo.class)).refreshChildren();
                 }
 
-                TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("CommandExecuted"), NotifyDescriptor.INFORMATION_MESSAGE));
+                TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("CommandExecuted"), NotifyDescriptor.INFORMATION_MESSAGE)); //NOI18N
             }
             stat.close();
             con.close();
@@ -534,7 +534,7 @@ public class DataViewWindow extends TopComponent {
                 return cname;
             }
 
-            return "";
+            return ""; //NOI18N
         }
 
         /** Returns column renderer/editor class
@@ -599,14 +599,14 @@ public class DataViewWindow extends TopComponent {
 
         private String format(Object value, int type)
         {
-            if (value == null) return "null";
+            if (value == null) return "null"; //NOI18N
             switch(type) {
             case Types.INTEGER:
             case Types.DOUBLE:
             case Types.FLOAT: return value.toString();
-            case Types.BIT: return ((Boolean)value).booleanValue() ? "1" : "0";
+            case Types.BIT: return ((Boolean)value).booleanValue() ? "1" : "0"; //NOI18N
             case Types.DATE: return value.toString();
-            default: return "\""+value.toString()+"\"";
+            default: return "\""+value.toString()+"\""; //NOI18N
             }
         }
 
@@ -621,8 +621,8 @@ public class DataViewWindow extends TopComponent {
                 if (cd.isBestRowIdentifierColumn()) {
                     String key = cd.getName();
                     String val = format(getValueAt(row,enucol), cd.getDataType());
-                    if (where.length()>0) where.append(" and ");
-                    where.append(key+" = "+val);
+                    if (where.length()>0) where.append(" and "); //NOI18N
+                    where.append(key+" = "+val); //NOI18N
                 }
                 enucol++;
             }
@@ -633,23 +633,3 @@ public class DataViewWindow extends TopComponent {
         return null;
     }
 }
-
-/*
- * <<Log>>
- *  11   Gandalf-post-FCS1.9.1.0     4/10/00  Radko Najman    
- *  10   Gandalf   1.9         2/10/00  Radko Najman    command editor support
- *  9    Gandalf   1.8         1/5/00   Jaroslav Tulach Change in notify 
- *       descriptor.
- *  8    Gandalf   1.7         11/27/99 Patrik Knakal   
- *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  6    Gandalf   1.5         10/10/99 Radko Najman    setName("Data View")
- *  5    Gandalf   1.4         9/8/99   Slavek Psenicka 
- *  4    Gandalf   1.3         7/21/99  Slavek Psenicka 
- *  3    Gandalf   1.2         6/30/99  Ian Formanek    NodeTransfer related 
- *       changes to make it compilable
- *  2    Gandalf   1.1         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  1    Gandalf   1.0         5/21/99  Slavek Psenicka 
- * $
- */

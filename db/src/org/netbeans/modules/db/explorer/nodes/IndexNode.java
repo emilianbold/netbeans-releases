@@ -13,24 +13,24 @@
 
 package org.netbeans.modules.db.explorer.nodes;
 
-import org.openide.nodes.Children;
+import java.awt.datatransfer.Transferable;
 import java.io.IOException;
-import java.util.*;
 import java.sql.*;
 import java.text.MessageFormat;
+import java.util.*;
+
+import org.openide.nodes.Children;
+import org.openide.nodes.NodeTransfer;
+import org.openide.nodes.Node;
+import org.openide.util.datatransfer.PasteType;
+
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.impl.*;
 import org.netbeans.modules.db.*;
 import org.netbeans.modules.db.explorer.*;
 import org.netbeans.modules.db.explorer.infos.*;
-import org.openide.util.datatransfer.PasteType;
-import java.awt.datatransfer.Transferable;
-import org.openide.nodes.NodeTransfer;
-import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
 
-public class IndexNode extends DatabaseNode
-{
+public class IndexNode extends DatabaseNode {
     /*
     	public void setName(String newname)
     	{
@@ -75,10 +75,8 @@ public class IndexNode extends DatabaseNode
         }
 
         /* @return Human presentable name of this paste type. */
-        public String getName()
-        {
-            ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
-            return bundle.getString("IndexPasteTypeName");
+        public String getName() {
+            return bundle.getString("IndexPasteTypeName"); //NOI18N
         }
 
         /** Performs the paste action.
@@ -86,12 +84,10 @@ public class IndexNode extends DatabaseNode
         *         paste action. It can be null, which means that clipboard content
         *         should stay the same.
         */
-        public Transferable paste() throws IOException
-        {
+        public Transferable paste() throws IOException {
             IndexNodeInfo destinfo = (IndexNodeInfo)getInfo();
-            ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
+            
             if (info != null) {
-
                 Connection con;
                 DatabaseMetaData dmd;
                 Specification spec;
@@ -102,7 +98,7 @@ public class IndexNode extends DatabaseNode
                     dmd = info.getSpecification().getMetaData();
                     spec = (Specification)info.getSpecification();
                     catalog = (String)info.get(DatabaseNode.CATALOG);
-                    boolean jdbcOdbcBridge = (((java.sql.DriverManager.getDriver(dmd.getURL()) instanceof sun.jdbc.odbc.JdbcOdbcDriver) && (!dmd.getDatabaseProductName().trim().equals("DB2/NT"))) ? true : false);
+                    boolean jdbcOdbcBridge = (((java.sql.DriverManager.getDriver(dmd.getURL()) instanceof sun.jdbc.odbc.JdbcOdbcDriver) && (!dmd.getDatabaseProductName().trim().equals("DB2/NT"))) ? true : false); //NOI18N
 
                     DriverSpecification drvSpec = info.getDriverSpecification();
                     drvSpec.getIndexInfo(catalog, dmd, info.getTable(), true, false);
@@ -111,13 +107,16 @@ public class IndexNode extends DatabaseNode
                         HashSet ixrm = new HashSet();
 
                         while (drvSpec.rs.next()) {
-                            String ixname = drvSpec.rs.getString("INDEX_NAME");
-                            String colname = drvSpec.rs.getString("COLUMN_NAME");
+                            String ixname = drvSpec.rs.getString("INDEX_NAME"); //NOI18N
+                            String colname = drvSpec.rs.getString("COLUMN_NAME"); //NOI18N
                             if (ixname.equals(index)) ixrm.add(colname);
                         }
                         drvSpec.rs.close();
 
-                        if (ixrm.contains(info.getName())) throw new IOException("index "+index+" already contains column "+info.getName());
+                        if (ixrm.contains(info.getName())) {
+                            String message = MessageFormat.format(bundle.getString("EXC_IndexContainsColumn"), new String[] {index, info.getName()}); // NOI18N
+                            throw new IOException(message);
+                        }
 
                         CreateIndex icmd = spec.createCommandCreateIndex(info.getTable());
                         icmd.setIndexName(destinfo.getName());
@@ -134,8 +133,8 @@ public class IndexNode extends DatabaseNode
                         if (drvSpec.rs != null) {
                             while (drvSpec.rs.next()) {
                                 if (jdbcOdbcBridge) drvSpec.rsTemp.next();
-                                String ixname = drvSpec.rs.getString("INDEX_NAME");
-                                String colname = drvSpec.rs.getString("COLUMN_NAME");
+                                String ixname = drvSpec.rs.getString("INDEX_NAME"); //NOI18N
+                                String colname = drvSpec.rs.getString("COLUMN_NAME"); //NOI18N
                                 if (ixname.equals(index) && colname.equals(info.getName())) {
                                     IndexNodeInfo ixinfo;
                                     if (jdbcOdbcBridge)
@@ -145,7 +144,7 @@ public class IndexNode extends DatabaseNode
 
                                     if (ixinfo != null) {
                                         ((DatabaseNodeChildren)destinfo.getNode().getChildren()).createSubnode(ixinfo,true);
-                                    } else throw new Exception("unable to create node information for index");
+                                    } else throw new Exception(bundle.getString("EXC_UnableToCreateIndexNodeInfo")); //NOI18N
                                 }
                             }
                             drvSpec.rs.close();
@@ -156,32 +155,10 @@ public class IndexNode extends DatabaseNode
                     throw new IOException(e.getMessage());
                 }
 
-            } else throw new IOException("cannot find index owner information");
+            } else
+                throw new IOException(bundle.getString("EXC_CannotFindIndexOwnerInformation"));
+            
             return null;
         }
     }
 }
-/*
- * <<Log>>
- *  14   Gandalf   1.13        1/26/00  Radko Najman    JDBC-ODBC bridge HACK
- *  13   Gandalf   1.12        1/26/00  Radko Najman    new driver adaptor 
- *       version
- *  12   Gandalf   1.11        1/25/00  Radko Najman    new driver adaptor 
- *       version
- *  11   Gandalf   1.10        12/15/99 Radko Najman    driver adaptor
- *  10   Gandalf   1.9         11/15/99 Radko Najman    MS ACCESS
- *  9    Gandalf   1.8         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  8    Gandalf   1.7         10/8/99  Radko Najman    getUser() method 
- *       replaced by dmd.getUserName()
- *  7    Gandalf   1.6         9/13/99  Slavek Psenicka 
- *  6    Gandalf   1.5         9/8/99   Slavek Psenicka adaptor changes
- *  5    Gandalf   1.4         8/19/99  Slavek Psenicka English
- *  4    Gandalf   1.3         6/30/99  Ian Formanek    NodeTransfer related 
- *       changes to make it compilable
- *  3    Gandalf   1.2         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  2    Gandalf   1.1         5/21/99  Slavek Psenicka new version
- *  1    Gandalf   1.0         5/14/99  Slavek Psenicka 
- * $
- */

@@ -13,13 +13,16 @@
 
 package org.netbeans.modules.db.explorer.infos;
 
+import java.beans.PropertyChangeSupport;
+import java.beans.PropertyChangeListener;
 import java.io.InputStream;
 import java.util.*;
 import java.sql.*;
-import org.netbeans.lib.ddl.*;
-import java.beans.PropertyChangeSupport;
-import java.beans.PropertyChangeListener;
+import java.text.MessageFormat;
+
 import org.openide.nodes.Node;
+
+import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.util.PListReader;
 import org.netbeans.modules.db.*;
 import org.netbeans.modules.db.explorer.*;
@@ -28,13 +31,10 @@ import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 import org.netbeans.modules.db.explorer.DatabaseDriver;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
 
-public class DriverListNodeInfo extends DatabaseNodeInfo
-            implements DriverOperations
-{
+public class DriverListNodeInfo extends DatabaseNodeInfo implements DriverOperations {
     static final long serialVersionUID =-7948529055260667590L;
-    protected void initChildren(Vector children)
-    throws DatabaseException
-    {
+    
+    protected void initChildren(Vector children) throws DatabaseException {
         Vector cons = RootNode.getOption().getAvailableDrivers();
         if (cons != null) {
             try {
@@ -45,7 +45,10 @@ public class DriverListNodeInfo extends DatabaseNodeInfo
                     if (chinfo != null && drv != null) {
                         chinfo.setDatabaseDriver(drv);
                         children.add(chinfo);
-                    } else throw new Exception("driver "+drv);
+                    } else {
+                        String message = MessageFormat.format(bundle.getString("EXC_Driver"), new String[] {drv.toString()}); // NOI18N
+                        throw new Exception(message);
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -78,8 +81,12 @@ public class DriverListNodeInfo extends DatabaseNodeInfo
     {
         DatabaseOption option = RootNode.getOption();
         Vector drvs = option.getAvailableDrivers();
-        if (!drvs.contains(drv)) drvs.add(drv);
-        else throw new DatabaseException("driver "+drv+" already exists in list");
+        if (!drvs.contains(drv))
+            drvs.add(drv);
+        else {
+            String message = MessageFormat.format(bundle.getString("EXC_DriverAlreadyExists"), new String[] {drv.toString()}); // NOI18N
+            throw new DatabaseException(message);
+        }
 
         DatabaseNodeChildren chld = (DatabaseNodeChildren)getNode().getChildren();
         DriverNodeInfo ninfo = (DriverNodeInfo)createNodeInfo(this, DatabaseNodeInfo.DRIVER);
@@ -87,19 +94,3 @@ public class DriverListNodeInfo extends DatabaseNodeInfo
         chld.createSubnode(ninfo, true);
     }
 }
-/*
- * <<Log>>
- *  9    Gandalf   1.8         11/27/99 Patrik Knakal   
- *  8    Gandalf   1.7         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  7    Gandalf   1.6         9/8/99   Slavek Psenicka adaptor changes
- *  6    Gandalf   1.5         8/19/99  Slavek Psenicka English
- *  5    Gandalf   1.4         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  4    Gandalf   1.3         5/21/99  Slavek Psenicka new version
- *  3    Gandalf   1.2         5/14/99  Slavek Psenicka new version
- *  2    Gandalf   1.1         4/26/99  Slavek Psenicka Default driver list 
- *       added.
- *  1    Gandalf   1.0         4/23/99  Slavek Psenicka 
- * $
- */

@@ -15,12 +15,14 @@ package org.netbeans.modules.db.explorer.nodes;
 
 import java.sql.*;
 import java.util.*;
-import org.netbeans.lib.ddl.*;
-import org.netbeans.lib.ddl.impl.*;
+
 import org.openide.nodes.*;
 import org.openide.NotifyDescriptor;
 import org.openide.TopManager;
 import org.openide.options.SystemOption;
+
+import org.netbeans.lib.ddl.*;
+import org.netbeans.lib.ddl.impl.*;
 import org.netbeans.modules.db.*;
 import org.netbeans.modules.db.explorer.*;
 import org.netbeans.modules.db.explorer.infos.*;
@@ -28,34 +30,27 @@ import org.netbeans.modules.db.explorer.infos.*;
 /** Abstract class that can be used as super class of all data objects that
 * should contain some nodes. It provides methods for adding/removing
 * sub nodes.
-*
-* @author Miloslav Metelka, Slavek Psenicka
-* @version 0.10, Jul 14, 1998
 */
-public class RootNode extends DatabaseNode
-{
+public class RootNode extends DatabaseNode {
     /** Stores DBNode's connections info */
     private static DatabaseOption option = null;
 
     /** DDLFactory */
     SpecificationFactory sfactory;
 
-    public static DatabaseOption getOption()
-    {
-        if (option == null) {
+    public static DatabaseOption getOption() {
+        if (option == null)
             option = (DatabaseOption)SystemOption.findObject(DatabaseOption.class, false);
-        }
 
         return option;
     }
 
-    public RootNode()
-    {
+    public RootNode() {
         try {
             sfactory = new SpecificationFactory();
-            DatabaseNodeInfo nfo = DatabaseNodeInfo.createNodeInfo(null, "root");
+            DatabaseNodeInfo nfo = DatabaseNodeInfo.createNodeInfo(null, "root"); //NOI18N
             if (sfactory != null) nfo.setSpecificationFactory(sfactory);
-            else throw new Exception("no specification factory");
+            else throw new Exception(bundle.getString("EXC_NoSpecificationFactory"));
 
             setInfo(nfo);
             getInfo().setNode(this);
@@ -64,12 +59,7 @@ public class RootNode extends DatabaseNode
         }
     }
 
-    public boolean canRename()
-    {
+    public boolean canRename() {
         return true;
     }
 }
-
-/*
- * <<Log>>
- */

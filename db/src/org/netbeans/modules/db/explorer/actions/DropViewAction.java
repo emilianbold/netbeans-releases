@@ -32,24 +32,10 @@ public class DropViewAction extends DatabaseAction
             node = activatedNodes[0];
         else
             return;
-        ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
-        //		try {
-        //		} catch(Exception e) {
-        //			TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("DropIndexErrorPrefix")+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
-        //		}
+        
+//        try {
+//        } catch(Exception e) {
+//            TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("???")+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+//        }
     }
 }
-/*
- * <<Log>>
- *  7    Gandalf-post-FCS1.5.1.0     4/10/00  Radko Najman    
- *  6    Gandalf   1.5         11/27/99 Patrik Knakal   
- *  5    Gandalf   1.4         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  3    Gandalf   1.2         5/21/99  Slavek Psenicka new version
- *  2    Gandalf   1.1         4/23/99  Slavek Psenicka oprava activatedNode[0] 
- *       check
- *  1    Gandalf   1.0         4/23/99  Slavek Psenicka 
- * $
- */

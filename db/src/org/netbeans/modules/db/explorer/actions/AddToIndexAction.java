@@ -17,14 +17,12 @@ import java.sql.*;
 import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.ResourceBundle;
 import java.util.Vector;
 
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.impl.*;
 import org.openide.*;
 import org.openide.nodes.*;
-import org.openide.util.NbBundle;
 import org.netbeans.modules.db.explorer.*;
 import org.netbeans.modules.db.explorer.dlg.*;
 import org.netbeans.modules.db.explorer.nodes.*;
@@ -34,8 +32,6 @@ public class AddToIndexAction extends DatabaseAction {
     static final long serialVersionUID =-1416260930649261633L;
     
     public void performAction (Node[] activatedNodes) {
-        ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); // NOI18N
-        
         Node node;
         if (activatedNodes != null && activatedNodes.length>0)
             node = activatedNodes[0];

@@ -38,13 +38,7 @@ import org.netbeans.modules.db.util.*;
 import org.netbeans.modules.db.explorer.infos.*;
 import org.netbeans.modules.db.explorer.nodes.*;
 
-/**
-* xxx
-*
-* @author Slavek Psenicka
-*/
-public class AddTableColumnDialog
-{
+public class AddTableColumnDialog {
     boolean result = false;
     Dialog dialog = null;
     Specification spec;
@@ -65,14 +59,14 @@ public class AddTableColumnDialog
             GridBagLayout layout = new GridBagLayout();
             GridBagConstraints con = new GridBagConstraints ();
             pane.setLayout (layout);
-            ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
+            ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
 
             TextFieldListener fldlistener = new TextFieldListener(dmodel);
             IntegerFieldListener intfldlistener = new IntegerFieldListener(dmodel);
 
             // Column name
 
-            label = new JLabel(bundle.getString("AddTableColumnName"));
+            label = new JLabel(bundle.getString("AddTableColumnName")); //NOI18N
             con.weightx = 0.0;
             con.anchor = GridBagConstraints.WEST;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
@@ -107,7 +101,7 @@ public class AddTableColumnDialog
             item.setProperty(ColumnItem.TYPE, ttab.elementAt(0));
             dmodel.addRow(item);
 
-            label = new JLabel(bundle.getString("AddTableColumnType"));
+            label = new JLabel(bundle.getString("AddTableColumnType")); //NOI18N
             con.weightx = 0.0;
             con.anchor = GridBagConstraints.WEST;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
@@ -136,7 +130,7 @@ public class AddTableColumnDialog
 
             // Column size
 
-            label = new JLabel(bundle.getString("AddTableColumnSize"));
+            label = new JLabel(bundle.getString("AddTableColumnSize")); //NOI18N
             subcon.weightx = 0.14;
             subcon.anchor = GridBagConstraints.WEST;
             subcon.insets = new java.awt.Insets (2, 2, 2, 2);
@@ -158,7 +152,7 @@ public class AddTableColumnDialog
 
             // Column scale
 
-            label = new JLabel(bundle.getString("AddTableColumnScale"));
+            label = new JLabel(bundle.getString("AddTableColumnScale")); //NOI18N
             subcon.weightx = 0.14;
             subcon.anchor = GridBagConstraints.WEST;
             subcon.insets = new java.awt.Insets (2, 10, 2, 2);
@@ -192,7 +186,7 @@ public class AddTableColumnDialog
 
             // Column default value
 
-            label = new JLabel(bundle.getString("AddTableColumnDefault"));
+            label = new JLabel(bundle.getString("AddTableColumnDefault")); //NOI18N
             con.weightx = 0.0;
             con.anchor = GridBagConstraints.WEST;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
@@ -215,7 +209,7 @@ public class AddTableColumnDialog
             // Check subpane
 
             subpane = new JPanel();
-            subpane.setBorder(new TitledBorder(bundle.getString("AddTableColumnConstraintsTitle")));
+            subpane.setBorder(new TitledBorder(bundle.getString("AddTableColumnConstraintsTitle"))); //NOI18N
             sublayout = new GridBagLayout();
             subcon = new GridBagConstraints ();
             subpane.setLayout(sublayout);
@@ -226,7 +220,7 @@ public class AddTableColumnDialog
             subcon.anchor = GridBagConstraints.WEST;
             subcon.gridx = 0;
             subcon.gridy = 0;
-            pkcheckbox = new JCheckBox(bundle.getString("AddTableColumnConstraintPKTitle"));
+            pkcheckbox = new JCheckBox(bundle.getString("AddTableColumnConstraintPKTitle")); //NOI18N
             pkcheckbox.setName(ColumnItem.PRIMARY_KEY);
             pkcheckbox.addActionListener(cbxlistener);
             sublayout.setConstraints(pkcheckbox, subcon);
@@ -234,7 +228,7 @@ public class AddTableColumnDialog
 
             subcon.gridx = 1;
             subcon.gridy = 0;
-            uniquecheckbox = new JCheckBox(bundle.getString("AddTableColumnConstraintUniqueTitle"));
+            uniquecheckbox = new JCheckBox(bundle.getString("AddTableColumnConstraintUniqueTitle")); //NOI18N
             sublayout.setConstraints(uniquecheckbox, subcon);
             uniquecheckbox.setName(ColumnItem.UNIQUE);
             uniquecheckbox.addActionListener(cbxlistener);
@@ -242,7 +236,7 @@ public class AddTableColumnDialog
 
             subcon.gridx = 2;
             subcon.gridy = 0;
-            nullcheckbox = new JCheckBox(bundle.getString("AddTableColumnConstraintNullTitle"));
+            nullcheckbox = new JCheckBox(bundle.getString("AddTableColumnConstraintNullTitle")); //NOI18N
             sublayout.setConstraints(nullcheckbox, subcon);
             nullcheckbox.setName(ColumnItem.NULLABLE);
             nullcheckbox.addActionListener(cbxlistener);
@@ -265,7 +259,7 @@ public class AddTableColumnDialog
             con.gridx = 0;
             con.gridy = 5;
             con.gridwidth = 1;
-            ixcheckbox = new JCheckBox(bundle.getString("AddTableColumnConstraintIXTitle"));
+            ixcheckbox = new JCheckBox(bundle.getString("AddTableColumnConstraintIXTitle")); //NOI18N
             layout.setConstraints(ixcheckbox, con);
             ixcheckbox.setName(ColumnItem.INDEX);
             ixcheckbox.addActionListener(cbxlistener);
@@ -288,7 +282,7 @@ public class AddTableColumnDialog
 
                 ixmap = new HashMap();
                 while (drvSpec.rs.next()) {
-                    String ixname = drvSpec.rs.getString("INDEX_NAME");
+                    String ixname = drvSpec.rs.getString("INDEX_NAME"); //NOI18N
                     if (ixname != null) {
                         Vector ixcols = (Vector)ixmap.get(ixname);
                         if (ixcols == null) {
@@ -296,7 +290,7 @@ public class AddTableColumnDialog
                             ixmap.put(ixname,ixcols);
                         }
 
-                        ixcols.add(drvSpec.rs.getString("COLUMN_NAME"));
+                        ixcols.add(drvSpec.rs.getString("COLUMN_NAME")); //NOI18N
                     }
                 }
                 drvSpec.rs.close();
@@ -317,7 +311,7 @@ public class AddTableColumnDialog
 
             con.gridx = 0;
             con.gridy = 6;
-            checkcheckbox = new JCheckBox(bundle.getString("AddTableColumnConstraintCheckTitle"));
+            checkcheckbox = new JCheckBox(bundle.getString("AddTableColumnConstraintCheckTitle")); //NOI18N
             layout.setConstraints(checkcheckbox, con);
             checkcheckbox.setName(ColumnItem.CHECK);
             checkcheckbox.addActionListener(cbxlistener);
@@ -427,7 +421,7 @@ public class AddTableColumnDialog
                                           }
                                       };
 
-            DialogDescriptor descriptor = new DialogDescriptor(pane, bundle.getString("AddColumnDialogTitle"), true, listener);
+            DialogDescriptor descriptor = new DialogDescriptor(pane, bundle.getString("AddColumnDialogTitle"), true, listener); //NOI18N
             dialog = TopManager.getDefault().createDialog(descriptor);
             dialog.setResizable(true);
         } catch (MissingResourceException e) {
@@ -514,29 +508,9 @@ public class AddTableColumnDialog
             String code = fld.getName();
             String numero = fld.getText();
             Integer ival;
-            if (numero == null || numero.length()==0) numero = "0";
+            if (numero == null || numero.length()==0) numero = "0"; //NOI18N
             ival = new Integer(numero);
             data.setValue(ival, code, 0);
         }
     }
 }
-/*
- * <<Log>>
- *  12   Gandalf   1.11        3/3/00   Radko Najman    scale field added
- *  11   Gandalf   1.10        2/16/00  Radko Najman    driver adaptor
- *  10   Gandalf   1.9         11/15/99 Radko Najman    MS ACCESS
- *  9    Gandalf   1.8         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  8    Gandalf   1.7         10/8/99  Radko Najman    getUser() method 
- *       replaced by dmd.getUserName()
- *  7    Gandalf   1.6         9/13/99  Slavek Psenicka 
- *  6    Gandalf   1.5         9/13/99  Slavek Psenicka 
- *  5    Gandalf   1.4         9/8/99   Slavek Psenicka adaptor changes
- *  4    Gandalf   1.3         7/21/99  Slavek Psenicka Disabling index combo 
- *       with no index in place
- *  3    Gandalf   1.2         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  2    Gandalf   1.1         5/21/99  Slavek Psenicka new version
- *  1    Gandalf   1.0         5/14/99  Slavek Psenicka 
- * $
- */

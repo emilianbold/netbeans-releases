@@ -13,11 +13,12 @@
 
 package org.netbeans.modules.db.explorer.nodes;
 
+import java.awt.datatransfer.Transferable;
+import java.lang.reflect.Method;
 import java.io.IOException;
 import java.util.*;
 import java.text.MessageFormat;
-import java.lang.reflect.Method;
-import java.awt.datatransfer.Transferable;
+
 import javax.swing.SwingUtilities;
 
 import org.openide.*;
@@ -35,22 +36,19 @@ import org.netbeans.modules.db.explorer.infos.*;
 
 // Node for Table/View/Procedure things.
 
-public class TableNode extends DatabaseNode implements InstanceCookie
-{
+public class TableNode extends DatabaseNode implements InstanceCookie {
     public void setInfo(DatabaseNodeInfo nodeinfo)
     {
         super.setInfo(nodeinfo);
         getCookieSet().add(this);
     }
 
-    public String instanceName()
-    {
-        return "org.netbeans.lib.sql.ConnectionSource";
+    public String instanceName() {
+        return "org.netbeans.lib.sql.ConnectionSource"; //NOI18N
     }
 
-    public Class instanceClass() throws IOException, ClassNotFoundException
-    {
-        return Class.forName("org.netbeans.lib.sql.ConnectionSource", true, org.openide.TopManager.getDefault ().currentClassLoader ());
+    public Class instanceClass() throws IOException, ClassNotFoundException {
+        return Class.forName("org.netbeans.lib.sql.ConnectionSource", true, org.openide.TopManager.getDefault ().currentClassLoader ()); //NOI18N
     }
 
     public Object instanceCreate()
@@ -65,13 +63,13 @@ public class TableNode extends DatabaseNode implements InstanceCookie
             String pwd = info.getPassword();
             Object obj =  objclass.newInstance();
 
-            met = objclass.getMethod("setDriver", new Class[] {String.class});
+            met = objclass.getMethod("setDriver", new Class[] {String.class}); //NOI18N
             if (met != null) met.invoke(obj, new String[] {drv});
-            met = objclass.getMethod("setDatabase", new Class[] {String.class});
+            met = objclass.getMethod("setDatabase", new Class[] {String.class}); //NOI18N
             if (met != null) met.invoke(obj, new String[] {db});
-            met = objclass.getMethod("setUsername", new Class[] {String.class});
+            met = objclass.getMethod("setUsername", new Class[] {String.class}); //NOI18N
             if (met != null) met.invoke(obj, new String[] {usr});
-            met = objclass.getMethod("setPassword", new Class[] {String.class});
+            met = objclass.getMethod("setPassword", new Class[] {String.class}); //NOI18N
             if (met != null) met.invoke(obj, new String[] {pwd});
 
             return obj;
@@ -155,8 +153,8 @@ public class TableNode extends DatabaseNode implements InstanceCookie
         /* @return Human presentable name of this paste type. */
         public String getName()
         {
-            ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
-            return bundle.getString("PasteTableName");
+            ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
+            return bundle.getString("PasteTableName"); //NOI18N
         }
 
         /** Performs the paste action.
@@ -167,14 +165,14 @@ public class TableNode extends DatabaseNode implements InstanceCookie
         public Transferable paste() throws IOException
         {
             TableNodeInfo info = (TableNodeInfo)getInfo();
-            ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle_noi18n");
+            ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle_noi18n"); //NOI18N
             TableListNodeInfo ownerinfo = (TableListNodeInfo)getInfo().getParent(DatabaseNode.TABLELIST);
             if (info != null) {
                 TableNodeInfo exinfo = ownerinfo.getChildrenTableInfo(info);
                 DatabaseNodeChildren chi = (DatabaseNodeChildren)getChildren();
                 String name = info.getName();
                 if (exinfo != null) {
-                    String namefmt = bundle.getString("PasteTableNameFormat");
+                    String namefmt = bundle.getString("PasteTableNameFormat"); //NOI18N
                     name = MessageFormat.format(namefmt, new String[] {name});
                 }
 
@@ -190,15 +188,18 @@ public class TableNode extends DatabaseNode implements InstanceCookie
                     throw new IOException(e.getMessage());
                 }
 
-            } else throw new IOException("cannot find table owner information");
+            } else
+                throw new IOException(bundle.getString("EXC_CannotFindTableOwnerInformation")); //NOI18N
+            
             return null;
         }
     }
 
     /** Paste type for transfering columns.
     */
-    private class ColumnPasteType extends PasteType
-    {
+    private class ColumnPasteType extends PasteType {
+        final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
+        
         /** transferred info */
         private DatabaseNodeInfo info;
 
@@ -214,10 +215,8 @@ public class TableNode extends DatabaseNode implements InstanceCookie
         }
 
         /* @return Human presentable name of this paste type. */
-        public String getName()
-        {
-            ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
-            return bundle.getString("PasteColumnName");
+        public String getName() {
+            return bundle.getString("PasteColumnName"); //NOI18N
         }
 
         /** Performs the paste action.
@@ -227,7 +226,7 @@ public class TableNode extends DatabaseNode implements InstanceCookie
         */
         public Transferable paste() throws IOException
         {
-            ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
+            ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
             TableNodeInfo ownerinfo = (TableNodeInfo)getInfo();
             if (info != null) {
                 try {
@@ -250,30 +249,8 @@ public class TableNode extends DatabaseNode implements InstanceCookie
                     					});
                     */					
                 }
-            } else throw new IOException("cannot find Column owner information");
+            } else throw new IOException(bundle.getString("EXC_CannotFindColumnOwnerInformation")); //NOI18N
             return null;
         }
     }
 }
-/*
- * <<Log>>
- *  14   Gandalf   1.13        2/16/00  Radko Najman    
- *  13   Gandalf   1.12        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  12   Gandalf   1.11        9/23/99  Slavek Psenicka Bug #3311
- *  11   Gandalf   1.10        9/13/99  Slavek Psenicka 
- *  10   Gandalf   1.9         9/8/99   Slavek Psenicka adaptor changes
- *  9    Gandalf   1.8         8/19/99  Slavek Psenicka English
- *  8    Gandalf   1.7         7/21/99  Slavek Psenicka cut'n'paste changes
- *  7    Gandalf   1.6         6/30/99  Ian Formanek    NodeTransfer related 
- *       changes to make it compilable
- *  6    Gandalf   1.5         6/15/99  Slavek Psenicka debug prints
- *  5    Gandalf   1.4         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  4    Gandalf   1.3         5/21/99  Slavek Psenicka new version
- *  3    Gandalf   1.2         5/14/99  Slavek Psenicka new version
- *  2    Gandalf   1.1         4/23/99  Slavek Psenicka Chyba createSpec pri 
- *       ConnectAs
- *  1    Gandalf   1.0         4/23/99  Slavek Psenicka 
- * $
- */

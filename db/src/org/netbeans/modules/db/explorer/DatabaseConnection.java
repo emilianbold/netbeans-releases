@@ -13,14 +13,17 @@
 
 package org.netbeans.modules.db.explorer;
 
-import java.sql.*;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeListener;
-import java.lang.String;
+import java.text.MessageFormat;
+import java.sql.*;
 import java.util.Properties;
-import org.netbeans.lib.ddl.*;
+import java.util.ResourceBundle;
+
 import org.openide.TopManager;
-import java.lang.reflect.*;
+import org.openide.util.NbBundle;
+
+import org.netbeans.lib.ddl.*;
 
 /**
 * Connection information
@@ -29,12 +32,13 @@ import java.lang.reflect.*;
 * connection and feels to be a bean (has propertychange support and customizer).
 * Instances of this class uses explorer option to store information about
 * open connection.
-*
-* @author Slavek Psenicka
 */
-
-public class DatabaseConnection extends Object implements DBConnection
-{
+public class DatabaseConnection implements DBConnection {
+    
+    static final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
+    
+    static final long serialVersionUID =4554639187416958735L;
+    
     /** Driver URL and name */
     private String drv, drvname;
 
@@ -45,7 +49,7 @@ public class DatabaseConnection extends Object implements DBConnection
     private String usr;
 
     /** User password */
-    private String pwd = "";
+    private String pwd = ""; //NOI18N
 
     /** Remembers password */
     private Boolean rpwd = Boolean.FALSE;
@@ -56,14 +60,13 @@ public class DatabaseConnection extends Object implements DBConnection
     /** Connection name */
     private String name;
 
-    public static final String PROP_DRIVER = "driver";
-    public static final String PROP_DATABASE = "database";
-    public static final String PROP_USER = "user";
-    public static final String PROP_PASSWORD = "password";
-    public static final String PROP_DRIVERNAME = "drivername";
-    public static final String PROP_NAME = "name";
+    public static final String PROP_DRIVER = "driver"; //NOI18N
+    public static final String PROP_DATABASE = "database"; //NOI18N
+    public static final String PROP_USER = "user"; //NOI18N
+    public static final String PROP_PASSWORD = "password"; //NOI18N
+    public static final String PROP_DRIVERNAME = "drivername"; //NOI18N
+    public static final String PROP_NAME = "name"; //NOI18N
 
-    static final long serialVersionUID =4554639187416958735L;
     /** Default constructor */
     public DatabaseConnection()
     {
@@ -210,10 +213,12 @@ public class DatabaseConnection extends Object implements DBConnection
     public Connection createJDBCConnection()
     throws DDLException
     {
-        if (drv == null || db == null || usr == null || pwd == null) throw new DDLException("insufficient information to create a connection");
+        if (drv == null || db == null || usr == null || pwd == null)
+            throw new DDLException(bundle.getString("EXC_InsufficientConnInfo"));
+
         Properties dbprops = new Properties();
-        dbprops.put("user", usr);
-        dbprops.put("password", pwd);
+        dbprops.put("user", usr); //NOI18N
+        dbprops.put("password", pwd); //NOI18N
 
         try {
             /*
@@ -232,8 +237,9 @@ public class DatabaseConnection extends Object implements DBConnection
             Connection connection = DriverManager.getConnection(db, dbprops);
             return connection;
 
-        } catch (Exception e) {
-            throw new DDLException("cannot establish a connection to "+db+" using "+drv+"("+e+")");
+        } catch (Exception exc) {
+            String message = MessageFormat.format(bundle.getString("EXC_CannotEstablishConnection"), new String[] {db, drv, exc.getMessage()}); // NOI18N
+            throw new DDLException(message);
         }
     }
 
@@ -296,29 +302,8 @@ public class DatabaseConnection extends Object implements DBConnection
         out.writeObject(name);
     }
 
-    public String toString()
-    {
-        return "drv: "+drv+" db: "+db+" usr: "+usr;
+    public String toString() {
+        return "Driver:" + drv + "Database:" + db + "User:" + usr;
     }
 
 }
-
-
-/*
- * <<Log>>
- *  11   Gandalf   1.10        11/27/99 Patrik Knakal   
- *  10   Gandalf   1.9         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  9    Gandalf   1.8         9/23/99  Slavek Psenicka Bug #3311
- *  8    Gandalf   1.7         9/13/99  Slavek Psenicka 
- *  7    Gandalf   1.6         8/19/99  Slavek Psenicka English
- *  6    Gandalf   1.5         7/21/99  Slavek Psenicka driver name
- *  5    Gandalf   1.4         6/15/99  Slavek Psenicka support for 
- *       in-repository mounted jdbc drivers (instead of classpath entry)
- *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  3    Gandalf   1.2         5/21/99  Slavek Psenicka new version
- *  2    Gandalf   1.1         4/23/99  Slavek Psenicka Debug mode
- *  1    Gandalf   1.0         4/23/99  Slavek Psenicka 
- * $
- */

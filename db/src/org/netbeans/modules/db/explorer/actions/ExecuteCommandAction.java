@@ -24,11 +24,8 @@ import org.netbeans.modules.db.explorer.nodes.*;
 import org.netbeans.modules.db.explorer.infos.*;
 import org.netbeans.modules.db.explorer.dataview.*;
 
-public class ExecuteCommandAction extends DatabaseAction
-{
-    //  static final long serialVersionUID =-894644054833609687L;
-    protected boolean enable(Node[] activatedNodes)
-    {
+public class ExecuteCommandAction extends DatabaseAction {
+    protected boolean enable(Node[] activatedNodes) {
         Node node;
         if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
         else return false;
@@ -41,24 +38,17 @@ public class ExecuteCommandAction extends DatabaseAction
     public void performAction (Node[] activatedNodes) {
         StringBuffer cols = new StringBuffer();
         Node node;
-        ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
 
         if (activatedNodes != null && activatedNodes.length > 0) {
             try {
                 node = activatedNodes[0];
                 DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
 
-                DataViewWindow win = new DataViewWindow(info, "");
+                DataViewWindow win = new DataViewWindow(info, ""); //NOI18N
                 win.open();
             } catch(Exception e) {
-                TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("DataViewFetchErrorPrefix") + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+                TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("DataViewFetchErrorPrefix") + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE)); //NOI18N
             }
         }
     }
 }
-/*
- * <<Log>>
- *  2    Gandalf-post-FCS1.0.1.0     4/10/00  Radko Najman    
- *  1    Gandalf   1.0         2/10/00  Radko Najman    
- * $
- */

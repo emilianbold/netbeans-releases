@@ -14,16 +14,17 @@
 package org.netbeans.modules.db.explorer.actions;
 
 import java.sql.Connection;
+import java.text.MessageFormat;
+
 import org.openide.*;
 import org.openide.nodes.*;
+
 import org.netbeans.modules.db.explorer.nodes.*;
 import org.netbeans.modules.db.explorer.infos.*;
 
-public class DisconnectAction extends DatabaseAction
-{
+public class DisconnectAction extends DatabaseAction {
     static final long serialVersionUID =-5994051723289754485L;
-    protected boolean enable(Node[] activatedNodes)
-    {
+    protected boolean enable(Node[] activatedNodes) {
         Node node;
         if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
         else return false;
@@ -34,8 +35,7 @@ public class DisconnectAction extends DatabaseAction
         return false;
     }
 
-    public void performAction (Node[] activatedNodes)
-    {
+    public void performAction (Node[] activatedNodes) {
         Node node;
         if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
         else return;
@@ -43,23 +43,9 @@ public class DisconnectAction extends DatabaseAction
             DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
             ConnectionNodeInfo nfo = (ConnectionNodeInfo)info.getParent(DatabaseNode.CONNECTION);
             nfo.disconnect();
-        } catch(Exception e) {
-            TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to disconnect from "+node.getName()+", "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+        } catch(Exception exc) {
+            String message = MessageFormat.format(bundle.getString("ERR_UnableToDisconnect"), new String[] {node.getName(), exc.getMessage()}); // NOI18N
+            TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
         }
     }
 }
-/*
- * <<Log>>
- *  8    Gandalf   1.7         11/27/99 Patrik Knakal   
- *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  6    Gandalf   1.5         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  5    Gandalf   1.4         5/21/99  Slavek Psenicka new version
- *  4    Gandalf   1.3         5/14/99  Slavek Psenicka new version
- *  3    Gandalf   1.2         4/23/99  Slavek Psenicka oprava activatedNode[0] 
- *       check
- *  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
- *  1    Gandalf   1.0         3/22/99  Slavek Psenicka 
- * $
- */

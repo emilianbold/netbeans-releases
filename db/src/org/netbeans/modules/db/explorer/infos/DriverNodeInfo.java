@@ -13,14 +13,17 @@
 
 package org.netbeans.modules.db.explorer.infos;
 
+import java.beans.PropertyChangeSupport;
+import java.beans.PropertyChangeListener;
 import java.io.InputStream;
 import java.io.IOException;
 import java.util.*;
 import java.sql.*;
-import org.netbeans.lib.ddl.*;
-import java.beans.PropertyChangeSupport;
-import java.beans.PropertyChangeListener;
+import java.text.MessageFormat;
+
 import org.openide.nodes.Node;
+
+import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.util.PListReader;
 import org.netbeans.lib.ddl.impl.*;
 import org.netbeans.modules.db.*;
@@ -55,7 +58,11 @@ public class DriverNodeInfo extends DriverListNodeInfo
             Vector drvs = RootNode.getOption().getAvailableDrivers();
             int idx = drvs.indexOf(drv);
             if (idx != -1) drvs.removeElementAt(idx);
-            else throw new DatabaseException("driver "+drv+" was not found");
+            else {
+                String message = MessageFormat.format(bundle.getString("EXC_DriverNotFound"), new String[] {drv.toString()}); // NOI18N
+                throw new DatabaseException(message);
+            }
+            
             // refresh list of drivers after driver delete action
             getParent().refreshChildren();
         } catch (Exception e) {
@@ -63,17 +70,3 @@ public class DriverNodeInfo extends DriverListNodeInfo
         }
     }
 }
-/*
- * <<Log>>
- *  8    Gandalf   1.7         11/27/99 Patrik Knakal   
- *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  6    Gandalf   1.5         9/8/99   Slavek Psenicka adaptor changes
- *  5    Gandalf   1.4         7/21/99  Slavek Psenicka prefix
- *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  3    Gandalf   1.2         5/21/99  Slavek Psenicka new version
- *  2    Gandalf   1.1         5/14/99  Slavek Psenicka new version
- *  1    Gandalf   1.0         4/23/99  Slavek Psenicka 
- * $
- */

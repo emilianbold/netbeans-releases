@@ -21,12 +21,8 @@ import java.util.ResourceBundle;
 import org.openide.util.NbBundle;
 
 /** A BeanInfo for DatabaseOption
-*
-* @author Petr Hamernik
-* @version 0.10, Dec 1, 1998
 */
-public class DatabaseOptionBeanInfo extends SimpleBeanInfo
-{
+public class DatabaseOptionBeanInfo extends SimpleBeanInfo {
     /** Array of property descriptors. */
     private static PropertyDescriptor[] desc;
 
@@ -36,18 +32,18 @@ public class DatabaseOptionBeanInfo extends SimpleBeanInfo
     static {
         try {
             desc = new PropertyDescriptor[] {
-                       new PropertyDescriptor("debugMode", DatabaseOption.class),
-                       new PropertyDescriptor("fetchLimit", DatabaseOption.class),
-                       new PropertyDescriptor("fetchStep", DatabaseOption.class)
-                   };
+                new PropertyDescriptor("debugMode", DatabaseOption.class), //NOI18N
+                new PropertyDescriptor("fetchLimit", DatabaseOption.class), //NOI18N
+                new PropertyDescriptor("fetchStep", DatabaseOption.class) //NOI18N
+            };
 
-            ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
-            desc[0].setDisplayName(bundle.getString("PROP_DEBUG_MODE"));
-            desc[0].setShortDescription(bundle.getString ("HINT_DEBUG_MODE"));
-            desc[1].setDisplayName(bundle.getString("PROP_FETCH_LIMIT"));
-            desc[1].setShortDescription(bundle.getString ("HINT_FETCH_LIMIT"));
-            desc[2].setDisplayName(bundle.getString("PROP_FETCH_STEP"));
-            desc[2].setShortDescription(bundle.getString ("HINT_FETCH_STEP"));
+            ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
+            desc[0].setDisplayName(bundle.getString("PROP_DEBUG_MODE")); //NOI18N
+            desc[0].setShortDescription(bundle.getString ("HINT_DEBUG_MODE")); //NOI18N
+            desc[1].setDisplayName(bundle.getString("PROP_FETCH_LIMIT")); //NOI18N
+            desc[1].setShortDescription(bundle.getString ("HINT_FETCH_LIMIT")); //NOI18N
+            desc[2].setDisplayName(bundle.getString("PROP_FETCH_STEP")); //NOI18N
+            desc[2].setShortDescription(bundle.getString ("HINT_FETCH_STEP")); //NOI18N
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -61,17 +57,13 @@ public class DatabaseOptionBeanInfo extends SimpleBeanInfo
     public Image getIcon(int type)
     {
         if (type == BeanInfo.ICON_COLOR_16x16) {
-            if (image == null) image = Toolkit.getDefaultToolkit().getImage(DatabaseOptionBeanInfo.class.getResource ("/org/netbeans/modules/db/resources/optionIcon.gif"));
+            if (image == null) image = Toolkit.getDefaultToolkit().getImage(DatabaseOptionBeanInfo.class.getResource ("/org/netbeans/modules/db/resources/optionIcon.gif")); //NOI18N
             return image;
         } else if (type == BeanInfo.ICON_COLOR_32x32) {
-            if (image32 == null) image32 = Toolkit.getDefaultToolkit().getImage(DatabaseOptionBeanInfo.class.getResource ("/org/netbeans/modules/db/resources/optionIcon32.gif"));
+            if (image32 == null) image32 = Toolkit.getDefaultToolkit().getImage(DatabaseOptionBeanInfo.class.getResource ("/org/netbeans/modules/db/resources/optionIcon32.gif")); //NOI18N
             return image32;
         }
 
         return super.getIcon(type);
     }
 }
-
-/*
- * <<Log>>
- */

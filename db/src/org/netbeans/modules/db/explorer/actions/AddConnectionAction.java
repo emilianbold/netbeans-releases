@@ -15,16 +15,14 @@ package org.netbeans.modules.db.explorer.actions;
 
 import java.beans.*;
 import java.io.*;
-import java.util.*;
 import java.sql.*;
 import java.text.MessageFormat;
-import java.util.ResourceBundle;
+import java.util.*;
 
 import org.openide.*;
 import org.openide.util.*;
 import org.openide.util.actions.*;
 import org.openide.nodes.*;
-import org.openide.util.NbBundle;
 import org.netbeans.lib.ddl.*;
 import org.netbeans.modules.db.explorer.*;
 import org.netbeans.modules.db.explorer.nodes.*;
@@ -32,8 +30,6 @@ import org.netbeans.modules.db.explorer.dlg.*;
 import org.netbeans.modules.db.explorer.infos.*;
 
 public class AddConnectionAction extends DatabaseAction {
-    private final static String CLASS_NOT_FOUND = "EXC_ClassNotFound"; // NOI18N
-    private final static String BUNDLE_PATH = "org.netbeans.modules.db.resources.Bundle"; // NOI18N
 
     static final long serialVersionUID =5370365696803042542L;
     public void performAction (Node[] activatedNodes) {
@@ -60,10 +56,10 @@ public class AddConnectionAction extends DatabaseAction {
                 nfo.addConnection((DBConnection)cinfo);
 
         } catch (ClassNotFoundException exc) {
-            String message = MessageFormat.format(NbBundle.getBundle(BUNDLE_PATH).getString(CLASS_NOT_FOUND), new String[] {exc.getMessage()});
+            String message = MessageFormat.format(bundle.getString("EXC_ClassNotFound"), new String[] {exc.getMessage()}); // NOI18N
             TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
         } catch (Exception exc) {
-            String message = MessageFormat.format(NbBundle.getBundle(BUNDLE_PATH).getString("ERR_UnableToPerformAction"), new String[] {exc.getMessage()}); // NOI18N
+            String message = MessageFormat.format(bundle.getString("ERR_UnableToPerformAction"), new String[] {exc.getMessage()}); // NOI18N
             TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
         }
     }
