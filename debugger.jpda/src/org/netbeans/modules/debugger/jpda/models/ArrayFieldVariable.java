@@ -13,10 +13,8 @@
 
 package org.netbeans.modules.debugger.jpda.models;
 
-import com.sun.jdi.Field;
-import com.sun.jdi.ObjectReference;
-import com.sun.jdi.Value;
-import com.sun.jdi.ArrayReference;
+import com.sun.jdi.*;
+import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 
 
 /**
@@ -24,7 +22,8 @@ import com.sun.jdi.ArrayReference;
  */
 public class ArrayFieldVariable extends AbstractVariable implements 
 org.netbeans.api.debugger.jpda.Field {
-        
+
+    private final ArrayReference array;
     private int index;
     private String declaredType;
     private String className;
@@ -34,6 +33,7 @@ org.netbeans.api.debugger.jpda.Field {
         Value value,
         String className,
         String declaredType,
+        ArrayReference array,
         int index, 
         String parentID
     ) {
@@ -46,6 +46,7 @@ org.netbeans.api.debugger.jpda.Field {
         this.index = index;
         this.declaredType = declaredType;
         this.className = className;
+        this.array = array;
     }
 
     
@@ -88,6 +89,21 @@ org.netbeans.api.debugger.jpda.Field {
         return declaredType;
     }
 
+    /**
+     * Sets new value of this variable.
+     * 
+     * @param value ne value
+     * @throws InvalidExpressionException if the value is invalid
+     */ 
+    protected void setValue (Value value) throws InvalidExpressionException {
+        try {
+            array.setValue(index, value);
+        } catch (InvalidTypeException ex) {
+            throw new InvalidExpressionException (ex);
+        } catch (ClassNotLoadedException ex) {
+            throw new InvalidExpressionException (ex);
+        }
+    }
     
     // other methods ...........................................................
 

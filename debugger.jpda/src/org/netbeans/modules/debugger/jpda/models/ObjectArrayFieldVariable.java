@@ -16,6 +16,7 @@ package org.netbeans.modules.debugger.jpda.models;
 import com.sun.jdi.Field;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.Value;
+import com.sun.jdi.ArrayReference;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 
 
@@ -30,6 +31,7 @@ implements ObjectVariable {
         ObjectReference value,
         String className,
         String declaredType,
+        ArrayReference array,
         int index, 
         String parentID
     ) {
@@ -37,7 +39,8 @@ implements ObjectVariable {
             model, 
             value, 
             className,
-            declaredType, 
+            declaredType,
+            array,
             index,
             parentID
         );

@@ -435,10 +435,10 @@ public class AbstractVariable implements ObjectVariable {
                 Value v = (Value) l.get (i);
                 ch [i] = (v instanceof ObjectReference) ?
                     new ObjectArrayFieldVariable (
-                        this.getModel(), (ObjectReference) v, className, componentType, i, parentID
+                        this.getModel(), (ObjectReference) v, className, componentType, ar, i, parentID
                     ) :
                     new ArrayFieldVariable (
-                        this.getModel(), v, className, componentType, i, parentID
+                        this.getModel(), v, className, componentType, ar, i, parentID
                     );
             }
             this.fields = ch;
