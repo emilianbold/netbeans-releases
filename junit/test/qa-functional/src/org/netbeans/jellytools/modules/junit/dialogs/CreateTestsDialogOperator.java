@@ -421,15 +421,19 @@ public class CreateTestsDialogOperator extends NbDialogOperator {
         System.out.println("CreateTestsDialogOperator verification finished.");
     }
     
-    public void dumpAll (PrintStream out) {
-        out.println ("FileSystem: " + cboFileSystem().getSelectedItem());
+    public void dumpAll (PrintStream out, String fs) {
+        Object o = cboFileSystem().getSelectedItem();
+        String str = (o != null) ? o.toString () : "<NULL_VALUE>";
+        if (str.startsWith (fs))
+            str = "<TARGET_FS>" + str.substring (fs.length ());
+        out.println ("FileSystem: " + str);
         out.println ("SuiteClass: " + cboSuiteClass().getSelectedItem());
         out.println ("TestClass: " + cboTestClass().getSelectedItem());
         out.println ("PublicMethod: " + cbPublicMethods().isSelected());
         out.println ("ProtectedMethod: " + cbProtectedMethods().isSelected());
         out.println ("PackageMethod: " + cbPackageMethods().isSelected());
         out.println ("IncludeAbstract: " + cbIncludeAbstractClasses().isSelected());
-        out.println ("IncludeException: " + cbIncludeAbstractClasses().isSelected());
+        out.println ("IncludeException: " + cbIncludeExceptionClasses().isSelected());
         out.println ("IncludePackagePrivateClass: " + cbIncludePackagePrivateClasses().isSelected());
         out.println ("Comments: " + cbComments().isSelected());
         out.println ("JavaDoc: " + cbJavaDoc().isSelected());
