@@ -75,11 +75,12 @@ final class PersistenceHandler implements PersistenceObserver {
 
     // XXX helper method
     public boolean isTopComponentPersistentWhenClosed(TopComponent tc) {
-        Object prop = tc.getClientProperty(PersistenceManager.PERSISTENCE_TYPE);
-        
-        return prop == null
-               || (!PersistenceManager.NEVER_PERSISTENT.equals(prop)
-               && !PersistenceManager.ONLY_OPENED_PERSISTENT.equals(prop));
+        int persistenceType = tc.getPersistenceType();
+        if (persistenceType == TopComponent.PERSISTENCE_ALWAYS) {
+            return true;
+        } else {
+            return false;
+        }
     }
     
 

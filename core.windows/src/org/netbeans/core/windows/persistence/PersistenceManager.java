@@ -86,12 +86,6 @@ public final class PersistenceManager implements PropertyChangeListener {
     public static final String GROUP_EXT = "wsgrp"; // NOI18N
     public static final String TCGROUP_EXT = "wstcgrp"; // NOI18N
     
-    /** Constants for client property of top component which specifies type of 
-     * persistence for top component */
-    public static final String PERSISTENCE_TYPE = "PersistenceType";
-    public static final String NEVER_PERSISTENT = "Never";
-    public static final String ONLY_OPENED_PERSISTENT = "OnlyOpened";
-    
     /** default base name for noname top components */
     private static final String DEFAULT_TC_NAME = "untitled_tc"; // NOI18N
     
@@ -634,8 +628,8 @@ public final class PersistenceManager implements PropertyChangeListener {
      * persistent when opened.
      */
     private boolean isTopComponentProbablyPersistent (TopComponent tc) {
-        String prop = (String)tc.getClientProperty(PERSISTENCE_TYPE);
-        if (NEVER_PERSISTENT.equals(prop)) {
+        int persistenceType = tc.getPersistenceType();
+        if (TopComponent.PERSISTENCE_NEVER == persistenceType) {
             return false;
         }
         return true;
@@ -648,9 +642,9 @@ public final class PersistenceManager implements PropertyChangeListener {
      * otherwise - top component's property exists saying "don't make me persistent"
      */
     public boolean isTopComponentPersistent (TopComponent tc) {
-        String prop = (String)tc.getClientProperty(PERSISTENCE_TYPE);
-        if (NEVER_PERSISTENT.equals(prop)
-        || (ONLY_OPENED_PERSISTENT.equals(prop) && !tc.isOpened())) {
+        int persistenceType = tc.getPersistenceType();
+        if ((TopComponent.PERSISTENCE_NEVER == persistenceType)
+        || ((TopComponent.PERSISTENCE_ONLY_OPENED == persistenceType) && !tc.isOpened())) {
             return false;
         }
         return true;
