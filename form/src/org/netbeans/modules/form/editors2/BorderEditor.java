@@ -66,7 +66,6 @@ public final class BorderEditor extends PropertyEditorSupport
 
     private FormModel formModel;
     private FormPropertyContext propertyContext;
-    private boolean needsUpdate;
     private BorderDesignSupport borderSupport;
 
     // customizer
@@ -78,7 +77,6 @@ public final class BorderEditor extends PropertyEditorSupport
     public BorderEditor() {
         bPanel = null;
         current = null;
-        needsUpdate = false;
     }
 
     // FormAwareEditor implementation
@@ -91,11 +89,6 @@ public final class BorderEditor extends PropertyEditorSupport
     // main methods
 
     public Object getValue() {
-        if (needsUpdate) {
-            current = borderSupport;
-            needsUpdate = false;
-        }
-
         return current;
     }
 
@@ -118,7 +111,6 @@ public final class BorderEditor extends PropertyEditorSupport
 
         if (borderSupport != null) {
             borderSupport.setPropertyContext(propertyContext);
-            needsUpdate = false;
 
             if (bPanel != null)
                 bPanel.setValue(value);
@@ -181,10 +173,10 @@ public final class BorderEditor extends PropertyEditorSupport
     }
 
     public Component getCustomEditor() {
-        if (bPanel == null) {
+        if (bPanel == null)
             bPanel = new BorderPanel();
-            bPanel.setValue(current);
-        }
+
+        bPanel.setValue(current);
         return bPanel;
     }
 
@@ -204,21 +196,15 @@ public final class BorderEditor extends PropertyEditorSupport
      */
     void updateBorder(Node node) {
         if (node instanceof NoBorderNode) {
-            BorderEditor.this.borderSupport = null;
-            needsUpdate = true; // update current value
+            borderSupport = null;
+            current = null;
         }
         else if (node instanceof UnknownBorderNode) {
-            BorderEditor.this.current = ((UnknownBorderNode)node).getBorder();
-            needsUpdate = false;
+            current = ((UnknownBorderNode)node).getBorder();
         }
         else {
-            try {
-                BorderEditor.this.borderSupport = new BorderDesignSupport(
-                    ((BorderNode)node).getBorderSupport());
-                borderSupport.setPropertyContext(propertyContext);
-                needsUpdate = true; // update current value
-            }
-            catch (Exception ex) {}
+            borderSupport = ((BorderNode)node).getBorderSupport();
+            current = borderSupport;
         }
     }
 
@@ -290,8 +276,15 @@ public final class BorderEditor extends PropertyEditorSupport
                 if (borderSupport != null
                     && borderSupport.getBorderClass() == nodeBDS.getBorderClass())
                 {
-                    borderNode = new BorderNode(borderSupport,
-                                                palItem.getItemNode());
+                    try {
+                        nodeBDS = new BorderDesignSupport(borderSupport);
+                    }
+                    catch (Exception ex) {
+                        ex.printStackTrace();
+                        continue;
+                    }
+                    nodeBDS.setPropertyContext(propertyContext);
+                    borderNode = new BorderNode(nodeBDS, palItem.getItemNode());
                     selectNode = borderNode;
                 }
                 else {
@@ -367,14 +360,14 @@ public final class BorderEditor extends PropertyEditorSupport
     }
 
     final class BorderNode extends AbstractNode implements PropertyChangeListener {
-        private BorderDesignSupport borderSupport;
+        private BorderDesignSupport nodeBorder;
         private Node palItemNode;
 
         BorderNode(BorderDesignSupport bds, Node itemNode) {
             super(Children.LEAF);
-            borderSupport = bds;
+            nodeBorder = bds;
             palItemNode = itemNode;
-            setName(borderSupport.getDisplayName());
+            setName(nodeBorder.getDisplayName());
         }
 
         /** Find an icon for this node (in the closed state).
@@ -396,7 +389,7 @@ public final class BorderEditor extends PropertyEditorSupport
 
         /** Creates property set for this node. */
         protected Sheet createSheet() {
-            Node.Property[] props = borderSupport.getProperties();
+            Node.Property[] props = nodeBorder.getProperties();
             Sheet.Set propsSet = Sheet.createPropertiesSet();
             propsSet.put(props);
             Sheet sheet = new Sheet();
@@ -414,7 +407,7 @@ public final class BorderEditor extends PropertyEditorSupport
         }
 
         public BorderDesignSupport getBorderSupport() {
-            return borderSupport;
+            return nodeBorder;
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
@@ -562,16 +555,16 @@ public final class BorderEditor extends PropertyEditorSupport
                 readMatteBorder(readNode);
             else if (ID_BI_NULL_BORDER.equals(infoName)) { // no border
                 borderSupport = null;
-                needsUpdate = true;
             }
             else { // read as BorderInfo
                 BorderInfo bInfo = (BorderInfo)PersistenceObjectRegistry
                                                       .createInstance(infoName);
                 bInfo.readFromXML(readNode);
                 borderSupport = new BorderDesignSupport(bInfo);
-                needsUpdate = true;
             }
             // no other way of reading from XML
+
+            current = borderSupport;
         } 
         catch (Exception e) {
             throw new java.io.IOException(e.toString());
@@ -811,8 +804,6 @@ public final class BorderEditor extends PropertyEditorSupport
             readProperty(ATTR_FONT, "titleFont", borderSupport, element);
 
             readProperty(ATTR_TITLE_COLOR, "titleColor", borderSupport, element);
-
-            needsUpdate = true;
         } 
         catch (Exception e) {
             throw new java.io.IOException(e.toString());
@@ -877,8 +868,6 @@ public final class BorderEditor extends PropertyEditorSupport
             readProperty(ATTR_HIGHLIGHT, "highlightColor", borderSupport, element);
 
             readProperty(ATTR_SHADOW, "shadowColor", borderSupport, element);
-
-            needsUpdate = true;
         } 
         catch (Exception e) {
             throw new java.io.IOException(e.toString());
@@ -946,8 +935,6 @@ public final class BorderEditor extends PropertyEditorSupport
             if (node != null && (prop = (FormProperty)borderSupport
                                        .getPropertyOfName("roundedCorners")) != null)
                 prop.setValue(new Boolean(node.getNodeValue()));
-
-            needsUpdate = true;
         } 
         catch (Exception e) {
             throw new java.io.IOException(e.toString());
@@ -1018,8 +1005,6 @@ public final class BorderEditor extends PropertyEditorSupport
                   && (prop = (FormProperty)borderSupport
                                    .getPropertyOfName("borderInsets")) != null)
                 prop.setValue(new Insets(top,left,bottom,right));
-
-            needsUpdate = true;
         } 
         catch (Exception e) {
             throw new java.io.IOException(e.toString());
@@ -1070,8 +1055,6 @@ public final class BorderEditor extends PropertyEditorSupport
 
             readProperty(ATTR_OUTSIDE, "outsideBorder", borderSupport, element);
             readProperty(ATTR_INSIDE, "insideBorder", borderSupport, element);
-
-            needsUpdate = true;
         } 
         catch (Exception e) {
             throw new java.io.IOException(e.toString());
@@ -1151,8 +1134,6 @@ public final class BorderEditor extends PropertyEditorSupport
             readProperty(ATTR_HIGHLIGHT_INNER, "highlightInnerColor", borderSupport, element);
             readProperty(ATTR_SHADOW_OUTER, "shadowOuterColor", borderSupport, element);
             readProperty(ATTR_SHADOW_INNER, "shadowInnerColor", borderSupport, element);
-
-            needsUpdate = true;
         } 
         catch (Exception e) {
             throw new java.io.IOException(e.toString());
@@ -1246,8 +1227,6 @@ public final class BorderEditor extends PropertyEditorSupport
                   && (prop = (FormProperty)borderSupport
                                    .getPropertyOfName("borderInsets")) != null)
                 prop.setValue(new Insets(top,left,bottom,right));
-
-            needsUpdate = true;
         } 
         catch (Exception e) {
             throw new java.io.IOException(e.toString());
