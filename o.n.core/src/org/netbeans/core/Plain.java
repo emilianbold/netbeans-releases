@@ -52,12 +52,46 @@ public class Plain extends NbTopManager implements Runnable {
   public void notifyException (Throwable t) {
     t.printStackTrace();
   }
+
+  /** */
+  public Object notify (org.openide.NotifyDescriptor nd) {
+    new Exception("TopManager.notify()").printStackTrace();
+    System.out.println("MSG = " + nd.getMessage());
+    Object[] options = nd.getOptions();
+    System.out.print("(");
+    for(int i = 0; i < options.length; i++) {
+      if (i != 0) System.out.print(", ");
+      System.out.print(options[i]);
+    }
+    System.out.println(")");
+    return new Object();
+  }
   
-  
+  /** */
+  public void setStatusText(String text) {
+    System.out.println(text);
+  }
   
   /** Initializaton of modules if user directory provided.
   */
   public void run() {
+    
+    // set proper versioning
+    
+    java.util.Properties versions = new java.util.Properties ();
+    try {
+      versions.load (Main.class.getClassLoader ().getResourceAsStream ("com/netbeans/developer/impl/Versioning.properties")); // NOI18N
+    } catch (java.io.IOException ioe) {
+      ioe.printStackTrace ();
+    }
+    System.setProperty ("org.openide.specification.version", versions.getProperty ("VERS_Specification_Version")); // NOI18N
+    System.setProperty ("org.openide.version", versions.getProperty ("VERS_Implementation_Version")); // NOI18N
+    System.setProperty ("org.openide.major.version", versions.getProperty ("VERS_Name")); // NOI18N
+
+    // set NbBundle recognizer
+    org.openide.util.NbBundle.setClassLoaderFinder(new ClassLoaderFinder());
+    
+    
     String userDir = System.getProperty("modules.dir");
     if (userDir != null) {
       java.io.File f = new java.io.File (userDir);
@@ -67,10 +101,21 @@ public class Plain extends NbTopManager implements Runnable {
       ModuleInstaller.autoLoadModules ();
     }
   }
+  
+  static class ClassLoaderFinder extends SecurityManager implements org.openide.util.NbBundle.ClassLoaderFinder {
+
+    public ClassLoader find() {
+      Class[] classes = getClassContext();
+      return classes[Math.min(4, classes.length - 1)].getClassLoader();
+    }
+  }
 }
 
 /* 
 * Log
+*  3    Jaga      1.2         3/24/00  Martin Ryzl     implemented 
+*       setStatusText(), notify(), added code for setting of version, 
+*       initialization of NbBundle.loaderFinder
 *  2    Jaga      1.1         3/17/00  Jaroslav Tulach Compiles with 1.2 
 *       compiler
 *  1    Jaga      1.0         3/17/00  Jaroslav Tulach 
