@@ -36,7 +36,7 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
 //  static final long serialVersionUID = -6035788991669336965L;
 
   private final static String URL_ICON_BASE =
-    "com/netbeans/developer/modules/loaders/url/urlObject";
+    "com/netbeans/developer/modules/loaders/url/urlObject"; // NOI18N
 
   /* The FileObject containing the URL String */
   private FileObject urlFile;
@@ -55,7 +55,7 @@ static final long serialVersionUID =6829522922370124627L;
   *           file, only the first line is returned
   */
   private String getURLString () {
-    String urlString = "";
+    String urlString = ""; // NOI18N
     InputStream is = null;
     try {
       urlString = new BufferedReader (new InputStreamReader (is = urlFile.getInputStream ())).readLine ();
@@ -264,6 +264,7 @@ static final long serialVersionUID =6829522922370124627L;
 
 /*
  * Log
+ *  15   Gandalf   1.14        1/5/00   Ian Formanek    NOI18N
  *  14   Gandalf   1.13        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  13   Gandalf   1.12        8/9/99   Ian Formanek    Generated Serial Version

@@ -217,12 +217,12 @@ public class BeanSupport {
   private static Object getSpecialDefaultAWTValue (Object beanObject, String propertyName) {
     if ((beanObject instanceof Frame) ||
         (beanObject instanceof Dialog)) {
-      if ("background".equals (propertyName))
+      if ("background".equals (propertyName)) // NOI18N
         return SystemColor.window;
-      else if ("foreground".equals (propertyName))
+      else if ("foreground".equals (propertyName)) // NOI18N
         return SystemColor.windowText;
-      else if ("font".equals (propertyName))
-        return new Font ("Dialog", Font.PLAIN, 12);
+      else if ("font".equals (propertyName)) // NOI18N
+        return new Font ("Dialog", Font.PLAIN, 12); // NOI18N
     }
 
     if ((beanObject instanceof Label) ||
@@ -235,12 +235,12 @@ public class BeanSupport {
         (beanObject instanceof Scrollbar) ||
         (beanObject instanceof Panel) ||
         (beanObject instanceof ScrollPane)) {
-      if ("background".equals (propertyName))
+      if ("background".equals (propertyName)) // NOI18N
         return SystemColor.control;
-      else if ("foreground".equals (propertyName))
+      else if ("foreground".equals (propertyName)) // NOI18N
         return SystemColor.controlText;
-      else if ("font".equals (propertyName))
-        return new Font ("Dialog", Font.PLAIN, 12);
+      else if ("font".equals (propertyName)) // NOI18N
+        return new Font ("Dialog", Font.PLAIN, 12); // NOI18N
     }
 
     return null;
@@ -250,6 +250,7 @@ public class BeanSupport {
 
 /*
  * Log
+ *  13   Gandalf   1.12        1/5/00   Ian Formanek    NOI18N
  *  12   Gandalf   1.11        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  11   Gandalf   1.10        9/24/99  Ian Formanek    getDefaultInstance 

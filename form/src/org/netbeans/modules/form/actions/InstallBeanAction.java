@@ -45,7 +45,7 @@ public class InstallBeanAction extends CallableSystemAction {
   * @return name of resource for icon
   */
   protected String iconResource () {
-    return "/com/netbeans/developer/modules/loaders/form/resources/installBean.gif";
+    return "/com/netbeans/developer/modules/loaders/form/resources/installBean.gif"; // NOI18N
   }
   
   /** This method is called by one of the "invokers" as a result of
@@ -59,6 +59,7 @@ public class InstallBeanAction extends CallableSystemAction {
 
 /*
  * Log
+ *  6    Gandalf   1.5         1/5/00   Ian Formanek    NOI18N
  *  5    Gandalf   1.4         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  4    Gandalf   1.3         6/24/99  Jesse Glick     Gosh-honest HelpID's.

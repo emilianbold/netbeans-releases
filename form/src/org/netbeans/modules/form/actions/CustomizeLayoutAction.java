@@ -60,7 +60,7 @@ public class CustomizeLayoutAction extends CookieAction {
   * @return name of resource for icon
   */
   protected String iconResource () {
-    return "/org/openide/resources/actions/empty.gif";
+    return "/org/openide/resources/actions/empty.gif"; // NOI18N
   }
 
   /**
@@ -110,6 +110,7 @@ public class CustomizeLayoutAction extends CookieAction {
 
 /*
  * Log
+ *  4    Gandalf   1.3         1/5/00   Ian Formanek    NOI18N
  *  3    Gandalf   1.2         11/27/99 Patrik Knakal   
  *  2    Gandalf   1.1         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment

@@ -71,7 +71,7 @@ public class EventsAction extends CookieAction {
   * @return name of resource for icon
   */
   protected String iconResource () {
-    return "/com/netbeans/developer/modules/loaders/form/resources/events.gif";
+    return "/com/netbeans/developer/modules/loaders/form/resources/events.gif"; // NOI18N
   }
 
   /**
@@ -199,6 +199,7 @@ public class EventsAction extends CookieAction {
 }
 /*
  * Log
+ *  12   Gandalf   1.11        1/5/00   Ian Formanek    NOI18N
  *  11   Gandalf   1.10        11/25/99 Pavel Buzek     support for multiple 
  *       handlers for one event
  *  10   Gandalf   1.9         11/1/99  Pavel Buzek     displying events and 

@@ -28,7 +28,7 @@ import com.netbeans.developer.modules.loaders.java.JavaDataLoader;
 */
 public class FormDataLoader extends JavaDataLoader {
   /* The standard extensions of the recognized files */
-  public static final String FORM_EXTENSION = "form";
+  public static final String FORM_EXTENSION = "form"; // NOI18N
 
   static final long serialVersionUID =7259146057404524013L;
   /** Constructs a new FormDataLoader */
@@ -144,6 +144,7 @@ public class FormDataLoader extends JavaDataLoader {
 
 /*
  * Log
+ *  21   Gandalf   1.20        1/5/00   Ian Formanek    NOI18N
  *  20   Gandalf   1.19        11/27/99 Patrik Knakal   
  *  19   Gandalf   1.18        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment

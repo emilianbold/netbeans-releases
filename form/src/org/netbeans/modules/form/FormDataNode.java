@@ -28,10 +28,10 @@ public class FormDataNode extends JavaNode {
 //  static final long serialVersionUID = 1795549004166402392L;
   
   /** Icons for form data objects. */
-  private static final String[] FORM_ICONS = { "form", "formMain", "formError", "form", "formMain" };
+  private static final String[] FORM_ICONS = { "form", "formMain", "formError", "form", "formMain" }; // NOI18N
 
   /** Icon base for form data objects. */
-  private static final String FORM_ICON_BASE = "com/netbeans/developer/modules/loaders/form/resources/";
+  private static final String FORM_ICON_BASE = "com/netbeans/developer/modules/loaders/form/resources/"; // NOI18N
     
   transient private String currentIcon;
 
@@ -52,6 +52,7 @@ public class FormDataNode extends JavaNode {
 
 /*
  * Log
+ *  12   Gandalf   1.11        1/5/00   Ian Formanek    NOI18N
  *  11   Gandalf   1.10        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  10   Gandalf   1.9         7/31/99  Ian Formanek    Comments cleaned up

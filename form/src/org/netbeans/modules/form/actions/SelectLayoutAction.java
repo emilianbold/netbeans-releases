@@ -67,7 +67,7 @@ public class SelectLayoutAction extends CookieAction {
   * @return name of resource for icon
   */
   protected String iconResource () {
-    return "/com/netbeans/developer/modules/loaders/form/resources/selectLayout.gif";
+    return "/com/netbeans/developer/modules/loaders/form/resources/selectLayout.gif"; // NOI18N
   }
 
   /**
@@ -204,6 +204,7 @@ public class SelectLayoutAction extends CookieAction {
 }
 /*
  * Log
+ *  11   Gandalf   1.10        1/5/00   Ian Formanek    NOI18N
  *  10   Gandalf   1.9         11/27/99 Patrik Knakal   
  *  9    Gandalf   1.8         11/1/99  Pavel Buzek     display correct name for
  *       layout (DisplayName not Name)

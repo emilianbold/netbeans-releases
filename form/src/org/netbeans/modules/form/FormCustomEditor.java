@@ -91,7 +91,7 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
       
     } else {
       tabs = new JTabbedPane ();
-      HelpCtx.setHelpIDString (tabs, FormCustomEditor.class.getName () + ".tabbedPane");
+      HelpCtx.setHelpIDString (tabs, FormCustomEditor.class.getName () + ".tabbedPane"); // NOI18N
       int indexToSelect = -1;
       for (int i = 0; i < allEditors.length; i++) {
         if (allEditors[i] instanceof FormAwareEditor) {
@@ -247,6 +247,7 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
 
 /*
  * Log
+ *  19   Gandalf   1.18        1/5/00   Ian Formanek    NOI18N
  *  18   Gandalf   1.17        11/5/99  Jesse Glick     Context help jumbo 
  *       patch.
  *  17   Gandalf   1.16        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

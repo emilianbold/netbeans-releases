@@ -50,11 +50,11 @@ public class URLDataLoaderBeanInfo extends SimpleBeanInfo {
     if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
         (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
       if (icon == null)
-        icon = loadImage("/com/netbeans/developer/modules/loaders/url/urlObject.gif");
+        icon = loadImage("/com/netbeans/developer/modules/loaders/url/urlObject.gif"); // NOI18N
       return icon;
     } else {
       if (icon32 == null)
-        icon32 = loadImage ("/com/netbeans/developer/modules/loaders/url/urlObject32.gif");
+        icon32 = loadImage ("/com/netbeans/developer/modules/loaders/url/urlObject32.gif"); // NOI18N
       return icon32;
     }
   }
@@ -77,6 +77,7 @@ public class URLDataLoaderBeanInfo extends SimpleBeanInfo {
 
 /*
 * Log
+*  7    Gandalf   1.6         1/5/00   Ian Formanek    NOI18N
 *  6    Gandalf   1.5         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
 *       Microsystems Copyright in File Comment
 *  5    Gandalf   1.4         6/9/99   Ian Formanek    ---- Package Change To 

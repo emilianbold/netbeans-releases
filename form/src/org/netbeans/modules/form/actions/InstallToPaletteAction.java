@@ -83,7 +83,7 @@ public class InstallToPaletteAction extends CookieAction {
   * @return name of resource for icon
   */
   protected String iconResource () {
-    return "/org/openide/resources/actions/empty.gif";
+    return "/org/openide/resources/actions/empty.gif"; // NOI18N
   }
 
   /**
@@ -103,6 +103,7 @@ public class InstallToPaletteAction extends CookieAction {
 
 /*
  * Log
+ *  5    Gandalf   1.4         1/5/00   Ian Formanek    NOI18N
  *  4    Gandalf   1.3         11/27/99 Patrik Knakal   
  *  3    Gandalf   1.2         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment

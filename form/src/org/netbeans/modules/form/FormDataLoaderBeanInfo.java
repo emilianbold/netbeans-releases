@@ -50,11 +50,11 @@ public class FormDataLoaderBeanInfo extends SimpleBeanInfo {
     if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
         (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
       if (icon == null)
-        icon = loadImage("/com/netbeans/developer/modules/loaders/form/resources/form.gif");
+        icon = loadImage("/com/netbeans/developer/modules/loaders/form/resources/form.gif"); // NOI18N
       return icon;
     } else {
       if (icon32 == null)
-        icon32 = loadImage ("/com/netbeans/developer/modules/loaders/form/resources/form32.gif");
+        icon32 = loadImage ("/com/netbeans/developer/modules/loaders/form/resources/form32.gif"); // NOI18N
       return icon32;
     }
   }
@@ -64,7 +64,7 @@ public class FormDataLoaderBeanInfo extends SimpleBeanInfo {
       NbBundle.getBundle(FormDataLoaderBeanInfo.class);
     try {
       descriptors =  new PropertyDescriptor[] {
-        new PropertyDescriptor ("displayName", FormDataLoader.class, "getDisplayName", null),
+        new PropertyDescriptor ("displayName", FormDataLoader.class, "getDisplayName", null), // NOI18N
       };
       descriptors[0].setDisplayName(bundle.getString("PROP_Name"));
       descriptors[0].setShortDescription(bundle.getString("HINT_Name"));
@@ -77,6 +77,7 @@ public class FormDataLoaderBeanInfo extends SimpleBeanInfo {
 
 /*
 * Log
+*  4    Gandalf   1.3         1/5/00   Ian Formanek    NOI18N
 *  3    Gandalf   1.2         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
 *       Microsystems Copyright in File Comment
 *  2    Gandalf   1.1         6/9/99   Ian Formanek    ---- Package Change To 

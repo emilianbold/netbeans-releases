@@ -35,7 +35,7 @@ public class URLDataLoader extends UniFileLoader {
     setDisplayName(NbBundle.getBundle(URLDataLoader.class).
                    getString("PROP_URLLoader_Name"));
     ExtensionList ext = new ExtensionList();
-    ext.addExtension("url");
+    ext.addExtension("url"); // NOI18N
     setExtensions(ext);
 
     setActions(new SystemAction[] {
@@ -76,6 +76,7 @@ public class URLDataLoader extends UniFileLoader {
 
 /*
  * Log
+ *  11   Gandalf   1.10        1/5/00   Ian Formanek    NOI18N
  *  10   Gandalf   1.9         11/27/99 Patrik Knakal   
  *  9    Gandalf   1.8         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment

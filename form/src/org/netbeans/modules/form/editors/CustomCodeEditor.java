@@ -87,7 +87,7 @@ public class CustomCodeEditor extends javax.swing.JDialog {
     getContentPane ().add (jPanel1, gridBagConstraints1);
 
 
-      codeEditorPane.setContentType ("text/x-java");
+      codeEditorPane.setContentType ("text/x-java"); // NOI18N
       /*
       try {
         codeEditorPane.setText((String) propertySupport.getValue ());
@@ -148,6 +148,7 @@ private void cancelButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN
 
 /*
  * Log
+ *  5    Gandalf   1.4         1/5/00   Ian Formanek    NOI18N
  *  4    Gandalf   1.3         12/13/99 Pavel Buzek     scrollPane added
  *  3    Gandalf   1.2         11/27/99 Patrik Knakal   
  *  2    Gandalf   1.1         11/25/99 Ian Formanek    Uses Utilities module

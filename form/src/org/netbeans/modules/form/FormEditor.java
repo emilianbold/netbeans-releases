@@ -53,12 +53,12 @@ final public class FormEditor extends Object {
   * is a concatenation of this string and the event name.
   * E.g. for mousePressed event, the property is named "__EVENT__mousePressed"
   */
-  public static final String EVENT_PREFIX = "__EVENT__";
+  public static final String EVENT_PREFIX = "__EVENT__"; // NOI18N
   /** The prefix for component's layout properties. The name of such property
   * is a concatenation of this string and the component layout property's name.
   * E.g. for Direction layout property, the property is named "__LAYOUT__mousePressed"
   */
-  public static final String LAYOUT_PREFIX = "__LAYOUT__";
+  public static final String LAYOUT_PREFIX = "__LAYOUT__"; // NOI18N
 
   /** The resource bundle for the form editor */
   private static java.util.ResourceBundle formBundle = org.openide.util.NbBundle.getBundle (FormEditor.class);
@@ -94,7 +94,7 @@ final public class FormEditor extends Object {
   
   /** Default icon base for control panel. */
   private static final String EMPTY_INSPECTOR_ICON_BASE =
-    "/com/netbeans/developer/modules/loaders/form/resources/emptyInspector";
+    "/com/netbeans/developer/modules/loaders/form/resources/emptyInspector"; // NOI18N
 
 // -----------------------------------------------------------------------------
 // Static methods
@@ -154,9 +154,9 @@ final public class FormEditor extends Object {
 
   public static String getSerializedBeanName (RADComponent comp) {
     StringBuffer name = new StringBuffer (comp.getFormManager ().getFormObject ().getName ());
-    name.append ("$");
+    name.append ("$"); // NOI18N
     name.append (comp.getName ());
-    name.append (".ser");
+    name.append (".ser"); // NOI18N
     return name.toString ();
   }
 
@@ -166,38 +166,38 @@ final public class FormEditor extends Object {
     String propName = null;
     Object propValue = null;
     if (comp instanceof Button) {
-      if ("".equals (((Button)comp).getLabel ())) {
-        propName = "label";
+      if ("".equals (((Button)comp).getLabel ())) { // NOI18N
+        propName = "label"; // NOI18N
         propValue = varName;
       }
     }
     else if (comp instanceof Checkbox) {
-      if ("".equals (((Checkbox)comp).getLabel ())) {
-        propName = "label";
+      if ("".equals (((Checkbox)comp).getLabel ())) { // NOI18N
+        propName = "label"; // NOI18N
         propValue = varName;
       }
     }
     else if (comp instanceof Label) {
-      if ("".equals (((Label)comp).getText ())) {
-        propName = "text";
+      if ("".equals (((Label)comp).getText ())) { // NOI18N
+        propName = "text"; // NOI18N
         propValue = varName;
       }
     }
     else if (comp instanceof TextField) {
-      if ("".equals (((TextField)comp).getText ())) {
-        propName = "text";
+      if ("".equals (((TextField)comp).getText ())) { // NOI18N
+        propName = "text"; // NOI18N
         propValue = varName;
       }
     }
     else if (comp instanceof AbstractButton) { // JButton, JToggleButton, JCheckBox, JRadioButton
-      if ("".equals (((AbstractButton)comp).getText ())) {
-        propName = "text";
+      if ("".equals (((AbstractButton)comp).getText ())) { // NOI18N
+        propName = "text"; // NOI18N
         propValue = varName;
       }
     }
     else if (comp instanceof JLabel) {
-      if ("".equals (((JLabel)comp).getText ())) {
-        propName = "text";
+      if ("".equals (((JLabel)comp).getText ())) { // NOI18N
+        propName = "text"; // NOI18N
         propValue = varName;
       }
     }
@@ -210,12 +210,12 @@ final public class FormEditor extends Object {
             new String[] {"Title 1", "Title 2", "Title 3", "Title 4"},
             4
           ));
-        propName = "model";
+        propName = "model"; // NOI18N
       }      
     }
     else if ((comp instanceof JTextField) && (!(comp instanceof JPasswordField))) { // JTextField and not JPasswordField
-      if ("".equals (((JTextField)comp).getText ())) {
-        propName = "text";
+      if ("".equals (((JTextField)comp).getText ())) { // NOI18N
+        propName = "text"; // NOI18N
         propValue = varName;
       }
     }
@@ -241,9 +241,9 @@ final public class FormEditor extends Object {
     Object propValue = null;
 
     if (comp instanceof MenuItem) {
-      if ("".equals (((MenuItem)comp).getLabel ())) {
-        String value = "{0}";
-        propName = "label";
+      if ("".equals (((MenuItem)comp).getLabel ())) { // NOI18N
+        String value = "{0}"; // NOI18N
+        propName = "label"; // NOI18N
         if (comp instanceof PopupMenu) {
           value = formBundle.getString("FMT_LAB_PopupMenu");
         }
@@ -261,9 +261,9 @@ final public class FormEditor extends Object {
       }
     }
     else if (comp instanceof JMenuItem) {
-      if ("".equals (((JMenuItem)comp).getText ())) {
-        String value = "{0}";
-        propName = "text";
+      if ("".equals (((JMenuItem)comp).getText ())) { // NOI18N
+        String value = "{0}"; // NOI18N
+        propName = "text"; // NOI18N
         if (comp instanceof JCheckBoxMenuItem) {
           value = formBundle.getString("FMT_LAB_JCheckBoxMenuItem");
         }
@@ -295,11 +295,11 @@ final public class FormEditor extends Object {
   }
 
   public static boolean isNonReflectedProperty (Class clazz, PropertyDescriptor desc) {
-    if ("visible".equals (desc.getName ())) return true;
+    if ("visible".equals (desc.getName ())) return true; // NOI18N
     else {
       if (Window.class.isAssignableFrom (clazz)) {
-        if ("enabled".equals (desc.getName ())) return true;
-        else if ("modal".equals (desc.getName ())) return true;
+        if ("enabled".equals (desc.getName ())) return true; // NOI18N
+        else if ("modal".equals (desc.getName ())) return true; // NOI18N
       }
     }
     return false;
@@ -348,9 +348,9 @@ final public class FormEditor extends Object {
     
     Container container = null;
     try {
-      Object value = item.getBeanInfo ().getBeanDescriptor ().getValue ("containerDelegate");
-      if ((value != null) && (value instanceof String) && ((String)value).equals ("getContentPane")) {
-        Method m = sharedInstance.getClass ().getMethod ("getContentPane", new Class [0]);
+      Object value = item.getBeanInfo ().getBeanDescriptor ().getValue ("containerDelegate"); // NOI18N
+      if ((value != null) && (value instanceof String) && ((String)value).equals ("getContentPane")) { // NOI18N
+        Method m = sharedInstance.getClass ().getMethod ("getContentPane", new Class [0]); // NOI18N
         container = (Container) m.invoke (sharedInstance, new Object [0]);
       }
     } catch (Exception e) { // effectively ignored - simply no containerDelegate
@@ -416,7 +416,7 @@ final public class FormEditor extends Object {
 
     /** The Inspector's icon */
     private final static java.awt.Image inspectorIcon = java.awt.Toolkit.getDefaultToolkit ().getImage (
-      ComponentInspector.class.getResource ("/com/netbeans/developer/modules/loaders/form/resources/inspector.gif"));
+      ComponentInspector.class.getResource ("/com/netbeans/developer/modules/loaders/form/resources/inspector.gif")); // NOI18N
 
 static final long serialVersionUID =4248268998485315927L;
     ComponentInspector () {
@@ -431,7 +431,7 @@ static final long serialVersionUID =4248268998485315927L;
       split.setSplitPosition(DEFAULT_INSPECTOR_PERCENTS);
       sheet.setDisplayWritableOnly (getFormSettings ().getDisplayWritableOnly ());
 
-      add ("Center", split);
+      add ("Center", split); // NOI18N
       
       manager.addPropertyChangeListener (new PropertyChangeListener () {
           public void propertyChange (PropertyChangeEvent evt) {
@@ -635,6 +635,7 @@ static final long serialVersionUID =7424646018839457544L;
 
 /*
  * Log
+ *  41   Gandalf   1.40        1/5/00   Ian Formanek    NOI18N
  *  40   Gandalf   1.39        12/8/99  Pavel Buzek     FormEditor and 
  *       ComponentInspector windows open on Visual workspace
  *  39   Gandalf   1.38        11/5/99  Jesse Glick     Context help jumbo 
