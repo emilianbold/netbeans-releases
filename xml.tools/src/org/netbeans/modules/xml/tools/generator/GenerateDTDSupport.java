@@ -157,6 +157,9 @@ public final class GenerateDTDSupport implements XMLGenerateCookie  {
             sb.append("<?xml version='1.0' encoding='").append(encoding).append("'?>\n\n"); // NOI18N
         }
 
+        String todo = Util.THIS.getString("TODO", name + "." + DTD_EXT);
+        sb.append("<!--\n    ").append(todo).append("\n\n-->");
+
         String usage = Util.THIS.getString("BK0010");
         sb.append("<!--\n").append("    " + usage + "\n\n").append("    <?xml version=\"1.0\"?>\n\n").// NOI18N
         append("    <!DOCTYPE ").append(rootQName).append(" SYSTEM \"").// NOI18N

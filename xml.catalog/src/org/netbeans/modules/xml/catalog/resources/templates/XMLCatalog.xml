@@ -12,7 +12,7 @@
 
 <catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">                
 
-    <!-- Sample public ID mapping registration. -->
+    <!-- TODO fill real entries instead of sample one. -->
     <public publicId="-//Company//Entity ID//EN" uri="file:/path/entity"/>
 
 </catalog>
