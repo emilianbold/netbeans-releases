@@ -22,7 +22,10 @@ import java.io.IOException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
 import javax.swing.Action;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
@@ -259,44 +262,48 @@ public class CreateTestAction extends CookieAction {
                 createSuiteTest(testClassPath, DataFolder.findFolder(foSource), mySuite, doSuiteT, parentSuite, progress);
             }
         } else {
-            createSingleTest(testClassPath, foSource, doTestT, doSuiteT, parentSuite, progress);
+            createSingleTest(testClassPath, foSource, doTestT, doSuiteT, parentSuite, progress, true);
         }
         return true;
     }
     
-    private void createSingleTest(ClassPath testClassPath, FileObject foSource,
+    public static Set createSingleTest(ClassPath testClassPath, FileObject foSource,
             DataObject doTestT, DataObject doSuiteT, LinkedList parentSuite,
-            ProgressIndicator progress) {
+            ProgressIndicator progress, boolean skipNonTestable) {
                 
         DataObject dobj;
         try {
             dobj = DataObject.find(foSource);
         } catch (DataObjectNotFoundException ex) {
             ErrorManager.getDefault().log(ErrorManager.ERROR, ex.toString());
-            return;
+            return null;
         }
 
         ClassElement[] classSources = TestUtil.getAllClassElementsFromDataObject(dobj);
+        Set result = new HashSet(2 * classSources.length, .5f);
         for (int i=0; i < classSources.length; i++) {
             ClassElement classSource = classSources[i];
             if (classSource == null) {
                 continue;
             }
-            if (TestCreator.isClassTestable(foSource, classSource)) {
+            if (!skipNonTestable || TestCreator.isClassTestable(foSource, classSource)) {
                 // find the test class, if it exists or create one from active template
                 DataObject doTarget = getTestClass(testClassPath, TestUtil.getTestClassFullName(classSource), doTestT);
 
                 // generate the test of current node
                 ClassElement classTarget = TestUtil.getClassElementFromDataObject(doTarget);
 
-                progress.setMessage(getCreatingMsg(classTarget.getName().getFullName()), false);
+                if (progress != null) {
+                    progress.setMessage(getCreatingMsg(classTarget.getName().getFullName()), false);
+                }
 
                 try {
                     TestCreator.createTestClass(foSource, classSource, doTarget.getPrimaryFile(), classTarget);
                     save(doTarget);
+                    result.add(doTarget);
                 } catch (Exception e) {
                     ErrorManager.getDefault().log(ErrorManager.ERROR, e.toString());
-                    return;
+                    return null;
                 }
 
                 String name = classTarget.getName().getFullName();
@@ -306,12 +313,15 @@ public class CreateTestAction extends CookieAction {
                 }
             }
             else {
-                progress.setMessage(getIgnoringMsg(classSource.getName().getFullName()), false);
+                if (progress != null) {
+                    progress.setMessage(getIgnoringMsg(classSource.getName().getFullName()), false);
+                }
             }
         }
+        return !result.isEmpty() ? result : null;
     }
     
-    private DataObject getTestClass(ClassPath cp, String testClassName, DataObject doTemplate) {
+    private static DataObject getTestClass(ClassPath cp, String testClassName, DataObject doTemplate) {
         FileObject fo = cp.findResource(testClassName+".java");
         if (fo != null) {
             try {
@@ -357,7 +367,7 @@ public class CreateTestAction extends CookieAction {
         return false;
     }
     
-    private void save(DataObject dO) throws IOException {
+    private static void save(DataObject dO) throws IOException {
         SaveCookie sc = (SaveCookie) dO.getCookie(SaveCookie.class);
         if (null != sc)
             sc.save();

@@ -22,12 +22,14 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.junit.CreateTestAction;
 import org.netbeans.modules.junit.JUnitSettings;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -210,33 +212,23 @@ public class SimpleTestCaseWizardIterator
             return null;
         }
         
-        /* ... determine the target folder... */
-        String classToTest = (String) wizard.getProperty(
-                                      SimpleTestCaseWizard.PROP_CLASS_TO_TEST);
-        System.out.println("class to test = " + classToTest);
-        
-        String classPkg;
-        String className;
-        int lastDotIndex = classToTest.lastIndexOf('.');
-        if (lastDotIndex == -1) {
-            classPkg = "";                                              //NOI18N
-            className = classToTest;
-        } else {
-            classPkg = classToTest.substring(0, lastDotIndex);
-            className = classToTest.substring(lastDotIndex + 1);
+        /* collect and build necessary data: */
+        FileObject classToTest = (FileObject)
+                wizard.getProperty(SimpleTestCaseWizard.PROP_CLASS_TO_TEST);
+        FileObject testRootFolder = (FileObject)
+                wizard.getProperty(SimpleTestCaseWizard.PROP_TEST_ROOT_FOLDER);
+        ClassPath testClassPath = ClassPathSupport.createClassPath(
+                new FileObject[] {testRootFolder});
+                
+        /* create test class(es) for the selected source class: */
+        Set tests = CreateTestAction.createSingleTest(
+                testClassPath, classToTest,
+                templateDataObj, null,
+                null, null, false);
+        if (tests == null) {
+            throw new IOException();
         }
-        
-        Project project = Templates.getProject(wizard);
-        FileObject testsRoot = Utils.findTestsRoot(project);
-        FileObject targetFolder = Utils.getPackageFolder(testsRoot, classPkg);
-        DataFolder targetFolderDataObj = DataFolder.findFolder(targetFolder);
-        
-        /* ... and instantiate the object: */
-        System.out.println("name = " + className);
-        DataObject testDataObj = templateDataObj.createFromTemplate(
-                                         targetFolderDataObj, className);
-        System.out.println("Test Created.");
-        return Collections.singleton(testDataObj);
+        return tests;
     }
 
     /**

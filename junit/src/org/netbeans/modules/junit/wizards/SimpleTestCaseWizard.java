@@ -21,7 +21,8 @@ import org.openide.loaders.TemplateWizard;
  */
 public class SimpleTestCaseWizard extends TemplateWizard {
     
-    static final String PROP_CLASS_TO_TEST = "classToTest";     //NOI18N
+    static final String PROP_CLASS_TO_TEST = "classToTest";             //NOI18N
+    static final String PROP_TEST_ROOT_FOLDER = "testRootFolder";       //NOI18N
     
     /** Creates a new instance of SimpleTestCaseWizard */
     public SimpleTestCaseWizard() {

@@ -105,6 +105,7 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
     private SourceGroup testSourceGroup;
     private FileObject srcRootFolder;
     private FileObject testRootFolder;
+    private FileObject srcFile;
     private String testsRootDirName = "";                               //NOI18N
     private String srcRelFileNameSys = "";                              //NOI18N
     private String testRelFileName = "";                                //NOI18N
@@ -428,8 +429,8 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
     }
     
     private boolean checkSelectedClassExists() {
-        FileObject file = srcRootFolder.getFileObject(srcRelFileNameSys);
-        classExists = (file != null);
+        srcFile = srcRootFolder.getFileObject(srcRelFileNameSys);
+        classExists = (srcFile != null);
         return classExists;
     }
     
@@ -597,7 +598,9 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
         wizard = (TemplateWizard) settings;
         
         wizard.putProperty(SimpleTestCaseWizard.PROP_CLASS_TO_TEST,
-                           tfClassToTest.getText());
+                           srcFile);
+        wizard.putProperty(SimpleTestCaseWizard.PROP_TEST_ROOT_FOLDER,
+                           testRootFolder);
         
         wizard.putProperty(GuiUtils.CHK_PUBLIC,
                            Boolean.valueOf(chkPublic.isSelected()));
