@@ -138,16 +138,14 @@
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerWSServiceHost" url="web/csh/dbox_projprops/CustomizerWSServiceHost.html" />
 	<!-- The Web Service Clients panel in Project Properties for a Standard Web Application -->
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerWSClientHost" url="web/csh/dbox_projprops/CustomizerWSClientHost.html" />
+	<!-- The Disabled Web Services panel in Project Properties for a Standard Web Application -->
+	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerWSServiceHostDisabled" url="web/csh/dbox_projprops/CustomizerWSServiceHost.html" />
+	<!-- The Disabled Web Service Clients panel in Project Properties for a Standard Web Application -->
+	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerWSClientHostDisabled" url="web/csh/dbox_projprops/CustomizerWSClientHost.html" />
 
         <!-- PROJECT PROPERTIES DIALOG BOX FOR A FREE-FORM WEB APPLICATION: -->
 	<!-- The Web Sources panel in Project Properties for a Free-Form Web Application: -->
 	<mapID target="org.netbeans.modules.web.freeform.ui.WebLocationsPanel" url="web/csh/dbox_projprops_freeform/WebLocationsPanel.html" />
-	<!-- The Sources Folder panel in Project Properties for a Free-Form Web Application: -->
-	<mapID target="org.netbeans.modules.java.freeform.ui.SourceFoldersPanel" url="web/csh/dbox_projprops_freeform/SourceFoldersPanel.html" />
-	<!-- The Classpath panel in Project Properties for a Free-Form Web Application: -->
-	<mapID target="org.netbeans.modules.java.freeform.ui.ClasspathPanel" url="web/csh/dbox_projprops_freeform/ClasspathPanel.html" />
-	<!-- The Output Folder panel in Project Properties for a Free-Form Web Application: -->
-	<mapID target="org.netbeans.modules.java.freeform.ui.OutputPanel" url="web/csh/dbox_projprops_freeform/OutputPanel.html" />
 
 	<!-- NEW PROJECT WIZARD FOR A STANDARD WEB APPLICATION :-->
 	<mapID target="org.netbeans.modules.web.project.ui.wizards.PanelConfigureProject" url="web/csh/projwiz_standard/PanelConfigureProject.html" />
