@@ -20,7 +20,6 @@ import java.util.List;
 import java.awt.*;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
-import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentEvent;

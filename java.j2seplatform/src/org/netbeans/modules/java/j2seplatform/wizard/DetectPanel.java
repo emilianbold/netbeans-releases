@@ -321,6 +321,7 @@ public class DetectPanel extends javax.swing.JPanel {
     
     private String browse (String oldValue, String title) {
         JFileChooser chooser = new JFileChooser ();
+        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         chooser.setFileFilter (new FileFilter () {
             public boolean accept(File f) {

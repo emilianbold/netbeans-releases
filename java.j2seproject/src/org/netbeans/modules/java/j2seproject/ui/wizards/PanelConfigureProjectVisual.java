@@ -14,7 +14,6 @@
 package org.netbeans.modules.java.j2seproject.ui.wizards;
 
 import java.io.File;
-import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;

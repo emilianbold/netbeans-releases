@@ -27,6 +27,7 @@ import javax.swing.event.*;
 import org.openide.ErrorManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 
@@ -285,6 +286,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
     private void addResource(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addResource
         // TODO add your handling code here:
         JFileChooser chooser = new JFileChooser();
+        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         if (this.volumeType.equalsIgnoreCase("classpath")) {        //NOI18N
             chooser.setMultiSelectionEnabled (true);
             chooser.setDialogTitle(NbBundle.getMessage(J2SEVolumeCustomizer.class,"TXT_OpenClasses"));

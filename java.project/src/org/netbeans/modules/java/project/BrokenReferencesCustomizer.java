@@ -26,6 +26,7 @@ import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.project.libraries.LibrariesCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -153,6 +154,7 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
                     "LBL_BrokenLinksCustomizer_Resolve_Project", or.getDisplayID()));
             } else {
                 chooser = new JFileChooser();
+                FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
                 chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
                 chooser.setDialogTitle(NbBundle.getMessage(BrokenReferencesCustomizer.class, 
                     "LBL_BrokenLinksCustomizer_Resolve_File", or.getDisplayID()));
