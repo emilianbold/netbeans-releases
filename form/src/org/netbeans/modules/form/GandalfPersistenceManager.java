@@ -824,7 +824,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     && (node = constrAttr.getNamedItem("toolTip")) != null) // NOI18N
                 toolTip = node.getNodeValue();
 
-            if (tabName != null && icon != null && toolTip != null) {
+            if (toolTip != null) {
                 if (addTabMethod1 == null)
                     addTabMethod1 = javax.swing.JTabbedPane.class.getMethod(
                                     "addTab", // NOI18N
@@ -835,21 +835,21 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 CodeStructure.createStatement(
                     contCodeExp,
                     addTabMethod1,
-                    new CodeExpression[] { codeStructure.createExpression(
-                                                      tabName.getClass(),
-                                                      tabName,
-                                                      tabName.toString()),
-                                        codeStructure.createExpression(
-                                                      icon.getClass(),
-                                                      icon,
-                                                      icon.toString()), // [??]
-                                        compExp,
-                                        codeStructure.createExpression(
-                                                      toolTip.getClass(),
-                                                      toolTip,
-                                                      toolTip.toString()) });
+                    new CodeExpression[] { 
+                        tabName != null ?
+                            codeStructure.createExpression(
+                                String.class, tabName, tabName.toString()) :
+                            codeStructure.createNullExpression(String.class),
+                        icon != null ?
+                            codeStructure.createExpression(
+                                javax.swing.Icon.class, icon, icon.toString()) : // [??]
+                            codeStructure.createNullExpression(
+                                              javax.swing.Icon.class),
+                        compExp,
+                        codeStructure.createExpression(
+                            String.class, toolTip, toolTip.toString()) });
             }
-            else if (tabName != null && icon != null) {
+            else if (icon != null) {
                 if (addTabMethod2 == null)
                     addTabMethod2 = javax.swing.JTabbedPane.class.getMethod(
                                     "addTab", // NOI18N
@@ -859,17 +859,16 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 CodeStructure.createStatement(
                     contCodeExp,
                     addTabMethod2,
-                    new CodeExpression[] { codeStructure.createExpression(
-                                                      tabName.getClass(),
-                                                      tabName,
-                                                      tabName.toString()),
-                                        codeStructure.createExpression(
-                                                      icon.getClass(),
-                                                      icon,
-                                                      icon.toString()), // [??]
-                                        compExp });
+                    new CodeExpression[] {
+                        tabName != null ?
+                            codeStructure.createExpression(
+                                String.class, tabName, tabName.toString()) :
+                            codeStructure.createNullExpression(String.class),
+                        codeStructure.createExpression(
+                            javax.swing.Icon.class, icon, icon.toString()), // [??]
+                        compExp });
             }
-            else if (tabName != null) {
+            else {
                 if (addTabMethod3 == null)
                     addTabMethod3 = javax.swing.JTabbedPane.class.getMethod(
                                     "addTab", // NOI18N
@@ -878,11 +877,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 CodeStructure.createStatement(
                     contCodeExp,
                     addTabMethod3,
-                        new CodeExpression[] { codeStructure.createExpression(
-                                                      tabName.getClass(),
-                                                      tabName,
-                                                      tabName.toString()),
-                                        compExp });
+                        new CodeExpression[] {
+                        tabName != null ?
+                            codeStructure.createExpression(
+                                String.class, tabName, tabName.toString()) :
+                            codeStructure.createNullExpression(String.class),
+                        compExp });
             }
         }
 

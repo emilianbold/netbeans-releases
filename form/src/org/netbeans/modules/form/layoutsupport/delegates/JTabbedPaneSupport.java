@@ -127,15 +127,15 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport
         Object connectingObject = statement.getMetaObject();
         if (getAddTabMethod1().equals(connectingObject)) {
             compExp = params[2];
-            constrPropsIndices = new int[] { 0, 1, 2 }; // tab, icon, tooltip
+            constrPropsIndices = new int[] { 0, 1, -1, 2 }; // tab, icon, tooltip
         }
         else if (getAddTabMethod2().equals(connectingObject)) {
             compExp = params[2];
-            constrPropsIndices = new int[] { 0, 1 }; // tab, icon
+            constrPropsIndices = new int[] { 0, 1, -1 }; // tab, icon
         }
         else if (getAddTabMethod3().equals(connectingObject)) {
             compExp = params[1];
-            constrPropsIndices = new int[] { 0 }; // tab
+            constrPropsIndices = new int[] { 0, -1 }; // tab
         }
         else return null;
 
@@ -311,6 +311,12 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport
                                 realValue = ((FormDesignValue)value).getDescription();
                             return realValue;
                         }
+
+                        protected void propertyValueChanged(Object old, Object current) {
+                            if (isChangeFiring())
+                                updateCode();
+                            super.propertyValueChanged(old, current);
+                        }
                     },
 
                     new FormProperty("tabIcon", // NOI18N
@@ -333,6 +339,12 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport
                         public Object getDefaultValue() {
                             return null;
                         }
+
+                        protected void propertyValueChanged(Object old, Object current) {
+                            if (isChangeFiring())
+                                updateCode();
+                            super.propertyValueChanged(old, current);
+                        }
                     },
 
                     new FormProperty("tabToolTip", // NOI18N
@@ -354,6 +366,12 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport
 
                         public Object getDefaultValue() {
                             return null;
+                        }
+
+                        protected void propertyValueChanged(Object old, Object current) {
+                            if (isChangeFiring())
+                                updateCode();
+                            super.propertyValueChanged(old, current);
                         }
                     }
                 };
