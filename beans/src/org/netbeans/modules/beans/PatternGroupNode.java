@@ -330,9 +330,13 @@ public class  PatternGroupNode extends AbstractNode {
     boolean propertyExists( String name  ) {
         Collection[] patterns = new Collection[2];
         String decapName = Introspector.decapitalize( name );
+        PatternAnalyser pa = ((PatternChildren)getChildren()).getPatternAnalyser();
+        if (!pa.isAnalyzed()) {
+            pa.analyzeAll();
+        }
 
-        patterns[0] = ((PatternChildren)getChildren()).getPatternAnalyser().getPropertyPatterns();
-        patterns[1] = ((PatternChildren)getChildren()).getPatternAnalyser().getIdxPropertyPatterns();
+        patterns[0] = pa.getPropertyPatterns();
+        patterns[1] = pa.getIdxPropertyPatterns();
 
         for ( int i = 0; i < patterns.length && patterns[i] != null; i++ ) {
             Iterator it = patterns[i].iterator();

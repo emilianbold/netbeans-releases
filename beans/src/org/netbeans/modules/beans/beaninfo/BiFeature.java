@@ -501,13 +501,16 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
         /** Returns the call to constructor of EventSetDescriptor */
         String getCreationString () {
             StringBuffer sb = new StringBuffer( 100 );
-
-            java.lang.reflect.Method[] listenerMethods;
+            
+            org.openide.src.MethodElement listenerMethods[];
 
             try {
-                listenerMethods = pattern.getType().toClass().getMethods();
-            } catch (ClassNotFoundException e) {
-                throw new InternalError("Listener class not found.");
+                org.openide.src.Type listenerType = pattern.getType();
+                org.openide.src.ClassElement listener = org.openide.src.ClassElement.forName(listenerType.getClassName().getFullName());
+                listenerMethods = listener.getMethods();
+            } catch (IllegalStateException e) {
+                org.openide.TopManager.getDefault().notifyException( e );
+                listenerMethods = new org.openide.src.MethodElement[0];
             }
 
             sb.append( "new EventSetDescriptor ( " ); // NOI18N
@@ -516,8 +519,10 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
             sb.append( pattern.getType().toString() + ".class, " ); // NOI18N
             sb.append( "new String[] {" ); // NOI18N
             for (int i = 0; i < listenerMethods.length; i++) {
-                if (i > 0) sb.append(", "); // NOI18N
-                sb.append( "\"" + listenerMethods[i++].getName() + "\"" ); // NOI18N
+                if (i > 0) {
+                    sb.append(", ");
+                }
+                sb.append( "\"" + listenerMethods[i].getName() + "\"" ); // NOI18N
             }
             sb.append( "}, "); // NOI18N
             sb.append( "\"" + pattern.getAddListenerMethod().getName().getName() + "\", " ); // NOI18N
@@ -583,16 +588,95 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
         this.me = me;
       }
       
-      private String getTypeClass(Class type) {
-          if (type.equals(Integer.TYPE)) return "Integer.TYPE";
-          else if (type.equals(Boolean.TYPE)) return "Boolean.TYPE";
-          else if (type.equals(Character.TYPE)) return "Character.TYPE";
-          else if (type.equals(Long.TYPE)) return "Long.TYPE";
-          else if (type.equals(Short.TYPE)) return "Short.TYPE";
-          else if (type.equals(Byte.TYPE)) return "Byte.TYPE";
-          else if (type.equals(Float.TYPE)) return "Float.TYPE";
-          else if (type.equals(Double.TYPE)) return "Double.TYPE";
-          else return "Class.forName(\"" + type.getName() + "\")";
+        private static String getSignature(org.openide.src.ClassElement cls) {
+            org.openide.src.Identifier n = cls.getName();
+            if (!cls.isInner()) {
+                return n.getFullName();
+            }
+
+            StringBuffer sb = new StringBuffer(n.getFullName());
+            org.openide.src.ClassElement c = cls;
+            int index = sb.length();
+
+            while (true) {
+                index -= n.getSourceName().length() + 1;
+                sb.setCharAt(index, '$');
+                c = c.getDeclaringClass();
+                if (!c.isInner())
+                    break;
+                n = c.getName();
+            } 
+            return sb.toString();
+        }
+        
+      private static String getVMClassName(org.openide.src.Type type) {
+        try {
+            if (!type.isArray()) {
+                String fqn = type.getClassName().getFullName();
+                org.openide.src.ClassElement cls = org.openide.src.ClassElement.forName(fqn);
+                if (cls == null)
+                    return fqn;
+                return getSignature(cls);    	    
+            }
+
+            int depth = 0;
+            org.openide.src.Type t = type;
+
+            do {
+                ++depth;
+                t = t.getElementType();
+            } while (t.isArray());		
+
+            StringBuffer sb = new StringBuffer(depth + 1);
+            for (int i = 0; i < depth; i++) {
+                sb.append('[');
+            }
+            if (t.isPrimitive()) {
+                sb.append(getPrimitiveCode(t));
+            } else {
+                sb.append('L');
+                sb.append(getVMClassName(t));
+                sb.append(';');
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            org.openide.TopManager.getDefault().notifyException(e);
+            return "";
+        }
+      }
+      
+        private static String getPrimitiveCode(org.openide.src.Type type) {
+            if (type.equals(type.INT)) return "I";
+            else if (type.equals(type.BOOLEAN)) return "Z";
+            else if (type.equals(type.CHAR)) return "C";
+            else if (type.equals(type.LONG)) return "J";
+            else if (type.equals(type.SHORT)) return "S";
+            else if (type.equals(type.BYTE)) return "B";
+            else if (type.equals(type.FLOAT)) return "F";
+            else if (type.equals(type.DOUBLE)) return "D";
+            else return "V";
+        }
+
+        private static String getTypeClass(org.openide.src.Type type) {
+          if (type.isPrimitive()) {
+              if (type.equals(type.INT)) return "Integer.TYPE";
+              else if (type.equals(type.BOOLEAN)) return "Boolean.TYPE";
+              else if (type.equals(type.CHAR)) return "Character.TYPE";
+              else if (type.equals(type.LONG)) return "Long.TYPE";
+              else if (type.equals(type.SHORT)) return "Short.TYPE";
+              else if (type.equals(type.BYTE)) return "Byte.TYPE";
+              else if (type.equals(type.FLOAT)) return "Float.TYPE";
+              else /*(type.equals(type.DOUBLE))*/ return "Double.TYPE";
+          } else if (type.isClass()) {
+              try {
+                  return type.getClassName().getFullName() + ".class";
+              } catch (Exception e) {
+                  org.openide.TopManager.getDefault().notifyException(e);
+                  return type.toString() + ".class";
+              }
+          } else /*(type.isArray())*/ {
+              return "Class.forName(\"" + getVMClassName(type) + "\")";
+          }
       }
       
       public String getToolTip() {
@@ -625,9 +709,9 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
             
             for (int i = 0; i < parameters.length; i ++) {
                 try {
-                    sb.append(getTypeClass(parameters[i].getType().toClass())); // NOI18N
+                    sb.append(getTypeClass(parameters[i].getType())); // NOI18N
                 } catch (Exception e) {
-                      e.printStackTrace();
+                    org.openide.TopManager.getDefault().notifyException( e );
                 }
                 if (i < (parameters.length - 1)) sb.append(", "); // NOI18N
             }

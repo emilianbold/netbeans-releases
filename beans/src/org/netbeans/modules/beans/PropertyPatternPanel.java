@@ -111,25 +111,25 @@ public class PropertyPatternPanel extends javax.swing.JPanel
         setCheckBox = new javax.swing.JCheckBox();
         supportCheckBox = new javax.swing.JCheckBox();
         setLayout(new java.awt.BorderLayout());
-
+        
         mainPanel.setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints1;
         mainPanel.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(5, 5, 5, 5)));
-
+        
         propertyPanel.setLayout(new java.awt.GridBagLayout());
           java.awt.GridBagConstraints gridBagConstraints2;
           propertyPanel.setBorder(new javax.swing.border.TitledBorder(
-          new javax.swing.border.EtchedBorder(java.awt.Color.white, new java.awt.Color (149, 142, 130)), 
+          new javax.swing.border.EtchedBorder(java.awt.Color.white, new java.awt.Color (149, 142, 130)),
           "propertyPanel", 0, 2, new java.awt.Font ("Dialog", 0, 11), java.awt.Color.black));
-  
+          
           nameLabel.setText("nameLabel");
             gridBagConstraints2 = new java.awt.GridBagConstraints();
             gridBagConstraints2.insets = new java.awt.Insets(2, 6, 2, 2);
             gridBagConstraints2.anchor = java.awt.GridBagConstraints.EAST;
             gridBagConstraints2.weighty = 1.0;
             propertyPanel.add(nameLabel, gridBagConstraints2);
-    
-    
+            
+            
           gridBagConstraints2 = new java.awt.GridBagConstraints();
             gridBagConstraints2.gridwidth = 0;
             gridBagConstraints2.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -138,16 +138,16 @@ public class PropertyPatternPanel extends javax.swing.JPanel
             gridBagConstraints2.weightx = 1.0;
             gridBagConstraints2.weighty = 1.0;
             propertyPanel.add(nameTextField, gridBagConstraints2);
-    
-    
+            
+            
           typeLabel.setText("typeLabel");
             gridBagConstraints2 = new java.awt.GridBagConstraints();
             gridBagConstraints2.insets = new java.awt.Insets(2, 6, 2, 2);
             gridBagConstraints2.anchor = java.awt.GridBagConstraints.EAST;
             gridBagConstraints2.weighty = 1.0;
             propertyPanel.add(typeLabel, gridBagConstraints2);
-    
-    
+            
+            
           typeComboBox.setEditable(true);
             gridBagConstraints2 = new java.awt.GridBagConstraints();
             gridBagConstraints2.gridwidth = 0;
@@ -157,16 +157,16 @@ public class PropertyPatternPanel extends javax.swing.JPanel
             gridBagConstraints2.weightx = 1.0;
             gridBagConstraints2.weighty = 1.0;
             propertyPanel.add(typeComboBox, gridBagConstraints2);
-    
-    
+            
+            
           modeLabel.setText("modeLabel");
             gridBagConstraints2 = new java.awt.GridBagConstraints();
             gridBagConstraints2.insets = new java.awt.Insets(2, 6, 2, 2);
             gridBagConstraints2.anchor = java.awt.GridBagConstraints.EAST;
             gridBagConstraints2.weighty = 1.0;
             propertyPanel.add(modeLabel, gridBagConstraints2);
-    
-    
+            
+            
           modeComboBox.addActionListener(new java.awt.event.ActionListener() {
                 public void actionPerformed(java.awt.event.ActionEvent evt) {
                     modeComboBoxActionPerformed(evt);
@@ -181,12 +181,12 @@ public class PropertyPatternPanel extends javax.swing.JPanel
             gridBagConstraints2.weightx = 1.0;
             gridBagConstraints2.weighty = 1.0;
             propertyPanel.add(modeComboBox, gridBagConstraints2);
-    
-    
+            
+            
           gridBagConstraints2 = new java.awt.GridBagConstraints();
             propertyPanel.add(jPanel3, gridBagConstraints2);
-    
-    
+            
+            
           boundCheckBox.setText("boundCheckBox");
             boundCheckBox.addActionListener(new java.awt.event.ActionListener() {
                 public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -201,12 +201,12 @@ public class PropertyPatternPanel extends javax.swing.JPanel
             gridBagConstraints2.weightx = 1.0;
             gridBagConstraints2.weighty = 1.0;
             propertyPanel.add(boundCheckBox, gridBagConstraints2);
-    
-    
+            
+            
           gridBagConstraints2 = new java.awt.GridBagConstraints();
             propertyPanel.add(jPanel4, gridBagConstraints2);
-    
-    
+            
+            
           constrainedCheckBox.setText("constrainedCheckBox");
             constrainedCheckBox.addActionListener(new java.awt.event.ActionListener() {
                 public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -221,21 +221,21 @@ public class PropertyPatternPanel extends javax.swing.JPanel
             gridBagConstraints2.weightx = 1.0;
             gridBagConstraints2.weighty = 1.0;
             propertyPanel.add(constrainedCheckBox, gridBagConstraints2);
-    
+            
             gridBagConstraints1 = new java.awt.GridBagConstraints();
           gridBagConstraints1.gridwidth = 0;
           gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
           gridBagConstraints1.weightx = 1.0;
           gridBagConstraints1.weighty = 1.0;
           mainPanel.add(propertyPanel, gridBagConstraints1);
-  
-  
+          
+          
         optionsPanel.setLayout(new java.awt.GridBagLayout());
           java.awt.GridBagConstraints gridBagConstraints3;
           optionsPanel.setBorder(new javax.swing.border.TitledBorder(
-          new javax.swing.border.EtchedBorder(java.awt.Color.white, new java.awt.Color (149, 142, 130)), 
+          new javax.swing.border.EtchedBorder(java.awt.Color.white, new java.awt.Color (149, 142, 130)),
           "optionsPanel", 0, 2, new java.awt.Font ("Dialog", 0, 11), java.awt.Color.black));
-  
+          
           fieldCheckBox.setText("fieldCheckBox");
             fieldCheckBox.addActionListener(new java.awt.event.ActionListener() {
                 public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -250,8 +250,8 @@ public class PropertyPatternPanel extends javax.swing.JPanel
             gridBagConstraints3.weightx = 1.0;
             gridBagConstraints3.weighty = 1.0;
             optionsPanel.add(fieldCheckBox, gridBagConstraints3);
-    
-    
+            
+            
           returnCheckBox.setText("returnCheckBox");
             returnCheckBox.setEnabled(false);
             gridBagConstraints3 = new java.awt.GridBagConstraints();
@@ -261,8 +261,8 @@ public class PropertyPatternPanel extends javax.swing.JPanel
             gridBagConstraints3.weightx = 1.0;
             gridBagConstraints3.weighty = 1.0;
             optionsPanel.add(returnCheckBox, gridBagConstraints3);
-    
-    
+            
+            
           setCheckBox.setText("setCheckBox");
             setCheckBox.setEnabled(false);
             gridBagConstraints3 = new java.awt.GridBagConstraints();
@@ -272,8 +272,8 @@ public class PropertyPatternPanel extends javax.swing.JPanel
             gridBagConstraints3.weightx = 1.0;
             gridBagConstraints3.weighty = 1.0;
             optionsPanel.add(setCheckBox, gridBagConstraints3);
-    
-    
+            
+            
           supportCheckBox.setText("supportCheckBox");
             supportCheckBox.setEnabled(false);
             gridBagConstraints3 = new java.awt.GridBagConstraints();
@@ -283,17 +283,17 @@ public class PropertyPatternPanel extends javax.swing.JPanel
             gridBagConstraints3.weightx = 1.0;
             gridBagConstraints3.weighty = 1.0;
             optionsPanel.add(supportCheckBox, gridBagConstraints3);
-    
+            
             gridBagConstraints1 = new java.awt.GridBagConstraints();
           gridBagConstraints1.gridwidth = 0;
           gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
           gridBagConstraints1.weightx = 1.0;
           gridBagConstraints1.weighty = 1.0;
           mainPanel.add(optionsPanel, gridBagConstraints1);
-  
-  
+          
+          
         add(mainPanel, java.awt.BorderLayout.CENTER);
-
+        
     }//GEN-END:initComponents
 
     private void fieldCheckBoxActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fieldCheckBoxActionPerformed

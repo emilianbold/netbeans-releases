@@ -60,6 +60,8 @@ public class PatternAnalyser extends Object implements Node.Cookie {
     private HashMap eventSetPatterns;
 
     private ClassElement classElement;
+    
+    private boolean analyzed = false;
 
     private boolean ignore;
 
@@ -74,6 +76,8 @@ public class PatternAnalyser extends Object implements Node.Cookie {
         if ( ignore ) {
             return;
         }
+        
+        analyzed = true;
 
         int methodCount = classElement.getMethods().length;
         propertyPatterns = new HashMap( methodCount / 2 + PROPERTIES_RESERVE );
@@ -89,6 +93,10 @@ public class PatternAnalyser extends Object implements Node.Cookie {
         resolveChangesOfProperties();
         resolveChangesOfIdxProperties();
         resolveChangesOfEventSets();
+    }
+    
+    boolean isAnalyzed() {
+        return analyzed;
     }
 
     void setIgnore( boolean ignore ) {
