@@ -7,17 +7,12 @@
 package org.netbeans.modules.j2ee.deployment.impl;
 
 import org.w3c.dom.Element;
-import org.w3c.dom.Document;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.NodeList;
 import java.io.*;
 
 import org.netbeans.spi.settings.DOMConvertor;
-import org.netbeans.spi.settings.Saver;
 
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
-import org.openide.util.Lookup;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.filesystems.*;
@@ -35,8 +30,6 @@ public class ServerStringConverter extends org.netbeans.spi.settings.DOMConverto
     private static final String A_NAME = "name";
     private static final String PUBLIC_ID = "-//org_netbeans_modules_j2ee//DTD ServerString 1.0//EN"; // NOI18N
     private static final String SYSTEM_ID = "nbres:/org/netbeans/modules/j2ee/deployment/impl/server-string.dtd"; // NOI18N
-    
-    private Saver saver;
     
     public static boolean writeServerInstance(ServerString instance, String destDir, String destFile) {
         FileLock lock = null;

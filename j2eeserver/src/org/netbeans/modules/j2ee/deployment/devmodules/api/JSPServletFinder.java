@@ -15,23 +15,15 @@ package org.netbeans.modules.j2ee.deployment.devmodules.api;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.lang.ref.SoftReference;
-import javax.enterprise.deploy.shared.ModuleType;
-import javax.enterprise.deploy.spi.DeploymentManager;
-import javax.enterprise.deploy.spi.TargetModuleID;
-import javax.enterprise.deploy.spi.exceptions.TargetException;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ServerString;
-import org.netbeans.modules.j2ee.deployment.impl.projects.DeploymentTargetImpl;
 import org.netbeans.modules.j2ee.deployment.plugins.api.FindJSPServlet;
 import org.netbeans.modules.j2ee.deployment.plugins.api.OldJSPDebug;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 
 /**
  *
@@ -71,27 +63,6 @@ public final class JSPServletFinder {
         return instance == null ? null : new ServerString (instance);
     }
     
-    /** Returns the module ID that corresponds to the deployed module on the current server, 
-     * for this JSPServletFinder. May return null.
-     */
-    private TargetModuleID getTargetModuleID() {
-        ServerString serverS = getServerString();
-        if (serverS == null)
-            return null;
-        ServerInstance inst = serverS.getServerInstance();
-        if (inst == null)
-            return null;
-        DeploymentManager dm = inst.getDeploymentManagerForConfiguration();
-        try {
-            TargetModuleID mod[] = dm.getAvailableModules(ModuleType.WAR, serverS.toTargets());
-            TargetModuleID mod0 = null; // PENDING - find by web URI
-            return mod0;
-        }
-        catch (TargetException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            return null;
-        }
-    }
     
     private String getWebURL() {
         J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup ().lookup (J2eeModuleProvider.class);

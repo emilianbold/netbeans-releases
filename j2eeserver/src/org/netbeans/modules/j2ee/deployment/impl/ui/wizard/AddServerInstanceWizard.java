@@ -15,7 +15,6 @@ package org.netbeans.modules.j2ee.deployment.impl.ui.wizard;
 
 import java.text.MessageFormat;
 import java.util.HashMap;
-import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.deployment.impl.Server;
@@ -118,7 +117,6 @@ public class AddServerInstanceWizard extends WizardDescriptor {
     private static class AddServerInstanceWizardIterator implements WizardDescriptor.InstantiatingIterator {
         private AddServerInstanceWizard wd;
         public boolean showingChooser;
-        private List panels;
         private WizardDescriptor.InstantiatingIterator iterator;
         private HashMap iterators;
         

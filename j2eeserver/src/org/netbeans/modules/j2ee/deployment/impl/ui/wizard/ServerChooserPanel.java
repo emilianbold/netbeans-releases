@@ -19,7 +19,6 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.j2ee.deployment.impl.Server;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 

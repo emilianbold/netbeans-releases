@@ -7,16 +7,10 @@
 package org.netbeans.modules.j2ee.deployment.impl;
 
 import org.w3c.dom.Element;
-import org.w3c.dom.Document;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.NodeList;
 
 import org.netbeans.spi.settings.DOMConvertor;
-import org.netbeans.spi.settings.Saver;
-
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
-import org.openide.util.Lookup;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.filesystems.*;
@@ -43,8 +37,6 @@ public class TargetModuleConverter extends DOMConvertor {
     private static final String A_TIMESTAMP = "timestamp";
     private static final String A_CONTENT_DIR = "content-dir";
     private static final String A_CONTEXT_ROOT = "context-root";
-    
-    private Saver saver;
     
     public static DOMConvertor create() {
         return new TargetModuleConverter();

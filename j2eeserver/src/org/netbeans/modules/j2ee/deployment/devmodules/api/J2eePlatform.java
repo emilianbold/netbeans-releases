@@ -31,7 +31,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Utilities;
-import org.openide.ErrorManager;
 
 
 /**

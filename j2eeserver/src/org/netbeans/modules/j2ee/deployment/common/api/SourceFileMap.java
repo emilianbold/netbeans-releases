@@ -23,7 +23,6 @@ import org.netbeans.modules.j2ee.deployment.config.DeployableObjectImpl;
 import org.netbeans.modules.j2ee.deployment.config.StandardDDImpl;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
 /**

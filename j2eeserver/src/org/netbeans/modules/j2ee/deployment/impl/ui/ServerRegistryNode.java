@@ -88,7 +88,6 @@ implements ServerRegistry.PluginListener, InstanceListener {
     
     public SystemAction[] createActions() {
         return new SystemAction[] {
-            //SystemAction.get(FindDeploymentManagerAction.class),
             SystemAction.get(AddServerInstanceAction.class)
         };
     }

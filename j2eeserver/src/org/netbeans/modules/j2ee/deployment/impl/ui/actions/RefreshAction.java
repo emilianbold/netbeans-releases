@@ -7,7 +7,6 @@
 package org.netbeans.modules.j2ee.deployment.impl.ui.actions;
 
 import org.netbeans.modules.j2ee.deployment.impl.*;
-import org.netbeans.modules.j2ee.deployment.plugins.api.StartServer;
 import org.openide.nodes.*;
 import org.openide.util.actions.*;
 import org.openide.util.HelpCtx;

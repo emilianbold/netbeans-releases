@@ -10,11 +10,9 @@ import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.shared.ModuleType;
-import javax.enterprise.deploy.spi.exceptions.TargetException;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 

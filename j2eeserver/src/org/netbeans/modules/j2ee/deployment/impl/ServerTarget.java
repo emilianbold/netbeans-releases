@@ -17,12 +17,7 @@ package org.netbeans.modules.j2ee.deployment.impl;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.openide.nodes.Node;
 import javax.enterprise.deploy.spi.Target;
-//import javax.management.ObjectName;
-//import javax.management.Notification;
-//import javax.management.NotificationListener;
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.j2ee.deployment.impl.ui.DeployProgressUI;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 
 // PENDING use environment providers, not Cookies
@@ -34,8 +29,6 @@ public class ServerTarget implements Node.Cookie {
     public static final String EVT_FAILED = "j2ee.state.failed";
     public static final String EVT_STOPPED = "j2ee.state.stopped";
     public static final String EVT_STOPPING = "j2ee.state.stopping";
-    private static final Integer STATE_RUNNING = new Integer(1);
-
     ServerInstance instance;
     Target target;
     //PENDING: caching state, sync, display through icon and action list.

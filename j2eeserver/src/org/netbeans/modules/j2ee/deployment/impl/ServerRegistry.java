@@ -24,7 +24,6 @@ import org.openide.util.NbBundle;
 
 import java.util.*;
 import java.io.*;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.openide.modules.InstalledFileLocator;
 

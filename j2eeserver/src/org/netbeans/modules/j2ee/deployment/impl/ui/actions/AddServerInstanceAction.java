@@ -14,7 +14,6 @@
 package org.netbeans.modules.j2ee.deployment.impl.ui.actions;
 
 import java.awt.Dialog;
-import javax.swing.SwingUtilities;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.NodeAction;

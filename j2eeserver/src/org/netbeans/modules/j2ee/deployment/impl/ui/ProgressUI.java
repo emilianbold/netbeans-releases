@@ -20,14 +20,11 @@
 package org.netbeans.modules.j2ee.deployment.impl.ui;
 
 import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.awt.event.*;
 import javax.swing.*;
 
 import org.openide.*;
 import org.openide.util.*;
-import org.openide.windows.TopComponent;
 
 import javax.enterprise.deploy.spi.status.*;
 
@@ -47,7 +44,6 @@ public class ProgressUI extends JPanel {
     private Object  lockObj;
     private boolean modal;
     private static boolean autoClose = true;
-    private WindowAdapter windowListener;
 
     // Use frame instead of dialog if non-modal, to get window controls (minimize, maximize)
     private Dialog dialog;

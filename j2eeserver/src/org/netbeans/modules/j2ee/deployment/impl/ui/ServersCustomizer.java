@@ -40,7 +40,6 @@ import org.openide.nodes.Node;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;

@@ -19,7 +19,6 @@
 package org.netbeans.modules.j2ee.deployment.impl.ui;
 
 import java.awt.Component;
-import java.awt.Cursor;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.openide.nodes.*;
@@ -27,7 +26,6 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 import org.netbeans.modules.j2ee.deployment.impl.*;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.*;
-import org.netbeans.modules.j2ee.deployment.impl.ui.actions.RemoveInstanceAction;
 
 import org.openide.windows.WindowManager;
 

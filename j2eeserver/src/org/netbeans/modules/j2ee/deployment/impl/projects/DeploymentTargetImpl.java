@@ -20,17 +20,11 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.shared.ModuleType;
-import org.openide.util.Lookup;
 import org.openide.ErrorManager;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
 import java.util.*;
 import java.io.*;
-import java.net.URL;
 import org.netbeans.modules.j2ee.deployment.config.*;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /** 

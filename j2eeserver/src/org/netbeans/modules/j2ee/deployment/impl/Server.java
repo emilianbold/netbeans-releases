@@ -23,8 +23,6 @@ import org.netbeans.modules.j2ee.deployment.common.api.ValidationException;
 import org.netbeans.modules.j2ee.deployment.impl.gen.nbd.*;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.modules.j2ee.deployment.impl.ui.RegistryNodeProvider;
-import org.netbeans.modules.j2ee.deployment.plugins.api.ConfigurationSupport;
-import org.netbeans.modules.j2ee.deployment.plugins.api.VerifierSupport;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.util.Lookup;
@@ -188,16 +186,6 @@ public class Server implements Node.Cookie {
                 configMap.put(beans[i].getClassName(),new ConfigBeanDescriptor(beans[i]));
         }
         return (ConfigBeanDescriptor) configMap.get(className);
-    }
-    
-    private Object getClassFromPlugin(String className) {
-        if (className == null || "".equals(className.trim())) return null; //NOI18N
-        try {
-        return factory.getClass().getClassLoader().loadClass(className).newInstance();
-        } catch (Exception e) {
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, e.getMessage());
-            return null;
-        }
     }
     
     // PENDING should be cached?

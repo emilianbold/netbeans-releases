@@ -34,7 +34,6 @@ import org.openide.filesystems.FileObject;
 import java.util.*;
 import java.io.*;
 import javax.enterprise.deploy.model.DeployableObject;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 
 /**
  * Encapsulates a set of ServerTarget(s), provides a wrapper for deployment
@@ -53,7 +52,6 @@ public class TargetServer {
     private static final long DISTRIBUTE_TIMEOUT = 120000;
     private static final long INCREMENTAL_TIMEOUT = 60000;
     private static final long TIMEOUT = 60000;
-    private static final TargetModule[] EMPTY_TARGETMODULE_ARRAY = new TargetModule[0];
     
     private Target[] targets;
     private final ServerInstance instance;

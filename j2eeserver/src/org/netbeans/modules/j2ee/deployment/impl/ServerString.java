@@ -14,8 +14,6 @@
 package org.netbeans.modules.j2ee.deployment.impl;
 
 import javax.enterprise.deploy.spi.Target;
-import javax.enterprise.deploy.shared.ModuleType;
-import org.openide.ErrorManager;
 
 public class ServerString implements java.io.Serializable {
     

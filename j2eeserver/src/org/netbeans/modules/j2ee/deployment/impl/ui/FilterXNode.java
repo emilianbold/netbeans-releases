@@ -13,10 +13,8 @@
 
 package org.netbeans.modules.j2ee.deployment.impl.ui;
 
-import org.netbeans.modules.j2ee.deployment.plugins.api.RegistryNodeFactory;
 import org.netbeans.modules.j2ee.deployment.impl.*;
 import org.openide.nodes.Node;
-import org.openide.nodes.Children.Keys;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Sheet;
 import org.openide.nodes.Node.PropertySet;
