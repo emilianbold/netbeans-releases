@@ -174,7 +174,7 @@ Microsystems, Inc. All Rights Reserved.
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
   </target>
   
-  <target name="jars" depends="libs,compile,13javac-workaround,vers-prep" description="Create JAR files.">
+  <target name="jars" depends="compile,13javac-workaround,vers-prep" description="Create JAR files.">
     <mkdir dir="netbeans/lib"/>
     <filter token="Class-Path" value="Class-Path"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
@@ -186,42 +186,6 @@ Microsystems, Inc. All Rights Reserved.
       <!-- Exclude libraries included in openide-fs.jar, openide-util, etc. -->
       <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt" >
            <include name="org/openide/**" />
-      	   <exclude name="org/openide/filesystems/**" />
-           <exclude name="org/openide/util/**"/>
-           <exclude name="org/openide/nodes/**"/>
-           <exclude name="org/openide/explorer/**"/>
-           <exclude name="org/openide/resources/propertysheet/**"/>
-
-           <exclude name="org/openide/resources/defaultNode.gif"/>
-           <exclude name="org/openide/resources/actions/paste.gif"/>
-           <exclude name="org/openide/resources/actions/copy.gif"/>
-           <exclude name="org/openide/resources/actions/delete.gif"/>   
-           <exclude name="org/openide/resources/actions/cut.gif"/>   
-           <exclude name="org/openide/resources/actions/properties.gif"/>   
-
-           <exclude name="org/openide/cookies/**"/>
-           <exclude name="org/openide/actions/ActionConstants*"/>
-           <exclude name="org/openide/actions/Bundle*"/>
-           <exclude name="org/openide/actions/CopyAction*"/>
-           <exclude name="org/openide/actions/DeleteAction*"/>
-           <exclude name="org/openide/actions/CutAction*"/>
-           <exclude name="org/openide/actions/PasteAction*"/>
-           <exclude name="org/openide/actions/PopupAction*"/>
-           <exclude name="org/openide/actions/PropertiesAction*"/>
-           <exclude name="org/openide/actions/CustomizeAction*"/>
-           <exclude name="org/openide/awt/ToolbarToggleButton*"/>
-           <exclude name="org/openide/awt/ToolbarButton*"/>
-           <exclude name="org/openide/awt/EnabledButtonModel*"/>
-           <exclude name="org/openide/awt/SplittedPanel*"/>
-           <exclude name="org/openide/awt/Bundle*"/>
-           <exclude name="org/openide/awt/JInlineMenu*"/>
-           <exclude name="org/openide/awt/Actions*"/>  
-           <exclude name="org/openide/awt/JMenuPlus*"/>
-           <exclude name="org/openide/awt/JPopupMenuUtils*"/> 
-           <exclude name="org/openide/awt/MouseUtils*"/>
-
-           <!-- Part of openide-util.jar -->
-           <exclude name="org/openide/ErrorManager*class"/> 
       </fileset>
       
       <fileset dir="src">
