@@ -129,7 +129,7 @@ public class MetaComponentCreator {
                                      (RADVisualComponent) sourceComp);
 
         // in other cases let's copy the source meta component
-        RADComponent newMetaComp = makeCopy(sourceComp);
+        RADComponent newMetaComp = makeCopy(sourceComp, targetPlacement);
         if (newMetaComp == null)
             return null;
 
@@ -327,8 +327,11 @@ public class MetaComponentCreator {
             if (targetComp == null)
                 return TARGET_VISUAL;
 
-            if (targetComp instanceof RADMenuComponent)
-                return TARGET_MENU;
+            if (targetComp instanceof RADMenuComponent) {
+                // adding to a menu
+                return ((RADMenuComponent)targetComp).canAddItem(beanClass) ?
+                    TARGET_MENU : NO_TARGET;
+            }
         }
 
         if (Component.class.isAssignableFrom(beanClass)) {
@@ -357,17 +360,25 @@ public class MetaComponentCreator {
 
     // ---------
 
-    private RADComponent makeCopy(RADComponent sourceComp) {
+    private RADComponent makeCopy(RADComponent sourceComp, int targetPlacement) {
         RADComponent newComp;
 
         if (sourceComp instanceof RADVisualContainer)
             newComp = new RADVisualContainer();
-        else if (sourceComp instanceof RADVisualComponent)
-            newComp = new RADVisualComponent();
+        else if (sourceComp instanceof RADVisualComponent) {
+            if (targetPlacement == TARGET_MENU)
+                newComp = new RADMenuItemComponent();
+            else
+                newComp = new RADVisualComponent();
+        }
         else if (sourceComp instanceof RADMenuComponent)
             newComp = new RADMenuComponent();
-        else if (sourceComp instanceof RADMenuItemComponent)
-            newComp = new RADMenuItemComponent();
+        else if (sourceComp instanceof RADMenuItemComponent) {
+            if (targetPlacement == TARGET_VISUAL)
+                newComp = new RADVisualComponent();
+            else
+                newComp = new RADMenuItemComponent();
+        }
         else
             newComp = new RADComponent();
 
@@ -394,7 +405,7 @@ public class MetaComponentCreator {
             RADComponent[] newSubs = new RADComponent[sourceSubs.length];
 
             for (int i=0; i < sourceSubs.length; i++) {
-                RADComponent newSubComp = makeCopy(sourceSubs[i]);
+                RADComponent newSubComp = makeCopy(sourceSubs[i], -1);
                 if (newSubComp == null)
                     return null;
                 newSubs[i] = newSubComp;
@@ -441,7 +452,9 @@ public class MetaComponentCreator {
             }
 
         // 5th - copy layout constraints
-        if (sourceComp instanceof RADVisualComponent) {
+        if (sourceComp instanceof RADVisualComponent
+            && newComp instanceof RADVisualComponent)
+        {
             Map constraints = ((RADVisualComponent)sourceComp).getConstraintsMap();
             Map newConstraints = new HashMap();
 
