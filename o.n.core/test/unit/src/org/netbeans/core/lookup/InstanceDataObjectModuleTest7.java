@@ -54,12 +54,19 @@ public class InstanceDataObjectModuleTest7 extends InstanceDataObjectModuleTestH
     private File mark, systemDir;
     
     protected void setUp() throws Exception {
-        mark = File.createTempFile("IDOMT7", ".txt");
-        systemDir = new File(mark.getParentFile(), mark.getName().substring(0, mark.getName().length() - 4));
-        if (! systemDir.mkdir()) throw new IOException("mkdir: " + systemDir);
-        //System.err.println("created system dir: " + systemDir);
-        // Understood by Plain:
-        System.setProperty("system.dir", systemDir.getAbsolutePath());
+        String origSysDir = System.getProperty("system.dir");
+        if (origSysDir == null) {
+            mark = File.createTempFile("IDOMT7", ".txt");
+            systemDir = new File(mark.getParentFile(), mark.getName().substring(0, mark.getName().length() - 4));
+            if (! systemDir.mkdir()) throw new IOException("mkdir: " + systemDir);
+            //System.err.println("created system dir: " + systemDir);
+            // Understood by Plain:
+            System.setProperty("system.dir", systemDir.getAbsolutePath());
+        } else {
+            // XXX #17333 workaround
+            systemDir = new File(origSysDir);
+            systemDir.mkdir();
+        }
         super.setUp();
     }
     
@@ -67,8 +74,8 @@ public class InstanceDataObjectModuleTest7 extends InstanceDataObjectModuleTestH
         super.tearDown();
         // In case ModuleList is still doing its thing:
         Thread.sleep(1000);
-        if (! mark.delete()) throw new IOException();
-        deleteRec(systemDir);
+        if (mark != null && !mark.delete()) throw new IOException();
+        deleteRec(mark == null ? new File(systemDir, "Services") : systemDir, true);
     }
     
     public void testFixedSettingsChangeInstanceAfterSlowReload() throws Exception {

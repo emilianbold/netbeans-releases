@@ -54,12 +54,20 @@ public class InstanceDataObjectModuleTest8 extends InstanceDataObjectModuleTestH
     private File mark, systemDir;
     
     protected void setUp() throws Exception {
-        mark = File.createTempFile("IDOMT8", ".txt");
-        systemDir = new File(mark.getParentFile(), mark.getName().substring(0, mark.getName().length() - 4));
-        if (! systemDir.mkdir()) throw new IOException("mkdir: " + systemDir);
-        //System.err.println("created system dir: " + systemDir);
-        // Understood by Plain:
-        System.setProperty("system.dir", systemDir.getAbsolutePath());
+        String origSysDir = System.getProperty("system.dir");
+        if (origSysDir == null) {
+            mark = File.createTempFile("IDOMT8", ".txt");
+            systemDir = new File(mark.getParentFile(), mark.getName().substring(0, mark.getName().length() - 4));
+            if (systemDir.exists()) throw new IOException();
+            if (! systemDir.mkdir()) throw new IOException("mkdir: " + systemDir);
+            //System.err.println("created system dir: " + systemDir);
+            // Understood by Plain:
+            System.setProperty("system.dir", systemDir.getAbsolutePath());
+        } else {
+            // XXX #17333 workaround
+            systemDir = new File(origSysDir);
+            systemDir.mkdir();
+        }
         super.setUp();
     }
     
@@ -67,8 +75,8 @@ public class InstanceDataObjectModuleTest8 extends InstanceDataObjectModuleTestH
         super.tearDown();
         // In case ModuleList is still doing its thing:
         Thread.sleep(1000);
-        if (! mark.delete()) throw new IOException();
-        deleteRec(systemDir);
+        if (mark != null && !mark.delete()) throw new IOException();
+        deleteRec(mark == null ? new File(systemDir, "Services") : systemDir, true);
     }
     
     /** Currently fails.
@@ -82,6 +90,7 @@ public class InstanceDataObjectModuleTest8 extends InstanceDataObjectModuleTestH
             InstanceCookie inst1 = (InstanceCookie)obj1.getCookie(InstanceCookie.class);
             assertNotNull("Had an instance", inst1);
             Action a1 = (Action)inst1.instanceCreate();
+            assertEquals("Correct action class", "test2.SomeAction", a1.getClass().getName());
             assertTrue("Old version of action", a1.isEnabled());
             // Make some change which should cause it to be written to disk:
             a1.setEnabled(false);

@@ -145,15 +145,15 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
         }
     }
     
-    protected static void deleteRec(File f) throws IOException {
+    protected static void deleteRec(File f, boolean thistoo) throws IOException {
         if (f.isDirectory()) {
             File[] kids = f.listFiles();
             if (kids == null) throw new IOException("Could not list: " + f);
             for (int i = 0; i < kids.length; i++) {
-                deleteRec(kids[i]);
+                deleteRec(kids[i], true);
             }
         }
-        if (! f.delete()) throw new IOException("Could not delete: " + f);
+        if (thistoo && !f.delete()) throw new IOException("Could not delete: " + f);
     }
     
 }
