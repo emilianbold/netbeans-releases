@@ -400,7 +400,7 @@ public final class NbMainExplorer extends CloneableTopComponent
             super();
             view = initGui();
             // complete initialization of composited explorer actions
-            IDESettings ideS = (IDESettings)IDESettings.findObject(IDESettings.class);
+            IDESettings ideS = (IDESettings)IDESettings.findObject(IDESettings.class, true);
             setConfirmDelete(ideS.getConfirmDelete());
             // attach listener to the changes of IDE settings
             weakIdeL = WeakListener.propertyChange(rcListener(), ideS);
@@ -811,101 +811,3 @@ public final class NbMainExplorer extends CloneableTopComponent
         e.open ();
     }
 }
-
-/*
-* Log
-*  54   Gandalf   1.53        1/19/00  Petr Nejedly    Commented out debug 
-*       messages
-*  53   Gandalf   1.52        1/17/00  David Simonek   renaming of tabs now 
-*       react also on NAME node chaanges, not only display name
-*  52   Gandalf   1.51        1/13/00  Jaroslav Tulach I18N
-*  51   Gandalf   1.50        1/11/00  David Simonek   projects tab now second 
-*       tab in main explorer
-*  50   Gandalf   1.49        1/9/00   David Simonek   modified initialization 
-*       of the WindowManagerImpl
-*  49   Gandalf   1.48        1/5/00   Jaroslav Tulach Newly created objects are
-*       selected in explorer
-*  48   Gandalf   1.47        12/23/99 David Simonek   special tabs for projects
-*       and module tabs
-*  47   Gandalf   1.46        12/21/99 David Simonek   minor fixes
-*  46   Gandalf   1.45        12/17/99 David Simonek   #4886
-*  45   Gandalf   1.44        12/3/99  David Simonek   
-*  44   Gandalf   1.43        11/30/99 David Simonek   neccessary changes needed
-*       to change main explorer to new UI style  (tabs are full top components 
-*       now, visual workspace added, layout of editing workspace chnaged a bit)
-*  43   Gandalf   1.42        11/5/99  Jesse Glick     Context help jumbo patch.
-*  42   Gandalf   1.41        11/5/99  Jaroslav Tulach WeakListener has now 
-*       registration methods.
-*  41   Gandalf   1.40        10/25/99 Ian Formanek    Fixed title of Main 
-*       Explorer - now displays selected node instead of explored context
-*  40   Gandalf   1.39        10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
-*       Microsystems Copyright in File Comment
-*  39   Gandalf   1.38        10/7/99  David Simonek   request focus related 
-*       bugs repaired
-*  38   Gandalf   1.37        9/22/99  Jaroslav Tulach Solving class cast 
-*       exception.  
-*  37   Gandalf   1.36        9/20/99  Jaroslav Tulach #1603
-*  36   Gandalf   1.35        9/15/99  David Simonek   cut/copy/delete actions 
-*       bugfix
-*  35   Gandalf   1.34        8/29/99  Ian Formanek    Removed obsoleted import
-*  34   Gandalf   1.33        8/20/99  Ian Formanek    Reverted last 2 changes
-*  33   Gandalf   1.32        8/20/99  Ian Formanek    Fixed bug with explorer 
-*       when starting clean IDE
-*  32   Gandalf   1.31        8/19/99  David Simonek   cut/copy/paste/delete 
-*       actions enabling hopefully fixed
-*  31   Gandalf   1.30        8/18/99  David Simonek   bugfix #3463, #3461  
-*  30   Gandalf   1.29        8/17/99  David Simonek   commentaries removed
-*  29   Gandalf   1.28        8/13/99  Jaroslav Tulach New Main Explorer
-*  28   Gandalf   1.27        8/9/99   Ian Formanek    Generated Serial Version 
-*       UID
-*  27   Gandalf   1.26        8/3/99   Jaroslav Tulach Getting better and 
-*       better.
-*  26   Gandalf   1.25        8/3/99   Jaroslav Tulach Serialization of 
-*       NbMainExplorer improved again.
-*  25   Gandalf   1.24        8/2/99   Jaroslav Tulach 
-*  24   Gandalf   1.23        8/1/99   Jaroslav Tulach MainExplorer now listens 
-*       to changes in root elements.
-*  23   Gandalf   1.22        7/30/99  David Simonek   
-*  22   Gandalf   1.21        7/30/99  David Simonek   serialization fixes
-*  21   Gandalf   1.20        7/28/99  David Simonek   canClose updates
-*  20   Gandalf   1.19        7/21/99  David Simonek   properties switcher fixed
-*  19   Gandalf   1.18        7/19/99  Jesse Glick     Context help.
-*  18   Gandalf   1.17        7/16/99  Ian Formanek    Fixed bug #1800 - You can
-*       drag off the explorer toolbar. 
-*  17   Gandalf   1.16        7/15/99  Ian Formanek    Swapped Global and 
-*       Project settings tabs
-*  16   Gandalf   1.15        7/13/99  Ian Formanek    New MainExplorer tabs 
-*       (usability&intuitiveness discussion results)
-*  15   Gandalf   1.14        7/12/99  Jesse Glick     Context help.
-*  14   Gandalf   1.13        7/11/99  David Simonek   window system change...
-*  13   Gandalf   1.12        6/8/99   Ian Formanek    ---- Package Change To 
-*       org.openide ----
-*  12   Gandalf   1.11        5/30/99  Ian Formanek    Fixed bug 1647 - Open, 
-*       Compile, Rename, Execute and  etc. actions in popup menu in explorer are
-*       sometimes disabled.  Fixed bug 1971 - If the tab is switched from 
-*       Desktop to Repository with some nodes already selected, the actions in 
-*       popupmenu might not be correctly enabled.  Fixed bug 1616 - Property 
-*       sheet button in explorer has no tooltip.
-*  11   Gandalf   1.10        5/15/99  David Simonek   switchable sheet 
-*       serialized properly.....finally
-*  10   Gandalf   1.9         5/14/99  David Simonek   serialization of 
-*       switchable sheet state
-*  9    Gandalf   1.8         5/11/99  David Simonek   changes to made window 
-*       system correctly serializable
-*  8    Gandalf   1.7         3/25/99  David Simonek   another small changes in 
-*       window system
-*  7    Gandalf   1.6         3/25/99  David Simonek   changes in window system,
-*       initial positions, bugfixes
-*  6    Gandalf   1.5         3/18/99  Ian Formanek    The title now updates 
-*       when tab is switched
-*  5    Gandalf   1.4         3/16/99  Ian Formanek    SINGLE mode removed, as 
-*       it is there by default
-*  4    Gandalf   1.3         3/16/99  Ian Formanek    Title improved
-*  3    Gandalf   1.2         3/16/99  Ian Formanek    Added listening to icon 
-*       and displayName changes on roots, support for ExplorerActions 
-*       (Cut/Copy/...)
-*  2    Gandalf   1.1         3/15/99  Ian Formanek    Added formatting of 
-*       title, updating activatedNodes
-*  1    Gandalf   1.0         3/14/99  Ian Formanek    
-* $
-*/
