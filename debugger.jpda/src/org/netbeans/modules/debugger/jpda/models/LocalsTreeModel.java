@@ -229,11 +229,11 @@ public class LocalsTreeModel implements TreeModel {
             ObjectReference thisR = sf.thisObject ();
             String className = sf.location ().declaringType ().name ();
             List l = sf.visibleVariables ();
-            int k = to - from, // length of result
-                j = from,      // current position in l
+            int j = from,      // current position in l
                 i = 0;         // current position in result
             if (to == 0) to = l.size () + 
                 (((thisR != null) && includeThis) ? 1 : 0);
+            int k = to - from; // length of result
             AbstractVariable[] locals = new AbstractVariable [k];
             if ((thisR != null) && includeThis) {
                 if (from == 0)
