@@ -13,21 +13,6 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <mconfig name="qa-functional tests config">
-
-    <!-- Validation: -->
-    <testbag testattribs="all,validation,full" name="validation">
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="org/netbeans/test/editor/suites/keybindings/*Performer.class"/>            
-		<include name="org/netbeans/test/editor/completion/*Performer.class"/>
-		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testcomplexsorted" />
-		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testcomplexunsorted" />
-		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testequalSignIunsorted" />
-		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testequalSignIsorted" />
-            </patternset>
-        </testset>
-    </testbag>
-        
     
     <!-- Editor Test Application's Tests -->
     
@@ -60,6 +45,19 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>    
         
+    <!-- Code completion Validation tests: -->
+    <testbag testattribs="all,validation,full" name="Completion-Validation">
+        <testset dir="qa-functional/src">
+            <patternset>
+		<include name="org/netbeans/test/editor/completion/*Performer.class"/>
+		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testcomplexsorted" />
+		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testcomplexunsorted" />
+		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testequalSignIunsorted" />
+		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testequalSignIsorted" />
+            </patternset>
+        </testset>
+    </testbag>
+
     <!-- Code completion non-validation tests: (and three from test editor application) -->
 
     <testbag testattribs="all,failing" name="completion-failing">
@@ -90,7 +88,18 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
-        
+
+    
+    <!-- Key bindings tests -->
+    
+    <testbag testattribs="all,full,regression" name="KeyBindings-Actions">
+        <testset dir="qa-functional/src">
+            <patternset>            
+                <include name="org/netbeans/test/editor/suites/keybindings/*Performer.class"/>            
+            </patternset>
+        </testset>
+    </testbag>
+    
     <!-- Experimental tests (not to be runned automaticaly): -->
     <testbag testattribs="all,exper" name="abbrev-gui">
         <testset dir="qa-functional/src">
