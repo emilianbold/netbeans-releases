@@ -70,6 +70,9 @@ public class ValidateLayerMenuTest extends NbTestCase {
         if (obj instanceof javax.swing.JSeparator) {
             return true;
         }
+        if (obj instanceof javax.swing.JMenuItem) {
+            return true;
+        }
         
         return false;
     }
