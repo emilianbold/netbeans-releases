@@ -59,31 +59,42 @@ public final class DataObjectAdapters {
      * @return InputSource never <code>null</code>
      */           
     public static InputSource inputSource(DataObject dataObject) throws IOException {
-        InputSource ret = null;
-        URL url = dataObject.getPrimaryFile().getURL();
-
-        // test if a document is opened
-
-        EditorCookie editor = (EditorCookie) dataObject.getCookie(EditorCookie.class);
-        
-        if (editor != null) {
-            Document doc = editor.getDocument();
-            if (doc != null) {
-                ret = new DocumentInputSource(doc);
-            }
-        } 
-
-        // anyway set system id to FileObject URL
-
-        if (ret == null) {
-            ret = new InputSource(url.toExternalForm());            
-        } else {
-            ret.setSystemId(url.toExternalForm());
-        }
-        
-        return ret;
+        return new DataObjectInputSource(dataObject);
     }
 
+    /**
+     *
+     */
+    private static class DataObjectInputSource extends InputSource {
+        
+        private final DataObject dataObject;
+        private final String systemId;
+        
+        public DataObjectInputSource(DataObject dataObject) throws IOException {
+            this.dataObject = dataObject;
+            this.systemId = dataObject.getPrimaryFile().getURL().toExternalForm();
+        }
+                
+        public String getSystemId() {
+            return systemId;
+        }
+        
+        public Reader getCharacterStream() {
+
+            EditorCookie editor = (EditorCookie) dataObject.getCookie(EditorCookie.class);
+
+            if (editor != null) {
+                Document doc = editor.getDocument();
+                if (doc != null) {
+                    return  new DocumentInputSource(doc).getCharacterStream();
+                }
+            }             
+            
+            return null;
+        }
+        
+    }
+    
     /**
      * Create Source from DataObject. Default implementation prefers opened
      * Swing <code>Document</code> over primary file URL.
