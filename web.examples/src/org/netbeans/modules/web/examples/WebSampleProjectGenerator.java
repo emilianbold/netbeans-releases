@@ -95,9 +95,9 @@ public class WebSampleProjectGenerator {
                 sb.append(":"); // NOI18N
                 sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jsp-api-2.0.jar", null, false));   //NOI18N
                 sb.append(":"); // NOI18N
-                sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-compiler-5.0.25.jar", null, false));    //NOI18N
+                sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-compiler-5.0.27.jar", null, false));    //NOI18N
                 sb.append(":"); // NOI18N
-                sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-runtime-5.0.25.jar", null, false));     //NOI18N
+                sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-runtime-5.0.27.jar", null, false));     //NOI18N
                 sb.append(":"); // NOI18N
                 sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/commons-el.jar", null, false));    //NOI18N
                 sb.append(":"); // NOI18N
