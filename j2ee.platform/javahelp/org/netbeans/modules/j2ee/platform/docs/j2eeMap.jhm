@@ -96,7 +96,6 @@
 	<mapID target="add_soap_message" url="web/webservice/add_soap_message.html" />
 	<mapID target="test_ws" url="web/webservice/test_ws.html" />
 	<mapID target="build_ws" url="web/webservice/build_ws.html" />
-	<mapID target="build_ws_message" url="web/webservice/build_ws_message.html" />
 	<mapID target="expose_ws" url="web/webservice/expose_ws.html" />
 	<mapID target="create_wsc" url="web/webserviceclient/create_wsc.html" />
 	<mapID target="call_ws_operation" url="web/webserviceclient/call_ws_operation.html" />

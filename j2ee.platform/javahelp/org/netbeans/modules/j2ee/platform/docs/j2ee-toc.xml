@@ -242,9 +242,8 @@
 		<tocitem text="Sending a JMS Message" target="send_JMS_message" />
   	 </tocitem>
          <tocitem text="Building and Exposing Web Services" >
-		 <tocitem text="Building a Procedural Based Web Service" target="build_ws" />
-                <tocitem text="Building a Document Based Web Service" target="build_ws_message" />
-	        <tocitem text="Exposing a Web Service" target="expose_ws" />
+		 <tocitem text="Building a Web Service" target="build_ws" />
+                 <tocitem text="Exposing a Web Service" target="expose_ws" />
 	 </tocitem>
 	 <tocitem text="Testing and Consuming Web Services" >
 		 <tocitem text="Testing a Web Service" target="test_ws" />
