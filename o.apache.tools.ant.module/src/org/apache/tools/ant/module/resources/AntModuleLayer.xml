@@ -21,7 +21,6 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="template" boolvalue="true"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/ProjectDescription.html"/>
-        <attr name="org.apache.tools.ant.module.loader.AntProjectDataLoader.KNOWN_ANT_FILE" boolvalue="true"/>
         <attr name="templateWizardIterator" newvalue="org.apache.tools.ant.module.loader.AntTemplateIterator"/>
       </file>
       <attr name="Project.xml/SampleProject.xml" boolvalue="true"/>
@@ -29,7 +28,6 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="template" boolvalue="true"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/SampleProjectDescription.html"/>
-        <attr name="org.apache.tools.ant.module.loader.AntProjectDataLoader.KNOWN_ANT_FILE" boolvalue="true"/>
         <attr name="templateWizardIterator" newvalue="org.apache.tools.ant.module.loader.AntTemplateIterator"/>
       </file>
       <attr name="SampleProject.xml/CustomTask.java" boolvalue="true"/>
@@ -66,8 +64,14 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
   </folder>
 
-  <!-- To make the module nicer to debug, list the cookies it provides. -->
   <folder name="Services">
+    <!-- Recognize text/x-ant+xml: -->
+    <folder name="MIMEResolver">
+      <file name="org-apache-tools-ant-module-mime-resolver.xml" url="mime-resolver.xml">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
+        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
+      </file>
+    </folder>
     <file name="AntSettings.settings" url="AntSettings.settings"/>
     <folder name="CompilerType">
       <file name="AntCompiler.settings" url="AntCompiler.settings"/>
@@ -77,6 +81,7 @@ Microsystems, Inc. All Rights Reserved.
       <file name="AntExecutor.settings" url="AntExecutor.settings"/>
     </folder>
     <folder name="Hidden">
+      <!-- To make the module nicer to debug, list the cookies it provides. -->
       <file name="org-apache-tools-ant-module-cookies.xml" url="cookies.xml"/>
     </folder>
     <folder name="JavaHelp">
@@ -88,7 +93,6 @@ Microsystems, Inc. All Rights Reserved.
           "http://www.netbeans.org/dtds/helpsetref-1_0.dtd">
 <helpsetref url="nbdocs:/org/apache/tools/ant/module/docs/HelpSet.hs"/>
 ]]>
-        <attr boolvalue="false" name="org.apache.tools.ant.module.loader.AntProjectDataLoader.KNOWN_ANT_FILE"/>
       </file>
     </folder>
   </folder>
@@ -104,7 +108,6 @@ Microsystems, Inc. All Rights Reserved.
 <helpctx id="org.apache.tools.ant.module.ant-docs"/>
 ]]>
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
-          <attr name="org.apache.tools.ant.module.loader.AntProjectDataLoader.KNOWN_ANT_FILE" boolvalue="false"/>
           <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
         </file>
       </folder>
@@ -120,7 +123,6 @@ Microsystems, Inc. All Rights Reserved.
 <helpctx id="org.apache.tools.ant.module.ant-docs"/>
 ]]>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
-        <attr name="org.apache.tools.ant.module.loader.AntProjectDataLoader.KNOWN_ANT_FILE" boolvalue="false"/>
         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
       </file>
     </folder>

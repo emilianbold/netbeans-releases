@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE MIME-Resolver PUBLIC "-//NetBeans//DTD MIME Resolver 1.0//EN" "http://www.netbeans.org/dtds/mime-resolver-1_0.dtd">
+
+<!-- See #9582. -->
+
+<MIME-resolver>
+
+    <!-- XXX Should these file attributes continue to be honored? -->
+
+    <file>
+        <fattr name="org.apache.tools.ant.module.loader.AntProjectDataLoader.KNOWN_ANT_FILE" text="false"/>
+        <fattr name="org.apache.tools.ant.module.AntProjectDataLoader.KNOWN_ANT_FILE" text="false"/>
+        <exit/>
+    </file>
+
+    <file>
+        <fattr name="org.apache.tools.ant.module.loader.AntProjectDataLoader.KNOWN_ANT_FILE" text="true"/>
+        <fattr name="org.apache.tools.ant.module.AntProjectDataLoader.KNOWN_ANT_FILE" text="true"/>
+        <resolver mime="text/x-ant+xml"/>
+    </file>
+    
+    <!-- Resolve according to root element: -->
+    <file>
+        <ext name="xml"/>
+        <resolver mime="text/x-ant+xml">
+            <xml-rule>
+                <element name="project">
+                    <attr name="default"/>
+                </element>
+            </xml-rule>
+        </resolver>
+    </file>
+        
+</MIME-resolver>

@@ -18,17 +18,38 @@ package org.apache.tools.ant.module.loader;
 import java.awt.Image;
 import java.beans.*;
 
-import org.openide.loaders.UniFileLoader;
+import org.openide.loaders.DataLoader;
 import org.openide.util.NbBundle;
+
+import org.apache.tools.ant.module.AntModule;
 
 public class AntProjectDataLoaderBeanInfo extends SimpleBeanInfo {
 
     public BeanInfo[] getAdditionalBeanInfo () {
         try {
-            return new BeanInfo[] { Introspector.getBeanInfo (UniFileLoader.class) };
+            return new BeanInfo[] { Introspector.getBeanInfo (DataLoader.class) };
         } catch (IntrospectionException ie) {
-            if (Boolean.getBoolean ("netbeans.debug.exceptions"))
-                ie.printStackTrace ();
+            AntModule.err.notify(ie);
+            return null;
+        }
+    }
+    
+    public PropertyDescriptor[] getPropertyDescriptors() {
+        // Make extensions into a r/o property.
+        // It will only contain the Ant MIME type.
+        // Customizations should be done on the resolver object, not on the extension list.
+        // Does not work to just use additional bean info from UniFileLoader and return one extensions
+        // property with no setter--Introspector cleverly (!&#$@&) keeps your display name
+        // and everything and adds back in the setter from the superclass.
+        // So bypass UniFileLoader in the beaninfo search.
+        try {
+            PropertyDescriptor extensions = new PropertyDescriptor("extensions", AntProjectDataLoader.class, "getExtensions", null); // NOI18N
+            extensions.setDisplayName(NbBundle.getMessage(AntProjectDataLoaderBeanInfo.class, "PROP_extensions"));
+            extensions.setShortDescription(NbBundle.getMessage(AntProjectDataLoaderBeanInfo.class, "HINT_extensions"));
+            extensions.setExpert(true);
+            return new PropertyDescriptor[] {extensions};
+        } catch (IntrospectionException ie) {
+            AntModule.err.notify(ie);
             return null;
         }
     }

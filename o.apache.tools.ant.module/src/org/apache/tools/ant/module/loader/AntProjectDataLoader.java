@@ -17,9 +17,6 @@ package org.apache.tools.ant.module.loader;
 
 import java.io.*;
 
-import org.xml.sax.*;
-import org.xml.sax.helpers.*;
-
 import org.openide.*;
 import org.openide.actions.*;
 import org.openide.filesystems.*;
@@ -28,7 +25,6 @@ import org.openide.loaders.*;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.io.SafeException;
-import org.openide.xml.XMLUtil;
 
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.nodes.RunTargetsAction;
@@ -36,8 +32,9 @@ import org.apache.tools.ant.module.nodes.RunTargetsAction;
 /** Recognizes single files in the Repository as being of Ant Project type.
  */
 public class AntProjectDataLoader extends UniFileLoader {
-    private static final String REQUIRED_EXTENSION = "xml"; // NOI18N
+    private static final String REQUIRED_MIME = "text/x-ant+xml"; // NOI18N
     private static final String KNOWN_ANT_FILE = "org.apache.tools.ant.module.loader.AntProjectDataLoader.KNOWN_ANT_FILE"; // NOI18N
+    private static final String KNOWN_ANT_FILE_OLD = "org.apache.tools.ant.module.AntProjectDataLoader.KNOWN_ANT_FILE"; // NOI18N
 
     private static final long serialVersionUID = 3642056255958054115L;
 
@@ -51,9 +48,8 @@ public class AntProjectDataLoader extends UniFileLoader {
 
     protected void initialize () {
         super.initialize ();
-        ExtensionList extensions = new ExtensionList ();
-        extensions.addExtension (REQUIRED_EXTENSION);
-        setExtensions (extensions);
+        // #9582: use declarative MIME types.
+        getExtensions().addMimeType(REQUIRED_MIME);
     }
 
     protected SystemAction[] defaultActions () {
@@ -94,28 +90,6 @@ public class AntProjectDataLoader extends UniFileLoader {
         }
     }
   
-    private static class ResolvedThrow extends SAXException {
-        public boolean match;
-        public ResolvedThrow (boolean match) {
-            super ("determined"); // NOI18N
-            this.match = match;
-        }
-    }
-
-    private static class QuickieHandler extends DefaultHandler {
-        public void startElement (String namespace, String name, String qname, Attributes attrs) throws SAXException {
-            throw new ResolvedThrow (qname.equals ("project") && // NOI18N
-                                     //attrs.getValue ("name") != null && // NOI18N
-                                     //attrs.getValue ("basedir") != null && // NOI18N
-                                     attrs.getValue ("default") != null); // NOI18N
-        }
-        public InputSource resolveEntity (String publicID, String systemID) {
-            //System.err.println ("resolveEntity: " + publicID + " " + systemID);
-            // Read nothing whatsoever.
-            return new InputSource (new ByteArrayInputStream (new byte[] { }));
-        }
-    }
-
     /** Determines whether a given file should be handled by this loader.
      * @param fo the file object to interrogate
      * @return the fileojbect if we will handle it otherwise null
@@ -123,51 +97,24 @@ public class AntProjectDataLoader extends UniFileLoader {
     protected FileObject findPrimaryFile (FileObject fo) {
         FileObject fo2 = super.findPrimaryFile (fo);
         if (fo2 == null) {
-            // Incorrect extension.
+            // Incorrect extension or contents.
             return null;
         } else {
-            // Check to see if we know that it is an Ant file already
-            // (i.e. cache the parsing result).
-            Object myGuy = fo2.getAttribute (KNOWN_ANT_FILE);
-            if (myGuy != null && (myGuy instanceof Boolean)) {
-                return ((Boolean) myGuy).booleanValue () ? fo2 : null;
-            } else {
-                if (fo2.getSize () == 0) {
-                    // Empty XML files are definitely too early; don't waste time
-                    // trying to parse them and failing.
-                    // Try again when they have content.
-                    return null;
-                }
-                // OK, first attempt to parse this file.
-                try {
-                    XMLReader r = XMLUtil.createXMLReader (false, false);
-                    QuickieHandler h = new QuickieHandler ();
-                    r.setContentHandler (h);
-                    r.setDTDHandler (h);
-                    r.setEntityResolver (h);
-                    r.setErrorHandler (h);
-                    InputSource ins = new InputSource(fo2.getInputStream());
-                    ins.setSystemId(fo2.getURL().toExternalForm());   //#9581 work around
-                    r.parse (ins);
-                    throw new IllegalStateException ();
-                } catch (ResolvedThrow rt) {
-                    recognizeIt (fo2, rt.match);
-                    return rt.match ? fo2 : null;
-                } catch (Exception e) {
-                    // SAXConfiguration or general SAX fatal parse error or IOException etc.
-                    AntModule.err.annotate (e, "Affected file: " + fo2); // NOI18N
-                    AntModule.err.notify (ErrorManager.INFORMATIONAL, e);
-                    return null;
-                }
-            }
+            // Ours. Clear any old-style file attributes first.
+            clearAttrs(fo2);
+            return fo2;
         }
     }
 
-    /** Mark a certain file as definitely mine or not mine.
-     * @param fo the file object to remember about
-     * @param mine whether it is an Ant file or not
+    /** Delete old, no-longer-used marker attributes when possible.
+     * @param fo the file object to unremember about
      */
-    private static void recognizeIt (FileObject fo, boolean mine) {
+    private static void clearAttrs(FileObject fo) {
+        if (fo.getAttribute(KNOWN_ANT_FILE) == null && fo.getAttribute(KNOWN_ANT_FILE_OLD) == null) {
+            // Already fine, no need to do anything.
+            // Trying to uselessly clear the attr can cause empty .nbattrs to be written etc.
+            return;
+        }
         if (fo.isReadOnly ()) {
             // Don't even try.
             return;
@@ -190,7 +137,8 @@ public class AntProjectDataLoader extends UniFileLoader {
             return;
         }
         try {
-            fo.setAttribute (KNOWN_ANT_FILE, new Boolean (mine));
+            fo.setAttribute (KNOWN_ANT_FILE, null);
+            fo.setAttribute (KNOWN_ANT_FILE_OLD, null);
         } catch (IOException ioe) {
             AntModule.err.notify (ErrorManager.INFORMATIONAL, ioe);
         }
@@ -198,55 +146,6 @@ public class AntProjectDataLoader extends UniFileLoader {
 
     protected MultiDataObject createMultiObject (FileObject primaryFile) throws DataObjectExistsException, IOException {
         return new AntProjectDataObject(primaryFile, this);
-    }
-
-    protected MultiDataObject.Entry createPrimaryEntry (MultiDataObject obj, FileObject fo) {
-        return new AntProjectFileEntry (obj, fo);
-    }
-
-    /** Purely for efficiency: if we are doing something with an Ant script, the result
-     * will logically still be an Ant script; do not waste time reparsing it.
-     */
-    private static class AntProjectFileEntry extends FileEntry {
-
-        private static final long serialVersionUID = -1765455606632045537L;
-        
-        public AntProjectFileEntry (MultiDataObject obj, FileObject fo) {
-            super (obj, fo);
-        }
-
-        public FileObject createFromTemplate (FileObject f, String name) throws IOException {
-            FileObject f2 = super.createFromTemplate (f, name);
-            if (f2 != null) {
-                recognizeIt (f2, true);
-            }
-            return f2;
-        }
-
-        public FileObject copy (FileObject f, String suffix) throws IOException {
-            FileObject f2 = super.copy (f, suffix);
-            if (f2 != null) {
-                recognizeIt (f2, true);
-            }
-            return f2;
-        }
-
-        public FileObject rename (String name) throws IOException {
-            FileObject f2 = super.rename (name);
-            if (f2 != null) {
-                recognizeIt (f2, true);
-            }
-            return f2;
-        }
-
-        public FileObject move (FileObject f, String suffix) throws IOException {
-            FileObject f2 = super.move (f, suffix);
-            if (f2 != null) {
-                recognizeIt (f2, true);
-            }
-            return f2;
-        }
-
     }
 
 }
