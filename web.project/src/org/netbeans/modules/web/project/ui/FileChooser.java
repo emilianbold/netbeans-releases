@@ -54,7 +54,16 @@ public class FileChooser extends JFileChooser {
         if (lastChooserLocation != null && lastChooserLocation.exists()) {
             return lastChooserLocation;
         } else {
-            return new File(System.getProperty("user.home")); //NOI18N
+            String pathname = System.getProperty("user.home"); //NOI18N
+            if(pathname != null) {
+                File file = new File(pathname).getAbsoluteFile();
+                if(file.exists()) {
+                    return file;
+                }
+            }
+            File file = new File("").getAbsoluteFile(); //NOI18N
+            assert file.exists() : "Default directory '" + file.getAbsolutePath() + "' does not exist"; //NOI18N
+            return f;
         }
     }
 
