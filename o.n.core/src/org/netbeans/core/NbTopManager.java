@@ -188,7 +188,7 @@ public class NbTopManager extends TopManager {
     Debugger d = debugger;
     if (d == null) {
       throw new DebuggerException(
-        NbBundle.getBundle(this).getString("MSG_NoDebugger")
+        NbBundle.getBundle(this).getString("EXC_NoDebugger")
       );
     }
     return d;
