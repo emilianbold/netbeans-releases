@@ -270,6 +270,7 @@ public class EditorWarmUpTask implements Runnable{
                     frame.paint(bGraphics);
                     frame.getContentPane().removeAll();
                     frame.dispose();
+                    pane.setEditorKit(null);
                 }
             });
 
