@@ -102,9 +102,12 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
         return false;
     }
     
-    /** It does nothing in this implementation.
+    /** Call setURL again to force reloading.
+     * Browser must be set to reload document and do not cache them.
      */
     public void reloadDocument() {
+        if (url != null)
+            setURL (url);
     }
     
     /** 
