@@ -558,12 +558,8 @@ public class EjbJarProjectProperties {
     }
     
     public static String getProperty(final String property, final AntProjectHelper helper, final String path) {
-        return (String)ProjectManager.mutex().readAccess(new Mutex.Action() {
-            public Object run() {
-                EditableProperties props = helper.getProperties(path);
-                return props.getProperty(property);
-            }
-        });
+        EditableProperties props = helper.getProperties(path);
+        return props.getProperty(property);
     }
     
     public static String getAntPropertyName( String property ) {
