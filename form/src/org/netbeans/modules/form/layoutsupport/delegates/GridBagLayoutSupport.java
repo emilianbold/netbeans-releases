@@ -89,7 +89,9 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
     {
         if (currentConstraints == null || components == null
                 || components.length > currentConstraints.length
-                || components.length == 0)
+                || components.length == 0
+                || !(previousConstraints[0]
+                     instanceof AbsoluteLayoutSupport.AbsoluteLayoutConstraints))
             return;
 
         ArrayList xlines = new ArrayList();
