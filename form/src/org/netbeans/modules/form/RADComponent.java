@@ -676,6 +676,13 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
                 properties[i] = prop;
                 validCount++;
             }
+            else { // force all properties creation, there might be more
+                   // properties than from BeanInfo [currently just ButtonGroup]
+                properties[i] = (RADProperty)
+                                getPropertyByName(name, RADProperty.class, true);
+                empty = false;
+                newProps = null;
+            }
         }
 
         if (empty) {
