@@ -7,31 +7,48 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.project.libraries;
 
-import org.openide.loaders.FolderInstance;
-import org.openide.loaders.DataFolder;
-import org.openide.cookies.InstanceCookie;
-import org.openide.filesystems.Repository;
-import org.openide.ErrorManager;
-import org.netbeans.spi.project.libraries.LibraryTypeProvider;
-
 import java.io.IOException;
-import java.util.List;
-import java.util.ArrayList;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.spi.project.libraries.LibraryTypeProvider;
+import org.openide.ErrorManager;
+import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.FolderInstance;
 
 public final class LibraryTypeRegistry extends FolderInstance {
 
     private static final String REGISTRY = "org-netbeans-api-project-libraries/LibraryTypeProviders";              //NOI18N
+    private static FileObject findProvidersFolder() {
+        FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
+        FileObject folder = sfs.findResource(REGISTRY);
+        if (folder == null) {
+            // #50391 - maybe we are turning this module off?
+            try {
+                folder = FileUtil.createFolder(sfs.getRoot(), REGISTRY);
+            } catch (IOException e) {
+                // Hmm, what to do?
+                throw (IllegalStateException) new IllegalStateException("Cannot make folder " + REGISTRY + ": " + e).initCause(e);
+            }
+        }
+        return folder;
+    }
+    
     private static Reference instance;
 
     private LibraryTypeRegistry () {
-        super (DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().findResource (REGISTRY)));
+        super(DataFolder.findFolder(findProvidersFolder()));
     }
 
     public LibraryTypeProvider[] getLibraryTypeProviders () {
