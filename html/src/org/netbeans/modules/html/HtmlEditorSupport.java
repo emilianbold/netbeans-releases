@@ -199,15 +199,15 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
      * @return the encoding or null if no has been found
      */
     private static String findEncoding (String txt) {
-        int headLen = txt.indexOf ("</HEAD>");
+        int headLen = txt.indexOf ("</HEAD>"); // NOI18N
         if (headLen == -1) headLen = txt.length ();
         
-        int content = txt.indexOf ("CONTENT-TYPE");
+        int content = txt.indexOf ("CONTENT-TYPE"); // NOI18N
         if (content == -1 || content > headLen) {
             return null;
         }
         
-        int charset = txt.indexOf ("CHARSET=", content);
+        int charset = txt.indexOf ("CHARSET=", content); // NOI18N
         if (charset == -1) {
             return null;
         }
@@ -224,7 +224,7 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
             }
         }
         
-        return txt.substring (charset + "CHARSET=".length (), charend);
+        return txt.substring (charset + "CHARSET=".length (), charend); // NOI18N
     }
     
     /** Nested class. Environment for this support. Extends <code>DataEditorSupport.Env</code> abstract class. */
