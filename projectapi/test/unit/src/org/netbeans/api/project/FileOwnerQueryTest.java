@@ -37,13 +37,14 @@ public class FileOwnerQueryTest extends NbTestCase {
     
     protected void setUp() throws Exception {
         scratch = TestUtil.makeScratchDir(this);
-        projdir = scratch.createFolder("testproject");
-        p = ProjectManager.getDefault().findProject(projdir);
-        randomfile = scratch.createData("randomfile");
+        projdir = scratch.createFolder("my-project");
+        projdir.createData("testproject");
+        randomfile = projdir.createData("randomfile");
         projfile = projdir.createData("projfile");
         TestUtil.setLookup(new Object[] {
             TestUtil.testProjectFactory(),
         }, FileOwnerQueryTest.class.getClassLoader());
+        p = ProjectManager.getDefault().findProject(projdir);
     }
     
     protected void tearDown() throws Exception {
