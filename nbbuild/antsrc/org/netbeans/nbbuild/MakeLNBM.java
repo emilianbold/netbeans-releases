@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -647,7 +647,7 @@ public class MakeLNBM extends MatchingTask {
 				signjar.getClass().getDeclaredMethod( "setKeystore", paramsT2 ).invoke( signjar, paramsV1 ); //NOI18N
 				signjar.getClass().getDeclaredMethod( "setJar", paramsT1 ).invoke( signjar, paramsV2 ); //NOI18N
 			    }   catch (NoSuchMethodException ex3) {
-                                throw new BuildException("Unknown ANT version, only ANT 1.6.1 is currently supported.");
+                                throw new BuildException("Unknown Ant version, only Ant 1.6.2 is currently supported.");
                             }
                         }
                     }
