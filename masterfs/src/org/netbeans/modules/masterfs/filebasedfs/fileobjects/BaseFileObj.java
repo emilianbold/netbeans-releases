@@ -173,6 +173,8 @@ public abstract class BaseFileObj extends FileObject {
             FSException.io("EXC_CannotRename", file.getName(), getFileSystem().getDisplayName(), file2Rename.getName()); // NOI18N                                        
         }
 
+        FileBasedFileSystem fs = getLocalFileSystem();
+        fs.getFactory().rename(); 
         BaseFileObj.attribs.renameAttributes(file.getAbsolutePath().replace('\\', '/'), file2Rename.getAbsolutePath().replace('\\', '/'));//NOI18N
         fireFileRenamedEvent(originalName, originalExt);
     }

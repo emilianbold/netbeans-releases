@@ -53,12 +53,20 @@ public final class FileObjectFactory {
             final Iterator it = allInstances.values().iterator();
             while (it.hasNext()) {
                 final Object obj = it.next();
-                //TODO: handle possible List
-                assert obj instanceof Reference;
-                final WeakReference ref = (WeakReference) obj;
-                final BaseFileObj fo = (BaseFileObj) ((ref != null) ? ref.get() : null);
-                if (fo != null && (fo.isFolder() || fo.getExistingParent() == null))  {
-                    all2Refresh.add(fo);
+                if (obj instanceof List) {
+                    for (Iterator iterator = ((List)obj).iterator(); iterator.hasNext();) {
+                        WeakReference ref = (WeakReference) iterator.next();
+                        final BaseFileObj fo = (BaseFileObj) ((ref != null) ? ref.get() : null);
+                        if (fo != null && (fo.isFolder() || fo.getExistingParent() == null))  {
+                            all2Refresh.add(fo);
+                        }                                            
+                    }
+                } else {
+                    final WeakReference ref = (WeakReference) obj;
+                    final BaseFileObj fo = (BaseFileObj) ((ref != null) ? ref.get() : null);
+                    if (fo != null && (fo.isFolder() || fo.getExistingParent() == null))  {
+                        all2Refresh.add(fo);
+                    }                    
                 }
             }
         }
@@ -68,10 +76,58 @@ public final class FileObjectFactory {
             final FileObject fo = (FileObject) iterator.next();
             fo.refresh(expected);
         }
-
-
     }
 
+    public final void rename () {
+        final Map toRename = new HashMap();
+        synchronized (allInstances) {
+            final Iterator it = allInstances.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry entry = (Map.Entry)it.next();
+                final Object obj = entry.getValue();
+                final Integer key = (Integer)entry.getKey();
+                if (!(obj instanceof List)) {
+                    final WeakReference ref = (WeakReference) obj;
+                
+                    final BaseFileObj fo = (BaseFileObj) ((ref != null) ? ref.get() : null);
+
+                    if (fo != null) {
+                        Integer computedId = fo.getFileName().getId();
+                        if (!key.equals(computedId)) {
+                          toRename.put(key,fo);      
+                        }
+                    }
+                } else {
+                    for (Iterator iterator = ((List)obj).iterator(); iterator.hasNext();) {
+                        WeakReference ref = (WeakReference) iterator.next();
+                        final BaseFileObj fo = (BaseFileObj) ((ref != null) ? ref.get() : null);
+                        if (fo != null) {
+                            Integer computedId = fo.getFileName().getId();
+                            if (!key.equals(computedId)) {
+                              toRename.put(key,ref);      
+                            }
+                        }                        
+                    }
+                    
+                }
+            }
+            
+            for (Iterator iterator = toRename.entrySet().iterator(); iterator.hasNext();) {
+                final Map.Entry entry = (Map.Entry ) iterator.next();
+                Object key = entry.getKey();
+                Object previous = allInstances.remove(key);
+                if (previous instanceof List) {
+                    List list = (List)previous;
+                    list.remove(entry.getValue());
+                    allInstances.put(key, previous);
+                } else {
+                    BaseFileObj bfo = (BaseFileObj )entry.getValue();
+                    putInCache(bfo, bfo.getFileName().getId());
+                }
+            }            
+        }
+    }    
+    
     private  FileObject findFileObjectImpl(final File file, final List keepIt) {
         FileObject retVal;
         synchronized (allInstances) {

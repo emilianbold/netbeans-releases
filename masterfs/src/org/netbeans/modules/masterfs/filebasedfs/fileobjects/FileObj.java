@@ -42,18 +42,25 @@ final class FileObj extends BaseFileObj {
         assert f.exists() || !isValid(true) ;
 
         final MutualExclusionSupport.Closeable closable = MutualExclusionSupport.getDefault().addResource(this, false);
-        return new FileOutputStream(getFileName().getFile()) {
-            //Exception ex = new Exception();
-            public void close() throws IOException {
-                if (!closable.isClosed()) {
-                    super.close();
-                    closable.close();
-                    lastModified();
-                    //ex.printStackTrace();                
-                    fireFileChangedEvent(false);
-                }
+        FileOutputStream retVal = null;
+        try {
+            retVal = new FileOutputStream(getFileName().getFile()) {
+                                public void close() throws IOException {
+                                    if (!closable.isClosed()) {
+                                        super.close();
+                                        closable.close();
+                                        lastModified();
+                                        fireFileChangedEvent(false);
+                                    }
+                                }
+                            };
+        } catch (FileNotFoundException e) {
+            if (closable != null) {
+                closable.close();
             }
-        };
+            throw e;
+        }
+        return retVal;
     }
 
     public final java.io.InputStream getInputStream() throws java.io.FileNotFoundException {
@@ -61,8 +68,11 @@ final class FileObj extends BaseFileObj {
         assert f.exists() || !isValid(true) ;
                         
         InputStream inputStream;
+        MutualExclusionSupport.Closeable closeableReference = null;
+        
         try {
             final MutualExclusionSupport.Closeable closable = MutualExclusionSupport.getDefault().addResource(this, true);
+            closeableReference = closable;
             inputStream = new FileInputStream(getFileName().getFile()) {
                 public void close() throws IOException {
                     super.close();
@@ -70,6 +80,10 @@ final class FileObj extends BaseFileObj {
                 }
             };
         } catch (IOException e) {
+            if (closeableReference != null) {
+                closeableReference.close();    
+            }
+            
             final FileNotFoundException fileNotFoundException = new FileNotFoundException(e.getLocalizedMessage());
             FSException.annotateException(fileNotFoundException);
             throw fileNotFoundException;

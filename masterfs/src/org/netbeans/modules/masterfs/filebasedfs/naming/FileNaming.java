@@ -31,5 +31,7 @@ public interface FileNaming {
 
     Integer getId();
 
+    Integer getId(boolean recompute);
+
     boolean rename(String name);
 }

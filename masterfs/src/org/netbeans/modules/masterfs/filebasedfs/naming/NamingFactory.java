@@ -48,18 +48,53 @@ public final class NamingFactory {
     
     public static synchronized boolean rename (FileNaming fNaming, String newName) {        
         boolean retVal = false;
-        Object value = NamingFactory.nameMap.get(fNaming.getId());
+        remove(fNaming, null);
+        retVal = fNaming.rename(newName);
+        NamingFactory.registerInstanceOfFileNaming(fNaming.getParent(), fNaming.getFile(), fNaming);
+        renameChildren();
+        return retVal;
+    }
+
+    private static void renameChildren() {
+        HashMap toRename = new HashMap ();
+        for (Iterator iterator = nameMap.entrySet().iterator(); iterator.hasNext();) {
+            Map.Entry entry = (Map.Entry) iterator.next();
+            Integer id = (Integer)entry.getKey();
+            //TODO: handle possible List            
+            FileNaming fN = (FileNaming)((Reference)entry.getValue()).get(); 
+            
+            Integer computedId = NamingFactory.createID(fN.getFile()); 
+                    
+
+            boolean isRenamed = (!computedId.equals (id));
+            if (isRenamed) {
+                toRename.put(id, fN);
+            }
+
+        }
+        
+        for (Iterator iterator = toRename.entrySet().iterator(); iterator.hasNext();) {
+            Map.Entry entry = (Map.Entry) iterator.next();
+            Integer id = (Integer)entry.getKey();
+            FileNaming fN = (FileNaming)entry.getValue(); 
+
+            remove(fN, id);
+            fN.getId(true);
+            NamingFactory.registerInstanceOfFileNaming(fN.getParent(), fN.getFile(), fN);            
+        }
+    }
+
+    private static void remove(final FileNaming fNaming, Integer id) {
+        id = (id != null) ? id : fNaming.getId();         
+        Object value = NamingFactory.nameMap.get(id);
         if (value instanceof List) {
             Reference ref = NamingFactory.getReference((List) value, fNaming.getFile());
             if (ref != null) {
                 ((List) value).remove(ref);                
             }            
         } else {
-            NamingFactory.nameMap.remove(fNaming.getId());
+            NamingFactory.nameMap.remove(id);
         }
-        retVal = fNaming.rename(newName);
-        NamingFactory.registerInstanceOfFileNaming(fNaming.getParent(), fNaming.getFile(), fNaming);
-        return retVal;
     }
 
     public static Integer createID(final File file) {
