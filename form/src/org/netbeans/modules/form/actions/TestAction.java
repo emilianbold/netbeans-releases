@@ -22,13 +22,11 @@ import org.openide.nodes.*;
 import org.openide.util.actions.*;
 import org.netbeans.modules.form.*;
 
-/** TestAction action.
- *
- * @author   Ian Formanek
+/**
+ * @author Tomas Pavek
  */
-public class TestAction extends CallableSystemAction {
 
-    static final long serialVersionUID =6405790716032972989L;
+public class TestAction extends CallableSystemAction implements Runnable {
 
     public TestAction() {
         setEnabled(false);
@@ -57,17 +55,13 @@ public class TestAction extends CallableSystemAction {
     public void performAction() {
         if (formModel != null) {
             if (java.awt.EventQueue.isDispatchThread())
-                testForm();
+                run();
             else
-                java.awt.EventQueue.invokeLater(new Runnable() {
-                    public void run() {
-                        testForm();
-                    }
-                });
+                java.awt.EventQueue.invokeLater(this);
         }
     }
 
-    private void testForm() {
+    public void run() {
         if (!(formModel.getTopRADComponent() instanceof RADVisualComponent))
             return;
 
