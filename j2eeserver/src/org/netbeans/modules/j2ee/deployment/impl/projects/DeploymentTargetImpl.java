@@ -80,7 +80,10 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
         
         url = findWebUrl(clientModule);
         if (url != null) {
-            return (url + partUrl);
+            if (partUrl.startsWith("/"))
+                return (url + partUrl);
+            else
+                return (url + "/" + partUrl); //NOI18N
         } else {
             return null;
         }
@@ -139,7 +142,7 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
             }
 
             // matched child module url with plugin's help
-            if (clientModuleUri.equals(mur.getModuleUrl(children[i]))) {
+            if (mur != null && clientModuleUri.equals(mur.getModuleUrl(children[i]))) {
                 tmid = children[i];
                 break;
             }
