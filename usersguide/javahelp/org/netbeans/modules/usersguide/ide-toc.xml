@@ -308,7 +308,7 @@
     <tocitem text="Restarting a Persistent Session" target="debug.sessions.restart" />
   </tocitem>
   <tocitem text="Setting Debugger Options" target="debug.debugger.jump">
-    <tocitem text="Default Debugger (JPDA)" target="debug.debugger.project_default"/>
+    <tocitem text="Default Debugger (JPDA)" target="debug.debugger.default"/>
     <tocitem text="Applet Debugger" target="debug.debugger.applet"/>
     <tocitem text="JDK 1.1 Debugger" target="debug.debugger.jdk"/>
     <tocitem text="Specifying the Default Debugger" target="debug.debugger.project_default"/>
