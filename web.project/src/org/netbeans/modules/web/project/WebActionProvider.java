@@ -325,53 +325,65 @@ class WebActionProvider implements ActionProvider {
                         return;
                     }
                 } else {
-                    // debug Java
-                    // debug servlet
-                    FileObject[] javaFiles = findJavaSources(context);
-                    if ((javaFiles != null) && (javaFiles.length>0)) {
-                        FileObject javaFile = javaFiles[0];
-
-                        if (hasMainMethod(javaFile)) {
-                            // debug Java with Main method
-                            String clazz = FileUtil.getRelativePath(project.getSourceDirectory(), javaFile);
-                            p = new Properties();
-                            p.setProperty("javac.includes", clazz); // NOI18N
-                            // Convert foo/FooTest.java -> foo.FooTest
-                            if (clazz.endsWith(".java")) { // NOI18N
-                                clazz = clazz.substring(0, clazz.length() - 5);
-                            }
-                            clazz = clazz.replace('/','.');
-
-                            p.setProperty("debug.class", clazz); // NOI18N
-                            targetNames = new String [] {"debug-single-main"};
+                    // debug HTML file
+                    FileObject[] htmlFiles = findHtml(context);
+                    if ((htmlFiles != null) && (htmlFiles.length>0)) {
+                        String url = "/" + FileUtil.getRelativePath(WebModule.getWebModule (htmlFiles[0]).getDocumentBase (), htmlFiles[0]); // NOI18N
+                        if (url != null) {
+                            url = org.openide.util.Utilities.replaceString(url, " ", "%20");
+                            p.setProperty("client.urlPart", url); //NOI18N
+                        } else {
+                            return;
                         }
-                        else {
-                            // run servlet
-                            // PENDING - what about servlets with main method? servlet should take precedence
-                            String executionUri = (String)javaFile.getAttribute(SetExecutionUriAction.ATTR_EXECUTION_URI);
-                            if (executionUri!=null) {
-                                p.setProperty("client.urlPart", executionUri); //NOI18N
-                            } else {
-                                WebModule webModule = WebModule.getWebModule(javaFile);
-                                String[] urlPatterns = SetExecutionUriAction.getServletMappings(webModule,javaFile);
-                                if (urlPatterns!=null && urlPatterns.length>0) {
-                                    ServletUriPanel uriPanel = new ServletUriPanel(urlPatterns,null,true);
-                                    DialogDescriptor desc = new DialogDescriptor(uriPanel,
-                                        NbBundle.getMessage (SetExecutionUriAction.class, "TTL_setServletExecutionUri"));
-                                    Object res = DialogDisplayer.getDefault().notify(desc);
-                                    if (res.equals(NotifyDescriptor.YES_OPTION)) {
-                                        p.setProperty("client.urlPart", uriPanel.getServletUri()); //NOI18N
-                                        try {
-                                            javaFile.setAttribute(SetExecutionUriAction.ATTR_EXECUTION_URI,uriPanel.getServletUri());
-                                        } catch (IOException ex){}
-                                    } else return;
+                    } else {
+                        // debug Java
+                        // debug servlet
+                        FileObject[] javaFiles = findJavaSources(context);
+                        if ((javaFiles != null) && (javaFiles.length>0)) {
+                            FileObject javaFile = javaFiles[0];
+
+                            if (hasMainMethod(javaFile)) {
+                                // debug Java with Main method
+                                String clazz = FileUtil.getRelativePath(project.getSourceDirectory(), javaFile);
+                                p = new Properties();
+                                p.setProperty("javac.includes", clazz); // NOI18N
+                                // Convert foo/FooTest.java -> foo.FooTest
+                                if (clazz.endsWith(".java")) { // NOI18N
+                                    clazz = clazz.substring(0, clazz.length() - 5);
+                                }
+                                clazz = clazz.replace('/','.');
+
+                                p.setProperty("debug.class", clazz); // NOI18N
+                                targetNames = new String [] {"debug-single-main"};
+                            }
+                            else {
+                                // run servlet
+                                // PENDING - what about servlets with main method? servlet should take precedence
+                                String executionUri = (String)javaFile.getAttribute(SetExecutionUriAction.ATTR_EXECUTION_URI);
+                                if (executionUri!=null) {
+                                    p.setProperty("client.urlPart", executionUri); //NOI18N
                                 } else {
-                                    String mes = java.text.MessageFormat.format (
-                                            NbBundle.getMessage (SetExecutionUriAction.class, "TXT_missingServletMappings"),
-                                            new Object [] {javaFile.getName()});
-                                    NotifyDescriptor desc = new NotifyDescriptor.Message(mes,NotifyDescriptor.Message.ERROR_MESSAGE);
-                                    DialogDisplayer.getDefault().notify(desc);
-                                    return;
+                                    WebModule webModule = WebModule.getWebModule(javaFile);
+                                    String[] urlPatterns = SetExecutionUriAction.getServletMappings(webModule,javaFile);
+                                    if (urlPatterns!=null && urlPatterns.length>0) {
+                                        ServletUriPanel uriPanel = new ServletUriPanel(urlPatterns,null,true);
+                                        DialogDescriptor desc = new DialogDescriptor(uriPanel,
+                                            NbBundle.getMessage (SetExecutionUriAction.class, "TTL_setServletExecutionUri"));
+                                        Object res = DialogDisplayer.getDefault().notify(desc);
+                                        if (res.equals(NotifyDescriptor.YES_OPTION)) {
+                                            p.setProperty("client.urlPart", uriPanel.getServletUri()); //NOI18N
+                                            try {
+                                                javaFile.setAttribute(SetExecutionUriAction.ATTR_EXECUTION_URI,uriPanel.getServletUri());
+                                            } catch (IOException ex){}
+                                        } else return;
+                                    } else {
+                                        String mes = java.text.MessageFormat.format (
+                                                NbBundle.getMessage (SetExecutionUriAction.class, "TXT_missingServletMappings"),
+                                                new Object [] {javaFile.getName()});
+                                        NotifyDescriptor desc = new NotifyDescriptor.Message(mes,NotifyDescriptor.Message.ERROR_MESSAGE);
+                                        DialogDisplayer.getDefault().notify(desc);
+                                        return;
+                                    }
                                 }
                             }
                         }
@@ -523,7 +535,7 @@ class WebActionProvider implements ActionProvider {
             return false;
         }
         if ( command.equals( COMMAND_DEBUG_SINGLE ) ) {
-            return findJavaSources(context) != null || findJsps(context) != null;
+            return findJavaSources(context) != null || findJsps(context) != null || findHtml(context) != null;
         }
         if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
             return findJavaSources( context ) != null || findJsps (context) != null;

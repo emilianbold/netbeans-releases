@@ -48,7 +48,7 @@ public class WebProjectModule extends ModuleInstall {
     public static final String COPYFILES_CLASSPATH = "copyfiles.classpath"; //NOI18N
     
     public void restored() {
-        // Hack JspDataLoader actions - not very nice - but copied from JavaProjectModule
+        // Hack JspDataLoader and HtmlDataLoader actions - not very nice - but copied from JavaProjectModule
         
         DataLoaderPool dataLoaderPool = (DataLoaderPool) Lookup.getDefault().lookup(DataLoaderPool.class);
         
@@ -74,13 +74,33 @@ public class WebProjectModule extends ModuleInstall {
                     newActions.add( null );
                 }
             }
-
-
             jspLoader.setActions((SystemAction[])newActions.toArray(new SystemAction[newActions.size()]));        
-
-            
+        } catch( ClassNotFoundException e ) {
+            ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );
         }
-        catch( ClassNotFoundException e ) {
+
+        try {
+            Class htmlDataObjectClass = Class.forName( "org.netbeans.modules.html.HtmlDataObject", 
+                                                        true, 
+                                                        (ClassLoader)Lookup.getDefault().lookup( ClassLoader.class ) );
+            
+            DataLoader htmlLoader = dataLoaderPool.firstProducerOf(htmlDataObjectClass );
+            
+            ArrayList actions = new ArrayList(Arrays.asList(htmlLoader.getActions()));
+            ArrayList newActions = new ArrayList( actions.size() + 4 );
+
+            for( Iterator it = actions.iterator(); it.hasNext(); ) {
+                SystemAction a = (SystemAction)it.next();
+                newActions.add(a);
+                if ( a instanceof org.openide.actions.OpenAction ) {
+                    newActions.add( null );
+                    newActions.add( new HtmlRunWrapper(  ) );
+                    newActions.add( new HtmlDebugWrapper(  ) );
+                    newActions.add( null );
+                }
+            }
+            htmlLoader.setActions((SystemAction[])newActions.toArray(new SystemAction[newActions.size()]));        
+        } catch( ClassNotFoundException e ) {
             ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );
         }
         
@@ -201,4 +221,18 @@ public class WebProjectModule extends ModuleInstall {
         }
     }
     
+    public static class HtmlRunWrapper extends ActionWrapper {
+        HtmlRunWrapper() {
+            super( FileSensitiveActions.fileCommandAction( 
+                       ActionProvider.COMMAND_RUN_SINGLE, "Run File", null ) );
+            
+        }
+    }
+    
+    public static class HtmlDebugWrapper extends ActionWrapper {
+        HtmlDebugWrapper() {
+            super( FileSensitiveActions.fileCommandAction( 
+                       ActionProvider.COMMAND_DEBUG_SINGLE, "Debug File", null ) );
+        }
+    }
 }
