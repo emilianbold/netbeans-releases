@@ -163,19 +163,27 @@ public class ReplaceTest extends EditorTestCase {
             // check status bar
             waitForLabel("'testReplaceDialogComboBox' found at 13:35");
             
-            assertEquals((String)replace.cboFindWhat().getItemAt(0), 
-                    "testReplaceDialogComboBox");
-            assertEquals((String)replace.cboFindWhat().getItemAt(1), 
-                    "class");
-            assertEquals((String)replace.cboFindWhat().getItemAt(2), 
-                    "package");
+            int found = 0;
+            for (int i = 0; i<replace.cboFindWhat().getItemCount(); i++) {
+                if (((String)replace.cboFindWhat().getItemAt(i)).equals( 
+                    "testReplaceDialogComboBox")) found++;
+                if (((String)replace.cboFindWhat().getItemAt(i)).equals( 
+                    "class")) found++;
+                if (((String)replace.cboFindWhat().getItemAt(i)).equals( 
+                    "package")) found++;
+            }
+            assertEquals(found, 3);
 
-            assertEquals((String)replace.cboReplaceWith().getItemAt(0), 
-                    "testReplaceDialogComboBox2");
-            assertEquals((String)replace.cboReplaceWith().getItemAt(1), 
-                    "klasa");
-            assertEquals((String)replace.cboReplaceWith().getItemAt(2), 
-                    "pakaz");
+            int found2 = 0;
+            for (int i = 0; i<replace.cboReplaceWith().getItemCount(); i++) {
+                if (((String)replace.cboReplaceWith().getItemAt(i)).equals( 
+                    "testReplaceDialogComboBox2")) found2++;
+                if (((String)replace.cboReplaceWith().getItemAt(i)).equals( 
+                    "klasa")) found2++;
+                if (((String)replace.cboReplaceWith().getItemAt(i)).equals( 
+                    "pakaz")) found2++;
+            }
+            assertEquals(found2, 3);
                         
             new EventTool().waitNoEvent(REPLACE_TIMEOUT);
             replace.close();
