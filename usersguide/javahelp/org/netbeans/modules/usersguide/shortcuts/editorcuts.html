@@ -1,45 +1,35 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
 <!--       
- *        Copyright (C) 2000  Sun Microsystems, Inc
- *                    All rights reserved.
- *          Notice of copyright on this source code 
- *          product does not indicate publication. 
- * 
- * RESTRICTED RIGHTS LEGEND: Use, duplication, or disclosure by 
- * the U.S. Government is subject to restrictions as set forth 
- * in subparagraph (c)(1)(ii) of the Rights in Technical Data
- * and Computer Software Clause at DFARS 252.227-7013 (Oct. 1988) 
- * and FAR 52.227-19 (c) (June 1988).
- *
- *    Sun Microsystems, Inc., 901 San Antonio Road,
- *    Palo Alto, California 94303 U.S.A.
- *
+*     Copyright 2001 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
 -->
 <html>
 <head>
 <title>Editor Shortcuts</title>
+<link rel="StyleSheet" href="../ide.css" type="text/css">
 </head>
-<BODY BGCOLOR="#FFFFFF">
+<body bgcolor="#FFFFFF">
 
 <h2>Editor Shortcuts</h2>
-
+<p>
 Shortcuts are available for the following operations:
 <ul>
 <li><a href="#mvpt">Moving the Insertion Point</a>
-<li><a href="#selecttxt">Selecting Text</a>
 <li><a href="#scrolltxt">Scrolling Text</a>
+<li><a href="#selecttxt">Selecting Text</a>
 <li><a href="#modtxt">Modifying Text</a>
+<li><a href="#macros">Recording Macros</a>
 <li><a href="#ccpdtxt">Cutting, Copying, Pasting, and Deleting Text</a>
 <li><a href="#searchtxt">Searching Text</a>
 <li><a href="#settabs">Setting Tabs</a>
 <li><a href="#modcode">Modifying Code</a>
 <li><a href="#openfiles">Opening Files</a>
 <li><a href="#usebkmks">Using Bookmarks</a>
-</ul>
+</ul></p>
 
 <a name="mvpt"></a>
 <h3>Moving the Insertion Point</h3>
-
+<p>
 <table border="1">
 <tr>
 <th align="left">Keys</th>
@@ -103,11 +93,42 @@ Shortcuts are available for the following operations:
 <td valign="top">PgDn</td>
 <td>Moves the insertion point one page down.</td> 
 </tr>
-</table>
+</table></p>
+
+<a name="scrolltxt"></a>
+<h3>Scrolling Text</h3>
+<p>
+<table border="1">
+<tr>
+<th align="left">Keys</th>
+<th align="left">Action</th>
+</tr>
+<tr>
+<td valign="top">Alt-T</td>
+<td>Scrolls text to top of window.</td>
+</tr>
+<tr>
+<td valign="top">Alt-M</td>
+<td>Scrolls text to middle of window.</td>
+</tr>
+<tr>
+<td valign="top">Alt-B</td>
+<td>Scrolls text to bottom of window.</td>
+</tr>
+<tr>
+<td valign="top">Ctrl-up arrow</td>
+<td>Scrolls the window up without moving the insertion point.</td> 
+</tr>
+<tr>
+<td valign="top">Ctrl-down arrow</td>
+<td>Scrolls the window down without moving the insertion point.</td> 
+</tr>
+</table></p>
+
 
 <a name="selecttxt"></a>
 <h3>Selecting Text</h3>
-
+<p>
 <table border="1">
 <tr>
 <th align="left">Keys</th>
@@ -173,41 +194,11 @@ document.</td>
 <td valign="top">Shift-PgDn</td>
 <td>Creates a text selection and extends it one page down.</td> 
 </tr>
-</table>
-
-<a name="scrolltxt"></a>
-<h3>Scrolling Text</h3>
-
-<table border="1">
-<tr>
-<th align="left">Keys</th>
-<th align="left">Action</th>
-</tr>
-<tr>
-<td valign="top">Alt-T</td>
-<td>Scrolls text to top of window.</td>
-</tr>
-<tr>
-<td valign="top">Alt-M</td>
-<td>Scrolls text to middle of window.</td>
-</tr>
-<tr>
-<td valign="top">Alt-B</td>
-<td>Scrolls text to bottom of window.</td>
-</tr>
-<tr>
-<td valign="top">Ctrl-up arrow</td>
-<td>Scrolls the window up without moving the insertion point.</td> 
-</tr>
-<tr>
-<td valign="top">Ctrl-down arrow</td>
-<td>Scrolls the window down without moving the insertion point.</td> 
-</tr>
-</table>
+</table></p>
 
 <a name="modtxt"></a>
 <h3>Modifying Text</h3>
-
+<p>
 <table border="1">
 <tr>
 <th align="left">Keys</th>
@@ -241,11 +232,29 @@ insertion point is on.</td>
 <td valign="top">Alt-F</td>
 <td>Reformat the selected text, else reformat the entire file.</td>
 </tr>
+</table></p>
+
+<a name="macros"></a>
+<h3>Recording Macros</h3>
+<p>
+<table border="1">
+<tr>
+<th align="left">Keys</th>
+<th align="left">Action</th>
+</tr>
+<tr>
+<td valign="top">Ctrl-Q, S</td>
+<td valign="top">Begins recording key sequence for macro. 
+</tr>
+<tr>
+<td valign="top">Ctrl-Q, E</td>
+<td valign="top">Stops recording key sequence for macro. 
+</tr>
 </table>
 
 <a name="ccpdtxt"></a>
 <h3>Cutting, Copying, Pasting, and Deleting Text</h3>
-
+<p>
 <table border="1">
 <tr>
 <th align="left">Keys</th>
@@ -316,11 +325,11 @@ point and pastes it at the insertion point.
 <td valign="top">Copies the word following the insertion
 point and pastes it at the insertion point.</td>
 </tr>
-</table>
+</table></p>
 
 <a name="searchtxt"></a>
 <h3>Searching for Text</h3>
-
+<p>
 <table border="1">
 <tr>
 <th align="left">Keys</th>
@@ -345,11 +354,11 @@ occurrence of the word.</td>
 <td valign="top">Alt-Shift-H</td>
 <td valign="top">Switches highlighting of words on or off.</td>
 </tr>
-</table>
+</table></p>
 
 <a name="settabs"></a>
 <h3>Setting Tabs</h3>
-
+<p>
 <table border="1">
 <tr>
 <th align="left">Keys</th>
@@ -369,11 +378,11 @@ the right.</td>
 <td valign="top">Shifts text in line containing the insertion point to
 the left.</td>
 </tr>
-</table>
+</table></p>
 
 <a name="modcode"></a>
 <h3>Modifying Code</h3>
-
+<p>
 <table border="1">
 <tr>
 <th align="left">Keys</th>
@@ -382,6 +391,11 @@ the left.</td>
 <tr>
 <td valign="top">Spacebar</td>
 <td>Opens the Java code completion dialog box.</td>
+</tr>
+<tr>
+<td valign="top">Alt-Shift-I</td>
+<td>Adds an import statement to the import section of the code when
+cursor is over the class name to be imported.</td>
 </tr>
 <tr>
 <td valign="top">Alt-U, G</td>
@@ -431,11 +445,11 @@ the left.</td>
 <td valign="top">Shift-Alt-L</td>
 <td>Goes to next entry in jump list not in the same file.</td>
 </tr>
-</table>
+</table></p>
 
 <a name="openfiles"></a>
 <h3>Opening Files</h3>
-
+<p>
 <table border="1">
 <tr>
 <th align="left">Keys</th>
@@ -443,9 +457,16 @@ the left.</td>
 </tr>
 <tr>
 <td valign="top">Alt-O</td>
-<td>Opens the source based on the current location of the insertion point. The source
-file must be in a directory mounted in Filesystems, and the parser
-database must be updated for that source.</td>
+<td>Opens the source based on the current location of the insertion
+point. The source file must be in a directory mounted in Filesystems,
+and the parser database must be updated for that source.</td>
+</tr>
+<tr>
+<td valign="top">Alt-Shift-O</td> 
+<td>Opens the source when the class name is entered in the dialog box
+that appears and pressing Open Source. The source file must be in a
+directory mounted in Filesystems, and the parser database must be
+updated for that source.</td>
 </tr>
 <tr>
 <td valign="top">Alt-F1</td>
@@ -455,11 +476,11 @@ directory mounted in Filesystems, and the parser database must be
 updated for that source. Also, the Javadoc documentation for that
 source must be mounted under the Javadoc tab in the Explorer.</td>
 </tr>
-</table>
+</table></p>
 
 <a name="usebkmks"></a>
 <h3>Using Bookmarks</h3>
-
+<p>
 <table border="1">
 <tr>
 <th align="left">Keys</th>
@@ -473,7 +494,7 @@ source must be mounted under the Javadoc tab in the Explorer.</td>
 <td valign="top">F2</td>
 <td>Goes to next bookmark.</td>
 </tr>
-</table>
+</table></p>
 
 <hr>
 <font size=-2><a href="../credits.html">Legal Notices</a></font>

@@ -1,28 +1,17 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
 <!--       
- *        Copyright (C) 2000  Sun Microsystems, Inc
- *                    All rights reserved.
- *          Notice of copyright on this source code 
- *          product does not indicate publication. 
- * 
- * RESTRICTED RIGHTS LEGEND: Use, duplication, or disclosure by 
- * the U.S. Government is subject to restrictions as set forth 
- * in subparagraph (c)(1)(ii) of the Rights in Technical Data
- * and Computer Software Clause at DFARS 252.227-7013 (Oct. 1988) 
- * and FAR 52.227-19 (c) (June 1988).
- *
- *    Sun Microsystems, Inc., 901 San Antonio Road,
- *    Palo Alto, California 94303 U.S.A.
- *
+*     Copyright 2001 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
 -->
 <html>
 <head>
 <title>Menu Shortcuts</title>
+<link rel="StyleSheet" href="../ide.css" type="text/css">
 </head>
-<BODY BGCOLOR="#FFFFFF">
+<body bgcolor="#FFFFFF">
 
 <h2>Menu Shortcuts</h2>
-
+<p>
 Shortcuts for commands available from the main menu:
 <ul>
 <li><a href="#file">File Menu</a>
@@ -32,12 +21,11 @@ Shortcuts for commands available from the main menu:
 <li><a href="#build">Build Menu</a>
 <li><a href="#debug">Debug Menu</a>
 <li><a href="#window">Window Menu</a>
-<li><a href="#help">Help Menu</a>
-</ul>
+</ul></p>
 
 <a name="file"></a>
 <h3>File Menu</h3>
-
+<p>
 <table border="1">
 <tr>
 <th align="left">Keys</th>
@@ -46,8 +34,8 @@ Shortcuts for commands available from the main menu:
 </tr>
 <tr>
 <td valign="top">Ctrl-N</td>
-<td>New</td>
-<td>Creates a new object</td>
+<td valign="top">New</td>
+<td>Creates a new object with the New From Template wizard.</td>
 </tr>
 <tr>
 <td valign="top">Ctrl-O</td>
@@ -64,10 +52,11 @@ Shortcuts for commands available from the main menu:
 <td>Print</td>
 <td>Prints the current file.</td>
 </tr>
-</table>
+</table></p>
 
 <a name="edit"></a>
 <h3>Edit Menu</h3>
+<p>
 <table  border="1">
 <tr>
 <th align="left">Keys</th>
@@ -123,10 +112,11 @@ string specified.</td>
 <td valign="top">Goto</td>
 <td valign="top">Goes to the line specified in the file.</td>
 </tr>
-</table>
+</table></p>
 
 <a name="view"></a>
 <h3>View Menu</h3>
+<p>
 <table  border="1">
 <tr>
 <th align="left">Keys</th>
@@ -135,7 +125,7 @@ string specified.</td>
 </tr>
 <tr>
 <td valign="top">Ctrl-0</td>
-<td valign="top">Explore from here</td>
+<td valign="top">Explore From Here</td>
 <td valign="top">Opens a new Explorer window. </td>
 </tr>
 <tr>
@@ -155,17 +145,17 @@ string specified.</td>
 </tr>
 <tr>
 <td valign="top">Ctrl-4</td>
-<td valign="top">Output</td>
+<td valign="top">Output Window</td>
 <td valign="top">Opens the Output window.</td>
 </tr>
 <tr>
 <td valign="top">Ctrl-5</td>
-<td valign="top">Debugger</td>
+<td valign="top">Debugger Window</td>
 <td valign="top">Opens the Debugger window.</td> 
 </tr>
 <tr>
 <td valign="top">Ctrl-6</td>
-<td valign="top">Execution</td>
+<td valign="top">Execution Window</td>
 <td valign="top">Opens the Execution window.</td>
 </tr>
 <tr>
@@ -184,40 +174,20 @@ string specified.</td>
 <td valign="top">Opens the Object Browser window.</td>
 </tr>
 <tr>
-<td valign="top">Shift-Ctrl-3</td>
-<td valign="top">Form Editor</td>
-<td valign="top">Opens the Form Editor window.</td>
+<td valign="top">Ctrl-F1</td>
+<td valign="top">Javadoc Index Search</td>
+<td valign="top">Opens the Javadoc Index Search window.</td>
 </tr>
-</table>
+</table></p>
 
 <a name="project"></a>
 <h3>Project Menu</h3>
-
+<p>
 <table border="1">
 <tr>
 <th align="left">Keys</th>
 <th align="left">Command</th>
 <th align="left">Action</th>
-</tr>
-<tr>
-<td valign="top">Ctrl-Shift-N</td>
-<td valign="top">New Project</td>
-<td valign="top">Creates a new project of the given name.</td>
-</tr>
-<tr>
-<td valign="top">Ctrl-Shift-O</td>
-<td valign="top">Open Project</td>
-<td valign="top">Opens the selected project.</td>
-</tr>
-<!--<tr>
-<td valign="top">Ctrl-Shift-P</td>
-<td valign="top">Add to Project</td>
-<td valign="top">Adds files specified to the current project.</td>
-</tr>-->
-<tr>
-<td valign="top">Ctrl-Shift-I</td>
-<td valign="top">Import Project</td>
-<td valign="top">Imports the given project.</td>
 </tr>
 <tr>
 <td valign="top">Ctrl-Shift-S</td>
@@ -255,11 +225,11 @@ the current project.</td>
 <td valign="top">Turns on debugging and changes workspace to the
 Debugging workspace.</td> 
 </tr>
-</table>
+</table></p>
 
 <a name="build"></a>
 <h3>Build Menu</h3>
-
+<p>
 <table border="1">
 <tr>
 <th align="left">Keys</th>
@@ -280,14 +250,14 @@ compile.</td>
 folder that are new or that have changed.</td>
 </tr>
 <tr>
-<td valign="top">F10</td>
+<td valign="top">Alt-F9</td>
 <td valign="top">Build</td>
 <td valign="top">Compiles the file. If you select a folder, the IDE
 compiles all files regardless of whether they have changed since the
 last compile.</td> 
 </tr> 
 <tr>
-<td valign="top">Ctrl-F10</td>
+<td valign="top">Ctrl-Alt-F9</td>
 <td valign="top">Build All</td>
 <td valign="top">Compiles all files within the selected folder
 regardless of whether they have changed since the last compile.</td> 
@@ -326,11 +296,11 @@ the previous build error.</td>
 <td valign="top">Execute</td>
 <td valign="top">Run the current program.</td>
 </tr>
-</table>
+</table></p>
 
 <a name="debug"></a>
 <h3>Debug Menu</h3>
-
+<p>
 <table border="1">
 <tr>
 <th align="left">Keys</th>
@@ -339,10 +309,15 @@ the previous build error.</td>
 </tr>
 <tr>
 <td valign="top">F5</td>
-<td valign="top">Start Debugging</td>
+<td valign="top">Start</td>
 <td valign="top">Starts debugging the current program until a
 breakpoint or the end of the program is reached. Changes the
 workspace to the Debugging workspace.</td>
+</tr>
+<tr>
+<td valign="top">Shift-F5</td>
+<td valign="top">Finish</td>
+<td valign="top">Stops the current debugging session..</td>
 </tr>
 <tr>
 <td valign="top">Ctrl-F5</td>
@@ -351,33 +326,17 @@ workspace to the Debugging workspace.</td>
 breakpoint or the end of the program is reached.</td>
 </tr>
 <tr>
-<td valign="top">Shift-F5</td>
-<td valign="top">Finish Debugging</td>
-<td valign="top">Stops the current debugging session..</td>
-</tr>
-<tr>
-<td valign="top">Ctrl-F8</td>
-<td valign="top">Add/Remove Breakpoint</td>
-<td valign="top">Adds a breakpoint or removes the breakpoint at the
-cursor location in the program.</td>
-</tr>
-<tr>
-<td valign="top">Ctrl-Alt-F8</td>
-<td valign="top">New Breakpoint</td>
-<td valign="top">Sets a new breakpoint at the specified line,
-exception, or method.</td>
-</tr>
-<tr>
-<td valign="top">Shift-F8</td>
-<td valign="top">Add Watch</td>
-<td valign="top">Adds the specified variable to watch.</td> 
-</tr>
-<tr>
 <td valign="top">F4</td>
 <td valign="top">Run to Cursor</td>
 <td valign="top">Runs the current project to the cursor's location in
 the file and stop program execution.
 </td>
+<tr>
+<td valign="top">F8</td>
+<td valign="top">Step Over</td>
+<td valign="top">Executes one source line of a program. If the line is
+a method call, executes the entire method then stops.</td>
+</tr>
 </tr>
 <tr>
 <td valign="top">F7</td>
@@ -387,12 +346,6 @@ a method call, executes the program up to the method's first
 statement and stops.</td> 
 </tr>
 <tr>
-<td valign="top">F8</td>
-<td valign="top">Step Over</td>
-<td valign="top">Executes one source line of a program. If the line is
-a method call, executes the entire method then stops.</td>
-</tr>
-<tr>
 <td valign="top">Ctrl-F7</td>
 <td valign="top">Step Out</td>
 <td valign="top">Executes one source line of a program. If the line is
@@ -400,20 +353,33 @@ a method call, executes the methods and returns control to the
 caller.</td> 
 </tr>
 <tr>
-<td valign="top">Ctrl-Cancel</td>
-<td valign="top">Suspends All Threads</td>
-<td valign="top">Pauses execution of all threads.</td>
+<td valign="top">Ctrl-F8</td>
+<td valign="top">Toggle Breakpoint</td>
+<td valign="top">Adds a breakpoint or removes the breakpoint at the
+cursor location in the program.</td>
 </tr>
 <tr>
-<td valign="top">Ctrl-Shift-Cancel</td>
-<td valign="top">Resumes All Threads</td>
-<td valign="top">Resumes execution of all threads.</td>
+<td valign="top">Ctrl-Shift-F8</td>
+<td valign="top">Add Breakpoint</td>
+<td valign="top">Sets a new breakpoint at the specified line,
+exception, or method.</td>
 </tr>
-</table>
+<tr>
+<td valign="top">Shift-F8</td>
+<td valign="top">Add Watch</td>
+<td valign="top">Adds the specified variable to watch.</td> 
+</tr>
+
+<tr>
+<td valign="top">Ctrl-5</td>
+<td valign="top">Debugger Window</td>
+<td valign="top">Opens the Debugger window.</td>
+</tr>
+</table></p>
 
 <a name="window"></a>
 <h3>Window Menu</h3>
-
+<p>
 <table border="1">
 <tr>
 <th align="left">Keys</th>
@@ -430,53 +396,7 @@ caller.</td>
 <td valign="top">Previous View</td>
 <td valign="top">Displays the previous file.</td>
 </tr>
-<!--<tr>
-<td valign="top">Ctrl-F4</td>
-<td valign="top">Close Window</td>
-<td valign="top">Closes the active window or tabbed pane.</td>
-</tr>
-<tr>
-<td valign="top">Ctrl-Alt-left arrow</td>
-<td valign="top">Previous Workspace</td>
-<td valign="top">Opens the previous workspace.</td>
-</tr>
-<tr>
-<td valign="top">Shift-Alt-right arrow</td>
-<td valign="top">Next Workspace</td>
-<td valign="top">Opens the next workspace.</td>
-</tr>
-<tr>
-<td valign="top">Ctrl-left arrow</td>
-<td valign="top">Previous Tab</td>
-<td valign="top">Opens the previous tabbed pane.</td>
-</tr>
-<tr>
-<td valign="top">Ctrl-right arrow</td>
-<td valign="top">Next Tab</td>
-<td valign="top">Opens the next tabbed pane.</td>
-</tr>-->
-</table>
-
-<a name="help"></a>
-<h3>Help Menu</h3>
-
-<table border="1">
-<tr>
-<th align="left">Keys</th>
-<th align="left">Command</th>
-<th align="left">Action</th>
-</tr>
-<tr>
-<td valign="top">F1</td>
-<td valign="top">Contents</td>
-<td valign="top">Displays the online help.</td>
-</tr>
-<tr>
-<td valign="top">Ctrl-F1</td>
-<td valign="top">Javadoc Index Search</td>
-<td valign="top">Displays the index for javadocs.</td>
-</tr>
-</table>
+</table></p>
 
 <hr>
 <font size=-2><a href="../credits.html">Legal Notices</a></font>
