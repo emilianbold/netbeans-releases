@@ -70,20 +70,13 @@ public class GandalfPersistenceManager extends PersistenceManager {
   * @exception IOException if any problem occured when accessing the form
   */
   public boolean canLoadForm (FormDataObject formObject) throws IOException {
-    /* try {
-      InputStream is = formObject.getFormEntry ().getFile ().getInputStream();
-      byte[] bytes = new byte[4];
-      int len = is.read (bytes);
-      return ((len == 4) && (bytes[0] == MAGIC_0) && (bytes[1] == MAGIC_1) && (bytes[2] == MAGIC_2) && (bytes[3] == MAGIC_3));
-    } catch (Throwable t) {
-      if (t instanceof ThreadDeath) {
-        throw (ThreadDeath)t;
-      }
-      
+    FileObject formFile = formObject.getFormEntry ().getFile ();
+    try {
+      org.w3c.dom.Document doc = org.openide.loaders.XMLDataObject.parse (formFile.getURL ());
+    } catch (IOException e) { // [PENDING - just test whether it is an XML file and in this case return false
       return false;
     }
-*/
-    return false;
+    return true;
   }
 
   /** Called to actually load the form stored in specified formObject.
@@ -94,6 +87,32 @@ public class GandalfPersistenceManager extends PersistenceManager {
   public FormManager2 loadForm (FormDataObject formObject) throws IOException {
     FileObject formFile = formObject.getFormEntry ().getFile ();
     org.w3c.dom.Document doc = org.openide.loaders.XMLDataObject.parse (formFile.getURL ());
+    org.w3c.dom.Element mainElement = doc.getDocumentElement ();
+
+// A. Do various checks
+
+  // 1. check the top-level element name
+    if (!XML_FORM.equals (mainElement.getTagName ())) {
+      throw new IOException (); // [PENDING]
+    }
+
+  // 2. check the form version
+    if (!CURRENT_VERSION.equals (mainElement.getAttribute (ATTR_FORM_VERSION))) {
+      throw new IOException (); // [PENDING - better version checking]
+    }
+
+// B. process top-element's subnodes (all required)
+
+    org.w3c.dom.NodeList childNodes = mainElement.getChildNodes ();
+    for (int i = 0; i < childNodes.getLength (); i++) {
+      org.w3c.dom.Node node = childNodes.item (i);
+      if (XML_NON_VISUAL_COMPONENTS.equals (node.getNodeName ())) {
+//        nonVisualsPresent = true;
+//        loadNonVisual (node);
+      } else if (false) { //PENDING
+      }
+    }
+
     return null;
   }
 
@@ -268,10 +287,38 @@ public class GandalfPersistenceManager extends PersistenceManager {
   }
   
 // --------------------------------------------------------------------------------------
-// Utility formatting methods
+// Value encoding methods
   
+  private Object decodeValue (String value) throws IOException {
+     if ((value == null) || (value.length () == 0)) return null;
+     char[] bisChars = value.toCharArray ();
+     byte[] bytes = new byte[bisChars.length];
+     String singleNum = "";
+     int count = 0;
+     for (int i = 0; i < bisChars.length; i++) {
+       if (',' == bisChars[i]) {
+         try {
+           bytes[count++] = (byte)Integer.parseInt (singleNum, 16);
+         } catch (NumberFormatException e) {
+           throw new IOException ();
+         }
+         singleNum = "";
+       } else {
+         singleNum += bisChars[i];
+       }
+     }
+
+     ByteArrayInputStream bis = new ByteArrayInputStream (bytes, 0, count);
+     try {
+       ObjectInputStream ois = new ObjectInputStream (bis);
+       return ois.readObject ();
+     } catch (Exception e) {
+       throw new IOException ();
+     }
+  }
+
   private String encodeValue (Object value, PropertyEditor ed) {
-    if (value == null) return "null";
+/*    if (value == null) return "null";
    
     if (value instanceof RADConnectionPropertyEditor.RADConnectionDesignValue) {
       RADConnectionPropertyEditor.RADConnectionDesignValue radConn = (RADConnectionPropertyEditor.RADConnectionDesignValue) value;
@@ -327,7 +374,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
      if (value instanceof Class) {
        return ((Class)value).getName ();
      }
-     
+*/     
      ByteArrayOutputStream bos = new ByteArrayOutputStream ();
      try {
        ObjectOutputStream oos = new ObjectOutputStream (bos);
@@ -347,6 +394,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
      }
      return sb.toString ();
   }
+  
+// --------------------------------------------------------------------------------------
+// Utility formatting methods
   
   private void addElementOpen (StringBuffer buf, String elementName) {
     buf.append ("<");
@@ -389,6 +439,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 /*
  * Log
+ *  8    Gandalf   1.7         7/8/99   Ian Formanek    
  *  7    Gandalf   1.6         7/5/99   Ian Formanek    getComponentInstance->getBeanInstance,
  *        getComponentClass->getBeanClass
  *  6    Gandalf   1.5         6/30/99  Ian Formanek    Second draft of XML 
