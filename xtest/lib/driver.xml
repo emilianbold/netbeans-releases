@@ -224,7 +224,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="install-ide" depends="install-from,find-installed-ide,check-installed-ide,make-bin-executable,install-nbms"/>
   
-  <target name="install-from" depends="install-from-zip,install-from-installer,install-from-dir"/>
+  <target name="install-from" depends="install-from-zip,install-from-installer,install-from-jarinstaller,install-from-dir"/>
      
   <target name="install-from-installer" depends="check-ide-param" if="ide.install.type.installer">
     <antcall target="clean-ide"/>
@@ -238,6 +238,13 @@ Microsystems, Inc. All Rights Reserved.
     </exec>
     <delete file="${ide.installto}/${ide.install.path.filenameext}"/>
     <delete file="${install.paramfile}"/>
+  </target>
+  
+  <target name="install-from-jarinstaller" depends="check-ide-param" if="ide.install.type.jarinstaller">
+    <antcall target="clean-ide"/>
+    <exec executable="${installer.java.home}/bin/java" failonerror="true">
+      <arg line="-DforteHome=${ide.installto} -DjdkHome=${installer.java.home} ${installer.params} -jar ${ide.install.path} -silent"/>
+    </exec>
   </target>
   
   <target name="install-from-zip" depends="check-ide-param" if="ide.install.type.zip">
@@ -278,6 +285,7 @@ Microsystems, Inc. All Rights Reserved.
         <or>
           <equals arg1="${ide.install.type}" arg2="zip"/>
           <equals arg1="${ide.install.type}" arg2="installer"/>
+          <equals arg1="${ide.install.type}" arg2="jarinstaller"/>
           <equals arg1="${ide.install.type}" arg2="dir"/>
         </or>
       </condition>
@@ -287,6 +295,9 @@ Microsystems, Inc. All Rights Reserved.
       </condition>
       <condition property="ide.install.type.installer">
           <equals arg1="${ide.install.type}" arg2="installer"/>
+      </condition>
+      <condition property="ide.install.type.jarinstaller">
+          <equals arg1="${ide.install.type}" arg2="jarinstaller"/>
       </condition>
       <condition property="ide.install.type.dir">
           <equals arg1="${ide.install.type}" arg2="dir"/>
