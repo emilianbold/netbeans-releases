@@ -90,9 +90,11 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     <!-- #13860: mount the examples dir: -->
     <folder name="Mount">
-        <file name="org-netbeans-modules-usersguide-sampledir.instance">
+        <file name="org-netbeans-modules-usersguide-sampledir.settings" url="sampledir.xml">
+<!--
             <attr name="instanceClass" methodvalue="org.netbeans.modules.usersguide.UGModule.createFileSystemClass"/>
             <attr name="instanceCreate" methodvalue="org.netbeans.modules.usersguide.UGModule.createFileSystem"/>
+-->
             <!-- #14403: make it look better: -->
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.usersguide.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/localFS.gif"/>
