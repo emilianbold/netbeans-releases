@@ -166,6 +166,8 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
 
     /** Finds TopComponentGroup of given name. */
     public TopComponentGroup findTopComponentGroup(String name) {
+        assert SwingUtilities.isEventDispatchThread();
+        
         for(Iterator it = getTopComponentGroups().iterator(); it.hasNext(); ) {
             TopComponentGroupImpl group = (TopComponentGroupImpl)it.next();
             if(group.getName().equals(name)) {
