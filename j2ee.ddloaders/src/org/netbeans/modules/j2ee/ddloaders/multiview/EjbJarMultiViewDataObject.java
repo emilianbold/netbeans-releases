@@ -74,7 +74,6 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
 
     private EjbJarProxy ejbJar;
     private FileObject srcRoots[];
-    private boolean parseable;
     protected final static RequestProcessor RP = new RequestProcessor("XML Parsing");   // NOI18N
     private PropertyChangeListener ejbJarChangeListener;
     private Map entityHelperMap = new HashMap();
@@ -492,23 +491,12 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
             new DDView(this, CMP_RELATIONSHIPS),
         };
     }
-    /** Returns true if xml file is parseable(data model can be created),
-     *  Method is called before switching to the design view from XML view when the document isn't parseable.
-     */
-    public boolean isDocumentParseable() {
-        waitForSync();
-        return parseable;
-    }
 
     /** Used to detect if data model has already been created or not.
      * Method is called before switching to the design view from XML view when the document isn't parseable.
      */
     protected boolean isModelCreated() {
-        return (ejbJar!=null && ((EjbJarProxy)ejbJar).getOriginal()!=null);
-    }
-
-    public boolean isParseable() {
-        return parseable;
+        return (ejbJar!=null && ejbJar.getOriginal()!=null);
     }
 
     private static class DDView extends DesignMultiViewDesc implements java.io.Serializable {
@@ -687,6 +675,9 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
     private class EjbJarPropertyChangeListener implements PropertyChangeListener {
 
         public void propertyChange(PropertyChangeEvent evt) {
+            if (EjbJar.PROPERTY_STATUS.equals(evt.getPropertyName())) {
+                return;
+            }
             modelChanged();
             Object source = evt.getSource();
             if (source instanceof EnterpriseBeans) {

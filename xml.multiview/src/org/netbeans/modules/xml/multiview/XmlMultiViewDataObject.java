@@ -26,6 +26,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.windows.CloneableTopComponent;
 import org.xml.sax.InputSource;
 
+import javax.swing.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.FileReader;
@@ -33,6 +34,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.util.Enumeration;
+import java.util.Date;
 
 /**
  * XmlMultiviewDataObject.java
@@ -46,30 +48,33 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     protected XmlMultiViewEditorSupport editor;
     private org.xml.sax.SAXException saxError;
     boolean changedFromUI;
-    private boolean modelUpdated;
 
     private static final int PARSING_INIT_DELAY = 100;
     private RequestProcessor.Task synchronizeModelTask = null;
     private boolean updateFromModel = false;
     private boolean updatingFromModel = false;
     private boolean updatingModel = false;
+    private Boolean overwriteUnparseable = Boolean.TRUE;
+    private long handleUnparseableTimeout = 0;
+    private static final int HANDLE_UNPARSABLE_TIMEOUT = 2000;
+    protected boolean parseable;
 
     /** Creates a new instance of XmlMultiViewDataObject */
     public XmlMultiViewDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
         getCookieSet().add(XmlMultiViewEditorSupport.class, this);
         try {
-            modelUpdated = createModelFromFileObject(pf);
+            createModelFromFileObject(pf);
         } catch (IOException ex) {
-            modelUpdated = false;
         }
     }
     
     public org.openide.nodes.Node.Cookie createCookie(Class clazz) {
-        if(clazz.isAssignableFrom(XmlMultiViewEditorSupport.class))
+        if (clazz.isAssignableFrom(XmlMultiViewEditorSupport.class)) {
             return createEditorSupport();
-        else
+        } else {
             return null;
+        }
     }
     
     // Package accessibility for XmlMultiViewEditorSupport:
@@ -118,9 +123,6 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     */
     protected abstract String generateDocumentFromModel();
     
-    protected boolean isModelUpdated() {
-        return modelUpdated;
-    }
     /** enables to switch quickly to XML perspective in multi view editor
      */
     public void goToXmlView() {
@@ -130,28 +132,18 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     public boolean isChangedFromUI() {
         return changedFromUI;
     }
-     /** This method parses XML document and calls abstract updateModelFromDocument() method which
-    * is trying to update corresponding data model.
-    */    
-    protected void updateModelFromSource() {
-        boolean modelUpd=false;
-        try {
-            modelUpd=updateModelFromDocument();
-        }
-        catch (java.io.IOException e) {
-            modelUpd=false;
-            org.openide.ErrorManager.getDefault ().notify (org.openide.ErrorManager.INFORMATIONAL, e);
-        }
-        modelUpdated=modelUpd;
-    }
-    
+
     protected void setSaxError(org.xml.sax.SAXException saxError) {
         org.xml.sax.SAXException oldError = this.saxError;
         this.saxError=saxError;
         if (oldError==null) {
-            if (saxError!=null) firePropertyChange(PROP_DOCUMENT_VALID, Boolean.TRUE, Boolean.FALSE);
+            if (saxError != null) {
+                firePropertyChange(PROP_DOCUMENT_VALID, Boolean.TRUE, Boolean.FALSE);
+            }
         } else {
-            if (saxError==null) firePropertyChange(PROP_DOCUMENT_VALID, Boolean.FALSE, Boolean.TRUE);
+            if (saxError == null) {
+                firePropertyChange(PROP_DOCUMENT_VALID, Boolean.FALSE, Boolean.TRUE);
+            }
         }
     }
     
@@ -206,36 +198,47 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
             return new InputSource(new StringReader(str[0]));
         } 
         else {
-            //return null;
             // loading from the file
-            //return new InputSource(new FileReader(org.openide.filesystems.FileUtil.toFile(getPrimaryFile())));
             return new InputSource(getPrimaryFile().getInputStream());
         }
     }
     
     protected void updateDocument() {
-        //System.out.println("restart Gen");           
+        if (handleUnparseableTimeout == -1) {
+            return;
+        }
+        if (!parseable) {
+            long time = new Date().getTime();
+            handleUnparseableTimeout = time;
+            if (time > handleUnparseableTimeout) {
+                handleUnparseableTimeout = -1;
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        String message = NbBundle.getMessage(XmlMultiViewDataObject.class,
+                                "TXT_OverwriteUnparsableDocument", getPrimaryFile().getNameExt());
+                        NotifyDescriptor desc = new NotifyDescriptor.Confirmation(message,
+                                NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE);
+                        DialogDisplayer.getDefault().notify(desc);
+                        overwriteUnparseable = Boolean.valueOf(desc.getValue() == NotifyDescriptor.YES_OPTION);
+                        handleUnparseableTimeout = new Date().getTime() + HANDLE_UNPARSABLE_TIMEOUT;
+                        synchronizeModelTask.run();
+                    }
+                });
+            } else if (!overwriteUnparseable.booleanValue()) {
+                return;
+            }
+        }
         final String newDoc = generateDocumentFromModel();
         try {
             javax.swing.text.Document doc = getEditorSupport().openDocument();
-            Utils.replaceDocument(doc,newDoc);
-            //setDocumentValid(true);
-            //if (saveAfterNodeChanges){
-            //    SaveCookie savec = (SaveCookie) getCookie(SaveCookie.class);
-            //    if (savec!=null) savec.save();
-            //}
-            // this is necessary for correct undo behaviour
-            //getEditorSupport().getUndo().discardAllEdits();
-        }
-        catch (javax.swing.text.BadLocationException e) {
+            Utils.replaceDocument(doc, newDoc);
+            setSaxError(null);
+        } catch (javax.swing.text.BadLocationException e) {
             org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
-        }
-
-        catch (IOException e) {
+        } catch (IOException e) {
             org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
-        }
-        finally {
-            changedFromUI=false;
+        } finally {
+            changedFromUI = false;
         }
     }
     
@@ -266,7 +269,10 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     /** Returns true if xml file is parseable(data model can be created),
      *  Method is called before switching to the design view from XML view when the document isn't parseable.
      */
-    public abstract boolean isDocumentParseable();
+    public boolean isDocumentParseable() {
+        waitForSync();
+        return parseable;
+    }
     
     /** Used to detect if data model has already been created or not.
      * Method is called before switching to the design view from XML view when the document isn't parseable.
