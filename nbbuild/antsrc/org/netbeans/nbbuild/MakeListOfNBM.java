@@ -119,7 +119,7 @@ public class MakeListOfNBM extends Task {
             for (int j=0; j < cntTok; j++) {
                 String s = tokenizer.nextToken();
                 lmnLocales[j] = s;
-                log("  lmnLocales[j] == "+lmnLocales[j]); // NOI18N
+                log("  lmnLocales[j] == "+lmnLocales[j], Project.MSG_DEBUG); // NOI18N
             }
             // update fileset for localized/branded files
         
