@@ -399,6 +399,9 @@ public class DataEditorSupport extends CloneableEditorSupport {
         * @exception IOException if an I/O error occures
         */
         public OutputStream outputStream() throws IOException {
+            if (fileLock == null || !fileLock.isValid()) {
+                fileLock = takeLock ();
+            }
             return getFileImpl ().getOutputStream (fileLock);
         }
         
