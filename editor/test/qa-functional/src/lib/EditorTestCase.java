@@ -1,4 +1,17 @@
 /*
+ *                 Sun Public License Notice
+ *
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+/*
  * EditorTestCase.java
  *
  * Created on 24. srpen 2004, 12:32
@@ -159,8 +172,6 @@ public class EditorTestCase extends NbTestCase {
      *  @param treeSubPath e.g. "Source Packages|test","sample1" */
     public void openFile(String treeSubPackagePathToFile, String fileName) {
         // debug info, to be removed
-        log("Tree: "+treeSubPackagePathToFile);
-        log("Filename: "+fileName);
         this.treeSubPackagePathToFile = treeSubPackagePathToFile;
         ProjectsTabOperator pto = new ProjectsTabOperator();
         pto.invoke();
@@ -180,13 +191,11 @@ public class EditorTestCase extends NbTestCase {
             String fullpath = token;
             while (st.hasMoreTokens()) {            
                 token = st.nextToken();
-                log("waitForChildNode("+fullpath+", "+token+")");
                 waitForChildNode(fullpath, token);
                 fullpath += treeSeparator+token;
             }
         } 
         // last node
-        log("waitForChildNode("+treeSubPackagePathToFile+", "+fileName+")");
         waitForChildNode(treeSubPackagePathToFile, fileName);
         // end of fix of issue #51191
         
@@ -194,6 +203,12 @@ public class EditorTestCase extends NbTestCase {
         node.performPopupAction("Open");
     }
     
+    /**
+     * Waits for a child node to be shown in the IDE. Needed for test 
+     * stabilization on slow machines. 
+     * @param parentPath full path for parent, | used as a delimiter
+     * @param childName name of the child node
+     */
     public void waitForChildNode(String parentPath, String childName) {
         ProjectsTabOperator pto = new ProjectsTabOperator();
         ProjectRootNode prn = pto.getProjectRootNode(projectName);
