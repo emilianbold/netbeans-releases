@@ -21,6 +21,7 @@ import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 
 import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
@@ -32,7 +33,7 @@ import org.netbeans.jemmy.operators.Operator;
  * Timeouts used:<br>
  * SearchResultsOperator.SearchTime - maximum time for search to be performed.
  */
-public class SearchResultsOperator extends TopComponentOperator {
+public class SearchResultsOperator extends JDialogOperator {
 
     private static final long SEARCH_TIME = 600000;
 
