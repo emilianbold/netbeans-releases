@@ -16,12 +16,15 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="Templates">
-        <folder name="JSP_Servlet">
+        <attr name="WebServices/Classes" boolvalue="true"/>
+        <folder name="WebServices">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.core.client.wizard.Bundle"/>
+            <attr name="WebServiceClient/MessageHandler" boolvalue="true"/>
             <file name="WebServiceClient">
                 <attr name="template" boolvalue="true"/>
                 <attr name="instantiatingIterator"
                     methodvalue="org.netbeans.modules.websvc.core.client.wizard.WebServiceClientWizardIterator.create" />
-                <attr name="templateCategory" stringvalue="web-types"/>
+                <attr name="templateCategory" stringvalue="web-service-clients"/>
                 <attr name="templateWizardURL"
                     urlvalue="nbresloc:/org/netbeans/modules/websvc/core/client/resources/WebServiceClient.html"/>
                 <attr name="SystemFileSystem.localizingBundle"
@@ -30,20 +33,6 @@ Microsystems, Inc. All Rights Reserved.
                     urlvalue="nbresloc:/org/netbeans/modules/websvc/core/client/resources/WebServiceClientTemplate.png"/>
             </file>
         </folder>
-<!--        <folder name="J2EE">
-            <file name="WebServiceClient">
-                <attr name="template" boolvalue="true"/>
-                <attr name="instantiatingIterator"
-                    methodvalue="org.netbeans.modules.websvc.core.client.wizard.WebServiceClientWizardIterator.create" />
-                <attr name="templateCategory" stringvalue="ejb-types"/>
-                <attr name="templateWizardURL"
-                    urlvalue="nbresloc:/org/netbeans/modules/websvc/core/client/resources/WebServiceClient.html"/>
-                <attr name="SystemFileSystem.localizingBundle"
-                    stringvalue="org.netbeans.modules.websvc.core.client.wizard.Bundle"/>
-                <attr name="SystemFileSystem.icon"
-                    urlvalue="nbresloc:/org/netbeans/modules/websvc/core/client/resources/WebServiceClientTemplate.png"/>
-            </file>
-        </folder>-->
     </folder>
     <folder name="Editors">
         <folder name="text">
