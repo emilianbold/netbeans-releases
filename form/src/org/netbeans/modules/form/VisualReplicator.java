@@ -22,7 +22,7 @@ import org.netbeans.modules.form.layoutsupport.*;
 
 /**
  * This class replicates the instances from meta-components hierarchy,
- * allowing additional updates. It also maintains maps for mapping meta
+ * allowing additional updates. It also maintains mapping from meta
  * components to clones, and viceversa.
  *
  * @author Tomas Pavek
@@ -294,9 +294,9 @@ public class VisualReplicator {
         if (targetComp == null)
             return;
 
-        // another Scrollbar hack - to change some properties of Scrollbar we
-        // must create a new instance of Scrollbar (peer must be recreated - 
-        // - maybe this should be done for all AWT components)
+        // Scrollbar hack - to change some properties of Scrollbar we
+        // must create a new instance of Scrollbar (peer must be recreated)
+        // [maybe this should be done for all AWT components]
         if (targetComp instanceof java.awt.Scrollbar) {
             // remove the component and add a new clone
             removeComponent(metacomp);
@@ -306,21 +306,22 @@ public class VisualReplicator {
 
         java.lang.reflect.Method writeMethod =
             property.getPropertyDescriptor().getWriteMethod();
-        if (writeMethod == null) {
+        if (writeMethod == null)
             return;
-        }
-        
-        if (!writeMethod.getDeclaringClass().isAssignableFrom(targetComp.getClass())) {
+
+        if (!writeMethod.getDeclaringClass().isAssignableFrom(
+                                               targetComp.getClass()))
+        {   // try to use same method of different (target) class
             try {
-                writeMethod = targetComp.getClass().getMethod(writeMethod.getName(), 
-                                                              writeMethod.getParameterTypes());
-            } catch (Exception ex) {
+                writeMethod = targetComp.getClass().getMethod(
+                                  writeMethod.getName(), 
+                                  writeMethod.getParameterTypes());
+            }
+            catch (Exception ex) { // ignore
                 return;
             }
-            if (writeMethod == null)
-                return;
         }
-            
+
         try {
             Object value = property.getRealValue();
             if (value == FormDesignValue.IGNORED_VALUE)
@@ -339,6 +340,11 @@ public class VisualReplicator {
                 value = FormUtils.cloneObject(value);
 
             writeMethod.invoke(targetComp, new Object[] { value });
+
+            // JScrollPane hack - for scrollbars policy properties
+            // [this should be better handled by layout support in the future]
+            if (targetComp instanceof JScrollPane)
+                ((JScrollPane)targetComp).updateUI();
         }
         catch (Exception ex) {
             if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
