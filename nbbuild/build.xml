@@ -1155,7 +1155,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <delete dir="tmp"/>
     <mkdir dir="tmp"/>
     <property name="nbroot" location=".."/>
-    <l10n topdirs="${nbroot}" modules="${fixedmodule},${modules}"
+    <l10n topdirs="${nbroot}" modules="${fixedmodules},${modules}"
           localizablefile="l10n.list" generatedfile="l10n.list.translated"
           distdir="${l10n.dist.dir}" changedfile="l10n.list.changed"
           builddir="tmp" buildnumber="${buildnumber}"
