@@ -1,0 +1,4 @@
+junit/src/org/netbeans/modules/junit/Bundle.properties
+junit/src/org/netbeans/modules/junit/testrunner/Bundle.properties
+junit/src/org/netbeans/modules/junit/resources/templates/SimpleJUnitTest.java.template
+
