@@ -14,6 +14,7 @@
 package org.netbeans.jellytools.nodes;
 
 import javax.swing.tree.TreePath;
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.RepositoryTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.actions.*;
@@ -50,7 +51,9 @@ public class URLNode extends Node {
     }
 
     static final OpenAction openAction = new OpenAction();
-    static final EditAction editAction = new EditAction();
+    static final ActionNoBlock editAction = 
+                         new ActionNoBlock(null, 
+                                           Bundle.getStringTrimmed("org.openide.actions.Bundle", "Edit"));
     static final CutAction cutAction = new CutAction();
     static final CopyAction copyAction = new CopyAction();
     static final PasteAction pasteAction = new PasteAction();
