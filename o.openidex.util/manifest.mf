@@ -1,0 +1,4 @@
+OpenIDE-Module: org.openidex.util/1
+OpenIDE-Module-Name: Common Utilities
+OpenIDE-Module-Specification-Version: 0.9.3
+OpenIDE-Module-Implementation-Version: 0.9.3
