@@ -14,24 +14,30 @@
 package org.netbeans.modules.j2ee.common.ui;
 
 import java.awt.Component;
+import java.awt.Dialog;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.ListSelectionEvent;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+
+import org.openide.util.NbBundle;
 
 /** Show a warning that no server is set and allows choose it.
  *
  * @author  Pavel Buzek
  */
 public class NoSelectedServerWarning extends JPanel {
-    
     public static final String OK_ENABLED = "ok_enabled"; //NOI18N
     private boolean okEnabled = false;
     
-    public NoSelectedServerWarning (String serverID) {
+    private NoSelectedServerWarning(Object[] moduleTypes, String j2eeSpec) {
         initComponents();
         // add MainClassChooser
-        jList1.setModel(new ServerListModel (serverID));
+        jList1.setModel(new ServerListModel (moduleTypes, j2eeSpec));
         jList1.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
         jList1.addListSelectionListener(new ListSelectionListener() {
                 public void valueChanged(ListSelectionEvent e) {
@@ -50,6 +56,52 @@ public class NoSelectedServerWarning extends JPanel {
             }
         );
         jList1.setCellRenderer(new ServersRenderer ());
+    }
+    
+    /**
+     * Show the "no selected server" dialog and let the user choose server instance from
+     * the list.
+     *
+     * @param moduleTypes module types that servers should support
+     * @param j2eeSpec lowest j2ee specification version that servers should support
+     * @param title dialog title
+     *
+     * @return serverInstanceId of the selected server instance, <code>null</code>
+     *         if canceled.
+     */
+    public static String selectServerDialog(Object[] moduleTypes, String j2eeSpec, String title) {
+        NoSelectedServerWarning panel = new NoSelectedServerWarning(moduleTypes, j2eeSpec);
+        Object[] options = new Object[] {
+            DialogDescriptor.OK_OPTION,
+            DialogDescriptor.CANCEL_OPTION
+        };
+        final DialogDescriptor desc = new DialogDescriptor(panel, title, true, options, 
+                DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
+        desc.setMessageType(DialogDescriptor.WARNING_MESSAGE);
+        Dialog dlg = null;
+        try {
+            dlg = DialogDisplayer.getDefault ().createDialog (desc);
+            panel.addPropertyChangeListener(new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        if (evt.getPropertyName().equals(NoSelectedServerWarning.OK_ENABLED)) {
+                            Object newvalue = evt.getNewValue();
+                            if ((newvalue != null) && (newvalue instanceof Boolean)) {
+                                desc.setValid(((Boolean)newvalue).booleanValue());
+                            }
+                        }
+                    }
+                }
+            );
+            desc.setValid(panel.getSelectedInstance() != null);
+            dlg.setVisible (true);
+        } finally {
+            if (dlg != null) {
+                dlg.dispose();
+            }
+        }
+        return desc.getValue() == DialogDescriptor.OK_OPTION 
+                ? panel.getSelectedInstance()
+                : null;
     }
     
     /** Returns the selected server instance Id or null if no instance was selected.
@@ -72,25 +124,16 @@ public class NoSelectedServerWarning extends JPanel {
     private void initComponents() {//GEN-BEGIN:initComponents
         java.awt.GridBagConstraints gridBagConstraints;
 
-        jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         jList1 = new javax.swing.JList();
+        jTextArea1 = new javax.swing.JTextArea();
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(NoSelectedServerWarning.class, "LBL_NoSelectedServerWarning_jLabel1"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 6, 12);
-        add(jLabel1, gridBagConstraints);
-
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(NoSelectedServerWarning.class, "LBL_NoSelectedServerWarning_jLabel2"));
+        setMinimumSize(new java.awt.Dimension(283, 215));
+        setPreferredSize(new java.awt.Dimension(283, 215));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(NoSelectedServerWarning.class, "LBL_NoSelectedServerWarning_jLabel2"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -98,11 +141,14 @@ public class NoSelectedServerWarning extends JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 6, 12);
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 6, 12);
         add(jLabel2, gridBagConstraints);
 
-        jScrollPane2.setMinimumSize(new java.awt.Dimension(100, 200));
+        jScrollPane2.setMinimumSize(new java.awt.Dimension(0, 0));
         jList1.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        jList1.setMinimumSize(null);
+        jList1.setPreferredSize(null);
+        jList1.setVisibleRowCount(1);
         jScrollPane2.setViewportView(jList1);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -117,25 +163,38 @@ public class NoSelectedServerWarning extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 12, 12);
         add(jScrollPane2, gridBagConstraints);
 
+        jTextArea1.setEditable(false);
+        jTextArea1.setLineWrap(true);
+        jTextArea1.setText(NbBundle.getMessage(NoSelectedServerWarning.class, "LBL_NoSelectedServerWarning_jLabel1"));
+        jTextArea1.setWrapStyleWord(true);
+        jTextArea1.setFocusable(false);
+        jTextArea1.setOpaque(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 6, 12);
+        add(jTextArea1, gridBagConstraints);
+        jTextArea1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NoSelectedServerWarning.class, "LBL_NoSelectedServerWarning_jLabel1"));
+
     }//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JList jList1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTextArea jTextArea1;
     // End of variables declaration//GEN-END:variables
 
 
     private static final class ServerListModel extends AbstractListModel {
         
-        private String serverID;
         private String instances [];
 
-        public ServerListModel (String serverID) {
-            this.serverID = serverID;
-            this.instances = Deployment.getDefault ().getInstancesOfServer (serverID);
+        public ServerListModel (Object[] moduleTypes, String j2eeSpec) {
+            instances = Deployment.getDefault().getServerInstanceIDs(moduleTypes, j2eeSpec);
         }
 
         public synchronized int getSize() {

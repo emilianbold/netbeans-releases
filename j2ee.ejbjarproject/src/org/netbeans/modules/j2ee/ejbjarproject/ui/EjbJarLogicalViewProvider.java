@@ -13,9 +13,13 @@
 
 package org.netbeans.modules.j2ee.ejbjarproject.ui;
 
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.CharConversionException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import javax.swing.AbstractAction;
@@ -26,6 +30,7 @@ import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.LogicalViewChildre
 import org.openide.nodes.*;
 import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
+import org.openide.xml.XMLUtil;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -45,6 +50,8 @@ import org.openide.loaders.DataFolder;
 import org.openide.util.lookup.Lookups;
 
 import org.netbeans.modules.j2ee.api.common.J2eeProjectConstants;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
+import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 
 /**
  * Support for creating logical views.
@@ -52,7 +59,7 @@ import org.netbeans.modules.j2ee.api.common.J2eeProjectConstants;
  */
 public class EjbJarLogicalViewProvider implements LogicalViewProvider {
     
-    private final Project project;
+    private final EjbJarProject project;
     private final AntProjectHelper helper;    
     private final UpdateHelper updateHelper;
     private final PropertyEvaluator evaluator;
@@ -60,7 +67,7 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
     private final ReferenceHelper resolver;
     
     
-    public EjbJarLogicalViewProvider(Project project, UpdateHelper updateHelper, PropertyEvaluator evaluator, SubprojectProvider spp, ReferenceHelper resolver) {
+    public EjbJarLogicalViewProvider(EjbJarProject project, UpdateHelper updateHelper, PropertyEvaluator evaluator, SubprojectProvider spp, ReferenceHelper resolver) {
         this.project = project;
         assert project != null;
         this.updateHelper = updateHelper;
@@ -106,8 +113,9 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
     private final class WebLogicalViewRootNode extends AbstractNode {
 
         private Action brokenLinksAction;
+        private BrokenServerAction brokenServerAction;
         private boolean broken;
-        
+        private static final String BROKEN_PROJECT_BADGE = "org/netbeans/modules/j2ee/ejbjarproject/ui/resources/brokenProjectBadge.gif"; // NOI18N
         
         public WebLogicalViewRootNode() {
             super( new LogicalViewChildren( project, updateHelper, evaluator, resolver ), createLookup( project ) ); 
@@ -117,6 +125,34 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
                 broken = true;
                 brokenLinksAction = new BrokenLinksAction();
             }
+            brokenServerAction = new BrokenServerAction();
+            J2eeModuleProvider moduleProvider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
+            moduleProvider.addInstanceListener((InstanceListener)WeakListeners.create(
+                        InstanceListener.class, brokenServerAction, moduleProvider));
+        }
+        
+        public Image getIcon(int type) {
+            Image original = super.getIcon( type );                
+            return broken || brokenServerAction.isEnabled() 
+                    ? Utilities.mergeImages(original, Utilities.loadImage(BROKEN_PROJECT_BADGE), 8, 0) 
+                    : original;
+        }
+
+        public Image getOpenedIcon(int type) {
+            Image original = super.getOpenedIcon(type);                
+            return broken || brokenServerAction.isEnabled() 
+                    ? Utilities.mergeImages(original, Utilities.loadImage(BROKEN_PROJECT_BADGE), 8, 0) 
+                    : original;
+        }            
+
+        public String getHtmlDisplayName() {
+            String dispName = super.getDisplayName();
+            try {
+                dispName = XMLUtil.toElementContent(dispName);
+            } catch (CharConversionException ex) {
+                // ignore
+            }
+            return broken || brokenServerAction.isEnabled() ? "<font color=\"#A40000\">" + dispName + "</font>" : null; //NOI18N
         }
 
         public Action[] getActions( boolean context ) {
@@ -137,60 +173,40 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
             ResourceBundle bundle = NbBundle.getBundle(EjbJarLogicalViewProvider.class);
             
             J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+            List actions = new ArrayList(30);
+            actions.add(CommonProjectActions.newFileAction());
+            actions.add(null);
+            actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_BUILD, bundle.getString( "LBL_BuildAction_Name" ), null )); // NOI18N
+            actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_REBUILD, bundle.getString( "LBL_RebuildAction_Name" ), null )); // NOI18N
+            actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_CLEAN, bundle.getString( "LBL_CleanAction_Name" ), null )); // NOI18N
             if (provider != null && provider.hasVerifierSupport()) {
-                return new Action[] {
-                    CommonProjectActions.newFileAction(),
-                    null,                
-                    ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_BUILD, bundle.getString( "LBL_BuildAction_Name" ), null ), // NOI18N
-                    ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_REBUILD, bundle.getString( "LBL_RebuildAction_Name" ), null ), // NOI18N
-                    ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_CLEAN, bundle.getString( "LBL_CleanAction_Name" ), null ), // NOI18N
-                    ProjectSensitiveActions.projectCommandAction( "verify", bundle.getString( "LBL_VerifyAction_Name" ), null ), // NOI18N
-                    ProjectSensitiveActions.projectCommandAction( JavaProjectConstants.COMMAND_JAVADOC, bundle.getString( "LBL_JavadocAction_Name" ), null ), // NOI18N                
-                    null,
-                    ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_RUN, bundle.getString( "LBL_RunAction_Name" ), null ), // NOI18N
-                    ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_DEBUG, bundle.getString( "LBL_DebugAction_Name" ), null ), // NOI18N
-                    //ProjectSensitiveActions.projectCommandAction( J2eeProjectConstants.COMMAND_REDEPLOY, bundle.getString( "LBL_RedeployAction_Name" ), null ), // NOI18N
-                    ProjectSensitiveActions.projectCommandAction( J2eeProjectConstants.COMMAND_DEPLOY, bundle.getString( "LBL_DeployAction_Name" ), null ), // NOI18N
-                    null,
-                    CommonProjectActions.setAsMainProjectAction(),
-                    CommonProjectActions.openSubprojectsAction(),
-                    CommonProjectActions.closeProjectAction(),
-                    null,
-                    SystemAction.get( org.openide.actions.FindAction.class ),
-                    null,
-                    SystemAction.get(org.openide.actions.OpenLocalExplorerAction.class),
-                    SystemAction.get( org.openide.actions.ToolsAction.class ),
-                    null,
-                    brokenLinksAction,
-                    CommonProjectActions.customizeProjectAction(),
-                };
-            } else {
-                return new Action[] {
-                    CommonProjectActions.newFileAction(),
-                    null,                
-                    ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_BUILD, bundle.getString( "LBL_BuildAction_Name" ), null ), // NOI18N
-                    ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_REBUILD, bundle.getString( "LBL_RebuildAction_Name" ), null ), // NOI18N
-                    ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_CLEAN, bundle.getString( "LBL_CleanAction_Name" ), null ), // NOI18N
-                    ProjectSensitiveActions.projectCommandAction( JavaProjectConstants.COMMAND_JAVADOC, bundle.getString( "LBL_JavadocAction_Name" ), null ), // NOI18N                
-                    null,
-                    ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_RUN, bundle.getString( "LBL_RunAction_Name" ), null ), // NOI18N
-                    ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_DEBUG, bundle.getString( "LBL_DebugAction_Name" ), null ), // NOI18N
-                    //ProjectSensitiveActions.projectCommandAction( J2eeProjectConstants.COMMAND_REDEPLOY, bundle.getString( "LBL_RedeployAction_Name" ), null ), // NOI18N
-                    ProjectSensitiveActions.projectCommandAction( J2eeProjectConstants.COMMAND_DEPLOY, bundle.getString( "LBL_DeployAction_Name" ), null ), // NOI18N
-                    null,
-                    CommonProjectActions.setAsMainProjectAction(),
-                    CommonProjectActions.openSubprojectsAction(),
-                    CommonProjectActions.closeProjectAction(),
-                    null,
-                    SystemAction.get( org.openide.actions.FindAction.class ),
-                    null,
-                    SystemAction.get(org.openide.actions.OpenLocalExplorerAction.class),
-                    SystemAction.get( org.openide.actions.ToolsAction.class ),
-                    null,
-                    brokenLinksAction,
-                    CommonProjectActions.customizeProjectAction(),
-                };
+                actions.add(ProjectSensitiveActions.projectCommandAction( "verify", bundle.getString( "LBL_VerifyAction_Name" ), null )); // NOI18N
             }
+            actions.add(ProjectSensitiveActions.projectCommandAction( JavaProjectConstants.COMMAND_JAVADOC, bundle.getString( "LBL_JavadocAction_Name" ), null )); // NOI18N
+            actions.add(null);
+            actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_RUN, bundle.getString( "LBL_RunAction_Name" ), null )); // NOI18N
+            actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_DEBUG, bundle.getString( "LBL_DebugAction_Name" ), null )); // NOI18N
+//            actions.add(ProjectSensitiveActions.projectCommandAction( J2eeProjectConstants.COMMAND_REDEPLOY, bundle.getString( "LBL_RedeployAction_Name" ), null )); // NOI18N
+            actions.add(ProjectSensitiveActions.projectCommandAction( J2eeProjectConstants.COMMAND_DEPLOY, bundle.getString( "LBL_DeployAction_Name" ), null )); // NOI18N
+            actions.add(null);
+            actions.add(CommonProjectActions.setAsMainProjectAction());
+            actions.add(CommonProjectActions.openSubprojectsAction());
+            actions.add(CommonProjectActions.closeProjectAction());
+            actions.add(null);
+            actions.add(SystemAction.get( org.openide.actions.FindAction.class ));
+            actions.add(null);
+            actions.add(SystemAction.get(org.openide.actions.OpenLocalExplorerAction.class));
+            actions.add(SystemAction.get( org.openide.actions.ToolsAction.class ));
+            actions.add(null);
+            if (brokenLinksAction != null) {
+                actions.add(brokenLinksAction);
+            }
+            if (brokenServerAction.isEnabled()) {
+                actions.add(brokenServerAction);
+            }
+            actions.add(CommonProjectActions.customizeProjectAction());
+
+            return (Action[])actions.toArray(new Action[actions.size()]);
         }
         
         /** This action is created only when project has broken references.
@@ -229,6 +245,56 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
                 fireOpenedIconChange();
             }
 
+        }
+        
+        private class BrokenServerAction extends AbstractAction implements 
+                    InstanceListener, PropertyChangeListener {
+
+            private RequestProcessor.Task task = null;
+            private boolean brokenServer;
+            
+            public BrokenServerAction() {
+                putValue(Action.NAME, NbBundle.getMessage(EjbJarLogicalViewProvider.class, "LBL_Fix_Missing_Server_Action")); // NOI18N
+                evaluator.addPropertyChangeListener(this);
+                checkMissingServer();
+            }
+            
+            public boolean isEnabled() {
+                return brokenServer;
+            }
+
+            public void actionPerformed(ActionEvent e) {
+                BrokenServerSupport.showCustomizer(project.getEjbJarProjectProperties());
+                checkMissingServer();
+            }
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (EjbJarProjectProperties.J2EE_SERVER_INSTANCE.equals(evt.getPropertyName())) {
+                    checkMissingServer();
+                }
+            }
+                
+            public void changeDefaultInstance(String oldServerInstanceID, String newServerInstanceID) {
+            }
+
+            public void instanceAdded(String serverInstanceID) {
+                checkMissingServer();
+            }
+
+            public void instanceRemoved(String serverInstanceID) {
+                checkMissingServer();
+            }
+
+            private void checkMissingServer() {
+                boolean old = brokenServer;
+                String servInstID = (String)project.getEjbJarProjectProperties().get(EjbJarProjectProperties.J2EE_SERVER_INSTANCE);
+                brokenServer = BrokenServerSupport.isBroken(servInstID);
+                if (old != brokenServer) {
+                    fireIconChange();
+                    fireOpenedIconChange();
+                    fireDisplayNameChange(null, null);
+                }
+            }
         }
 
     }

@@ -146,4 +146,8 @@ Microsystems, Inc. All Rights Reserved.
         <file name="MANIFEST.MF" url="MANIFEST.MF"/>
     </folder>
     
+    <folder name="Services">
+        <file name="org-netbeans-modules-j2ee-ejbjarproject-ui-FoldersList.settings" url="foldersList.settings"/>
+    </folder>
+
 </filesystem>

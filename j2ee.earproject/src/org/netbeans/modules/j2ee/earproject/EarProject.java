@@ -49,6 +49,7 @@ import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 //import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.spi.project.SubprojectProvider;
 //import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
@@ -90,7 +91,7 @@ import org.w3c.dom.Text;
 import org.netbeans.modules.j2ee.common.ui.IconBaseProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.j2ee.dd.api.application.*;
+
 
 /**
  * Represents an Enterprise Application project.
@@ -497,7 +498,7 @@ public final class EarProject implements J2eeProject, Project, AntProjectListene
                         }
                     }
                     if (platform == null) {
-                        // TODO inform the user that no server is set
+                        BrokenServerSupport.showAlert();
                     }
                 }
             } catch (IOException e) {

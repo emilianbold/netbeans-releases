@@ -13,9 +13,6 @@
 
 package org.netbeans.modules.j2ee.ejbjarproject;
 
-import java.awt.Dialog;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,8 +35,6 @@ import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProper
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.*;
 import org.netbeans.api.project.ProjectInformation;
-
-import org.netbeans.modules.j2ee.ejbjarproject.ui.NoSelectedServerWarning;
 
 import org.netbeans.modules.j2ee.api.common.J2eeProjectConstants;
 
@@ -367,8 +362,6 @@ class EjbJarActionProvider implements ActionProvider {
     
     private boolean isSelectedServer () {
         String instance = antProjectHelper.getStandardPropertyEvaluator ().getProperty (EjbJarProjectProperties.J2EE_SERVER_INSTANCE);
-        boolean selected;
-        
         if (instance != null) {
             String id = Deployment.getDefault().getServerID(instance);
             if (id != null) {
@@ -388,41 +381,9 @@ class EjbJarActionProvider implements ActionProvider {
         }
 
         // no selected server => warning
-        NoSelectedServerWarning panel = new NoSelectedServerWarning (serverType);
-
-        Object[] options = new Object[] {
-            DialogDescriptor.OK_OPTION,
-            DialogDescriptor.CANCEL_OPTION
-        };
-        final DialogDescriptor desc = new DialogDescriptor (panel,
-                NbBundle.getMessage (NoSelectedServerWarning.class, "CTL_NoSelectedServerWarning_Title"), // NOI18N
-            true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
-        desc.setMessageType(DialogDescriptor.WARNING_MESSAGE);
-        Dialog dlg = DialogDisplayer.getDefault ().createDialog (desc);
-        panel.addPropertyChangeListener(new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (evt.getPropertyName().equals(NoSelectedServerWarning.OK_ENABLED)) {
-                        Object newvalue = evt.getNewValue();
-                        if ((newvalue != null) && (newvalue instanceof Boolean)) {
-                            desc.setValid(((Boolean)newvalue).booleanValue());
-                        }
-                    }
-                }
-            }
-        );
-        desc.setValid(panel.getSelectedInstance() != null);
-        dlg.setVisible (true);
-        if (desc.getValue() != options[0]) {
-            selected = false;
-        } else {
-            instance = panel.getSelectedInstance ();
-            selected = instance != null;
-            if (selected) {
-                setServerInstance(instance);
-            }
-        }
-        dlg.dispose();
-        return selected;
+        String msg = NbBundle.getMessage(EjbJarActionProvider.class, "MSG_No_Server_Selected"); //  NOI18N
+        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
+        return false;
     }
     
     private void setServerInstance(String serverInstanceId) {

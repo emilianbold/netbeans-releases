@@ -28,13 +28,15 @@ public class FoldersListSettings extends SystemOption {
     private static final String LAST_USED_CP_FOLDER = "lastUsedClassPathFolder";    //NOI18N
     
     private static final String SHOW_AGAIN_BROKEN_REF_ALERT = "showAgainBrokenRefAlert"; //NOI18N
+    
+    private static final String SHOW_AGAIN_BROKEN_SERVER_ALERT = "showAgainBrokenServerAlert"; //NOI18N
 
     private static final String LAST_USED_ARTIFACT_FOLDER = "lastUsedArtifactFolder"; //NOI18N
 
     private static final String LAST_USED_SOURCE_ROOT_FOLDER = "lastUsedSourceRootFolder";   //NOI18N
 
     public String displayName() {
-        return NbBundle.getMessage (FoldersListSettings.class, "TXT_WebProjectFolderList"); //NOI18N
+        return NbBundle.getMessage (FoldersListSettings.class, "TXT_EjbJarProjectFolderList"); //NOI18N
     }
 
     public String getLastExternalSourceRoot () {
@@ -61,6 +63,15 @@ public class FoldersListSettings extends SystemOption {
     
     public void setShowAgainBrokenRefAlert(boolean again) {
         this.putProperty(SHOW_AGAIN_BROKEN_REF_ALERT, Boolean.valueOf(again), true);
+    }
+    
+    public boolean isShowAgainBrokenServerAlert() {
+        Boolean b = (Boolean)getProperty(SHOW_AGAIN_BROKEN_SERVER_ALERT);
+        return b == null ? true : b.booleanValue();
+    }
+    
+    public void setShowAgainBrokenServerAlert(boolean again) {
+        this.putProperty(SHOW_AGAIN_BROKEN_SERVER_ALERT, Boolean.valueOf(again), true);
     }
 
     public static FoldersListSettings getDefault () {

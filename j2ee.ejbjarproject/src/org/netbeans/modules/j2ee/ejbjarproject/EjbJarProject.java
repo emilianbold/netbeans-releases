@@ -30,7 +30,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.modules.j2ee.api.common.J2eeProjectConstants;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.EjbJarProjectClassPathExtender;
@@ -54,7 +53,6 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
-import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
@@ -69,6 +67,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.BrokenReferencesAlertPanel;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.FoldersListSettings;
 import org.netbeans.modules.j2ee.ejbjarproject.queries.SourceLevelQueryImpl;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.BrokenServerSupport;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -599,7 +598,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                         }
                     }
                     if (platform == null) {
-                        // TODO inform the user that no server is set
+                        BrokenServerSupport.showAlert();
                     }
                 }
             } catch (IOException e) {
