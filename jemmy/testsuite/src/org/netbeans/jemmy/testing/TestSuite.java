@@ -79,6 +79,10 @@ public class TestSuite extends Task {
 	dispatch = v;
     }
     public void execute() throws BuildException {
+        //init X
+        javax.swing.JFrame frame = new javax.swing.JFrame("");
+        frame.show();
+        frame.hide();
 	try {
 	    QueueTool qt = new QueueTool();
 	    qt.setOutput(JemmyProperties.getCurrentOutput().createErrorOutput());

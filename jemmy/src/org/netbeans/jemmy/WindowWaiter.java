@@ -237,7 +237,7 @@ public class WindowWaiter extends Waiter implements Timeoutable {
 	owner = o;
 	chooser = ch;
 	this.index = index;
-	return((Window)waitAction(""));
+	return((Window)waitAction(null));
     }
 
     /**
@@ -258,6 +258,10 @@ public class WindowWaiter extends Waiter implements Timeoutable {
     public Window waitWindow(Window o, ComponentChooser ch)
 	throws InterruptedException {
 	return(waitWindow(o, ch, 0));
+    }
+
+    public String getDescription() {
+	return(chooser.getDescription());
     }
 
     /**
@@ -385,13 +389,13 @@ public class WindowWaiter extends Waiter implements Timeoutable {
 
     private Window waitWindow()
 	throws InterruptedException {
-	return((Window)waitAction(""));
+	return((Window)waitAction(null));
     }
 
     private Window waitWindow(Window o)
 	throws InterruptedException {
 	owner = o;
-	return((Window)waitAction(""));
+	return((Window)waitAction(null));
     }
 
     private static class IndexChooser implements ComponentChooser {
