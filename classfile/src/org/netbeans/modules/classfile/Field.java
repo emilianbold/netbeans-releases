@@ -29,84 +29,47 @@ import java.util.*;
  */
 public abstract class Field {
 
-    /* name and type are lazily initialized, so must be
-     * kept private. 
-     */
-    private CPUTF8Info utfName;
-    private CPUTF8Info utfType;
+    private int iName;
+    private int iType;
     private String typeSignature;
     private String _name;
     private String _type;
 
     int access;
     ClassFile classFile;
-    private boolean deprecated = false;
-    private boolean synthetic = false;
-    private HashMap annotations;
-    private HashMap attributes;
+    private Map annotations;
+    protected AttributeMap attributes;
 
     /** Creates new Field */
-    Field(DataInputStream in, ConstantPool pool, ClassFile classFile) throws IOException {
+    Field(DataInputStream in, ConstantPool pool, ClassFile classFile, 
+	  boolean includeCode) throws IOException {
         access = in.readUnsignedShort();
+	iName = in.readUnsignedShort();
+	iType = in.readUnsignedShort();
 	this.classFile = classFile;
-        CPEntry entry = null;
-        try { // debug
-	    utfName = (CPUTF8Info)pool.get(in.readUnsignedShort());
-	    utfType = (CPUTF8Info)pool.get(in.readUnsignedShort());
-        } catch (ClassCastException e) {
-            // debug assertion
-            System.out.println("error looking up constant pool entry: wanted type CPUTF8Info, got " + entry.getClass().getName() + "; e=" + e);
-            e.printStackTrace();
-            throw new IOException("internal error");
-        }
+        attributes = AttributeMap.load(in, pool, includeCode);
     }
 
-    Field(String name, String type) {
+    Field(String name, String type, ClassFile classFile) {
+	access = 0;
 	_name = name;
 	_type = type;
+	this.classFile = classFile;
+	attributes = new AttributeMap(new HashMap(1));
     }
-    
-    final void loadAttributes(DataInputStream in, ConstantPool pool) throws IOException {       
-	annotations = new HashMap(2);
-        int count = in.readUnsignedShort();
-        attributes = new HashMap(count + 1, (float)1.0);
-	//FIXME: attributes map is currently empty.
-        for (int i = 0; i < count; i++) {
-            CPUTF8Info entry = (CPUTF8Info)pool.get(in.readUnsignedShort());
-            int len = in.readInt();
-            String name = entry.getName();
-            if (name.equals("Deprecated"))
-                deprecated = true;
-            else if (name.equals("Synthetic"))
-                synthetic = true;
-	    else if (name.equals("RuntimeVisibleAnnotations")) { //NOI18N
-		Annotation.load(in, pool, true, annotations);
-	    }
-	    else if (name.equals("RuntimeInvisibleAnnotations")) { //NOI18N
-		Annotation.load(in, pool, false, annotations);
-	    }
-            else if (!loadAttribute(name, len, in, pool))  {
-                // ignore attribute...
-		ClassFile.skip(in, len);
-            }
-        }
-    }
-
-    abstract boolean loadAttribute(String type, int len, 
-        DataInputStream in, ConstantPool pool) throws IOException;
     
     public final String getName() {
-	if (_name == null && utfName != null) {
+	if (_name == null && iName != 0) {
+	    CPUTF8Info utfName = (CPUTF8Info)classFile.constantPool.get(iName);
             _name = utfName.getName();
-	    utfName = null;              // release for gc
 	}
         return _name;
     }
 
     public final String getDescriptor() {
-	if (_type == null && utfType != null) {
+	if (_type == null && iType != 0) {
+	    CPUTF8Info utfType = (CPUTF8Info)classFile.constantPool.get(iType);
             _type = utfType.getName();
-	    utfType = null;              // release for gc
 	}
         return _type;
     }
@@ -138,11 +101,11 @@ public abstract class Field {
     }
 
     public final boolean isDeprecated() {
-        return deprecated;
+	return attributes.get("Deprecated") != null;
     }
     
     public final boolean isSynthetic() {
-        return synthetic;
+        return attributes.get("Synthetic") != null;
     }
 
     /**
@@ -159,6 +122,20 @@ public abstract class Field {
      * is returned.
      */
     public String getTypeSignature() {
+	if (typeSignature == null) {
+	    DataInputStream in = attributes.getStream("Signature"); // NOI18N
+	    if (in != null) {
+		try {
+		    int index = in.readUnsignedShort();
+		    CPUTF8Info entry = 
+			(CPUTF8Info)classFile.constantPool.get(index);
+		    typeSignature = entry.getName();
+		    in.close();
+		} catch (IOException e) {
+		    System.err.println("invalid Signature attribute");
+		}
+	    }
+	}
 	return typeSignature;
     }
 
@@ -171,6 +148,7 @@ public abstract class Field {
      * annotations are not included in this collection.
      */
     public final Collection getAnnotations() {
+	loadAnnotations();
 	return annotations.values();
     }
 
@@ -179,6 +157,7 @@ public abstract class Field {
      * no annotation of that type exists for this field.
      */
     public final Annotation getAnnotation(final ClassName annotationClass) {
+	loadAnnotations();
 	return (Annotation)annotations.get(annotationClass);
     }
     
@@ -187,6 +166,7 @@ public abstract class Field {
      * this field.
      */
     public final boolean isAnnotationPresent(final ClassName annotationClass) {
+	loadAnnotations();
 	return annotations.get(annotationClass) != null;
     }
     
@@ -200,10 +180,16 @@ public abstract class Field {
      *
      * @see org.netbeans.modules.classfile.ClassFile#getAttributes
      */
-    public final Map getAttributes(){
+    public final AttributeMap getAttributes(){
         return attributes;
     }
     
+    private void loadAnnotations() {
+	if (annotations == null)
+	    annotations = ClassFile.buildAnnotationMap(classFile.constantPool, 
+						       attributes);
+    }
+
     public String toString() {
         StringBuffer sb = new StringBuffer();
 	String name = getName();
@@ -211,18 +197,19 @@ public abstract class Field {
 	    sb.append(getName());
 	    sb.append(' ');
 	}
-        if (synthetic)
+        if (isSynthetic())
             sb.append("(synthetic)"); //NOI18N
-        if (deprecated)
+        if (isDeprecated())
             sb.append("(deprecated)"); //NOI18N
         sb.append("type="); //NOI18N
         sb.append(getDescriptor());
-	if (typeSignature != null) {
+	if (getTypeSignature() != null) {
 	    sb.append(", signature="); //NOI18N
 	    sb.append(typeSignature);
 	}
         sb.append(", access="); //NOI18N
         sb.append(Access.toString(access));
+	loadAnnotations();
 	if (annotations.size() > 0) {
 	    Iterator iter = annotations.values().iterator();
 	    sb.append(", annotations={ ");

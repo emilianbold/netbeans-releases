@@ -30,8 +30,7 @@ import java.io.*;
  */
 public final class Variable extends Field {
 
-    private boolean constant;    // don't initialize to false, as loadAttribute is called by super.<init>
-    private Object value;
+    private Object constValue;
     
     static Variable[] loadFields(DataInputStream in, ConstantPool pool,
                                  ClassFile cls) 
@@ -44,34 +43,9 @@ public final class Variable extends Field {
     }
     
     /** Creates new Variable */
-    Variable(DataInputStream in, ConstantPool pool, ClassFile cls) throws IOException {
-        super(in, pool, cls);
-        loadAttributes(in, pool);
-    }
-
-    /**
-     * (Private implementation method)
-     */
-    final boolean loadAttribute(String name, int len, 
-      DataInputStream in, ConstantPool pool) throws IOException {
-        if (name.equals("ConstantValue")) { //NOI18N
-            constant = true;
-            int index = in.readUnsignedShort();
-            CPEntry cpe = pool.get(index);
-            value = cpe.getValue();
-            return true;
-        }
-	else if (name.equals("Signature")) { //NOI18N
-            CPUTF8Info entry;
-	    try {
-		entry = (CPUTF8Info)pool.get(in.readUnsignedShort());
-	    } catch (ClassCastException e) {
-		throw new IOException("invalid constant pool entry");
-	    }
-	    setTypeSignature(entry.getName());
-	    return true;
-	}
-        return false;
+    Variable(DataInputStream in, ConstantPool pool, ClassFile cls) 
+	throws IOException {
+        super(in, pool, cls, false);
     }
 
     /**
@@ -80,7 +54,7 @@ public final class Variable extends Field {
      * @see #getConstantValue
      */
     public final boolean isConstant() {
-        return constant;
+        return attributes.get("ConstantValue") != null;//NOI18N
     }
 
     /**
@@ -89,7 +63,7 @@ public final class Variable extends Field {
      * @deprecated replaced by <code>Object getConstantValue()</code>.
      */
     public final Object getValue() {
-        return value;
+	return getConstantValue();
     }
     
     /**
@@ -98,7 +72,19 @@ public final class Variable extends Field {
      * @see #isConstant
      */
     public final Object getConstantValue() {
-        return value;
+	if (constValue == null) {
+	    DataInputStream in = attributes.getStream("ConstantValue"); // NOI18N
+	    if (in != null) {
+		try {
+		    int index = in.readUnsignedShort();
+		    CPEntry cpe = classFile.constantPool.get(index);
+		    constValue = cpe.getValue();
+		} catch (IOException e) {
+		    System.err.println("invalid ConstantValue attribute");
+		}
+	    }
+	}
+        return constValue;
     }
     
     /**

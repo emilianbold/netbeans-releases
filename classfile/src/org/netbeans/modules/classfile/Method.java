@@ -31,7 +31,6 @@ import java.util.Arrays;
  */
 public final class Method extends Field {
     
-    private boolean includeCode;
     private Code code;
     private CPClassInfo[] exceptions;
     private Parameter[] parameters;
@@ -47,35 +46,16 @@ public final class Method extends Field {
     }
     
     /** Creates new Method */
-    Method(DataInputStream in, ConstantPool pool, ClassFile cls, boolean includeCode) throws IOException {
-        super(in, pool, cls);
-        this.includeCode = includeCode;
-        super.loadAttributes(in, pool);
+    Method(DataInputStream in, ConstantPool pool, ClassFile cls, 
+	   boolean includeCode) throws IOException {
+        super(in, pool, cls, includeCode);
     }
 
     /**
-     * (Private implementation method)
-     */
+     * (Private implementation method) FIXME
+     *
     final boolean loadAttribute(String name, int len, 
       DataInputStream in, ConstantPool pool) throws IOException {
-        if (includeCode && name.equals("Code")) { //NOI18N
-	    code = new Code(in, pool);
-            return true;
-	}
-        else if (name.equals("Exceptions")) { //NOI18N
-            exceptions = ClassFile.getCPClassList(in, pool);
-            return true;
-        }
-	else if (name.equals("Signature")) { //NOI18N
-            CPUTF8Info entry;
-	    try {
-		entry = (CPUTF8Info)pool.get(in.readUnsignedShort());
-	    } catch (ClassCastException e) {
-		throw new IOException("invalid constant pool entry");
-	    }
-	    setTypeSignature(entry.getName());
-	    return true;
-	}
 	else if (name.equals("RuntimeVisibleParameterAnnotations")) { //NOI18N
 	    return false; //FIXME
 	}
@@ -85,21 +65,47 @@ public final class Method extends Field {
 	else if (name.equals("AnnotationDefault")) { //NOI18N
 	    return false; //FIXME
 	}
+
         return false;
     }
-
+    */
     /** 
-     * Get the bytecodes of this method.
+     * Get the bytecodes of this method.  This method returns null if
+     * the method is abstract, or if the ClassFile instance was created
+     * with a includeCode parameter of false.
      *
-     * @return the Code object, or null if method is abstract.
+     * @return the Code object, or null.
      */    
     public final Code getCode() {
+	if (code == null) {
+	    DataInputStream in = attributes.getStream("Code"); // NOI18N
+	    if (in != null) {
+		try {
+		    code = new Code(in, classFile.constantPool);
+		    in.close();
+		} catch (IOException e) {
+		    System.err.println("invalid Signature attribute");
+		}
+	    }
+	}
         return code;  // will be null for abstract methods
     }
     
     public final CPClassInfo[] getExceptionClasses() {
-        if (exceptions == null)
-            exceptions = new CPClassInfo[0];
+        if (exceptions == null) {
+	    DataInputStream in = attributes.getStream("Exceptions"); // NOI18N
+	    if (in != null) {
+		try {
+		    exceptions = 
+			ClassFile.getCPClassList(in, classFile.constantPool);
+		    in.close();
+		} catch (IOException e) {
+		    System.err.println("invalid Signature attribute");
+		}
+	    }
+	    if (exceptions == null)
+		exceptions = new CPClassInfo[0];
+	}
         return exceptions;
     }
     
@@ -138,6 +144,9 @@ public final class Method extends Field {
                 sb.append(ec[i].getName());
             }
 	}
+	Code code = getCode();
+	if (code != null)
+	    sb.append(code.toString());
         return sb.toString();
     }
 

@@ -36,8 +36,8 @@ public final class Parameter extends Field {
     }
 
     /** Creates new Parameter */
-    Parameter(String name, String type) {
-        super(name, type);
+    Parameter(String name, String type, ClassFile classFile) {
+        super(name, type, classFile);
     }
 
     boolean loadAttribute(String type, int len, DataInputStream in, 

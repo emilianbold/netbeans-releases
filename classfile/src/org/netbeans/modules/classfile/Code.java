@@ -78,7 +78,7 @@ public final class Code {
 		    System.out.println("skipped unknown code attribute: " + name);
 		
                 // ignore unknown attribute...
-		ClassFile.skip(in, len);
+		//ClassFile.skip(in, len); FIXME
             }
         }
     }
@@ -131,5 +131,15 @@ public final class Code {
      */
     public final LocalVariableTypeTableEntry[] getLocalVariableTypeTable() {
         return localVariableTypeTable;
+    }
+
+    public String toString() {
+	StringBuffer sb = new StringBuffer("Code: bytes=");
+	sb.append(byteCodes.length);
+	sb.append(", stack=");
+	sb.append(maxStack);
+	sb.append(", locals=");
+	sb.append(maxLocals);
+	return sb.toString();
     }
 }

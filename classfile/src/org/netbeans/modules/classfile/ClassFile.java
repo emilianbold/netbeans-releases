@@ -37,11 +37,9 @@ public class ClassFile {
     Variable[] variables;
     Method[] methods;
     String sourceFileName;
-    boolean deprecated = false;
-    boolean synthetic = false;
     InnerClass[] innerClasses;
-    private HashMap attributes;
-    private HashMap annotations;
+    private AttributeMap attributes;
+    private Map annotations;
     short majorVersion;
     short minorVersion;
     String typeSignature;
@@ -145,7 +143,7 @@ public class ClassFile {
             interfaces = getCPClassList(in, constantPool);
             variables = Variable.loadFields(in, constantPool, this);
             methods = Method.loadMethods(in, constantPool, this, includeCode);
-            loadAttributes(in, constantPool);
+            attributes = AttributeMap.load(in, constantPool);
         } catch (IOException ioe) {
             ioe.printStackTrace();
 	    String msg = "invalid class format";
@@ -185,80 +183,6 @@ public class ClassFile {
         return classes;
     }
     
-    //FIXME: rewrite to store all attributes as byte arrays, delay conversion
-    private void loadAttributes(DataInputStream in, ConstantPool pool) 
-      throws IOException {        
-        int count = in.readUnsignedShort();
-        attributes = new HashMap(count + 1, (float)1.0);
-	annotations = new HashMap(2);
-	final byte[] noBytes = new byte[0];
-        for (int i = 0; i < count; i++) {
-            try {
-		CPUTF8Info entry = 
-		    (CPUTF8Info)pool.get(in.readUnsignedShort());
-
-		int len = in.readInt();
-		String name = entry.getName();
-		if (name.equals("Deprecated")){
-		    attributes.put(name, noBytes);
-		    deprecated = true;
-		}
-		else if (name.equals("Synthetic")){
-		    attributes.put(name, noBytes);
-		    synthetic = true;
-		}
-		else if (name.equals("SourceFile")) { //NOI18N
-		    entry = (CPUTF8Info)pool.get(in.readUnsignedShort());
-		    sourceFileName = entry.getName();
-		    attributes.put(name, sourceFileName);
-		} else if (name.equals("InnerClasses")){
-		    innerClasses = InnerClass.loadInnerClasses(in, pool);
-		    attributes.put(name, innerClasses);
-		}
-		else if (name.equals("Signature")) { //NOI18N
-                    entry = (CPUTF8Info)pool.get(in.readUnsignedShort());
-		    typeSignature = entry.getName();
-		    attributes.put(name, typeSignature);
-		}
-		else if (name.equals("EnclosingMethod")) { //NOI18N
-		    int classIndex = in.readUnsignedShort();
-		    int natIndex = in.readUnsignedShort();
-		    CPEntry classInfo = pool.get(classIndex);
-		    if (classInfo.getTag() == ConstantPool.CONSTANT_Class) {
-			enclosingMethod = 
-			    new EnclosingMethod(pool, 
-						(CPClassInfo)classInfo, 
-						natIndex);
-			attributes.put(name, enclosingMethod);
-		    } else
-			; // Dasho bug in 1.5 beta1's jce.jar
-		}
-		else if (name.equals("RuntimeVisibleAnnotations")) //NOI18N
-		    Annotation.load(in, pool, true, annotations);
-		else if (name.equals("RuntimeInvisibleAnnotations")) //NOI18N
-		    Annotation.load(in, pool, false, annotations);
-		else {
-		    skip(in, len);
-		    attributes.put(name, noBytes);
-		}
-            } catch (ClassCastException e) {
-                throw new IOException("invalid constant pool entry");
-            }
-        }
-        if (innerClasses == null)
-            innerClasses = new InnerClass[0];
-    }
-
-    /*
-     * version of InputStream.skip() which will skip the actual
-     * number of requested bytes.
-     */
-    static void skip(InputStream in, int len) throws IOException {
-	int n;
-	while ((n = (int)in.skip(len)) > 0 && n < len)
-	    len -= n;
-    }
-
     /**
      * Returns the access permissions of this class or interface.
      * @return a mask of access flags.
@@ -370,16 +294,29 @@ public class ClassFile {
      * @return the name of the source file the compiler used to create this class.
      */    
     public final String getSourceFileName() {
+	if (sourceFileName == null) {
+	    DataInputStream in = attributes.getStream("SourceFile"); // NOI18N
+	    if (in != null) {
+		try {
+		    int ipool = in.readUnsignedShort();
+		    CPUTF8Info entry = (CPUTF8Info)constantPool.get(ipool);
+		    sourceFileName = entry.getName();
+		    in.close();
+		} catch (IOException e) {
+		    System.err.println("invalid SourceFile attribute");
+		}
+	    }
+	}
         return sourceFileName;
     }
     
     public final boolean isDeprecated() {
-        return deprecated;
+	return attributes.get("Deprecated") != null;
     }
 
     public final boolean isSynthetic() {
-        return synthetic ||
-	    (classAccess & Access.SYNTHETIC) == Access.SYNTHETIC;
+        return (classAccess & Access.SYNTHETIC) == Access.SYNTHETIC ||
+	    attributes.get("Synthetic") != null;
     }
 
 
@@ -398,19 +335,30 @@ public class ClassFile {
     }
 
     /**
-     * Returns a map of the raw attributes for this classfile.  The
-     * keys for this map are the names of the attributes (as Strings,
-     * not constant pool indexes).  The values are byte arrays that
-     * hold the contents of the attribute.  Field attributes are
+     * Returns a map of the raw attributes for this classfile.  
+     * Field attributes are
      * not returned in this map.
      *
      * @see org.netbeans.modules.classfile.Field#getAttributes
      */
-    public final Map getAttributes(){
+    public final AttributeMap getAttributes(){
         return attributes;
     }
     
     public final Collection getInnerClasses(){
+	if (innerClasses == null) {
+	    DataInputStream in = attributes.getStream("InnerClasses"); // NOI18N
+	    if (in != null) {
+		try {
+		    innerClasses = 
+			InnerClass.loadInnerClasses(in, constantPool);
+		    in.close();
+		} catch (IOException e) {
+		    System.err.println("invalid InnerClasses attribute");
+		}
+	    } else
+		innerClasses = new InnerClass[0];
+	}
         return Arrays.asList(innerClasses);
     }
 
@@ -434,6 +382,19 @@ public class ClassFile {
      * is returned.
      */
     public String getTypeSignature() {
+	if (typeSignature == null) {
+	    DataInputStream in = attributes.getStream("Signature"); // NOI18N
+	    if (in != null) {
+		try {
+		    CPUTF8Info entry = 
+			(CPUTF8Info)constantPool.get(in.readUnsignedShort());
+		    typeSignature = entry.getName();
+		    in.close();
+		} catch (IOException e) {
+		    System.err.println("invalid Signature attribute");
+		}
+	    }
+	}
 	return typeSignature;
     }
 
@@ -445,7 +406,57 @@ public class ClassFile {
      * null is returned.
      */
     public EnclosingMethod getEnclosingMethod() {
+	if (enclosingMethod == null) {
+	    DataInputStream in = 
+		attributes.getStream("EnclosingMethod"); // NOI18N
+	    if (in != null) {
+		try {
+		    int classIndex = in.readUnsignedShort();
+		    int natIndex = in.readUnsignedShort();
+		    CPEntry classInfo = constantPool.get(classIndex);
+		    if (classInfo.getTag() == ConstantPool.CONSTANT_Class)
+			enclosingMethod = 
+			    new EnclosingMethod(constantPool, 
+						(CPClassInfo)classInfo, 
+						natIndex);
+		    else
+			; // JDK 1.5 beta1 bug
+		    in.close();
+		} catch (IOException e) {
+		    System.err.println("invalid EnclosingMethod attribute");
+		}
+	    }
+	}
 	return enclosingMethod;
+    }
+
+    private void loadAnnotations() {
+	if (annotations == null)
+	    annotations = buildAnnotationMap(constantPool, attributes);
+    }
+
+    static Map buildAnnotationMap(ConstantPool pool, AttributeMap attrs) {
+	Map annotations = new HashMap(2);
+	DataInputStream in = 
+	    attrs.getStream("RuntimeVisibleAnnotations"); //NOI18N
+	if (in != null) {
+	    try {
+		Annotation.load(in, pool, true, annotations);
+		in.close();
+	    } catch (IOException e) {
+		System.err.println("invalid RuntimeVisibleAnnotations attribute");
+	    }
+	}
+	in = attrs.getStream("RuntimeInvisibleAnnotations"); //NOI18N
+	if (in != null) {
+	    try {
+		Annotation.load(in, pool, false, annotations);
+		in.close();
+	    } catch (IOException e) {
+		System.err.println("invalid RuntimeInvisibleAnnotations attribute");
+	    }
+	}
+	return annotations;
     }
 
     /**
@@ -453,6 +464,7 @@ public class ClassFile {
      * annotations are not included in this collection.
      */
     public final Collection getAnnotations() {
+	loadAnnotations();
 	return annotations.values();
     }
 
@@ -461,6 +473,7 @@ public class ClassFile {
      * no annotation of that type exists for this class.
      */
     public final Annotation getAnnotation(final ClassName annotationClass) {
+	loadAnnotations();
 	return (Annotation)annotations.get(annotationClass);
     }
     
@@ -469,6 +482,7 @@ public class ClassFile {
      * this class.
      */
     public final boolean isAnnotationPresent(final ClassName annotationClass) {
+	loadAnnotations();
 	return annotations.get(annotationClass) != null;
     }
     
@@ -516,23 +530,24 @@ public class ClassFile {
         sb.append(Access.toString(classAccess));
         sb.append(' ');
         sb.append(classInfo);
-        if (synthetic)
+        if (isSynthetic())
             sb.append(" (synthetic)"); //NOI18N
-        if (deprecated)
+        if (isDeprecated())
             sb.append(" (deprecated)"); //NOI18N
         sb.append("\n   source: "); //NOI18N
-        sb.append(sourceFileName);
+        sb.append(getSourceFileName());
         sb.append("\n   super: "); //NOI18N
         sb.append(superClassInfo);
-	if (typeSignature != null) {
+	if (getTypeSignature() != null) {
 	    sb.append("\n   signature: "); //NOI18N
 	    sb.append(typeSignature);
 	}
-	if (enclosingMethod != null) {
+	if (getEnclosingMethod() != null) {
 	    sb.append("\n   enclosing method: "); //NOI18N
 	    sb.append(enclosingMethod);
 	}
         sb.append("\n   ");
+	loadAnnotations();
 	if (annotations.size() > 0) {
 	    Iterator iter = annotations.values().iterator();
 	    sb.append("annotations: ");
@@ -546,7 +561,7 @@ public class ClassFile {
             sb.append(arrayToString("interfaces", interfaces)); //NOI18N
             sb.append("\n   ");
         }
-        if (innerClasses.length > 0) {
+        if (getInnerClasses().size() > 0) {
             sb.append(arrayToString("innerclasses", innerClasses)); //NOI18N
             sb.append("\n   ");
         }
