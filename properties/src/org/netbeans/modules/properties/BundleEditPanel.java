@@ -78,7 +78,7 @@ public class BundleEditPanel extends JPanel {
         JTextField textField = new JTextField();
         textField.setBorder(new LineBorder(Color.black));
         table.setDefaultEditor(PropertiesTableModel.StringPair.class,
-            new PropertiesTableCellEditor(textField, textComment, textValue));
+            new PropertiesTableCellEditor(textField, textComment, textValue, valueLabel));
 
         // Sets renderer.
         table.setDefaultRenderer(PropertiesTableModel.StringPair.class, new TableViewRenderer());

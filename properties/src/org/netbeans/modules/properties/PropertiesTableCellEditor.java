@@ -17,11 +17,13 @@ package org.netbeans.modules.properties;
 
 import java.awt.Component;
 import javax.swing.DefaultCellEditor;
+import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -39,12 +41,12 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
     /** Constructs a PropertiesTableCellEditor that uses a text field.
     * @param x  a JTextField object ...
     */
-    public PropertiesTableCellEditor(JTextField tf, final JTextComponent commentComponent, final JTextComponent valueComponent) {
+    public PropertiesTableCellEditor(JTextField tf, final JTextComponent commentComponent, final JTextComponent valueComponent, final JLabel valueLabel) {
         super(tf);
         // Number of clicks needed to edit an editable cell.
         this.clickCountToStart = 1;
         valueComponent.setDocument(tf.getDocument());
-        this.delegate = new PropertiesEditorDelegate(commentComponent, valueComponent);
+        this.delegate = new PropertiesEditorDelegate(commentComponent, valueComponent, valueLabel);
         ((JTextField)editorComponent).addActionListener(delegate);
         
     }
@@ -86,15 +88,18 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
         JTextComponent commentComponent;
         /** Reference to text component showing key or value respectively on bundle edit table. */
         JTextComponent valueComponent;
+        /** Reference to the value label. */
+        JLabel valueLabel;
 
         /** Generated serial version UID. */
         static final long serialVersionUID =9082979978712223677L;
         
         
         /** Constructor. */        
-        public PropertiesEditorDelegate(JTextComponent commentComponent, JTextComponent valueComponent) {
+        public PropertiesEditorDelegate(JTextComponent commentComponent, JTextComponent valueComponent, JLabel valueLabel) {
             this.commentComponent = commentComponent;
             this.valueComponent = valueComponent;
+            this.valueLabel = valueLabel;
         }
         
 
@@ -120,11 +125,15 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
             String value = ((JTextField)getComponent()).getText();
             
             // Cell is a properties key.
-            if(isKeyCell)
+            if(isKeyCell) {
                 value = UtilConvert.escapeJavaSpecialChars(UtilConvert.escapePropertiesSpecialChars(value));
+                valueLabel.setText(NbBundle.getBundle(PropertyPanel.class).getString("LBL_KeyLabel"));
+            }
             // Cell is a properties value.
-            else
+            else {
                 value = UtilConvert.escapeJavaSpecialChars(UtilConvert.escapeLineContinuationChar(value));
+                valueLabel.setText(NbBundle.getBundle(BundleEditPanel.class).getString("LBL_ValueLabel"));
+            }
             
             // the cell is a properties key 
             return new PropertiesTableModel.StringPair(commentComponent.getText(),
