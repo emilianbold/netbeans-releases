@@ -353,13 +353,28 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
         
         public Action[] getActions() {
             Action[] sa = super.getActions();
-            Action[] jspServletActions = new SystemAction[] {
-                null,
-                SystemAction.get(ValidateAction.class),
-                SystemAction.get(EditServletAction.class),
-                null,
-                SystemAction.get(ExecuteAction.class)
-            };
+            Action[] jspServletActions;
+            if (JspCompilationProxy.getCompilationProxy() == null) {
+                // no JSP compilation 
+                jspServletActions = new SystemAction[] {
+                    null,
+                    SystemAction.get(ValidateAction.class),
+                    SystemAction.get(EditServletAction.class),
+                    null,
+                    SystemAction.get(ExecuteAction.class)
+                };
+            }
+            else {
+                // JSP compilation enabled
+                jspServletActions = new SystemAction[] {
+                    null,
+                    SystemAction.get(CompileAction.class),
+                    SystemAction.get(ValidateAction.class),
+                    SystemAction.get(EditServletAction.class),
+                    null,
+                    SystemAction.get(ExecuteAction.class)
+                };
+            }
             List acs = new ArrayList(Arrays.asList(sa));
             acs.addAll(Arrays.asList(jspServletActions));
             return (Action[])acs.toArray(new Action[0]);
