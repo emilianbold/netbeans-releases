@@ -286,14 +286,42 @@ public class OptionsAction extends CallableSystemAction {
             prepareNodes ();
             
             TTW ttw = (TTW)view;
-            ttw.expandTheseNodes (toExpand, getExplorerManager ().getRootContext ());
-            try {
-                getExplorerManager ().setSelectedNodes (selectedNodes);
-            } catch (java.beans.PropertyVetoException pve) {
-                // notify non-success during set selected nodes back
-                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, pve);
-            }
+            Node rootContext = getExplorerManager ().getRootContext ();
+            ttw.expandTheseNodes (toExpand, rootContext);
             
+            // workaround issue #26192, check if selected nodes are under root
+            // node is sometimes removed from hierarchy because its data object is revalidated
+            // the reason why is revalidated is not known
+            boolean isNodeUnderRoot = true;
+            int indexOfNodeWithoutRoot = 0;
+            Node node;
+            for (int i = 0; i < selectedNodes.length; i++) {
+                node = selectedNodes[i];
+                isNodeUnderRoot = false;
+                while (node != null) {
+                    if (node.equals (rootContext)) {
+                        isNodeUnderRoot = true;
+                        break;
+                    }
+                    node = node.getParentNode ();
+                }
+                if (!isNodeUnderRoot) {
+                    indexOfNodeWithoutRoot = i;
+                    break;
+                }
+            }
+            if (isNodeUnderRoot) {
+                try {
+                    getExplorerManager ().setSelectedNodes (selectedNodes);
+                } catch (java.beans.PropertyVetoException pve) {
+                    // notify non-success during set selected nodes back
+                    ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, pve);
+                }
+            } else {
+                ErrorManager.getDefault ().log (ErrorManager.WARNING,
+                    "Node "+selectedNodes[indexOfNodeWithoutRoot].getName () + // NOI18N
+                    " was removed from hierarchy, is not under root context!"); // NOI18N
+            }
             expanded = true;
         }
         
