@@ -15,6 +15,8 @@
 package org.netbeans.modules.image;
 
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
 import java.util.Enumeration;
 import javax.swing.Icon;
@@ -24,10 +26,12 @@ import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
+import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.OpenSupport;
 import org.openide.NotifyDescriptor;
 import org.openide.TopManager;
+import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -55,10 +59,11 @@ public class ImageOpenSupport extends OpenSupport implements OpenCookie {
     
 
     /** Constructs ImageOpenSupportObject on given MultiDataObject.Entry. */
-    public ImageOpenSupport (MultiDataObject.Entry ent) {
-        super (ent);
+    public ImageOpenSupport(MultiDataObject.Entry entry) {
+        super(entry, new Environment(entry.getDataObject())); // TEMP
     }
 
+    
     /** Creates the CloenableTOPComponent viewer of image. */
     public CloneableTopComponent createCloneableTopComponent () {
         prepareViewer();
@@ -120,5 +125,20 @@ public class ImageOpenSupport extends OpenSupport implements OpenCookie {
             }
         }
     }
+    
+    /** Environment for image open support. */
+    private static class Environment extends OpenSupport.Env {
+
+        /** Constructor. */
+        public Environment(DataObject dataObject) {
+            super(dataObject);
+        }
+        
+        
+        /** Overrides superclass method. Gets from OpenCookie. */
+        public CloneableOpenSupport findCloneableOpenSupport() {
+            return (CloneableOpenSupport)getDataObject().getCookie(OpenCookie.class);
+        }
+    } // End of nested Environment class.
 }
 
