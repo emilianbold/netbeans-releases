@@ -608,7 +608,9 @@ class HandleLayer extends JPanel
     }
 
     private void displayHint(RADComponent metacomp, Point p, PaletteItem item) {
-        if (!(metacomp instanceof RADVisualComponent)) {
+        if (!(metacomp instanceof RADVisualComponent)
+            || item.getItemClass() == null)
+        {
             TopManager.getDefault().setStatusText(""); // NOI18N
             return;
         }
