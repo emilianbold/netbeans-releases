@@ -21,7 +21,6 @@ package org.netbeans.xtest.harness;
 
 import java.io.*;
 import java.util.*;
-import java.util.logging.Level;
 
 import org.netbeans.xtest.xmlserializer.*;
 import org.netbeans.xtest.pe.server.*;
