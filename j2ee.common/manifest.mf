@@ -5,4 +5,6 @@ OpenIDE-Module-Specification-Version: 1.0
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2ee/common
  /Bundle.properties
 OpenIDE-Module: org.netbeans.modules.j2ee.common/1
+X-Comment: The j2ee/earproject depends on lots of code in here. If you add a dependency or change the interface increment the impl version number.
+OpenIDE-Module-Implementation-Version: 1.0.1
 
