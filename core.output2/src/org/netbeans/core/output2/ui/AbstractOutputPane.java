@@ -366,7 +366,6 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
             if (!locked) { //XXX check if doc is still being written?
                 BoundedRangeModel mdl = getVerticalScrollBar().getModel();
                 if (mdl.getValue() == mdl.getMaximum()) {
-                    Thread.dumpStack();
                     lockScroll();
                 }
             }
