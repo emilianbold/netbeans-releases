@@ -139,6 +139,17 @@ final class FileSelector extends CoronaDialog implements PropertyChangeListener 
         // CustomPane
         ep.setLayout(new BorderLayout(0, 5));
         ep.setBorder(new EmptyBorder(12, 12, 0, 11));
+        
+        // Center
+        tree = new BeanTreeView ();
+        tree.setPopupAllowed (false);
+        tree.setDefaultActionAllowed (false);
+        // install proper border for tree
+        tree.setBorder((Border)UIManager.get("Nb.ScrollPane.border")); // NOI18N
+        tree.getAccessibleContext().setAccessibleName(NbBundle.getBundle(FileSelector.class).getString("ACSN_FileSelectorTreeView"));
+        tree.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(FileSelector.class).getString("ACSD_FileSelectorTreeView"));
+        this.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(FileSelector.class).getString("ACSD_FileSelectorDialog"));
+        ep.add(tree, BorderLayout.CENTER);
 
         // component to place at the top
         try {
@@ -173,6 +184,7 @@ final class FileSelector extends CoronaDialog implements PropertyChangeListener 
             } else {
                 manager.setSelectedNodes (new Node[] { root });
                 JLabel label = new JLabel(rootLabel.replace('&', ' '));
+                label.setLabelFor(tree);
                 ep.add(label, BorderLayout.NORTH);
             }
         } catch(PropertyVetoException pve) {
@@ -180,16 +192,6 @@ final class FileSelector extends CoronaDialog implements PropertyChangeListener 
         }
 
 
-        // Center
-        tree = new BeanTreeView ();
-        tree.setPopupAllowed (false);
-        tree.setDefaultActionAllowed (false);
-        // install proper border for tree
-        tree.setBorder((Border)UIManager.get("Nb.ScrollPane.border")); // NOI18N
-        tree.getAccessibleContext().setAccessibleName(NbBundle.getBundle(FileSelector.class).getString("ACSN_FileSelectorTreeView"));
-        tree.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(FileSelector.class).getString("ACSD_FileSelectorTreeView"));
-        this.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(FileSelector.class).getString("ACSD_FileSelectorDialog"));
-        ep.add(tree, BorderLayout.CENTER);
 
         // South
         if (top != null) {
