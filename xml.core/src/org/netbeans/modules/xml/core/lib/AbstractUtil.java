@@ -16,6 +16,10 @@ import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
+import java.awt.*;
+import java.util.StringTokenizer;
+import java.util.MissingResourceException;
+
 /**
  * This provides package scope utilities for debugging and code
  * internationalization. It is designed to have a subclass,
@@ -97,8 +101,44 @@ public abstract class AbstractUtil {
         if (key == null) throw new NullPointerException();        
 	return NbBundle.getMessage (this.getClass(), key).charAt (0);
     }
-    
-    
+
+
+    /**
+     * Loads branded color. Parses syntax given by to Color(int,int,int) constructor:
+     * e.g.: <tt>0,255,128</tt>.
+     * @return color or <code>null</null> if bundle contains <tt>null</tt> literal
+     * (masking) or of entry miss at all.
+     * @throws MissingResourceException on invalid color syntax
+     */
+    public final Color getColor(String key) {
+        String raw = null;
+        try {
+            raw = getString(key);
+        } catch (MissingResourceException e) {
+            return null;
+        }
+        StringTokenizer tokenizer = new StringTokenizer(raw, ", \t"); // NOI18N
+        if (tokenizer.countTokens() < 3) {
+            if (tokenizer.countTokens() == 1) {
+                if ("null".equals(tokenizer.nextToken())) return null;  // NOI18N
+            }
+            throw new MissingResourceException("Invalid color format: " + raw, getClass().getName(), key);  // NOI18N
+        }
+
+        String red = tokenizer.nextToken();
+        String green = tokenizer.nextToken();
+        String blue = tokenizer.nextToken();
+        int r = Integer.parseInt(red);
+        if (r<0 || r>255) throw new MissingResourceException("Invalid color format: " + raw, getClass().getName(), key);  // NOI18N
+        int g = Integer.parseInt(green);
+        if (g<0 || g>255) throw new MissingResourceException("Invalid color format: " + raw, getClass().getName(), key);  // NOI18N
+        int b = Integer.parseInt(blue);
+        if (b<0 || b>255) throw new MissingResourceException("Invalid color format: " + raw, getClass().getName(), key);  // NOI18N
+        // ignore remainig tokens, possibly alpha in future
+
+        return new Color(r, g, b);
+    }
+
     //
     // Debugging purposes
     //
