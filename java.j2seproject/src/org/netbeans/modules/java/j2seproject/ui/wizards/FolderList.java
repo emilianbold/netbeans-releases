@@ -51,7 +51,7 @@ public final class FolderList extends javax.swing.JPanel {
         initComponents();
         this.jLabel1.setText(label);
         this.jLabel1.setDisplayedMnemonic(mnemonic);
-        this.roots.getAccessibleContext().setAccessibleName(accessibleDesc);
+        this.roots.getAccessibleContext().setAccessibleDescription(accessibleDesc);
         this.roots.setCellRenderer(new Renderer());
         this.roots.setModel (new DefaultListModel());
         this.roots.addListSelectionListener(new ListSelectionListener() {
@@ -106,6 +106,7 @@ public final class FolderList extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
+        jLabel1.setLabelFor(roots);
         jLabel1.setText("jLabel1");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
