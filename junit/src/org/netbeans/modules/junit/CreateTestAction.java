@@ -59,12 +59,13 @@ import org.openide.filesystems.FileUtil;
 public class CreateTestAction extends TestAction {
         
         public CreateTestAction() {
-            putValue("noIconInMenu", Boolean.TRUE);
+            putValue("noIconInMenu", Boolean.TRUE);                     //NOI18N
         }
         
         /* public members */
         public String getName() {
-            return NbBundle.getMessage(CreateTestAction.class, "LBL_Action_CreateTest");
+            return NbBundle.getMessage(CreateTestAction.class,
+                                       "LBL_Action_CreateTest");        //NOI18N
         }
         
         public HelpCtx getHelpCtx() {
@@ -75,18 +76,26 @@ public class CreateTestAction extends TestAction {
         
         protected void initialize() {
             super.initialize();
-            putProperty(Action.SHORT_DESCRIPTION, NbBundle.getMessage(CreateTestAction.class, "HINT_Action_CreateTest"));
+            putProperty(Action.SHORT_DESCRIPTION,
+                        NbBundle.getMessage(CreateTestAction.class,
+                                            "HINT_Action_CreateTest")); //NOI18N
         }
         
         protected String iconResource() {
-            return "org/netbeans/modules/junit/resources/CreateTestActionIcon.gif";
+            return "org/netbeans/modules/junit/resources/"              //NOI18N
+                   + "CreateTestActionIcon.gif";                        //NOI18N
         }
         
 
         
         private static void noTemplateMessage(String temp) {
-            String msg = NbBundle.getMessage(CreateTestAction.class, "MSG_template_not_found", temp);
-            NotifyDescriptor descr = new Message(msg, NotifyDescriptor.ERROR_MESSAGE);
+            String msg = NbBundle.getMessage(
+                    CreateTestAction.class,
+                    "MSG_template_not_found",                           //NOI18N
+                    temp);
+            NotifyDescriptor descr = new Message(
+                    msg,
+                    NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(descr);
         }
         
