@@ -9,7 +9,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -31,6 +31,7 @@ Microsystems, Inc. All Rights Reserved.
         <!-- Temp removed, cannot run on test4u, needs to be fixed -->
         <!-- <module name="apisupport/project" testtypes="unit"  attributes="stable"/> -->
         <module name="java/api" testtypes="unit" attributes="stable"/>
+        <module name="java/freeform" testtypes="unit" attributes="stable"/>
         <module name="java/j2seplatform" testtypes="unit" attributes="stable"/>
         <module name="java/j2seproject" testtypes="unit" attributes="stable"/>
         <module name="java/javacore" testtypes="unit" attributes="full"/>
