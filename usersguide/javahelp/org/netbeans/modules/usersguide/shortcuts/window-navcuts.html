@@ -14,17 +14,20 @@ Window Navigation Shortcuts
 </h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 <p>
-The IDE uses JFC/Swing shortcuts to navigate, activate,
-and select operations in windows in 
-the IDE using the keyboard instead of the mouse.  
+The IDE uses JFC/Swing keyboard shortcuts to navigate, activate,
+and select operations in windows in the IDE. 
 The JFC/Swing keyboard shortcuts are not configurable 
 in the IDE.
 </p>
 <p>
 The following table lists the keystrokes needed to navigate,
-activate, and select window operations.
+activate, and select window operations in 
+multiple document interface
+(MDI) mode.  MDI mode confines all of the IDE's
+internal windows (also known as frames) inside the primary IDE window
+and is the default window mode.
 </p>
-<table border="1" cellpadding="5" cellspacing="0" summary="Window navigation keyboard shortcuts">
+<table border="1" cellpadding="5" cellspacing="0" summary="Window navigation keyboard shortcuts in MDI mode">
 <tr valign="top" align="left">
 <th align="left" scope="col">Keys</th>
 <th align="left" scope="col">Action</th>
@@ -39,6 +42,13 @@ reading order).</td>
 <td>Shift-Tab</td>
 <td>Shifts focus to the previous component or to the last component
 in the previous group of components (reverse navigation of Tab).</td>
+</tr>
+<tr valign="top">
+<td>Home</td>
+<td>Selects the first item in the list or pane.</td>
+<tr valign="top">
+<td>End</td>
+<td>Selects the last item in the list or pane.</td>
 </tr>
 <tr valign="top">
 <td>
@@ -83,12 +93,10 @@ Opens a folder (node).
 <td>Activates the item that has focus.</td>
 </tr>
 <tr valign="top">
-<td>Home</td>
-<td>Selects the first item in the list or pane.</td>
-<tr valign="top">
-<td>End</td>
-<td>Selects the last item in the list or pane.</td>
+<td>Ctrl-F4</td>
+<td>Closes internal window that has keyboard focus.</td>
 </tr>
+
 </table>
 
 <table>
@@ -98,6 +106,8 @@ Opens a folder (node).
 <tr>
 <td width="23"></td>
 <td>
+<a href="../workspace/window_modes.html">Changing Window Modes</a>
+<br>
 <a href="menucuts.html">Menu Shortcuts</a>
 <br>
 <a href="editorcuts.html">Editor Shortcuts</a>
