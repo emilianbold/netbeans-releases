@@ -503,7 +503,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../ant/docs" target="netbeans"/>
   </target>
-  <target name="all-ant/freeform" depends="all-ant,all-java/project,all-java/api,all-java/platform,all-ant/project,all-projects/projectapi,all-projects/projectuiapi,all-web/webapi">
+  <target name="all-ant/freeform" depends="init,all-web/webapi">
     <echo message="Building module ant/freeform..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
@@ -835,7 +835,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../innertesters" target="netbeans"/>
   </target>
-  <target name="all-j2eeserver" depends="init,all-j2eeserver/j2eeapis,all-projects/projectapi,build-schema2beans/anttask,all-xml/api,all-schema2beans/rt,all-libs/j2eeeditor">
+  <target name="all-j2eeserver" depends="init,all-j2eeserver/j2eeapis">
     <echo message="Building module j2eeserver..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
@@ -1139,7 +1139,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../metrics" target="netbeans"/>
   </target>
   <!-- XXX remove dep on all-web/servletapi23 when possible (unused at runtime) -->
-  <target name="all-monitor" depends="init,all-web/core,all-schema2beans/rt,all-html,all-httpserver,all-httpserver/servletapi,all-web/servletapi23">
+  <target name="all-monitor" depends="init,all-web/core,all-web/servletapi23">
     <echo message="Building module monitor..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
@@ -1459,7 +1459,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../testtools" target="netbeans"/>
   </target>
-  <target name="all-tomcatint/tomcat5" depends="init,all-ant,all-schema2beans/rt,all-java/srcmodel,all-j2eeserver,all-web/ddapi,build-schema2beans/anttask">
+  <target name="all-tomcatint/tomcat5" depends="init,all-j2eeserver,all-web/ddapi">
     <echo message="Building module tomcatint/tomcat5..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
@@ -1662,7 +1662,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../web/jstl11" target="netbeans"/>
   </target>
-  <target name="all-web/ddapi" depends="init,all-schema2beans/rt,build-schema2beans/anttask,all-libs/xerces">
+  <target name="all-web/ddapi" depends="init">
     <echo message="Building module web/ddapi..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
@@ -1671,7 +1671,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../web/ddapi" target="netbeans"/>
   </target>
-  <target name="all-web/webapi" depends="init,all-schema2beans/rt,all-java/api">
+  <target name="all-web/webapi" depends="init">
     <echo message="Building module web/webapi..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
@@ -1680,7 +1680,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../web/webapi" target="netbeans" />
   </target>
-  <target name="all-web/project" depends="init,all-web/webapi,all-web/servletapi24,all-web/jstl11,all-java/api,all-java/platform,all-java/project,all-ant/project,all-projects/projectapi,all-projects/libraries,all-projects/projectuiapi,all-schema2beans/rt,   all-j2ee/ddapi, all-j2ee/ejbapi, all-j2ee/utilities, all-websvc/websvcapi, all-websvc/websvcddapi">
+  <target name="all-web/project" depends="init,all-web/webapi,all-web/servletapi24,all-web/jstl11,all-j2ee/ddapi, all-j2ee/ejbapi, all-j2ee/utilities, all-websvc/websvcapi, all-websvc/websvcddapi">
     <echo message="Building module web/project..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
@@ -1689,7 +1689,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../web/project" target="netbeans" />
   </target>
-  <target name="all-web/core" depends="init,all-java,all-editor,all-web/ddapi,all-web/webapi,all-j2eeserver,all-html,all-httpserver,all-debuggercore,all-openidex,all-schema2beans/rt,all-xml/api,all-xml/catalog,all-java/srcmodel,all-java/api,all-projects/projectapi,all-web/jspsyntax">
+  <target name="all-web/core" depends="init,all-web/ddapi,all-web/webapi,all-j2eeserver,all-web/jspsyntax">
     <echo message="Building module web/core..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
@@ -1698,7 +1698,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../web/core" target="netbeans"/>
   </target>
-  <target name="all-web/jspparser" depends="init,all-web/servletapi24,all-libs/commons_logging">
+  <target name="all-web/jspparser" depends="init,all-web/servletapi24">
     <echo message="Building module web/jspparser..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
@@ -1707,7 +1707,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../web/jspparser" target="netbeans"/>
   </target>
-  <target name="all-web/jspsyntax" depends="init,all-web/jspparser,all-xml/text-edit">
+  <target name="all-web/jspsyntax" depends="init,all-web/jspparser">
     <echo message="Building module web/jspsyntax..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
@@ -1725,7 +1725,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../web/examples" target="netbeans"/>
   </target>
-  <target name="all-web/jspdebug" depends="init,all-web/core,all-java/srcmodel,all-debuggercore/api,all-debuggerjpda/api">
+  <target name="all-web/jspdebug" depends="init,all-web/core">
     <echo message="Building module web/jspdebug..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
@@ -2301,7 +2301,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
 
 
-  <target name="all-db/model" depends="init , all-db">
+  <target name="all-db/model" depends="init , all-db, build-schema2beans/anttask">
     <echo message="Building module all-db/model.."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
