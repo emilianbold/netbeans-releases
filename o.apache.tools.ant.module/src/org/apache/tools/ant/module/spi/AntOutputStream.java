@@ -44,9 +44,11 @@ public abstract class AntOutputStream extends OutputStream {
         handleClose();
     }
 
-    /** This method is called during the stream close and it allows
-     * entensions of this class to do some additional tasks, eg. closing
-     * an underlaying stream, etc. Default implementation does nothing.
+    /**
+     * This method is called when the stream is closed and it allows
+     * entensions of this class to do additional tasks.
+     * For example, closing an underlying stream, etc.
+     * The default implementation does nothing.
      */
     protected void handleClose() throws IOException {
     }
