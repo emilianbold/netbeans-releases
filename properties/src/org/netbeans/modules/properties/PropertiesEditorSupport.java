@@ -441,7 +441,9 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
 
     /** Make modifiedApendix accessible for inner classes. */
     String getModifiedAppendix() {
-        return modifiedAppendix;
+        // TEMP due changes in EditorSupport
+        return " *";
+        //return modifiedAppendix;
     }
 
     /** Cloneable top component to hold the editor kit.
