@@ -39,6 +39,7 @@ import com.sun.jdi.Bootstrap;
 import com.sun.jdi.connect.ListeningConnector;
 import com.sun.jdi.connect.Transport;
 import com.sun.jdi.connect.Connector;
+import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.java.platform.JavaPlatform;
 
 /**
@@ -67,6 +68,8 @@ public class JPDAStart extends Task implements Runnable {
     /** Explicit bootclasspath of the debugged process. */
     private Path bootclasspath = null;
     private Object [] lock = null; 
+    /** The class debugger should stop in, or null. */
+    private String stopClassName = null;
     
 
     // properties ..............................................................
@@ -93,6 +96,14 @@ public class JPDAStart extends Task implements Runnable {
     
     private String getName () {
         return name;
+    }
+    
+    public void setStopClassName (String stopClassName) {
+        this.stopClassName = stopClassName;
+    }
+    
+    private String getStopClassName () {
+        return stopClassName;
     }
     
     public void addClasspath (Path path) {
@@ -184,6 +195,15 @@ public class JPDAStart extends Task implements Runnable {
                     sourcepath, 
                     bootclasspath
                 );
+                
+                if (stopClassName != null) {
+                    MethodBreakpoint breakpoint = MethodBreakpoint.create (
+                        stopClassName,
+                        ""
+                    );
+                    breakpoint.setHidden (true);
+                    DebuggerManager.getDebuggerManager ().addBreakpoint (breakpoint);
+                }                
                 
                 debug ("Debugger started");
                 JPDADebugger.startListening (lc, args, new Object[] {sourcePath});
