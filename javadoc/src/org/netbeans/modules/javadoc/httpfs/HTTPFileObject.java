@@ -746,9 +746,10 @@ class HTTPFileObject extends FileObject {
         newChildFileObject.parentFileObject = this;
         childFileObjects.put( newChildFileObject.getNameExt( ), newChildFileObject );
 
-        // Notify any listeners that this item has been added
-        if( !listeners.isEmpty( ) ) {
+        // If there are any listeners and the contents of the folder have been read,
+        if( !listeners.isEmpty( ) && areFolderContentsKnown ) {
 
+            // Notify the listeners that this item has been added
             if( newChildFileObject.isData( ) ) {
 
                 fireFileDataCreatedEvent( listeners.elements( ), new FileEvent( this, newChildFileObject, true ) );
@@ -787,9 +788,10 @@ class HTTPFileObject extends FileObject {
                 childIterator.remove( );
                 childFile.parentFileObject = null;
 
-                // Notify any listeners that this file has been removed
-                if( !listeners.isEmpty( ) ) {
+                // If there are any listeners and the contents of the folder have been read,
+                if( !listeners.isEmpty( ) && areFolderContentsKnown ) {
 
+                    // Notify the listeners that this file has been removed
                     fireFileDeletedEvent( listeners.elements( ), new FileEvent( this, childFile, true ) );
 
                 }

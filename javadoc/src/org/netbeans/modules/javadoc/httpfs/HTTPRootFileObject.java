@@ -60,7 +60,7 @@ class HTTPRootFileObject
         // Start reading the items in the root directory in the background
         refreshThread = new Thread( this );
         threadIsRunning = true;
-		refreshPending = false;
+        refreshPending = false;
         refreshThread.start( );
 
     }
