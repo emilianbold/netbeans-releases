@@ -31,6 +31,7 @@ import org.openide.util.NbBundle;
 /**
  *
  * @author  vstejskal
+ * @author  Marian Petras
  * @version 1.0
  */
 public class TestCreator extends java.lang.Object {
