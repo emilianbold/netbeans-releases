@@ -292,6 +292,9 @@ public class DataEditorSupport extends CloneableEditorSupport {
         * Transient => is not serialized.
         */
         private transient FileLock fileLock;
+        /** did we warned about the size of the file?
+         */
+        private transient boolean warned;
         
         /** Constructor.
         * @param obj this support should be associated with
@@ -361,6 +364,34 @@ public class DataEditorSupport extends CloneableEditorSupport {
         * @exception IOException if an I/O error occures
         */
         public InputStream inputStream() throws IOException {
+            final FileObject fo = getFileImpl ();
+            if (!warned && fo.getSize () > 1024 * 1024) {
+                class ME extends org.openide.util.UserQuestionException {
+                    private long size;
+                    
+                    public ME (long size) {
+                        super ("The file is too big. " + size + " bytes.");
+                        this.size = size;
+                    }
+                    
+                    public String getLocalizedMessage () {
+                        Object[] arr = {
+                            fo.getPath (),
+                            fo.getNameExt (),
+                            new Long (size), // bytes
+                            new Long (size / 1024 + 1), // kilobytes
+                            new Long (size / (1024 * 1024)), // megabytes
+                            new Long (size / (1024 * 1024 * 1024)), // gigabytes
+                        };
+                        return NbBundle.getMessage(DataObject.class, "MSG_ObjectIsTooBig", arr);
+                    }
+                    
+                    public void confirmed () {
+                        warned = true;
+                    }
+                }
+                throw new ME (fo.getSize ());
+            }
             InputStream is = getFileImpl ().getInputStream ();
             return is;
         }
