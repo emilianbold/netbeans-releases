@@ -60,6 +60,7 @@ public final class CatalogRootNode extends AbstractNode {
         setName("XML-CATALOG"); // NOI18N
         setDisplayName (Util.getString("TEXT_catalog_root")); // NOI18N
         setIconBase("org/netbeans/modules/xml/catalog/resources/catalog-root");  // NOI18N
+        setShortDescription(Util.getString("PROP_catalog_root_desc"));
     }
     
     protected SystemAction[] createActions() {
