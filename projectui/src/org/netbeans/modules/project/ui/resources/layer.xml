@@ -512,6 +512,10 @@ Microsystems, Inc. All Rights Reserved.
 	    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-physical-tab-action.instance"/>
 	</file>
 
+        <file name="CS-1.shadow">
+	    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-SelectInProjects.instance"/>
+	</file>
+        
         <file name="CS-2.shadow">
 	    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-SelectInFiles.instance"/>
 	</file>
