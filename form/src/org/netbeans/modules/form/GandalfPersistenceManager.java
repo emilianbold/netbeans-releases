@@ -106,15 +106,88 @@ public class GandalfPersistenceManager extends PersistenceManager {
   }
 
   private String readEncoding (InputStream is) {
-    byte buffer[] = new byte [1024];
+    // If all else fails, assume XML without a declaration, and
+    // using UTF-8 encoding.
+    String useEncoding = "UTF-8";
+    byte buf [];
+    int	len;
+    buf = new byte [4];
+      // See if we can figure out the character encoding used
+      // in this file by peeking at the first few bytes.
     try {
-      for (int i; (i = is.read()) != '<'; );
+      len = is.read (buf);
+         if (len == 4) switch (buf [0] & 0x0ff) {
+           case 0:
+              // 00 3c 00 3f == illegal UTF-16 big-endian
+              if (buf [1] == 0x3c && buf [2] == 0x00 && buf [3] == 0x3f) {
+		  useEncoding = "UnicodeBig";
+              }
+	      // else it's probably UCS-4
+	      break;
+
+            case '<':      // 0x3c: the most common cases!
+              switch (buf [1] & 0x0ff) {
+                // First character is '<'; could be XML without
+		// an XML directive such as "<hello>", "<!-- ...",
+		// and so on.
+                default:
+                  break;
+
+                // 3c 00 3f 00 == illegal UTF-16 little endian
+                case 0x00:
+                  if (buf [2] == 0x3f && buf [3] == 0x00) {
+		      useEncoding = "UnicodeLittle";
+                  }
+		  // else probably UCS-4
+		  break;
+
+                // 3c 3f 78 6d == ASCII and supersets '<?xm'
+                case '?': 
+                  if (buf [2] != 'x' || buf [3] != 'm')
+		      break;
+		  //
+		  // One of several encodings could be used:
+                  // Shift-JIS, ASCII, UTF-8, ISO-8859-*, etc
+		  //
+		  useEncoding = "UTF8";
+              }
+	      break;
+
+            // 4c 6f a7 94 ... some EBCDIC code page
+            case 0x4c:
+              if (buf [1] == 0x6f
+		    && (0x0ff & buf [2]) == 0x0a7
+		    && (0x0ff & buf [3]) == 0x094) {
+		  useEncoding = "CP037";
+	      }
+	      // whoops, treat as UTF-8
+	      break;
+
+            // UTF-16 big-endian
+            case 0xfe:
+              if ((buf [1] & 0x0ff) != 0xff)
+                  break;
+	      useEncoding = "UTF-16";
+
+            // UTF-16 little-endian
+            case 0xff:
+              if ((buf [1] & 0x0ff) != 0xfe)
+                  break;
+	      useEncoding = "UTF-16";
+
+            // default ... no XML declaration
+            default:
+              break;
+        }
+    //System.out.println("useEncoding:"+useEncoding);
+    
+    byte buffer[] = new byte [1024];
       is.read(buffer);
-      String s = new String (buffer);
+      String s = new String (buffer, useEncoding);
       int pos = s.indexOf("encoding");
       String result=null;
       int startPos, endPos;
-      if ((pos < 0) || (pos < s.indexOf (">"))) {
+      if ((pos > 0) && (pos < s.indexOf (">"))) {
         if ( (startPos = s.indexOf('"', pos)) > 0 && 
              (endPos = s.indexOf('"', startPos+1)) > startPos ) {
           result = s.substring(startPos+1, endPos);
@@ -122,12 +195,13 @@ public class GandalfPersistenceManager extends PersistenceManager {
       }
       if (result == null) {
         // encoding not specified in xml
-        result = System.getProperty ("file.encoding");
+        //result = System.getProperty ("file.encoding");
+        result = null;
       }
       return result;
     } catch (java.io.IOException e) {
       e.printStackTrace();
-      return "unknown encoding";
+      return null;
     }
   }
   
@@ -534,9 +608,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
       StringBuffer buf = new StringBuffer ();
       
       // 1.store XML file header
-      buf.append ("<?xml version=\"1.0\" encoding=\"");
-      buf.append (manager.getEncoding ());
-      buf.append ("\" ?>\n");
+      buf.append ("<?xml version=\"1.0\"");
+      if (manager.getEncoding () != null) {
+        buf.append (" encoding=\"" + manager.getEncoding ()+ "\"");
+      }
+      buf.append (" ?>\n");
       buf.append ("\n");
       
       // 2.store Form element
@@ -584,7 +660,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
       addElementClose (buf, XML_FORM);
       
       os = formFile.getOutputStream (lock); // [PENDING - first save to ByteArray for safety]
-      os.write (buf.toString ().getBytes (manager.getEncoding ()));
+      if (manager.getEncoding () != null) {
+        os.write (buf.toString ().getBytes (manager.getEncoding ()));
+      } else {
+        os.write (buf.toString ().getBytes ());
+      }
     } finally {
       if (os != null) os.close ();
       if (lock != null) lock.releaseLock ();
@@ -1437,6 +1517,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 /*
  * Log
+ *  42   Gandalf   1.41        11/16/99 Pavel Buzek     recognition of XML file 
+ *       encoding improved
  *  41   Gandalf   1.40        11/15/99 Pavel Buzek     
  *  40   Gandalf   1.39        11/15/99 Pavel Buzek     property for encoding
  *  39   Gandalf   1.38        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
