@@ -51,7 +51,10 @@ import org.w3c.dom.NodeList;
  * it is not possible to determine what the value of the file path will actually
  * be at runtime, at least not with complete accuracy. A future implementation
  * may be enhanced to handle most such cases, based on property definitions found
- * in the Ant script. However the file path is considered relative to the project
+ * in the Ant script. Currently such imports are quietly ignored.
+ * </p>
+ * <p>
+ * The imported file path is considered relative to the project
  * base directory, hopefully according to Ant's own rules.
  * </p>
  * <p>
@@ -294,7 +297,9 @@ public class TargetLister {
                 } else if (elName.equals("import")) { // NOI18N
                     String fileS = el.getAttribute("file").replace('/', File.separatorChar); // NOI18N
                     if (fileS.indexOf("${") != -1) { // NOI18N
-                        throw new IOException("TargetLister does not yet handle Ant property substs in imported file names: " + fileS + " from " + apc); // NOI18N
+                        // Not yet handled.
+                        // #45066: throwing an IOException might be more correct, but is undesirable in practice.
+                        continue;
                     }
                     File _file = new File(fileS);
                     File file;
