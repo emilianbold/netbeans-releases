@@ -28,7 +28,6 @@ Modules:
 ant (only provisional integration)
 emacs (currently will conflict with editor if installed)
 javacvs (is it stable enough to include?)
-scripting (bins may not be available yet)
 treefs (complete yet?)
 workspaceswitcher
 -->
@@ -54,6 +53,8 @@ workspaceswitcher
       <config name="ide-hacker" modules="apisupport,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,i18n,icebrowser,image,jarpackager,java,javadoc,objectbrowser,projects,properties,serialversion,sysprops,text,utilities,vcscvs"/>
       <config name="jesses-pick" modules="ant,apisupport,beans,clazz,editor,html,icebrowser,image,java,javadoc,projects,properties,serialversion,sysprops,text,utilities"/>
       <config name="bloated" modules="ant,apisupport,applet,autoupdate,beans,clazz,crosscompile,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,java,javadoc,javaembeddedserver,makefile,multicompile,objectbrowser,projects,properties,remotefs,serialversion,sysprops,text,usersguide,utilities,vcscvs,web"/>
+      <!-- You are on your own for getting the binaries for some of these: -->
+      <config name="bloated-plus-extrabins" modules="ant,apisupport,applet,autoupdate,beans,clazz,crosscompile,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,java,javadoc,javaembeddedserver,makefile,multicompile,objectbrowser,projects,properties,remotefs,scripting,serialversion,sysprops,text,usersguide,utilities,vcscvs,web"/>
     </configmods>
   </target>
 
@@ -202,6 +203,11 @@ workspaceswitcher
   <target name="all-remotefs" depends="all-openide">
     <echo message="Building module remotefs..."/>
     <ant dir="../remotefs" target="netbeans"/>
+  </target>
+  <!-- XXX illegal dependence on core! -->
+  <target name="all-scripting" depends="all-openide,all-openidex,all-core">
+    <echo message="Building module scripting..."/>
+    <ant dir="../scripting" target="netbeans"/>
   </target>
   <target name="all-serialversion" depends="all-openide">
     <echo message="Building module serialversion..."/>
@@ -365,6 +371,10 @@ workspaceswitcher
     <ant dir="../projects" target="nbm"/>
     <echo message="Making NBM for module remotefs..."/>
     <ant dir="../remotefs" target="nbm"/>
+    <!-- Not for now (binaries issues):
+    <echo message="Making NBM for module scripting..."/>
+    <ant dir="../scripting" target="nbm"/>
+    -->
     <echo message="Making NBM for module serialversion..."/>
     <ant dir="../serialversion" target="nbm"/>
     <echo message="Making NBM for module sysprops..."/>
@@ -423,6 +433,9 @@ workspaceswitcher
         <nbm file="../javaembeddedserver/javaembeddedserver.nbm"/>
         <nbm file="../multicompile/multicompile.nbm"/>
         <nbm file="../remotefs/remotefs.nbm"/>
+        <!-- Not for now (binary redistribution issues):
+        <nbm file="../scripting/scripting.nbm"/>
+        -->
         <nbm file="../serialversion/serialversion.nbm"/>
         <nbm file="../sysprops/sysprops.nbm"/>
       </group>
