@@ -7,11 +7,11 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.modules.project.libraries;
 
+package org.netbeans.modules.project.libraries;
 
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import java.util.*;
@@ -70,7 +70,7 @@ public final class DefaultLibraryImplementation implements LibraryImplementation
         return Collections.unmodifiableList (content);
     }
 
-    public void setContent (String contentType, List path) {
+    public void setContent (String contentType, List path) throws IllegalArgumentException {
         if (path == null) {
             throw new IllegalArgumentException ();
         }
