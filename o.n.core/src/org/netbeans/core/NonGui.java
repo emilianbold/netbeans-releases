@@ -1,6 +1,6 @@
 /*
  *                 Sun Public License Notice
- * 
+ * a
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
@@ -105,7 +105,7 @@ public class NonGui extends NbTopManager implements Runnable {
     private static TopLogging logger;
 
     /** The flag for accessibility */
-    public static boolean accessibility = true;
+    public static boolean accessibility = false;
     
     /** Getter for home directory.
     */
