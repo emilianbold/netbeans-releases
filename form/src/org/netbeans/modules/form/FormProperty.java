@@ -223,9 +223,7 @@ public abstract class FormProperty extends Node.Property {
 
         if (oldValue != BeanSupport.NO_VALUE) {
             // check whether the new value is different
-            if (!(value instanceof FormDesignValue)
-                && (value == oldValue
-                    || (value != null && value.equals(oldValue))))
+            if (!(value instanceof FormDesignValue) && equals(value, oldValue))
                 return; // no change
         }
         else oldValue = null; // [should not BeanSupport.NO_VALUE remain??]
@@ -283,9 +281,7 @@ public abstract class FormProperty extends Node.Property {
         // is not equal to the default value (or default value doesn't exist).
         setChanged((propType & (NO_READ_PROP|NO_WRITE_PROP)) == 0
                    && (defValue == BeanSupport.NO_VALUE
-                       || (value != defValue 
-                           && (value == null || !value.equals(defValue)))));
-        // or use Utilities.compareObjects(defValue,value) ?
+                       || !equals(value, defValue)));
 
 //        settleDesignValueListener(oldValue, value);
         propertyValueChanged(oldValue, value);
@@ -341,8 +337,7 @@ public abstract class FormProperty extends Node.Property {
             try {  // get the old value (still the current)
                 oldValue = getValue();
                 if (!(defValue instanceof FormDesignValue)
-                    && (defValue == oldValue
-                        || (defValue != null && defValue.equals(oldValue))))
+                        && equals(defValue, oldValue))
                     return; // no change
             }
             catch (Exception e) {}  // no problem -> keep null
@@ -419,8 +414,7 @@ public abstract class FormProperty extends Node.Property {
             Object value = getTargetValue();
             if (supportsDefaultValue()) {
                 Object defValue = getDefaultValue();
-                mayChanged = value != defValue
-                             && (value == null || !value.equals(defValue));
+                mayChanged = !equals(value, defValue);
             }
             if (mayChanged) {
                 propertyValue = value;
@@ -761,10 +755,9 @@ public abstract class FormProperty extends Node.Property {
 
             if (isExternalChangeMonitoring()) {
                 value = getTargetValue();
-                if (value != lastRealValue
-                    && (value == null || !value.equals(lastRealValue))
-                    && (propertyValue == null
-                        || getValueType().isAssignableFrom(propertyValue.getClass())))
+                if (!equals(value, lastRealValue)
+                    && (value == null || propertyValue == null
+                        || value.getClass().isAssignableFrom(propertyValue.getClass())))
                 {   // the value is different from the one last set
                     valueSet = false;
                     setChanged(false);
@@ -791,6 +784,126 @@ public abstract class FormProperty extends Node.Property {
             return FormPropertyEditorManager.findEditor(getValueType());
         } 
         return defaultEditor;
+    }
+
+    // --------
+
+    // [we could probably use org.openide.util.Utilities.compareObjects instead]
+    private static boolean equals(Object obj1, Object obj2) {
+        if (obj1 == obj2)
+            return true;
+
+        if (obj1 == null || obj2 == null)
+            return false;
+
+        Class cls1 = obj1.getClass();
+        Class cls2 = obj2.getClass();
+
+        if (!cls1.isArray() || !cls1.equals(cls2))
+            return obj1.equals(obj2);
+
+        // and this is what is special on this method - comparing arrays...
+        Class cType = cls1.getComponentType();
+        if (!cType.isPrimitive()) {
+            Object[] array1 = (Object[]) obj1;
+            Object[] array2 = (Object[]) obj2;
+            if (array1.length != array2.length)
+                return false;
+            for (int i=0; i < array1.length; i++)
+                if (!equals(array1[i], array2[i]))
+                    return false;
+            return true;
+        }
+
+        if (Integer.TYPE.equals(cType)) {
+            int[] array1 = (int[]) obj1;
+            int[] array2 = (int[]) obj2;
+            if (array1.length != array2.length)
+                return false;
+            for (int i=0; i < array1.length; i++)
+                if (array1[i] != array2[i])
+                    return false;
+            return true;
+        }
+
+        if (Boolean.TYPE.equals(cType)) {
+            boolean[] array1 = (boolean[]) obj1;
+            boolean[] array2 = (boolean[]) obj2;
+            if (array1.length != array2.length)
+                return false;
+            for (int i=0; i < array1.length; i++)
+                if (array1[i] != array2[i])
+                    return false;
+            return true;
+        }
+
+        if (Long.TYPE.equals(cType)) {
+            long[] array1 = (long[]) obj1;
+            long[] array2 = (long[]) obj2;
+            if (array1.length != array2.length)
+                return false;
+            for (int i=0; i < array1.length; i++)
+                if (array1[i] != array2[i])
+                    return false;
+            return true;
+        }
+
+        if (Double.TYPE.equals(cType)) {
+            double[] array1 = (double[]) obj1;
+            double[] array2 = (double[]) obj2;
+            if (array1.length != array2.length)
+                return false;
+            for (int i=0; i < array1.length; i++)
+                if (array1[i] != array2[i])
+                    return false;
+            return true;
+        }
+
+        if (Byte.TYPE.equals(cType)) {
+            byte[] array1 = (byte[]) obj1;
+            byte[] array2 = (byte[]) obj2;
+            if (array1.length != array2.length)
+                return false;
+            for (int i=0; i < array1.length; i++)
+                if (array1[i] != array2[i])
+                    return false;
+            return true;
+        }
+
+        if (Character.TYPE.equals(cType)) {
+            char[] array1 = (char[]) obj1;
+            char[] array2 = (char[]) obj2;
+            if (array1.length != array2.length)
+                return false;
+            for (int i=0; i < array1.length; i++)
+                if (array1[i] != array2[i])
+                    return false;
+            return true;
+        }
+
+        if (Float.TYPE.equals(cType)) {
+            float[] array1 = (float[]) obj1;
+            float[] array2 = (float[]) obj2;
+            if (array1.length != array2.length)
+                return false;
+            for (int i=0; i < array1.length; i++)
+                if (array1[i] != array2[i])
+                    return false;
+            return true;
+        }
+
+        if (Short.TYPE.equals(cType)) {
+            short[] array1 = (short[]) obj1;
+            short[] array2 = (short[]) obj2;
+            if (array1.length != array2.length)
+                return false;
+            for (int i=0; i < array1.length; i++)
+                if (array1[i] != array2[i])
+                    return false;
+            return true;
+        }
+
+        return false;
     }
 
 /*    private void settleDesignValueListener(Object oldVal, Object newVal) {
