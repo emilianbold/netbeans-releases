@@ -105,7 +105,8 @@ public class JPDAReload extends Task {
                     if (fo != null) {
                         try {
                             String url = classToSourceURL (fo);
-                            editorContext.updateTimeStamp (debugger, url);
+                            if (url != null)
+                                editorContext.updateTimeStamp (debugger, url);
                             InputStream is = fo.getInputStream ();
                             long fileSize = fo.getSize ();
                             byte[] bytecode = new byte [(int) fileSize];
@@ -146,6 +147,7 @@ public class JPDAReload extends Task {
                 (root.getURL ()).getRoots ();
             ClassPath sourcePath = ClassPathSupport.createClassPath (sRoots);
             FileObject rfo = sourcePath.findResource (resourceName + ".java");
+            if (rfo == null) return null;
             return rfo.getURL ().toExternalForm ();
         } catch (FileStateInvalidException ex) {
             ex.printStackTrace ();
