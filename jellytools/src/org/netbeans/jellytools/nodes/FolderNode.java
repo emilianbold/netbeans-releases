@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -37,7 +37,7 @@ public class FolderNode extends Node {
     static final DeleteAction deleteAction = new DeleteAction();
     static final RenameAction renameAction = new RenameAction();
     static final PropertiesAction propertiesAction = new PropertiesAction();
-    static final NewTemplateAction newTemplateAction = new NewTemplateAction();
+    static final NewFileAction newFileAction = new NewFileAction();
     
     /*   protected static final Action[] folderActions = new Action[] {
         copyAction
@@ -167,15 +167,15 @@ public class FolderNode extends Node {
         propertiesAction.perform(this);
     }
     
-    /** performs NewTemplateAction with this node */    
-    public void newFromTemplate() {
-        newTemplateAction.perform(this);
+    /** performs NewFileAction with this node */    
+    public void newFile() {
+        newFileAction.perform(this);
     }
 
-    /** performs NewTemplateAction with this node
+    /** performs NewFileAction with this node
      * @param templateName template name from sub menu
      */    
-    public void newFromTemplate(String templateName) {
-        new NewTemplateAction(templateName).perform(this);
+    public void newFile(String templateName) {
+        new NewFileAction(templateName).perform(this);
     }
 }
