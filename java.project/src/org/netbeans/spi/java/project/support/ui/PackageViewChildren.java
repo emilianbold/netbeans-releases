@@ -66,7 +66,7 @@ import org.openidex.search.SearchInfoFactory;
  * Display of Java sources in a package structure rather than folder structure.
  * @author Adam Sotona, Jesse Glick, Petr Hrebejk, Tomas Zezula
  */
-final class PackageViewChildren extends Children.Keys/*<String>*/ implements FileChangeListener, ChangeListener {
+final class PackageViewChildren extends Children.Keys/*<String>*/ implements FileChangeListener, ChangeListener, Runnable {
     
     private static final String NODE_NOT_CREATED = "NNC"; // NOI18N
     private static final MessageFormat PACKAGE_FLAVOR = new MessageFormat("application/x-java-org-netbeans-modules-java-project-packagenodednd; class=org.netbeans.spi.java.project.support.ui.PackageViewChildren$PackageNode; mask={0}"); //NOI18N
@@ -106,10 +106,24 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         }
         
     }
+    
+    RequestProcessor.Task task = RequestProcessor.getDefault().create( this );
         
     protected void addNotify() {
         // System.out.println("ADD NOTIFY" + root + " : " + this );
         super.addNotify();
+        task.schedule( 0 );
+    }
+    
+    public Node[] getNodes( boolean optimal ) {
+        Node[] garbage = super.getNodes( false );
+        if ( optimal ) {
+            task.waitFinished();
+        }
+        return super.getNodes( false );
+    }
+    
+    public void run() {
         computeKeys();
         refreshKeys();
         try { 
@@ -166,7 +180,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         FileObject[] kids = fo.getChildren();
         boolean hasSubfolders = false;
         boolean hasFiles = false;
-        for (int i = 0; i < kids.length; i++) {
+        for (int i = 0; i < kids.length; i++) {            
             // XXX could use PackageDisplayUtils.isSignificant here
             if ( VisibilityQuery.getDefault().isVisible( kids[i] ) ) {
                 if (kids[i].isFolder() ) {
