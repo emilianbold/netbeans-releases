@@ -17,14 +17,14 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Editor Test Application's Tests -->
     
     <!-- Validation tests-->
-   <testbag testattribs="validation" name="TestApplication">
+   <testbag testattribs="validation" name="Editor Validation">
          <testset dir="qa-functional/src">
              <patternset>
                <include name="org/netbeans/test/editor/suites/keyboard_shortcuts/Find*"/>
                <include name="org/netbeans/test/editor/suites/keyboard_shortcuts/Replace*"/>
                <include name="org/netbeans/test/editor/suites/smart_enter/SmartEnter*"/>
-               <include name="smart_bracket/SmartBracketTestSuite*"/>
-               <include name="code_folding/CodeFoldingTestSuite*"/>
+               <include name="smart_bracket/SmartBracketTestSuite.class"/>
+               <include name="code_folding/CodeFoldingTestSuite.class"/>
 
              </patternset>
          </testset>

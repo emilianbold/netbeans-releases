@@ -27,6 +27,8 @@ import org.netbeans.junit.ide.ProjectSupport;
  */
 public class EditorTestCase extends NbTestCase {
     
+    private static final int OPENED_PROJECT_ACCESS_TIMEOUT = 1000;
+    
     /** Default name of project is used if not specified in openProject method. */
     private String defaultProjectName = "editor_test";
     private String defaultSamplePackage = "test";
@@ -40,47 +42,41 @@ public class EditorTestCase extends NbTestCase {
     private String fileName = null;
     private final String dialogSaveTitle = "Save";  // I18N
     
-    /** Creates a new instance of EditorTestCase */
-    public EditorTestCase(String testMethodName) {
-        super(testMethodName);
-    }
-    
     /**
-     * Pass the class of the test from which the test method name
-     * and sample name and package are determined.
+     * Creates a new instance of EditorTestCase.
      *
      * <p>
-     * For a test class named "ClsNameTest" the "testClsName()" test method
-     * will be executed and "ClsNameSample" sample file will be used.
+     * Initializes default sample file name (package and name)
+     * so that {@link #openDefaultSampleFile()} can be used.
+     * <br>
+     * The rule for naming is the same like for golden files
+     * i.e. package corresponds to the class name and the file
+     * name corresponds to test method name.
      *
-     * @param testClass class of the test to be executed.
+     * @param testMethodName name of the test method
+     *  that should be executed.
      */
-    public EditorTestCase(Class testClass) {
-        this(splitClassName(testClass.getName()));
+    public EditorTestCase(String testMethodName) {
+        super(testMethodName);
+        
+        defaultSamplePackage = getClass().getName();
+        defaultSampleName = getName();
     }
     
-    private EditorTestCase(String[] pkgAndCls) {
-         // For "ClsName" it produces "testClsName"
-        this("test" + pkgAndCls[1]);
-        
-        this.defaultSamplePackage = pkgAndCls[0];
-         // For "ClsName" it produces "ClsNameSample"
-        this.defaultSampleName = pkgAndCls[1] + "Sample";
-    }
-
     /**
      * Split class full name into package name and class name.
      *
      * @param full name of the class
      * @return array containing package name and the class name.
      */
-    public static String[] splitClassName(String classFullName) {
+/*    public static String[] splitClassName(String classFullName) {
         int lastDotIndex = classFullName.lastIndexOf('.');
         return new String[] {
             (lastDotIndex >= 0) ? classFullName.substring(0, lastDotIndex) : "", // pkg name
             classFullName.substring(lastDotIndex + 1) // class name
         };
     }
+ */
     
     /** Open project. Before opening the project is checked opened projects.
      * @param projectName is name of the project stored in .../editor/test/qa-functional/data/ directory.
@@ -95,13 +91,12 @@ public class EditorTestCase extends NbTestCase {
         pto.invoke();
         boolean isOpen = true;
         try {
-            JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", 2000); 
+            JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", OPENED_PROJECT_ACCESS_TIMEOUT); 
             ProjectRootNode prn = pto.getProjectRootNode(projectName);
         } catch (TimeoutExpiredException ex) {
-            ex.printStackTrace();
-            isOpen = false;
-            
             // This excpeiton is ok, project is not open;
+            //ex.printStackTrace();
+            isOpen = false;
         }
         
         if ( isOpen ) {
@@ -114,15 +109,33 @@ public class EditorTestCase extends NbTestCase {
         Object prj= ProjectSupport.openProject(projectPath);
         
     }
-    
+   
+    /**
+     * Get the default project name to be used
+     * in {@link openDefaultProject()}.
+     * <br>
+     * The default value is "editor_test".
+     *
+     * @return default project name
+     */
     protected final String getDefaultProjectName() {
         return defaultProjectName;
     }
     
+    /**
+     * Set the default project name to be used
+     * in {@link openDefaultProject()}.
+     *
+     * @param defaultProjectName new default project name.
+     */
     protected void setDefaultProjectName(String defaultProjectName) {
         this.defaultProjectName = defaultProjectName;
     }
     
+    /**
+     * Open default project determined
+     * by {@link #getDefaultProjectName()}.
+     */
     protected void openDefaultProject() {
         openProject(getDefaultProjectName());
     }
