@@ -23,6 +23,8 @@ import java.net.UnknownHostException;
 import java.awt.Dialog;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.beans.PropertyVetoException;
 
 import org.xml.sax.*;
@@ -170,7 +172,7 @@ public class TransformPerformer {
     // class AbstractPerformer
     //
     
-    private abstract class AbstractPerformer implements ActionListener {
+    private abstract class AbstractPerformer extends WindowAdapter implements ActionListener {
         // if called on TransformableCookie node
         private TransformableCookie transformableCookie;
         // input XML source DataObject
@@ -196,6 +198,9 @@ public class TransformPerformer {
         
         private TransformPanel.Data data;
         private boolean last = true;
+
+        // was window closed by
+        private boolean workaround31850 = true;
 
 
         public AbstractPerformer(TransformableCookie transformable) {
@@ -233,16 +238,16 @@ public class TransformPerformer {
             }
             transformPanel = new TransformPanel(xmlDO, xmlStylesheetName, xslDO);
             
-            DialogDescriptor transformDD = new DialogDescriptor
-            (transformPanel,
+            dialogDescriptor = new DialogDescriptor(transformPanel,
             Util.THIS.getString("NAME_transform_panel_title"), true,
             DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
             DialogDescriptor.BOTTOM_ALIGN,
             new HelpCtx(TransformAction.class), null);
-            transformDD.setClosingOptions(new Object[] { DialogDescriptor.CANCEL_OPTION });
-            transformDD.setButtonListener(this);
-            
-            dialog = DialogDisplayer.getDefault().createDialog(transformDD);
+            dialogDescriptor.setClosingOptions(new Object[] { DialogDescriptor.CANCEL_OPTION });
+            dialogDescriptor.setButtonListener(this);
+
+            dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
+            dialog.addWindowListener(this);  // #31850 workaround
             dialog.show();
         }
         
@@ -390,7 +395,8 @@ public class TransformPerformer {
                 Util.THIS.debug("[TransformPerformer::AbstractPerformer] actionPerformed: " + e);
                 Util.THIS.debug("    ActionEvent.getSource(): " + e.getSource());
             }
-            
+
+            workaround31850 = false;
             if ( DialogDescriptor.OK_OPTION.equals(e.getSource()) ) {
                 try {
                     prepareData(); // throws IOException(, FileStateInvalidException, MalformedURLException), ParserConfigurationException, SAXException
@@ -399,7 +405,7 @@ public class TransformPerformer {
                     ( resultFO == null ) ) {
                         return;
                     }
-                    
+
                     dialog.dispose();
                     storeData();
                     async();
@@ -416,6 +422,16 @@ public class TransformPerformer {
                         active = false;
                     }
                 }
+            } else {
+                active = false;
+            }
+        }
+
+        // WindowAdapter  #31850 workaround
+        public void windowClosed(WindowEvent e) {
+            super.windowClosed(e);
+            if (workaround31850) {
+                active = false;
             }
         }
 
