@@ -59,6 +59,21 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
+    <testbag testattribs="all" executor="ide" name="JSP and Servlet settings tests">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="**/settings/JspAndServletSettings.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
+    <testbag testattribs="jas" executor="ide" name="JSP and Servlet settings tests">
+        <testset dir="qa-functional/src">
+            <patternset>
+               <include name="**/settings/JspAndServletSettings.class"/>
+            </patternset>
+        </testset>
+    </testbag>
 
     <testbag testattribs="ss" executor="ide" name="SystemSettings tests">
         <testset dir="qa-functional/src">

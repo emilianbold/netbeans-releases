@@ -35,12 +35,12 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
 import org.netbeans.junit.NbTestSuite;
 import java.io.File;
 
-public class SystemSettings extends JellyTestCase {
+public class JspAndServletSettings extends JellyTestCase {
     private static String fSep = System.getProperty("file.separator");
     private static String iSep = "|";
    
 
-    public SystemSettings(java.lang.String testName) {
+    public JspAndServletSettings(java.lang.String testName) {
         super(testName);
     }
 
@@ -50,7 +50,7 @@ public class SystemSettings extends JellyTestCase {
          
     //method required by JUnit
     public static junit.framework.Test suite() {
-	return new NbTestSuite(SystemSettings.class);
+	return new NbTestSuite(JspAndServletSettings.class);
     }
 
     /**
@@ -80,10 +80,9 @@ public class SystemSettings extends JellyTestCase {
 
     private void testSystemValue(String newVal) {
 	OptionsOperator oo = OptionsOperator.invoke();
-	String ideConfiguration = Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration");
-	String sys = Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration/System");
-	String sett = Bundle.getString("org.netbeans.core.Bundle","Services/org-netbeans-core-IDESettings.settings");
-	oo.selectOption(ideConfiguration + iSep + sys + iSep + sett);
+	String dae = Bundle.getString("org.netbeans.core.Bundle", "UI/Services/DebuggingAndExecuting");
+	String sett = Bundle.getString("org.netbeans.modules.web.core.Bundle","Services/org-netbeans-modules-web-core-ServletSettings.settings");
+	oo.selectOption(dae + iSep + sett);
 	PropertySheetOperator pso = PropertySheetOperator.invoke();
         PropertySheetTabOperator psto = new PropertySheetTabOperator(pso);
 	String pnameWebBrowser = Bundle.getString("org.netbeans.modules.web.core.Bundle" ,"PROP_WWWBrowser");
@@ -94,7 +93,7 @@ public class SystemSettings extends JellyTestCase {
 	}
 	oo.close();
 	oo = OptionsOperator.invoke();
-	oo.selectOption(ideConfiguration + iSep + sys + iSep + sett);
+	oo.selectOption(dae + iSep + sett);
 	pso = PropertySheetOperator.invoke();
         psto = new PropertySheetTabOperator(pso);
 	pr = new ComboBoxProperty(psto, pnameWebBrowser);
@@ -103,6 +102,8 @@ public class SystemSettings extends JellyTestCase {
 	}
     }
 }
+
+
 
 
 
