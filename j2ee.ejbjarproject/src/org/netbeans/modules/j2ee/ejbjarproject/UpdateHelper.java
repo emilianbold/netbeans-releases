@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -106,7 +106,7 @@ public class UpdateHelper {
                     }
                     else if (canUpdate()) {
                         try {
-                            saveUpdate ();
+                            saveUpdate (props);
                             helper.putProperties(path,props);
                         } catch (IOException ioe) {
                             ErrorManager.getDefault().notify (ioe);
@@ -153,7 +153,7 @@ public class UpdateHelper {
                     helper.putPrimaryConfigurationData(element, shared);
                 } else if (canUpdate()) {
                     try {
-                        saveUpdate ();
+                        saveUpdate (null);
                         helper.putPrimaryConfigurationData(element, shared);
                     } catch (IOException ioe) {
                         ErrorManager.getDefault().notify(ioe);
@@ -176,10 +176,15 @@ public class UpdateHelper {
      * Request an saving of update. If the project is not of current version the user will be asked to update the project.
      * If the user agrees with an update the project is updated.
      */
-    public void requestSave () throws IOException{
-        if (!isCurrent() && canUpdate()) {
-            saveUpdate ();
+    public boolean requestSave () throws IOException{
+        if (isCurrent()) {
+            return true;
         }
+        if (!canUpdate()) {
+            return false;
+        }
+        saveUpdate (null);
+        return true;
     }
 
     /**
@@ -214,9 +219,8 @@ public class UpdateHelper {
         }
     }
 
-    private void saveUpdate () throws IOException {
+    private void saveUpdate (EditableProperties props) throws IOException {
         this.helper.putPrimaryConfigurationData(getUpdatedSharedConfigurationData(),true);
-        
         if (this.cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/j2ee-ejbjarproject/1",true) != null) { //NOI18N
             //version 1
             this.cfg.removeConfigurationFragment("data","http://www.netbeans.org/ns/j2ee-ejbjarproject/1",true); //NOI18N
@@ -225,6 +229,24 @@ public class UpdateHelper {
             this.cfg.removeConfigurationFragment("data","http://www.netbeans.org/ns/j2ee-ejbjarproject/2",true); //NOI18N
         }
                 
+        boolean putProps = false;
+        
+        // AB: fix for #55597: should not update the project without adding the properties
+        // update is only done once, so if we don't add the properties now, we don't get another chance to do so
+        if (props == null) {
+            props = getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            putProps = true;
+        }
+
+        //add properties needed by 4.1 project
+        if(props != null) {
+            props.put("test.src.dir", "test"); //NOI18N
+        }
+
+        if (putProps) {
+            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+        }
+        
         ProjectManager.getDefault().saveProject (this.project);
         this.genFileHelper.refreshBuildScript(GeneratedFilesHelper.BUILD_IMPL_XML_PATH, UpdateHelper.class.getResource("resources/build-impl.xsl"),
             true);
