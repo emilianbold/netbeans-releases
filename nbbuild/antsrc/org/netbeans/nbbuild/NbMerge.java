@@ -18,6 +18,7 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Target;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Deltree;
@@ -35,7 +36,6 @@ public class NbMerge extends Task {
     private Vector modules = new Vector (); // Vector<String>
     private String targetprefix = "all-";
     private String topdir = "..";
-    private Vector tasks = null;
     
     public void setUpperdir (String s) {
         upperdir = s;
@@ -56,20 +56,26 @@ public class NbMerge extends Task {
         topdir = s;
     }
     
-    public void init () throws BuildException {
-        tasks = new Vector ();
+    public void execute () throws BuildException {
         Deltree deltree = (Deltree) project.createTask ("deltree");
-        deltree.setLocation (location);
         // Yes, this is fixed by .nbm format:
         deltree.setDir (upperdir + "/netbeans");
-        tasks.addElement (deltree);
+	deltree.init ();
+        deltree.setLocation (location);
+	deltree.execute ();
         for (int i = 0; i < modules.size (); i++) {
             String module = (String) modules.elementAt (i);
+	    String nbm = topdir + '/' + module + '/' + module + ".nbm";
+	    if (! new File (nbm).exists ()) {
+		log ("NBM file " + nbm + " does not exist, skipping...", Project.MSG_WARN);
+		continue;
+	    }
             Expand expand = (Expand) project.createTask ("unzip");
-            expand.setLocation (location);
             expand.setDest (upperdir);
-            expand.setSrc (topdir + '/' + module + '/' + module + ".nbm");
-            tasks.addElement (expand);
+            expand.setSrc (nbm);
+	    expand.init ();
+            expand.setLocation (location);
+            expand.execute ();
         }
     }
     
@@ -80,12 +86,6 @@ public class NbMerge extends Task {
             String module = (String) modules.elementAt (i);
             t.addDependency (targetprefix + module);
         }
-        for (int i = 0; i < tasks.size (); i++) {
-            Task task = (Task) tasks.elementAt (i);
-            t.addTask (task);
-        }
     }
-    
-    // No execute method...the real tasks take care of that.
     
 }
