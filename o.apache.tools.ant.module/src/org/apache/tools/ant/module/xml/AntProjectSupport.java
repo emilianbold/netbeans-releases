@@ -18,6 +18,7 @@ package org.apache.tools.ant.module.xml;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.util.*;
+import javax.swing.JEditorPane;
 import javax.swing.event.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
@@ -265,6 +266,11 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
                 StyledDocument doc = editor.openDocument ();
                 // Gack. What a mess. Have to regenerate whole document.
                 // XXX replace with XMLDataObject.write when possible....
+                JEditorPane[] panes = editor.getOpenedPanes (); // #11738
+                int[] carets = new int[(panes == null) ? 0 : panes.length];
+                for (int i = 0; i < carets.length; i++) {
+                    carets[i] = panes[i].getCaretPosition ();
+                }
                 OutputFormat format = new OutputFormat (projDoc);
                 format.setPreserveSpace (true);
                 Writer wr = new DocumentWriter (doc, fo);
@@ -275,6 +281,15 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
                     wr.write ('\n');
                 } finally {
                     wr.close ();
+                }
+                for (int i = 0; i < carets.length; i++) {
+                    if (carets[i] < doc.getLength ()) {
+                        try {
+                            panes[i].setCaretPosition (carets[i]);
+                        } catch (IllegalArgumentException iae) {
+                            AntModule.err.notify (ErrorManager.INFORMATIONAL, iae);
+                        }
+                    }
                 }
                 exception = null;
                 parsed = true;
@@ -428,11 +443,12 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
     private static class DocumentWriter extends PipedWriter implements Runnable {
         private StyledDocument doc;
         private PipedReader rd;
+        private Thread t;
         public DocumentWriter (StyledDocument doc, FileObject fo) throws IOException {
             this.doc = doc;
             rd = new PipedReader ();
             connect (rd);
-            new Thread (this, "ant DocumentWriter: " + fo).start (); // NOI18N
+            (t = new Thread (this, "ant DocumentWriter: " + fo)).start (); // NOI18N
         }
         public void run () {
             try {
@@ -453,6 +469,16 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
                     });
             } catch (BadLocationException e) {
                 AntModule.err.notify (ErrorManager.INFORMATIONAL, e);
+            }
+        }
+        public void close () throws IOException {
+            super.close ();
+            try {
+                t.join ();
+            } catch (InterruptedException ie) {
+                IOException ioe = new IOException ();
+                AntModule.err.annotate (ioe, ie);
+                throw ioe;
             }
         }
     }
