@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.projectimport.eclipse.wizard;
 
+import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -20,6 +21,7 @@ import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -33,10 +35,16 @@ abstract class ImporterWizardPanel extends JPanel
     /** Registered ChangeListeners */
     private List changeListeners;
     
+    /** Panel validity flag */
+    private boolean valid;
+    
+    /** Error message displayed by wizard. */
+    private String errorMessage;
+    
     static final String WORKSPACE_LOCATION_STEP =
-            NbBundle.getMessage(ImporterWizardPanel.class, "LBL_WorkspaceLocationStep"); // NOI18N
+            NbBundle.getMessage(ImporterWizardPanel.class, "CTL_WorkspaceLocationStep"); // NOI18N
     static final String PROJECT_SELECTION_STEP =
-            NbBundle.getMessage(ImporterWizardPanel.class, "LBL_ProjectSelectionStep"); // NOI18N
+            NbBundle.getMessage(ImporterWizardPanel.class, "CTL_ProjectSelectionStep"); // NOI18N
     
     /** Creates a new instance of ImporterPanel */
     ImporterWizardPanel(int wizardNumber) {
@@ -51,16 +59,11 @@ abstract class ImporterWizardPanel extends JPanel
         });
     }
     
-    
     /**
      * Return message to be displayed as ErrorMessage by Eclipse importer
      * wizard. Default implementation returns null (no error message will be
      * displayed)
      */
-    String getErrorMessage() {
-        return null;
-    }
-    
     public void addChangeListener(ChangeListener l) {
         if (changeListeners == null) {
             changeListeners = new ArrayList(2);
@@ -83,6 +86,43 @@ abstract class ImporterWizardPanel extends JPanel
                 ((ChangeListener) i.next()).stateChanged(e);
             }
         }
+    }
+    
+    /** Sets error message used by importer wizard. */
+    protected void setErrorMessage(String newError) {
+        boolean changed =
+                (errorMessage == null && newError != null) ||
+                (errorMessage != null && !errorMessage.equals(newError));
+        if (changed) errorMessage = newError;
+        setValid(newError == null, changed);
+    }
+    
+    
+    /** Sets if the current state of panel is valid or not. */
+    protected void setValid(boolean valid, boolean forceFiring) {
+        boolean changed = this.valid != valid;
+        if (changed) this.valid = valid;
+        if (changed || forceFiring) {
+            fireChange();
+        }
+    }
+    
+    /** Returns error message used by importer wizard. */
+    String getErrorMessage() {
+        return errorMessage;
+    }
+    
+    
+    public boolean isValid() {
+        return valid;
+    }
+    
+    public HelpCtx getHelp() {
+        return null;
+    }
+    
+    public Component getComponent() {
+        return this;
     }
     
     public void storeSettings(Object settings) {;}

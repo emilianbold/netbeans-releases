@@ -159,7 +159,6 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
     private static final int COL_CHECKBOX_WIDTH = 26;
     private ProjectTableModel model = new ProjectTableModel();
     private String workspaceDir;
-    private boolean valid;
     
     /** Creates new form ProjectSelectionPanel */
     public ProjectSelectionPanel() {
@@ -205,6 +204,7 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
         destination.setText(System.getProperty("user.home"));
     }
     
+    /** Loads project from workspace in the given <code>workspaceDir</code>. */
     void loadProjects(String workspaceDir) {
         Workspace workspace = null;
         try {
@@ -213,12 +213,6 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
             setErrorMessage("The workspace in a " + workspaceDir + " is invalid");
             return;
         }
-        //        for (Iterator it = workspace.getProjects().iterator(); it.hasNext(); ) {
-        //            EclipseProject prj = (EclipseProject) it.next();
-        //            System.out.println("MK>   prj: " + prj);
-        //            System.out.println("MK>     " + prj.getName());
-        //            System.out.println("MK>     " + prj.getDirectory());
-        //        }
         Set wsPrjs = new TreeSet();
         wsPrjs.addAll(workspace.getProjects());
         projects = new EclipseProject[wsPrjs.size()];
@@ -229,29 +223,6 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
         selectedProjects = new HashSet();
         neededProjects = new HashSet();
         updateValidity();
-    }
-    
-    /** Sets error message used by importer wizard. */
-    private void setErrorMessage(String newError) {
-        boolean changed =
-                (errorMessage == null && newError != null) ||
-                (errorMessage != null && !errorMessage.equals(newError));
-        if (changed) errorMessage = newError;
-        setValid(newError == null, changed);
-    }
-
-    /** Sets if the current state of panel is valid or not. */
-    private void setValid(boolean valid, boolean forceFiring) {
-        boolean changed = this.valid != valid;
-        if (changed) this.valid = valid;
-        if (changed || forceFiring) {
-            fireChange();
-        }
-    }
-    
-    /** Returns error message used by importer wizard. */
-    String getErrorMessage() {
-        return errorMessage;
     }
     
     /** Returns projects selected by selection panel */
@@ -272,18 +243,6 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
      */
     String getDestination() {
         return destination.getText();
-    }
-    
-    public boolean isValid() {
-        return valid;
-    }
-    
-    public HelpCtx getHelp() {
-        return null;
-    }
-    
-    public Component getComponent() {
-        return this;
     }
     
     /** This method is called from within the constructor to

@@ -44,7 +44,7 @@ public final class ProjectImporterWizard {
         });
         wizardDescriptor.setTitleFormat(new java.text.MessageFormat(" {1}"));  // NOI18N
         wizardDescriptor.setTitle(NbBundle.getMessage(
-                ProjectImporterWizard.class, "LBL_WizardTitle")); // NOI18N
+                ProjectImporterWizard.class, "CTL_WizardTitle")); // NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
         dialog.show();
         dialog.toFront();

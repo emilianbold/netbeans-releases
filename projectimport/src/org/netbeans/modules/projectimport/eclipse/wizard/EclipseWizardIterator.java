@@ -23,7 +23,7 @@ import org.netbeans.modules.projectimport.eclipse.EclipseProject;
 import org.openide.WizardDescriptor;
 
 /**
- * DOCDO
+ * Iterates on the sequence of Eclipse wizard panels.
  *
  * @author mkrauskopf
  */
@@ -138,7 +138,7 @@ final class EclipseWizardIterator implements
     }
     
     void updateErrorMessage() {
-        this.errorMessage = current.getErrorMessage();
+        errorMessage = current.getErrorMessage();
         fireChange();
     }
     
