@@ -44,9 +44,11 @@ public class DatabaseModule extends ModuleInstall {
             FileSystem rfs = tm.getRepository().getDefaultFileSystem();
             FileObject rootFolder = rfs.getRoot();
             FileObject databaseFileObject = rootFolder.getFileObject("Database"); //NOI18N
-            if (databaseFileObject == null) {
+            if (databaseFileObject == null)
                 databaseFileObject = rootFolder.createFolder("Database"); //NOI18N
-                FileObject adaptorsFileObject = databaseFileObject.createFolder("Adaptors"); //NOI18N
+            FileObject adaptorsFileObject = databaseFileObject.getFileObject("Adaptors"); //NOI18N
+            if (adaptorsFileObject == null) {
+                adaptorsFileObject = databaseFileObject.createFolder("Adaptors"); //NOI18N
                 InstanceDataObject.create(DataFolder.findFolder(adaptorsFileObject), "DefaultAdaptor", org.netbeans.lib.ddl.adaptors.DefaultAdaptor.class); //NOI18N
             }
         } catch (LinkageError ex) {
@@ -61,7 +63,24 @@ public class DatabaseModule extends ModuleInstall {
     }
     
     public void uninstalled() {
+        close();
+        // closing all open connection
+        
+       Children.MUTEX.writeAccess (new Runnable () {
+            public void run () {
+                try {
+                    Node n[] = TopManager.getDefault().getPlaces().nodes().environment().getChildren().findChild("Databases").getChildren().getNodes(); //NOI18N
+                    TopManager.getDefault().getPlaces().nodes().environment().getChildren().findChild("Databases").getChildren().remove(n);
+                } catch (Exception exc) {
+                    if (Boolean.getBoolean("netbeans.debug.exceptions")) //NOI18N
+                        System.out.println("DBExplorer: Uninstalled: "+exc.getMessage()); //NOI18N
+                }
+            }
+        });
 
+    }
+    
+    public void close () {
         // closing all open connection
         Children.MUTEX.writeAccess (new Runnable () {
             public void run () {
@@ -75,12 +94,6 @@ public class DatabaseModule extends ModuleInstall {
                 }
             }
         });
-    }
-    
-    public boolean closing () {
-        // method is called because of closing connections
-        uninstalled();
-        return true;
     }
 
 }
