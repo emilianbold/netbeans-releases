@@ -20,7 +20,6 @@ Microsystems, Inc. All Rights Reserved.
       <include name="${nb.modules/autoload.dir}/j2eeserver.jar"/>
     </patternset>
     <path id="cp">
-      <pathelement location="${core/javahelp.dir}/${nb.modules.dir}/org-netbeans-modules-javahelp.jar"/>
       <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
       <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
       <pathelement location="${nb_all}/libs/external/j2eeeditor-1.0.jar"/>
@@ -215,6 +214,7 @@ symbols and copy jar file(s)" depends="debug">
       <property name="javadoc.classpath" refid="cp"/>
       <property name="javadoc.overview" location="api/doc/overview.html"/>
       <property name="javadoc.docfiles" location="api/doc"/>
+      <property name="javadoc.arch" location="arch.xml"/>
       <!--<property name="javadoc.apichanges" location="api/doc/changes/apichanges.xml"/>-->
     </ant>
     <copy file="javadoc/J2EEServerAPI.zip" tofile="www/serverintegration.zip"/>
