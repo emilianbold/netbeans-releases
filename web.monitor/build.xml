@@ -24,11 +24,11 @@ Microsystems, Inc. All Rights Reserved.
     <path id="core-cp">
       <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
       <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
-      <pathelement location="${schema2beans/rt.dir}/${nb.modules/autoload.dir}/schema2beans.jar"/>
+      <pathelement location="${schema2beans/rt.dir}/${nb.modules.dir}/org-netbeans-modules-schema2beans.jar"/>
       <pathelement location="${httpserver/servletapi.dir}/${nb.modules/autoload.dir}/ext/servlet-2.2.jar"/>
     </path>
     <path id="server-cp">
-      <pathelement location="${schema2beans/rt.dir}/${nb.modules/autoload.dir}/schema2beans.jar"/>
+      <pathelement location="${schema2beans/rt.dir}/${nb.modules.dir}/org-netbeans-modules-schema2beans.jar"/>
       <pathelement location="${web/servletapi23.dir}/${nb.modules/autoload.dir}/ext/servlet-2.3.jar"/>
     </path>
   </target>
@@ -118,7 +118,7 @@ Microsystems, Inc. All Rights Reserved.
     The need for this target will be removed when we move the the
     projects based deployment of the monitor. 
     --> 
-    <copy file="${schema2beans/rt.dir}/${nb.modules/autoload.dir}/schema2beans.jar" 
+    <copy file="${schema2beans/rt.dir}/${nb.modules.dir}/org-netbeans-modules-schema2beans.jar" 
           tofile="${tomcatint/tomcat5/bundled.dir}/jakarta-tomcat-5.0.19/common/lib/schema2beans.jar"/>
     <copy file="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/httpmonitor.jar"
           tofile="${tomcatint/tomcat5/bundled.dir}/jakarta-tomcat-5.0.19/common/lib/httpmonitor.jar"/>

@@ -25,7 +25,7 @@ Microsystems, Inc. All Rights Reserved.
       <pathelement location="${nb_all}/libs/external/j2eeeditor-1.0.jar"/>
       <pathelement location="${openide/execution.dir}/${nb.modules.dir}/org-openide-execution.jar"/> <!-- XXX -->
       <pathelement location="${openide/execution/deprecated.dir}/${nb.modules.dir}/org-openide-execution-deprecated.jar"/> <!-- XXX -->
-      <pathelement location="${schema2beans/rt.dir}/${nb.modules/autoload.dir}/schema2beans.jar"/>
+      <pathelement location="${schema2beans/rt.dir}/${nb.modules.dir}/org-netbeans-modules-schema2beans.jar"/>
       <pathelement location="${openide/io.dir}/${nb.modules.dir}/org-openide-io.jar"/> 
       <pathelement location="${core/settings.dir}/${nb.modules.dir}/org-netbeans-modules-settings.jar"/>
       <pathelement location="${xml/api.dir}/${nb.modules/autoload.dir}/xml-api.jar" />
@@ -41,7 +41,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="s2binit" depends="init">
 	<taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
 	  <classpath>
-		<pathelement path="${schema2beans/rt.dir}/${nb.modules/autoload.dir}/schema2beans.jar" />
+		<pathelement path="${schema2beans/rt.dir}/${nb.modules.dir}/org-netbeans-modules-schema2beans.jar" />
 		<pathelement path="${schema2beans/dev.dir}/${nb.modules/autoload.dir}/schema2beansdev.jar" />
 		<pathelement path="${nb_all}/schema2beans/anttask/s2banttask.jar"/>
 	  </classpath>
@@ -157,7 +157,7 @@ Microsystems, Inc. All Rights Reserved.
      <echo message="Generated schema2beans from ${dtdfile}"/>
      <java classname="org.netbeans.modules.schema2beansdev.GenBeans" fork="yes">
        <classpath>
-          <pathelement location="${schema2beans/rt.dir}/${nb.modules/autoload.dir}/schema2beans.jar" />
+          <pathelement location="${schema2beans/rt.dir}/${nb.modules.dir}/org-netbeans-modules-schema2beans.jar" />
           <pathelement location="${schema2beans/dev.dir}/${nb.modules/autoload.dir}/schema2beansdev.jar" />
           <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
           <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
