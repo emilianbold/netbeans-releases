@@ -7,20 +7,22 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.javahelp;
 
-import java.util.*;
+import java.util.ConcurrentModificationException;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
-
+import org.netbeans.api.javahelp.Help;
 import org.openide.ErrorManager;
 import org.openide.modules.ModuleInstall;
-
-import org.netbeans.api.javahelp.Help;
 
 public class Installer extends ModuleInstall {
     
@@ -62,7 +64,13 @@ public class Installer extends ModuleInstall {
         Iterator it = d.entrySet().iterator();
         ClassLoader aboutToDie = Installer.class.getClassLoader();
         while (it.hasNext()) {
-            Map.Entry e = (Map.Entry)it.next();
+            Map.Entry e;
+            try {
+                e = (Map.Entry) it.next();
+            } catch (ConcurrentModificationException x) {
+                // Seems to be possible during shutdown. Just skip the hack in this case.
+                return;
+            }
             Object k = e.getKey();
             Object o = e.getValue();
             if (o instanceof Class) {

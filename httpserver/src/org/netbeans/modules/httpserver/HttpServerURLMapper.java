@@ -7,26 +7,25 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.httpserver;
 
-import java.io.File;
-import java.net.URL;
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.net.URLDecoder;
-import java.net.MalformedURLException;
+import java.net.UnknownHostException;
 import java.util.StringTokenizer;
-
 import org.openide.ErrorManager;
-import org.openide.util.SharedClassObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
+import org.openide.util.SharedClassObject;
 
 /** Implementation of a URLMapper which creates http URLs for fileobjects in the IDE.
  * Directs the requests for URLs to WrapperServlet.
@@ -34,6 +33,8 @@ import org.openide.filesystems.FileObject;
  * @author Petr Jiricka, David Konecny
  */
 public class HttpServerURLMapper extends URLMapper {
+    
+    private static final HttpServerSettings settings = (HttpServerSettings) SharedClassObject.findObject(HttpServerSettings.class, true);
     
     /** Creates a new instance of HttpServerURLMapper */
     public HttpServerURLMapper() {
@@ -47,7 +48,6 @@ public class HttpServerURLMapper extends URLMapper {
         String path = url.getPath();
 
         // remove the wrapper servlet URI
-        HttpServerSettings settings = (HttpServerSettings)SharedClassObject.findObject(HttpServerSettings.class, true);
         String wrapper = settings.getWrapperBaseURL ();
         if (path == null || !path.startsWith(wrapper))
             return null;
@@ -74,7 +74,12 @@ public class HttpServerURLMapper extends URLMapper {
             if (tok.startsWith("/")) { // NOI18N
                 newPath.append(tok);
             } else {
-                newPath.append(URLDecoder.decode(tok));
+                try {
+                    newPath.append(URLDecoder.decode(tok, "UTF-8")); // NOI18N
+                } catch (UnsupportedEncodingException e) {
+                    assert false : e;
+                    return null;
+                }
             }
         }
         
@@ -140,7 +145,12 @@ public class HttpServerURLMapper extends URLMapper {
             if (tok.startsWith("/")) { // NOI18N
                 path.append(tok);
             } else {
-                path.append(URLEncoder.encode(tok));
+                try {
+                    path.append(URLEncoder.encode(tok, "UTF-8")); // NOI18N
+                } catch (UnsupportedEncodingException e) {
+                    assert false : e;
+                    return null;
+                }
             }
         }
         return path.toString();
