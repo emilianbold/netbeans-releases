@@ -112,12 +112,7 @@ public class ModuleActions extends ActionManager
                             INSTANCE.firePropertyChange(PROP_RUNNING_ACTIONS, null, null);
                         }
                     } else {
-                        //System.err.println ("invokeAction -> beep: " + a);
-                        Mutex.EVENT.readAccess (new Runnable () {
-                                public void run () {
-                                    Toolkit.getDefaultToolkit ().beep ();
-                                }
-                            });
+                        Toolkit.getDefaultToolkit ().beep ();
                     }
                     //System.err.println ("invokeAction -> run done: " + a);
                     releaseRequestProcessor (rp);
