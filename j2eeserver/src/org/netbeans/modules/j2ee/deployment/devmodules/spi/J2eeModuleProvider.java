@@ -46,6 +46,10 @@ public abstract class J2eeModuleProvider {
      */
     public abstract FileObject getModuleFolder ();
     
+    public boolean useDirectoryPath() {
+        return true;
+    }
+    
     /** This object must be added by modules into project lookup. */
     public static final Object createJ2eeProjectMarker (J2eeModuleProvider provider) {
         return new J2eeDeploymentLookup (provider);

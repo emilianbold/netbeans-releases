@@ -101,7 +101,7 @@ public class ServerFileDistributor extends ServerProgress {
         J2eeModule module = getJ2eeModule(target);
         List descriptorRelativePaths = getDescriptorPath(module);
         
-        ModuleType moduleType = (ModuleType) J2eeDeploymentLookup.translateModule.get (module.getModuleType ());
+        ModuleType moduleType = (ModuleType) module.getModuleType ();
         List serverDescriptorRelativePaths = Arrays.asList(splitter.getDeploymentPlanFileNames(moduleType));
         return new AppChanges(descriptorRelativePaths, serverDescriptorRelativePaths, (ModuleType) dtarget.getModule ().getModuleType ());
     }
@@ -239,7 +239,7 @@ public class ServerFileDistributor extends ServerProgress {
                 FileUtil.copyFile(sourceFO, destFolder, sourceFO.getName());
             }
             
-            ModuleType moduleType = (ModuleType) J2eeDeploymentLookup.translateModule.get (dtarget.getModule ().getModuleType ());
+            ModuleType moduleType = (ModuleType) dtarget.getModule ().getModuleType ();
             String[] rPaths = splitter.getDeploymentPlanFileNames(moduleType);
             /*for (int n=0; n < rPaths.length; n++) {
                 FileObject removedFO = (FileObject)destMap.remove(rPaths[n]);
