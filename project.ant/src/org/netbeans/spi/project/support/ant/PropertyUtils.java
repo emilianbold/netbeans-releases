@@ -413,7 +413,14 @@ public class PropertyUtils {
     
     private static final Pattern RELATIVE_SLASH_SEPARATED_PATH = Pattern.compile("[^:/\\\\.][^:/\\\\]*(/[^:/\\\\.][^:/\\\\]*)*"); // NOI18N
     
-    /* public? */ static File resolveFile(File basedir, String filename) {
+    /**
+     * Find an absolute file path from a possibly relative path.
+     * @param basedir base file for relative filename resolving
+     * @param filename a pathname which may be relative or absolute and may
+     *                 use / or \ as the path separator
+     * @return an absolute file corresponding to it
+     */
+    public static File resolveFile(File basedir, String filename) {
         assert basedir != null;
         assert filename != null;
         if (RELATIVE_SLASH_SEPARATED_PATH.matcher(filename).matches()) {
