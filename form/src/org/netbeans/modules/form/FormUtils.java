@@ -1120,12 +1120,12 @@ public class FormUtils
 
     // ---------
 
-    public static Class loadClass(String name, FormModel form)
-        throws ClassNotFoundException
-    {
-        return loadClass(name, FormEditorSupport.getFormDataObject(form).getFormFile());
-    }
-
+    /** Loads a class of a component to be used in the form editor. The class
+     * might be either a support class being part of the IDE, or a user class
+     * defined externally (by a project classpath). This methods tries both.
+     * @param name String name of the class
+     * @param formFile FileObject representing the form file as part of a project
+     */
     public static Class loadClass(String name, FileObject formFile)
         throws ClassNotFoundException
     {
@@ -1137,9 +1137,7 @@ public class FormUtils
         // first try the system class loader (for Swing components and IDE stuff
         // like property editors, form module support classes, etc)
         try {
-            ClassLoader loader = (ClassLoader)
-                                 Lookup.getDefault().lookup(ClassLoader.class);
-            theClass = loader.loadClass(name);
+            theClass = loadSystemClass(name);
         }
         catch (ClassNotFoundException ex) {
             exception = ex;
@@ -1151,10 +1149,7 @@ public class FormUtils
         // second try the project class loader
         if (theClass == null && formFile != null) {
             try {
-                ClassLoader loader =
-                    ClassPath.getClassPath(formFile, ClassPath.COMPILE)
-                        .getClassLoader(true);
-                theClass = loader.loadClass(name);
+                theClass = loadUserClass(name, formFile);
             }
             catch (ClassNotFoundException ex) {
                 exception = ex;
@@ -1173,6 +1168,43 @@ public class FormUtils
             throw error;
         throw new ClassNotFoundException();
     }
+
+    public static Class loadClass(String name, FormModel form)
+        throws ClassNotFoundException
+    {
+        return loadClass(name, FormEditorSupport.getFormDataObject(form).getFormFile());
+    }
+
+    /** Loads a class using IDE system class loader. Usable for form module
+     * support classes, property editors, etc.
+     */
+    public static Class loadSystemClass(String name) throws ClassNotFoundException {
+        ClassLoader loader = (ClassLoader)
+                                 Lookup.getDefault().lookup(ClassLoader.class);
+        if (loader == null)
+            throw new ClassNotFoundException();
+
+        return loader.loadClass(name);
+    }
+
+    /** Loads a class from a class path of a user project specified by given
+     * form file placed somewhere in the project.
+     */
+    public static Class loadUserClass(String name, FileObject formFile)
+        throws ClassNotFoundException
+    {
+        ClassPath cp = ClassPath.getClassPath(formFile, ClassPath.COMPILE);
+        if (cp == null)
+            throw new ClassNotFoundException();
+
+        return cp.getClassLoader(true).loadClass(name);
+    }
+
+//    public static Class loadUserClass(String name, FormModel form)
+//        throws ClassNotFoundException
+//    {
+//        return loadUserClass(name, FormEditorSupport.getFormDataObject(form).getFormFile());
+//    }
 
     // ---------
 

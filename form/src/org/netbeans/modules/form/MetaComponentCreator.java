@@ -1070,7 +1070,7 @@ public class MetaComponentCreator {
                                                   .getFormFile();
         try {
             try {
-                return FormUtils.loadClass(item.getComponentClassName(), formFile);
+                return FormUtils.loadUserClass(item.getComponentClassName(), formFile);
             }
             catch (ClassNotFoundException ex) {
                 error = ex;
@@ -1110,7 +1110,7 @@ public class MetaComponentCreator {
 
                 // try again to load the class after 
                 try {
-                    return FormUtils.loadClass(item.getComponentClassName(), formFile);
+                    return FormUtils.loadUserClass(item.getComponentClassName(), formFile);
                 }
                 catch (ClassNotFoundException ex) {
                     error = ex;
