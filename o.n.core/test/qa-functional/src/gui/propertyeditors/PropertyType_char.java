@@ -26,8 +26,6 @@ public class PropertyType_char extends PropertyEditorsTest {
     public String propertyValue_L;
     public String propertyValueExpectation_L;
     
-    public boolean waitDialog = false;
-    
     /** Creates a new instance of PropertyType_char */
     public PropertyType_char(String testName) {
         super(testName);
@@ -49,19 +47,17 @@ public class PropertyType_char extends PropertyEditorsTest {
     public void testByInPlace(){
         propertyValue_L = "@";
         propertyValueExpectation_L = propertyValue_L;
-        waitDialog = false;
         setByInPlace(propertyName_L, propertyValue_L, true);
     }
     
     public void testByInPlaceInvalid(){
         propertyValue_L = "\\";
         propertyValueExpectation_L = "\\\\";
-        waitDialog = true;
         setByInPlace(propertyName_L, propertyValue_L, true);
     }
     
     public void verifyPropertyValue(boolean expectation) {
-        verifyExpectationValue(propertyName_L,expectation, propertyValueExpectation_L, propertyValue_L, waitDialog);
+        verifyExpectationValue(propertyName_L,expectation, propertyValueExpectation_L, propertyValue_L, false);
     }
     
     public void setCustomizerValue(){}
