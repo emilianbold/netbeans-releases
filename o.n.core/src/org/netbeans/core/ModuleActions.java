@@ -13,18 +13,22 @@
 
 package org.netbeans.core;
 
-import java.beans.*;
+import java.awt.event.ActionEvent;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.*;
+import javax.swing.Action;
 import javax.swing.event.*;
 
 import org.openide.actions.ActionManager;
 import org.openide.modules.ManifestSection;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.*;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
 
 /** Holds list of all actions added by modules.
 *
-* @author jtulach
+* @author jtulach, jglick
 */
 class ModuleActions extends ActionManager
 /*implements PropertyChangeListener*/ {
@@ -60,13 +64,35 @@ class ModuleActions extends ActionManager
     /** Invokes action in a RequestPrecessor dedicated to performing
      * actions.
      */
-    public void invokeAction(final javax.swing.Action a, final java.awt.event.ActionEvent e) {
+    public void invokeAction(final Action a, final ActionEvent e) {
     //    a.actionPerformed(e);
-        Task task = getRequestProcessor().post(new Runnable () {
+        Task task = getRequestProcessor(a).post(new Runnable () {
             public void run () {
                 a.actionPerformed(e);
             }
         });
+    }
+
+    /** Get the processor appropriate for some action. Most actions share a single processor.
+     * Transmodal ones have their own processor, as they must continue to function e.g. when some
+     * other action is running and is showing a dialog.
+     */
+    private RequestProcessor getRequestProcessor (Action a) {
+        if (Boolean.TRUE.equals (a.getValue ("OpenIDE-Transmodal-Action"))) { // NOI18N
+            String rpKey = "org.netbeans.core.ModuleActions.requestProcessor"; // NOI18N
+            Reference r = (Reference) a.getValue (rpKey);
+            if (r != null) {
+                RequestProcessor rp = (RequestProcessor) r.get ();
+                if (rp != null) {
+                    return rp;
+                }
+            }
+            RequestProcessor rp = new RequestProcessor ("org.netbeans.core.ModuleActions: " + a); // NOI18N
+            a.putValue (rpKey, new WeakReference (rp));
+            return rp;
+        } else {
+            return getRequestProcessor ();
+        }
     }
 
     /** Keeps track of the one instance of the RequestPrecessor.*/
@@ -74,7 +100,7 @@ class ModuleActions extends ActionManager
         if (requestProcessor == null) {
             synchronized (this) {
                 if (requestProcessor == null) {
-                    requestProcessor = new RequestProcessor();
+                    requestProcessor = new RequestProcessor("org.netbeans.core.ModuleActions"); // NOI18N
                 }
             }
         }
@@ -143,7 +169,7 @@ class ModuleActions extends ActionManager
     /** Creates the actions.
     */
     private synchronized static SystemAction[] createActions () {
-        java.util.Iterator it = map.values ().iterator ();
+        Iterator it = map.values ().iterator ();
 
         LinkedList arr = new LinkedList ();
 
