@@ -547,28 +547,38 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
 //                System.err.println("Magic test " + XMLUtil.toHex(magic, 0, magic.length) + m);
                 
                 // fetch header
-                
-                InputStream in = fo.getInputStream();
+
+                InputStream in = null;
                 boolean unexpectedEnd = false;
-                for (int i = 0; i<magic.length; ) {
-                    try {
-                        int read = in.read(header, i, magic.length-i);
-                        if (read < 0) unexpectedEnd = true;
-                        i += read;
-                    } catch (IOException ex) {
-                        unexpectedEnd = true;
-                        break;
+                try {
+                    in = fo.getInputStream();
+                    for (int i = 0; i<magic.length; ) {
+                        try {
+                            int read = in.read(header, i, magic.length-i);
+                            if (read < 0) unexpectedEnd = true;
+                            i += read;
+                        } catch (IOException ex) {
+                            unexpectedEnd = true;
+                            break;
+                        }
+                        if (unexpectedEnd) break;
                     }
-                    if (unexpectedEnd) break;
+                } catch (IOException openex) {
+                    unexpectedEnd = true;
+                    if (fo.canRead() == true) {
+                        throw openex;
+                    } else {
+                        // #26521  silently do not recognize it
+                    }
+                } finally {
+                    try {
+                        if (in != null) in.close();
+                    } catch (IOException ioe) {
+                        // already closed
+                    }
                 }
 
-                try {
-                    in.close();
-                } catch (IOException ioe) {
-                    // closed
-                }
-                
-                
+
 //                System.err.println("Header " + XMLUtil.toHex(header, 0, header.length));
                 
                 // compare it
