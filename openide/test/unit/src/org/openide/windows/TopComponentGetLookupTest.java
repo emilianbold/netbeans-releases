@@ -493,10 +493,12 @@ public class TopComponentGetLookupTest extends NbTestCase {
         ViewCookie v = (ViewCookie)n2.getCookie(ViewCookie.class);
         assertNotNull(v);
         assertTrue(v instanceof Node);
+        
+        HashSet queryJustOnce = new HashSet(n2.getLookup().lookup(new Lookup.Template(Node.class)).allInstances());
         assertEquals("Second node in selection has two nodes in its own lookup",
-            new HashSet(Arrays.asList(new Object[] {n2, v})),
-            new HashSet(n2.getLookup().lookup(new Lookup.Template(Node.class)).allInstances()));
-        assertEquals(2, n2.getLookup().lookup(new Lookup.Template(Node.class)).allInstances().size());
+            new HashSet(Arrays.asList(new Object[] {n2, v})), queryJustOnce
+        );
+        assertEquals(2, queryJustOnce.size());
         top.setActivatedNodes(sel);
         assertEquals("CloseCookie propagated from one member of node selection to TC lookup",
             1,
