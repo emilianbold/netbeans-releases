@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?> <!-- -*- sgml-indent-step: 2 -*- -->
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
                 Sun Public License Notice
 
@@ -13,108 +13,21 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="usersguide" default="netbeans" basedir=".">
-  <import file="../nbbuild/default.xml"/> 
 
-  <target name="init" depends="default.init">
-    <patternset id="usersguide.files">
-      <include name="${nb.modules.dir}/usersguide.jar"/>
-      <include name="${nb.modules/docs.dir}/usersguide.jar"/>
-      <include name="${nb.beans.dir}/TimerBean.jar"/>
-      <include name="${nb.sources.dir}/org/netbeans/examples/lib/timerbean/**"/>
-      <include name="${nb.docs.dir}/org/netbeans/modules/usersguide/ide.css"/>
-    </patternset>
-  </target>
+    <import file="../nbbuild/templates/projectized.xml"/>
 
-  <target name="jars" depends="init">
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}"/>
-    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/usersguide.jar"
-         manifest="manifest-subst.mf"
-	 excludesfile="../nbbuild/standard-jar-excludes.txt"
-	 compress="false"
-         basedir="src"/>
-  </target>
+    <target name="files-init" depends="basic-init">
+        <patternset id="module.files">
+            <include name="${module.jar}"/>
+            <include name="${javahelp.jar}" if="has.javahelp"/>
+            <include name="${nb.system.dir}/Modules/${code.name.base.dashes}.xml"/>
+            <include name="${nb.docs.dir}/org/netbeans/modules/usersguide/ide.css"/>
+        </patternset>
+    </target>
 
-  <target name="release" depends="init">
-    <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.beans.dir}">
-      <fileset dir="release/beans"/>
-    </copy>
-    <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.sources.dir}">
-      <fileset dir="release/sources"/>
-    </copy>
-  </target>
-
-  <target name="javahelp" depends="init">
-    <mkdir dir="javahelp/org/netbeans/modules/usersguide/JavaHelpSearch2"/>
-    <jhindexer basedir="javahelp/org/netbeans/modules/usersguide"
-               db="javahelp/org/netbeans/modules/usersguide/JavaHelpSearch2">
-      <classpath>
-        <fileset dir="${nb_all}/nbbuild/external">
-          <include name="jhall*.jar"/>
-        </fileset>
-      </classpath>
-      <include name="**/*.html"/>
-      <exclude name="credits.html"/>
-      <exclude name="ant/credits.html"/>
-      <exclude name="pending.html"/>
-    </jhindexer>
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/docs.dir}"/>
-    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/docs.dir}/usersguide.jar"
-	    compress="true">
-      <fileset dir="javahelp" excludesfile="../nbbuild/standard-jar-excludes.txt">
-        <exclude name="org/netbeans/modules/usersguide/ide.css"/>
-      </fileset>
-    </jar>
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}/org/netbeans/modules/usersguide"/>
-    <copy file="javahelp/org/netbeans/modules/usersguide/ide.css" tofile="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}/org/netbeans/modules/usersguide/ide.css"/>
-  </target>
-
-  <target name="netbeans" depends="jars,release,javahelp">
-    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/usersguide.jar">
-       <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-         <patternset refID="usersguide.files"/>
-       </fileset>
-    </genlist>
-  </target>
-
-  <target name="nbm" depends="netbeans">
-    <makenbm file="usersguide.nbm"
-             productdir="${netbeans.dest.dir}/${cluster.dir}"
-             module="${nb.modules.dir}/usersguide.jar"
-	     homepage="http://usersguide.${homepage.base}/"
-	     distribution="http://${dist.base}/usersguide.nbm">
-      <license file="${license.file}"/>
-      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-    </makenbm>
-  </target>
-
-  <target name="clean" depends="init">
-    <delete file="manifest-subst.mf"/>
-    <delete file="usersguide.nbm"/>
-    <delete>
-      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-        <patternset refID="usersguide.files"/>
-      </fileset>
-    </delete>
-    <delete dir="javahelp/org/netbeans/modules/usersguide/JavaHelpSearch2"/>
-  </target>
-
-  <!-- See #13931: -->
-  <target name="check-javahelp" depends="javahelp" description="Validate helpset for various errors.">
-    <taskdef name="checkhelpsets" classname="org.netbeans.nbbuild.CheckHelpSets">
-      <classpath>
-        <pathelement location="${nb_all}/nbbuild/nbantext.jar"/>
-        <fileset dir="${nb_all}/nbbuild/external">
-          <include name="jhall*.jar"/>
-        </fileset>
-      </classpath>
-    </taskdef>
-    <checkhelpsets>
-      <fileset dir="javahelp">
-        <include name="org/netbeans/modules/usersguide/ide.hs"/>
-      </fileset>
-    </checkhelpsets>
-  </target>
+    <target name="javahelp" depends="projectized.javahelp">
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}/org/netbeans/modules/usersguide"/>
+        <copy file="javahelp/org/netbeans/modules/usersguide/ide.css" tofile="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}/org/netbeans/modules/usersguide/ide.css"/>
+    </target>
 
 </project>

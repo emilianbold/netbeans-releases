@@ -81,7 +81,6 @@ Microsystems, Inc. All Rights Reserved.
         <property name="javahelp.base" value="${code.name.base.slashes}/docs"/>
         <property name="javahelp.search" value="JavaHelpSearch"/>
         <property name="javahelp.excludes" value="credits.html"/>
-        <!-- XXX maybe have a javahelp.hs property to point to the helpset -->
     </target>
 
     <target name="test-preinit" depends="init"/>
@@ -353,7 +352,24 @@ Microsystems, Inc. All Rights Reserved.
         </jar>
     </target>
 
-    <!-- XXX need targets to check javahelp links and to preview javahelp in a viewer like this: -->
+    <target name="check-javahelp" depends="javahelp" description="Validate helpset for various errors." if="has.javahelp">
+        <fail unless="javahelp.hs">Must set javahelp.hs property</fail>
+        <taskdef name="checkhelpsets" classname="org.netbeans.nbbuild.CheckHelpSets">
+            <classpath>
+                <pathelement location="${nb_all}/nbbuild/nbantext.jar"/>
+                <fileset dir="${nb_all}/nbbuild/external">
+                    <include name="jhall*.jar"/>
+                </fileset>
+            </classpath>
+        </taskdef>
+        <checkhelpsets>
+            <fileset dir="javahelp">
+                <include name="${javahelp.base}/${javahelp.hs}"/>
+            </fileset>
+        </checkhelpsets>
+    </target>
+
+    <!-- XXX need target to preview javahelp in a viewer like this: -->
     <!--
     HelpSet hs = new HelpSet(someClassLoader, f.toURI().toURL());
     String title = hs.getTitle();
