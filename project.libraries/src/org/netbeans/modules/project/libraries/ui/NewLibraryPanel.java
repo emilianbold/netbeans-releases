@@ -14,6 +14,8 @@
 package org.netbeans.modules.project.libraries.ui;
 
 import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.Map;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.project.libraries.LibraryTypeRegistry;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
@@ -27,6 +29,7 @@ import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 public class NewLibraryPanel extends javax.swing.JPanel {
     
     private LibrariesModel model;
+    private Map typeMap;
     private javax.swing.JButton okOption;
 
 
@@ -55,7 +58,8 @@ public class NewLibraryPanel extends javax.swing.JPanel {
     
     
     public String getLibraryType () {
-        return (String) this.libraryType.getSelectedItem();
+        Integer index = new Integer (this.libraryType.getSelectedIndex());
+        return (String) this.typeMap.get(index);
     }
     
     public String getLibraryName () {
@@ -64,11 +68,17 @@ public class NewLibraryPanel extends javax.swing.JPanel {
     
     
     private void initModel () {
+        this.typeMap = new HashMap ();
         this.name.setText (NbBundle.getMessage (NewLibraryPanel.class,"TXT_NewLibrary"));
         LibraryTypeRegistry regs = LibraryTypeRegistry.getDefault();
         LibraryTypeProvider[] providers = regs.getLibraryTypeProviders();
         for (int i=0; i< providers.length; i++) {
-            this.libraryType.addItem (providers[i].getLibraryType());
+            typeMap.put (new Integer(i),providers[i].getLibraryType());
+            String displayName = providers[i].getDisplayName();
+            if (displayName == null) {
+                displayName = providers[i].getLibraryType();
+            }            
+            this.libraryType.addItem (displayName);
         }
         if (this.libraryType.getItemCount() > 0) {
             this.libraryType.setSelectedIndex(0);

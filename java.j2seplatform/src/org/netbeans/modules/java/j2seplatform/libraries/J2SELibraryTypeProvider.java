@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.net.URL;
 import java.net.URI;
 import java.net.URISyntaxException;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -59,6 +60,10 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
 
     public String getLibraryType() {
         return LIBRARY_TYPE;
+    }
+    
+    public String getDisplayName () {
+        return NbBundle.getMessage (J2SELibraryTypeProvider.class,"TXT_J2SELibraryType");
     }
 
     public String[] getSupportedVolumeTypes () {

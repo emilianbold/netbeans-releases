@@ -514,7 +514,7 @@ public final class LibrariesCustomizer extends javax.swing.JPanel implements Exp
         }
         
         public String getDisplayName() {
-            return this.getName ();
+            return this.provider.getDisplayName();
         }
     }    
     

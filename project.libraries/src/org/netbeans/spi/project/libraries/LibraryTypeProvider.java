@@ -20,6 +20,14 @@ import java.beans.Customizer;
  * and for supplying the customizers of library's volumes.
  */
 public interface LibraryTypeProvider {
+    
+    /**
+     * Returns the UI name of the LibraryType.
+     * This name is used in the UI while the libraryType is used as a system
+     * identifier.
+     * @return String the display name
+     */
+    public String getDisplayName ();
 
     /**
      * Get a unique identifier for the library type.
