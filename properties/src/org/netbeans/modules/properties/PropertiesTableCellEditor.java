@@ -24,7 +24,7 @@ import javax.swing.text.JTextComponent;
 public class PropertiesTableCellEditor extends DefaultCellEditor {
     /** Value holding info if the editing cell is a key or value.
     */
-    boolean isKeyCell;
+    private boolean isKeyCell;
 
     static final long serialVersionUID =-5292598860635851664L;
     /** Constructs a PropertiesTableCellEditor that uses a text field.
