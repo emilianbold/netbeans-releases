@@ -29,8 +29,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.actions.SystemAction;
 
 import org.netbeans.modules.web.core.WebExecSupport;
-import org.netbeans.modules.web.core.LanguageEditor;
-import org.netbeans.modules.web.core.FeatureFactory;
 
 import org.netbeans.modules.java.Util;
 

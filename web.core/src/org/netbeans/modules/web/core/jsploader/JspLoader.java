@@ -100,8 +100,6 @@ public class JspLoader extends UniFileLoader {
                         SystemAction.get (EditServletAction.class),
                         SystemAction.get (FileSystemAction.class),
                         null,
-                        SystemAction.get (org.openide.actions.ExecuteAction.class),
-                        null,
                         SystemAction.get (CutAction.class),
                         SystemAction.get (CopyAction.class),
                         SystemAction.get (PasteAction.class),

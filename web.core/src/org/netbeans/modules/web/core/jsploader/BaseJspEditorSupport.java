@@ -46,7 +46,6 @@ import org.openide.cookies.*;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.text.CloneableEditor;
 import org.openide.util.actions.SystemAction;
-import org.openide.actions.ExecuteAction;
 import org.openide.util.TaskListener;
 import org.openide.util.Task;
 
@@ -359,8 +358,6 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
             Action[] jspServletActions = new SystemAction[] {
                 null,
                 SystemAction.get(EditServletAction.class),
-                null,
-                SystemAction.get(ExecuteAction.class)
             };
             List acs = new ArrayList(Arrays.asList(sa));
             acs.addAll(Arrays.asList(jspServletActions));
