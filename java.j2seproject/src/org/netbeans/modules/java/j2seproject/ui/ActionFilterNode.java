@@ -14,10 +14,13 @@ package org.netbeans.modules.java.j2seproject.ui;
 
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;
 import javax.swing.Action;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.openide.ErrorManager;
 import org.openide.actions.FindAction;
 import org.openide.loaders.DataObject;
@@ -248,17 +251,25 @@ class ActionFilterNode extends FilterNode {
                    String cp = props.getProperty (classPathId);
                    if (cp != null) {
                        String[] entries = PropertyUtils.tokenizePath(cp);
-                       StringBuffer result = new StringBuffer();
+                       List/*<String>*/ result = new ArrayList ();                       
                        for (int i=0; i<entries.length; i++) {
                            if (!entryId.equals(J2SEProjectProperties.getAntPropertyName(entries[i]))) {
-                               if (result.length()>0) {
-                                   result.append(File.pathSeparatorChar);
+                               int size = result.size();
+                               if (size>0) {
+                                   result.set (size-1,(String)result.get(size-1) + ':'); //NOI18N
                                }
-                               result.append (entries[i]);
+                               result.add (entries[i]);                                                                                             
                            }
                        }
-                       props.put (classPathId, result.toString());
+                       props.setProperty (classPathId, (String[])result.toArray(new String[result.size()]));
                        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,props);
+                       Project project = FileOwnerQuery.getOwner(helper.getAntProjectHelper().getProjectDirectory());
+                       assert project != null;
+                       try {
+                        ProjectManager.getDefault().saveProject(project);
+                       } catch (IOException ioe) {
+                           ErrorManager.getDefault().notify(ioe);
+                       }
                    }
                }
            });

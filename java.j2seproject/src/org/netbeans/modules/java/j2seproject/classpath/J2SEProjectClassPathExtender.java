@@ -15,6 +15,7 @@ package org.netbeans.modules.java.j2seproject.classpath;
 import java.io.IOException;
 import java.io.File;
 import java.util.List;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -68,8 +69,12 @@ public class J2SEProjectClassPathExtender implements ProjectClassPathExtender {
                             if (!resources.contains(item)) {
                                 resources.add (item);
                                 raw = parser.encode (resources, project, helper.getAntProjectHelper(), refHelper);
-                                props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //PathParser may change the EditableProperties
-                                props.put (classPathId, raw);
+                                props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //PathParser may change the EditableProperties                                
+                                String[] items = PropertyUtils.tokenizePath(raw);
+                                for (int i=0; i<items.length-1; i++) {
+                                    items[i] += ':'; //NOI18N
+                                }                                
+                                props.setProperty(classPathId, items);
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                                 ProjectManager.getDefault().saveProject(project);
                                 return Boolean.TRUE;
@@ -112,7 +117,11 @@ public class J2SEProjectClassPathExtender implements ProjectClassPathExtender {
                                 resources.add (item);
                                 raw = parser.encode (resources, project, helper.getAntProjectHelper(), refHelper);
                                 props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);  //PathParser may change the EditableProperties
-                                props.put (classPathId, raw);
+                                String[] items = PropertyUtils.tokenizePath(raw);
+                                for (int i=0; i<items.length-1; i++) {
+                                    items[i] += ':';  //NOI18N
+                                }                                
+                                props.setProperty(classPathId, items);
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                                 ProjectManager.getDefault().saveProject(project);
                                 return Boolean.TRUE;
@@ -151,7 +160,11 @@ public class J2SEProjectClassPathExtender implements ProjectClassPathExtender {
                                 resources.add (item);
                                 raw = parser.encode (resources, project, helper.getAntProjectHelper(), refHelper);
                                 props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
-                                props.put (classPathId, raw);
+                                String[] items = PropertyUtils.tokenizePath(raw);
+                                for (int i=0; i<items.length-1; i++) {
+                                    items[i] += ':'; //NOI18N
+                                }                                                                                                
+                                props.setProperty (classPathId, items);
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                                 ProjectManager.getDefault().saveProject(project);
                                 return Boolean.TRUE;

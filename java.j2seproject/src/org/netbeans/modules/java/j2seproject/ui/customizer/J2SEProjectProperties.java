@@ -377,8 +377,7 @@ public class J2SEProjectProperties {
                                     // tokenizing could be omitted here:
                                     String[] items = PropertyUtils.tokenizePath(newValueEncoded);
                                     for (int i=0; i<items.length-1; i++) {
-                                        // XXX use ':' on all platforms
-                                        items[i] += File.pathSeparatorChar;
+                                        items[i] += ':';    //NOI18N
                                     }
                                     ep.setProperty(pd.name, items);
                                 } else {
