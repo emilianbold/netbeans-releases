@@ -64,7 +64,9 @@ class JspBreakpointPanel extends JPanel implements Controller, Runnable {
         }
         
         String jspSourcePath = event.getJspName();
-        cboxJspSourcePath.setSelectedItem(jspSourcePath == null ? "" : jspSourcePath.trim());        
+        String contextRoot = event.getContextRoot();
+       
+        cboxJspSourcePath.setSelectedItem(jspSourcePath == null ? "" : contextRoot + " : " + jspSourcePath);        
         fillLineNumber();
         run();
     }
