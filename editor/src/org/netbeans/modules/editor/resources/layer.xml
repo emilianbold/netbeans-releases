@@ -42,7 +42,10 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         
         <folder name="View">
-        <attr name="org-netbeans-modules-javadoc-search-IndexOverviewAction.instance/CodeFolds" boolvalue="true"/>            
+            <file name="Separator2.instance">
+              <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+            <attr name="org-netbeans-modules-javadoc-search-IndexOverviewAction.instance/Separator2.instance" boolvalue="true"/>
             <folder name="CodeFolds">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.Bundle" />
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/Folder.gif" />
@@ -54,6 +57,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="org-netbeans-modules-editor-NbCodeFoldingAction$CollapseAll.instance/org-netbeans-modules-editor-NbCodeFoldingAction$ExpandAll.instance" boolvalue="true"/>
                 <file name="org-netbeans-modules-editor-NbCodeFoldingAction$ExpandAll.instance"/>
             </folder>
+            <attr name="Separator2.instance/CodeFolds" boolvalue="true"/>
         </folder>
     </folder>
 
