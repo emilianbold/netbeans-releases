@@ -97,10 +97,10 @@ workspaceswitcher
       <config name="slim" modules="autoupdate,beans,classfile,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,image,java,openidex,projects,text,utilities"/>
       <!-- [PENDING] A poor name; 'standard' would be more in line with the CVS pseudomodule. -->
       <config name="stable" modules="ant,apisupport/lite,applet,autoupdate,beans,classfile,clazz,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,httpserver/servletapi,i18n,image,j2eeserver,jarpackager,java,javacvs,javadoc,jndi,openidex,projects,properties,rmi,scripting,text,tomcatint/tomcat32,usersguide,utilities,vcscore,vcscvs/compat,vcsgeneric,web/servletapi23,web/core,web/jspparser,web/jspsyntax,xml/tax,xml/core,xml/catalog,xml/tools,xml/text-edit,xml/tree-edit,xml/css"/>
-      <config name="stable-with-apisupport" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,clazz,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,httpserver/servletapi,i18n,image,j2eeserver,jarpackager,java,javacvs,javadoc,jndi,openidex,projects,properties,rmi,scripting,text,tomcatint/tomcat32,usersguide,utilities,vcscore,vcscvs/compat,vcsgeneric,web/servletapi23,web/core,web/jspparser,web/jspsyntax,xml/tax,xml/core,xml/catalog,xml/tools,xml/text-edit,xml/tree-edit,xml/css"/>
-      <config name="bloated" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,classclosure,clazz,cpp,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,externaleditor,form,freestylebrowser,html,httpserver,httpserver/servletapi,i18n,icebrowser,image,innertesters,j2eeserver,jarpackager,java,javacvs,javadoc,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,schema2beans,scripting,serialversion,sysprops,text,tomcatint/tomcat32,tomcatint/tomcat40,usersguide,utilities,vcscore,vcscvs,vcscvs/compat,vcsgeneric,web/servletapi23,web/core,web/jspparser,web/jspsyntax,web/jspdebug,web/advanced,xml/tax,xml/core,xml/catalog,xml/tools,xml/text-edit,xml/tree-edit,xml/css"/>
+      <config name="stable-with-apisupport" modules="ant,apisupport,apisupport/lite,apisupport/ant,apisupport/apidocs,applet,autoupdate,beans,classfile,clazz,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,httpserver/servletapi,i18n,image,j2eeserver,jarpackager,java,javacvs,javadoc,jndi,openidex,projects,properties,rmi,scripting,text,tomcatint/tomcat32,usersguide,utilities,vcscore,vcscvs/compat,vcsgeneric,web/servletapi23,web/core,web/jspparser,web/jspsyntax,xml/tax,xml/core,xml/catalog,xml/tools,xml/text-edit,xml/tree-edit,xml/css"/>
+      <config name="bloated" modules="ant,apisupport,apisupport/lite,apisupport/ant,apisupport/apidocs,applet,autoupdate,beans,classfile,classclosure,clazz,cpp,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,externaleditor,form,freestylebrowser,html,httpserver,httpserver/servletapi,i18n,icebrowser,image,innertesters,j2eeserver,jarpackager,java,javacvs,javadoc,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,schema2beans,scripting,serialversion,sysprops,text,tomcatint/tomcat32,tomcatint/tomcat40,usersguide,utilities,vcscore,vcscvs,vcscvs/compat,vcsgeneric,web/servletapi23,web/core,web/jspparser,web/jspsyntax,web/jspdebug,web/advanced,xml/tax,xml/core,xml/catalog,xml/tools,xml/text-edit,xml/tree-edit,xml/css"/>
       <!-- You are on your own for getting the binaries for some of these: -->
-      <config name="bloated-plus-extrabins" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,classclosure,clazz,cpp,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,externaleditor,form,freestylebrowser,html,httpserver,httpserver/servletapi,i18n,icebrowser,image,innertesters,j2eeserver,jarpackager,java,javacvs,javadoc,jini,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,schema2beans,scripting,serialversion,sysprops,text,tomcatint/tomcat32,tomcatint/tomcat40,usersguide,utilities,vcscore,vcscvs,vcscvs/compat,vcsgeneric,web/servletapi23,web/core,web/jspparser,web/jspsyntax,web/jspdebug,web/advanced,xml/tax,xml/core,xml/catalog,xml/tools,xml/text-edit,xml/tree-edit,xml/css"/>
+      <config name="bloated-plus-extrabins" modules="ant,apisupport,apisupport/lite,apisupport/ant,apisupport/apidocs,applet,autoupdate,beans,classfile,classclosure,clazz,cpp,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,externaleditor,form,freestylebrowser,html,httpserver,httpserver/servletapi,i18n,icebrowser,image,innertesters,j2eeserver,jarpackager,java,javacvs,javadoc,jini,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,schema2beans,scripting,serialversion,sysprops,text,tomcatint/tomcat32,tomcatint/tomcat40,usersguide,utilities,vcscore,vcscvs,vcscvs/compat,vcsgeneric,web/servletapi23,web/core,web/jspparser,web/jspsyntax,web/jspdebug,web/advanced,xml/tax,xml/core,xml/catalog,xml/tools,xml/text-edit,xml/tree-edit,xml/css"/>
     </configmods>
   </target>
 
@@ -127,9 +127,17 @@ workspaceswitcher
     <echo message="Building module ant..."/>
     <ant dir="../ant" target="netbeans"/>
   </target>
-  <target name="all-apisupport" depends="all-openide,all-core,all-core/javahelp,all-jarpackager,all-ant,all-apisupport/lite">
+  <target name="all-apisupport" depends="all-openide,all-core,all-core/javahelp,all-jarpackager,all-apisupport/lite">
     <echo message="Building module apisupport..."/>
     <ant dir="../apisupport" target="netbeans"/>
+  </target>
+  <target name="all-apisupport/ant" depends="all-openide,all-core,all-apisupport,all-ant">
+    <echo message="Building module apisupport/ant..."/>
+    <ant dir="../apisupport/ant" target="netbeans"/>
+  </target>
+  <target name="all-apisupport/apidocs" depends="all-openide,all-apisupport">
+    <echo message="Building module apisupport/apidocs..."/>
+    <ant dir="../apisupport/apidocs" target="netbeans"/>
   </target>
   <target name="all-apisupport/lite" depends="all-openide,all-core,all-jarpackager">
     <echo message="Building module apisupport lite..."/>
@@ -819,6 +827,10 @@ the ${netbeans.dest}/bin/ directory.
     <ant dir="../apisupport" target="nbm"/>
     <echo message="Making NBM for module apisupport/lite..."/>
     <ant dir="../apisupport/lite" target="nbm"/>
+    <echo message="Making NBM for module apisupport/ant..."/>
+    <ant dir="../apisupport/ant" target="nbm"/>
+    <echo message="Making NBM for module apisupport/apidocs..."/>
+    <ant dir="../apisupport/apidocs" target="nbm"/>
     <echo message="Making NBM for module javadoc..."/>
     <ant dir="../javadoc" target="nbm"/>
 <!--
@@ -877,6 +889,8 @@ the ${netbeans.dest}/bin/ directory.
           <include name="../ant/ant.nbm"/>
           <include name="../apisupport/apisupport-lite.nbm"/>
           <include name="../apisupport/apisupport.nbm"/>
+          <include name="../apisupport/ant/apisupport-ant.nbm"/>
+          <include name="../apisupport/apidocs/apisupport-apidocs.nbm"/>
           <include name="../applet/applet.nbm"/>
           <include name="../autoupdate/autoupdate.nbm"/>
           <include name="../beans/beans.nbm"/>
