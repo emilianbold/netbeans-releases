@@ -4,7 +4,9 @@ OpenIDE-Module-Install: org/netbeans/modules/xml/catalog/CatalogModuleInstall.cl
 OpenIDE-Module-Layer: org/netbeans/modules/xml/catalog/resources/mf-layer.xml
 OpenIDE-Module-Specification-Version: @CATALOG_SPEC_VERS_SUBST@
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
-OpenIDE-Module-Public-Packages: org.netbeans.modules.xml.catalog.spi.**
+OpenIDE-Module-Public-Packages: 
+ org.netbeans.modules.xml.catalog.spi.**,
+ org.netbeans.modules.xml.catalog.settings.*
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 2.19
 OpenIDE-Module-Module-Dependencies: 
  org.netbeans.api.xml/1 > @API_SPEC_VERS_SUBST@,
