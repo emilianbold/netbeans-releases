@@ -566,59 +566,47 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
               new TagInfo ("fallback", null, TagInfo.BODY_CONTENT_JSP, "alternative text to browsers that do not support OBJECT or EMBED",    // NOI18N
                 null, null, new TagAttributeInfo[] {}),
               new TagInfo ("forward", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref1212.html", // NOI18N
-                null, null, new TagAttributeInfo[] { new TagAttributeInfo ("page", true, "", true)}),       // NOI18N
+                null, null, new TagAttributeInfo[] { new TagAttributeInfo ("page", true, url + "syntaxref1212.html#15704#18312", true)}),       // NOI18N
               new TagInfo ("getProperty", null, TagInfo.BODY_CONTENT_EMPTY, url + "syntaxref1213.html",           // NOI18N
-                null, null, new TagAttributeInfo[] { new TagAttributeInfo ("name", false, "", false),       // NOI18N
-                                                     new TagAttributeInfo ("property", false, "", false)}), // NOI18N
+                null, null, new TagAttributeInfo[] { new TagAttributeInfo ("name", true, url + "syntaxref1213.html#15748#10919", false),       // NOI18N
+                                                     new TagAttributeInfo ("property", true, url + "syntaxref1213.html#10919#19482", false)}), // NOI18N
               new TagInfo ("include", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref1214.html",              // NOI18N
-                null, null, new TagAttributeInfo[] { new TagAttributeInfo ("flush", true, "", false),       // NOI18N
-                                                     new TagAttributeInfo ("page", true, "", true)}),       // NOI18N
+                null, null, new TagAttributeInfo[] { new TagAttributeInfo ("flush", true, url + "syntaxref1214.html#17145#18376", false),       // NOI18N
+                                                     new TagAttributeInfo ("page", true, url + "syntaxref1214.html#10930#17145", true)}),       // NOI18N
               new TagInfo ("param", null, TagInfo.BODY_CONTENT_EMPTY, "specifies parameter",                // NOI18N
                 null, null, new TagAttributeInfo[] { new TagAttributeInfo ("name", true, "", false),        // NOI18N
                                                      new TagAttributeInfo ("value", true, "", true)}),      // NOI18N
               new TagInfo ("params", null, TagInfo.BODY_CONTENT_JSP, "contains parameters",                 // NOI18N
                 null, null, new TagAttributeInfo[] {}),
               new TagInfo ("plugin", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref1215.html",               // NOI18N
-                null, null, new TagAttributeInfo[] { new TagAttributeInfo ("align", false, "", false),      // NOI18N
-                                                     new TagAttributeInfo ("archive", false, "", false),    // NOI18N
-                                                     new TagAttributeInfo ("code", true, "", false),        // NOI18N
-                                                     new TagAttributeInfo ("codebase", false, "", false),   // NOI18N
-                                                     new TagAttributeInfo ("height", false, "", false),     // NOI18N
-                                                     new TagAttributeInfo ("hspace", false, "", false),     // NOI18N
-                                                     new TagAttributeInfo ("iepluginurl", false, "", false),// NOI18N
-                                                     new TagAttributeInfo ("jreversion", false, "", false), // NOI18N
-                                                     new TagAttributeInfo ("name", false, "", false),       // NOI18N
-                                                     new TagAttributeInfo ("nspluginurl", false, "", false),// NOI18N
-                                                     new TagAttributeInfo ("type", true, "", false),        // NOI18N
-                                                     new TagAttributeInfo ("vspace", false, "", false),     // NOI18N
-                                                     new TagAttributeInfo ("width", false, "", false)}),    // NOI18N
+                null, null, new TagAttributeInfo[] { new TagAttributeInfo ("align", false, url + "syntaxref1215.html#11516#11518", false),      // NOI18N
+                                                     new TagAttributeInfo ("archive", false, url + "syntaxref1215.html#11553#11516", false),    // NOI18N
+                                                     new TagAttributeInfo ("code", true, url + "syntaxref1215.html#11514#11515", false),        // NOI18N
+                                                     new TagAttributeInfo ("codebase", true, url + "syntaxref1215.html#11515#11547", false),   // NOI18N
+                                                     new TagAttributeInfo ("height", false, url + "syntaxref1215.html#11518#11568", false),     // NOI18N
+                                                     new TagAttributeInfo ("hspace", false, url + "syntaxref1215.html#11568#11520", false),     // NOI18N
+                                                     new TagAttributeInfo ("iepluginurl", false, url + "syntaxref1215.html#11526#11538", false),// NOI18N
+                                                     new TagAttributeInfo ("jreversion", false, url + "syntaxref1215.html#11520#11525", false), // NOI18N
+                                                     new TagAttributeInfo ("name", false, url + "syntaxref1215.html#11547#11553", false),       // NOI18N
+                                                     new TagAttributeInfo ("nspluginurl", false,url + "syntaxref1215.html#11525#11526", false),// NOI18N
+                                                     new TagAttributeInfo ("type", true, url + "syntaxref1215.html#10935#11514", false),        // NOI18N
+                                                     new TagAttributeInfo ("vspace", false, url + "syntaxref1215.html#11568#11520", false),     // NOI18N
+                                                     new TagAttributeInfo ("width", false, url + "syntaxref1215.html#11518#11568", false)}),    // NOI18N
               new TagInfo ("setProperty", null, TagInfo.BODY_CONTENT_EMPTY, url + "syntaxref1216.html",           // NOI18N
-                null, null, new TagAttributeInfo[] { new TagAttributeInfo ("name", false, "", true),        // NOI18N
-                                                     new TagAttributeInfo ("param", false, "", false),      // NOI18N
-                                                     new TagAttributeInfo ("property", false, "", false),   // NOI18N
-                                                     new TagAttributeInfo ("value", false, "", true)}),     // NOI18N
+                null, null, new TagAttributeInfo[] { new TagAttributeInfo ("name", true, url + "syntaxref1216.html#17612#1001786", true),        // NOI18N
+                                                     new TagAttributeInfo ("param", false, url + "syntaxref1216.html#9919#20483", false),      // NOI18N
+                                                     new TagAttributeInfo ("property", false, url + "syntaxref1216.html#1001786#9329", false),   // NOI18N
+                                                     new TagAttributeInfo ("value", false, url + "syntaxref1216.html#20483#9329", true)}),     // NOI18N
               new TagInfo ("useBean", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref1217.html",     // NOI18N
-                null, null, new TagAttributeInfo[] { new TagAttributeInfo ("beanName", false, "", false),   // NOI18N
-                                                     new TagAttributeInfo ("class", false, "", false),      // NOI18N
-                                                     new TagAttributeInfo ("id", false, "", false),         // NOI18N
-                                                     new TagAttributeInfo ("scope", false, "", false),      // NOI18N
-                                                     new TagAttributeInfo ("type", false, "", false)})     // NOI18N
+                null, null, new TagAttributeInfo[] { new TagAttributeInfo ("beanName", false, url + "syntaxref1217.html#15804#15804", false),   // NOI18N
+                                                     new TagAttributeInfo ("class", false, url + "syntaxref1217.html#18019#15804", false),      // NOI18N
+                                                     new TagAttributeInfo ("id", true, url + "syntaxref1217.html#10964#10966", false),         // NOI18N
+                                                     new TagAttributeInfo ("scope", true, url + "syntaxref1217.html#10966#9359", false),      // NOI18N
+                                                     new TagAttributeInfo ("type", false, url + "syntaxref1217.html#19433#18019", false)})     // NOI18N
             };
             
         }
     
-        /*if (directiveJspData2 == null) {
-             directiveJspData2 = new TreeMap();
-            // fill in the data, both directive names and attribute names should be in alphabetical order
-            directiveJspData2.put("include", new String[]   // NOI18N
-                {"file"});      // NOI18N
-            directiveJspData2.put("page", new String[]      // NOI18N
-                {"autoFlush", "buffer", "contentType", "errorPage", "extends",  // NOI18N 
-                 "import", "info", "isErrorPage", "isThreadSafe", "language", "pageEncoding", "session"});  // NOI18N
-            directiveJspData2.put("taglib", new String[]    // NOI18N
-            {"prefix", "uri", "tagdir"}); // NOI18N
-            
-        }*/
 
         if (directiveJspData == null){
             directiveJspData = new TagInfo[] {
