@@ -62,6 +62,10 @@ public class PaletteItem implements java.io.Serializable {
 // -----------------------------------------------------------------------------
 // Class Methods
 
+  public String getName () {
+    return com.netbeans.ide.util.Utilities.getShortClassName (getItemClass ());
+  }
+  
   public Object getSharedInstance () throws InstantiationException, IllegalAccessException {
     Object sharedObject;
     if ((sharedReference == null) || ((sharedObject = sharedReference.get ()) == null)) {
@@ -112,6 +116,8 @@ public class PaletteItem implements java.io.Serializable {
 
 /*
  * Log
+ *  5    Gandalf   1.4         5/20/99  Ian Formanek    Fixed multiplication of 
+ *       PaletteItems
  *  4    Gandalf   1.3         5/15/99  Ian Formanek    
  *  3    Gandalf   1.2         5/14/99  Ian Formanek    
  *  2    Gandalf   1.1         5/14/99  Ian Formanek    
