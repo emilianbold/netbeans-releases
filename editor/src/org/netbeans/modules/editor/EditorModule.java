@@ -195,7 +195,6 @@ public class EditorModule extends ModuleInstall {
             DataObject.getRegistry().addChangeListener((ChangeListener)(WeakListener.change(rl, DataObject.getRegistry())));
         }
         
-        /* removing because of the issue #22790
         if (repoListen==null){
             repoListen=new RepositListener();
             Repository repo = TopManager.getDefault().getRepository();
@@ -203,7 +202,6 @@ public class EditorModule extends ModuleInstall {
                 repo.addRepositoryListener((RepositoryListener)(WeakListener.repository(repoListen, repo)));
             }
         }
-         */
 
     }
 
@@ -518,145 +516,18 @@ public class EditorModule extends ModuleInstall {
                 return; 
             }
             org.openide.windows.WindowManager wm=TopManager.getDefault().getWindowManager();
-            if(wm!=null){
+            if(wm == null) return;
                 java.awt.Frame frm = wm.getMainWindow();
-                if(frm!=null){
-                    if(frm.isVisible()){
-                        if (ev.getFileSystem() == null) return;
-                        FileObject fo = ev.getFileSystem().getRoot();
-                        // ignoring JavaDoc (if FS is hidden), ignoring FS already parsed
-                        if ((fo!=null) && (!ev.getFileSystem().isHidden()) &&
-                        (JCStorage.getStorage().findFileSystemElement(ev.getFileSystem().getSystemName())==null)){
-                            
-                            JavaOptions jo;
-                            
-                            if (BaseOptions.getOptions(JavaKit.class) instanceof JavaOptions){
-                                // load options
-                                jo = (JavaOptions)BaseOptions.getOptions(JavaKit.class);
-                            }else{
-                                return; //NO JavaKit ...
-                            }
-                            
-                            String updation = jo.getUpdatePDAfterMounting();
-
-                            
-                            if (ExtSettingsNames.ASK.equals(updation)){
-                                try{
-                                    DataObject dataObj = DataObject.find(fo);
-                                    Node[] node = new Node[1];
-                                    node[0] = dataObj.getNodeDelegate();
-                                    AutoUpdateQuestionPanel qPanel = new AutoUpdateQuestionPanel(
-                                        MessageFormat.format(NbBundle.getBundle( AutoUpdateQuestionPanel.class ).getString("AUQP_UPDATE_QUESTION"), 
-                                        new Object [] { ev.getFileSystem().getSystemName() } )
-                                        );
-
-                                    DialogDescriptor dd = new DialogDescriptor(qPanel,
-                                    "Question", true, DialogDescriptor.OK_CANCEL_OPTION,
-                                    DialogDescriptor.OK_OPTION, null);
-                                    java.awt.Dialog d = TopManager.getDefault().createDialog(dd);
-                                    d.pack();
-                                    d.show();
-
-                                    Object o = dd.getValue();
-                                    if (o == DialogDescriptor.OK_OPTION) {
-                                        if (qPanel.getDoNowShowNextTime()){
-                                            jo.setUpdatePDAfterMounting(qPanel.getYes() ? ExtSettingsNames.ALWAYS : ExtSettingsNames.NEVER);
-                                        }
-                                        if (qPanel.getYes()){
-                                            JCUpdater update = new JCUpdater(node, false);
-                                            update.start();
-                                        }
-                                    }
-                                }catch(DataObjectNotFoundException notFound){
-                                }
-                            }else if (ExtSettingsNames.NEVER.equals(updation)){
-                                return;
-                            }else if (ExtSettingsNames.ALWAYS.equals(updation)){
-                                try{
-                                    DataObject dataObj = DataObject.find(fo);
-                                    Node[] node = new Node[1];
-                                    node[0] = dataObj.getNodeDelegate();
-                                    
-                                    JCUpdater update = new JCUpdater(node, false, false);
-                                    update.start();
-                                }catch (DataObjectNotFoundException notFound){
-                                }
-                            }
-                        }
+                if(frm!=null && frm.isVisible()){
+                    if (ev.getFileSystem() != null){
+                        JCStorage storage = JCStorage.getStorage();
+                        storage.parseFSOnBackground(ev.getFileSystem());
                     }
                 }
-            }
+            
         }
         
         public void fileSystemRemoved(RepositoryEvent ev){
-            if (Boolean.getBoolean("netbeans.full.hack") == true) { //NOI18N
-                return; 
-            }
-            FileSystem fs = ev.getFileSystem();            
-            if (fs == null) return;
-
-            FileObject fo = ev.getFileSystem().getRoot();
-
-            if ((fo!=null) && (!ev.getFileSystem().isHidden()) &&
-            (JCStorage.getStorage().findFileSystemElement(ev.getFileSystem().getSystemName())!=null)){
-                JavaOptions jo;
-
-                if (BaseOptions.getOptions(JavaKit.class) instanceof JavaOptions){
-                    // load options
-                    jo = (JavaOptions)BaseOptions.getOptions(JavaKit.class);
-                }else{
-                    return; //NO JavaKit ...
-                }
-
-                String delete = jo.getDeletePDAfterUnmounting();
-
-                if (ExtSettingsNames.ASK.equals(delete)){
-                    try{
-                        DataObject dataObj = DataObject.find(fo);
-                        Node[] node = new Node[1];
-                        node[0] = dataObj.getNodeDelegate();
-                        AutoUpdateQuestionPanel qPanel = new AutoUpdateQuestionPanel(
-                            MessageFormat.format(NbBundle.getBundle( AutoUpdateQuestionPanel.class ).getString("AUQP_DELETE_QUESTION"), 
-                            new Object [] { ev.getFileSystem().getSystemName() } )
-                        );
-                        
-                        DialogDescriptor dd = new DialogDescriptor(qPanel,
-                        "Question", true, DialogDescriptor.OK_CANCEL_OPTION,
-                        DialogDescriptor.OK_OPTION, null);
-                        java.awt.Dialog d = TopManager.getDefault().createDialog(dd);
-                        d.pack();
-                        d.show();
-                        
-                        Object o = dd.getValue();
-                        if (o == DialogDescriptor.OK_OPTION) {
-                            if (qPanel.getDoNowShowNextTime()){
-                                jo.setDeletePDAfterUnmounting(qPanel.getYes() ? ExtSettingsNames.ALWAYS : ExtSettingsNames.NEVER);
-                            }
-                            if (qPanel.getYes()){
-                                JCStorageElement elem = JCStorage.getStorage().findFileSystemElement(fs.getSystemName());
-                                if (elem == null) return;
-                                String prefixName = elem.getName();
-                                PDCustomizer.getDefault().delete(prefixName, false);
-                            }else{
-                                PDCustomizer.getDefault().refresh();
-                            }
-                        }
-                    }catch(DataObjectNotFoundException notFound){
-                        // nothing will be done
-                    }
-
-                } else if (ExtSettingsNames.NEVER.equals(delete)){
-                    return; // never delete the Code Completion DB file
-                } else if (ExtSettingsNames.ALWAYS.equals(delete)){
-                    // delete always w/o asking
-                    JCStorageElement elem = JCStorage.getStorage().findFileSystemElement(fs.getSystemName());
-                    if (elem == null) return;
-                    String prefixName = elem.getName();
-                    PDCustomizer.getDefault().delete(prefixName, false);
-                }
-                
-            }
-
         }
         
         public void fileSystemPoolReordered(RepositoryReorderedEvent ev){
