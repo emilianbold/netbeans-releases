@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -30,6 +30,7 @@ import org.openide.util.actions.SystemAction;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.ErrorManager;
 import org.openide.loaders.RepositoryNodeFactory;
+import org.openide.util.actions.CallableSystemAction;
 
 /** Data system encapsulates logical structure of more file systems.
 * It also allows filtering of content of DataFolders
@@ -127,6 +128,8 @@ implements RepositoryListener, NewTemplateAction.Cookie {
     public org.openide.util.actions.SystemAction[] createActions() {
         return new SystemAction[] {
                    SystemAction.get (org.openide.actions.FindAction.class),
+                   null,
+                   SystemAction.get(RefreshAllAction.class), // #31047
                    null,
 /*
                    SystemAction.get (org.netbeans.core.actions.AddFSAction.class),
@@ -282,6 +285,28 @@ implements RepositoryListener, NewTemplateAction.Cookie {
         
         public Node repository(DataFilter f) {
             return DataSystem.getDataSystem(f == DataFilter.ALL ? null : f);
+        }
+        
+    }
+    
+    public static final class RefreshAllAction extends CallableSystemAction {
+        
+        public String getName() {
+            return NbBundle.getMessage(DataSystem.class, "LAB_refresh_all_filesystems");
+        }
+        
+        public void performAction() {
+            Enumeration e = Repository.getDefault().fileSystems();
+            while (e.hasMoreElements()) {
+                // Do not restrict to just visible filesystems; hidden ones
+                // may be important too for various reasons.
+                FileSystem fs = (FileSystem)e.nextElement();
+                fs.refresh(false);
+            }
+        }
+        
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx(DataSystem.class);
         }
         
     }
