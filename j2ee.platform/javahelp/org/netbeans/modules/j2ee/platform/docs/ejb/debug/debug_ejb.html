@@ -50,6 +50,11 @@
 </ul>
 <p><b>Notes:</b></p>
 <ul>
+  <li>If your EJB module is part of an enterprise application, you should always 
+    debug it by running the debug command on the enterprise application project. 
+    Since the IDE does not know which enterprise applications an EJB module project 
+    belongs to, running the Debug command on an EJB module project deploys it 
+    as a stand-alone module.</li>
   <li>The information in this page only applies to <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
       <param name="content" value="nbdocs:/org/netbeans/modules/usersguide/project/csh/glossary_standard.html">
       <param name="viewerActivator" value="javax.help.LinkLabel">

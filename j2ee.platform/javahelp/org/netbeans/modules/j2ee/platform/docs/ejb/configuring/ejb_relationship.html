@@ -56,6 +56,11 @@
   <li>When you generate CMP entity beans from a database, the IDE automatically 
     registers all of the container-managed relationships based on the relationships 
     in the database.</li>
+  <li>Changes in the <tt>ejb-jar.xml</tt> deployment descriptor can result in 
+    automatic or necessary changes in the corresponding <tt>sun-ejb-jar.xml</tt> 
+    or the application server specific-deployment files. For example, when you 
+    add a relationship in <tt>ejb-jar.xml</tt>, you have to map it to a real database 
+    in <tt>sun-ejb-jar.xml</tt>.</li>
 </ul>
 <table border="0">
   <tr> 
