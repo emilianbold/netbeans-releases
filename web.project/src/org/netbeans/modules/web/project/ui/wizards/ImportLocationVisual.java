@@ -240,7 +240,7 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
     }//GEN-LAST:event_jTextFieldContextPathKeyReleased
 
     private void jButtonPrjLocationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonPrjLocationActionPerformed
-        JFileChooser chooser = createChooser();    
+        JFileChooser chooser = createChooser(projectLocationTextField.getText());
         if (chooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File projectDir = chooser.getSelectedFile();
             projectLocationTextField.setText( projectDir.getAbsolutePath());
@@ -248,7 +248,7 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
     }//GEN-LAST:event_jButtonPrjLocationActionPerformed
 
     private void jButtonSrcLocationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSrcLocationActionPerformed
-        JFileChooser chooser = createChooser();    
+        JFileChooser chooser = createChooser(moduleLocationTextField.getText());    
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File projectDir = chooser.getSelectedFile();
             moduleLocationTextField.setText( projectDir.getAbsolutePath());
@@ -272,11 +272,17 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
     public javax.swing.JTextField projectNameTextField;
     // End of variables declaration//GEN-END:variables
     
-    private static JFileChooser createChooser() {
+    private static JFileChooser createChooser(String path) {
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         chooser.setAcceptAllFileFilterUsed(false);
         
+        if (path.length() > 0) {
+            File f = new File(path);
+            if (f.exists())
+                chooser.setSelectedFile(f);
+        }
+
         return chooser;
     }
     
