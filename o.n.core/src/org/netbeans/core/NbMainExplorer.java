@@ -175,8 +175,7 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
     setLayout(new BorderLayout ());
     add(split, BorderLayout.CENTER);
     add(toolbar = createToolbar(), BorderLayout.NORTH);
-    // in single by default
-    setMode(TopComponent.Mode.SINGLE);
+
     updateTitle ();
   }
 
@@ -348,6 +347,8 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
 
 /*
 * Log
+*  5    Gandalf   1.4         3/16/99  Ian Formanek    SINGLE mode removed, as 
+*       it is there by default
 *  4    Gandalf   1.3         3/16/99  Ian Formanek    Title improved
 *  3    Gandalf   1.2         3/16/99  Ian Formanek    Added listening to icon 
 *       and displayName changes on roots, support for ExplorerActions 
