@@ -11,24 +11,30 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
+
 package org.netbeans.beaninfo.editors;
 
-import java.lang.reflect.*;
-import java.io.*;
-import java.util.*;
-import java.awt.event.*;
-import java.beans.*;
 
+import java.awt.Component;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyEditorSupport;
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
 import javax.swing.JFileChooser;
-import javax.swing.JButton;
 
-import org.openide.explorer.propertysheet.*;
-import org.openide.util.*;
-import org.openide.TopManager;
+import org.openide.explorer.propertysheet.ExPropertyEditor;
+import org.openide.explorer.propertysheet.PropertyEnv;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
+
 
 /**
- * PropertyEditor for java.io.File.
- * @author  jtulach, dstrupl
+ * PropertyEditor for <code>java.io.File</code>.
+ *
+ * @author  Jaroslav Tulach, David Strupl
  */
 public class FileEditor extends PropertyEditorSupport implements ExPropertyEditor {
     
@@ -46,18 +52,30 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
     
     /** Name of the property obtained from the feature descriptor.*/
     private static final String PROPERTY_CURRENT_DIR = "currentDir"; //NOI18N
+
+    /** Name of the property obtained from the feature descriptor. */
+    private static final String PROPERTY_BASE_DIR = "baseDir"; // NOI18N
     
     /** Openning mode.*/
     private int mode = JFileChooser.FILES_AND_DIRECTORIES;
     
+    /** Flag indicating whether to choose directories. Default value is <code>true</code>. */
     private boolean directories = true;
+    /** Flag indicating whether to choose files. Default value is <code>true</code>. */
     private boolean files = true;
-    private javax.swing.filechooser.FileFilter fileFilter = null;
-    private java.io.File currentDirectory = null;
+    /** Filter for files to show. */
+    private javax.swing.filechooser.FileFilter fileFilter;
+    /** Current firectory. */
+    private File currentDirectory;
+    /** Base directory to which to show relative path, if is set. */
+    private File baseDirectory;
+
+    /** Caches last used directory. */
+    private static File lastCurrentDir;
     
-    private static File lastCurrentDir = null;
-    
+    /** File chooser. */
     private JFileChooser chooser;
+    /** Property change listener. */
     private PropertyChangeListener pListener;
     
     /**
@@ -78,8 +96,8 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
         }
         
         Object filter = env.getFeatureDescriptor().getValue(PROPERTY_FILTER);
-        if (filter instanceof java.io.FilenameFilter) {
-            fileFilter = new DelegatingFilenameFilter((java.io.FilenameFilter)filter);
+        if (filter instanceof FilenameFilter) {
+            fileFilter = new DelegatingFilenameFilter((FilenameFilter)filter);
         }
         
         if (filter instanceof javax.swing.filechooser.FileFilter) {
@@ -91,10 +109,19 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
         }
 
         Object curDir = env.getFeatureDescriptor().getValue(PROPERTY_CURRENT_DIR);
-        if (curDir instanceof java.io.File) {
+        if (curDir instanceof File) {
             currentDirectory = (File)curDir;
         }
 
+        Object baseDir = env.getFeatureDescriptor().getValue(PROPERTY_BASE_DIR);
+        if(baseDir instanceof File) {
+            baseDirectory = (File)baseDir;
+            // As baseDir accept only directories in their absolute form.
+            if(!baseDirectory.isDirectory() || !baseDirectory.isAbsolute()) {
+                baseDirectory = null;
+            }
+        }
+        
         if (files) {
             mode = directories ? JFileChooser.FILES_AND_DIRECTORIES : 
                 JFileChooser.FILES_ONLY;
@@ -103,7 +130,8 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
                 JFileChooser.FILES_AND_DIRECTORIES; // both false, what now?
         }
     }
-    
+
+    /** Sets value. */
     public void setValue(Object value) {
         super.setValue(value);
         if ((value instanceof File) && (chooser != null)) {
@@ -114,29 +142,51 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
     /** Returns human readable form of the edited value.
      * @return string reprezentation
      */
-    public java.lang.String getAsText() {
+    public String getAsText() {
         File retValue = (File)getValue();
         if (retValue == null) {
             return ""; // NOI18N
         }
+
+        if(baseDirectory != null) {
+            String relPath = getRelativePath(baseDirectory, retValue);
+            if(relPath != null) {
+                return relPath;
+            }
+        }
+        
         try {
             return retValue.getCanonicalPath();
-        } catch (IOException x) {
+        } catch (IOException ioe) {
+            // Should not happen.
         }
+        
         return null;
     }
     
     /** Parses the given string and should create a new instance of the
      * edited object.
-     * @param str string reprezentation of the file (used as a parameter for java.io.File).
+     * @param str string reprezentation of the file (used as a parameter for File).
      * @throws IllegalArgumentException If the given string cannot be parsed
      */
-    public void setAsText(java.lang.String str) throws java.lang.IllegalArgumentException {
+    public void setAsText(String str) throws IllegalArgumentException {
         if (str == null) {
-            throw new IllegalArgumentException("null"); // // NOI18N
+            throw new IllegalArgumentException("null"); // NOI18N
         }
-        File f = new File(str);
-        if (f != null)  {
+
+        File f = null;
+        
+        if(baseDirectory != null) {
+            f = new File(str);
+            
+            if(!f.isAbsolute()) {
+                f = new File(baseDirectory, str);
+            }
+        } else {
+            f = new File(str);
+        }
+        
+        if(f != null)  {
             setValue(f);
         }
     }
@@ -144,13 +194,12 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
     /** Custon editor.
      * @return Returns custom editor component.
      */
-    public java.awt.Component getCustomEditor() {
+    public Component getCustomEditor() {
         final JFileChooser ch = createFileChooser ();
         return ch;
     }
     
-    /** 
-     */
+    /** Creates file chooser. */
     private JFileChooser createFileChooser () {
         if (chooser == null) {
             chooser = new JFileChooser();
@@ -213,10 +262,119 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
         }
         return pListener;
     }
-    
-    /** Property change listaner attached to the JFileChooser
-     * chooser.
+
+    /** Implements PropertyEditor method.
+     * @return Returns true.
      */
+    public boolean supportsCustomEditor() {
+        // [PENDING] see org.openide.propertysheet.editors.FileEditor
+        return true;
+    }
+    
+    /** Should create a string insertable to the newly generated source code.
+     * @return initialization string
+     */
+    public String getJavaInitializationString() {
+        File value = (File) getValue ();
+        if (value == null) {
+            return "null"; // NOI18N
+        } else {
+            // [PENDING] not a full escape of filenames, but enough to at least
+            // handle normal Windows backslashes
+            return "new java.io.File (\"" + // NOI18N
+                   Utilities.replaceString (value.getAbsolutePath (), "\\", "\\\\") // NOI18N
+                   + "\")"; // NOI18N
+        }
+    }
+
+    /** Gets help context. */
+    private HelpCtx getHelpCtx () {
+        return new HelpCtx (FileEditor.class);
+    }
+    
+    /** Gets localized string. Helper method. */
+    private static String getString(String key) {
+        return NbBundle.getBundle(FileEditor.class).getString(key);
+    }
+    
+    /** Gets relative path of file to specified directory.
+     * @param baseDir base directory
+     * @param file file which relative path to <code>baseDir</code> is needed
+     * @return rtelative path or <code>null</code> can't be resolved */
+    private static String getRelativePath(File baseDir, File file) {
+        if(baseDir.equals(file)) {
+            return "."; // NOI18N
+        }
+        
+        String basePath = getNormalizedAbsolutePath(baseDir);
+        String filePath = getNormalizedAbsolutePath(file);
+        
+        File parent = baseDir;
+        
+        int level = 0;
+    
+        String relPath;
+        
+        while(true) {
+            relPath = extractChildRelativePath(basePath, filePath);
+            
+            if(relPath != null) {
+                break;
+            }
+            
+            parent = parent.getParentFile();
+
+            if(parent == null) {
+                return null;
+            }
+            
+            basePath = parent.getAbsolutePath();
+            level++;
+        }
+
+        StringBuffer buffer = new StringBuffer();
+        for(int i = 0; i < level; i++) {
+            buffer.append(".."); // NOI18N
+            if(i < (level - 1)) {
+                buffer.append(File.separatorChar);
+            }
+        }
+        
+        return buffer.append(relPath).toString();
+    }
+
+    /** Gets 'normalized' absolute class path, i.e. path 
+     * which doesn't end with '.' and ends with separator char if it is directory.  */
+    private static String getNormalizedAbsolutePath(File file) {
+        String path = file.getAbsolutePath();
+        
+        if(path.endsWith(".")) { // NOI18N
+            path = path.substring(0, path.length() - 1);
+        }
+        
+        if(file.isDirectory() && !path.endsWith(new String(new char[] {File.separatorChar}))) {
+            path += File.separatorChar;
+        }
+        
+        return path;
+    }
+    
+    /** Extracts childs relative path to the path of directory which contains it.
+     * @param basePath absolute path to the base directory
+     * @param childPath absolute path to the child file/directory
+     * @return child's relative path or <code>null</code> if the child path
+     * is not in the base directory tree */
+    private static String extractChildRelativePath(String basePath, String childPath) {
+        if(childPath.startsWith(basePath)) {
+            return childPath.substring(basePath.length());
+        }
+        
+        return null;
+    }
+
+    
+    
+    /** Property change listaner attached to the JFileChooser chooser. */
     private class PListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent e) {
             File f = chooser.getSelectedFile ();
@@ -240,41 +398,8 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
                 setValue(f);
             }
         } 
-    }
+    } // End of class PListener.
     
-    /** Implements java.beans.PropertyEditor method.
-     * @return Returns true.
-     */
-    public boolean supportsCustomEditor() {
-        // [PENDING] see org.openide.propertysheet.editors.FileEditor
-        return true;
-    }
-    
-    /** Should create a string insertable to the newly generated source code.
-     * @return initialization string
-     */
-    public java.lang.String getJavaInitializationString() {
-        File value = (File) getValue ();
-        if (value == null) {
-            return "null"; // NOI18N
-        } else {
-            // [PENDING] not a full escape of filenames, but enough to at least
-            // handle normal Windows backslashes
-            return "new java.io.File (\"" + // NOI18N
-                   Utilities.replaceString (value.getAbsolutePath (), "\\", "\\\\") // NOI18N
-                   + "\")"; // NOI18N
-        }
-    }
-    
-    private static String getString(String key) {
-        return NbBundle.getBundle(FileEditor.class).getString(key);
-    }
-    
-    /** 
-     */
-    private HelpCtx getHelpCtx () {
-        return new HelpCtx (FileEditor.class);
-    }
     
     /** Wraps java.io.FileFilter to javax.swing.filechooser.FileFilter. */
     private static class DelegatingFileFilter extends javax.swing.filechooser.FileFilter {
@@ -284,7 +409,7 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
             this.filter = f;
         }
         
-        public boolean accept(java.io.File f) {
+        public boolean accept(File f) {
             return filter.accept(f);
         }
         
@@ -293,19 +418,20 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
             return null;
         }
         
-    }
+    } // End of class DelegatingFileFilter.
     
-    /** Wraps java.io.FilenameFilter to javax.swing.filechooser.FileFilter. */
+    
+    /** Wraps FilenameFilter to javax.swing.filechooser.FileFilter. */
     private static class DelegatingFilenameFilter extends javax.swing.filechooser.FileFilter {
-        private java.io.FilenameFilter filter;
+        private FilenameFilter filter;
         
-        public DelegatingFilenameFilter(java.io.FilenameFilter f) {
+        public DelegatingFilenameFilter(FilenameFilter f) {
             this.filter = f;
         }
         /** Calls the filenameFilter's accept method with arguments
          * created from the original object f.
          */
-        public boolean accept(java.io.File f) {
+        public boolean accept(File f) {
             return filter.accept(f.getParentFile(), f.getName());
         }
         
@@ -313,5 +439,6 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
             // [PENDING] what should we return?
             return null;
         }
-    }
+    } // End of class DelegatingFilenameFilter.
+    
 }
