@@ -19,7 +19,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="netbeans.home" location="../../nbbuild/netbeans"/>
     <property name="netbeans.test.home" value="${netbeans.home}"/>
     
-    <!-- says how to create classpath for code tests --> 
+    <!-- says how to create classpath for code tests -->
     <!-- can have values src, jar, ide               -->
     <property name="xtest.code.classpath" value="src"/>
     
@@ -71,7 +71,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- this classpath will be used for executing tests against installed IDE -->
     <path id="ide.codetest.classpath">        
-        <fileset dir="${netbeans.home}/lib">            
+        <fileset dir="${netbeans.home}/lib">
             <include name="core.jar"/>
             <include name="ext/*.jar"/>
         </fileset>
@@ -81,7 +81,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- =========== -->
     <!-- Init target -->
     <!-- =========== -->
-    <target name="init">
+    <target name="init" depends="prepare-xtest">
     
         <taskdef name="nbtaskdef" classname="org.netbeans.xtest.NbMultiTaskDef" 
                  classpath="${xtest.home}/lib/xtest.jar"/>
@@ -149,13 +149,17 @@ Microsystems, Inc. All Rights Reserved.
     <target name="buildtests" depends="jars"/>
     <target name="cleantests" depends="clean"/>
 
+    <target name="prepare-xtest">
+        <ant dir="${xtest.home}" antfile="build.xml" target="buildxtest"/>
+    </target>
+    
     <target name="config" depends="init">
         <!-- This task reads config file cfg-${xtest.testtype}.xml and selects all -->
         <!-- testbags, which conforms to ${xtest.attributes} - is subset or equals -->
         <test-configurator testtype="${xtest.testtype}" testattributes="${xtest.attributes}"/>
     </target>
     
-    <target name="runtests" depends="config,cleanresults">
+    <target name="runtests" depends="config,cleanresults,buildtests">
         <echo message="core tests, test type: ${xtest.testtype}, test attributes: ${xtest.attributes}"/>
         <test-executor paramClasspathProp="tbag.classpath"
                        paramPatternsetInProp="tbag.patternset.include"
@@ -184,7 +188,6 @@ Microsystems, Inc. All Rights Reserved.
         
         <antcall target="prepare-tests"/>
         <antcall target="${xtest.exectype}_test_bootstrap"/>
-        <!-- <antcall target="test_report"/> it will be called by TestExecutor -->
     </target>
     
     <target name="prepare-tests" depends="test-unjared" unless="unjared">
@@ -267,7 +270,7 @@ Microsystems, Inc. All Rights Reserved.
         </property>
 
         <property name="args" value="-jdkhome ${jdkhome} -userdir ${xtest.userdir} -cp:p ${xtest.ide.path} -J-Dtest.class=${test.class} -J-Dtest.classpath=${test.classpath} -J-Dtest.ant.file=${ant.file} -J-Dtest.target=${test.target} -J-Dxtest.home=${xtest.home} -J-Dxtest.includes=${xtest.includes} -J-Dxtest.excludes=${xtest.excludes} -J-Dtbag.classpath=${tbag.classpath} -J-Dtbag.patternset.include=${tbag.patternset.include} -J-Dtbag.patternset.exclude=${tbag.patternset.exclude} -J-Dtbag.testtype=${tbag.testtype} -J-Dtbag.formater=${tbag.formater} -J-Dtest.exit=true -J-Dnetbeans.full.hack=true"/>
-        <echo message="ARUMENTS = ${args}"/>
+        <echo message="ARGUMENTS = ${args}"/>
 
         <copy file="${xtest.home}/lib/patches/testmain.jar" todir="${netbeans.test.home}/lib/patches"/>
         <copy file="${xtest.home}/lib/xtest.jar" todir="${netbeans.test.home}/lib"/>
@@ -358,7 +361,7 @@ Microsystems, Inc. All Rights Reserved.
 		<pathelement path="${xerces.path}"/>
             </classpath>            
             <exclude name="org/netbeans/core/windows/data/"/>
-            <exclude name="org/netbeans/core/modules/jars/"/>            
+            <exclude name="org/netbeans/core/modules/jars/"/>
         </javac>
     </target>
     
