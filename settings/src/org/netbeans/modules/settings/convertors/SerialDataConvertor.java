@@ -18,6 +18,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
+import java.util.Arrays;
+import java.util.Collections;
 
 import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
@@ -155,27 +157,22 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
     }
     
     private void instanceCookieChanged(Object inst) {
-        SaveSupport _saver = saver;
-        if (_saver != null) {
-            _saver.removePropertyChangeListener(this);
-            lkpContent.remove(_saver);
+        if (saver != null) {
+            saver.removePropertyChangeListener(this);
             getScheduledRequest().cancel();
             saver = null;
         }
-        
-        lkpContent.remove(this, node);
-        lkpContent.add(this, node);
-        
-        if (instance != null) {
-            lkpContent.remove(instance);
-            instance = null;
-        }
-        
+
         SerialDataConvertor.SettingsInstance si = createInstance(inst);
         if (isModuleEnabled(si)) {
             instance = si;
-            lkpContent.add(instance);
+            lkpContent.set(Arrays.asList(new Object [] { this, si }), null);
+        } else {
+            lkpContent.set(Collections.singleton(this), null);
+            instance = null;
         }
+        
+        lkpContent.add(this, node);
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
