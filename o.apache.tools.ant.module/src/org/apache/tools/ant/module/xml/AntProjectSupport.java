@@ -262,13 +262,13 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, javax.sw
             Document doc;
             if (editor != null) {
                 final StyledDocument document = editor.openDocument();
-                InputSource in = createInputSource(fo, editor, document);
-                doc = documentBuilder.parse(in);
                 // add only one Listener (listeners for doc are hold in a List!)
                 if ((styledDocRef != null && styledDocRef.get () != document) || styledDocRef == null) {
                     document.addDocumentListener(this);
                     styledDocRef = new WeakReference(document);
                 }
+                InputSource in = createInputSource(fo, editor, document);
+                doc = documentBuilder.parse(in);
             } else if (fo != null) {
                 InputStream is = fo.getInputStream();
                 try {

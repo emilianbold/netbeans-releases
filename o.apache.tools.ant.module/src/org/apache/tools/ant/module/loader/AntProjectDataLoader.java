@@ -33,6 +33,7 @@ public class AntProjectDataLoader extends UniFileLoader {
     private static final String REQUIRED_MIME = "text/x-ant+xml"; // NOI18N
     private static final String KNOWN_ANT_FILE = "org.apache.tools.ant.module.loader.AntProjectDataLoader.KNOWN_ANT_FILE"; // NOI18N
     private static final String KNOWN_ANT_FILE_OLD = "org.apache.tools.ant.module.AntProjectDataLoader.KNOWN_ANT_FILE"; // NOI18N
+    private static final String KNOWN_ANT_FILENAME = "build.xml"; // NOI18N
 
     private static final long serialVersionUID = 3642056255958054115L;
 
@@ -66,6 +67,17 @@ public class AntProjectDataLoader extends UniFileLoader {
             SystemAction.get (ToolsAction.class),
             SystemAction.get (PropertiesAction.class),
         };
+    }
+    
+    protected FileObject findPrimaryFile(FileObject fo) {
+        FileObject prim = super.findPrimaryFile(fo);
+        if (prim == null && fo.getNameExt().equals(KNOWN_ANT_FILENAME)) {
+            // XXX hack for #43871.
+            // Does not set the MIME type correctly, but at least should be
+            // possible to run targets, etc.
+            prim = fo;
+        }
+        return prim;
     }
 
     protected MultiDataObject createMultiObject (FileObject primaryFile) throws DataObjectExistsException, IOException {
