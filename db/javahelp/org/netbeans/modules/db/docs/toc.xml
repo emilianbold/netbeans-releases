@@ -39,7 +39,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <tocitem text="Enabling and Disabling Debug Mode to Monitor SQL Commands" target="manipsql" />
 
-<tocitem text="Hints and Tips for Use with the Database Explorer" target="misc" />
+<tocitem text="Limiting the Number of Database Rows Fetched" target="misc" />
 
 <tocitem text="Configuring Database Explorer Properties" target="dbconfig" />
 
