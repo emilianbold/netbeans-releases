@@ -61,7 +61,7 @@ class EjbReferencesTableModel extends InnerTableModel {
         Project project = FileOwnerQuery.getOwner(ejbJarFile);
         ClassElement beanClass = Utils.getClassElement(Utils.getSourceClassPath(ejbJarFile), ejb.getEjbClass());
         CallEjbDialog callEjbDialog = new CallEjbDialog();
-        if (callEjbDialog.open(ejb, project, beanClass)) {
+        if (callEjbDialog.open(project, beanClass)) {
             modelUpdatedFromUI();
         }
         return -1;
