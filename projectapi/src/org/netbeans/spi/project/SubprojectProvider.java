@@ -36,7 +36,7 @@ public interface SubprojectProvider {
      * but it may be a DAG, i.e. two projects may both depend on the same subproject.
      * @return an immutable and unchanging set of {@link Project}s
      */
-    Set/*<Project>*/ getSubProjects();
+    Set/*<Project>*/ getSubprojects();
     
     /**
      * Add a listener to changes in the set of subprojects.

@@ -509,7 +509,7 @@ public class ReferenceHelperTest extends NbTestCase {
         art = seph.createSimpleAntArtifact("jar", "build.jar", seph.getStandardPropertyEvaluator(), "dojar", "clean");
         assertTrue("added a ref to proj3.dojar", r.addReference(art));
         SubprojectProvider sp = r.createSubprojectProvider();
-        Set/*<Project>*/ subprojs = sp.getSubProjects();
+        Set/*<Project>*/ subprojs = sp.getSubprojects();
         assertEquals("two subprojects", 2, subprojs.size());
         Project[] subprojsA = (Project[])subprojs.toArray(new Project[2]);
         Project proj2, proj3;

@@ -332,7 +332,7 @@ public final class OpenProjectList {
             return;
         }
         
-        for( Iterator/*<Project>*/ it = spp.getSubProjects().iterator(); it.hasNext(); ) {
+        for( Iterator/*<Project>*/ it = spp.getSubprojects().iterator(); it.hasNext(); ) {
             Project sp = (Project)it.next(); 
             if ( !openProjects.contains( sp ) ) {
                 openProjects.add( sp );

@@ -268,7 +268,7 @@ public class WebProjectProperties {
             return;
         }
         
-        for( Iterator/*<Project>*/ it = spp.getSubProjects().iterator(); it.hasNext(); ) {
+        for( Iterator/*<Project>*/ it = spp.getSubprojects().iterator(); it.hasNext(); ) {
             Project sp = (Project)it.next(); 
             if ( !result.contains( sp ) ) {
                 result.add( sp );

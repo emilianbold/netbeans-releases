@@ -39,7 +39,7 @@ final class SubprojectProviderImpl implements SubprojectProvider {
         this.helper = helper;
     }
     
-    public Set/*<Project>*/ getSubProjects() {
+    public Set/*<Project>*/ getSubprojects() {
         return (Set/*<Project>*/)ProjectManager.mutex().readAccess(new Mutex.Action() {
             public Object run() {
                 ReferenceHelper.RawReference[] refs = helper.getRawReferences();
