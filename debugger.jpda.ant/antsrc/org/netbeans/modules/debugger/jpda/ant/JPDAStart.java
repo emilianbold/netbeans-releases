@@ -239,14 +239,14 @@ public class JPDAStart extends Task implements Runnable {
                     convertToClassPath (project, sourcepath)
                 }
             );
-        sourcePath = ClassPathSupport.createProxyClassPath (
-            new ClassPath[] {
-                sourcePath,
-                (bootclasspath == null) ? 
-                    JavaPlatform.getDefault ().getSourceFolders () :
-                    convertToSourcePath (project, bootclasspath)
-            }
-        );
+//        sourcePath = ClassPathSupport.createProxyClassPath (
+//            new ClassPath[] {
+//                sourcePath,
+//                (bootclasspath == null) ? 
+//                    JavaPlatform.getDefault ().getSourceFolders () :
+//                    convertToSourcePath (project, bootclasspath)
+//            }
+//        );
         return sourcePath;
     }
     
