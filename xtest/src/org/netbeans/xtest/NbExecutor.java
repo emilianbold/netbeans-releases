@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -43,6 +43,7 @@ public class NbExecutor extends Task {
     File   testrun;
     
     private static final String[] propertiesToPass = {
+                                            "netbeans.dest.dir",
                                             "netbeans.home",
                                             "build.sysclasspath",
                                             "ant.home",

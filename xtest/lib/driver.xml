@@ -209,6 +209,10 @@ Microsystems, Inc. All Rights Reserved.
      <ant dir="${xtest.instance.dir}" target="buildtests">
         <property name="xtest.source.location" value="ide"/>
         <property name="netbeans.home" value="${ide.home}"/>
+        <!-- Hotfix - need to set netbeans.dest.dir property to directory 
+        with moduleCluster.properties and directories.properties.
+        It expects ide.home points one level up, e.g. <root>/netbeans. -->
+        <property name="netbeans.dest.dir" location="${ide.home}/.."/>
      </ant>
    </target>
    
@@ -235,6 +239,10 @@ Microsystems, Inc. All Rights Reserved.
      <ant dir="${xtest.instance.dir}" target="localresults-clean"/> -->
      <ant dir="${xtest.instance.dir}" target="runtests">
        	<property name="netbeans.home" value="${ide.home}"/>
+        <!-- Hotfix - need to set netbeans.dest.dir property to directory 
+        with moduleCluster.properties and directories.properties.
+        It expects ide.home points one level up, e.g. <root>/netbeans. -->
+        <property name="netbeans.dest.dir" location="${ide.home}/.."/>
       	<property name="xtest.mode" value="ide"/>
       	<property name="xtest.noboot" value="true"/>
  	<property name="xtest.source.location" value="ide"/>
