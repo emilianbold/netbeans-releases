@@ -85,6 +85,8 @@
 	<mapID target="add_ws_operation" url="web/webservice/add_ws_operation.html" />
 	<mapID target="add_enterprise_resource" url="web/webservice/add_enterprise_resource.html" />
 	<mapID target="call_an_ejb" url="web/webservice/call_an_ejb.html" />
+	<mapID target="use_a_database" url="web/webservice/use_a_database.html" />
+	<mapID target="send_JMS_message" url="web/webservice/send_JMS_message.html" />
 	<mapID target="add_soap_message" url="web/webservice/add_soap_message.html" />
 	<mapID target="test_ws" url="web/webservice/test_ws.html" />
 	<mapID target="run_ws" url="web/webservice/run_ws.html" />

@@ -52,7 +52,13 @@
          <tocitem text="About Servlets" target="concepts_servlet" />
          <tocitem text="Upgrading to the J2EE 1.4 Specification" target="spec_version" />
          <tocitem text="Creating a Servlet" target="servlet_create" />
-         <tocitem text="Editing a Servlet" target="servlet_edit"/>
+	 <tocitem text="Editing a Servlet" target="servlet_edit"/>
+	 <tocitem text="Adding an Enterprise Resource" >
+	 <tocitem text="About Adding an Enterprise Resource" target="add_enterprise_resource" />
+	 	<tocitem text="Calling an EJB" target="call_an_ejb" />
+	 	<tocitem text="Using a Database" target="use_a_database" />
+		<tocitem text="Sending a JMS Message" target="send_JMS_message" />
+	 </tocitem> 
          <tocitem text="Viewing a JSP's Servlet" target="jsp_servletview" />
          <tocitem text="Adding a Servlet JAR file to a WAR File" target="webmod_addservlet" />
          <tocitem text="Passing Request Parameters" target="jsp_queryparams"/>
@@ -78,8 +84,8 @@
 	 <tocitem text="Adding an Enterprise Resource" >
 	 <tocitem text="About Adding an Enterprise Resource" target="add_enterprise_resource" />
 	 	<tocitem text="Calling an EJB" target="call_an_ejb" />
-	 	<tocitem text="Using a Database" target="tbd" />
-		<tocitem text="Sending a JMS Message" target="tbd" />
+	 	<tocitem text="Using a Database" target="use_a_database" />
+		<tocitem text="Sending a JMS Message" target="send_JMS_message" />
 	 </tocitem> 
          <tocitem text="Passing Request Parameters" target="jsp_queryparams"/>
          <tocitem text="Running a Web Service" target="run_ws" />
