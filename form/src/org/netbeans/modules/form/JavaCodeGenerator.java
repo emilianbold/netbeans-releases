@@ -628,6 +628,15 @@ public class JavaCodeGenerator extends CodeGenerator {
 
   private class JCGFormListener implements FormListener {
 
+    /** Called when the form is succesfully loaded and fully initialized
+    */
+    public void formLoaded () {
+      // 1. regenerate variables
+      regenerateVariables ();
+      // 2. regenerate initializer
+      regenerateInitializer ();
+    }
+
     public void formChanged () {
       // 1. regenerate initializer
       regenerateInitializer ();
@@ -636,7 +645,7 @@ public class JavaCodeGenerator extends CodeGenerator {
     /** Called when a new component is added to the form
     * @param evt the event object describing the event
     */
-    public void componentAdded (FormEvent evt) {
+    public void componentsAdded (RADComponent[] comps) {
       // 1. regenerate variables
       regenerateVariables ();
       // 2. regenerate initializer
@@ -646,7 +655,7 @@ public class JavaCodeGenerator extends CodeGenerator {
     /** Called when any component is removed from the form
     * @param evt the event object describing the event
     */
-    public void componentRemoved (FormEvent evt) {
+    public void componentsRemoved (RADComponent[] comps) {
       // 1. regenerate variables
       regenerateVariables ();
       // 2. regenerate initializer
@@ -700,6 +709,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  18   Gandalf   1.17        5/31/99  Ian Formanek    
  *  17   Gandalf   1.16        5/26/99  Ian Formanek    
  *  16   Gandalf   1.15        5/24/99  Ian Formanek    Non-Visual components
  *  15   Gandalf   1.14        5/24/99  Ian Formanek    

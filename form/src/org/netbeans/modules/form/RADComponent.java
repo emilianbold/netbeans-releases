@@ -456,12 +456,6 @@ public class RADComponent {
     return valuesCache.get (desc);
   }
   
-  protected PropertyEditor getUsedEditor (PropertyDescriptor desc) {
-    RADProperty prop = (RADProperty)nameToProperty.get(desc.getName ());
-    return (prop == null) ? null : prop.getCurrentEditor ();
-  }
-
-  
 // -----------------------------------------------------------------------------
 // Debug methods
 
@@ -604,10 +598,7 @@ public class RADComponent {
     public PropertyEditor getPropertyEditor () {
       if (editor == null) {
         PropertyEditor defaultEditor = null;
-        
-          if (isChangedValue (desc)) {
-          defaultEditor = getUsedEditor (desc);
-        } else if (desc.getPropertyEditorClass () != null) {
+        if (desc.getPropertyEditorClass () != null) {
           try {
             defaultEditor = (PropertyEditor) desc.getPropertyEditorClass ().newInstance ();
           } catch (InstantiationException ex) {
@@ -746,9 +737,7 @@ public class RADComponent {
       if (editor == null) {
         PropertyEditor defaultEditor = null;
         
-          if (isChangedValue (desc)) {
-          defaultEditor = getUsedEditor (desc);
-        } else if (desc.getPropertyEditorClass () != null) {
+        if (desc.getPropertyEditorClass () != null) {
           try {
             defaultEditor = (PropertyEditor) desc.getPropertyEditorClass ().newInstance ();
           } catch (InstantiationException ex) {
@@ -892,6 +881,7 @@ public class RADComponent {
 
 /*
  * Log
+ *  18   Gandalf   1.17        5/31/99  Ian Formanek    
  *  17   Gandalf   1.16        5/31/99  Ian Formanek    
  *  16   Gandalf   1.15        5/30/99  Ian Formanek    
  *  15   Gandalf   1.14        5/26/99  Ian Formanek    cleaned
