@@ -331,13 +331,10 @@ public class FormCustomEditor extends JPanel
                     PropertyEditor pe = prop.getPropertyEditor();
 
                     if (pe instanceof FormPropertyEditor) {
-                        FormPropertyEditor fpe = (FormPropertyEditor) pe;
-
-                        fpe.getProperty().setPreCode(preCode);
-                        fpe.getProperty().setPostCode(postCode);
-
-                        fpe.setModifiedEditor(fpe.getAllEditors()[currentIndex]);
-                        fpe.commitModifiedEditor();
+                        prop.setPreCode(preCode);
+                        prop.setPostCode(postCode);
+                        prop.setCurrentEditor(((FormPropertyEditor)pe)
+                                                .getAllEditors()[currentIndex]);
                     }
                 }
             }

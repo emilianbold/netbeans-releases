@@ -11,10 +11,11 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.form;
 
 import java.beans.*;
+import java.lang.ref.WeakReference;
+
 import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
@@ -25,6 +26,7 @@ import org.openide.nodes.*;
  *
  * @author Ian Formanek
  */
+
 public class FormPropertyEditor implements PropertyEditor,
                                            PropertyChangeListener,
                                            EnhancedPropertyEditor,
@@ -34,7 +36,7 @@ public class FormPropertyEditor implements PropertyEditor,
     private Object source;
     private FormProperty property;
     private FormPropertyContext propertyContext;
-    private PropertyEnv propertyEnv;
+    private WeakReference propertyEnv;
 
     private PropertyEditor modifiedEditor;
     private PropertyEditor[] allEditors;
@@ -63,7 +65,7 @@ public class FormPropertyEditor implements PropertyEditor,
     }
 
     PropertyEnv getPropertyEnv() {
-        return propertyEnv;
+        return propertyEnv != null ? (PropertyEnv) propertyEnv.get() : null;
     }
 
     PropertyEditor getModifiedEditor() {
@@ -366,8 +368,7 @@ public class FormPropertyEditor implements PropertyEditor,
      * the environment to the property editor.
      */
     public void attachEnv(PropertyEnv env) {
-        propertyEnv = env;
-        propertyContext.setPropertyEnv(env);
+        propertyEnv = new WeakReference(env);
         if (modifiedEditor instanceof ExPropertyEditor)
             ((ExPropertyEditor)modifiedEditor).attachEnv(env);
     }

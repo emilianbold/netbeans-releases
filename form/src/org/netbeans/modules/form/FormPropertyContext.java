@@ -45,8 +45,6 @@ public interface FormPropertyContext {
 
     public void initPropertyEditor(PropertyEditor prEd);
 
-    public void setPropertyEnv(PropertyEnv env);
-
     /** 
      * Support for default implementation of FormPropertyContext interface.
      * One FormModel and one Node instances are needed for now.
@@ -55,8 +53,6 @@ public interface FormPropertyContext {
      * To use this class, implement methods getFormModel() and getNode().
      */
     public static abstract class DefaultSupport implements FormPropertyContext {
-
-        private PropertyEnv propertyEnv; // for ExPropertyEditor
 
         public boolean useMultipleEditors() {
             FormModel formModel = getFormModel();
@@ -68,21 +64,6 @@ public interface FormPropertyContext {
 
             if (formModel != null && prEd instanceof FormAwareEditor)
                 ((FormAwareEditor)prEd).setFormModel(formModel);
-
-            if (propertyEnv != null) {
-                if (prEd instanceof NodePropertyEditor) {
-                    Object[] nodes = propertyEnv.getBeans();
-                    if (nodes instanceof Node[])
-                        ((NodePropertyEditor)prEd).attach((Node[])nodes);
-                }
-
-                if (prEd instanceof ExPropertyEditor)
-                    ((ExPropertyEditor)prEd).attachEnv(propertyEnv);
-            }
-        }
-
-        public void setPropertyEnv(PropertyEnv env) {
-            propertyEnv = env;
         }
 
         public abstract FormModel getFormModel();
@@ -110,9 +91,6 @@ public interface FormPropertyContext {
         }
 
         public void initPropertyEditor(PropertyEditor prEd) {
-        }
-
-        public void setPropertyEnv(PropertyEnv env) {
         }
 
         // ------
