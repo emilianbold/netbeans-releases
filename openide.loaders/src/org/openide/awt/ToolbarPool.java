@@ -118,7 +118,8 @@ public final class ToolbarPool extends JComponent implements Accessible {
             setBorder(BorderFactory.createCompoundBorder(
                 upperBorder, 
                 BorderFactory.createCompoundBorder(
-                    BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("controlShadow")),
+                    BorderFactory.createMatteBorder(0, 0, 1, 0, 
+                    fetchColor("controlShadow", Color.DARK_GRAY)),
                     BorderFactory.createMatteBorder(0, 0, 1, 0, mid))
             )); //NOI18N
         }
@@ -160,10 +161,21 @@ public final class ToolbarPool extends JComponent implements Accessible {
         return lowerBorder;
     }
 
+    private static Color fetchColor (String key, Color fallback) {
+        //Fix ExceptionInInitializerError from MainWindow on GTK L&F - use
+        //fallback colors
+        Color result = (Color) UIManager.get(key);
+        if (result == null) {
+            result = fallback;
+        }
+        return result;
+    }
+    
     private static Color mid;
     static {
-        Color lo = UIManager.getColor("controlShadow"); //NOI18N
-        Color hi = UIManager.getColor("control"); //NOI18N
+        Color lo = fetchColor("controlShadow", Color.DARK_GRAY); //NOI18N
+        Color hi = fetchColor("control", Color.GRAY); //NOI18N
+        
         int r = (lo.getRed() + hi.getRed()) / 2;
         int g = (lo.getGreen() + hi.getGreen()) / 2;
         int b = (lo.getBlue() + hi.getBlue()) / 2;
@@ -172,14 +184,14 @@ public final class ToolbarPool extends JComponent implements Accessible {
     
     private static final Border lowerBorder = BorderFactory.createCompoundBorder(
         BorderFactory.createMatteBorder(0, 0, 1, 0, 
-        UIManager.getColor("controlShadow")),
+        fetchColor("controlShadow", Color.DARK_GRAY)),
         BorderFactory.createMatteBorder(0, 0, 1, 0, mid)); //NOI18N
 
     private static final Border upperBorder = BorderFactory.createCompoundBorder(
         BorderFactory.createMatteBorder(1, 0, 0, 0,
-        UIManager.getColor("controlShadow")),
+        fetchColor("controlShadow", Color.DARK_GRAY)),
         BorderFactory.createMatteBorder(1, 0, 0, 0,
-        UIManager.getColor("controlLtHighlight"))); //NOI18N
+        fetchColor("controlLtHighlight", Color.WHITE))); //NOI18N
      
     
     /** Allows to wait till the content of the pool is initialized. */
