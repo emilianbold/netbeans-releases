@@ -27,7 +27,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
         <pathelement location="${openide/execution.dir}/${nb.modules/autoload.dir}/openide-execution.jar"/>
         <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/>
-        <pathelement location="${core.dir}/${nb.modules/autoload.dir}/terminalemulator.jar"/>
+        <pathelement location="${core/term.dir}/${nb.modules/autoload.dir}/terminalemulator.jar"/>
         
 	<pathelement path="${junit.path}"/> <!-- XXX ??? -->
         <pathelement path="${xerces.path}"/> <!-- XXX ??? -->
@@ -40,7 +40,8 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
         <pathelement location="${openide/execution.dir}/${nb.modules/autoload.dir}/openide-execution.jar"/>
         <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/> 
-        <pathelement location="${core.dir}/${nb.modules/autoload.dir}/terminalemulator.jar"/>
+        <pathelement location="${core/term.dir}/${nb.modules/autoload.dir}/terminalemulator.jar"/>
+        <pathelement location="${core/settings.dir}/${nb.modules/autoload.dir}/core-settings.jar"/>
     </path>
     
     <!-- ========= -->
