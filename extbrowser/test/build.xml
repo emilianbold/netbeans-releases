@@ -15,6 +15,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Name of tested module -->
     <property name="xtest.module" value="extbrowser"/>
+    <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.modules.extbrowser=0"/>
     
     <import file="../../nbbuild/templates/xtest.xml"/>
     
