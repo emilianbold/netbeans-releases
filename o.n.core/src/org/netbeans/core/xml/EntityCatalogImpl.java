@@ -34,7 +34,7 @@ import org.openide.xml.*;
  * @author  Petr Kuzel
  * @version 1.0
  */
-public final class EntityCatalogImpl implements EntityResolver {
+public final class EntityCatalogImpl extends EntityCatalog {
 
     /** map between publicId and privateId (String, String); must be synchronized */
     private Map id2uri;  
@@ -137,7 +137,7 @@ public final class EntityCatalogImpl implements EntityResolver {
         // InstanceCookie impl
 
         public Class instanceClass() throws IOException, ClassNotFoundException {
-            return EntityCatalogImpl.class;
+            return EntityCatalog.class;
         }
 
         /** We return singleton instance */
@@ -152,9 +152,8 @@ public final class EntityCatalogImpl implements EntityResolver {
             return instance;
         }
 
-        //do not understand what it means, but it must return the value
         public String instanceName() {
-            return "org.netbeans.core.xml.EntityCatalogImpl"; // NOI18N
+            return "org.openide.xml.EntityCatalog"; // NOI18N
         }
 
         /**
@@ -167,7 +166,9 @@ public final class EntityCatalogImpl implements EntityResolver {
             }
             
             if (XMLDataObject.PROP_DOCUMENT.equals(e.getPropertyName())) {
-                System.err.println("XML file have changed. reparsing " + peer.getPrimaryFile() );
+                // Please use ErrorManager if debugging messages are required
+                // (try TM.getErrorManager().getInstance(thisClassName).log(message))
+                //System.err.println("XML file have changed. reparsing " + peer.getPrimaryFile() ); // NOI18N
                 //update it sync
                 run();
                 instance.id2uri = map;  //replace map

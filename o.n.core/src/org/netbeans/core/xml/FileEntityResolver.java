@@ -24,6 +24,7 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.*;
 import org.openide.cookies.InstanceCookie;
 import org.openide.util.Lookup;
+import org.openide.xml.EntityCatalog;
 
 
 /** Entity resolver which loads entities (typically DTDs) from fixed
@@ -31,8 +32,7 @@ import org.openide.util.Lookup;
  *
  * @author  Jaroslav Tulach
  */
-public class FileEntityResolver 
-implements EntityResolver, Environment.Provider {
+public class FileEntityResolver extends EntityCatalog implements Environment.Provider {
     private static final String ENTITY_PREFIX = "/xml/entities"; // NOI18N
     private static final String LOOKUP_PREFIX = "/xml/lookups"; // NOI18N
     
@@ -131,7 +131,7 @@ implements EntityResolver, Environment.Provider {
         // well, it is a hack, but just for default compatibility
         if (method == null) {
             try {
-                method = XMLDataObject.class.getDeclaredMethod ("createInfoLookup", new Class[] {
+                method = XMLDataObject.class.getDeclaredMethod ("createInfoLookup", new Class[] { // NOI18N
                     XMLDataObject.class,
                     XMLDataObject.Info.class
                 });
@@ -150,7 +150,7 @@ implements EntityResolver, Environment.Provider {
     }
 
     /** Converts the publicID into filesystem friendly name.
-     * 
+     * @see EntityCatalog
      */
     private static String convertPublicId (String publicID) {
         char[] arr = publicID.toCharArray ();
