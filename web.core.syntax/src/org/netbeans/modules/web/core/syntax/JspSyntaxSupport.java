@@ -728,6 +728,8 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                 null, null, new TagAttributeInfo[]{}),                                                     
               new TagInfo ("element", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2016.html#1003696#1003708",             // NOI18N
                 null, null, new TagAttributeInfo[] { new TagAttributeInfo ("name", true, url + "syntaxref2016.html#1003706#1003708", false)}),           // NOI18N
+               new TagInfo ("expression", null, TagInfo.BODY_CONTENT_JSP, url+"syntaxref205.html#1004353#11268",                 // NOI18N
+                  null, null, new TagAttributeInfo[] {}),
               new TagInfo ("fallback", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2023.html#11583#19029",    // NOI18N
                 null, null, new TagAttributeInfo[] {}),
               new TagInfo ("forward", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2018.html#1003349#15708", // NOI18N
