@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.WeakHashMap;
 import java.util.jar.Manifest;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -183,6 +184,7 @@ final class NbModuleProject implements Project {
         defaults.put("src.dir", "src"); // NOI18N
         defaults.put("build.classes.dir", "build/classes"); // NOI18N
         defaults.put("test.unit.src.dir", "test/unit/src"); // NOI18N
+        defaults.put("test.qa-functional.src.dir", "test/qa-functional/src"); // NOI18N
         defaults.put("build.test.unit.classes.dir", "build/test/unit/classes"); // NOI18N
         // skip a bunch of properties irrelevant here - NBM stuff, etc.
         return PropertyUtils.sequentialPropertyEvaluator(predefs, new PropertyProvider[] {
@@ -196,20 +198,32 @@ final class NbModuleProject implements Project {
     PropertyEvaluator evaluator() {
         return eval;
     }
+    
+    private final Map/*<String,FileObject>*/ directoryCache = new WeakHashMap();
+    
+    private FileObject getDir(String prop) {
+        // XXX also add a PropertyChangeListener to eval and clear the cache of changed props
+        if (directoryCache.containsKey(prop)) {
+            return (FileObject)directoryCache.get(prop);
+        } else {
+            String v = evaluator().getProperty(prop);
+            assert v != null : "No value for " + prop;
+            FileObject f = helper.resolveFileObject(v);
+            directoryCache.put(prop, f);
+            return f;
+        }
+    }
 
     FileObject getSourceDirectory() {
-        String srcDir = eval.getProperty("src.dir"); // NOI18N
-        return helper.resolveFileObject(srcDir);
+        return getDir("src.dir"); // NOI18N
     }
     
     FileObject getTestSourceDirectory() {
-        String testSrcDir = eval.getProperty("test.unit.src.dir"); // NOI18N
-        return helper.resolveFileObject(testSrcDir);
+        return getDir("test.unit.src.dir"); // NOI18N
     }
     
     FileObject getFunctionalTestSourceDirectory() {
-        // Hardcode location for now. XXX could make it based on some properties.
-        return helper.resolveFileObject("test/qa-functional/src"); // NOI18N
+        return getDir("test.qa-functional.src.dir"); // NOI18N
     }
     
     File getTestClassesDirectory() {
