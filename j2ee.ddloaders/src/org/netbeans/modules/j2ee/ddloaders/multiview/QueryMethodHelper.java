@@ -76,8 +76,10 @@ public class QueryMethodHelper {
         QueryMethod queryMethod = query.getQueryMethod();
         Type[] types = getQueryMethodParamTypes(queryMethod);
         String methodName = queryMethod.getMethodName();
-        boolean hasLocal = localHomeClass.getMethod(Identifier.create(methodName), types) != null;
-        boolean hasRemote = homeClass.getMethod(Identifier.create(methodName), types) != null;
+        boolean hasLocal = localHomeClass == null ?
+                false : localHomeClass.getMethod(Identifier.create(methodName), types) != null;
+        boolean hasRemote = homeClass == null ?
+                false : homeClass.getMethod(Identifier.create(methodName), types) != null;
         String remote = "remote"; //NOI18N;
         String local = "local"; //NOI18N;
         if (hasLocal) {
