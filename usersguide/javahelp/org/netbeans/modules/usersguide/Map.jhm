@@ -160,7 +160,6 @@
 <mapID target="editing.fontsandcolors" url="editing/configuring/fontsandcolors.html" />
 <mapID target="editing.keybindings" url="editing/configuring/keybindings.html" />
 
-<!--CSH<mapID target="editing.colorchooser" url="editing/configuring/colorchooser.html" />-->
 
 <mapID target="refactor.aboutRefactoring" url="refactor/aboutRefactoring.html" />
 <mapID target="refactor.Undo" url="refactor/Undo.html" />
