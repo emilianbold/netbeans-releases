@@ -95,6 +95,7 @@ public final class WebModule {
     }
     
     /** WEB-INF folder for the web module.
+     * It may return null for web module that does not have any WEB-INF folder.
      * <div class="nonnormative">
      * The WEB-INF folder would typically be a child of the folder returned 
      * by {@link #getDocumentBase} but does not need to be.
