@@ -24,6 +24,7 @@ import java.net.*;
 import java.util.StringTokenizer;
 
 import org.openide.filesystems.*;
+import org.openide.filesystems.FileSystem; // override java.io.FileSystem
 
 
 /**
