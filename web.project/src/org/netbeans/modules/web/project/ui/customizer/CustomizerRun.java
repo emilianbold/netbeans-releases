@@ -19,15 +19,14 @@ import javax.swing.event.DocumentListener;
 
 import org.openide.util.NbBundle;
 
-import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
-import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 
 public class CustomizerRun extends JPanel implements WebCustomizer.Panel, DocumentListener {
     
     // Helper for storing properties
     private WebProjectProperties webProperties;
-    
-    private ServerInstance[] si;
+    String[] serverURLs;
+    String[] serverNames;
     
     /** Creates new form CustomizerCompile */
     public CustomizerRun() {
@@ -39,20 +38,18 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, Docume
         
         VisualPropertySupport vps = new VisualPropertySupport(webProperties);
         
-        ServerRegistry sr = ServerRegistry.getInstance();
-        si = sr.getServerInstances();
-        String[] serverNames = new String[si.length];
-        String[] serverValues = new String[si.length];
-		for (int i = 0; i < si.length; i++) {
-            serverNames[i] = si[i].getServer().getDisplayName() + ", " + si[i].getDisplayName();
-            serverValues[i] = si[i].getUrl();
+        
+        serverURLs = InstanceProperties.getInstanceList ();
+        serverNames = new String[serverURLs.length];
+        for (int i = 0; i < serverURLs.length; i++) {
+            serverNames[i] = InstanceProperties.getInstanceProperties (serverURLs [i]).getProperty (InstanceProperties.DISPLAY_NAME_ATTR);;
         }
         
         vps.register(jTextFieldContextPath, WebProjectProperties.CONTEXT_PATH);
         vps.register(jCheckBoxDisplayBrowser, WebProjectProperties.DISPLAY_BROWSER);
         vps.register(jTextFieldRelativeURL, WebProjectProperties.LAUNCH_URL_RELATIVE);
         vps.register(jTextFieldFullURL, WebProjectProperties.LAUNCH_URL_FULL);
-        vps.register(jComboBoxServer, serverNames, serverValues, WebProjectProperties.SERVER);
+        vps.register(jComboBoxServer, serverNames, serverURLs, WebProjectProperties.J2EE_SERVER);
 
         jTextFieldRelativeURL.setEditable(jCheckBoxDisplayBrowser.isSelected());
         jTextFieldContextPath.getDocument().addDocumentListener(this);
@@ -224,7 +221,7 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, Docume
     private void setFullURL() {
         int index = jComboBoxServer.getSelectedIndex();
         StringBuffer fullURL = new StringBuffer();
-        fullURL.append(si[index].getDisplayName());
+        fullURL.append(serverNames[index]);
         if (jTextFieldContextPath.getText().startsWith("/")) //NOI18N
             fullURL.append(jTextFieldContextPath.getText().trim().substring(1));
         else

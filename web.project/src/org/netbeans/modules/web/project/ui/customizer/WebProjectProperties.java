@@ -77,7 +77,7 @@ public class WebProjectProperties {
     public static final String LAUNCH_URL_RELATIVE = "launch.url.relative";
     public static final String LAUNCH_URL_FULL = "launch.url.full";
     public static final String DISPLAY_BROWSER = "display.browser";
-    public static final String SERVER = "server";
+    public static final String J2EE_SERVER = "j2ee.server";
     public static final String JAVAC_SOURCE = "javac.source";
     public static final String JAVAC_DEBUG = "javac.debug";
     public static final String JAVAC_DEPRECATION = "javac.deprecation";
@@ -141,7 +141,7 @@ public class WebProjectProperties {
         new PropertyDescriptor( LAUNCH_URL_RELATIVE, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( LAUNCH_URL_FULL, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( DISPLAY_BROWSER, PROJECT, BOOLEAN_PARSER ),
-        new PropertyDescriptor( SERVER, PROJECT, STRING_PARSER ),
+        new PropertyDescriptor( J2EE_SERVER, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( JAVAC_SOURCE, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( JAVAC_DEBUG, PROJECT, BOOLEAN_PARSER ),       
         new PropertyDescriptor( JAVAC_DEPRECATION, PROJECT, BOOLEAN_PARSER ),
