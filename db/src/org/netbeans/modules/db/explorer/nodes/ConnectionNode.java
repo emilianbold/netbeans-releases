@@ -269,7 +269,7 @@ public class ConnectionNode extends DatabaseNode implements InstanceCookie {
                     info.put(DefaultAdaptor.PROP_CATALOGS_SEPARATOR, dmd.getCatalogSeparator());
 
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    //ex.printStackTrace();
                 }
 
                 // Create subnodes
@@ -284,7 +284,7 @@ public class ConnectionNode extends DatabaseNode implements InstanceCookie {
 
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
     }
 }
