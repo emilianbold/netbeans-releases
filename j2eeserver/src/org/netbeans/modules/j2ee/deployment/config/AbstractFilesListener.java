@@ -14,7 +14,7 @@
 package org.netbeans.modules.j2ee.deployment.config;
 
 import java.io.File;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.filesystems.FileAttributeEvent;
@@ -28,10 +28,13 @@ import org.openide.filesystems.FileUtil;
  * Abstract deep directory file listener on list of files, existent or not.
  *
  * @author nn136682
+ * @author Andrei Badea
  */
-public abstract class AbstractFilesListener  implements FileChangeListener {
+public abstract class AbstractFilesListener {
     protected J2eeModuleProvider provider;
-    private HashSet listenedFOs = new HashSet();
+    private HashMap fileListeners = new HashMap();
+    
+    private FileChangeListener listener = new FileListener();
     
     /** Creates a new instance of AbstractFilesListener */
     public AbstractFilesListener(J2eeModuleProvider provider) {
@@ -53,9 +56,9 @@ public abstract class AbstractFilesListener  implements FileChangeListener {
         }
     }
     public synchronized void stopListening() {
-        for (Iterator i=listenedFOs.iterator(); i.hasNext();) {
+        for (Iterator i = fileListeners.keySet().iterator(); i.hasNext();) {
             FileObject fo = (FileObject) i.next();
-            fo.removeFileChangeListener(this);
+            removeFileListenerFrom(fo);
         }
     }
     private void startListening(File target) {
@@ -66,64 +69,79 @@ public abstract class AbstractFilesListener  implements FileChangeListener {
                 return;
             targetFO = FileUtil.toFileObject(target);
         }
-        if (! listenedFOs.contains(targetFO)) {
-            targetFO.addFileChangeListener(this);
-            listenedFOs.add(targetFO);
+        if (!fileListeners.containsKey(targetFO)) {
+            addFileListenerTo(targetFO);
         }
     }
-    public void fileFolderCreated(FileEvent e) {
-        startListening();
+    
+    private void addFileListenerTo(FileObject fo) {
+        System.out.println("adding to " + fo);
+        FileChangeListener l = FileUtil.weakFileChangeListener(listener, fo);
+        fileListeners.put(fo, l);
+        fo.addFileChangeListener(l);
+        
     }
-    public void fileDeleted(FileEvent e) {
-        FileObject fo = e.getFile();
-        if (isTarget(fo)) {
-            synchronized(listenedFOs) {
-                listenedFOs.remove(fo);
-                fo.removeFileChangeListener(this);
-            }
-            targetDeleted(fo);
-        }
-        startListening();
-    }
-    public void fileDataCreated(FileEvent e) {
-        FileObject fo = e.getFile();
-        if (isTarget(fo)) {
-            synchronized(listenedFOs) {
-                listenedFOs.add(fo);
-                fo.addFileChangeListener(this);
-            }
-            targetCreated(fo);
+    
+    private void removeFileListenerFrom(FileObject fo) {
+        FileChangeListener l = (FileChangeListener)fileListeners.remove(fo);
+        if (l != null) {
+            System.out.println("removing from " + fo);
+            fo.removeFileChangeListener(l);
         }
     }
-    public void fileRenamed(FileRenameEvent e) {
-        FileObject fo = e.getFile();
-        if (isTarget(fo)) {
-            synchronized(listenedFOs) {
-                if (!listenedFOs.contains(fo)) {
-                    listenedFOs.add(fo);
-                    fo.addFileChangeListener(this);
-                }
-            }
-            targetCreated(fo);
-        } else {
-            if (isTarget(e.getName() + "." + e.getExt())) {
-                synchronized(listenedFOs) {
-                    listenedFOs.remove(fo);
-                    fo.removeFileChangeListener(this);
+    
+    private final class FileListener implements FileChangeListener {
+        
+        public void fileFolderCreated(FileEvent e) {
+            startListening();
+        }
+        public void fileDeleted(FileEvent e) {
+            FileObject fo = e.getFile();
+            if (isTarget(fo)) {
+                synchronized(fileListeners) {
+                    removeFileListenerFrom(fo);
                 }
                 targetDeleted(fo);
             }
+            startListening();
         }
-        startListening();
-    }
-    
-    public void fileAttributeChanged(FileAttributeEvent e) {};
+        public void fileDataCreated(FileEvent e) {
+            FileObject fo = e.getFile();
+            if (isTarget(fo)) {
+                synchronized(fileListeners) {
+                    addFileListenerTo(fo);
+                }
+                targetCreated(fo);
+            }
+        }
+        public void fileRenamed(FileRenameEvent e) {
+            FileObject fo = e.getFile();
+            if (isTarget(fo)) {
+                synchronized(fileListeners) {
+                    if (!fileListeners.containsKey(fo)) {
+                        addFileListenerTo(fo);
+                    }
+                }
+                targetCreated(fo);
+            } else {
+                if (isTarget(e.getName() + "." + e.getExt())) {
+                    synchronized(fileListeners) {
+                        removeFileListenerFrom(fo);
+                    }
+                    targetDeleted(fo);
+                }
+            }
+            startListening();
+        }
 
-    public void fileChanged(FileEvent e) {
-        FileObject fo = e.getFile();
-        if (isTarget(fo)) {
-            fo.refresh(true);
-            targetChanged(fo);
+        public void fileAttributeChanged(FileAttributeEvent e) {};
+
+        public void fileChanged(FileEvent e) {
+            FileObject fo = e.getFile();
+            if (isTarget(fo)) {
+                fo.refresh(true);
+                targetChanged(fo);
+            }
         }
     }
 }
