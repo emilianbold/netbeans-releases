@@ -19,6 +19,7 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.Enumeration;
+import java.util.Iterator;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JViewport;
@@ -133,9 +134,15 @@ public class EditorWarmUpTask implements Runnable{
         // Start of a code block that tries to force hotspot to compile
         // the view hierarchy and related classes for faster performance
         if (debug) {
+            System.out.println("Kit instances initialized:"+(System.currentTimeMillis()-startTime));
             startTime = System.currentTimeMillis();
         }
 
+        Iterator componentIterator = Registry.getComponentIterator();
+        if (componentIterator.hasNext()) { // at least one component opened
+            return ;
+        }
+        
         // Work with artificial frame that will host an editor pane
         final JEditorPane pane = new JEditorPane();
         pane.setEditorKit(javaKit);
