@@ -94,6 +94,11 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
      */
     public void paint(Graphics g, JComponent c) {
         paintOverallBorder(g, c);
+        Color col = c.getBackground();
+        if (col != null) {
+            g.setColor (col);
+            g.fillRect (0, 0, c.getWidth(), c.getHeight());
+        }
         super.paint(g, c);
     }
 

@@ -82,6 +82,11 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
      * bottom area, depending on activation status value
      */
     public void paint(Graphics g, JComponent c) {
+        Color col = c.getBackground();
+        if (col != null) {
+            g.setColor (col);
+            g.fillRect (0, 0, c.getWidth(), c.getHeight());
+        }        
         ColorUtil.setupAntialiasing(g);
         super.paint(g, c);
         paintBottomBorder(g, c);
