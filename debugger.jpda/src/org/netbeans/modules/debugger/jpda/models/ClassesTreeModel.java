@@ -24,6 +24,7 @@ import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.InvalidStackFrameException;
 import com.sun.jdi.LocalVariable;
 import com.sun.jdi.NativeMethodException;
+import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.PrimitiveType;
 import com.sun.jdi.PrimitiveValue;
@@ -180,6 +181,7 @@ public class ClassesTreeModel implements TreeModel {
         Set loaders = new TreeSet (comparator1);
         int i, k = names.size ();
         for (i = 0; i < k; i++) {
+            try {
             String name = (String) names.get (i);
             ReferenceType rt = (ReferenceType) classes.get (i);
             ClassLoaderReference clr = rt.classLoader ();
@@ -190,6 +192,8 @@ public class ClassesTreeModel implements TreeModel {
                 continue;
             else
                 loaders.add (clr);
+            } catch (ObjectCollectedException ex) {
+            }
         }
         ch = loaders.toArray ();
         cache.put (null, ch);
