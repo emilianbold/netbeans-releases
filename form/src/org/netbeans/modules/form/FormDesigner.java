@@ -626,7 +626,7 @@ public class FormDesigner extends TopComponent
                         compToMetaComp.put(cont, topDesignContainer);
 
                         walkVisualComps(cont, topDesignContainer, FormDesigner.this);
-                        handleLayer.requestFocus();
+                        //handleLayer.requestFocus();
                         return null;
                     }
                 });
