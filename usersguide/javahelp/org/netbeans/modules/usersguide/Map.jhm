@@ -345,6 +345,7 @@
 <mapID target="debug.breakpoint.variable" url="debug/breakpoint/breakpoint_variable.html" />
 <mapID target="debug.breakpoint.exception" url="debug/breakpoint/breakpoint_exception.html" />
 <mapID target="debug.breakpoint.class" url="debug/breakpoint/breakpoint_class.html" />
+<mapID target="debug.breakpoint.group" url="debug/breakpoint/group.html" />
 <mapID target="debug.breakpoint.source" url="debug/breakpoint/breakpoint_source.html" />
 <mapID target="debug.breakpoint.enable" url="debug/breakpoint/breakpoint_enable.html" />
 <mapID target="debug.breakpoint.remove" url="debug/breakpoint/breakpoint_remove.html" />

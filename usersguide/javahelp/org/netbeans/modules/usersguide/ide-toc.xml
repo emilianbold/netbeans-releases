@@ -278,6 +278,7 @@
      <tocitem text="Setting a Breakpoint on a Class" target="debug.breakpoint.class" />
      <tocitem text="Setting a Breakpoint on a Thread" target="debug.breakpoint.thread" />
      <tocitem text="Setting a Breakpoint on a Variable" target="debug.breakpoint.variable" />
+     <tocitem text="Organizing Breakpoints Into a Group" target="debug.breakpoint.group" />    
      <tocitem text="Viewing the Source for a Breakpoint" target="debug.breakpoint.source" />    
      <tocitem text="Disabling a Breakpoint" target="debug.breakpoint.enable" />
      <tocitem text="Removing a Breakpoint" target="debug.breakpoint.remove" />
