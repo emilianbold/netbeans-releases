@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -215,16 +215,16 @@ class SearchThreadJdk12 extends IndexSearchThread {
 
     /* These are constants for the inner class */
     
-    static private final String STR_CLASS = ResourceUtils.getBundledString( "JDK12_CLASS" );       //NOI18N
-    static private final String STR_INTERFACE = ResourceUtils.getBundledString( "JDK12_INTERFACE" );   //NOI18N
-    static private final String STR_EXCEPTION = ResourceUtils.getBundledString( "JDK12_EXCEPTION" );   //NOI18N
-    static private final String STR_CONSTRUCTOR = ResourceUtils.getBundledString( "JDK12_CONSTRUCTOR" );   //NOI18N
-    static private final String STR_METHOD = ResourceUtils.getBundledString( "JDK12_METHOD" );   //NOI18N
-    static private final String STR_ERROR = ResourceUtils.getBundledString( "JDK12_ERROR" );   //NOI18N
-    static private final String STR_VARIABLE = ResourceUtils.getBundledString( "JDK12_VARIABLE" );   //NOI18N
-    static private final String STR_STATIC = ResourceUtils.getBundledString( "JDK12_STATIC" );   //NOI18N
-    static private final String STR_DASH = ResourceUtils.getBundledString( "JDK12_DASH" );   //NOI18N
-    static private final String STR_PACKAGE = ResourceUtils.getBundledString( "JDK12_PACKAGE" );   //NOI18N
+    static private final String STR_CLASS = NbBundle.getMessage(SearchThreadJdk12.class, "JDK12_CLASS" );       //NOI18N
+    static private final String STR_INTERFACE = NbBundle.getMessage(SearchThreadJdk12.class, "JDK12_INTERFACE" );   //NOI18N
+    static private final String STR_EXCEPTION = NbBundle.getMessage(SearchThreadJdk12.class, "JDK12_EXCEPTION" );   //NOI18N
+    static private final String STR_CONSTRUCTOR = NbBundle.getMessage(SearchThreadJdk12.class, "JDK12_CONSTRUCTOR" );   //NOI18N
+    static private final String STR_METHOD = NbBundle.getMessage(SearchThreadJdk12.class, "JDK12_METHOD" );   //NOI18N
+    static private final String STR_ERROR = NbBundle.getMessage(SearchThreadJdk12.class, "JDK12_ERROR" );   //NOI18N
+    static private final String STR_VARIABLE = NbBundle.getMessage(SearchThreadJdk12.class, "JDK12_VARIABLE" );   //NOI18N
+    static private final String STR_STATIC = NbBundle.getMessage(SearchThreadJdk12.class, "JDK12_STATIC" );   //NOI18N
+    static private final String STR_DASH = NbBundle.getMessage(SearchThreadJdk12.class, "JDK12_DASH" );   //NOI18N
+    static private final String STR_PACKAGE = NbBundle.getMessage(SearchThreadJdk12.class, "JDK12_PACKAGE" );   //NOI18N
     private static final String STR_ENUM = NbBundle.getMessage(SearchThreadJdk12.class, "JDK15_ENUM"); //NOI18N
     private static final String STR_ANNTYPE = NbBundle.getMessage(SearchThreadJdk12.class, "JDK15_ANNOTATION_TYPE"); //NOI18N
 
@@ -271,13 +271,19 @@ class SearchThreadJdk12 extends IndexSearchThread {
                     currentDii = new DocIndexItem( null, null, contextURL, hrefVal );
                 }
             }
-            else if ( t == HTML.Tag.A && where == IN_DESCRIPTION_SUFFIX ) {
+            else if ( t == HTML.Tag.A && (where == IN_DESCRIPTION_SUFFIX || where == IN_DESCRIPTION) ) {
                 ; // Just ignore
             }
             else if ( t == HTML.Tag.B && where == IN_AREF ) {
                 where = IN_AREF;
             }
             else {
+                where = IN_BALAST;
+            }
+        }
+
+        public void handleEndTag(HTML.Tag t, int pos) {
+            if (t == HTML.Tag.DT && where != IN_BALAST) {
                 where = IN_BALAST;
             }
         }
@@ -336,8 +342,14 @@ class SearchThreadJdk12 extends IndexSearchThread {
                 }
                 */
                 
-                currentDii.setRemark( text );
                 //text = text.toUpperCase();
+
+                int dashIdx = text.indexOf(STR_DASH);
+                if (dashIdx < 0) {
+                    return;
+                }
+                text = text.substring(dashIdx - 1);
+                currentDii.setRemark( text );
 
                 StringTokenizer st = new StringTokenizer( text );
                 String token = st.nextToken();

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -25,6 +25,7 @@ import javax.swing.text.html.HTML;
 import javax.swing.text.MutableAttributeSet;
 
 import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 import org.openide.filesystems.FileObject;
 
 /** This class implements the index search through documenation
@@ -182,9 +183,7 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
                 return;
             }
 
-            Integer fileNumber = new Integer( currentIndexNumber );
-
-            String fileName = new String( "index-" + fileNumber.toString() ); // NOI18N
+            String fileName = "index-" + currentIndexNumber; // NOI18N
 
             if ( folder == null ) {
                 indexRoot = null;
@@ -215,20 +214,22 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
 
     /* These are constants for the inner class */
     
-    static private final String STR_CLASS = ResourceUtils.getBundledString( "JDK12_CLASS" );       //NOI18N
-    static private final String STR_INTERFACE = ResourceUtils.getBundledString( "JDK12_INTERFACE" );   //NOI18N
-    static private final String STR_EXCEPTION = ResourceUtils.getBundledString( "JDK12_EXCEPTION" );   //NOI18N
-    static private final String STR_CONSTRUCTOR = ResourceUtils.getBundledString( "JDK12_CONSTRUCTOR" );   //NOI18N
-    static private final String STR_METHOD = ResourceUtils.getBundledString( "JDK12_METHOD" );   //NOI18N
-    static private final String STR_ERROR = ResourceUtils.getBundledString( "JDK12_ERROR" );   //NOI18N
-    static private final String STR_VARIABLE = ResourceUtils.getBundledString( "JDK12_VARIABLE" );   //NOI18N
-    static private final String STR_STATIC = ResourceUtils.getBundledString( "JDK12_STATIC" );   //NOI18N
-    static private final String STR_DASH = ResourceUtils.getBundledString( "JDK12_DASH" );   //NOI18N
-    static private final String STR_PACKAGE = ResourceUtils.getBundledString( "JDK12_PACKAGE" );   //NOI18N
+    static private final String STR_CLASS = NbBundle.getMessage(SearchThreadJdk12_japan.class, "JDK12_CLASS" );       //NOI18N
+    static private final String STR_INTERFACE = NbBundle.getMessage(SearchThreadJdk12_japan.class, "JDK12_INTERFACE" );   //NOI18N
+    static private final String STR_EXCEPTION = NbBundle.getMessage(SearchThreadJdk12_japan.class, "JDK12_EXCEPTION" );   //NOI18N
+    static private final String STR_CONSTRUCTOR = NbBundle.getMessage(SearchThreadJdk12_japan.class, "JDK12_CONSTRUCTOR" );   //NOI18N
+    static private final String STR_METHOD = NbBundle.getMessage(SearchThreadJdk12_japan.class, "JDK12_METHOD" );   //NOI18N
+    static private final String STR_ERROR = NbBundle.getMessage(SearchThreadJdk12_japan.class, "JDK12_ERROR" );   //NOI18N
+    static private final String STR_VARIABLE = NbBundle.getMessage(SearchThreadJdk12_japan.class, "JDK12_VARIABLE" );   //NOI18N
+    static private final String STR_STATIC = NbBundle.getMessage(SearchThreadJdk12_japan.class, "JDK12_STATIC" );   //NOI18N
+    static private final String STR_DASH = NbBundle.getMessage(SearchThreadJdk12_japan.class, "JDK12_DASH" );   //NOI18N
+    static private final String STR_PACKAGE = NbBundle.getMessage(SearchThreadJdk12_japan.class, "JDK12_PACKAGE" );   //NOI18N
+    private static final String STR_ENUM = NbBundle.getMessage(SearchThreadJdk12_japan.class, "JDK15_ENUM"); //NOI18N
+    private static final String STR_ANNTYPE = NbBundle.getMessage(SearchThreadJdk12_japan.class, "JDK15_ANNOTATION_TYPE"); //NOI18N
 
-    static private final String STR_CONSTRUCTOR_JA = ResourceUtils.getBundledString( "JDK12_CONSTRUCTOR_JA" );   //NOI18N
-    static private final String STR_METHOD_JA = ResourceUtils.getBundledString( "JDK12_METHOD_JA" );   //NOI18N
-    static private final String STR_VARIABLE_JA = ResourceUtils.getBundledString( "JDK12_VARIABLE_JA" );   //NOI18N
+    static private final String STR_CONSTRUCTOR_JA = NbBundle.getMessage(SearchThreadJdk12_japan.class, "JDK12_CONSTRUCTOR_JA" );   //NOI18N
+    static private final String STR_METHOD_JA = NbBundle.getMessage(SearchThreadJdk12_japan.class, "JDK12_METHOD_JA" );   //NOI18N
+    static private final String STR_VARIABLE_JA = NbBundle.getMessage(SearchThreadJdk12_japan.class, "JDK12_VARIABLE_JA" );   //NOI18N
     
     static private final int IN_BALAST = 0;
     static private final int IN_DT = 1;
@@ -273,13 +274,19 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
                     currentDii = new DocIndexItem( null, null, contextURL, hrefVal );
                 }
             }
-            else if ( t == HTML.Tag.A && where == IN_DESCRIPTION_SUFFIX ) {
+            else if ( t == HTML.Tag.A && (where == IN_DESCRIPTION_SUFFIX || where == IN_DESCRIPTION) ) {
                 ; // Just ignore
             }
             else if ( t == HTML.Tag.B && where == IN_AREF ) {
                 where = IN_AREF;
             }
             else {
+                where = IN_BALAST;
+            }
+        }
+
+        public void handleEndTag(HTML.Tag t, int pos) {
+            if (t == HTML.Tag.DT && where != IN_BALAST) {
                 where = IN_BALAST;
             }
         }
@@ -337,6 +344,13 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
                 }
                 */
                 
+                //text = text.toUpperCase();
+
+                int dashIdx = text.indexOf(STR_DASH);
+                if (dashIdx < 0) {
+                    return;
+                }
+                text = text.substring(dashIdx - 1);
                 currentDii.setRemark( text );
 
                 StringTokenizer st = new StringTokenizer( text );
@@ -355,6 +369,10 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
                     currentDii.setIconIndex( DocSearchIcons.ICON_CLASS );
                 else if ( token.equalsIgnoreCase( STR_INTERFACE ) )
                     currentDii.setIconIndex( DocSearchIcons.ICON_INTERFACE );
+                else if ( token.equalsIgnoreCase( STR_ENUM ) )
+                    currentDii.setIconIndex( DocSearchIcons.ICON_ENUM );
+                else if ( token.equalsIgnoreCase( STR_ANNTYPE ) )
+                    currentDii.setIconIndex( DocSearchIcons.ICON_ANNTYPE );
                 else if ( token.equalsIgnoreCase( STR_EXCEPTION ) )
                     currentDii.setIconIndex( DocSearchIcons.ICON_EXCEPTION );
                 else if ( token.equalsIgnoreCase( STR_ERROR ) )
@@ -371,7 +389,9 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
                 // Add the item when all information is available
                 //insertDocIndexItem( currentDii );
 
-                if ( text.endsWith( "." ) ) { // NOI18N
+                if (currentDii.getPackage() != null) {
+                    where = IN_DESCRIPTION_SUFFIX;
+                } else if ( text.endsWith( "." ) ) { // NOI18N
                     where = IN_DESCRIPTION_SUFFIX;
                     currentDii.setPackage( text.substring( text.lastIndexOf( ' ' ) ).trim() );
                 }
@@ -380,22 +400,22 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
             }
             else if ( where == IN_DESCRIPTION_SUFFIX ) {
                 boolean isStatic = false;
-                String text = new String ( data );
-                currentDii.setRemark( currentDii.getRemark() + text);
-                String declaringClass = new String( data ).trim();
+                String remark = String.valueOf(data);
+                currentDii.setRemark( currentDii.getRemark() + remark);
+                String declaringClass = remark.trim();
                 if( !(".".equals(declaringClass))){    //NOI18N
                     currentDii.setDeclaringClass(declaringClass);
 
                     // System.out.println("Data: " + text );
-                    text = text.toUpperCase();
-                    if( text.indexOf( STR_STATIC ) != -1 )
+                    remark = remark.toUpperCase();
+                    if( remark.indexOf( STR_STATIC ) != -1 )
                         isStatic = true;
 
-                    if( text.indexOf ( STR_CONSTRUCTOR_JA ) != -1 )
+                    if( remark.indexOf ( STR_CONSTRUCTOR_JA ) != -1 )
                         currentDii.setIconIndex (DocSearchIcons.ICON_CONSTRUCTOR );
-                    else if( text.indexOf ( STR_METHOD_JA ) != -1 )
+                    else if( remark.indexOf ( STR_METHOD_JA ) != -1 )
                         currentDii.setIconIndex ( isStatic ? DocSearchIcons.ICON_METHOD_ST : DocSearchIcons.ICON_METHOD );
-                    else if( text.indexOf ( STR_VARIABLE_JA ) != -1 )
+                    else if( remark.indexOf ( STR_VARIABLE_JA ) != -1 )
                         currentDii.setIconIndex ( isStatic ? DocSearchIcons.ICON_VARIABLE_ST : DocSearchIcons.ICON_VARIABLE );
                     insertDocIndexItem( currentDii );
                 }
