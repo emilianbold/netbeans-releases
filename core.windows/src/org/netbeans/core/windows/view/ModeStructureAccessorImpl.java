@@ -198,40 +198,13 @@ final class ModeStructureAccessorImpl implements ModeStructureAccessor {
 
     /** */
     static class ModeAccessorImpl extends ElementAccessorImpl implements ModeAccessor { 
-        private final ModeImpl mode;
         
-        private final String name;
-        private final int state;
-        private final int kind;
-        private final Rectangle bounds;
-        private final int frameState;
-        private final TopComponent selectedTopComponent;
-        private final TopComponent[] openedTopComponents;
-        private final double resizeWeight;
-        
-        public ModeAccessorImpl(ModelElement originator, ElementSnapshot snapshot,
-            ModeImpl mode,
-            String name,
-            int state,
-            int kind,
-            Rectangle bounds,
-            int frameState,
-            TopComponent selectedTopComponent,
-            TopComponent[] openedTopComponents,
-            double resizeWeight
-        ) {
+        public ModeAccessorImpl(ModelElement originator, ModeStructureSnapshot.ModeSnapshot snapshot) {
             super(originator, snapshot);
-
-            this.mode = mode;
-            
-            this.name = name;
-            this.state = state;
-            this.kind = kind;
-            this.bounds = bounds;
-            this.frameState = frameState;
-            this.selectedTopComponent = selectedTopComponent;
-            this.openedTopComponents = openedTopComponents;
-            this.resizeWeight = resizeWeight;
+        }
+        
+        private ModeStructureSnapshot.ModeSnapshot getModeSnapShot() {
+            return (ModeStructureSnapshot.ModeSnapshot)getSnapshot();
         }
         
         
@@ -247,43 +220,43 @@ final class ModeStructureAccessorImpl implements ModeStructureAccessor {
         }
         
         public ModeImpl getMode() {
-            return mode;
+            return getModeSnapShot().getMode();
         }
         
         public String getName() {
-            return name;
+            return getModeSnapShot().getName();
         }
 
         public int getState() {
-            return state;
+            return getModeSnapShot().getState();
         }
 
         public int getKind() {
-            return kind;
+            return getModeSnapShot().getKind();
         }
 
         public Rectangle getBounds() {
-            return bounds;
+            return getModeSnapShot().getBounds();
         }
 
         public int getFrameState() {
-            return frameState;
+            return getModeSnapShot().getFrameState();
         }
 
         public TopComponent getSelectedTopComponent() {
-            return selectedTopComponent;
+            return getModeSnapShot().getSelectedTopComponent();
         }
 
         public TopComponent[] getOpenedTopComponents() {
-            return openedTopComponents;
+            return getModeSnapShot().getOpenedTopComponents();
         }
         
         public double getResizeWeight() {
-            return resizeWeight;
+            return getModeSnapShot().getResizeWeight();
         }
         
         public String toString() {
-            return super.toString() + "[name=" + name + " ]"; // NOI18N
+            return super.toString() + "[name=" + getName() + " ]"; // NOI18N
         }
 
     }
@@ -293,20 +266,8 @@ final class ModeStructureAccessorImpl implements ModeStructureAccessor {
 
         private final String side;
         
-        public SlidingAccessorImpl(ModelElement originator, ElementSnapshot snapshot,
-            ModeImpl mode,
-            String name,
-            int state,
-            int kind,
-            Rectangle bounds,
-            int frameState,
-            TopComponent selectedTopComponent,
-            TopComponent[] openedTopComponents,
-            double resizeWeight,
-            String side
-        ) {
-            super(originator, snapshot, mode, name, state, kind, bounds, frameState,
-                  selectedTopComponent, openedTopComponents, resizeWeight);
+        public SlidingAccessorImpl(ModelElement originator, ModeStructureSnapshot.ModeSnapshot snapshot, String side) {
+            super(originator, snapshot);
 
             this.side = side;
         }

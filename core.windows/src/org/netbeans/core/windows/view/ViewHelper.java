@@ -92,16 +92,7 @@ final class ViewHelper {
             if(snapshot.isVisibleSeparate()) {
                 s.add(new ModeStructureAccessorImpl.ModeAccessorImpl(
                     snapshot.getOriginator(),
-                    snapshot,
-                    snapshot.getMode(),
-                    snapshot.getName(),
-                    snapshot.getState(),
-                    snapshot.getKind(),
-                    snapshot.getBounds(),
-                    snapshot.getFrameState(),
-                    snapshot.getSelectedTopComponent(),
-                    snapshot.getOpenedTopComponents(),
-                    snapshot.getResizeWeight()));
+                    snapshot));
             }
         }
         
@@ -116,15 +107,6 @@ final class ViewHelper {
             s.add(new ModeStructureAccessorImpl.SlidingAccessorImpl(
                 snapshot.getOriginator(),
                 snapshot,
-                snapshot.getMode(),
-                snapshot.getName(),
-                snapshot.getState(),
-                snapshot.getKind(),
-                snapshot.getBounds(),
-                snapshot.getFrameState(),
-                snapshot.getSelectedTopComponent(),
-                snapshot.getOpenedTopComponents(),
-                snapshot.getResizeWeight(),
                 snapshot.getSide()
             ));
         }
@@ -155,16 +137,7 @@ final class ViewHelper {
                 ModeStructureSnapshot.ModeSnapshot modeSnapshot = (ModeStructureSnapshot.ModeSnapshot)snapshot;
                 return new ModeStructureAccessorImpl.ModeAccessorImpl(
                     modeSnapshot.getOriginator(),
-                    modeSnapshot,
-                    modeSnapshot.getMode(),
-                    modeSnapshot.getName(),
-                    modeSnapshot.getState(),
-                    modeSnapshot.getKind(),
-                    modeSnapshot.getBounds(),
-                    modeSnapshot.getFrameState(),
-                    modeSnapshot.getSelectedTopComponent(),
-                    modeSnapshot.getOpenedTopComponents(),
-                    modeSnapshot.getResizeWeight());
+                    modeSnapshot);
             }
         } else {
             if(snapshot instanceof ModeStructureSnapshot.SplitSnapshot) {
