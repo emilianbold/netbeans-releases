@@ -13,10 +13,16 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="openide" default="nbm" basedir=".">
+  <available property="jdk13proxies" classname="java.lang.reflect.Proxy"/>
   <target name="compile">
-  <javac srcdir="src"
-         destdir="src"
-	 classpath="../core/release/lib/ext/regexp.jar:../core/release/lib/ext/jaxp.jar:../core/release/lib/ext/parser.jar"/>
+    <javac srcdir="src" destdir="src">
+      <exclude name="**/org/openide/util/WeakListener13.java" unless="jdk13proxies"/>
+      <classpath>
+        <pathelement location="../core/release/lib/ext/regexp.jar"/>
+        <pathelement location="../core/release/lib/ext/jaxp.jar"/>
+        <pathelement location="../core/release/lib/ext/parser.jar"/>
+      </classpath>
+    </javac>
   </target>
   <target name="jars" depends="compile">
     <mkdir dir="netbeans/lib"/>
@@ -26,8 +32,6 @@ Microsystems, Inc. All Rights Reserved.
 	 compress="false"/>
   </target>
   <target name="nbm" depends="jars">
-    <zip zipfile="openide.nbm"
-         includes="netbeans/"
-	 basedir="."/>
+    <zip zipfile="openide.nbm" includes="netbeans/" basedir="."/>
   </target>
 </project>
