@@ -44,8 +44,6 @@ public final class LoaderPoolNode extends IndexedNode {
   /** Default icon base for loader pool node.*/
   private static final String LOADER_POOL_ICON_BASE =
     "/com/netbeans/developer/impl/resources/loaderPool";
-  /** Programmatic name of this node */
-  private static final String LOADER_POOL_NAME = "Loader Pool";
   /** The only instance of the LoaderPoolNode class in the system.
   * This value is returned from the getLoaderPoolNode() static method */
   private static LoaderPoolNode loaderPoolNode;
@@ -78,9 +76,8 @@ public final class LoaderPoolNode extends IndexedNode {
   /** Initialize itself */
   private void initialize () {
     myChildren = (LoaderPoolNodeChildren)getChildren();
-    setDisplayName(NbBundle.getBundle(this).
+    setName(NbBundle.getBundle(this).
                    getString("CTL_LoaderPool"));
-    setName(LOADER_POOL_NAME);
     setIconBase(LOADER_POOL_ICON_BASE);
   }
 
@@ -526,6 +523,7 @@ public final class LoaderPoolNode extends IndexedNode {
 
 /*
 * Log
+*  8    Gandalf   1.7         3/18/99  Jaroslav Tulach 
 *  7    Gandalf   1.6         2/16/99  David Simonek   
 *  6    Gandalf   1.5         1/20/99  Jaroslav Tulach 
 *  5    Gandalf   1.4         1/7/99   David Simonek   

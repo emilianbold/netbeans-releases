@@ -88,7 +88,7 @@ final class EnvironmentNode extends AbstractNode {
   /** Does all initialization */
   private void initialize () {
     initializeChildren();
-    setDisplayName(NbBundle.getBundle(this).
+    setName(NbBundle.getBundle(this).
                    getString("CTL_Environment_name"));
     setIconBase(EN_ICON_BASE);
     createProperties();
@@ -187,6 +187,7 @@ final class EnvironmentNode extends AbstractNode {
 
 /*
  * Log
+ *  10   Gandalf   1.9         3/18/99  Jaroslav Tulach 
  *  9    Gandalf   1.8         2/25/99  Jaroslav Tulach Change of clipboard 
  *       management  
  *  8    Gandalf   1.7         2/12/99  Ian Formanek    Reflected renaming 
