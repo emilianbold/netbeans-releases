@@ -779,7 +779,6 @@ Set jmf.home to the location of your JMF installation to continue."/>
     <delete file="OpenAPIs.tar.gz"/>
     <delete file="OpenAPIs.tar.bz2"/>
     <delete dir="examplemodules"/>
-    <delete file="api/examples/org/netbeans/examples/modules/minicomposer/templates.jar"/>
     <delete dir="compatkit-work"/>
   </target>
 
