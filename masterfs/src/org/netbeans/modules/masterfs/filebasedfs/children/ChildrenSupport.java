@@ -60,10 +60,10 @@ public final class ChildrenSupport {
         FileNaming retVal = null;
         switch (status) {
             case ChildrenSupport.ALL_CHILDREN_CACHED:
-                retVal = lookupChildInCache(childName);
+                retVal = lookupChildInCache(folderName, childName);
                 if (!rescan) break;
             case ChildrenSupport.SOME_CHILDREN_CACHED:
-                if (status != ChildrenSupport.ALL_CHILDREN_CACHED) retVal = lookupChildInCache(childName);
+                if (status != ChildrenSupport.ALL_CHILDREN_CACHED) retVal = lookupChildInCache(folderName, childName);
             case ChildrenSupport.NO_CHILDREN_CACHED:
                 if (retVal == null || rescan) {
                     final FileNaming original = retVal;
@@ -83,17 +83,61 @@ public final class ChildrenSupport {
         return retVal;
     }
     
-    private FileName lookupChildInCache(final String childName) {
-        FileName retVal = null;
-        final Set cache = getChildrenCache();
-        for (Iterator iterator = cache.iterator(); iterator.hasNext();) {
-            final FileName item = (FileName) iterator.next();
-            if (item.getName().equals(childName)) {
-                retVal = item;
-                break;
+    private FileName lookupChildInCache(final FileNaming folder, final String childName) {
+        final File f = new File (folder.getFile (), childName);
+        final Integer id = NamingFactory.createID (f);
+        
+        class FakeNaming implements FileNaming {
+            public FileName lastEqual;
+            
+            public  String getName() {
+                return childName;
+            }
+            public FileNaming getParent() {
+                return folder;
+            }
+            public boolean isRoot() {
+                return false;
+            }
+
+            public File getFile() {
+                return f;
+            }
+
+            public Integer getId() {
+                return id;
+            }
+            public boolean rename(String name) {
+                // not implemented, as it will not be called
+                throw new IllegalStateException ();
+            }
+            
+            public boolean equals (Object obj) {
+                if (hashCode () == obj.hashCode ()) {
+                    assert lastEqual == null : "Just one can be there"; // NOI18N
+                    lastEqual = (FileName)obj;
+                    return true;
+                }
+                return false;
+            }
+            
+            public int hashCode () {
+                return id.intValue ();
+            }
+
+            public Integer getId(boolean recompute) {
+                return id;
             }
         }
-        return retVal;
+        FakeNaming fake = new FakeNaming ();
+        
+        final Set cache = getChildrenCache();
+        if (cache.contains (fake)) {
+            assert fake.lastEqual != null : "If cache contains the object, we set lastEqual"; // NOI18N
+            return fake.lastEqual;
+        } else {
+            return null;
+        }
     }
     
     private static FileNaming rescanChild(final FileNaming folderName, final String childName) {
