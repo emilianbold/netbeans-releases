@@ -448,11 +448,14 @@ public class OptionUtilities {
             
             DataObject dob = (DataObject) popup.get(i);
             InstanceCookie ic = (InstanceCookie)dob.getCookie(InstanceCookie.class);
+            
             if (ic!=null){
+                
                 try{
-                    if (SystemAction.class.isAssignableFrom(ic.instanceClass()) ||
-                        javax.swing.Action.class.isAssignableFrom(ic.instanceClass())){
+                    if (SystemAction.class.isAssignableFrom(ic.instanceClass())){
                         retList.add(ic.instanceName());
+                    }else if (javax.swing.Action.class.isAssignableFrom(ic.instanceClass())){
+                        retList.add(ic.instanceCreate());
                     }
                     if(javax.swing.JSeparator.class.isAssignableFrom(ic.instanceClass())){
                         retList.add(null);

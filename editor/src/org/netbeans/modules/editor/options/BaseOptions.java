@@ -1209,11 +1209,11 @@ public class BaseOptions extends OptionSupport {
         
     /** Retrieves the actions from XML file */
     public void initPopupMenuItems(){
-        List orderedPopupFiles = getOrderedMultiPropertyFolderFiles("Popup");
-        if (orderedPopupFiles.size() >0){
-            super.setSettingValue(ExtSettingsNames.POPUP_MENU_ACTION_NAME_LIST,
-                OptionUtilities.getPopupStrings(orderedPopupFiles)); //NOI18N
-        }
+        List orderedPopupFiles = getOrderedMultiPropertyFolderFiles("Popup"); //NOI18N
+        //if (orderedPopupFiles.size() >0){
+        //    super.setSettingValue(ExtSettingsNames.POPUP_MENU_ACTION_NAME_LIST,
+        //        OptionUtilities.getPopupStrings(orderedPopupFiles)); //NOI18N
+        //}
     }
     
     public List getOrderedMultiPropertyFolderFiles(String folderName){

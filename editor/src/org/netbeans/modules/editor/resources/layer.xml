@@ -161,31 +161,11 @@ Microsystems, Inc. All Rights Reserved.
 
             <folder name="base">
                 <folder name="Popup">
-                    <file name="org-openide-windows-TopComponent"/>
-                    <attr name="org-openide-windows-TopComponent/Separator1.instance" boolvalue="true"/>
-                    <file name="Separator1.instance">
-			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                    </file>
-                    <attr name="Separator1.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
                     <file name="org-openide-actions-CutAction.instance"/>
                     <attr name="org-openide-actions-CutAction.instance/org-openide-actions-CopyAction.instance" boolvalue="true"/>
                     <file name="org-openide-actions-CopyAction.instance"/>
                     <attr name="org-openide-actions-CopyAction.instance/org-openide-actions-PasteAction.instance" boolvalue="true"/>
                     <file name="org-openide-actions-PasteAction.instance"/>
-                    <attr name="org-openide-actions-PasteAction.instance/Separator2.instance" boolvalue="true"/>
-                    <file name="Separator2.instance">
-			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                    </file>
-                    <attr name="Separator2.instance/org-openide-actions-DeleteAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-DeleteAction.instance"/>
-                    <file name="SeparatorAfterDelete.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                    </file>
-                    
-                    <attr name="org-openide-actions-DeleteAction.instance/SeparatorAfterDelete.instance" boolvalue="true"/>
-                    <attr name="SeparatorAfterDelete.instance/generate-gutter-popup" boolvalue="true"/>
-                    <file name="generate-gutter-popup"/>
-
                 </folder>
                 
                 <folder name="SideBar">
@@ -269,62 +249,34 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
                 
                 <folder name="Popup">
-                    <file name="goto-help"/>
-                    <attr name="goto-help/Separator3.instance" boolvalue="true"/>
-
-                    <file name="Separator3.instance">
-			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                    </file>
-                    <attr name="Separator3.instance/generate-goto-popup" boolvalue="true"/>
-
                     <file name="generate-goto-popup"/>
-                    <attr name="generate-goto-popup/Separator4.instance" boolvalue="true"/>
+                    <file name="goto-help"/>
+                    <attr name="generate-goto-popup/goto-help" boolvalue="true"/>
 
-                    <file name="Separator4.instance">
+                    <file name="SeparatorAfterGoToHelp.instance">
 			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file>
-                    <attr name="Separator4.instance/generate-fold-popup" boolvalue="true"/>
-                    
-                    <file name="generate-fold-popup"/>
-                    <attr name="generate-fold-popup/format" boolvalue="true"/>
-                    
-                    <file name="format"/>
-                    <attr name="format/try-catch" boolvalue="true"/>
+                    <attr name="goto-help/SeparatorAfterGoToHelp.instance" boolvalue="true"/>
                     
                     <file name="try-catch"/>
-                    <attr name="try-catch/Separator5.instance" boolvalue="true"/>
-
-                    <file name="Separator5.instance">
-			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                    </file>
-                    <attr name="Separator5.instance/org-openide-windows-TopComponent" boolvalue="true"/>
+                    <attr name="SeparatorAfterGoToHelp.instance/try-catch" boolvalue="true"/>                                        
+                    <file name="format"/>
+                    <attr name="try-catch/format" boolvalue="true"/>
                     
-                    <file name="Separator7.instance">
+                    <file name="SeparatorBeforeCut.instance">
 			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file>
-                                        
-                    <attr name="Separator7.instance/Separator8.instance" boolvalue="true"/>
-
-                    <file name="Separator8.instance">
+                    <attr name="SeparatorBeforeCut.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
+                    <attr name="format/SeparatorBeforeCut.instance" boolvalue="true"/>
+                    
+                    <file name="SeparatorAfterPaste.instance">
 			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file>
-                    <attr name="Separator8.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
+                    <attr name="org-openide-actions-PasteAction.instance/SeparatorAfterPaste.instance" boolvalue="true"/>
+                    
+                    <file name="generate-fold-popup"/>
+                    <attr name="SeparatorAfterPaste.instance/generate-fold-popup" boolvalue="true"/>
 
-                    <attr name="SeparatorAfterDelete.instance/org-openide-actions-NewAction.instance" boolvalue="true"/>
-
-                    <file name="org-openide-actions-NewAction.instance"/>
-                    <attr name="org-openide-actions-NewAction.instance/Separator10.instance" boolvalue="true"/>
-
-                    <file name="Separator10.instance">
-			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                    </file>
-                    <attr name="Separator10.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>
-
-                    <file name="org-openide-actions-ToolsAction.instance"/>
-                    <attr name="org-openide-actions-ToolsAction.instance/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
-                    <attr name="org-openide-actions-ToolsAction.instance/generate-gutter-popup" boolvalue="true"/>
-                    <attr name="generate-gutter-popup/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-PropertiesAction.instance"/>
                 </folder>
                 <folder name="Toolbars">
                     <folder name="Default">
@@ -348,20 +300,11 @@ Microsystems, Inc. All Rights Reserved.
 
                 <folder name="Popup">
                     <file name="format"/>
-                    <attr name="format/Separator5.instance" boolvalue="true"/>
-
-                    <file name="Separator5.instance">
-			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    <file name="SeparatorAfterFormat.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file>
-                    <attr name="Separator5.instance/org-openide-windows-TopComponent" boolvalue="true"/>
-                    
-                    
-                    <attr name="Separator6.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>    
-                    <file name="org-openide-actions-ToolsAction.instance"/>
-                    <attr name="org-openide-actions-ToolsAction.instance/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
-                    <attr name="org-openide-actions-ToolsAction.instance/generate-gutter-popup" boolvalue="true"/>
-                    <attr name="generate-gutter-popup/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-PropertiesAction.instance"/>
+                    <attr name="format/SeparatorAfterFormat.instance" boolvalue="true"/>
+                    <attr name="SeparatorAfterFormat.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
                 </folder>
             </folder>
 

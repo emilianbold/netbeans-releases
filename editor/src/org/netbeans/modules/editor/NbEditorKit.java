@@ -19,6 +19,7 @@ import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.text.MessageFormat;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JEditorPane;
@@ -63,6 +64,7 @@ import org.netbeans.editor.LocaleSupport;
 import org.netbeans.editor.MacroDialogSupport;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
+import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.modules.editor.options.OptionUtilities;
 import org.netbeans.modules.editor.options.AllOptionsFolder;
@@ -201,12 +203,40 @@ public class NbEditorKit extends ExtKit {
         protected JPopupMenu buildPopupMenu(JTextComponent target) {        
             // to make keyboard navigation (Up/Down keys) inside popup work, we
             // must use JPopupMenuPlus instead of JPopupMenu
-            JPopupMenu popup = super.buildPopupMenu(target);
-            if (popup instanceof org.openide.awt.JPopupMenuPlus)
-                return popup;
+//            JPopupMenu popup = super.buildPopupMenu(target);
+            JPopupMenu pm = new JPopupMenu();
+            List l;
+            EditorUI ui = Utilities.getEditorUI(target);            
+            BaseOptions bo = BaseOptions.getOptions(NbEditorKit.this.getClass());
+            if (bo != null){
+                l = OptionUtilities.getPopupStrings(bo.getOrderedMultiPropertyFolderFiles("Popup"));
+            }else{
+                l = (List)Settings.getValue(Utilities.getKitClass(target),
+                    (ui == null || ui.hasExtComponent())
+                        ? ExtSettingsNames.POPUP_MENU_ACTION_NAME_LIST
+                        : ExtSettingsNames.DIALOG_POPUP_MENU_ACTION_NAME_LIST
+                );
+            }
+            
+            if (l != null) {
+                Iterator i = l.iterator();
+                while (i.hasNext()) {
+                    Object obj = i.next();
+                    if (obj instanceof Action){
+                        addAction(target, pm, (Action)obj);
+                    }else{
+                        String an = (String)obj;
+                        addAction(target, pm, an);
+                    }
+                }
+            }
+            //return pm;
+            
+            if (pm instanceof org.openide.awt.JPopupMenuPlus)
+                return pm;
 
-            java.awt.Component[] comps = popup.getComponents();
-            popup.removeAll();
+            java.awt.Component[] comps = pm.getComponents();
+            pm.removeAll();
 
             org.openide.awt.JPopupMenuPlus popupPlus = new org.openide.awt.JPopupMenuPlus();
             for (int i = 0; i < comps.length; i++) {
@@ -226,6 +256,36 @@ public class NbEditorKit extends ExtKit {
                 }
             }
             return lookup;
+        }
+        
+        protected void addAction(JTextComponent target, JPopupMenu popupMenu, Action a){
+            String itemText = (String) a.getValue(Action.NAME);
+            JMenuItem item = null;
+            
+            //if (itemText == null){
+            //    itemText = getItemText(target, actionName, a);
+            //}
+
+            if (itemText != null) {
+                item = new JMenuItem();
+                Mnemonics.setLocalizedText(item, itemText);
+                item.addActionListener(a);
+                // Try to get the accelerator
+                Keymap km = target.getKeymap();
+                if (km != null) {
+                    KeyStroke[] keys = km.getKeyStrokesForAction(a);
+                    if (keys != null && keys.length > 0) {
+                        item.setAccelerator(keys[0]);
+                    }
+                }
+                item.setEnabled(a.isEnabled());
+                Object helpID = a.getValue ("helpID");
+                if (helpID != null && (helpID instanceof String))
+                    item.putClientProperty ("HelpID", helpID);
+            }
+            if (item != null) {
+                popupMenu.add(item);
+            }
         }
         
         protected void addAction(JTextComponent target, JPopupMenu popupMenu,
@@ -314,51 +374,6 @@ public class NbEditorKit extends ExtKit {
                         }
 
                         return;
-                    } else if(saClass != null && javax.swing.Action.class.isAssignableFrom(saClass)){
-                        Action a = null;
-                        JMenuItem item = null;
-                        
-                        if (actionName.endsWith("FileCommandAction")) return; //filter FileCommandAction
-                        
-                        try{
-                            a = (Action) saClass.newInstance();
-                        }catch(InstantiationException ie){
-                            ie.printStackTrace();
-                        }catch(IllegalAccessException iae){
-                            iae.printStackTrace();
-                        }
-                        
-                        if (a == null) return;
-
-                        
-                        String itemText = (String) a.getValue(Action.NAME);
-                        if (itemText == null){
-                            itemText = getItemText(target, actionName, a);
-                        }
-
-                        if (itemText != null) {
-                            item = new JMenuItem();
-                            Mnemonics.setLocalizedText(item, itemText);
-                            item.addActionListener(a);
-                            // Try to get the accelerator
-                            Keymap km = target.getKeymap();
-                            if (km != null) {
-                                KeyStroke[] keys = km.getKeyStrokesForAction(a);
-                                if (keys != null && keys.length > 0) {
-                                    item.setAccelerator(keys[0]);
-                                }
-                            }
-                            item.setEnabled(a.isEnabled());
-                            Object helpID = a.getValue ("helpID");
-                            if (helpID != null && (helpID instanceof String))
-                                item.putClientProperty ("HelpID", helpID);
-                        }
-                        if (item != null) {
-                            popupMenu.add(item);
-                        }
-
-                        return;
-                        
                     }
                 }
 
