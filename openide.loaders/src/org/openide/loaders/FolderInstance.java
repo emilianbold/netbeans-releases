@@ -530,6 +530,9 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
         // and everything was completely broken
         err.log ("recreate");
         recognizingTask = computeChildrenList (container, listener);
+        if (err.isLoggable(err.INFORMATIONAL)) {
+            err.log ("  recognizing task is now " + recognizingTask);
+        }
         notifyRunning ();
     }
 
@@ -548,7 +551,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
     /** Checks whether recreation has already started and starts it if if was
      *  was not yet started during the live of this <code>FolderInstance</code>.
      * @return the latest started task for children computation */
-    private final Task checkRecognizingStarted () {
+    private final synchronized Task checkRecognizingStarted () {
         if(recognizingTask == null) {
             recreate();
         }
