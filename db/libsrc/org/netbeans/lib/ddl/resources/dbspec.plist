@@ -18,7 +18,40 @@
     ColumnListHeader = "";
     ColumnListDelimiter = ",\n\t";
     ArgumentListDelimiter = ", ";
-    TypeMap = {};
+    TypeMap = {
+//      java.sql.Types.ARRAY = ?; //JDBC 2.0 A type representing an SQL ARRAY
+//      java.sql.Types.BIGINT = BIGINT;
+//      java.sql.Types.BINARY = BINARY;
+      java.sql.Types.BIT = BIT;
+//      java.sql.Types.BLOB = BLOB;  //JDBC 2.0 A type representing an SQL Binary Large Object
+     java.sql.Types.CHAR = CHAR;
+//      java.sql.Types.CLOB = CLOB;  //JDBC 2.0 A type representing an SQL Character Large Object
+      java.sql.Types.DATE = DATE;
+      java.sql.Types.DECIMAL = DECIMAL;
+//      java.sql.Types.DISTINCT = ?; //JDBC 2.0 A type based on a built-in type
+      java.sql.Types.DOUBLE = "DOUBLE PRECISION";
+      java.sql.Types.FLOAT = FLOAT;
+      java.sql.Types.INTEGER = INT;
+//      java.sql.Types.JAVA_OBJECT = ?; //JDBC 2.0 A type representing a Java Object
+//      java.sql.Types.LONGVARBINARY = "LONG BINARY";
+//      java.sql.Types.LONGVARCHAR = "LONG VARCHAR";
+//      java.sql.Types.NULL = ?;
+      java.sql.Types.NUMERIC = NUMERIC;
+//      java.sql.Types.OTHER = ?; //OTHER indicates that the SQL type is database-specific and gets mapped to a Java object that can be accessed via the methods getObject and setObject
+      java.sql.Types.REAL = REAL;
+//      java.sql.Types.REF = ?; //JDBC 2.0 A type representing an SQL REF
+      java.sql.Types.SMALLINT = SMALLINT;
+//      java.sql.Types.STRUCT = ?; //JDBC 2.0 A type consisting of attributes that may be any type
+      java.sql.Types.TIME = TIME;
+      java.sql.Types.TIMESTAMP = TIMESTAMP;
+//      java.sql.Types.TINYINT = TINYINT;
+//      java.sql.Types.VARBINARY = VARBINARY;
+      java.sql.Types.VARCHAR = VARCHAR;
+    };
+    SizelessTypes = (BIT,DATE,"DOUBLE PRECISION",FLOAT,INT,REAL,SMALLINT,TIME,TIMESTAMP,VARCHAR);
+    DecimalTypes = (DECIMAL,NUMERIC);
+    CharacterTypes = (CHAR);
+
     
     Column = {
       Class = com.netbeans.ddl.impl.TableColumn;
@@ -30,17 +63,17 @@
       Format = "{column.name}[ {direction}]";
     };
 
-    UniqueColumnName = {
+    UniqueColumn = {
       Class = com.netbeans.ddl.impl.TableColumn;
       Format = "unique {column.name}";
     };
 
-    PrimaryKey = {
+    PrimaryKeyColumn = {
       Class = com.netbeans.ddl.impl.TableColumn;
       Format = "primary key";
     };
 
-    ForeignKey = {
+    ForeignKeyColumn = {
       Class = com.netbeans.ddl.impl.TableColumn;
       Format = "foreign key {column.name}";
     };
@@ -818,7 +851,7 @@
     TypeMap = {
       java.sql.Types.BINARY = BINARY;
       java.sql.Types.BIT = BIT;
-      java.sql.Types.BLOB = IMAGE;  //JDBC 2.0 A type representing an SQL Binary Large Object
+      java.sql.Types.BLOB = BLOB;
       java.sql.Types.CHAR = CHAR;
       java.sql.Types.DATE = DATETIME;
       java.sql.Types.DECIMAL = DECIMAL;
