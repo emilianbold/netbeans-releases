@@ -36,6 +36,7 @@ public class RectangleCustomEditor extends javax.swing.JPanel implements Enhance
     initComponents ();
     this.editor = editor;
     Rectangle rectangle = (Rectangle)editor.getValue ();
+    if (rectangle == null) rectangle = new Rectangle (0, 0, 0, 0);
     xField.setText (""+rectangle.x);
     yField.setText (""+rectangle.y);
     widthField.setText (""+rectangle.width);
@@ -209,6 +210,8 @@ public class RectangleCustomEditor extends javax.swing.JPanel implements Enhance
 
 /*
  * Log
+ *  8    Gandalf   1.7         8/18/99  Ian Formanek    Fixed bug 2322 - Some PE
+ *       couldn't be initialized - en exception is issued
  *  7    Gandalf   1.6         7/8/99   Jesse Glick     Context help.
  *  6    Gandalf   1.5         6/30/99  Ian Formanek    Reflecting changes in 
  *       editors packages and enhanced property editor interfaces

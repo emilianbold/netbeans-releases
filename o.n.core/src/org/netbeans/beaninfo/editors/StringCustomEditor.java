@@ -33,6 +33,7 @@ static final long serialVersionUID =7348579663907322425L;
   public StringCustomEditor(StringEditor ed) {
     editor = ed;
     String s = (String) editor.getValue ();
+    if (s == null) s = "";
     initComponents ();
     textArea.setText (s);
     setBorder (new javax.swing.border.EmptyBorder (new java.awt.Insets(8, 8, 8, 8)));
@@ -79,6 +80,8 @@ static final long serialVersionUID =7348579663907322425L;
 
 /*
  * Log
+ *  9    Gandalf   1.8         8/18/99  Ian Formanek    Fixed bug 2322 - Some PE
+ *       couldn't be initialized - en exception is issued
  *  8    Gandalf   1.7         8/9/99   Ian Formanek    Generated Serial Version
  *       UID
  *  7    Gandalf   1.6         7/15/99  Ian Formanek    Fixed preferred size of 

@@ -36,6 +36,7 @@ public class DimensionCustomEditor extends javax.swing.JPanel implements Enhance
     initComponents ();
     this.editor = editor;
     Dimension dimension = (Dimension)editor.getValue ();
+    if (dimension == null) dimension = new Dimension (0, 0);
 
     setBorder (new javax.swing.border.EmptyBorder (new java.awt.Insets(5, 5, 5, 5)));
     insidePanel.setBorder (new javax.swing.border.CompoundBorder (
@@ -158,6 +159,8 @@ public class DimensionCustomEditor extends javax.swing.JPanel implements Enhance
 
 /*
  * Log
+ *  8    Gandalf   1.7         8/18/99  Ian Formanek    Fixed bug 2322 - Some PE
+ *       couldn't be initialized - en exception is issued
  *  7    Gandalf   1.6         7/8/99   Jesse Glick     Context help.
  *  6    Gandalf   1.5         6/30/99  Ian Formanek    Reflecting changes in 
  *       editors packages and enhanced property editor interfaces

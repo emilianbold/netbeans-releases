@@ -20,10 +20,9 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 
-/**
+/** Custom editor for java.awt.Insets.
 *
 * @author   Ian Formanek
-* @version  1.00, 01 Sep 1998
 */
 public class InsetsCustomEditor extends javax.swing.JPanel implements EnhancedCustomPropertyEditor {
 
@@ -31,12 +30,14 @@ public class InsetsCustomEditor extends javax.swing.JPanel implements EnhancedCu
   static ResourceBundle bundle = NbBundle.getBundle (
     InsetsCustomEditor.class);
 
-static final long serialVersionUID =-1472891501739636852L;
+  static final long serialVersionUID =-1472891501739636852L;
+
   /** Initializes the Form */
   public InsetsCustomEditor(InsetsEditor editor) {
     initComponents ();
     this.editor = editor;
     Insets insets = (Insets)editor.getValue ();
+    if (insets == null) insets = new Insets (0, 0, 0, 0);
     topField.setText (""+insets.top);
     leftField.setText (""+insets.left);
     bottomField.setText (""+insets.bottom);
@@ -211,6 +212,8 @@ static final long serialVersionUID =-1472891501739636852L;
 
 /*
  * Log
+ *  9    Gandalf   1.8         8/18/99  Ian Formanek    Fixed bug 2322 - Some PE
+ *       couldn't be initialized - en exception is issued
  *  8    Gandalf   1.7         8/17/99  Ian Formanek    Generated serial version
  *       UID
  *  7    Gandalf   1.6         7/8/99   Jesse Glick     Context help.

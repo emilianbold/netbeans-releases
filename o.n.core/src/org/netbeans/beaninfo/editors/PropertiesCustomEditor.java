@@ -34,6 +34,7 @@ static final long serialVersionUID =2473843831910895646L;
     editor = ed;
     initComponents ();
     Properties props = (Properties) editor.getValue ();
+    if (props == null) props = new Properties ();
     ByteArrayOutputStream baos = new ByteArrayOutputStream ();
     try {
       props.store (baos, "");
@@ -90,6 +91,8 @@ static final long serialVersionUID =2473843831910895646L;
 
 /*
  * Log
+ *  6    Gandalf   1.5         8/18/99  Ian Formanek    Fixed bug 2322 - Some PE
+ *       couldn't be initialized - en exception is issued
  *  5    Gandalf   1.4         8/9/99   Ian Formanek    Generated Serial Version
  *       UID
  *  4    Gandalf   1.3         7/8/99   Jesse Glick     Context help.

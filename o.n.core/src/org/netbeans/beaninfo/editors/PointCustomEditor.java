@@ -37,6 +37,7 @@ static final long serialVersionUID =-4067033871196801978L;
     initComponents ();
     this.editor = editor;
     Point point = (Point)editor.getValue ();
+    if (point == null) point = new Point (0, 0);
     xField.setText (""+point.x);
     yField.setText (""+point.y);
 
@@ -156,6 +157,8 @@ static final long serialVersionUID =-4067033871196801978L;
 
 /*
  * Log
+ *  9    Gandalf   1.8         8/18/99  Ian Formanek    Fixed bug 2322 - Some PE
+ *       couldn't be initialized - en exception is issued
  *  8    Gandalf   1.7         8/17/99  Ian Formanek    Generated serial version
  *       UID
  *  7    Gandalf   1.6         7/8/99   Jesse Glick     Context help.
