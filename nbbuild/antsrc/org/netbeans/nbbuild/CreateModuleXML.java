@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -29,6 +29,7 @@ public class CreateModuleXML extends Task {
     private final List enabled = new ArrayList(1); // List<FileSet>
     private final List disabled = new ArrayList(1); // List<FileSet>
     private final List autoload = new ArrayList(1); // List<FileSet>
+    private final List eager = new ArrayList(1); // List<FileSet>
     
     /** Add a set of module JARs that should be enabled.
      * Should be .jar files from the modules/ directory.
@@ -51,6 +52,13 @@ public class CreateModuleXML extends Task {
         autoload.add(fs);
     }
     
+    /** Add a set of module JARs that should be eager modules.
+     * Should be .jar files from the modules/eager/ directory.
+     */
+    public void addEager(FileSet fs) {
+        eager.add(fs);
+    }
+    
     private File xmldir = null;
     
     /** Set the modules directory where XML will be stored.
@@ -63,33 +71,40 @@ public class CreateModuleXML extends Task {
     private List enabledNames = new ArrayList(50); // List<String>
     private List disabledNames = new ArrayList(10); // List<String>
     private List autoloadNames = new ArrayList(10); // List<String>
+    private List eagerNames = new ArrayList(10); // List<String>
     
     public void execute() throws BuildException {
         if (xmldir == null) throw new BuildException("Must set xmldir", location);
-        if (enabled.isEmpty() && disabled.isEmpty() && autoload.isEmpty()) {
+        if (enabled.isEmpty() && disabled.isEmpty() && autoload.isEmpty() && eager.isEmpty()) {
             log("Warning: <createmodulexml> with no modules listed", Project.MSG_WARN);
         }
         Iterator it = enabled.iterator();
         while (it.hasNext()) {
-            scanModules((FileSet)it.next(), true, false, "installation", enabledNames);
+            scanModules((FileSet)it.next(), true, false, false, "installation", enabledNames);
         }
         it = disabled.iterator();
         while (it.hasNext()) {
-            scanModules((FileSet)it.next(), false, false, "installation", disabledNames);
+            scanModules((FileSet)it.next(), false, false, false, "installation", disabledNames);
         }
         it = autoload.iterator();
         while (it.hasNext()) {
-            scanModules((FileSet)it.next(), false, true, "installation/autoload", autoloadNames);
+            scanModules((FileSet)it.next(), false, true, false, "installation/autoload", autoloadNames);
+        }
+        it = eager.iterator();
+        while (it.hasNext()) {
+            scanModules((FileSet)it.next(), false, false, true, "installation/eager", eagerNames);
         }
         Collections.sort(enabledNames);
         Collections.sort(disabledNames);
         Collections.sort(autoloadNames);
+        Collections.sort(eagerNames);
         log("Enabled modules: " + enabledNames);
         log("Disabled modules: " + disabledNames);
         log("Autoload modules: " + autoloadNames);
+        log("Eager modules: " + eagerNames);
     }
     
-    private void scanModules(FileSet fs, boolean isEnabled, boolean isAutoload, String origin, List names) throws BuildException {
+    private void scanModules(FileSet fs, boolean isEnabled, boolean isAutoload, boolean isEager, String origin, List names) throws BuildException {
         FileScanner scan = fs.getDirectoryScanner(project);
         File dir = scan.getBasedir();
         String[] kids = scan.getIncludedFiles();
@@ -163,7 +178,8 @@ public class CreateModuleXML extends Task {
                         pw.println("                        \"http://www.netbeans.org/dtds/module-status-1_0.dtd\">");
                         pw.println("<module name=\"" + codenamebase + "\">");
                         pw.println("    <param name=\"autoload\">" + isAutoload + "</param>");
-                        if (! isAutoload) {
+                        pw.println("    <param name=\"eager\">" + isEager + "</param>");
+                        if (!isAutoload && !isEager) {
                             pw.println("    <param name=\"enabled\">" + isEnabled + "</param>");
                         }
                         pw.println("    <param name=\"jar\">" + module.getName() + "</param>");

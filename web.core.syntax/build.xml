@@ -49,10 +49,10 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="jars" depends="compile">
-    <mkdir dir="netbeans/modules"/>
+    <mkdir dir="netbeans/modules/eager"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <locjar jarfile="netbeans/modules/jsp-syntax.jar"
+    <locjar jarfile="netbeans/modules/eager/jsp-syntax.jar"
             manifest="manifest-subst.mf"
             basedir="src"
 	    excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt"
@@ -77,7 +77,7 @@ Microsystems, Inc. All Rights Reserved.
     <delete dir="Info"/>
     <makenbm file="web-jspsyntax.nbm"
              topdir="."
-             module="netbeans/modules/jsp-syntax.jar"
+             module="netbeans/modules/eager/jsp-syntax.jar"
 	     homepage="http://web.${homepage.base}/"
 	     distribution="http://${dist.base}/web-jspsyntax.nbm">
       <license file="${license.file}"/>
@@ -99,7 +99,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <!-- This target will only work *inside* the IDE! -->
   <target depends="jars" description="Test the module inside the running IDE." name= "test">
-    <nbinstaller action="reinstall" module="netbeans/modules/jsp-syntax.jar"/>
+    <nbinstaller action="reinstall" module="netbeans/modules/eager/jsp-syntax.jar"/>
   </target>
 
 </project>

@@ -47,7 +47,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="jars" depends="compile">
-    <mkdir dir="netbeans/modules"/>
+    <mkdir dir="netbeans/modules/eager"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
     <locjar jarfile="netbeans/modules/properties.jar"
@@ -59,7 +59,7 @@ Microsystems, Inc. All Rights Reserved.
       <locale name="ja"/>
     </locjar>
     <copy file="manifest-syntax.mf" tofile="manifest-syntax-subst.mf" filtering="on"/>
-    <locjar jarfile="netbeans/modules/properties-syntax.jar"
+    <locjar jarfile="netbeans/modules/eager/properties-syntax.jar"
             manifest="manifest-syntax-subst.mf"
             basedir="src"
             excludesfile="../nbbuild/standard-jar-excludes.txt"
@@ -75,6 +75,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="nbm" depends="netbeans">
     <!-- Make one NBM with both module JARs. -->
+    <!-- XXX now preferred to make separate NBMs. -->
     <makenbm file="properties.nbm"
              topdir="."
              module="netbeans/modules/properties.jar"

@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -468,6 +468,7 @@ workspaceswitcher
     <taskdef name="createmodulexml" classname="org.netbeans.nbbuild.CreateModuleXML" classpath="nbantext.jar"/>
     <mkdir dir="${netbeans.dest}/system/Modules"/>
     <mkdir dir="${netbeans.dest}/modules/autoload"/>
+    <mkdir dir="${netbeans.dest}/modules/eager"/>
     <createmodulexml xmldir="${netbeans.dest}/system/Modules">
       <enabled dir="${netbeans.dest}/modules">
         <include name="*.jar"/>
@@ -480,6 +481,9 @@ workspaceswitcher
       <autoload dir="${netbeans.dest}/modules/autoload">
         <include name="*.jar"/>
       </autoload>
+      <eager dir="${netbeans.dest}/modules/eager">
+        <include name="*.jar"/>
+      </eager>
     </createmodulexml>
     <echo file="${netbeans.dest}/build_info">NetBeans dev build
 ------------------

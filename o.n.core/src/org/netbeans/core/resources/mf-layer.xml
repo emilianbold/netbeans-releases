@@ -543,6 +543,7 @@ Microsystems, Inc. All Rights Reserved.
         <!-- Permit test modules to be (re)deployed. -->
         <file name="org-netbeans-core-module-tester.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.core.modules.TestModuleDeployer"/>
+            <attr name="instanceOf" stringvalue="org.netbeans.core.modules.TestModuleDeployer"/>
             <attr name="instanceCreate" methodvalue="org.netbeans.core.modules.ModuleSystem.getTestModuleDeployer"/>
         </file>
         

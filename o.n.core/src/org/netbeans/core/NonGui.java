@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -147,6 +147,7 @@ public class NonGui extends NbTopManager implements Runnable {
                     makedir (projDir);
                     touch (new File (projDir, "workspace.ser_hidden")); // NOI18N
                     makedir (new File (new File (userDir, DIR_MODULES), "autoload")); // NOI18N
+                    makedir (new File (new File (userDir, DIR_MODULES), "eager")); // NOI18N
                     File libDir = new File (userDir, "lib"); // NOI18N
                     makedir (libDir);
                     makedir (new File (libDir, "ext")); // NOI18N

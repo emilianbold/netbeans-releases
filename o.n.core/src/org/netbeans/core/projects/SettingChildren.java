@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,6 +15,7 @@ package org.netbeans.core.projects;
 
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
+import org.openide.cookies.InstanceCookie;
 import org.openide.nodes.*;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataFolder;
@@ -56,6 +57,15 @@ public final class SettingChildren extends FilterNode.Children {
         boolean filter = false;
         try {
             DataObject d = (DataObject) node.getCookie (DataObject.class);
+            if (d != null) {
+                InstanceCookie.Of inst = (InstanceCookie.Of)d.getCookie(InstanceCookie.Of.class);
+                if (inst != null && (inst.instanceOf(Node.class) || inst.instanceOf(Node.Handle.class))) {
+                    // This is just a node, not a real setting. E.g. ModuleNode, LoaderPoolNode. As such,
+                    // it itself should not display any origin information, it would make no sense. However
+                    // its children might have a legitimate DataObject cookie from the SFS.
+                    d = null;
+                }
+            }
             DataFolder folder = (DataFolder) node.getCookie (DataFolder.class);
             FileSystem fs = d == null || folder != null ? null : d.getPrimaryFile ().getFileSystem ();
             filter = fs == null ? false : fs.equals (TopManager.getDefault ().getRepository ().getDefaultFileSystem ());

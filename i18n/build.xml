@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -55,7 +55,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="jars" depends="compile">
-    <mkdir dir="netbeans/modules"/>
+    <mkdir dir="netbeans/modules/eager"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
     <locjar jarfile="netbeans/modules/i18n.jar"
@@ -67,7 +67,7 @@ Microsystems, Inc. All Rights Reserved.
       <locale name="ja"/>
     </locjar>
     <copy file="manifest-form.mf" tofile="manifest-form-subst.mf" filtering="on"/>
-    <locjar jarfile="netbeans/modules/i18n-form.jar"
+    <locjar jarfile="netbeans/modules/eager/i18n-form.jar"
             manifest="manifest-form-subst.mf"
             basedir="src"
 	    excludesfile="../nbbuild/standard-jar-excludes.txt"
@@ -83,6 +83,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="nbm" depends="netbeans">
+    <!-- XXX i18n-form.jar should have its own NBM -->
     <makenbm file="i18n.nbm"
              topdir="."
              module="netbeans/modules/i18n.jar"
