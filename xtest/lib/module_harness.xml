@@ -292,8 +292,55 @@ Microsystems, Inc. All Rights Reserved.
         <antcall target="check-userdir"/>
         <antcall target="ide_test_bootstrap_cont"/>
     </target>
+
+
+    <!-- prepare user dirs and workdirs for ide mode tests -->
+    <target name="ide_prepare_userdir_and_workdir">
+
+        <property name="xtest.workdir.idejars" value="${xtest.workdir}/sys/idejars"/>
+        <mkdir dir="${xtest.workdir.idejars}"/>
+        
+        <!-- let's put our jars under ${xtest.userdir}/xtest ... -->
+        <mkdir dir="${xtest.userdir}/xtest/lib/ext"/>
+        
+        <copy file="${xtest.home}/lib/xtest.jar" todir="${xtest.userdir}/xtest/lib"/>        
+        <copy file="${xtest.home}/lib/junit.jar" todir="${xtest.userdir}/xtest/lib/ext"/>
+        <copy file="${xtest.home}/lib/nbjunit.jar" todir="${xtest.userdir}/xtest/lib/ext"/>        
+                
+        <copy file="${xtest.home}/lib/xtest-junit-testrunner.jar" todir="${xtest.workdir.idejars}"/> 
+
+        <antcall target="copy-user-jars"/>    
+    </target>    
     
-    <target name="ide_test_bootstrap_cont" unless="xtest.reuse.and.noexist">
+    <!-- default netbeans.classpath !!! -->        
+    <target name="ide_set_netbeans_classpath_default" unless="tests.use.openide.classloader"
+            depends="ide_prepare_userdir_and_workdir">
+        <property name="xtest.netbeans.classpath" refid="xtest.netbeans.classpath">
+            <classpath id="xtest.netbeans.classpath">
+                <fileset dir="${xtest.userdir}/xtest/lib">
+                    <include name="xtest.jar"/>
+                </fileset>
+            </classpath>        
+        </property>        
+    </target>
+            
+    
+    <!-- netbeans.classpath for core/openide tests which need to be loaded by openide/core classloader -->        
+    <target name="ide_set_netbeans_classpath_test_core" if="tests.use.openide.classloader"
+            depends="ide_prepare_userdir_and_workdir">
+        <echo message="Using openide/core classloader to load tests ..."/>
+        <property name="_helper_xtest.netbeans.classpath" refid="xtest.netbeans.classpath">
+            <classpath id="xtest.netbeans.classpath">
+                <fileset dir="${xtest.userdir}/xtest/lib">
+                    <include name="xtest.jar"/>                    
+                </fileset>
+            </classpath>        
+        </property>
+        <property name="xtest.netbeans.classpath" value="${_helper_xtest.netbeans.classpath}:${tbag.classpath}"/>
+    </target>
+    
+    <target name="ide_test_bootstrap_cont" unless="xtest.reuse.and.noexist" 
+            depends="ide_set_netbeans_classpath_default,ide_set_netbeans_classpath_test_core">
 
         <ide-jvmargs jvmargs="${xtest.jvmargs}" property="xtest.ide.commandline.jvmargs"/>
             
@@ -307,22 +354,6 @@ Microsystems, Inc. All Rights Reserved.
         
         <property name="xtest.ide.timeout" value="${xtest.timeout}"/>
         
-        <!--
-        <property name="xtest.workdir.idejars" value="${netbeans.home}/lib/xtest"/>
-        -->
-        <property name="xtest.workdir.idejars" value="${xtest.workdir}/sys/idejars"/>
-        <mkdir dir="${xtest.workdir.idejars}"/>
-        
-        <!-- let's put our jars under ${xtest.userdir}/xtest ... -->
-        <mkdir dir="${xtest.userdir}/xtest/lib/ext"/>
-        
-        <copy file="${xtest.home}/lib/xtest.jar" todir="${xtest.userdir}/xtest/lib"/>        
-        <copy file="${xtest.home}/lib/junit.jar" todir="${xtest.userdir}/xtest/lib/ext"/>
-        <copy file="${xtest.home}/lib/nbjunit.jar" todir="${xtest.userdir}/xtest/lib/ext"/>        
-                
-        <copy file="${xtest.home}/lib/xtest-junit-testrunner.jar" todir="${xtest.workdir.idejars}"/> 
-
-        <antcall target="copy-user-jars"/>
         
         <!-- now create a system classloader path to be supplied to ide -->
         <property name="xtest.netbeans.systemclassloader.patches" refid="xtest.netbeans.systemclassloader.path">
@@ -342,16 +373,7 @@ Microsystems, Inc. All Rights Reserved.
                 </fileset>                
             </classpath>
         </property>        
-        
-        <!-- now the most important - netbeans.classpath -->
-        <property name="xtest.netbeans.classpath" refid="xtest.netbeans.classpath">
-            <classpath id="xtest.netbeans.classpath">
-                <fileset dir="${xtest.userdir}/xtest/lib">
-                    <include name="xtest.jar"/>
-                </fileset>
-            </classpath>        
-        </property>
-        
+                
         <!-- this property can be used to turn off the IDE security ... -->
         <!--
         <property name="xtest.ide.security" value="-J-Dnetbeans.security.nocheck=true"/>
