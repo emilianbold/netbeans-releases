@@ -43,7 +43,6 @@ import org.openide.loaders.TemplateWizard;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -81,7 +80,7 @@ public class CustomizerCompile extends JPanel implements J2SECustomizer.Panel, H
         vps.register( jCheckBoxDebugInfo, J2SEProjectProperties.JAVAC_DEBUG );                
         vps.register( vcs, J2SEProjectProperties.JAVAC_CLASSPATH );
         vps.register( jCheckBoxBuildSubprojects, J2SEProjectProperties.NO_DEPENDENCIES );
-
+        vps.register(additionalJavacParamsJTextField, J2SEProjectProperties.JAVAC_COMPILER_ARG); 
         jButtonEdit.setVisible( false );
 
     }
@@ -101,6 +100,9 @@ public class CustomizerCompile extends JPanel implements J2SECustomizer.Panel, H
 
         jCheckBoxDebugInfo = new javax.swing.JCheckBox();
         jCheckBoxDeprecation = new javax.swing.JCheckBox();
+        additionalJavacParamsJLabel = new javax.swing.JLabel();
+        additionalJavacParamsJTextField = new javax.swing.JTextField();
+        additionalJavacParamsExampleJLabel = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         jLabelClasspath = new javax.swing.JLabel();
         jScrollClasspath = new javax.swing.JScrollPane();
@@ -138,6 +140,32 @@ public class CustomizerCompile extends JPanel implements J2SECustomizer.Panel, H
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(jCheckBoxDeprecation, gridBagConstraints);
         jCheckBoxDeprecation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "ACSD_CustomizerCompile_jCheckBoxDeprecation"));
+
+        additionalJavacParamsJLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage (CustomizerCompile.class,"MNE_AdditionalCompilerOptions").charAt(0));
+        additionalJavacParamsJLabel.setLabelFor(additionalJavacParamsJTextField);
+        additionalJavacParamsJLabel.setText(org.openide.util.NbBundle.getMessage (CustomizerCompile.class,"LBL_AdditionalCompilerOptions"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 12);
+        add(additionalJavacParamsJLabel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
+        add(additionalJavacParamsJTextField, gridBagConstraints);
+        additionalJavacParamsJTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage (CustomizerCompile.class,"AD_AdditionalCompilerOptions"));
+
+        additionalJavacParamsExampleJLabel.setText(org.openide.util.NbBundle.getMessage (CustomizerCompile.class,"LBL_AdditionalCompilerOptionsExample"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        add(additionalJavacParamsExampleJLabel, gridBagConstraints);
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
@@ -222,8 +250,6 @@ public class CustomizerCompile extends JPanel implements J2SECustomizer.Panel, H
         jButtonMoveDown.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "ACSD_CustomizerCompile_jButtonMoveDown"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
@@ -243,6 +269,9 @@ public class CustomizerCompile extends JPanel implements J2SECustomizer.Panel, H
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel additionalJavacParamsExampleJLabel;
+    private javax.swing.JLabel additionalJavacParamsJLabel;
+    private javax.swing.JTextField additionalJavacParamsJTextField;
     private javax.swing.JButton jButtonAddArtifact;
     private javax.swing.JButton jButtonAddJar;
     private javax.swing.JButton jButtonAddLibrary;

@@ -75,6 +75,7 @@ public class J2SEProjectProperties {
     public static final String JAVAC_TEST_CLASSPATH = "javac.test.classpath"; // NOI18N
     public static final String JAVAC_DEBUG = "javac.debug"; // NOI18N
     public static final String JAVAC_DEPRECATION = "javac.deprecation"; // NOI18N
+    public static final String JAVAC_COMPILER_ARG = "javac.compilerargs";    //NOI18N
     public static final String RUN_TEST_CLASSPATH = "run.test.classpath"; // NOI18N
     public static final String SRC_DIR = "src.dir"; // NOI18N
     public static final String TEST_SRC_DIR = "test.src.dir"; // NOI18N
@@ -134,6 +135,7 @@ public class J2SEProjectProperties {
         new PropertyDescriptor( JAVAC_TEST_CLASSPATH, PROJECT, PATH_PARSER ),
         new PropertyDescriptor( JAVAC_DEBUG, PRIVATE, BOOLEAN_PARSER ),       
         new PropertyDescriptor( JAVAC_DEPRECATION, PROJECT, BOOLEAN_PARSER ),
+        new PropertyDescriptor( JAVAC_COMPILER_ARG, PROJECT, STRING_PARSER),
         new PropertyDescriptor( RUN_TEST_CLASSPATH, PROJECT, PATH_PARSER ),
         new PropertyDescriptor( SRC_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( TEST_SRC_DIR, PROJECT, STRING_PARSER ),
