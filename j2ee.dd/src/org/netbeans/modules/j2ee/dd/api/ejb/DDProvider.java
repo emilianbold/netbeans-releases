@@ -44,8 +44,6 @@ public final class DDProvider {
     private static final DDProvider ddProvider = new DDProvider();
     private Map ddMap;
 
-    static java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/dd/Bundle");
-
     /** Creates a new instance of EjbModule */
     private DDProvider() {
         //ddMap=new java.util.WeakHashMap(5);
