@@ -55,10 +55,6 @@ public class FormLoaderSettings extends SystemOption {
   /** Property name of the displayWritableOnly property */
   public static final String PROP_DISPLAY_WRITABLE_ONLY = "displayWritableOnly";
 
-  /** The resource bundle for the form editor */
-  public static java.util.ResourceBundle formBundle =
-    com.netbeans.ide.util.NbBundle.getBundle("com.netbeans.developer.modules.locales.LoadersFormBundle");
-
   /** A constant for "private" access modifier used in variablesModifier property */
   public static final int PRIVATE = 0;
   /** A constant for "package private" access modifier used in variablesModifier property */
@@ -349,13 +345,14 @@ public class FormLoaderSettings extends SystemOption {
   /** This method must be overriden. It returns display name of this options.
   */
   public String displayName () {
-    return formBundle.getString("CTL_FormSettings");
+    return com.netbeans.ide.util.NbBundle.getBundle (FormLoaderSettings.class).getString("CTL_FormSettings");
   }
 
 }
 
 /*
  * Log
+ *  3    Gandalf   1.2         3/16/99  Ian Formanek    
  *  2    Gandalf   1.1         3/10/99  Ian Formanek    Gandalf updated
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $

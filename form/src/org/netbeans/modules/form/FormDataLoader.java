@@ -127,6 +127,8 @@ public class FormDataLoader extends MultiFileLoader {
 
 /*
  * Log
+ *  8    Gandalf   1.7         3/16/99  Ian Formanek    
+ *  7    Gandalf   1.6         3/16/99  Ian Formanek    
  *  6    Gandalf   1.5         3/14/99  Jaroslav Tulach Change of 
  *       MultiDataObject.Entry.
  *  5    Gandalf   1.4         3/11/99  Ian Formanek    fixed order of form and 

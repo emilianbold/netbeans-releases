@@ -25,6 +25,7 @@ import com.netbeans.ide.util.actions.SystemAction;
 //import com.netbeans.ide.windows.ComponentRefListener;
 import com.netbeans.ide.nodes.Node;
 import com.netbeans.developer.modules.loaders.java.JavaDataObject;
+import com.netbeans.developer.modules.loaders.form.cookies.*;
 //import com.netbeans.developer.modules.loaders.form.formeditor.*;
 //import com.netbeans.developer.modules.loaders.java.DocumentRef;
 //import com.netbeans.developer.modules.loaders.java.JavaEditor;
@@ -473,6 +474,7 @@ public class FormDataObject extends JavaDataObject implements FormCookie {
 
 /*
  * Log
+ *  6    Gandalf   1.5         3/16/99  Ian Formanek    
  *  5    Gandalf   1.4         3/14/99  Jaroslav Tulach Change of 
  *       MultiDataObject.Entry.
  *  4    Gandalf   1.3         3/10/99  Ian Formanek    Gandalf updated
