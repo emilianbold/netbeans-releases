@@ -110,9 +110,16 @@ implements ServerRegistry.PluginListener, ServerRegistry.InstanceListener {
         return node;
     }
     private void initDefaultServerChildrenNodes() {
-        Server s = ServerRegistry.getInstance().getDefaultInstance().getServer();
+        ServerString ss = ServerRegistry.getInstance().getDefaultInstance();
+        if (ss == null)
+            return;
+        Server s = ss.getServer();
+        if (s == null)
+            return;
         Node node = getServerNode(s);
-        node.getChildren().getNodes();
+        if (node != null) {
+            node.getChildren().getNodes();
+        }
     }
     public SystemAction[] createActions() {
         return new SystemAction[] {
