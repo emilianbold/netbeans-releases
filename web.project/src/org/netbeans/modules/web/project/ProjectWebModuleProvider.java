@@ -31,15 +31,18 @@ public class ProjectWebModuleProvider implements WebModuleProvider {
         if (project != null && project instanceof WebProject) {
             WebProject wp = (WebProject) project;
             FileObject src = wp.getSourceDirectory ();
-            FileObject web = wp.getWebModule ().getDocumentBase ();
-            if (src.equals (file) || web.equals (file) || FileUtil.isParentOf (src, file) || FileUtil.isParentOf (web, file)) {
+            if (src != null && (src.equals (file) || FileUtil.isParentOf (src, file))) {
                 return WebModuleFactory.createWebModule (wp.getWebModule ());
             }
+
+            FileObject web = wp.getWebModule ().getDocumentBase ();
+            if (web != null && (web.equals (file) || FileUtil.isParentOf (web, file))) {
+                return WebModuleFactory.createWebModule (wp.getWebModule ());
+            }
+
             FileObject build = wp.getWebModule().getBuildDirectory();
-            if (build != null) {
-                if (build.equals (file) || FileUtil.isParentOf (build, file)) {
-                    return WebModuleFactory.createWebModule (wp.getWebModule ());
-                }
+            if (build != null && (build.equals (file) || FileUtil.isParentOf (build, file))) {
+                return WebModuleFactory.createWebModule (wp.getWebModule ());
             }
         }
         return null;
