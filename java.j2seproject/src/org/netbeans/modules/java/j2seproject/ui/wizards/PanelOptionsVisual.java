@@ -18,7 +18,7 @@ import org.openide.WizardDescriptor;
  */
 public class PanelOptionsVisual extends javax.swing.JPanel implements ActionListener {
     
-    private static boolean lastMainClassCheck = false; // XXX Store somewhere
+    private static boolean lastMainClassCheck = true; // XXX Store somewhere
     
     private PanelConfigureProject panel;
     
@@ -76,17 +76,19 @@ public class PanelOptionsVisual extends javax.swing.JPanel implements ActionList
         setAsMainCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(setAsMainCheckBox, gridBagConstraints);
 
+        createMainCheckBox.setSelected(true);
         createMainCheckBox.setText("Create Main Class:");
         createMainCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(createMainCheckBox, gridBagConstraints);
 
+        mainClassTextField.setText("com.myapp.Main");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -111,8 +113,8 @@ public class PanelOptionsVisual extends javax.swing.JPanel implements ActionList
     }
 
     void store( WizardDescriptor d ) {
-        d.putProperty( /*XXX Define somewhere */ "setAsMain", setAsMainCheckBox.isSelected() ? Boolean.TRUE : Boolean.FALSE ); // NOI18N
-        d.putProperty( /*XXX Define somewhere */ "mainClass", createMainCheckBox.isSelected() ? mainClassTextField.getText() : null ); // NOI18N      
+        d.putProperty( /*XXX Define somewhere */ "setAsMain", setAsMainCheckBox.isSelected() && setAsMainCheckBox.isVisible() ? Boolean.TRUE : Boolean.FALSE ); // NOI18N
+        d.putProperty( /*XXX Define somewhere */ "mainClass", createMainCheckBox.isSelected() && createMainCheckBox.isVisible() ? mainClassTextField.getText() : null ); // NOI18N      
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

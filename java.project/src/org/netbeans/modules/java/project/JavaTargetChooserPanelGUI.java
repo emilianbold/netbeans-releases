@@ -135,7 +135,6 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         rootComboBox = new javax.swing.JComboBox();
         jLabel2 = new javax.swing.JLabel();
         packageComboBox = new javax.swing.JComboBox();
-        jPanel2 = new javax.swing.JPanel();
         jLabel4 = new javax.swing.JLabel();
         fileTextField = new javax.swing.JTextField();
         targetSeparator = new javax.swing.JSeparator();
@@ -160,13 +159,13 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 24, 0);
         gridBagConstraints.weightx = 1.0;
         add(jPanel1, gridBagConstraints);
 
         jLabel5.setText("Project");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel5, gridBagConstraints);
 
@@ -174,19 +173,19 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
         add(projectTextField, gridBagConstraints);
 
         jLabel1.setText("Package Root:");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel1, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
         gridBagConstraints.weightx = 1.0;
         add(rootComboBox, gridBagConstraints);
 
@@ -203,26 +202,19 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         gridBagConstraints.weightx = 1.0;
         add(packageComboBox, gridBagConstraints);
 
-        jPanel2.setLayout(new java.awt.GridBagLayout());
-
         jLabel4.setText("Created File:");
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel2.add(jLabel4, gridBagConstraints);
+        add(jLabel4, gridBagConstraints);
 
         fileTextField.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
-        jPanel2.add(fileTextField, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
-        add(jPanel2, gridBagConstraints);
+        add(fileTextField, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -250,7 +242,6 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JComboBox packageComboBox;
     private javax.swing.JTextField projectTextField;
