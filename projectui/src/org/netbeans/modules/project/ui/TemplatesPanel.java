@@ -43,28 +43,32 @@ public class TemplatesPanel implements WizardDescriptor.Panel {
     private ArrayList listeners;
     private TemplatesPanelGUI panel;
     
+    private boolean needsReselect = false;   // WelcomeScreen hack, XXX Delete after WS is redesigned
+        
     /** Creates a new instance of TemplatesPanel */
     public TemplatesPanel() {
     }
     
-    public void readSettings (Object settings) {        
+    public void readSettings (Object settings) {      
         TemplateWizard wd = (TemplateWizard) settings;
         wd.putProperty ("WizardPanel_contentSelectedIndex", new Integer (0)); // NOI18N
         wd.putProperty ("WizardPanel_contentData", new String[] { // NOI18N
                 NbBundle.getBundle (TemplatesPanel.class).getString ("LBL_TemplatesPanel_Name"), // NOI18N
                 NbBundle.getBundle (TemplatesPanel.class).getString ("LBL_TemplatesPanel_Dots")}); // NOI18N
         FileObject templatesFolder = (FileObject) wd.getProperty (TemplatesPanelGUI.TEMPLATES_FOLDER);
-        if (templatesFolder != null && templatesFolder.isFolder() && wd.getTemplate() == null) {
+        
+        // WelcomeScreen hack, XXX Delete after WS is redesigned
+        String preselectedCategory = (String)wd.getProperty( "PRESELECT_CATEGORY" );        
+        if ( templatesFolder != null && templatesFolder.isFolder() && 
+            ( wd.getTemplate() == null || preselectedCategory != null || needsReselect ) ) {
             TemplatesPanelGUI gui = (TemplatesPanelGUI)this.getComponent();
             gui.setTemplatesFolder (templatesFolder);
             
-            // Uggly hack for the WelcomeScreen action
-            // XXX Delete after WS is redesigned
-            String preselectedCategory = (String)wd.getProperty( "PRESELECT_CATEGORY" );            
             String selectedCategory = OpenProjectListSettings.getInstance().getLastSelectedProjectCategory ();
             gui.setSelectedCategoryByName( preselectedCategory != null ? preselectedCategory : selectedCategory );
+            
             String selectedTemplate = OpenProjectListSettings.getInstance().getLastSelectedProjectType ();
-            gui.setSelectedTemplateByName(selectedTemplate);
+            gui.setSelectedTemplateByName( preselectedCategory != null ? null : selectedTemplate);            
         }
         // bugfix #44792: project wizard title always changes
         ((WizardDescriptor)settings).putProperty ("NewProjectWizard_Title", null); // NOI18N
@@ -72,22 +76,33 @@ public class TemplatesPanel implements WizardDescriptor.Panel {
     
     public void storeSettings (Object settings) {
         TemplateWizard wd = (TemplateWizard) settings;
-        TemplatesPanelGUI gui = (TemplatesPanelGUI)this.getComponent();
-        FileObject fo = gui.getSelectedTemplate();
-        if (fo != null) {
-            try {
-                wd.setTemplate (DataObject.find(fo));
-            } catch (DataObjectNotFoundException e) {
-                ErrorManager.getDefault().notify(e);
+        
+        // WelcomeScreen hack, XXX Delete after WS is redesigned
+        String preselectedCategory = (String)wd.getProperty( "PRESELECT_CATEGORY" );            
+        if ( preselectedCategory == null ) {
+        
+            TemplatesPanelGUI gui = (TemplatesPanelGUI)this.getComponent();
+            FileObject fo = gui.getSelectedTemplate();
+            if (fo != null) {
+                try {
+                    wd.setTemplate (DataObject.find(fo));
+                } catch (DataObjectNotFoundException e) {
+                    ErrorManager.getDefault().notify(e);
+                }
             }
+                
+            String path = gui.getSelectedCategoryName();        
+            if (path != null) {
+                OpenProjectListSettings.getInstance().setLastSelectedProjectCategory(path);
+            }
+            path = gui.getSelectedTemplateName();
+            if (path != null) {
+                OpenProjectListSettings.getInstance().setLastSelectedProjectType (path);
+            }
+            needsReselect = false;
         }
-        String path = gui.getSelectedCategoryName();
-        if (path != null) {
-            OpenProjectListSettings.getInstance().setLastSelectedProjectCategory(path);
-        }
-        path = gui.getSelectedTemplateName();
-        if (path != null) {
-            OpenProjectListSettings.getInstance().setLastSelectedProjectType (path);
+        else {
+            needsReselect = true;
         }
     }
     
@@ -113,7 +128,7 @@ public class TemplatesPanel implements WizardDescriptor.Panel {
         return new HelpCtx( TemplatesPanel.class );
     }
     
-    public synchronized Component getComponent() {
+    public synchronized Component getComponent() {        
         if (this.panel == null) {
             this.panel = new TemplatesPanelGUI ();
             Utilities.attachInitJob (panel, new WarmupJob ());
@@ -122,10 +137,10 @@ public class TemplatesPanel implements WizardDescriptor.Panel {
         return this.panel;
     }
     
-    private TemplatesPanelGUI.Builder constructBuilder () {
-        return new Builder ();
-    }
-    
+//    private TemplatesPanelGUI.Builder constructBuilder () {
+//        return new Builder ();
+//    }
+//    
     private static class CategoriesChildren extends Children.Keys {
         
         private DataFolder root;
@@ -203,8 +218,9 @@ public class TemplatesPanel implements WizardDescriptor.Panel {
     
     private class WarmupJob implements AsyncGUIJob {
         public void construct () {
-            TemplatesPanelGUI.Builder firer = constructBuilder ();
+            TemplatesPanelGUI.Builder firer = new Builder();
             panel.doWarmUp (firer);
+            
         }
         
         public void finished () {

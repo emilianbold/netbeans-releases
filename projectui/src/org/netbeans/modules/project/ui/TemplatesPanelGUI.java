@@ -79,6 +79,8 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     private boolean isWarmingUp = false;
     private static int DELAY_TIME = 50;
     
+    private static final RequestProcessor RP = new RequestProcessor();
+    
     /** Creates new form TemplatesPanelGUI */
     public TemplatesPanelGUI () {
         isWarmingUp = true;
@@ -104,7 +106,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
 //            if (setTemplatesFolderTask != null && !setTemplatesFolderTask.isFinished ()) {
 //                setTemplatesFolderTask.cancel ();
 //            }
-            setTemplatesFolderTask = RequestProcessor.getDefault ().post (new Runnable () {
+            setTemplatesFolderTask = RP.post (new Runnable () {
                 public void run () {
                     setTemplatesFolder (folder);
                 }
@@ -126,7 +128,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
 //            if (setSelectedCategoryByNameTask != null && !setSelectedCategoryByNameTask.isFinished ()) {
 //                setSelectedCategoryByNameTask.cancel ();
 //            }
-            setSelectedCategoryByNameTask = RequestProcessor.getDefault ().post (new Runnable () {
+            setSelectedCategoryByNameTask = RP.post (new Runnable () {
                 public void run () {
                     setSelectedCategoryByName (categoryName);
                 }
@@ -158,7 +160,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             if (setSelectedTemplateByNameTask != null && !setSelectedTemplateByNameTask.isFinished ()) {
                 setSelectedTemplateByNameTask.cancel ();
             }
-            setSelectedTemplateByNameTask = RequestProcessor.getDefault ().post (new Runnable () {
+            setSelectedTemplateByNameTask = RP.post (new Runnable () {
                 public void run () {
                     setSelectedTemplateByName (templateName);
                 }
