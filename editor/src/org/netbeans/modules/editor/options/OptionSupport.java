@@ -224,12 +224,6 @@ public class OptionSupport extends SystemOption {
         return settingsInitializer;
     }
     
-    public void writeExternal() throws IOException{
-    }
-    
-    public void writeExternal(ObjectOutput out) throws IOException{
-    }
-
     
     class SettingsInitializer implements Settings.Initializer {
         

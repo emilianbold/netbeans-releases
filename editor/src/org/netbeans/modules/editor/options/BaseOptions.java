@@ -1302,5 +1302,13 @@ public class BaseOptions extends OptionSupport {
         loadSettings(FontsColorsMIMEProcessor.class);
         loadSettings(PropertiesMIMEProcessor.class);
     }
+
+    /** Overriden writeExternal method. BaseOptions are no longer serialized. */
+    public void writeExternal() throws IOException{
+    }
+    
+    /** Overriden writeExternal method. BaseOptions are no longer serialized. */
+    public void writeExternal(ObjectOutput out) throws IOException{
+    }
     
 }
