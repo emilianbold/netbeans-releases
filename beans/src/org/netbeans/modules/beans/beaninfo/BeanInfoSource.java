@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataFolder;
+import org.openide.src.SourceElement;
 import org.openide.src.ClassElement;
 import org.openide.src.MethodElement;
 import org.openide.TopManager;
@@ -86,18 +87,26 @@ public class BeanInfoSource extends Object {
 
         javaEditor = null;
 
-        DataObject dataObject = (DataObject)classElement.getCookie( DataObject.class );
-        if ( dataObject == null )
+        SourceElement sc = classElement.getSource();
+        if ( sc == null ) {
             return;
+        }
+        
+        DataObject dataObject = (DataObject)sc.getCookie( DataObject.class );
+        if ( dataObject == null ) {
+            return;
+        }
 
         FileObject folder = dataObject.getFolder().getPrimaryFile();
-        if ( folder == null )
+        if ( folder == null ) {
             return;
-
+        }
+        
         FileObject biFile = folder.getFileObject( dataObject.getName() + BEANINFO_NAME_EXT, "java" ); // NOI18N
-        if ( biFile == null )
+        if ( biFile == null ) {
             return;
-
+        }
+        
         try {
             biDataObject = DataObject.find( biFile );
             javaEditor = (JavaEditor)biDataObject.getCookie( JavaEditor.class );
@@ -119,42 +128,50 @@ public class BeanInfoSource extends Object {
     void createFromTemplate() {
 
         DataFolder dfTemplates = TopManager.getDefault().getPlaces().folders().templates();
-        if ( dfTemplates == null )
+        if ( dfTemplates == null ) {
             return;
-
+        }
+        
         FileObject foTemplates = dfTemplates.getPrimaryFile() ;
-        if ( foTemplates == null )
+        if ( foTemplates == null ) {
             return;
+        }
 
         FileObject foClassTemplates = foTemplates.getFileObject( "Beans" ); // NOI18N
-        if ( foClassTemplates == null )
+        if ( foClassTemplates == null ) {
             return;
-
+        }    
+            
         FileObject foBiTemplate = foClassTemplates.getFileObject( "BeanInfo", "java" ); // NOI18N
-        if ( foBiTemplate == null )
+        if ( foBiTemplate == null ) {
             return;
-
+        }
 
 
         try {
             DataObject doBiTemplate = DataObject.find ( foBiTemplate );
-
-            DataObject dataObject = (DataObject)classElement.getCookie( DataObject.class );
-
-            if ( dataObject == null )
+ 
+            SourceElement sc = classElement.getSource();
+            if ( sc == null )
                 return;
+            
+            DataObject dataObject = (DataObject)sc.getCookie( DataObject.class );
 
+            if ( dataObject == null ) {
+                return;
+            }
+            
             DataFolder folder = dataObject.getFolder();
 
             biDataObject = doBiTemplate.createFromTemplate( folder, dataObject.getName() + BEANINFO_NAME_EXT );
             javaEditor = (JavaEditor)biDataObject.getCookie( JavaEditor.class );
         }
         catch ( org.openide.loaders.DataObjectNotFoundException e ) {
-            //System.out.println ( e );
+            // System.out.println ( e );
             // Do nothing if no data object is found
         }
         catch ( java.io.IOException e ) {
-            //System.out.println ( e );
+            // System.out.println ( e );
             // Do nothing if no data object is found
         }
     }

@@ -226,7 +226,9 @@ public class BiAnalyser extends Object implements Node.Cookie {
     void regenerateSource() {
 
         if ( bis.exists() ) {
+
             if ( !bis.isNbBeanInfo() ) {
+                
                 String mssg = NbBundle.getBundle(BiAnalyser.class).getString( "MSG_BeanInfoExists" );
                 NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
                 TopManager.getDefault().notify( nd );
@@ -247,6 +249,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
             }
         }
         else {
+            
             bis.createFromTemplate();
 
             if ( !bis.isNbBeanInfo() ) {
@@ -493,6 +496,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
                 break;
             }
         }
+        
         return result;
 
     }
@@ -501,7 +505,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
         //ArrayList result = new ArrayList();
         String paramString;
 
-        int beg = command.lastIndexOf( '(' );
+        int beg = command.indexOf( '(' );
         int end = command.lastIndexOf( ')' );
 
         if ( beg != -1 && end != -1 && ( ++beg < end ) )
@@ -509,7 +513,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
         else
             return new String[0];
 
-        StringTokenizer strTok = new StringTokenizer( paramString, ",)" ); // NOI18N
+        StringTokenizer strTok = new StringTokenizer( paramString, "," ); // NOI18N
 
         String[] resultStrs = new String[ strTok.countTokens() ];
 
