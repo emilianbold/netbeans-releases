@@ -556,7 +556,9 @@
 <mapID target="proxy" url="webbrowser/proxy.html" />
 <mapID target="bypass.proxy" url="webbrowser/bypassproxy.html" />
 <mapID target="httpserver-options" url="webbrowser/httpserver-options.html" />
+
 <mapID target="webbrowser.default" url="webbrowser/default.html" />
+<!--linked to from web/advanced help set - file webmod/mod_browser.html-->
 
 <mapID target="workspace.jump" url="workspace/workspace_jump.html" />
 <mapID target="workspace.clone" url="workspace/clone.html" />
@@ -1452,6 +1454,9 @@
   <!--ID for action as listed in Options | IDE Configuration | Look and Feel | Actions--> 
   <mapID target="org.netbeans.modules.j2ee.impl.DeployAction" url="pending.html" />
 
+  <mapID target="org.netbeans.modules.j2ee.deployment.config.ConfigDataObject" url="pending.html" />
+  <!--ID used for server nodes if not overridden by ID for specific server-->
+  
   <mapID target="org.netbeans.modules.j2ee.deployment.execution.ServerDebuggerType" url="debug/debugger/j2ee_debugger.html" />
   <mapID target="org.netbeans.modules.j2ee.deployment.execution.ServerExecutor" url="run/j2ee_executor.html" />
   
