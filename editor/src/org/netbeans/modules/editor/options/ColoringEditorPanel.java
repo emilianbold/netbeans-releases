@@ -26,8 +26,6 @@ import org.openide.explorer.propertysheet.PropertyModel;
 import org.netbeans.editor.Coloring;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsDefaults;
-import org.netbeans.beaninfo.editors.FontEditor;
-import org.netbeans.beaninfo.editors.ColorEditor;
 import java.awt.Dimension;
 import java.beans.FeatureDescriptor;
 import org.openide.explorer.propertysheet.ExPropertyModel;
@@ -70,7 +68,10 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
         gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints1.insets = new java.awt.Insets (0, 0, 0, 0);
         gridBagConstraints1.weightx = 1.0;
-        fontPanel = new PropWithDefaultPanel( Font.class, FontEditor.class,
+        // There should always be non-null property editors for Font and Color 
+        Class fontEditorClass = PropertyEditorManager.findEditor(Font.class).getClass();
+        Class colorEditorClass = PropertyEditorManager.findEditor(Color.class).getClass();
+        fontPanel = new PropWithDefaultPanel( Font.class, fontEditorClass,
                                               getBundleString("CEP_FontTitle"),        // NOI18N
                                               getBundleString("ACSD_CEP_Font"),        // NOI18N
                                               getBundleString("CEP_FontTrans"),        // NOI18N
@@ -92,7 +93,7 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints1.insets = new java.awt.Insets (12, 0, 0, 0);
         gridBagConstraints1.weightx = 1.0;
-        fgColorPanel = new PropWithDefaultPanel( Color.class, ColorEditor.class,
+        fgColorPanel = new PropWithDefaultPanel( Color.class, colorEditorClass,
                        getBundleString("CEP_FgTitle"),       // NOI18N
                        getBundleString("ACSD_CEP_Fg"),       // NOI18N
                        getBundleString("CEP_FgTrans"),       // NOI18N
@@ -114,7 +115,7 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints1.insets = new java.awt.Insets (12, 0, 0, 0);
         gridBagConstraints1.weightx = 1.0;
-        bgColorPanel = new PropWithDefaultPanel( Color.class, ColorEditor.class,
+        bgColorPanel = new PropWithDefaultPanel( Color.class, colorEditorClass,
                        getBundleString("CEP_BgTitle"),       // NOI18N
                        getBundleString("ACSD_CEP_Bg"),       // NOI18N
                        getBundleString("CEP_BgTrans"),       // NOI18N
