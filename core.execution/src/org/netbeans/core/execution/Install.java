@@ -63,7 +63,7 @@ public class Install extends ModuleInstall {
         SharedClassObject.findObject (ExecutionSettings.class, true);
         // run classes int Startup folder
         FileObject startup = Repository.getDefault().getDefaultFileSystem().findResource("Startup"); // NOI18N
-        if (startup != null) {
+        if (startup != null && startup.getChildren().length > 0) {
             startFolder(DataFolder.findFolder(startup));
         }
 
