@@ -158,7 +158,9 @@ public class CheckLinks extends MatchingTask {
                         if (others != null) {
                             String otherbase = hrefOrAnchor.getParen (2);
                             String otheranchor = hrefOrAnchor.getParen (3);
-                            others.add(new URL(base, (otheranchor == null) ? otherbase : otherbase + otheranchor));
+                            if (!otherbase.startsWith("mailto:")) {
+                                others.add(new URL(base, (otheranchor == null) ? otherbase : otherbase + otheranchor));
+                            }
                         } // else we are only checking that this one has right anchors
                     } else {
                         throw new IllegalStateException(type);
