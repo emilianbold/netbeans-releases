@@ -55,6 +55,13 @@ public class PopToHereActionProvider extends JPDADebuggerActionProvider {
     protected void checkEnabled (int debuggerState) {
         if (debuggerState == getDebuggerImpl ().STATE_STOPPED) {
             JPDAThread t = getDebuggerImpl ().getCurrentThread ();
+            if (t == null) {
+                setEnabled (
+                    DebuggerManager.ACTION_POP_TOPMOST_CALL,
+                    false
+                );
+                return;
+            }
             setEnabled (
                 DebuggerManager.ACTION_POP_TOPMOST_CALL,
                 t.getStackDepth () > 1
