@@ -24,20 +24,18 @@ public class SectionContainerNode extends org.openide.nodes.AbstractNode {
     public SectionContainerNode(org.openide.nodes.Children ch) {
         super(ch);
         int childrenSize = ch.getNodes().length;
-        setIconBase(childrenSize==0?"org/netbeans/modules/xml/multiview/resources/folder": //NOI18N
-                                    "org/netbeans/modules/xml/multiview/resources/folderOpen"); //NOI18N
+        setIconBase("org/netbeans/modules/xml/multiview/resources/folder"); //NOI18N
         addNodeListener(new NodeAdapter() {
             public void childrenAdded(org.openide.nodes.NodeMemberEvent ev) {
                 if (SectionContainerNode.this.getChildren().getNodes().length==1) {
-                    setIconBase("org/netbeans/modules/xml/multiview/resources/folderOpen"); //NOI18N
+                    firePropertyChange(org.openide.nodes.Node.PROP_LEAF,Boolean.TRUE, Boolean.FALSE);
                 }
             }
             public void childrenRemoved(org.openide.nodes.NodeMemberEvent ev) {
                 if (SectionContainerNode.this.getChildren().getNodes().length==0) {
-                    setIconBase("org/netbeans/modules/xml/multiview/resources/folder"); //NOI18N
+                    firePropertyChange(org.openide.nodes.Node.PROP_LEAF,Boolean.FALSE, Boolean.TRUE);
                 }
             }
         });
     }
-    
 }
