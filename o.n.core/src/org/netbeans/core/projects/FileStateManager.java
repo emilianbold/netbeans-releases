@@ -207,12 +207,21 @@ final class FileStateManager {
             if (SessionManager.PROP_OPEN.equals (evt.getPropertyName ())) {
                 FileObject mfos [] = null;
 
-                // [PENDING] this should be better synchronized
-                getLayers ();
-                
                 synchronized (info) {
                     mfos = (FileObject [])info.keySet ().toArray (new FileObject [0]);
+                    
+                    // invalidate all existing FileInfos
+                    for (int i = 0; i < mfos.length; i++) {
+                        FileInfo finf = (FileInfo) info.get (mfos [i]);
+                        if (finf != null)
+                            finf.invalidate ();
+                    }
+
+                    // clear the cache
                     info.clear ();
+
+                    // [PENDING] this should be better synchronized
+                    getLayers ();
                 }
                 
                 for (int i = 0; i < mfos.length; i++)
@@ -247,7 +256,15 @@ final class FileStateManager {
                 attachNotifier (mfo, i);
             }
         }
-        
+
+        public void invalidate () {
+            detachAllNotifiers ();
+            synchronized (LOCK) {
+                for (int i = 0; i < LAYERS_COUNT; i++)
+                    state [i] = FSTATE_UNDEFINED;
+            }
+        }
+
         public int getState (int layer) {
             synchronized (LOCK) {
                 return state [layer];
@@ -306,7 +323,7 @@ final class FileStateManager {
         /**
          * @return true if attached notifier is the delegate FO
          */
-        private boolean attachNotifier (FileObject mfo, int layer) {
+        private synchronized boolean attachNotifier (FileObject mfo, int layer) {
             String fn = mfo.getPackageNameExt ('/', '.');
             FileObject fo = null;
             boolean isDelegate = true;
@@ -339,7 +356,7 @@ final class FileStateManager {
             return isDelegate;
         }
 
-        private void detachAllNotifiers () {
+        private synchronized void detachAllNotifiers () {
             for (int i = 0; i < LAYERS_COUNT; i++) {
                 if (notifiers [i] != null) {
                     notifiers [i].removeFileChangeListener (weakL [i]);
