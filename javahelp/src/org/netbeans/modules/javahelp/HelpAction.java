@@ -21,108 +21,131 @@ import org.openide.ErrorManager;
 import org.openide.TopManager;
 import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
-
 import org.netbeans.api.javahelp.Help;
 
-/** Show help for the thing under the cursor.
-* @author Jesse Glick
-*/
-public class HelpAction extends SystemAction {
-
+/**
+ * Shows help for the currently focused component
+ * @author Jesse Glick
+ */
+public class HelpAction extends SystemAction
+{
     private static final long serialVersionUID = 4658008202517094416L;
 
-    /** Component the mouse is currently over. */
-    private static Component globallySelectedComp;
-    private static AWTEventListener l = new AWTEventListener() {
-        public void eventDispatched(AWTEvent ev) {
-            if ((ev instanceof MouseEvent) && ev.getID() == MouseEvent.MOUSE_ENTERED) {
-                globallySelectedComp = ((MouseEvent)ev).getComponent();
-                //System.err.println("mouse entered: " + globallySelectedComp);
-            }
-        }
-    };
+    // XXX(-ttran) we need to register AWTEventListener even before HelpAction
+    // is called for the first time.  Do it in a static block.  Beware that it
+    // wouldn't work if the class is not loaded eargerly
+    
     static {
-        // For live-tracking, we need to know what component the mouse is over:
-        // Make sure it is not null:
-        globallySelectedComp = TopManager.getDefault().getWindowManager().getMainWindow();
-        AWTEventListener wl = (AWTEventListener)WeakListener.create(AWTEventListener.class, l, Toolkit.getDefaultToolkit());
-        Toolkit.getDefaultToolkit().addAWTEventListener(wl, AWTEvent.MOUSE_EVENT_MASK);
-        // [PENDING] Should instead use if available (JDK 1.4):
-        // java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager ().getFocusOwner ()
+        WindowActivatedDetector.install();
     }
 
-    /* Human presentable name of the action. This should be
-    * presented as an item in a menu.
-    * @return the name of the action
-    */
     public String getName() {
         return NbBundle.getMessage(HelpAction.class, "LBL_HelpAction");
     }
 
-    /* Help context where to find more about the action.
-    * @return the help context for this action
-    */
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
-    /* Icon resource.
-    * @return name of resource for icon
-    */
     protected String iconResource() {
         return "org/netbeans/modules/javahelp/resources/show-help.gif"; // NOI18N
     }
 
-    // Make sure this action works on dialogs, etc.--everywhere.
     protected void initialize() {
         super.initialize();
         Installer.err.log("HelpAction.initialize");
-        // Cf. org.netbeans.core.windows.frames.NbFocusManager:
+
+        // Cf. org.netbeans.core.windows.frames.NbFocusManager and
+        // org.netbeans.core.windows.frames.ShortcutAndMenuKeyEventProcessor
         putProperty("OpenIDE-Transmodal-Action", Boolean.TRUE); // NOI18N
     }
 
+    private static class WindowActivatedDetector implements AWTEventListener
+    {
+        private static java.lang.ref.WeakReference currentWindowRef;
+        private static boolean installed;
+
+        static synchronized void install() {
+            if (installed)
+                return;
+            installed = true;
+            
+            Toolkit.getDefaultToolkit ().addAWTEventListener(
+                new WindowActivatedDetector(), AWTEvent.WINDOW_EVENT_MASK);
+        }
+        
+        static synchronized Window getCurrentActivatedWindow() {
+            if (currentWindowRef != null) {
+                return (Window) currentWindowRef.get();
+            }
+            else {
+                return null;
+            }
+        }
+
+        private static synchronized void setCurrentActivatedWindow(Window w) {
+            currentWindowRef = new java.lang.ref.WeakReference(w);
+        }
+
+        public void eventDispatched (AWTEvent ev) {
+            if (ev.getID() != WindowEvent.WINDOW_ACTIVATED)
+                return;
+            setCurrentActivatedWindow(((WindowEvent) ev).getWindow());
+        }
+    }
+    
+    private static HelpCtx findHelpCtx() {
+        Window w = WindowActivatedDetector.getCurrentActivatedWindow();
+        Component focused = (w != null) ? SwingUtilities.findFocusOwner(w) : null;
+        HelpCtx help = (focused == null) ? HelpCtx.DEFAULT_HELP : HelpCtx.findHelp(focused);
+
+        if (Installer.err.isLoggable(ErrorManager.UNKNOWN)) {
+            Installer.err.log(ErrorManager.UNKNOWN, help.toString() + " from " + focused);
+        } else if (Installer.err.isLoggable(ErrorManager.INFORMATIONAL)) {
+            Installer.err.log(ErrorManager.INFORMATIONAL, help.toString());
+        }
+        return help;
+    }
+    
     public void actionPerformed(ActionEvent ev) {
         Help h = (Help)Lookup.getDefault().lookup(Help.class);
         if (h == null) {
             Toolkit.getDefaultToolkit().beep();
             return;
         }
-        if (globallySelectedComp instanceof RootPaneContainer) {
-            // #17424: in some circumstances an NbDialog will be open with
-            // some contents incl. a table and so on--but not completely filled
-            // acc. to the layout manager--and mouse entered events give the
-            // NbDialog itself, rather than the table or whatever you might
-            // have expected. Strange bit of AWT behavior there. Anyway, since
-            // NbPresenter puts a helpID on the root pane, we need to look at
-            // that instead of the dialog.
-            globallySelectedComp = ((RootPaneContainer)globallySelectedComp).getRootPane();
-        }
-        HelpCtx help = HelpCtx.findHelp(globallySelectedComp);
-        if (Installer.err.isLoggable(ErrorManager.UNKNOWN)) {
-            Installer.err.log(ErrorManager.UNKNOWN, help.toString() + " from " + globallySelectedComp);
-        } else if (Installer.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-            Installer.err.log(ErrorManager.INFORMATIONAL, help.toString());
-        }
-        TopManager.getDefault().setStatusText(NbBundle.getMessage(HelpAction.class, "CTL_OpeningHelp"));
-        h.showHelp(help);
-        TopManager.getDefault().setStatusText(""); // NOI18N
-        // Copied from MainWindow:
-        final MenuSelectionManager msm = MenuSelectionManager.defaultManager();
-        final MenuElement[] path = msm.getSelectedPath();
-        // post request that should after half of second clear the selected menu
-        RequestProcessor.postRequest(new Runnable() {
-            public void run() {
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        MenuElement[] newPath = msm.getSelectedPath();
-                        if (newPath.length != path.length) return;
-                        for (int i = 0; i < newPath.length; i++) {
-                            if (newPath[i] != path[i]) return;
-                        }
-                        msm.clearSelectedPath();
+
+        HelpCtx help;
+        
+        final MenuElement[] path =
+            MenuSelectionManager.defaultManager().getSelectedPath();
+
+        if (path != null
+            && path.length > 0
+            && !(path[0].getComponent() instanceof javax.swing.plaf.basic.ComboPopup)
+            ) {
+            help = HelpCtx.findHelp(path[path.length - 1].getComponent());
+            
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    MenuElement[] newPath =
+                        MenuSelectionManager.defaultManager().getSelectedPath();
+
+                    if (newPath.length != path.length)
+                        return;
+                    for (int i = 0; i < newPath.length; i++) {
+                        if (newPath[i] != path[i])
+                            return;
                     }
-                });
-            }
-        }, 200);
+                    MenuSelectionManager.defaultManager().clearSelectedPath();
+                }
+            });
+        }
+        else {
+            help = findHelpCtx();
+        }
+        
+        TopManager.getDefault().setStatusText(NbBundle.getMessage(HelpAction.class, "CTL_OpeningHelp"));
+        h.showHelp (help);
+        TopManager.getDefault ().setStatusText (""); // NOI18N
     }
 }
