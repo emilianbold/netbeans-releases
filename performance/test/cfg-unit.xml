@@ -49,11 +49,20 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
     
+    <testbag testattribs="measure_ide or measure_warmup" prio="2" executor="measure_warmup" name="Measure warm up">
+	<testset dir="unit/src">
+	    <patternset>
+		<include name="startup/MeasureWarmUp.class/testWarmUp"/>		
+	    </patternset>
+	</testset>
+    </testbag>
+    
 <!-- END Property Editors testbag -->
     
     <executor name="measure_startup" antfile="build-unit.xml" target="runcodetest_measure_startup"/>
     <executor name="measure_startup_opened_files_prepare" antfile="build-unit.xml" target="runcodetest_measure_complex_startup_prepare"/>
     <executor name="measure_startup_opened_files" antfile="build-unit.xml" target="runcodetest_measure_complex_startup"/>
+    <executor name="measure_warmup" antfile="build-unit.xml" target="runcodetest_measure_warmup"/>
     
     <executor name="measure_ide_memory_consumption" antfile="build-unit.xml" target="runidetest_measure_memory"/>
     

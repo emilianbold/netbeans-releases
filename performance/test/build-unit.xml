@@ -77,6 +77,7 @@ Microsystems, Inc. All Rights Reserved.
             
             <property name="xtest.timeout" value="1800000" />
         </executeTests>
+        
         <antcall target="copy_original_ide_cfg_file"/>
     </target>
 
@@ -102,6 +103,21 @@ Microsystems, Inc. All Rights Reserved.
         <antcall target="copy_original_ide_cfg_file"/>
     </target>
 
+    <!-- Executor for Measure Warm Up test -->
+    <target name="runcodetest_measure_warmup" depends="make_netbeans_executable">
+        <antcall target="copy_released_ide_cfg_file"/>
+        <executeTests pluginName="jvm">
+            <property name="xtest.userdata|netbeans.dest.dir" value="${netbeans.dest.dir}"/>
+            <property name="xtest.userdata|performance.testutilities.dist.jar" value="${performance.testutilities.dist.jar}"/>
+            
+            <property name="xtest.enable.assertions" value="false" /> 
+            
+            <!-- Property for repeatedly used New Userdirs and Userdirs used on old Userdirs -->
+            <property name="xtest.userdata|org.netbeans.performance.repeat" value="1"/>
+            
+        </executeTests>
+        <antcall target="copy_original_ide_cfg_file"/>
+    </target>
 
     <!-- ========= -->
     <!-- Utils     -->
