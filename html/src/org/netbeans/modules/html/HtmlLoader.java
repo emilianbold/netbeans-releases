@@ -32,8 +32,6 @@ import com.netbeans.ide.util.NbBundle;
 import com.netbeans.ide.util.actions.SystemAction;
 import com.netbeans.ide.windows.CloneableTopComponent;
 
-import ice.iblite.Browser;
-
 
 /**
 * Loader for Html DataObjects.
@@ -162,6 +160,7 @@ public class HtmlLoader extends UniFileLoader {
 
 /*
 * Log
+*  7    Gandalf   1.6         3/2/99   Jan Jancura     
 *  6    Gandalf   1.5         2/16/99  Jan Jancura     
 *  5    Gandalf   1.4         2/11/99  Jan Jancura     
 *  4    Gandalf   1.3         2/3/99   Jaroslav Tulach 
