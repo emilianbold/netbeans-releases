@@ -34,7 +34,7 @@ public class FormDataLoader extends JavaDataLoader {
     static final long serialVersionUID =7259146057404524013L;
     /** Constructs a new FormDataLoader */
     public FormDataLoader() {
-        super(FormDataObject.class);
+        super("org.netbeans.modules.form.FormDataObject"); // NOI18N
     }
 
     protected void initialize () {

@@ -47,7 +47,7 @@ public class HtmlLoader extends UniFileLoader {
     static final long serialVersionUID =-5809935261731217882L;
     
     public HtmlLoader() {
-        super (HtmlDataObject.class);
+        super ("org.netbeans.modules.html.HtmlDataObject"); // NOI18N
     }
 
     protected void initialize () {
