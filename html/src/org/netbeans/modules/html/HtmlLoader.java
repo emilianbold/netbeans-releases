@@ -59,7 +59,8 @@ public class HtmlLoader extends UniFileLoader {
       null,
       SystemAction.get (SaveAsTemplateAction.class),
       null,
-      new PropertiesAction ()
+      SystemAction.get (ToolsAction.class),
+      SystemAction.get (PropertiesAction.class),
     });
   }
 
@@ -106,6 +107,7 @@ public class HtmlLoader extends UniFileLoader {
 
 /*
 * Log
+*  16   Gandalf   1.15        6/9/99   Ian Formanek    ToolsAction
 *  15   Gandalf   1.14        6/9/99   Ian Formanek    ---- Package Change To 
 *       org.openide ----
 *  14   Gandalf   1.13        5/13/99  Jan Jancura     What action is default? 

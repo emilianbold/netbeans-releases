@@ -52,6 +52,7 @@ public class ImageDataLoader extends UniFileLoader {
       null,
       SystemAction.get(SaveAsTemplateAction.class),
       null,
+      SystemAction.get(ToolsAction.class),
       SystemAction.get(PropertiesAction.class)
     });
 

@@ -48,7 +48,8 @@ public class URLDataLoader extends UniFileLoader {
       null,
       SystemAction.get(SaveAsTemplateAction.class),
       null,
-      SystemAction.get(PropertiesAction.class)
+      SystemAction.get(ToolsAction.class),
+      SystemAction.get(PropertiesAction.class),
     });
 
   }
@@ -70,6 +71,7 @@ public class URLDataLoader extends UniFileLoader {
 
 /*
  * Log
+ *  5    Gandalf   1.4         6/9/99   Ian Formanek    ToolsAction
  *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  3    Gandalf   1.2         3/26/99  Ian Formanek    Fixed use of obsoleted 
