@@ -398,7 +398,7 @@ public class DTDGrammar implements GrammarQuery {
          * @output name that is presented to user
          */
         public String getDisplayName() {
-            return getNodeName() + " disp";
+            return null;
         }
 
         public boolean isEmptyElement() {

@@ -1026,7 +1026,7 @@ public final class XSLGrammarQuery implements GrammarQuery{
          * @return name that is presented to user
          */
         public String getDisplayName() {
-            return getNodeName();
+            return null;
         }
 
         public boolean isEmptyElement() {

@@ -53,6 +53,6 @@ abstract class AbstractResultNode extends AbstractNode implements GrammarResult 
      * @output name that is presented to user
      */
     public String getDisplayName() {
-        return getNodeName() + " disp";
+        return null;
     }
 }
