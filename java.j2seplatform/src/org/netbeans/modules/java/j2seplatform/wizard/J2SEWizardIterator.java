@@ -7,41 +7,48 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.java.j2seplatform.wizard;
 
-import java.io.*;
-import java.util.*;
-import java.net.URL;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
-
-
+import java.net.URL;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.StringTokenizer;
 import javax.swing.event.ChangeListener;
-
-import org.openide.WizardDescriptor.Panel;
-import org.openide.filesystems.*;
-import org.openide.loaders.*;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.java.j2seplatform.platformdefinition.J2SEPlatformImpl;
+import org.netbeans.modules.java.j2seplatform.platformdefinition.PlatformConvertor;
+import org.netbeans.modules.java.j2seplatform.platformdefinition.Util;
+import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.ErrorManager;
+import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.modules.InstalledFileLocator;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
-import org.openide.ErrorManager;
-import org.openide.modules.SpecificationVersion;
-
-import org.netbeans.api.java.platform.*;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.modules.java.j2seplatform.platformdefinition.PlatformConvertor;
-import org.netbeans.modules.java.j2seplatform.platformdefinition.J2SEPlatformImpl;
-import org.netbeans.modules.java.j2seplatform.platformdefinition.Util;
-import org.openide.WizardDescriptor;
-import org.openide.modules.InstalledFileLocator;
+import org.openide.util.NbBundle;
 
 /**
  * Wizard Iterator for standard J2SE platforms. It assumes that there is a
@@ -52,11 +59,16 @@ import org.openide.modules.InstalledFileLocator;
  */
 public class J2SEWizardIterator implements WizardDescriptor.InstantiatingIterator, Runnable {
 
-
     private static final String CLASSIC = "classic";        //NOI18N
     private static final String MODERN = "modern";          //NOI18N
     private static final String JAVAC13 = "javac1.3";       //NOI18N
-
+    private static final String[] IMPORTANT_TOOLS = {
+        // Used by j2seproject:
+        "javac", // NOI18N
+        "java", // NOI18N
+        // Might be used, though currently not (cf. #46901):
+        "javadoc", // NOI18N
+    };
 
     DataFolder                  installFolder;
     DetectPanel.WizardPanel     detectPanel;
@@ -79,7 +91,7 @@ public class J2SEWizardIterator implements WizardDescriptor.InstantiatingIterato
         listeners.add(l);
     }
 
-    public Panel current() {
+    public WizardDescriptor.Panel current() {
         switch (this.currentIndex) {
             case 0:
                 return this.detectPanel;
@@ -152,28 +164,18 @@ public class J2SEWizardIterator implements WizardDescriptor.InstantiatingIterato
                             }
                             props.setProperty(bootClassPathPropName,sbootcp.toString());   //NOI18N
                             props.setProperty(compilerType,getCompilerType(getPlatform()));
-                            FileObject tool = platform.findTool ("javac");                          //NOI18N
-                            if (tool != null) {
-                                if (!isDefaultLocation(tool,platform.getInstallFolders())) {
-                                    String toolName = createName(systemName,"javac");               //NOI18N
-                                    props.setProperty(toolName,normalizePath(getToolPath(tool),jdkHome, homePropName));
+                            for (int i = 0; i < IMPORTANT_TOOLS.length; i++) {
+                                String name = IMPORTANT_TOOLS[i];
+                                FileObject tool = platform.findTool(name);
+                                if (tool != null) {
+                                    if (!isDefaultLocation(tool, platform.getInstallFolders())) {
+                                        String toolName = createName(systemName, name);
+                                        props.setProperty(toolName, normalizePath(getToolPath(tool), jdkHome, homePropName));
+                                    }
+                                } else {
+                                    // XXX User should be asked about the exact path to the tool
+                                    throw new IOException("Cannot locate " + name + " command"); // NOI18N
                                 }
-                            }
-                            else {
-                                //TODO: User should be asked about the exact path to javac
-                                throw new IOException ("Can not locate javac command");
-
-                            }
-                            tool = platform.findTool ("java");                                      //NOI18N
-                            if (tool != null) {
-                                if (!isDefaultLocation(tool,platform.getInstallFolders())) {
-                                    String toolName = createName(systemName,"java");
-                                    props.setProperty(toolName,normalizePath(getToolPath(tool),jdkHome, homePropName));
-                                }
-                            }
-                            else {
-                                //TODO: User should be asked about the exact path to java
-                                throw new IOException ("Can not locate java command");
                             }
                             PropertyUtils.putGlobalProperties (props);
                             return null;

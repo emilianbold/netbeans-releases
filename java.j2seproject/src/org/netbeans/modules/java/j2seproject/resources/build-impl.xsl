@@ -593,35 +593,88 @@ is divided into following sections:
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <mkdir dir="${{dist.javadoc.dir}}"/>
                 <!-- XXX do an up-to-date check first -->
-                <javadoc>
-                
-                    <xsl:attribute name="destdir">${dist.javadoc.dir}</xsl:attribute>
-                    <xsl:if test ="not(/p:project/p:configuration/j2se:data/j2se:explicit-platform/@explicit-source-supported ='false')">                            
-                        <xsl:attribute name="source">${javac.source}</xsl:attribute>
-                    </xsl:if>
-                    <xsl:attribute name="notree">${javadoc.notree}</xsl:attribute>
-                    <xsl:attribute name="use">${javadoc.use}</xsl:attribute>
-                    <xsl:attribute name="nonavbar">${javadoc.nonavbar}</xsl:attribute>
-                    <xsl:attribute name="noindex">${javadoc.noindex}</xsl:attribute>
-                    <xsl:attribute name="splitindex">${javadoc.splitindex}</xsl:attribute>
-                    <xsl:attribute name="author">${javadoc.author}</xsl:attribute>
-                    <xsl:attribute name="version">${javadoc.version}</xsl:attribute>
-                    <xsl:attribute name="windowtitle">${javadoc.windowtitle}</xsl:attribute>
-                    <xsl:attribute name="private">${javadoc.private}</xsl:attribute>
-                    
-                    <classpath>
-                        <path path="${{javac.classpath}}"/>
-                    </classpath>
-                    <sourcepath>
-                        <pathelement location="${{src.dir}}"/>
-                    </sourcepath>
-                    <xsl:if test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
-                        <bootclasspath>
-                            <path path="${{platform.bootcp}}"/>
-                        </bootclasspath>
-                    </xsl:if>
-                    <fileset dir="${{src.dir}}"/>                
-                </javadoc>
+                <xsl:choose>
+                    <xsl:when test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
+                        <!-- XXX #46901: <javadoc> does not support an explicit executable -->
+                        <j2seproject:property name="platform.javadoc.tmp" value="platforms.${{platform.active}}.javadoc"/>
+                        <condition property="platform.javadoc" value="${{platform.home}}/bin/javadoc">
+                            <equals arg1="${{platform.javadoc.tmp}}" arg2="$${{platforms.${{platform.active}}.javadoc}}"/>
+                        </condition>
+                        <property name="platform.javadoc" value="${{platform.javadoc.tmp}}"/>
+                        <condition property="javadoc.notree.opt" value="-notree">
+                            <istrue value="${{javadoc.notree}}"/>
+                        </condition>
+                        <property name="javadoc.notree.opt" value=""/>
+                        <condition property="javadoc.use.opt" value="-use">
+                            <istrue value="${{javadoc.use}}"/>
+                        </condition>
+                        <property name="javadoc.use.opt" value=""/>
+                        <condition property="javadoc.nonavbar.opt" value="-nonavbar">
+                            <istrue value="${{javadoc.nonavbar}}"/>
+                        </condition>
+                        <property name="javadoc.nonavbar.opt" value=""/>
+                        <condition property="javadoc.noindex.opt" value="-noindex">
+                            <istrue value="${{javadoc.noindex}}"/>
+                        </condition>
+                        <property name="javadoc.noindex.opt" value=""/>
+                        <condition property="javadoc.splitindex.opt" value="-splitindex">
+                            <istrue value="${{javadoc.splitindex}}"/>
+                        </condition>
+                        <property name="javadoc.splitindex.opt" value=""/>
+                        <condition property="javadoc.author.opt" value="-author">
+                            <istrue value="${{javadoc.author}}"/>
+                        </condition>
+                        <property name="javadoc.author.opt" value=""/>
+                        <condition property="javadoc.version.opt" value="-version">
+                            <istrue value="${{javadoc.version}}"/>
+                        </condition>
+                        <property name="javadoc.version.opt" value=""/>
+                        <condition property="javadoc.private.opt" value="-private">
+                            <istrue value="${{javadoc.private}}"/>
+                        </condition>
+                        <property name="javadoc.private.opt" value=""/>
+                        <apply executable="${{platform.javadoc}}" failonerror="true" parallel="true">
+                            <arg value="-d"/>
+                            <arg file="${{dist.javadoc.dir}}"/>
+                            <xsl:if test ="not(/p:project/p:configuration/j2se:data/j2se:explicit-platform/@explicit-source-supported ='false')">
+                                <arg value="-source"/>
+                                <arg value="${{javac.source}}"/>
+                            </xsl:if>
+                            <arg value="-windowtitle"/>
+                            <arg value="${{javadoc.windowtitle}}"/>
+                            <arg line="${{javadoc.notree.opt}} ${{javadoc.use.opt}} ${{javadoc.nonavbar.opt}} ${{javadoc.noindex.opt}} ${{javadoc.splitindex.opt}} ${{javadoc.author.opt}} ${{javadoc.version.opt}} ${{javadoc.private.opt}}"/>
+                            <arg value="-classpath"/>
+                            <arg path="${{javac.classpath}}"/>
+                            <arg value="-sourcepath"/>
+                            <arg file="${{src.dir}}"/>
+                            <arg value="-bootclasspath"/>
+                            <arg path="${{platform.bootcp}}"/>
+                            <fileset dir="${{src.dir}}" includes="**/*.java"/>
+                        </apply>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <javadoc>
+                            <xsl:attribute name="destdir">${dist.javadoc.dir}</xsl:attribute>
+                            <xsl:attribute name="source">${javac.source}</xsl:attribute>
+                            <xsl:attribute name="notree">${javadoc.notree}</xsl:attribute>
+                            <xsl:attribute name="use">${javadoc.use}</xsl:attribute>
+                            <xsl:attribute name="nonavbar">${javadoc.nonavbar}</xsl:attribute>
+                            <xsl:attribute name="noindex">${javadoc.noindex}</xsl:attribute>
+                            <xsl:attribute name="splitindex">${javadoc.splitindex}</xsl:attribute>
+                            <xsl:attribute name="author">${javadoc.author}</xsl:attribute>
+                            <xsl:attribute name="version">${javadoc.version}</xsl:attribute>
+                            <xsl:attribute name="windowtitle">${javadoc.windowtitle}</xsl:attribute>
+                            <xsl:attribute name="private">${javadoc.private}</xsl:attribute>
+                            <classpath>
+                                <path path="${{javac.classpath}}"/>
+                            </classpath>
+                            <sourcepath>
+                                <pathelement location="${{src.dir}}"/>
+                            </sourcepath>
+                            <fileset dir="${{src.dir}}"/>                
+                        </javadoc>
+                    </xsl:otherwise>
+                </xsl:choose>
             </target>
 
             <target name="-javadoc-browse">
