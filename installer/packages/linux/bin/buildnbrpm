@@ -1,0 +1,196 @@
+#!/bin/bash
+#
+# Script: nb_buildnbrpm
+#
+# Author: mk <martin.krauskopf at sun.com>
+# Editor: VIM - Vi IMproved 6.3 (2004 June 7, compiled Jun 26 2004 15:03:59)
+#
+# Helps with building NetBeans RPMs. Customize following variables to your
+# environment.
+# DON'T COMMIT YOUR SETTINGS TO CVS
+#
+# TODO: should be more self-acting
+
+# What to do
+CREATE_PLATFORM5=true
+CREATE_IDE5_MODULES=true
+CREATE_BRANDING=true
+CREATE_ENTERPRISE1=true
+CREATE_IDE=true
+CREATE_MOBILITY=true
+
+# Enter value that apply to your environment
+
+# netbeans binary distribution archive
+NB_BIN_ZIP=/usr/share/java/0_netbeans-latest/netbeans-4_1-daily-bin-latest.zip
+# mobility cluster archive
+MOBILITY_ZIP=/usr/share/java/0_netbeans-latest/mobility-latest.zip
+# wtk emulator archive
+WTK_LIN_ZIP=/usr/share/java/0_netbeans-latest/wtk_lin-latest.zip
+
+# where to store final RPMs
+TARGET_DIR=~/tmp/nbrpm
+
+# storage used for unzipped distribution(s)
+NB_BLD_TMP=~/tmp/netbeans-building
+
+# debuggin options
+# (un)comment to (don't) use the option
+#NOBUILD="-nobuild"
+#NOCLEAN="-noclean"
+
+# compute other variables ==================================================== #
+
+SPEC_DIR=../spec
+
+# functions ================================================================== #
+
+function pinfo {
+  echo "INFORMATION: $1"
+}
+
+function exitIfNotDir {
+  if [ -z "$1" ]; then
+    pinfo "Usage: checkDirExistence dir"
+    exit 1
+  fi
+  if [ ! -d "$1" ]; then
+    pinfo "Directory \"$1\" doesn't exist!";
+    exit 1
+  else
+    return 0
+  fi
+}
+
+unzipped=0
+function unzipNB {
+  if [ $unzipped -ne 1 ]; then
+    mkdir -p $NB_BLD_TMP
+    pinfo "Unzipping $NB_BIN_ZIP..."
+    unzip -q $NB_BIN_ZIP -d $NB_BLD_TMP || exit 1
+    unzipped=1
+    NB_BIN=$NB_BLD_TMP/netbeans
+    exitIfNotDir "$NB_BIN"
+  fi
+}
+
+# script phase =============================================================== #
+
+EOPTIONS="$NOCLEAN $NOBUILD"
+
+# Backup previous build
+if [ -d $NB_BLD_TMP ]; then
+  pinfo "Backuping old build to $NB_BLD_TMP.bck"
+  [ -d $NB_BLD_TMP.bck ] && rm -r $NB_BLD_TMP.bck
+  mv $NB_BLD_TMP $NB_BLD_TMP.bck
+fi
+
+if [ ! -d $SPEC_DIR ]; then
+  pinfo "ERROR: The installer module is probably missing.";
+  exit 1
+fi
+
+# perl script must be run from the 'spec' dir - because of 'erpm_common.spec' file
+cd $SPEC_DIR
+[ -d $TARGET_DIR ] && rm -r $TARGET_DIR
+mkdir -p $TARGET_DIR
+exitIfNotDir $TARGET_DIR
+pinfo "Producing RPMs into $TARGET_DIR..."
+
+
+# PLATFORM5 cluster RPM
+if [ "$CREATE_PLATFORM5" = "true" ]; then
+  pinfo "Creating RPM for platform5 cluster"
+  unzipNB
+  PLATFORM5_SPEC_FILE="$SPEC_DIR/SUNWnetbeans-platform5.spec"
+  pinfo "perl ../bin/easy_rpm.pl $EOPTIONS -define nb_destdir $NB_BIN -targetdir $TARGET_DIR $PLATFORM5_SPEC_FILE"
+  perl ../bin/easy_rpm.pl $EOPTIONS -define nb_destdir $NB_BIN -targetdir $TARGET_DIR $PLATFORM5_SPEC_FILE
+else
+  pinfo "Skipping RPM creation for platform5 cluster"
+fi
+
+
+# IDE5 cluster RPM
+if [ "$CREATE_IDE5_MODULES" = "true" ]; then
+  pinfo "Creating RPM for ide5 cluster"
+  unzipNB
+  IDE5_MODULES_SPEC_FILE="$SPEC_DIR/SUNWnetbeans-ide5-modules.spec" # depends on PLATFORM5_SPEC_FILE
+  pinfo "perl ../bin/easy_rpm.pl $EOPTIONS -define nb_destdir $NB_BIN -targetdir $TARGET_DIR $IDE5_MODULES_SPEC_FILE"
+  perl ../bin/easy_rpm.pl $EOPTIONS -define nb_destdir $NB_BIN -targetdir $TARGET_DIR $IDE5_MODULES_SPEC_FILE
+else
+  pinfo "Skipping RPM creation for ide5 cluster"
+fi
+
+
+# BRANDING cluster RPM
+if [ "$CREATE_BRANDING" = "true" ]; then
+  pinfo "Creating RPM for branding cluster"
+  unzipNB
+  BRANDING_SPEC_FILE="$SPEC_DIR/SUNWnetbeans-nb-branding.spec" # depends on IDE5_MODULES_SPEC_FILE
+  pinfo "perl ../bin/easy_rpm.pl $EOPTIONS -define nb_destdir $NB_BIN -targetdir $TARGET_DIR $BRANDING_SPEC_FILE"
+  perl ../bin/easy_rpm.pl $EOPTIONS -define nb_destdir $NB_BIN -targetdir $TARGET_DIR $BRANDING_SPEC_FILE
+else
+  pinfo "Skipping RPM creation for branding cluster"
+fi
+
+
+# ENTERPRISE1 cluster RPM
+if [ "$CREATE_ENTERPRISE1" = "true" ]; then
+  pinfo "Creating RPM for enterprise1 cluster"
+  unzipNB
+  ENTERPRISE1_SPEC_FILE="$SPEC_DIR/SUNWnetbeans-enterprise1.spec" # depends on IDE5_MODULES_SPEC_FILE
+  pinfo "perl ../bin/easy_rpm.pl $EOPTIONS -define nb_destdir $NB_BIN -targetdir $TARGET_DIR $ENTERPRISE1_SPEC_FILE"
+  perl ../bin/easy_rpm.pl $EOPTIONS -define nb_destdir $NB_BIN -targetdir $TARGET_DIR $ENTERPRISE1_SPEC_FILE
+else
+  pinfo "Skipping RPM creation for enterprise1 cluster"
+fi
+
+
+# IDE cluster RPM
+if [ "$CREATE_IDE" = "true" ]; then
+  pinfo "Creating RPM for NB branding cluster"
+  unzipNB
+  # Ugly hack - stops muttering about missing dirs
+  # (TODO - there is a better way, at least copy there icon)
+  [ -d "$NB_BIN/applications" ] || mkdir "$NB_BIN/applications"
+  [ -d "$NB_BIN/pixmaps" ] || mkdir "$NB_BIN/pixmaps"
+  IDE_SPEC_FILE="$SPEC_DIR/SUNWnetbeans-ide.spec" # depends on IDE5_MODULES_SPEC_FILE
+  pinfo "perl ../bin/easy_rpm.pl $EOPTIONS -define nb_destdir $NB_BIN -targetdir $TARGET_DIR $IDE_SPEC_FILE"
+  perl ../bin/easy_rpm.pl $EOPTIONS -define nb_destdir $NB_BIN -targetdir $TARGET_DIR $IDE_SPEC_FILE
+else
+  pinfo "Skipping RPM creation for NB branding cluster"
+fi
+
+
+# MOBILITY cluster RPM
+if [ "$CREATE_MOBILITY" = "true" ]; then
+  pinfo "Creating RPM for mobility cluster"
+
+  # decompressing archives
+  echo "Unzipping $MOBILITY_ZIP..."
+  unzip -q $MOBILITY_ZIP -d $NB_BLD_TMP || exit 1
+  echo "Unzipping $WTK_LIN_ZIP..."
+  unzip -q $WTK_LIN_ZIP -d $NB_BLD_TMP || exit 1
+
+  MOBILITY=$NB_BLD_TMP/mobility
+  exitIfNotDir "$MOBILITY"
+  WTK_LIN=$NB_BLD_TMP/wtk_lin
+  exitIfNotDir "$WTK_LIN"
+
+  echo "cp -a $WTK_LIN/* $MOBILITY"
+  cp -a $WTK_LIN/* $MOBILITY
+  echo "cp -a $MOBILITY $NB_BIN"
+  cp -a $MOBILITY $NB_BIN
+
+  MOBILITY_SPEC_FILE="$SPEC_DIR/SUNWnetbeans-mobility.spec" # depends on IDE_SPEC_FILE
+  pinfo "perl ../bin/easy_rpm.pl $EOPTIONS -define nb_destdir $NB_BIN -targetdir $TARGET_DIR $MOBILITY_SPEC_FILE"
+  perl ../bin/easy_rpm.pl $EOPTIONS -define nb_destdir $NB_BIN -targetdir $TARGET_DIR $MOBILITY_SPEC_FILE
+else
+  pinfo "Skipping RPM creation for mobility cluster"
+fi
+
+# clean up
+
+pinfo "INFO: Produced RPMs are stored in $TARGET_DIR. Listing follows..."
+ls -l1 $TARGET_DIR
+

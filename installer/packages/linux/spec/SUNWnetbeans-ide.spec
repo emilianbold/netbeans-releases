@@ -1,6 +1,6 @@
 Name: sun-netbeans-ide
 Summary: NetBeans IDE
-Requires: sun-netbeans-ide4-modules >= 4.0
+Requires: sun-netbeans-ide5-modules >= 4.1
 
 %description
 NetBeans IDE
@@ -11,7 +11,7 @@ NetBeans IDE
 
 %dir /usr/lib/netbeans
 
-/usr/lib/netbeans/nb4.0
+/usr/lib/netbeans/nb4.1
 
 %dir /usr/lib/netbeans/bin
 

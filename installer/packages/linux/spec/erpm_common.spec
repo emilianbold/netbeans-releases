@@ -1,5 +1,5 @@
 # This should be the same as the Solaris package version. #
-%define global_product_version 4.0
+%define global_product_version 4.1
 
 # This is an RPM-specific thing.  The RPM manual says that this is the
 # package's version (rather than the package's content's version).  So
