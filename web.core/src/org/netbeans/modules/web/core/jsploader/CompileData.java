@@ -50,12 +50,15 @@ public class CompileData {
     /** Creates new CompileData */
     public CompileData(JspDataObject jspPage) {
         this.jspPage = jspPage;
-        this.docRoot = WebModule.getWebModule (jspPage.getPrimaryFile()).getDocumentBase ();
-        String jspResourcePath = JspCompileUtil.findRelativeContextPath(docRoot, jspPage.getPrimaryFile());
-        JSPServletFinder finder = JSPServletFinder.findJSPServletFinder (docRoot);
-        servletJavaRoot = finder.getServletTempDirectory();
-        servletResourceName = finder.getServletResourcePath(jspResourcePath);
-        servletEncoding = finder.getServletEncoding(jspResourcePath);
+        WebModule wm = WebModule.getWebModule (jspPage.getPrimaryFile());
+        if (wm != null) {
+            this.docRoot = wm.getDocumentBase ();
+            String jspResourcePath = JspCompileUtil.findRelativeContextPath(docRoot, jspPage.getPrimaryFile());
+            JSPServletFinder finder = JSPServletFinder.findJSPServletFinder (docRoot);
+            servletJavaRoot = finder.getServletTempDirectory();
+            servletResourceName = finder.getServletResourcePath(jspResourcePath);
+            servletEncoding = finder.getServletEncoding(jspResourcePath);
+        }
     }
     
     public FileObject getServletJavaRoot() {
@@ -108,24 +111,6 @@ public class CompileData {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
         
-        /*FileObject fo[] = FileUtil.fromFile(servlet);
-        // get a fileobject from the same FS as the root
-        try {
-            FileSystem rootFs = root.getFileSystem();
-            for (int i = 0; i < fo.length; i++) {
-                if (fo[i].getFileSystem() == rootFs) {
-                    return fo[i];
-                }
-            }
-            // not found, needs refresh
-            root.getFileSystem().refresh(false);
-            return root.getFileObject(getServletResourceName());
-              //JspCompileUtil.findRelativeResource(root, getServletResourceName());
-        }
-        catch (FileStateInvalidException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-        }
-         */
         return null;
     }
     
@@ -149,8 +134,14 @@ public class CompileData {
         sb.append("servletResource : " + servletResourceName + ", fileobject exists= " +  // NOI18N
             (getServletFileObject() != null)); // NOI18N
         sb.append("\n"); // NOI18N
-        sb.append("servletFile : " + getServletFile().getAbsolutePath() + ", exists= " +  // NOI18N
-            getServletFile().exists()); // NOI18N
+        File sf = getServletFile();
+        if (sf != null) {
+            sb.append("servletFile : " + sf.getAbsolutePath() + ", exists= " +  // NOI18N
+                getServletFile().exists()); // NOI18N
+        }
+        else {
+            sb.append("servletFile : null"); // NOI18N
+        }
         sb.append("\n"); // NOI18N
         sb.append("--end COMPILE DATA--"); // NOI18N
         return sb.toString();
