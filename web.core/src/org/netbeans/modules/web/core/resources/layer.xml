@@ -42,7 +42,9 @@ Microsystems, Inc. All Rights Reserved.
       <file name="JSPX.jspx" url="templates/JSPDoc.template"/>
       <!--  JSP Segment --> 
       <file name="JSPF.jspf" url="templates/JSPF.template"/>
-      <!-- Tag File --> 
+      <!--  XML segemnt --> 
+      <file name="JSPFX.jspf" url="templates/JSPDocX.template"/>
+      <!-- Tag File -->
       <file name="TagFile.tag" url="templates/TagFile.template">
         <attr name="template" boolvalue="true"/>
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/TagFile.html"/>
