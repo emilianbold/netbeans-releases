@@ -54,6 +54,8 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
                                                "getShowFileExtensions", "setShowFileExtensions"), // NOI18N
                        new PropertyDescriptor (IDESettings.PROP_MODULES_SORT_MODE, IDESettings.class,
                                                "getModulesSortMode", "setModulesSortMode"), // NOI18N
+                       new PropertyDescriptor (IDESettings.PROP_WWWBROWSER, IDESettings.class, 
+                                               "getWWWBrowser", "setWWWBrowser") // NOI18N
                    };
 
             desc[0].setDisplayName (Main.getString ("PROP_SHOW_TIPS_ON_STARTUP"));
@@ -82,6 +84,9 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
             desc[8].setShortDescription (Main.getString ("HINT_SHOW_FILE_EXTENSIONS"));
 
             desc[9].setHidden (true);
+
+            desc[10].setDisplayName (Main.getString ("PROP_WWW_BROWSER"));
+            desc[10].setShortDescription (Main.getString ("HINT_WWW_BROWSER"));
 
         } catch (IntrospectionException ex) {
             if (System.getProperty ("netbeans.debug.exceptions") != null) ex.printStackTrace();

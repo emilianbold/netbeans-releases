@@ -834,11 +834,26 @@ public abstract class NbTopManager extends TopManager {
 
         static final long serialVersionUID =5000673049583700380L;
 
+        private transient PropertyChangeListener idePCL = null;
         /**
         * For externalization.
         */
         public NbBrowser () {
-            super ((HtmlBrowser.Factory)Lookup.getDefault().lookup(HtmlBrowser.Factory.class), true, true);
+            super (((IDESettings)IDESettings.findObject (IDESettings.class, true)).getWWWBrowser (), true, true);
+            setListener ();
+        }
+        
+        /** 
+         * Release resources and also allow to create new browser later using another implementation
+         * @return result from ancestor is returned 
+         */
+        protected boolean closeLast () {
+            if (idePCL != null) {
+                ((IDESettings)IDESettings.findObject (IDESettings.class, true)).removePropertyChangeListener (idePCL);
+                idePCL = null;
+            }
+            NbTopManager.get ().htmlViewer = null;
+            return super.closeLast ();
         }
 
         /* Deserialize this top component.
@@ -846,7 +861,37 @@ public abstract class NbTopManager extends TopManager {
         */
         public void readExternal (ObjectInput in) throws IOException, ClassNotFoundException {
             super.readExternal (in);
+            setListener ();
             NbTopManager.get ().htmlViewer = this;
+        }
+
+        /**
+         *  Sets listener that invalidates this as main IDE's browser if user changes the settings
+         */
+        private void setListener () {
+            if (idePCL != null)
+                return;
+            try {
+                // listen on preffered browser change
+                idePCL = new PropertyChangeListener () {
+                    public void propertyChange (PropertyChangeEvent evt) {
+                        String name = evt.getPropertyName ();
+                        if (name == null) return;
+                        if (name.equals (IDESettings.PROP_WWWBROWSER)) {
+                            NbTopManager.get ().htmlViewer = null;
+                            if (idePCL != null) {
+                                ((IDESettings)IDESettings.findObject (IDESettings.class, true))
+                                .removePropertyChangeListener (idePCL);
+                                idePCL = null;
+                            }
+                        }
+                    }
+                };
+                ((IDESettings)IDESettings.findObject (IDESettings.class, true)).addPropertyChangeListener (idePCL);
+            }
+            catch (Exception ex) {
+                NbTopManager.get ().notifyException (ex);
+            }
         }
     }
     

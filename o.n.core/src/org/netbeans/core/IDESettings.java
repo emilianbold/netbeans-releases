@@ -26,7 +26,12 @@ import org.openide.NotifyDescriptor;
 import org.openide.ErrorManager;
 import org.openide.TopManager;
 import org.openide.awt.HtmlBrowser;
+import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataNode;
+import org.openide.nodes.Node;
 import org.openide.options.SystemOption;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -58,6 +63,8 @@ public class IDESettings extends SystemOption {
     public static final String PROP_SHOW_FILE_EXTENSIONS = "showFileExtensions"; // NOI18N
     /** sorting style of Modules node */
     public static final String PROP_MODULES_SORT_MODE = "modulesSortMode"; // NOI18N
+    /** Web Browser prefered by user */
+    public static final String PROP_WWWBROWSER = "WWWBrowser"; // NOI18N
 
     /** proxy host VM property key */
     public static final String KEY_PROXY_HOST = "http.proxyHost"; // NOI18N
@@ -281,7 +288,58 @@ public class IDESettings extends SystemOption {
               NotifyDescriptor.WARNING_MESSAGE));
         }
     }
-    
+
+    /** Getter for preffered web browser.
+     *
+     * @return prefered browser, may return null if no browser is selected 
+     */
+    public HtmlBrowser.Factory getWWWBrowser() {
+        try {
+            Node.Handle hdl = (Node.Handle) getProperty(PROP_WWWBROWSER);
+            if (hdl == null)
+                return null;
+            
+            Node n = hdl.getNode ();
+            Object o = ((InstanceCookie) n.getCookie (InstanceCookie.class)).instanceCreate ();
+            return (HtmlBrowser.Factory)o;
+        }
+        catch (Exception ex) {
+            TopManager.getDefault ().notifyException (ex);
+        }
+        return null;
+    }
+
+    /** Setter for preffered browser.
+     *
+     *  Actually Node.Handle of node that represent browser in lookup folder is stored.
+     *
+     * @param brow prefered browser capable of providing implementation
+     */
+    public void setWWWBrowser(HtmlBrowser.Factory brow) {
+        // Node.Handle is stored to refer to registered browser
+        try {
+            if (brow == null) {
+                putProperty(PROP_WWWBROWSER, brow, true);    
+                return;
+            }
+
+            FileObject fo = TopManager.getDefault ().getRepository ()
+                .getDefaultFileSystem ().findResource ("Services/Browsers");   // NOI18N
+            DataFolder folder = DataFolder.findFolder (fo);
+            DataObject [] dobjs = folder.getChildren ();
+            for (int i = 0; i<dobjs.length; i++) {
+                Object o = ((InstanceCookie)dobjs[i].getCookie (InstanceCookie.class)).instanceCreate ();
+                if ((o != null) && o.equals (brow)) {
+                    putProperty(PROP_WWWBROWSER, dobjs[i].getNodeDelegate ().getHandle (), true);    
+                    break;
+                }
+            }
+        }
+        catch (Exception ex) {
+            TopManager.getDefault ().notifyException (ex);
+        }
+    }
+
     // PRIVATE METHODS
     
     /** Returns the default value for the http.nonProxyHosts system property. <br>
