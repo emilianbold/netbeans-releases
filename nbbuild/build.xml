@@ -141,14 +141,6 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building openide/io..."/>
     <ant dir="../openide/io" target="netbeans"/>
   </target>
-  <target name="all-core/deprecated" depends="build-platform">
-    <echo message="Building core/deprecated..."/>
-    <ant dir="../core/deprecated" target="netbeans"/>
-  </target>
-  <target name="all-java/srcmodel" depends="build-platform,all-java/api">
-    <echo message="Building java/srcmodel..."/>
-    <ant dir="../java/srcmodel" target="netbeans"/>
-  </target>
   <target name="all-core/bootstrap" depends="init">
     <echo message="Building module core/bootstrap..."/>
     <ant dir="../core/bootstrap" target="netbeans"/>
@@ -205,16 +197,24 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <echo message="Building module projects/queries..."/>
       <ant dir="../projects/queries" target="netbeans"/>
   </target>
-  <target name="all-core/swing/plaf">
+  <target name="all-core/swing/plaf" depends="init">
      <echo message="Building look and feel library..."/>
      <ant dir="../core/swing/plaf" target="netbeans"/>
   </target>
-  <target name="all-core/swing/tabcontrol">
+  <target name="all-core/swing/tabcontrol" depends="init">
      <echo message="Building tabcontrol javabean..."/>
      <ant dir="../core/swing/tabcontrol" target="netbeans"/>
   </target>
 
   <!-- And the rest of modules - all should depend on build-platform: -->
+  <target name="all-java/srcmodel" depends="build-platform,all-java/api">
+    <echo message="Building java/srcmodel..."/>
+    <ant dir="../java/srcmodel" target="netbeans"/>
+  </target>
+  <target name="all-core/deprecated" depends="build-platform">
+    <echo message="Building core/deprecated..."/>
+    <ant dir="../core/deprecated" target="netbeans"/>
+  </target>
   <target name="all-openide/deprecated" depends="build-platform">
     <echo message="Building openide/deprecated..."/>
     <ant dir="../openide/deprecated" target="netbeans"/>
@@ -732,7 +732,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module javacvs compat..."/>
     <ant dir="../javacvs/compat" target="netbeans"/>
   </target>
-  <target name="all-javacvs/libmodule">
+  <target name="all-javacvs/libmodule" depends="init">
     <echo message="Building module javacvs/libmodule..."/>
     <ant dir="../javacvs/libmodule" target="netbeans"/>
   </target>
@@ -740,11 +740,11 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module web/servletapi23..."/>
     <ant dir="../web/servletapi23" target="netbeans"/>
   </target>
-  <target name="all-web/servletapi24">
+  <target name="all-web/servletapi24" depends="init">
     <echo message="Building module web/servletapi24..."/>
     <ant dir="../web/servletapi24" target="netbeans"/>
   </target>
-  <target name="all-web/jstl11">
+  <target name="all-web/jstl11" depends="init">
     <echo message="Building module web/jstl11..."/>
     <ant dir="../web/jstl11" target="netbeans"/>
   </target>
@@ -1483,7 +1483,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
           
           
   <target name="tryme-run" depends="init,maybe-build-nozip" unless="debug.port" >
-    <exec os="Windows NT Windows 95 Windows 98 Windows 2000 Windows XP" executable="${netbeans.dest.abs}/bin/netbeans.exe" failonerror="yes">
+    <exec os="Windows NT Windows 95 Windows 98 Windows 2000 Windows XP" executable="${netbeans.dest.abs}/bin/nb.exe" failonerror="yes">
       <arg value="-jdkhome"/>
       <arg file="${jdkhome}"/>
       <arg value="-userdir"/>
