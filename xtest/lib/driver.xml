@@ -142,6 +142,8 @@ Microsystems, Inc. All Rights Reserved.
                   output="xtest.instance.loc"/>                   
      <setproperty input="xtest.instance.config${xtest.instance.postfix}"
                   output="xtest.config"/>
+     <setproperty input="xtest.instance.master-config${xtest.instance.postfix}"
+                  output="xtest.instance.master-config"/>
      <property name="xtest.instance.dir" location="${xtest.instance.wdir}/${xtest.instance.loc}"/>
      <echo message="Testing xtest instance ${xtest.instance.dir} with config ${xtest.config}"/>
      <!-- <antcall target="build"/> -->
