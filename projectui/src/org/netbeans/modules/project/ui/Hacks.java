@@ -15,26 +15,18 @@ package org.netbeans.modules.project.ui;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.project.ui.actions.NewFile;
-import org.netbeans.spi.project.ui.support.LogicalViews;
-import org.openide.actions.EditAction;
+import org.netbeans.modules.project.ui.actions.Actions;
+import org.openide.actions.NewTemplateAction;
+import org.openide.actions.RenameAction;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataLoader;
-import org.openide.loaders.DataLoaderPool;
-import org.openide.loaders.DataNode;
-import org.openide.loaders.DataObject;
+import org.openide.loaders.*;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.SharedClassObject;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.TopComponent;
 
@@ -46,60 +38,16 @@ public class Hacks {
     /** @author Petr Hrebejk */
     static void hackFolderActions() {
         
-                
-        try {
-            Class folderLoaderClass = Class.forName( "org.openide.loaders.DataLoaderPool$FolderLoader" );
-            
-            SharedClassObject folderLoader = SharedClassObject.findObject( folderLoaderClass );
-            ((DataLoader)folderLoader).getActions();
-            
-            
-            Method getProperty = SharedClassObject.class.getDeclaredMethod( "getProperty", new Class[] { Object.class } );
-            getProperty.setAccessible( true );
-            Method putProperty = SharedClassObject.class.getDeclaredMethod( "putProperty", new Class[] { Object.class, Object.class } );
-            putProperty.setAccessible( true );
-            
-            SystemAction defaultActions[] = (SystemAction[])getProperty.invoke( folderLoader, new Object[] { "defaultActions" } );
-            
-            ArrayList newActions = new ArrayList();
-            for( int i = 0; i < defaultActions.length; i++ ) {
+        DataLoaderPool dataLoaderPool = (DataLoaderPool) Lookup.getDefault().lookup(DataLoaderPool.class);
+        DataLoader folderLoader = dataLoaderPool.firstProducerOf(DataFolder.class);
 
-                //System.out.println( i + " " + defaultActions[i] );
-                
-                if ( defaultActions[i] == null ) {
-                    newActions.add( defaultActions[i]);
-                    continue;
-                }
-                
-                String className = defaultActions[i].getClass().getName();
-                
-                if ( "org.openide.actions.NewTemplateAction".equals( className ) ) {
-                    newActions.add( SystemAction.get( org.netbeans.modules.project.ui.actions.Actions.SystemNewFile.class ) );
-                }
-                else {
-                    newActions.add( defaultActions[i]);
-                }
-            }
+        ArrayList actions = new ArrayList(Arrays.asList(folderLoader.getActions()));
+        int index = actions.indexOf(RenameAction.findObject(NewTemplateAction.class));
+        if (index >= 0) {
+            actions.set(index , SystemAction.get(Actions.SystemNewFile.class));
+            folderLoader.setActions((SystemAction[])actions.toArray(new SystemAction[actions.size()]));
+        }
 
-            defaultActions = new SystemAction[ newActions.size() ];
-            newActions.toArray( defaultActions );
-           
-            putProperty.invoke( folderLoader, new Object[]{ "defaultActions", defaultActions } );
-        }
-        catch( ClassNotFoundException e ) {
-            System.err.println( e );
-        }
-        catch( NoSuchMethodException e ) {
-            e.printStackTrace();
-        }
-        catch( IllegalAccessException e ) {
-            System.err.println( e );
-        }
-        catch( InvocationTargetException e  ) {
-            System.err.println( e );
-        }
-        
-        
     }
     
     private static Object windowSystemImpl = null;

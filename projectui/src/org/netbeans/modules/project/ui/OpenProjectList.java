@@ -24,18 +24,24 @@ import java.util.List;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.Collator;
+import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.modules.project.uiapi.ProjectOpenedTrampoline;
+import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  * List of projects open in the GUI.
@@ -61,6 +67,9 @@ public final class OpenProjectList {
     /** List of recently closed projects */
     RecentProjectList recentProjects;
 
+    /** LRUs of templates for projects */
+    Map /*<String,List<String>*/ lrusAsString;
+    
     /** Property change listeners */
     private PropertyChangeSupport pchSupport;
     
@@ -212,6 +221,53 @@ public final class OpenProjectList {
         pchSupport.removePropertyChangeListener( l );        
     }
 
+               
+    // Used from NewFile action        
+    public List /*<DataObject>*/ getTemplatesLRU( Project project ) {
+        List pLRU = getTemplateNamesLRU( project );
+        List templates = new ArrayList();
+        FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
+        for( Iterator it = pLRU.iterator(); it.hasNext(); ) {
+            String path = (String)it.next();
+            FileObject fo = sfs.findResource( path );
+            if ( fo != null ) {
+                try {
+                    DataObject dobj = DataObject.find( fo );                    
+                    templates.add( dobj );
+                }
+                catch ( DataObjectNotFoundException e ) {
+                    it.remove();
+                    org.openide.ErrorManager.getDefault().notify( org.openide.ErrorManager.INFORMATIONAL, e );
+                }
+            }
+            else {
+                it.remove();
+            }
+        }
+        
+        return templates;
+    }
+        
+    
+    // Used from NewFile action    
+    public void updateTemplatesLRU( Project project, FileObject template ) {
+        List pLRU = getTemplateNamesLRU( project );        
+        
+        
+        String templateName = template.getPath();
+        
+        if ( pLRU.contains( templateName ) ) {
+            pLRU.remove( templateName );
+        }
+        pLRU.add( 0, templateName );
+        
+        if ( pLRU.size() > 10 ) {
+            pLRU.remove( 10 );
+        }
+        
+        OpenProjectListSettings.getInstance().setTemplateUsageLRUs( lrusAsString );
+    }
+    
     
     // Package private methods -------------------------------------------------
 
@@ -245,6 +301,8 @@ public final class OpenProjectList {
         }
         
     }
+    
+    
     
     // Private methods ---------------------------------------------------------
     
@@ -327,6 +385,30 @@ public final class OpenProjectList {
         return projects;
         
     }
+    
+    private ArrayList /*<String>*/ getTemplateNamesLRU( Project project ) {
+        if ( lrusAsString == null ) {
+            lrusAsString = OpenProjectListSettings.getInstance().getTemplateUsageLRUs();
+            if ( lrusAsString == null ) {
+                lrusAsString = new HashMap();                                
+            }            
+        }
+
+        String projectPath = project.getProjectDirectory().getPath();
+        
+        ArrayList pLRU = (ArrayList)lrusAsString.get( projectPath );
+        if ( pLRU == null ) {
+            // Needs init from the project API            
+            PrivilegedTemplates pt = (PrivilegedTemplates)project.getLookup().lookup( PrivilegedTemplates.class );
+            pLRU = new ArrayList( Arrays.asList( pt.getPrivilegedTemplates() ) );
+            lrusAsString.put( projectPath, pLRU );
+        }
+
+        return pLRU;
+               
+    }
+    
+    
     
     // Private innerclasses ----------------------------------------------------
     

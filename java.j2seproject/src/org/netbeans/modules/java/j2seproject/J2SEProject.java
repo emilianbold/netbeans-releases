@@ -56,6 +56,7 @@ import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
+import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
@@ -334,7 +335,7 @@ final class J2SEProject implements Project, AntProjectListener {
 
     }
     
-    private static final class RecommendedTemplatesImpl implements RecommendedTemplates {
+    private static final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
         
         // List of primarily supported templates
         
@@ -349,8 +350,20 @@ final class J2SEProject implements Project, AntProjectListener {
             "templateType_J2SE",        // NOI18N
         };
         
+        private static final String[] PRIVILEGED_NAMES = new String[] {
+            "Templates/Classes/Class.java",
+            "Templates/Package",
+            "Templates/Classes/Interface.java",
+            "Templates/GUIForms/JPanel.java",
+            "Templates/GUIForms/JFrame.java",
+        };
+        
         public String[] getRecommendedTypes() {
             return TYPES;
+        }
+        
+        public String[] getPrivilegedTemplates() {
+            return PRIVILEGED_NAMES;
         }
         
     }

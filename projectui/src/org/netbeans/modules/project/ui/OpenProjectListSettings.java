@@ -16,6 +16,7 @@ package org.netbeans.modules.project.ui;
 import java.util.ArrayList;
 import java.util.List;
 import java.io.File;
+import java.util.Map;
 
 import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
@@ -26,13 +27,14 @@ import org.openide.util.NbBundle;
  */
 public class OpenProjectListSettings extends SystemOption {
 
-    private static final String DIR_NAMES = "DirectoryNames";
-    private static final String LAST_OPEN_PROJECT_DIR = "LastOpenProjectDir";
-    private static final String OPEN_SUBPROJECTS = "OpenSubprojects";
-    private static final String OPEN_AS_MAIN = "OpenAsMain";
-    private static final String MAIN_PROJECT_DIR = "MainProjectDir";
-    private static final String RECENT_PROJECTS_DIR_NAMES = "RecentProjectsDirectoryNames";
+    private static final String DIR_NAMES = "DirectoryNames"; //NOI18N
+    private static final String LAST_OPEN_PROJECT_DIR = "LastOpenProjectDir"; //NOI18N
+    private static final String OPEN_SUBPROJECTS = "OpenSubprojects"; //NOI18N
+    private static final String OPEN_AS_MAIN = "OpenAsMain"; //NOI18N
+    private static final String MAIN_PROJECT_DIR = "MainProjectDir"; //NOI18N
+    private static final String RECENT_PROJECTS_DIR_NAMES = "RecentProjectsDirectoryNames"; //NOI18N
     private static final String PROP_PROJECTS_FOLDER = "projectsFolder";    //NOI18N
+    private static final String TEMPLATE_USAGE_LRUS = "templateUsageLrus"; // NOI18N
     
     // PERSISTENCE
     private static final long serialVersionUID = 8754987489474L;
@@ -43,7 +45,7 @@ public class OpenProjectListSettings extends SystemOption {
     }
     
     public String displayName() {
-        return NbBundle.getMessage (OpenProjectListSettings.class,"TXT_UISettings");
+        return NbBundle.getMessage (OpenProjectListSettings.class,"TXT_UISettings"); //NOI18N
     }        
 
     public List getDirNames() {
@@ -113,6 +115,14 @@ public class OpenProjectListSettings extends SystemOption {
         else {
             this.putProperty(PROP_PROJECTS_FOLDER, folder.getAbsolutePath());
         }
+    }
+    
+    public Map getTemplateUsageLRUs() {
+        return (Map)getProperty( TEMPLATE_USAGE_LRUS );       
+    }
+    
+    public void setTemplateUsageLRUs( Map map ) {
+        putProperty( TEMPLATE_USAGE_LRUS, map, true  );
     }
 
 }

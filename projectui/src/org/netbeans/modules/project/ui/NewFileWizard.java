@@ -17,6 +17,7 @@ import java.text.MessageFormat;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 
@@ -29,6 +30,7 @@ public final class NewFileWizard extends TemplateWizard {
 
     public NewFileWizard( Project p /*, String recommendedTypes[] */ ) {
         this.p = p;
+        putProperty( ProjectChooserFactory.WIZARD_KEY_PROJECT, p );
         // this.recommendedTypes = recommendedTypes;        
         setTitle( "New File" );
         setTitleFormat( new MessageFormat( "{0}") );
