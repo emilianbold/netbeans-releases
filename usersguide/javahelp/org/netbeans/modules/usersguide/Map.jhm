@@ -484,6 +484,11 @@
 <mapID target="internation.replformat" url="internationalize/replacingformat.html" />
 <mapID target="internation.testing" url="internationalize/testingwizard.html" />
 
+<mapID target="script.scripting" url="scripting/scripting.html" />
+<mapID target="script.runscript" url="scripting/runningscript.html" />
+<mapID target="script.addscript" url="scripting/addingscript.html" />
+<mapID target="script.dynamicexample" url="scripting/dynamic-example.html" />
+
 <mapID target="ant.building" url="ant/building.html" />
 <mapID target="ant.ident" url="ant/ident.html" />
 <mapID target="ant.project" url="ant/exec-proj.html" />
