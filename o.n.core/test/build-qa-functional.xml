@@ -109,6 +109,44 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- This target is executed from test-executor in newly created Project -->
     <!-- Name of this task is defined in cfg-xxx.xml -->
+    <!-- This target executes tests inside IDE -->
+    <target name="runidetest_firststart" depends="set_classpath">
+        <ant dir="." antfile="${xtest.module_harness.antfile}"
+             target="test">
+           <property name="xtest.exectype" value="ide"/>
+        </ant>
+        <!-- now backup generated golden files for second run -->
+        <jar jarfile="lib/gf.jar" >
+            <fileset dir="${xtest.workdir}/user/gui/windowsystem/validation/Validation_Init/testInitialPlacementInEditing"
+                includes="*.txt" />
+            <fileset dir="${xtest.workdir}/user/gui/windowsystem/validation/Validation_Init/testInitialPlacementInGUIEditing"
+                includes="*.txt" />
+            <fileset dir="${xtest.workdir}/user/gui/windowsystem/validation/Validation_Init/testInitialPlacementInDebugging"
+                includes="*.txt" />
+            <fileset dir="${xtest.workdir}/user/gui/windowsystem/validation/Validation_Init/testInitialPlacementInRunning"
+                includes="*.txt" />
+            <fileset dir="${xtest.workdir}/user/gui/windowsystem/validation/Validation_Init/testInitialPlacementOfEditor"
+                includes="*.txt" />
+        </jar>
+    </target>
+    
+    <!-- This target is executed from test-executor in newly created Project -->
+    <!-- Name of this task is defined in cfg-xxx.xml -->
+    <!-- This target executes tests inside IDE and will reuse userdir from previous testbag-->
+    <target name="runidetest_secondstart" depends="set_classpath">
+        <!-- first restore golden files from previous run -->
+        <mkdir dir="work/sys/tests/qa-functional/src/gui/windowsystem/validation/data/goldenfiles/Validation_Init_1"/>
+        <unjar src="lib/gf.jar" dest="${xtest.workdir}/sys/tests/qa-functional/src/gui/windowsystem/validation/data/goldenfiles/Validation_Init_1" />        
+        <!-- to achieve execution on previous directory -->
+        <property name="xtest.reuse.ide" value="true"/>    
+        <ant dir="." antfile="${xtest.module_harness.antfile}"
+             target="test">
+           <property name="xtest.exectype" value="ide"/>
+        </ant>
+    </target>
+    
+    <!-- This target is executed from test-executor in newly created Project -->
+    <!-- Name of this task is defined in cfg-xxx.xml -->
     <!-- This target executes standalone tests -->
     <target name="runcodetest" depends="set_classpath">
         <ant dir="." antfile="${xtest.module_harness.antfile}"

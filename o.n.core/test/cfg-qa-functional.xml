@@ -25,13 +25,22 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="core qa-functional test config">
 <!-- START Window System testbags -->
-    <testbag testattribs="stable or ide or ws" executor="ide" name="Validation tests - initial position of windows (in ide)" resultsprocessor="unit">
+    <testbag testattribs="stable1" executor="ide_firststart" prio="1" name="Validation tests - initial position of windows (in ide)" resultsprocessor="unit">
         <testset dir="qa-functional/src">
             <patternset>                
                 <include name="gui/windowsystem/validation/Validation_Init.class"/>		               
             </patternset>
         </testset>
     </testbag>
+    
+    <testbag testattribs="stable1" executor="ide_secondstart" prio="2" name="Validation tests - initial position of windows (in ide) after restart" resultsprocessor="unit">
+        <testset dir="qa-functional/src">
+            <patternset>                
+                <include name="gui/windowsystem/validation/Validation_Init_1.class"/>		               
+            </patternset>
+        </testset>
+    </testbag>
+    
     <testbag testattribs="stable or ide or ws" executor="ide" name="Validation tests - docking/attaching/resize/move/project switching (in ide)" resultsprocessor="unit">
         <testset dir="qa-functional/src">
             <patternset>
@@ -83,6 +92,10 @@ Microsystems, Inc. All Rights Reserved.
     <executor name="code" antfile="build-qa-functional.xml" target="runcodetest"/>
     
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest"/>
+
+    <executor name="ide_firststart" antfile="build-qa-functional.xml" target="runidetest_firststart"/>
+    
+    <executor name="ide_secondstart" antfile="build-qa-functional.xml" target="runidetest_secondstart"/>
 
     <compiler name="QAcompiler" antfile="build-qa-functional.xml" target="QAcompiler" default="true"/>
 
