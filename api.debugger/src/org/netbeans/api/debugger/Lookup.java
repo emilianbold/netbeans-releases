@@ -173,7 +173,8 @@ abstract class Lookup {
         ) {
             ArrayList l = new ArrayList ();
             try {
-                ClassLoader cl = (ClassLoader) org.openide.util.Lookup.getDefault().lookup(ClassLoader.class);
+                ClassLoader cl = (ClassLoader) org.openide.util.Lookup.
+                    getDefault ().lookup (ClassLoader.class);
                 String v = "\nR lookup " + resourceName;
                 Enumeration e = cl.getResources (resourceName);
                 while (e.hasMoreElements ()) {
@@ -205,7 +206,8 @@ abstract class Lookup {
         
         private Object createInstance (String service) {
             try {
-                ClassLoader cl = Thread.currentThread ().getContextClassLoader ();
+                ClassLoader cl = (ClassLoader) org.openide.util.Lookup.
+                    getDefault ().lookup (ClassLoader.class);
                 Class cls = cl.loadClass (service);
 
                 Object o = null;
