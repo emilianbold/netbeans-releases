@@ -259,7 +259,7 @@ After that you should be done!
             <property name="javadoc.classpath" refid="cp"/>
             <property name="javadoc.apichanges" location="api/doc/changes/apichanges.xml"/>
             <property name="javadoc.docfiles" location="api/doc"/>
-            <!-- XXX: <property name="javadoc.arch" location="arch/arch-ant.xml"/>-->
+            <property name="javadoc.arch" location="arch/arch-ant-main.xml"/>
         </ant>
     </target>
   

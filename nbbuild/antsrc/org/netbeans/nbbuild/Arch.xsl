@@ -101,7 +101,7 @@ Microsystems, Inc. All Rights Reserved.
     
         <p/>
         <font color="gray" >
-        <b>Question (<xsl:value-of select="@id"/>):</b> <em><xsl:apply-templates select="./node()" /></em>
+        <b><a name="answer-{@id}">Question (<xsl:value-of select="@id"/>)</a>:</b> <em><xsl:apply-templates select="./node()" /></em>
         </font>
         <p/>
         
