@@ -15,20 +15,19 @@ package org.netbeans.spi.java.project.support.ui;
 
 import java.awt.Image;
 import java.awt.Toolkit;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.dnd.DnDConstants;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.Collections;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.StringTokenizer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
@@ -43,11 +42,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.ChangeableDataFilter;
-import org.openide.loaders.DataFilter;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.loaders.*;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
@@ -56,18 +51,24 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
+import org.openide.util.datatransfer.ExTransferable;
+import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openidex.search.SimpleSearchInfo;
 
 /**
  * Display of Java sources in a package structure rather than folder structure.
- * @author Adam Sotona, Jesse Glick, Petr Hrebejk
+ * @author Adam Sotona, Jesse Glick, Petr Hrebejk, Tomas Zezula
  */
 final class PackageViewChildren extends Children.Keys/*<String>*/ implements FileChangeListener, ChangeListener {
     
     private static final String NODE_NOT_CREATED = "NNC"; // NOI18N
-    
+    private static final MessageFormat PACKAGE_FLAVOR = new MessageFormat("application/x-java-org-netbeans-modules-java-project-packagenodednd; class=org.netbeans.spi.java.project.support.ui.PackageViewChildren$PackageNode; mask={0}"); //NOI18N
+    static final String PRIMARY_TYPE = "application";   //NOI18N
+    static final String SUBTYPE = "x-java-org-netbeans-modules-java-project-packagenodednd";    //NOI18N
+    static final String MASK = "mask";  //NOI18N
+
     private java.util.Map/*<String,NODE_NOT_CREATED|PackageNode>*/ names2nodes;
     private final FileObject root;
     private FileChangeListener wfcl;    // Weak listener on the system filesystem
@@ -374,7 +375,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
      
     
 
-    private static final class PackageNode extends FilterNode {
+    static final class PackageNode extends FilterNode {
         
         /** whether to turn on #42589 */
         private static final boolean TRUNCATE_PACKAGE_NAMES =
@@ -416,6 +417,56 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
 
         public boolean canCut () {
             return !isDefaultPackage;    
+        }
+
+        /**
+         * Copy handling
+         */
+        public Transferable clipboardCopy () throws IOException {
+            try {
+                ExTransferable t = ExTransferable.create (super.clipboardCopy ());
+                PackageTransferable pt = new PackageTransferable (this, DnDConstants.ACTION_COPY);
+                t.put (pt);
+                return t;
+            } catch (ClassNotFoundException e) {
+                Exception ioe = new IOException ();
+                throw (IOException) ErrorManager.getDefault().annotate(ioe,e);
+            }
+        }
+        
+        public Transferable clipboardCut () throws IOException {
+            try {
+                ExTransferable t = ExTransferable.create (super.clipboardCut ());
+                t.put (new PackageTransferable (this, DnDConstants.ACTION_MOVE));
+                return t;
+            } catch (ClassNotFoundException e) {
+                Exception ioe = new IOException ();
+                throw (IOException) ErrorManager.getDefault().annotate(ioe,e);
+            }
+        }
+
+
+        public PasteType[] getPasteTypes(Transferable t) {
+            DataFlavor[] flavors = t.getTransferDataFlavors();
+            if (root!= null  && root.canWrite()) {
+                for (int i=0; i<flavors.length; i++) {
+                    if (SUBTYPE.equals(flavors[i].getSubType ()) && PRIMARY_TYPE.equals(flavors[i].getPrimaryType ())) {
+                        try {
+                            int op = Integer.valueOf (flavors[i].getParameter (MASK)).intValue ();
+                            PackageNode pkgNode = (PackageNode) t.getTransferData(flavors[i]);
+                            return new PasteType[] {new PackagePasteType (root, pkgNode, op)};
+                        } catch (IOException ioe) {
+                            ErrorManager.getDefault().notify(ioe);
+                            return new PasteType[0];
+                        }
+                        catch (UnsupportedFlavorException ufe) {
+                            ErrorManager.getDefault().notify(ufe);
+                            return new PasteType[0];
+                        }
+                    }
+                }
+            }
+            return super.getPasteTypes(t);
         }
 
         public void setName(String name) {
@@ -592,5 +643,79 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         }
         
     }
-    
+
+    static class PackageTransferable extends ExTransferable.Single {
+
+        private PackageNode node;
+
+        public PackageTransferable (PackageNode node, int operation) throws ClassNotFoundException {
+            super (new DataFlavor (PACKAGE_FLAVOR.format(new Object[] {new Integer(operation)})));
+            this.node = node;
+        }
+
+        protected Object getData() throws IOException, UnsupportedFlavorException {
+            return this.node;
+        }
+    }
+
+
+    static class PackagePasteType extends PasteType {
+        
+        private int op;
+        private PackageNode node;
+        private FileObject srcRoot;
+
+        public PackagePasteType (FileObject srcRoot, PackageNode node, int op) {
+            assert op == DnDConstants.ACTION_COPY || op == DnDConstants.ACTION_MOVE : "Invalid DnD operation";  //NOI18N
+            this.node = node;
+            this.op = op;
+            this.srcRoot = srcRoot;
+        }
+
+        public Transferable paste() throws IOException {
+            String pkgName = node.computePackageName(false);
+            StringTokenizer tk = new StringTokenizer(pkgName,".");  //NOI18N
+            FileObject fo = srcRoot;
+            while (tk.hasMoreTokens()) {
+                String name = tk.nextToken();
+                FileObject tmp = fo.getFileObject(name,null);
+                if (tmp == null) {
+                    tmp = fo.createFolder(name);
+                }
+                fo = tmp;
+            }
+            DataFolder dest = DataFolder.findFolder(fo);
+            DataObject[] children = node.dataFolder.getChildren();
+            boolean cantDelete = false;
+            for (int i=0; i< children.length; i++) {
+                if (children[i].getPrimaryFile().isData()) {
+                    //Copy only the pacakge level
+                    children[i].copy (dest);
+                    if (this.op == DnDConstants.ACTION_MOVE) {
+                        try {
+                            children[i].delete();
+                        } catch (IOException ioe) {
+                            cantDelete = true;
+                        }
+                    }
+                }
+                else {
+                    cantDelete = true;
+                }
+            }
+            if (this.op == DnDConstants.ACTION_MOVE && !cantDelete) {
+                try {
+                    node.dataFolder.delete ();
+                } catch (IOException ioe) {
+                    //Not important
+                }
+            }            
+            return ExTransferable.EMPTY;
+        }
+
+        public String getName() {
+            return NbBundle.getMessage(PackageViewChildren.class,"TXT_PastePackage");
+        }
+    }
+
 }

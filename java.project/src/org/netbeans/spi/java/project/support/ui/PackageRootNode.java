@@ -17,7 +17,10 @@ import java.awt.Component;
 import java.awt.Image;
 import java.awt.Panel;
 import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.Action;
@@ -25,6 +28,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -36,6 +40,7 @@ import org.openide.nodes.NodeOp;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
+
 
 /** Node displaying a packages in given SourceGroup
  * @author Petr Hrebejk
@@ -89,9 +94,30 @@ final class PackageRootNode extends AbstractNode {
     }
 
     // XXX Paste types - probably not very nice 
-    public void createPasteTypes( Transferable t, List list ) {            
+    public void createPasteTypes( Transferable t, List list ) {
+        DataFlavor[] flavors = t.getTransferDataFlavors();
+        FileObject root = this.group.getRootFolder();
+        if (root!= null  && root.canWrite()) {
+            for (int i=0; i<flavors.length; i++) {
+                if (PackageViewChildren.SUBTYPE.equals(flavors[i].getSubType ()) &&
+                    PackageViewChildren.PRIMARY_TYPE.equals(flavors[i].getPrimaryType ())) {
+                    try {
+                        int op = Integer.valueOf (flavors[i].getParameter (PackageViewChildren.MASK)).intValue ();
+                        PackageViewChildren.PackageNode pkgNode = (PackageViewChildren.PackageNode) t.getTransferData(flavors[i]);
+                        list.add(new PackageViewChildren.PackagePasteType (root, pkgNode, op));
+                    } catch (IOException ioe) {
+                        ErrorManager.getDefault().notify(ioe);
+                    }
+                    catch (UnsupportedFlavorException ufe) {
+                        ErrorManager.getDefault().notify(ufe);
+                    }
+                }
+            }
+        }
         list.addAll( Arrays.asList( getDataFolderNodeDelegate().getPasteTypes( t ) ) );
     }
+
+
 
     // Private methods ---------------------------------------------------------
     
