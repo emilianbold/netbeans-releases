@@ -231,14 +231,10 @@ public final class OpenProjectList {
         
         try {
             
-            FileObject[] fos = FileUtil.fromFile( projectDir );
-            
-            if ( fos.length > 0 ) {
-                FileObject projectRoot = fos[0];
-                Project project = ProjectManager.getDefault().findProject( projectRoot );
-                return project;
-            }
-            else {
+            FileObject fo = FileUtil.toFileObject(projectDir);
+            if (fo != null) {
+                return ProjectManager.getDefault().findProject(fo);
+            } else {
                 return null;
             }
                         

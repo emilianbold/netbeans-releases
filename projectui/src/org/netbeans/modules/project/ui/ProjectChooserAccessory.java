@@ -212,16 +212,8 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         if ( !file.isDirectory() ) {
             return null;
         }
-        
-        FileObject[] fos = FileUtil.fromFile( file );
 
-        if ( fos.length > 0 ) {
-            return fos[0];
-        }
-        else {
-            return null;
-        }
-                                
+        return FileUtil.toFileObject(file);
     }
     
     private static boolean isProjectDir( File dir ) {
