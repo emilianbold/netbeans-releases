@@ -91,7 +91,7 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
     public void tearDown() {
         ((SaveAllAction) SaveAllAction.findObject(SaveAllAction.class, true)).performAction();
         
-//        Utilities.delete(NAME_TEST_FILE + ".java");
+        Utilities.delete(NAME_TEST_FILE + ".java");
     }
     
     /** - Create an empty class
