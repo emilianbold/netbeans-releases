@@ -153,7 +153,7 @@ Cf. http://projects.netbeans.org/buildsys/design.html#freeform
                         <xsd:attribute name="style" type="xsd:NMTOKEN" use="required"/>
                     </xsd:complexType>
                 </xsd:element>
-                <xsd:element name="source-file" minOccurs="0" maxOccurs="unbounded">
+                <xsd:element name="source-file">
                     <xsd:complexType>
                         <xsd:sequence>
                             <xsd:element name="label" type="xsd:token" minOccurs="0"/>
