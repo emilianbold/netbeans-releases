@@ -443,6 +443,8 @@ Microsystems, Inc. All Rights Reserved.
             <file name="Application.java" url="templates/Dialogs/Application_java">
                 <attr name="template" boolvalue="true" />
                 <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/form/resources/Application.html"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor16.gif"/>
+                <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor32.gif"/>
             </file>
             <file name="Application.form" url="templates/Dialogs/Application_form">
                 <attr name="template" boolvalue="true" />
@@ -451,6 +453,8 @@ Microsystems, Inc. All Rights Reserved.
             <file name="MDIApplication.java" url="templates/Dialogs/MDIApplication_java">
                 <attr name="template" boolvalue="true" />
                 <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/form/resources/MDIApplication.html"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor16.gif"/>
+                <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor32.gif"/>
             </file>
             <file name="MDIApplication.form" url="templates/Dialogs/MDIApplication_form">
                 <attr name="template" boolvalue="true" />
@@ -459,6 +463,8 @@ Microsystems, Inc. All Rights Reserved.
             <file name="OkCancelDialog.java" url="templates/Dialogs/OkCancelDialog_java">
                 <attr name="template" boolvalue="true" />
                 <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/form/resources/OKCancelDialog.html"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JDialogColor16.gif"/>
+                <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JDialogColor32.gif"/>
             </file>
             <file name="OkCancelDialog.form" url="templates/Dialogs/OkCancelDialog_form">
                 <attr name="template" boolvalue="true" />
