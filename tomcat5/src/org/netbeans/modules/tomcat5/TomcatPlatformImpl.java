@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.tomcat5;
 
+import java.awt.Image;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -27,6 +28,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformImpl;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * Tomcat's implementation of the J2eePlatformImpl.
@@ -42,6 +44,8 @@ public class TomcatPlatformImpl extends J2eePlatformImpl {
     private static final String JSP_API_DOC = "webapps/tomcat-docs/jspapi";         // NOI18N
     private static final String SERVLET_API_JAR = "common/lib/servlet-api.jar";     // NOI18N
     private static final String SERVLET_API_DOC = "webapps/tomcat-docs/servletapi"; // NOI18N
+    
+    private static final String ICON = "org/netbeans/modules/tomcat5/resources/tomcat5instance.gif"; // NOI18N
     
     private File catalinaHome;
     private File catalinaBase;
@@ -111,6 +115,10 @@ public class TomcatPlatformImpl extends J2eePlatformImpl {
     
     public String getDisplayName() {
         return displayName;
+    }
+    
+    public Image getIcon() {
+        return Utilities.loadImage(ICON);
     }
     
     public File[] getPlatformRoots() {
