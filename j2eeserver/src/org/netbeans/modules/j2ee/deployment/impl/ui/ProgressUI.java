@@ -393,7 +393,7 @@ public class ProgressUI extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 24, 12, 24);
         add(errorText, gridBagConstraints);
 
-        autoCloseCheck.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/deployment/impl/ui/Bundle").getString("LBL_Close_When_Finished"));
+        autoCloseCheck.setText(NbBundle.getMessage(ProgressUI.class, "LBL_Close_When_Finished"));
         autoCloseCheck.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 autoCloseCheckActionPerformed(evt);
