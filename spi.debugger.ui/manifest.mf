@@ -8,6 +8,9 @@ OpenIDE-Module-Module-Dependencies: org.openidex.util/1
 Name: org/netbeans/modules/debugger/support/DebuggerSettings.class
 OpenIDE-Module-Class: Option
 
+Name: org/netbeans/modules/debugger/support/DebuggerProjectSettings.class
+OpenIDE-Module-Class: Option
+
 Name: org/netbeans/modules/debugger/delegator/DelegatingDebugger.class
 OpenIDE-Module-Class: Debugger
 
