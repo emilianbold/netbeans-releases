@@ -138,9 +138,11 @@ public class PatternChildren extends ClassChildren {
 
         // Method is added or removed ve have to re-analyze the pattern abd to
         // registrate Children as listener
-	elementListener.unregisterAll();
-        elementListener.reassignMethodListener(element);
-        elementListener.reassignFieldListener(element);
+        synchronized (this) {
+	        elementListener.unregisterAll();
+            elementListener.reassignMethodListener(element);
+            elementListener.reassignFieldListener(element);
+        }
         patternAnalyser.analyzeAll();
         try{
             //temporary solution, probably bug in java module
@@ -259,16 +261,18 @@ public class PatternChildren extends ClassChildren {
         knownFields = fields;
     }
 
-    void unregisterAll() {
+    synchronized void unregisterAll() {
         // unregister us from everywhere:
-        if (knownFields != null) {
-            for (int i = 0; i < knownFields.length; i++)
-                knownFields[i].removePropertyChangeListener(this);
+        Element[] els = knownFields;
+        if (els != null) {
+            for (int i = 0; i < els.length; i++)
+                els[i].removePropertyChangeListener(this);
             knownFields = null;
         }
-        if (knownMethods != null) {
-            for (int i = 0; i < knownMethods.length; i++)
-                knownMethods[i].removePropertyChangeListener(this);
+        els = knownMethods;
+        if (els != null) {
+            for (int i = 0; i < els.length; i++)
+                els[i].removePropertyChangeListener(this);
             knownMethods = null;
         }
     }
