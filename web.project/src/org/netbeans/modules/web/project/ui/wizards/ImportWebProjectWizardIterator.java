@@ -286,6 +286,13 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         } catch (FileStateInvalidException fsie) {
             ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, fsie);
         }
+        FileObject docBase = guessDocBase (dir);
+        if (docBase != null) {
+            FileObject classes = docBase.getFileObject ("WEB-INF/classes"); //NOI18N
+            if (classes != null) {
+                return classes;
+            }
+        }
         return null;
     }
     
