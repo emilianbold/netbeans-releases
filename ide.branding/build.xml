@@ -23,8 +23,7 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
 
   <!-- These are the locales we care about.  Not everything has to be -->
   <!-- localized for each of these locales, though.		      -->
-  <property name="locales" value="nb"/>
-  <property name="locjar.locales"       value="${locales}"/>
+  <property name="locjar.brands" value="nb"/>
 
   <target name="init" depends="default.init" >
 
