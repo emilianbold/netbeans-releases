@@ -12,7 +12,7 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project nameg="junit" default="netbeans" basedir=".">
+<project name="junit" default="netbeans" basedir=".">
   <import file="../nbbuild/default.xml"/> 
 
   <property name="module.license.file" location="${nb_all}/nbbuild/standard-nbm-license.txt"/>
