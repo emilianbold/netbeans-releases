@@ -33,10 +33,6 @@ public class I18nOptions extends SystemOption {
     /** Generated serial version UID.  */
     static final long serialVersionUID = -1045171977263973656L;
 
-    /** Property name for generate field. 
-     * Sets default value whether should be generated resource bundle field in java sources. */
-    public static final String PROP_GENERATE_FIELD = "generateField"; // NOI18N
-
     /** Property name for advanced wizard. 
      * Indicates wheter I18N Wizard has to show panel with genaration field values for java sources. */
     public static final String PROP_ADVANCED_WIZARD = "advancedWizard"; // NOI18N
@@ -79,21 +75,6 @@ public class I18nOptions extends SystemOption {
         return I18nUtil.getBundle().getString("LBL_Internationalization");
     }
 
-    /** Getter for init generate field property. */
-    public boolean isGenerateField() {
-        // Lazy init.
-        if(getProperty(PROP_GENERATE_FIELD) == null)
-            putProperty(PROP_GENERATE_FIELD, Boolean.FALSE, true);
-        
-        return ((Boolean)getProperty(PROP_GENERATE_FIELD)).booleanValue();
-    }
-
-    /** Setter for init generate field property. */
-    public void setGenerateField(boolean generateField) {
-        // Stores in class-wide state and fires property changes if needed:
-        putProperty(PROP_GENERATE_FIELD, new Boolean(generateField), true);
-    }
-    
     /** Getter for init advanced wizard property. */
     public boolean isAdvancedWizard() {
         // Lazy init.
