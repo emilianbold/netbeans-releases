@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -17,6 +17,7 @@ import java.io.*;
 import java.util.*;
 import java.util.jar.*;
 import java.util.zip.*;
+import java.net.*;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Location;
@@ -302,8 +303,13 @@ public class MakeNBM extends MatchingTask {
         this.needsrestart = needsrestart;
     }
     /** URL where this NBM file is expected to be downloadable from. */
-    public void setDistribution (String distribution) {
-	this.distribution = distribution;
+    public void setDistribution (String distribution) throws MalformedURLException {
+        if (distribution.startsWith("http://")) {
+            this.distribution = distribution;
+        } else {
+            // workaround for typical bug in build script
+            this.distribution = "http://" + distribution;
+        }
     }
     public Blurb createLicense () {
 	return (license = new Blurb ());

@@ -7,17 +7,23 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.nbbuild;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.Target;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Ant;
 
@@ -28,9 +34,14 @@ import org.apache.tools.ant.taskdefs.Ant;
 public class CleanAll extends Task {
     
     private Vector modules = new Vector (); // Vector<String>
+    private Vector failedmodules = new Vector (); // Vector of failed modules
     private String targetname = "clean";
     private File topdir = null;
     private File [] topdirs = null;
+    private boolean resolvedependencies = false; // resolve compile-time dependencies for clean
+    private String deptargetprefix = "";  // target prefix for resolving dependencies
+    private Hashtable targets;
+    private boolean failonerror = true; // fail if particular module build failed?
     
     /** Comma-separated list of modules to include. */
     public void setModules (String s) {
@@ -43,6 +54,25 @@ public class CleanAll extends Task {
     /** Name of the target to run in each module's build script. */ 
     public void setTargetname (String s) {
         targetname = s;
+    }
+    
+    /** Prefix of compile targets in current build script for 
+      * each module.
+      */ 
+    public void setDepTargetPrefix (String s) {
+        deptargetprefix = s;
+    }
+    
+    /** Enable/Disable resolving compile-time dependencies. */
+    public void setResolveDependencies (boolean b) {
+        resolvedependencies = b;
+    }
+    
+    /** Enable/Disable BUILD FAILED, when particular module's 
+      * build failed.
+      */
+    public void setFailOnError (boolean b) {
+        failonerror = b;
     }
     
     /** The top directory containing these modules as subdirectories. */
@@ -58,6 +88,38 @@ public class CleanAll extends Task {
             topdirs[i] = new File (st.nextToken().trim());
         }
     }
+ 
+    /** Resolve compile-time dependencies and use them for cleaning */
+    private void resolveDependencies () throws BuildException {
+        Target dummy = new Target ();
+        String dummyName = "nbmerge-" + target.getName ();
+        targets = project.getTargets ();
+        while (targets.contains (dummyName))
+            dummyName += "-x";
+        dummy.setName (dummyName);
+        for (int i = 0; i < modules.size (); i++) {
+            String module = (String) modules.elementAt (i);
+            dummy.addDependency (deptargetprefix + module);
+        }
+        project.addTarget (dummy);
+        Vector fullList = project.topoSort(dummyName, targets);
+        // Now remove earlier ones: already done.
+        Vector doneList = project.topoSort(getOwningTarget().getName(), targets);
+        List todo = new ArrayList(fullList.subList(0, fullList.indexOf(dummy)));
+        todo.removeAll(doneList.subList(0, doneList.indexOf(getOwningTarget())));
+
+        Iterator targit = todo.iterator();
+        while (targit.hasNext()) {
+            String _targetname = ((Target) targit.next()).getName();
+            if (_targetname.startsWith(deptargetprefix)) {
+                String module = _targetname.substring(deptargetprefix.length());
+                if (modules.indexOf(module) < 0) {
+                    modules.addElement(module);
+                    log("Adding dependency module \"" + module + "\" to the list of modules for cleaning", Project.MSG_VERBOSE);
+                }
+            }
+        }
+    }
     
     public void execute () throws BuildException {
         
@@ -70,6 +132,8 @@ public class CleanAll extends Task {
             throw new BuildException ("You must set at least one topdir attribute", location);
         }
         
+        if (resolvedependencies) resolveDependencies();
+            
         for (int j = 0; j < topdirs.length; j++) {
             topdir = topdirs[j];            
             for (int i = 0; i < modules.size (); i++) {
@@ -95,8 +159,24 @@ public class CleanAll extends Task {
                     throw new BuildException ("Could not set 'dir' attribute on Ant task", e, location);
                 }
                 ant.setTarget (targetname);
-                ant.execute ();
+                try {
+                    ant.execute ();
+                } catch (BuildException BE) {
+                    if (failonerror) {
+                        throw new BuildException(BE.getMessage(), BE, location);
+                    } else {
+                        log("Target \"" + targetname + "\" failed in module \"" + module + "\"", Project.MSG_WARN);
+                        log(fl.getAbsolutePath());
+                        log(BE.getMessage());
+                        String fname = fl.getAbsolutePath();
+                        failedmodules.addElement( fname );
+                    }
+                }
             }
+        }
+        if (failedmodules.size() > 0) {
+            log("<cleanall> SOME MODULES FAILED TO BUILD, BUT THEIR BuildException WAS CAUGHT", Project.MSG_WARN);
+            log("<cleanall> cleanfailedmodules=\"" + failedmodules.toString() + "\"", Project.MSG_WARN);
         }
     }
 }

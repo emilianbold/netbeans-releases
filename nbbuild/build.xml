@@ -628,6 +628,9 @@ ToDo:
   
   <!-- build NBMs for selected modules -->
   <target name="build-nbms" depends="init">
+      <!-- It's good idea to call merge target before this one.
+           NbMerge.java can set property "modules" to the list of realy
+           built modules (excluding fixedmodules which must build everytime). -->
       <for-each startdir=".." target="nbm" locations="${fixedmodules},${modules}"/>
   </target>
   <target name="nbm" description="Dummy target."/>
@@ -716,7 +719,14 @@ the ${netbeans.dest}/bin/ directory.
   
   <target name="merge" depends="build-messaging">
     <mkdir dir="${netbeans.dest}"/>
-    <nbmerge dest="${netbeans.dest}" topdir=".." modules="${fixedmodules},${modules}" targetprefix="all-">
+    <nbmerge failonerror="${stop.when.broken.modules}" 
+             dest="${netbeans.dest}" 
+             topdir=".." 
+             fixedmodules="${fixedmodules}" 
+             modules="${modules}"
+             builtmodulesproperty="${built.modules.property}" 
+             targetprefix="all-" 
+             mergedependentmodules="${merge.dependent.modules}" >
       <suppress locale="ja" unless="netbeans.japanese"/>
     </nbmerge>
     <chmod perm="ugo+x">
@@ -1227,7 +1237,12 @@ the ${netbeans.dest}/bin/ directory.
 
   <target name="clean" depends="init,localclean"
           description="Clean out (almost) all build products.">
-    <cleanall topdir=".." modules="${fixedmodules},${modules}" targetname="clean"/>
+    <cleanall topdir=".." 
+              modules="${fixedmodules},${modules}" 
+              targetname="clean"
+              resolvedependencies="${resolve.clean.dependencies}"
+              deptargetprefix="all-"
+              failonerror="${stop.when.clean.error}" />
     <echo message="Run `ant real-clean' if desired."/>
   </target>
 

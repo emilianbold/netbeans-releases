@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -29,18 +29,60 @@ import org.apache.tools.ant.types.FileSet;
  * the first place; and then to unpack them all to a certain location.
  *
  * @author Jesse Glick
+ *
+ * 2002-07-31: Rudolf Balada Added build success granularity (Issue 9701),
+ *             fixed modules can't fail, "modules" can fail
  */
 public class NbMerge extends Task {
     
     private File dest;
-    private Vector modules = new Vector (); // Vector<String>
+    private Vector modules = new Vector (); // list of modules defined by build.xml
+    private Vector buildmodules = new Vector (); // list of modules which will be built
+    private Vector fixedmodules = new Vector (); // list of fixed modules defined in build.xml
+    private Vector buildfixedmodules = new Vector (); // List of fixed modules which will be built
+    private Vector failedmodules = new Vector (); // List of failed modules
+    private Vector builtmodules = new Vector (); // list of successfully built modules
+    private Vector mergemodules = new Vector (); // list of successfully built modules
+    private Vector builttargets = new Vector (); // list of successfully built targets
     private String targetprefix = "all-";    
     private List topdirs = new ArrayList (); // List<File>
     private List suppress = new LinkedList (); // List<Suppress>
+    private boolean failonerror = true; // false = enable build success granularity
+    private boolean mergedependentmodules = false; // merge also dependent modules
+    private String dummyName;
+    private Target dummy;
+    private Hashtable targets;
+    private String builtmodulesproperty = ""; // if set, update property of the name
+                                         // to list of successfuly built modules
     
     /** Target directory to unpack to (top of IDE installation). */
     public void setDest (File f) {
         dest = f;
+    }
+
+    /** Enable/disable build failing */
+    public void setFailOnError (boolean b) {
+        failonerror = b;
+    }
+
+    /** At the end of task, set system property to the list of successfuly
+     *  built modules
+     */
+    public void setBuiltModulesProperty (String s) {
+        builtmodulesproperty = s;
+    }
+    
+    /** Enable/Disable merging also dependencies */
+    public void setMergeDependentModules (boolean b) {
+        mergedependentmodules = b;
+    }
+    
+    /** Comma-separated list of fixed modules to include. */
+    public void setFixedModules (String s) {
+        StringTokenizer tok = new StringTokenizer (s, ", ");
+        fixedmodules = new Vector ();
+        while (tok.hasMoreTokens ())
+            fixedmodules.addElement (tok.nextToken ());
     }
     
     /** Comma-separated list of modules to include. */
@@ -114,33 +156,157 @@ public class NbMerge extends Task {
         return s;
     }
 
+    
+    /** Execute targets which cannot fail and though throw BuildException */
+    private void FixedModulesBuild () throws BuildException {
+        // Somewhat convoluted code because Project.executeTargets does not
+        // eliminate duplicates when analyzing dependencies! Ecch.
+        // build fixed modules first
+        dummy = new Target ();
+        dummyName = "nbmerge-" + target.getName ();
+        targets = project.getTargets ();
+        while (targets.contains (dummyName))
+            dummyName += "-x";
+        dummy.setName (dummyName);
+        for (int i = 0; i < buildfixedmodules.size (); i++) {
+            String fixedmodule = (String) buildfixedmodules.elementAt (i);
+            dummy.addDependency (targetprefix + fixedmodule);
+        }
+        project.addTarget (dummy);
+
+        project.setProperty("fixedmodules-built",  "1" );
+        Vector fullList = project.topoSort(dummyName, targets);
+        // Now remove earlier ones: already done.
+        Vector doneList = project.topoSort(getOwningTarget().getName(), targets);
+        List todo = new ArrayList(fullList.subList(0, fullList.indexOf(dummy)));
+        todo.removeAll(doneList.subList(0, doneList.indexOf(getOwningTarget())));
+        Iterator targit = todo.iterator();
+        System.out.println(""); System.out.println("<nbmerge> Going to execute targets \"" + todo.toString() + "\"");
+        while (targit.hasNext()) {
+            Target nexttargit = (Target)targit.next();
+            String targetname = nexttargit.getName();
+            if ( builttargets.indexOf(targetname) < 0 ) {
+                System.out.println(""); System.out.println(targetname + ":");
+                nexttargit.execute();
+                builttargets.addElement(targetname);
+            }
+        }
+
+        builtmodules.addAll(fixedmodules); // add already built fixed modules to the list
+        log("fixedmodules=\"" + fixedmodules.toString() + "\"", Project.MSG_DEBUG);
+        log("builtmodules=\"" + builtmodules.toString() + "\"", Project.MSG_VERBOSE);
+    }
+    
+    /** Execute targets which can fail _without_ throwing BuildException */
+    private void ModulesBuild () throws BuildException {
+        String module;
+        if ( ! failonerror ) {
+            project.setProperty("modules-built",  "1" );
+            // build the rest of modules
+            for (int i = 0; i < buildmodules.size (); i++) {
+                module = (String) buildmodules.elementAt (i);
+                dummy = new Target ();
+                dummyName = "nbmerge-" + target.getName () + "-" + module;
+                while (targets.contains (dummyName))
+                    dummyName += "-x";
+                dummy.setName (dummyName);
+                dummy.addDependency (targetprefix + module);
+                project.addTarget (dummy);
+                Vector fullList = project.topoSort(dummyName, targets);
+                // Now remove earlier ones: already done.
+                Vector doneList = project.topoSort(getOwningTarget().getName(), targets);
+                List todo = new ArrayList(fullList.subList(0, fullList.indexOf(dummy)));
+                todo.removeAll(doneList.subList(0, doneList.indexOf(getOwningTarget())));
+                
+                Iterator targit = todo.iterator();
+                try {
+                    while (targit.hasNext()) {
+                        Target nexttargit = (Target)targit.next();
+                        String targetname = nexttargit.getName();
+                        if ( builttargets.indexOf(targetname) < 0 ) {
+                            System.out.println(""); System.out.println(targetname + ":");
+                            nexttargit.execute();
+                            builttargets.addElement(targetname);
+                        }
+                        
+                    }
+                    builtmodules.addElement(module);
+                } catch (BuildException BE) {
+                        log(BE.toString());
+                        BE.printStackTrace();
+                        failedmodules.addElement(module);
+                }
+            }
+        }
+    }
+    
     public void execute () throws BuildException {
         if (topdirs.isEmpty ()) {
             throw new BuildException ("You must set at least one topdir attribute", location);
         }
-        
-        // Somewhat convoluted code because Project.executeTargets does not
-        // eliminate duplicates when analyzing dependencies! Ecch.
-        Target dummy = new Target ();
-        String dummyName = "nbmerge-" + target.getName ();
-        Hashtable targets = project.getTargets ();
-        while (targets.contains (dummyName))
-            dummyName += "-x";
-        dummy.setName (dummyName);
-        for (int i = 0; i < modules.size (); i++) {
-            String module = (String) modules.elementAt (i);
-            dummy.addDependency (targetprefix + module);
-        }
-        project.addTarget (dummy);
-        project.executeTarget (dummyName);
 
-/* Done in build.xml        
-        Delete delete = (Delete) project.createTask ("delete");
-        delete.setDir (dest);
-        delete.init ();
-        delete.setLocation (location);
-        delete.execute ();
-*/
+        buildfixedmodules.addAll(fixedmodules);
+        buildmodules.addAll(modules);
+        
+        if (( modules.size() > 0 ) && ( fixedmodules.size() == 0 ) && (! failonerror)) {
+            log("Unable to build without fixedmodules set", Project.MSG_WARN);
+            log("Swapping modules list with fixedmodules list", Project.MSG_WARN);
+            buildfixedmodules.addAll(modules);
+            buildmodules.removeAllElements();
+        }
+
+        if (( failonerror ) && ( modules.size() > 0 )) {
+            // failonerror is enabled => build success granularity is disabled
+            // though move all modules to fixedmodules
+            buildfixedmodules.addAll(modules);
+            buildmodules.removeAllElements();
+        } 
+
+        // build of fixed modules
+        FixedModulesBuild ();
+        
+        // build of the rest of modules
+        ModulesBuild ();
+        
+        // final data merging
+        DataMerge();
+
+        // display build success status
+        if (builtmodules.size() > 0 ) {
+            log("builtmodules=\"" + builtmodules.toString() + "\"");
+            log("builttargets=\"" + builttargets.toString() + "\"");
+            if (failedmodules.size() > 0 ) {
+                log("SOME MODULES FAILED TO BUILD, BUT THEIR BuildException WAS CAUGHT.", Project.MSG_WARN);
+                log("failedmodules=\"" + failedmodules.toString() + "\"", Project.MSG_WARN);
+            }
+            
+            if ( mergemodules.size() > 0 ) {
+                if ( builtmodulesproperty.length() > 0 ) {
+                    Vector setmodules = new Vector();
+                    // add all successfuly built modules
+                    setmodules.addAll(mergemodules);
+                    // remove all fixed modules (don't put fixed modules to modules list)
+                    setmodules.removeAll(fixedmodules);
+                    // check if the modules list is equal to mergemodules without fixedmodules
+                    if (( ! modules.containsAll(setmodules)) || ( ! setmodules.containsAll(modules))) {
+                        String bm = setmodules.toString();
+                        bm = bm.substring( 1, bm.length() - 1);
+                        if (bm.length() > 0 ) {
+                            log("Setting property \"" + builtmodulesproperty + "\" to new value \"" + bm + "\""); //, Project.MSG_VERBOSE);
+                            project.setUserProperty(builtmodulesproperty, bm);
+                        }
+                    }
+                }
+            }
+            
+        } else {
+            throw new BuildException("No modules were built", location);
+        }
+        
+    }
+
+    /** Do final data merge */
+    private void DataMerge () throws BuildException {
         List suppressedlocales = new LinkedList (); // List<String>
         Iterator it = suppress.iterator ();
         while (it.hasNext ()) {
@@ -153,10 +319,26 @@ public class NbMerge extends Task {
             log ("Suppressing locale: " + s.locale);
             suppressedlocales.add (s.locale);
         }        
+
+        mergemodules = new Vector ();
+        mergemodules.addAll(builtmodules);
+        if (mergedependentmodules) {
+            for ( int i = 0; i < builttargets.size(); i++) {
+                String target = (String) builttargets.elementAt(i);
+                if (target.startsWith(targetprefix)) {
+                    String module = target.substring(targetprefix.length());
+                    if ( builtmodules.indexOf(module) < 0 ) {
+                        mergemodules.addElement(module);
+                    }
+                }
+            }
+        }
+
+        // merge the data
         for (int j = 0; j < topdirs.size (); j++) {
             File topdir = (File) topdirs.get (j);
-            for (int i = 0; i < modules.size (); i++) {
-                String module = (String) modules.elementAt (i);
+            for (int i = 0; i < mergemodules.size (); i++) {
+                String module = (String) mergemodules.elementAt (i);
                 File netbeans = new File (new File (topdir, module), "netbeans");
                 if (! netbeans.exists ()) {
                     log ("Build product dir " + netbeans + " does not exist, skipping...", Project.MSG_WARN);
@@ -180,6 +362,7 @@ public class NbMerge extends Task {
                 copy.execute ();
             }
         }
+        log("mergemodules=\"" + mergemodules.toString() + "\"");
         it = suppressedlocales.iterator ();
         UpdateTracking tr = new UpdateTracking( dest.getAbsolutePath() );
         log ( dest.getAbsolutePath() );
