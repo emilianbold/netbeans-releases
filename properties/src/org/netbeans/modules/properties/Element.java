@@ -168,7 +168,8 @@ public abstract class Element extends Object
         * @return the string
         */
         public String printString() {
-            return UtilConvert.saveConvert(value) + "=";
+            //return UtilConvert.saveConvert(value) + "=";
+            return getValue()+"="; // no converting to unicode back and forth
         }
 
     }
@@ -186,7 +187,8 @@ public abstract class Element extends Object
         * @return the string
         */
         public String printString() {
-            return UtilConvert.saveConvert(value) + "\n";
+            //return UtilConvert.saveConvert(value) + "\n";
+            return getValue()+"\n"; // no converting to unicode back and forth
         }
 
     }

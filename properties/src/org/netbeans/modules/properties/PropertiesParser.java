@@ -248,8 +248,8 @@ class PropertiesParser {
                 ;
 
             // Convert then store key and value
-            key   = UtilConvert.loadConvert(key);
-            value = UtilConvert.loadConvert(value);
+//            key   = UtilConvert.loadConvert(key); // TEMP
+//            value = UtilConvert.loadConvert(value); // TEMP
 
             int currentPos = in.position;
             int valuePosFile = 0;
