@@ -283,7 +283,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                 }
 
                 if (!triedStart) {
-                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(NbDdeBrowserImpl.class, "MSG_openingURLInBrowser"));
+                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(NbDdeBrowserImpl.class, "MSG_openingURLInBrowser", urlStr));
                     String args1 = "\""+urlStr+"\",,-1,0x1,,,";  // NOI18N
 
                     try {
@@ -383,7 +383,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
          * It is used when WWW_Activate or WWW_OpenURL fail
          */
         private void startBrowser(NbProcessDescriptor cmd, String url) throws java.io.IOException {
-            StatusDisplayer.getDefault ().setStatusText (NbBundle.getMessage(NbDdeBrowserImpl.class, "MSG_startingBrowser"));
+            StatusDisplayer.getDefault ().setStatusText (NbBundle.getMessage(NbDdeBrowserImpl.class, "MSG_startingBrowser", url));
             cmd.exec(new ExtWebBrowser.UnixBrowserFormat(url));
         }
     }
