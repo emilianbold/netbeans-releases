@@ -85,13 +85,13 @@
 			},
 			{
 				name = "Cloudscape RMI";
-				driver = "COM.cloudscape.core.JDBCDriver";
-				prefix = "jdbc:rmi:<HOST>:<PORT>:jdbc:cloudscape:<DB>";
+				driver = "RmiJdbc.RJDriver";
+				prefix = "jdbc:rmi://<HOST>:<PORT>/jdbc:cloudscape:<DB>";
 			},
 			{
 				name = "ODBC Bridge";
 				driver = "sun.jdbc.odbc.JdbcOdbcDriver";
-				prefix = "jdbc.odbc.<DB>";
+				prefix = "jdbc:odbc:<DB>";
 			},
 			{
 				name = "Oracle";
