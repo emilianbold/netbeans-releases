@@ -81,8 +81,7 @@ final class Importer {
         JavaPlatform defPlf = JavaPlatformManager.getDefault().getDefaultPlatform();
         Collection installFolder = defPlf.getInstallFolders();
         if (installFolder.isEmpty()) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING,
-                    "There is not any platform in NetBeans..."); // NOI18N
+            logWarning("There is not any platform in NetBeans..."); // NOI18N
             return;
         } else {
             nbDefPlfDir = FileUtil.toFile(
@@ -110,7 +109,7 @@ final class Importer {
     int getNOfProcessed() {
         return nOfProcessed;
     }
-
+    
     /**
      * Returns localized message describing current importer activity.
      */
@@ -180,8 +179,7 @@ final class Importer {
                     FileObject eclLib = FileUtil.toFileObject(eclLibs[i]);
                     nbProjectClassPath.addArchiveFile(eclLib);
                 } else {
-                    ErrorManager.getDefault().log(ErrorManager.WARNING,
-                            eclLibs[i] + " doesn't exist. Skipping..."); // NOI18N
+                    logWarning(eclLibs[i] + " doesn't exist. Skipping..."); // NOI18N
                 }
             }
             
@@ -243,7 +241,7 @@ final class Importer {
         }
         // If we are not able to find any platform let's use the "broken
         // platform" which can be easily added by user with "Resolve Reference
-        // Problems" feature. Such behaviour is much better then using a default 
+        // Problems" feature. Such behaviour is much better then using a default
         // platform when user imports more projects.
         // TODO parse version from Eclipse project or parse it out from a
         // platform directory
@@ -256,5 +254,10 @@ final class Importer {
         }
         prop.setProperty(J2SEProjectProperties.JAVA_PLATFORM, normalizedName);
         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, prop);
+    }
+    
+    /** Delegates to ErrorManager */
+    private void logWarning(String message) {
+        ErrorManager.getDefault().log(ErrorManager.WARNING, message);
     }
 }
