@@ -69,8 +69,10 @@ public class AnnotationTypesNode extends AbstractNode {
     protected Sheet createSheet() {
         Sheet sheet = super.createSheet();
         
-        Sheet.Set ps = new Sheet.Set();
-        ps.setName(Sheet.PROPERTIES);
+	Sheet.Set ps = sheet.get (Sheet.PROPERTIES);
+	if (ps == null) {
+	    ps = Sheet.createPropertiesSet ();
+	}
         
         ps.put(createProperty(AnnotationTypes.PROP_BACKGROUND_DRAWING, boolean.class)); //NOI18N
         ps.put(createProperty(AnnotationTypes.PROP_BACKGROUND_GLYPH_ALPHA, int.class)); //NOI18N
