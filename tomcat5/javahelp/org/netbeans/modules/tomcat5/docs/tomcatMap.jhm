@@ -38,10 +38,7 @@ help\
 	<mapID target="tomcat_plugin" url="tomcat/tomcat_plugintro.html" />
 	<mapID target="tomcat_start" url="tomcat/tomcat_start.html" />
 	<mapID target="tomcat_top_node" url="tomcat/tomcat_top_node.html" />
-        <!-- these appear in the web module help -->
-        <mapID target="webmod_singletest" url="webmod/mod_singletest.html" />
-        <mapID target="jsp_run" url="create_jsp/jsp_run.html" />
-        <mapID target="servlet_run" url="servlet/servlet_run.html" />
+        <!-- these appear in the web module help --> 
         <mapID target="tomcat_default" url="tomcat/tomcat_default.html" /> 
 
         <!-- CSH topics -->
