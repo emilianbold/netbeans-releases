@@ -112,6 +112,15 @@ public abstract class Constants {
     //a big performance hit on Linux.  Appears that XP L&F will not display images even if
     //supplied.
     public static final boolean SWITCH_USE_DRAG_IMAGES = Boolean.getBoolean("netbeans.windows.useDragImages") || Utilities.getOperatingSystem() == Utilities.OS_MAC;
+   
+    /** Allowing complete removal of toolbars. */
+    public static final boolean NO_TOOLBARS = Boolean.getBoolean("netbeans.winsys.no_toolbars"); // NOI18N
+
+    /** File name whose InstanceCookie can contain custom menu bar component.*/
+    public static final String CUSTOM_MENU_BAR_PATH = System.getProperty("netbeans.winsys.menu_bar.path"); // NOI18N
+
+    /** File name whose InstanceCookie can contain custom status line component.*/
+    public static final String CUSTOM_STATUS_LINE_PATH = System.getProperty("netbeans.winsys.status_line.path"); // NOI18N
     
     private Constants() {}
 }

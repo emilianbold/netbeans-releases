@@ -33,13 +33,16 @@ import javax.swing.event.ChangeListener;
 
 import org.openide.awt.MenuBar;
 import org.openide.filesystems.*;
+import org.openide.loaders.*;
 import org.openide.nodes.*;
+import org.openide.cookies.InstanceCookie;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.*;
 import org.openide.windows.TopComponent;
 import org.openide.awt.ToolbarPool;
+import org.openide.ErrorManager;
 
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.Constants;
@@ -105,21 +108,30 @@ public final class MainWindow extends JFrame {
 
         setJMenuBar(createMenuBar());
     
-        JComponent tb = getToolbarComponent();
+        if (!Constants.NO_TOOLBARS) {
+            JComponent tb = getToolbarComponent();
         
-        getContentPane().add(tb, BorderLayout.NORTH);
+            getContentPane().add(tb, BorderLayout.NORTH);
+        }
         
         if(!Constants.SWITCH_STATUSLINE_IN_MENUBAR) {
-            JLabel status = new StatusLine();
-            // XXX #19910 Not to squeeze status line.
-            status.setText(" "); // NOI18N
-            status.setPreferredSize(new Dimension(0, status.getPreferredSize().height));
+            if (Constants.CUSTOM_STATUS_LINE_PATH == null) {
+                JLabel status = new StatusLine();
+                // XXX #19910 Not to squeeze status line.
+                status.setText(" "); // NOI18N
+                status.setPreferredSize(new Dimension(0, status.getPreferredSize().height));
 
-            JPanel panel = new JPanel(new BorderLayout());
-            panel.add(new JSeparator(), BorderLayout.NORTH);
-            panel.add(status, BorderLayout.CENTER);
-            panel.setName("statusLine"); //NOI18N
-            getContentPane().add(panel, BorderLayout.SOUTH);
+                JPanel panel = new JPanel(new BorderLayout());
+                panel.add(new JSeparator(), BorderLayout.NORTH);
+                panel.add(status, BorderLayout.CENTER);
+                panel.setName("statusLine"); //NOI18N
+                getContentPane().add(panel, BorderLayout.SOUTH);
+            } else { // custom status line provided
+                JComponent status = getCustomStatusLine();
+                if (status != null) {
+                    getContentPane().add(status, BorderLayout.SOUTH);
+                }
+            }
         }
         
         // initialize desktop panel
@@ -192,26 +204,90 @@ public final class MainWindow extends JFrame {
 
     /** Creates menu bar. */
     private static JMenuBar createMenuBar() {
-        MenuBar menu = new MenuBar (null);
+        MenuBar menu = getCustomMenuBar();
+        if (menu == null) {
+             menu = new MenuBar (null);
+        }
         menu.setBorderPainted(false);
         menu.waitFinished();
         
         if(Constants.SWITCH_STATUSLINE_IN_MENUBAR) {
-            JLabel status = new StatusLine();
-            JPanel panel = new JPanel(new BorderLayout());
-            JSeparator sep = new JSeparator(JSeparator.VERTICAL);
-            Dimension d = sep.getPreferredSize();
-            d.width += 6; // need a bit more padding...
-            sep.setPreferredSize(d);
-            panel.add(sep, BorderLayout.WEST);
-            panel.add(status, BorderLayout.CENTER);
-            panel.setName("statusLine"); //NOI18N
-            menu.add(panel);
+            if (Constants.CUSTOM_STATUS_LINE_PATH == null) {
+                JLabel status = new StatusLine();
+                JPanel panel = new JPanel(new BorderLayout());
+                JSeparator sep = new JSeparator(JSeparator.VERTICAL);
+                Dimension d = sep.getPreferredSize();
+                d.width += 6; // need a bit more padding...
+                sep.setPreferredSize(d);
+                panel.add(sep, BorderLayout.WEST);
+                panel.add(status, BorderLayout.CENTER);
+                panel.setName("statusLine"); //NOI18N
+                menu.add(panel);
+            } else {
+                JComponent status = getCustomStatusLine();
+                if (status != null) {
+                    menu.add(status);
+                }
+            }
         }
         
         return menu;
     }
+
+     /**
+      * Tries to find custom menu bar component on system file system.
+      * @return menu bar component or <code>null</code> if no menu bar
+      *         component is found on system file system.
+      */
+     private static MenuBar getCustomMenuBar() {
+         try {
+             String fileName = Constants.CUSTOM_MENU_BAR_PATH;
+             if (fileName == null) {
+                 return null;
+             }
+             FileObject fo =
+                 Repository.getDefault().getDefaultFileSystem().findResource(
+                     fileName);
+             if (fo != null) {
+                 DataObject dobj = DataObject.find(fo);
+                 InstanceCookie ic = (InstanceCookie)dobj.getCookie(InstanceCookie.class);
+                 if (ic != null) {
+                     return (MenuBar)ic.instanceCreate();
+                 }
+             }
+         } catch (Exception e) {
+             ErrorManager.getDefault().notify(e);
+         }
+         return null;
+     }
     
+     /**
+      * Tries to find custom status line component on system file system.
+      * @return status line component or <code>null</code> if no status line
+      *         component is found on system file system.
+      */
+     private static JComponent getCustomStatusLine() {
+         try {
+             String fileName = Constants.CUSTOM_STATUS_LINE_PATH;
+             if (fileName == null) {
+                 return null;
+             }
+             FileObject fo =
+                 Repository.getDefault().getDefaultFileSystem().findResource(
+                     fileName);
+             if (fo != null) {
+                 DataObject dobj = DataObject.find(fo);
+                 InstanceCookie ic = (InstanceCookie)dobj.getCookie(InstanceCookie.class);
+                 if (ic != null) {
+                     return (JComponent)ic.instanceCreate();
+                 }
+             }
+         } catch (Exception e) {
+             ErrorManager.getDefault().notify(e);
+         }
+         return null;
+     }
+     
     /** Creates toolbar component. */
     private static JComponent getToolbarComponent() {
         ToolbarPool tp = ToolbarPool.getDefault();
