@@ -23,12 +23,12 @@ Microsystems, Inc. All Rights Reserved.
                <include name="org/netbeans/test/editor/suites/keyboard_shortcuts/Find*"/>
                <include name="org/netbeans/test/editor/suites/keyboard_shortcuts/Replace*"/>
                <include name="org/netbeans/test/editor/suites/smart_enter/SmartEnter*"/>
+               <include name="smart_bracket/SmartBracketTestSuite*"/>
 
              </patternset>
          </testset>
      </testbag>
 
- 
     <testbag testattribs="all,full,apps" name="TestApplication">
         <testset dir="qa-functional/src">
             <patternset>
