@@ -443,7 +443,6 @@
 
 <mapID target="javadoc.jump" url="javadoc/javadoc_jump.html" />
 <mapID target="javadoc.search" url="javadoc/search.html" />
-<mapID target="javadoc.jdkdocs" url="javadoc/jdkdocs.html" />
 <mapID target="javadoc.source_editor" url="javadoc/show_in_editor.html" />
 <mapID target="javadoc.comment.jump" url="javadoc/comment_jump.html" />
 <mapID target="javadoc.addcomment" url="javadoc/addcomment.html" />
@@ -460,9 +459,7 @@
 <mapID target="javadoc.stylesheet" url="javadoc/stylesheet.html" />
 <mapID target="javadoc.doclet" url="javadoc/doclet.html" />
 <mapID target="javadoc.searchengine" url="javadoc/searchengine.html" />
-<mapID target="javadoc.executor" url="javadoc/executor.html" />
 <mapID target="javadoc.externaljavadoc" url="javadoc/externaljavadoc.html" />
-<mapID target="javadoc.internaljavadoc" url="javadoc/internaljavadoc.html" />
 
 <mapID target="javadoc.search.window" url="javadoc/search_window.html" />
 <mapID target="javadoc.auto.comment" url="javadoc/auto_comment_window.html" />
@@ -1065,6 +1062,8 @@
    <mapID target="org.netbeans.modules.javadoc.JavaDocType" url="javadoc/executor.html" /> 
    <mapID target="org.netbeans.modules.javadoc.StdDocletType" url="javadoc/doclet.html" /> 
    <mapID target="org.netbeans.modules.javadoc.search.DocFSOffsetEditor" url="javadoc/root_offset.html" /> 
+   <mapID target="org.netbeans.modules.javadoc.ManageDocAction" url="javadoc/manager.html" /> 
+   <mapID target="org.netbeans.modules.javadoc.FileSystem.docroots" url="javadoc/docroots.html" />
 
    <mapID target="org.netbeans.modules.javadoc.search.IndexSearch" url="pending.html" /> 
    <mapID target="org.netbeans.modules.javadoc.comments.AutoCommentTopComponent" url="pending.html" />

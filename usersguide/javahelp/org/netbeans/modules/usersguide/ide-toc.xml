@@ -276,7 +276,7 @@
   <tocitem text="Using the Call Stack" target="debug.callstack.jump" >
     <tocitem text="Making a Call Current" target="debug.callstack.callingmethod" />
     <tocitem text="Viewing Source for a Method on the Call Stack" target="debug.callstack.source" />
-    <tocitem text="Removing a Call From the Call Stack" target="debug.callstack.pop" />
+    <tocitem text="Popping a Call From the Call Stack" target="debug.callstack.pop" />
   </tocitem>
 
   <tocitem text="Examining Variables and Expressions" target="debug.variables.jump" >
@@ -400,17 +400,16 @@
 <tocitem text="Working With Javadoc Documentation" target="javadoc.jump">
     <tocitem text="Searching Through Javadoc-Generated Documentation" target="javadoc.search"/>
     <tocitem text="Generating Javadoc Documentation" target="javadoc.generate"/>
-    <tocitem text="Browsing JDK Documentation" target="javadoc.jdkdocs"/>
-    <tocitem text="Viewing Documentation From the Source Editor" target="javadoc.source_editor"/>
+    <tocitem text="Showing Documentation From the Source Editor" target="javadoc.source_editor"/>
     <tocitem text="Commenting Java Source Code" target="javadoc.comment.jump">
       <tocitem text="Format of a Javadoc Comment" target="javadoc.comment"/>
-      <tocitem text="Adding a Javadoc Comment to Source Code" target="javadoc.addcomment"/>
-      <tocitem text="Checking Javadoc Comments for Accuracy" target="javadoc.accuracy"/>
+      <tocitem text="Adding a Comment to Java Source Code" target="javadoc.addcomment"/>
+      <tocitem text="Checking Comments for Accuracy" target="javadoc.accuracy"/>
     </tocitem>
     <tocitem text="Mounting Javadoc Filesystems" target="javadoc.filesystem.jump">
       <tocitem text="Mounting a Javadoc Filesystem" target="javadoc.search.path"/>
       <tocitem text="Configuring a Javadoc Filesystem" target="javadoc.filesystem.configure"/>
-      <tocitem text="Unmounting a Javadoc Filesystem" target="javadoc.filesystem.unmount"/>
+      <tocitem text="Removing a Javadoc Filesystem" target="javadoc.filesystem.unmount"/>
     </tocitem>
     <tocitem text="Setting Javadoc Options" target="javadoc.settings.jump">
       <tocitem text="Turning Off Exact Case Matching" target="javadoc.case.sensitive"/>
@@ -418,10 +417,8 @@
       <tocitem text="Specifying a Style Sheet for Javadoc Documentation" target="javadoc.stylesheet"/>
       <tocitem text="Modifying Doclet Properties" target="javadoc.doclet"/>
       <tocitem text="Specifying the Default Search Engine" target="javadoc.searchengine"/>
-    </tocitem>
-    <tocitem text="Specifying the Default Javadoc Executor" target="javadoc.executor">
-      <tocitem text="External Javadoc Executor" target="javadoc.externaljavadoc"/>
-      <tocitem text="Internal Javadoc Executor" target="javadoc.internaljavadoc"/>
+      <tocitem text="Configuring the Javadoc Executor" target="javadoc.externaljavadoc">
+      </tocitem>
     </tocitem>
   </tocitem>
   <tocitem text="Using the JAR Packager" target="jarpackager">
