@@ -860,7 +860,7 @@ public abstract class NbTopManager extends TopManager {
          * method is called to initialize the FolderLookup.
          */
 	    
-        public static final synchronized void modulesClassPathInitialized () {
+        public static final void modulesClassPathInitialized () {
             //System.err.println("mCPI");
 	    //StartLog.logStart ("NbTopManager$Lkp: initialization of FolderLookup"); // NOI18N
 
@@ -871,6 +871,8 @@ public abstract class NbTopManager extends TopManager {
             if (lookup instanceof Lkp) {
                 Lkp lkp = (Lkp)lookup;
                 lkp.initializeLookup ();
+                // Wait for the lookup initialization to better measure module startups
+                lkp.initTask.waitFinished();
             }
         }
         
