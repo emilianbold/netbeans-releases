@@ -138,28 +138,39 @@ public final class BiNode extends AbstractNode {
                         getString ("CTL_NODE_BeanInfo"));
         setIconBase (ICON_BASE);
 
-        // Add children nodes
+        Node[] subnodes = (biAnalyser.isOlderVersion() ? 
+            new Node[] {
+                    new SubNode( biAnalyser,
+                               new Class[] { BiFeature.Property.class, BiFeature.IdxProperty.class },
+                               "CTL_NODE_Properties", // NOI18N
+                               ICON_BASE_PATTERNS,
+                               propSubnodeProperties ),
 
-        Node[] subnodes = new Node[] {
-                              new SubNode( biAnalyser,
-                                           new Class[] { BiFeature.Property.class, BiFeature.IdxProperty.class },
-                                           "CTL_NODE_Properties", // NOI18N
-                                           ICON_BASE_PATTERNS,
-                                           propSubnodeProperties ),
+                    new SubNode( biAnalyser,
+                               new Class[] { BiFeature.EventSet.class },
+                               "CTL_NODE_EventSets", // NOI18N
+                               ICON_BASE_PATTERNS,
+                               eventSubnodeProperties )
+            } : new Node[] {
+                    new SubNode( biAnalyser,
+                               new Class[] { BiFeature.Property.class, BiFeature.IdxProperty.class },
+                               "CTL_NODE_Properties", // NOI18N
+                               ICON_BASE_PATTERNS,
+                               propSubnodeProperties ),
 
-                              new SubNode( biAnalyser,
-                                           new Class[] { BiFeature.EventSet.class },
-                                           "CTL_NODE_EventSets", // NOI18N
-                                           ICON_BASE_PATTERNS,
-                                           eventSubnodeProperties ),
+                    new SubNode( biAnalyser,
+                               new Class[] { BiFeature.EventSet.class },
+                               "CTL_NODE_EventSets", // NOI18N
+                               ICON_BASE_PATTERNS,
+                               eventSubnodeProperties ),
 
-                              new SubNode( biAnalyser, 
-                                       new Class[] { BiFeature.Method.class },
-                                       "CTL_NODE_Methods",
-                                       ICON_BASE_PATTERNS,
-                                       methodSubnodeProperties )
-                          };
-
+                    new SubNode( biAnalyser, 
+                           new Class[] { BiFeature.Method.class },
+                           "CTL_NODE_Methods",
+                           ICON_BASE_PATTERNS,
+                           methodSubnodeProperties )
+            });
+        
         Sheet sheet = Sheet.createDefault();
         Sheet.Set ps = sheet.get(Sheet.PROPERTIES);
 

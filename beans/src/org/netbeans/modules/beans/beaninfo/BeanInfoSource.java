@@ -79,7 +79,7 @@ public class BeanInfoSource extends Object {
         JavaEditor.SimpleSection iss = javaEditor.findSimpleSection( ICONS_SECTION );
         JavaEditor.SimpleSection dss = javaEditor.findSimpleSection( IDX_SECTION );
 
-        return ( pis != null && eis != null && iss != null && dss != null && mis != null);
+        return ( pis != null && eis != null && iss != null && dss != null);
     }
 
 
@@ -210,7 +210,7 @@ public class BeanInfoSource extends Object {
 
     }
 
-    /** Sets the header and bottom of properties section */
+    /** Sets the header and bottom of methods section */
     void setMethodsSection( String header, String bottom ) {
         JavaEditor.InteriorSection is = javaEditor.findInteriorSection( METHODS_SECTION );
 
@@ -227,8 +227,9 @@ public class BeanInfoSource extends Object {
         if ( is != null ) {
             return is.getText();
         }
-        else
-            return null;
+        else {
+          return null;
+        }
 
     }
 
