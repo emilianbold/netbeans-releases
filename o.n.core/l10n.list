@@ -1,3 +1,6 @@
+core/ide/release/README.html
+core/ide/release/CHANGES.html
+core/release/CREDITS.html
 core/compiler/src/org/netbeans/core/compiler/Bundle.properties
 core/compiler/src/org/netbeans/core/compiler/beaninfo/Bundle.properties
 core/compiler/src/org/netbeans/core/compiler/beaninfo/editors/Bundle.properties
