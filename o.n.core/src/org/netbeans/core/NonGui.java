@@ -273,21 +273,9 @@ public class NonGui extends NbTopManager implements Runnable {
             }
         }
 
-        if (!noLogging) {
-            try {
-                logger = new TopLogging(getSystemDir());
-            } catch (IOException e) {
-                System.err.println("Cannot create log file. Logging disabled."); // NOI18N
-                e.printStackTrace ();
-            }
-        }
-        StartLog.logProgress ("TopLogging initialized"); // NOI18N
-        
         if (! specifiedBranding) {
             // Read default branding from file "lib/branding" in installation.
-            File branding = new File (getUserDir (), "lib" + File.separator + "branding"); // NOI18N
-            if (! branding.exists ())
-                branding = new File (getHomeDir (), "lib" + File.separator + "branding"); // NOI18N
+            File branding = new File(new File(getHomeDir(), "lib"), "branding"); // NOI18N
             if (branding.exists ()) {
                 try {
                     InputStream is = new FileInputStream (branding);
@@ -313,6 +301,17 @@ public class NonGui extends NbTopManager implements Runnable {
                 }
             }
         }
+
+        if (!noLogging) {
+            try {
+                logger = new TopLogging(getSystemDir());
+            } catch (IOException e) {
+                System.err.println("Cannot create log file. Logging disabled."); // NOI18N
+                e.printStackTrace ();
+            }
+        }
+        StartLog.logProgress ("TopLogging initialized"); // NOI18N
+        
     }
     
     /** Lazily loads classes */ // #9951
