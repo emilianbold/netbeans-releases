@@ -97,7 +97,7 @@ public class ProductInformationPanel extends JPanel {
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 0;
-        gridBagConstraints1.insets = new java.awt.Insets(6, 12, 0, 0);
+        gridBagConstraints1.insets = new java.awt.Insets(12, 12, 0, 0);
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(ideImageLabel, gridBagConstraints1);
         
@@ -106,7 +106,7 @@ public class ProductInformationPanel extends JPanel {
         gridBagConstraints1.gridx = 1;
         gridBagConstraints1.gridy = 0;
         gridBagConstraints1.gridwidth = 2;
-        gridBagConstraints1.insets = new java.awt.Insets(6, 12, 0, 11);
+        gridBagConstraints1.insets = new java.awt.Insets(12, 12, 0, 11);
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
         add(productInformationLabel, gridBagConstraints1);
         
@@ -290,7 +290,7 @@ public class ProductInformationPanel extends JPanel {
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 1;
         gridBagConstraints1.gridy = 12;
-        gridBagConstraints1.insets = new java.awt.Insets(6, 12, 5, 0);
+        gridBagConstraints1.insets = new java.awt.Insets(6, 12, 11, 0);
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
         add(userDirLabel, gridBagConstraints1);
         
@@ -299,7 +299,7 @@ public class ProductInformationPanel extends JPanel {
         gridBagConstraints1.gridx = 2;
         gridBagConstraints1.gridy = 12;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints1.insets = new java.awt.Insets(6, 12, 5, 11);
+        gridBagConstraints1.insets = new java.awt.Insets(6, 12, 11, 11);
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints1.weightx = 1.0;
         add(userDirValueLabel, gridBagConstraints1);
