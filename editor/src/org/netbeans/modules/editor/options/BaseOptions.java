@@ -951,24 +951,6 @@ public class BaseOptions extends OptionSupport {
         setSettingValue(SettingsNames.MARGIN, i, MARGIN_PROP);
     }
     
-    public Insets getLineNumberMargin() {
-        return (Insets)getSettingValue(SettingsNames.LINE_NUMBER_MARGIN);
-    }
-    public void setLineNumberMargin(Insets i) {
-        setSettingValue(SettingsNames.LINE_NUMBER_MARGIN, i, LINE_NUMBER_MARGIN_PROP);
-    }
-
-
-    //-------- used only for better UI repres=entation as a fix of the bug #17950 --
-    public Dimension getLineNumberMargin2() {
-        Insets ins =  (Insets)getSettingValue(SettingsNames.LINE_NUMBER_MARGIN);
-        return new Dimension(ins.left, ins.right);
-    }
-    public void setLineNumberMargin2(Dimension d) {
-        setLineNumberMargin(new Insets(0, d.width, 0, d.height));
-    }
-    //--------------------------------------------------------------------
-    
     public boolean getStatusBarVisible() {
         return getSettingBoolean(SettingsNames.STATUS_BAR_VISIBLE);
     }
