@@ -18,7 +18,6 @@ package org.apache.tools.ant.module.run;
 import java.awt.EventQueue;
 import java.io.*;
 import java.util.*;
-import java.util.Map; // override org.apache.tools.ant.Map
 
 import org.openide.*;
 import org.openide.actions.ExecuteAction;
@@ -42,6 +41,12 @@ import org.apache.tools.ant.module.bridge.AntBridge;
 /** Executes an Ant Target asynchronously in the IDE.
  */
 public class TargetExecutor implements Runnable {
+    
+    /**
+     * All tabs which are currently being used for some execution task.
+     * These are never reused.
+     */
+    private static final Set/*<String>*/ tabNamesInUse = new HashSet();
     
     private AntProjectCookie pcookie;
     private InputOutput io;
@@ -133,7 +138,13 @@ public class TargetExecutor implements Runnable {
         synchronized (this) {
 
             // OutputWindow
-            io = IOProvider.getDefault ().getIO (name, false);
+            synchronized (tabNamesInUse) {
+                // XXX this is not quite right; while e.g. Ant Execution is in use
+                // by one long-running build, you get many more for other short
+                // builds, even though the others could be reused... is it possible
+                // to safely keep its own list of InputOutput's somehow?
+                io = IOProvider.getDefault().getIO(name, !tabNamesInUse.add(name));
+            }
             // this will delete the output even if a script is still running.
             io.getOut ().reset ();
             // Disabled since for Ant-based compilation it is usually annoying:
@@ -145,7 +156,7 @@ public class TargetExecutor implements Runnable {
             //System.err.println("execute #3: " + this);
         }
         //System.err.println("execute #5: " + this);
-        WrapperExecutorTask wrapper = new WrapperExecutorTask (task, io);
+        WrapperExecutorTask wrapper = new WrapperExecutorTask(task, io, name);
         RequestProcessor.getDefault().post(wrapper);
         return wrapper;
     }
@@ -154,14 +165,14 @@ public class TargetExecutor implements Runnable {
         this.outputStream = outputStream;
         ExecutorTask task = ExecutionEngine.getDefault().execute(
             NbBundle.getMessage(TargetExecutor.class, "LABEL_execution_name"), this, InputOutput.NULL);
-        return new WrapperExecutorTask(task, null);
+        return new WrapperExecutorTask(task, null, null);
     }
     
     private class WrapperExecutorTask extends ExecutorTask {
         private ExecutorTask task;
         private InputOutput inputOutput;
-        public WrapperExecutorTask (ExecutorTask task, InputOutput inputOutput) {
-            super (new WrapperRunnable (task));
+        public WrapperExecutorTask(ExecutorTask task, InputOutput inputOutput, String name) {
+            super(new WrapperRunnable(task, name));
             this.task = task;
             this.inputOutput = inputOutput;
         }
@@ -176,12 +187,19 @@ public class TargetExecutor implements Runnable {
         }
     }
     private static class WrapperRunnable implements Runnable {
-        private ExecutorTask task;
-        public WrapperRunnable (ExecutorTask task) {
+        private final ExecutorTask task;
+        private final String name;
+        public WrapperRunnable(ExecutorTask task, String name) {
             this.task = task;
+            this.name = name;
         }
         public void run () {
             task.waitFinished ();
+            if (name != null) {
+                synchronized (tabNamesInUse) {
+                    tabNamesInUse.remove(name);
+                }
+            }
         }
     }
   
