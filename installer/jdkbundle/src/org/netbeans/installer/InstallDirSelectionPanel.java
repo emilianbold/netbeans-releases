@@ -109,7 +109,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 
 	// if null, no previous jdk was found. Always null on unix platforms.
 	installedJdk = (String) System.getProperties().get("installedJdk");
-	logEvent(this, Log.DBG, "\nInstalled JDK Found: " + installedJdk);
+	logEvent(this, Log.DBG, "Installed JDK Found: " + installedJdk);
 
         backupDirName = (String)System.getProperties().get("backupDirName");
         if (backupDirName == null) {
@@ -350,9 +350,9 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	}
 	try {
 	    ProductService service = (ProductService)getService(ProductService.NAME);
-	    service.setProductBeanProperty(productURL, "beanNB", "installLocation", nbInstallDir);
-            service.setProductBeanProperty(productURL, null, "installLocation", nbInstallDir);
-            service.setProductBeanProperty(productURL, null, "absoluteInstallLocation", nbInstallDir);
+	    service.setRetainedProductBeanProperty(productURL, "beanNB", "installLocation", nbInstallDir);
+            service.setRetainedProductBeanProperty(productURL, null, "installLocation", nbInstallDir);
+            service.setRetainedProductBeanProperty(productURL, null, "absoluteInstallLocation", nbInstallDir);
 	} catch (ServiceException e) {
 	    logEvent(this, Log.ERROR, e);
 	}
@@ -398,7 +398,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 		}
 		try {
 		    ProductService service = (ProductService)getService(ProductService.NAME);
-		    service.setProductBeanProperty(productURL, "beanJ2SE", "installLocation", j2seInstallDir);
+		    service.setRetainedProductBeanProperty(productURL, "beanJ2SE", "installLocation", j2seInstallDir);
 		} catch (ServiceException e) {
 		    logEvent(this, Log.ERROR, e);
 		}

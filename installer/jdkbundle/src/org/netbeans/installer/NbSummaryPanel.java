@@ -45,28 +45,33 @@ public class NbSummaryPanel extends TextDisplayPanel
     }
     
     public boolean queryEnter(WizardBeanEvent evt) {
+        logEvent(this, Log.DBG, "queryEnter ENTER");
         boolean okay = super.queryEnter(evt);
-
         try {
             ProductService service = (ProductService) getService(ProductService.NAME);
+            String productURL = ProductService.DEFAULT_PRODUCT_SOURCE;
             nbInstallDir = (String) service.getProductBeanProperty
-            (ProductService.DEFAULT_PRODUCT_SOURCE, "beanNB", "installLocation");
-            logEvent(this, Log.DBG, "nbInstallDir: " + nbInstallDir);
+            (productURL, "beanNB", "installLocation");
+            logEvent(this, Log.DBG, "queryEnter nbInstallDir: " + nbInstallDir);
             if (type == ProductService.POST_INSTALL) {
-                ProductTree pt = service.getSoftwareObjectTree(ProductService.DEFAULT_PRODUCT_SOURCE);
+                logEvent(this, Log.DBG, "queryEnter POSTINSTALL PANEL");
+                ProductTree pt = service.getSoftwareObjectTree(productURL);
                 GenericSoftwareObject gso = (GenericSoftwareObject) pt.getRoot();
                 
                 if (gso.getInstallStatus() == gso.UNINSTALLED) {
-                    // intallation failed
-                    
+                    //Installation failed
                     Properties summary = service.getProductSummary(
-                    ProductService.DEFAULT_PRODUCT_SOURCE,
+                    productURL,
                     ProductService.POST_INSTALL,
                     ProductService.HTML);
+                    logEvent(this, Log.DBG, "queryEnter INSTALLATION FAILED");
+                    logEvent(this, Log.DBG, "queryEnter summaryPostMsg:'"
+                    + summary.getProperty(ProductService.SUMMARY_MSG) + "'");
                     setText(summary.getProperty(ProductService.SUMMARY_MSG));
                 } else {
                     //setText(resolveString("$L(org.netbeans.installer.Bundle, SummaryPanel.description)"));
-                    logEvent(this, Log.DBG, "summaryPostMsg:'" + getPostSummaryMessage() + "'");
+                    logEvent(this, Log.DBG, "queryEnter INSTALLATION SUCCESSFUL");
+                    logEvent(this, Log.DBG, "queryEnter summaryPostMsg:'" + getPostSummaryMessage() + "'");
                     setText(getPostSummaryMessage());
                 }
             } else {
@@ -75,6 +80,7 @@ public class NbSummaryPanel extends TextDisplayPanel
                 type,
                 ProductService.HTML);
                 setText(summary.getProperty(ProductService.SUMMARY_MSG));*/
+                logEvent(this, Log.DBG, "queryEnter PREINSTALL PANEL");
                 logEvent(this, Log.DBG, "summaryPreMsg:'" + getPreSummaryMessage() + "'");
                 setText(getPreSummaryMessage());
             }
@@ -143,20 +149,20 @@ public class NbSummaryPanel extends TextDisplayPanel
         + getTotalSize();
         return summaryMessage;
     }
-                                                                                                                                                     
-
+    
     private String getTotalSize() {
         RequiredBytesTable table;
         long size = 0;
         long j2seSize = 0;
         String mBytes = null;
-                                                                                                                                                     
+        
         try {
             ProductService service = (ProductService)getService(ProductService.NAME);
-            table = service.getRequiredBytes(ProductService.DEFAULT_PRODUCT_SOURCE,"beanNB"); //NOI18N
+            String productURL = ProductService.DEFAULT_PRODUCT_SOURCE;
+            table = service.getRequiredBytes(productURL,"beanNB"); //NOI18N
             size = table.getBytes(nbInstallDir) >> 20;
             logEvent(this, Log.DBG, "Size of NetBeans: " + size);
-                                                                                                                                                     
+            
             if (!Util.isJDKAlreadyInstalled()) {
                 j2seSize = getJ2SESize() >> 20;
                 logEvent(this, Log.DBG, "Adjusted size of J2SE: " + j2seSize);
@@ -172,7 +178,7 @@ public class NbSummaryPanel extends TextDisplayPanel
         }
         return mBytes + " MB";  //NOI18N
     }
-                                                                                                                                                     
+    
     private long getJ2SESize() {
         if (Util.isWindowsOS()) {
             return 135000000L;
