@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -321,10 +321,13 @@ public class MergeControl extends Object implements ActionListener, VetoableChan
                         new Difference[unresolvedConflicts.size()])));
                     panel.setNeedsSaveState(false);
                 } catch (IOException ioex) {
-                    throw new PropertyVetoException(NbBundle.getMessage(MergeControl.class,
-                                                        "MergeControl.failedToSave",
-                                                        ioex.getLocalizedMessage()),
-                                                    propertyChangeEvent);
+                    PropertyVetoException pvex =
+                        new PropertyVetoException(NbBundle.getMessage(MergeControl.class,
+                                                                      "MergeControl.failedToSave",
+                                                                      ioex.getLocalizedMessage()),
+                                                  propertyChangeEvent);
+                    pvex.initCause(ioex);
+                    throw pvex;
                 }
             }
         }

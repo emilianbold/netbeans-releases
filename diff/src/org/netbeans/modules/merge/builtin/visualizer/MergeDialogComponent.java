@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,6 +21,7 @@ import java.awt.Toolkit;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -46,6 +47,7 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.Workspace;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.UserQuestionException;
 import org.openide.util.WeakListener;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.SystemAction;
@@ -204,15 +206,41 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
         }
         if (!NotifyDescriptor.YES_OPTION.equals(ret) && !NotifyDescriptor.NO_OPTION.equals(ret)) return ;
         if (NotifyDescriptor.YES_OPTION.equals(ret)) {
-            try {
-                for (Iterator it = saveCookies.iterator(); it.hasNext(); ) {
-                    SaveCookie sc = (SaveCookie) it.next();
+            for (Iterator it = saveCookies.iterator(); it.hasNext(); ) {
+                SaveCookie sc = (SaveCookie) it.next();
+                IOException ioException = null;
+                try {
                     sc.save();
+                } catch (UserQuestionException uqex) {
+                    Object status = DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Confirmation(uqex.getLocalizedMessage()));
+                    if (status == NotifyDescriptor.OK_OPTION || status == NotifyDescriptor.YES_OPTION) {
+                        boolean success;
+                        try {
+                            uqex.confirmed();
+                            success = true;
+                        } catch (IOException ioex) {
+                            success = false;
+                            ioException = ioex;
+                        }
+                        if (success) {
+                            try {
+                                sc.save();
+                            } catch (IOException ioex) {
+                                ioException = ioex;
+                            }
+                        }
+                    } else if (status != NotifyDescriptor.NO_OPTION) {
+                        // cancel
+                        return ;
+                    }
+                } catch (IOException ioEx) {
+                    ioException = ioEx;
                 }
-            } catch (java.io.IOException ioEx) {
-                DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(ioEx.getLocalizedMessage()));
-                return ;
+                if (ioException != null) {
+                    DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message(ioException.getLocalizedMessage()));
+                }
             }
         }
         for (int i = 0; i < panels.length; i++) {
@@ -418,7 +446,12 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
             try {
                 MergeDialogComponent.this.fireVetoableChange(PROP_PANEL_SAVE, null, mergePanelRef.get());
             } catch (PropertyVetoException vetoEx) {
-                throw new java.io.IOException(vetoEx.getLocalizedMessage());
+                Throwable cause = vetoEx.getCause();
+                if (cause instanceof IOException) {
+                    throw (IOException) cause;
+                } else {
+                    throw new java.io.IOException(vetoEx.getLocalizedMessage());
+                }
             }
             //System.out.println("SAVE called.");
             //deactivateSave();
