@@ -86,6 +86,14 @@ public class SectionNodePanel extends SectionPanel {
         return innerPanel;
     }
 
+    protected void openInnerPanel() {
+        super.openInnerPanel();
+        Node[] childNodes = ((SectionNode) getNode()).getChildren().getNodes();
+        if (childNodes != null && childNodes.length > 0) {
+            ((SectionNode) childNodes[0]).getSectionNodePanel().openInnerPanel();
+        }
+    }
+
     protected void closeInnerPanel() {
         if (getFoldButton().isVisible()) {
             if (getSectionView().getActivePanel() == this) {
