@@ -151,7 +151,7 @@ public class SimpleExtBrowser implements HtmlBrowser.Factory, java.io.Serializab
                 return;
             try {
                 if (url.getProtocol().equals("nbfs")) {   // NOI18N
-                    url = URLUtil.createExternalURL(url);
+                    url = URLUtil.createExternalURL(url, false);
                 }
                 process.exec(new BrowserFormat((url == null)? "": url.toString())); // NOI18N
                 this.url = url;

@@ -160,7 +160,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
         try {
             // internal protocols cannot be displayed in external viewer
             if (isInternalProtocol (url.getProtocol ())) {
-                url = URLUtil.createExternalURL(url);
+                url = URLUtil.createExternalURL(url, true);
             }
             
             cmd = extBrowserFactory.getBrowserExecutable (); // NOI18N

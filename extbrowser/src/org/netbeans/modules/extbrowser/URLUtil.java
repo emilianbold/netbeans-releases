@@ -23,7 +23,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.util.Lookup;
 
 /** Utility class for various useful URL-related tasks.
- *
+ * <p>There is similar class in extbrowser/webclient module doing almost the same work.
  * @author Petr Jiricka
  */
 public class URLUtil {
@@ -35,16 +35,19 @@ public class URLUtil {
         result = Lookup.getDefault().lookup(new Lookup.Template (URLMapper.class));
     }            
     
-    /** Creates a URL that is suitable for using in a different process on the 
-     * same node, similarly to URLMapper.EXTERNAL. May just return the original 
+    /** Creates a URL that is suitable for using in a different process on the
+     * same node, similarly to URLMapper.EXTERNAL. May just return the original
      * URL if that's good enough.
+     * @param url URL that needs to be displayed in browser
+     * @param allowJar is <CODE>jar:</CODE> acceptable protocol?
+     * @return browsable URL or null
      */
-    public static URL createExternalURL(URL url) {
+    public static URL createExternalURL(URL url, boolean allowJar) {
         if (url == null)
             return null;
 
         // return if the protocol is fine
-        if (isAcceptableProtocol(url.getProtocol().toLowerCase()))
+        if (isAcceptableProtocol(url.getProtocol().toLowerCase(), allowJar))
             return url;
         
         // remove the anchor
@@ -59,7 +62,7 @@ public class URLUtil {
         try {
             FileObject fos[] = URLMapper.findFileObjects(new URL(urlString));
             if ((fos != null) && (fos.length > 0)) {
-                URL newUrl = getURLOfAppropriateType(fos[0]);
+                URL newUrl = getURLOfAppropriateType(fos[0], allowJar);
                 if (newUrl != null) {
                     // re-add the anchor if exists
                     urlString = newUrl.toString();
@@ -82,7 +85,7 @@ public class URLUtil {
      * First attempts to get an EXTERNAL URL, if that is a suitable URL, it is used;
      * otherwise a NETWORK URL is used.
      */
-    private static URL getURLOfAppropriateType(FileObject fo) {
+    private static URL getURLOfAppropriateType(FileObject fo, boolean allowJar) {
         // PENDING - there is still the problem that the HTTP server will be started 
         // (because the HttpServerURLMapper.getURL(...) method starts it), 
         // even when it is not needed
@@ -93,9 +96,10 @@ public class URLUtil {
         while (instances.hasNext()) {
             URLMapper mapper = (URLMapper) instances.next();
             retVal = mapper.getURL (fo, URLMapper.EXTERNAL);
-            if ((retVal != null) && isAcceptableProtocol(retVal.getProtocol().toLowerCase())) {
-                // return if this is a 'file' URL
-                if ("file".equals(retVal.getProtocol().toLowerCase())) { // NOI18N
+            if ((retVal != null) && isAcceptableProtocol(retVal.getProtocol().toLowerCase(), allowJar)) {
+                // return if this is a 'file' or 'jar' URL
+                String p = retVal.getProtocol().toLowerCase();
+                if ("file".equals(p) || "jar".equals(p)) { // NOI18N
                     return retVal;
                 }
                 suitable = retVal;
@@ -113,36 +117,15 @@ public class URLUtil {
     /** Returns true if the protocol is acceptable for usual web browsers.
      * Specifically, returns true for file, http and ftp protocols.
      */
-    private static boolean isAcceptableProtocol(String protocol) {
+    private static boolean isAcceptableProtocol(String protocol, boolean allowJar) {
         if ("http".equals(protocol)          // NOI18N
         ||  "ftp".equals(protocol)           // NOI18N
         ||  "file".equals(protocol))         // NOI18N
+            return true;
+        if (allowJar && "jar".equals(protocol)) 
             return true;
         
         return false;
     }
 
-    /**
-     * Returns whether given protocol is internal or not. 
-     * (Internal protocols cannot be displayed by external viewers.
-     * They must be wrapped somehow.)
-     *
-     * @return true if protocol is internal, false otherwise
-     */
-/*    private static boolean isInternalProtocol (String protocol) {
-        // internal protocols cannot be displayed in external viewer
-        if (protocol.equals ("nbfs")               // NOI18N
-        ||  protocol.equals ("nbres")              // NOI18N
-        ||  protocol.equals ("nbrescurr")          // NOI18N
-        ||  protocol.equals ("nbresloc")           // NOI18N
-        ||  protocol.equals ("nbrescurrloc"))      // NOI18N
-            return true;
-        
-        if (protocol.startsWith ("nb"))            // NOI18N
-            return true;
-        
-        return false;
-    }*/
-    
-    
 }
