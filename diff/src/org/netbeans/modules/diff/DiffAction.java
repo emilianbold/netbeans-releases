@@ -57,8 +57,8 @@ public class DiffAction extends NodeAction {
         //setupDefaultServices();
     }
     
+    /*
     private void setupDefaultServices() {
-        DiffSettings settings = (DiffSettings) SystemOption.findObject(DiffSettings.class, true);
         DiffManager manager = DiffManager.getDefault();
         //DiffProvider dp = new org.netbeans.modules.diff.cmdline.provider.CmdlineDiffProvider(settings.getDiffCmd());
         DiffProvider dp = new org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider();
@@ -66,6 +66,7 @@ public class DiffAction extends NodeAction {
         DiffVisualizer dv = new org.netbeans.modules.diff.builtin.visualizer.GraphicalDiffVisualizer();
         manager.setDefaultDiffVisualizer(dv);
     }
+     */
     
     public String getName() {
         return NbBundle.getMessage(DiffAction.class, "CTL_DiffActionName");
