@@ -42,6 +42,8 @@ abstract class ImporterWizardPanel implements WizardDescriptor.Panel {
             ProjectImporterWizard.getMessage("CTL_WorkspaceLocationStep"); // NOI18N
     static final String PROJECT_SELECTION_STEP =
             ProjectImporterWizard.getMessage("CTL_ProjectSelectionStep"); // NOI18N
+    static final String PROJECTS_SELECTION_STEP =
+            ProjectImporterWizard.getMessage("CTL_ProjectsSelectionStep"); // NOI18N
     
     /* Init defaults for the given component. */
     void initPanel(JComponent comp, int wizardNumber) {
@@ -51,7 +53,7 @@ abstract class ImporterWizardPanel implements WizardDescriptor.Panel {
         comp.putClientProperty("WizardPanel_contentSelectedIndex",  // NOI18N
                 new Integer(wizardNumber));
         comp.putClientProperty("WizardPanel_contentData", new String[] {
-            WORKSPACE_LOCATION_STEP, PROJECT_SELECTION_STEP
+            WORKSPACE_LOCATION_STEP, PROJECTS_SELECTION_STEP
         });
         comp.setPreferredSize(new java.awt.Dimension(500, 380));
     }

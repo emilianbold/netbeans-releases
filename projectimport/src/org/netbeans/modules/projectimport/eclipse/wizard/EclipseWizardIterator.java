@@ -143,8 +143,10 @@ final class EclipseWizardIterator implements
     
     public String name() {
         return (current == workspacePanel) ?
-            ImporterWizardPanel.WORKSPACE_LOCATION_STEP :
-            ImporterWizardPanel.PROJECT_SELECTION_STEP;
+            (workspacePanel.isWorkspaceChosen() ?
+                ImporterWizardPanel.WORKSPACE_LOCATION_STEP :
+                ImporterWizardPanel.PROJECT_SELECTION_STEP) :
+                ImporterWizardPanel.PROJECTS_SELECTION_STEP;
     }
     
     public boolean hasPrevious() {

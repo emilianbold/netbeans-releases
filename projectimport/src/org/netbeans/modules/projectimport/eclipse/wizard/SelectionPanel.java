@@ -343,11 +343,13 @@ final class SelectionPanel extends JPanel {
         setWorkspaceEnabled(false);
         projectChanged();
         projectDir.requestFocusInWindow();
+        firePropertyChange("workspaceChoosen", true, false); // NOI18N
     }//GEN-LAST:event_projectButtonActionPerformed
     
     private void workspaceButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_workspaceButtonActionPerformed
         setWorkspaceEnabled(true);
         workspaceChanged();
+        firePropertyChange("workspaceChoosen", false, true); // NOI18N
     }//GEN-LAST:event_workspaceButtonActionPerformed
     
     private void setWorkspaceEnabled(boolean enabled) {
