@@ -297,6 +297,9 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
 
     /** Get tags possible for choosing value. Implements <code>PropertyEditor</code> interface. */
     public String[] getTags() {
+        if (color == null) {
+            return getAWTColorNames();
+        }
         switch (color.getPalette()) {
             case AWT_PALETTE:
                 return getAWTColorNames();
