@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.project.ui;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.io.File;
@@ -25,12 +26,12 @@ import org.openide.util.NbBundle;
  */
 public class OpenProjectListSettings extends SystemOption {
 
-    private static final String DIR_NAMES = "DirectoryNames"; //NOI18N
+    private static final String OPEN_PROJECTS_URLS = "OpenProjectsURLs"; //NOI18N
     private static final String LAST_OPEN_PROJECT_DIR = "LastOpenProjectDir"; //NOI18N
     private static final String OPEN_SUBPROJECTS = "OpenSubprojects"; //NOI18N
     private static final String OPEN_AS_MAIN = "OpenAsMain"; //NOI18N
-    private static final String MAIN_PROJECT_DIR = "MainProjectDir"; //NOI18N
-    private static final String RECENT_PROJECTS_DIR_NAMES = "RecentProjectsDirectoryNames"; //NOI18N
+    private static final String MAIN_PROJECT_URL = "MainProjectURL"; //NOI18N
+    private static final String RECENT_PROJECTS_URLS = "RecentProjectsURLs"; //NOI18N
     private static final String PROP_PROJECTS_FOLDER = "projectsFolder"; //NOI18N
     private static final String RECENT_TEMPLATES = "recentlyUsedTemplates"; // NOI18N
     private static final String PROP_PROJECT_CATEGORY = "lastSelectedProjectCategory"; //NOI18N
@@ -48,13 +49,13 @@ public class OpenProjectListSettings extends SystemOption {
         return NbBundle.getMessage (OpenProjectListSettings.class,"TXT_UISettings"); //NOI18N
     }        
 
-    public List/*<String>*/ getDirNames() {
-        List list = (List)getProperty( DIR_NAMES );
+    public List/*<URL>*/ getOpenProjectsURLs() {
+        List list = (List)getProperty( OPEN_PROJECTS_URLS );
         return list == null ? new ArrayList( 3 ) : list;
     }
 
-    public void setDirNames( List/*<String>*/ list ) {
-        putProperty( DIR_NAMES, list, true  );
+    public void setOpenProjectsURLs( List/*<URL>*/ list ) {
+        putProperty( OPEN_PROJECTS_URLS, list, true  );
     }
     
     public boolean isOpenSubprojects() {        
@@ -75,12 +76,12 @@ public class OpenProjectListSettings extends SystemOption {
         putProperty( OPEN_AS_MAIN, openAsMain ? Boolean.TRUE : Boolean.FALSE, true );
     }
     
-    public String getMainProjectDir() {
-        return (String)getProperty( MAIN_PROJECT_DIR );
+    public URL getMainProjectURL() {
+        return (URL)getProperty( MAIN_PROJECT_URL );
     }
     
-    public void setMainProjectDir( String mainProjectDir ) {
-        putProperty( MAIN_PROJECT_DIR, mainProjectDir, true  );
+    public void setMainProjectURL( URL mainProjectURL ) {
+        putProperty( MAIN_PROJECT_URL, mainProjectURL, true  );
     }
     
     public String getLastOpenProjectDir() {
@@ -91,13 +92,13 @@ public class OpenProjectListSettings extends SystemOption {
         putProperty( LAST_OPEN_PROJECT_DIR, path, true  );
     }
 
-    public List/*<String>*/ getRecentProjectsDirNames() {
-        List list = (List)getProperty( RECENT_PROJECTS_DIR_NAMES );
+    public List/*<URL>*/ getRecentProjectsURLs() {
+        List list = (List)getProperty( RECENT_PROJECTS_URLS );
         return list == null ? new ArrayList( 5 ) : list;
     }
 
-    public void setRecentProjectsDirNames( List/*<String>*/ list ) {
-        putProperty( RECENT_PROJECTS_DIR_NAMES, list, true  );
+    public void setRecentProjectsURLs( List/*<URL>*/ list ) {
+        putProperty( RECENT_PROJECTS_URLS, list, true  );
     }
 
     public File getProjectsFolder () {

@@ -16,8 +16,10 @@ package org.netbeans.modules.project.ui;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
@@ -40,9 +42,11 @@ import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 
@@ -95,15 +99,20 @@ public final class OpenProjectList {
                 INSTANCE = new OpenProjectList();
                 INSTANCE.openProjects = loadProjectList();                
                 INSTANCE.recentTemplates = new ArrayList( OpenProjectListSettings.getInstance().getRecentTemplates() );
-                String mainProjectDir = OpenProjectListSettings.getInstance().getMainProjectDir();
+                URL mainProjectURL = OpenProjectListSettings.getInstance().getMainProjectURL();
                 // Load recent project list
                 INSTANCE.recentProjects.load();
                 for( Iterator it = INSTANCE.openProjects.iterator(); it.hasNext(); ) {
                     Project p = (Project)it.next();
                     // Set main project
-                    if ( mainProjectDir != null && 
-                         mainProjectDir.equals( FileUtil.toFile( p.getProjectDirectory() ).getPath() ) ) {
-                        INSTANCE.mainProject = p;
+                    try {
+                        if ( mainProjectURL != null && 
+                             mainProjectURL.equals( p.getProjectDirectory().getURL() ) ) {
+                            INSTANCE.mainProject = p;
+                        }
+                    }
+                    catch( FileStateInvalidException e ) {
+                        // Not a main project
                     }
                 }          
             }
@@ -285,7 +294,7 @@ public final class OpenProjectList {
             }
         }
     }
-    
+        
     // Used from OpenProjectAction
     public static Project fileToProject( File projectDir ) {
         
@@ -309,6 +318,47 @@ public final class OpenProjectList {
     
     
     // Private methods ---------------------------------------------------------
+    
+    private static List URLs2Projects( Collection /*<URL>*/ URLs ) {
+        ArrayList result = new ArrayList( URLs.size() );
+            
+        for( Iterator it = URLs.iterator(); it.hasNext(); ) {
+            URL url = (URL)it.next();
+            FileObject dir = URLMapper.findFileObject( url );
+            if ( dir != null && dir.isFolder() ) {
+                try {
+                    Project p = ProjectManager.getDefault().findProject( dir );
+                    if ( p != null ) {
+                        result.add( p );
+                    }
+                }       
+                catch ( IOException e ) {
+                    // Ignore invalid folders
+                }
+            }
+        }
+        
+        return result;
+    }
+    
+    private static List projects2URLs( Collection /*<Project>*/ projects ) {
+        ArrayList URLs = new ArrayList( projects.size() );
+        for( Iterator it = projects.iterator(); it.hasNext(); ) {
+            Project p = (Project)it.next();
+            try {
+                URL root = p.getProjectDirectory().getURL();
+                if ( root != null ) {
+                    URLs.add( root );
+                }
+            }
+            catch( FileStateInvalidException e ) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
+        }        
+        
+        return URLs;
+    }
+    
     
     private static void notifyOpened(Project p) {
         ProjectOpenedHook hook = (ProjectOpenedHook)p.getLookup().lookup(ProjectOpenedHook.class);
@@ -344,24 +394,27 @@ public final class OpenProjectList {
         }
         
     }
-        
-    private static void saveProjectList( List projects ) {
-        
-        ArrayList names = new ArrayList( projects.size() );
-        
-        for( Iterator it = projects.iterator(); it.hasNext(); ) {
-            Project p = (Project)it.next();            
-            File root = FileUtil.toFile( p.getProjectDirectory() );            
-            names.add( root.getPath() );
-        }
-        
-        OpenProjectListSettings.getInstance().setDirNames( names );
+    
+    private static List loadProjectList() {               
+        List URLs = OpenProjectListSettings.getInstance().getOpenProjectsURLs();
+        List projects = URLs2Projects( URLs );
+        return projects;        
     }
     
-    private static void saveMainProject( Project mainProject ) {
-        OpenProjectListSettings.getInstance().setMainProjectDir( 
-            mainProject == null ? null : FileUtil.toFile( mainProject.getProjectDirectory() ).getPath() );
-        
+  
+    private static void saveProjectList( List projects ) {        
+        List /*<URL>*/ URLs = projects2URLs( projects );
+        OpenProjectListSettings.getInstance().setOpenProjectsURLs( URLs );
+    }
+    
+    private static void saveMainProject( Project mainProject ) {        
+        try {
+            URL mainRoot = mainProject == null ? null : mainProject.getProjectDirectory().getURL(); 
+            OpenProjectListSettings.getInstance().setMainProjectURL( mainRoot );
+        }
+        catch ( FileStateInvalidException e ) {
+            OpenProjectListSettings.getInstance().setMainProjectURL( null );
+        }
     }
     
     private static boolean compareProjects( Project p1, Project p2 ) {
@@ -372,24 +425,7 @@ public final class OpenProjectList {
             return p1.getProjectDirectory().equals( p2.getProjectDirectory() );
         }
     }
-    
-    private static List loadProjectList() {
-               
-        List names = OpenProjectListSettings.getInstance().getDirNames();
-        List projects = new ArrayList( names.size() );
         
-        for( Iterator it = names.iterator(); it.hasNext(); ) {
-            File root = new File( (String)it.next() );
-            Project p = fileToProject( root );
-            if ( p != null ) {
-                projects.add( p );
-            }
-        }
-        
-        return projects;
-        
-    }
-    
     private ArrayList /*<FileObject>*/ getTemplateNamesLRU( Project project ) {
         // First take recently used templates and try to find those which
         // are supported by the project.
@@ -479,7 +515,7 @@ public final class OpenProjectList {
      */    
     private static class RecentProjectList {
        
-        private List recentProjects;
+        private List /*<Project>*/ recentProjects;
         
         private int size;
         
@@ -533,26 +569,14 @@ public final class OpenProjectList {
         }
         
         public void load() {
-            List names = OpenProjectListSettings.getInstance().getRecentProjectsDirNames();
+            List URLs = OpenProjectListSettings.getInstance().getRecentProjectsURLs();
             recentProjects.clear();
-            for( Iterator it = names.iterator(); it.hasNext(); ) {
-                String dirName = (String)it.next();
-                File file = new File( dirName );
-                if ( file.exists() && file.isDirectory() ) {
-                    Project p = fileToProject( file );
-                    if ( p != null ) {
-                        recentProjects.add( p );
-                    }                    
-                }
-            }
+            recentProjects.addAll( URLs2Projects( URLs ) );            
         }
         
         public void save() {
-            List names = new ArrayList( recentProjects.size() );
-            for( Iterator it = recentProjects.iterator(); it.hasNext(); ) {
-                names.add( ((Project)it.next()).getProjectDirectory().getPath() );
-            }                        
-            OpenProjectListSettings.getInstance().setRecentProjectsDirNames( names );
+            List /*<URL>*/ URLs = projects2URLs( recentProjects );
+            OpenProjectListSettings.getInstance().setRecentProjectsURLs( URLs );
         }
         
         private int getIndex( Project p ) {
