@@ -684,7 +684,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../web/servletapi24" target="netbeans"/>
   </target>
   <!-- XXX illegal dependence on core! -->
-  <target name="all-web/core" depends="all-openide,all-java,all-core,all-editor,all-j2eeserver/deprecated,all-html,all-httpserver,all-jarpackager,all-debuggercore,all-openidex,all-schema2beans,all-xml/api,all-openide/deprecated,all-java/srcmodel,all-openide/compiler,all-openide/execution,all-openide/io,all-debuggercore/oldapi,all-projects,all-web/jspsyntax">
+  <target name="all-web/core" depends="all-openide,all-java,all-core,all-editor,all-j2eeserver/deprecated,all-html,all-httpserver,all-jarpackager,all-debuggercore,all-openidex,all-schema2beans,all-xml/api,all-xml/catalog,all-openide/deprecated,all-java/srcmodel,all-openide/compiler,all-openide/execution,all-openide/io,all-debuggercore/oldapi,all-projects,all-web/jspsyntax">
     <echo message="Building module web/core..."/>
     <ant dir="../web/core" target="netbeans"/>
   </target>
@@ -705,7 +705,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module web/taglibed..."/>
     <ant dir="../web/taglibed" target="netbeans"/>
   </target>
-  <target name="all-web/advanced" depends="all-web/core,all-web/jspsyntax,all-jarpackager,all-debuggercore,all-xml/catalog,all-j2eeserver/deprecated,all-html,all-openidex,all-openide/deprecated,all-java/srcmodel,all-openide/execution">
+  <target name="all-web/advanced" depends="all-web/core,all-web/jspsyntax,all-jarpackager,all-debuggercore,all-j2eeserver/deprecated,all-html,all-openidex,all-openide/deprecated,all-java/srcmodel,all-openide/execution">
     <echo message="Building module web/advanced..."/>
     <ant dir="../web/advanced" target="netbeans"/>
   </target>
