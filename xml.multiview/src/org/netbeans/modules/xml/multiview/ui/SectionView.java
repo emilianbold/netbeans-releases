@@ -28,11 +28,11 @@ public class SectionView extends PanelView implements SectionFocusCookie, Contai
     private java.util.Hashtable map;
     private int sectionCount=0;
     private NodeSectionPanel activePanel;
-    private CustomPanelFactory factory;
+    private InnerPanelFactory factory;
     boolean sectionSelected;
     
     
-    public SectionView(CustomPanelFactory factory) {
+    public SectionView(InnerPanelFactory factory) {
         super();
         this.factory=factory;
     }
@@ -231,11 +231,11 @@ public class SectionView extends PanelView implements SectionFocusCookie, Contai
         return null;
     }
     
-    CustomPanelFactory getCustomPanelFactory() {
+    InnerPanelFactory getInnerPanelFactory() {
         return factory;
     }
     
-    public void setCustomPanelFactory(CustomPanelFactory factory) {
+    public void setInnerPanelFactory(InnerPanelFactory factory) {
         this.factory=factory;
     }
     
@@ -243,7 +243,7 @@ public class SectionView extends PanelView implements SectionFocusCookie, Contai
         if (key!=null) {
             SectionPanel panel = findSectionPanel(key);
             if (panel!=null) {
-                if (panel.getCustomPanel()==null) panel.open();
+                if (panel.getInnerPanel()==null) panel.open();
                 panel.scroll();
                 panel.setActive(true);
             }

@@ -14,9 +14,7 @@
 
 package org.netbeans.modules.xml.multiview.ui;
 
-import org.netbeans.modules.xml.multiview.Error;
 import org.netbeans.modules.xml.multiview.cookies.ErrorLocator;
-import org.netbeans.modules.xml.multiview.cookies.LinkCookie;
 import org.openide.nodes.Node;
 
 import javax.swing.*;
@@ -34,7 +32,7 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
     private String title;
     private Node node;
     private boolean active;
-    private CustomPanel customPanel;
+    private SectionInnerPanel innerPanel;
     private Object key;
     private int index;
 
@@ -91,9 +89,11 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         }
     }
 
-    private void openCustomPanel() {
-        closeCustomPanel(); // close previous custom panel if exists
-        customPanel = sectionView.getCustomPanelFactory().createCustomPanel(key);
+    private void openInnerPanel() {
+        closeInnerPanel(); // close previous inner panel if exists
+        innerPanel = node instanceof SectionNode ?
+                ((SectionNode) node).createInnerPanel() : sectionView.getInnerPanelFactory().createInnerPanel(key);
+
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -101,7 +101,7 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         filler.setVisible(true);
-        customPanel.addMouseListener(new org.openide.awt.MouseUtils.PopupMouseAdapter() {
+        innerPanel.addMouseListener(new org.openide.awt.MouseUtils.PopupMouseAdapter() {
             protected void showPopup(java.awt.event.MouseEvent e) {
                 if (!SectionPanel.this.isActive()) {
                     SectionPanel.this.setActive(true);
@@ -110,15 +110,15 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
                 popup.show(foldButton, e.getX(), e.getY());
             }
         });
-        customPanel.addFocusListener(sectionFocusListener);
-        add(customPanel, gridBagConstraints);
+        innerPanel.addFocusListener(sectionFocusListener);
+        add(innerPanel, gridBagConstraints);
     }
 
-    private void closeCustomPanel() {
-        if (customPanel != null) {
-            customPanel.removeFocusListener(sectionFocusListener);
-            remove(customPanel);
-            customPanel = null;
+    private void closeInnerPanel() {
+        if (innerPanel != null) {
+            innerPanel.removeFocusListener(sectionFocusListener);
+            remove(innerPanel);
+            innerPanel = null;
         }
         filler.setVisible(false);
     }
@@ -145,7 +145,7 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
     public void open() {
         foldButton.setSelected(false);
         //contentPanel.setVisible(true);
-        openCustomPanel();
+        openInnerPanel();
         filler.setVisible(true);
     }
 
@@ -263,16 +263,16 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
     }//GEN-END:initComponents
 
     private void titleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_titleButtonActionPerformed
-        if (getCustomPanel()==null) open();
+        if (getInnerPanel()==null) open();
         setActive(true);
     }//GEN-LAST:event_titleButtonActionPerformed
 
     private void foldButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_foldButtonActionPerformed
         if (!foldButton.isSelected()) {
-            openCustomPanel();
+            openInnerPanel();
             setActive(true);
         } else {
-            closeCustomPanel();
+            closeInnerPanel();
         }
         //contentPanel.setVisible(!foldButton.isSelected());
         //filler.setVisible(!foldButton.isSelected());
@@ -286,157 +286,6 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JButton titleButton;
     // End of variables declaration//GEN-END:variables
-    
-    public static abstract class CustomPanel extends javax.swing.JPanel implements LinkCookie, ErrorLocator {
-        private SectionView sectionView;
-
-        private boolean localFocusListenerInitialized = false;
-        private FocusListener localFocusListener = new FocusListener() {
-            public void focusGained(FocusEvent evt) {
-                final FocusListener[] focusListeners = getFocusListeners();
-                for (int i = 0; i < focusListeners.length; i++) {
-                    focusListeners[i].focusGained(evt);
-                }
-            }
-
-            public void focusLost(FocusEvent evt) {
-                processFocusEvent(evt);
-            }
-        };
-
-        public CustomPanel(SectionView sectionView) {
-            this.sectionView = sectionView;
-        }
-
-        public synchronized void addFocusListener(FocusListener l) {
-            super.addFocusListener(l);
-            if (!localFocusListenerInitialized) {
-                localFocusListenerInitialized = true;
-                final Component[] components = getComponents();
-                for (int i = 0; i < components.length; i++) {
-                    Component component = components[i];
-                    if (component.isFocusable() && !(component instanceof JLabel)) {
-                        component.addFocusListener(localFocusListener);
-                    }
-                }
-            }
-        }
-
-        public abstract javax.swing.JComponent getErrorComponent(String errorId);
-
-        public abstract void setValue(javax.swing.JComponent source, Object value);
-
-        public void documentChanged(javax.swing.text.JTextComponent source, String value) {}
-
-        public void rollbackValue(javax.swing.text.JTextComponent source) {}
-
-        public void addModifier(final javax.swing.JTextField tf) {
-            tf.addFocusListener(new java.awt.event.FocusAdapter() {
-                private String orgValue;
-
-                public void focusGained(java.awt.event.FocusEvent evt) {
-                    orgValue = tf.getText();
-                }
-
-                public void focusLost(java.awt.event.FocusEvent evt) {
-                    if (!tf.getText().equals(orgValue)) {
-                        setValue(tf, tf.getText());
-                    }
-                }
-            });
-        }
-
-        public void addValidatee(final javax.swing.JTextField tf) {
-            tf.getDocument().addDocumentListener(new TextListener(tf));
-            tf.addFocusListener(new java.awt.event.FocusAdapter() {
-                private String orgValue;
-                private boolean viewIsBuggy;
-
-                public void focusGained(java.awt.event.FocusEvent evt) {
-                    orgValue = tf.getText();
-                    if (sectionView.getErrorPanel().getError()!=null) viewIsBuggy=true;
-                    else viewIsBuggy=false;
-                }
-
-                public void focusLost(java.awt.event.FocusEvent evt) {
-                    Error error = sectionView.getErrorPanel().getError();
-                    if (error != null && error.isEditError() && tf == error.getFocusableComponent()) {
-                        if (Error.TYPE_WARNING == error.getSeverityLevel()) {
-                            org.openide.DialogDescriptor desc = new RefreshSaveDialog(sectionView.getErrorPanel());
-                            java.awt.Dialog dialog = org.openide.DialogDisplayer.getDefault().createDialog(desc);
-                            dialog.show();
-                            Integer opt = (Integer) desc.getValue();
-                            if (opt.equals(RefreshSaveDialog.OPTION_FIX)) {
-                                tf.requestFocus();
-                            } else if (opt.equals(RefreshSaveDialog.OPTION_REFRESH)) {
-                                rollbackValue(tf);
-                                sectionView.validateView();
-                            } else {
-                                setValue(tf, tf.getText());
-                                sectionView.validateView();
-                            }
-                        } else {
-                            org.openide.DialogDescriptor desc = new RefreshDialog(sectionView.getErrorPanel());
-                            java.awt.Dialog dialog = org.openide.DialogDisplayer.getDefault().createDialog(desc);
-                            dialog.show();
-                            Integer opt = (Integer) desc.getValue();
-                            if (opt.equals(RefreshDialog.OPTION_FIX)) {
-                                tf.requestFocus();
-                            } else if (opt.equals(RefreshDialog.OPTION_REFRESH)) {
-                                rollbackValue(tf);
-                                sectionView.validateView();
-                            }
-                        }
-                    } else {
-                        if (!tf.getText().equals(orgValue)) {
-                            setValue(tf, tf.getText());
-                            sectionView.validateView();
-                        } else {
-                            if (viewIsBuggy) sectionView.validateView();
-                        }
-                    }
-                }
-            });
-        }
-
-        private class TextListener implements javax.swing.event.DocumentListener {
-            private javax.swing.JTextField tf;
-
-            TextListener(javax.swing.JTextField tf) {
-                this.tf = tf;
-            }
-
-            /**
-             * Method from DocumentListener
-             */
-            public void changedUpdate(javax.swing.event.DocumentEvent evt) {
-                update(evt);
-            }
-
-            /**
-             * Method from DocumentListener
-             */
-            public void insertUpdate(javax.swing.event.DocumentEvent evt) {
-                update(evt);
-            }
-
-            /**
-             * Method from DocumentListener
-             */
-            public void removeUpdate(javax.swing.event.DocumentEvent evt) {
-                update(evt);
-            }
-
-            private void update(javax.swing.event.DocumentEvent evt) {
-                try {
-                    String text = evt.getDocument().getText(0, evt.getDocument().getLength());
-                    documentChanged(tf, text);
-                } catch (javax.swing.text.BadLocationException ex) {
-                }
-            }
-        }
-
-    }
 
     public void setKey(Object key) {
         this.key = key;
@@ -447,14 +296,14 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
     }
 
     public JComponent getErrorComponent(String errorId) {
-        if (customPanel != null) {
-            return customPanel.getErrorComponent(errorId);
+        if (innerPanel != null) {
+            return innerPanel.getErrorComponent(errorId);
         }
         return null;
     }
 
-    CustomPanel getCustomPanel() {
-        return customPanel;
+    SectionInnerPanel getInnerPanel() {
+        return innerPanel;
     }
 
     public void setIndex(int index) {
