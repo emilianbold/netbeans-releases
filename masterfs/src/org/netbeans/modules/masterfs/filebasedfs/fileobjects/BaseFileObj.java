@@ -186,7 +186,6 @@ public abstract class BaseFileObj extends FileObject {
     public final void setAttribute(final String attrName, final Object value) throws java.io.IOException {
         final Object oldValue = BaseFileObj.attribs.readAttribute(getFileName().getFile().getAbsolutePath().replace('\\', '/'), attrName);//NOI18N
         BaseFileObj.attribs.writeAttribute(getFileName().getFile().getAbsolutePath().replace('\\', '/'), attrName, value);//NOI18N
-        assert value == null || getAttribute(attrName).equals(value);
         fireFileAttributeChangedEvent(attrName, oldValue, value);
     }
 
