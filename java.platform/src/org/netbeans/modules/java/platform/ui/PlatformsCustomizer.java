@@ -430,6 +430,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
     private static class PlatformCategoriesDescriptor implements Comparable {
         private final String categoryName;
         private final List/*<Node>*/ platforms;
+        private boolean changed = false;
         
         public PlatformCategoriesDescriptor (String categoryName) {
             assert categoryName != null;
@@ -441,12 +442,19 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
             return this.categoryName;
         }
         
-        public List getPlatform () {
-            return Collections.unmodifiableList(this.platforms);
+        public List getPlatform () {                        
+            if (changed) {
+                //SortedSet can't be used, there can be platforms with the same
+                //display name
+                Collections.sort(this.platforms, new PlatformNodeComparator());
+                changed = false;
+            }
+            return Collections.unmodifiableList (this.platforms);
         }
         
         public void add (Node node) {
             this.platforms.add (node);
+            this.changed = true;
         }
         
         public int hashCode () {
@@ -597,6 +605,18 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         }
         
 
+    }
+    
+    private static class PlatformNodeComparator implements Comparator {
+        
+        public int compare (Object o1, Object o2) {
+            if (!(o1 instanceof Node) || !(o2 instanceof Node)) {
+                throw new IllegalArgumentException ();
+            }
+            String dn1 = ((Node)o1).getDisplayName();
+            String dn2 = ((Node)o2).getDisplayName();
+            return dn1.compareTo(dn2);
+        }
     }
 
 }
