@@ -65,8 +65,10 @@ public class KeyStrokeEditor extends PropertyEditorSupport
     }
 
     public void setAsText(String text) throws IllegalArgumentException {
-        if (text == null || "".equals(text))
+        if (text == null || "".equals(text) || "null".equals(text)) {
             setValue(null);
+            return;
+        }
 
         KeyStroke key = keyStrokeFromString(text);
         if (key == null)
