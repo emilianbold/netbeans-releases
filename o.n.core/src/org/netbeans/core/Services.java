@@ -289,12 +289,45 @@ final class Services extends ServiceType.Registry {
     * @param c collection of ServiceTypes
     */
     public void changeAll (Collection c) {
+      Iterator it = c.iterator ();
+      LinkedList newKeys = new LinkedList ();
+      while (it.hasNext ()) {
+        ServiceType s = (ServiceType)it.next ();
+        // if the key is not there yet
+        try {
+          Node n = (Node)map.get (key (s));
+          if (!newKeys.contains (n)) {
+            newKeys.add (n);
+          }
+        } catch (InstantiationException e) {
+        }
+      }
+      
+      // now compute the permutation to be applied
+      Node[] current = getNodes ();
+      int[] perm = new int[current.length];
+      
+      int max = current.length;
+      
+      for (int i = 0; i < max; i++) {
+        int indx = newKeys.indexOf (current[i]);
+        if (indx == -1) {
+          // node is not present => add at the end
+          perm[i] = --max;
+        } else {
+          // node present => do the right position
+          perm[i] = indx;
+        }
+      }
+      
       Enumeration en = nodes ();
       while (en.hasMoreElements ()) {
         Node n = (Node)en.nextElement ();
         Level l = (Level)n.getChildren ();
         l.changeAll (c);
       }
+
+      reorder (perm);
     }
     
     /** Computes a key for given section. This key is used 
@@ -565,7 +598,9 @@ final class Services extends ServiceType.Registry {
 
 /*
 * Log
+*  3    Gandalf   1.2         9/19/99  Jaroslav Tulach Read/write external 
+*       remembers order of services.
 *  2    Gandalf   1.1         9/17/99  Jaroslav Tulach Reorder of nodes works.
 *  1    Gandalf   1.0         9/10/99  Jaroslav Tulach 
-* $?
+* $
 */
