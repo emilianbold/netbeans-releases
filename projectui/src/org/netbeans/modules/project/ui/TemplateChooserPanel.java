@@ -111,6 +111,10 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel, ChangeListen
                     wd.putProperty( ProjectChooserFactory.WIZARD_KEY_PROJECT, newProject );
                 }
                 
+                if (gui.getTemplate () == null) {
+                    return ;
+                }
+                
                 if (wd instanceof TemplateWizard) {
                     ((TemplateWizard)wd).setTemplate( DataObject.find( gui.getTemplate() ) );
                 } else {
