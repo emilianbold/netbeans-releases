@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -26,10 +26,6 @@ import org.openide.util.NbBundle;
 * @author   Petr Hamernik
 */
 public class RectangleEditor extends ArrayOfIntSupport implements ExPropertyEditor {
-
-    // the bundle to use
-    static ResourceBundle bundle = NbBundle.getBundle (
-                                       RectangleEditor.class);
 
     public RectangleEditor() {
         super("java.awt.Rectangle", 4); // NOI18N
@@ -69,7 +65,7 @@ public class RectangleEditor extends ArrayOfIntSupport implements ExPropertyEdit
 
     /** @return the format of value set in property editor. */
     String getHintFormat() {
-        return bundle.getString ("CTL_HintFormatRE");
+        return NbBundle.getMessage(RectangleEditor.class, "CTL_HintFormatRE");
     }
 
     /** Provides name of XML tag to use for XML persistence of the property value */

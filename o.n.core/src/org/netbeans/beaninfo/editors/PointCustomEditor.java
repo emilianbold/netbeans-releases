@@ -28,10 +28,6 @@ import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 */
 public class PointCustomEditor extends javax.swing.JPanel implements EnhancedCustomPropertyEditor {
 
-    // the bundle to use
-    static ResourceBundle bundle = NbBundle.getBundle (
-                                       PointCustomEditor.class);
-
     static final long serialVersionUID =-4067033871196801978L;
     
     private boolean dimensionMode = false;
@@ -45,13 +41,13 @@ public class PointCustomEditor extends javax.swing.JPanel implements EnhancedCus
         xField.setText (""+point.x); // NOI18N
         yField.setText (""+point.y); // NOI18N
         
-        xLabel.setDisplayedMnemonic(bundle.getString("CTL_X_Mnemonic").charAt(0));
-        yLabel.setDisplayedMnemonic(bundle.getString("CTL_Y_Mnemonic").charAt(0));
+        xLabel.setDisplayedMnemonic(NbBundle.getMessage(PointCustomEditor.class, "CTL_X_Mnemonic").charAt(0));
+        yLabel.setDisplayedMnemonic(NbBundle.getMessage(PointCustomEditor.class, "CTL_Y_Mnemonic").charAt(0));
 
-        xField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_X"));
-        yField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Y"));
+        xField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PointCustomEditor.class, "ACSD_CTL_X"));
+        yField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PointCustomEditor.class, "ACSD_CTL_Y"));
         
-        commonInit( bundle.getString ("CTL_Point") );
+        commonInit( NbBundle.getMessage(PointCustomEditor.class, "CTL_Point") );
     }
     
     public PointCustomEditor(DimensionEditor editor) {
@@ -64,21 +60,21 @@ public class PointCustomEditor extends javax.swing.JPanel implements EnhancedCus
         xField.setText ("" + dimension.width);    // NOI18N
         yField.setText ("" + dimension.height);  // NOI18N
         
-        xLabel.setText (bundle.getString("CTL_Width"));
-        xLabel.setDisplayedMnemonic(bundle.getString("CTL_Width_mnemonic").charAt(0));
+        xLabel.setText (NbBundle.getMessage(PointCustomEditor.class, "CTL_Width"));
+        xLabel.setDisplayedMnemonic(NbBundle.getMessage(PointCustomEditor.class, "CTL_Width_mnemonic").charAt(0));
         xLabel.setLabelFor(xField);
-        yLabel.setText (bundle.getString("CTL_Height"));
-        yLabel.setDisplayedMnemonic(bundle.getString("CTL_Height_mnemonic").charAt(0));
+        yLabel.setText (NbBundle.getMessage(PointCustomEditor.class, "CTL_Height"));
+        yLabel.setDisplayedMnemonic(NbBundle.getMessage(PointCustomEditor.class, "CTL_Height_mnemonic").charAt(0));
         yLabel.setLabelFor(yField);
 
-        xField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Width"));
-        yField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Height"));
+        xField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PointCustomEditor.class, "ACSD_CTL_Width"));
+        yField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PointCustomEditor.class, "ACSD_CTL_Height"));
         
-        commonInit( bundle.getString ("CTL_Dimension") );
+        commonInit( NbBundle.getMessage(PointCustomEditor.class, "CTL_Dimension") );
     }
     
     private void commonInit( String panelTitle ) {
-        getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_PointCustomEditor"));
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PointCustomEditor.class, "ACSD_PointCustomEditor"));
         
         setBorder (new javax.swing.border.EmptyBorder(12, 12, 0, 11));
         insidePanel.setBorder (new javax.swing.border.CompoundBorder (
@@ -101,7 +97,7 @@ public class PointCustomEditor extends javax.swing.JPanel implements EnhancedCus
                 IllegalStateException ise = new IllegalStateException();
                 ErrorManager.getDefault().annotate(
                     ise, ErrorManager.USER, null, 
-                    bundle.getString("CTL_NegativeSize"), null, null);
+                    NbBundle.getMessage(PointCustomEditor.class, "CTL_NegativeSize"), null, null);
                 throw ise;
             }
             if ( dimensionMode )
@@ -112,7 +108,7 @@ public class PointCustomEditor extends javax.swing.JPanel implements EnhancedCus
             IllegalStateException ise = new IllegalStateException();
             ErrorManager.getDefault().annotate(
                 ise, ErrorManager.USER, null, 
-                bundle.getString("CTL_InvalidValue"), null, null);
+                NbBundle.getMessage(PointCustomEditor.class, "CTL_InvalidValue"), null, null);
             throw ise;
         }
     }

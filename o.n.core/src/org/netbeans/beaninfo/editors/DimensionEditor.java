@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -25,10 +25,6 @@ import org.openide.util.NbBundle;
 * @version  0.10, 21 Jul, 1998
 */
 public class DimensionEditor extends ArrayOfIntSupport {
-
-    // the bundle to use
-    static ResourceBundle bundle = NbBundle.getBundle (
-                                       DimensionEditor.class);
 
     public DimensionEditor() {
         super("java.awt.Dimension", 2); // NOI18N
@@ -84,7 +80,7 @@ public class DimensionEditor extends ArrayOfIntSupport {
 
     /** @return the format of value set in property editor. */
     String getHintFormat() {
-        return bundle.getString ("CTL_HintFormat"); //NOI18N
+        return NbBundle.getMessage(DimensionEditor.class, "CTL_HintFormat"); //NOI18N
     }
 
     /** Provides name of XML tag to use for XML persistence of the property value */

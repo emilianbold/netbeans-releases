@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -18,17 +18,14 @@ import java.util.ResourceBundle;
 import org.openide.ErrorManager;
 
 import org.openide.NotifyDescriptor;
+import org.openide.explorer.propertysheet.ExPropertyEditor;
+import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
 
 /** A property editor for Insets class.
 * @author   Petr Hamernik
 */
-public class InsetsEditor extends ArrayOfIntSupport {
-
-    // the bundle to use
-    static ResourceBundle bundle = NbBundle.getBundle (
-                                       InsetsEditor.class);
-
+public class InsetsEditor extends ArrayOfIntSupport implements ExPropertyEditor {
     public InsetsEditor() {
         super("java.awt.Insets", 4); // NOI18N
     }
@@ -66,17 +63,23 @@ public class InsetsEditor extends ArrayOfIntSupport {
     }
 
     public java.awt.Component getCustomEditor () {
-        return new InsetsCustomEditor (this);
+        return new InsetsCustomEditor (this, env);
     }
 
     /** @return the format of value set in property editor. */
     String getHintFormat() {
-        return bundle.getString ("CTL_HintFormatIE"); //NOI18N
+        return NbBundle.getMessage (InsetsEditor.class, "CTL_HintFormatIE"); //NOI18N
     }
 
     /** Provides name of XML tag to use for XML persistence of the property value */
     protected String getXMLValueTag () {
         return "Insets"; // NOI18N
     }
+    
+    private PropertyEnv env;
+    public void attachEnv(PropertyEnv env) {
+        //cache for custom editor
+        this.env = env;
+    }    
 
 }

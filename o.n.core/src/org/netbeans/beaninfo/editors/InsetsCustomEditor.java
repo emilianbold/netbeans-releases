@@ -13,60 +13,82 @@
 
 package org.netbeans.beaninfo.editors;
 
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.event.KeyListener;
+import java.util.HashMap;
 import java.util.ResourceBundle;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+import javax.swing.UIManager;
 
 import org.openide.ErrorManager;
+import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 
-/** Custom editor for java.awt.Insets.
+/**
 *
 * @author   Ian Formanek
+* @version  1.00, 01 Sep 1998
 */
-public class InsetsCustomEditor extends javax.swing.JPanel implements EnhancedCustomPropertyEditor {
-
-    // the bundle to use
-    static ResourceBundle bundle = NbBundle.getBundle (
-                                       InsetsCustomEditor.class);
-
+public class InsetsCustomEditor extends javax.swing.JPanel implements EnhancedCustomPropertyEditor, KeyListener {
     static final long serialVersionUID =-1472891501739636852L;
-
+   
+    //XXX this is just a copy of RectangleEditor with the fields and value 
+    //type changed.  A proper solution would be have an equivalent of 
+    //ArrayOfIntSupport for custom editors, which would just produce the
+    //required number of fields
+    
+    private HashMap labelMap = new HashMap();
+    private PropertyEnv env;
     /** Initializes the Form */
-    public InsetsCustomEditor(InsetsEditor editor) {
+    public InsetsCustomEditor(InsetsEditor editor, PropertyEnv env) {
+        this.env=env;
         initComponents ();
         this.editor = editor;
         Insets insets = (Insets)editor.getValue ();
         if (insets == null) insets = new Insets (0, 0, 0, 0);
-        topField.setText (""+insets.top); // NOI18N
-        leftField.setText (""+insets.left); // NOI18N
-        bottomField.setText (""+insets.bottom); // NOI18N
-        rightField.setText (""+insets.right); // NOI18N
+        xField.setText (""+insets.top); // NOI18N
+        yField.setText (""+insets.left); // NOI18N
+        widthField.setText (""+insets.bottom); // NOI18N
+        heightField.setText (""+insets.right); // NOI18N
 
-        setBorder (new javax.swing.border.EmptyBorder (new java.awt.Insets(5, 5, 5, 5)));
+        setBorder (new javax.swing.border.EmptyBorder (new Insets(5, 5, 5, 5)));
         jPanel2.setBorder (new javax.swing.border.CompoundBorder (
                                new javax.swing.border.TitledBorder (
                                    new javax.swing.border.EtchedBorder (),
-                                   " " + bundle.getString ("CTL_Insets") + " "),
+                                   " " + NbBundle.getMessage (InsetsCustomEditor.class, "CTL_Insets") + " "),
                                new javax.swing.border.EmptyBorder (new java.awt.Insets(5, 5, 5, 5))));
 
-//        HelpCtx.setHelpIDString (this, InsetsCustomEditor.class.getName ());
+        xLabel.setText (NbBundle.getMessage (InsetsCustomEditor.class, "CTL_Top"));
+        yLabel.setText (NbBundle.getMessage (InsetsCustomEditor.class, "CTL_Left"));
+        widthLabel.setText (NbBundle.getMessage (InsetsCustomEditor.class, "CTL_Bottom"));
+        heightLabel.setText (NbBundle.getMessage (InsetsCustomEditor.class, "CTL_Right"));
 
-        topLabel.setLabelFor(topField);
-        leftLabel.setLabelFor(leftField);
-        bottomLabel.setLabelFor(bottomField);
-        rightLabel.setLabelFor(rightField);
+        xLabel.setLabelFor(xField);
+        yLabel.setLabelFor(yField);
+        widthLabel.setLabelFor(widthField);
+        heightLabel.setLabelFor(heightField);
+
+        xLabel.setDisplayedMnemonic(NbBundle.getMessage (InsetsCustomEditor.class, "CTL_Top_Mnemonic").charAt(0));
+        yLabel.setDisplayedMnemonic(NbBundle.getMessage (InsetsCustomEditor.class, "CTL_Left_Mnemonic").charAt(0));
+        widthLabel.setDisplayedMnemonic(NbBundle.getMessage (InsetsCustomEditor.class, "CTL_Bottom_Mnemonic").charAt(0));
+        heightLabel.setDisplayedMnemonic(NbBundle.getMessage (InsetsCustomEditor.class, "CTL_Right_Mnemonic").charAt(0));
+
+        xField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (InsetsCustomEditor.class, "ACSD_CTL_Top"));
+        yField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (InsetsCustomEditor.class, "ACSD_CTL_Left"));
+        widthField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (InsetsCustomEditor.class, "ACSD_CTL_Bottom"));
+        heightField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (InsetsCustomEditor.class, "ACSD_CTL_Right"));
         
-        topLabel.setDisplayedMnemonic(bundle.getString("CTL_Top_Mnemonic").charAt(0));
-        leftLabel.setDisplayedMnemonic(bundle.getString("CTL_Left_Mnemonic").charAt(0));
-        bottomLabel.setDisplayedMnemonic(bundle.getString("CTL_Bottom_Mnemonic").charAt(0));
-        rightLabel.setDisplayedMnemonic(bundle.getString("CTL_Right_Mnemonic").charAt(0));
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (InsetsCustomEditor.class, "ACSD_CustomRectangleEditor"));
 
-        topField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Top"));
-        leftField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Left"));
-        bottomField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Bottom"));
-        rightField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Right"));
-        getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_InsetsCustomEditor"));
+        labelMap.put(widthField,widthLabel);
+        labelMap.put(xField,xLabel);
+        labelMap.put(yField,yLabel);
+        labelMap.put(heightField,heightLabel);
     }
 
     public java.awt.Dimension getPreferredSize () {
@@ -75,153 +97,192 @@ public class InsetsCustomEditor extends javax.swing.JPanel implements EnhancedCu
 
     public Object getPropertyValue () throws IllegalStateException {
         try {
-            int top = Integer.parseInt (topField.getText ());
-            int left = Integer.parseInt (leftField.getText ());
-            int bottom = Integer.parseInt (bottomField.getText ());
-            int right = Integer.parseInt (rightField.getText ());
-            if ((top < 0) || (left < 0) || (bottom < 0) || (right < 0)) {
+            int x = Integer.parseInt (xField.getText ());
+            int y = Integer.parseInt (yField.getText ());
+            int width = Integer.parseInt (widthField.getText ());
+            int height = Integer.parseInt (heightField.getText ());
+            if ((x < 0) || (y < 0) || (width < 0) || (height < 0)) {
                 IllegalStateException ise = new IllegalStateException();
                 ErrorManager.getDefault().annotate(
                     ise, ErrorManager.USER, null, 
-                    bundle.getString("CTL_NegativeSize"), null, null);
+                    NbBundle.getMessage (InsetsCustomEditor.class, "CTL_NegativeSize"), null, null);
                 throw ise;
             }
-            return new Insets (top, left, bottom, right);
+            return new Insets (x, y, width, height);
         } catch (NumberFormatException e) {
             IllegalStateException ise = new IllegalStateException();
             ErrorManager.getDefault().annotate(
                 ise, ErrorManager.USER, null, 
-                bundle.getString("CTL_InvalidValue"), null, null);
+                NbBundle.getMessage (InsetsCustomEditor.class, "CTL_InvalidValue"), null, null);
             throw ise;
         }
     }
 
-    /** This method is called from within the constructor to
-     * initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is
-     * always regenerated by the FormEditor.
-     */
-    private void initComponents() {//GEN-BEGIN:initComponents
-        java.awt.GridBagConstraints gridBagConstraints;
 
-        jPanel2 = new javax.swing.JPanel();
-        topLabel = new javax.swing.JLabel();
-        topField = new javax.swing.JTextField();
-        leftLabel = new javax.swing.JLabel();
-        leftField = new javax.swing.JTextField();
-        bottomLabel = new javax.swing.JLabel();
-        bottomField = new javax.swing.JTextField();
-        rightLabel = new javax.swing.JLabel();
-        rightField = new javax.swing.JTextField();
+    private void initComponents () {
+        setLayout (new java.awt.BorderLayout ());
 
-        setLayout(new java.awt.BorderLayout());
+        jPanel2 = new javax.swing.JPanel ();
+        jPanel2.setLayout (new java.awt.GridBagLayout ());
+        java.awt.GridBagConstraints gridBagConstraints1;
 
-        jPanel2.setLayout(new java.awt.GridBagLayout());
+        xLabel = new javax.swing.JLabel ();
+        xLabel.setText (null);
 
-        topLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/beaninfo/editors/Bundle").getString("CTL_Top"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel2.add(topLabel, gridBagConstraints);
+        gridBagConstraints1 = new java.awt.GridBagConstraints ();
+        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel2.add (xLabel, gridBagConstraints1);
 
-        topField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyPressed(java.awt.event.KeyEvent evt) {
-                fieldKeyPressed(evt);
-            }
-        });
+        xField = new javax.swing.JTextField ();
+        xField.addKeyListener (this);
+        
+        gridBagConstraints1 = new java.awt.GridBagConstraints ();
+        gridBagConstraints1.gridwidth = 0;
+        gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints1.insets = new java.awt.Insets (4, 8, 4, 0);
+        gridBagConstraints1.weightx = 1.0;
+        jPanel2.add (xField, gridBagConstraints1);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 8, 4, 0);
-        jPanel2.add(topField, gridBagConstraints);
+        yLabel = new javax.swing.JLabel ();
+        yLabel.setText (null);
 
-        leftLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/beaninfo/editors/Bundle").getString("CTL_Left"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel2.add(leftLabel, gridBagConstraints);
+        gridBagConstraints1 = new java.awt.GridBagConstraints ();
+        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel2.add (yLabel, gridBagConstraints1);
 
-        leftField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyPressed(java.awt.event.KeyEvent evt) {
-                fieldKeyPressed(evt);
-            }
-        });
+        yField = new javax.swing.JTextField ();
+        yField.addKeyListener(this);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 8, 4, 0);
-        jPanel2.add(leftField, gridBagConstraints);
+        gridBagConstraints1 = new java.awt.GridBagConstraints ();
+        gridBagConstraints1.gridwidth = 0;
+        gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints1.insets = new java.awt.Insets (4, 8, 4, 0);
+        gridBagConstraints1.weightx = 1.0;
+        jPanel2.add (yField, gridBagConstraints1);
 
-        bottomLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/beaninfo/editors/Bundle").getString("CTL_Bottom"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel2.add(bottomLabel, gridBagConstraints);
+        widthLabel = new javax.swing.JLabel ();
+        widthLabel.setText (null);
 
-        bottomField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyPressed(java.awt.event.KeyEvent evt) {
-                fieldKeyPressed(evt);
-            }
-        });
+        gridBagConstraints1 = new java.awt.GridBagConstraints ();
+        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel2.add (widthLabel, gridBagConstraints1);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 8, 4, 0);
-        jPanel2.add(bottomField, gridBagConstraints);
+        widthField = new javax.swing.JTextField ();
+        widthField.addKeyListener(this);
+        
+        gridBagConstraints1 = new java.awt.GridBagConstraints ();
+        gridBagConstraints1.gridwidth = 0;
+        gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints1.insets = new java.awt.Insets (4, 8, 4, 0);
+        gridBagConstraints1.weightx = 1.0;
+        jPanel2.add (widthField, gridBagConstraints1);
 
-        rightLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/beaninfo/editors/Bundle").getString("CTL_Right"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel2.add(rightLabel, gridBagConstraints);
+        heightLabel = new javax.swing.JLabel ();
+        heightLabel.setText (null);
 
-        rightField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyPressed(java.awt.event.KeyEvent evt) {
-                fieldKeyPressed(evt);
-            }
-        });
+        gridBagConstraints1 = new java.awt.GridBagConstraints ();
+        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel2.add (heightLabel, gridBagConstraints1);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 8, 4, 0);
-        jPanel2.add(rightField, gridBagConstraints);
+        heightField = new javax.swing.JTextField ();
+        heightField.addKeyListener(this);
 
-        add(jPanel2, java.awt.BorderLayout.CENTER);
+        gridBagConstraints1 = new java.awt.GridBagConstraints ();
+        gridBagConstraints1.gridwidth = 0;
+        gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints1.insets = new java.awt.Insets (4, 8, 4, 0);
+        gridBagConstraints1.weightx = 1.0;
+        jPanel2.add (heightField, gridBagConstraints1);
 
-    }//GEN-END:initComponents
 
-    private void fieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_fieldKeyPressed
-        if ( evt.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER )
-            updateInsets();
-    }//GEN-LAST:event_fieldKeyPressed
+        add (jPanel2, "Center"); // NOI18N
 
-    private void updateInsets() {
+    }
+
+
+    private void updateRectangle () {
         try {
-            int top = Integer.parseInt (topField.getText ());
-            int left = Integer.parseInt (leftField.getText ());
-            int bottom = Integer.parseInt (bottomField.getText ());
-            int right = Integer.parseInt (rightField.getText ());
-            editor.setValue (new Insets (top, left, bottom, right));
+            int x = Integer.parseInt (xField.getText ());
+            int y = Integer.parseInt (yField.getText ());
+            int width = Integer.parseInt (widthField.getText ());
+            int height = Integer.parseInt (heightField.getText ());
+            editor.setValue (new Rectangle (x, y, width, height));
         } catch (NumberFormatException e) {
             // [PENDING beep]
         }
     }
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel topLabel;
-    private javax.swing.JTextField topField;
-    private javax.swing.JLabel leftLabel;
-    private javax.swing.JTextField leftField;
+    public void keyPressed(java.awt.event.KeyEvent e) {
+    }    
+
+    public void keyReleased(java.awt.event.KeyEvent e) {
+        if (checkValues()) {
+            updateRectangle();
+        }
+    }
+    
+    public void keyTyped(java.awt.event.KeyEvent e) {
+    }
+    
+    private boolean checkValues() {
+        Component[] c = jPanel2.getComponents();
+        boolean valid=true;
+        for (int i=0; i < c.length; i++) {
+            if (c[i] instanceof JTextField) {
+                valid &= validFor((JTextField) c[i]);
+            }
+        }
+        if (env != null) {
+           env.setState(valid ? env.STATE_VALID : env.STATE_INVALID);
+        }
+        return valid;
+    }
+    
+    private boolean validFor(JTextField c) {
+        String s = c.getText().trim();
+        try {
+            Integer.parseInt(s);
+            handleValid(c);
+            return true;
+        } catch (NumberFormatException e) {
+            handleInvalid(c);
+            return false;
+        }
+    }
+    
+    private void handleInvalid(JTextField c) {
+        c.setForeground(getErrorColor());
+        findLabelFor(c).setForeground(getErrorColor());
+    }
+    
+    private void handleValid(JTextField c) {
+        c.setForeground(getForeground());
+        findLabelFor(c).setForeground(getForeground());
+    }
+    
+    private Color getErrorColor() {
+        Color c=UIManager.getColor("nb.errorForeground");
+        if (c == null) {
+            c = Color.RED;
+        }
+        return c;
+    }
+    
+    private JLabel findLabelFor(JTextField c) {
+        return (JLabel) labelMap.get(c);
+    }
+    
+    // Variables declaration - do not modify
     private javax.swing.JPanel jPanel2;
-    private javax.swing.JLabel rightLabel;
-    private javax.swing.JLabel bottomLabel;
-    private javax.swing.JTextField rightField;
-    private javax.swing.JTextField bottomField;
-    // End of variables declaration//GEN-END:variables
+    private javax.swing.JLabel xLabel;
+    private javax.swing.JTextField xField;
+    private javax.swing.JLabel yLabel;
+    private javax.swing.JTextField yField;
+    private javax.swing.JLabel widthLabel;
+    private javax.swing.JTextField widthField;
+    private javax.swing.JLabel heightLabel;
+    private javax.swing.JTextField heightField;
+    // End of variables declaration
 
     private InsetsEditor editor;
 

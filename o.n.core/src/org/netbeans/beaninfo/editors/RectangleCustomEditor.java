@@ -34,11 +34,6 @@ import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 * @version  1.00, 01 Sep 1998
 */
 public class RectangleCustomEditor extends javax.swing.JPanel implements EnhancedCustomPropertyEditor, KeyListener {
-
-    // the bundle to use
-    static ResourceBundle bundle = NbBundle.getBundle (
-                                       RectangleCustomEditor.class);
-
     static final long serialVersionUID =-9015667991684634296L;
    
     private HashMap labelMap = new HashMap();
@@ -59,30 +54,30 @@ public class RectangleCustomEditor extends javax.swing.JPanel implements Enhance
         jPanel2.setBorder (new javax.swing.border.CompoundBorder (
                                new javax.swing.border.TitledBorder (
                                    new javax.swing.border.EtchedBorder (),
-                                   " " + bundle.getString ("CTL_Rectangle") + " "),
+                                   " " + NbBundle.getMessage (RectangleCustomEditor.class, "CTL_Rectangle") + " "),
                                new javax.swing.border.EmptyBorder (new java.awt.Insets(5, 5, 5, 5))));
 
-        xLabel.setText (bundle.getString ("CTL_X"));
-        yLabel.setText (bundle.getString ("CTL_Y"));
-        widthLabel.setText (bundle.getString ("CTL_Width"));
-        heightLabel.setText (bundle.getString ("CTL_Height"));
+        xLabel.setText (NbBundle.getMessage (RectangleCustomEditor.class, "CTL_X"));
+        yLabel.setText (NbBundle.getMessage (RectangleCustomEditor.class, "CTL_Y"));
+        widthLabel.setText (NbBundle.getMessage (RectangleCustomEditor.class, "CTL_Width"));
+        heightLabel.setText (NbBundle.getMessage (RectangleCustomEditor.class, "CTL_Height"));
 
         xLabel.setLabelFor(xField);
         yLabel.setLabelFor(yField);
         widthLabel.setLabelFor(widthField);
         heightLabel.setLabelFor(heightField);
 
-        xLabel.setDisplayedMnemonic(bundle.getString("CTL_X_Mnemonic").charAt(0));
-        yLabel.setDisplayedMnemonic(bundle.getString("CTL_Y_Mnemonic").charAt(0));
-        widthLabel.setDisplayedMnemonic(bundle.getString("CTL_Width_mnemonic").charAt(0));
-        heightLabel.setDisplayedMnemonic(bundle.getString("CTL_Height_mnemonic").charAt(0));
+        xLabel.setDisplayedMnemonic(NbBundle.getMessage (RectangleCustomEditor.class, "CTL_X_Mnemonic").charAt(0));
+        yLabel.setDisplayedMnemonic(NbBundle.getMessage (RectangleCustomEditor.class, "CTL_Y_Mnemonic").charAt(0));
+        widthLabel.setDisplayedMnemonic(NbBundle.getMessage (RectangleCustomEditor.class, "CTL_Width_mnemonic").charAt(0));
+        heightLabel.setDisplayedMnemonic(NbBundle.getMessage (RectangleCustomEditor.class, "CTL_Height_mnemonic").charAt(0));
 
-        xField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_X"));
-        yField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Y"));
-        widthField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Width"));
-        heightField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Height"));
+        xField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (RectangleCustomEditor.class, "ACSD_CTL_X"));
+        yField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (RectangleCustomEditor.class, "ACSD_CTL_Y"));
+        widthField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (RectangleCustomEditor.class, "ACSD_CTL_Width"));
+        heightField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (RectangleCustomEditor.class, "ACSD_CTL_Height"));
         
-        getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CustomRectangleEditor"));
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (RectangleCustomEditor.class, "ACSD_CustomRectangleEditor"));
 
         labelMap.put(widthField,widthLabel);
         labelMap.put(xField,xLabel);
@@ -105,7 +100,7 @@ public class RectangleCustomEditor extends javax.swing.JPanel implements Enhance
                 IllegalStateException ise = new IllegalStateException();
                 ErrorManager.getDefault().annotate(
                     ise, ErrorManager.USER, null, 
-                    bundle.getString("CTL_NegativeSize"), null, null);
+                    NbBundle.getMessage (RectangleCustomEditor.class, "CTL_NegativeSize"), null, null);
                 throw ise;
             }
             return new Rectangle (x, y, width, height);
@@ -113,7 +108,7 @@ public class RectangleCustomEditor extends javax.swing.JPanel implements Enhance
             IllegalStateException ise = new IllegalStateException();
             ErrorManager.getDefault().annotate(
                 ise, ErrorManager.USER, null, 
-                bundle.getString("CTL_InvalidValue"), null, null);
+                NbBundle.getMessage (RectangleCustomEditor.class, "CTL_InvalidValue"), null, null);
             throw ise;
         }
     }

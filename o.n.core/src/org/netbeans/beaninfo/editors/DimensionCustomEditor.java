@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -31,10 +31,6 @@ import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
  * @author  IanFormanek, Vladimir Zboril
  */
 public class DimensionCustomEditor extends javax.swing.JPanel implements EnhancedCustomPropertyEditor {
-    
-    // the bundle to use
-    static ResourceBundle bundle = NbBundle.getBundle (
-                                       DimensionCustomEditor.class);
 
     static final long serialVersionUID =3718340148720193844L;
 
@@ -45,21 +41,21 @@ public class DimensionCustomEditor extends javax.swing.JPanel implements Enhance
         Dimension dimension = (Dimension)editor.getValue ();
         
         if (dimension == null) dimension = new Dimension (0, 0);
-        jLabel1.setText(bundle.getString ("CTL_Dimension"));
-        widthLabel.setText (bundle.getString("CTL_Width"));
-        widthLabel.setDisplayedMnemonic(bundle.getString("CTL_Width_mnemonic").charAt(0));
+        jLabel1.setText(NbBundle.getMessage(DimensionCustomEditor.class, "CTL_Dimension"));
+        widthLabel.setText (NbBundle.getMessage(DimensionCustomEditor.class, "CTL_Width"));
+        widthLabel.setDisplayedMnemonic(NbBundle.getMessage(DimensionCustomEditor.class, "CTL_Width_mnemonic").charAt(0));
         widthLabel.setLabelFor(widthField);
-        heightLabel.setText (bundle.getString("CTL_Height"));
-        heightLabel.setDisplayedMnemonic(bundle.getString("CTL_Height_mnemonic").charAt(0));
+        heightLabel.setText (NbBundle.getMessage(DimensionCustomEditor.class, "CTL_Height"));
+        heightLabel.setDisplayedMnemonic(NbBundle.getMessage(DimensionCustomEditor.class, "CTL_Height_mnemonic").charAt(0));
         heightLabel.setLabelFor(heightField);
 
         widthField.setText ("" + dimension.width);    // NOI18N
         heightField.setText ("" + dimension.height);  // NOI18N
 //        HelpCtx.setHelpIDString (this, DimensionCustomEditor.class.getName ());
 
-        widthField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Width"));
-        heightField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Height"));
-        getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_DimensionCustomEditor"));
+        widthField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DimensionCustomEditor.class, "ACSD_CTL_Width"));
+        heightField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DimensionCustomEditor.class, "ACSD_CTL_Height"));
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DimensionCustomEditor.class, "ACSD_DimensionCustomEditor"));
     }
 
     public java.awt.Dimension getPreferredSize () {
@@ -74,7 +70,7 @@ public class DimensionCustomEditor extends javax.swing.JPanel implements Enhance
                 IllegalStateException ise = new IllegalStateException();
                 ErrorManager.getDefault().annotate(
                     ise, ErrorManager.ERROR, null, 
-                    bundle.getString("CTL_NegativeSize"), null, null);
+                    NbBundle.getMessage(DimensionCustomEditor.class, "CTL_NegativeSize"), null, null);
                 throw ise;
             }
             return new Dimension (width, height);
@@ -82,7 +78,7 @@ public class DimensionCustomEditor extends javax.swing.JPanel implements Enhance
             IllegalStateException ise = new IllegalStateException();
             ErrorManager.getDefault().annotate(
                 ise, ErrorManager.ERROR, null, 
-                bundle.getString("CTL_InvalidValue"), null, null);
+                NbBundle.getMessage(DimensionCustomEditor.class, "CTL_InvalidValue"), null, null);
             throw ise;
         }
     }
