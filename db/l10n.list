@@ -1,5 +1,6 @@
 db/libsrc/org/netbeans/lib/ddl/resources/Bundle.properties
 db/src/org/netbeans/modules/db/resources/Bundle.properties
+db/src/org/netbeans/modules/db/Bundle.properties
 db/javahelp/org/netbeans/modules/db/docs/**/*.html
 db/javahelp/org/netbeans/modules/db/docs/**/*.hs
 db/javahelp/org/netbeans/modules/db/docs/**/*.jhm

@@ -32,7 +32,8 @@ import org.openide.nodes.*;
 //import org.openide.util.Mutex;
 
 public class DatabaseModule extends ModuleInstall {
-    private ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
+//    private ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
+    private ResourceBundle bundle = NbBundle.getBundle(DatabaseModule.class); //NOI18N
 
     static final long serialVersionUID =5426465356344170725L;
     

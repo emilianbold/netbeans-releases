@@ -80,27 +80,30 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="javahelp">
-    <copy todir="netbeans/docs">
-      <fileset dir="javahelp"/>
-    </copy>
-    <mkdir dir="netbeans/docs/org/netbeans/modules/db/docs/JavaHelpSearch"/>
-    <jhindexer basedir="netbeans/docs/org/netbeans/modules/db/docs/"
-               db="netbeans/docs/org/netbeans/modules/db/docs/JavaHelpSearch"
+    <mkdir dir="javahelp/org/netbeans/modules/db/docs/JavaHelpSearch"/>
+    <jhindexer basedir="javahelp/org/netbeans/modules/db/docs/"
+               db="javahelp/org/netbeans/modules/db/docs/JavaHelpSearch"
                jhall="${binroot}/nbbuild/lib/jhall.jar">
       <include name="**/*.html"/>
       <exclude name="JavaHelpSearch/"/>
       <exclude name="ja/"/>
       <exclude name="credits.html"/>
     </jhindexer>
-    <mkdir dir="netbeans/docs/org/netbeans/modules/db/docs/ja/JavaHelpSearch"/>
-    <jhindexer basedir="netbeans/docs/org/netbeans/modules/db/docs/ja/"
-               db="netbeans/docs/org/netbeans/modules/db/docs/ja/JavaHelpSearch"
+    <mkdir dir="javahelp/org/netbeans/modules/db/docs/ja/JavaHelpSearch"/>
+    <jhindexer basedir="javahelp/org/netbeans/modules/db/docs/ja/"
+               db="javahelp/org/netbeans/modules/db/docs/ja/JavaHelpSearch"
                locale="ja"
                jhall="${binroot}/nbbuild/lib/jhall.jar">
       <include name="**/*.html"/>
       <exclude name="JavaHelpSearch/"/>
       <exclude name="credits.html"/>
     </jhindexer>
+    <mkdir dir="netbeans/modules/docs"/>
+    <locjar jarfile="netbeans/modules/docs/db.jar"
+            compress="true">
+      <fileset dir="javahelp" excludesfile="../../nb_all/nbbuild/standard-jar-excludes.txt"/>
+      <locale name="ja"/>
+    </locjar>
   </target>
 
   <target name="netbeans" depends="jars,javahelp"/>
@@ -135,6 +138,7 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="db.nbm"/>
     <delete dir="netbeans"/>
     <delete dir="Info"/>
+    <delete dir="javahelp/org/netbeans/modules/db/docs/JavaHelpSearch"/>
   </target>
 
 </project>
