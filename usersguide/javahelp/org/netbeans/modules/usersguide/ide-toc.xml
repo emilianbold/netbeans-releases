@@ -533,7 +533,6 @@
       <tocitem text="Specifying the Default Web Browser" target="webbrowser.default" />
       <tocitem text="Configuring a Web Browser" target="webbrowser.config" />
       <tocitem text="Configuring HTTP Server Options" target="httpserver-options" />
-      <tocitem text="Creating a Bookmark for a Web Page" target="webbrowser.bookmark" />
       <tocitem text="Setting a Home Page for the Web Browser" target="webbrowser.homepage" />
     </tocitem>
     <tocitem text="Configuring Menus">
@@ -551,12 +550,13 @@
       <tocitem text="Removing a Toolbar From the Main Window" target="configure.tbdelete" />
     </tocitem>
     <tocitem text="Setting Font Size in the IDE" target="configure.fontsize" />
-    <tocitem text="Using the Setup Wizard After Startup" target="configure.setup" />
     <tocitem text="Configuring System Settings" target="configure.system.settings" />
     <tocitem text="Keyboard Shortcuts" >
+      <tocitem text="About" target="shortcuts.kybd" />
       <tocitem text="Menu Shortcuts" target="shortcuts.menus" />
       <tocitem text="Setting Menu Shortcuts" target="shortcuts.menucuts-setting" />
       <tocitem text="Editor Shortcuts" target="shortcuts.editor" />
+      <tocitem text="Setting Keyboard Shortcuts for the Source Editor" target="editing.settingkeybdshorts"/>
       <tocitem text="Window Navigation Shortcuts" target="shortcuts.window" />
       <tocitem text="Help Viewer Shortcuts" target="accessibility.jhshortcuts" />
     </tocitem>

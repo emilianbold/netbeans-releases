@@ -16,211 +16,94 @@
 There are keyboard shortcuts available to activate the 
 following Source Editor operations:
 <ul>
-<li><a href="#mvpt">Moving the Insertion Point</a>
-<li><a href="#scrolltxt">Scrolling Text</a>
-<li><a href="#selecttxt">Selecting Text</a>
-<li><a href="#modtxt">Modifying Text</a>
-<li><a href="#macros">Recording Macros</a>
-<li><a href="#ccpdtxt">Cutting, Copying, Pasting, and Deleting Text</a>
-<li><a href="#searchtxt">Searching Text</a>
-<li><a href="#settabs">Setting Tabs</a>
-<li><a href="#modcode">Modifying Code</a>
-<li><a href="#openfiles">Opening Files</a>
-<li><a href="#usebkmks">Using Bookmarks</a>
-<li><a href="#annotations">Cycling Through Annotations</a>
-</ul></p>
-
+  <li><a href="#mvpt">Scrolling and Selecting</a> 
+  <li><a href="#modtxt">Modifying Text</a> 
+  <li><a href="#fold">Code Folding</a>
+  <li><a href="#macros">Recording Macros</a> 
+  <li><a href="#ccpdtxt">Cutting, Copying, Pasting, and Deleting Text</a> 
+  <li><a href="#searchtxt">Searching Text</a> 
+  <li><a href="#settabs">Setting Tabs</a> 
+  <li><a href="#modcode">Modifying Code</a> 
+  <li><a href="#openfiles">Opening Files</a> 
+  <li><a href="#usebkmks">Using Bookmarks</a> 
+  <li><a href="#annotations">Cycling Through Annotations</a> 
+</ul>
 <table>
   <tr> 
-    <td valign=top><img src="../images/tip.gif" alt="tip"></td>
-    <td valign=top align=left>You can also type abbreviations in files and have
-them expand to longer words or phrases. See <li><a
-href="../editing/macros/abbreviations.html">Using Abbreviations</a>.</td>
+    <td valign="top"><img src="../images/tip.gif" alt="Tip"></td>
+    <td valign="top" align="left"> Multikey shortcuts are written in the following format: Alt-U, T. To use 
+      this shortcut, hold down the Alt key and press U, then release both keys 
+      and press T.</td>
   </tr>
 </table>
 
-<a name="mvpt"></a>
-<h3>Moving the Insertion Point</h3>
-<table border="1" summary="This table displays keyboard shortcuts for moving the insertion point in the 
-source editor.">
-<tr>
-<th align="left" scope="col">Keys</th>
-<th align="left" scope="col">Action</th>
-</tr>
-<tr>
-<td valign="top">Left arrow,<br>Right arrow</td>
-<td>Moves the insertion point one character to the left or right.</td> 
-</tr>
-<tr>
-<td valign="top">Alt-U, E</td>
-<td>Moves the insertion point to the end of the word.</td> 
-</tr>
-<td valign="top">Ctrl-right arrow</td>
-<td>Moves the insertion point one word to the right.</td> 
-</tr>
-<td valign="top">Ctrl-left arrow</td>
-<td>Moves the insertion point one word to the left.</td> 
-</tr>
-<tr>
-<td valign="top">Ctrl-[</td>
-<td>Moves the insertion point to the highlighted matching bracket.</td>
-</tr>
-<tr>
-<td valign="top">Home</td>
-<td>Moves the insertion point to the beginning of the line.</td> 
-</tr>
-<tr>
-<td valign="top">End</td>
-<td>Moves the insertion point to the end of the line.</td> 
-</tr>
-<tr>
-<td valign="top">Up arrow</td>
-<td>Moves the insertion point one one line up.</td> 
-</tr>
-<tr>
-<td valign="top">Down arrow</td>
-<td>Moves the insertion point one one line down.</td> 
-</tr>
-<tr>
-<td valign="top">Ctrl-G</td>
-<td>Opens Go to Line dialog box.</td> 
-</tr>
-<tr>
-<td valign="top">Alt-Shift-T</td>
-<td>Moves the insertion point to the top of the window.</td>
-</tr>
-<tr>
-<td valign="top">Alt-Shift-M</td>
-<td>Moves the insertion point to the middle of the window.</td>
-</tr>
-<tr>
-<td valign="top">Alt-Shift-B</td>
-<td>Moves the insertion point to the bottom of the window.</td>
-</tr>
-<tr>
-<td valign="top">Ctrl-Home</td>
-<td>Moves the insertion point to the beginning of the document.</td>
-</tr>
-<tr>
-<td valign="top">Ctrl-End</td>
-<td>Moves the insertion point to the end of the document.</td>
-</tr>
-<tr>
-<td valign="top">PgUp</td>
-<td>Moves the insertion point one page up.</td> 
-</tr>
-<tr>
-<td valign="top">PgDn</td>
-<td>Moves the insertion point one page down.</td> 
-</tr>
-</table>
-
-<a name="scrolltxt"></a>
-<h3>Scrolling Text</h3>
+<h3>Scrolling and Selecting<a name="mvpt"></a></h3>
 <table border="1" summary="This table displays keyboard shortcuts for scrolling text in the source editor.">
-<tr>
-<th align="left" scope="col">Keys</th>
-<th align="left" scope="col">Action</th>
-</tr>
-<tr>
-<td valign="top">Alt-U, T</td>
-<td>Scrolls text to top of window.</td>
-</tr>
-<tr>
-<td valign="top">Alt-U, M</td>
-<td>Scrolls text to middle of window.</td>
-</tr>
-<tr>
-<td valign="top">Alt-U, B</td>
-<td>Scrolls text to bottom of window.</td>
-</tr>
-<tr>
-<td valign="top">Ctrl-down arrow</td>
-<td>Scrolls the window up without moving the insertion point.</td> 
-</tr>
-<tr>
-<td valign="top">Ctrl-up arrow</td>
-<td>Scrolls the window down without moving the insertion point.</td> 
-</tr>
+  <tr> 
+    <th align="left" scope="col">Keys</th>
+    <th align="left" scope="col">Action</th>
+  </tr>
+  <tr> 
+    <td valign="top">Alt-U, T</td>
+    <td>Scrolls the line the instertion point is on to the top of window.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Alt-U, M</td>
+    <td>Scrolls the line the instertion point is on to the middle of window.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Alt-U, B</td>
+    <td>Scrolls the line the instertion point is on to the to bottom of window.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Ctrl-down arrow</td>
+    <td>Scrolls the window up without moving the insertion point.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Ctrl-up arrow</td>
+    <td>Scrolls the window down without moving the insertion point.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Ctrl-[</td>
+    <td>Moves the insertion point to the highlighted matching bracket. This shortcut 
+      only works when the instertion point is immediately after the opening bracket.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Ctrl-Shift-[</td>
+    <td>Selects the block between a pair of brackets. This shortcut only works 
+      when the insertion point is imtmediately after either the opening or closing 
+      bracket.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Ctrl-G</td>
+    <td>Jumps to any specified line.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Alt-Shift-T</td>
+    <td>Moves the insertion point to the top of the window.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Alt-Shift-M</td>
+    <td>Moves the insertion point to the middle of the window.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Alt-Shift-B</td>
+    <td>Moves the insertion point to the bottom of the window.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Ctrl-Home</td>
+    <td>Moves the insertion point to the beginning of the document.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Ctrl-End</td>
+    <td>Moves the insertion point to the end of the document.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Ctrl-A</td>
+    <td valign="top">Selects all text in the file.</td>
+  </tr>
 </table>
-
-
-<a name="selecttxt"></a>
-<h3>Selecting Text</h3>
-<table border="1" summary="This table displays keyboard shortcuts for selecting text in the source editor.">
-<tr>
-<th align="left" scope="col">Keys</th>
-<th align="left" scope="col">Action</th>
-</tr>
-<tr>
-<td valign="top">Ctrl-A</td>
-<td valign="top">Selects all text in the file.</td>
-</tr>
-<tr>
-<td valign="top">Shift-right arrow</td>
-<td>Selects the character to the right of the insertion point.</td>
-</tr>
-<tr>
-<td valign="top">Shift-left arrow</td>
-<td>Selects the character to the left of the insertion point.</td>
-</tr>
-<tr>
-<td valign="top">Alt-J</td>
-<td>Selects the word the insertion point is on, else deselects any
-selected text.</td>
-</tr>
-<tr>
-<td valign="top">Ctrl-Shift-right arrow</td>
-<td>Creates a text selection and extends it one word to the right.</td> 
-</tr>
-<tr>
-<td valign="top">Ctrl-Shift-left arrow</td>
-<td>Creates a text selection and extends it one word to the left.</td> 
-</tr>
-<tr>
-<td valign="top">Shift-Home</td>
-<td>Creates a text selection and extends it to the beginning of the
-line.</td>  
-</tr>
-<tr>
-<td valign="top">Shift-End</td>
-<td>Creates a text selection and extends it to the end of the line.</td> 
-</tr>
-<tr>
-<td valign="top">Shift-up arrow</td>
-<td>Creates a text selection and extends it to the previous line.</td> 
-</tr>
-<tr>
-<td valign="top">Shift-down arrow</td>
-<td>Creates a text selection and extends it to the next line.</td> 
-</tr>
-<tr>
-<td valign="top">Ctrl-Shift-Home</td>
-<td>Creates a text selection and extends it to the beginning of the
-document.</td>  
-</tr>
-<tr>
-<td valign="top">Ctrl-Shift-End</td>
-<td>Creates a text selection and extends it to the end of the
-document.</td>  
-</tr>
-<tr>
-<td valign="top">Shift-PgUp</td>
-<td>Creates a text selection and extends it one page up.</td> 
-</tr>
-<tr>
-<td valign="top">Shift-PgDn</td>
-<td>Creates a text selection and extends it one page down.</td> 
-</tr>
-<tr>
-<td valign="top">Ctrl-Shift-[</td>
-<td>Selects the block between a pair of brackets. This shortcut only works 
-when the insertion point is immediately after either the opening or closing bracket.</td>
-</tr>
-</table>
-
-<a name="modtxt"></a>
-<h3>Modifying Text</h3>
+<h3>Modifying Text<a name="modtxt"></a> </h3>
 <table border="1" summary="This table displays keyboard shortcuts for modifying text in the source editor.">
 <tr>
 <th align="left" scope="col">Keys</th>
@@ -252,8 +135,31 @@ the right of the insertion point.</td>
 </tr>
 </table>
 
-<a name="macros"></a>
-<h3>Recording Macros</h3>
+
+<h3>Code Folding<a name="fold"></a></h3>
+<table border="1" summary="This table displays keyboard shortcuts for scrolling text in the source editor.">
+  <tr> 
+    <th align="left" scope="col">Keys</th>
+    <th align="left" scope="col">Action</th>
+  </tr>
+  <tr> 
+    <td valign="top">Ctrl-Minus (-)</td>
+    <td>Collapses the block of code the instertion point is on.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Ctrl-Plus (+)</td>
+    <td>Expands the block of code the instertion point is next to.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Ctrl-Shift-Minus (-)</td>
+    <td>Collapses all blocks of code.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Ctrl-Shift-Plus (+)</td>
+    <td>Expands all blocks of code.</td>
+  </tr>
+</table>
+<h3>Recording Macros<a name="macros"></a></h3>
 <table border="1" summary="This table displays keyboard shortcuts for recording macros in the source editor.">
 <tr>
 <th align="left" scope="col">Keys</th>
@@ -269,88 +175,87 @@ the right of the insertion point.</td>
 </tr>
 </table>
 
-<a name="ccpdtxt"></a>
-<h3>Cutting, Copying, Pasting, and Deleting Text</h3>
+
+<h3>Cutting, Copying, Pasting, and Deleting Text<a name="ccpdtxt"></a></h3>
 <table border="1" summary="This table displays keyboard shortcuts for clipboard operations in the source editor.">
-<tr>
-<th align="left" scope="col">Keys</th>
-<th align="left" scope="col">Action</th>
-</tr>
-<tr>
-<td valign="top">Ctrl-Z</td>
-<td valign="top">(Undo) Reverses (one at a time) a series of editor actions,
-except Save.</td>
-</tr>
-<tr>
-<td valign="top">Ctrl-Y</td>
-<td valign="top">(Redo) Reverses (one at a time) a series of Undo commands.</td>
-</tr>
-<tr>
-<td valign="top">Ctrl-X</td>
-<td valign="top">(Cut) Deletes the current selection and places it on the
-clipboard.</td> 
-</tr>
-<tr>
-<td valign="top">Shift-Delete</td>
-<td valign="top">(Cut) Deletes the current selection and places it on the
-clipboard.</td> 
-</tr>
-<tr>
-<td valign="top">Ctrl-C</td>
-<td valign="top">(Copy) Copies the current selection to the clipboard.</td>
-</tr>
-<tr>
-<td valign="top">Ctrl-Insert</td>
-<td valign="top">(Copy) Copies the current selection to the clipboard.</td>
-</tr>
-<tr>
-<td valign="top">Ctrl-V</td>
-<td valign="top">(Paste) Pastes the contents of the clipbard at the insert
-point.</td> 
-</tr>
-<tr>
-<td valign="top">Delete</td>
-<td valign="top">(Delete) Deletes the current selection.</td>
-</tr>
-<tr>
-<td valign="top">Ctrl-E</td>
-<td valign="top">Deletes the current line.</td>
-</tr>
-<tr>
-<td valign="top">Backspace</td>
-<td valign="top">Deletes the character preceding the insertion point.</td>
-</tr>
-<tr>
-<td valign="top">Ctrl-U</td>
-<td valign="top">Deletes text in the following sequence: 
-<ul>
-<li>text preceding insertion point on same line
-<li>indentation on same line
-<li>line break
-<li>text on previous line
-</ul></td>
-</tr>
-<tr>
-<td valign="top">Ctrl-W</td>
-<td valign="top">Removes the current word or the word preceding the
-insertion point.</td>
-</tr>
-<tr>
-<td valign="top">Ctrl-K</td>
-<td valign="top">Copies the word preceding the insertion
-point and pastes it at the insertion point. (The insertion point must
-be on a whitespace before or after a word.)
-</tr>
-<tr>
-<td valign="top">Ctrl-L</td>
-<td valign="top">Copies the word following the insertion
-point and pastes it at the insertion point. (The insertion point must
-be on a whitespace before or after a word.)</td>
-</tr>
+  <tr> 
+    <th align="left" scope="col">Keys</th>
+    <th align="left" scope="col">Action</th>
+  </tr>
+  <tr> 
+    <td valign="top">Ctrl-Z</td>
+    <td valign="top">(Undo) Reverses (one at a time) a series of editor actions, 
+      except Save.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Ctrl-Y</td>
+    <td valign="top">(Redo) Reverses (one at a time) a series of Undo commands.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Ctrl-X</td>
+    <td valign="top">(Cut) Deletes the current selection and places it on the 
+      clipboard.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Shift-Delete</td>
+    <td valign="top">(Cut) Deletes the current selection and places it on the 
+      clipboard.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Ctrl-C</td>
+    <td valign="top">(Copy) Copies the current selection to the clipboard.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Ctrl-Insert</td>
+    <td valign="top">(Copy) Copies the current selection to the clipboard.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Ctrl-V</td>
+    <td valign="top">(Paste) Pastes the contents of the clipbard at the insert 
+      point.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Delete</td>
+    <td valign="top">(Delete) Deletes the current selection.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Ctrl-E</td>
+    <td valign="top">Deletes the current line.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Ctrl-U</td>
+    <td valign="top">Deletes text in the following sequence: 
+      <ul>
+        <li>text preceding insertion point on same line 
+        <li>indentation on same line 
+        <li>line break 
+        <li>text on previous line 
+      </ul>
+    </td>
+  </tr>
+  <tr> 
+    <td valign="top">Ctrl-W</td>
+    <td valign="top">Removes the text in the current word preceding the insertion 
+      point.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Ctrl-K</td>
+    <td valign="top">Copies the word preceding the insertion point and pastes 
+      it at the insertion point. (The insertion point must be on a whitespace 
+      before or after a word.) Press K multiple times to cycle through consecutive 
+      previous words.
+  </tr>
+  <tr> 
+    <td valign="top">Ctrl-L</td>
+    <td valign="top">Copies the word following the insertion point and pastes 
+      it at the insertion point. (The insertion point must be on a whitespace 
+      before or after a word.) Press L multiple times to cycle through consecutive 
+      following words.</td>
+  </tr>
 </table>
 
-<a name="searchtxt"></a>
-<h3>Searching for Text</h3>
+
+<h3>Searching for Text<a name="searchtxt"></a></h3>
 <table border="1" summary="This table displays keyboard shortcuts for searching text in the source editor.">
 <tr>
 <th align="left" scope="col">Keys</th>
@@ -363,17 +268,15 @@ higlights all occurrences of that word.
 </tr>
 <tr>
 <td valign="top">F3</td>
-<td valign="top">Moves the insertion point to the next found occurrence
-of the word.</td>
+    <td valign="top">Selects the next found occurrence of the word.</td>
 </tr>
 <tr>
 <td valign="top">Shift-F3</td>
-<td valign="top">Moves the insertion point to the previous found
-occurrence of the word.</td>
+    <td valign="top">Selects the previous found occurrence of the word.</td>
 </tr>
 <tr>
 <td valign="top">Alt-Shift-H</td>
-<td valign="top">Switches highlighting of words on or off.</td>
+    <td valign="top">Switches highlighting of search results on or off.</td>
 </tr>
 <tr>
 <td valign="top">Ctrl-F</td>
@@ -385,8 +288,8 @@ occurrence of the word.</td>
 </tr>
 </table>
 
-<a name="settabs"></a>
-<h3>Setting Tabs</h3>
+
+<h3>Setting Tabs<a name="settabs"></a></h3>
 <table border="1" summary="This table displays keyboard shortcuts for setting tabs in the source editor.">
 <tr>
 <th align="left" scope="col">Keys</th>
@@ -408,101 +311,97 @@ the left.</td>
 </tr>
 </table>
 
-<a name="modcode"></a>
-<h3>Modifying Code</h3>
+
+<h3>Modifying Code<a name="modcode"></a></h3>
 <table border="1" summary="This table displays keyboard shortcuts for modifying code in the source editor.">
-<tr>
-<th align="left" scope="col">Keys</th>
-<th align="left" scope="col">Action</th>
-</tr>
-<tr>
-<td valign="top">Ctrl-Spacebar</td>
-<td>Opens the Java code completion dialog box.</td>
-</tr>
-<tr>
-<td valign="top">Ctrl-\</td>
-<td>Opens the Java code completion dialog box.</td>
-</tr>
-<tr>
-<td valign="top">Shift-Enter</td>
-<td>Enters the text that is selected in the code completion box into your file.</td>
-</tr>
-<tr>
-<td valign="top">Alt-Shift-I</td>
-<td>Adds an import statement to the import section of the code when
-cursor is over the class name to be imported.</td>
-</tr>
-<tr>
-<td valign="top">Alt-U, G</td>
-<td>Appends the prefix <tt>get</tt> to the identifier.</td>
-</tr>
-<tr>
-<td valign="top">Alt-U, S</td>
-<td>Appends the prefix <tt>set</tt> to the identifier.</td>
-</tr>
-<tr>
-<td valign="top">Alt-U, I</td>
-<td>Appends the prefix <tt>is</tt> to the identifier.</td>
-</tr>
-<tr>
-<td valign="top">Alt-G</td>
-<td>Goes to the method or variable declaration for method or variable
-the insertion point is on.</td>
-</tr>
-<tr>
-<td valign="top">Ctrl-M</td>
-<td>Selects the next parameter.</td>
-</tr>
-<tr>
-<td valign="top">Ctrl-Shift-T</td>
-<td>Comments out the current or selected lines.</td>
-</tr>
-<tr>
-<td valign="top">Ctrl-Shift-D</td>
-<td>Removes comment from the current or selected lines.</td>
-</tr>
-<tr>
-<td valign="top">Ctrl-Shift-[</td>
-<td>Selects block between brackets when insertion point is immediately
-in front of the open bracket.</td>
-</tr>
-<tr>
-<td valign="top">Alt-K</td>
-<td>Goes to the previous entry in jump list.</td>
-</tr>
-<tr>
-<td valign="top">Alt-L</td>
-<td>Goes to the next entry in jump list.</td>
-</tr>
-<tr>
-<td valign="top">Alt-Shift-K</td>
-<td>Goes to the previous entry in jump list not in the same file.</td>
-</tr>
-<tr>
-<td valign="top">Alt-Shift-L</td>
-<td>Goes to the next entry in jump list not in the same file.</td>
-</tr>
-<tr>
-<td valign="top">Ctrl-Shift-F</td>
-<td>Reformats code.</td>
-</tr>
-<tr>
-<td valign="top">Shift-F10</td>
-<td>Opens editor's contextual menu.</td>
-</tr>
-<tr>
-<td valign="top">Ctrl-J, D</td>
-<td>A macro that selects the identifier under the caret. Then inserts 
-debugging code on the previous line to print the value of that identifier</td>
-</tr>
-<tr>
-<td valign="top">Shift-Spacebar</td>
-<td>Adds a space without checking for abbreviations to expand.</td>
-</tr>
+  <tr> 
+    <th align="left" scope="col">Keys</th>
+    <th align="left" scope="col">Action</th>
+  </tr>
+  <tr> 
+    <td valign="top">Ctrl-Spacebar</td>
+    <td>Opens the Java code completion dialog box.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Ctrl-\</td>
+    <td>Opens the Java code completion dialog box.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Shift-Enter</td>
+    <td>Enters the text that is selected in the code completion box into your 
+      file.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Alt-Shift-I</td>
+    <td>Adds an import statement to the import section of the code when cursor 
+      is over the class name to be imported.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Alt-U, G</td>
+    <td>Appends the prefix <tt>get</tt> to the identifier.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Alt-U, S</td>
+    <td>Appends the prefix <tt>set</tt> to the identifier.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Alt-U, I</td>
+    <td>Appends the prefix <tt>is</tt> to the identifier.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Alt-G</td>
+    <td>Goes to the method or variable declaration for method or variable the 
+      insertion point is on.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Ctrl-M</td>
+    <td>Selects the next parameter.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Ctrl-Shift-T</td>
+    <td>Comments out the current or selected lines.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Ctrl-Shift-D</td>
+    <td>Removes comment from the current or selected lines.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Alt-K</td>
+    <td>Goes to the previous entry in jump list.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Alt-L</td>
+    <td>Goes to the next entry in jump list.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Alt-Shift-K</td>
+    <td>Goes to the previous entry in jump list not in the same file.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Alt-Shift-L</td>
+    <td>Goes to the next entry in jump list not in the same file.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Ctrl-Shift-F</td>
+    <td>Reformats selected code or entire file if nothing is selected.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Shift-F10</td>
+    <td>Opens editor's contextual menu.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Ctrl-J, D</td>
+    <td>A macro that selects the identifier under the caret. Then inserts debugging 
+      code on the previous line to print the value of that identifier</td>
+  </tr>
+  <tr> 
+    <td valign="top">Shift-Spacebar</td>
+    <td>Adds a space without checking for abbreviations to expand.</td>
+  </tr>
 </table>
 
-<a name="openfiles"></a>
-<h3>Opening Files</h3>
+
+<h3>Opening Files<a name="openfiles"></a></h3>
 <table border="1" summary="This table displays keyboard shortcuts 
 for opening files when you are working in the source editor.">
 <tr>
@@ -517,10 +416,9 @@ and the code completion database must be updated for that source.</td>
 </tr>
 <tr>
 <td valign="top">Alt-Shift-O</td> 
-<td>Opens the source when the class name is entered in the dialog box
-that appears and pressing Open Source. The source file must be in a
-directory mounted in Filesystems, and the code completion database must be
-updated for that source.</td>
+    <td>Opens a dialog box in which you can search for the source code for any 
+      element of Java source. The source file must be in a directory mounted in 
+      Filesystems, and the code completion database must be updated for that source.</td>
 </tr>
 <tr>
 <td valign="top">Alt-F1</td>
@@ -533,8 +431,8 @@ by choosing Tools<img src="../images/arrow.gif" alt="and choosing">&nbsp;Javadoc
 </tr>
 </table>
 
-<a name="usebkmks"></a>
-<h3>Using Bookmarks</h3>
+
+<h3>Using Bookmarks<a name="usebkmks"></a></h3>
 <table border="1" summary="This table displays keyboard shortcuts for using bookmarks in the source editor.">
 <tr>
 <th align="left" scope="col">Keys</th>
@@ -550,8 +448,8 @@ by choosing Tools<img src="../images/arrow.gif" alt="and choosing">&nbsp;Javadoc
 </tr>
 </table>
 
-<a name="annotations"></a>
-<h3>Cycling Through Annotations</h3>
+
+<h3>Cycling Through Annotations<a name="annotations"></a></h3>
 <table border="1" summary="This table displays keyboard shortcuts for using annotations in the source editor.">
 <tr>
 <th align="left" scope="col">Keys</th>

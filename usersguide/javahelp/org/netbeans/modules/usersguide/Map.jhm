@@ -554,10 +554,6 @@
 <mapID target="webbrowser.swing" url="webbrowser/swingbrowser.html" />
 <mapID target="webbrowser" url="webbrowser/webbrowser.html" />
 <mapID target="webbrowser.homepage" url="webbrowser/home_page.html" />
-<mapID target="webbrowser.bookmark" url="webbrowser/bookmark.html" />
-<mapID target="webbrowser.winwebbrowser" url="webbrowser/winwebbrowser.html" />
-<mapID target="webbrowser.unixwebbrowser" url="webbrowser/unixwebbrowser.html" />
-<mapID target="webbrowser.simpleextbrowser" url="webbrowser/simpleextbrowser.html" />
 <mapID target="webbrowser.config" url="webbrowser/config_browser.html" />
 <mapID target="proxy" url="webbrowser/proxy.html" />
 <mapID target="bypass.proxy" url="webbrowser/bypassproxy.html" />
@@ -625,7 +621,6 @@
 
 <mapID target="configure.options" url="configure/configure_options.html" />
 <mapID target="configure.startup-switches" url="configure/configure_startup-switches.html" />
-<mapID target="configure.setup" url="configure/setup.html" />
 <mapID target="configure.menucommands" url="configure/menu_commands.html" />
 <mapID target="configure.popup" url="configure/popup.html" />
 <mapID target="configure.menucreate" url="configure/menu_create.html" />
@@ -875,7 +870,7 @@
   <mapID target="org.openide.actions.ToolsAction" url="pending.html" />
   <mapID target="org.openide.src.nodes.DefaultFactory$ElementCategoryNode" url="pending.html" /> 
 
-   <mapID target="org.netbeans.core.actions.SetupWizardAction" url="configure/setup.html" />
+   <mapID target="org.netbeans.core.actions.SetupWizardAction" url="configure/setup_1.html" />
    <mapID target="org.netbeans.core.actions.SettingsAction" url="pending.html" />
 
    <mapID target="org.netbeans.beaninfo.editors.BeanEditor" url="pending.html" />
@@ -973,15 +968,15 @@
    <mapID target="org.netbeans.core.execution.ProcessNodeItem" url="objects/objects_runtime.html" /> 
    <mapID target="org.netbeans.core.execution.ProcessNodeItem$TerminateProcessAction" url="objects/objects_runtime.html" /> 
    <mapID target="org.netbeans.core.output.OutputSettings" url="configure/output.html" /> 
-   <mapID target="org.netbeans.core.windows.nodes.WorkspaceContext" url="workspace/workspace.html" /> 
+   <mapID target="org.netbeans.core.windows.nodes.WorkspaceContext" url="workspace/workspace_jump.html" /> 
    <mapID target="org.netbeans.core.windows.nodes.WorkspaceContext$TopFramePasteType" url="pending.html" /> 
    <mapID target="org.netbeans.core.windows.nodes.WorkspaceNewType" url="pending.html" /> 
-   <mapID target="org.netbeans.core.windows.nodes.WorkspacePoolContext" url="workspace/workspace.html" /> 
+   <mapID target="org.netbeans.core.windows.nodes.WorkspacePoolContext" url="workspace/workspace_jump.html" /> 
    <mapID target="org.netbeans.core.windows.nodes.WorkspacePoolContext$WorkspacePasteType" url="pending.html" /> 
    <mapID target="org.netbeans.core.windows.toolbars.ToolbarConfiguration" url="configure/toolbar.html" /> 
 
  <!--TODO: add a CSH topic for these nodes; Look & Feel / Menu Bar; Toobars-->  
-   <mapID target="org.netbeans.core.windows.services.MenuFolderNode" url="configure/menu.html" /> 
+   <mapID target="org.netbeans.core.windows.services.MenuFolderNode" url="configure/menu_commands.html" /> 
    <mapID target="org.netbeans.core.windows.services.ToolbarFolderNode" url="configure/toolbar.html" /> 
       
    <mapID target="org.netbeans.core.output.OutputTab" url="pending.html" />
@@ -1156,14 +1151,14 @@
    <mapID target="org.netbeans.modules.form.palette.PaletteNode" url="pending.html" />
    <mapID target="org.netbeans.modules.form.ParametersPicker" url="pending.html"/>
    <mapID target="org.netbeans.modules.java.JavaConnections.dialog" url="pending.html"/>
-   <mapID target="org.netbeans.modules.url.BookmarksNode" url="webbrowser/bookmark.html" />
+   <mapID target="org.netbeans.modules.url.BookmarksNode" url="pending.html" />
    <mapID target="org.netbeans.modules.image.ImageViewer" url="pending.html" /> 
    
    <mapID target="org.netbeans.modules.image.CustomZoomAction" url="pending.html" /> 
    
    <mapID target="org.netbeans.modules.url.OpenInNewWindowAction" url="pending.html" /> 
    <mapID target="org.netbeans.modules.url.BookmarksAction" url="pending.html" />
-   <mapID target="org.netbeans.modules.url.URLDataObject" url="webbrowser/bookmark.html" /> 
+   <mapID target="org.netbeans.modules.url.URLDataObject" url="pending.html" /> 
    <mapID target="org.netbeans.modules.openfile.OpenFile.dialog" url="pending.html" /> 
    <mapID target="org.netbeans.modules.openfile.OpenFileAction" url="pending.html" /> 
 <!--Pending: map the ID below to a topic on open file server settings-->
@@ -1396,7 +1391,7 @@
 
    <mapID target="org.netbeans.core.actions.ConfigureShortcutsAction" url="shortcuts/kybdshortcuts.html" />
    <mapID target="org.netbeans.core.NbNodeOperation.customize" url="pending.html" />
-   <mapID target="org.netbeans.core.windows.nodes.ModeContext" url="workspace/workspace.html" />
+   <mapID target="org.netbeans.core.windows.nodes.ModeContext" url="workspace/workspace_jump.html" />
    <mapID target="org.openide.explorer.propertysheet.PropertySheet$BeanPasteType" url="pending.html" />
 
    <mapID target="org.openide.actions.StartDebuggerAction" url="pending.html" />
@@ -1427,9 +1422,6 @@
    <mapID target="org.netbeans.core.ui.NewTemplateWizard1" url="pending.html" />
    <mapID target="org.openide.text.CloneableEditor" url="pending.html" />
    <mapID target="org.openide.actions.ClassNamePanel" url="pending.html" />
-
-   <mapID target="org.netbeans.core.ui.WelcomeFolderNode" url="configure/welcome_node.html" />
-
 
    <mapID target="org.netbeans.core.actions.NewFileSystemAction" url="filesystems/filesystems_mounting.html" />
    <!--Mount Filesystem Dialogue-->
