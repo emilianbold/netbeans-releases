@@ -32,6 +32,7 @@ import org.openide.src.MethodElement;
 import org.openide.src.SourceException;
 import org.openide.cookies.SaveCookie;
 import org.openide.loaders.TemplateWizard;
+import org.openide.filesystems.FileObject;
 
 import org.netbeans.modules.java.JavaDataObject;
 
@@ -96,11 +97,21 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
             
     private static void transformTemplateMethods(JavaDataObject source, String[] newNames,  int[] indexes, MethodElement[] templates) throws SourceException, IOException {
         ClassElement clel = source.getSource().getClass(Identifier.create(source.getName()));
+
+        // removing old template methods
         clel.removeMethods(getTemplateMethods(source));
+
+        // adding and renaming new methods, creating golden files if needed
         for (int i=0; i<newNames.length; i++) {
             clel.addMethod(templates[indexes[i]]);
             clel.getMethod(templates[indexes[i]].getName(), null).setName(Identifier.create(newNames[i]));
+            if (templates[indexes[i]].getBody().indexOf("compareReferenceFiles")>=0)
+                try {
+                    createGoldenFile(source, newNames[i]);
+                } catch (IOException ioe) {}
         }
+
+        // creating list of test cases
         String className=source.getName();
         StringBuffer suite = new StringBuffer();
         suite.append("\n        TestSuite suite = new NbTestSuite();\n");
@@ -114,6 +125,17 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         suite.append("        return suite;\n");
         clel.getMethod(Identifier.create("suite"), null).setBody(suite.toString());
         ((SaveCookie)source.getCookie(SaveCookie.class)).save();
+    }
+
+    public static void createGoldenFile(JavaDataObject source, String name) throws IOException {
+        FileObject fo=source.getFolder().getPrimaryFile();
+        FileObject fo2=fo.getFileObject("data");
+        if ((fo2==null)||(!fo2.isFolder()))
+            fo2=fo.createFolder("data");
+        fo=fo2.getFileObject(source.getName());
+        if ((fo==null)||(!fo.isFolder()))
+            fo=fo2.createFolder(source.getName());
+        fo.createData(name,"pass");
     }
     
 }

@@ -35,6 +35,9 @@ Microsystems, Inc. All Rights Reserved.
         <fileset dir="${nbroot}/openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
+        <fileset dir="${nbroot}/java/netbeans/modules">
+          <include name="java.jar" />
+        </fileset>
         <!-- Hopefully set up by nbbuild/build.xml: -->
         <pathelement location="${jdkhome}/lib/tools.jar"/>
       </classpath>

@@ -1,0 +1,67 @@
+/*
+ * __NAME__.java
+ *
+ * Created on __DATE__, __TIME__
+ */
+
+package Templates.TestTools;
+
+import java.io.IOException;
+import java.io.PrintStream;
+
+import junit.framework.*;
+import org.netbeans.junit.*;
+
+/** JUnit test suite with Jemmy support
+ *
+ * @author __USER__
+ * @version 1.0
+ */
+public class simpleTest extends NbTestCase {
+    
+    /** constructor required by JUnit
+     * @param testName method name to be used as testcase
+     */
+    public simpleTest(String testName) {
+        super(testName);
+    }
+    
+    /** method used for explicit testsuite definition
+     */
+    public static junit.framework.Test suite() {
+    }
+    
+    
+    /** method called before each testcase
+     */
+    protected void setUp() throws IOException {
+    }
+    
+    /** method called after each testcase<br>
+     * resets Jemmy WaitComponentTimeout
+     */
+    protected void tearDown() {
+    }
+    
+    /** simple test case
+     */
+    public void testSimpleTestCase() {
+    }
+
+    /** test case with golden file
+     */
+    public void testGoldenTestCase() {
+        PrintStream ref = getRef();
+
+        // place test case body here
+            
+        compareReferenceFiles();
+    }
+
+    /** Use for internal test execution inside IDE
+     * @param args command line arguments
+     */
+    public static void main(java.lang.String[] args) {
+        junit.textui.TestRunner.run(suite());
+    }
+}

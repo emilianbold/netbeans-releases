@@ -87,22 +87,28 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>
         <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.testtools.wizards.TestWorkspaceWizardIterator.singleton"/>
       </file>
-      <file name="qa-functional" url="templates/cfg-qa-functional_xml">
+      <file name="build-.xml" url="templates/build-.xml.template">
+      </file>
+      <file name="cfg-.xml" url="templates/cfg-.xml.template">
+      </file>
+      <file name="qa-functional" url="templates/qa-functional.group.template">
         <attr name="template" boolvalue="true"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>
         <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.testtools.wizards.TestTypeWizardIterator.singleton"/>
+        <attr name="templatepattern" stringvalue="{0}{1}"/>
+        <attr name="usepattern" boolvalue="true"/>
       </file>
-      <file name="simpleTest.java" url="templates/simpleTest_java">
+      <file name="simpleTest.java" url="templates/simpleTest.java.template">
         <attr name="template" boolvalue="true"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>
         <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.testtools.wizards.TestSuiteWizardIterator.singleton"/>
       </file>
-      <file name="jemmyTest.java" url="templates/jemmyTest_java">
+      <file name="jemmyTest.java" url="templates/jemmyTest.java.template">
         <attr name="template" boolvalue="true"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>
         <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.testtools.wizards.TestSuiteWizardIterator.singleton"/>
       </file>
-      <file name="jellyTest.java" url="templates/jellyTest_java">
+      <file name="jellyTest.java" url="templates/jellyTest.java.template">
         <attr name="template" boolvalue="true"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>
         <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.testtools.wizards.TestSuiteWizardIterator.singleton"/>

@@ -1,0 +1,114 @@
+/*
+ * __NAME__.java
+ *
+ * Created on __DATE__, __TIME__
+ */
+
+package Templates.TestTools;
+
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+
+import junit.framework.*;
+import org.netbeans.junit.*;
+
+import org.netbeans.jemmy.*;
+import org.netbeans.jemmy.operators.*;
+import org.netbeans.jemmy.util.PNGEncoder;
+import org.netbeans.test.oo.gui.jam.*;
+import org.netbeans.test.oo.gui.jello.*;
+import org.netbeans.test.oo.gui.jelly.*;
+
+/** JUnit test suite with Jemmy support
+ *
+ * @author __USER__
+ * @version 1.0
+ */
+public class jellyTest extends NbTestCase {
+    
+    /** screen capture feature in case of failure is enabled by default
+     */
+    public static boolean captureScreen = !Boolean.getBoolean("jemmy.disable.screen.capture");
+    
+    /** constructor required by JUnit
+     * @param testName method name to be used as testcase
+     */
+    public jellyTest(String testName) {
+        super(testName);
+    }
+    
+    /** method used for explicit testsuite definition
+     */
+    public static junit.framework.Test suite() {
+    }
+    
+    
+    /** method called before each testcase
+     */
+    protected void setUp() throws IOException {
+        JellyProperties.setJemmyDebugTimeouts();
+        PrintWriter log=new PrintWriter(getLog());
+        JellyProperties.setJemmyOutput(log, log);
+        JellyProperties.setJellyOutput(log, log);
+        JamUtilities.waitEventQueueEmpty(2000);
+    }
+    
+    /** method called after each testcase<br>
+     * resets Jemmy WaitComponentTimeout
+     */
+    protected void tearDown() {
+        JemmyProperties.setCurrentOutput(TestOut.getNullOutput());
+    }
+    
+    void fail(Exception e) {
+        e.printStackTrace(getLog());
+        if (captureScreen) {
+            try {
+                PNGEncoder.captureScreen(getWorkDirPath()+"/screen.png");
+            } catch (IOException ioe) {}
+        }
+        throw new AssertionFailedExceptionError(e);
+    }
+    
+    /** simple test case
+     */
+    public void testSimpleTestCase() {
+        try {
+
+            // place test case body here
+            
+        } catch (JemmyException e1) {
+            fail(e1);
+        } catch (JellyException e2) {
+            fail(e2);
+        } catch (JamRuntimeException e3) {
+            fail(e3);
+        }
+    }
+
+    /** test case with golden file
+     */
+    public void testGoldenTestCase() {
+        try {
+            PrintStream ref = getRef();
+
+            // place test case body here
+            
+            compareReferenceFiles();
+        } catch (JemmyException e1) {
+            fail(e1);
+        } catch (JellyException e2) {
+            fail(e2);
+        } catch (JamRuntimeException e3) {
+            fail(e3);
+        }
+    }
+
+    /** Use for internal test execution inside IDE
+     * @param args command line arguments
+     */
+    public static void main(java.lang.String[] args) {
+        junit.textui.TestRunner.run(suite());
+    }
+}
