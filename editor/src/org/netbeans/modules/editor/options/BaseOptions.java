@@ -191,6 +191,11 @@ public class BaseOptions extends OptionSupport {
         createMIMENode(typeName);
         
     }
+
+    public static BaseOptions getOptions(Class kitClass) {
+        return (BaseOptions)kitClass2Options.get(kitClass);
+    }
+    
     
     /** Gets MIMEOptionNode that belongs to this bean */
     public MIMEOptionNode getMimeNode(){

@@ -54,7 +54,7 @@ public class OptionSupport extends SystemOption {
     
     private transient SettingsInitializer settingsInitializer;
     
-    private static final HashMap kitClass2Type = new HashMap();
+    static final HashMap kitClass2Options = new HashMap();
     
 
 
@@ -68,7 +68,7 @@ public class OptionSupport extends SystemOption {
         this.kitClass = kitClass;
         this.typeName = typeName;
         initializerValuesMap = new HashMap();
-        kitClass2Type.put(kitClass, typeName);
+        kitClass2Options.put(kitClass, this);
     }
 
     public Class getKitClass() {
@@ -78,9 +78,12 @@ public class OptionSupport extends SystemOption {
     public String getTypeName() {
         return typeName;
     }
-    
+
     public static String getTypeName(Class kitClass) {
-        return (String)kitClass2Type.get(kitClass);
+        if (kitClass2Options.get(kitClass) != null)
+            return ((OptionSupport)kitClass2Options.get(kitClass)).getTypeName();
+        else
+            return "";  // NOI18N
     }
 
     public String displayName() {

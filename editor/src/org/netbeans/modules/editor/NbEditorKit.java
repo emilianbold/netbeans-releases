@@ -48,6 +48,7 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.editor.Annotations;
 import org.netbeans.editor.BaseTextUI;
 import org.netbeans.modules.editor.options.AllOptionsFolder;
+import org.netbeans.modules.editor.options.BaseOptions;
 
 /**
 * Java editor kit with appropriate document
@@ -80,7 +81,8 @@ public class NbEditorKit extends ExtKit {
                                        new NbUndoAction(),
                                        new NbRedoAction(),
                                        new NbToggleBookmarkAction(),
-                                       new NbGotoNextBookmarkAction(BaseKit.gotoNextBookmarkAction, false)
+                                       new NbGotoNextBookmarkAction(BaseKit.gotoNextBookmarkAction, false),
+                                       new NbToggleLineNumbersAction()
                                    };
         return TextAction.augmentList(super.createActions(), nbEditorActions);
     }
@@ -332,6 +334,26 @@ public class NbEditorKit extends ExtKit {
             ((Line)anno.getAttachedAnnotatable()).show(Line.SHOW_GOTO);
         }
     }
+
+    /** Switch visibility of line numbers in editor */
+    public class NbToggleLineNumbersAction extends ActionFactory.ToggleLineNumbersAction {
+
+        private BaseOptions bo;
+        
+        public NbToggleLineNumbersAction() {
+            bo = BaseOptions.getOptions(NbEditorKit.this.getClass());
+        }
+        
+        protected boolean isLineNumbersVisible() {
+            return bo.getLineNumberVisible();
+        }
+        
+        protected void toggleLineNumbers() {
+            bo.setLineNumberVisible(!isLineNumbersVisible());
+        }
+        
+    }
+
     
     /** Annotation implementation for bookmarks */
     private static class BookmarkAnnotation extends Annotation {
