@@ -459,6 +459,11 @@ public final class LoaderPoolNode extends AbstractNode {
             Exception t = null;
             try {
                 DataLoader loader = (DataLoader)obj.get ();
+                if (loader == null) {
+                    // loader that wishes to be skipped (right now WSLoader from
+                    // issue 38658)
+                    continue;
+                }
                 Class clazz = loader.getClass();
                 if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log("reading modified " + clazz.getName());
                 l.add (loader);
