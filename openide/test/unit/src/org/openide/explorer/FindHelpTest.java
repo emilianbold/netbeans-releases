@@ -24,12 +24,18 @@ import java.awt.BorderLayout;
 import org.openide.explorer.view.BeanTreeView;
 import javax.swing.JLabel;
 import org.openide.util.HelpCtx;
+import org.openide.util.actions.ActionsInfraHid;
 
 /** Test finding help IDs on explorers.
  * @author Jesse Glick
  * @see #14701
  */
 public class FindHelpTest extends NbTestCase {
+    
+    static {
+        // Do not want to rely on core-windows.jar at all. Use a dummy WindowManager impl.
+        System.setProperty("org.openide.util.Lookup", ActionsInfraHid.UsefulLookup.class.getName());
+    }
     
     public FindHelpTest(String name) {
         super(name);
