@@ -32,7 +32,7 @@ public class CloneViewAction extends Action {
     private static final String menuPath = windowItem
                                             + "|"
                                             + Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle", 
-                                                                      "CloneWindowAction");
+                                                                      "CTL_CloneDocumentAction");
 
     /** "Clone Document" popup menu item. */
     private static final String popupPath = Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle",

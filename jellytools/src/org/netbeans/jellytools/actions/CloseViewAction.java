@@ -34,7 +34,7 @@ public class CloseViewAction extends Action {
     /** "Windows|Close Window" main menu item */
     private static final String menuPath = windowItem+"|"+
                             Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle",
-                                                    "CloseWindowAction");
+                                                    "CTL_CloseWindowAction");
     private static final Shortcut shortcut = new Shortcut(KeyEvent.VK_F4, KeyEvent.CTRL_MASK);
     
     /** Create new CloseViewAction instance. */
