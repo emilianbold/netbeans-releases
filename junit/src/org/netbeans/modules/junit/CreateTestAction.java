@@ -29,9 +29,9 @@ import org.openide.filesystems.*;
 import org.openide.filesystems.FileSystem; // override java.io.FileSystem
 import org.openide.cookies.*;
 
-import java.lang.reflect.*;
 import java.util.*;
 import java.io.*;
+import java.text.MessageFormat;
 
 /** Action sensitive to some cookie that does something useful.
  *
@@ -86,19 +86,12 @@ public class CreateTestAction extends CookieAction {
         return MODE_ANY;    // allow creation of tests for multiple selected nodes (classes, packages)
     }
     
-    /**
-     * Creates a progress dialog.
-     *
-     * @return  created progress dialog
-     */
-    private JUnitProgress createProgressDialog() {
-        String msg = NbBundle.getMessage(
-                JUnitProgress.class,
-                "LBL_generator_progress_title");                        //NOI18N
-        JUnitProgress progress = new JUnitProgress(msg);
-        return progress;
+    public boolean asynchronous() {
+        return true; // yes, this action should run asynchronously
+        // would be better to rewrite it to synchronous (running in AWT thread),
+        // just replanning test generation to RequestProcessor
     }
-    
+
     protected void performAction(Node[] nodes) {
         FileSystem      fsTest = null;
         DataObject      doTestTempl = null;
@@ -142,8 +135,8 @@ public class CreateTestAction extends CookieAction {
         TestCreator.initialize();
         
         String msg;
-        JUnitProgress progress = createProgressDialog();
-        progress.showMe(true);
+        ProgressIndicator progress = new ProgressIndicator();
+        progress.show();
         
         msg = NbBundle.getMessage(
                 CreateTestAction.class,
@@ -154,7 +147,7 @@ public class CreateTestAction extends CookieAction {
             for(int nodeIdx = 0; nodeIdx < nodes.length; nodeIdx++) {
                 if (!hasParentAmongNodes(nodes, nodeIdx)) {
                     if (null != (fo = TestUtil.getFileObjectFromNode(nodes[nodeIdx])))
-                        createTest(fsTest, fo, doTestTempl, doSuiteTempl, null);
+                        createTest(fsTest, fo, doTestTempl, doSuiteTempl, null, progress);
                     else {
                         // @@ log - the node has no file associated
                         // System.out.println("@@ log - the node has no file associated");
@@ -174,7 +167,7 @@ public class CreateTestAction extends CookieAction {
             progress.displayStatusText(msg);
         }
         finally {
-            progress.hideMe();
+            progress.hide();
         }
     }
     
@@ -182,13 +175,16 @@ public class CreateTestAction extends CookieAction {
     private final int NODETYPE_UNKNOWN  = 0;
     private final int NODETYPE_CLASS    = 1;
     private final int NODETYPE_PACKAGE  = 2;
-    private static final String msgCreating = NbBundle.getMessage(CreateTestAction.class, "LBL_generator_status_creating");
-    private static final String msgScanning = NbBundle.getMessage(CreateTestAction.class, "LBL_generator_status_scanning");
-    private static final String msgIgnoring = NbBundle.getMessage(CreateTestAction.class, "LBL_generator_status_ignoring");
     
     private class CreateTestCanceledException extends Exception {}
     
-    private void createSuiteTest(FileSystem fsTest, DataFolder folder, LinkedList suite, DataObject doSuiteT, LinkedList parentSuite) {
+    private void createSuiteTest(FileSystem fsTest,
+                                 DataFolder folder,
+                                 LinkedList suite,
+                                 DataObject doSuiteT,
+                                 LinkedList parentSuite,
+                                 ProgressIndicator progress)
+    {
         ClassElement[]      classTargets;
         DataObject          doTarget;
         FileObject          fo;
@@ -200,10 +196,9 @@ public class CreateTestAction extends CookieAction {
             // generate the test suite for all listed test classes
             classTargets = TestUtil.getAllClassElementsFromDataObject(doTarget);
             
-            JUnitProgress progress = createProgressDialog();
             for (int i=0; i < classTargets.length; i++) {
                 ClassElement classTarget = classTargets[i];
-                progress.setMessage(msgCreating + classTarget.getName().getFullName() + " ...");
+                progress.setMessage(getCreatingMsg(classTarget.getName().getFullName()), false);
                 
                 TestCreator.createTestSuite(suite, fo.getPackageName('.'), classTarget);
                 save(doTarget);
@@ -220,14 +215,20 @@ public class CreateTestAction extends CookieAction {
         }
     }
     
-    private void createTest(FileSystem fsTest, FileObject foSource, DataObject doTestT, DataObject doSuiteT, LinkedList parentSuite) throws CreateTestCanceledException {
-        JUnitProgress progress = createProgressDialog();
+    private void createTest(FileSystem fsTest,
+                            FileObject foSource,
+                            DataObject doTestT,
+                            DataObject doSuiteT,
+                            LinkedList parentSuite,
+                            ProgressIndicator progress)
+        throws CreateTestCanceledException
+    {
         if (foSource.isFolder()) {
             // recurse of subfolders
             FileObject  childs[] = foSource.getChildren();
             LinkedList  mySuite = new LinkedList();
             
-            progress.setMessage(msgScanning + foSource.getName() + " ...");
+            progress.setMessage(getScanningMsg(foSource.getName()), false);
             for( int i = 0; i < childs.length; i++) {
                 boolean recurse;
                 
@@ -239,12 +240,12 @@ public class CreateTestAction extends CookieAction {
                 }
                 
                 if (recurse) {
-                    createTest(fsTest, childs[i], doTestT, doSuiteT, mySuite);
+                    createTest(fsTest, childs[i], doTestT, doSuiteT, mySuite, progress);
                 }
             }
             
             if ((0 < mySuite.size())&(JUnitSettings.getDefault().isGenerateSuiteClasses())) {
-                createSuiteTest(fsTest, DataFolder.findFolder(foSource), mySuite, doSuiteT, parentSuite);
+                createSuiteTest(fsTest, DataFolder.findFolder(foSource), mySuite, doSuiteT, parentSuite, progress);
             }
         }
         else {
@@ -265,7 +266,7 @@ public class CreateTestAction extends CookieAction {
                             // generate the test of current node
                             classTarget = TestUtil.getClassElementFromDataObject(doTarget);
                             
-                            progress.setMessage(msgCreating + classTarget.getName().getFullName() + " ...");
+                            progress.setMessage(getCreatingMsg(classTarget.getName().getFullName()), false);
                             
                             TestCreator.createTestClass(classSource, classTarget);
                             save(doTarget);
@@ -277,7 +278,7 @@ public class CreateTestAction extends CookieAction {
                             }
                         }
                         else
-                            progress.setMessage(msgIgnoring + classSource.getName().getFullName() + " ...");
+                            progress.setMessage(getIgnoringMsg(classSource.getName().getFullName()), false);
                     }
                     else {
                         // @@ log - the tested class file can't be parsed
@@ -345,5 +346,23 @@ public class CreateTestAction extends CookieAction {
         SaveCookie sc = (SaveCookie) dO.getCookie(SaveCookie.class);
         if (null != sc)
             sc.save();
+    }
+
+    private static String getCreatingMsg(String className) {
+        String fmt = NbBundle.getMessage(CreateTestAction.class,
+                                         "FMT_generator_status_creating"); // NOI18N
+        return MessageFormat.format(fmt, new Object[] { className });
+    }
+
+    private static String getScanningMsg(String sourceName) {
+        String fmt = NbBundle.getMessage(CreateTestAction.class,
+                                         "FMT_generator_status_scanning"); // NOI18N
+        return MessageFormat.format(fmt, new Object[] { sourceName });
+    }
+
+    private static String getIgnoringMsg(String sourceName) {
+        String fmt = NbBundle.getMessage(CreateTestAction.class,
+                                         "FMT_generator_status_ignoring"); // NOI18N
+        return MessageFormat.format(fmt, new Object[] { sourceName });
     }
 }
