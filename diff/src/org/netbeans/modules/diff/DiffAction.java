@@ -18,7 +18,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.SwingUtilities;
@@ -57,9 +56,6 @@ import org.openide.filesystems.FileUtil;
  * @author  Martin Entlicher
  */
 public class DiffAction extends NodeAction {
-    
-    /** The FileObject attribute that defines the encoding of the FileObject content. */
-    private static final String CHAR_SET_ATTRIBUTE = "Content-Encoding"; // NOI18N
 
     /** Creates new DiffAction */
     public DiffAction() {
@@ -139,30 +135,9 @@ public class DiffAction extends NodeAction {
         }
         Component tp;
         try {
-            Object encoding1 = fo1.getAttribute(CHAR_SET_ATTRIBUTE);
-            Object encoding2 = fo2.getAttribute(CHAR_SET_ATTRIBUTE);
-            Reader r1 = null;
-            if (encoding1 != null) {
-                try {
-                    r1 = new InputStreamReader(fo1.getInputStream(), encoding1.toString());
-                } catch (UnsupportedEncodingException ueex) {
-                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Unknown encoding attribute '"+encoding1+"' of "+fo1);
-                }
-            }
-            if (r1 == null) {
-                r1 = new InputStreamReader(fo1.getInputStream());
-            }
-            Reader r2 = null;
-            if (encoding2 != null) {
-                try {
-                    r2 = new InputStreamReader(fo2.getInputStream(), encoding2.toString());
-                } catch (UnsupportedEncodingException ueex) {
-                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Unknown encoding attribute '"+encoding2+"' of "+fo2);
-                }
-            }
-            if (r2 == null) {
-                r2 = new InputStreamReader(fo2.getInputStream());
-            }
+            EncodedReaderFactory rf = EncodedReaderFactory.getDefault();
+            Reader r1 = rf.getReader(fo1, rf.getEncoding(fo1));
+            Reader r2 = rf.getReader(fo2, rf.getEncoding(fo2));
             tp = diff.createDiff(fo1.getNameExt(), FileUtil.getFileDisplayName(fo1),
                                  r1,
                                  fo2.getNameExt(), FileUtil.getFileDisplayName(fo2),
