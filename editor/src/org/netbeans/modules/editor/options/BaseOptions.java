@@ -201,15 +201,7 @@ public class BaseOptions extends OptionSupport {
     }
 
     public static BaseOptions getOptions(Class kitClass) {
-        BaseOptions option = (BaseOptions)kitClass2Options.get(kitClass);
-        
-        if (option == null) {
-            AllOptionsFolder.getDefault().loadMIMEOption(kitClass);
-            
-            option = (BaseOptions)kitClass2Options.get(kitClass);
-        }
-        
-        return option;
+        return (BaseOptions)kitClass2Options.get(kitClass);
     }
     
     
