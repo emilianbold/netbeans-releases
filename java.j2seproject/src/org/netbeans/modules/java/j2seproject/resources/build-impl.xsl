@@ -667,15 +667,27 @@ is divided into following sections:
                 <xsl:attribute name="description">Run unit tests.</xsl:attribute>
             </target>
 
+            <target name="pre-test-run-single">
+                <xsl:attribute name="if">have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <mkdir dir="${{build.test.results.dir}}"/>
+            </target>
+
             <target name="do-test-run-single">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
-                <xsl:attribute name="depends">init,compile-test,pre-test-run</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test,pre-test-run-single</xsl:attribute>
                 <fail unless="test.includes">Must select some files in the IDE or set test.includes</fail>
                 <j2seproject:junit xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1" includes="${{test.includes}}"/>
             </target>
 
+            <target name="post-test-run-single">
+                <xsl:attribute name="if">have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test,pre-test-run-single,do-test-run-single</xsl:attribute>
+                <fail if="tests.failed">Some tests failed; see details above.</fail>
+            </target>
+
             <target name="test-single">
-                <xsl:attribute name="depends">init,compile-test,pre-test-run,do-test-run-single,post-test-run</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test,pre-test-run-single,do-test-run-single,post-test-run-single</xsl:attribute>
                 <xsl:attribute name="description">Run single unit test.</xsl:attribute>
             </target>
 
