@@ -234,7 +234,7 @@
 		<tocitem text="About Creating and Editing Web Services" target="tbd" />
 	        <tocitem text="Creating a Project for a Web Service" target="create_ws_project" />
 		<tocitem text="Implementing an Existing WSDL File" target="create_ws_fromwsdl" />
-		<tocitem text="Exposing Existing Code" target="create_ws_fromcode" />
+		<tocitem text="Exposing Existing Code as a Web Service" target="create_ws_fromcode" />
 		<tocitem text="Creating a Web Service from Scratch" target="create_ws" />
     	        <tocitem text="Adding a Web Service Operation" target="add_ws_operation" />
 	        <tocitem text="Adding a SOAP Message Handler" target="add_soap_message" />
