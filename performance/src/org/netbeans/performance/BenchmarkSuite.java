@@ -101,6 +101,8 @@ public final class BenchmarkSuite implements Test {
     
     /** Run this suite */
     public void run(TestResult result) {
+        Reporter reporter = new XMLReporter();
+        Benchmark.setReporter( reporter );
         loadData(result);
         
         for (Iterator iter = benchmarks.iterator(); iter.hasNext(); ) {
@@ -109,6 +111,7 @@ public final class BenchmarkSuite implements Test {
         
         storeData(result);
         tearDownData(result);
+        reporter.flush();
     }
     
     //----------------- impl methods -------------------
