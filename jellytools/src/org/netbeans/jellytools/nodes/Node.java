@@ -319,6 +319,43 @@ public class Node {
         return o.findPath(new Node.StringArraySubPathChooser(treePath, o.parseString(subPath, delimiter), indexInt, o.getDefaultStringComparator()));
     }
     
+    /** Expands current node to see children */    
+    public void expand() {
+        treeOperator.expandPath(treePath);
+        waitExpanded();
+    }
+    
+    /** Collapse current node to hide children */    
+    public void collapse() {
+        treeOperator.collapsePath(treePath);
+        waitCollapsed();
+    }
+    
+    /** Waits for node to be expanded */    
+    public void waitExpanded() {
+        treeOperator.waitExpanded(treePath);
+    }
+    
+    /** Waits for node to be collapsed */    
+    public void waitCollapsed() {
+        treeOperator.collapsePath(treePath);
+        treeOperator.waitCollapsed(treePath);
+    }
+    
+    /** Informs if current node is expanded
+     * @return boolean true when node is expanded
+     */    
+    public boolean isExpanded() {
+        return treeOperator.isExpanded(treePath);
+    }
+    
+    /** Informs if current node is collapsed
+     * @return boolean true when node is collapsed
+     */    
+    public boolean isCollapsed() {
+        return treeOperator.isCollapsed(treePath);
+    }
+        
 /*    protected Action[] getActions() {
         return null;
     }
