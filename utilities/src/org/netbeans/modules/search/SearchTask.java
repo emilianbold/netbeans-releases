@@ -19,11 +19,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import org.openide.nodes.Node;
-import org.openide.nodes.NodeAcceptor;
 import org.openide.util.Task;
 import org.openide.util.WeakListeners;
 import org.openidex.search.SearchGroup;
-import org.openidex.search.SearchType;
 
 
 /**
