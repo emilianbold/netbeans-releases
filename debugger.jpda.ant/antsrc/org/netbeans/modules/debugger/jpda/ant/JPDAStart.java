@@ -16,15 +16,30 @@ package org.netbeans.modules.debugger.jpda.ant;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
+import java.beans.PropertyChangeEvent;
+
+import com.sun.jdi.Bootstrap;
+import com.sun.jdi.connect.ListeningConnector;
+import com.sun.jdi.connect.Transport;
+import com.sun.jdi.connect.Connector;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.Path;
+
+import org.openide.ErrorManager;
+import org.openide.util.RequestProcessor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
@@ -32,24 +47,11 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-
-import org.openide.ErrorManager;
-import org.openide.util.RequestProcessor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-
-import com.sun.jdi.Bootstrap;
-import com.sun.jdi.connect.ListeningConnector;
-import com.sun.jdi.connect.Transport;
-import com.sun.jdi.connect.Connector;
-import java.beans.PropertyChangeEvent;
 import org.netbeans.api.debugger.DebuggerEngine;
-
-
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
-
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.java.platform.JavaPlatform;
+
 
 /**
  * Ant task to start the NetBeans JPDA debugger in listening mode.

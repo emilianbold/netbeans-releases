@@ -16,9 +16,12 @@ package org.netbeans.modules.debugger.jpda.ant;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.Path;
+
+import org.openide.util.RequestProcessor;
+
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.openide.util.RequestProcessor;
+
 
 /**
  * Ant task to attach the NetBeans JPDA debugger to a remote process.

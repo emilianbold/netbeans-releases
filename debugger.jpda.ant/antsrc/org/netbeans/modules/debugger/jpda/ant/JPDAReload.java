@@ -30,11 +30,18 @@ import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.util.FileUtils;
 
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.debugger.jpda.EditorContext;
 
 
 /**
@@ -81,7 +88,9 @@ public class JPDAReload extends Task {
         
         FileUtils fileUtils = FileUtils.newFileUtils ();
         Map map = new HashMap ();
-        
+        EditorContext editorContext = (EditorContext) DebuggerManager.
+            getDebuggerManager ().lookupFirst (null, EditorContext.class);
+
         Iterator it = filesets.iterator ();
         while (it.hasNext ()) {
             FileSet fs = (FileSet) it.next ();
@@ -95,6 +104,8 @@ public class JPDAReload extends Task {
                     FileObject fo = FileUtil.toFileObject(f);
                     if (fo != null) {
                         try {
+                            String url = classToSourceURL (fo);
+                            editorContext.updateTimeStamp (debugger, url);
                             InputStream is = fo.getInputStream ();
                             long fileSize = fo.getSize ();
                             byte[] bytecode = new byte [(int) fileSize];
@@ -121,5 +132,24 @@ public class JPDAReload extends Task {
             return;
         }
         debugger.fixClasses (map);
+    }
+    
+    private String classToSourceURL (FileObject fo) {
+        try {
+            ClassPath cp = ClassPath.getClassPath (fo, ClassPath.EXECUTE);
+            FileObject root = cp.findOwnerRoot (fo);
+            String resourceName = cp.getResourceName (fo, '/', false);
+            int i = resourceName.indexOf ('$');
+            if (i > 0)
+                resourceName = resourceName.substring (0, i);
+            FileObject[] sRoots = SourceForBinaryQuery.findSourceRoots 
+                (root.getURL ()).getRoots ();
+            ClassPath sourcePath = ClassPathSupport.createClassPath (sRoots);
+            FileObject rfo = sourcePath.findResource (resourceName + ".java");
+            return rfo.getURL ().toExternalForm ();
+        } catch (FileStateInvalidException ex) {
+            ex.printStackTrace ();
+            return null;
+        }
     }
 }

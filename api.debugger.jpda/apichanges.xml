@@ -307,6 +307,22 @@ Microsystems, Inc. All Rights Reserved.
             </p>
         </description>
     </change>
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>"EditorContext.updateTimeStamp(timeStamp,url)" method has been added.</summary>
+        <date day="13" month="10" year="2004"/>
+        <author login="jjancura"/>
+        <compatibility>
+            <p>
+                Incompatile change.
+            </p>
+        </compatibility>
+        <description>
+            <p>
+                This method is needed to correctly implement fix & continue action.
+            </p>
+        </description>
+    </change>
 
 </changes>
 

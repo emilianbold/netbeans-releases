@@ -72,6 +72,14 @@ public abstract class EditorContext {
      * @param timeStamp a time stamp to be disposed
      */
     public abstract void disposeTimeStamp (Object timeStamp);
+    
+    /**
+     * Updates timeStamp for gived url.
+     *
+     * @param timeStamp time stamp to be updated
+     * @param url an url
+     */
+    public abstract void updateTimeStamp (Object timeStamp, String url);
 
     /**
      * Adds annotation to given url on given line.

@@ -392,6 +392,11 @@ public class EditorContextBridge {
             cp1.disposeTimeStamp (timeStamp);
             cp2.disposeTimeStamp (timeStamp);
         }
+        
+        public void updateTimeStamp (Object timeStamp, String url) {
+            cp1.updateTimeStamp (timeStamp, url);
+            cp2.updateTimeStamp (timeStamp, url);
+        }
 
         public String getCurrentClassName () {
             String s = cp1.getCurrentClassName ();
