@@ -72,18 +72,22 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
      * @see OpenCookie#open
      */
     public void open() {
-        // set status text "Opening Form..."
-        TopManager.getDefault().setStatusText(
-            java.text.MessageFormat.format(
-                FormEditor.getFormBundle().getString("FMT_OpeningForm"), // NOI18N
-                new Object[] { formObject.getName() }));
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                // set status text "Opening Form..."
+                TopManager.getDefault().setStatusText(
+                    java.text.MessageFormat.format(
+                        FormEditor.getFormBundle().getString("FMT_OpeningForm"), // NOI18N
+                        new Object[] { formObject.getName() }));
 
-        // open form
-        if (loadForm()) openGUI();
-        super.open(); // java is opened even if form failed
+                if (loadForm())
+                    openGUI();
+                FormEditorSupport.super.open();
 
-        // clear status text
-        TopManager.getDefault().setStatusText(""); // NOI18N
+                // clear status text
+                TopManager.getDefault().setStatusText(""); // NOI18N
+            }
+        });
     }
 
     /** Main loading method - loads form data from file.
@@ -204,15 +208,17 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
     // ------------
     // loading
 
-    /** Alternate open method. Returns true if form successfully loaded.
-     */
-    boolean openForm(boolean openGui) {
-        boolean loaded = loadForm();
-        if (loaded) {
-            if (openGui) openGUI();
-            super.open(); // java is opened only if form succeeded
-        }
-        return loaded;
+    private void openForm(final boolean openGui) {
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                boolean loaded = loadForm();
+                if (loaded) {
+                    if (openGui)
+                        openGUI();
+                    FormEditorSupport.super.open();
+                }
+            }
+        });
     }
 
     /** Finds PersistenceManager that can load and save the form.
@@ -339,16 +345,19 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
 
     protected void notifyClose() {
         super.notifyClose();
-        if (formLoaded) closeForm();
+        if (formLoaded)
+            closeForm();
     }
 
     protected org.openide.util.Task reloadDocumentTask() {
         boolean reloadForm = formLoaded;
-        if (formLoaded) closeForm();
+        if (formLoaded)
+            closeForm();
 
         org.openide.util.Task docLoadTask = super.reloadDocumentTask();
 
-        if (reloadForm) openForm(true);
+        if (reloadForm)
+            openForm(true);
 
         return docLoadTask;
     }
@@ -360,7 +369,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
 
         // remove nodes hierarchy
         formObject.getNodeDelegate().getChildren()
-                .remove(new RADComponentNode [] { formRootNode });
+            .remove(new RADComponentNode [] { formRootNode });
 
         // remove listeners
         detachWorkspacesListener();
@@ -515,10 +524,16 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
     }
 
     public void gotoForm() {
-        if (!formLoaded) openForm(true);
-        else {
-            formModel.getFormDesigner().open();
-            formModel.getFormDesigner().requestFocus();
-        }
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+
+                if (!formLoaded)
+                    openForm(true);
+                else {
+                    formModel.getFormDesigner().open();
+                    formModel.getFormDesigner().requestFocus();
+                }
+            }
+        });
     }
 }

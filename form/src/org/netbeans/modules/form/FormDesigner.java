@@ -126,6 +126,9 @@ public class FormDesigner extends TopComponent
     }
 
     public void open(Workspace workspace) {
+        if (formModel == null)
+            return;
+        
         if (workspace == null)
             workspace = TopManager.getDefault().getWindowManager().getCurrentWorkspace();
 

@@ -85,28 +85,35 @@ public class GandalfPersistenceManager extends PersistenceManager {
     private org.w3c.dom.Document topDocument =
         org.openide.xml.XMLUtil.createDocument("topDocument",null,null,null); // NOI18N
 
-    /** A method which allows the persistence manager to provide infotrmation on whether
-     * is is capable to store info about advanced features provided from Developer 3.0 
+    /** A method which allows the persistence manager to provide infotrmation
+     * on whether is is capable to store info about advanced features provided
+     * from Developer 3.0
      * - all persistence managers except the one providing backward compatibility with 
      * Developer 2.X should return true from this method.
-     * @return true if this PersistenceManager is capable to store advanced form features, false otherwise
+     * @return true if this PersistenceManager is capable to store advanced
+     * form features, false otherwise
      */
     public boolean supportsAdvancedFeatures() {
         return true;
     }
 
-    /** A method which allows the persistence manager to check whether it can read
-     * given form format.
-     * @return true if this PersistenceManager can load form stored in the specified form, false otherwise
+    /** A method which allows the persistence manager to check whether it can
+     * read given form format.
+     * @return true if this PersistenceManager can load form stored in the
+     * specified form, false otherwise
      * @exception IOException if any problem occured when accessing the form
      */
     public boolean canLoadForm(FormDataObject formObject) throws IOException {
         FileObject formFile = formObject.getFormEntry().getFile();
         try {
             org.w3c.dom.Document doc = org.openide.loaders.XMLDataObject.parse(formFile.getURL());
-        } catch (IOException e) { // [PENDING - just test whether it is an XML file and in this case return false
+        } catch (IOException e) {
+            if (System.getProperty("netbeans.debug.exceptions") != null) // NOI18N
+                e.printStackTrace();
             return false;
-        } catch (org.xml.sax.SAXException e) { // [PENDING - just test whether it is an XML file and in this case return false
+        } catch (org.xml.sax.SAXException e) {
+            if (System.getProperty("netbeans.debug.exceptions") != null) // NOI18N
+                e.printStackTrace();
             return false;
         }
         return true;
@@ -247,11 +254,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
         } catch (Exception e) {
             if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
                 e.printStackTrace();
-            throw new IOException(java.text.MessageFormat.format(
-                FormEditor.getFormBundle().getString("FMT_ERR_FormInfoNotFound"),
-                new String[] { infoClass }
-                )
-                                  );
+            throw new IOException(
+                java.text.MessageFormat.format(
+                    FormEditor.getFormBundle().getString("FMT_ERR_FormInfoNotFound"),
+                    new String[] { infoClass }
+                    )
+                );
         }
 
         //XXX RADForm radForm = new RADForm(formInfo);
