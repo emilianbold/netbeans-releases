@@ -25,10 +25,6 @@ Microsystems, Inc. All Rights Reserved.
       <module name="openidex" testtypes="unit" attributes="stable"/>
   </config>
   
-  <config name="config-validation">
-      <module name="openide" testtypes="validation" attributes="stable,code"/>
-  </config>
-  
   <!-- QA TESTS -->
   <!-- ======== -->
   
@@ -44,6 +40,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="editor" testtypes="qa-functional" attributes="stable"/>
       <module name="ant" testtypes="qa-functional" attributes="stable"/>
       <module name="projects" testtypes="qa-functional" attributes="stable"/>
+      <module name="beans" testtypes="qa-func" attributes="stable"/>
   </config>
   
   <!-- QA functional tests for FFJ CE -->
@@ -52,11 +49,6 @@ Microsystems, Inc. All Rights Reserved.
       <module name="i18n" testtypes="qa-functional" attributes="stable"/>
       <module name="ant" testtypes="qa-functional" attributes="stable"/>      
       <module name="projects" testtypes="qa-functional" attributes="stable"/>
-  </config>
-
-  <!-- Deprecated, only for compatibility -->
-  <config name="qa-pilot">
-      <module name="debuggercore" testtypes="qa-functional" attributes="stable"/>
   </config>
 
 </testconfig>
