@@ -199,6 +199,7 @@ build_package () {
     pkgproto ${SOURCE_DIR}/netbeans/etc/netbeans.conf=/etc/netbeans.conf >> proto
     pkgproto ${GNOME_DIR}/NetBeans-IDE-4.0.desktop=/usr/share/applications/NetBeans-IDE-4.0.desktop >> proto
     pkgproto ${GNOME_DIR}/nb48x48.png=/usr/share/pixmaps/nb48x48.png >> proto
+    pkgproto ${GNOME_DIR}/productid=netbeans/nb4.0/config/productid >> proto
   fi
 
   echo "i pkginfo=pkginfo" > prototype
