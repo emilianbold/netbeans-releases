@@ -45,9 +45,9 @@ public class IDESettings extends SystemOption {
   /** lastTip property name */
   public static String PROP_LAST_TIP = "lastTip";
   /** beanInfoSearchPath property name */
-//  public static String PROP_BEANINFO_SEARCH_PATH = "beanInfoSearchPath";
+  public static String PROP_BEANINFO_SEARCH_PATH = "beanInfoSearchPath";
   /** propertyEditorSearchPath property name */
-//  public static String PROP_PROPERTYEDITOR_SEARCH_PATH = "propertyEditorSearchPath";
+  public static String PROP_PROPERTYEDITOR_SEARCH_PATH = "propertyEditorSearchPath";
   /** confirmDelete property name */
   public static String PROP_CONFIRM_DELETE = "confirmDelete";
 
@@ -158,13 +158,13 @@ public class IDESettings extends SystemOption {
   }
 
   /** Getter for beanInfoSearchPath property
-   * @return The list of packages in which the BeanInfo is searched * /
+   * @return The list of packages in which the BeanInfo is searched */
   public String[] getBeanInfoSearchPath () {
     return Introspector.getBeanInfoSearchPath ();
   }
 
   /** Setter for beanInfoSearchPath property
-   * @param value The list of packages in which the BeanInfo is searched * /
+   * @param value The list of packages in which the BeanInfo is searched */
   public void setBeanInfoSearchPath (String[] value) {
     if (Utilities.compareObjects (value, Introspector.getBeanInfoSearchPath ())) return;
     String[] oldValue = Introspector.getBeanInfoSearchPath ();
@@ -174,13 +174,13 @@ public class IDESettings extends SystemOption {
   }
 
   /** Getter for propertyEditorSearchPath property
-   * @return The list of packages in which the PropertyEditor is searched * /
+   * @return The list of packages in which the PropertyEditor is searched */
   public String[] getPropertyEditorSearchPath () {
     return PropertyEditorManager.getEditorSearchPath ();
   }
 
   /** Setter for propertyEditorSearchPath property
-   * @param value The list of packages in which the PropertyEditor is searched * /
+   * @param value The list of packages in which the PropertyEditor is searched */
   public void setPropertyEditorSearchPath (String[] value) {
     if (Utilities.compareObjects (value, PropertyEditorManager.getEditorSearchPath ())) return;
     String[] oldValue = PropertyEditorManager.getEditorSearchPath ();
@@ -233,6 +233,7 @@ public class IDESettings extends SystemOption {
 
 /*
  * Log
+ *  4    Gandalf   1.3         4/8/99   Ian Formanek    Undone last change
  *  3    Gandalf   1.2         4/8/99   Ian Formanek    Removed SearchPath 
  *       properties
  *  2    Gandalf   1.1         3/26/99  Ian Formanek    Fixed use of obsoleted 

@@ -45,10 +45,10 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
                                 "getShowTipsOnStartup", "setShowTipsOnStartup"),
         new PropertyDescriptor (IDESettings.PROP_LAST_TIP, IDESettings.class,
                                 "getLastTip", "setLastTip"),
-/*        new PropertyDescriptor (IDESettings.PROP_BEANINFO_SEARCH_PATH, IDESettings.class,
+        new PropertyDescriptor (IDESettings.PROP_BEANINFO_SEARCH_PATH, IDESettings.class,
                                 "getBeanInfoSearchPath", "setBeanInfoSearchPath"),
         new PropertyDescriptor (IDESettings.PROP_PROPERTYEDITOR_SEARCH_PATH, IDESettings.class,
-                                "getPropertyEditorSearchPath", "setPropertyEditorSearchPath"), */
+                                "getPropertyEditorSearchPath", "setPropertyEditorSearchPath"),
         new PropertyDescriptor (IDESettings.PROP_CONFIRM_DELETE, IDESettings.class,
                                 "getConfirmDelete", "setConfirmDelete"),
         new PropertyDescriptor ("loadedBeans", IDESettings.class,
@@ -68,18 +68,18 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
 
       desc[3].setHidden (true);
 
-/*      desc[4].setDisplayName (Main.getString ("PROP_BEANINFO_SEARCH_PATH"));
+      desc[4].setDisplayName (Main.getString ("PROP_BEANINFO_SEARCH_PATH"));
       desc[4].setShortDescription (Main.getString ("HINT_BEANINFO_SEARCH_PATH"));
       desc[4].setExpert (true);
 
       desc[5].setDisplayName (Main.getString ("PROP_PROPERTYEDITOR_SEARCH_PATH"));
       desc[5].setShortDescription (Main.getString ("HINT_PROPERTYEDITOR_SEARCH_PATH"));
-      desc[5].setExpert (true); */
+      desc[5].setExpert (true);
 
-      desc[4].setDisplayName (Main.getString ("PROP_CONFIRM_DELETE"));
-      desc[4].setShortDescription (Main.getString ("HINT_CONFIRM_DELETE"));
+      desc[6].setDisplayName (Main.getString ("PROP_CONFIRM_DELETE"));
+      desc[6].setShortDescription (Main.getString ("HINT_CONFIRM_DELETE"));
 
-      desc[5].setHidden(true);
+      desc[7].setHidden(true);
 
     } catch (IntrospectionException ex) {
       ex.printStackTrace ();
@@ -204,6 +204,7 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
 
 /*
  * Log
+ *  4    Gandalf   1.3         4/8/99   Ian Formanek    Undone last change
  *  3    Gandalf   1.2         4/8/99   Ian Formanek    Removed SearchPath 
  *       properties
  *  2    Gandalf   1.1         1/7/99   Ian Formanek    fixed resource names
