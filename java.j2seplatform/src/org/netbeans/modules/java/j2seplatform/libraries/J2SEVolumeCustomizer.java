@@ -59,6 +59,17 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
         this.addButton.requestFocus();
     }
 
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        this.addButton.setEnabled(enabled);
+        if (this.addURLButton != null) {
+            this.addURLButton.setEnabled(enabled);
+        }
+        this.removeButton.setEnabled(enabled);
+        this.downButton.setEnabled(enabled);
+        this.upButton.setEnabled(enabled);
+    }
+
 
     private void postInitComponents () {
         this.upButton.setEnabled (false);
