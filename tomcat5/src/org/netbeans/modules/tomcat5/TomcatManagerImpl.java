@@ -16,6 +16,7 @@ package org.netbeans.modules.tomcat5;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -152,12 +153,20 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
         try {
             FileInputStream in = new FileInputStream (contextXml);
             Context ctx = Context.createGraph (in);
-            this.tmId = new TomcatModule (t, ctx.getAttributeValue ("path"));
-        } catch (java.io.FileNotFoundException fnfe) {
-            pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, fnfe.getLocalizedMessage (), StateType.FAILED));
+            this.tmId = new TomcatModule (t, ctx.getAttributeValue ("path")); //NOI18N
+            String docBaseURI = dir.getAbsoluteFile().toURI().toASCIIString();
+            String docBase = docBaseURI.substring (docBaseURI.indexOf (':') + 1);
+            if (!docBase.equals (ctx.getAttributeValue ("docBase"))) { //NOI18N
+                ctx.setAttributeValue ("docBase", docBase); //NOI18N
+                FileOutputStream fos = new FileOutputStream (contextXml);
+                ctx.write (fos);
+                fos.close ();
+            }
+            command = "deploy?config=" + contextXml.toURI ().toASCIIString () + "&war=" + docBaseURI; // NOI18N
+            cmdType = CommandType.DISTRIBUTE;
+        } catch (java.io.IOException ioex) {
+            pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, ioex.getLocalizedMessage (), StateType.FAILED));
         }
-        command = "deploy?config=" + contextXml.toURI ().toASCIIString () + "&war=" + dir.getAbsoluteFile().toURI().toASCIIString(); // NOI18N
-        cmdType = CommandType.DISTRIBUTE;
         pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, "", StateType.RUNNING));
         rp ().post (this, 0, Thread.NORM_PRIORITY);
     }
