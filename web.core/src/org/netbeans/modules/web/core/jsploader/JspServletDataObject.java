@@ -46,7 +46,7 @@ public class JspServletDataObject extends JavaDataObject {
      * Helper object that handles execution bits for us. Lazy initialized from
      * {@link #getExecDebugCookie}.
      */
-    private transient JspServletExecSupport jspServletExecSupport;
+//    private transient JspServletExecSupport jspServletExecSupport;
     
     /** New instance.
     * @param pf primary file object for this data object
@@ -78,9 +78,9 @@ public class JspServletDataObject extends JavaDataObject {
                 return servletEditor;
         }
 	// all execution-related services -> getExecSupport
-        if (c.isAssignableFrom(JspServletExecSupport.class)) {
-            return getExecDebugCookie();
-        } 
+//        if (c.isAssignableFrom(JspServletExecSupport.class)) {
+//            return getExecDebugCookie();
+//        } 
         return super.getCookie(c);
     }
 
@@ -90,19 +90,19 @@ public class JspServletDataObject extends JavaDataObject {
     /**
      * Returns or creates the exec support.
      */
-    public JspServletExecSupport getExecDebugCookie() {
-        DataObject sourceJsp = getSourceJspPage();
-        if (sourceJsp == null)
-            return null;
-        if (jspServletExecSupport == null) {
-            jspServletExecSupport = new JspServletExecSupport(sourceJsp);
-        }
-        return jspServletExecSupport;
-    }
+//    public JspServletExecSupport getExecDebugCookie() {
+//        DataObject sourceJsp = getSourceJspPage();
+//        if (sourceJsp == null)
+//            return null;
+//        if (jspServletExecSupport == null) {
+//            jspServletExecSupport = new JspServletExecSupport(sourceJsp);
+//        }
+//        return jspServletExecSupport;
+//    }
     
-    private void changeCookies() {
-        jspServletExecSupport = null;
-    }
+//    private void changeCookies() {
+//        jspServletExecSupport = null;
+//    }
 
     /** Get the name of the data object.
     * Uses the name of the source JSP
@@ -136,7 +136,7 @@ public class JspServletDataObject extends JavaDataObject {
     
     /** Sets the source JSP page for this servlet */
     public void setSourceJspPage(DataObject jspPage) throws IOException {
-        changeCookies();
+//        changeCookies();
         setSourceJspPage(getPrimaryFile(), jspPage);
         firePropertyChange(PROP_COOKIE, null, null);
     }
