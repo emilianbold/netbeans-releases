@@ -15,8 +15,8 @@
 <tocitem text="IDE Basics" >
 
   <tocitem text="Getting Started" >
-<!--    <tocitem text="IDE Overview" target="tbd" />
-    <tocitem text="Key Concepts" target="tbd" />-->
+   <tocitem text="IDE Overview" target="gs.tour" />
+    <tocitem text="Key Concepts" target="gs.key" />
     <tocitem text="IDE Tutorials and Guides" target="gs.tutorials" />
   </tocitem>
   
@@ -24,7 +24,7 @@
     <tocitem text="About Projects" target="tbd" />
     <tocitem text="Working with Projects" target="proj_process"/>
     <tocitem text="Project Tasks: Quick Reference" target="proj_quickref"/>
-    <tocitem text="Creating a Java Project" target="tbd"/>
+    <tocitem text="Creating a Java Project" target="proj_creating"/>
     <tocitem text="Java Project Templates" target="proj_templates" />
     <tocitem text="Setting the Main Project" target="proj_main" />
     <tocitem text="Standard Projects" target="tbd" >
@@ -35,7 +35,7 @@
       <tocitem text="Setting the Target JDK" target="proj_jdk" />
       <tocitem text="Customizing the IDE-Generated Ant Script" target="proj_stand_customize" />
     </tocitem>
-    <tocitem text="Freeform Projects" target="tbd" >
+    <tocitem text="Freeform Projects" >
       <tocitem text="About Freeform Projects" target="proj_free_about" />
       <tocitem text="Adding a Source Directory to a Freeform Project" target="proj_free_add" />
       <tocitem text="Declaring the Classpath in Freeform Projects" target="proj_free_classpath" />
@@ -335,8 +335,8 @@
   
   
   
-  <tocitem text="Working With Ant">
-    <tocitem text="About" target="tbd" />
+  <tocitem text="Working with Ant">
+    <tocitem text="About Working with Ant" target="ant_intro" />
     <tocitem text="Editing an Ant Script" target="ant_editing" />
     <tocitem text="Running an Ant Script" target="ant_running" />
     <tocitem text="Creating a Shortcut to a Target" target="ant_shortcut" />

@@ -14,10 +14,8 @@
 <mapID target="ide.welcome" url="getstart/welcome.html" />
 <mapID target="pending" url="pending.html" />
 <mapID target="tbd" url="tbd.html" />
-<mapID target="gs.ide" url="getstart/ide.html" />
 <mapID target="gs.tour" url="getstart/idetour.html" />
 <mapID target="gs.key" url="getstart/keyconcepts.html" />
-<mapID target="gs.howto" url="getstart/howto.html" />
 <mapID target="gs.tutorials" url="getstart/tutorials.html" />
 
 <mapID target="proj_creating" url="project/proj_creating.html" />
@@ -206,7 +204,6 @@
 <mapID target="css_copypastecss" url="xml/copypastecss.html" />
 <mapID target="css_createcss"    url="xml/createcss.html" />
 <mapID target="org.netbeans.modules.css.CSSObject"     url="xml/cssnodes.html" />
-
 
 <!-- debug IDs -->
 
