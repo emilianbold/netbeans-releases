@@ -150,6 +150,7 @@ public class DiffComponent extends org.openide.windows.TopComponent {
         setSource2Title(title2);
         insertEmptyLines(true);
         setDiffHighlight(true);
+        insertEmptyLinesNotReported();
     }
     
     
@@ -406,6 +407,175 @@ public class DiffComponent extends org.openide.windows.TopComponent {
                 break;
             }
         }
+    }
+    
+    /**
+     * Read one line from the given text, from the given position. It returns
+     * the end position of this line and the beginning of the next one.
+     * @param begin Contains just one value - IN: the beginning of the line to read.
+     *              OUT: the start of the next line.
+     * @param end Contains just one value - OUT: the end of the line.
+     * @param text The text to read.
+     * @return The line.
+     */
+    private static String readLine(int[] begin, int[] end, String text) {
+        int n = text.length();
+        for (int i = begin[0]; i < n; i++) {
+            char c = text.charAt(i);
+            if (c == '\n' || c == '\r') {
+                end[0] = i;
+                break;
+            }
+        }
+        if (end[0] < begin[0]) end[0] = n;
+        String line = text.substring(begin[0], end[0]);
+        begin[0] = end[0] + 1;
+        if (begin[0] < n && text.charAt(end[0]) == '\r' && text.charAt(begin[0]) == '\n') begin[0]++;
+        return line;
+    }
+    
+    /**
+     * Find the first diff, that is on or below the given line number.
+     * @return The index of the desired difference in the supplied array or
+     *         a value, that is bigger then the array size if such a diff does
+     *         not exist.
+     */
+    private static int findDiffForLine(int lineNumber, int diffIndex, Difference[] diffs, int[][] diffShifts) {
+        while (diffIndex < diffs.length) {
+            if ((diffs[diffIndex].getFirstEnd() + diffShifts[diffIndex][0]) >= lineNumber ||
+                (diffs[diffIndex].getSecondEnd() + diffShifts[diffIndex][1]) >= lineNumber) break;
+            diffIndex++;
+        }
+        return diffIndex;
+    }
+    
+    /**
+     * Find out whether the line lies in the difference.
+     * @param lineNumber The number of the line.
+     * @param diff The difference
+     * @param diffShifts The shifts of the difference in the current document
+     * @return true if the line lies in the difference, false if does not.
+     */
+    private static boolean isLineInDiff(int lineNumber, Difference diff, int[] diffShifts) {
+        int l1 = diff.getFirstStart() + diffShifts[0];
+        int l2 = diff.getFirstEnd() + diffShifts[0];
+        int l3 = diff.getSecondStart() + diffShifts[1];
+        int l4 = diff.getSecondEnd() + diffShifts[1];
+        return (l1 <= lineNumber && ((l2 >= l1) ? (l2 >= lineNumber) : false)) ||
+               (l3 <= lineNumber && ((l4 >= l3) ? (l4 >= lineNumber) : false));
+    }
+    
+    private static int numEmptyLines(int beginLine, String text, int endLine) {
+        if (endLine >= 0 && endLine <= beginLine) return 0;
+        int numLines = 0;
+        int[] begin = { beginLine };
+        int[] end = { 0 };
+        do {
+            String line = readLine(begin, end, text);
+            if (line.trim().length() > 0) break;
+            numLines++;
+        } while ((endLine < 0 || beginLine + numLines < endLine) && begin[0] < text.length());
+        return numLines;
+    }
+    
+    /**
+     * We have to keep the balance of lines from the first and the second document,
+     * so that corresponding lines will have the same line number in the document.
+     * Because some diff providers can be set not to report changes in empty lines,
+     * we have to use heuristics to balance the corresponding lines manually
+     * if they do not match.
+     * <p>
+     * This method goes through both documents and finds unreported differences
+     * in empty lines. Whenever it encounters an empty line with a corresponding
+     * non-empty line, which in not inside a difference (== unreported),
+     * it checks whether the following lines match (because there can be unreported
+     * difference in the amount of space rather than a missing or added line).
+     * If following lines "match", then silently add an empty line to the other
+     * document. This added line is not highlighted, since it was not reported
+     * as a difference.
+     */
+    private void insertEmptyLinesNotReported() {
+        String docText1 = diffPanel.getDocumentText1();
+        String docText2 = diffPanel.getDocumentText2();
+        int[] begin1 = { 0 };
+        int[] end1 = { -1 };
+        int[] begin2 = { 0 };
+        int[] end2 = { -1 };
+        int n1 = docText1.length();
+        int n2 = docText2.length();
+        int lineNumber = 1;
+        int diffIndex = 0;
+        do {
+            int lastBegin1 = begin1[0];
+            int lastBegin2 = begin2[0];
+            String line1 = readLine(begin1, end1, docText1);
+            String line2 = readLine(begin2, end2, docText2);
+            if (line1.length() == 0 && line2.length() > 0) {
+                //System.out.println("Detected empty line LEFT "+lineNumber);
+                diffIndex = findDiffForLine(lineNumber, diffIndex, diffs, diffShifts);
+                if (diffIndex >= diffs.length || !isLineInDiff(lineNumber, diffs[diffIndex], diffShifts[diffIndex])) {
+                    boolean addMissingLine;
+                    if (line2.trim().length() == 0) {
+                        int emptyLines1 = numEmptyLines(begin1[0], docText1, (diffIndex < diffs.length) ? diffs[diffIndex].getFirstStart() : -1);
+                        int emptyLines2 = numEmptyLines(begin2[0], docText2, (diffIndex < diffs.length) ? diffs[diffIndex].getSecondStart() : -1);
+                        addMissingLine = emptyLines1 > emptyLines2;
+                        //System.out.println("emptyLines1 = "+emptyLines1+", emptyLines2 = "+emptyLines2);
+                    } else {
+                        addMissingLine = true;
+                    }
+                    if (addMissingLine) {
+                        addEmptyLines2(lineNumber - 1, 1);
+                        //highlightRegion2(lineNumber, lineNumber, colorAdded);
+                        shiftDiffs(false, lineNumber);
+                        begin2[0] = lastBegin2;
+                        end2[0] = lastBegin2 - 1;
+                    }
+                }
+            } else if (line2.length() == 0 && line1.length() > 0) {
+                //System.out.println("Detected empty line RIGHT "+lineNumber);
+                diffIndex = findDiffForLine(lineNumber, diffIndex, diffs, diffShifts);
+                if (diffIndex >= diffs.length || !isLineInDiff(lineNumber, diffs[diffIndex], diffShifts[diffIndex])) {
+                    boolean addMissingLine;
+                    if (line1.trim().length() == 0) {
+                        int emptyLines1 = numEmptyLines(begin1[0], docText1, (diffIndex < diffs.length) ? diffs[diffIndex].getFirstStart() : -1);
+                        int emptyLines2 = numEmptyLines(begin2[0], docText2, (diffIndex < diffs.length) ? diffs[diffIndex].getSecondStart() : -1);
+                        addMissingLine = emptyLines2 > emptyLines1;
+                        //System.out.println("emptyLines1 = "+emptyLines1+", emptyLines2 = "+emptyLines2);
+                    } else {
+                        addMissingLine = true;
+                    }
+                    if (addMissingLine) {
+                        addEmptyLines1(lineNumber - 1, 1);
+                        //highlightRegion1(lineNumber, lineNumber, colorMissing);
+                        shiftDiffs(true, lineNumber);
+                        begin1[0] = lastBegin1;
+                        end1[0] = lastBegin1 - 1;
+                    }
+                }
+            }
+            lineNumber++;
+        } while (begin1[0] < n1 && begin2[0] < n2);
+    }
+    
+    /**
+     * Shift the differences by one in the first or the second document from the given line.
+     * @param inFirstDoc True to shift differences the first document, false for the second.
+     * @param fromLine The starting line. Shift all differences after this line.
+     */
+    private void shiftDiffs(boolean inFirstDoc, int fromLine) {
+        int n = diffs.length;
+        for(int i = 0; i < n; i++) {
+            Difference action = diffs[i];
+            if (inFirstDoc) {
+                if (action.getFirstStart() + diffShifts[i][0] >= fromLine) {
+                    diffShifts[i][0]++;
+                }
+            } else {
+                if (action.getSecondStart() + diffShifts[i][1] >= fromLine) {
+                    diffShifts[i][1]++;
+                }
+            }
+        }        
     }
 
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {

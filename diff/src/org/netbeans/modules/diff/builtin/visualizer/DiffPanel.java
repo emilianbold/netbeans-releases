@@ -814,6 +814,14 @@ public class DiffPanel extends javax.swing.JPanel {
         }
     }
     
+    String getDocumentText1() {
+        return jEditorPane1.getText();
+    }
+    
+    String getDocumentText2() {
+        return jEditorPane2.getText();
+    }
+    
     private void setHighlight(StyledDocument doc, int line1, int line2, java.awt.Color color) {
         //System.out.println("setHighlight(): <"+line1+", "+line2+">, color = "+color); // NOI18N
         //Style s = doc.addStyle("diff-style("+color+"):1500", null); // NOI18N
