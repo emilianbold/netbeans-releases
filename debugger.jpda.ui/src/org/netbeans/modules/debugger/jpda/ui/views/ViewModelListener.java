@@ -16,6 +16,7 @@ package org.netbeans.modules.debugger.jpda.ui.views;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Collections;
 import java.util.Set;
@@ -83,35 +84,45 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     private void updateModel () {
         DebuggerManager dm = DebuggerManager.getDebuggerManager ();
         DebuggerEngine e = dm.getCurrentEngine ();
-        Set s = new HashSet ();
+        List l = new ArrayList ();
         if (e != null) {
-            s.addAll (e.lookup (viewType, TreeModel.class));
-            s.addAll (e.lookup (viewType, TreeModelFilter.class));
-            s.addAll (e.lookup (viewType, TreeExpansionModel.class));
-            s.addAll (e.lookup (viewType, NodeModel.class));
-            s.addAll (e.lookup (viewType, NodeModelFilter.class));
-            s.addAll (e.lookup (viewType, TableModel.class));
-            s.addAll (e.lookup (viewType, TableModelFilter.class));
-            s.addAll (e.lookup (viewType, NodeActionsProvider.class));
-            s.addAll (e.lookup (viewType, NodeActionsProviderFilter.class));
-            s.addAll (e.lookup (viewType, ColumnModel.class));
-            s.addAll (e.lookup (viewType, Model.class));
+            l.addAll (e.lookup (viewType, TreeModel.class));
+            l.addAll (e.lookup (viewType, TreeModelFilter.class));
+            l.addAll (e.lookup (viewType, TreeExpansionModel.class));
+            l.addAll (e.lookup (viewType, NodeModel.class));
+            l.addAll (e.lookup (viewType, NodeModelFilter.class));
+            l.addAll (e.lookup (viewType, TableModel.class));
+            l.addAll (e.lookup (viewType, TableModelFilter.class));
+            l.addAll (e.lookup (viewType, NodeActionsProvider.class));
+            l.addAll (e.lookup (viewType, NodeActionsProviderFilter.class));
+            l.addAll (e.lookup (viewType, ColumnModel.class));
+            l.addAll (e.lookup (viewType, Model.class));
         }
-        s.addAll (dm.lookup (viewType, TreeModel.class));
-        s.addAll (dm.lookup (viewType, TreeModelFilter.class));
-        s.addAll (dm.lookup (viewType, TreeExpansionModel.class));
-        s.addAll (dm.lookup (viewType, NodeModel.class));
-        s.addAll (dm.lookup (viewType, NodeModelFilter.class));
-        s.addAll (dm.lookup (viewType, TableModel.class));
-        s.addAll (dm.lookup (viewType, TableModelFilter.class));
-        s.addAll (dm.lookup (viewType, NodeActionsProvider.class));
-        s.addAll (dm.lookup (viewType, NodeActionsProviderFilter.class));
-        s.addAll (dm.lookup (viewType, ColumnModel.class));
-        s.addAll (dm.lookup (viewType, Model.class));
+        l.addAll (dm.lookup (viewType, TreeModel.class));
+        l.addAll (dm.lookup (viewType, TreeModelFilter.class));
+        l.addAll (dm.lookup (viewType, TreeExpansionModel.class));
+        l.addAll (dm.lookup (viewType, NodeModel.class));
+        l.addAll (dm.lookup (viewType, NodeModelFilter.class));
+        l.addAll (dm.lookup (viewType, TableModel.class));
+        l.addAll (dm.lookup (viewType, TableModelFilter.class));
+        l.addAll (dm.lookup (viewType, NodeActionsProvider.class));
+        l.addAll (dm.lookup (viewType, NodeActionsProviderFilter.class));
+        l.addAll (dm.lookup (viewType, ColumnModel.class));
+        l.addAll (dm.lookup (viewType, Model.class));
+        
+        Set s = new HashSet ();
+        Iterator it = l.iterator ();
+        while (it.hasNext ()) {
+            Object o = it.next ();
+            if (s.contains (o))
+                it.remove ();
+            else
+                s.add (o);
+        }
         
         Models.setModelsToView (
             view, 
-            Models.createCompoundModel (new ArrayList (s))
+            Models.createCompoundModel (new ArrayList (l))
         );
     }
 
