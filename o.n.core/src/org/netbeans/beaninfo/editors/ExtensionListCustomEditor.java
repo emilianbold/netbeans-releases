@@ -13,6 +13,10 @@
 
 package org.netbeans.beaninfo.editors;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -97,6 +101,46 @@ public class ExtensionListCustomEditor extends javax.swing.JPanel {
             removeButton.setEnabled( false );
         }
         updateButtons ();
+        itemField.addKeyListener(new KeyAdapter() {
+           public void keyReleased(KeyEvent event) {
+                boolean containsCurrent = containsCurrent();
+                String txt = itemField.getText().trim();
+                boolean en = itemField.isEnabled() &&
+                    txt.length() > 0 &&
+                    !containsCurrent;
+                addButton.setEnabled(en);
+                changeButton.setEnabled(en && itemList.getSelectedIndex() != -1);
+                if (containsCurrent) {
+                    itemList.setSelectedIndex(idxOfCurrent());
+                }
+           }
+        });
+        itemField.addActionListener(new ActionListener() {
+            public void actionPerformed (ActionEvent ae) {
+                if (addButton.isEnabled()) {
+                    doAdd();
+                }
+            }
+        }); 
+        addButton.setEnabled(false);
+        changeButton.setEnabled(false);
+    }
+    
+    /** Determine if the text of the text field matches an item in the 
+     * list */
+    private boolean containsCurrent() {
+        return idxOfCurrent() != -1;
+    }
+    
+    private int idxOfCurrent() {
+        String txt = itemField.getText().trim();
+        if (txt.length() > 0) {
+            int max = itemList.getModel().getSize();
+            for (int i=0; i < max; i++) {
+                if (txt.equals(itemList.getModel().getElementAt(i))) return i;
+            }
+        }
+        return -1;
     }
 
     public java.awt.Dimension getPreferredSize () {
@@ -283,6 +327,7 @@ public class ExtensionListCustomEditor extends javax.swing.JPanel {
         int sel = itemList.getSelectedIndex ();
         if (sel != -1) {
             itemField.setText ((String) itemList.getModel().getElementAt(sel));
+            changeButton.setEnabled(false);
         }
     }//GEN-LAST:event_itemListValueChanged
 
