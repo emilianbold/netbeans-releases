@@ -1254,8 +1254,6 @@ public class FormEditorSupport extends JavaEditor
     }
 
     public void gotoForm() {
-        System.err.println("\nCalling go to form");
-        Thread.dumpStack(); // TEMP
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 if (formModel != null && formModel.getFormDesigner().isOpened())
