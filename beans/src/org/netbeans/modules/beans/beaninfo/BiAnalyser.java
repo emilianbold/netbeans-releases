@@ -643,9 +643,9 @@ public class BiAnalyser extends Object implements Node.Cookie {
         }
 
         it = allMethods.iterator();
-        int lCurMethodCount = 0;
+        //int lCurMethodCount = 0;
         
-        for ( int i = 0; it.hasNext(); i++ ) {
+        for ( int i = 0, lCurMethodCount = 0; it.hasNext(); ) {
             BiFeature bif = ( BiFeature )it.next();
 
             if ( bif.isIncluded() ) {
@@ -659,6 +659,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
                     sb.append( ((!lazyMethods)?TABx3:TABx4) + "methods[METHOD_" ).append( bif.getName() ).append(i + "]."); // NOI18N
                     sb.append( (String)csit.next() ).append( ";\n" ); // NOI18N
                 }
+                i++;
             }
         }
 
