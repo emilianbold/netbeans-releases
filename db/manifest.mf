@@ -1,8 +1,8 @@
 OpenIDE-Module: com.netbeans.enterprise.modules.db/1
 OpenIDE-Module-Name: Database explorer
 OpenIDE-Module-Main: com/netbeans/enterprise/modules/db/DatabaseModule.class
-OpenIDE-Module-Specification-Version: 0.9.1
-OpenIDE-Module-Implementation-Version: 0.9.1
+OpenIDE-Module-Specification-Version: 0.9.2
+OpenIDE-Module-Implementation-Version: 0.9.2
 OpenIDE-Module-Description: com.netbeans.enterprise.modules.db.docs.HelpSet
 
 Name: com/netbeans/enterprise/modules/db/explorer/nodes/RootNode.class
