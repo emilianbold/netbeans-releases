@@ -666,7 +666,7 @@ public class FormDesigner extends TopComponent
     }
 
     private void notifyCannotEditInPlace() {
-        TopManager.getDefault().notify(
+        DialogDisplayer.getDefault().notify(
             new NotifyDescriptor.Message(
                 FormUtils.getBundleString("MSG_ComponentNotShown"), // NOI18N
                 NotifyDescriptor.WARNING_MESSAGE));
@@ -713,8 +713,7 @@ public class FormDesigner extends TopComponent
 
     public void open(Workspace workspace) {
         if (workspace == null)
-            workspace = TopManager.getDefault().getWindowManager()
-                                                 .getCurrentWorkspace();
+            workspace = WindowManager.getDefault().getCurrentWorkspace();
 
         if (isOpened(workspace))
             return;

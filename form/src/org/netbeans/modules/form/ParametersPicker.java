@@ -25,7 +25,6 @@ import javax.swing.event.ChangeListener;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
-import org.openide.TopManager;
 import org.openide.ErrorManager;
 import org.openide.DialogDescriptor;
 
@@ -223,7 +222,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
     public Object getPropertyValue() throws IllegalStateException {
         if (!isFilled()) {
             IllegalStateException exc = new IllegalStateException();
-            TopManager.getDefault().getErrorManager().annotate(
+            ErrorManager.getDefault().annotate(
                 exc, ErrorManager.USER, null, 
                 FormUtils.getBundleString("ERR_NothingEntered"), // NOI18N
                 null, null);
@@ -556,7 +555,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
                 dd.setValid(((Boolean)evt2.getNewValue()).booleanValue());
             }
         });
-        java.awt.Dialog dialog = TopManager.getDefault().createDialog(dd);
+        java.awt.Dialog dialog = org.openide.DialogDisplayer.getDefault().createDialog(dd);
         dialog.show();
 
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
@@ -596,7 +595,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
                 dd.setValid(((Boolean)evt2.getNewValue()).booleanValue());
             }
         });
-        java.awt.Dialog dialog = TopManager.getDefault().createDialog(dd);
+        java.awt.Dialog dialog = org.openide.DialogDisplayer.getDefault().createDialog(dd);
         dialog.show();
         
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {

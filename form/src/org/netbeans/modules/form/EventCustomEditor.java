@@ -17,7 +17,7 @@ import java.util.*;
 import javax.swing.JList;
 import javax.swing.DefaultListModel;
 
-import org.openide.TopManager;
+import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
 /**
@@ -183,7 +183,7 @@ public class EventCustomEditor extends javax.swing.JPanel {
                 FormUtils.getBundleString("CTL_EE_RENAME_CAPTION")); // NOI18N
             nd.setInputText(oldName);
 
-            if (TopManager.getDefault().notify(nd).equals(NotifyDescriptor.OK_OPTION)) {
+            if (DialogDisplayer.getDefault().notify(nd).equals(NotifyDescriptor.OK_OPTION)) {
                 String newName = nd.getInputText();
                 if (newName.equals(oldName)) return; // no change
 
@@ -191,7 +191,7 @@ public class EventCustomEditor extends javax.swing.JPanel {
                     NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
                         FormUtils.getBundleString("CTL_EE_NOT_IDENTIFIER"), // NOI18N
                         NotifyDescriptor.ERROR_MESSAGE);
-                    TopManager.getDefault().notify(msg);
+                    DialogDisplayer.getDefault().notify(msg);
                     return;
                 }
 
@@ -199,7 +199,7 @@ public class EventCustomEditor extends javax.swing.JPanel {
                     NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
                         FormUtils.getBundleString("CTL_EE_ALREADY_EXIST"), // NOI18N
                         NotifyDescriptor.INFORMATION_MESSAGE);
-                    TopManager.getDefault().notify(msg);
+                    DialogDisplayer.getDefault().notify(msg);
                     return;
                 }
 
@@ -252,13 +252,13 @@ public class EventCustomEditor extends javax.swing.JPanel {
         NotifyDescriptor.InputLine nd = new NotifyDescriptor.InputLine(
             FormUtils.getBundleString("CTL_EE_ADD_LABEL"), // NOI18N
             FormUtils.getBundleString("CTL_EE_ADD_CAPTION")); // NOI18N
-        if (TopManager.getDefault().notify(nd).equals(NotifyDescriptor.OK_OPTION)) {
+        if (DialogDisplayer.getDefault().notify(nd).equals(NotifyDescriptor.OK_OPTION)) {
             String newHandler = nd.getInputText();
             if (!org.openide.util.Utilities.isJavaIdentifier(newHandler)) {
                 NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
                     FormUtils.getBundleString("CTL_EE_NOT_IDENTIFIER"), // NOI18N
                     NotifyDescriptor.ERROR_MESSAGE);
-                TopManager.getDefault().notify(msg);
+                DialogDisplayer.getDefault().notify(msg);
                 return;
             }
 
@@ -266,7 +266,7 @@ public class EventCustomEditor extends javax.swing.JPanel {
                 NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
                     FormUtils.getBundleString("CTL_EE_ALREADY_EXIST"), // NOI18N
                     NotifyDescriptor.INFORMATION_MESSAGE);
-                TopManager.getDefault().notify(msg);
+                DialogDisplayer.getDefault().notify(msg);
                 return;
             }
 

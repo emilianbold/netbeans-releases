@@ -184,7 +184,7 @@ public class MetaComponentCreator {
                 if (formClass != null
                     &&  formClass.getVMName().equals(beanClass.getName()))
                 {
-                    TopManager.getDefault().notify(
+                    DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Message(
                             FormUtils.getBundleString("MSG_ERR_CannotAddForm"), // NOI18N
                             NotifyDescriptor.WARNING_MESSAGE));
@@ -634,7 +634,7 @@ public class MetaComponentCreator {
             if (!layoutInitialized) {
                 if (layoutEx == null) {
                     // no LayoutSupportDelegate found for the container
-                    TopManager.getDefault().notify(
+                    DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Message(
                             FormUtils.getBundleString(
                                         "MSG_ERR_NoLayoutSupportFound2"), // NOI18N
@@ -798,7 +798,7 @@ public class MetaComponentCreator {
         }
 
         if (layoutDelegate == null) {
-            TopManager.getDefault().notify(
+            DialogDisplayer.getDefault().notify(
                 new NotifyDescriptor.Message(
                     FormUtils.getFormattedBundleString(
                         "FMT_ERR_LayoutNotFound", // NOI18N
@@ -946,7 +946,7 @@ public class MetaComponentCreator {
                 && (prop = targetComp.getBeanProperty("border")) != null) // NOI18N
             return prop;
 
-        TopManager.getDefault().notify(new NotifyDescriptor.Message(
+        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
             FormUtils.getBundleString("MSG_BorderNotApplicable"), // NOI18N
             NotifyDescriptor.INFORMATION_MESSAGE));
 

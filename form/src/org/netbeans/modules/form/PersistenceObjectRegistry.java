@@ -16,7 +16,6 @@ package org.netbeans.modules.form;
 
 import java.util.Map;
 import java.util.HashMap;
-import org.openide.TopManager;
 import org.openide.util.Utilities;
 
 /**
@@ -62,7 +61,7 @@ public class PersistenceObjectRegistry
         String classname =(String) _nameToClassname.get(name);
         if (classname == null)
             classname = name;
-        return TopManager.getDefault().currentClassLoader().loadClass(classname);
+        return FormUtils.getClassLoader().loadClass(classname);
     }
 
     public static String getPrimaryName(Object instance) {

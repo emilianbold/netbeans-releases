@@ -69,20 +69,17 @@ public class CreationFactory {
         }
 
         private void exchangeClass() {
-            // hack - use the class loaded by TopManager.currentClassLoader,
-            // avoid using class loaded by another loader from InstanceSupport
+            // hack - use the class loaded by NbClassLoader, avoid using class
+            // loaded by another loader from InstanceSupport
             String name = instClass.getName();
             if (!name.startsWith("javax.") && !name.startsWith("java.")) { // NOI18N
-                ClassLoader filesysClassLoader =
-                    org.openide.TopManager.getDefault().currentClassLoader();
-                if (instClass.getClassLoader() != filesysClassLoader) {
+                ClassLoader filesysClassLoader = FormUtils.getClassLoader();
+                if (!instClass.getClassLoader().getClass().equals(filesysClassLoader.getClass())) {
                     try {
                         instClass = filesysClassLoader.loadClass(name);
                     }
-                    catch (Throwable th) {
-                        if (th instanceof ThreadDeath)
-                            throw (ThreadDeath)th;
-                    }
+                    catch (LinkageError ex) {}
+                    catch (Exception ex) {}
                 }
             }
         }

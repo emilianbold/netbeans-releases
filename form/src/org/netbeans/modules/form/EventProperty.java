@@ -183,7 +183,7 @@ class EventProperty extends PropertySupport.ReadWrite {
                     String handlerName = (String) it.next();
 
                     if (!Utilities.isJavaIdentifier(handlerName)) { // invalid name
-                        TopManager.getDefault().notify(
+                        DialogDisplayer.getDefault().notify(
                             new NotifyDescriptor.Message(
                                 FormUtils.getFormattedBundleString(
                                     "FMT_MSG_InvalidJavaIdentifier", // NOI18N
@@ -432,7 +432,7 @@ class EventProperty extends PropertySupport.ReadWrite {
                     }
                 });
 
-            return TopManager.getDefault().createDialog(dd);
+            return DialogDisplayer.getDefault().createDialog(dd);
         }
     }
 

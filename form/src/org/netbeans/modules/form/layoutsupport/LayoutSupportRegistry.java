@@ -16,7 +16,6 @@ package org.netbeans.modules.form.layoutsupport;
 import java.awt.*;
 import java.util.*;
 
-import org.openide.TopManager;
 import org.openide.loaders.*;
 import org.openide.filesystems.*;
 import org.openide.cookies.InstanceCookie;
@@ -336,7 +335,7 @@ public class LayoutSupportRegistry {
 
     private static DataFolder getPaletteFolder() {
         if (paletteFolder == null) {
-            FileObject fo = TopManager.getDefault().getRepository()
+            FileObject fo = Repository.getDefault()
                               .getDefaultFileSystem().findResource("Palette"); // NOI18N
             if (fo != null)
                 paletteFolder = DataFolder.findFolder(fo);
@@ -347,7 +346,7 @@ public class LayoutSupportRegistry {
     private static Class loadClass(String className)
         throws ClassNotFoundException
     {
-        return TopManager.getDefault().currentClassLoader().loadClass(className);
+        return org.netbeans.modules.form.FormUtils.getClassLoader().loadClass(className);
     }
 
     private static Map getContainersMap() {

@@ -14,13 +14,14 @@
 package org.netbeans.modules.form.editors2;
 
 import javax.swing.*;
-import org.openide.explorer.propertysheet.editors.*;
+import org.netbeans.modules.form.editors.StringArrayEditor;
 import org.netbeans.modules.form.FormDesignValue;
 
 /** A simple property editor for ComboBoxModel.
  *
  * @author Tomas Pavek
  */
+
 public class ComboBoxModelEditor extends StringArrayEditor {
 
     private NbComboBoxModel comboModel = null;

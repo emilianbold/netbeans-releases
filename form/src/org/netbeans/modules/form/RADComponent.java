@@ -368,7 +368,7 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
         if (!org.openide.util.Utilities.isJavaIdentifier(name)) {
             IllegalArgumentException iae =
                 new IllegalArgumentException("Invalid component name"); // NOI18N
-            TopManager.getDefault ().getErrorManager().annotate(
+            ErrorManager.getDefault().annotate(
                 iae, ErrorManager.USER, null, 
                 FormUtils.getBundleString("ERR_INVALID_COMPONENT_NAME"), // NOI18N
                 null, null);
@@ -378,7 +378,7 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
         if (formModel.getCodeStructure().isVariableNameReserved(name)) {
             IllegalArgumentException iae =
                 new IllegalArgumentException("Component name already in use: "+name); // NOI18N
-            TopManager.getDefault ().getErrorManager().annotate(
+            ErrorManager.getDefault().annotate(
                 iae, ErrorManager.USER, null,
                 FormUtils.getBundleString("ERR_COMPONENT_NAME_ALREADY_IN_USE"), // NOI18N
                 null, null);

@@ -19,7 +19,6 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.awt.*;
 
-import org.openide.TopManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
 

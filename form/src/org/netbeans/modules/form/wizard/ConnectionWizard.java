@@ -65,7 +65,7 @@ public class ConnectionWizard extends WizardDescriptor {
      * @returns whether the wizard was finished (not canceled)
      */
     public boolean show() {
-        java.awt.Dialog d = TopManager.getDefault().createDialog(this);
+        java.awt.Dialog d = DialogDisplayer.getDefault().createDialog(this);
 
         finished = false;
         d.show();
@@ -269,7 +269,7 @@ public class ConnectionWizard extends WizardDescriptor {
         public void nextPanel() {
             if (stage < getPanelsCount()) {
                 if (stage == 1 && panel1.handlerAlreadyExists()) {
-                    if (TopManager.getDefault().notify(
+                    if (DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Confirmation(
                               NbBundle.getBundle(ConnectionWizard.class)
                                         .getString("MSG_RewritingEvent"), // NOI18N

@@ -343,7 +343,7 @@ public class FormEditorSupport extends JavaEditor
                 public void run() {
                     // for some reason this would be displayed before the
                     // ErrorManager if not invoked later
-                    TopManager.getDefault().notify(new NotifyDescriptor(
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor(
                         FormUtils.getBundleString("MSG_FormLoadedWithErrors"), // NOI18N
                         FormUtils.getBundleString("CTL_FormLoadedWithErrors"), // NOI18N
                         NotifyDescriptor.DEFAULT_OPTION,
@@ -700,7 +700,7 @@ public class FormEditorSupport extends JavaEditor
     private boolean activateWorkspace() {
         attachWorkspacesListener();
 
-        String currentWSName = TopManager.getDefault().getWindowManager()
+        String currentWSName = WindowManager.getDefault()
                                               .getCurrentWorkspace().getName();
         String formWSName = FormEditor.getFormSettings().getWorkspace();
 
@@ -714,8 +714,7 @@ public class FormEditorSupport extends JavaEditor
                 && !formWSName.equals(NO_WORKSPACE))
             {   // switch to the form main workspace
                 Workspace formWorkspace =
-                    TopManager.getDefault().getWindowManager()
-                        .findWorkspace(formWSName);
+                    WindowManager.getDefault().findWorkspace(formWSName);
                 if (formWorkspace != null)
                     formWorkspace.activate();
             }
@@ -864,8 +863,7 @@ public class FormEditorSupport extends JavaEditor
             return;
 
         if (ws == null)
-            ws = TopManager.getDefault().getWindowManager()
-                                          .getCurrentWorkspace();
+            ws = WindowManager.getDefault().getCurrentWorkspace();
         Mode mode = ws.findMode(formDesigner);
         if (mode != null && FormDesigner.FORM_MODE_NAME.equals(mode.getName())) {
             TopComponent inspector = null;
@@ -1002,8 +1000,7 @@ public class FormEditorSupport extends JavaEditor
                                            evt.getPropertyName()))
                     return;
 
-                Workspace ws = TopManager.getDefault().getWindowManager()
-                                                   .getCurrentWorkspace();
+                Workspace ws = WindowManager.getDefault().getCurrentWorkspace();
                 if (ws == null)
                     return; // [can it even be null?]
 
@@ -1059,14 +1056,12 @@ public class FormEditorSupport extends JavaEditor
             }
         };
 
-        TopManager.getDefault().getWindowManager()
-            .addPropertyChangeListener(workspacesListener);
+        WindowManager.getDefault().addPropertyChangeListener(workspacesListener);
     }
 
     private static void detachWorkspacesListener() {
         if (workspacesListener != null) {
-            TopManager.getDefault().getWindowManager()
-                    .removePropertyChangeListener(workspacesListener);
+            WindowManager.getDefault().removePropertyChangeListener(workspacesListener);
             workspacesListener = null;
         }
     }

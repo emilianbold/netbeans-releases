@@ -89,7 +89,10 @@ public abstract class PersistenceManager {
         Iterator iter = getManagersNamesList().iterator();
         while (iter.hasNext()) { // create managers registered by name
             if (classLoader == null)
-                classLoader = TopManager.getDefault().currentClassLoader();
+                classLoader = FormUtils.getClassLoader();
+            // (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+            //  - could be enough
+
             String pmClassName = (String) iter.next();
             try {
                 PersistenceManager manager = (PersistenceManager)
@@ -127,7 +130,7 @@ public abstract class PersistenceManager {
             "FMT_ERR_PersistenceManagerInstantiation", // NOI18N
             new Object[] { pmClassName });
 
-        ErrorManager errorManager = TopManager.getDefault().getErrorManager();
+        ErrorManager errorManager = ErrorManager.getDefault();
         errorManager.annotate(th, msg);
         errorManager.notify(ErrorManager.EXCEPTION, th);
     }

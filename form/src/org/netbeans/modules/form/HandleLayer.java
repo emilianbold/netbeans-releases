@@ -21,7 +21,8 @@ import java.util.*;
 import javax.swing.border.Border;
 import java.text.MessageFormat;
 
-import org.openide.TopManager;
+import org.openide.DialogDisplayer;
+import org.openide.awt.StatusDisplayer;
 import org.openide.windows.TopComponent;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
@@ -957,7 +958,7 @@ class HandleLayer extends JPanel
         input.setInputText(Integer.toString(size.width) + ", " // NOI18N
                            + Integer.toString(size.height));
 
-        if (TopManager.getDefault().notify(input) == NotifyDescriptor.OK_OPTION) {
+        if (DialogDisplayer.getDefault().notify(input) == NotifyDescriptor.OK_OPTION) {
             String txt = input.getInputText();
             int i = txt.indexOf(',');
             if (i > 0) {
@@ -1007,7 +1008,7 @@ class HandleLayer extends JPanel
         if ((!(metacomp instanceof RADVisualComponent) && metacomp != null)
             || item.getItemClass() == null)
         {
-            TopManager.getDefault().setStatusText(""); // NOI18N
+            StatusDisplayer.getDefault().setStatusText(""); // NOI18N
             return;
         }
 
@@ -1061,7 +1062,7 @@ class HandleLayer extends JPanel
     }
 
     private static void setStatusText(String formatId, Object[] args) {
-        TopManager.getDefault().setStatusText(
+        StatusDisplayer.getDefault().setStatusText(
             FormUtils.getFormattedBundleString(formatId, args));
     }
     
@@ -1134,7 +1135,7 @@ class HandleLayer extends JPanel
         }
 
         public void mouseExited(MouseEvent e) {
-            TopManager.getDefault().setStatusText(""); // NOI18N
+            StatusDisplayer.getDefault().setStatusText(""); // NOI18N
         }
 
         public void mousePressed(MouseEvent e) {

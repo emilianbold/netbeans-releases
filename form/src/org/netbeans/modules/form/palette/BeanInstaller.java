@@ -37,7 +37,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.SharedClassObject;
 import org.openide.util.Utilities;
 
-import org.netbeans.modules.form.FormLoaderSettings;
+import org.netbeans.modules.form.FormUtils;
 import org.netbeans.modules.form.GlobalJarFileSystem;
 
 /**
@@ -65,7 +65,7 @@ public final class BeanInstaller
 
         JarFileSystem jar = createJarForFile(jarFile);
         if (jar == null) {
-            TopManager.getDefault().notify(new NotifyDescriptor.Message(
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                 CPManager.getBundle().getString(
                     "MSG_ErrorInFile"), NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
             return;
@@ -74,7 +74,7 @@ public final class BeanInstaller
         Collection beans = findJavaBeans(jar);
 
         if (beans.size() == 0) {
-            TopManager.getDefault().notify(new NotifyDescriptor.Message(
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                 CPManager.getBundle().getString(
                     "MSG_noBeansInJar"), NotifyDescriptor.INFORMATION_MESSAGE)); // NOI18N
             return;
@@ -89,7 +89,7 @@ public final class BeanInstaller
             );
         desc.setHelpCtx(new HelpCtx(BeanInstaller.class.getName() + ".installBean")); // NOI18N
 
-        TopManager.getDefault().createDialog(desc).show();
+        DialogDisplayer.getDefault().createDialog(desc).show();
         if (desc.getValue() == NotifyDescriptor.OK_OPTION) {
             String cat = selectPaletteCategory();
             if (cat != null) {
@@ -174,8 +174,8 @@ public final class BeanInstaller
             cat = "Beans"; // default palette category // NOI18N
         }
 
-        FileSystem fs = TopManager.getDefault().getRepository().getDefaultFileSystem();
-        
+        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
+
         FileObject root = fs.getRoot();
         FileObject paletteFolder = root.getFileObject("Palette"); // NOI18N
         if (paletteFolder == null) {
@@ -230,7 +230,7 @@ public final class BeanInstaller
     private static void addJarFileSystem(JarFileSystem jar) {
         boolean alreadyInstalled = false;
         if (jar != null) {
-            Repository rep = TopManager.getDefault().getRepository();
+            Repository rep = Repository.getDefault();
             JarFileSystem jar2 =(JarFileSystem) rep.findFileSystem(jar.getSystemName());
             if (jar2 != null) {
                 alreadyInstalled = true;
@@ -252,20 +252,20 @@ public final class BeanInstaller
                 DataShadow.create(DataFolder.findFolder(folder), originalDO);
             }
         } catch (IOException e) {
-            TopManager.getDefault().getErrorManager().notify(e);
+            ErrorManager.getDefault().notify(e);
         }
     }
     
     static void createInstance(FileObject folder, String className) {
         // first check if the class is valid and can be loaded
         try {
-            Class.forName(className, true, TopManager.getDefault().currentClassLoader());
+            Class.forName(className, true, FormUtils.getClassLoader());
         }
         catch (Throwable ex) {
             if (ex instanceof ThreadDeath)
                 throw (ThreadDeath)ex;
             
-            ErrorManager manager = TopManager.getDefault().getErrorManager();
+            ErrorManager manager = ErrorManager.getDefault();
             
             String message = MessageFormat.format(
                 CPManager.getBundle().getString("FMT_ERR_CannotLoadClass"), // NOI18N
@@ -319,7 +319,7 @@ public final class BeanInstaller
             );
         desc.setHelpCtx(new HelpCtx(BeanInstaller.class.getName() + ".selectPaletteCategory")); // NOI18N
 
-        TopManager.getDefault().createDialog(desc).show();
+        DialogDisplayer.getDefault().createDialog(desc).show();
         if (desc.getValue() == NotifyDescriptor.OK_OPTION) {
             return sel.getSelectedCategory();
         } else {
@@ -373,8 +373,9 @@ public final class BeanInstaller
         }
 
         chooser.setDialogTitle(bundle.getString("CTL_SelectJar"));
-        while (chooser.showDialog(TopManager.getDefault().getWindowManager().getMainWindow(),
-                               bundle.getString("CTL_Select_Approve_Button"))
+        while (chooser.showDialog(
+                 org.openide.windows.WindowManager.getDefault().getMainWindow(),
+                 bundle.getString("CTL_Select_Approve_Button"))
                == JFileChooser.APPROVE_OPTION)
         {
             File f = chooser.getSelectedFile();
@@ -383,7 +384,7 @@ public final class BeanInstaller
                 return f;
             }
 
-            TopManager.getDefault().notify(new NotifyDescriptor.Message(
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                 bundle.getString("MSG_noValidFile"), NotifyDescriptor.WARNING_MESSAGE));
         }
         return null;

@@ -622,7 +622,7 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
                         message, title, NotifyDescriptor.YES_NO_OPTION);
 
             return NotifyDescriptor.YES_OPTION.equals (
-                   TopManager.getDefault().notify(desc));
+                   DialogDisplayer.getDefault().notify(desc));
         }
     }
 

@@ -15,7 +15,7 @@ package org.netbeans.modules.form.actions;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.*;
-import org.openide.nodes.Node;
+import org.openide.nodes.*;
 import org.netbeans.modules.form.*;
 
 /** CustomizeLayout action - enabled on RADContainerNodes and RADLayoutNodes.
@@ -77,7 +77,7 @@ public class CustomizeLayoutAction extends CookieAction {
         if (radCookie != null) {
             RADComponent metacomp = radCookie.getRADComponent();
             if (metacomp instanceof RADVisualContainer) {
-                org.openide.TopManager.getDefault().getNodeOperation().customize(
+                NodeOperation.getDefault().customize(
                     ((RADVisualContainer)metacomp).getLayoutNodeReference());
             }
         }

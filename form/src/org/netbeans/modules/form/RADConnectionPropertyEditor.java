@@ -18,7 +18,6 @@ import java.awt.*;
 import java.beans.*;
 import java.text.MessageFormat;
 
-import org.openide.TopManager;
 import org.openide.options.SystemOption;
 import org.openide.explorer.propertysheet.*;
 import org.openide.explorer.propertysheet.editors.*;

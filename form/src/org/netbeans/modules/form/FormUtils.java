@@ -21,11 +21,12 @@ import java.util.*;
 import java.lang.reflect.Method;
 import javax.swing.JComponent;
 import java.text.MessageFormat;
+import java.security.*;
 
 import org.openide.util.*;
+import org.openide.execution.NbClassLoader;
 import org.openide.nodes.Node;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
-import org.openide.TopManager;
 
 import org.netbeans.modules.form.editors2.BorderDesignSupport;
 
@@ -919,6 +920,24 @@ public class FormUtils
 
     // ---------
 
+    public static ClassLoader getClassLoader() {
+        NbClassLoader loader = new NbClassLoader();
+        loader.setDefaultPermissions(getAllPermissions());
+        return loader;
+    }
+
+    private static PermissionCollection allPermission;
+
+    static PermissionCollection getAllPermissions() {
+        if (allPermission == null) {
+            allPermission = new Permissions();
+            allPermission.add(new AllPermission());
+        }
+        return allPermission;
+    }
+
+    // ---------
+
     private static class OIS extends ObjectInputStream {
         public OIS(InputStream is) throws IOException {
             super(is);
@@ -927,8 +946,7 @@ public class FormUtils
         protected Class resolveClass(ObjectStreamClass streamCls)
             throws IOException, ClassNotFoundException
         {
-            return TopManager.getDefault().currentClassLoader().loadClass(
-                                                       streamCls.getName());
+            return getClassLoader().loadClass(streamCls.getName());
         }
     }
 }

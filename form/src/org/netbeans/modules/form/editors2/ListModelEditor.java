@@ -14,13 +14,14 @@
 package org.netbeans.modules.form.editors2;
 
 import javax.swing.*;
-import org.openide.explorer.propertysheet.editors.*;
+import org.netbeans.modules.form.editors.StringArrayEditor;
 import org.netbeans.modules.form.FormDesignValue;
 
 /** A simple property editor for ListModel.
  *
  * @author Tomas Pavek
  */
+
 public class ListModelEditor extends StringArrayEditor {
 
     private NbListModel listModel = null;

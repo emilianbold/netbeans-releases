@@ -14,7 +14,6 @@
 
 package org.netbeans.modules.form;
 
-import org.openide.TopManager;
 import org.openide.util.SharedClassObject; 
 
 import java.beans.*;
@@ -119,7 +118,7 @@ final public class FormPropertyEditorManager extends Object
                     String name = searchPath[i] + "." + editorName + "Editor"; // NOI18N
                     try {
                         Class edClass = Class.forName(name, true,
-                                TopManager.getDefault().currentClassLoader());
+                                                      FormUtils.getClassLoader());
                         editorsList.add(edClass);
                         break; // stop on first found editor
                     }
@@ -138,7 +137,7 @@ final public class FormPropertyEditorManager extends Object
                     for (int j = 1; j < typereg.length; j++) {
                         try {
                             Class edClass = Class.forName(typereg[j], true,
-                                TopManager.getDefault().currentClassLoader());
+                                                          FormUtils.getClassLoader());
                             if (!editorsList.contains(edClass))
                                 editorsList.add(edClass);
                         }

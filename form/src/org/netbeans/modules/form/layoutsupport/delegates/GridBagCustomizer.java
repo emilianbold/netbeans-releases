@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.lang.Math;
 
-import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.*;
 import org.openide.explorer.propertysheet.PropertySheet;
@@ -147,7 +146,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
             propertySheet.setSortingMode(PropertySheet.UNSORTED);
         }
         catch (java.beans.PropertyVetoException e) {
-            TopManager.getDefault().notifyException(e);
+//            ErrorManager.getDefault().notifyException(e);
         }
 
         JPanel panel = new JPanel();

@@ -20,7 +20,6 @@ import javax.swing.event.MenuListener;
 import javax.swing.event.MenuEvent;
 import java.text.MessageFormat;
 
-import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.*;

@@ -260,7 +260,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             Class superclass;
             if (superclassId != null) {
                 declaredSuperclassName = superclassId.getFullName();
-                superclass = TopManager.getDefault().currentClassLoader()
+                superclass = FormUtils.getClassLoader()
                                          .loadClass(declaredSuperclassName);
             }
             else superclass = Object.class;
@@ -2213,9 +2213,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     serName += "."; // NOI18N
                 serName += serFile;
 
-                Object instance = Beans.instantiate(
-                    TopManager.getDefault().currentClassLoader(),
-                    serName);
+                Object instance = Beans.instantiate(FormUtils.getClassLoader(),
+                                                    serName);
 
                 comp.setInstance(instance);
             }

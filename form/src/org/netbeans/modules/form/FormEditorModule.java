@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.form;
 
-import org.openide.TopManager;
 import org.openide.filesystems.*;
 import org.openide.nodes.Node;
 import org.openide.modules.ModuleInstall;
@@ -61,7 +60,7 @@ public class FormEditorModule extends ModuleInstall
     /** Module was uninstalled. */
 
     public void uninstalled() {
-        Repository rep = TopManager.getDefault().getRepository();
+        Repository rep = Repository.getDefault();
 
         java.util.Enumeration enum = rep.getFileSystems();
         while (enum.hasMoreElements()) {
