@@ -117,6 +117,7 @@ public class EditorModule extends ModuleInstall implements Runnable {
             DataObject.getRegistry().addChangeListener((ChangeListener)(WeakListener.change(rl, DataObject.getRegistry())));
         }
 
+        /*
         if (repoListen==null){
             repoListen=new RepositListener();
             Repository repo = TopManager.getDefault().getRepository();
@@ -124,6 +125,7 @@ public class EditorModule extends ModuleInstall implements Runnable {
                 repo.addRepositoryListener((RepositoryListener)(WeakListener.repository(repoListen, repo)));
             }
         }
+         */
 
     }
 
