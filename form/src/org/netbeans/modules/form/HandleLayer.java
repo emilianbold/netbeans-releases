@@ -203,9 +203,11 @@ class HandleLayer extends JPanel
                 if ((e.getModifiers()&InputEvent.CTRL_MASK)==InputEvent.CTRL_MASK) {
                     // Ctrl+TAB
                     if ((e.getModifiers()&InputEvent.SHIFT_MASK)!=InputEvent.SHIFT_MASK)
-                        FocusManager.getCurrentManager().focusNextComponent(this);
+                        javax.swing.FocusManager.getCurrentManager()
+                                                    .focusNextComponent(this);
                     else
-                        FocusManager.getCurrentManager().focusPreviousComponent(this);
+                        javax.swing.FocusManager.getCurrentManager()
+                                                    .focusPreviousComponent(this);
                 }
                 else {
                     RADComponent nextComp = formDesigner.getNextVisualComponent(
