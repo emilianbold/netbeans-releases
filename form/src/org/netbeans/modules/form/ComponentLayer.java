@@ -25,6 +25,7 @@ class ComponentLayer extends JPanel
 {
     ComponentLayer() {
         setBackground(Color.white);
+        setFont(new Font("Dialog", Font.PLAIN, 12)); // NOI18N
         setLayout(new BorderLayout());
     }
     
