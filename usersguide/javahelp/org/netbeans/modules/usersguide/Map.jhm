@@ -271,7 +271,6 @@
 <mapID target="editing.tabs" url="editing/tabs.html" />
 <mapID target="editing.linenumbers" url="editing/linenumbers.html" />
 <mapID target="editing.annotations" url="editing/annotations.html" />
-<mapID target="editing.annotations" url="editing/annotations.html" />
 <mapID target="editing.imageview" url="editing/imageview.html" />
 <mapID target="editing.codecompletion" url="editing/codecompletion/intro.html" />
 <mapID target="editing.completing-exp" url="editing/codecompletion/completing-exp.html" />
