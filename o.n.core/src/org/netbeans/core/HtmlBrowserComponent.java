@@ -27,7 +27,6 @@ import java.util.Iterator;
 import javax.swing.*;
 import javax.accessibility.*;
 
-import org.openide.awt.ToolbarButton;
 import org.openide.*;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.Workspace;
