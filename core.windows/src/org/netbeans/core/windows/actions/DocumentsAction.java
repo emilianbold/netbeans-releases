@@ -47,8 +47,17 @@ public class DocumentsAction extends AbstractAction implements Runnable {
         };
         TopComponent.Registry registry = TopComponent.getRegistry();
         registry.addPropertyChangeListener(WeakListeners.propertyChange(propListener, registry));
-        
-        updateState();
+
+        // #37529 WindowsAPI to be called from AWT thread only.
+        if(SwingUtilities.isEventDispatchThread()) {
+            updateState();
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    updateState();
+                }
+            });
+        }
     }
     
     /** Perform the action. Tries the performer and then scans the ActionMap

@@ -15,6 +15,7 @@ package org.netbeans.core.windows.persistence;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.SwingUtilities;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileAttributeEvent;
@@ -232,81 +233,113 @@ class ModuleChangeHandler implements FileChangeListener {
     private void addMode (String modeName) {
         log("addMode" + " mo:" + modeName);
         WindowManagerParser wmParser = PersistenceManager.getDefault().getWindowManagerParser();
-        ModeConfig modeConfig = wmParser.addMode(modeName);
+        final ModeConfig modeConfig = wmParser.addMode(modeName);
         if (modeConfig != null) {
-            WindowManagerImpl wmi = (WindowManagerImpl) WindowManager.getDefault();
-            wmi.getPersistenceObserver().modeConfigAdded(modeConfig);
+            // #37529 WindowsAPI to be called from AWT thread only.
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    WindowManagerImpl.getInstance().getPersistenceObserver().modeConfigAdded(modeConfig);
+                }
+            });
         }
     }
     
     private void addGroup (String groupName) {
         log("addGroup" + " group:" + groupName);
         WindowManagerParser wmParser = PersistenceManager.getDefault().getWindowManagerParser();
-        GroupConfig groupConfig = wmParser.addGroup(groupName);
+        final GroupConfig groupConfig = wmParser.addGroup(groupName);
         if (groupConfig != null) {
-            WindowManagerImpl wmi = (WindowManagerImpl) WindowManager.getDefault();
-            wmi.getPersistenceObserver().groupConfigAdded(groupConfig);
+            // #37529 WindowsAPI to be called from AWT thread only.
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    WindowManagerImpl.getInstance().getPersistenceObserver().groupConfigAdded(groupConfig);
+                }
+            });
         }
     }
     
-    private void addTCRef (String modeName, String tcRefName) {
+    private void addTCRef (final String modeName, String tcRefName) {
         log("addTCRef" + " modeName:" + modeName
         + " tcRefName:" + tcRefName);
         WindowManagerParser wmParser = PersistenceManager.getDefault().getWindowManagerParser();
         List tcRefNameList = new ArrayList(10);
-        TCRefConfig tcRefConfig = wmParser.addTCRef(modeName, tcRefName, tcRefNameList);
+        final TCRefConfig tcRefConfig = wmParser.addTCRef(modeName, tcRefName, tcRefNameList);
         if (tcRefConfig != null) {
-            String [] tcRefNameArray = (String []) tcRefNameList.toArray(new String[tcRefNameList.size()]);
-            WindowManagerImpl wmi = (WindowManagerImpl) WindowManager.getDefault();
-            wmi.getPersistenceObserver().topComponentRefConfigAdded(modeName, tcRefConfig, tcRefNameArray);
+            final String [] tcRefNameArray = (String []) tcRefNameList.toArray(new String[tcRefNameList.size()]);
+            // #37529 WindowsAPI to be called from AWT thread only.
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    WindowManagerImpl.getInstance().getPersistenceObserver().topComponentRefConfigAdded(modeName, tcRefConfig, tcRefNameArray);
+                }
+            });
         }
     }
     
-    private void addTCGroup (String groupName, String tcGroupName) {
+    private void addTCGroup (final String groupName, String tcGroupName) {
         log("addTCGroup" + " groupName:" + groupName
         + " tcGroupName:" + tcGroupName);
         WindowManagerParser wmParser = PersistenceManager.getDefault().getWindowManagerParser();
-        TCGroupConfig tcGroupConfig = wmParser.addTCGroup(groupName, tcGroupName);
+        final TCGroupConfig tcGroupConfig = wmParser.addTCGroup(groupName, tcGroupName);
         if (tcGroupConfig != null) {
-            WindowManagerImpl wmi = (WindowManagerImpl) WindowManager.getDefault();
-            wmi.getPersistenceObserver().topComponentGroupConfigAdded(groupName, tcGroupConfig);
+            // #37529 WindowsAPI to be called from AWT thread only.
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    WindowManagerImpl.getInstance().getPersistenceObserver().topComponentGroupConfigAdded(groupName, tcGroupConfig);
+                }
+            });
         }
     }
     
-    private void removeMode (String modeName) {
+    private void removeMode (final String modeName) {
         log("removeMode" + " mo:" + modeName);
         WindowManagerParser wmParser = PersistenceManager.getDefault().getWindowManagerParser();
         wmParser.removeMode(modeName);
         //Mode is not removed from model because it can already contain TCs added
         //by user using GUI eg.D&D.
-        //WindowManagerImpl wmi = (WindowManagerImpl) WindowManager.getDefault();
-        //wmi.getPersistenceObserver().modeConfigRemoved(modeName);
+        // #37529 WindowsAPI to be called from AWT thread only.
+        //SwingUtilities.invokeLater(new Runnable() {
+        //    public void run() {
+        //      WindowManagerImpl.getInstance().getPersistenceObserver().modeConfigRemoved(modeName);
+        //    }
+        //});
     }
     
-    private void removeGroup (String groupName) {
+    private void removeGroup (final String groupName) {
         log("removeGroup" + " group:" + groupName);
         WindowManagerParser wmParser = PersistenceManager.getDefault().getWindowManagerParser();
         wmParser.removeGroup(groupName);
-        WindowManagerImpl wmi = (WindowManagerImpl) WindowManager.getDefault();
-        wmi.getPersistenceObserver().groupConfigRemoved(groupName);
+        // #37529 WindowsAPI to be called from AWT thread only.
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                WindowManagerImpl.getInstance().getPersistenceObserver().groupConfigRemoved(groupName);
+            }
+        });
     }
     
-    private void removeTCRef (String tcRefName) {
+    private void removeTCRef (final String tcRefName) {
         log("removeTCRef" + " tcRefName:" + tcRefName);
         WindowManagerParser wmParser = PersistenceManager.getDefault().getWindowManagerParser();
         if (wmParser.removeTCRef(tcRefName)) {
-            WindowManagerImpl wmi = (WindowManagerImpl) WindowManager.getDefault();
-            wmi.getPersistenceObserver().topComponentRefConfigRemoved(tcRefName);
+            // #37529 WindowsAPI to be called from AWT thread only.
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    WindowManagerImpl.getInstance().getPersistenceObserver().topComponentRefConfigRemoved(tcRefName);
+                }
+            });
         }
     }
     
-    private void removeTCGroup (String groupName, String tcGroupName) {
+    private void removeTCGroup (final String groupName, final String tcGroupName) {
         log("removeTCGroup" + " groupName:" + groupName
         + " tcGroupName:" + tcGroupName);
         WindowManagerParser wmParser = PersistenceManager.getDefault().getWindowManagerParser();
         if (wmParser.removeTCGroup(groupName, tcGroupName)) {
-            WindowManagerImpl wmi = (WindowManagerImpl) WindowManager.getDefault();
-            wmi.getPersistenceObserver().topComponentGroupConfigRemoved(groupName, tcGroupName);
+            // #37529 WindowsAPI to be called from AWT thread only.
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    WindowManagerImpl.getInstance().getPersistenceObserver().topComponentGroupConfigRemoved(groupName, tcGroupName);
+                }
+            });
         }
     }
     
