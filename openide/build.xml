@@ -109,7 +109,6 @@ Microsystems, Inc. All Rights Reserved.
       <include name="org/openide/filesystems/LocalFileSystem.java"/>
       <include name="org/openide/filesystems/JarFileSystem.java"/>
       <include name="org/openide/filesystems/AbstractFileSystem.java"/>
-      <include name="org/openide/filesystems/Repository.java"/>
       <include name="org/openide/explorer/propertysheet/PropertyDialogManager.java"/>
       <include name="org/openide/explorer/propertysheet/SetDefaultValueAction.java"/>
       <include name="org/openide/awt/Toolbar.java"/>
@@ -150,32 +149,17 @@ Microsystems, Inc. All Rights Reserved.
     </jar>
   </target>
   
-  <target name="jars" depends="libs,compile,13javac-workaround">
+  <target name="jars" depends="compile,13javac-workaround">
     <mkdir dir="netbeans/lib"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
     <locjar jarfile="netbeans/lib/openide.jar"
             manifest="manifest-subst.mf"
+            basedir="src"
+	    excludesfile="../nbbuild/standard-jar-excludes.txt"
 	    compress="false">
       <locale name="ja"/>
-      
-      <!-- Exclude libraries included in openide-fs.jar, openide-util, etc. -->
-      <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt" >
-           <include name="org/openide/**" />
-      	   <exclude name="org/openide/filesystems/**" />
-           <exclude name="org/openide/util/**"/>
-           
-           <!-- Part of openide-util.jar -->
-           <exclude name="org/openide/ErrorManager*class"/> 
-      </fileset>
-      
-      <fileset dir="src">
-           <!-- But include all localized resources -->
-           <include name="org/openide/**/*_*" />
-      </fileset>
     </locjar>
-    
-    
     <!-- Create binary compatibility kit. NOBODY should compile against it unless they -->
     <!-- are trying to make their code obsolete! -->
     <mkdir dir="netbeans/lib/patches"/>
@@ -188,81 +172,6 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="netbeans" depends="jars"/>
-
-  
-  <!-- Build separate libraries for the IDE -->
-  
-  <target name="libs" depends="lib-util,lib-fs" />
-  
-  <target name="lib-util" depends="compile,13javac-workaround">
-	<mkdir dir="netbeans/lib" />
-        
-        <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-        <copy file="openide-util.mf" tofile="openide-util-subst.mf" filtering="on"/>
-        
-        <!-- include nearly whole org.openide.util, plus some important stuff around -->
-  	<jar 
-        	jarfile="netbeans/lib/openide-util.jar"
-	        manifest="openide-util-subst.mf"
-        >
-             <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt" >
-                  <include name="org/openide/ErrorManager*class"/>
-             	  <include name="org/openide/util/io/*"/>
-             	  <include name="org/openide/util/enum/*"/>
-             	  <include name="org/openide/util/datatransfer/*"/>
-                  <include name="org/openide/util/actions/*"/>
-                  
-                  <include name="org/openide/awt/JPopupMenu*class" />
-                  <include name="org/openide/awt/NbPopupMenuUI*class" />
-                  <include name="org/openide/loaders/OperationListener*class" />
-                  <include name="org/openide/filesystems/RepositoryListener*class" />
-                  <include name="org/openide/filesystems/FileChangeListener*class" />
-                  <include name="org/openide/filesystems/FileStatusListener*class" />
-                  <include name="org/openide/nodes/NodeListener*class" />
-                  
-                  <!-- exlude localized resources, they are part of openide.jar -->
-                  <exclude name="org/openide/**/*_*" />
-             </fileset>
-
-             <!-- Includes of the org/openide/util package -->
-             <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt" >
-             	  <include name="org/openide/util/*"/>
-                  
-                  <!-- exlude localized resources, they are part of openide.jar -->
-                  <exclude name="org/openide/util/*_*" />
-                  
-<!--                  <exclude name="org/openide/util/WeakListener$$FileChange.class" />
-                  <exclude name="org/openide/util/WeakListener$$FileStatus.class" />
-                  <exclude name="org/openide/util/WeakListener$$Node.class" />
-                  <exclude name="org/openide/util/WeakListener$$Operation.class" />
-                  <exclude name="org/openide/util/WeakListener$$Repository.class" />
-             	  <exclude name="org/openide/util/HttpServer*" />
--->                  
-             </fileset>
-        </jar>
-  </target>        
-  
-  <target name="lib-fs" depends="compile,13javac-workaround">
-	<mkdir dir="netbeans/lib" />
-        
-        <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-        <copy file="openide-fs.mf" tofile="openide-fs-subst.mf" filtering="on"/>
-        
-  	<jar 
-        	jarfile="netbeans/lib/openide-fs.jar"
-                manifest="openide-fs-subst.mf"
-        >
-             <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt" >
-                  <include name="org/openide/filesystems/*"/>
-                  
-                  <!-- exlude localized resources, they are part of openide.jar -->
-                  <exclude name="org/openide/filesystems/*_*" />
-                  
-<!--                  <exclude name="org/openide/filesystems/RefreshAction.class" /> -->
-             </fileset>
-        </jar>
-  </target>        
-             	
 
   <!-- Open API documentation. -->
   <target name="open-apis-check-timestamps" unless="open-apis-force-rebuild">
@@ -507,13 +416,13 @@ The Java Media Framework is separately downloadable.
       <fileset dir="src">
         <include name="**/*.class"/>
       </fileset>
+    </delete>
+    <delete>
       <fileset dir="api/examples">
         <include name="**/*.class"/>
       </fileset>
-      <fileset dir=".">
-        <include name="*-subst.mf"/>
-      </fileset>
     </delete>
+    <delete file="manifest-subst.mf"/>
     <delete dir="netbeans"/>
     <delete file="openide-13javac-workaround.jar"/>
     <delete dir="OpenAPIs"/>
