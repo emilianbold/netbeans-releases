@@ -271,7 +271,7 @@ public class BaseOptions extends OptionSupport {
     public void setColoringMap(Map coloringMap) {
         if (coloringMap != null) {
             coloringMap.remove(null); // remove kit class
-            SettingsUtil.updateColoringSettings(getKitClass(), coloringMap, false);
+// !!!           SettingsUtil.updateColoringSettings(getKitClass(), coloringMap, false);
         }
     }
 
@@ -298,7 +298,7 @@ public class BaseOptions extends OptionSupport {
                 }
             }
 
-            SettingsUtil.updateColoringSettings(getKitClass(), cm, false);
+// !!!            SettingsUtil.updateColoringSettings(getKitClass(), cm, false);
         }
     }
 

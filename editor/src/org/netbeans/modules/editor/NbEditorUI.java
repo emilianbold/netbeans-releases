@@ -242,7 +242,7 @@ public class NbEditorUI extends ExtEditorUI {
                         }
 
                         if (saClass != null) {
-                            if (TopManager.getDefault() != null) {
+                            if (NbEditorUtilities.getTopManager() != null) {
                                 systemAction = SystemAction.get(saClass);
                             }
                         }

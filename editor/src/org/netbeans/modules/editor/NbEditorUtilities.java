@@ -24,6 +24,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.JumpList;
+import org.openide.TopManager;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
@@ -141,6 +142,18 @@ public class NbEditorUtilities {
             );
             timer.start();
         }
+    }
+
+    /** Get the current system top-manager. */
+    public static TopManager getTopManager() {
+        TopManager tm;
+        try {
+            tm = TopManager.getDefault();
+        } catch (Throwable t) {
+            tm = null;
+        }
+
+        return tm;
     }
 
 }

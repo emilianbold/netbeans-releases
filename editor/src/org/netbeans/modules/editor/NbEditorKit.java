@@ -120,7 +120,7 @@ public abstract class NbEditorKit extends ExtKit {
                 }
 
                 if (saClass != null && SystemAction.class.isAssignableFrom(saClass)) {
-                    TopManager tm = TopManager.getDefault();
+                    TopManager tm = NbEditorUtilities.getTopManager();
                     if (tm != null) { // IDE initialized
                         SystemAction sa = SystemAction.get(saClass);
                         if (sa instanceof Presenter.Popup) {

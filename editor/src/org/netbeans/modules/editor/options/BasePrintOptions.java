@@ -80,7 +80,7 @@ public class BasePrintOptions extends OptionSupport {
     }
     public void setPrintColoringMap(Map coloringMap) {
         coloringMap.remove(null); // remove kit class
-        SettingsUtil.updateColoringSettings(getKitClass(), coloringMap, true);
+// !!!        SettingsUtil.updateColoringSettings(getKitClass(), coloringMap, true);
     }
 
 }

@@ -30,6 +30,7 @@ import org.netbeans.editor.LocaleSupport;
 import org.netbeans.editor.Formatter;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.html.HTMLKit;
+import org.netbeans.modules.editor.plain.PlainKit;
 import org.netbeans.modules.editor.java.JCStorage;
 import org.netbeans.modules.editor.java.JCUpdateAction;
 

@@ -32,6 +32,8 @@ import org.netbeans.modules.editor.html.HTMLKit;
 import org.netbeans.modules.editor.html.NbHTMLSettingsInitializer;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.java.NbJavaSettingsInitializer;
+import org.netbeans.modules.editor.plain.PlainKit;
+import org.netbeans.modules.editor.plain.NbPlainSettingsInitializer;
 import org.openide.actions.SaveAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.CopyAction;
@@ -45,7 +47,9 @@ import org.openide.actions.DeleteAction;
 * @version 1.00
 */
 
-public class NbEditorSettingsInitializer implements Settings.Initializer {
+public class NbEditorSettingsInitializer extends Settings.AbstractInitializer {
+
+    public static final String NAME = "nb-editor-settings-initializer";
 
     private static boolean inited;
 
@@ -57,7 +61,7 @@ public class NbEditorSettingsInitializer implements Settings.Initializer {
             Settings.addInitializer(new JavaSettingsInitializer(JavaKit.class));
             Settings.addInitializer(new HTMLSettingsInitializer(HTMLKit.class));
             Settings.addInitializer(new NbEditorSettingsInitializer());
-            Settings.addInitializer(new PlainSettingsInitializer());
+            Settings.addInitializer(new NbPlainSettingsInitializer());
             Settings.addInitializer(new NbJavaSettingsInitializer());
             Settings.addInitializer(new NbHTMLSettingsInitializer());
 
@@ -66,6 +70,7 @@ public class NbEditorSettingsInitializer implements Settings.Initializer {
     }
 
     public NbEditorSettingsInitializer() {
+        super(NAME);
     }
 
     /** Update map filled with the settings.
