@@ -13,6 +13,8 @@
 
 package com.netbeans.developer.modules.search;
 
+import java.awt.*;
+
 import javax.swing.event.*;
 
 import org.openide.nodes.*;
@@ -20,11 +22,13 @@ import org.openide.util.*;
 
 import org.openidex.search.*;
 
+import com.netbeans.developer.modules.search.res.*;
+
 /** 
  * Holds search result data.
  * 
  * @author  Petr Kuzel
- * @version 
+ * @version 1.0
  */
 public class ResultModel implements NodeAcceptor, TaskListener {
 
@@ -42,8 +46,7 @@ public class ResultModel implements NodeAcceptor, TaskListener {
   public ResultModel() {       
     
     EVENT = new ChangeEvent(this);
-    root = new AbstractNode(new Children.Array());
-    root.setDisplayName("Searching...");
+    root = new ResultRootNode();   
   }
   
   public boolean acceptNodes(Node[] nodes) {
@@ -55,7 +58,9 @@ public class ResultModel implements NodeAcceptor, TaskListener {
     
     return true;
   }
-   
+
+  /**
+  */
   public void setTask (SearchTask task) {
     this.task = task;
     this.task.addTaskListener(this);
@@ -81,11 +86,31 @@ public class ResultModel implements NodeAcceptor, TaskListener {
     if (task != null) task.stop();
   }
   
+  /** Search Result root node. May contain some statistic properties. 
+  */
+  private class ResultRootNode extends AbstractNode {
+    
+    
+    /** create new */
+    public ResultRootNode () {
+      super(new Children.Array());
+      
+      setDisplayName("Searching...");      
+    }
+    
+    /** @return universal search icon.
+    */
+    public Image getIcon(int type) {
+      return Res.image("SEARCH");
+    }
+    
+  }
 }
 
 
 /* 
 * Log
+*  3    Gandalf   1.2         12/15/99 Petr Kuzel      
 *  2    Gandalf   1.1         12/14/99 Petr Kuzel      Minor enhancements
 *  1    Gandalf   1.0         12/14/99 Petr Kuzel      
 * $ 
