@@ -98,9 +98,9 @@ public class DiffAction extends NodeAction {
         }
         Component tp;
         try {
-            tp = diff.createDiff(fo1.getName(), fo1.getPackageNameExt('/', '.'),
+            tp = diff.createDiff(fo1.getNameExt(), fo1.getPackageNameExt('/', '.'),
                                  new InputStreamReader(fo1.getInputStream()),
-                                 fo2.getName(), fo2.getPackageNameExt('/', '.'),
+                                 fo2.getNameExt(), fo2.getPackageNameExt('/', '.'),
                                  new InputStreamReader(fo2.getInputStream()), fo1.getMIMEType());
         } catch (IOException ioex) {
             TopManager.getDefault().notifyException(ioex);
