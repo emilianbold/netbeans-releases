@@ -45,8 +45,9 @@ public class RefactorRenameDialog extends testUtilities.PerformanceTestCase {
     }
     
     public void initialize() {
-        TITLE = "Rename"; //NOI18N
-        ACTION = "Refactor|Rename..."; //NOI18N
+        String BUNDLE = "org.netbeans.modules.refactoring.ui.Bundle";
+        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"LBL_Rename");  // "Rename"
+        ACTION = org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"LBL_Action") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"LBL_RenameAction"); // "Refactor|Rename..."
         testNode = new Node(new ProjectsTabOperator().getProjectRootNode("jEdit"),Utilities.SOURCE_PACKAGES + "|org.gjt.sp.jedit|jEdit.java");
     }
     

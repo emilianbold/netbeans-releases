@@ -38,7 +38,7 @@ public class CreateProject extends testUtilities.PerformanceTestCase {
      */
     public CreateProject(String testName) {
         super(testName);
-        expectedTime = WINDOW_OPEN;
+        expectedTime = 10000;
         WAIT_AFTER_OPEN=20000;
     }
     
@@ -49,25 +49,25 @@ public class CreateProject extends testUtilities.PerformanceTestCase {
      */
     public CreateProject(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        expectedTime = WINDOW_OPEN;
+        expectedTime = 10000;
         WAIT_AFTER_OPEN=20000;
     }
     
     public void testCreateJavaApplicationProject(){
-        category="Standard";
-        project="Java Application";
+        category = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle","Templates/Project/Standard"); // "Standard"
+        project = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle","Templates/Project/Standard/emptyJ2SE.xml"); // "Java Application"
         doMeasurement();
     }
     
     public void testCreateJavaLibraryProject(){
-        category="Standard";
-        project="Java Class Library";
+        category = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle","Templates/Project/Standard"); // "Standard"
+        project = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle","Templates/Project/Standard/emptyJ2SElibrary.xml"); // "Java Class Library"
         doMeasurement();
     }
     
     public void testCreateWebApplicationProject(){
-        category="Web";
-        project="Web Application";
+        category = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.projects.Bundle",""); //"Web"
+        project = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.wizards.Bundle","Templates/Project/Web/emptyWeb.xml"); //"Web Application"
         doMeasurement();
     }
 

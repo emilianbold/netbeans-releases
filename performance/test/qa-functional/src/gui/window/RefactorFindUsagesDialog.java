@@ -45,8 +45,9 @@ public class RefactorFindUsagesDialog extends testUtilities.PerformanceTestCase 
     }
     
     public void initialize() {
-        TITLE = "Find Usages"; //NOI18N
-        ACTION = "Find Usages..."; //NOI18N
+        String BUNDLE = "org.netbeans.modules.refactoring.ui.Bundle";
+        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"LBL_WhereUsed");  // "Find Usages"
+        ACTION = org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"LBL_WhereUsedAction"); // "Find Usages..."
         testNode = new Node(new ProjectsTabOperator().getProjectRootNode("jEdit"),Utilities.SOURCE_PACKAGES + "|org.gjt.sp.jedit|jEdit.java");
     }
     

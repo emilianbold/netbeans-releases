@@ -47,8 +47,9 @@ public class RefactorMoveClassDialog extends testUtilities.PerformanceTestCase {
     }
     
     public void initialize() {
-        TITLE = "Move Class"; //NOI18N
-        ACTION = "Refactor|Move Class..."; //NOI18N
+        String BUNDLE = "org.netbeans.modules.refactoring.ui.Bundle";
+        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"LBL_MoveClass");  // "Move Class"
+        ACTION = org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"LBL_Action") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"LBL_MoveClassAction"); // "Refactor|Move Class..."
         testNode = new Node(new ProjectsTabOperator().getProjectRootNode("jEdit"),Utilities.SOURCE_PACKAGES + "|org.gjt.sp.jedit|jEdit.java");
     }
     
