@@ -118,11 +118,7 @@ public class EditorWindowOperator extends NbFrameOperator {
         if(tabbed == null) {
             return getEditor();
         }
-        // waitPage should be called in jemmy - removed when fixed 28672
-        tbpEditorTabbedPane().waitPage(label);
         tbpEditorTabbedPane().selectPage(label);
-        // wait until tab is not selected
-        tbpEditorTabbedPane().waitSelected(label);
         // return selected editor
         return getEditor();
     }
@@ -141,8 +137,6 @@ public class EditorWindowOperator extends NbFrameOperator {
             return getEditor();
         }
         tbpEditorTabbedPane().selectPage(index);
-        // wait until tab is not selected
-        tbpEditorTabbedPane().waitSelected(index);
         // return selected editor
         return getEditor();
     }
@@ -153,7 +147,8 @@ public class EditorWindowOperator extends NbFrameOperator {
      * @see EditorOperator
      */
     public EditorOperator getEditor() {
-        EditorOperator ed = new EditorOperator(new ContainerOperator((Container)tbpEditorTabbedPane().getSelectedComponent()),"");
+        EditorOperator ed = new EditorOperator(new ContainerOperator(
+                    (Container)tbpEditorTabbedPane().getSelectedComponent()),"");
         ed.copyEnvironment(this);
         return ed;
     }
