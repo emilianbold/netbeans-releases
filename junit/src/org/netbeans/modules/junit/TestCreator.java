@@ -164,14 +164,15 @@ public class TestCreator extends java.lang.Object {
 
             // look for the import among all imports in the target file
             Iterator ti_it = tgtRes.getImports().iterator();
+            boolean found = false;
             while (ti_it.hasNext()) {
                 Import i = (Import)ti_it.next();
                 if (i.getName().equals(JUNIT_FRAMEWORK_PACKAGE_NAME) &&
                     i.isStatic() == false &&
-                    i.isOnDemand() == true) break;
+                        i.isOnDemand() == true) { found = true; break;}
             }
 
-            if (!ti_it.hasNext()) // not found
+            if (!found) // not found
                 tgtRes.getImports().add(createFrameworkImport(pkg));
 
             // construct/update test class from the source class
@@ -204,7 +205,6 @@ public class TestCreator extends java.lang.Object {
         
             // check whether class implements test interfaces
             if (TestUtil.isClassImplementingTestInterface(jc)) {
-                //System.err.println("!!Class implements Test Interface");
                 if (!JUnitSettings.GENERATE_TESTS_FROM_TEST_CLASSES) {
                     // we don't want to generate tests from test classes                
                     return false;
@@ -225,7 +225,6 @@ public class TestCreator extends java.lang.Object {
             // nothing from the non-static inner class is accessible (and testable),
             // except there is a class specific way how to get an instance of inner class
             if (jc.isInner() && 0 == (classModifiers & Modifier.STATIC)) {
-                //System.err.println("isClassTestable(): is inner, but not static");
                 return false;
             }
             
@@ -279,7 +278,6 @@ public class TestCreator extends java.lang.Object {
     static private Method createTestClassSuiteMethod(JavaClass tgtClass) {
 
         JavaModelPackage pkg = (JavaModelPackage)tgtClass.refImmediatePackage();
-        System.err.println("Generating suite() method for :"+tgtClass.getName());
         
         // create header of function
         Method method = createSuiteMethod(pkg);
@@ -294,7 +292,6 @@ public class TestCreator extends java.lang.Object {
         while (itic.hasNext()) {
             JavaClass jc = (JavaClass)itic.next();
             if (TestUtil.isClassTest(jc)) {
-                System.err.println("Adding inner class:"+jc.getName());
                 body.append("suite.addTest(");
                 body.append(jc.getSimpleName());
                 body.append(".suite());\n");
@@ -529,7 +526,6 @@ public class TestCreator extends java.lang.Object {
                     innerTester = pkg.getJavaClass().createJavaClass();
                     innerTester.setSimpleName(tgtClass.getName()+"."+name);
                     tgtClass.getFeatures().add(innerTester);
-                    System.err.println("THE FQN Name is: " + innerTester.getName());
                 }
                 
                 // process tested inner class the same way like top-level class
@@ -546,16 +542,14 @@ public class TestCreator extends java.lang.Object {
         if (JUnitSettings.getDefault().isGenerateSuiteClasses() &&
             (!hasSuiteMethod(tgtClass))) {
             tgtClass.getFeatures().add(createTestClassSuiteMethod(tgtClass));            
-        } else {
-            System.err.println("TestCreator.createTestClassSuiteMethod() - do not regenerate ...");
-        }
+        } 
+
         
 
         // fill methods according to the iface of tested class
         Iterator methit = TestUtil.filterFeatures(srcClass, Method.class).iterator();
         while (methit.hasNext()) {
             Method sm = (Method)methit.next();
-            System.err.println("Copying method " + sm.getName());
             if (isMethodAcceptable(sm) &&
                 tgtClass.getMethod(createTestMethodName(sm.getName()),
                                    createTestMethodParams(sm, (JavaModelPackage)tgtClass.refImmediatePackage()), 
@@ -563,9 +557,8 @@ public class TestCreator extends java.lang.Object {
                 {
                     Method tm = createTestMethod(srcClass, sm, (JavaModelPackage)tgtClass.refImmediatePackage());
                     tgtClass.getFeatures().add(tm);
-                } else {
-                    System.err.println("...SKIPPED");
-                }
+                } 
+
         }
 
 
@@ -592,41 +585,18 @@ public class TestCreator extends java.lang.Object {
 
         // find "suite()" method 
         Method suiteMethod = tgtClass.getMethod("suite", Collections.EMPTY_LIST, false);
+        tgtClass.getFeatures().remove(suiteMethod);
         
-        if (suiteMethod == null)  suiteMethod = createSuiteMethod(pkg);
-        suiteMethod.setJavadocText(NbBundle.getMessage(TestCreator.class,"TestCreator.suiteMethod.JavaDoc.comment"));
+        suiteMethod = createSuiteMethod(pkg);
+        String javadocText = NbBundle.getMessage(TestCreator.class,"TestCreator.suiteMethod.JavaDoc.comment");
+        JavaDoc jd = pkg.getJavaDoc().createJavaDoc(javadocText, Collections.EMPTY_LIST);
+        suiteMethod.setJavadoc(jd);
         
-        // generate the body of suite method
-        StringTokenizer oldBody = new StringTokenizer(suiteMethod.getBodyText(), "\n");
         StringBuffer newBody = new StringBuffer();
-        
-        boolean insideBlock = false;
-        boolean justBlockExists = false;
-        
-        
-        while (oldBody.hasMoreTokens()) {
-            String line = oldBody.nextToken();
-            
-            if (-1 != line.indexOf(GENERATED_SUITE_BLOCK_START)) {
-                insideBlock = true;
-            }
-            else if (-1 != line.indexOf(GENERATED_SUITE_BLOCK_END)) {
-                // JUst's owned suite block, regenerate it
-                insideBlock = false;
-                generateSuiteBody(tgtClass.getSimpleName(), newBody, listMembers, true);
-                justBlockExists = true;
-            }
-            else if (!insideBlock) {
-                newBody.append(line);
-                newBody.append("\n");
-            }
-        }
-        
-        if (!justBlockExists) {
-            generateSuiteBody(tgtClass.getSimpleName(), newBody, listMembers, true);
-        }
-                    
+        generateSuiteBody(tgtClass.getSimpleName(), newBody, listMembers, true);
         suiteMethod.setBodyText(newBody.toString());
+        tgtClass.getFeatures().add(suiteMethod);
+
     }
 
 
@@ -680,8 +650,6 @@ public class TestCreator extends java.lang.Object {
         String implClassName = srcClass.getSimpleName() + "Impl";
         JavaClass innerClass = tgtClass.getInnerClass(implClassName, false);
 
-        System.err.println("Creating impl of " + srcClass.getName());
-
         if (innerClass == null) {
             String name = implClassName;
             List annotations = Collections.EMPTY_LIST;
@@ -724,23 +692,19 @@ public class TestCreator extends java.lang.Object {
             tgtClass.getFeatures().add(innerClass);
         }
 
-        System.err.println("Collecting " + srcClass.getName());
         // created dummy implementation for all abstract methods
         Iterator it = TestUtil.collectFeatures(srcClass, Method.class,
                                                Modifier.ABSTRACT, true).iterator();
 
         while (it.hasNext()) {
             Method oldMethod = (Method)it.next();
-            System.err.print("About to implement " + oldMethod.getName());
             if (innerClass.getMethod(oldMethod.getName(),
                                      TestUtil.getParameterTypes(oldMethod.getParameters()),
                                      false) == null) {
-                System.err.println("...implementing");
                 Method newMethod = createMethodImpl(pkg, oldMethod);
                 innerClass.getFeatures().add(newMethod);
-            } else {
-                System.err.println("...already implemented");
-            }
+            } 
+
         }
 
 

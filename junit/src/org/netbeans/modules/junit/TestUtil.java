@@ -246,9 +246,6 @@ public class TestUtil {
             while (it.hasNext()) {
                 Element e = (Element)it.next();
                 if (e instanceof JavaClass) {
-                    System.err.println(((JavaClass)e).getName());
-                    System.err.println(resName);
-
                     if (((JavaClass)e).getName().equals(resName)) 
                         return (JavaClass)e;
                 }
@@ -405,19 +402,15 @@ public class TestUtil {
                                    List list ) 
     {
 
-        System.err.println("Collecting " + c.getName());
-
         // this class
         
         int mo = (c.isInterface()) ? Modifier.ABSTRACT : 0;
         Iterator it = TestUtil.filterFeatures(c, cls).iterator();
         while (it.hasNext()) {
             Feature m = (Feature)it.next();
-            System.err.print("Method : " + m.getName() + " ,modif:" + m.getModifiers());
             if (((m.getModifiers() | mo) & modifiers) == modifiers) {
-                System.err.println("...matches");
                 list.add(m);
-            } else System.err.println("...skipped");
+            }
         }
 
         if (recursive) {
