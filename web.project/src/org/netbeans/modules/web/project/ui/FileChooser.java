@@ -90,7 +90,6 @@ public class FileChooser extends JFileChooser {
     }
 
     public void cancelSelection() {
-        saveCurrentLocation();
         super.cancelSelection();
     }
 
