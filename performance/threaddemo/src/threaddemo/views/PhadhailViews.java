@@ -55,7 +55,8 @@ public class PhadhailViews {
     
     /** use Looks and Nodes API with an Explorer view */
     public static Component lookNodeView(Phadhail root) {
-        return nodeBasedView(Nodes.node(root, PhadhailLookSelector.PHADHAIL_LOOK, new PhadhailLookSelector()));
+        // XXX is null permitted here? Cf. #33373.
+        return nodeBasedView(Nodes.node(root, null, new PhadhailLookSelector()));
     }
     
     /** use raw Looks API with a JTree */
