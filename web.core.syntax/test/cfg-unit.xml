@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<mconfig name="unit test config">
+
+    <testbag testattribs="validation" executor="code" name="jsp syntax parser test">
+        <testset dir="unit/src">
+            <patternset>
+		<include name="**/*Test.class"/>
+		<!--include name="org/netbeans/test/web/core/syntax/CompletionTest.class"/-->
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <executor name="code" antfile="build-unit.xml" target="runcodetest"/>
+    
+    <compiler name="unit-compiler" antfile="build-unit.xml" target="unit-compiler" default="true"/>
+    
+</mconfig>
