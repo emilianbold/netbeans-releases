@@ -61,6 +61,11 @@ public class AntSettings extends SystemOption {
         setProperties (p);
         setSaveAll (true);
         setCustomDefs (new IntrospectedInfo ());
+        setCompiler (AntCompilerSupport.NoCompiler.NO_COMPILER);
+        Executor exec = Executor.find (AntExecutor.class);
+        if (exec == null)
+            exec = Executor.getDefault();
+        setExecutor (exec);
     }
 
     public String displayName () {
@@ -120,28 +125,12 @@ public class AntSettings extends SystemOption {
         putProperty (PROP_CUSTOM_DEFS, ii, true);
     }
 
-    // Compiler and Executor settings copied from JavaSettings
     /** @return CompilerType */
     public CompilerType getCompiler() {
         CompilerType.Handle compilerType = (CompilerType.Handle) getProperty (PROP_COMPILER);
-        CompilerType type = null;
-        
-        if (compilerType != null) {
-            type = (CompilerType) compilerType.getServiceType ();
-        }
-        if (type == null) {
-            return setDefaultCompilerType ();
-	}
-        return type;
+        return (CompilerType) compilerType.getServiceType ();
     }
 
-    /** Sets a default Compiler for Ant Scripts. */
-    CompilerType setDefaultCompilerType() {
-        CompilerType antCompilerType = AntCompilerSupport.NoCompiler.NO_COMPILER;
-        setCompiler(antCompilerType);
-        return antCompilerType;
-    }
-    
     /** Uses given CompilerType */
     public void setCompiler(CompilerType ct) {
         putProperty(PROP_COMPILER, new CompilerType.Handle(ct), true);
@@ -150,14 +139,6 @@ public class AntSettings extends SystemOption {
     /** @return Executor */
     public Executor getExecutor() {
         ServiceType.Handle serviceType = (ServiceType.Handle) getProperty(PROP_EXECUTOR);
-        if ((serviceType == null) || (serviceType.getServiceType() == null)) {
-            Executor exec = Executor.find (AntExecutor.class);
-            if (exec == null)
-                exec = Executor.getDefault();
-            serviceType = new ServiceType.Handle(exec);
-            putProperty(PROP_EXECUTOR, serviceType, false);
-            return exec;
-        }
         return (Executor) serviceType.getServiceType();
     }
 
