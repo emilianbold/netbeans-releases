@@ -680,7 +680,6 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
         <folder name="components">
-            <file name="Javadoc.settings" url="components/Javadoc.settings" />
             <file name="Component Inspector.settings" url="components/Component Inspector.settings" />
             <file name="Component Palette.settings" url="components/Component Palette.settings" />
         </folder>
