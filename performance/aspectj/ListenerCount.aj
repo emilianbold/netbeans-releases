@@ -181,7 +181,7 @@ aspect ListenerCount
                 }
                 else {
                     if (c != num) {
-                        System.out.println("listenerCount: " + num + "\t" + occur + "\t" + scl.getSourceClass().getName() + "[" + scl.getListenerType() + "]");
+                        System.out.println("listenerCount: " + num + "\t" + occur + "\t" + scl.getSourceClass().getName() + "\t" + scl.getListenerType());
                         num = c;
                         occur = 1;
                         continue;
@@ -191,7 +191,7 @@ aspect ListenerCount
                 occur++;
             }
             if (num > 0 && occur > 0)
-                System.out.println("listenerCount: " + num + "\t" + occur + "\t" + scl.getSourceClass().getName() + "[" + scl.getListenerType() + "]");
+                System.out.println("listenerCount: " + num + "\t" + occur + "\t" + scl.getSourceClass().getName() + "\t" + scl.getListenerType());
         }
     }
 
