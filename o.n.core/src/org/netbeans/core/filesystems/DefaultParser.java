@@ -109,10 +109,12 @@ abstract class DefaultParser  extends DefaultHandler {
 
         } catch (IOException io) {
             if (stopException()  != io) {
-                ErrorManager emgr = ErrorManager.getDefault();
-                emgr.log("While parsing: " + fo.toString());
-                emgr.notify(emgr.INFORMATIONAL, io);
-                state = ERROR;
+                if (fo.isValid() && fo.canRead()) {
+                    ErrorManager emgr = ErrorManager.getDefault();
+                    emgr.log("While parsing: " + fo.toString());
+                    emgr.notify(emgr.INFORMATIONAL, io);
+                    state = ERROR;
+                }
             }
         } catch (SAXException sex) {
             if (stopException()  != sex) {
