@@ -15,7 +15,6 @@ package org.netbeans.modules.ant.freeform.ui;
 
 import org.netbeans.api.queries.VisibilityQuery;
 import org.openide.util.Utilities;
-
 import java.util.Collections;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ant.freeform.Actions;
@@ -23,18 +22,17 @@ import org.netbeans.modules.ant.freeform.FreeformProjectType;
 import org.netbeans.modules.ant.freeform.Util;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.support.GenericSources;
-
+import org.netbeans.spi.project.support.ant.AntProjectEvent;
+import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
-
 import org.openide.loaders.ChangeableDataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.FilterNode;
 import javax.swing.Action;
-
 import java.awt.Image;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -45,7 +43,6 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-
 
 /**
  * Logical view of a freeform project.
@@ -71,7 +68,7 @@ public final class View implements LogicalViewProvider {
         return null;
     }
     
-    private static final class RootChildren extends Children.Keys/*<Element>*/ {
+    private static final class RootChildren extends Children.Keys/*<Element>*/ implements AntProjectListener {
         
         private final FreeformProject p;
         
@@ -81,6 +78,17 @@ public final class View implements LogicalViewProvider {
         
         protected void addNotify() {
             super.addNotify();
+            updateKeys();
+            p.helper().addAntProjectListener(this);
+        }
+        
+        protected void removeNotify() {
+            setKeys(Collections.EMPTY_SET);
+            p.helper().removeAntProjectListener(this);
+            super.removeNotify();
+        }
+        
+        private void updateKeys() {
             Element genldata = p.helper().getPrimaryConfigurationData(true);
             Element viewEl = Util.findElement(genldata, "view", FreeformProjectType.NS_GENERAL); // NOI18N
             if (viewEl != null) {
@@ -89,11 +97,6 @@ public final class View implements LogicalViewProvider {
             } else {
                 setKeys(Collections.EMPTY_SET);
             }
-        }
-        
-        protected void removeNotify() {
-            setKeys(Collections.EMPTY_SET);
-            super.removeNotify();
         }
         
         protected Node[] createNodes(Object key) {
@@ -135,6 +138,14 @@ public final class View implements LogicalViewProvider {
                 assert itemEl.getLocalName().equals("source-file") : itemEl;
                 return new Node[] {new ViewItemNode(fileDO.getNodeDelegate(), location, label)};
             }
+        }
+
+        public void configurationXmlChanged(AntProjectEvent ev) {
+            updateKeys();
+        }
+
+        public void propertiesChanged(AntProjectEvent ev) {
+            // ignore
         }
         
     }
