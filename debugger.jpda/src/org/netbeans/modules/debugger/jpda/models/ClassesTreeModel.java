@@ -201,8 +201,9 @@ public class ClassesTreeModel implements TreeModel {
     }
     
     private Object[] getPackages (ClassLoaderReference clr) {
-        Object[] ch = (Object[]) cache.get (clr);
-        if (clr == null) ch = (Object[]) cache.get (NULL_CLASS_LOADER);
+        Object[] ch = clr == null ?
+            (Object[]) cache.get (NULL_CLASS_LOADER) :
+            (Object[]) cache.get (clr);
         if (ch != null) return ch;
         List names = getNames ();
         Set objects = new TreeSet (comparator);
@@ -223,7 +224,10 @@ public class ClassesTreeModel implements TreeModel {
                 objects.add (new Object[] {name.substring (0, end), clr});
         }
         ch = objects.toArray ();
-        cache.put (clr, ch);
+        if (clr == null)
+            cache.put (NULL_CLASS_LOADER, ch);
+        else
+            cache.put (clr, ch);
         return ch;
     }
     
