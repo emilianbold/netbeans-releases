@@ -12,6 +12,9 @@ import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
 import org.netbeans.modules.j2ee.deployment.impl.*;
 import org.netbeans.modules.j2ee.deployment.impl.ui.*;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
+import org.openide.DialogDisplayer;
 
 /**
  *
@@ -41,10 +44,12 @@ public class RemoveInstanceAction extends CookieAction {
             ServerInstance instance = (ServerInstance) nodes[i].getCookie(ServerInstance.class);
             if (instance == null)
                 continue;
-            
-            instance.remove();
-            //Node parentNode = nodes[i].getParentNode();
-            //parentNode.getChildren().remove(new Node[] { nodes[i] });
+            String title = NbBundle.getMessage(RemoveInstanceAction.class, "MSG_RemoveInstanceTitle", instance.getDisplayName());
+            String msg = NbBundle.getMessage(RemoveInstanceAction.class, "MSG_ReallyRemoveInstance", instance.getDisplayName());
+            NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, title, NotifyDescriptor.OK_CANCEL_OPTION);
+            if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION) {
+                instance.remove();
+            }
         }
     }
     
