@@ -62,7 +62,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.awt.ToolbarToggleButton;
 
 import org.netbeans.modules.web.monitor.data.*;
 
@@ -115,7 +114,7 @@ class EditPanel extends javax.swing.JPanel implements
      * See also (PENDING) for other changes required to reintroduce
      * this feature. 
      */ 
-    //private ToolbarToggleButton browserCookieButton, savedCookieButton; 
+    //private JToggleButton browserCookieButton, savedCookieButton; 
     //private static boolean useBrowserCookie = true;
     
     final static String METHOD = "method"; //NOI18N
@@ -411,7 +410,7 @@ class EditPanel extends javax.swing.JPanel implements
 
 	// Do we use the browser's cookie or the saved cookie? 
 	browserCookieButton = 
-	    new ToolbarToggleButton(TransactionView.browserCookieIcon,
+	    new JToggleButton(TransactionView.browserCookieIcon,
 				    useBrowserCookie); 
 	browserCookieButton.setToolTipText(NbBundle.getBundle(EditPanel.class).getString("MON_Browser_cookie"));
 	browserCookieButton.addActionListener(new ActionListener() {
@@ -424,7 +423,7 @@ class EditPanel extends javax.swing.JPanel implements
 	    });
 
 	savedCookieButton = 
-	    new ToolbarToggleButton(TransactionView.savedCookieIcon,
+	    new JToggleButton(TransactionView.savedCookieIcon,
 				    !useBrowserCookie); 
 	savedCookieButton.setToolTipText(NbBundle.getBundle(EditPanel.class).getString("MON_Saved_cookie"));
 	savedCookieButton.addActionListener(new ActionListener() {

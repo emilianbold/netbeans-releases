@@ -38,11 +38,13 @@ import java.io.ObjectStreamException;
 import java.io.Serializable;
 import javax.swing.Icon;     
 import javax.swing.ImageIcon;     
+import javax.swing.JButton;
 import javax.swing.JFrame;     
 import javax.swing.JPanel;     
 import javax.swing.JScrollPane;      
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;    
+import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.border.CompoundBorder;     
@@ -51,8 +53,6 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.event.ChangeListener;    
 import javax.swing.event.ChangeEvent;    
 
-import org.openide.awt.ToolbarButton;
-import org.openide.awt.ToolbarToggleButton;
 import org.openide.explorer.ExplorerPanel;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
@@ -82,7 +82,7 @@ class TransactionView extends ExplorerPanel implements
     private transient static Controller controller = null;
 
     // Misc
-    private transient ToolbarToggleButton timeAButton, 	timeDButton,
+    private transient JToggleButton timeAButton, 	timeDButton,
 	alphaButton; 
 
     /* These buttons were used for the feature that allows the user to
@@ -97,7 +97,7 @@ class TransactionView extends ExplorerPanel implements
      * that are not there now). If so, the feature can be
      * reintroduced. 
      */ 
-    //private transient ToolbarToggleButton browserCookieButton, savedCookieButton; 
+    //private transient JToggleButton browserCookieButton, savedCookieButton; 
 
     // Sizing and stuff...
     private transient  Dimension logD = new Dimension(250, 400);
@@ -362,20 +362,20 @@ class TransactionView extends ExplorerPanel implements
 				    ));
 	buttonPanel.setFloatable (false);
 
-	ToolbarButton updateButton = new ToolbarButton(updateIcon);
+	JButton updateButton = new JButton(updateIcon);
 	updateButton.setToolTipText(NbBundle.getBundle(TransactionView.class).getString("MON_Reload_all_17"));
 	updateButton.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
 		    controller.getTransactions();
 		}});
 
-	timeAButton = new ToolbarToggleButton(timesortAIcon, false);
+	timeAButton = new JToggleButton(timesortAIcon, false);
 	timeAButton.setToolTipText(NbBundle.getBundle(TransactionView.class).getString("MON_Order_transactions_15"));
 
 	timeAButton.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
 
-		    if(!((ToolbarToggleButton)e.getSource()).isSelected())
+		    if(!((JToggleButton)e.getSource()).isSelected())
 			return;
 		    else {
 			timeDButton.setSelected(false);
@@ -385,12 +385,12 @@ class TransactionView extends ExplorerPanel implements
 		    }
 		}});
 
-	timeDButton = new ToolbarToggleButton(timesortDIcon, true);
+	timeDButton = new JToggleButton(timesortDIcon, true);
 	timeDButton.setToolTipText(NbBundle.getBundle(TransactionView.class).getString("MON_Order_transactions_16"));
 	timeDButton.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
 
-		    if(!((ToolbarToggleButton)e.getSource()).isSelected())
+		    if(!((JToggleButton)e.getSource()).isSelected())
 			return;
 		    else {
 			timeAButton.setSelected(false);
@@ -401,12 +401,12 @@ class TransactionView extends ExplorerPanel implements
 
 		}});
 
-	alphaButton = new ToolbarToggleButton(a2zIcon, false);
+	alphaButton = new JToggleButton(a2zIcon, false);
 	alphaButton.setToolTipText(NbBundle.getBundle(TransactionView.class).getString("MON_Order_transactions_14"));
 	alphaButton.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
 
-		    if(!((ToolbarToggleButton)e.getSource()).isSelected())
+		    if(!((JToggleButton)e.getSource()).isSelected())
 			return;
 		    else {
 			timeAButton.setSelected(false);
@@ -421,7 +421,7 @@ class TransactionView extends ExplorerPanel implements
 	// See comment above for variable declaration
 	// "browserCookieButton"
 	/*
-	browserCookieButton = new ToolbarToggleButton(browserCookieIcon, true);
+	browserCookieButton = new JToggleButton(browserCookieIcon, true);
 	browserCookieButton.setToolTipText(NbBundle.getBundle(TransactionView.class).getString("MON_Browser_cookie"));
 	browserCookieButton.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
@@ -431,7 +431,7 @@ class TransactionView extends ExplorerPanel implements
 
 		}});
 
-	savedCookieButton = new ToolbarToggleButton(savedCookieIcon, false);
+	savedCookieButton = new JToggleButton(savedCookieIcon, false);
 	savedCookieButton.setToolTipText(NbBundle.getBundle(TransactionView.class).getString("MON_Saved_cookie"));
 	savedCookieButton.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
@@ -442,8 +442,8 @@ class TransactionView extends ExplorerPanel implements
 
 	*/
 
-	ToolbarToggleButton timestampButton = new
-	    ToolbarToggleButton(timestampIcon,
+	JToggleButton timestampButton = new
+	    JToggleButton(timestampIcon,
 				TransactionNode.showTimeStamp());
 	timestampButton.setToolTipText(NbBundle.getBundle(TransactionView.class).getString("MON_Show_time_25"));
 	timestampButton.addActionListener(new ActionListener() {
