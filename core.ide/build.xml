@@ -34,9 +34,7 @@ Microsystems, Inc. All Rights Reserved.
                     <include name="openide*.jar" />
                 </fileset>
 				<pathelement location="../netbeans/lib/core.jar"/>
-                <pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
                 <pathelement location="${binroot}/core/release/lib/ext/${xml-apis}"/>
-<!--                <pathelement location="${binroot}/core/release/lib/ext/jh.jar"/> -->
             </classpath>
         </javac>
     </target>
@@ -54,14 +52,7 @@ Microsystems, Inc. All Rights Reserved.
         </locjar>
     </target>
 
-    <target name="release">
-<!--
-        <mkdir dir="netbeans/lib/autoload/ext"/>
-        <copy file="${binroot}/core/release/lib/ext/jh.jar" tofile="netbeans/modules/autoload/ext/jh-1.1.2_02.jar"/>
--->
-    </target>
-
-    <target name="netbeans" depends="jars,release">
+    <target name="netbeans" depends="jars">
         <genlist targetname="nbm" outputfiledir="../../nbbuild/netbeans"/>
     </target>
 
@@ -71,25 +62,9 @@ Microsystems, Inc. All Rights Reserved.
                  module="netbeans/lib/core-ide.jar"
                  homepage="http://core.${homepage.base}/"
                  distribution="http://${dist.base}/core-ide.nbm">
-            <license name="core-ide-license.txt">
-                <text>For the core-ide module:</text>
-                <file location="${license.file}"/>
-                <!-- 
-		<text>For the bundled JavaHelp runtime library:</text> 
-                <file location="javahelp-license.txt"/>
-		-->
-            </license>
+            <license file="${license.file}"/>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>
-    </target>
-
-    <target name="test-build" depends="jars">
-        <mkdir dir="reload/ext"/>
-        <copy file="netbeans/lib/core-ide.jar" tofile="reload/core-ide.jar"/>
-        <!-- <copy file="${binroot}/core/release/lib/ext/jh.jar" tofile="reload/ext/jh-1.1.2_02.jar"/> -->
-    </target>
-    <target name="test" depends="test-build">
-        <nbinstaller module="reload/core-ide.jar" action="reinstall"/>
     </target>
 
     <target name="clean">
@@ -102,10 +77,6 @@ Microsystems, Inc. All Rights Reserved.
         <delete file="core-ide.nbm"/>
         <delete dir="Info"/>
         <delete file="manifest-subst.mf"/>
-    </target>
-
-    <target name="real-clean" depends="clean">
-        <delete dir="reload"/>
     </target>
 
 </project>

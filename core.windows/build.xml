@@ -25,23 +25,21 @@ Microsystems, Inc. All Rights Reserved.
     <property name="binroot" location="../../../nbextra"/>
     <property name="xml-apis" value="xml-apis.jar"/>
 
-    <target name="compile">
     <!--
+    <target name="compile">
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
             <classpath>
                 <pathelement location="../../openide/openide-13javac-workaround.jar"/>
                 <fileset dir="../../openide/netbeans/lib">
                     <include name="openide*.jar" />
                 </fileset>
-                <pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
                 <pathelement location="${binroot}/core/release/lib/ext/${xml-apis}"/>
-                <pathelement location="${binroot}/core/release/lib/ext/jh.jar"/>
             </classpath>
         </javac>
-	-->
     </target>
+	-->
 
-    <target name="jars" depends="compile">
+    <target name="jars">
         <mkdir dir="netbeans/lib"/>
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
@@ -54,14 +52,7 @@ Microsystems, Inc. All Rights Reserved.
         </locjar>
     </target>
 
-    <target name="release">
-<!--
-        <mkdir dir="netbeans/lib/autoload/ext"/>
-        <copy file="${binroot}/core/release/lib/ext/jh.jar" tofile="netbeans/modules/autoload/ext/jh-1.1.2_02.jar"/>
--->
-    </target>
-
-    <target name="netbeans" depends="jars,release">
+    <target name="netbeans" depends="jars">
         <genlist targetname="nbm" outputfiledir="../../nbbuild/netbeans"/>
     </target>
 
@@ -71,25 +62,9 @@ Microsystems, Inc. All Rights Reserved.
                  module="netbeans/lib/core-windows.jar"
                  homepage="http://core.${homepage.base}/"
                  distribution="http://${dist.base}/core-windows.nbm">
-            <license name="core-windows-license.txt">
-                <text>For the core-windows module:</text>
-                <file location="${license.file}"/>
-                <!-- 
-		<text>For the bundled JavaHelp runtime library:</text> 
-                <file location="javahelp-license.txt"/>
-		-->
-            </license>
+            <license file="${license.file}"/>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>
-    </target>
-
-    <target name="test-build" depends="jars">
-        <mkdir dir="reload/ext"/>
-        <copy file="netbeans/lib/core-windows.jar" tofile="reload/core-windows.jar"/>
-        <!-- <copy file="${binroot}/core/release/lib/ext/jh.jar" tofile="reload/ext/jh-1.1.2_02.jar"/> -->
-    </target>
-    <target name="test" depends="test-build">
-        <nbinstaller module="reload/core-windows.jar" action="reinstall"/>
     </target>
 
     <target name="clean">
@@ -102,10 +77,6 @@ Microsystems, Inc. All Rights Reserved.
         <delete file="core-windows.nbm"/>
         <delete dir="Info"/>
         <delete file="manifest-subst.mf"/>
-    </target>
-
-    <target name="real-clean" depends="clean">
-        <delete dir="reload"/>
     </target>
 
 </project>
