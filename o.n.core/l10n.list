@@ -5,8 +5,6 @@ core/release/CREDITS.html
 core/bootstrap/src/**/Bundle.properties
 core/execution/src/**/Bundle.properties
 core/ide/src/**/Bundle.properties
-core/ide/release/README.html
-core/ide/release/shortcuts.pdf
 core/javahelp/src/**/Bundle.properties
 core/javahelp/src/org/netbeans/modules/javahelp/resources/masterHelpPage.html
 core/javahelp/src/org/netbeans/modules/javahelp/resources/masterHelpSet.xml
