@@ -162,7 +162,22 @@ public class NbEditorKit extends ExtKit {
             if ( pendingNodeActivator instanceof Runnable) {
                 ((Runnable)pendingNodeActivator).run();
             }
-            return super.buildPopupMenu(target);
+
+            // to make keyboard navigation (Up/Down keys) inside popup work, we
+            // must use JPopupMenuPlus instead of JPopupMenu
+            
+            JPopupMenu popup = super.buildPopupMenu(target);
+            if (popup instanceof org.openide.awt.JPopupMenuPlus)
+                return popup;
+
+            java.awt.Component[] comps = popup.getComponents();
+            popup.removeAll();
+
+            org.openide.awt.JPopupMenuPlus popupPlus = new org.openide.awt.JPopupMenuPlus();
+            for (int i = 0; i < comps.length; i++) {
+                popupPlus.add(comps[i]);
+            }
+            return popupPlus;
         }
         
         protected void addAction(JTextComponent target, JPopupMenu popupMenu,
