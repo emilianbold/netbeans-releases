@@ -36,6 +36,9 @@ Microsystems, Inc. All Rights Reserved.
        <pathelement location="${nbroot}/openide/explorer/netbeans/lib/openide-explorer.jar"/>
        <pathelement location="${nbroot}/openide/fs/netbeans/lib/openide-fs.jar"/>
     </path>
+    <javac srcdir="src" >
+       <classpath refid="classpath" />
+    </javac>
     <ant dir="${nbroot}/openide" target="do-lib-javac" inheritRefs="true" >
       <property name="localdir" location="src" />
       <property name="selector" value="openide.actions" />
