@@ -36,7 +36,6 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
-import org.openide.util.WeakListener;
 import org.openide.windows.TopComponent;
 
 
