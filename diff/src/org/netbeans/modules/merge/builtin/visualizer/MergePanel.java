@@ -41,7 +41,7 @@ import org.netbeans.modules.diff.builtin.visualizer.LinesComponent;
  * @author  Martin Entlicher
  */
 public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopComponent { */
-
+    
     // scroll 4 lines vertically
     private static final double VERTICAL_SCROLL_NUM_LINES = 4.0;
     // scroll 4 "lines" horizontally
@@ -135,6 +135,12 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
         commandPanel.setLayout(new java.awt.GridBagLayout());
 
         firstConflictButton.setPreferredSize(new java.awt.Dimension(24, 24));
+        firstConflictButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                firstConflictButtonActionPerformed(evt);
+            }
+        });
+
         commandPanel.add(firstConflictButton, new java.awt.GridBagConstraints());
 
         prevConflictButton.setToolTipText(org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.prevButton.toolTipText"));
@@ -142,6 +148,12 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
         prevConflictButton.setMaximumSize(new java.awt.Dimension(24, 24));
         prevConflictButton.setMargin(new java.awt.Insets(1, 1, 0, 1));
         prevConflictButton.setMinimumSize(new java.awt.Dimension(24, 24));
+        prevConflictButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                prevConflictButtonActionPerformed(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 1);
@@ -152,12 +164,24 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
         nextConflictButton.setMaximumSize(new java.awt.Dimension(24, 24));
         nextConflictButton.setMargin(new java.awt.Insets(1, 1, 0, 1));
         nextConflictButton.setMinimumSize(new java.awt.Dimension(24, 24));
+        nextConflictButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                nextConflictButtonActionPerformed(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 1, 0, 1);
         commandPanel.add(nextConflictButton, gridBagConstraints);
 
         lastConflictButton.setPreferredSize(new java.awt.Dimension(24, 24));
+        lastConflictButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                lastConflictButtonActionPerformed(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 1, 0, 2);
@@ -209,9 +233,9 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 2);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 2);
         leftCommandPanel.add(acceptAndNextLeftButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -270,9 +294,9 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.RELATIVE;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 2);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 2);
         rightCommandPanel.add(acceptAndNextRightButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -341,6 +365,22 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
         add(editorPanel, gridBagConstraints);
 
     }//GEN-END:initComponents
+
+    private void firstConflictButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_firstConflictButtonActionPerformed
+        // Add your handling code here:
+    }//GEN-LAST:event_firstConflictButtonActionPerformed
+
+    private void prevConflictButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_prevConflictButtonActionPerformed
+        // Add your handling code here:
+    }//GEN-LAST:event_prevConflictButtonActionPerformed
+
+    private void nextConflictButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nextConflictButtonActionPerformed
+        // Add your handling code here:
+    }//GEN-LAST:event_nextConflictButtonActionPerformed
+
+    private void lastConflictButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lastConflictButtonActionPerformed
+        // Add your handling code here:
+    }//GEN-LAST:event_lastConflictButtonActionPerformed
 
     private void acceptRightButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_acceptRightButtonActionPerformed
         // Add your handling code here:

@@ -36,6 +36,8 @@ public class MergeControl extends Object {
     private Difference[] diffs;
     /** The shift of differences */
     private int[][] diffShifts;
+    /** The current diff */
+    private int currentDiffLine = 0;
     
     /** Creates a new instance of MergeControl */
     public MergeControl(/*MergeDialogComponent component, */MergePanel panel) {
@@ -169,4 +171,14 @@ public class MergeControl extends Object {
         panel.copySource1ToResult(line1 - 1, -1, line3);
     }
 
+    private void showCurrentLine() {
+        Difference diff = diffs[currentDiffLine];
+        int line = diff.getFirstStart() + diffShifts[currentDiffLine][0];
+        if (diff.getType() == Difference.ADD) line++;
+        int lf1 = diff.getFirstEnd() - diff.getFirstStart() + 1;
+        int lf2 = diff.getSecondEnd() - diff.getSecondStart() + 1;
+        int length = Math.max(lf1, lf2);
+        panel.setCurrentLine(line, length);
+    }
+    
 }
