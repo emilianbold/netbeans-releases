@@ -166,7 +166,7 @@ public class PropertyPanel extends JPanel {
         gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints1.insets = new java.awt.Insets(17, 12, 0, 11);
         gridBagConstraints1.weightx = 1.0;
-        gridBagConstraints1.weighty = 0.5;
+        gridBagConstraints1.weighty = 1.0;
         add(commentScroll, gridBagConstraints1);
         
         
@@ -227,7 +227,6 @@ public class PropertyPanel extends JPanel {
         gridBagConstraints1.gridwidth = 2;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints1.insets = new java.awt.Insets(7, 12, 0, 11);
-        gridBagConstraints1.weighty = 1.0;
         add(keyBundleCombo, gridBagConstraints1);
         
         

@@ -25,8 +25,9 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.i18n.I18nUtil;
 
 import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
 import org.openide.TopManager;
-import org.openide.util.actions.CallableSystemAction;
+import org.openide.util.actions.NodeAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -38,25 +39,48 @@ import org.openide.WizardDescriptor;
  *
  * @author  Peter Zavadsky
  */
-public class I18nTestWizardAction extends CallableSystemAction {
+public class I18nTestWizardAction extends NodeAction {
 
     /** Generated serial version UID. */
     static final long serialVersionUID = -3265587506739081248L;
 
     
+    /** Implements superclass abstract method. 
+     * @return <code>true</code> */
+    protected boolean enable(Node[] activatedNodes) {
+        return true;
+    }
+    
     /** Actually performs action. Implements superclass abstract method. */
-    public void performAction() {
+    public void performAction(Node[] activatedNodes) {
         
+        WizardDescriptor wizardDescriptor = new I18nWizardDescriptor(
+            getWizardIterator(),
+            I18nWizardAction.getSettings(activatedNodes)
+        );
+
+        initWizard(wizardDescriptor);
+        
+        Dialog dialog = TopManager.getDefault().createDialog(wizardDescriptor);
+        
+        dialog.show();
+    }
+
+    /** Gets wizard iterator thru panels used in wizard invoked by this action, 
+     * i.e I18N wizard. */
+    private WizardDescriptor.Iterator getWizardIterator() {
         ArrayList panels = new ArrayList(3);
+        
         panels.add(new SourceWizardPanel.Panel(true));
         panels.add(new ResourceWizardPanel.Panel(true));
         panels.add(new TestStringWizardPanel.Panel());
         
-        WizardDescriptor wizardDesc = new I18nWizardDescriptor(
-            new WizardDescriptor.ArrayIterator((WizardDescriptor.Panel[])panels.toArray(new WizardDescriptor.Panel[panels.size()])),
-            new TreeMap(new SourceData.DataObjectComparator())
-        );
-
+        return new WizardDescriptor.ArrayIterator(
+            (WizardDescriptor.Panel[])panels.toArray(new WizardDescriptor.Panel[panels.size()]));
+    }
+    
+    /** Initializes wizard descriptor. */
+    private void initWizard(WizardDescriptor wizardDesc) {
         // Init properties.
         wizardDesc.putProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); // NOI18N
         wizardDesc.putProperty("WizardPanel_contentDisplayed", Boolean.TRUE); // NOI18N
@@ -73,12 +97,8 @@ public class I18nTestWizardAction extends CallableSystemAction {
         wizardDesc.setTitleFormat(new MessageFormat("{0} ({1})")); // NOI18N
 
         wizardDesc.setModal(false);
-        
-        Dialog dialog = TopManager.getDefault().createDialog(wizardDesc);
-        
-        dialog.show();
     }
-
+    
     /** Gets localized name of action. Overrides superclass method. */
     public String getName() {
         return NbBundle.getBundle(getClass()).getString("LBL_TestWizardActionName");

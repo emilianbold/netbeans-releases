@@ -360,7 +360,7 @@ public class HardStringWizardPanel extends JPanel {
             
             editorComponent.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
-                    PropertyPanel panel = new PropertyPanel();
+                    PropertyPanel panel = i18nString.getSupport().getPropertyPanel();
                     panel.setI18nString(i18nString);
 
                     DialogDescriptor dd = new DialogDescriptor(panel,"Customize Property");

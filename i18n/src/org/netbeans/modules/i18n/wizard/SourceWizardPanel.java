@@ -17,6 +17,9 @@ package org.netbeans.modules.i18n.wizard;
 
 import java.awt.Component;
 import java.beans.BeanInfo;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import javax.swing.DefaultListCellRenderer;
@@ -194,7 +197,7 @@ public class SourceWizardPanel extends JPanel {
       
         Node repositoryNode = TopManager.getDefault().getPlaces().nodes().repository(dataFilter);
       
-        // Selects sources data object.
+        // Selects source data objects which could be i18n-ized.
         try {
             Node[] selectedNodes= TopManager.getDefault().getNodeOperation().select(
                 NbBundle.getBundle(SourceWizardPanel.class).getString("LBL_SelectSources"),
@@ -212,17 +215,31 @@ public class SourceWizardPanel extends JPanel {
                             if(dataObject == null)
                                 return false;
 
+                            // if it is folder and constains some our data object.
+                            if(dataObject instanceof DataFolder && containsAcceptedDataObject((DataFolder)dataObject))
+                                return true;
+                            
                             // Has to have registered i18n factory for that data object class name.
-                            if(!FactoryRegistry.hasFactory(dataObject.getClass().getName()))
-                                return false;
+                            if(FactoryRegistry.hasFactory(dataObject.getClass().getName()))
+                                return true;
                         }
                         
-                        return true;
+                        return false;
                     }
-            });
+                    
+                }
+            );
             
             for(int i=0; i<selectedNodes.length; i++) {
-                sourceMap.put(selectedNodes[i].getCookie(DataObject.class), null);
+                DataObject dataObject = (DataObject)selectedNodes[i].getCookie(DataObject.class);
+
+                if(dataObject instanceof DataFolder) {
+                    Iterator it = getAcceptedDataObjects((DataFolder)dataObject).iterator();
+                    while(it.hasNext()) 
+                        sourceMap.put(it.next(), null);
+                    
+                } else
+                    sourceMap.put(selectedNodes[i].getCookie(DataObject.class), null);
             }
             
             sourcesList.setListData(sourceMap.keySet().toArray());
@@ -230,10 +247,9 @@ public class SourceWizardPanel extends JPanel {
             descPanel.fireStateChanged();
         } catch (UserCancelException uce) {
             if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                System.err.println("I18N module: User cancelled selection"); // NOI18N
+                System.err.println("I18N: User cancelled selection"); // NOI18N
         }
     }//GEN-LAST:event_addButtonActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel sourcesLabel;
@@ -243,6 +259,41 @@ public class SourceWizardPanel extends JPanel {
     private javax.swing.JButton removeButton;
     // End of variables declaration//GEN-END:variables
 
+    /** Indicates if folder contains some from accepted data objects. */
+    static boolean containsAcceptedDataObject(DataFolder folder) {
+        DataObject[] children = folder.getChildren();
+
+        for(int i = 0; i < children.length; i++) {
+            if(children[i] instanceof DataFolder) {  
+                if(containsAcceptedDataObject((DataFolder)children[i]))
+                    return true;
+            } else {
+                if(FactoryRegistry.hasFactory(children[i].getClass().getName()))
+                    return true;
+            }
+        }
+
+        return false;
+    }
+    
+    /** Utility method. Gets all accepted data objects from given folder. */
+    static List getAcceptedDataObjects(DataFolder folder) {
+        List accepted = new ArrayList();
+        
+        DataObject[] children = folder.getChildren();
+
+        for(int i = 0; i < children.length; i++) {
+            if(children[i] instanceof DataFolder) {  
+                accepted.addAll(getAcceptedDataObjects((DataFolder)children[i]));
+            } else {
+                if(FactoryRegistry.hasFactory(children[i].getClass().getName()))
+                    accepted.add(children[i]);
+            }
+        }
+
+        return accepted;
+    }
+    
 
     /** List cell rendrerer which uses data object as values. */
     public static class DataObjectListCellRenderer extends DefaultListCellRenderer {
