@@ -1,0 +1,12 @@
+OpenIDE-Module: org.netbeans.modules.web.debug/1
+OpenIDE-Module-Name: JSP/Servlet Breakpoint Support
+OpenIDE-Module-Display-Category: Web
+OpenIDE-Module-Install: org/netbeans/modules/web/debug/DebugModule.class
+OpenIDE-Module-Layer: org/netbeans/modules/web/debug/layer.xml
+OpenIDE-Module-Specification-Version: 1.0
+OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
+OpenIDE-Module-Module-Dependencies: org.netbeans.modules.web.core/1
+
+Name: org/netbeans/modules/web/debug/JspLoaderIE.class
+OpenIDE-Module-Class: Loader
+Install-Before: org.netbeans.modules.web.core.jsploader.JspDataObject
