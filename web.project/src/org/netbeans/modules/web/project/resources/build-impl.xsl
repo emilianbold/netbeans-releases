@@ -844,11 +844,22 @@ is divided into following sections:
                         </xsl:call-template>
                     </xsl:if>
                     <xsl:if test="//webproject3:library[@dirs]">
-                        <xsl:call-template name="copyIterateDirs">
-                            <xsl:with-param name="files" select="@dirs"/>
-                            <xsl:with-param name="target" select="concat('${build.web.dir.real}/',$copyto)"/>
-                            <xsl:with-param name="libfile" select="webproject3:file"/>
-                        </xsl:call-template>
+                        <xsl:choose>
+                            <xsl:when test="webproject3:path-in-war-classes">
+                                <xsl:call-template name="copyIterateDirs">
+                                    <xsl:with-param name="files" select="@dirs"/>
+                                    <xsl:with-param name="target" select="concat('${build.web.dir.real}/',webproject3:path-in-war-classes)"/>
+                                    <xsl:with-param name="libfile" select="webproject3:file"/>
+                                </xsl:call-template>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:call-template name="copyIterateDirs">
+                                    <xsl:with-param name="files" select="@dirs"/>
+                                    <xsl:with-param name="target" select="concat('${build.web.dir.real}/',webproject3:path-in-war)"/>
+                                    <xsl:with-param name="libfile" select="webproject3:file"/>
+                                </xsl:call-template>
+                            </xsl:otherwise>
+                        </xsl:choose>
                     </xsl:if>
                 </xsl:for-each>
                 
@@ -862,11 +873,22 @@ is divided into following sections:
                         </xsl:call-template>
                     </xsl:if>
                     <xsl:if test="//webproject3:library[@dirs]">
-                        <xsl:call-template name="copyIterateDirs">
-                            <xsl:with-param name="files" select="@files"/>
-                            <xsl:with-param name="target" select="concat('${build.web.dir.real}/',$copyto)"/>
-                            <xsl:with-param name="libfile" select="webproject3:file"/>
-                        </xsl:call-template>
+                        <xsl:choose>
+                            <xsl:when test="webproject3:path-in-war-classes">
+                                <xsl:call-template name="copyIterateDirs">
+                                    <xsl:with-param name="files" select="@dirs"/>
+                                    <xsl:with-param name="target" select="concat('${build.web.dir.real}/',webproject3:path-in-war-classes)"/>
+                                    <xsl:with-param name="libfile" select="webproject3:file"/>
+                                </xsl:call-template>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:call-template name="copyIterateDirs">
+                                    <xsl:with-param name="files" select="@dirs"/>
+                                    <xsl:with-param name="target" select="concat('${build.web.dir.real}/',webproject3:path-in-war)"/>
+                                    <xsl:with-param name="libfile" select="webproject3:file"/>
+                                </xsl:call-template>
+                            </xsl:otherwise>
+                        </xsl:choose>
                     </xsl:if>
                 </xsl:for-each>
              </target>
