@@ -18,11 +18,16 @@ import javax.swing.*;
 import java.awt.*;
 
 import org.openide.*;
+import org.openide.loaders.DataObject;
 import org.openide.filesystems.*;
 import org.openide.util.*;
 
 import org.netbeans.modules.xml.core.lib.GuiUtil;
 
+/**
+ * Extremelly simple dialog with one input line. Invoke using
+ * {@link #getFileObject} method.
+ */
 public class SelectFileDialog extends JPanel {
 
     /** Serial Version UID */
@@ -203,7 +208,12 @@ public class SelectFileDialog extends JPanel {
                 newFO = folder.getFileObject (newName, ext);
 
             } else if (newFO != null) {
-                if (!!! GuiUtil.confirmAction (MessageFormat.format (Util.THIS.getString ("PROP_replaceMsg"),
+                DataObject data = DataObject.find(newFO);
+                if (data.isModified() || data.isValid() == false) {
+                    NotifyDescriptor message = new NotifyDescriptor.Message(Util.THIS.getString("BK0001"), NotifyDescriptor.WARNING_MESSAGE);
+                    DialogDisplayer.getDefault().notify(message);
+                    throw new UserCancelException();
+                } else if (!!! GuiUtil.confirmAction (MessageFormat.format (Util.THIS.getString ("PROP_replaceMsg"),
                                                                 new String [] { newName, ext })) ) {
                     throw new UserCancelException();
                 }

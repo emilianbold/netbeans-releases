@@ -35,13 +35,19 @@ import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
 public class GenerateDTDSupport implements XMLGenerateCookie {
     static final String DTD_EXT = "dtd"; // NOI18N
 
-    DataObject DO;
-    TreeElement element;
+    /**
+     * XML document data object actiang as a "template".
+     */
+    private DataObject template;
+    private TreeElement element;
 //      ElementNode node;
 
 
-    public GenerateDTDSupport (XMLDataObject DO) {
-  	this.DO = DO;
+    /**
+     * @param template data object that is a "template" for created DTD
+     */
+    public GenerateDTDSupport (XMLDataObject template) {
+  	this.template = template;
   	this.element = null;
     }
 
@@ -67,7 +73,7 @@ public class GenerateDTDSupport implements XMLGenerateCookie {
         try {
             TreeDocumentRoot result;
 
-            TreeEditorCookie cake = (TreeEditorCookie) ((XMLDataObject)DO).getCookie(TreeEditorCookie.class);
+            TreeEditorCookie cake = (TreeEditorCookie) ((XMLDataObject)template).getCookie(TreeEditorCookie.class);
             if (cake != null) {
                 result = cake.openDocumentRoot();
             } else {
@@ -82,7 +88,7 @@ public class GenerateDTDSupport implements XMLGenerateCookie {
             if (element == null)
                 return;
 
-            FileObject primFile = DO.getPrimaryFile();
+            FileObject primFile = template.getPrimaryFile();
             String name = primFile.getName() + "_" + element.getLocalName(); // NOI18N
             FileObject folder = primFile.getParent();
 
