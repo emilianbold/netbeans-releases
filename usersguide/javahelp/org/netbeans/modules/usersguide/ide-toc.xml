@@ -419,17 +419,18 @@
     <tocitem text="Configuring the VCS Profile Customizer" target="vcsgeneric.vars-basic" />
     <tocitem text="Substitution Formats for Variables" target="vcsgeneric.vars-subcode" />
   </tocitem>
+    <tocitem text="Using VCS Groups" target="vcs.groups" >
+    <tocitem text="Adding and Deleting VCS Groups" target="vcs.groupsadd" />
+    <tocitem text="Adding Files to VCS Groups" target="vcs.groupsaddfile" />
+    <tocitem text="Moving and Removing Files from VCS Groups" target="vcs.groupsmovefile" />
+    <tocitem text="Calling VCS Commands on VCS Groups" target="vcs.groupscommands" />
+    <tocitem text="Preparing Groups for Check In to the Repository" target="vcs.groupsverify" />
+    <tocitem text="Resolving Problems With Grouped Files" target="vcs.groupsresolve" />
+    <tocitem text="Setting VCS Group Properties" target="vcs.groupsproperties" />
+  </tocitem>
   <tocitem text="VCS Support on Windows 95/98/ME" target="vcs.cygwin" />
   <tocitem text="The Revision Explorer" target="vcs.revexplorer" />
   <tocitem text="Comparing File Versions Visually" target="vcs.diffs" />
-  <tocitem text="Using VCS Groups" target="vcs.groups" />
-  <tocitem text="Adding and Deleting VCS Groups" target="vcs.groupsadd" />
-  <tocitem text="Adding Files to VCS Groups" target="vcs.groupsaddfile" />
-  <tocitem text="Moving and Removing Files from VCS Groups" target="vcs.groupsmovefile" />
-  <tocitem text="Calling VCS Commands on VCS Groups" target="vcs.groupscommands" />
-  <tocitem text="Preparing Groups for Check In to the Repository" target="vcs.groupsverify" />
-  <tocitem text="Resolving Problems With Grouped Files" target="vcs.groupsresolve" />
-  <tocitem text="Setting VCS Group Properties" target="vcs.groupsproperties" />
   <tocitem text="Refreshing VCS File Statuses" target="vcs.refresh" />
   <tocitem text="Version Control Statuses" target="vcs.status" />
   <tocitem text="Searching for a File by VCS Status" target="search.status" />
