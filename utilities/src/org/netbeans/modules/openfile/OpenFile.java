@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -19,6 +19,7 @@ import org.netbeans.modules.openfile.cli.Callback;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -91,13 +92,20 @@ public final class OpenFile {
      *          <code>false</code> otherwise
      */
     private static boolean checkFileExists(File file) {
-        if (file.exists() && file.isFile()) {
+        final String errMsgKey;
+        if (!file.exists()) {
+            errMsgKey = "MSG_fileNotFound";                             //NOI18N
+        } else if (isSpecifiedByUNCPath(file)) {
+            errMsgKey = "MSG_UncNotSupported";                          //NOI18N
+        } else if (!file.isFile()) {
+            errMsgKey = "MSG_fileNotFound";                             //NOI18N
+        } else {
             return true;
         }
         
         final String fileName = file.toString();
         final String msg = NbBundle.getMessage(OpenFileImpl.class,
-                                               "MSG_fileNotFound",      //NOI18N
+                                               errMsgKey,
                                                fileName);
         new Thread(new Runnable() {
                 public void run() {
@@ -106,6 +114,20 @@ public final class OpenFile {
                 }
             }).start();
         return false;
+    }
+
+    /**
+     * Checks whether a given file is specified by an UNC path.
+     *
+     * @param  file  existing file to check
+     * @return  <code>true</code> if the file is specified by UNC path;
+     *          <code>false</code> otherwise
+     */
+    static boolean isSpecifiedByUNCPath(File file) {
+        assert file != null && file.exists();
+
+        file = FileUtil.normalizeFile(file);
+        return file.getPath().startsWith("\\\\");                       //NOI18N
     }
     
 }
