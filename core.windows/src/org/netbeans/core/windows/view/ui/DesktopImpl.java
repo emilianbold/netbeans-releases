@@ -92,26 +92,7 @@ public final class DesktopImpl {
     }
     
    public void setSplitRoot (ViewElement splitRoot) {
-        // check for the same instance.. 
-        // #43273 - was causing strange focus loosing problems..
-//        if ((this.splitRoot == splitRoot && this.splitRoot != null && this.splitRoot.getComponent() == viewComponent) 
-//          || (splitRoot != null && splitRoot.getComponent() == viewComponent)) {
-////            if (splitRoot != null && splitRootComponent != null && splitRoot.getComponent() == null) {
-////                desktop.remove(splitRootComponent);
-////                splitRootComponent = null;
-////            }
-//            System.out.println("desktopimpl: ignore");
-//            System.out.println("firstcondition=" + (this.splitRoot == splitRoot && this.splitRoot != null && this.splitRoot.getComponent() == viewComponent));
-//            System.out.println("secondcondition=" + (splitRoot != null && splitRoot.getComponent() == viewComponent));
-//            return;
-//        }
-//        if (this.splitRoot != null) {
-//            desktop.remove(this.splitRoot.getComponent());
-//        } else {
-//            if (splitRootComponent != null) {
-//                desktop.remove(splitRootComponent);
-//            }
-//        }
+ 
         this.splitRoot = splitRoot;
         if (splitRoot != null) {
 //            System.out.println("desktopimpl: splitroot comp");
@@ -120,55 +101,18 @@ public final class DesktopImpl {
 //            System.out.println("desktopimpl: null");
             setViewComponent(null);
         }
-//        if (splitRoot != null) {
-//            splitRootComponent = splitRoot.getComponent();
-//            desktop.add(splitRoot.getComponent(), BorderLayout.CENTER);
-//        } else {
-//            splitRootComponent = null;
-//        }
+
     }
    
-//    public void setSplitRoot (ViewElement splitRoot) {
-//        // check for the same instance.. 
-//        // #43273 - was causing strange focus loosing problems..
-//        if (this.splitRoot == splitRoot) {
-//            if (splitRoot != null && splitRootComponent != null && splitRoot.getComponent() == null) {
-//                desktop.remove(splitRootComponent);
-//                splitRootComponent = null;
-//            }
-//            return;
-//        }
-//        if (this.splitRoot != null) {
-//            desktop.remove(this.splitRoot.getComponent());
-//        } else {
-//            if (splitRootComponent != null) {
-//                desktop.remove(splitRootComponent);
-//            }
-//        }
-//        this.splitRoot = splitRoot;
-//        if (splitRoot != null) {
-//            splitRootComponent = splitRoot.getComponent();
-//            desktop.add(splitRoot.getComponent(), BorderLayout.CENTER);
-//        } else {
-//            splitRootComponent = null;
-//        }
-//    }
+
     
    public void setMaximizedView(ViewElement component) {
-//        System.out.println("desktopimpl : maximized");
-//        ViewElement lastEditor = null;
-//        if (component instanceof EditorView) {
-//             lastEditor = maximizedMode;
-//        }
+
         maximizedMode = component;
         if (component.getComponent() != viewComponent) {
 //            System.out.println("desktopimpl : maximized perform");
             setViewComponent(component.getComponent());
-//            if (lastEditor != null) {
-                // that's the weirdo way of readding the editor back to hierarchy..
-//                System.out.println("attempt to replace editor area..");
-//                lastEditor.getComponent();
-//            }
+
         }
     }
     
@@ -412,13 +356,13 @@ public final class DesktopImpl {
                     Rectangle splitRootRect = viewComponent.getBounds();
 
                     if (Constants.LEFT.equals(side)) {
-                        result.height = size.height;
+                        result.height = splitRootRect.height;
                     } else if (Constants.RIGHT.equals(side)) {
                         result.x = size.width - viewRect.width - result.width;
-                        result.height = size.height;
+                        result.height = splitRootRect.height;
                     } else if (Constants.BOTTOM.equals(side)) {
                         result.y = size.height - viewRect.height - result.height;
-                        result.width = size.width;
+                        result.width = splitRootRect.width;
                     }
 
                     slidedComp.setBounds(result);
