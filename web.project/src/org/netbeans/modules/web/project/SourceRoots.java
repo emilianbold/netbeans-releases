@@ -273,7 +273,7 @@ public final class SourceRoots {
                                 int rootIndex = 1;
                                 while (props.containsKey(rootName)) {
                                     rootIndex++;
-                                    rootName = MessageFormat.format(newRootNameTemplate, new Object[]{new Integer(rootIndex)});
+                                    rootName = MessageFormat.format(newRootNameTemplate,new Object[]{names[names.length-1],new Integer(rootIndex)});
                                 }
                                 File f = FileUtil.normalizeFile(new File(URI.create(newRoot.toExternalForm())));
                                 File projDir = FileUtil.toFile(helper.getAntProjectHelper().getProjectDirectory());
