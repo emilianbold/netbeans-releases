@@ -1,5 +1,5 @@
 OpenIDE-Module: com.netbeans.enterprise.modules.db/1
-OpenIDE-Module-Name: JDBC Support
+OpenIDE-Module-Name: Database explorer
 OpenIDE-Module-Main: com/netbeans/enterprise/modules/db/DatabaseModule.class
 OpenIDE-Module-Specification-Version: 1.0
 OpenIDE-Module-Implementation-Version: 1.0
