@@ -64,10 +64,8 @@ implements TableOwnerOperations
 		try {
       DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String) get(DatabaseNode.CATALOG);
-			boolean uc = dmd.storesUpperCaseIdentifiers();
-			String tableNamePattern = (uc ? tname.toUpperCase() : tname.toLowerCase());
 			String[] types = new String[] {"TABLE","BASE"};
-      ResultSet rs = getDriverSpecification().getTables(catalog, dmd, tableNamePattern, types);
+      ResultSet rs = getDriverSpecification().getTables(catalog, dmd, tname, types);
 
       if (rs != null) {
         rs.next();
@@ -141,6 +139,7 @@ implements TableOwnerOperations
 }
 /*
  * <<Log>>
+ *  14   Gandalf   1.13        12/22/99 Radko Najman    Case Identifiers removed
  *  13   Gandalf   1.12        12/15/99 Radko Najman    driver adaptor
  *  12   Gandalf   1.11        11/27/99 Patrik Knakal   
  *  11   Gandalf   1.10        11/15/99 Radko Najman    MS ACCESS

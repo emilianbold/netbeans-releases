@@ -60,10 +60,8 @@ public class ViewListNodeInfo extends DatabaseNodeInfo
  		try {
       DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String) get(DatabaseNode.CATALOG);
-			boolean uc = dmd.storesUpperCaseIdentifiers();
-			String tableNamePattern = (uc ? name.toUpperCase() : name.toLowerCase());
 			String[] types = new String[] {"VIEW"};
-      ResultSet rs = getDriverSpecification().getTables(catalog, dmd, tableNamePattern, types);
+      ResultSet rs = getDriverSpecification().getTables(catalog, dmd, name, types);
 			
       if (rs != null) {
         rs.next();
@@ -82,6 +80,7 @@ public class ViewListNodeInfo extends DatabaseNodeInfo
 
 /*
  * <<Log>>
+ *  13   Gandalf   1.12        12/22/99 Radko Najman    Case Identifiers removed
  *  12   Gandalf   1.11        12/15/99 Radko Najman    driver adaptor
  *  11   Gandalf   1.10        11/27/99 Patrik Knakal   
  *  10   Gandalf   1.9         11/15/99 Radko Najman    MS ACCESS
