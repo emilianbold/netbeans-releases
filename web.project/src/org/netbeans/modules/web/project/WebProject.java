@@ -596,20 +596,41 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
         
     }
 
-    public class CopyOnSaveSupport extends FileChangeAdapter {
+    public class CopyOnSaveSupport extends FileChangeAdapter implements PropertyChangeListener {
+        private FileObject docBase = null;
 
         /** Creates a new instance of CopyOnSaveSupport */
         public CopyOnSaveSupport() {
         }
 
         public void initialize() throws FileStateInvalidException {
-            getWebModule().getDocumentBase().getFileSystem().addFileChangeListener(this);
+            docBase = getWebModule().getDocumentBase();
+            if (docBase != null) {
+                docBase.getFileSystem().addFileChangeListener(this);
+            }
+            ProjectInformation info = (ProjectInformation) getLookup().lookup(ProjectInformation.class);
+            if (info != null) {
+                info.addPropertyChangeListener (this);
+            }
         }
 
         public void cleanup() throws FileStateInvalidException {
-            getWebModule().getDocumentBase().getFileSystem().removeFileChangeListener(this);
+            if (docBase != null) {
+                docBase.getFileSystem().removeFileChangeListener(this);
+            }
         }
 
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getPropertyName().equals(WebProjectProperties.WEB_DOCBASE_DIR)) {
+                try {
+                    cleanup();
+                    initialize();
+                } catch (org.openide.filesystems.FileStateInvalidException e) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                }
+            }
+        }
+    
         /** Fired when a file is changed.
         * @param fe the event describing context where action has taken place
         */

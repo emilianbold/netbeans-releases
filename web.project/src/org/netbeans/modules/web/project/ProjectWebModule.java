@@ -60,12 +60,15 @@ public final class ProjectWebModule extends J2eeModuleProvider
     public FileObject getDeploymentDescriptor() {
         FileObject webInfFo = getWebInf();
         if (webInfFo==null) {
-            DialogDisplayer.getDefault().notify(
-                new NotifyDescriptor.Message(NbBundle.getMessage(ProjectWebModule.class,"MSG_WebInfCorrupted"),
-                                             NotifyDescriptor.ERROR_MESSAGE));
             return null;
         }
-        return getWebInf ().getFileObject (FILE_DD);
+        FileObject dd = webInfFo.getFileObject (FILE_DD);
+        if (dd == null) {
+            DialogDisplayer.getDefault().notify(
+                new NotifyDescriptor.Message(NbBundle.getMessage(ProjectWebModule.class,"MSG_WebXmlNotFound", webInfFo.getPath()),
+                                             NotifyDescriptor.ERROR_MESSAGE));
+        }
+        return dd;
     }
 
     public String getContextPath () {
@@ -90,7 +93,13 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
     
     public FileObject getDocumentBase () {
-        return getFileObject("web.docbase.dir"); // NOI18N
+        FileObject docBase = getFileObject("web.docbase.dir"); // NOI18N
+        if (docBase == null) {
+            DialogDisplayer.getDefault().notify(
+                new NotifyDescriptor.Message(NbBundle.getMessage(ProjectWebModule.class,"MSG_DocBase_Corrupted"),
+                                             NotifyDescriptor.ERROR_MESSAGE));
+        }
+        return docBase;
     }
 
     public ClassPath getJavaSources () {
@@ -103,7 +112,16 @@ public final class ProjectWebModule extends J2eeModuleProvider
     
     public FileObject getWebInf () {
         FileObject documentBase = getDocumentBase();
-        return documentBase == null ? null : documentBase.getFileObject (FOLDER_WEB_INF);
+        if (documentBase == null) {
+            return null;
+        }
+        FileObject webInf = documentBase.getFileObject (FOLDER_WEB_INF);
+        if (webInf == null) {
+                DialogDisplayer.getDefault().notify(
+                new NotifyDescriptor.Message(NbBundle.getMessage(ProjectWebModule.class,"MSG_WebInfCorrupted", documentBase.getPath()),
+                                             NotifyDescriptor.ERROR_MESSAGE));
+        }
+        return webInf;
     }
     
     public ClassPathProvider getClassPathProvider () {
