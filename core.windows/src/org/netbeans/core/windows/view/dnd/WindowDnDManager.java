@@ -410,7 +410,9 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
     private static boolean isInFreeArea(Point location) {
         Frame[] frames = Frame.getFrames();
         for(int i = 0; i < frames.length; i++) {
-            if(frames[i].getBounds().contains(location.x, location.y)) {
+            //#40782 fix. don't take the invisible frames into account when deciding what is 
+            // free space.
+            if(frames[i].isVisible() && frames[i].getBounds().contains(location.x, location.y)) {
                 return false;
             }
         }
