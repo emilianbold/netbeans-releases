@@ -289,7 +289,7 @@ public class SearchResultsOperator extends NbFrameOperator {
      * Double clicks on position in list.
      */
     public EditorWindowOperator showPosition(String position) {
-        lstPositions().clickOnItem(position, 1);
+        lstPositions().clickOnItem(position, 2);
         return(new EditorWindowOperator());
     }
 
