@@ -61,7 +61,7 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
     private final String[] toPrefixes;
     private final String[] toSuffixes;
     private static final Object NONE = "NONE"; // NOI18N
-    private final Map/*<FileObject,Reference<StatusImpl>|NONE>*/ stati = new WeakHashMap();
+    private final Map/*<FileObject,Reference<StatusImpl>|NONE>*/ statuses = new WeakHashMap();
     private RequestProcessor.Task refreshTask = null;
     private final FileL fileL;
     private final FileChangeListener weakFileL;
@@ -106,12 +106,12 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
          */
         weakFileL = FileUtil.weakFileChangeListener(fileL, null);
         // XXX add properties listener to evaluator... if anything changes, refresh all
-        // status objects and clear the stati cache; can then also keep a cache of
+        // status objects and clear the status cache; can then also keep a cache of
         // evaluated path prefixes & suffixes
     }
     
     public synchronized FileBuiltQuery.Status getStatus(FileObject file) {
-        Object o = stati.get(file);
+        Object o = statuses.get(file);
         if (o == NONE) {
             return null;
         }
@@ -120,9 +120,9 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
         if (status == null) {
             status = createStatus(file);
             if (status != null) {
-                stati.put(file, new WeakReference(status));
+                statuses.put(file, new WeakReference(status));
             } else {
-                stati.put(file, NONE);
+                statuses.put(file, NONE);
             }
         }
         return status;
@@ -205,7 +205,7 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
         
         public void run() {
             synchronized (GlobFileBuiltQuery.this) {
-                Iterator/*<Reference<StatusImpl>|NONE>*/ it = stati.values().iterator();
+                Iterator/*<Reference<StatusImpl>|NONE>*/ it = statuses.values().iterator();
                 while (it.hasNext()) {
                     Object o = it.next();
                     if (o == NONE) {
