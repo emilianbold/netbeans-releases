@@ -20,11 +20,10 @@ Microsystems, Inc. All Rights Reserved.
    <property name="xtest.execute" value="install-ide,checkout,build,execute"/>
 
    <property name="ide.installto" location="../ide" />
-   <property name="java.path" location="${java.home}"/>
    <property name="ide.nbm.temp" location="${ide.installto}/nbmtemp"/>
-   
-   <property name="ide.installator.edition" value="ce"/>
-   <property name="ide.installator.params" value=""/>
+
+   <property name="installer.java.home" location="${java.home}"/>
+   <property name="installer.params" value=""/>
    
    <property name="xtest.home" location=".."/>
    
@@ -47,6 +46,7 @@ Microsystems, Inc. All Rights Reserved.
         <taskdef name="reportinfo" classname="org.netbeans.xtest.pe.XTestResultsReportTask"/>
         <taskdef name="buildinfo" classname="org.netbeans.xtest.pe.ParseBuildInfo"/>
         <taskdef name="unzip2" classname="org.netbeans.xtest.driver.UnzipExt"/>
+        <taskdef name="getfilename" classname="org.netbeans.xtest.driver.FileName"/>
      </nbtaskdef>
    </target>
    
@@ -224,13 +224,20 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="install-ide" depends="install-from,find-installed-ide,check-installed-ide,make-bin-executable,install-nbms"/>
   
-  <target name="install-from" depends="install-from-zip,install-from-installator,install-from-dir"/>
+  <target name="install-from" depends="install-from-zip,install-from-installer,install-from-dir"/>
      
-  <target name="install-from-installator" depends="check-ide-param" if="ide.install.type.installator">
+  <target name="install-from-installer" depends="check-ide-param" if="ide.install.type.installer">
     <antcall target="clean-ide"/>
-    <exec executable="${ide.install.path}" failonerror="true">
-      <arg value="-a &quot;/edition ${ide.installator.edition} ${ide.installator.params} /path ${ide.installto} /jvm ${java.path} &quot;"/>
+    <copy file="${ide.install.path}" todir="${ide.installto}"/>
+    <getfilename file="${ide.install.path}" nameExtProperty="ide.install.path.filenameext" nameProperty="ide.install.path.filename"/>
+    <property name="install.paramfile" value="${ide.installto}/${ide.install.path.filename}.sp"/>
+    <echo message="forteHome=${ide.installto} jdkHome=${installer.java.home} ${installer.params}" file="${install.paramfile}"/>
+    <replace file="${install.paramfile}" token=" " value="&#xA;"/>
+    <exec executable="${ide.installto}/${ide.install.path.filenameext}" failonerror="true">
+      <arg value="-silent"/>
     </exec>
+    <delete file="${ide.installto}/${ide.install.path.filenameext}"/>
+    <delete file="${install.paramfile}"/>
   </target>
   
   <target name="install-from-zip" depends="check-ide-param" if="ide.install.type.zip">
@@ -259,7 +266,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="install-type-fail" unless="ide.install.type.ok">
-     <fail message="Property ide.install.type has to contain one of these values: 'zip', 'installator' or 'dir'"/>
+     <fail message="Property ide.install.type has to contain one of these values: 'zip', 'installer' or 'dir'"/>
   </target>
   
   <target name="make-bin-executable" if="ide.home">
@@ -270,7 +277,7 @@ Microsystems, Inc. All Rights Reserved.
       <condition property="ide.install.type.ok">
         <or>
           <equals arg1="${ide.install.type}" arg2="zip"/>
-          <equals arg1="${ide.install.type}" arg2="installator"/>
+          <equals arg1="${ide.install.type}" arg2="installer"/>
           <equals arg1="${ide.install.type}" arg2="dir"/>
         </or>
       </condition>
@@ -278,8 +285,8 @@ Microsystems, Inc. All Rights Reserved.
       <condition property="ide.install.type.zip">
           <equals arg1="${ide.install.type}" arg2="zip"/>
       </condition>
-      <condition property="ide.install.type.installator">
-          <equals arg1="${ide.install.type}" arg2="installator"/>
+      <condition property="ide.install.type.installer">
+          <equals arg1="${ide.install.type}" arg2="installer"/>
       </condition>
       <condition property="ide.install.type.dir">
           <equals arg1="${ide.install.type}" arg2="dir"/>
