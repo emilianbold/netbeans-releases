@@ -47,6 +47,7 @@
 <mapID target="files.template" url="files/files_template.html" />
 <mapID target="files.unknown" url="files/files_unknown.html" />
 <mapID target="files.runtime" url="files/files_runtime.html" />
+<mapID target="files.elements" url="files/files_elements.html" />
 
 <!--begin GUI Form Editor section-->
 <mapID target="gui.about" url="gui/gui_about.html" />
@@ -597,6 +598,12 @@
   
 <!--ID for Waiting For Tasks to Finish dialog box-->
     <mapID target="org.netbeans.core.execution.Install.pending" url="misc-general/waiting.html" />
+
+<!--ID for Java Platform Manager dialog box-->
+    <mapID target="org.netbeans.api.java.platform.PlatformsCustomizer" url="project/proj_jdk.html" />
+
+<!--ID for Java Elements Options window node-->
+    <mapID target="org.netbeans.modules.java.ui.nodes.elements.SourceOptions" url="files/files_elements.html" />
     
   <mapID target="org.openide.explorer.propertysheet.SetDefaultValueAction" url="pending.html" />
   <mapID target="org.openide.filesystems.RefreshAction" url="pending.html" />
