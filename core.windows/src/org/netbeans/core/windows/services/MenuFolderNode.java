@@ -29,8 +29,11 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.NewType;
+import org.openide.util.datatransfer.PasteType;
 
 import java.util.ResourceBundle;
+import java.util.List;
+import java.awt.datatransfer.Transferable;
 
 /** The node for the menu folder representation.
 * Delegates most of its functionality to the original data folder node.
@@ -69,6 +72,15 @@ public final class MenuFolderNode extends DataFolder.FolderNode {
         return new HelpCtx (MenuFolderNode.class);
     }
 
+    protected void createPasteTypes(Transferable t, List s) {
+        PasteType pType = ActionPasteType.getPasteType((DataFolder)getDataObject() , t);
+        if (pType != null) {
+            s.add(pType);
+        } else {
+            super.createPasteTypes(t, s);    
+        }        
+    }
+    
     /** Support for new types that can be created in this node.
     * @return array of new type operations that are allowed
     */

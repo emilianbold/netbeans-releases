@@ -34,12 +34,15 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.NewType;
+import org.openide.util.datatransfer.PasteType;
 
 import java.awt.*;
+import java.awt.datatransfer.Transferable;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.ResourceBundle;
+import java.util.*;
+import java.util.List;
 
 /** The node for the toolbar folder representation.
 * Delegates most of its functionality to the original data folder node.
@@ -73,7 +76,16 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
     public HelpCtx getHelpCtx () {
         return new HelpCtx (ToolbarFolderNode.class);
     }
-
+    
+    protected void createPasteTypes(Transferable t, java.util.List s) {
+        PasteType pType = ActionPasteType.getPasteType((DataFolder)getDataObject() , t);
+        if (pType != null) {
+            s.add(pType);
+        } else {
+            super.createPasteTypes(t, s);    
+        }        
+    }
+    
     /** Support for new types that can be created in this node.
     * @return array of new type operations that are allowed
     */
@@ -470,6 +482,15 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
             attachConfigListener();
         }
 
+        protected void createPasteTypes(Transferable t, List s) {
+            PasteType pType = ActionPasteType.getPasteType((DataFolder)getDataObject() , t);
+            if (pType != null) {
+                s.add(pType);
+            } else {
+                super.createPasteTypes(t, s);    
+            }        
+        }
+        
         /** Support for new types that can be created in this node.
         * @return array of new type operations that are allowed
         */
