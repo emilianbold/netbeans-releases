@@ -149,5 +149,9 @@ public class I18nWizardAction extends NodeAction {
     public HelpCtx getHelpCtx() {
         return new HelpCtx(I18nUtil.HELP_ID_WIZARD);
     }
+
+    protected boolean asynchronous() {
+      return false;
+    }
     
 }
