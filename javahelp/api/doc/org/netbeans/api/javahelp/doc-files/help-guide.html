@@ -94,7 +94,7 @@ Microsystems, Inc. All Rights Reserved.
   </li>
   <li> Where to include help related files in the module source so it can be checked 
     into the CVS repository </li>
-  <li> How to specify how the help set is built during the S1S build process </li>
+  <li> How to specify how the help set is built during the IDE's build process </li>
 </ul>
 
 <h2><a name="adding">Adding Help to GUI components</a></h2>
@@ -227,7 +227,7 @@ referenceTab.setName(<span class="string">"referenceTab"</span>); <span class="c
 
 <h3><a name="props">Individual Properties</a></h3>
 <p> You can also set an individual help ID for each property (<code>Node.Property</code>) 
-  in a property sheet. Presently S1S and NetBeans help is not provided on a per-property 
+  in a property sheet. Presently Sun Java Studio and NetBeans help is not provided on a per-property 
   basis - help on individual properties is provided in the form of a tooltip. 
 </p>
 <h3><a name="propeditor"></a>Custom Property Editor</b>s </h3>
@@ -391,8 +391,8 @@ the NetBeans Module Document</a>.
     JAR files will be produced: one for the module class files and another for 
     the module help set. The will both have the same name, but will be installed 
     into different directories. The module with the class files is installed into 
-    <samp><i>s1s-install</i>/modules</samp> and its corresponding help set jar is 
-    installed into <samp><i>s1s-install</i>/modules/docs</samp>. The <code>Class-Path</code> 
+    <samp><i>IDE-install</i>/modules</samp> and its corresponding help set jar is 
+    installed into <samp><i>IDE-install</i>/modules/docs</samp>. The <code>Class-Path</code> 
     entry above is required so that the help set jar can be found at runtime when 
     the corresponding class file module is loaded. </li>
 </ul>
