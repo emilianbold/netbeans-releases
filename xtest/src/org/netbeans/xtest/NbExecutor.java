@@ -45,7 +45,8 @@ public class NbExecutor extends Task {
                                             "ant.home",
                                             "running.mode",
                                             "basedir",
-                                            "user.dir" };
+                                            "user.dir",
+                                            "scrambler"};
 
     private static final String ERRORS_PROP = "xtest.errors";
     
