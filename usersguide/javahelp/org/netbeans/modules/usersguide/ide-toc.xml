@@ -486,6 +486,7 @@
     <tocitem text="Viewing Javadoc Documentation" target="javadoc.source_editor"/>
     <tocitem text="Browsing a Javadoc Library" target="javadoc.indices"/>
     <tocitem text="Searching Javadoc Documentation" target="javadoc.search"/>
+    <tocitem text="Using Javadoc With Code Completion" target="editing.completing-javadoc"/>    
     <tocitem text="Generating Javadoc Documentation" target="javadoc.generate"/>
     <tocitem text="Entering Javadoc Comments in Source Code" target="javadoc.accuracy"/>
     <tocitem text="Removing a Javadoc Library from a Project" target="javadoc.filesystem.unmount"/>
