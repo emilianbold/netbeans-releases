@@ -78,7 +78,9 @@ Microsystems, Inc. All Rights Reserved.
 	<!--
 	<exclude name="org/netbeans/xtest/ide/**"/>
 	-->
+	<!-- XTestErrorManager has problems - temporarily disabling it
 	<include name="META-INF/services/org.openide.ErrorManager"/>
+	-->
     </jar>	    
   
     <copy file="../junit/external/junit-3.7.jar" tofile="lib/junit.jar"/>
