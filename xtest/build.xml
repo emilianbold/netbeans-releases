@@ -45,6 +45,8 @@ Microsystems, Inc. All Rights Reserved.
         <include name="${nb.modules.dir}/ext/nbjunit-ide.jar"/>
         <include name="xtest-distribution/**"/>
       </patternset>
+      <!-- Copy directories.properties because it is not guaranteed it is in IDE build. -->
+      <copy file="${nb_all}/nbbuild/directories.properties" todir="lib" overwrite="true"/>
   </target>
   
   <target name="compile" depends="init,prepare-nbjunit">
@@ -114,7 +116,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="netbeans.no.pre.unscramble" value="true"/>
      </ant>
      <zip zipfile="xtest-distribution.zip">     
-	<zipfileset dir="lib" prefix="lib" includes="**/*.xml,**/*.jar,**/*.xsl,**/*.exe,**/*.so,**/*.dll"/>
+	<zipfileset dir="lib" prefix="lib" includes="**/*.xml,**/*.jar,**/*.xsl,**/*.exe,**/*.so,**/*.dll,**/*.properties"/>
         <zipfileset dir="plugins" prefix="plugins" includes="**"/>
         <zipfileset dir="." includes="dist_build.xml" fullpath="build.xml"/>
         <zipfileset dir="." includes="standard-test-includes.txt,standard-test-excludes.txt"/>
@@ -140,6 +142,7 @@ Microsystems, Inc. All Rights Reserved.
     </delete>
     <delete file="manifest-subst.mf"/>
     <delete file="module-manifest-subst.mf"/>
+    <delete file="lib/directories.properties"/>
     <delete dir="lib/patches"/>
     <delete file="lib/xtest.jar"/>
     <delete file="lib/xtest-ide-plugin.jar"/>

@@ -172,6 +172,8 @@ Microsystems, Inc. All Rights Reserved.
          <property file="${netbeans.dest.dir}/directories.properties"/>
          <!-- read from second location -->
          <property file="${netbeans.dest.dir}/../directories.properties"/>
+         <!-- Try to read directories.properties also from xtest/lib because it is not guaranteed it is in IDE zip. -->
+         <property file="${xtest.home}/lib/directories.properties"/>
          <property file="${netbeans.dest.dir}/moduleCluster.properties"/>
          <!-- read also from this location -->
          <property file="${netbeans.dest.dir}/netbeans/moduleCluster.properties"/>

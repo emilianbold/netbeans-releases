@@ -297,6 +297,8 @@ Microsystems, Inc. All Rights Reserved.
      <!-- Read moduleCluster.properties and directories.properties from netbeans.dest.dir -->
      <property name="netbeans.dest.dir" location="${ide.install.path}/netbeans"/>
      <property file="${ide.install.path}/directories.properties"/>
+      <!-- Try to read directories.properties also from xtest/lib because it is not guaranteed it is in IDE zip. -->
+     <property file="${xtest.home}/lib/directories.properties"/>
      <property file="${ide.install.path}/netbeans/moduleCluster.properties"/>
      <available file="${openide.dir}/${nb.lib.dir}/openide.jar" type="file" property="ide.home" value="${ide.install.path}"/>
      <antcall target="find-existing-ide"/>
@@ -310,6 +312,8 @@ Microsystems, Inc. All Rights Reserved.
      <!-- Read moduleCluster.properties and directories.properties from netbeans.dest.dir -->
      <property name="netbeans.dest.dir" location="${ide.installto}/netbeans"/>
      <property file="${ide.installto}/directories.properties"/>
+      <!-- Try to read directories.properties also from xtest/lib because it is not guaranteed it is in IDE zip. -->
+     <property file="${xtest.home}/lib/directories.properties"/>
      <property file="${ide.installto}/netbeans/moduleCluster.properties"/>
      <available file="${openide.dir}/${nb.lib.dir}/openide.jar" type="file" property="ide.home" value="${ide.installto}"/>
   </target>
