@@ -1053,7 +1053,6 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
     static final java.util.Map getHints() {
         if (hintsMap == null) {
             hintsMap = new java.util.HashMap();
-            hintsMap.put(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
             hintsMap.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
             hintsMap.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         }

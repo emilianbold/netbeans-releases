@@ -162,8 +162,6 @@ final class ColorUtil {
     private static Map getHints() {
         if (hintsMap == null) {
             hintsMap = new HashMap();
-            hintsMap.put(RenderingHints.KEY_FRACTIONALMETRICS,
-                         RenderingHints.VALUE_FRACTIONALMETRICS_ON);
             hintsMap.put(RenderingHints.KEY_TEXT_ANTIALIASING,
                          RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
             hintsMap.put(RenderingHints.KEY_ANTIALIASING,
