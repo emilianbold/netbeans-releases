@@ -131,7 +131,7 @@ public final class CatalogRootNode extends AbstractNode implements Node.Cookie {
         }
         
         public String getName() {
-            return Util.THIS.getString ("PROP_Mount_Catalog"); // NOI18N
+            return Util.THIS.getString ("LBL_mount"); // NOI18N
         }
     }
     
