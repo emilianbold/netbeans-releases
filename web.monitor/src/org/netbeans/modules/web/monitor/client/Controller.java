@@ -886,7 +886,9 @@ class Controller  {
 	    currTrans.remove(currTrans.getNodes());
 	    currBeans.clear();
 	}
-
+        if (directory.getChildren().length == 0) {
+            return;
+        }
         final ProgressMonitor progressMonitor = new ProgressMonitor();
         
         RequestProcessor.getDefault().post(new Runnable () {
