@@ -29,14 +29,18 @@
 <ul>
   <li><b>Project Name. </b>Specifies the display name of the project. This name 
     is also used to create the project folder.</li>
-  <li><b>Project Location. </b>Specifies the folder where you want to store the 
-  project metadata and source code.</li>
-  <li><b>Set as Main Project.</b> Sets the newly created project as the <a href="../general/ent_app_build.html">main 
-    project</a>.</li>
+    <li><b>Project Location. </b>Specifies the folder that contains your sources.
+     The sources must conform to the Java BluePrints standard.</li>
   <li><b>Server.</b> Specifies the web application's server. Note that J2EE applications cannot
   be deployed to the Tomcat web server.</li>
   <li><b>J2EE Specification Level.</b> Specifies the J2EE level against which your enterprise
   application will run.</li>
+  <li><b>Create Ejb Module.</b> Specifies the name of the EJB module. By default, it is created and named
+   <tt><i>project-name</i>-ejb</tt>.</li>
+   <li><b>Create Web Application Module.</b> Specifies the name of the web application module. By default, it is created and named
+   <tt><i>project-name</i>-war</tt>.</li>
+  <li><b>Set as Main Project.</b> Sets the newly created project as the <a href="../general/ent_app_build.html">main 
+    project</a>.</li>
 </ul>
 When you click Finish, the project is created on your computer and opened in the IDE. 
 You can view its logical structure in the Projects window and its file structure in the Files window. 
