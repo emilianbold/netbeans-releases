@@ -489,7 +489,8 @@ public class RADComponent {
 
   protected void attachDefaultEvent () {
     EventsList.Event defaultEvt = eventsList.getDefaultEvent ();
-    if (defaultEvt.getHandlers () == null)
+    Vector handlers = defaultEvt.getHandlers();
+    if ( handlers == null || handlers.size() == 0)
       defaultEvt.createDefaultEventHandler ();
     defaultEvt.gotoEventHandler ();
   }
@@ -1489,6 +1490,8 @@ public class RADComponent {
 
 /*
  * Log
+ *  78   Gandalf-post-FCS1.76.1.0    3/30/00  Tran Duc Trung  FIX #6100: double-click 
+ *       on component does not create a default event handler
  *  77   Gandalf   1.76        3/7/00   Tran Duc Trung  fix #5791: cannot add 
  *       serialized bean to component palette
  *  76   Gandalf   1.75        1/18/00  Pavel Buzek     ignoring some properties
