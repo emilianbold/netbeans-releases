@@ -213,8 +213,20 @@ public class NbTopManager extends TopManager {
   * @return the option that has been choosen in the notification
   */
   public Object notify (NotifyDescriptor descriptor) {
+    Component focusOwner = null;
+    Component comp = org.openide.windows.TopComponent.getRegistry ().getActivated ();
+    Component win = comp;
+    while ((win != null) && (!(win instanceof Window))) win = win.getParent ();
+    if (win != null) focusOwner = ((Window)win).getFocusOwner ();
+
     final NotifyPresenter presenter = new NotifyPresenter(descriptor);
     presenter.setVisible(true);
+
+    if (focusOwner != null) { // if the focusOwner is null (meaning that MainWindow was focused before), the focus will be back on main window
+      win.requestFocus ();
+      comp.requestFocus ();
+      focusOwner.requestFocus (); 
+    }
     return descriptor.getValue();
   }
 
