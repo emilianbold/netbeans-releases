@@ -433,7 +433,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="move-results">
         <!-- move results from workdir to result dir --> 
         <move toDir="${xtest.current.results}">
-            <fileset dir="${xtest.workdir}">                        
+            <fileset dir="${xtest.workdir}" defaultexcludes="no">                        
                 <exclude name="sys/**"/>                
             </fileset>
         </move>
