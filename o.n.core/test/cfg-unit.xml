@@ -135,11 +135,8 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <executor name="code" antfile="build-unit.xml" target="runcodetest"/>
-    
     <executor name="ide" antfile="build-unit.xml" target="runidetest"/>
 
     <compiler name="unit-compiler" antfile="build-unit.xml" target="unit-compiler" default="true"/>
-
-    <resultsprocessor name="unit" antfile="build.xml" target="test_report" default="true"/>
 
 </mconfig>
