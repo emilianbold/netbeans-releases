@@ -42,6 +42,10 @@ import java.text.MessageFormat;
 public class ExportHtmlAction extends CookieAction {
 
     private static final String HTML_EXT = ".html";  //NOI18N
+    private static final String OPEN_HTML_HIST = "ExportHtmlAction_open_html_history"; //NOI18N
+    private static final String SHOW_LINES_HIST = "ExportHtmlAction_show_lines_history"; //NOI18N
+    private static final String SELECTION_HIST = "ExportHtmlAction_selection_history"; //NOI18N
+    private static final String FOLDER_NAME_HIST = "ExportHtmlAction_folder_name_history"; //NOI18N
 
     private Dialog dlg;
 
@@ -69,11 +73,19 @@ public class ExportHtmlAction extends CookieAction {
             final BaseDocument bdoc = (BaseDocument) doc;
             final JTextComponent jtc = Utilities.getLastActiveComponent();
             Presenter p = new Presenter ();
-            p.setFileName (System.getProperty("user.home")+File.separatorChar+              //NOI18N
+            String folderName = (String)EditorState.get(FOLDER_NAME_HIST);
+            if (folderName == null)
+                folderName = System.getProperty("user.home"); //NOI18N
+            p.setFileName (folderName+File.separatorChar+
                     ((DataObject)bdoc.getProperty (Document.StreamDescriptionProperty)).getPrimaryFile().getName()+HTML_EXT);
-            p.setShowLines (((Boolean)SettingsUtil.getValue (bdoc.getKitClass(),SettingsNames.LINE_NUMBER_VISIBLE,
+            Boolean bool = (Boolean)EditorState.get(SHOW_LINES_HIST);
+            p.setShowLines ((bool != null ? bool : (Boolean)SettingsUtil.getValue (bdoc.getKitClass(),SettingsNames.LINE_NUMBER_VISIBLE,
                     Boolean.FALSE)).booleanValue());
-            p.setSelectionActive ((jtc != null && jtc.getSelectionStart()!=jtc.getSelectionEnd()));
+            bool = (Boolean)EditorState.get(SELECTION_HIST);
+            p.setSelectionActive (jtc != null && jtc.getSelectionStart()!=jtc.getSelectionEnd());
+            p.setSelection ((jtc != null && jtc.getSelectionStart()!=jtc.getSelectionEnd()) && (bool != null ? bool.booleanValue() : true));
+            bool = (Boolean)EditorState.get(OPEN_HTML_HIST);
+            p.setOpenHtml(bool != null ? bool.booleanValue() : false);
             DialogDescriptor dd = new DialogDescriptor (p, NbBundle.getMessage(ExportHtmlAction.class, "CTL_ExportHtml"));
             boolean overwrite = true;
             dlg = DialogDisplayer.getDefault().createDialog (dd);            
@@ -100,9 +112,15 @@ public class ExportHtmlAction extends CookieAction {
             dlg = null;
             if (dd.getValue() == DialogDescriptor.OK_OPTION) {
                 boolean selection = p.isSelection();
+                EditorState.put(SELECTION_HIST, selection ? Boolean.TRUE : Boolean.FALSE);
                 final String file = p.getFileName();
+                int idx = file.lastIndexOf(File.separatorChar);
+                if (idx != -1)
+                    EditorState.put(FOLDER_NAME_HIST, file.substring(0, idx));
                 final boolean lineNumbers = p.isShowLines();
+                EditorState.put(SHOW_LINES_HIST, lineNumbers ? Boolean.TRUE : Boolean.FALSE);
                 final boolean open = p.isOpenHtml();
+                EditorState.put(OPEN_HTML_HIST, open ? Boolean.TRUE : Boolean.FALSE);
                 final int selectionStart = selection ? jtc.getSelectionStart() : 0;
                 final int selectionEnd = selection ? jtc.getSelectionEnd() : bdoc.getLength();
                 RequestProcessor.getDefault().post(
@@ -217,8 +235,16 @@ public class ExportHtmlAction extends CookieAction {
             return this.selection.isSelected();
         }
 
+        public final void setSelection(boolean value) {
+            this.selection.setSelected(value);
+        }
+
         public final boolean isOpenHtml () {
             return this.openHtml.isSelected();
+        }
+
+        public final void setOpenHtml (boolean value) {
+            this.openHtml.setSelected (value);
         }
 
         public final void setSelectionActive (boolean value) {
