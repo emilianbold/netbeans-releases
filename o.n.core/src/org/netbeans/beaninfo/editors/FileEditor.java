@@ -502,7 +502,7 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
                 //intermittently)
                 if (c instanceof Dialog) {
                     if (((Dialog) c).isVisible()) {
-                        ((Dialog) c).hide();
+                        ((Dialog) c).setVisible (false);
                         ((Dialog) c).dispose();
                     }
                 }
