@@ -39,6 +39,9 @@ final class NbErrorManager extends ErrorManager {
     */
     private Map lastException = new WeakHashMap (27);
 
+    /** Minimum value of severity to write exception to the log file*/
+    private int minLogSeverity = ErrorManager.UNKNOWN;
+    
     /** Creates new NbExceptionManager. */
     public NbErrorManager() {
         System.setProperty("sun.awt.exception.handler", "org.netbeans.core.NbErrorManager$AWTHandler");
@@ -150,8 +153,10 @@ final class NbErrorManager extends ErrorManager {
 
     /** */
     public void log(int severity, String s) {
-        getLogWriter().println(s);
-        getLogWriter().flush(); 
+        if(severity >= minLogSeverity) {
+            getLogWriter().println(s);
+            getLogWriter().flush(); 
+        }
     }
     
     /** Returns an instance with given name. The name
@@ -160,8 +165,16 @@ final class NbErrorManager extends ErrorManager {
      */
     public final ErrorManager getInstance(String name) {
         // TODO: change this to create a hierarchy
-        return this;
-    }
+        NbErrorManager newEM = new NbErrorManager();
+        if (System.getProperty (name) != null) {
+            try {
+                newEM.minLogSeverity = Integer.parseInt(System.getProperty (name));                    
+            } catch (NumberFormatException nfe) {
+                newEM.minLogSeverity = ErrorManager.UNKNOWN;
+            }
+        }
+        return newEM;
+    }    
 
     /** Finds annotations associated with given exception.
     * @param t the exception
@@ -412,6 +425,7 @@ final class NbErrorManager extends ErrorManager {
             TopManager.getDefault().getErrorManager().notify((ERROR << 1), t);
         }
     }
+
 }
 
 /*
