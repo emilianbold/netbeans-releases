@@ -159,11 +159,11 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
     if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
         (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
       if (icon == null)
-        icon = loadImage("/com/netbeans/developer/modules/loaders/form/resources/form.gif");
+        icon = loadImage("/com/netbeans/developer/modules/loaders/form/resources/formSetings.gif");
       return icon;
     } else {
       if (icon32 == null)
-        icon32 = loadImage ("/com/netbeans/developer/modules/loaders/form/resources/form32.gif");
+        icon32 = loadImage ("/com/netbeans/developer/modules/loaders/form/resources/formSettings32.gif");
       return icon32;
     }
   }
@@ -209,6 +209,7 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
 
 /*
  * Log
+ *  4    Gandalf   1.3         3/29/99  Ian Formanek    Icon change
  *  3    Gandalf   1.2         3/16/99  Ian Formanek    
  *  2    Gandalf   1.1         3/10/99  Ian Formanek    Gandalf updated
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
