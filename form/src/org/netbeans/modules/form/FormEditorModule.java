@@ -14,12 +14,9 @@
 package org.netbeans.modules.form;
 
 import org.openide.TopManager;
-import org.openide.NotifyDescriptor;
+import org.openide.windows.*;
 import org.openide.filesystems.*;
-import org.openide.loaders.*;
 import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.modules.ModuleInstall;
 
 import org.netbeans.modules.form.actions.*;
@@ -78,6 +75,12 @@ public class FormEditorModule extends ModuleInstall
             });
     }
 
+    /** Module installed for the first time. */
+
+    public void installed () {
+        installWorkspace ();
+    }
+
     /** Module installed again. */
     
     public void restored() {
@@ -109,6 +112,55 @@ public class FormEditorModule extends ModuleInstall
             javax.swing.KeyStroke.class,
             org.netbeans.modules.form.editors.KeyStrokeEditor.class);
     }
+
+    /** Module was uninstalled. */
+    public void uninstalled() {
+        uninstallWorkspace();
+    }
+
+    private void installWorkspace() {
+        WindowManager wm = TopManager.getDefault().getWindowManager();
+        Workspace guiWorkspace = wm.findWorkspace(FormEditor.GUI_EDITING_WORKSPACE_NAME);
+        if (guiWorkspace != null) return;
+
+        // create the workspace if not found
+        guiWorkspace = wm.createWorkspace(FormEditor.GUI_EDITING_WORKSPACE_NAME,
+            FormEditor.getFormBundle().getString("CTL_GuiEditingWorkspaceName")); // NOI18N
+
+        Workspace[] currWorkspaces = wm.getWorkspaces();
+        Workspace[] newWorkspaces = new Workspace[currWorkspaces.length+1];
+
+        boolean placed = false;
+        for (int i=0, j=0; i < currWorkspaces.length; i++, j++) {
+            newWorkspaces[j] = currWorkspaces[i];
+            if ("Editing".equals(currWorkspaces[i].getName())) { // NOI18N
+                newWorkspaces[++j] = guiWorkspace;
+                placed = true;
+            }
+        }
+
+        if (!placed)
+            newWorkspaces[newWorkspaces.length-1] = guiWorkspace;
+
+        wm.setWorkspaces (newWorkspaces);
+    }
+
+    private void uninstallWorkspace() {
+        WindowManager wm = TopManager.getDefault().getWindowManager ();
+        Workspace[] currWorkspaces = wm.getWorkspaces ();
+        Workspace[] newWorkspaces = new Workspace[currWorkspaces.length-1];
+
+        for (int i=0,j=0; i < currWorkspaces.length; i++) {
+            if (!FormEditor.GUI_EDITING_WORKSPACE_NAME.equals(currWorkspaces[i].getName()))
+                if (j < newWorkspaces.length)
+                    newWorkspaces[j++] = currWorkspaces[i];
+                else return;
+        }
+
+        wm.setWorkspaces (newWorkspaces);
+    }
+
+    // -------
 
     static String[] getDefaultAWTComponents() {
         return defaultAWTComponents;
