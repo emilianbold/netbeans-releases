@@ -21,7 +21,7 @@ import org.openide.windows.TopComponent;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
+import org.netbeans.core.windows.Constants;
 
 /**
  * Model which stored TopComponents in one mode. It manages opened, closed
@@ -37,13 +37,14 @@ final class TopComponentSubModel {
     private final List openedTopComponents = new ArrayList(10);
     /** List of all TopComponent IDs (both opened and closed). */
     private final List tcIDs = new ArrayList(10);
+    /** kind of mode model this sub model is part of */
+    private final int kind;
     /** Selected TopComponent ID. Has to be present in openedTopComponenets. */
     private String selectedTopComponentID;
 
-    
-    public TopComponentSubModel() {
+    public TopComponentSubModel(int kind) {
+        this.kind = kind;
     }
-
     
     public List getTopComponents() {
         List l = new ArrayList(openedTopComponents);
@@ -95,7 +96,7 @@ final class TopComponentSubModel {
             tcIDs.add(tcID);
         }
         
-        if(selectedTopComponentID == null) {
+        if(selectedTopComponentID == null && !isNullSelectionAllowed()) {
             selectedTopComponentID = getID(tc);
         }
         
@@ -131,7 +132,7 @@ final class TopComponentSubModel {
             tcIDs.add(previousIndex + 1, tcID);
         }
         
-        if(selectedTopComponentID == null) {
+        if(selectedTopComponentID == null && !isNullSelectionAllowed()) {
             selectedTopComponentID = getID(tc);
         }
         
@@ -200,7 +201,7 @@ final class TopComponentSubModel {
     }
     
     private void adjustSelectedTopComponent(int index) {
-        if(openedTopComponents.isEmpty()) {
+        if(openedTopComponents.isEmpty() || isNullSelectionAllowed()) {
             selectedTopComponentID = null;
             return;
         }
@@ -211,13 +212,27 @@ final class TopComponentSubModel {
         
         selectedTopComponentID = getID((TopComponent)openedTopComponents.get(index));
     }
-    
+
+    /** @return true for sliding kind of model, false otherwise. It means that
+     * null selection is valid only in sliding kind of model.
+     */
+    private boolean isNullSelectionAllowed() {
+        return kind == Constants.MODE_KIND_SLIDING;
+    }
+
+    /** Sets selected component. Note that for sliding kind null selection
+     * is allowed
+     */
     public void setSelectedTopComponent(TopComponent tc) {
         if(tc != null && !openedTopComponents.contains(tc)) {
             return;
         }
         
-        selectedTopComponentID = getID(tc);
+        if (tc == null && isNullSelectionAllowed()) {
+            selectedTopComponentID = null;
+        } else {
+            selectedTopComponentID = getID(tc);
+        }
     }
     
     public void setUnloadedSelectedTopComponent(String tcID) {

@@ -34,8 +34,11 @@ public class ModeConfig {
     /** State of mode: 0 = split, 1 = separate. */
     public int state;
     
-    /** Kind of mode: 0 = editor, 1 = view */
+    /** Kind of mode: 0 = editor, 1 = view, 2 - sliding */
     public int kind;
+    
+    /** side for sliding kind*/
+    public String side;
     
     /** Constraints of mode - path in tree model */
     public SplitConstraint[] constraints;

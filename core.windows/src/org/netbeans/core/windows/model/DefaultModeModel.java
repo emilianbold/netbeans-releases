@@ -18,6 +18,18 @@ import org.openide.windows.TopComponent;
 
 import java.awt.*;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.HashMap;
+
+import org.netbeans.core.windows.ModeImpl;
+import org.netbeans.core.windows.SplitConstraint;
+import org.netbeans.core.windows.WindowManagerImpl;
+
+import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
+import org.openide.windows.TopComponent;
 
 
 /**
@@ -46,7 +58,11 @@ final class DefaultModeModel implements ModeModel {
     private final boolean permanent;
 
     /** Sub model which manages TopComponents stuff. */
-    private final TopComponentSubModel topComponentSubModel = new TopComponentSubModel();
+    private final TopComponentSubModel topComponentSubModel;
+    
+    /** Context of tcx. Lazy initialization, because this will be used only by
+     * sliding kind of modes */
+    private TopComponentContextSubModel topComponentContextSubModel = null;
 
     // Locks>>
     /** */
@@ -59,13 +75,16 @@ final class DefaultModeModel implements ModeModel {
     private final Object LOCK_FRAMESTATE = new Object();
     /** Locks top components. */
     private final Object LOCK_TOPCOMPONENTS = new Object();
-
+    /** Locks tc contexts */
+    private final Object LOCK_TC_CONTEXTS = new Object();
+    
     
     public DefaultModeModel(String name, int state, int kind, boolean permanent) {
         this.name = name;
         this.state = state;
         this.kind = kind;
         this.permanent = permanent;
+        this.topComponentSubModel = new TopComponentSubModel(kind);
     }
 
     /////////////////////////////////////
@@ -251,10 +270,41 @@ final class DefaultModeModel implements ModeModel {
             return topComponentSubModel.getTopComponentsIDs();
         }
     }
+    
+    public SplitConstraint[] getTopComponentPreviousConstraints(TopComponent tc) {
+        synchronized(LOCK_TC_CONTEXTS) {
+            return getContextSubModel().getTopComponentPreviousConstraints(tc);
+        }
+    }
+    
+    public ModeImpl getTopComponentPreviousMode(TopComponent tc) {
+        synchronized(LOCK_TC_CONTEXTS) {
+            return getContextSubModel().getTopComponentPreviousMode(tc);
+        }
+    }
+    
+    public void setTopComponentPreviousConstraints(TopComponent tc, SplitConstraint[] constraints) {
+        synchronized(LOCK_TC_CONTEXTS) {
+            getContextSubModel().setTopComponentPreviousConstraints(tc, constraints);
+        }
+    }
+    
+    public void setTopComponentPreviousMode(TopComponent tc, ModeImpl mode) {
+        synchronized(LOCK_TC_CONTEXTS) {
+            getContextSubModel().setTopComponentPreviousMode(tc, mode);
+        }
+    }
+    
     /////////////////////////////////////
     // Accessor methods <<
     /////////////////////////////////////
     
+    private TopComponentContextSubModel getContextSubModel() {
+        if (topComponentContextSubModel == null) {
+            topComponentContextSubModel = new TopComponentContextSubModel();
+        }
+        return topComponentContextSubModel;
+    }
     
 }
 

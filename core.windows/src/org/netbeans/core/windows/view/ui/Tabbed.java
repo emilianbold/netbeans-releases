@@ -30,7 +30,7 @@ import java.awt.event.ActionListener;
  * @author  Peter Zavadsky
  */
 public interface Tabbed {
-
+    
     public void addTopComponent(String name, Icon icon, TopComponent tc, String toolTip);
 
     public void insertComponent(String name, Icon icon, Component comp, String toolTip, int position);
@@ -77,5 +77,21 @@ public interface Tabbed {
     public Image createImageOfTab (int tabIndex);
 
     public String getCommandAtPoint (Point p);
+    
+    /** Accessor for visual component holding components */
+    public Component getComponent();
+    
+    /** Allows tabbed implementors to speficy content of popup menu on tab
+     * with given index. Incoming actions are default set by winsys
+     */
+    public Action[] getPopupActions(Action[] defaultActions, int tabIndex);
+    
+    /** Interface for simple accessing of Tabbed instance */
+    public interface Accessor {
+
+        public Tabbed getTabbed ();
+
+    } // end of Accessor
+
 }
 

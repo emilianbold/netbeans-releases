@@ -22,6 +22,10 @@ import org.netbeans.core.windows.actions.CloseAllDocumentsAction;
 import org.netbeans.core.windows.actions.ActionUtils;
 import org.netbeans.core.windows.view.ModeView;
 import org.netbeans.core.windows.view.ui.tabcontrol.TabbedAdapter;
+import org.netbeans.core.windows.WindowManagerImpl;
+import org.netbeans.core.windows.view.SlidingView;
+import org.netbeans.core.windows.view.ui.slides.SlideOperation;
+import org.netbeans.core.windows.view.ui.slides.TabbedSlideAdapter;
 import org.netbeans.swing.tabcontrol.TabbedContainer;
 import org.netbeans.swing.tabcontrol.event.TabActionEvent;
 import org.openide.windows.TopComponent;
@@ -35,6 +39,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.AWTEventListener;
+import org.netbeans.core.windows.view.ui.slides.SlideBar;
+import org.netbeans.core.windows.view.ui.slides.SlideBarActionEvent;
 
 
 /** Helper class which handles <code>Tabbed</code> component inside
@@ -42,13 +48,15 @@ import java.awt.event.AWTEventListener;
  *
  * @author  Peter Zavadsky
  */
-final class TabbedHandler implements ChangeListener, ActionListener {
+public final class TabbedHandler implements ChangeListener, ActionListener {
 
     /** Associated mode container. */
     private final ModeView modeView;
     
     /** Component which plays tabbed. */
     private final Tabbed tabbed;
+    /** kind of the mode view we are handling tabs for */
+    private final int kind;
 
     /** Ignore own changes. */
     private boolean ignoreChange = false;
@@ -59,6 +67,7 @@ final class TabbedHandler implements ChangeListener, ActionListener {
     /** Creates new SimpleContainerImpl */
     public TabbedHandler(ModeView modeView, int kind) {
         this.modeView = modeView;
+        this.kind = kind;
 
         synchronized (TabbedHandler.class) {
             if (activationManager == null) {
@@ -71,7 +80,7 @@ final class TabbedHandler implements ChangeListener, ActionListener {
         tabbed = createTabbedComponent(kind);
 
         // E.g. when switching tabs in mode.
-        ((Container)tabbed).setFocusCycleRoot(true);
+        ((Container)tabbed.getComponent()).setFocusCycleRoot(true);
     }
 
     
@@ -81,6 +90,8 @@ final class TabbedHandler implements ChangeListener, ActionListener {
 
         if(kind == Constants.MODE_KIND_EDITOR) {
             tabbed = new TabbedAdapter(Constants.MODE_KIND_EDITOR);
+        } else if (kind == Constants.MODE_KIND_SLIDING) {
+            tabbed = new TabbedSlideAdapter(((SlidingView)modeView).getSide());
         } else {
             tabbed = new TabbedAdapter(Constants.MODE_KIND_VIEW);
         }
@@ -93,7 +104,7 @@ final class TabbedHandler implements ChangeListener, ActionListener {
 
     
     public Component getComponent() {
-        return (Component)tabbed;
+        return tabbed.getComponent();
     }
 
     /** Adds given top component to this container. */
@@ -197,11 +208,14 @@ final class TabbedHandler implements ChangeListener, ActionListener {
     /** Sets selected <code>TopComponent</code>.
      * Ensures GUI components to set accordingly. */
     public void setSelectedTopComponent(TopComponent tc) {
-        if(tc == null || tc == getSelectedTopComponent()) {
+        if(tc == getSelectedTopComponent()) {
+            return;
+        }
+        if (tc == null && !isNullSelectionAllowed()) {
             return;
         }
         
-        if(tabbed.indexOf(tc) >= 0) {
+        if(tabbed.indexOf(tc) >= 0 || (isNullSelectionAllowed() && tc == null)) {
             try {
                 ignoreChange = true;
                 tabbed.setSelectedComponent(tc);
@@ -209,6 +223,10 @@ final class TabbedHandler implements ChangeListener, ActionListener {
                 ignoreChange = false;
             }
         }
+    }
+    
+    private boolean isNullSelectionAllowed() {
+        return kind == Constants.MODE_KIND_SLIDING;
     }
     
     public TopComponent getSelectedTopComponent() {
@@ -229,7 +247,6 @@ final class TabbedHandler implements ChangeListener, ActionListener {
         if(ignoreChange || evt.getSource() != tabbed) {
             return;
         }
-        
         TopComponent selected = tabbed.getSelectedTopComponent();
         modeView.getController().userSelectedTab(modeView, (TopComponent)selected);
     }
@@ -266,22 +283,42 @@ final class TabbedHandler implements ChangeListener, ActionListener {
             } else if (TabbedContainer.COMMAND_CLOSE_ALL_BUT_THIS == cmd) {
                 TopComponent tc = (TopComponent) tabbed.getTopComponentAt(tae.getTabIndex());
                 ActionUtils.closeAllExcept(tc);
-            }
             //Pin button handling here
+            } else if (TabbedContainer.COMMAND_ENABLE_AUTO_HIDE.equals(cmd)) {
+                TopComponent tc = (TopComponent) tabbed.getTopComponentAt(tae.getTabIndex());
+                modeView.getController().userEnabledAutoHide(modeView, tc);
+            } else if (TabbedContainer.COMMAND_DISABLE_AUTO_HIDE.equals(cmd)) {
+                TopComponent tc = (TopComponent) tabbed.getTopComponentAt(tae.getTabIndex());
+                modeView.getController().userDisabledAutoHide(modeView, tc);
+            }
+        } else if (e instanceof SlideBarActionEvent) {
+            // slide bar commands
+            SlideBarActionEvent sbe = (SlideBarActionEvent)e;
+            String cmd = sbe.getActionCommand();
+            if (SlideBar.COMMAND_POPUP_REQUEST.equals(cmd)) {
+                handlePopupMenuShowing(sbe.getMouseEvent(), sbe.getTabIndex());
+            } else if (SlideBar.COMMAND_SLIDE_IN.equals(cmd)) {
+                modeView.getController().userTriggeredSlideIn(modeView, sbe.getSlideOperation());
+            } else if (SlideBar.COMMAND_SLIDE_OUT.equals(cmd)) {
+                modeView.getController().userTriggeredSlideOut(modeView, sbe.getSlideOperation());
+            } else if (SlideBar.COMMAND_DISABLE_AUTO_HIDE.equals(cmd)) {
+                TopComponent tc = (TopComponent) tabbed.getTopComponentAt(sbe.getTabIndex());
+                modeView.getController().userDisabledAutoHide(modeView, tc);
+            }
         }
     }
 
     /** Possibly invokes popup menu. */
     public static void handlePopupMenuShowing(MouseEvent e, int idx) {
         Component c = (Component) e.getSource();
-        while (c != null && !(c instanceof Tabbed))
+        while (c != null && !(c instanceof Tabbed.Accessor))
             c = c.getParent();
         if (c == null) {
             return;
         }
-        final Tabbed tab = (Tabbed) c;
+        final Tabbed tab = ((Tabbed.Accessor)c).getTabbed();
 
-        final Point p = SwingUtilities.convertPoint((Component) e.getSource(), e.getPoint(), (Component)tab);
+        final Point p = SwingUtilities.convertPoint((Component) e.getSource(), e.getPoint(), c);
 
         final int clickTab = idx;
         if (clickTab < 0) {
@@ -292,11 +329,15 @@ final class TabbedHandler implements ChangeListener, ActionListener {
         if(tc == null) {
             return;
         }
+        
+        // ask also tabbed to possibly alter actions
+        Action[] actions = tab.getPopupActions(tc.getActions(), clickTab);
+        if (actions == null) { 
+            actions = tc.getActions();
+        }
 
         showPopupMenu(
-            Utilities.actionsToPopup(tc.getActions(), tc.getLookup()),
-            p,
-            (Component)tab);
+            Utilities.actionsToPopup(actions, tc.getLookup()), p, c);
     }
 
     /** Shows given popup on given coordinations and takes care about the
@@ -354,42 +395,42 @@ final class TabbedHandler implements ChangeListener, ActionListener {
             }
         }
 
+        //
+        /* XXX(-ttran) when the split container contains two TopComponents say TC1
+         * and TC2.  If TC2 itself does not accept focus or the user clicks on one
+         * of TC2's child compoennts which does not accept focus, then the whole
+         * split container is activated.  It in turn may choose to activate TC1 not
+         * TC2.  This is a very annoying problem if TC1 is an Explorer and TC2 is
+         * the global property sheet.  The user clicks on the property sheet but
+         * the Explorer gets activated which has a different selected node than the
+         * one attached to the property sheet at that moment.  The contents of the
+         * property sheet is updated immediately after the mouse click.  For more
+         * details see <http://www.netbeans.org/issues/show_bug.cgi?id=11149>
+         *
+         * What follows here is a special hack for mouse click on _any_
+         * TopComponent.  The hack will cause the nearest upper TopComponent in the
+         * AWT hieararchy to be activated on MOUSE_PRESSED on any of its child
+         * components.  This behavior is compatible with all window managers I can
+         * imagine.
+         */
+        private void handleActivation(MouseEvent evt) {
+            Component comp = (Component) evt.getSource();
 
-    //
-    /* XXX(-ttran) when the split container contains two TopComponents say TC1
-     * and TC2.  If TC2 itself does not accept focus or the user clicks on one
-     * of TC2's child compoennts which does not accept focus, then the whole
-     * split container is activated.  It in turn may choose to activate TC1 not
-     * TC2.  This is a very annoying problem if TC1 is an Explorer and TC2 is
-     * the global property sheet.  The user clicks on the property sheet but
-     * the Explorer gets activated which has a different selected node than the
-     * one attached to the property sheet at that moment.  The contents of the
-     * property sheet is updated immediately after the mouse click.  For more
-     * details see <http://www.netbeans.org/issues/show_bug.cgi?id=11149>
-     *
-     * What follows here is a special hack for mouse click on _any_
-     * TopComponent.  The hack will cause the nearest upper TopComponent in the
-     * AWT hieararchy to be activated on MOUSE_PRESSED on any of its child
-     * components.  This behavior is compatible with all window managers I can
-     * imagine.
-     */
-    private void handleActivation(MouseEvent evt) {
-        Component comp = (Component) evt.getSource();
+            if (!(comp instanceof Component)) {
+                return;
+            }
 
-        if (!(comp instanceof Component)) {
-            return;
+            while (comp != null && !(comp instanceof ModeComponent)) {
+                comp = comp.getParent();
+            }
+
+            if (comp instanceof ModeComponent) {
+                ModeView modeView = ((ModeComponent)comp).getModeView();
+                modeView.getController().userActivatedModeView(modeView);
+            }
         }
+        
+    } // end of ActivationManager
 
-        while (comp != null && !(comp instanceof ModeComponent)) {
-            comp = comp.getParent();
-        }
-
-        if (comp instanceof ModeComponent) {
-            ModeView modeView = ((ModeComponent)comp).getModeView();
-            modeView.getController().userActivatedModeView(modeView);
-        }
-    }
-
-    }
 }
 

@@ -315,6 +315,10 @@ public final class ModeImpl implements Mode {
     public int getKind() {
         return getCentral().getModeKind(this);
     }
+    /** Gets side, either null for view and editor kinds, a side constant for sliding kind.. */
+    public String getSide() {
+        return getCentral().getModeSide(this);
+    }
     
     // Contstraints and split weights are saved in split structure at wm model level.
     /** Sets constraints for mode. */
@@ -357,8 +361,12 @@ public final class ModeImpl implements Mode {
         if(mode == null) {
             return true;
         }
+        // allow mixing of view and sliding modes
+        int myKind = getKind();
+        int otherKind = mode.getKind();
         
-        return mode.getKind() == getKind();
+        return (myKind == otherKind) ||
+               (myKind != Constants.MODE_KIND_EDITOR && otherKind != Constants.MODE_KIND_EDITOR);
     }
     
     void doFirePropertyChange(final String propName,

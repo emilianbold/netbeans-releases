@@ -13,7 +13,12 @@
 
 package org.netbeans.core.windows.model;
 
-
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.ModeStructureSnapshot;
@@ -43,6 +48,11 @@ final class ModesSubModel {
 
     /** Represents split model of modes, also contains special editor area. */
     private final EditorSplitSubModel editorSplitSubModel;
+   
+    /** Sliding modes model, <ModeImpl, String> mapping 
+     of mode and side of presence */
+    private final HashMap slidingModes2Sides = new HashMap(5);
+    private final HashMap slidingSides2Modes = new HashMap(5);
 
     /** Active mode. */
     private ModeImpl activeMode;
@@ -76,6 +86,18 @@ final class ModesSubModel {
         } else {
             return editorSplitSubModel.getModeConstraints(mode);
         }
+    }
+    
+    public String getSlidingModeConstraints(ModeImpl mode) {
+        return (String)slidingModes2Sides.get(mode);
+    }
+    
+    public ModeImpl getSlidingMode(String side) {
+        return (ModeImpl)slidingSides2Modes.get(side);
+    }
+    
+    public Set getSlidingModes() {
+        return Collections.unmodifiableSet(slidingModes2Sides.keySet());
     }
 
     public boolean addMode(ModeImpl mode, SplitConstraint[] constraints) {
@@ -179,10 +201,29 @@ final class ModesSubModel {
         }
         return result;
     }
+    
+    public boolean addModeSliding(ModeImpl mode, String side) {
+        if(modes.contains(mode) || (mode.getKind() != Constants.MODE_KIND_SLIDING)) {
+            return false;
+        }
+
+        slidingModes2Sides.put(mode, side);
+        slidingSides2Modes.put(side, mode);
+        
+        modes.add(mode);
+        
+        return true;
+    }
 
     
     public boolean removeMode(ModeImpl mode) {
         modes.remove(mode);
+        int kind = mode.getKind();
+        if (kind == Constants.MODE_KIND_SLIDING) {
+            String side = getSlidingModeConstraints(mode);
+            slidingSides2Modes.remove(side);
+            return slidingModes2Sides.remove(mode) != null;
+        }
         if(mode.getKind() == Constants.MODE_KIND_EDITOR) {
             return editorSplitSubModel.getEditorArea().removeMode(mode);
         } else {
@@ -254,11 +295,24 @@ final class ModesSubModel {
         
         return s;
     }
+    
+    public Set createSlidingModeSnapshots() {
+        Set result = new HashSet();
+        Map.Entry curEntry;
+        for (Iterator iter = slidingModes2Sides.entrySet().iterator(); iter.hasNext(); ) {
+            curEntry = (Map.Entry)iter.next();
+            result.add(new ModeStructureSnapshot.SlidingModeSnapshot(
+                    (ModeImpl)curEntry.getKey(), (String)curEntry.getValue()));
+        }
+        
+        return result;
+    }
+    
     ////////////////////////////////////////////
 
     
     //////////////////////////////
-    // Controller udpates >>
+    // Controller updates >>
     
     public ModeImpl getModeForOriginator(ModelElement originator) {
         ModeImpl mode = editorSplitSubModel.getModeForOriginator(originator);
@@ -273,5 +327,7 @@ final class ModesSubModel {
     
     // Controller updates <<
     ///////////////////////////////
+    
+    
 }
 

@@ -78,8 +78,9 @@ final class ViewHelper {
     private static ModeStructureAccessorImpl createModeStructureAccessor(ModeStructureSnapshot mss) {
         ElementAccessor splitRoot = createVisibleAccessor(mss.getSplitRootSnapshot());
         Set separateModes = createSeparateModeAccessors(mss.getSeparateModeSnapshots());
+        Set slidingModes = createSlidingModeAccessors(mss.getSlidingModeSnapshots());
         
-        ModeStructureAccessorImpl msa =  new ModeStructureAccessorImpl(splitRoot, separateModes);
+        ModeStructureAccessorImpl msa =  new ModeStructureAccessorImpl(splitRoot, separateModes, slidingModes);
         return msa;
     }
     
@@ -101,6 +102,30 @@ final class ViewHelper {
                     snapshot.getOpenedTopComponents(),
                     snapshot.getResizeWeight()));
             }
+        }
+        
+        return s;
+    }
+    
+    private static Set createSlidingModeAccessors(ModeStructureSnapshot.SlidingModeSnapshot[] slidingModeSnapshots) {
+        Set s = new HashSet();
+        ModeStructureSnapshot.SlidingModeSnapshot snapshot; 
+        for(int i = 0; i < slidingModeSnapshots.length; i++) {
+            snapshot = slidingModeSnapshots[i];
+            s.add(new ModeStructureAccessorImpl.SlidingAccessorImpl(
+                snapshot.getOriginator(),
+                snapshot,
+                snapshot.getMode(),
+                snapshot.getName(),
+                snapshot.getState(),
+                snapshot.getKind(),
+                snapshot.getBounds(),
+                snapshot.getFrameState(),
+                snapshot.getSelectedTopComponent(),
+                snapshot.getOpenedTopComponents(),
+                snapshot.getResizeWeight(),
+                snapshot.getSide()
+            ));
         }
         
         return s;

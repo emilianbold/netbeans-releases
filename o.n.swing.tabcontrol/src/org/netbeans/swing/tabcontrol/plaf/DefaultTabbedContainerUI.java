@@ -349,7 +349,7 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
      */
     protected TabDisplayer createTabDisplayer() {
         TabDisplayer result = new TabDisplayer(
-                container.getModel(), container.getType());
+                container.getModel(), container.getType(), container.getLocationInformer());
         result.setName("Tab Displayer");  //NOI18N
         return result;
     }

@@ -23,6 +23,8 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
@@ -32,6 +34,7 @@ import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.swing.tabcontrol.LocationInformer;
 
 /**
  * Basic UI class for view tabs - non scrollable tabbed displayer, which shows all
@@ -56,9 +59,14 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
     private Font txtFont;
 
     protected Controller controller;
+    
+    protected static IconLoader iconCache = new IconLoader();
+    
+    private PinButton pinButton;
 
     public AbstractViewTabDisplayerUI (TabDisplayer displayer) {
         super (displayer);
+        displayer.setLayout(null);
     }
 
     public void installUI(JComponent c) {
@@ -70,7 +78,16 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         displayer.addPropertyChangeListener (controller);
         selectionModel.addChangeListener (controller);
         displayer.addMouseListener(controller);
-        displayer.addMouseMotionListener(controller);    }
+        displayer.addMouseMotionListener(controller);
+        LocationInformer locInfo = displayer.getLocationInformer();
+        if (locInfo != null) {
+            pinButton = createPinButton();
+        }
+        if (pinButton != null) {
+            displayer.add(pinButton);
+            pinButton.addActionListener(controller);
+        }
+    }
 
     public void uninstallUI(JComponent c) {
         super.uninstallUI(c);
@@ -79,6 +96,10 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         selectionModel.removeChangeListener(controller);
         displayer.removeMouseListener(controller);
         displayer.removeMouseMotionListener(controller);
+        if (pinButton != null) {
+            displayer.remove(pinButton);
+            pinButton.removeActionListener(controller);
+        }
         layoutModel = null;
         selectionModel = null;
         dataModel = null;
@@ -255,6 +276,36 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         int iconHeight = icon.getIconHeight();
         return y + (Math.max(0, h / 2 - iconHeight / 2));
     }
+    
+    
+    /** Utility method to access pin button instance conveniently */
+    protected final PinButton getPinButton (int index) {
+        if (pinButton == null) {
+            return null;
+        }
+        LocationInformer locInfo = getDisplayer().getLocationInformer();
+        if (locInfo == null) {
+            return null;
+        }
+        Object orientation = locInfo.getOrientation(getDisplayer().getModel().getTab(index).getComponent());
+        pinButton.setOrientation(orientation);
+        
+        return pinButton;
+    }
+
+    /** Subclasses should create and return pin button instance, parametrized
+     * to given orientation
+     * @see PinButton
+     */ 
+    // XXX - change back to abstract after implementing in all LFs
+    protected /*abstract*/ PinButton createPinButton () {
+        Map normalIcons = new HashMap(6);
+        normalIcons.put(TabDisplayer.ORIENTATION_EAST, "org/netbeans/swing/tabcontrol/resources/win-pin-normal-east.gif");
+        normalIcons.put(TabDisplayer.ORIENTATION_WEST, "org/netbeans/swing/tabcontrol/resources/win-pin-normal-west.gif");
+        normalIcons.put(TabDisplayer.ORIENTATION_SOUTH, "org/netbeans/swing/tabcontrol/resources/win-pin-normal-south.gif");
+        normalIcons.put(TabDisplayer.ORIENTATION_CENTER, "org/netbeans/swing/tabcontrol/resources/win-pin-normal-center.gif");
+        return new PinButton(normalIcons, null, null);
+    }
 
     public Polygon getExactTabIndication(int index) {
         // TBD - the same code is copied in ScrollableTabsUI, should be shared
@@ -416,7 +467,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
      * button behaviour.
      */
     abstract class Controller extends MouseAdapter
-            implements MouseMotionListener, ChangeListener, PropertyChangeListener {
+            implements MouseMotionListener, ChangeListener, PropertyChangeListener, ActionListener {
 
         /**
          * index of tab whose close icon currently pressed, -1 otherwise
@@ -594,7 +645,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
          */
         protected void setMouseInCloseButton(Point location) {
             int isNow = inCloseIconRect(location);
-            if (mouseInCloseButton == isNow) {
+            if (mouseInCloseButton == isNow || dataModel.size() == 0) {
                 return;
             }
             // sync of indexes
@@ -618,5 +669,62 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
                 getDisplayer().repaint();
             }
         }
+        
+        /** Implementation of ActionListener. Reacts to pin button clicks
+         */
+        public void actionPerformed(ActionEvent e) {
+            PinButton pinButton = (PinButton)e.getSource();
+            // pin button only active on selected index, so this is safe here
+            int index = getSelectionModel().getSelectedIndex();
+            if (TabDisplayer.ORIENTATION_CENTER.equals(pinButton.getOrientation())) {
+                shouldPerformAction(TabDisplayer.COMMAND_DISABLE_AUTO_HIDE, index, null);
+            } else {
+                shouldPerformAction(TabDisplayer.COMMAND_ENABLE_AUTO_HIDE, index, null);
+            }
+            // XXX - what to do if action was not consumed???
+        }
+        
     } // end of Controller
+    
+
+    /** Implementation of Pin button, its look is dependent on orientation
+     * and can be set using setOrientation method.
+     */
+    protected static final class PinButton extends JButton {
+        
+        private Map pressedIcons, rolloverIcons, regularIcons;
+        
+        private Object orientation;
+        
+        public PinButton (Map regularIcons, Map pressedIcons, Map rolloverIcons) {
+            super();
+            this.regularIcons = regularIcons;
+            this.pressedIcons = pressedIcons;
+            this.rolloverIcons = rolloverIcons;
+            setFocusable(false);
+            setBorder(null);
+            setContentAreaFilled(false);
+            setRolloverEnabled(rolloverIcons != null);
+            setOrientation(TabDisplayer.ORIENTATION_CENTER);
+        }
+        
+        public Object getOrientation () {
+            return orientation;
+        }
+        
+        public void setOrientation (Object orientation) {
+            this.orientation = orientation;
+            Icon icon = iconCache.obtainIcon((String)regularIcons.get(orientation));
+            setIcon(icon);
+            setSize(icon.getIconWidth(), icon.getIconHeight());
+            if (pressedIcons != null) {
+                setPressedIcon(iconCache.obtainIcon((String)regularIcons.get(orientation)));
+            }
+            if (rolloverIcons != null) {
+                setRolloverIcon(iconCache.obtainIcon((String)rolloverIcons.get(orientation)));
+            }
+        }
+        
+    } // end of PinButton
+    
 }

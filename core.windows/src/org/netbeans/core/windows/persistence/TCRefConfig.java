@@ -30,6 +30,8 @@ public class TCRefConfig {
     /** Is TopComponent opened. */
     public boolean opened;
     
+    public String previousMode;
+    
     /** Creates a new instance of TCRefConfig */
     public TCRefConfig() {
         tc_id = ""; // NOI18N

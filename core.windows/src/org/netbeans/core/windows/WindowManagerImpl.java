@@ -435,7 +435,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         }
         
         // XXX PENDING When no constraints are specified, default (editor or view) mode is returned.
-        if(constraints == null) {
+        if(constraints == null && kind != Constants.MODE_KIND_SLIDING) {
             if(kind == Constants.MODE_KIND_EDITOR) {
                 return getDefaultEditorMode();
             } else {
@@ -448,6 +448,20 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         return mode;
     }
     
+    public ModeImpl createSlidingMode(String name, boolean permanent, String side) {
+        // It gets existing mode with the same name.
+        ModeImpl mode = (ModeImpl)findMode(name);
+        if(mode != null) {
+            return mode;
+        }
+        
+        mode = createModeImpl(name, Constants.MODE_KIND_SLIDING, permanent);
+        central.addSlidingMode(mode, null, side);
+        return mode;
+    }
+    
+    
+    
     /** */
     /*private*/ ModeImpl createModeImpl(String name, int kind, boolean permanent) {
         if(name == null) {
@@ -456,8 +470,8 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         int state = getEditorAreaState() == Constants.EDITOR_AREA_JOINED
                                                 ? Constants.MODE_STATE_JOINED
                                                 : Constants.MODE_STATE_SEPARATED;
-
-        return ModeImpl.createModeImpl(name, state, kind, permanent);
+        ModeImpl toReturn =  ModeImpl.createModeImpl(name, state, kind, permanent);
+        return toReturn;
     }
 
     // XXX
@@ -485,6 +499,24 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
                 new IllegalStateException("Creating default view mode. It shouldn't happen this way")); // NOI18N
             // PENDING should be defined in winsys layer?
             ModeImpl newMode = createModeImpl("explorer", Constants.MODE_KIND_VIEW, true); // NOI18N
+            addMode(newMode, new SplitConstraint[] {
+                new SplitConstraint(Constants.VERTICAL, 0, 0.7D),
+                new SplitConstraint(Constants.HORIZONTAL, 0, 0.25D)
+            });
+            return newMode;
+        } else {
+            return mode;
+        }
+    }
+    
+    /** Gets default sliding view mode. */
+    ModeImpl getDefaultSlidingMode() {
+        ModeImpl mode = findModeImpl("sliding"); // NOI18N
+        if(mode == null) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                new IllegalStateException("Creating default sliding mode. It shouldn't happen this way")); // NOI18N
+            // PENDING should be defined in winsys layer?
+            ModeImpl newMode = createModeImpl("sliding", Constants.MODE_KIND_SLIDING, true); // NOI18N
             addMode(newMode, new SplitConstraint[] {
                 new SplitConstraint(Constants.VERTICAL, 0, 0.7D),
                 new SplitConstraint(Constants.HORIZONTAL, 0, 0.25D)
@@ -623,12 +655,21 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
 
     /** Adds mode. */
     private void addMode(ModeImpl mode, SplitConstraint[] modeConstraints) {
-        central.addMode(mode, modeConstraints);
+        if (mode.getKind() == Constants.MODE_KIND_SLIDING) {
+            // TODO.. where to get the side..
+            central.addSlidingMode(mode, null, Constants.LEFT);
+        } else {
+            central.addMode(mode, modeConstraints);
+        }
     }
     
     /** Removes mode. */
     public void removeMode(ModeImpl mode) {
-        central.removeMode(mode);
+        if (mode.getKind() == Constants.MODE_KIND_SLIDING) {
+            
+        } else {
+            central.removeMode(mode);
+        }
     }
 
     /** Sets toolbar configuration name. */
@@ -763,6 +804,18 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     public boolean isDragInProgress() {
         return central.isDragInProgress();
     }
+    
+    /** Analyzes bounds of given top component and finds appropriate side
+     * of desktop for sliding for given top component.
+     *
+     * @param tc top component to find side for sliding for
+     * @return side where top component should live in sliding state
+     * @see Constants.LEFT 
+     */ 
+    public String guessSlideSide(TopComponent tc) {
+        return central.guessSlideSide(tc);
+    }
+    
     
     // PENDING>>
     public void setRecentViewList(TopComponent[] tcs) {
@@ -1005,6 +1058,15 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         }
         
         return null;
+    }
+    
+    
+    public ModeImpl getPreviousModeForTopComponent(TopComponent tc, ModeImpl slidingMode) {
+        return getCentral().getModeTopComponentPreviousMode(tc, slidingMode);
+    }
+    
+    public void setPreviousModeForTopComponent(TopComponent tc, ModeImpl slidingMode, ModeImpl prevMode) {
+        getCentral().setModeTopComponentPreviousMode(tc, slidingMode, prevMode);
     }
     
     

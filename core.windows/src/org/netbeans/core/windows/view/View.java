@@ -16,8 +16,8 @@ package org.netbeans.core.windows.view;
 
 
 import org.netbeans.core.windows.WindowSystemSnapshot;
-
 import java.awt.*;
+import org.openide.windows.TopComponent;
 
 
 /**
@@ -67,10 +67,12 @@ public interface View {
     public int CHANGE_TOPCOMPONENT_ACTIVATED           = 44;
     public int CHANGE_MODE_CLOSED                      = 45;
     public int CHANGE_DND_PERFORMED                    = 46;
+    public int CHANGE_TOPCOMPONENT_AUTO_HIDE_ENABLED   = 47;
+    public int CHANGE_TOPCOMPONENT_AUTO_HIDE_DISABLED  = 48;
     
     // Others
-    public int CHANGE_UI_UPDATE    = 51;
-    public int CHANGE_PROJECT_NAME = 52;
+    public int CHANGE_UI_UPDATE    = 61;
+    public int CHANGE_PROJECT_NAME = 62;
     
     /** Provides GUI changes to manifest model changes to user. */
     public void changeGUI(ViewEvent[] viewEvents, WindowSystemSnapshot snapshot);
@@ -79,6 +81,9 @@ public interface View {
     public boolean isDragInProgress();
     // XXX
     public Frame getMainWindow();
+    
+    public String guessSlideSide(TopComponent tc);
+   
     
 }
 

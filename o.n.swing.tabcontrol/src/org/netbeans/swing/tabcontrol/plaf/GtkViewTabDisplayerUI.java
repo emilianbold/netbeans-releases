@@ -143,7 +143,15 @@ public final class GtkViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             g.drawLine(iconX, iconY + iconHeight, iconX + iconWidth, iconY);
 
             iconY++;
-            textW -= iconWidth + 7;
+            
+            // pin button
+            JButton pinButton = getPinButton(index);
+            int space4Pin = pinButton != null ? pinButton.getWidth() + 1 : 0;
+            if (pinButton != null) {
+                pinButton.setLocation(iconX - space4Pin, iconY);
+            }
+            
+            textW -= iconWidth + 7 + space4Pin;
         }
 
         if (text.length() == 0) {
@@ -266,6 +274,11 @@ public final class GtkViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         }
     }
 
+    protected PinButton createPinButton() {
+        // XXX - TBD - change to own specialized pin button with proper icons
+        return super.createPinButton();
+    }
+    
     /**
      * Own close icon button controller
      */

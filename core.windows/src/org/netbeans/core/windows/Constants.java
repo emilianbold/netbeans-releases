@@ -46,6 +46,7 @@ public abstract class Constants {
     /** Horizontal orientation constant used in constraint. */
     public static final int HORIZONTAL = JSplitPane.HORIZONTAL_SPLIT;
     
+    /** Sides of attaching, used both for regular modes and sliding modes */
     public static final String TOP    = JSplitPane.TOP;
     public static final String BOTTOM = JSplitPane.BOTTOM;
     public static final String LEFT   = JSplitPane.LEFT;

@@ -34,10 +34,14 @@ public class ModeStructureSnapshot {
     
     private final Set separateModeSnapshots;
     
+    private final Set slidingModeSnapshots;
+    
     /** Creates a new instance of ModesModelSnapshot. */
-    public ModeStructureSnapshot(ElementSnapshot splitRootSnapshot, Set separateModeSnapshots) {
+    public ModeStructureSnapshot(ElementSnapshot splitRootSnapshot, Set separateModeSnapshots,
+                                    Set slidingModeSnapshots) {
         this.splitRootSnapshot = splitRootSnapshot;
         this.separateModeSnapshots = separateModeSnapshots;
+        this.slidingModeSnapshots = slidingModeSnapshots;
     }
 
     public ElementSnapshot getSplitRootSnapshot() {
@@ -46,6 +50,10 @@ public class ModeStructureSnapshot {
     
     public ModeSnapshot[] getSeparateModeSnapshots() {
         return (ModeSnapshot[])separateModeSnapshots.toArray(new ModeSnapshot[0]);
+    }
+    
+    public SlidingModeSnapshot[] getSlidingModeSnapshots() {
+        return (SlidingModeSnapshot[])slidingModeSnapshots.toArray(new SlidingModeSnapshot[0]);
     }
 
     /** @param name name of mode */
@@ -57,6 +65,13 @@ public class ModeStructureSnapshot {
         
         for(Iterator it = separateModeSnapshots.iterator(); it.hasNext(); ) {
             ma = (ModeSnapshot)it.next();
+            if(name.equals(ma.getName())) {
+                return ma;
+            }
+        }
+        
+        for(Iterator it = slidingModeSnapshots.iterator(); it.hasNext(); ) {
+            ma = (SlidingModeSnapshot)it.next();
             if(name.equals(ma.getName())) {
                 return ma;
             }
@@ -139,7 +154,7 @@ public class ModeStructureSnapshot {
         public abstract boolean hasVisibleDescendant();
         
         public String toString() {
-            return "Snapshot[originatorHash=" + Integer.toHexString(originator.hashCode()) + "]"; // NOI18N
+            return "Snapshot[originatorHash=" + (originator != null ? Integer.toHexString(originator.hashCode()) : "null" ) + "]"; // NOI18N
         }
     }
     
@@ -338,6 +353,22 @@ public class ModeStructureSnapshot {
         }
 
     }
+    
+    public static class SlidingModeSnapshot extends ModeSnapshot { 
+
+        private final String side;
+        
+        public SlidingModeSnapshot(ModeImpl mode, String side) {
+            super(null, null, mode, 0D);
+            
+            this.side = side;
+        }
+        
+        public String getSide () {
+            return side;
+        }
+    } // end of SlidingModeSnapshot
+    
     
     /** */
     public static class EditorSnapshot extends ElementSnapshot {

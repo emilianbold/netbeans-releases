@@ -32,5 +32,8 @@ interface ModeStructureAccessor {
     /** Gets set of separate mode accessors. */
     public ModeAccessor[] getSeparateModeAccessors();
 
+    /** Gets set of sliding mode accessors. */
+    public SlidingAccessor[] getSlidingModeAccessors();
+
 }
 

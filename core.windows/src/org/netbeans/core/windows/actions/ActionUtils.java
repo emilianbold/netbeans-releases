@@ -14,16 +14,32 @@
 
 package org.netbeans.core.windows.actions;
 
+import java.awt.Container;
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+
+import org.openide.util.actions.Presenter;
+import org.openide.windows.TopComponent;
+import org.openide.windows.TopComponent;
+
+import java.io.IOException;
+import java.util.*;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenuItem;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.WindowManagerImpl;
+import org.netbeans.core.windows.view.ui.slides.SlideController;
 import org.openide.ErrorManager;
 import org.openide.actions.SaveAction;
 import org.openide.cookies.SaveCookie;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
-import org.openide.windows.TopComponent;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -57,12 +73,23 @@ public abstract class ActionUtils {
             actions.add(new CloneDocumentAction(tc));
             actions.add(null); // Separator
             actions.add(new CloseAllButThisAction(tc));
+        } else if (kind == Constants.MODE_KIND_VIEW) {
+            actions.add(new CloseWindowAction(tc));
+            actions.add(new MaximizeWindowAction(tc));
+        } else if (kind == Constants.MODE_KIND_SLIDING) {
+            actions.add(new CloseWindowAction(tc));
         }
-
-        actions.add(new CloseWindowAction(tc));
-        actions.add(new MaximizeWindowAction(tc));
+        
         return (Action[])actions.toArray(new Action[actions.size()]);
     }
+    
+    /**** PENDING remove during merge, TabbedListener removed, instead drive directly */
+    private static Container slidingContext;
+    
+    public static void setSlidingContext (Container slidingContext) {
+        ActionUtils.slidingContext = slidingContext;
+    }
+    /******** end of PENDING **********/
     
     
     /** */
@@ -174,7 +201,55 @@ public abstract class ActionUtils {
             }
         }
 
-    } // End of class CloseWindowAction.
+    } // End of class CloseAllButThisAction
+
+    /** Auto-hide toggle action */
+    public static final class AutoHideWindowAction extends AbstractAction implements Presenter.Popup {
+        
+        private final SlideController slideController;
+        
+        private final int tabIndex;
+        
+        private boolean state;
+        
+        private JCheckBoxMenuItem menuItem;
+        
+        public AutoHideWindowAction(SlideController slideController, int tabIndex, boolean initialState) {
+            super();
+            this.slideController = slideController;
+            this.tabIndex = tabIndex;
+            this.state = initialState;
+            putValue(Action.NAME, NbBundle.getMessage(ActionUtils.class, "LBL_AutoHideWindowAction"));
+        }
+        
+        public HelpCtx getHelpCtx() {
+            return null;
+        }
+        
+        /** Chnage boolean state and delegate event to winsys through
+         * SlideController (implemented by SlideBar component)
+         */
+        public void actionPerformed(ActionEvent e) {
+            // update state and menu item
+            state = !state;
+            getMenuItem().setSelected(state);
+            // send event to winsys
+            slideController.userToggledAutoHide(tabIndex, state);
+        }
+
+        public JMenuItem getPopupPresenter() {
+            return getMenuItem();
+        }
+        
+        private JCheckBoxMenuItem getMenuItem() {
+            if (menuItem == null) {
+                menuItem = new JCheckBoxMenuItem((String)getValue(Action.NAME), state);
+                menuItem.addActionListener(this);
+            }
+            return menuItem;
+        }
+        
+    } // End of class AutoHideWindowAction
 
     private static class SaveDocumentAction extends AbstractAction implements PropertyChangeListener {
         private final TopComponent tc;
@@ -265,7 +340,7 @@ public abstract class ActionUtils {
         if(sc != null) {
             try {
                 sc.save();
-            } catch(java.io.IOException ioe) {
+            } catch(IOException ioe) {
                 ErrorManager.getDefault().notify(ioe);
             }
         }

@@ -23,13 +23,20 @@ import org.netbeans.swing.tabcontrol.TabbedContainer;
 import org.netbeans.swing.tabcontrol.plaf.EqualPolygon;
 import org.openide.ErrorManager;
 import org.openide.windows.TopComponent;
-
+import org.openide.ErrorManager;
+import java.awt.Image;
+import org.netbeans.core.windows.view.ui.slides.SlideController;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import org.netbeans.core.windows.actions.ActionUtils;
+import org.netbeans.swing.tabcontrol.DefaultTabDataModel;
+import org.netbeans.swing.tabcontrol.LocationInformer;
+import org.netbeans.swing.tabcontrol.TabDisplayer;
+import org.netbeans.swing.tabcontrol.event.TabActionEvent;
 
 /** Adapter class that implements a pseudo JTabbedPane API on top
  * of the new tab control.  This class should eventually be eliminated
@@ -37,7 +44,7 @@ import java.util.Arrays;
  *
  * @author  Tim Boudreau
  */
-public class TabbedAdapter extends TabbedContainer implements Tabbed {
+public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Accessor, SlideController {
     
     public static final int DOCUMENT = 1;
     
@@ -50,7 +57,7 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed {
 
     /** Creates a new instance of TabbedAdapter */
     public TabbedAdapter (int type) {
-        super (type);
+        super (null, type, new LocInfo());
         getSelectionModel().addChangeListener(new ChangeListener() {
             public void stateChanged (ChangeEvent ce) {
                 int idx = getSelectionModel().getSelectedIndex();
@@ -352,5 +359,59 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed {
     private static void debugLog(String message) {
         Debug.log(TabbedAdapter.class, message);
     }
-
+    
+    public Image createImageOfTab(int tabIndex) {
+        // XXX -TBD
+        return null;
+    }
+    
+    public Component getComponent() {
+        return this;
+    }
+    
+    /** Add action for enabling slide */
+    public Action[] getPopupActions(Action[] defaultActions, int tabIndex) {
+        // no auto hide for editor types
+        if (TabbedContainer.TYPE_EDITOR == getType()) {
+            return defaultActions;
+        }
+        Action[] result = new Action[defaultActions.length + 1];
+        System.arraycopy(defaultActions, 0, result, 0, defaultActions.length);
+        result[defaultActions.length] = 
+            new ActionUtils.AutoHideWindowAction(this, tabIndex, false);
+        return result;
+    }
+    
+    /********** implementation of SlideController *****************/
+    
+    public void userToggledAutoHide(int tabIndex, boolean enabled) {
+        postActionEvent(new TabActionEvent(this, TabbedContainer.COMMAND_ENABLE_AUTO_HIDE, tabIndex));
+    }    
+    
+    /********* implementation of Tabbed.Accessor **************/
+    
+    public Tabbed getTabbed() {
+        return this;
+    }
+    
+    /********* implementation of LocationInformer ********/
+    
+    static class LocInfo implements LocationInformer {
+    
+        public Object getOrientation(Component comp) {
+            String side = ((WindowManagerImpl)WindowManagerImpl.getDefault()).guessSlideSide((TopComponent)comp);
+            Object result = null;
+            if (side.equals(Constants.LEFT)) {
+                result = TabDisplayer.ORIENTATION_WEST;
+            } else if (side.equals(Constants.RIGHT)) {
+                result = TabDisplayer.ORIENTATION_EAST;
+            } else if (side.equals(Constants.BOTTOM)) {
+                result = TabDisplayer.ORIENTATION_SOUTH;
+            } else {
+                result = TabDisplayer.ORIENTATION_CENTER;
+            }
+            return result;   
+        }    
+    } // end of LocInfo
+    
 }

@@ -211,6 +211,45 @@ public class ModeParserTest extends NbTestCase {
         
         System.out.println("ModeParserTest.testLoadMode04 FINISH");
     }
+
+        /** Test of loaded data
+     */
+    public void testLoadMode05 () throws Exception {
+        System.out.println("");
+        System.out.println("ModeParserTest.testLoadMode05 START");
+        
+        ModeParser modeParser = createModeParser("data/valid/Windows/Modes","mode05");
+        
+        ModeConfig modeCfg = modeParser.load();
+        
+        //Check loaded data
+        assertNotNull("Could not load data.", modeCfg);
+        
+        //Check data
+        assertEquals("Mode kind",Constants.MODE_KIND_SLIDING,modeCfg.kind);
+        assertEquals("Mode sliding side",Constants.LEFT, modeCfg.side);
+//        assertEquals("Mode state",Constants.MODE_STATE_SEPARATED,modeCfg.state);
+        
+//        assertNotNull("Mode constraints are null",modeCfg.constraints);
+//        assertEquals("Mode constraints are not empty",0,modeCfg.constraints.length);
+        
+//        assertNull("Mode bounds are not null",modeCfg.bounds);
+        
+//        assertNotNull("Mode relative bounds are null",modeCfg.relativeBounds);
+        
+//        assertEquals("Mode relative bounds x",0,modeCfg.relativeBounds.x);
+//        assertEquals("Mode relative bounds y",0,modeCfg.relativeBounds.y);
+//        assertEquals("Mode relative bounds width",40,modeCfg.relativeBounds.width);
+//        assertEquals("Mode relative bounds height",20,modeCfg.relativeBounds.height);
+        
+//        assertEquals("Mode frame state",Frame.MAXIMIZED_BOTH,modeCfg.frameState);
+        
+        assertEquals("Active TC","output",modeCfg.selectedTopComponentID);
+        assertTrue("Permanent",modeCfg.permanent);
+        
+        System.out.println("ModeParserTest.testLoadMode05 FINISH");
+    }
+
     
     /** Test of saving
      */

@@ -115,6 +115,17 @@ public final class TabDisplayer extends JComponent {
      */
     public static final String COMMAND_CLOSE_ALL_BUT_THIS = TabbedContainer.COMMAND_CLOSE_ALL_BUT_THIS; //NOI18N
 
+    /**
+     * Action command indicating that the action event signifies the user
+     * clicking the Pin button on a tab.
+     */
+    public static final String COMMAND_ENABLE_AUTO_HIDE = TabbedContainer.COMMAND_ENABLE_AUTO_HIDE; //NOI18N
+
+    /**
+     * Action command indicating that the action event signifies the user
+     * clicking the Pin button on a tab.
+     */
+    public static final String COMMAND_DISABLE_AUTO_HIDE = TabbedContainer.COMMAND_DISABLE_AUTO_HIDE; //NOI18N
 
     /**
      * UIManager key for the UI Delegate to be used for &quot;editor&quot; style TabbedContainers
@@ -148,12 +159,20 @@ public final class TabDisplayer extends JComponent {
     /** Client property value to display tabs on the bottom edge of the control 
      */
     public static final Object ORIENTATION_SOUTH = "south"; //NOI18N
+    /** Client property value for pin button to have neutral orientation 
+     */
+    public static final Object ORIENTATION_CENTER = "center"; //NOI18N
     
     /**
      * Utility field holding list of ActionListeners.
      */
     private transient List actionListenerList;
+    
+    /** Info about global positioning of this tab control 
+     * or null if no global location info is needed */
+    private LocationInformer locationInformer = null;
 
+    
     public TabDisplayer () {
         this (new DefaultTabDataModel(), TYPE_VIEW);
     }
@@ -162,6 +181,13 @@ public final class TabDisplayer extends JComponent {
      * Creates a new instance of TabDisplayer
      */
     public TabDisplayer(TabDataModel model, int type) {
+        this (model, type, null);
+    }
+    
+    /**
+     * Creates a new instance of TabDisplayer
+     */
+    public TabDisplayer(TabDataModel model, int type, LocationInformer locationInformer) {
         switch (type) {
             case TYPE_VIEW:
             case TYPE_EDITOR:
@@ -172,6 +198,7 @@ public final class TabDisplayer extends JComponent {
         }
         this.model = model;
         this.type = type;
+        this.locationInformer = locationInformer;
         putClientProperty (PROP_ORIENTATION, ORIENTATION_NORTH);
         initialized = true;
         updateUI();
@@ -368,6 +395,10 @@ public final class TabDisplayer extends JComponent {
 
     public int tabForCoordinate(Point p) {
         return getUI().tabForCoordinate(p);
+    }
+    
+    public LocationInformer getLocationInformer() {
+        return locationInformer;
     }
     
 }

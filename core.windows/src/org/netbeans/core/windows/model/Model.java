@@ -86,6 +86,8 @@ public interface Model {
     public void removeTopComponentGroup(TopComponentGroupImpl tcGroup);
     // XXX 
     public void setProjectName(String projectName);
+    /** Adds sliding mode into specific side */ 
+    public void addSlidingMode(ModeImpl mode, String side);
     // Mutators (global level) <<
     /////////////////////////////
 
@@ -126,6 +128,11 @@ public interface Model {
     // XXX
     /** Gets model element constraints. */
     public SplitConstraint[] getModelElementConstraints(ModelElement element);
+    /** Gets constraints (its side) for sliding mode */
+    public String getSlidingModeConstraints(ModeImpl mode);
+    /** Gets constraints (its side) for sliding mode */
+    public ModeImpl getSlidingMode(String side);
+    
     // Accessors (global level) >>
     //////////////////////////////   
     // Global (the highest) level <<
@@ -142,7 +149,7 @@ public interface Model {
     public void setModeBounds(ModeImpl mode, Rectangle bounds);
     /** Sets frame state. */
     public void setModeFrameState(ModeImpl mode, int frameState);
-    /** Sets seleted TopComponent. */
+    /** Sets selected TopComponent. */
     public void setModeSelectedTopComponent(ModeImpl mode, TopComponent selected);
     /** Adds opened TopComponent. */
     public void addModeOpenedTopComponent(ModeImpl mode, TopComponent tc);
@@ -159,6 +166,15 @@ public interface Model {
     public void removeModeTopComponent(ModeImpl mode, TopComponent tc);
     // XXX
     public void removeModeClosedTopComponentID(ModeImpl mode, String tcID);
+
+    // Info about previous top component context, used by sliding kind of modes
+    
+    /** Sets information of previous mode top component was in. */
+    public void setModeTopComponentPreviousMode(ModeImpl mode, TopComponent tc, ModeImpl previousMode);
+    /** Sets information of previous constraints of mode top component was in. */
+    public void setModeTopComponentPreviousConstraints(ModeImpl mode, TopComponent tc, SplitConstraint[] constraints);
+    
+    
     // Mutators (mode level) <<
     ///////////////////////////
 
@@ -174,6 +190,8 @@ public interface Model {
     public int getModeState(ModeImpl mode);
     /** Gets kind. */
     public int getModeKind(ModeImpl mode);
+    /** Gets side. */
+    public String getModeSide(ModeImpl mode);
     /** Gets frame state. */
     public int getModeFrameState(ModeImpl mode);
     /** Gets whether it is permanent. */
@@ -192,6 +210,12 @@ public interface Model {
     public List getModeOpenedTopComponentsIDs(ModeImpl mode);
     public List getModeClosedTopComponentsIDs(ModeImpl mode);
     public List getModeTopComponentsIDs(ModeImpl mode);
+    
+    // Info about previous top component context, used by sliding kind of modes
+    
+    public ModeImpl getModeTopComponentPreviousMode(ModeImpl mode, TopComponent tc);
+    public SplitConstraint[] getModeTopComponentPreviousConstraints(ModeImpl mode, TopComponent tc);
+    
     // Accessors (mode level) <<
     ////////////////////////////
     // Mode level <<

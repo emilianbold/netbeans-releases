@@ -56,17 +56,14 @@ public class EditorView extends ViewElement {
     
     // XXX
     Rectangle getPureBounds() {
-        if(editorArea == null) {
-            return new Rectangle();
-        } else {
-            Component comp = editorArea.getComponent();
-            Rectangle bounds = comp.getBounds();
-            Point location = new Point(0, 0);
-            javax.swing.SwingUtilities.convertPointToScreen(location, comp);
-            bounds.setLocation(location);
-            return bounds;
-        }
+        Component comp = getEditorAreaComponent();
+        Rectangle bounds = comp.getBounds();
+        Point location = new Point(0, 0);
+        javax.swing.SwingUtilities.convertPointToScreen(location, comp);
+        bounds.setLocation(location);
+        return bounds;
     }
+    
     
     private EditorAreaComponent getEditorAreaComponent() {
         if(editorAreaComponent == null) {
@@ -101,12 +98,20 @@ public class EditorView extends ViewElement {
         return getEditorAreaComponent();
     }
     
-    private void assureComponentInEditorArea() {
+    void assureComponentInEditorArea() {
+        // earlier was removing from current place and puting into EAcomponent..
+        // now automagically placing the editor area into the component only
+        // if not elsewhere -> like when maximized..
         EditorAreaComponent eac = getEditorAreaComponent();
         if(editorArea == null) {
             eac.setAreaComponent(null);
         } else {
-            eac.setAreaComponent(editorArea.getComponent());
+            if (editorArea.getComponent() != null && editorArea.getComponent().getParent() == null) {
+//                System.out.println("replacing editorArea..");
+                eac.setAreaComponent(editorArea.getComponent());
+//            } else {
+//                System.out.println("not replacing editorArea..");
+            }
         }
         manageBorder(eac);
         

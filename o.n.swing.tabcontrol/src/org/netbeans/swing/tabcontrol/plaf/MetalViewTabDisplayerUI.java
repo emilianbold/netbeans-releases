@@ -123,7 +123,9 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             String iconPath = findIconPath(index);
             Icon icon = closeIcon.obtainIcon(iconPath);
             int iconWidth = icon.getIconWidth();
-            int space4Icon = iconWidth + ICON_X_LEFT_PAD + ICON_X_RIGHT_PAD;
+            JButton pinButton = getPinButton(index);
+            int space4Pin = pinButton != null ? pinButton.getWidth() + 1 : 0;
+            int space4Icon = iconWidth + ICON_X_LEFT_PAD + ICON_X_RIGHT_PAD + space4Pin;
             text2Paint = stripTextToFit(text,
                                         width - 2 * TXT_X_PAD - space4Icon, fm);
             int txtWidth = fm.stringWidth(text2Paint);
@@ -134,6 +136,9 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
                           y + BUMP_Y_PAD, bumpWidth, height - 2 * BUMP_Y_PAD);
             }
             getCloseIconRect(tempRect, index);
+            if (pinButton != null) {
+                pinButton.setLocation(tempRect.x - space4Pin, tempRect.y);
+            }
             icon.paintIcon(getDisplayer(), g, tempRect.x, tempRect.y);
         } else {
             text2Paint = stripTextToFit(text, width - 2 * TXT_X_PAD, fm);
@@ -270,6 +275,11 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         return controller;
     }
 
+    protected PinButton createPinButton() {
+        // XXX - TBD - change to own specialized pin button with proper icons
+        return super.createPinButton();
+    }
+    
     /**
      * Own close icon button controller
      */

@@ -15,9 +15,9 @@
 package org.netbeans.core.windows.view;
 
 
+import java.awt.Rectangle;
+import org.netbeans.core.windows.view.ui.slides.SlideOperation;
 import org.openide.windows.TopComponent;
-
-import java.awt.*;
 
 
 /**
@@ -71,5 +71,15 @@ public interface Controller {
     public void userDroppedTopComponentsAroundEditor(TopComponent[] tcs, String side);
     
     public void userDroppedTopComponentsIntoFreeArea(TopComponent[] tcs, Rectangle bounds);
+    
+    // Sliding
+    public void userEnabledAutoHide(ModeView modeView, TopComponent tc);
+    
+    public void userDisabledAutoHide(ModeView modeView, TopComponent tc);
+    
+    public void userTriggeredSlideIn(ModeView modeView, SlideOperation operation);
+
+    public void userTriggeredSlideOut(ModeView modeView, SlideOperation operation);
+
 }
 

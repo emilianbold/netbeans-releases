@@ -38,6 +38,8 @@ class TCRefParser {
     = "-//NetBeans//DTD Top Component in Mode Properties 1.0//EN"; // NOI18N
     public static final String INSTANCE_DTD_ID_2_0
     = "-//NetBeans//DTD Top Component in Mode Properties 2.0//EN"; // NOI18N
+    public static final String INSTANCE_DTD_ID_2_1
+    = "-//NetBeans//DTD Top Component in Mode Properties 2.1//EN"; // NOI18N
     
     private static final boolean DEBUG = Debug.isLoggable(TCRefParser.class);
     
@@ -238,7 +240,7 @@ class TCRefParser {
         throws SAXException {
             if ("tc-ref".equals(qname)) { // NOI18N
                 handleTCRef(attrs);
-            } else if (internalConfig.specVersion.compareTo(new SpecificationVersion("2.0")) == 0) { // NOI18N
+            } else if (internalConfig.specVersion.compareTo(new SpecificationVersion("2.0")) >= 0) { // NOI18N
                 //Parse version 2.0
                 if ("module".equals(qname)) { // NOI18N
                     handleModule(attrs);
@@ -246,6 +248,8 @@ class TCRefParser {
                     handleTcId(attrs);
                 } else if ("state".equals(qname)) { // NOI18N
                     handleState(attrs);
+                } else if ("previousMode".equals(qname)) {
+                    handlePreviousMode(attrs);
                 }
             } else {
                 log("-- TCRefParser.startElement PARSING OLD");
@@ -369,6 +373,20 @@ class TCRefParser {
                 tcRefConfig.opened = false;
             }
         }
+
+        private void handlePreviousMode (Attributes attrs) throws SAXException {
+            String name = attrs.getValue("name"); // NOI18N;
+            if (name != null) {
+                tcRefConfig.previousMode = name;
+            } else {
+                ErrorManager.getDefault().log(ErrorManager.WARNING,
+                "[WinSys.TCRefParser.handlePreviousMode]" // NOI18N
+                + " Warning: Missing required attribute \"name\"" // NOI18N
+                + " of element \"previousMode\"."); // NOI18N
+                tcRefConfig.previousMode = null;
+            }
+        }
+        
         
         public void endDocument() throws SAXException {
         }
@@ -436,11 +454,14 @@ class TCRefParser {
             /*buff.append("<!DOCTYPE tc-ref PUBLIC\n"); // NOI18N
             buff.append("          \"-//NetBeans//DTD Top Component in Mode Properties 2.0//EN\"\n"); // NOI18N
             buff.append("          \"http://www.netbeans.org/dtds/tc-ref2_0.dtd\">\n\n"); // NOI18N*/
-            buff.append("<tc-ref version=\"2.0\">\n"); // NOI18N
+            buff.append("<tc-ref version=\"2.1\">\n"); // NOI18N
             
             appendModule(ic, buff);
             appendTcId(tcRefCfg, buff);
             appendState(tcRefCfg, buff);
+            if (tcRefCfg.previousMode != null) {
+                appendPreviousMode(tcRefCfg, buff);
+            }
             
             buff.append("</tc-ref>\n"); // NOI18N
             return buff;
@@ -485,6 +506,12 @@ class TCRefParser {
             buff.append(" />\n"); // NOI18N
         }
         
+        private void appendPreviousMode(TCRefConfig tcRefCfg, StringBuffer buff) {
+            buff.append("    <previousMode name=\""); // NOI18N
+            buff.append(tcRefCfg.previousMode);
+            buff.append("\" />\n"); // NOI18N
+        }
+
         /** @return Newly created parser with set content handler, errror handler
          * and entity resolver
          */
@@ -504,7 +531,8 @@ class TCRefParser {
         public InputSource resolveEntity (String publicId, String systemId)
         throws SAXException {
             if (INSTANCE_DTD_ID_1_0.equals(publicId)
-             || INSTANCE_DTD_ID_2_0.equals(publicId)) {
+             || INSTANCE_DTD_ID_2_0.equals(publicId)
+             || INSTANCE_DTD_ID_2_1.equals(publicId)) {
                 InputStream is = new ByteArrayInputStream(new byte[0]);
                 //getClass().getResourceAsStream(INSTANCE_DTD_LOCAL);
 //                if (is == null) {

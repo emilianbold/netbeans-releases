@@ -100,9 +100,11 @@ public class SplitView extends ViewElement {
         assureComponentInSplit(second.getComponent(), false);
         return getSplitPane();
     }
-
+    
     private void assureComponentInSplit(Component comp, boolean left){
-        // Component is in use, adjust it if necessary.
+        // previously: Component is in use, adjust it if necessary.
+        // now don't touch the component when in use.. just in case it's not anywhere, put to default place..
+        
         Container parent = comp.getParent();
         if(parent == getSplitPane()) {
             return;
@@ -110,6 +112,9 @@ public class SplitView extends ViewElement {
         if(parent != null) {
             parent.remove(comp);
         }
+//        if (parent != null) {
+//            return;
+//        }
         
         int location = getSplitPane().getDividerLocation(); // keep split position
         if(left) {

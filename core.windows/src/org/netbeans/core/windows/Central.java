@@ -19,6 +19,9 @@ import org.netbeans.core.windows.model.ModelElement;
 import org.netbeans.core.windows.model.ModelFactory;
 import org.netbeans.core.windows.view.ControllerHandler;
 import org.netbeans.core.windows.view.View;
+import org.netbeans.core.windows.view.ui.slides.SlideOperation;
+
+import org.openide.ErrorManager;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -433,7 +436,7 @@ final class Central implements ControllerHandler {
     private ModeImpl setSomeModeActive() {
         for(Iterator it = getModes().iterator(); it.hasNext(); ) {
             ModeImpl mode = (ModeImpl)it.next();
-            if(!mode.getOpenedTopComponents().isEmpty()) {
+            if(!mode.getOpenedTopComponents().isEmpty() && Constants.MODE_KIND_SLIDING != mode.getKind()) {
                 model.setActiveMode(mode);
                 return mode;
             }
@@ -482,8 +485,11 @@ final class Central implements ControllerHandler {
     
     /** Sets seleted TopComponent into model and requests view (if needed). */
     public void setModeSelectedTopComponent(ModeImpl mode, TopComponent selected) {
-        if(!getModeOpenedTopComponents(mode).contains(selected)) {
-            return;
+        // don't apply check for sliding kind when clearing selection to null
+        if (mode.getKind() != Constants.MODE_KIND_SLIDING || selected != null) {
+            if(!getModeOpenedTopComponents(mode).contains(selected)) {
+                return;
+            }
         }
         
         TopComponent old = getModeSelectedTopComponent(mode);
@@ -1014,6 +1020,12 @@ final class Central implements ControllerHandler {
     public int getModeKind(ModeImpl mode) {
         return model.getModeKind(mode);
     }
+    
+    /** Gets side. */
+    public String getModeSide(ModeImpl mode) {
+        return model.getModeSide(mode);
+    }
+    
     /** Gets frame state. */
     public int getModeFrameState(ModeImpl mode) {
         return model.getModeFrameState(mode);
@@ -1283,6 +1295,11 @@ final class Central implements ControllerHandler {
         // XXX
         return viewRequestor.getMainWindow(); 
     }
+    
+    public String guessSlideSide(TopComponent tc) {
+        return viewRequestor.guessSlideSide(tc);
+    }
+    
     // Other <<
     
     // Helper methods
@@ -1290,6 +1307,7 @@ final class Central implements ControllerHandler {
     public void createModeModel(ModeImpl mode, String name, int state, int kind, boolean permanent) {
         model.createModeModel(mode, name, state, kind, permanent); 
     }
+    
     
     /** Creates model for top component group, used internally. */
     public void createGroupModel(TopComponentGroupImpl tcGroup, String name, boolean opened) {
@@ -1526,8 +1544,99 @@ final class Central implements ControllerHandler {
                 new ViewRequest(null, View.CHANGE_DND_PERFORMED, null, null));
         }
     }
+
+    
+    // Sliding
+    
+   /** Adds mode into model and requests view (if needed). */
+    public void addSlidingMode(ModeImpl mode, ModeImpl original, String side) {
+        ModeImpl targetMode = model.getSlidingMode(side);
+        if (targetMode != null) {
+            //TODO what to do here.. something there already
+            return;
+        }
+            targetMode = WindowManagerImpl.getInstance().createModeImpl(
+                ModeImpl.getUnusedModeName(), Constants.MODE_KIND_SLIDING, false);
+        
+        model.addSlidingMode(mode, side);
+        
+        if(isVisible()) {
+            viewRequestor.scheduleRequest(
+                new ViewRequest(null, View.CHANGE_MODE_ADDED, null, mode));
+        }
+        
+        WindowManagerImpl.getInstance().doFirePropertyChange(
+            WindowManager.PROP_MODES, null, null);
+    }    
+    
+    public void userEnabledAutoHide(TopComponent tc, ModeImpl source, String targetSide) {
+        ModeImpl targetMode = model.getSlidingMode(targetSide);
+        if (targetMode == null) {
+            targetMode = WindowManagerImpl.getInstance().createModeImpl(
+                ModeImpl.getUnusedModeName(), Constants.MODE_KIND_SLIDING, false);
+            model.addSlidingMode(targetMode, targetSide);
+        }
+        moveTCWithoutActivation(targetMode, tc);
+        
+        // remember previous mode and constraints for precise de-auto-hide
+        model.setModeTopComponentPreviousMode(targetMode, tc, source);
+        model.setModeTopComponentPreviousConstraints(targetMode, tc, model.getModeConstraints(source));
+        
+        if(isVisible()) {
+            viewRequestor.scheduleRequest(
+                new ViewRequest(null, View.CHANGE_TOPCOMPONENT_AUTO_HIDE_ENABLED, null, null));
+        }
+    }
+    
+    public void userDisabledAutoHide(TopComponent tc, ModeImpl source) {
+        ModeImpl targetMode = getModeTopComponentPreviousMode(tc, source);
+        
+        if ((targetMode == null) || !model.getModes().contains(targetMode)) {
+            // mode to return to isn't valid anymore, try constraints
+            SplitConstraint[] constraints = model.getModeTopComponentPreviousConstraints(source, tc);
+            constraints = constraints == null ? new SplitConstraint[0] : constraints;
+            // create mode to dock topcomponent back into
+            targetMode = WindowManagerImpl.getInstance().createModeImpl(
+                    ModeImpl.getUnusedModeName(), Constants.MODE_KIND_VIEW, false);
+            model.addMode(targetMode, constraints);
+        }
+        
+        moveTopComponentsIntoMode(targetMode, new TopComponent[] { tc } );
+        
+        if (source.isEmpty()) {
+            model.removeMode(source);
+        }
+        
+        if(isVisible()) {
+            viewRequestor.scheduleRequest(
+                new ViewRequest(null, View.CHANGE_TOPCOMPONENT_AUTO_HIDE_DISABLED, null, null));
+        }
+    }
+
+    /** Moves given top component into given mode, but does not activate it
+     * or select it, in contrary to moveTopComponentsIntoMode methods
+     */
+    private boolean moveTCWithoutActivation(ModeImpl mode, TopComponent tc) {
+        if(!mode.canContain(tc)) {
+            return false;
+        }
+        if(!removeTopComponentFromOtherModes(mode, tc)) {
+            return false;
+        }
+        model.addModeOpenedTopComponent(mode, tc);
+        return true;
+    }
+    
+    
+    public ModeImpl getModeTopComponentPreviousMode(TopComponent tc, ModeImpl currentSlidingMode) {
+        return  model.getModeTopComponentPreviousMode(currentSlidingMode, tc);
+    }
+    
+    public void setModeTopComponentPreviousMode(TopComponent tc, ModeImpl currentSlidingMode, ModeImpl prevMode) {
+        model.setModeTopComponentPreviousMode(currentSlidingMode, tc, prevMode);
+    }
+    
     // ControllerHandler <<
     ////////////////////////////
-
 
 }

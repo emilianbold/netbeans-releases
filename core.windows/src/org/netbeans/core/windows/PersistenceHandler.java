@@ -140,6 +140,8 @@ final class PersistenceHandler implements PersistenceObserver {
         
         // First create empty modes.
         Map mode2config = new HashMap();
+        Set slidingModes = new HashSet();
+        
         for (int i = 0; i < wmc.modes.length; i++) {
             ModeConfig mc = (ModeConfig) wmc.modes[i];
             ModeImpl mode = getModeFromConfig(mc);
@@ -159,7 +161,8 @@ final class PersistenceHandler implements PersistenceObserver {
             ModeImpl mode = (ModeImpl)it.next();
             ModeConfig mc = (ModeConfig)mode2config.get(mode);
             initModeFromConfig(mode, mc);
-
+            initPreviousModes(mode, mc, mode2config);
+            
             // Set selected TopComponent.
             if(mc.selectedTopComponentID != null) {
                 mode.setUnloadedSelectedTopComponent(mc.selectedTopComponentID);
@@ -271,13 +274,56 @@ final class PersistenceHandler implements PersistenceObserver {
             debugLog("Creating mode name=\"" + mc.name + "\""); // NOI8N
         }
         
-        ModeImpl mode = WindowManagerImpl.getInstance().createMode(
-            mc.name, mc.kind, mc.permanent, mc.constraints);
-
-
+        ModeImpl mode;
+        if (mc.kind == Constants.MODE_KIND_SLIDING) {
+            mode = WindowManagerImpl.getInstance().createSlidingMode(mc.name, mc.permanent, mc.side);
+        } else {
+             mode = WindowManagerImpl.getInstance().createMode(
+                mc.name, mc.kind, mc.permanent, mc.constraints);
+        }
         name2mode.put(mc.name, mode);
         
         return mode;
+    }
+    
+    /**
+     * find the the previous mode for tc if exists and set it in the model..
+     */
+    private void initPreviousModes(ModeImpl mode, ModeConfig mc, Map modes) {
+        for (int j = 0; j < mc.tcRefConfigs.length; j++) {
+            TCRefConfig tcRefConfig = (TCRefConfig) mc.tcRefConfigs[j];
+            if(DEBUG) {
+                debugLog("\tTopComponent[" + j + "] id=\"" // NOI18N
+                    + tcRefConfig.tc_id + "\", \topened=" + tcRefConfig.opened); // NOI18N
+            }
+            if (tcRefConfig.previousMode != null) {
+                if (tcRefConfig.opened) {
+                    TopComponent tc = getTopComponentForID(tcRefConfig.tc_id);
+                    if(tc != null) {
+                        Iterator it = modes.keySet().iterator();
+                        ModeImpl previous = null;
+                        while (it.hasNext()) {
+                            ModeImpl md = (ModeImpl)it.next();
+                            
+                            if (tcRefConfig.previousMode.equals(md.getName())) {
+                                previous = md;
+                                break;
+                            }
+                        }
+                        if (previous != null) {
+                            WindowManagerImpl.getInstance().setPreviousModeForTopComponent(tc, mode, previous);
+                        } else {
+                            debugLog("\tTopComponent[" + j + "] id=\"" // NOI18N
+                                + tcRefConfig.tc_id + "\", \topened=" + tcRefConfig.opened + " previousmode=\"" + tcRefConfig.previousMode + "\""); // NOI18N
+                            
+                        }
+                    }
+                } else {
+                    // do nothing..
+//                    mode.addUnloadedTopComponent(tcRefConfig.tc_id);
+                }
+            }
+        }
     }
     
     private ModeImpl initModeFromConfig(ModeImpl mode, ModeConfig mc) {
@@ -476,7 +522,7 @@ final class PersistenceHandler implements PersistenceObserver {
 
     private ModeConfig getConfigFromMode(ModeImpl mode) {
         PersistenceManager pm = PersistenceManager.getDefault();
-        WindowManager wm = WindowManager.getDefault();
+        WindowManagerImpl wm = WindowManagerImpl.getInstance();
         ModeConfig modeCfg = new ModeConfig();
         modeCfg.name = mode.getName();
         if(DEBUG) {
@@ -492,6 +538,13 @@ final class PersistenceHandler implements PersistenceObserver {
         if(DEBUG) {
             debugLog("mode kind=" + modeCfg.kind); // NOI18N
         }
+        if (wm instanceof WindowManagerImpl) { 
+            modeCfg.side = wm.getCentral().getModeSide(mode);
+        }
+        if(DEBUG) {
+            debugLog("mode side=" + modeCfg.side); // NOI18N
+        }
+        
         modeCfg.constraints = mode.getConstraints();
         if(DEBUG) {
             debugLog("mode constraints=" + modeCfg.constraints); // NOI18N
@@ -534,10 +587,17 @@ final class PersistenceHandler implements PersistenceObserver {
             String tcID = (String)it.next();
             
             boolean opened = openedTcIDs.contains(tcID);
+            String modeName = null;
             if(opened) {
                 TopComponent tc = wm.findTopComponent(tcID);
                 if(tc == null || !pm.isTopComponentPersistent(tc)) {
                     continue;
+                }
+                if (mode.getKind() == Constants.MODE_KIND_SLIDING) {
+                    ModeImpl prev = wm.getPreviousModeForTopComponent(tc, mode);
+                    if (prev != null) {
+                        modeName = prev.getName();
+                    }
                 }
             }
 
@@ -547,6 +607,7 @@ final class PersistenceHandler implements PersistenceObserver {
             TCRefConfig tcRefCfg = new TCRefConfig();
             tcRefCfg.tc_id = tcID;
             tcRefCfg.opened = opened;
+            tcRefCfg.previousMode = modeName;
             tcRefCfgList.add(tcRefCfg);
         }
         

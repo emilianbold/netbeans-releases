@@ -18,6 +18,11 @@ import org.openide.windows.TopComponent;
 
 import java.awt.*;
 import java.util.List;
+import java.util.Map;
+
+import org.netbeans.core.windows.ModeImpl;
+import org.netbeans.core.windows.SplitConstraint;
+import org.openide.windows.TopComponent;
 
 
 /**
@@ -51,8 +56,13 @@ interface ModeModel {
     public void removeTopComponent(TopComponent tc);
     // XXX
     public void removeClosedTopComponentID(String tcID);
-
-
+    
+    // Info about previous top component context, used by sliding kind of modes
+    
+    /** Sets information of previous mode top component was in. */
+    public void setTopComponentPreviousMode(TopComponent tc, ModeImpl mode);
+    /** Sets information of previous constraints of mode top component was in. */
+    public void setTopComponentPreviousConstraints(TopComponent tc, SplitConstraint[] constraints);
 
     // Accessors
     /** Gets programatic name of mode. */
@@ -83,6 +93,12 @@ interface ModeModel {
     public List getOpenedTopComponentsIDs();
     public List getClosedTopComponentsIDs();
     public List getTopComponentsIDs();    
+    
+    // Info about previous top component context, used by sliding kind of modes
+    
+    public ModeImpl getTopComponentPreviousMode(TopComponent tc);
+    
+    public SplitConstraint[] getTopComponentPreviousConstraints(TopComponent tc);
     
 }
 

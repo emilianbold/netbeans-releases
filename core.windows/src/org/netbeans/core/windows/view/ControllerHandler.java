@@ -17,6 +17,7 @@ package org.netbeans.core.windows.view;
 
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.model.ModelElement;
+import org.netbeans.core.windows.view.ui.slides.SlideOperation;
 import org.openide.windows.TopComponent;
 
 import java.awt.*;
@@ -82,5 +83,12 @@ public interface ControllerHandler {
     
     public void userDroppedTopComponentsIntoFreeArea(TopComponent[] tcs, Rectangle bounds);
     // DnD<<
+    
+    // Sliding>>
+    public void userEnabledAutoHide(TopComponent tc, ModeImpl source, String target);
+    
+    public void userDisabledAutoHide(TopComponent tc, ModeImpl source);
+    // Sliding<<
+    
 }
 

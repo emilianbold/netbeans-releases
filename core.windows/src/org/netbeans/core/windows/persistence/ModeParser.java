@@ -1004,14 +1004,16 @@ class ModeParser {
         public void startElement (String nameSpace, String name, String qname, Attributes attrs) throws SAXException {
             if ("mode".equals(qname)) { // NOI18N
                 handleMode(attrs);
-            } else if (internalConfig.specVersion.compareTo(new SpecificationVersion("2.0")) == 0) { // NOI18N
-                //Parse version 2.0
+            } else if (internalConfig.specVersion.compareTo(new SpecificationVersion("2.0")) >= 0) { // NOI18N
+                //Parse version 2.0 and beyond
                 if ("module".equals(qname)) { // NOI18N
                     handleModule(attrs);
                 } else if ("name".equals(qname)) { // NOI18N
                     handleName(attrs);
                 } else if ("kind".equals(qname)) { // NOI18N
                     handleKind(attrs);
+                } else if ("slidingSide".equals(qname)) { // NOI18N
+                    handleSlidingSide(attrs);
                 } else if ("state".equals(qname)) { // NOI18N
                     handleState(attrs);
                 } else if ("constraints".equals(qname)) { // NOI18N
@@ -1125,6 +1127,8 @@ class ModeParser {
                     modeConfig.kind = Constants.MODE_KIND_EDITOR;
                 } else if ("view".equals(type)) {
                     modeConfig.kind = Constants.MODE_KIND_VIEW;
+                } else if ("sliding".equals(type)) {
+                    modeConfig.kind = Constants.MODE_KIND_SLIDING;
                 } else {
                     ErrorManager.getDefault().log(ErrorManager.WARNING,
                     "[WinSys.ModeParser.handleKind]" // NOI18N
@@ -1138,6 +1142,29 @@ class ModeParser {
                 modeConfig.kind = Constants.MODE_KIND_VIEW;
             }
         }
+        
+        /** Reads element "kind" */
+        private void handleSlidingSide(Attributes attrs) {
+            String side = attrs.getValue("side");
+            if (side != null) {
+                if (Constants.LEFT.equals(side) ||
+                    Constants.RIGHT.equals(side) ||
+                    Constants.BOTTOM.equals(side)) 
+                {
+                    modeConfig.side = side;
+                } else {
+                    ErrorManager.getDefault().log(ErrorManager.WARNING,
+                    "[WinSys.ModeParser.handleSlidingSide]" // NOI18N
+                    + " Warning: Wrong value \"" + side + "\" of attribute \"side\" for sliding mode"); // NOI18N
+                    modeConfig.side = Constants.LEFT;
+                }
+            } else {
+                ErrorManager.getDefault().log(ErrorManager.WARNING,
+                "[WinSys.ModeParser.handleSlidingSide]" // NOI18N
+                + " Warning: Missing value of attribute \"side\" for sliding mode."); // NOI18N
+                modeConfig.side = Constants.LEFT;
+            }
+        }      
         
         private void handleState(Attributes attrs) throws SAXException {
             String type = attrs.getValue("type"); // NOI18N
@@ -1453,11 +1480,14 @@ class ModeParser {
             /*buff.append("<!DOCTYPE mode PUBLIC\n"); // NOI18N
             buff.append("          \"-//NetBeans//DTD Mode Properties 2.0//EN\"\n"); // NOI18N
             buff.append("          \"http://www.netbeans.org/dtds/mode-properties2_0.dtd\">\n\n"); // NOI18N*/
-                append("<mode version=\"2.0\">\n"); // NOI18N
+                append("<mode version=\"2.1\">\n"); // NOI18N
             
             appendModule(ic, buff);
             appendName(mc, buff);
             appendKind(mc, buff);
+            if (mc.kind == Constants.MODE_KIND_SLIDING) {
+                appendSlidingSide(mc, buff);
+            }
             appendState(mc, buff);
             appendConstraints(mc, buff);
             if (mc.bounds != null) {
@@ -1503,8 +1533,17 @@ class ModeParser {
                 buff.append("editor"); // NOI18N
             } else if (mc.kind == Constants.MODE_KIND_VIEW) {
                 buff.append("view"); // NOI18N
+            } else if (mc.kind == Constants.MODE_KIND_SLIDING) {
+                buff.append("sliding"); // NOI18N
             }
             buff.append("\" />\n"); // NOI18N
+        }
+        
+        private void appendSlidingSide(ModeConfig mc, StringBuffer buff) {
+            buff.append("  <slidingSide side=\"");
+            buff.append(mc.side);
+            buff.append("\" ");
+            buff.append("/>\n"); // NOI18N
         }
 
         private void appendState (ModeConfig mc, StringBuffer buff) {

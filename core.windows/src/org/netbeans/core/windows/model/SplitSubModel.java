@@ -661,7 +661,6 @@ class SplitSubModel {
     /** Recursively dump tree content */
     private static String dumpNode(Node node, int ind, String state) {
         ind++;
-        //System.out.println("WD.appendNode ENTER [" + ind + "]");
         if (node == null) {
             return "NULL NODE\n";
         }
@@ -736,7 +735,6 @@ class SplitSubModel {
             buffer.append("</editor-node>\n"); // NOI18N
         }
         return buffer.toString();
-        //System.out.println("WD.appendNode LEAVE [" + ind + "]");
     }
     
     private static StringBuffer getOffset (int ind) {

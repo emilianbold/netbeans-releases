@@ -27,6 +27,27 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JSplitPane;
+import javax.swing.SwingUtilities;
+
+import org.openide.awt.ToolbarPool; // Why is this in open API?
+import org.openide.util.WeakSet;
+import org.openide.windows.TopComponent;
+
+import org.netbeans.core.windows.Constants;
+import org.netbeans.core.windows.Debug;
+import org.netbeans.core.windows.ModeImpl;
+import org.netbeans.core.windows.ModeStructureSnapshot;
+import org.netbeans.core.windows.model.ModelElement;
+import org.netbeans.core.windows.view.dnd.WindowDnDManager;
+import org.netbeans.core.windows.view.ui.MainWindow;
+import org.netbeans.core.windows.WindowManagerImpl;
+import org.netbeans.core.windows.WindowSystemSnapshot;
+import org.netbeans.core.windows.view.ui.slides.SlideOperation;
+import org.openide.ErrorManager;
 
 
 /**
@@ -63,6 +84,23 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         return hierarchy.getMainWindow();
     }
     
+    public String guessSlideSide (TopComponent tc) {
+        String toReturn = Constants.LEFT;
+        Rectangle tcb = tc.getBounds();
+        Rectangle editorb = hierarchy.getPureEditorAreaBounds();
+        Point leftTop = new Point(0, 0);
+        SwingUtilities.convertPointToScreen(leftTop, tc);
+        if (editorb.x > leftTop.x) {
+            toReturn = Constants.LEFT;
+        }
+        if ((editorb.x + editorb.width) < leftTop.x) {
+            toReturn = Constants.RIGHT;
+        }
+        if ((editorb.y + editorb.height) < leftTop.y) {
+                toReturn = Constants.BOTTOM;
+        }
+        return toReturn;
+    }
                                                   
     public void changeGUI(ViewEvent[] viewEvents, WindowSystemSnapshot snapshot) {
         
@@ -382,6 +420,14 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                 }
                 
                 hierarchy.setProjectName(wsa.getProjectName());
+            } else if(changeType == CHANGE_TOPCOMPONENT_AUTO_HIDE_ENABLED ||
+                      changeType == CHANGE_TOPCOMPONENT_AUTO_HIDE_DISABLED) {
+                if(DEBUG) {
+                    debugLog("Top Component Auto Hide changed"); // NOI18N
+                }
+                hierarchy.updateDesktop(wsa);
+                hierarchy.updateSplits();
+                hierarchy.activateMode(wsa.getActiveModeAccessor());
             }
         }
         
@@ -817,6 +863,35 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         controllerHandler.userDroppedTopComponentsIntoFreeArea(tcs, bounds);
     }
     
+    // Sliding
+
+    public void userDisabledAutoHide(ModeView modeView, TopComponent tc) {
+        ModeAccessor modeAccessor = (ModeAccessor)hierarchy.getAccessorForView(modeView);
+        ModeImpl mode = getModeForModeAccessor(modeAccessor);
+        controllerHandler.userDisabledAutoHide(tc, mode);
+    }    
+
+    public void userEnabledAutoHide(ModeView modeView, TopComponent tc) {
+        ModeAccessor modeAccessor = (ModeAccessor)hierarchy.getAccessorForView(modeView);
+        ModeImpl mode = getModeForModeAccessor(modeAccessor);
+        String side = guessSlideSide(tc);
+        controllerHandler.userEnabledAutoHide(tc, mode, side);
+    }
+    
+    public void userTriggeredSlideIn(ModeView modeView, SlideOperation operation) {
+        /*ModeAccessor modeAccessor = (ModeAccessor)hierarchy.getAccessorForView(modeView);
+        ModeImpl mode = getModeForModeAccessor(modeAccessor);
+        controllerHandler.userTriggeredSlideIn(mode, operation);*/
+        hierarchy.performSlideIn(operation);
+    }    
+    
+    public void userTriggeredSlideOut(ModeView modeView, SlideOperation operation) {
+        /*ModeAccessor modeAccessor = (ModeAccessor)hierarchy.getAccessorForView(modeView);
+        ModeImpl mode = getModeForModeAccessor(modeAccessor);
+        controllerHandler.userTriggeredSlideOut(mode, operation);*/
+        hierarchy.performSlideOut(operation);
+    }    
+    
     
     private static ModeImpl getModeForModeAccessor(ModeAccessor accessor) {
         return accessor == null ? null : accessor.getMode();
@@ -887,7 +962,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
     private static void debugLog(String message) {
         Debug.log(DefaultView.class, message);
     }
-
-
+    
+    
 }
 

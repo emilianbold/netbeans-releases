@@ -17,8 +17,10 @@ package org.netbeans.core.windows.view;
 
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.view.dnd.WindowDnDManager;
+import org.netbeans.core.windows.view.ui.DesktopImpl;
 import org.netbeans.core.windows.view.ui.EditorAreaFrame;
 import org.netbeans.core.windows.view.ui.MainWindow;
+import org.netbeans.core.windows.view.ui.slides.SlideOperation;
 import org.openide.ErrorManager;
 
 import javax.swing.*;
@@ -39,10 +41,12 @@ final class ViewHierarchy {
     
     private final WindowDnDManager windowDnDManager;
 
-    /** Split root element. */
-    private ViewElement splitRoot;
+    /** desktop component maintainer */
+    private DesktopImpl desktop = new DesktopImpl();
     /** Map of separate mode views (view <-> accessor). */
     private final Map separateModeViews = new HashMap(10);
+    /** Map of sliding mode views (view <-> accessor) */
+    private final Map slidingModeViews = new HashMap(10);
     
     /** Component in which is editor area, when the editor state is separated. */
     private EditorAreaFrame editorAreaFrame;
@@ -51,6 +55,7 @@ final class ViewHierarchy {
     private ModeView activeModeView;
     /** Maximized mode view. */
     private ModeView maximizedModeView;
+    private ViewElement currentSplitRoot;
     
     /** */
     private final Map accessor2view = new HashMap(10);
@@ -60,6 +65,7 @@ final class ViewHierarchy {
     private final MainWindow mainWindow = new MainWindow();
 
     private final MainWindowListener mainWindowListener;
+    
     
     
     /** Creates a new instance of ViewHierarchy. */
@@ -91,10 +97,22 @@ final class ViewHierarchy {
     
     /** Updates the view hierarchy according to new structure. */
     public void updateViewHierarchy(ModeStructureAccessor modeStructureAccessor, 
-    boolean addingAllowed) {
+        boolean addingAllowed) {
         updateAccessors(modeStructureAccessor);
-        splitRoot = updateViewForAccessor(modeStructureAccessor.getSplitRootAccessor(), addingAllowed);
+        currentSplitRoot = updateViewForAccessor(modeStructureAccessor.getSplitRootAccessor(), addingAllowed);
+//        System.out.println("updateViewHierarchy... elem=" + elem);
+//        if (maximizedModeView == null) {
+////            System.out.println("updateViewHierarchy...splitoroot=" + elem);
+//            setSplitRootIntoDesktop(elem);
+//        } else {
+////            System.out.println("updateViewHierarchy...mazimized=" + maximizedModeView);
+//            setMaximizedViewIntoDesktop(maximizedModeView);
+//        }
+        if (desktop.getSplitRoot() == null) {
+            setSplitRootIntoDesktop(currentSplitRoot);
+        }
         updateSeparateViews(modeStructureAccessor.getSeparateModeAccessors());
+        updateSlidingViews(modeStructureAccessor.getSlidingModeAccessors());
     }
     
     /** Puts new instances of accessors in and reuses the old relevant views. */
@@ -106,6 +124,7 @@ final class ViewHierarchy {
 
         Set accessors  = getAllAccessorsForTree(modeStructureAccessor.getSplitRootAccessor());
         accessors.addAll(Arrays.asList(modeStructureAccessor.getSeparateModeAccessors()));
+        accessors.addAll(Arrays.asList(modeStructureAccessor.getSlidingModeAccessors()));
         
         for(Iterator it = accessors.iterator(); it.hasNext(); ) {
             ElementAccessor accessor = (ElementAccessor)it.next();
@@ -169,6 +188,11 @@ final class ViewHierarchy {
                 EditorView ev = (EditorView)view;
                 ev.setEditorArea(updateViewForAccessor(ea.getEditorAreaAccessor(), addingAllowed), addingAllowed);
                 return ev;
+            } else if(patternAccessor instanceof SlidingAccessor) {
+                SlidingAccessor sa = (SlidingAccessor)patternAccessor;
+                SlidingView sv = (SlidingView)view;
+                sv.setTopComponents(sa.getOpenedTopComponents(), sa.getSelectedTopComponent());
+                return sv;
             } else if(patternAccessor instanceof ModeAccessor) {
                 // It is a ModeView.
                 ModeAccessor ma = (ModeAccessor)patternAccessor;
@@ -186,6 +210,14 @@ final class ViewHierarchy {
                 ViewElement second = updateViewForAccessor(sa.getSecond(), addingAllowed);
                 SplitView sv = new SplitView(controller, sa.getResizeWeight(),
                     sa.getOrientation(), sa.getSplitPosition(), first, second);
+                accessor2view.put(patternAccessor, sv);
+                view2accessor.put(sv, patternAccessor);
+                return sv;
+            } else if(patternAccessor instanceof SlidingAccessor) {
+                SlidingAccessor sa = (SlidingAccessor)patternAccessor;
+                SlidingView sv = new SlidingView(controller, windowDnDManager, 
+                            sa.getOpenedTopComponents(), sa.getSelectedTopComponent(),
+                            sa.getSide());
                 accessor2view.put(patternAccessor, sv);
                 view2accessor.put(sv, patternAccessor);
                 return sv;
@@ -253,6 +285,37 @@ final class ViewHierarchy {
             }
         }
     }
+    
+    private void updateSlidingViews(SlidingAccessor[] slidingModeAccessors) {
+        Map newViews = new HashMap();
+        for(int i = 0; i < slidingModeAccessors.length; i++) {
+            SlidingAccessor sa = slidingModeAccessors[i];
+            SlidingView sv = (SlidingView)updateViewForAccessor(sa, true);
+            newViews.put(sv, sa);
+        }
+        
+        Set oldViews = new HashSet(slidingModeViews.keySet());
+        oldViews.removeAll(newViews.keySet());
+    
+        Set addedViews = new HashSet(newViews.keySet());
+        addedViews.removeAll(slidingModeViews.keySet());
+
+        slidingModeViews.clear();
+        slidingModeViews.putAll(newViews);
+        
+        // remove old views.
+        SlidingView curSv;
+        for(Iterator it = oldViews.iterator(); it.hasNext(); ) {
+            curSv = (SlidingView)it.next();
+            desktop.removeSlidingView(curSv);
+        }
+        // add all new views.
+        for(Iterator it = addedViews.iterator(); it.hasNext(); ) {
+            curSv = (SlidingView)it.next();
+            desktop.addSlidingView(curSv);
+        }
+    }
+    
     
     
     public ModeView getModeViewForAccessor(ModeAccessor modeAccessor) {
@@ -324,7 +387,7 @@ final class ViewHierarchy {
             return;
         }
         
-        splitRoot = removeModeViewFromElement(splitRoot, modeView);
+        setSplitRootIntoDesktop((SplitView)removeModeViewFromElement(desktop.getSplitRoot(), modeView));
     }
     
     /** Gets set of all mode view components. */
@@ -383,22 +446,23 @@ final class ViewHierarchy {
     }
     
     private Component getDesktopComponent() {
-        return splitRoot == null ? null : splitRoot.getComponent();
+        return currentSplitRoot == null ? null : desktop.getDesktopComponent();
     }    
 
     public ViewElement getSplitRootElement() {
-        return splitRoot;
+        return currentSplitRoot;
+//        return desktop.getSplitRoot();
     }
     
     public void releaseAll() {
-        splitRoot = null;
+        setSplitRootIntoDesktop(null);
         separateModeViews.clear();
         activeModeView = null;
         accessor2view.clear();
     }
     
     public void setSplitModesVisible(boolean visible) {
-        setVisibleModeElement(splitRoot, visible);
+        setVisibleModeElement(desktop.getSplitRoot(), visible);
     }
     
     private static void setVisibleModeElement(ViewElement view, boolean visible) {
@@ -443,9 +507,9 @@ final class ViewHierarchy {
         }
         
         // #38014 The destkop can be null if special switch used.
-        Component desktop = getDesktopComponent();
-        if(desktop != null) {
-            updateSplitElement(splitRoot, desktop.getSize());
+        Component desktopComp = getDesktopComponent();
+        if(desktopComp != null) {
+            updateSplitElement(desktop.getSplitRoot(), desktopComp.getSize());
         }
     }
 
@@ -491,12 +555,30 @@ final class ViewHierarchy {
     public void setProjectName(String projectName) {
         mainWindow.setProjectName(projectName);
     }
+    
+    private void setMaximizedViewIntoDesktop(ViewElement elem) {
+        desktop.setMaximizedView(elem);
+    }
+    
+    
+    private void setSplitRootIntoDesktop(ViewElement root) {
+        desktop.setSplitRoot(root);
+        EditorView editView = findEditorAreaElement();
+        if (editView != null) {
+            // hack to trigger readding the editor view compnent into editor view..
+            editView.assureComponentInEditorArea();
+        }
+    }
 
     // PENDING Revise, updating desktop and editor area, bounds... separate this method.
     public void updateDesktop(WindowSystemAccessor wsa) {
+//        System.out.println("updatedesktop(param)");
         if(wsa.getEditorAreaState() == Constants.EDITOR_AREA_JOINED) {
             if(maximizedModeView != null) {
-                setMainWindowDesktop(maximizedModeView.getComponent());
+                setMainWindowDesktop(getDesktopComponent());
+//                System.out.println("viewhierarchyupdddesktop: have maximized=" + maximizedModeView.getClass());
+                setMaximizedViewIntoDesktop(maximizedModeView);
+//                setMainWindowDesktop(maximizedModeView.getComponent());
                 return;
             }
         }
@@ -508,7 +590,11 @@ final class ViewHierarchy {
                 editorAreaFrame = null;
             }
             setMainWindowDesktop(getDesktopComponent());
+//            System.out.println("viewhierarchyupdddesktop: no maximized");
+            setSplitRootIntoDesktop(getSplitRootElement());
+            
         } else {
+//            System.out.println("viewhierarchyupdddesktop: EDITOR_AREA_SPLIT");
             boolean showEditorFrame = hasEditorAreaVisibleView();
             
             if(editorAreaFrame == null && showEditorFrame) {
@@ -524,6 +610,7 @@ final class ViewHierarchy {
             
             setMainWindowDesktop(null);
             if(showEditorFrame) {
+                setSplitRootIntoDesktop(getSplitRootElement());
                 setEditorAreaDesktop(getDesktopComponent());
                 // #39755 restore the framestate of the previously closed editorArea.
                 updateEditorAreaFrameState(wsa.getEditorAreaFrameState());
@@ -532,11 +619,17 @@ final class ViewHierarchy {
     }
     
     public void updateDesktop() {
+//        System.out.println("updatedesktop()");
         if(mainWindow.hasDesktop()) {
+            setMainWindowDesktop(getDesktopComponent());
             if(maximizedModeView != null) {
-                setMainWindowDesktop(maximizedModeView.getComponent());
+//                System.out.println("viewhierarchy: have maximized=" + maximizedModeView.getClass());
+                setMaximizedViewIntoDesktop(maximizedModeView);
+//                setMainWindowDesktop();
             } else {
-                setMainWindowDesktop(getDesktopComponent());
+//                System.out.println("viewhierarchy: no maximized");
+                setSplitRootIntoDesktop(getSplitRootElement());
+//                setMainWindowDesktop(getDesktopComponent());
             }
         } else {
             boolean showEditorFrame = hasEditorAreaVisibleView();
@@ -550,6 +643,14 @@ final class ViewHierarchy {
                 }
             }
         }
+    }
+    
+    public void performSlideIn(SlideOperation operation) {
+        desktop.performSlideIn(operation, getPureEditorAreaBounds());
+    }
+    
+    public void performSlideOut(SlideOperation operation) {
+        desktop.performSlideOut(operation, getPureEditorAreaBounds());
     }
     
     private void setMainWindowDesktop(Component component) {
@@ -738,7 +839,7 @@ final class ViewHierarchy {
     }
     
     public String toString() {
-        return dumpElement(splitRoot, 0) + "\nseparateViews=" + separateModeViews.keySet(); // NOI18N
+        return dumpElement(desktop.getSplitRoot(), 0) + "\nseparateViews=" + separateModeViews.keySet(); // NOI18N
     }
     
     private String dumpElement(ViewElement view, int indent) {

@@ -18,6 +18,8 @@ import org.netbeans.swing.tabcontrol.TabDisplayer;
 import javax.swing.*;
 import javax.swing.plaf.ComponentUI;
 import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Windows classic-like user interface of view type tabs. Implements Border just
@@ -135,11 +137,16 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
             String iconPath = findIconPath(index);
             Icon icon = closeIcon.obtainIcon(iconPath);
             int iconWidth = icon.getIconWidth();
-            int space4Icon = iconWidth + 2 * ICON_X_PAD;
+            JButton pinButton = getPinButton(index);
+            int space4Pin = pinButton != null ? pinButton.getWidth() + 1 : 0;
+            int space4Icon = iconWidth + 2 * ICON_X_PAD + space4Pin;
             text2Paint = stripTextToFit(text,
                                         width - 2 * TXT_X_PAD - space4Icon, fm);
             int txtWidth = fm.stringWidth(text2Paint);
             getCloseIconRect(tempRect, index);
+            if (pinButton != null) {
+                pinButton.setLocation(tempRect.x - space4Pin, tempRect.y);
+            }
             icon.paintIcon(getDisplayer(), g, tempRect.x, tempRect.y);
         } else {
             text2Paint = stripTextToFit(text, width - 2 * TXT_X_PAD, fm);
@@ -302,6 +309,30 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
         return rect;
     }
 
+    /** Creates pin button with specialized icons for Win classic LF */
+    protected PinButton createPinButton() {
+        Map normalIcons = new HashMap(6);
+        normalIcons.put(TabDisplayer.ORIENTATION_EAST, "org/netbeans/swing/tabcontrol/resources/win-pin-normal-east.gif");
+        normalIcons.put(TabDisplayer.ORIENTATION_WEST, "org/netbeans/swing/tabcontrol/resources/win-pin-normal-west.gif");
+        normalIcons.put(TabDisplayer.ORIENTATION_SOUTH, "org/netbeans/swing/tabcontrol/resources/win-pin-normal-south.gif");
+        normalIcons.put(TabDisplayer.ORIENTATION_CENTER, "org/netbeans/swing/tabcontrol/resources/win-pin-normal-center.gif");
+        Map pressedIcons = new HashMap(6);
+        pressedIcons.put(TabDisplayer.ORIENTATION_EAST, "org/netbeans/swing/tabcontrol/resources/win-pin-pressed-east.gif");
+        pressedIcons.put(TabDisplayer.ORIENTATION_WEST, "org/netbeans/swing/tabcontrol/resources/win-pin-pressed-west.gif");
+        pressedIcons.put(TabDisplayer.ORIENTATION_SOUTH, "org/netbeans/swing/tabcontrol/resources/win-pin-pressed-south.gif");
+        pressedIcons.put(TabDisplayer.ORIENTATION_CENTER, "org/netbeans/swing/tabcontrol/resources/win-pin-pressed-center.gif");
+        Map rolloverIcons = new HashMap(6);
+        rolloverIcons.put(TabDisplayer.ORIENTATION_EAST, "org/netbeans/swing/tabcontrol/resources/win-pin-rollover-east.gif");
+        rolloverIcons.put(TabDisplayer.ORIENTATION_WEST, "org/netbeans/swing/tabcontrol/resources/win-pin-rollover-west.gif");
+        rolloverIcons.put(TabDisplayer.ORIENTATION_SOUTH, "org/netbeans/swing/tabcontrol/resources/win-pin-rollover-south.gif");
+        rolloverIcons.put(TabDisplayer.ORIENTATION_CENTER, "org/netbeans/swing/tabcontrol/resources/win-pin-rollover-center.gif");
+        return new PinButton(normalIcons, pressedIcons, rolloverIcons);
+    }
+    
+    private static final Color getSelGradientColor() {
+        return UIManager.getColor("winclassic_tab_sel_gradient");
+    }
+
     /**
      * Own close icon button controller
      */
@@ -320,7 +351,4 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
 
     } // end of OwnController
 
-    private static final Color getSelGradientColor() {
-        return UIManager.getColor("winclassic_tab_sel_gradient");
-    }
 }

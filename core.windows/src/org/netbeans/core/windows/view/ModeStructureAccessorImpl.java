@@ -38,10 +38,13 @@ final class ModeStructureAccessorImpl implements ModeStructureAccessor {
     
     private final Set separateModeAccessors;
     
+    private final Set slidingModeAccessors;
+    
     /** Creates a new instance of ModesModelAccessorImpl. */
-    public ModeStructureAccessorImpl(ElementAccessor splitRootAccessor, Set separateModeAccessors) {
+    public ModeStructureAccessorImpl(ElementAccessor splitRootAccessor, Set separateModeAccessors, Set slidingModeAccessors) {
         this.splitRootAccessor = splitRootAccessor;
         this.separateModeAccessors = separateModeAccessors;
+        this.slidingModeAccessors = slidingModeAccessors;
     }
 
     public ElementAccessor getSplitRootAccessor() {
@@ -50,6 +53,10 @@ final class ModeStructureAccessorImpl implements ModeStructureAccessor {
     
     public ModeAccessor[] getSeparateModeAccessors() {
         return (ModeAccessor[])separateModeAccessors.toArray(new ModeAccessor[0]);
+    }
+    
+    public SlidingAccessor[] getSlidingModeAccessors() {
+        return (SlidingAccessor[])slidingModeAccessors.toArray(new SlidingAccessor[0]);
     }
 
     /** @param name name of mode */
@@ -60,6 +67,13 @@ final class ModeStructureAccessorImpl implements ModeStructureAccessor {
         }
         
         for(Iterator it = separateModeAccessors.iterator(); it.hasNext(); ) {
+            ma = (ModeAccessor)it.next();
+            if(name.equals(ma.getName())) {
+                return ma;
+            }
+        }
+        
+        for(Iterator it = slidingModeAccessors.iterator(); it.hasNext(); ) {
             ma = (ModeAccessor)it.next();
             if(name.equals(ma.getName())) {
                 return ma;
@@ -131,7 +145,7 @@ final class ModeStructureAccessorImpl implements ModeStructureAccessor {
         }
         
         public String toString() {
-            return super.toString() + "[originatorHash=" + Integer.toHexString(originator.hashCode()) + "]"; // NOI18N
+            return super.toString() + "[originatorHash=" + (originator != null ? Integer.toHexString(originator.hashCode()) : "null") + "]"; // NOI18N
         }
     }
     
@@ -183,7 +197,7 @@ final class ModeStructureAccessorImpl implements ModeStructureAccessor {
     }
 
     /** */
-    static final class ModeAccessorImpl extends ElementAccessorImpl implements ModeAccessor { 
+    static class ModeAccessorImpl extends ElementAccessorImpl implements ModeAccessor { 
         private final ModeImpl mode;
         
         private final String name;
@@ -273,6 +287,46 @@ final class ModeStructureAccessorImpl implements ModeStructureAccessor {
         }
 
     }
+
+    /** Data accessor for sliding view */
+    static final class SlidingAccessorImpl extends ModeAccessorImpl implements SlidingAccessor { 
+
+        private final String side;
+        
+        public SlidingAccessorImpl(ModelElement originator, ElementSnapshot snapshot,
+            ModeImpl mode,
+            String name,
+            int state,
+            int kind,
+            Rectangle bounds,
+            int frameState,
+            TopComponent selectedTopComponent,
+            TopComponent[] openedTopComponents,
+            double resizeWeight,
+            String side
+        ) {
+            super(originator, snapshot, mode, name, state, kind, bounds, frameState,
+                  selectedTopComponent, openedTopComponents, resizeWeight);
+
+            this.side = side;
+        }
+    
+        public String getSide() {
+            return side;
+        }
+        
+        public boolean originatorEquals(ElementAccessor o) {
+            if(!super.originatorEquals(o)) {
+                return false;
+            }
+            
+            // XXX Even if originators are same, they differ if their side are different.
+            SlidingAccessor me = (SlidingAccessor)o;
+            return getSide() == me.getSide();
+        }
+        
+    } // end of SlidingAccessorImpl
+        
     
     /** */
     static final class EditorAccessorImpl extends ElementAccessorImpl implements EditorAccessor {
@@ -349,6 +403,7 @@ final class ModeStructureAccessorImpl implements ModeStructureAccessor {
         
         return sb.toString();
     }
+    
     
 }
 

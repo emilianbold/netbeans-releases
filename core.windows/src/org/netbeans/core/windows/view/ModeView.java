@@ -19,6 +19,8 @@ import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.dnd.WindowDnDManager;
 import org.netbeans.core.windows.view.ui.DefaultSeparateContainer;
 import org.netbeans.core.windows.view.ui.DefaultSplitContainer;
+import org.netbeans.core.windows.WindowManagerImpl;
+import org.netbeans.core.windows.view.ui.slides.SlideBarContainer;
 import org.openide.windows.TopComponent;
 
 import java.awt.*;
@@ -33,8 +35,8 @@ import java.util.List;
  * @author  Peter Zavadsky
  */
 public class ModeView extends ViewElement {
-    
-    private final ModeContainer container;
+    //mkleint - made protected non-final because of SlidingView constructor..
+    protected ModeContainer container;
 
     // PENDING it is valid only for separate mode, consider create of two classes
     // of view, one for split, and second one for separate mode type.
@@ -61,6 +63,16 @@ public class ModeView extends ViewElement {
         container = new DefaultSeparateContainer(this, windowDnDManager, bounds);
         
         setTopComponents(topComponents, selectedTopComponent);
+    }
+
+    /** Specialized constructor for SlidingView.
+     */
+    protected ModeView(Controller controller) {
+        super(controller, 0D);
+        //mkleint - moved to SlidingView - "side" needs to be initialized first..
+//        this.container = new SlideBarContainer(this, windowDnDManager);
+        
+//        setTopComponents(topComponents, selectedTopComponent);
     }
     
     

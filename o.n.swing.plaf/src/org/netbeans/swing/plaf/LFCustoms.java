@@ -216,6 +216,7 @@ public abstract class LFCustoms {
     protected static final String VIEW_TAB_DISPLAYER_UI = "ViewTabDisplayerUI"; //NOI18N
     protected static final String SLIDING_TAB_DISPLAYER_UI = "SlidingTabDisplayerUI"; //NOI18N
     protected static final String SLIDING_TAB_BUTTON_UI = "IndexButtonUI";
+    protected static final String SLIDING_BUTTON_UI = "SlidingButtonUI"; //NOI18N
 
     //Tab control colors - see org.netbeans.swing.plaf.DefaultTabbedContainerUI
     protected static final String EDITOR_TAB_CONTENT_BORDER = "TabbedContainer.editor.contentBorder"; //NOI18N

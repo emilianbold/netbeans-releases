@@ -24,6 +24,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import org.openide.windows.TopComponent;
 
 
 /**
@@ -70,7 +71,10 @@ class ViewRequestor {
     public Frame getMainWindow() {
         return view.getMainWindow();
     }
-
+    
+    public String guessSlideSide(TopComponent tc) {
+        return view.guessSlideSide(tc);
+    }
     
     /** Schedules request into AWT. */
     public void scheduleRequest(ViewRequest request) {

@@ -96,8 +96,8 @@ public abstract class AbstractModeContainer implements ModeContainer {
             tabbedHandler.setTopComponents(tcs, selected);
             updateTitle(WindowManagerImpl.getInstance().getTopComponentDisplayName(selected));
         } else {
-            //Probably this method is never used just to set the selection,
-            //but it should work if someone tries it
+            //[dafe] It is also used as selection modifier only, for example when
+            // clearing selection to null on sliding modes
             setSelectedTopComponent(selected);
         }
     }

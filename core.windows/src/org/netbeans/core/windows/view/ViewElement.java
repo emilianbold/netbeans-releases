@@ -41,7 +41,7 @@ public abstract class ViewElement {
         return controller;
     }
 
-    protected abstract Component getComponent();
+    public abstract Component getComponent();
     
     public final double getResizeWeight() {
         return resizeWeight;

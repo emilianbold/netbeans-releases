@@ -125,11 +125,16 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             String iconPath = findIconPath(index);
             Icon icon = closeIcon.obtainIcon(iconPath);
             int iconWidth = icon.getIconWidth();
-            int space4Icon = iconWidth + 2 * ICON_X_PAD;
+            JButton pinButton = getPinButton(index);
+            int space4Pin = pinButton != null ? pinButton.getWidth() + 1 : 0;
+            int space4Icon = iconWidth + 2 * ICON_X_PAD + space4Pin;
             text2Paint = stripTextToFit(text,
                                         width - 2 * TXT_X_PAD - space4Icon, fm);
             int txtWidth = fm.stringWidth(text2Paint);
             getCloseIconRect(tempRect, index);
+            if (pinButton != null) {
+                pinButton.setLocation(tempRect.x - space4Pin, tempRect.y);
+            }
             icon.paintIcon(getDisplayer(), g, tempRect.x, tempRect.y);
         } else {
             text2Paint = stripTextToFit(text, width - 2 * TXT_X_PAD, fm);
@@ -140,8 +145,7 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
                  + BUMP_Y_PAD_BOTTOM));
         // draw text                            
         g.setColor(txtC);
-        g.drawString(text2Paint, x + TXT_X_PAD,
-                     y + fm.getAscent() + TXT_Y_PAD);
+        g.drawString(text2Paint, x + TXT_X_PAD, y + fm.getAscent() + TXT_Y_PAD);
     }
 
     protected void paintTabBorder(Graphics g, int index, int x, int y,
@@ -310,6 +314,11 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         return rect;
     }
 
+    protected PinButton createPinButton() {
+        // XXX - TBD - change to own specialized pin button with proper icons
+        return super.createPinButton();
+    }
+    
     /**
      * Own close icon button controller
      */

@@ -234,6 +234,13 @@ final class DefaultModel implements Model {
             modesSubModel.addModeAroundEditor(mode, side);
         }
     }
+
+    public void addSlidingMode(ModeImpl mode, String side) {
+        synchronized(LOCK_MODES) {
+            modesSubModel.addModeSliding(mode, side);
+        }
+    }
+    
     
     /** Removes mode. */
     public void removeMode(ModeImpl mode) {
@@ -245,7 +252,10 @@ final class DefaultModel implements Model {
     /** Sets active mode. */
     public void setActiveMode(ModeImpl activeMode) {
         synchronized(LOCK_MODES) {
-            modesSubModel.setActiveMode(activeMode);
+            boolean success = modesSubModel.setActiveMode(activeMode);
+            if (success) {
+                updateSlidingSelections(activeMode);
+            }
         }
     }
     
@@ -383,6 +393,18 @@ final class DefaultModel implements Model {
         }
     }
     
+    public String getSlidingModeConstraints(ModeImpl mode) {
+        synchronized(LOCK_MODES) {
+            return modesSubModel.getSlidingModeConstraints(mode);
+        }
+    }
+    
+    public ModeImpl getSlidingMode(String side) {
+        synchronized(LOCK_MODES) {
+            return modesSubModel.getSlidingMode(side);
+        }
+    }
+    
     /** Gets active mode. */
     public ModeImpl getActiveMode() {
         synchronized(LOCK_MODES) {
@@ -419,7 +441,8 @@ final class DefaultModel implements Model {
     // Mode specific >>
     public void createModeModel(ModeImpl mode, String name, int state, int kind, boolean permanent) {
         synchronized(mode2model) {
-            ModeModel mm = new DefaultModeModel(name, state, kind, permanent);
+            ModeModel mm;
+            mm = new DefaultModeModel(name, state, kind, permanent);
             mode2model.put(mode, mm);
         }
     }
@@ -518,7 +541,28 @@ final class DefaultModel implements Model {
             modeModel.removeClosedTopComponentID(tcID);
         }
     }
+
+    /**
+     * @param mode - sliding mode
+     */
     
+    public void setModeTopComponentPreviousConstraints(ModeImpl mode, TopComponent tc, SplitConstraint[] constraints) {
+        ModeModel modeModel = getModelForMode(mode);
+        if(modeModel != null) {
+            modeModel.setTopComponentPreviousConstraints(tc, constraints);
+        }
+    }
+    
+    /**
+     * @param mode - sliding mode
+     * @param previousMode - the original mode.
+     */
+    public void setModeTopComponentPreviousMode(ModeImpl mode, TopComponent tc, ModeImpl previousMode) {
+        ModeModel modeModel = getModelForMode(mode);
+        if(modeModel != null) {
+            modeModel.setTopComponentPreviousMode(tc, previousMode);
+        }
+    }
     
     // Accessors
     /** Gets programatic name of mode. */
@@ -568,6 +612,12 @@ final class DefaultModel implements Model {
         } else {
             return -1;
         }
+    }
+
+    /** Gets side. */
+    public String getModeSide(ModeImpl mode) {
+        String side = modesSubModel.getSlidingModeConstraints(mode);
+        return side;
     }
     
     /** Gets frame state. */
@@ -667,6 +717,17 @@ final class DefaultModel implements Model {
             return Collections.EMPTY_LIST;
         }
     }
+    
+    public SplitConstraint[] getModeTopComponentPreviousConstraints(ModeImpl mode, TopComponent tc) {
+        ModeModel modeModel = getModelForMode(mode);
+        return modeModel == null ? null : modeModel.getTopComponentPreviousConstraints(tc);
+    }
+    
+    public ModeImpl getModeTopComponentPreviousMode(ModeImpl mode, TopComponent tc) {
+        ModeModel modeModel = getModelForMode(mode);
+        return modeModel == null ? null : modeModel.getTopComponentPreviousMode(tc);
+    }
+    
     // End of mode specific.
 
     
@@ -966,12 +1027,14 @@ final class DefaultModel implements Model {
     private ModeStructureSnapshot createModeStructureSnapshot() {
         ModeStructureSnapshot.ElementSnapshot splitRoot;
         Set separateModes;
+        Set slidingModes;
         synchronized(LOCK_MODES) {
             splitRoot = modesSubModel.createSplitSnapshot();
             separateModes = modesSubModel.createSeparateModeSnapshots();
+            slidingModes = modesSubModel.createSlidingModeSnapshots();
         }
         
-        ModeStructureSnapshot ms =  new ModeStructureSnapshot(splitRoot, separateModes);
+        ModeStructureSnapshot ms =  new ModeStructureSnapshot(splitRoot, separateModes, slidingModes);
         return ms;
     }
     ///////////////////////////////////////////////////
@@ -986,6 +1049,22 @@ final class DefaultModel implements Model {
         
         return true;
     }
+    
+    /** Keeps selected components of sliding modes in sync with given current
+     * active mode. Sliding mode can have non-null selection (=slide) only if
+     * it is active mode as well
+     */   
+    private void updateSlidingSelections (ModeImpl curActive) {
+        Set slidingModes = modesSubModel.getSlidingModes();
+        ModeImpl curSliding = null;
+        for (Iterator iter = slidingModes.iterator(); iter.hasNext(); ) {
+            curSliding = (ModeImpl)iter.next();
+            if (!curSliding.equals(curActive)) {
+                setModeSelectedTopComponent(curSliding, null);
+            }
+        }
+    }
 
+    
 }
 

@@ -170,6 +170,10 @@ public class TabbedContainer extends JComponent {
 
     public static final String COMMAND_CLOSE_ALL_BUT_THIS = "closeAllButThis"; //NOI18N
 
+    public static final String COMMAND_ENABLE_AUTO_HIDE = "enableAutoHide"; //NOI18N
+
+    public static final String COMMAND_DISABLE_AUTO_HIDE = "disableAutoHide"; //NOI18N
+    
     //XXX support supressing close buttons
     
     /**
@@ -243,6 +247,10 @@ public class TabbedContainer extends JComponent {
     /** The component converter which will tranlate TabData's from the model into
      * components. */
     private ComponentConverter converter = null;
+    
+    /** Info about global positioning of this tab control 
+     * or null if no global location info is needed */
+    private LocationInformer locationInformer = null;
 
 
     /**
@@ -262,13 +270,23 @@ public class TabbedContainer extends JComponent {
     public TabbedContainer(int type) {
         this (null, type);
     }
-
+    
     /**
      * Create a new pane with the specified model and displayer type
      *
      * @param model The model
      */
     public TabbedContainer(TabDataModel model, int type) {
+        this (model, type, null);
+    }
+    
+
+    /**
+     * Create a new pane with the specified model and displayer type
+     *
+     * @param model The model
+     */
+    public TabbedContainer(TabDataModel model, int type, LocationInformer locationInformer) {
         switch (type) {
             case TYPE_VIEW:
             case TYPE_EDITOR:
@@ -282,6 +300,7 @@ public class TabbedContainer extends JComponent {
         }
         this.model = model;
         this.type = Boolean.getBoolean("nb.tabcontrol.allsliding") ? TYPE_SLIDING : type;
+        this.locationInformer = locationInformer;
         initialized = true;
         updateUI();
     }
@@ -653,6 +672,11 @@ public class TabbedContainer extends JComponent {
             return getUI().getInsertTabIndication(over);
         }
     }
+    
+    public LocationInformer getLocationInformer() {
+        return locationInformer;
+    }
+    
 
     static {
         //Support for experimenting with different content policies in NetBeans
