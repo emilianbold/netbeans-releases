@@ -265,6 +265,7 @@ public final class LibrariesCustomizer extends javax.swing.JPanel implements Exp
 
         setLayout(new java.awt.GridBagLayout());
 
+        getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/libraries/ui/Bundle").getString("AD_LibrariesCustomizer"));
         jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/libraries/ui/Bundle").getString("MNE_LibraryName").charAt(0));
         jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/libraries/ui/Bundle").getString("CTL_LibraryName"));
         jLabel1.setLabelFor(libraryName);
@@ -284,6 +285,7 @@ public final class LibrariesCustomizer extends javax.swing.JPanel implements Exp
         gridBagConstraints.weightx = 0.6;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 12);
         add(libraryName, gridBagConstraints);
+        libraryName.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/libraries/ui/Bundle").getString("AD_LibraryName"));
 
         properties.setPreferredSize(new java.awt.Dimension(400, 300));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -296,6 +298,8 @@ public final class LibrariesCustomizer extends javax.swing.JPanel implements Exp
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(2, 6, 6, 12);
         add(properties, gridBagConstraints);
+        properties.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/libraries/ui/Bundle").getString("AN_LibrariesCustomizerProperties"));
+        properties.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/libraries/ui/Bundle").getString("AD_LibrariesCustomizerProperties"));
 
         createButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/libraries/ui/Bundle").getString("CTL_NewLibrary"));
         createButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/libraries/ui/Bundle").getString("MNE_NewLibrary").charAt(0));
@@ -311,6 +315,7 @@ public final class LibrariesCustomizer extends javax.swing.JPanel implements Exp
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
         add(createButton, gridBagConstraints);
+        createButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/libraries/ui/Bundle").getString("AD_NewLibrary"));
 
         deleteButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/libraries/ui/Bundle").getString("CTL_DeleteLibrary"));
         deleteButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/libraries/ui/Bundle").getString("MNE_DeleteLibrary").charAt(0));
@@ -326,6 +331,7 @@ public final class LibrariesCustomizer extends javax.swing.JPanel implements Exp
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         add(deleteButton, gridBagConstraints);
+        deleteButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/libraries/ui/Bundle").getString("AD_DeleteLibrary"));
 
         libsPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -340,6 +346,7 @@ public final class LibrariesCustomizer extends javax.swing.JPanel implements Exp
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 6);
         add(libsPanel, gridBagConstraints);
+        libsPanel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/libraries/ui/Bundle").getString("AD_libsPanel"));
 
     }//GEN-END:initComponents
 

@@ -80,12 +80,16 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
             this.addButton.setMnemonic(NbBundle.getMessage(J2SEVolumeCustomizer.class,"MNE_AddClassPath").charAt(0));
             this.message.setText(NbBundle.getMessage(J2SEVolumeCustomizer.class,"CTL_ContentClassPath"));
             this.message.setDisplayedMnemonic(NbBundle.getMessage(J2SEVolumeCustomizer.class,"MNE_ContentClassPath").charAt(0));
+            this.addButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(J2SEVolumeCustomizer.class,"AD_AddClassPath"));
+            this.message.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(J2SEVolumeCustomizer.class,"AD_ContentClassPath"));
         }
         else if (this.volumeType.equals("javadoc")) {  //NOI18N
             this.addButton.setText(NbBundle.getMessage(J2SEVolumeCustomizer.class,"CTL_AddJavadoc"));
             this.addButton.setMnemonic(NbBundle.getMessage(J2SEVolumeCustomizer.class,"MNE_AddJavadoc").charAt(0));
             this.message.setText(NbBundle.getMessage(J2SEVolumeCustomizer.class,"CTL_ContentJavadoc"));
             this.message.setDisplayedMnemonic(NbBundle.getMessage(J2SEVolumeCustomizer.class,"MNE_ContentJavadoc").charAt(0));
+            this.addButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(J2SEVolumeCustomizer.class,"AD_AddJavadoc"));
+            this.message.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(J2SEVolumeCustomizer.class,"AD_ContentJavadoc"));
 //            this.addURLButton = new JButton ();
 //            this.addURLButton.setText(NbBundle.getMessage (J2SEVolumeCustomizer.class,"CTL_AddJavadocURL"));
 //            this.addURLButton.setMnemonic(NbBundle.getMessage (J2SEVolumeCustomizer.class,"MNE_AddJavadocURL").charAt(0));
@@ -110,6 +114,8 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
             this.addButton.setMnemonic (NbBundle.getMessage(J2SEVolumeCustomizer.class,"MNE_AddSources").charAt(0));
             this.message.setText(NbBundle.getMessage(J2SEVolumeCustomizer.class,"CTL_ContentSources"));
             this.message.setDisplayedMnemonic(NbBundle.getMessage(J2SEVolumeCustomizer.class,"MNE_ContentSources").charAt(0));
+            this.addButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(J2SEVolumeCustomizer.class,"AD_AddSources"));
+            this.message.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(J2SEVolumeCustomizer.class,"AD_ContentSources"));
         }
         this.content.addListSelectionListener(new ListSelectionListener () {
             public void valueChanged(ListSelectionEvent e) {
@@ -147,6 +153,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
 
         setLayout(new java.awt.GridBagLayout());
 
+        getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/libraries/Bundle").getString("AD_J2SEVolumeCustomizer"));
         message.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/libraries/Bundle").getString("MNE_ContentMessage").charAt(0));
         message.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/libraries/Bundle").getString("CTL_ContentMessage"));
         message.setLabelFor(content);
@@ -184,8 +191,8 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(3, 6, 5, 6);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(3, 6, 5, 6);
         add(addButton, gridBagConstraints);
 
         removeButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/libraries/Bundle").getString("CTL_RemoveContent"));
@@ -201,9 +208,10 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 6);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 6);
         add(removeButton, gridBagConstraints);
+        removeButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/libraries/Bundle").getString("AD_RemoveContent"));
 
         upButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/libraries/Bundle").getString("CTL_UpContent"));
         upButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/libraries/Bundle").getString("MNE_UpContent").charAt(0));
@@ -218,9 +226,10 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 6, 0, 6);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 6, 0, 6);
         add(upButton, gridBagConstraints);
+        upButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/libraries/Bundle").getString("AD_UpContent"));
 
         downButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/libraries/Bundle").getString("CTL_DownContent"));
         downButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/libraries/Bundle").getString("MNE_DownContent").charAt(0));
@@ -235,9 +244,10 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
         gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 6, 6, 6);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 6, 6, 6);
         add(downButton, gridBagConstraints);
+        downButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/libraries/Bundle").getString("AD_DownContent"));
 
     }//GEN-END:initComponents
 
