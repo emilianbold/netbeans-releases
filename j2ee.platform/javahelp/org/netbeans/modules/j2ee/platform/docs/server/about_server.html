@@ -23,10 +23,11 @@ and connect the computer to the Internet. Server software for the following
 server types are supported by the IDE:</p>
 <ul>
 <li><b>SJS App Server</b>
-    <p>Use this server for the following development activities:
-    <ul><li>Creating and deploying <a href="../enterprise/general/about_ent_apps.html">enterprise applications</a> 
+    <p>Use this server and its libraries for the following development activities:
+    <ul><li>Deploying <a href="../enterprise/general/about_ent_apps.html">enterprise applications</a> 
 	    and <a href="../ejb/general/about_ejbs.html">enterprise beans</a>.</li>
-	<li>Creating and deploying JSR-109 and JSR-101 web services.</li>
+	<li>Deploying web services and web service clients that use JSR-109 or JSR-101 stubs.</li>
+	<li>Deploying web applications, JSP pages, and servlets.</li>
 	<li>Libraries included with the SJS App Server can be used 
             to <a href="../webservice/build/about_wscompile.html">compile</a> web services and clients,
             <a href="../enterprise/general/ent_app_verify.html">verify</a> that your application
@@ -35,28 +36,35 @@ server types are supported by the IDE:</p>
             or <a href="../web/create/tag/framework/framework_jsf_add.html">add JSF support</a>
 	    to an existing web application</li>
     </ul></li>
-    <li><b>Tomcat Web Server</b>
-<p>Use this server for the following development activities:
-    <ul><li>Creating and deploying web applications.</li>
-	    <li>Deploying a web service client that uses JSR-101 stubs.
+<li><b>Tomcat Web Server</b>
+    <p>Use this server and its libraries for the following development activities:
+    <ul><li>Deploying web applications, JSP pages, and servlets.</li>
+	<li>Deploying web services and web service clients that use JSR-101 stubs.
 	    <table cellpadding="3" cellspacing="0" border="0">
-<tr valign="top"> 
-<td><img src="../../images/tip.gif" alt="tip">&nbsp;</td>
-<td>The Tomcat Web Server is not a J2EE 1.4 container. Therefore, you cannot deploy a web service client
-	that uses JSR-109 stubs to this server. When you <a href="../consume/wsc_create.html">create the web service client</a>,
-	make sure that you select JAXRPC Static Stub in the Web service client type drop-down.</td>
-</tr>
-</table></li></ul>
+            <tr valign="top"> 
+            <td><img src="../images/tip.gif" alt="tip">&nbsp;</td>
+            <td>The Tomcat Web Server is not a J2EE 1.4 container. Therefore, you cannot deploy a web service client
+	        that uses JSR-109 stubs to this server. When you <a href="../consume/wsc_create.html">create the web service client</a>,
+		make sure that you select JAXRPC Static Stub in the Web service client type drop-down.</td></tr></table></li></ul>
 </ul>
-
+<p>When you register a server with the IDE, you make its libraries available for production,
+ or deployment, or both. If you deploy your applications to a remote instance of the
+ SJS Application Server, its libraries are available at runtime. However, during 
+ development, you might need a local instance of this server.</p>
+<p>You can have multiple instances of the SJS Application Server registered with the 
+IDE. Once you have registered your local instance, you can register remote instances, 
+but you always have to specify the local folder that contains the local installation of 
+the SJS Application Server.</p>
 <h3>Servers in the IDE</h3>
 <p>Before you can deploy an enterprise application, web application, JSP, servlet, or EJB module, 
 the server to which you are going to deploy needs to be registered with the IDE. 
 By default, only the bundled Tomcat Web Server is registered with the IDE. 
 You must <a href="server_register.html">register</a> all other servers yourself.
 When a server is registered with the IDE, you can see its node in the Runtime 
-window under the the Server Registry node. To target a server for a project, right-click it,
-choose Properties, click Run, and select the server.</p>
+window under the the Server Registry node. When you create a project in the New Project wizard, 
+you select the server to which you want to deploy your application. After you create the
+ application, you can change the server by right-clicking the project,
+ choosing Properties, clicking Run, and selecting a different server.</p>
 <table>
 <tr>
 <th colspan=2 align=left><a name="seealso">See Also</a></th>
