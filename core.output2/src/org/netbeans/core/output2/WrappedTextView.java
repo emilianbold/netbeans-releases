@@ -12,6 +12,8 @@
  */
 package org.netbeans.core.output2;
 
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.text.DefaultCaret;
 import org.openide.ErrorManager;
 
@@ -75,6 +77,9 @@ public class WrappedTextView extends View {
      * We do a somewhat prettier arrow if it is.
      */
     private boolean aa = false;
+    /** set antialiasing hints when it's requested. */
+    private static final boolean antialias = Boolean.getBoolean ("swing.aatext") || //NOI18N
+                                             "Aqua".equals (UIManager.getLookAndFeel().getID()); // NOI18N
 
     //Self explanatory...
     static Color selectedFg;
@@ -87,6 +92,19 @@ public class WrappedTextView extends View {
     static Color unselectedErr;
     static final Color arrowColor = new Color (80, 162, 80);
 
+    private static Map hintsMap = null;
+    
+    static final Map getHints() {
+        if (hintsMap == null) {
+            hintsMap = new HashMap();
+            hintsMap.put(RenderingHints.KEY_TEXT_ANTIALIASING,
+                RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            hintsMap.put(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
+        }
+        return hintsMap;
+    }
+   
     static {
         selectedFg = UIManager.getColor ("nb.output.foreground.selected"); //NOI18N
         if (selectedFg == null) {
@@ -292,6 +310,11 @@ public class WrappedTextView extends View {
     }
 
     public void paint(Graphics g, Shape allocation) {
+        
+        if (antialias) {
+            ((Graphics2D)g).addRenderingHints(getHints());
+        }
+        
         updateInfo(g);
         
         comp.getHighlighter().paint(g);
