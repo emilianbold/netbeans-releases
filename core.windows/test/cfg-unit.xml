@@ -48,10 +48,20 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/core/windows/persistence/*.class"/>
                 <include name="org/netbeans/core/windows/*.class"/>
                 <include name="org/netbeans/core/windows/services/*.class"/>
+                <exclude name="org/netbeans/core/windows/persistence/WindowManagerParserTest.class"/>
             </patternset>
         </testset>
     </testbag>
 
+    <!-- WindowManager may delete some group data files needed by other unit test so run it in an extra bag --> 
+    <testbag testattribs="stable" executor="ide" name="testbag_3">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="org/netbeans/core/windows/persistence/WindowManagerParserTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
     <!-- If you want to use this testbag you *must* provide xtest.includes property, -->
     <!-- (either on cmd line or in the script) to explicitly define which test       -->
     <!-- you want to run. This will run *only* tests from unit/src folder !!!        -->
