@@ -215,7 +215,11 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
   protected Node.Property[] createSyntheticProperties () {
     if (!getFormManager ().getFormEditorSupport ().supportsAdvancedFeatures ()) {
-      return new Node.Property[0];
+      if ((formInfo instanceof JMenuBarContainer) || (formInfo instanceof MenuBarContainer)) {
+        return new Node.Property[] { createMenuProperty () } ;
+      } else {
+        return new Node.Property[0];
+      }
     }
 
     Node.Property policyProperty = new PropertySupport.ReadWrite (PROP_FORM_SIZE_POLICY, Integer.TYPE, "form size policy", "form size policy") {
@@ -306,28 +310,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     if ((formInfo instanceof JMenuBarContainer) || (formInfo instanceof MenuBarContainer)) {
       Node.Property[] ret = new Node.Property [7];
 
-     Node.Property menuProperty = new PropertySupport.ReadWrite (PROP_MENU_BAR, String.class, "menu bar", "menu bar of the form") {
-        public Object getValue () throws
-        IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
-          String s = getFormMenu ();
-          return (s == null) ? NO_MENU : s;
-        }
-    
-        public void setValue (Object val) throws IllegalAccessException,
-        IllegalArgumentException, java.lang.reflect.InvocationTargetException {
-          if (!(val instanceof String)) throw new IllegalArgumentException ();
-          String s = (String) val;
-          setFormMenu(s.equals(NO_MENU) ? null : s);
-        }
-  
-        /** Editor for alignment */
-        public java.beans.PropertyEditor getPropertyEditor () {
-          return new FormMenuEditor ();
-        }
-        
-      };
-
-      ret[0] = menuProperty;
+      ret[0] = createMenuProperty ();
       ret[1] = sizeProperty;
       ret[2] = positionProperty;
       ret[3] = policyProperty;
@@ -345,6 +328,28 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
       ret[5] = genCenterProperty;
       return ret;
     }
+  }
+
+  private Node.Property createMenuProperty () {
+    return new PropertySupport.ReadWrite (PROP_MENU_BAR, String.class, "menu bar", "menu bar of the form") {
+      public Object getValue () throws
+      IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
+        String s = getFormMenu ();
+        return (s == null) ? NO_MENU : s;
+      }
+  
+      public void setValue (Object val) throws IllegalAccessException,
+      IllegalArgumentException, java.lang.reflect.InvocationTargetException {
+        if (!(val instanceof String)) throw new IllegalArgumentException ();
+        String s = (String) val;
+        setFormMenu(s.equals(NO_MENU) ? null : s);
+      }
+
+      /** Editor for alignment */
+      public java.beans.PropertyEditor getPropertyEditor () {
+        return new FormMenuEditor ();
+      }
+    };
   }
 
   ArrayList getAvailableMenus() {
@@ -430,6 +435,9 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
 /*
  * Log
+ *  10   Gandalf   1.9         7/14/99  Ian Formanek    synthetic "menu" 
+ *       property does not require supportsAdvancedFeatures () to return true in
+ *       the current persistence manager
  *  9    Gandalf   1.8         7/11/99  Ian Formanek    Some synthetic 
  *       properties are available only if supportsAdvancedFeatures of current 
  *       persistence manager returns true
