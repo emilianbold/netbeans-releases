@@ -603,7 +603,7 @@ public final class ClientInfo extends JPanel {
     public void setWsdlDownloadMessage(String m) {
         downloadMsg = m;
         
-        // reenable edit control.
+        // reenable edit control if state indicates download is completed (or failed).
         if(retriever.getState() >= WsdlRetriever.STATUS_COMPLETE) {
             jTxtWsdlURL.setEditable(true);
             jTxtLocalFilename.setText(retriever.getWsdlFileName());
