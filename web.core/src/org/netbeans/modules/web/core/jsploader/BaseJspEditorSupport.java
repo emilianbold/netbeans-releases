@@ -142,7 +142,9 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
         addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent evt) {
                 if (isDocumentLoaded()) {
-                    getDocument().addDocumentListener(docListener);
+                    if (getDocument() != null) {
+                        getDocument().addDocumentListener(docListener);
+                    }
                 }
             }
         });
