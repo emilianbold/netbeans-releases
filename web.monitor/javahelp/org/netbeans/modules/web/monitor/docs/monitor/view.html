@@ -11,7 +11,7 @@
 
 
 
-<title>Analyzing HTTP Requests</title>
+<title>Analyzing Session Data</title>
 <meta 
 http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link 
@@ -20,14 +20,19 @@ rel="StyleSheet" href="../../../../usersguide/ide.css" type="text/css">
 
 <body>
 
-<h2>Analyzing HTTP Requests</h2>
+<h2>Analyzing Session Data</h2>
 <p><small> 
 <a href="#seealso">See Also</a> 
-</small></p> 
+</small></p>
+<ol>
+<li>Run a web module.</li>
+<li>Click the HTTP Monitor.</li>
+<li>Select any HTTP request in the tree view to view its information in the
+display panel.	
 <p>The HTTP Monitor consists of two panels. On the left is a tree view of 
 HTTP request records. On the right is a 
-display panel that presents the data associated with the selected HTTP 
-request records. 
+display panel that presents the session data associated with the selected HTTP 
+request records.</p> 
 <h3>The tree view</h3>
 In the tree view, the All Records category contains two subcategories: Current 
 Records and Saved Records. Individual HTTP request records reside in either 
@@ -39,7 +44,7 @@ Current HTTP request records persist across restarts of the server. They are
 cleared whenever you exit the IDE, or when you explicitly delete them. Entries 
 in Saved Records persist until you delete them. Records in all 
 categories can be sorted according to various criteria using the buttons above 
-the tree view:
+the tree view:</p>
 <table width="100%" border="1">
   <tr valign="top"> 
     <td width="7%" height="38"><img src="../images/reload.gif" width="25" 
@@ -84,9 +89,11 @@ height="25" alt="show or hide timestamps icon"></td>
   </tr>
 </table>
 <h3>The display panel</h3>
-When you select a HTTP request record in the tree view on the left, the 
-data corresponding to that HTTP request record appears in the 
-display panel on the right.
+<p>When you select a HTTP request record in the tree view on the left, the 
+session data corresponding to that HTTP request record appears in the 
+display panel on the right.</p>
+</li>
+</ol>
 <hr>
 <small><a href="../credits.html">Legal Notices</a> 
 <table cellpadding="20" border="0"> 

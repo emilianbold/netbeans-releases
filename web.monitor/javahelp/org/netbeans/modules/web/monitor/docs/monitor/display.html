@@ -23,34 +23,20 @@ rel="StyleSheet" href="../../../../usersguide/ide.css" type="text/css">
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p> 
-
+<p>The HTTP Monitor is enabled by default when you run a web application.
+   If the HTTP Monitor does not display or if it does not show the session
+   data for a running web 
+   module, ensure that it is enabled as described below.</p>
 <p><b>To display the HTTP Monitor:</b>
 <ul><li>Choose Window <img src="../images/arrow.gif" alt="and choosing">&nbsp;HTTP 
 Monitor (Ctrl+7) from the main menu.</p></li></ul>
 
-<table cellpadding="3" cellspacing="0" border="0">
-  <tr valign="top"> 
-    <td><img src="../images/tip.gif" alt="tip">&nbsp;</td>
-    <td> The HTTP Monitor appears by default when you run a web application.
-      If the HTTP Monitor does not display or if it does not show the HTTP 
-      request records for a running web 
-      module, ensure that it is enabled as described below.</td>
-  </tr>
-</table>
-<p>
-<b>To enable the HTTP Monitor for a web server managed by a plugin
-that is bundled with the IDE:</b>
-<ol><li>Right-click your web server'a node in the Runtime window's
+<b>To enable the HTTP Monitor for a bundled web server:</b>
+<ol><li>Right-click your web server's node in the Runtime window's
 Server Registry node.</li>
 <li>Choose Properties.</li>
 <li>Select the Enable HTTP Monitor checkbox.</p></ol>
-<table cellpadding="3" cellspacing="0" border="0">
-  <tr valign="top"> 
-    <td><img src="../images/tip.gif" alt="tip">&nbsp;</td>
-    <td>By default, the HTTP Monitor is enabled.</td>
-  </tr>
-</table>
-<b>To enable the HTTP Monitor for all non-bundled web servers:</b>
+<b>To enable the HTTP Monitor for an external web server:</b>
 <ol>
   <li>Copy <i>IDE-install-directory</i><tt>/modules/schema2beans.jar</tt> and 
     <i>IDE-install-directory</i><tt>/modules/ext/httpmonitor.jar</tt> to your 
@@ -101,9 +87,8 @@ Server Registry node.</li>
 	  </ul>
   </li>
   <li>
- You can have more than one IDE monitoring the data 
-      records from a web module by adding a second <tt>init-param</tt> entry as 
-      follows: 
+To monitor the data records from a web module using more than one
+    IDE, add a second init-param entry as follows: 
       <pre>
   &lt;init-param&gt;
   &lt;param-name&gt;netbeans.monitor.register&lt;/param-name&gt;

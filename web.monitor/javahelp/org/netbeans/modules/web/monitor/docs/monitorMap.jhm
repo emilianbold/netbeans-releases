@@ -20,7 +20,6 @@ help\
 
 	<mapID target="ctx_monitorintro" url="monitor/ctx_monitorintro.html" />
 	<mapID target="monitor_process" url="monitor/process.html" />
-	<mapID target="monitor_quickref" url="monitor/quickref.html" />
 	<mapID target="monitor_display" url="monitor/display.html" />
 	<mapID target="monitor_delete" url="monitor/delete.html" />
 	<mapID target="monitor_resend" url="monitor/resend.html" />
