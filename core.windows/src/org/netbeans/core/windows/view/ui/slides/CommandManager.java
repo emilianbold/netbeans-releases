@@ -14,24 +14,17 @@
 package org.netbeans.core.windows.view.ui.slides;
 
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
-import java.util.Map;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.ActionMap;
-import javax.swing.InputMap;
-import javax.swing.JComponent;
-import javax.swing.KeyStroke;
-import org.netbeans.swing.tabcontrol.DefaultTabDataModel;
-import org.netbeans.swing.tabcontrol.SlideBarDataModel;
-import org.netbeans.swing.tabcontrol.SlidingButton;
-import org.netbeans.swing.tabcontrol.TabDataModel;
-import org.netbeans.swing.tabcontrol.TabbedContainer;
+import javax.swing.*;
+import org.netbeans.swing.tabcontrol.*;
 import org.netbeans.swing.tabcontrol.event.TabActionEvent;
+import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 /*
@@ -43,7 +36,7 @@ import org.openide.windows.TopComponent;
  * @author Dafe Simonek
  */
 final class CommandManager implements ActionListener {
-    
+   
     /** Asociated slide bar */
     private final SlideBar slideBar;
     /** Local tabbed container used to display slided component */
@@ -142,6 +135,20 @@ final class CommandManager implements ActionListener {
      * actions are handled in the same way as usual.
      */
     public void actionPerformed(ActionEvent e) {
+        if (TabbedContainer.COMMAND_POPUP_REQUEST.equals(e.getActionCommand())) {
+            TabActionEvent tae = (TabActionEvent) e;
+            if (curSlidedComp != null && curSlidedComp instanceof TopComponent) {
+                TopComponent tc = (TopComponent)curSlidedComp;
+                Action[] actions = slideBar.getTabbed().getPopupActions(tc.getActions(), 0);
+                if (actions == null) {
+                    actions = tc.getActions();
+                }
+                
+                showPopupMenu(
+                    Utilities.actionsToPopup(actions, tc.getLookup()), tae.getMouseEvent().getPoint(), tae.getMouseEvent().getComponent());
+                
+            }
+        }
         if (TabbedContainer.COMMAND_DISABLE_AUTO_HIDE.equals(e.getActionCommand())) {
             slideIntoDesktop(curSlidedIndex);
         } else {
@@ -155,6 +162,35 @@ final class CommandManager implements ActionListener {
     }
     
     /************************** non-public stuff **********************/
+    
+     private static final boolean NO_POPUP_PLACEMENT_HACK = Boolean.getBoolean("netbeans.popup.no_hack"); // NOI18N
+// ##########################     
+// copied from TabbedHandler, maybe reuse..
+//     
+
+    /** Shows given popup on given coordinations and takes care about the
+     * situation when menu can exceed screen limits */
+    private static void showPopupMenu (JPopupMenu popup, Point p, Component comp) {
+        if (NO_POPUP_PLACEMENT_HACK) {
+            popup.show(comp, p.x, p.y);
+            return;
+        }
+
+        SwingUtilities.convertPointToScreen (p, comp);
+        Dimension popupSize = popup.getPreferredSize ();
+        Rectangle screenBounds = Utilities.getUsableScreenBounds(comp.getGraphicsConfiguration());
+
+        if (p.x + popupSize.width > screenBounds.x + screenBounds.width) {
+            p.x = screenBounds.x + screenBounds.width - popupSize.width;
+        }
+        if (p.y + popupSize.height > screenBounds.y + screenBounds.height) {
+            p.y = screenBounds.y + screenBounds.height - popupSize.height;
+        }
+
+        SwingUtilities.convertPointFromScreen (p, comp);
+        popup.show(comp, p.x, p.y);
+    }    
+    
     
     private TabbedContainer getSlidedTabContainer () {
         if (slidedTabContainer == null) {
@@ -250,10 +286,11 @@ final class CommandManager implements ActionListener {
     
     private final Action escapeAction = new EscapeAction();
     
-    private final class EscapeAction extends AbstractAction {
+    private final class EscapeAction extends javax.swing.AbstractAction {
         public void actionPerformed(ActionEvent e) {
             slideOut(true);
         }
     } // end of EscapeAction
+   
     
 }
