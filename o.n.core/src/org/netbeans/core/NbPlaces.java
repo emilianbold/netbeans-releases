@@ -19,6 +19,7 @@ import java.util.*;
 import org.openide.*;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.nodes.*;
@@ -110,10 +111,10 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
         return ControlPanelNode.getDefault ();
     }
 
-    /** Project settings.
+    /** Workplace Node.
     */
     public Node project () {
-        return ControlPanelNode.getProjectSettings ();
+        return org.netbeans.core.ui.WorkplaceNode.getDefault();
     }
 
     /** Node with all workspaces */
@@ -126,10 +127,14 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
         return FSPoolNode.getFSPoolNode ();
     }
 
-    /** Workspace node for current project. This node can change when project changes.
+    /** Active project's node, this node can change when active project changes.
     */
     public Node projectDesktop () {
-        return org.netbeans.core.ui.WorkplaceNode.getDefault();
+        DataObject prj = org.netbeans.core.ui.WorkplaceNode.getDefault().getActiveProject ();
+        if (prj == null)
+            return org.netbeans.core.ui.WorkplaceNode.getDefault().cloneNode ();
+        
+        return prj.getNodeDelegate ().cloneNode ();
     }
 
     /** Root nodes.
@@ -171,7 +176,7 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
     /** Default folder for projects.
     */
     public DataFolder projects () {
-        return findSessionFolder ("Projects"); // NOI18N
+        return findSessionFolder (org.netbeans.core.ui.WorkplaceNode.WORKPLACE_FOLDER);
     }
 
     /** Startup folder.

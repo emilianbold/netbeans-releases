@@ -295,7 +295,7 @@ public final class NbMainExplorer extends CloneableTopComponent
         // build the list of roots
         LinkedList result = new LinkedList();
         // workplace
-        result.add(ns.projectDesktop ());
+        result.add(ns.project ());
         // repository
         result.add(ns.repository());
         // roots added by modules (javadoc etc...)
@@ -312,9 +312,9 @@ public final class NbMainExplorer extends CloneableTopComponent
         // switch according to the type of the root context
         MainTab panel = null;
         Places.Nodes ns = TopManager.getDefault().getPlaces().nodes();
-        if (rc.equals(ns.projectDesktop ())) {
-            // projects tab
-            panel = new ProjectsTab();
+        if (rc.equals(ns.project ())) {
+            // workplace tab
+            panel = new WorkplaceTab();
         } else if (rc.equals(ns.repository())) {
             panel = new RepositoryTab ();
         } else if (rc.equals(ns.environment())) {
@@ -667,11 +667,16 @@ public final class NbMainExplorer extends CloneableTopComponent
          * @param ev event describing the action
          */
         public void operationCreateShadow (OperationEvent.Copy ev) {
+            postTask (ev.getObject ());
         }
         /** New instance of an object has been created.
          * @param ev event describing the action
          */
-        public void operationCreateFromTemplate (final OperationEvent.Copy ev) {
+        public void operationCreateFromTemplate (OperationEvent.Copy ev) {
+            postTask (ev.getObject ());
+        }
+
+        private void postTask (final DataObject obj) {
             RequestProcessor.Task t = previousTask;
             if (t != null) {
                 t.cancel ();
@@ -681,17 +686,15 @@ public final class NbMainExplorer extends CloneableTopComponent
                                public void run () {
                                    previousTask = null;
 
-                                   doSelectNode (ev.getObject ());
+                                   doSelectNode (obj);
                                }
                            }, 100);
         }
-
+        
         /** Setups the environment to select the right node.
         */
         public void doSelectNode (DataObject obj) {
-            if (selectNode (obj, null)) {
-                requestFocus ();
-            }
+            selectNode (obj, null);
         }
 
 
@@ -706,6 +709,10 @@ public final class NbMainExplorer extends CloneableTopComponent
                 obj = obj.getFolder ();
             }
 
+            // insert parent as well
+            if (obj != null)
+                stack.push (obj);
+            
             Node current = getExplorerManager ().getRootContext ();
             while (!stack.isEmpty ()) {
                 Node n = findDataObject (current, (DataObject)stack.pop ());
@@ -736,6 +743,10 @@ public final class NbMainExplorer extends CloneableTopComponent
 
             Node[] arr = node.getChildren ().getNodes ();
             for (int i = 0; i < arr.length; i++) {
+                DataShadow ds = (DataShadow)arr[i].getCookie (DataShadow.class);
+                if (ds != null && obj == ds.getOriginal ()) {
+                    return arr[i];
+                }
                 if (obj == arr[i].getCookie (DataFolder.class)) {
                     return arr[i];
                 }
@@ -743,32 +754,48 @@ public final class NbMainExplorer extends CloneableTopComponent
                     return arr[i];
                 }
             }
-
             return null;
         }
     }
 
     /** Special class for projects tab in main explorer */
-    public static class ProjectsTab extends RepositoryTab {
+    public static class WorkplaceTab extends RepositoryTab {
         static final long serialVersionUID =-8178367548546385799L;
 
         /** Exchanges deserialized root context to projects root context
         * to keep the uniquennes. */
         protected void validateRootContext () {
-            Node projectsRc = TopManager.getDefault ().getPlaces ().nodes ().projectDesktop ();
+            Node projectsRc = TopManager.getDefault ().getPlaces ().nodes ().project ();
             setRootContext(projectsRc);
             registerRootContext(projectsRc);
         }
 
         public void doSelectNode (DataObject obj) {
-            DataFolder root = (DataFolder)getRootContext ().getCookie (DataFolder.class);
-
-            if (selectNode (obj, root)) {
-                requestFocus ();
+            DataFolder parent = null;
+            DataFolder workplace = TopManager.getDefault ().getPlaces ().folders ().projects ();
+            DataObject prjs [] = workplace.getChildren ();
+            
+            for (int i = 0; i < prjs.length; i++) {
+                DataShadow ds = (DataShadow)prjs[i].getCookie (DataShadow.class);
+                if (ds == null)
+                    continue;
+                
+                DataObject prj = ds.getOriginal ();
+                parent = obj.getFolder ();
+                while (parent != null && parent != prj) {
+                    parent = parent.getFolder ();
+                }
+                
+                if (parent == null && workplace == obj.getFolder ()) {
+                    parent = workplace;
+                }
             }
+            
+            if (parent != null)
+                selectNode (obj, parent);
         }
 
-    } // end of ProjectsTab inner class
+    } // end of WorkplaceTab inner class
 
     /** Special class for tabs added by modules to the main explorer */
     public static class ModuleTab extends MainTab {
