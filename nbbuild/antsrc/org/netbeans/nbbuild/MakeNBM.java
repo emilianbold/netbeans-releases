@@ -221,6 +221,7 @@ public class MakeNBM extends MatchingTask {
     private String distribution = null;
     private Blurb license = null;
     private Blurb description = null;
+    private Blurb notification = null;    
     private Signature signature = null;
     private long mostRecentInput = 0L;
     private boolean isStandardInclude = true;
@@ -277,6 +278,9 @@ public class MakeNBM extends MatchingTask {
     public Blurb createLicense () {
 	return (license = new Blurb ());
     }
+    public Blurb createNotification () {
+	return (notification = new Blurb ());
+    }    
     public Blurb createDescription () {
         log(getLocation() + "The <description> subelement in <makenbm> is deprecated except for emergency patches, please ensure your module has an OpenIDE-Module-Long-Description instead", Project.MSG_WARN);
 	return (description = new Blurb ());
@@ -430,6 +434,11 @@ public class MakeNBM extends MatchingTask {
                         ps.print ("  <license name=\"" + xmlEscape(license.getName ()) + "\">");
 			ps.print (license.getText ());
 			ps.println ("</license>");
+		    }
+                    if (notification != null) {
+                        ps.print("  <module_notification>");
+                        ps.print(notification.getText());
+                        ps.println("</module_notification>");
 		    }
 		    ps.println ("</module>");
                     ps.flush();
