@@ -479,6 +479,7 @@
 <!-- JSP, HTML and Tag wizard -->
 <mapID target="org.netbeans.modules.web.dd.wizards.TargetChooserPanel_jsptag" url="web/webmod/mod_tagf_add.html" />
 <mapID target="org.netbeans.modules.web.dd.wizards.TargetChooserPanel_html" url="web/concepts/html.html" />
+<mapID target="org.netbeans.modules.html.HtmlLoader.Obj" url="web/concepts/html.html" />
 
 <!-- Servlet and Filter wizards -->
 <mapID target="org.netbeans.modules.web.dd.wizards.DeployDataPanel_filter" url="web/servlet/filter_create.html" />
@@ -1185,7 +1186,7 @@
     url="web/servlet/servlet_props.html" />
 
 <mapID target="org.netbeans.modules.web.core.jsploader.JspNode" 
-    url="web/create_jsp/jsp_node.html" />
+	url="web/concepts/jsp.html" />
 <mapID target="org.netbeans.modules.web.core.jsploader.JspNode.PropertySheet" 
     url="web/create_jsp/jsp_props.html" />
 
