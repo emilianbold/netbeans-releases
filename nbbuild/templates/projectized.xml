@@ -334,6 +334,19 @@ Microsystems, Inc. All Rights Reserved.
             <arg line="${test.class}"/>
         </java>
     </target>
+    
+    <target name="debug" depends="netbeans" >
+        <nbjpdastart name="NetBeans" addressproperty="debug.port" transport="dt_socket">
+            <classpath>
+                <fileset dir="${netbeans.dest.dir}" >
+                    <include name="**/*.jar" />
+                </fileset>
+            </classpath>
+        </nbjpdastart>
+        <property name="debug.server" value="n" />
+        <ant dir="${nb_all}/nbbuild" target="tryme" />
+    </target>
+    
 
     <target name="debug-test-single" depends="init,test-init,test-build,do-debug-test-single"/>
 
