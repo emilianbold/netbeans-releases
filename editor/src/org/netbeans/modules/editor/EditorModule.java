@@ -320,9 +320,7 @@ public class EditorModule extends ModuleInstall {
                 InstanceCookie cookie = (InstanceCookie)dobj.getCookie(InstanceCookie.class);
                 Class kitClass = cookie.instanceClass();
                 if(EditorKit.class.isAssignableFrom(kitClass)) {
-                    synchronized (AllOptionsFolder.class){
-                        return BaseKit.getKit(kitClass);
-                    }
+                    return BaseKit.getKit(kitClass);
                 }
             }
             catch (DataObjectNotFoundException e) {}

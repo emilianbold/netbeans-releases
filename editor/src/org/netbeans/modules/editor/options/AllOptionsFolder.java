@@ -321,7 +321,7 @@ public class AllOptionsFolder{
         
         BaseOptions ret = (BaseOptions)BaseOptions.findObject(BaseOptions.class, true);
         
-        synchronized (this){
+        synchronized (Settings.class){
             if (baseInitialized == false){
                 // Add the initializer for the base options. It will not be removed
                 Settings.addInitializer(ret.getSettingsInitializer(),
@@ -417,7 +417,7 @@ public class AllOptionsFolder{
     /** Updates MIME option initializer. Loads user's settings stored in XML
      *  files and updates Setting's initializers via reset method */
     private void processInitializers(BaseOptions bo, boolean remove) {
-        synchronized (AllOptionsFolder.class){
+        synchronized (Settings.class){
             Settings.Initializer si = bo.getSettingsInitializer();
             // Remove the old one
             Settings.removeInitializer(si.getName());
