@@ -15,7 +15,7 @@ package gui.propertyeditors;
 
 import org.netbeans.junit.NbTestSuite;
 
-import gui.propertyeditors.utilities.PropertyEditorsSupport;
+import gui.propertyeditors.utilities.CoreSupport;
 
 import org.netbeans.jellytools.properties.editors.ClasspathCustomEditorOperator;
 import org.netbeans.jellytools.properties.editors.FileCustomEditorOperator;
@@ -56,7 +56,11 @@ public class PropertyType_NbClassPath extends PropertyEditorsTest {
     }
     
     public static NbTestSuite suite() {
-        String path = PropertyEditorsSupport.getSystemPath(PropertyEditorsSupport.Resources, PropertyEditorsSupport.beanName, "java");
+        
+        //TODO write new way for promoD
+        //String path = CoreSupport.getSystemPath("gui/data", CoreSupport.beanName, "java");
+        String path = ""; 
+        
         FS_Data_path = path.substring(0,path.lastIndexOf(System.getProperty("file.separator")));
         FS_Data_path_data_jar = FS_Data_path + System.getProperty("file.separator") + "data.jar";
         

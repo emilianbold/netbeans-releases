@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
 	    <patternset>
 		<include name="gui/propertyeditors/PropertyType_BooleanO.class"/>
 		<include name="gui/propertyeditors/PropertyType_ByteO.class"/>
-		<include name="gui/propertyeditors/PropertyType_Character.class"/>
+                <include name="gui/propertyeditors/PropertyType_Character.class"/>
 		<include name="gui/propertyeditors/PropertyType_Class.class"/>
 		<include name="gui/propertyeditors/PropertyType_DoubleO.class"/>
 		<include name="gui/propertyeditors/PropertyType_FloatO.class"/>
@@ -37,6 +37,7 @@ Microsystems, Inc. All Rights Reserved.
 		<include name="gui/propertyeditors/PropertyType_int.class"/>
 		<include name="gui/propertyeditors/PropertyType_long.class"/>
 		<include name="gui/propertyeditors/PropertyType_short.class"/>
+   
 	    </patternset>
 	</testset>
     </testbag>
@@ -46,14 +47,16 @@ Microsystems, Inc. All Rights Reserved.
 	    <patternset>
 		<include name="gui/propertyeditors/PropertyType_Color.class"/>
 		<include name="gui/propertyeditors/PropertyType_Dimension.class"/>
-		<include name="gui/propertyeditors/PropertyType_File.class"/>
-		<include name="gui/propertyeditors/PropertyType_Filesystem.class"/>
 		<include name="gui/propertyeditors/PropertyType_Font.class"/>
 		<include name="gui/propertyeditors/PropertyType_HTMLBrowser.class"/>
 		<include name="gui/propertyeditors/PropertyType_IndentEngine.class"/>
 		<include name="gui/propertyeditors/PropertyType_Insets.class"/>
+<!-- TODO write for new build system
+		<include name="gui/propertyeditors/PropertyType_File.class"/>
+		<include name="gui/propertyeditors/PropertyType_Filesystem.class"/>
 		<include name="gui/propertyeditors/PropertyType_NbClassPath.class"/>
 		<include name="gui/propertyeditors/PropertyType_NbProcessDescriptor.class"/>
+-->                
 		<include name="gui/propertyeditors/PropertyType_Point.class"/>
 		<include name="gui/propertyeditors/PropertyType_Properties.class"/>
 		<include name="gui/propertyeditors/PropertyType_Rectangle.class"/>

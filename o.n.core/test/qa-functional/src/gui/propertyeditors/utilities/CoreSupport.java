@@ -47,10 +47,10 @@ public class CoreSupport {
      * @param _extension file extension
      * @return finded file object or null
      */
-    public static FileObject findFileObject(String _package, String _name, String _extension) {
-        FileObject f = Repository.getDefault().find(_package, _name, _extension);
-        return f;
-    }
+//    public static FileObject findFileObject(String _package, String _name, String _extension) {
+//        FileObject f = Repository.getDefault().find(_package, _name, _extension);
+//        return f;
+//    }
     
     
     /** Find file system name.
@@ -59,7 +59,7 @@ public class CoreSupport {
      * @param fileExtension file extension
      * @throws FileStateInvalidException
      * @return  full FileSystem name  */
-    public static String getFS(String _package, String fileName, String fileExtension){
+/*    public static String getFS(String _package, String fileName, String fileExtension){
         FileObject f = findFileObject(_package, fileName, fileExtension);
         
         if(f==null)
@@ -90,7 +90,7 @@ public class CoreSupport {
         String fileSeparator = System.getProperty("file.separator");
         return getPath(packageName, fileName, fileExtension, fileSeparator)+ "." + fileExtension;
     }
-    
+*/    
     public static void writeExc(Exception exc, PrintStream err) {
         err.println("Test ERROR: ");
         exc.printStackTrace(err);

@@ -7,13 +7,13 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package gui.propertyeditors;
 
-import gui.propertyeditors.utilities.PropertyEditorsSupport;
+import gui.propertyeditors.utilities.CoreSupport;
 
 import org.netbeans.jellytools.properties.editors.FileCustomEditorOperator;
 
@@ -56,21 +56,33 @@ public class PropertyType_File extends PropertyEditorsTest {
     }
     
     public void testCustomizerOk() {
-        propertyValue_L = PropertyEditorsSupport.getSystemPath(PropertyEditorsSupport.Resources, "clear_JFrame", "java");
+        
+        //TODO write new way for promoD
+        //propertyValue_L = CoreSupport.getSystemPath("gui/data", "clear_JFrame", "java");
+        propertyValue_L = ""; 
+        
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = false;
         setByCustomizerOk(propertyName_L, true);
     }
     
     public void testCustomizerCancel(){
-        propertyValue_L = PropertyEditorsSupport.getSystemPath(PropertyEditorsSupport.Resources, "clear_Frame", "java");
+        
+        //TODO write new way for promoD
+        //propertyValue_L = CoreSupport.getSystemPath("gui/data", "clear_Frame", "java");
+        propertyValue_L = ""; 
+        
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = false;
         setByCustomizerCancel(propertyName_L, false);
     }
     
     public void testByInPlace(){
-        propertyValue_L = PropertyEditorsSupport.getSystemPath(PropertyEditorsSupport.Resources, PropertyEditorsSupport.beanName, "java");
+        
+        //TODO write new way for promoD
+        //propertyValue_L = CoreSupport.getSystemPath("gui/data", CoreSupport.beanName, "java");
+        propertyValue_L = ""; 
+        
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = false;
         setByInPlace(propertyName_L, propertyValue_L, true);

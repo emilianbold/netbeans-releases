@@ -13,8 +13,6 @@
 
 package gui.propertyeditors;
 
-import gui.propertyeditors.data.PropertiesTest;
-
 import java.io.PrintStream;
 import java.io.PrintWriter;
 

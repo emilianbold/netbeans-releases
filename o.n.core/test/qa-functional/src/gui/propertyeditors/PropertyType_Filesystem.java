@@ -7,19 +7,20 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package gui.propertyeditors;
 
+import gui.propertyeditors.utilities.CoreSupport;
+
+import org.netbeans.jellytools.properties.editors.FileCustomEditorOperator;
 import org.netbeans.jellytools.properties.editors.FilesystemCustomEditorOperator;
 
-import org.netbeans.junit.NbTestSuite;
-import gui.propertyeditors.utilities.PropertyEditorsSupport;
-import org.netbeans.jellytools.properties.editors.FileCustomEditorOperator;
 import org.netbeans.jemmy.EventTool;
 
+import org.netbeans.junit.NbTestSuite;
 
 
 /**
@@ -53,7 +54,11 @@ public class PropertyType_Filesystem extends PropertyEditorsTest {
     }
     
     public static NbTestSuite suite() {
-        String path = PropertyEditorsSupport.getSystemPath(PropertyEditorsSupport.Resources, PropertyEditorsSupport.beanName, "java");
+        
+        //TODO write new way for promoD
+        //String path = CoreSupport.getSystemPath("gui/data", CoreSupport.beanName, "java");
+        String path = ""; 
+        
         FS_Data_path = path.substring(0,path.lastIndexOf(System.getProperty("file.separator")));
         FS_Data_path_data_jar = FS_Data_path + System.getProperty("file.separator") + "data.jar";
         

@@ -13,7 +13,7 @@
 
 package gui.propertyeditors;
 
-import gui.propertyeditors.utilities.PropertyEditorsSupport;
+import gui.propertyeditors.utilities.CoreSupport;
 
 import org.netbeans.jellytools.properties.editors.ProcessDescriptorCustomEditorOperator;
 
@@ -48,7 +48,11 @@ public class PropertyType_NbProcessDescriptor extends PropertyEditorsTest {
     }
     
     public static NbTestSuite suite() {
-        String path = PropertyEditorsSupport.getSystemPath(PropertyEditorsSupport.Resources, PropertyEditorsSupport.beanName, "java");
+        
+        //TODO write new way for promoD
+        //String path = CoreSupport.getSystemPath("gui/data", CoreSupport.beanName, "java");
+        String path = ""; 
+        
         FS_Data_path = path.substring(0,path.lastIndexOf(System.getProperty("file.separator")));
         
         NbTestSuite suite = new NbTestSuite();
