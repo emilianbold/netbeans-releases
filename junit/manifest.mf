@@ -1,0 +1,18 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.junit/2
+OpenIDE-Module-Short-Description: Creates and executes tests suitable for JUnit framework.
+OpenIDE-Module-Specification-Version: 2.0.1
+OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
+OpenIDE-Module-Layer: org/netbeans/modules/junit/Layer.xml
+
+Name: org/netbeans/modules/junit/TestsAction.class
+OpenIDE-Module-Class: Action
+
+Name: org/netbeans/modules/junit/JUnitSettings.class
+OpenIDE-Module-Class: Option
+
+Name: org/netbeans/modules/junit/JUnitIntExecutor.class
+OpenIDE-Module-Class: Service
+
+Name: org/netbeans/modules/junit/JUnitExExecutor.class
+OpenIDE-Module-Class: Service
