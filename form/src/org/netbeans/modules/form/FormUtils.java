@@ -560,23 +560,29 @@ public class FormUtils
             return ((Boolean)registered).booleanValue();
 
         // not registered
-        boolean isContainer;
-        if (!canBeContainer(beanClass))
-            isContainer = false;
-        else { // find "isContainer" attribute in BeanDescriptor
-            Object isContainerValue = null;
-            try {
-                BeanDescriptor desc = Utilities.getBeanInfo(beanClass)
-                                                  .getBeanDescriptor();
-                if (desc != null)
-                   isContainerValue = desc.getValue("isContainer"); // NOI18N
+        int containerStatus = canBeContainer(beanClass);
+        if (containerStatus == -1) { // "isContainer" attribute not specified
+            containerStatus = 1;
+            Class cls = beanClass.getSuperclass();
+            while (cls != null
+                   && !cls.equals(java.awt.Container.class))
+            {
+                String beanClassName = cls.getName();
+                int i;
+                for (i=0; i < forbiddenContainers.length; i++)
+                    if (beanClassName.equals(forbiddenContainers[i]))
+                        break; // superclass cannot be container
+
+                if (i < forbiddenContainers.length) {
+                    containerStatus = 0;
+                    break;
+                }
+
+                cls = cls.getSuperclass();
             }
-            catch (IntrospectionException ex) { // ignore
-                ex.printStackTrace();
-            }
-            isContainer = isContainerValue instanceof Boolean ?
-                          ((Boolean)isContainerValue).booleanValue() : true;
         }
+
+        boolean isContainer = containerStatus == 1;
 
         if (beanClass.getName().startsWith("javax.swing.")) // NOI18N
             setIsContainer(beanClass, isContainer);
@@ -584,15 +590,20 @@ public class FormUtils
         return isContainer;
     }
 
-    public static boolean canBeContainer(Class beanClass) {
+    /** @return 1 if the class is explicitly specified as container in BeanInfo;
+     *          0 if the class is explicitly enumerated in forbiddenContainers
+     *          or specified as non-container in its BeanInfo;
+     *          -1 if the class is not forbidden nor specified in BeanInfo at all
+     */
+    public static int canBeContainer(Class beanClass) {
         if (beanClass == null
                 || !java.awt.Container.class.isAssignableFrom(beanClass))
-            return false;
+            return 0;
 
         String beanClassName = beanClass.getName();
         for (int i=0; i < forbiddenContainers.length; i++)
             if (beanClassName.equals(forbiddenContainers[i]))
-                return false;
+                return 0; // cannot be container
 
         Object isContainerValue = null;
         try {
@@ -604,8 +615,10 @@ public class FormUtils
         catch (IntrospectionException ex) { // ignore
             ex.printStackTrace();
         }
-        return isContainerValue instanceof Boolean ?
-                 ((Boolean)isContainerValue).booleanValue() : true;
+
+        if (isContainerValue instanceof Boolean)
+            return ((Boolean)isContainerValue).booleanValue() ? 1 : 0;
+        return -1; // "isContainer" attribute not specified
     }
 
     public static void setIsContainer(Class beanClass, boolean isContainer) {
