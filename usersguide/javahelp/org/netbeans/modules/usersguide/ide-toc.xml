@@ -78,7 +78,7 @@
      <tocitem text="Searching for a File by Text in the File" target="search.text" />
      <tocitem text="Searching for a File by Type" target="search.filetype" />
      <tocitem text="Searching for a File by Date" target="search.date" />
-     <tocitem text="Searching for a File by CVS Status" target="search.status" />
+     <tocitem text="Searching for a File by VCS Status" target="search.status" />
      <tocitem text="Searching With a Combination of Criteria" target="search.combo" />
      <tocitem text="Saving and Reusing Search Criteria" target="search.predefine" />
      <tocitem text="Modifying Existing Search Criteria" target="search.modify" />
