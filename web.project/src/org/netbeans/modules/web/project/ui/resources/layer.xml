@@ -58,7 +58,11 @@ Microsystems, Inc. All Rights Reserved.
                   <file name="OpenAction.instance">
                     <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction" />
                   </file>
-                  <attr boolvalue="true" name="OpenAction.instance/jsp-project-separator-1.instance" />
+                  <attr boolvalue="true" name="OpenAction.instance/EditServletAction.instance" />
+                  <file name="EditServletAction.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.jsploader.EditServletAction" />
+                  </file>
+                  <attr boolvalue="true" name="EditServletAction.instance/jsp-project-separator-1.instance" />
                   <file name="jsp-project-separator-1.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
                   </file>
