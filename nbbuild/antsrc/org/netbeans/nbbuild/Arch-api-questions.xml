@@ -234,11 +234,11 @@
             If there is a property that can change the behaviour of your 
             code, somebody will likely use it. You should describe what it does 
             and the stability category of this API. You may use
-            <PRE>
+            <pre>
                 &lt;property name="id" category="private" &gt;
                     description of the property, where it is used, what it influence, etc.
                 &lt;/property&gt;            
-            </PRE>
+            </pre>
             </hint>
         </question>
         

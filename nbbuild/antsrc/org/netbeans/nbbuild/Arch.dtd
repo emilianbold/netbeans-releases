@@ -1,0 +1,83 @@
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!--
+Public ID: "-//NetBeans//DTD Arch Answers//EN"
+Describes format of NetBeans Architecture Answers file
+-->
+
+<!-- overriding values of misc.inline to our special tags that 
+     can occur in HTML
+-->
+<!ENTITY % misc.inline "api | property">
+<!ENTITY % xhtml PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "../../../../../libs/external/dtds/xhtml1-20020801/DTD/xhtml1-strict.dtd">
+<!-- Now include normal XHTML DTD: -->
+%xhtml;
+
+<!-- stability categories -->
+<!ENTITY % category "(official|stable|devel|third|standard|friend|private)">
+
+<!--
+Document element.
+-->
+<!ELEMENT api-answers (api-questions, answer*) >
+<!ATTLIST api-answers
+          version CDATA #REQUIRED
+          date CDATA #REQUIRED
+          question-version CDATA #REQUIRED
+          module CDATA #REQUIRED
+          author CDATA #REQUIRED
+>
+
+<!--
+HTML contents of the document, with substitutions.
+-->
+<!ELEMENT answer %Flow; >
+<!ATTLIST answer
+          id ID #REQUIRED
+>
+
+<!ELEMENT api EMPTY >
+<!ATTLIST api
+          name CDATA #REQUIRED
+          type (import|export) #REQUIRED
+          category %category; #REQUIRED
+          url CDATA #REQUIRED
+>
+
+<!ELEMENT property %Flow; >
+<!ATTLIST property
+          name CDATA #REQUIRED
+          category %category; #REQUIRED
+>
+
+<!-- now the content of included questions file -->
+
+<!ELEMENT api-questions ( category )* >
+<!ATTLIST api-questions
+          version CDATA #REQUIRED
+          date CDATA #IMPLIED
+>
+
+<!ELEMENT category ( question )* >
+<!ATTLIST category
+          name CDATA #REQUIRED
+          id CDATA #REQUIRED
+>
+
+<!ELEMENT question (#PCDATA | %inline; | hint)* >
+<!ATTLIST question
+          id CDATA #REQUIRED
+>
+
+<!ELEMENT hint %Flow; >

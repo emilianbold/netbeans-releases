@@ -77,7 +77,10 @@ public class Arch extends Task implements org.xml.sax.EntityResolver {
         
         org.w3c.dom.Document q;
         try {
-            javax.xml.parsers.DocumentBuilder builder = javax.xml.parsers.DocumentBuilderFactory.newInstance ().newDocumentBuilder();
+            javax.xml.parsers.DocumentBuilderFactory factory = javax.xml.parsers.DocumentBuilderFactory.newInstance ();
+            factory.setValidating(false);
+            
+            javax.xml.parsers.DocumentBuilder builder = factory.newDocumentBuilder();
             builder.setEntityResolver(this);
 
             if (generateTemplate) {
@@ -227,12 +230,37 @@ public class Arch extends Task implements org.xml.sax.EntityResolver {
         }
     }
     
+    private static String findNbRoot (File f) {
+        StringBuffer result = new StringBuffer ();
+        f = f.getParentFile();
+        
+        while (f != null) {
+            File x = new File (f, 
+                "nbbuild" + File.separatorChar + 
+                "antsrc" + File.separatorChar + 
+                "org" + File.separatorChar + 
+                "netbeans" + File.separatorChar +
+                "nbbuild" + File.separatorChar +
+                "Arch.dtd"
+            );
+            if (x.exists ()) {
+                return result.toString();
+            }
+            result.append ("..");
+            result.append (File.separatorChar);
+            f = f.getParentFile();
+        }
+        return "${nbroot}/";
+    }
+    
     private void generateTemplateFile (String versionOfQuestions, Set missing) throws IOException {
+        String nbRoot = findNbRoot (questionsFile);
+        
         Writer w = new FileWriter (questionsFile);
         
         w.write ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-        w.write ("<!DOCTYPE api-answers [\n");
-        w.write ("  <!ENTITY api-questions SYSTEM \"api-questions.xml\">\n");
+        w.write ("<!DOCTYPE api-answers PUBLIC \"-//NetBeans//DTD Arch Answers//EN\" \""); w.write (nbRoot); w.write ("nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd\" [\n");
+        w.write ("  <!ENTITY api-questions SYSTEM \""); w.write (nbRoot); w.write ("nbbuild/antsrc/org/netbeans/nbbuild/Arch-api-questions.xml\">\n");
         w.write ("]>\n");
         w.write ("\n");
         w.write ("<api-answers\n");
@@ -283,6 +311,9 @@ public class Arch extends Task implements org.xml.sax.EntityResolver {
     throws org.xml.sax.SAXException, IOException {
         if (systemId != null && systemId.endsWith ("api-questions.xml")) {
             return new org.xml.sax.InputSource (getClass ().getResourceAsStream("Arch-api-questions.xml"));
+        }
+        if (systemId != null && systemId.endsWith ("Arch.dtd")) {
+            return new org.xml.sax.InputSource (getClass ().getResourceAsStream("Arch.dtd"));
         }
         System.out.println("resolve: " + publicId);
         System.out.println("      s: " + systemId);
