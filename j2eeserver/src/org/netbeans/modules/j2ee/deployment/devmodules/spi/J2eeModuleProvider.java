@@ -226,6 +226,7 @@ public abstract class J2eeModuleProvider {
 
     public final FileObject[] getConfigurationFiles(boolean refresh) {
         if (refresh) {
+            fcl.stopListening();
             fcl = null;
         }
         addFCL();
