@@ -88,7 +88,9 @@ public abstract class NbTopManager extends TopManager {
 
     /** stores main shortcut context*/
     private Keymap shortcutContext;
-    
+
+    /** the lookup that delegates to top manager's methods */
+    private static org.netbeans.core.lookup.TMLookup tmLookup;
     /** dynamic lookup service for this top mangager */
     private org.netbeans.core.lookup.InstanceLookup instanceLookup;
     /** main lookup service of the system */
@@ -286,10 +288,10 @@ public abstract class NbTopManager extends TopManager {
             if (lookup != null) {
                 return lookup;
             }
+            
             lookup = new org.netbeans.core.lookup.ProxyLookup (
-                new org.openide.util.Lookup[] {
-                    new org.netbeans.core.lookup.TMLookup ()
-                }
+                // XXX: pair method with YYY few lines bellow
+                proxiedLookups ()
             );
             return lookup;
         }
@@ -302,14 +304,40 @@ public abstract class NbTopManager extends TopManager {
         // replace the lookup by new one
 
         org.netbeans.core.lookup.ProxyLookup pl = (org.netbeans.core.lookup.ProxyLookup)lookup;
-        pl.setLookups (
-            new org.openide.util.Lookup[] {
-                new org.netbeans.core.lookup.TMLookup (),
+        
+        // YYY: pair method with XXX few lines above
+        org.openide.util.Lookup[] arr = proxiedLookups ();
+        if (pl != null) {
+            pl.setLookups (arr);
+        }
+    }
+    
+    /** Initializes the top manager lookup and also returns the array 
+     * of lookups we should delegate to.
+     */
+    private org.openide.util.Lookup[] proxiedLookups () {
+        boolean force;
+        
+        // second call to this method will initialize all objects correctly
+        if (tmLookup == null) {
+            // first time initialization
+            tmLookup = new org.netbeans.core.lookup.TMLookup ();
+            force = false;
+        } else {
+            force = true;
+        }
+        
+        if (force) {
+            // either we are asked to create all known lookups or 
+            return new org.openide.util.Lookup[] {
+                tmLookup,
                 getInstanceLookup (),
                 new org.netbeans.core.lookup.FolderLookup ("Services").getLookup () // NOI18N
-            }
-        );
-    }
+            };
+        } else {
+            return new org.openide.util.Lookup[] { tmLookup };
+        }
+    }   
     
     //
     // Implementation of methods from TopManager
