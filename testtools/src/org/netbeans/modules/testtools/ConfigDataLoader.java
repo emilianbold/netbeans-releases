@@ -21,6 +21,7 @@ package org.netbeans.modules.testtools;
 
 import java.awt.Component;
 import java.awt.Image;
+import java.beans.SimpleBeanInfo;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -144,6 +145,20 @@ public class ConfigDataLoader extends UniFileLoader {
         
         public Component getCustomizer() {
             return new JLabel("Ahoj");
+/*
+        XMLDataObject dob=(XMLDataObject)DataObject.find(Repository.getDefault().findResource("cfg-qa-functional.xml"));
+        Document doc=dob.getDocument();
+        Document doc2=dob.getDocument();
+        doc.getDocumentElement().setAttribute("ahoj","cau");
+        EditorCookie cookie=(EditorCookie)dob.getCookie(EditorCookie.class);
+        StringWriter sw=new StringWriter();
+        XMLSerializer ser=new XMLSerializer(sw, new OutputFormat("xml","UTF-8",true));
+        ser.serialize(doc);
+        sw.close();
+        StyledDocument stdoc=cookie.openDocument();
+        stdoc.remove(0, stdoc.getLength());
+        stdoc.insertString(0, sw.toString(), null);
+*/
         }
 
         public HelpCtx getHelpCtx() {
