@@ -17,7 +17,7 @@ Microsystems, Inc. All Rights Reserved.
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
 
   <property name="binroot" location="../../nbextra"/>
-  <property name="xtest.extra.home" location="${binroot}/xtest"/>
+  <property name="junit.framework.jar" location="${binroot}/junit/release/modules/ext/junit.jar"/>
 
   <property name="build.compiler.deprecation" value="off"/>
   <property name="build.compiler.debug" value="off"/>  
@@ -26,19 +26,20 @@ Microsystems, Inc. All Rights Reserved.
   <property name="junit.license.file" location="ibm-public-license.txt"/>
 
   <target name="compile-junit-extensions">
+    <echo message="junit framework is set to ${junit.framework.jar}"/>
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <include name="org/netbeans/junit/**"/>
       <classpath>
         <!-- Since junit.jar is not included in extra binaries, use the one in xtest dir -->
 	<!-- <pathelement location="${binroot}/junit/release/lib/ext/junit.jar"/> -->
-	<pathelement location="${xtest.extra.home}/lib/junit.jar"/>
+	<pathelement location="${junit.framework.jar}"/>
       </classpath>
     </javac>
   </target>
 
   <target name="jar-junit-extensions" depends="compile-junit-extensions">
-      <mkdir dir="netbeans/lib/ext"/>
-      <jar jarfile="netbeans/lib/ext/junit-ext.jar"
+      <mkdir dir="netbeans/modules/ext"/>
+      <jar jarfile="netbeans/modules/ext/junit-ext.jar"
             basedir="src"
             excludesfile="../nbbuild/standard-jar-excludes.txt"
             compress="false"
@@ -51,7 +52,7 @@ Microsystems, Inc. All Rights Reserved.
         <include name="org/netbeans/junit/**/*.class"/>
       </fileset>
     </delete>
-    <delete file="netbeans/lib/ext/junit-ext.jar"/>
+    <delete file="netbeans/lib/modules/junit-ext.jar"/>
   </target>
 
  <target name="javadoc-junit-extensions">
@@ -61,7 +62,7 @@ Microsystems, Inc. All Rights Reserved.
 	       destdir="javadoc/nbjunit-api"
 	       windowtitle="NetBeans extensions to JUnit"
 	       doctitle="NetBeans extensions to JUnit"
-	       classpath="${binroot}/junit/release/lib/ext/junit.jar"
+	       classpath="${junit.framework.jar}"
       />  
       <mkdir dir="netbeans/docs"/>
       <zip zipfile="netbeans/docs/nbjunit-api.zip"
@@ -84,7 +85,7 @@ Microsystems, Inc. All Rights Reserved.
         <fileset dir="../openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
-	<pathelement location="${binroot}/junit/release/lib/ext/junit.jar"/>
+	<pathelement location="${junit.framework.jar}"/>
       </classpath>
     </javac>
   </target>
@@ -103,9 +104,17 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="javahelp">
+  	<!--
     <copy todir="netbeans/docs">
       <fileset dir="javahelp"/>
     </copy>
+    -->
+    <mkdir dir="netbeans/modules/docs"/>
+    <jar jarfile="netbeans/modules/docs/junit-module-help.jar"
+    	basedir="javahelp"
+    	excludesfile="../nbbuild/standard-jar-excludes.txt">
+    </jar>
+    
   </target>
 
   <target name="release">
@@ -114,7 +123,7 @@ Microsystems, Inc. All Rights Reserved.
     </copy>
   </target>
 
-  <target name="netbeans" depends="jars,jar-junit-extensions,javadoc-junit-extensions,javahelp,release"/>
+  <target name="netbeans" depends="jar-junit-extensions,jars,javadoc-junit-extensions,javahelp,release"/>
 
   <target name="nbm" depends="netbeans">
     <makenbm file="junit.nbm"
@@ -146,7 +155,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="clean-junit-ext">
-    <delete file="netbeans/lib/ext/junit-ext.jar"/>
+    <delete file="netbeans/modules/ext/junit-ext.jar"/>
     <delete>
       <fileset dir="src">
         <include name="org/netbeans/junit/**/*.class"/>
@@ -155,7 +164,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="test" depends="netbeans">
-    <ant dir="tst/function"/>
+    <ant dir="test/function"/>
   </target>
 
 </project>
