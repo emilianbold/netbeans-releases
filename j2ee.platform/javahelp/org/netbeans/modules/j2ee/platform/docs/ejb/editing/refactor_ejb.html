@@ -1,0 +1,76 @@
+ 
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2005 Sun Microsystems, Inc. 
+ * All rights reserved.
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Refactoring an Enterprise Bean</title> 
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+
+</head>
+<body>
+<h2>Refactoring an Enterprise Bean</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>Refactoring is especially useful in EJB modules, since changing the name of 
+  one method often means you have to update the name in all of the related interfaces, 
+  deployment descriptors, and dependent classes and servlets. </p>
+<p><b>To refactor an EJB module, do any of the following:</b></p>
+<ul>
+  <li>Right-click a piece of code in the Source Editor and choose from the Refactor 
+    submenu in the contextual menu.</li>
+  <li>Right-click a node in the Projects window, such as a Local Methods node 
+    or a CMP Fields node, and choose from the Refactoring menu.</li>
+  <li>Rename parts of an enterprise bean in the <tt>ejb-jar.xml</tt> deployment 
+    descriptor. For example, in the Enterprise Bean Implementation and Interfaces 
+    section, you can use the Rename Class and Move Class buttons to refactor an 
+    enterprise bean's bean class and interfaces. To open <tt>ejb-jar.xml</tt>, 
+    expand the project's Configuration Files node in the Projects window and double-click 
+    <tt>ejb-jar.xml</tt>. </li>
+</ul>
+<p><b>Notes:</b></p>
+<ul>
+  <li>You cannot move an enterprise bean or any of its classes and interfaces 
+    to a different project. The Move Class command only lets you move bean classes 
+    and interfaces to different packages in the same EJB module.</li>
+  <li>You cannot rename mandatory EJB infrastructure methods such as <tt>ejbCreate</tt>.</li>
+  <li>In CMP entity beans, when you rename a finder method or select method, the 
+    IDE updates the query element and statement in the deployment descriptor. 
+    For finder methods, the IDE also updates the method name in the home interfaces.</li>
+  <li>When you rename a CMP field in a CMP entity bean, the IDE updates the <tt>cmp-field</tt> 
+    element and the names of the get and set methods in the bean class. When you 
+    rename a CMR field, the IDE also updates the <tt>cmr-field</tt> entity.</li>
+  <li>In CMP entity beans, you cannot run the Encapsulate Field command on a field 
+    that is registered as the bean's primary key.</li>
+  <li>When you rename a Web service endpoint interface, the IDE updates the corresponding 
+    WSDL file.</li>
+</ul>
+<table border="0">
+  <tr><th colspan="2" align="left" ><a name="seealso">See Also</a></th>
+  </tr>
+  <tr valign="top" > 
+    <td width="23px" nowrap>&nbsp;</td>
+    <td nowrap> <a href="nbdocs://org/netbeans/modules/usersguide/refactor/aboutRefactoring.html">About 
+      Refactoring</a><br>
+      <a href="define_finder_method.html">Defining a Finder Method</a><br>
+      <a href="define_select_method.html">Defining a Select Method</a><br>
+      <a href="define_cmp_field.html">Defining a CMP Field</a><br>
+      <a href="../configuring/config_ejb_dd.html">Configuring EJB Deployment Descriptors</a> 
+    </td>
+  </tr>
+</table>
+ 
+<hr>
+<small> <a href="../../credits.html">Legal Notices</a></small> 
+<table cellpadding="150" border="0"> 
+   <tr><td>&nbsp;</td></tr> 
+   <tr><td>&nbsp;</td></tr> 
+   <tr><td>&nbsp;</td></tr> 
+   </table> 
+</body>
+
+</html>
