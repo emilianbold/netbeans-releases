@@ -752,26 +752,37 @@ public class BundleEditPanel extends JPanel {
 
             PropertiesTableModel.StringPair sp = (PropertiesTableModel.StringPair)value;
 
-            JLabel label = (JLabel)super.getTableCellRendererComponent(table, sp, isSelected, hasFocus, row, column);
-            label.setText(sp.getValue() == null ? "" : UtilConvert.unicodesToChars(sp.toString())); // NOI18N
+            setFont(table.getFont());
+            
+            if(hasFocus)
+                setBorder(UIManager.getBorder("Table.focusCellHighlightBorder") ); // NOI18N
+            else
+                setBorder(noFocusBorder);
+            
+            setText(sp.getValue() == null ? "" : UtilConvert.unicodesToChars(sp.toString())); // NOI18N
 
             // Set background color.
             if(sp.isKeyType())
-                label.setBackground(settings.getKeyBackground());
+                setBackground(settings.getKeyBackground());
             else {
                 if( sp.getValue() != null)
-                    label.setBackground(settings.getValueBackground());
+                    setBackground(settings.getValueBackground());
                 else
-                    label.setBackground(settings.getShadowColor());
+                    setBackground(settings.getShadowColor());
             }
 
             // Set foregound color.
             if(sp.isKeyType())
-                label.setForeground(settings.getKeyColor());
+                setForeground(settings.getKeyColor());
             else
-                label.setForeground(settings.getValueColor());
+                setForeground(settings.getValueColor());
+            
+            // Optimization to avoid painting background if is the same like table's.
+            Color back = getBackground();
+            boolean colorMatch = (back != null) && (back.equals(table.getBackground()) ) && table.isOpaque();
+            setOpaque(!colorMatch);
 
-            return label;
+            return this;
         }
 
         /** Overrides superclass method. It adds the highlighting of search occurences in it. */
