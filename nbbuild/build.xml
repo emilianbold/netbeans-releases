@@ -98,9 +98,9 @@ workspaceswitcher
       <!-- [PENDING] A poor name; 'standard' would be more in line with the CVS pseudomodule. -->
       <config name="stable" modules="ant,apisupport/lite,applet,autoupdate,beans,classfile,clazz,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,httpserver/servletapi,i18n,image,j2eeserver,jarpackager,java,javacvs,javadoc,jndi,openidex,projects,properties,rmi,scripting,text,tomcatint/tomcat32,usersguide,utilities,vcscore,vcscvs/compat,vcsgeneric,web/servletapi23,web/core,web/jspparser,web/jspsyntax,xml/tax,xml/core,xml/catalog,xml/tools,xml/text-edit,xml/tree-edit,xml/css"/>
       <config name="stable-with-apisupport" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,clazz,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,httpserver/servletapi,i18n,image,j2eeserver,jarpackager,java,javacvs,javadoc,jndi,openidex,projects,properties,rmi,scripting,text,tomcatint/tomcat32,usersguide,utilities,vcscore,vcscvs/compat,vcsgeneric,web/servletapi23,web/core,web/jspparser,web/jspsyntax,xml/tax,xml/core,xml/catalog,xml/tools,xml/text-edit,xml/tree-edit,xml/css"/>
-      <config name="bloated" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,clazz,cpp,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,externaleditor,form,freestylebrowser,html,httpserver,httpserver/servletapi,i18n,icebrowser,image,innertesters,j2eeserver,jarpackager,java,javacvs,javadoc,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,scripting,serialversion,sysprops,text,tomcatint/tomcat32,usersguide,utilities,vcscore,vcscvs,vcscvs/compat,vcsgeneric,web/servletapi23,web/core,web/jspparser,web/jspsyntax,xml/tax,xml/core,xml/catalog,xml/tools,xml/text-edit,xml/tree-edit,xml/css"/>
+      <config name="bloated" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,classclosure,clazz,cpp,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,externaleditor,form,freestylebrowser,html,httpserver,httpserver/servletapi,i18n,icebrowser,image,innertesters,j2eeserver,jarpackager,java,javacvs,javadoc,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,schema2beans,scripting,serialversion,sysprops,text,tomcatint/tomcat32,usersguide,utilities,vcscore,vcscvs,vcscvs/compat,vcsgeneric,web/servletapi23,web/core,web/jspparser,web/jspsyntax,web/jspdebug,web/advanced,xml/tax,xml/core,xml/catalog,xml/tools,xml/text-edit,xml/tree-edit,xml/css"/>
       <!-- You are on your own for getting the binaries for some of these: -->
-      <config name="bloated-plus-extrabins" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,clazz,cpp,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,externaleditor,form,freestylebrowser,html,httpserver,httpserver/servletapi,i18n,icebrowser,image,innertesters,j2eeserver,jarpackager,java,javacvs,javadoc,jini,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,scripting,serialversion,sysprops,text,tomcatint/tomcat32,usersguide,utilities,vcscore,vcscvs,vcscvs/compat,vcsgeneric,web/servletapi23,web/core,web/jspparser,web/jspsyntax,xml/tax,xml/core,xml/catalog,xml/tools,xml/text-edit,xml/tree-edit,xml/css"/>
+      <config name="bloated-plus-extrabins" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,classclosure,clazz,cpp,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,externaleditor,form,freestylebrowser,html,httpserver,httpserver/servletapi,i18n,icebrowser,image,innertesters,j2eeserver,jarpackager,java,javacvs,javadoc,jini,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,schema2beans,scripting,serialversion,sysprops,text,tomcatint/tomcat32,usersguide,utilities,vcscore,vcscvs,vcscvs/compat,vcsgeneric,web/servletapi23,web/core,web/jspparser,web/jspsyntax,web/jspdebug,web/advanced,xml/tax,xml/core,xml/catalog,xml/tools,xml/text-edit,xml/tree-edit,xml/css"/>
     </configmods>
   </target>
 
@@ -150,6 +150,10 @@ workspaceswitcher
   <target name="all-classfile" depends="all-openide">
     <echo message="Building module classfile..."/>
     <ant dir="../classfile" target="netbeans"/>
+  </target>
+  <target name="all-classclosure" depends="all-openide,all-classfile,all-logger">
+    <echo message="Building module classclosure..."/>
+    <ant dir="../classclosure" target="netbeans"/>
   </target>
   <target name="all-clazz" depends="all-openide,all-classfile">
     <echo message="Building module clazz..."/>
@@ -299,6 +303,10 @@ workspaceswitcher
     <echo message="Building module rmi..."/>
     <ant dir="../rmi" target="netbeans"/>
   </target>
+  <target name="all-schema2beans" depends="all-openide">
+    <echo message="Building module schema2beans..."/>
+    <ant dir="../schema2beans" target="netbeans"/>
+  </target>
   <!-- XXX illegal dependence on core! -->
   <target name="all-scripting" depends="all-openide,all-openidex,all-core">
     <echo message="Building module scripting..."/>
@@ -357,7 +365,7 @@ workspaceswitcher
     <ant dir="../web/servletapi23" target="netbeans"/>
   </target>
   <!-- XXX illegal dependence on core! -->
-  <target name="all-web/core" depends="all-openide,all-java,all-core,all-editor,all-j2eeserver,all-html,all-httpserver,all-jarpackager,all-debuggercore">
+  <target name="all-web/core" depends="all-openide,all-java,all-core,all-editor,all-j2eeserver,all-html,all-httpserver,all-jarpackager,all-debuggercore,all-openidex">
     <echo message="Building module web/core..."/>
     <ant dir="../web/core" target="netbeans"/>
   </target>
@@ -368,6 +376,14 @@ workspaceswitcher
   <target name="all-web/jspsyntax" depends="all-web/core">
     <echo message="Building module web/jspsyntax..."/>
     <ant dir="../web/jspsyntax" target="netbeans"/>
+  </target>
+  <target name="all-web/jspdebug" depends="all-web/core">
+    <echo message="Building module web/jspdebug..."/>
+    <ant dir="../web/jspdebug" target="netbeans"/>
+  </target>
+  <target name="all-web/advanced" depends="all-web/core,all-web/jspsyntax,all-jarpackager,all-debuggercore,all-xml/text-edit,all-xml/catalog,all-j2eeserver,all-schema2beans,all-classclosure,all-html,all-openidex">
+    <echo message="Building module web/advanced..."/>
+    <ant dir="../web/advanced" target="netbeans"/>
   </target>
   <target name="all-cpplite" depends="all-openide,all-editor,all-java">
     <echo message="Building module cpplite..."/>
