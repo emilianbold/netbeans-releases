@@ -381,8 +381,11 @@ public class AntTargetNode extends ElementNode implements ChangeListener {
             final JComboBox combo = new javax.swing.JComboBox(names.toArray ());
             combo.getAccessibleContext().setAccessibleName(NbBundle.getMessage (AntTargetNode.class, "ACSN_choose_task_combo"));
             combo.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (AntTargetNode.class, "ACSD_choose_task_combo"));
+            jLabel1.setDisplayedMnemonic((NbBundle.getMessage(AntTargetNode.class, "LBL_choose_task_mnem")).charAt(0));
+            jLabel1.setLabelFor(combo);
 
             help.setText(NbBundle.getMessage(AntTargetNode.class, "LBL_task_help"));
+            help.setMnemonic((NbBundle.getMessage(AntTargetNode.class, "LBL_task_help_mnem")).charAt(0));
             jLabel1.setFont(new java.awt.Font("Arial", 0, 11));
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
