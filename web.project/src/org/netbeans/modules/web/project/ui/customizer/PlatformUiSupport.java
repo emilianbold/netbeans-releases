@@ -96,9 +96,30 @@ public class PlatformUiSupport {
                 }
             }
             else {
-                if (explicitPlatformNodes.getLength()==0) {
-                    Element explicitPlatform = root.getOwnerDocument().createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "explicit-platform"); //NOI18N
-                    root.appendChild(explicitPlatform);
+                Element explicitPlatform;
+                
+                switch (explicitPlatformNodes.getLength()) {
+                    case 0:
+                        explicitPlatform = root.getOwnerDocument().createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "explicit-platform"); //NOI18N
+                        root.appendChild(explicitPlatform);
+                        changed = true;
+                        break;
+                    case 1:
+                        explicitPlatform = (Element)explicitPlatformNodes.item(0);
+                        break;
+                    default:
+                        throw new AssertionError("Broken project.xml file"); // NOI18N
+                }
+                SpecificationVersion jdk13 = new SpecificationVersion("1.3"); // NOI18N
+                String explicitSourceAttrValue = explicitPlatform.getAttribute("explicit-source-supported"); // NOI18N
+                if (jdk13.compareTo(platform.getSpecification().getVersion())>=0 &&
+                    "true".equals(explicitSourceAttrValue)) {   //NOI18N
+                    explicitPlatform.setAttribute("explicit-source-supported","false"); //NOI18N
+                    changed = true;
+                }
+                else if (jdk13.compareTo(platform.getSpecification().getVersion())<0 &&
+                    !"true".equals(explicitSourceAttrValue)) {  //NOI18N
+                    explicitPlatform.setAttribute("explicit-source-supported","true"); //NOI18N
                     changed = true;
                 }
                 if (sourceLevel == null) {
