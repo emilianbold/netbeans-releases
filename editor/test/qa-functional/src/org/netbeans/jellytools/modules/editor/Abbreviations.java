@@ -9,7 +9,9 @@ import java.util.*;
 import javax.swing.table.TableModel;
 import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
+import org.netbeans.jellytools.properties.PropertySheetTabOperator;
 import org.netbeans.jellytools.properties.TextFieldProperty;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.*;
 
 /** Class implementing all necessary methods for handling "Abbreviations" NbDialog.
@@ -264,8 +266,10 @@ public class Abbreviations extends JDialogOperator {
         options.selectOption(ResourceBundle.getBundle("org/netbeans/core/Bundle").getString("UI/Services/Editing")+
         "|"+ResourceBundle.getBundle("org/netbeans/modules/editor/options/Bundle").getString("OPTIONS_all")+
         "|" + editorName);
+        new EventTool().waitNoEvent(500);
         PropertySheetOperator property = new PropertySheetOperator(options);
-        new TextFieldProperty(property,ResourceBundle.getBundle("org/netbeans/modules/editor/options/Bundle").getString("PROP_Abbreviations")).openEditor();
+        PropertySheetTabOperator psto = new PropertySheetTabOperator(property);
+        new TextFieldProperty(psto,ResourceBundle.getBundle("org/netbeans/modules/editor/options/Bundle").getString("PROP_Abbreviations")).openEditor();
         
         Abbreviations abbs = new Abbreviations();
         
@@ -319,7 +323,7 @@ public class Abbreviations extends JDialogOperator {
 /*        EnterAbbreviation enter = new EnterAbbreviation();
         enter.fillAbbreviation("En","Enumeration");
         enter.btOK();
-  */      
+ */
         
         try {
             //java.io.PrintWriter pw= new java.io.PrintWriter(new java.io.FileWriter("/tmp/abbrevs.java"));

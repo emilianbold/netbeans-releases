@@ -310,7 +310,7 @@ public class KeyBindings extends JDialogOperator {
      */
     public static void main(String args[]) {
         //repeating test
-        /*String[] names=new String[] {"Plain Editor","HTML Editor","Java Editor"};
+        String[] names=new String[] {"Plain Editor","HTML Editor","Java Editor"};
         List list;
         for (int j=0;j < 20;j++) {
          
@@ -318,8 +318,8 @@ public class KeyBindings extends JDialogOperator {
                 list = KeyBindings.listActions(names[i]);
                 System.out.println("step "+j+" output size="+list.size());
             }
-        }*/
-        
+        }
+        /*
         String name="Java Editor";
         Hashtable table;
         table = KeyBindings.listAllKeyBindings(name);
@@ -340,7 +340,7 @@ public class KeyBindings extends JDialogOperator {
             pw.close();
         } catch (Exception ex) {
             ex.printStackTrace();
-        }
+        }*/
     }
 }
 
