@@ -120,6 +120,7 @@ public class JPDASupport implements DebuggerManagerListener {
         if (debugger == null) throw new DebuggerStartException("JPDA debugger was not started");
         debugger.addPropertyChangeListener(this);
 
+        waitDebuggerListens();
         process = launchVM(mainClass, localhostAddres, false);
         pio = new ProcessIO(process);
         pio.go();
@@ -128,6 +129,10 @@ public class JPDASupport implements DebuggerManagerListener {
             waitDebuggerStarted();
             if (verbose) System.out.println("JPDA SUPPORT STOPPED IN " + debugger.getCurrentCallStackFrame().getMethodName() + " LINE: " + debugger.getCurrentCallStackFrame().getLineNumber(null));
         }
+    }
+
+    private void waitDebuggerListens() {
+        try { Thread.sleep(300); } catch (InterruptedException e) {}
     }
 
     private void addMainMethodBreakpoint(String mainClass) {
