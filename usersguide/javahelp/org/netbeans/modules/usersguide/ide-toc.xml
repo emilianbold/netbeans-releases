@@ -361,9 +361,9 @@
 
 <tocitem text="Developing Web Applications"> 	
   <tocitem text="Applets" >
-          <tocitem text="Adding an Existing Applet" target="webmod_addcompapplet"/>
 	  <tocitem text="Creating an Applet" target="webmod_addapplet"/>
 	  <tocitem text="Running an Applet" target="webmod_runapplet"/>
+          <tocitem text="Packaging an Applet" target="webmod_addcompapplet"/>
   </tocitem> <!-- Working With Applets -->
 
   <tocitem text="Filters"> 
@@ -461,7 +461,8 @@
         <tocitem text="About Packaging Web Applications" target="concepts_war"  />
 <!--    <tocitem text="Unpacking and Mounting WAR Files" target="war_unpack" /> -->	
         <tocitem text="Packaging Web Applications" target="webmod_packagewar" />
-        <tocitem text="Packaging External Resources" target="war_xtrafiles" />	
+	<tocitem text="Packaging External Resources" target="war_xtrafiles" />
+        <tocitem text="Packaging an Applet" target="webmod_addcompapplet"/>	
 <!--	<tocitem text="Viewing the Contents of a WAR File" target="war_viewcont" />  -->
         <tocitem text="Removing Packaged Web Applications" target="war_delete"/>        
     </tocitem> <!-- Packaging Web Applications -->
