@@ -14,6 +14,7 @@
 package com.netbeans.developer.modules.loaders.form.palette;
 
 import com.netbeans.ide.cookies.InstanceCookie;
+import com.netbeans.ide.loaders.InstanceDataObject;
 import com.netbeans.developerx.loaders.form.formeditor.layouts.DesignLayout;
 import com.netbeans.developerx.loaders.form.formeditor.border.DesignBorder;
 import com.netbeans.developerx.loaders.form.formeditor.border.BorderInfo;
@@ -28,6 +29,8 @@ public class PaletteItem implements java.io.Serializable {
   /** generated Serialized Version UID */
 //  static final long serialVersionUID = -2098259549820241091L;
 
+  public final static String ATTR_IS_CONTAINER = "isContainer";
+  public final static Object VALUE_IS_CONTAINER = Boolean.TRUE;
 // -----------------------------------------------------------------------------
 // Global class variables
 
@@ -36,13 +39,30 @@ public class PaletteItem implements java.io.Serializable {
 
   /** The JavaBean Class represented by this PaletteItem */
   private Class beanClass;
+
+  private boolean isContainer;
+
+  private InstanceCookie instanceCookie;
   
 // -----------------------------------------------------------------------------
 // Constructors
 
   /** Creates a new PaletteItem */
   public PaletteItem (InstanceCookie cookie) throws ClassNotFoundException, java.io.IOException {
-    this (cookie.instanceClass ());
+    this.beanClass = beanClass;
+    this.instanceCookie = cookie;
+    this.isContainer = java.awt.Container.class.isAssignableFrom (beanClass);
+  }
+
+  /** Creates a new PaletteItem */
+  public PaletteItem (InstanceDataObject ido) throws ClassNotFoundException, java.io.IOException {
+    this.beanClass = ido.instanceClass ();
+    this.instanceCookie = ido;
+    this.isContainer = java.awt.Container.class.isAssignableFrom (beanClass);
+    Object attr = ido.getPrimaryFile ().getAttribute (ATTR_IS_CONTAINER);
+    if ((attr != null)  && attr.equals (VALUE_IS_CONTAINER)) {
+      isContainer = true;
+    }
   }
 
   /** Creates a new PaletteItem for specified JavaBean class 
@@ -56,9 +76,18 @@ public class PaletteItem implements java.io.Serializable {
   * @param beanClass the Java Bean's class
   */
   public PaletteItem (Class beanClass) {
-    this.beanClass = beanClass;
+    this (beanClass, java.awt.Container.class.isAssignableFrom (beanClass));
   }
   
+  /** Creates a new PaletteItem for specified JavaBean class
+  * @param beanClass the Java Bean's class
+  * @param isContainer allows to explicitly specify whether the item represents bean which can contain other beans
+  */
+  public PaletteItem (Class beanClass, boolean isContainer) {
+    this.beanClass = beanClass;
+    this.isContainer = isContainer;
+  }
+
 // -----------------------------------------------------------------------------
 // Class Methods
 
@@ -78,7 +107,17 @@ public class PaletteItem implements java.io.Serializable {
   
   public Object createInstance () throws InstantiationException, IllegalAccessException {
     if (beanClass == null) return null;
-    return beanClass.newInstance ();
+    if (instanceCookie != null) {
+      try {
+        return instanceCookie.instanceCreate ();
+      } catch (ClassNotFoundException e) {
+        throw new InstantiationException (e.getMessage ());
+      } catch (java.io.IOException e) {
+        throw new InstantiationException (e.getMessage ());
+      }
+    } else {
+      return beanClass.newInstance ();
+    }
   }
 
   public Class getItemClass () {
@@ -110,12 +149,14 @@ public class PaletteItem implements java.io.Serializable {
   }
 
   public boolean isContainer () {
-    return java.awt.Container.class.isAssignableFrom (beanClass);
+    return isContainer;
   }
 }
 
 /*
  * Log
+ *  6    Gandalf   1.5         6/7/99   Ian Formanek    Better support of 
+ *       instances
  *  5    Gandalf   1.4         5/20/99  Ian Formanek    Fixed multiplication of 
  *       PaletteItems
  *  4    Gandalf   1.3         5/15/99  Ian Formanek    
