@@ -183,8 +183,12 @@ Microsystems, Inc. All Rights Reserved.
                        paramExecutorProp="tbag.executor"
                        resultDir="${xtest.workdir}/xmlresults/suites"
                        workDir="${xtest.workdir}/sys"/>
+                       
+        <ant antfile="${xtest.home}/lib/harness.xml" target="mail-results"/>
 
-    </target>
+        <!-- print summary -->
+        <printSummary resultsDir="${xtest.results}"/>   
+    </target>        
     
     <target name="test">
         <!--
@@ -489,8 +493,6 @@ ${xtest.ide.security} ${xtest.ide.commandline.jvmargs} ${xtest.ide.commandline.s
         <testbaginfo unexpectedFailure="testbag did not finish correctly, some tests did not have to run" outfile="${xtest.workdir}/xmlresults/testbag.xml"/> 
     </target>
     
-    
-    
     <!-- ================= -->
     <!-- Main JUnit target -->
     <!-- ================= -->
@@ -545,11 +547,12 @@ ${xtest.ide.security} ${xtest.ide.commandline.jvmargs} ${xtest.ide.commandline.s
                       outputDir="${xtest.results}"/>                      
         
         <!-- print summary -->
+        <!-- Moved to target runtests
         <printSummary resultsDir="${xtest.results}"/>
+        -->
         
-    </target>        
-    <!--
-    -->
+
+    </target>
     
     <target name="move-results">
         <!-- copy results from workdir to result dir --> 

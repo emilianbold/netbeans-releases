@@ -145,9 +145,12 @@ Microsystems, Inc. All Rights Reserved.
      
      
      <for list="${xtest.instance.postfixes}" delimiters="," property="xtest.instance.postfix">
-       <antcall target="test-one-repository"/>
+       <antcall target="test-one-repository">
+           <param name="xtest.no.mail.results" value="true"/>
+       </antcall>
      </for>   
-     <antcall target="pack-results"/>     
+     <antcall target="pack-results"/>   
+     <ant antfile="${xtest.home}/lib/harness.xml" target="mail-results"/>  
    </target>
    
    <target name="pack-results" if="ide.home">

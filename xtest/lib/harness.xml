@@ -48,6 +48,7 @@ Microsystems, Inc. All Rights Reserved.
             <taskdef name="regenerateXML" classname="org.netbeans.xtest.pe.RegenerateXMLTask"/>
             <taskdef name="transformXML" classname="org.netbeans.xtest.pe.TransformXMLTask"/>
             <taskdef name="printSummary" classname="org.netbeans.xtest.pe.PrintSummary"/>
+            <taskdef name="getResults" classname="org.netbeans.xtest.pe.GetResultsTask"/>
         </nbtaskdef>
         <property name="tasks-defined" value="true"/>
     </target>
@@ -83,24 +84,61 @@ Microsystems, Inc. All Rights Reserved.
         <antcall target="executor">
             <param name="target.name" value="runtest-helper"/>
             <param name="running.mode" value="run"/>
+	    <param name="xtest.no.mail.results" value="true"/>
         </antcall>
         
         <!-- regenerate and transform results. -->
         <regenerateXML inputDir="${xtest.results}"/>
 	<transformXML inputDir="${xtest.results}"
                       outputDir="${xtest.results}"/>              
-        <!-- print summary -->
-        <printSummary resultsDir="${xtest.results}"/>        
-                                    
+
+	<antcall target="mail-results">
+            
+        </antcall>
+
         <get-system-property systemProperty="xtest.errors"/>
         <antcall target="print-errors"/>
-        
-               
+
+        <!-- print summary -->
+        <printSummary resultsDir="${xtest.results}"/>        
     </target>
+    
+    <target name="mail-results" unless="xtest.no.mail.results">
+        <property name="xtest.mail.from" value="xtest"/>
+    	<property name="xtest.mail.mailhost" value="localhost"/>        
+        <antcall target="mail-all-result"/>
+        <antcall target="mail-failed-result"/>
+    </target>
+    
+    <target name="mail-all-result" if="xtest.mail.results.to">
+        <antcall target="send-mail">
+           <param name="xtest.mail.to" value="${xtest.mail.results.to}"/>
+           <param name="is.failed" value="true"/>
+        </antcall>
+    </target>
+
+    <target name="mail-failed-result" if="xtest.mail.failed.to">
+        <antcall target="send-mail">
+           <param name="xtest.mail.to" value="${xtest.mail.failed.to}"/>
+        </antcall>
+    </target>
+
+    <target name="send-mail" depends="init">
+    	<getResults resultsDir="${xtest.results}" summaryProperty="summary" 
+                    isFailedProperty="is.failed" onlyUnexpected="true" 
+                    mailReportProperty="xtest.mail.report"/> 
+	<antcall target="send-mail2"/>
+    </target>    
+
+    <target name="send-mail2" if="is.failed">
+        <mail from="${xtest.mail.from}" tolist="${xtest.mail.to}" 
+              subject="XTest Results: ${summary}" files="${xtest.mail.report}"
+              mailhost="${xtest.mail.mailhost}"/>     
+    </target>    
     
     <target name="print-errors" if="xtest.errors">
        <echo message="Following ERRORS in test harness or in compilation were found and that's why some tests might not be correctly executed or were not executed at all: ${xtest.errors}"/>
-    </target>        
+    </target>      
 
     <target name="runtestsfromdist">
         <ant antfile="build.xml" target="runtests">

@@ -37,6 +37,7 @@ public class PEConstants {
     public static final String TESTREPORT_FAILURES_HTML_FILE = "testreport-failures.html";
     public static final String TESTREPORT_XML_FILE="testreport.xml";
     public static final String TESTREPORT_HTML_FILE="testreport.html";
+    public static final String TESTREPORT_TXT_FILE="testreport.txt";
     public static final String TESTSUITES_SUBDIR="suites";
     
     public static final String SYSTEMINFO_HTML_FILE="systeminfo.html";
@@ -45,6 +46,7 @@ public class PEConstants {
     
     public static final String XMLRESULTS_DIR = "xmlresults";
     public static final String HTMLRESULTS_DIR = "htmlresults";
+    public static final String TXTRESULTS_DIR = "txtresults";
     
     public static final String SYSDIR_LOCATION = "sys";
     public static final String IDE_USERDIR_LOCATION = "sys/ide";
