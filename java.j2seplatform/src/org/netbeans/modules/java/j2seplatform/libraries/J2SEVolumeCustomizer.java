@@ -252,18 +252,27 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
 
     private void downResource(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downResource
         int index = this.content.getSelectedIndex();
+        if (index < 0) {
+            return;
+        }
         this.model.moveDown(index);
         this.content.setSelectedIndex (index+1);
     }//GEN-LAST:event_downResource
 
     private void upResource(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_upResource
         int index = this.content.getSelectedIndex();
+        if (index < 0) {
+            return;
+        }
         this.model.moveUp(index);
         this.content.setSelectedIndex(index-1);
     }//GEN-LAST:event_upResource
 
     private void removeResource(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeResource
         int index =this.content.getSelectedIndex();
+        if (index < 0) {
+            return;
+        }
         this.model.removeResource(index);
         if (index < this.model.getSize()) {
             this.content.setSelectedIndex(index);
