@@ -116,7 +116,9 @@ public class GraphicalDiffVisualizer extends DiffVisualizer implements Serializa
             return null;
         }
         DiffComponent diff;
-        diff = new DiffComponent(diffs, name1+" <> "+name2, MIMEType,
+        String componentName = name1;
+        if (name2 != null && name2.length() > 0)  componentName += " <> "+name2;
+        diff = new DiffComponent(diffs, componentName, MIMEType,
             name1, name2, title1, title2, r1, r2,
             new Color[] { colorMissing, colorAdded, colorChanged });
         return diff;

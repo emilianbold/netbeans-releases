@@ -364,7 +364,10 @@ public class TextDiffVisualizer extends DiffVisualizer implements Serializable {
         }
         
         public String getName() {
-            return getName1() + " <> " + getName2();
+            String componentName = getName1();
+            String name2 = getName2();
+            if (name2 != null && name2.length() > 0)  componentName += " <> "+name2;
+            return componentName;
         }
         
         public String getTitle() {
