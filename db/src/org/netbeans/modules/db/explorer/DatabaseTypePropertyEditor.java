@@ -33,8 +33,7 @@ public class DatabaseTypePropertyEditor implements PropertyEditor {
     private String name;
     private PropertyChangeSupport support;
 
-    public DatabaseTypePropertyEditor()
-    {
+    public DatabaseTypePropertyEditor() {
         support = new PropertyChangeSupport(this);
         constants = new int[] {
             java.sql.Types.ARRAY,
@@ -93,15 +92,13 @@ public class DatabaseTypePropertyEditor implements PropertyEditor {
         }; //NOI18N
     }
 
-    public DatabaseTypePropertyEditor(int[] types, String[] titles)
-    {
+    public DatabaseTypePropertyEditor(int[] types, String[] titles) {
         support = new PropertyChangeSupport(this);
         constants = types;
         names = titles;
     }
 
-    public Object getValue ()
-    {
+    public Object getValue () {
         return new Integer(constants[index]);
     }
 
@@ -124,7 +121,8 @@ public class DatabaseTypePropertyEditor implements PropertyEditor {
         int ii = type.intValue();
 //end of MSSQL hack
         
-        int i, k = constants.length;
+        int i;
+        int k = constants.length;
         
         for (i = 0; i < k; i++)
             if (constants [i] == ii)
@@ -162,11 +160,7 @@ public class DatabaseTypePropertyEditor implements PropertyEditor {
                 case 2006: name = bundle.getString("SQL_REF"); break; //NOI18N
                 default: name = bundle.getString("SQL_UNKNOWN"); //NOI18N
             }
-            
-            index = -1;
-            
-//            String message = MessageFormat.format(bundle.getString("EXC_CannotFind"), new String[] {new Integer(ii).toString()}); // NOI18N
-//            throw new IllegalArgumentException(message);
+            index = 0;
         } else {
             index = i;
             name = names [i];
@@ -179,8 +173,7 @@ public class DatabaseTypePropertyEditor implements PropertyEditor {
         return name;
     }
 
-    public void setAsText (String string)
-    throws IllegalArgumentException {
+    public void setAsText (String string) throws IllegalArgumentException {
         int i, k = names.length;
         for (i = 0; i < k; i++) if (names [i].equals (string)) break;
         if (i == k) {
