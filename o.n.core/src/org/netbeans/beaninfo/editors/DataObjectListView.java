@@ -29,6 +29,7 @@ import org.openide.*;
 import org.openide.explorer.*;
 import org.openide.explorer.propertysheet.editors.*;
 import org.openide.explorer.view.*;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
 import org.openide.util.*;
@@ -123,7 +124,7 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
             }
         }
         
-        rootFile = new NodeFile(rNode.getDisplayName(), rNode);
+        rootFile = new NodeFile(getFileName(rNode), rNode);
         
         //Create instance AFTER root file is set!!!
         chooser = new NodeFileChooser(rootFile, new NodeFileSystemView());
@@ -164,6 +165,24 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
             } else {
                 setOkButtonEnabled(getDataObject() != null);
             }
+        }
+    }
+    
+    /**
+     * Tries to retrieve unique file name from Node -> DataObject -> PrimaryFile
+     * if possible. Used to set file name for NodeFile representing node in JFileChooser.
+     */
+    private static String getFileName (Node n) {
+        DataObject dObj = (DataObject) n.getCookie(DataObject.class);
+        if (dObj != null) {
+            FileObject pf = dObj.getPrimaryFile();
+            if (pf.isRoot()) {
+                return n.getDisplayName();
+            } else {
+                return pf.getNameExt();
+            }
+        } else {
+            return n.getDisplayName();
         }
     }
     
@@ -213,7 +232,7 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
             fileName = fileName.replace('#','/');
             //Find node with the same name
             for (int i = 0; i < nodes.length; i++) {
-                if (fileName.equals(nodes[i].getDisplayName())) {
+                if (fileName.equals(getFileName(nodes[i]))) {
                     n = nodes[i];
                     break;
                 }
@@ -236,7 +255,7 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
         }*/
         
         //Check if node was found
-        if (!fileName.equals(n.getDisplayName())) {
+        if (!fileName.equals(getFileName(n))) {
             return null;
         }
         return n;
@@ -281,14 +300,14 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
             fileName = fileName.replace('#','/');
             //Find node with the same name
             for (int i = 0; i < nodes.length; i++) {
-                if (fileName.equals(nodes[i].getDisplayName())) {
+                if (fileName.equals(getFileName(nodes[i]))) {
                     n = nodes[i];
                     break;
                 }
             }
         }
         
-        if (!fileName.equals(n.getDisplayName())) {
+        if (!fileName.equals(getFileName(n))) {
             //Create new node
             n = new FakeNode(Children.LEAF);
             n.setDisplayName(fileName.replace('#','/'));
@@ -515,7 +534,7 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
             Node [] nodes = n.getChildren().getNodes(true);
             NodeFile [] files = new NodeFile[nodes.length];
             for (int i = 0; i < nodes.length; i++) {
-                String name = nodes[i].getDisplayName();
+                String name = getFileName(nodes[i]);
                 name = name.replace('/','#');
                 files[i] = new NodeFile(getPath() + "/" + name, nodes[i]); // NOI18N
             }
@@ -571,7 +590,7 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
                 p = p.substring(0, ind);
             }
             p = p.replace('#','/');
-            if (p.equals(rootNode.getDisplayName())) {
+            if (p.equals(getFileName(rootNode))) {
                 return true;
             } else {
                 return false;
@@ -648,7 +667,7 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
             super();
         }
         
-        public String getName(File f) {
+        public String getName (File f) {
             if (f instanceof NodeFile) {
                 return f.getName();
             } else {
@@ -662,7 +681,7 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
             }
         }
         
-        public Icon getIcon(File f) {
+        public Icon getIcon (File f) {
             if (f instanceof NodeFile) {
                 return ((NodeFile) f).getIcon();
             } else {
