@@ -28,14 +28,29 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="jars" depends="compile">
     <mkdir dir="lib"/>
+    <mkdir dir="lib/patches"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
+
     <jar jarfile="lib/xtest.jar"
             manifest="manifest-subst.mf"
             basedir="src"
             excludesfile="../nbbuild/standard-jar-excludes.txt"
-            compress="false">
-    </jar>
+            compress="false"
+            includes="org/netbeans/xtest/**"/>
+
+    <jar jarfile="lib/patches/testmain.jar"
+            manifest="manifest-subst.mf"
+            basedir="src"
+            compress="false"
+            includes="org/netbeans/Main*.class"/>
+
+    <jar jarfile="lib/patches/junit-file-diff.jar"
+            manifest="manifest-subst.mf"
+            basedir="src"
+            excludesfile="../nbbuild/standard-jar-excludes.txt"
+            compress="false"
+            includes="junit/**"/>
   </target>
 
   <target name="netbeans" depends="jars"/>
