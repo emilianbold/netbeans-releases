@@ -110,6 +110,18 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/executionSettings.gif" />
         </file>
+        
+        <folder name="Hidden">
+            <attr name="hidden" boolvalue="true" />
+
+            <file name="org-netbeans-core-default-execution-engine.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.core.execution.ExecutionEngine"/>
+                <attr name="instanceOf" stringvalue="org.openide.execution.ExecutionEngine"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.core.execution.ExecutionEngine.getExecutionEngine"/>
+            </file>
+        
+        </folder>
+
     </folder>
     
     <folder name="UI">

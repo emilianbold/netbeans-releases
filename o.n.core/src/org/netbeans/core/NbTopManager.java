@@ -59,7 +59,6 @@ import org.openide.util.lookup.*;
 import org.netbeans.core.actions.*;
 import org.netbeans.core.output.OutputTabTerm;
 import org.netbeans.core.windows.WindowManagerImpl;
-import org.netbeans.core.compiler.CompilationEngineImpl;
 import org.netbeans.core.execution.TopSecurityManager;
 import org.netbeans.core.perftool.StartLog;
 import org.netbeans.core.modules.ModuleManager;
@@ -594,36 +593,6 @@ public abstract class NbTopManager extends TopManager {
         res.allClasses();
     }
 
-    /**
-    * @return implementation of ExecutionMachine
-    */
-    public ExecutionEngine getExecutionEngine () {
-        if (execEngine != null) {
-            return execEngine;
-        }
-
-        synchronized (this) {
-            if (execEngine == null) {
-                execEngine = org.netbeans.core.execution.ExecutionEngine.getExecutionEngine ();
-            }
-        }
-        return execEngine;
-    }
-
-    /** @return implementation of CompilationEngine */
-    public CompilationEngine getCompilationEngine() {
-        if (compilationEngine != null) {
-            return compilationEngine;
-        }
-
-        synchronized (this) {
-            if (compilationEngine == null) {
-                compilationEngine = new CompilationEngineImpl();
-            }
-        }
-        return compilationEngine;
-    }
-
     /** Services.
     */
     public org.openide.ServiceType.Registry getServices () {
@@ -817,7 +786,17 @@ public abstract class NbTopManager extends TopManager {
         change.firePropertyChange (p, o, n);
     }
 
-
+    /** Someone running NonGuiMain might want to set this to true.
+     * This variable is read from CompilationEngineImpl to determine
+     * whether to do synchronous compile.
+     */
+    public static boolean compileSync = false;
+    
+    /** Sets the compileSync static variable.
+     */
+    public static void setCompileSync(boolean sync) {
+        compileSync = sync;
+    }
 
     /** Provides support for www documents.
     *
