@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.j2eeserver/2
 OpenIDE-Module-Specification-Version: 1.7
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 3.40
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 3.38
 OpenIDE-Module-Requires: org.openide.TopManager, org.openide.compiler.CompilationEngine, org.openide.execution.ExecutionEngine
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.debugger.core/3, org.netbeans.modules.debugger.jpda/1, org.openide.src > 1.0, org.openide.compiler > 1.0, org.openide.execution > 1.0, org.openide.io > 1.0, org.openide.debugger > 1.0, org.netbeans.modules.javahelp/1 > 1.0
 OpenIDE-Module-Layer: org/netbeans/modules/j2ee/impl/layer.xml
