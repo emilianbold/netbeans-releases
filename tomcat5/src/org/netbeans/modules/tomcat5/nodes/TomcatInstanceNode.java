@@ -22,6 +22,7 @@ import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
 
 import javax.enterprise.deploy.spi.DeploymentManager;
+import org.netbeans.modules.tomcat5.ide.MonitorSupport;
 
 /**
  *
@@ -40,6 +41,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
     protected static final String DEBUGGING_TYPE = "debugging_type"; //NOI18N
     protected static final String SERVER_PORT= "server_port";//NOI18N
     protected static final String ADMIN_PORT= "admin_port";//NOI18N
+    protected static final String MONITOR_ENABLED= "monitor_enabled";//NOI18N
     protected static final String CLASSIC = "classic"; //NOI18N
     protected static final String NAME_FOR_SHARED_MEMORY_ACCESS = "name_for_shared_memory_access"; //NOI18N
     private static final String DEFAULT_NAME_FOR_SHARED_MEMORY_ACCESS = "tomcat_shared_memory_id"; //NOI18N
@@ -68,6 +70,14 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
         }
         return NbBundle.getMessage(TomcatInstanceNode.class, "LBL_TomcatInstanceNode",  // NOI18N
             new Object []{portStr});
+    }
+    
+    /** Returns the TomcatManager for this node, or null if TomcatManager was not found - which 
+     * should never happen.
+     */
+    private TomcatManager getTomcatManager() {
+        DeploymentManager m = getDeploymentManager();
+        return (m instanceof TomcatManager) ? (TomcatManager)m : null;
     }
     
     private Integer getServerPort () {
@@ -212,6 +222,29 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                        return getBase();
                    }
                };    
+        ssProp.put(p);
+        p = new PropertySupport.ReadWrite (
+        MONITOR_ENABLED,
+        Boolean.TYPE,
+        NbBundle.getMessage (TomcatInstanceNode.class, "PROP_monitorEnabled"),   // NOI18N
+        NbBundle.getMessage (TomcatInstanceNode.class, "HINT_monitorEnabled")   // NOI18N
+        ) {
+            public Object getValue () {
+                TomcatManager tm = getTomcatManager();
+                if (tm != null) {
+                    return Boolean.valueOf(MonitorSupport.getMonitorFlag(tm));
+                }
+                else return null;
+            }
+            
+            public void setValue (Object val){
+                TomcatManager tm = getTomcatManager();
+                if (tm != null) {
+                    boolean b = ((Boolean)val).booleanValue();
+                    MonitorSupport.setMonitorFlag(tm, b);
+                }
+            }
+        };
         ssProp.put(p);
         
         

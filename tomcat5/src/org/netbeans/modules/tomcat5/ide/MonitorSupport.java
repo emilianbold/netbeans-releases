@@ -77,8 +77,20 @@ public class MonitorSupport {
         return (prop == null) ? true : Boolean.valueOf(prop).booleanValue();
     }
     
+    public static void setMonitorFlag(TomcatManager tm, boolean enable) {
+        setMonitorFlag(getTomcatManagerURL(tm), enable);
+    }
+    
+    public static boolean getMonitorFlag(TomcatManager tm) {
+        return getMonitorFlag(getTomcatManagerURL(tm));
+    }
+    
+    private static String getTomcatManagerURL(TomcatManager tm) {
+        return TomcatFactory.tomcatUriPrefix + tm.getUri();
+    }
+    
     public static void synchronizeMonitorWithFlag(TomcatManager tm, boolean alsoSetPort, boolean alsoCopyJars) throws IOException, SAXException {
-        String url = TomcatFactory.tomcatUriPrefix + tm.getUri();
+        String url = getTomcatManagerURL(tm);
         boolean monitorFlag = getMonitorFlag(url);
         boolean monitorModuleAvailable = isMonitorEnabled();
         boolean shouldInstall = monitorModuleAvailable && monitorFlag;
