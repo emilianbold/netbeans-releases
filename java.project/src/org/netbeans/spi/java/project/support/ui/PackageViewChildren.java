@@ -488,8 +488,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                                                   dataFolder.getPrimaryFile(),
                                                   false,      //not recursive
                                                   new FileObjectFilter[] {
-                                                          SearchInfoFactory.VISIBILITY_FILTER,
-                                                          SearchInfoFactory.SHARABILITY_FILTER}))),
+                                                          SearchInfoFactory.VISIBILITY_FILTER}))),
                    })
             );
             this.root = root;
