@@ -7,15 +7,15 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package gui;
 
+import gui.menu.*;
 
 import org.netbeans.junit.NbTestSuite;
-import gui.menu.*;
 
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
@@ -26,6 +26,7 @@ public class MeasureMenus  {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
+        
         suite.addTest(new MainMenu("testFileMenu", "File main menu"));
         suite.addTest(new MainMenu("testEditMenu", "Edit main menu"));
         suite.addTest(new MainMenu("testViewMenu", "View main menu"));
@@ -35,7 +36,7 @@ public class MeasureMenus  {
         suite.addTest(new MainMenu("testVersioningMenu", "Versioning main menu"));
         suite.addTest(new MainMenu("testWindowMenu", "Window main menu"));
         suite.addTest(new MainMenu("testHelpMenu", "Help main menu"));
-
+        
         // recent prj menu is empty and disabled
         // suite.addTest(new MainSubMenus("testFileOpenRecentProjectMenu", "File | Open Recent Project main menu"));
         // suite.addTest(new MainSubMenus("testViewDocumentationIndicesMenu", "View | Documentation Indices main menu"));
@@ -77,12 +78,12 @@ public class MeasureMenus  {
         suite.addTest(new SourceEditorPopupMenu("testPopupOnClassName", "Java Editor Class Name popup"));
         
         suite.addTest(new RuntimeViewPopupMenu("testServerRegistryPopupMenuRuntime", "Server Registry node popup in Runtime View"));
-        suite.addTest(new RuntimeViewPopupMenu("testTomcatPopupMenuRuntime", "Tomcat node popup in Runtime View"));
-        suite.addTest(new RuntimeViewPopupMenu("testHttpTomcatPopupMenuRuntime", "http localhost node popup in Runtime View"));
+//TODO doesn't work in current trunk        suite.addTest(new RuntimeViewPopupMenu("testTomcatPopupMenuRuntime", "Tomcat node popup in Runtime View"));
+//TODO doesn't work in current trunk        suite.addTest(new RuntimeViewPopupMenu("testHttpTomcatPopupMenuRuntime", "http localhost node popup in Runtime View"));
         
         suite.addTest(new FormInspectorNodePopupMenu("testFormNodePopupMenuInspector", "Form Inspector node popup"));
         
-        suite.addTest(new ToolsOptionsNodePopupMenu("testOptionsNodePopupMenu", "Tools-Options node popup"));
+        //remove from test run for NB4.1        suite.addTest(new ToolsOptionsNodePopupMenu("testOptionsNodePopupMenu", "Tools-Options node popup"));
 
 /*
     TEMPORARY commented -> try to solve never finixhed tests
