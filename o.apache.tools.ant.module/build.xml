@@ -144,6 +144,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
         <include name="org/apache/tools/ant/taskdefs/ExecuteWatchdog.java"/>
         <include name="org/apache/tools/ant/taskdefs/Javac.java"/>
         <include name="org/apache/tools/ant/taskdefs/MatchingTask.java"/>
+        <include name="org/apache/tools/ant/taskdefs/Property.java"/>
         <include name="org/apache/tools/ant/taskdefs/Rmic.java"/>
         <include name="org/apache/tools/ant/taskdefs/compilers/CompilerAdapter.java"/>
         <include name="org/apache/tools/ant/taskdefs/compilers/DefaultCompilerAdapter.java"/>
@@ -231,6 +232,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     - docs/javahelp/org/apache/tools/ant/module/docs/TOC.toc
     - docs/src/org/apache/tools/ant/module/docs/Bundle.properties
     - src/org/apache/tools/ant/module/resources/SampleProject.xml_
+    - src/org/apache/tools/ant/module/resources/CustomTask_java
 8.  Update ${ParserDB} with sources from ${useful-sources}
 9.  Update ${features.xml}
 10. Refresh these files with the prebuilt binaries from an Ant download:
