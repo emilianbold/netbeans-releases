@@ -20,6 +20,7 @@ import javax.swing.event.*;
 import org.openide.actions.ActionManager;
 import org.openide.modules.ManifestSection;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.*;
 
 /** Holds list of all actions added by modules.
 *
@@ -34,6 +35,9 @@ class ModuleActions extends ActionManager
     /** current module */
     private static Object module;
 
+    /** */
+    private RequestProcessor requestProcessor;
+    
     /** instance */
     static final ModuleActions INSTANCE = new ModuleActions ();
 
@@ -52,7 +56,31 @@ class ModuleActions extends ActionManager
         array = a = createActions ();
         return a;
     }
+    
+    /** Invokes action in a RequestPrecessor dedicated to performing
+     * actions.
+     */
+    public void invokeAction(final javax.swing.Action a, final java.awt.event.ActionEvent e) {
+    //    a.actionPerformed(e);
+        Task task = getRequestProcessor().post(new Runnable () {
+            public void run () {
+                a.actionPerformed(e);
+            }
+        });
+    }
 
+    /** Keeps track of the one instance of the RequestPrecessor.*/
+    private RequestProcessor getRequestProcessor() {
+        if (requestProcessor == null) {
+            synchronized (this) {
+                if (requestProcessor == null) {
+                    requestProcessor = new RequestProcessor();
+                }
+            }
+        }
+        return requestProcessor;
+    }
+    
     /** Listens on change of modules and if changed,
     * fires change to all listeners.
     */
@@ -134,21 +162,3 @@ class ModuleActions extends ActionManager
     }
 }
 
-/*
-* Log
-*  8    Jaga      1.6.1.0     3/14/00  Jaroslav Tulach ActionManager instead of 
-*       ugly ToolsAction.Model callback.  
-*  7    Gandalf   1.6         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
-*       Microsystems Copyright in File Comment
-*  6    Gandalf   1.5         9/2/99   Jaroslav Tulach #3637
-*  5    Gandalf   1.4         8/5/99   Jaroslav Tulach Tools & New action in 
-*       editor.
-*  4    Gandalf   1.3         7/28/99  Jaroslav Tulach Additional manifest & 
-*       separation of actions by modules
-*  3    Gandalf   1.2         6/8/99   Ian Formanek    ---- Package Change To 
-*       org.openide ----
-*  2    Gandalf   1.1         5/13/99  Jaroslav Tulach Services changed to 
-*       tools.
-*  1    Gandalf   1.0         5/13/99  Jaroslav Tulach 
-* $
-*/
