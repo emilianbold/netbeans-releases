@@ -270,7 +270,7 @@ Microsystems, Inc. All Rights Reserved.
             </classpath>
         </property>
 
-        <property name="args" value="-jdkhome ${jdkhome} -userdir ${xtest.userdir} -cp:p ${xtest.ide.path} -J-Dtest.class=${test.class} -J-Dtest.classpath=${test.classpath} -J-Dtest.ant.file=${ant.file} -J-Dtest.target=${test.target} -J-Dxtest.home=${xtest.home} -J-Dxtest.includes=${xtest.includes} -J-Dxtest.excludes=${xtest.excludes} -J-Dtbag.classpath=${tbag.classpath} -J-Dtbag.patternset.include=${tbag.patternset.include} -J-Dtbag.patternset.exclude=${tbag.patternset.exclude} -J-Dtbag.testtype=${tbag.testtype} -J-Dtbag.formater=${tbag.formater} -J-Dtest.exit=true -J-Dnetbeans.full.hack=true"/>
+        <property name="args" value="-jdkhome ${jdkhome} -userdir ${xtest.userdir} -cp:p ${xtest.ide.path} -J-Dtest.class=${test.class} -J-Dtest.classpath=${test.classpath} -J-Dtest.ant.file=${ant.file} -J-Dtest.target=${test.target} -J-Dxtest.home=${xtest.home} -J-Dxtest.includes=${xtest.includes} -J-Dxtest.excludes=${xtest.excludes} -J-Dtbag.classpath=${tbag.classpath} -J-Dtbag.patternset.include=${tbag.patternset.include} -J-Dtbag.patternset.exclude=${tbag.patternset.exclude} -J-Dtbag.testtype=${tbag.testtype} -J-Dtbag.formater=${tbag.formater} -J-Ddistexec=true -J-Dtest.exit=true -J-Dnetbeans.full.hack=true"/>
         <echo message="ARGUMENTS = ${args}"/>
 
         <copy file="${xtest.home}/lib/patches/testmain.jar" todir="${netbeans.test.home}/lib/patches"/>
