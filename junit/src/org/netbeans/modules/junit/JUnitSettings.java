@@ -58,6 +58,8 @@ public class JUnitSettings extends SystemOption {
     public static final String PROP_GENERATE_TESTS_FROM_TEST_CLASSES = "generateTestsFromTestClasses";    
     public static final String PROP_GENERATE_MAIN_METHOD = "generateMainMethod";
     public static final String PROP_GENERATE_MAIN_METHOD_BODY = "generateMainMethodBody";
+    public static final String PROP_GENERATE_SETUP      = "generateSetUp";
+    public static final String PROP_GENERATE_TEARDOWN   = "generateTearDown";
     public static final String PROP_TEST_CLASSNAME_PREFIX = "testClassNamePrefix";
     public static final String PROP_TEST_CLASSNAME_SUFFIX = "testClassNameSuffix";
     public static final String PROP_SUITE_CLASSNAME_PREFIX = "suiteClassNamePrefix";
@@ -68,7 +70,7 @@ public class JUnitSettings extends SystemOption {
     
     public static final String PROP_VERSION = "version";    
     
-    public static final Integer CURRENT_VERSION = new Integer(30);
+    public static final Integer CURRENT_VERSION = new Integer(40);
     
     // No constructor please!
 
@@ -130,6 +132,8 @@ public class JUnitSettings extends SystemOption {
         out.writeObject(getProperty(PROP_SUITE_CLASSNAME_PREFIX));
         out.writeObject(getProperty(PROP_SUITE_CLASSNAME_SUFFIX));
         out.writeObject(getProperty(PROP_ROOT_SUITE_CLASSNAME));
+        out.writeObject(getProperty(PROP_GENERATE_SETUP));
+        out.writeObject(getProperty(PROP_GENERATE_TEARDOWN));
     }
     
     public void readExternal (ObjectInput in) throws IOException, ClassNotFoundException {
@@ -150,6 +154,9 @@ public class JUnitSettings extends SystemOption {
     
     private void readVersionedOptions(ObjectInput in, int version) throws IOException, ClassNotFoundException {
         switch (version) {
+            case 40:
+                readVersion40Options(in);
+                break;
             case 30:
                 readVersion30Options(in);
                 break;
@@ -161,6 +168,20 @@ public class JUnitSettings extends SystemOption {
                 // System.err.println("Unkonwn options? - version"+version);
                 // Notification should be added
         }
+    }
+    
+    private void readVersion40Options(ObjectInput in) throws IOException, ClassNotFoundException {
+        readVersion30Options(in);
+        
+        /* generate method setUp() ? */
+        putProperty(PROP_GENERATE_SETUP,
+                    Boolean.valueOf(Boolean.TRUE.equals(in.readObject())),
+                    true);
+        
+        /* generate method tearDown() ? */
+        putProperty(PROP_GENERATE_TEARDOWN,
+                    Boolean.valueOf(Boolean.TRUE.equals(in.readObject())),
+                    true);
     }
     
     private void readVersion30Options(ObjectInput in) throws IOException, ClassNotFoundException {
@@ -382,6 +403,22 @@ public class JUnitSettings extends SystemOption {
 
     public void setGenerateMainMethod(boolean newVal) {
         putProperty(PROP_GENERATE_MAIN_METHOD, newVal ? Boolean.TRUE : Boolean.FALSE, true);
+    }
+    
+    public boolean isGenerateSetUp() {
+        return ((Boolean) getProperty(PROP_GENERATE_SETUP)).booleanValue();
+    }
+
+    public void setGenerateSetUp(boolean newVal) {
+        putProperty(PROP_GENERATE_SETUP, newVal ? Boolean.TRUE : Boolean.FALSE, true);
+    }
+    
+    public boolean isGenerateTearDown() {
+        return ((Boolean) getProperty(PROP_GENERATE_TEARDOWN)).booleanValue();
+    }
+
+    public void setGenerateTearDown(boolean newVal) {
+        putProperty(PROP_GENERATE_TEARDOWN, newVal ? Boolean.TRUE : Boolean.FALSE, true);
     }
     
     public String getGenerateMainMethodBody() {

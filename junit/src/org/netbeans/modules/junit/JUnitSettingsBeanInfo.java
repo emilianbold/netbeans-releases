@@ -28,6 +28,7 @@ import org.openide.util.NbBundle;
 /**
  *
  * @author vstejskal
+ * @author  Marian Petras
  */
 public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
 
@@ -89,6 +90,14 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
             propIncludePackagePrivateClasses.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_include_package_private_classes"));
             propIncludePackagePrivateClasses.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_include_package_private_classes"));
             
+            PropertyDescriptor propGenerateSetUp = new PropertyDescriptor (JUnitSettings.PROP_GENERATE_SETUP, JUnitSettings.class);
+            propGenerateSetUp.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_generate_setUp"));
+            propGenerateSetUp.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_generate_setUp"));
+            
+            PropertyDescriptor propGenerateTearDown = new PropertyDescriptor (JUnitSettings.PROP_GENERATE_TEARDOWN, JUnitSettings.class);
+            propGenerateTearDown.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_generate_tearDown"));
+            propGenerateTearDown.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_generate_tearDown"));
+            
 
             
             // expert properties
@@ -134,6 +143,7 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
               propJavaDoc, propCfgConfigEnabled,
               propGenerateExceptionClasses, propGenerateAbstractImpl, propIncludePackagePrivateClasses, 
               propGenerateSuiteClasses,
+              propGenerateSetUp, propGenerateTearDown,
               propGenerateMainMethod, propGenerateMainMethodBody, 
               //propTestClassNamePrefix, propTestClassNameSuffix, propSuiteClassNamePrefix, propSuiteClassNameSuffix, 
               propRootSuiteClassName 

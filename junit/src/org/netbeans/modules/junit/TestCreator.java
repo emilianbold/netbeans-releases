@@ -21,6 +21,7 @@ package org.netbeans.modules.junit;
 import java.lang.reflect.Modifier;
 import java.text.MessageFormat;
 import java.util.*;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 
 import org.openide.src.*;
@@ -42,6 +43,8 @@ public class TestCreator extends java.lang.Object {
     
     static private final String GENERATED_SUITE_BLOCK_START                = "--JUNIT:";
     static private final String GENERATED_SUITE_BLOCK_END                  = ":JUNIT--";    
+    private static final String METHOD_NAME_SETUP = "setUp";            //NOI18N
+    private static final String METHOD_NAME_TEARDOWN = "tearDown";      //NOI18N
 
     /* public methods */
 
@@ -370,6 +373,65 @@ public class TestCreator extends java.lang.Object {
         } catch (SourceException e) {
             // Nothing is done, because it is expected that constructor already exists
         }
+        
+        //add method setUp() (optionally):
+        if (JUnitSettings.getDefault().isGenerateSetUp()
+                && !hasInitMethod(classTest, METHOD_NAME_SETUP)) {
+            try {
+                classTest.addMethod(generateInitMethod(METHOD_NAME_SETUP));
+            } catch (SourceException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+            }
+        }
+        
+        //add method tearDown() (optionally):
+        if (JUnitSettings.getDefault().isGenerateTearDown()
+                && !hasInitMethod(classTest, METHOD_NAME_TEARDOWN)) {
+            try {
+                classTest.addMethod(generateInitMethod(METHOD_NAME_TEARDOWN));
+            } catch (SourceException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+            }
+        }
+    }
+    
+    /**
+     * Detects whether a given class contains a no-argument method of a given
+     * name, having protected or public member access.
+     *
+     * @param  testClass  class the method is to be found in
+     * @param  methodName  name of the method to be found
+     * @return  <code>true</code> if the class contains such a method,
+     *          <code>false</code> otherwise
+     */
+    private static boolean hasInitMethod(ClassElement testClass,
+                                         String methodName) {
+        return testClass.getMethod(Identifier.create(methodName),
+                                   new org.openide.src.Type[0])
+               != null;
+    }
+    
+    /**
+     * Generates a set-up or a tear-down method.
+     * The generated method will have no arguments, void return type
+     * and a declaration that it may throw <code>java.lang.Exception</code>.
+     * The method will have a declared protected member access.
+     *
+     * @param  methodName  name of the method to be created
+     * @return  created method
+     * @see  http://junit.sourceforge.net/javadoc/junit/framework/TestCase.html
+     *       methods <code>setUp()</code> and <code>tearDown()</code>
+     */
+    private static MethodElement generateInitMethod(String methodName)
+            throws SourceException {
+        MethodElement method = new MethodElement();
+        method.setModifiers(Modifier.PROTECTED);
+        method.setReturn(org.openide.src.Type.VOID);
+        method.setName(Identifier.create(methodName));
+        method.setParameters(new MethodParameter[0]);
+        method.setExceptions(new Identifier[] {
+                Identifier.create("java.lang.Exception", "Exception")});//NOI18N
+        return method;
     }
     
     static private void fillTestClass(FileObject sourceCtx, ClassElement classSource, FileObject classCtx, ClassElement classTest) throws SourceException {
