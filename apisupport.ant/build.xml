@@ -70,9 +70,8 @@ Microsystems, Inc. All Rights Reserved.
             <fileset dir="../..">
                 <include name="nbbuild/external/ant-1.*.jar"/>
                 <include name="nbbuild/external/jhall*.jar"/>
-                <include name="core/external/xml-apis*.jar"/>
-                <include name="core/external/xerces*.jar"/>
                 <include name="core/external/regexp*.jar"/>
+                <include name="libs/external/xerces*.jar"/>
             </fileset>
         </path>
     </target>

@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -88,13 +88,6 @@ Microsystems, Inc. All Rights Reserved.
     </folder> <!-- xml -->
 
     <folder name="Mount">
-        <folder name="java">
-            <file name="org-netbeans-modules-xml-tools-resources-xml_apis.xml" url="xml_apis-library.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.tools.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/xmlObject.gif" />
-            </file>
-        </folder> <!-- java -->
-
         <folder name="Javadoc">
             <file name="org-netbeans-modules-xml-tools-resources-xml_apis.xml" url="xml_apis-javadoc.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.tools.resources.Bundle" />

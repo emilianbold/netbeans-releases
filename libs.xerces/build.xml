@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -41,7 +41,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="netbeans/modules"/>
 
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-        <locjar jarfile="netbeans/modules/autoload/xerces.jar"
+        <locjar jarfile="netbeans/modules/autoload/nb-xerces-wrapper.jar"
                 manifest="manifest-subst.mf"
                 compress="false">
             <fileset dir="src" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
@@ -54,6 +54,7 @@ Microsystems, Inc. All Rights Reserved.
         <copy todir="netbeans/modules/autoload/ext">
             <fileset dir="../external">
                 <include name="xerces*.jar"/>
+                <include name="xml-commons-dom-ranges-*.jar"/>
             </fileset>
         </copy>
     </target>
@@ -66,7 +67,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="Info"/>
         <makenbm file="${libs_root}/xerces.nbm"
                  topdir="."
-                 module="netbeans/modules/autoload/xerces.jar"
+                 module="netbeans/modules/autoload/nb-xerces-wrapper.jar"
                  homepage="http://${homepage.base}/#xerces"
                  distribution="http://${dist.base}/xerces.nbm">
             <license name="xerces-license.txt">
@@ -74,6 +75,8 @@ Microsystems, Inc. All Rights Reserved.
                 <file location="${license.file}"/>
                 <text>For the Xerces library:</text>
                 <file location="${apache-license.file}"/>
+                <text>For the DOM Ranges API:</text>
+                <file location="../external/dom-license.txt"/>
             </license>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>

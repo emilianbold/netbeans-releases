@@ -40,8 +40,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     <fileset dir="external">
       <include name="ant-1.5.1.jar"/>
     </fileset>
-    <fileset dir="../core/external">
-      <include name="xml-apis*.jar"/>
+    <fileset dir="../libs/external">
       <include name="xerces*.jar"/>
     </fileset>
     <pathelement location="../core/javahelp/netbeans/modules/autoload/javahelp-api.jar"/>
@@ -175,12 +174,6 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
       <sourcepath>
         <pathelement location="${useful-sources}"/>
       </sourcepath>
-      <classpath>
-        <fileset dir="../core/external">
-          <include name="xml-apis*.jar"/>
-          <include name="xerces*.jar"/>
-        </fileset>
-      </classpath>
     </javadoc>
     <delete file="${ant-api.zip}"/>
     <zip zipfile="${ant-api.zip}">

@@ -133,10 +133,6 @@ Microsystems, Inc. All Rights Reserved.
         <!-- PENDING required by debugger type, perhaps could be
         removed -->
         <pathelement location="${nbroot}/java/srcmodel/netbeans/modules/autoload/java-src-model.jar"/> 
-        <fileset dir="${nbroot}/core/external">
-          <include name="xml-apis*.jar"/> <!-- PENDING remove when move to 1.4 build -->
-          <include name="crimson*.jar"/>
-        </fileset>
       </classpath>
     </javac>
   </target>
@@ -288,10 +284,6 @@ symbols and copy jar file(s)">
         <!-- PENDING required by debugger type, perhaps could be
         removed -->
         <pathelement location="${nbroot}/java/srcmodel/netbeans/modules/autoload/java-src-model.jar"/> 
-        <fileset dir="${nbroot}/core/external">
-          <include name="xml-apis*.jar"/> <!-- PENDING remove when move to 1.4 build -->
-          <include name="crimson*.jar"/>
-        </fileset>
       </classpath>
     </javadoc>
     <copy todir="J2EEServerAPIs">

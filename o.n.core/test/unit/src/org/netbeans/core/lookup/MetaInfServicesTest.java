@@ -20,8 +20,7 @@ import org.netbeans.core.modules.*;
 import org.openide.util.*;
 import java.io.File;
 import java.util.*;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.SAXParserFactory;
+import javax.print.PrintServiceLookup;
 
 /** Test whether modules can really register things in their META-INF/services/class.Name
  * files, and whether this behaves correctly when the modules are disabled/enabled.
@@ -31,11 +30,6 @@ import javax.xml.parsers.SAXParserFactory;
  */
 public class MetaInfServicesTest extends NbTestCase {
 
-    static {
-        // Currently this feature is turned off in the core by default. We want to test it on.
-        System.setProperty("netbeans.lookup.usemetainfservices", "true");
-    }
-    
     public MetaInfServicesTest(String name) {
         super(name);
     }
@@ -160,13 +154,9 @@ public class MetaInfServicesTest extends NbTestCase {
         Lookup.Result r2 = Lookup.getDefault().lookup(new Lookup.Template(xface2));
         instances = new ArrayList(r2.allInstances());
         assertEquals(1, instances.size());
-        // Let's also check up on XML providers, which ought to be in the classpath.
-        DocumentBuilderFactory dbf = (DocumentBuilderFactory)Lookup.getDefault().lookup(DocumentBuilderFactory.class);
-        assertNotNull(dbf);
-        SAXParserFactory spf = (SAXParserFactory)Lookup.getDefault().lookup(SAXParserFactory.class);
-        assertNotNull(spf);
-        //System.err.println("dbf=" + dbf + " spf=" + spf);
-        //System.err.println("all DBFs=" + Lookup.getDefault().lookup(new Lookup.Template(DocumentBuilderFactory.class)).allInstances());
+        // Let's also check up on some standard JDK services.
+        PrintServiceLookup psl = (PrintServiceLookup)Lookup.getDefault().lookup(PrintServiceLookup.class);
+        assertNotNull("Some META-INF/services/javax.print.PrintServiceLookup was found in " + Lookup.getDefault(), psl);
     }
     
     protected static final class LookupL implements LookupListener {

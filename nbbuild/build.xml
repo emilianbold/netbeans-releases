@@ -48,14 +48,14 @@ ToDo:
     <echo message="Bootstrapping NetBeans-specific Ant extensions..."/>
     <ant dir="external" target="unscramble"/>
     <ant dir="../core/external" target="unscramble"/>
+    <ant dir="../libs/external" target="unscramble"/>
     <ant dir="../xml/external" target="unscramble"/>
     <path id="bootstrap-cp">
       <fileset dir="..">
         <!-- For running inside IDE, to pick up ant.jar -->
         <include name="nbbuild/external/ant*.jar"/>
-        <!-- General XML stuff, XML serializer, and resolver catalog: -->
-        <include name="core/external/xml-apis*.jar"/>
-        <include name="core/external/xerces*.jar"/>
+        <!-- XML Serializer: -->
+        <include name="libs/external/xerces*.jar"/>
         <!-- Needed for CheckLinks: -->
         <include name="core/external/regexp*.jar"/>
         <!-- For JavaHelp indexing: -->
@@ -900,10 +900,6 @@ the ${netbeans.dest}/bin/ directory.
     <taskdef name="validatexml" classname="org.netbeans.nbbuild.XMLValidate">
       <classpath>
         <pathelement location="nbantext.jar"/>
-        <fileset dir="../core/external">
-          <include name="xml-apis*.jar"/>
-          <include name="xerces*.jar"/>
-        </fileset>
         <fileset dir="../xml/external">
           <include name="resolver*.jar"/>
         </fileset>

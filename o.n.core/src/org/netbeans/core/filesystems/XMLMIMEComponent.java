@@ -258,8 +258,8 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
             return parser;
         }
         
-        protected Exception stopException() {
-            return STOP;
+        protected boolean isStopException(Exception e) {
+            return STOP.getMessage().equals(e.getMessage());
         }        
         
         

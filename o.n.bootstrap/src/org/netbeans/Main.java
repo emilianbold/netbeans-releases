@@ -79,8 +79,7 @@ public class Main extends Object {
 	Class c = loader.loadClass(className);
         Method m = c.getMethod ("main", new Class[] { String[].class }); // NOI18N
         
-        // Needed e.g. for JAXP to find NbSAXParserFactoryImpl.
-        // Also for Lookup.getDefault to find NbTopManager.Lkp.
+        // Needed for Lookup.getDefault to find NbTopManager.Lkp.
         // Note that ModuleManager.updateContextClassLoaders will later change
         // the loader on this and other threads to be MM.SystemClassLoader anyway.
         Thread.currentThread().setContextClassLoader (loader);

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -39,9 +39,6 @@ public class MIMEResolverImplTest extends NbTestCase {
     }
     
     protected void setUp() throws Exception {
-        // Exercise #16484:
-        org.netbeans.core.xml.NbSAXParserFactoryImpl.install();
-
         URL u = getClass().getProtectionDomain().getCodeSource().getLocation();
         u = new URL(u, "org/netbeans/core/filesystems/code-fs.xml");
         FileSystem fs = new XMLFileSystem(u);

@@ -31,9 +31,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="init">
     <ant dir="../core/external" target="unscramble"/>
     <path id="openide-cp">
-      <fileset dir="../core/external">
-        <include name="xml-apis*.jar"/>
-      </fileset>
+      <!-- nothing -->
     </path>
     <path id="openide-boot-cp">
       <!-- XXX not nice to use undocumented property here: -->
@@ -574,6 +572,9 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
     <taskdef name="arch" classname="org.netbeans.nbbuild.Arch">
       <classpath>
         <pathelement location="../nbbuild/nbantext.jar"/>
+        <fileset dir="../libs/external">
+          <include name="xerces*.jar"/>
+        </fileset>
       </classpath>
     </taskdef>
     <property name="jdk-docs-location" value="http://java.sun.com/j2se/1.4.1/docs/api"/>
@@ -950,23 +951,8 @@ Set jmf.home to the location of your JMF installation to continue."/>
     <delete dir="examplemodulereload"/>
   </target>
 
-    <target  name="standalone-fs" depends="standalone-fs-prepare" description="Creates zip file suitable for download. Zip file contains all JARs necessary for using standalone filesystems, including XML libraries.">
+    <target  name="standalone-fs" depends="standalone-fs-prepare" description="Creates ZIP file suitable for download. ZIP file contains all JARs necessary for using standalone filesystems (excluding a JAXP implementation).">
         <zip compress="true" zipfile="standalone/nbfilesystems.zip">
-            <fileset dir="standalone">
-                <include name="openide-fs.jar"/>
-                <include name="openide-util.jar"/>
-                <include name="openide-lookup.jar"/>
-                <include name="README-FS.txt"/>
-            </fileset>
-            <fileset dir="../core/external">
-                <include name="xml-apis*.jar"/>
-                <include name="xerces*.jar"/>
-            </fileset>
-        </zip>
-    </target>
-
-    <target  name="standalone-fs-light" depends="standalone-fs-prepare" description="Creates zip file suitable for download. Zip file contains all JARs necessary for using standalone filesystems, excluding XML libraries.">
-        <zip compress="true" zipfile="standalone/nbfilesystems-light.zip">
             <fileset dir="standalone">
                 <include name="openide-fs.jar"/>
                 <include name="openide-util.jar"/>
@@ -988,7 +974,7 @@ into your classpath:
 
 	java -cp nbfilesystems.jar yourpackage.YourClass
 
-nbfilesystems-light.jar is similar but requires an XML parser in the classpath too.
+You need a JAXP-compliant XML parser in the classpath too.
 
 Comments or questions? Post to the dev@openide.netbeans.org mailing list.
 ]]></echo>

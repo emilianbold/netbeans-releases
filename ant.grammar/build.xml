@@ -30,9 +30,6 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="../../openide/netbeans/lib/openide.jar"/>
         <pathelement location="../netbeans/modules/ant.jar"/>
         <pathelement location="../../xml/core/netbeans/modules/autoload/xml-core.jar"/>
-        <fileset dir="../../core/external">
-          <include name="xml-apis*.jar"/>
-        </fileset>
       </classpath>
     </javac>
   </target>

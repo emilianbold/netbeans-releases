@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -34,7 +34,6 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="netbeans/lib/ext/boot.jar"/>
         <fileset dir="external">
           <include name="regexp*.jar"/>
-          <include name="xml-apis*.jar"/>
         </fileset>
       </classpath>
     </javac>
@@ -72,9 +71,6 @@ Microsystems, Inc. All Rights Reserved.
     <mkdir dir="netbeans/lib/ext"/>
     <copy todir="netbeans/lib/ext">
       <fileset dir="external">
-        <include name="crimson*.jar"/>
-        <include name="xerces*.jar"/>
-        <include name="xml-apis*.jar"/>
         <include name="regexp*.jar"/>
       </fileset>
     </copy>
@@ -99,11 +95,8 @@ Microsystems, Inc. All Rights Reserved.
       <license name="core-license.txt">
         <text>For the NetBeans core code itself:</text>
         <file location="${license.file}"/>
-        <text>For the Crimson, Regexp, and Xerces software products
-included with the NetBeans core:</text>
+        <text>For the Regexp software product included with the NetBeans core:</text>
         <file location="../nbbuild/external/apache-license.txt"/>
-        <text>For the XML Commons software product:</text>
-        <file location="external/xml-apis-license.txt"/>
       </license>
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>

@@ -60,11 +60,11 @@ abstract class DefaultParser  extends DefaultHandler {
     }
 
     /**
-     * Return exception thrown form handler used for stopping the parser.
-     * Such exception is tested for reference equality.
+     * Check if the given exception is one thrown from the handler
+     * for stopping the parser.
      */
-    protected Exception stopException() {
-        return null;
+    protected boolean isStopException(Exception e) {
+        return false;
     }
 
     /**
@@ -108,7 +108,7 @@ abstract class DefaultParser  extends DefaultHandler {
             parser.parse(in);
 
         } catch (IOException io) {
-            if (stopException()  != io) {
+            if (!isStopException(io)) {
                 if (fo.isValid() && fo.canRead()) {
                     ErrorManager emgr = ErrorManager.getDefault();
                     emgr.log("While parsing: " + fo.toString());
@@ -117,7 +117,7 @@ abstract class DefaultParser  extends DefaultHandler {
                 }
             }
         } catch (SAXException sex) {
-            if (stopException()  != sex) {
+            if (!isStopException(sex)) {
                 ErrorManager emgr = ErrorManager.getDefault();
                 emgr.log("While parsing: " + fo.toString());
                 //System.out.println("While parsing: " + fo.toString());

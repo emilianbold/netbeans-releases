@@ -17,8 +17,6 @@ Microsystems, Inc. All Rights Reserved.
     <property file="user.build.properties"/>
 
     <property name="nbroot" location="../.."/>
-    <property name="xerces.jar" location="${nbroot}/core/external/xerces-2.0.2.jar"/>
-    <property name="xml-apis.jar" location="${nbroot}/core/external/xml-apis-1.0b2.jar"/>
     <!-- Trunk, except Mutex*.java should be with tag mutex_32439: -->
     <property name="openide.jar" location="???/openide/netbeans/lib/openide.jar"/>
     <property name="looks" location="${nbroot}/openide/looks"/>
@@ -34,8 +32,6 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${openide.jar}"/>
         <pathelement location="${looks.jar}"/>
         <pathelement location="${Spin.jar}"/>
-        <pathelement location="${xerces.jar}"/>
-        <pathelement location="${xml-apis.jar}"/>
     </path>
     
     <target name="init">
