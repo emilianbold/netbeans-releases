@@ -25,11 +25,7 @@ Microsystems, Inc. All Rights Reserved.
   <property name="plugins.install.dir" location="plugins"/>
 
   
-  
-  <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="${nbext}/nbantext.jar"/>
-  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext}/nbantext.jar"/>
-  <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nbext}/nbantext.jar"/>
-  <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext}/nbantext.jar"/>
+
   
   <target name="prepare-nbjunit">
     <ant dir="nbjunit" antfile="build.xml" target="jar-nbjunit"/>
@@ -100,7 +96,11 @@ Microsystems, Inc. All Rights Reserved.
   <target name="build-all" depends="build-xtest, build-plugins"/>
   
   
-  <target name="makedist" depends="build-all">
+  <target name="makedist">
+     <!-- build xtest from nbbuil, so required openide/core modules are built as well -->     
+     <ant dir="../nbbuild" target="all-xtest">
+        <property name="netbeans.no.pre.unscramble" value="true"/>
+     </ant>
      <zip zipfile="xtest-distribution.zip">     
 	<zipfileset dir="lib" prefix="lib" includes="**/*.xml,**/*.jar,**/*.xsl,**/*.exe,**/*.so,**/*.dll"/>
         <zipfileset dir="plugins" prefix="plugins" includes="**"/>
@@ -173,13 +173,11 @@ Microsystems, Inc. All Rights Reserved.
   <target name="all-xtest">
      <ant dir="../nbbuild" antfile="build.xml" target="all-xtest"/>
   </target>  
-
-  <target name="timestamp" unless="buildnumber">
-    <tstamp>
-        <format property="buildnumber" pattern="yyyyMMddhhmm"/>
-    </tstamp>
-  </target>
   
+  <!-- xtest module targets -> module is currently not maintained -->
+  <target name="nbm">
+    <ant antfile="module_build.xml" target="nbm"/>
+  </target>
   
   
   <!-- XTest PES proxy targets -->
@@ -192,35 +190,5 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   
   
-  <!-- XTest module - currently not maintained !!!! -->
-  
-  <target name="nbjunit-module">
-    <ant dir="nbjunit" antfile="build.xml" target="netbeans"/>
-    <mkdir dir="netbeans"/>       
-    <copy todir="netbeans">
-       <fileset dir="nbjunit/netbeans"/>
-    </copy>
-  </target>
-
-  <target name="nbm" depends="nbjunit-module,makedist,timestamp">
-    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-    <copy file="module-manifest.mf" tofile="module-manifest-subst.mf" filtering="on"/>
-    <mkdir dir="netbeans/modules"/>
-    <locjar jarfile="netbeans/modules/xtest.jar"
-         manifest="module-manifest-subst.mf"
-         basedir="modulesrc"
-	 excludesfile="../nbbuild/standard-jar-excludes.txt"
-	 compress="false">
-    </locjar>
-    <mkdir dir="netbeans/xtest-distribution"/>
-    <unzip src="xtest-distribution.zip" dest="netbeans/xtest-distribution" />
-    <makenbm file="xtest.nbm"
-             topdir="."
-             module="netbeans/modules/xtest.jar"
-             homepage="http://xtest.${homepage.base}"
-	         distribution="http://${dist.base}/xtest.nbm">
-      <license file="${xtest.license.file}"/>
-<!--      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/> -->
-    </makenbm>
-  </target>
+ 
 </project>
