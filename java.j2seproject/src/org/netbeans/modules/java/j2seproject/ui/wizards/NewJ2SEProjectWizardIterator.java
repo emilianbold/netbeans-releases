@@ -93,6 +93,10 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
             File sourceFolder = (File)wiz.getProperty("sourceRoot");        //NOI18N
             File testFolder = (File)wiz.getProperty("testRoot");            //NOI18N            
             J2SEProjectGenerator.createProject(dirF, name, sourceFolder, testFolder );
+            FileObject srcFo = FileUtil.toFileObject(sourceFolder);
+            if (srcFo != null) {
+                resultSet.add (srcFo);
+            }
         }
         else {
             AntProjectHelper h = J2SEProjectGenerator.createProject(dirF, name, mainClass, type == TYPE_APP ? MANIFEST_FILE : null);
