@@ -508,6 +508,12 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
             }
         });
 
+        codeArea.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                codeAreaMouseClicked(evt);
+            }
+        });
+
         codeScrollPane.setViewportView(codeArea);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -528,6 +534,11 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         add(paramLabel, gridBagConstraints);
 
     }//GEN-END:initComponents
+
+    private void codeAreaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_codeAreaMouseClicked
+        if (!codeButton.isSelected())
+            codeButton.doClick();
+    }//GEN-LAST:event_codeAreaMouseClicked
 
     private void methodDetailsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_methodDetailsButtonActionPerformed
         MethodPicker picker = new MethodPicker(formModel, null, requiredType);
