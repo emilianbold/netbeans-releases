@@ -2683,14 +2683,6 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       
       <style 
         in="modules_javadoc/index.xml" 
-        out="modules_javadoc/index.html" 
-        style="javadoctools/export2html.xsl"
-      >
-        <param name="date" expression="${modules-javadoc-date}"/>
-      </style>
-      
-      <style 
-        in="modules_javadoc/index.xml" 
         out="modules_javadoc/usecases.html" 
         style="javadoctools/export2usecases.xsl"
       >
@@ -2706,6 +2698,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
         <param name="changes-since-year" expression="${previous.release.year}"/>
         <param name="changes-since-day" expression="${previous.release.day}"/>
         <param name="changes-since-month" expression="${previous.release.month}"/>
+        <param name="include-introduction" expression="true" />
       </style>
       
       
@@ -2722,6 +2715,15 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
         </packageslist>
     </javadoc-index>
     
+
+    <!-- at the end geneate the index.html so people know where to start -->      
+      <style 
+        in="modules_javadoc/index.xml" 
+        out="modules_javadoc/index.html" 
+        style="javadoctools/export2html.xsl"
+      >
+        <param name="date" expression="${modules-javadoc-date}"/>
+      </style>
       
       
   </target>
