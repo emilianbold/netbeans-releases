@@ -33,7 +33,9 @@ public class ConnectorsTest extends DebuggerJPDAApiTestBase {
 
     public void testListen() throws Exception {
 
-        JPDASupport support = JPDASupport.listen("org.netbeans.api.debugger.jpda.testapps.EmptyApp");
+        JPDASupport support = JPDASupport.attach (
+            "org.netbeans.api.debugger.jpda.testapps.EmptyApp"
+        );
         support.doFinish();
     }
 }

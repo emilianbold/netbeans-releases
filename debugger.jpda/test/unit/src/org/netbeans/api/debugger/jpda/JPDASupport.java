@@ -39,26 +39,171 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
  */
 public class JPDASupport implements DebuggerManagerListener {
 
-    private static final boolean verbose = false;
+    private static final boolean    verbose = false;
     private static final DateFormat df = new SimpleDateFormat("kk:mm:ss.SSS");
+    private static DebuggerManager  dm = DebuggerManager.getDebuggerManager ();
 
-    private DebuggerManager     dm;
-    private Process             process;
-    private ProcessIO           pio;
-    private JPDADebugger        jpdaDebugger;
+    private JPDADebugger            jpdaDebugger;
+    private DebuggerEngine          debuggerEngine;
     
 
     private Object [] debuggerStartLock = new Object[1];
     private Object [] stepLock = new Object[1];
 
-    private JPDASupport () {
-        dm = DebuggerManager.getDebuggerManager ();
+    private Object              STATE_LOCK = new Object ();
+    
+    
+    private JPDASupport (JPDADebugger jpdaDebugger) {
+        this.jpdaDebugger = jpdaDebugger;
+        jpdaDebugger.addPropertyChangeListener (this);
+        DebuggerEngine[] de = dm.getDebuggerEngines ();
+        int i, k = de.length;
+        for (i = 0; i < k; i++)
+            if (de [i].lookupFirst (null, JPDADebugger.class) == jpdaDebugger) {
+                debuggerEngine = de [i];
+                break;
+            }
     }
 
-    private Object[] createServices () {
+    
+    // starting methods ........................................................
+
+//    public static JPDASupport listen (String mainClass) 
+//    throws IOException, IllegalConnectorArgumentsException, 
+//    DebuggerStartException {
+//        VirtualMachineManager vmm = Bootstrap.virtualMachineManager ();
+//        List lconnectors = vmm.listeningConnectors ();
+//        ListeningConnector connector = null;
+//        for (Iterator i = lconnectors.iterator (); i.hasNext ();) {
+//            ListeningConnector lc = (ListeningConnector) i.next ();
+//            Transport t = lc.transport ();
+//            if (t != null && t.name ().equals ("dt_socket")) {
+//                connector = lc;
+//                break;
+//            }
+//        }
+//        if (connector == null) 
+//            throw new RuntimeException 
+//                ("No listening socket connector available");
+//
+//        Map args = connector.defaultArguments ();
+//        String address = connector.startListening (args);
+//        String localhostAddres;
+//        try
+//        {
+//            int port = Integer.parseInt 
+//                (address.substring (address.indexOf (':') + 1));
+//            localhostAddres = "localhost:" + port;
+//            Connector.IntegerArgument portArg = 
+//                (Connector.IntegerArgument) args.get("port");
+//            portArg.setValue(port);
+//        } catch (Exception e) {
+//            // this address format is not known, use default
+//            localhostAddres = address;
+//        }
+//
+//        JPDADebugger jpdaDebugger = JPDADebugger.listen 
+//            (connector, args, createServices ());
+//        if (jpdaDebugger == null) 
+//            throw new DebuggerStartException ("JPDA jpdaDebugger was not started");
+//        Process process = launchVM (mainClass, localhostAddres, false);
+//        ProcessIO pio = new ProcessIO (process);
+//        pio.go ();
+//        return new JPDASupport (jpdaDebugger);
+//    }
+
+    public static JPDASupport attach (String mainClass) throws IOException, 
+    DebuggerStartException {
+        Process process = launchVM (mainClass, "", true);
+        String line = readLine (process.getInputStream ());
+        int port = Integer.parseInt (line.substring (line.lastIndexOf (':') + 1).trim ());
+        ProcessIO pio = new ProcessIO (process);
+        pio.go ();
+
+        VirtualMachineManager vmm = Bootstrap.virtualMachineManager();
+        List aconnectors = vmm.attachingConnectors();
+        AttachingConnector connector = null;
+        for (Iterator i = aconnectors.iterator(); i.hasNext();) {
+            AttachingConnector ac = (AttachingConnector) i.next();
+            Transport t = ac.transport ();
+            if (t != null && t.name().equals("dt_socket")) {
+                connector = ac;
+                break;
+            }
+        }
+        if (connector == null) 
+            throw new RuntimeException
+                ("No attaching socket connector available");
+
+        JPDADebugger jpdaDebugger = JPDADebugger.attach (
+            "localhost", 
+            port, 
+            createServices ()
+        );
+        return new JPDASupport (jpdaDebugger);
+    }
+
+    
+    // public interface ........................................................
+    
+    public void doContinue () {
+        if (jpdaDebugger.getState () != JPDADebugger.STATE_STOPPED) 
+            throw new IllegalStateException ();
+        debuggerEngine.getActionsManager ().doAction 
+            (ActionsManager.ACTION_CONTINUE);
+    }
+
+    public void stepOver () {
+        step (ActionsManager.ACTION_STEP_OVER);
+    }
+
+    public void stepInto () {
+        step (ActionsManager.ACTION_STEP_INTO);
+    }
+
+    public void stepOut () {
+        step (ActionsManager.ACTION_STEP_OUT);
+    }
+
+    public void step (Object action) {
+        if (jpdaDebugger.getState () != JPDADebugger.STATE_STOPPED)
+            throw new IllegalStateException ();
+        debuggerEngine.getActionsManager ().doAction (action);
+        waitState (JPDADebugger.STATE_STOPPED);
+    }
+
+    public void doFinish () {
+        if (jpdaDebugger == null) return;
+        debuggerEngine.getActionsManager ().
+            doAction (ActionsManager.ACTION_KILL);
+        waitState (JPDADebugger.STATE_DISCONNECTED);
+    }
+
+    public void waitState (int state) {
+        while ( jpdaDebugger.getState () != state &&
+                jpdaDebugger.getState () != JPDADebugger.STATE_DISCONNECTED
+        ) {
+            synchronized (STATE_LOCK) {
+                try {
+                    STATE_LOCK.wait ();
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace ();
+                }
+            }
+        }
+    }
+
+    public JPDADebugger getDebugger() {
+        return jpdaDebugger;
+    }
+    
+    
+    // other methods ...........................................................
+    
+    private static Object[] createServices () {
         try {
             Map map = new HashMap ();
-            ClassLoader cl = this.getClass ().getClassLoader ();
+            ClassLoader cl = JPDASupport.class.getClassLoader ();
             String file = "org/netbeans/api/debugger/jpda/testapps/LineBreakpointApp.class";
             URL url = cl.getResource (file);
             String surl = url.toString ();
@@ -74,140 +219,8 @@ public class JPDASupport implements DebuggerManagerListener {
             return new Object[] {};
         }
     }
-    
-    public ActionsManager getActionsManager () {
-        return DebuggerManager.getDebuggerManager ().getCurrentEngine ().
-            getActionsManager ();
-    }
 
-    public static Process launchVM (
-        String mainClass, 
-        String connectorAddress, 
-        boolean vmListens
-    ) throws IOException {
-
-        URLClassLoader ucl = (URLClassLoader) JPDASupport.class.
-                getClassLoader ();
-        URL [] urls = ucl.getURLs();
-
-        StringBuffer cp = new StringBuffer(200);
-        for (int i = 0; i < urls.length; i++) {
-            URL url = urls[i];
-            cp.append(url.getPath());
-            cp.append(File.pathSeparatorChar);
-        }
-
-        String [] cmdArray = new String [] {
-            System.getProperty("java.home") + File.separatorChar + "bin" + File.separatorChar + "java",
-            "-Xdebug",
-            "-Xnoagent",
-            "-Xrunjdwp:transport=" + "dt_socket" + ",address=" + connectorAddress + ",suspend=y,server=" + (vmListens ? "y" : "n"),
-            "-Djava.compiler=NONE",
-            "-classpath",
-            cp.substring(0, cp.length() -1),
-            mainClass
-        };
-
-        return Runtime.getRuntime().exec(cmdArray);
-    }
-
-    private void connect (String mainClass, boolean stopInMain) throws IOException, IllegalConnectorArgumentsException, DebuggerStartException {
-
-        VirtualMachineManager vmm = Bootstrap.virtualMachineManager();
-        List lconnectors = vmm.listeningConnectors();
-        ListeningConnector connector = null;
-        for (Iterator i = lconnectors.iterator(); i.hasNext();) {
-            ListeningConnector lc = (ListeningConnector) i.next();
-            Transport t = lc.transport ();
-            if (t != null && t.name().equals("dt_socket")) {
-                connector = lc;
-                break;
-            }
-        }
-        if (connector == null) throw new RuntimeException("No listening socket connector available");
-
-        Map args = connector.defaultArguments();
-        String address = connector.startListening(args);
-        String localhostAddres;
-        try
-        {
-            int port = Integer.parseInt(address.substring(address.indexOf(':') + 1));
-            localhostAddres = "localhost:" + port;
-            Connector.IntegerArgument portArg = (Connector.IntegerArgument) args.get("port");
-            portArg.setValue(port);
-        } catch (Exception e) {
-            // this address format is not known, use default
-            localhostAddres = address;
-        }
-
-        if (stopInMain) addMainMethodBreakpoint(mainClass);
-
-        debuggerStartLock = new Object[1];
-
-        JPDADebugger.startListening (connector, args, createServices ());
-
-        DebuggerEngine de = dm.getCurrentEngine ();
-        jpdaDebugger = (JPDADebugger) de.lookupFirst (null, JPDADebugger.class);
-        if (jpdaDebugger == null) 
-            throw new DebuggerStartException ("JPDA jpdaDebugger was not started");
-        jpdaDebugger.addPropertyChangeListener (this);
-
-        waitDebuggerListens ();
-        process = launchVM (mainClass, localhostAddres, false);
-        pio = new ProcessIO (process);
-        pio.go();
-
-        if (stopInMain) {
-            waitDebuggerStarted();
-            if (verbose) System.out.println("JPDA SUPPORT STOPPED IN " + jpdaDebugger.getCurrentCallStackFrame().getMethodName() + " LINE: " + jpdaDebugger.getCurrentCallStackFrame().getLineNumber(null));
-        }
-    }
-
-    private void waitDebuggerListens() {
-        try { Thread.sleep(300); } catch (InterruptedException e) {}
-    }
-
-    private void addMainMethodBreakpoint(String mainClass) {
-        final MethodBreakpoint mb = MethodBreakpoint.create(mainClass, "main");
-        mb.setBreakpointType(MethodBreakpoint.TYPE_METHOD_ENTRY);
-        mb.addJPDABreakpointListener(new JPDABreakpointListener() {
-            public void breakpointReached(JPDABreakpointEvent event) {
-                dm.removeBreakpoint(mb);
-            }
-        });
-        dm.addBreakpoint(mb);
-    }
-
-    private void attachImpl(String mainClass) throws IOException, DebuggerStartException {
-
-        Process process = launchVM(mainClass, "", true);
-        String line = readLine(process.getInputStream());
-        int port = Integer.parseInt(line.substring(line.lastIndexOf(':') + 1).trim());
-        pio = new ProcessIO(process);
-        pio.go();
-
-        addMainMethodBreakpoint(mainClass);
-
-        VirtualMachineManager vmm = Bootstrap.virtualMachineManager();
-        List aconnectors = vmm.attachingConnectors();
-        AttachingConnector connector = null;
-        for (Iterator i = aconnectors.iterator(); i.hasNext();) {
-            AttachingConnector ac = (AttachingConnector) i.next();
-            Transport t = ac.transport ();
-            if (t != null && t.name().equals("dt_socket")) {
-                connector = ac;
-                break;
-            }
-        }
-        if (connector == null) throw new RuntimeException("No attaching socket connector available");
-
-        jpdaDebugger = JPDADebugger.attach("localhost", port, createServices ());
-        jpdaDebugger.addPropertyChangeListener(this);
-
-        waitDebuggerStarted();
-    }
-
-    private String readLine(InputStream in) throws IOException {
+    private static String readLine (InputStream in) throws IOException {
         StringBuffer sb = new StringBuffer();
         for (;;) {
             int c = in.read();
@@ -220,170 +233,43 @@ public class JPDASupport implements DebuggerManagerListener {
             sb.append((char)c);
         }
     }
-
-    private void waitDebuggerStarted() throws DebuggerStartException {
-        synchronized(debuggerStartLock) {
-            try {
-                if ("started".equals(debuggerStartLock[0])) return;
-                debuggerStartLock.wait(10000);
-                if (debuggerStartLock[0] == null) throw new DebuggerStartException("Debugger did not start");
-            } catch (InterruptedException e) {
-                throw new DebuggerStartException(e);
-            }
-        }
-    }
-
-    public static JPDASupport listen(String mainClass) throws IOException, IllegalConnectorArgumentsException,
-            DebuggerStartException {
-        return listen (mainClass, true);
-    }
-
-    public static JPDASupport listen (
+    
+    private static Process launchVM (
         String mainClass, 
-        boolean stopInMain
-    ) throws IOException, IllegalConnectorArgumentsException, 
-    DebuggerStartException {
+        String connectorAddress, 
+        boolean server
+    ) throws IOException {
 
-        JPDASupport jpda = new JPDASupport ();
-        jpda.connect (mainClass, stopInMain);
-        return jpda;
-    }
+        URLClassLoader ucl = (URLClassLoader) JPDASupport.class.
+            getClassLoader ();
+        URL [] urls = ucl.getURLs ();
 
-    public static JPDASupport attach(String mainClass) throws IOException, DebuggerStartException {
-
-        JPDASupport jpda = new JPDASupport();
-        jpda.attachImpl(mainClass);
-        return jpda;
-    }
-
-    public void doContinue() {
-        if (jpdaDebugger.getState() != DebuggerConstants.STATE_STOPPED) throw new IllegalStateException();
-        waitEnabled(ActionsManager.ACTION_CONTINUE);
-        getActionsManager().doAction(ActionsManager.ACTION_CONTINUE);
-        if (verbose) System.err.println(df.format(new Date()) + " Successfully invoked continue");
-    }
-
-    public void stepOver() {
-        step(ActionsManager.ACTION_STEP_OVER);
-    }
-
-    public void stepInto() {
-        step(ActionsManager.ACTION_STEP_INTO);
-    }
-
-    public void stepOut() {
-        step(ActionsManager.ACTION_STEP_OUT);
-    }
-
-    public void step(Object action) {
-        if (jpdaDebugger.getState() != DebuggerConstants.STATE_STOPPED) {
-            throw new IllegalStateException();
-        }
-        waitEnabled(action);
-        synchronized (stepLock) {
-            stepLock[0] = "stepStart";
-            getActionsManager().doAction(action);
-            if (verbose) System.err.println(df.format(new Date()) + " Successfully invoked step: " + action);
-            try {
-                stepLock.wait(10000);
-                if (stepLock[0] != null) throw new TimeoutException("Step action timed out");
-            } catch (InterruptedException e) {
-                 throw new IllegalStateException();
-            }
-        }
-    }
-
-    private void waitEnabled(Object action) {
-        for (int i = 0; i < 50; i++) {
-            if (getActionsManager().isEnabled(action)) return;
-            sleep(100);
-        }
-        throw new IllegalStateException("Action " + action + " is not enabled");
-    }
-
-    public void waitDisconnected(int timeoutMillis) {
-        long t0 = System.currentTimeMillis();
-        while (jpdaDebugger.getState() != DebuggerConstants.STATE_DISCONNECTED) {
-            sleep(100);
-            if (System.currentTimeMillis() - t0 > timeoutMillis) throw new TimeoutException();
-/*
-            if (jpdaDebugger.getState() == JPDADebugger.STATE_STOPPED) {
-                System.out.println("Stopped at " + jpdaDebugger.getCurrentCallStackFrame().getClassName() + ":" +
-                                   jpdaDebugger.getCurrentCallStackFrame().getLineNumber(null));
-            }
-*/
-        }
-    }
-
-    public static class TimeoutException extends RuntimeException {
-        TimeoutException() {
+        StringBuffer cp = new StringBuffer (200);
+        for (int i = 0; i < urls.length; i++) {
+            URL url = urls [i];
+            cp.append (url.getPath ());
+            cp.append (File.pathSeparatorChar);
         }
 
-        TimeoutException(String message) {
-            super(message);
-        }
-    }
+        String [] cmdArray = new String [] {
+            System.getProperty ("java.home") + File.separatorChar + 
+                "bin" + File.separatorChar + "java",
+            "-Xdebug",
+            "-Xnoagent",
+            "-Xrunjdwp:transport=" + "dt_socket" + ",address=" + 
+                connectorAddress + ",suspend=y,server=" + 
+                (server ? "y" : "n"),
+            "-Djava.compiler=NONE",
+            "-classpath",
+            cp.substring(0, cp.length() -1),
+            mainClass
+        };
 
-    public void waitState(int state, int timeoutMillis) {
-        long t0 = System.currentTimeMillis();
-        while (jpdaDebugger.getState() != state) {
-            sleep(200);
-            if (System.currentTimeMillis() - t0 > timeoutMillis) {
-/*
-                VirtualMachine vm = ((JPDADebuggerImpl) jpdaDebugger).getVirtualMachine();
-                List threads = vm.allThreads();
-                for (Iterator i = threads.iterator(); i.hasNext();) {
-                    ThreadReference threadReference = (ThreadReference) i.next();
-                    System.err.println("Thread " + threadReference.name() + " suspended? " + threadReference.isSuspended());
-                }
-*/
-                throw new TimeoutException("Waitstate timeout: " + jpdaDebugger.getState());
-            }
-        }
+        return Runtime.getRuntime ().exec (cmdArray);
     }
-
-    public void waitStates(int state1, int state2, int timeoutMillis) {
-        long t0 = System.currentTimeMillis();
-        while (jpdaDebugger.getState() != state1 && jpdaDebugger.getState() != state2) {
-            if (System.currentTimeMillis() - t0 > timeoutMillis)
-                throw new TimeoutException("Waitstate timeout: " + jpdaDebugger.getState());
-            sleep(200);
-        }
-    }
-
-    private void sleep(int time) {
-        try {
-            Thread.sleep(time);
-        } catch (InterruptedException e) {
-            throw new DisconnectedException(e);
-        }
-    }
-
-    public void doFinish() {
-        if (jpdaDebugger == null) return;
-        jpdaDebugger.removePropertyChangeListener(this);
-        if (DebuggerManager.getDebuggerManager().getCurrentEngine() != null) {
-            try {
-                ActionsManager am = getActionsManager();
-                am.doAction(ActionsManager.ACTION_KILL);
-                waitDisconnected(10000);
-            } catch (Throwable e) {
-                e.printStackTrace(System.out);
-            }
-        }
-        jpdaDebugger = null;
-        if (verbose) System.err.println(df.format(new Date()) + " DEBUGGER FINISHED OK");
-    }
-
-    private class DisconnectedException extends RuntimeException {
-        public DisconnectedException(Throwable cause) {
-            super(cause);
-        }
-
-        public DisconnectedException() {
-            super();
-        }
-    }
+    
+    
+    // DebuggerListener ........................................................
 
     public Breakpoint[] initBreakpoints() {
         return new Breakpoint[0];
@@ -410,45 +296,31 @@ public class JPDASupport implements DebuggerManagerListener {
     public void sessionRemoved(Session session) {
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-//        System.out.println(evt.getSource() + " : " + evt.getPropertyName() + " : " + evt.getOldValue() + " : " + evt.getNewValue());
+    public void propertyChange (PropertyChangeEvent evt) {
         if (evt.getSource() instanceof JPDADebugger) {
             JPDADebugger dbg = (JPDADebugger) evt.getSource();
 
             if (JPDADebugger.PROP_STATE.equals(evt.getPropertyName())) {
-                int os = ((Integer) evt.getOldValue()).intValue();
-                int ns = ((Integer) evt.getNewValue()).intValue();
-                if (verbose) System.err.println(df.format(new Date()) + " STATE: " + os + " => " + ns);
-                synchronized(debuggerStartLock) {
-                    if (debuggerStartLock != null && debuggerStartLock[0] == null) {
-                        if (DebuggerConstants.STATE_RUNNING == os && DebuggerConstants.STATE_STOPPED == ns) {
-                            debuggerStartLock[0] = "started";
-                            debuggerStartLock.notifyAll();
-                        }
-                    }
+                synchronized (STATE_LOCK) {
+                    STATE_LOCK.notifyAll ();
                 }
-                synchronized(stepLock) {
-                    if (stepLock[0] != null) {
-                        if (stepLock[0].equals("stepStart")) {
-                            if (os == DebuggerConstants.STATE_STOPPED && ns == DebuggerConstants.STATE_RUNNING) {
-                                stepLock[0] = "stepInProgress";
-                            }
-                        } else if (stepLock[0].equals("stepInProgress")) {
-                            if (os == DebuggerConstants.STATE_RUNNING && ns == DebuggerConstants.STATE_STOPPED) {
-                                stepLock.notifyAll();
-                                stepLock[0] = null;
-                            }
-                        }
-                    }
-                }
+                if (jpdaDebugger.getState () == JPDADebugger.STATE_DISCONNECTED)
+                    jpdaDebugger.removePropertyChangeListener (this);
             }
         }
     }
 
-    public JPDADebugger getDebugger() {
-        return jpdaDebugger;
+    // TODO: Include check of these call in the test suite
+    public void engineAdded (DebuggerEngine debuggerEngine) {
     }
 
+    // TODO: Include check of these call in the test suite
+    public void engineRemoved (DebuggerEngine debuggerEngine) {
+    }
+
+    
+    // innerclasses ............................................................
+    
     private static class ProcessIO {
 
         private Process p;
@@ -493,13 +365,5 @@ public class JPDASupport implements DebuggerManagerListener {
             }
             System.out.println("PIO QUIT");
         }
-    }
-
-    // TODO: Include check of these call in the test suite
-    public void engineAdded (DebuggerEngine debuggerEngine) {
-    }
-
-    // TODO: Include check of these call in the test suite
-    public void engineRemoved (DebuggerEngine debuggerEngine) {
     }
 }

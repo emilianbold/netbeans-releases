@@ -13,6 +13,10 @@
 
 package org.netbeans.api.debugger.jpda;
 
+import java.net.URL;
+import org.netbeans.api.debugger.ActionsManager;
+import org.netbeans.api.debugger.DebuggerManager;
+
 /**
  * Tests JPDA stepping actions: step in, step out and step over.
  *
@@ -20,107 +24,201 @@ package org.netbeans.api.debugger.jpda;
  */
 public class StepTest extends DebuggerJPDAApiTestBase {
 
-    private static final int STEP_INTO = 0;
-    private static final int STEP_OVER = 1;
-    private static final int STEP_OUT  = 3;
-
+    private DebuggerManager dm = DebuggerManager.getDebuggerManager ();
+    private String          sourceRoot = System.getProperty ("test.dir.src");
     private JPDASupport support;
 
-    public StepTest(String s) {
-        super(s);
+    public StepTest (String s) {
+        super (s);
     }
 
-    protected void setUp() throws Exception {
-        support = JPDASupport.listen("org.netbeans.api.debugger.jpda.testapps.StepApp");
-    }
-
-    public void testStepOver() throws Exception {
+    public void testStepOver () throws Exception {
         try {
-            int line;
-
-            line = support.getDebugger().getCurrentCallStackFrame().getLineNumber(null);
-            String cls = support.getDebugger().getCurrentCallStackFrame().getClassName();
-            assertEquals("Execution stopped in wrong class", cls, "org.netbeans.api.debugger.jpda.testapps.StepApp");
-            assertEquals("Execution stopped at wrong line", 24, line);
-
-            stepCheck(STEP_OVER, "org.netbeans.api.debugger.jpda.testapps.StepApp", 25);
-            stepCheck(STEP_OVER, "org.netbeans.api.debugger.jpda.testapps.StepApp", 26);
-            stepCheck(STEP_OVER, "org.netbeans.api.debugger.jpda.testapps.StepApp", 27);
-            stepCheck(STEP_OVER, "org.netbeans.api.debugger.jpda.testapps.StepApp", 28);
-            stepCheck(STEP_OVER, "org.netbeans.api.debugger.jpda.testapps.StepApp", 29);
-
-            support.doContinue();
-            support.waitDisconnected(5000);
+            LineBreakpoint lb = LineBreakpoint.create (
+                sourceRoot + 
+                    "org/netbeans/api/debugger/jpda/testapps/StepApp.java",
+                24
+            );
+            dm.addBreakpoint (lb);
+            support = JPDASupport.attach
+                ("org.netbeans.api.debugger.jpda.testapps.StepApp");
+            support.doContinue ();
+            dm.removeBreakpoint (lb);
+            assertEquals (
+                "Execution stopped in wrong class", 
+                support.getDebugger ().getCurrentCallStackFrame ().
+                    getClassName (), 
+                "org.netbeans.api.debugger.jpda.testapps.StepApp"
+            );
+            assertEquals (
+                "Execution stopped at wrong line", 
+                24, 
+                support.getDebugger ().getCurrentCallStackFrame ().
+                    getLineNumber (null)
+            );
+            stepCheck (
+                ActionsManager.ACTION_STEP_OVER, 
+                "org.netbeans.api.debugger.jpda.testapps.StepApp", 
+                25
+            );
+            stepCheck (
+                ActionsManager.ACTION_STEP_OVER, 
+                "org.netbeans.api.debugger.jpda.testapps.StepApp", 
+                26
+            );
+            stepCheck (
+                ActionsManager.ACTION_STEP_OVER, 
+                "org.netbeans.api.debugger.jpda.testapps.StepApp", 
+                27
+            );
+            stepCheck (
+                ActionsManager.ACTION_STEP_OVER, 
+                "org.netbeans.api.debugger.jpda.testapps.StepApp", 
+                28
+            );
+            stepCheck (
+                ActionsManager.ACTION_STEP_OVER, 
+                "org.netbeans.api.debugger.jpda.testapps.StepApp", 
+                29
+            );
+            support.doContinue ();
+            support.waitState (JPDADebugger.STATE_DISCONNECTED);
         } finally {
-            support.doFinish();
+            support.doFinish ();
         }
     }
 
-    public void testStepInto() throws Exception {
+    public void testStepInto () throws Exception {
         try {
-            support = JPDASupport.listen("org.netbeans.api.debugger.jpda.testapps.StepApp");
+            support = JPDASupport.attach
+                ("org.netbeans.api.debugger.jpda.testapps.StepApp");
+            assertEquals (
+                "Execution stopped in wrong class", 
+                support.getDebugger ().getCurrentCallStackFrame ().
+                    getClassName (), 
+                "org.netbeans.api.debugger.jpda.testapps.StepApp"
+            );
+            assertEquals (
+                "Execution stopped at wrong line", 
+                24, 
+                support.getDebugger ().getCurrentCallStackFrame ().
+                    getLineNumber (null)
+            );
 
-            int line = support.getDebugger().getCurrentCallStackFrame().getLineNumber(null);
-            String cls = support.getDebugger().getCurrentCallStackFrame().getClassName();
-            assertEquals("Execution stopped in wrong class", cls, "org.netbeans.api.debugger.jpda.testapps.StepApp");
-            assertEquals("Execution stopped at wrong line", 24, line);
+            stepCheck (
+                ActionsManager.ACTION_STEP_INTO, 
+                "org.netbeans.api.debugger.jpda.testapps.StepApp", 
+                32
+            );
+            stepCheck (ActionsManager.ACTION_STEP_INTO, "java.lang.Object", -1);
+            stepCheck (
+                ActionsManager.ACTION_STEP_OVER, 
+                "org.netbeans.api.debugger.jpda.testapps.StepApp", 
+                33
+            );
+            stepCheck (
+                ActionsManager.ACTION_STEP_OVER, 
+                "org.netbeans.api.debugger.jpda.testapps.StepApp", 
+                24
+            );
+            stepCheck (
+                ActionsManager.ACTION_STEP_OVER, 
+                "org.netbeans.api.debugger.jpda.testapps.StepApp", 
+                25
+            );
+            stepCheck (
+                ActionsManager.ACTION_STEP_OVER, 
+                "org.netbeans.api.debugger.jpda.testapps.StepApp", 
+                36
+            );
+            stepCheck (
+                ActionsManager.ACTION_STEP_OVER, 
+                "org.netbeans.api.debugger.jpda.testapps.StepApp", 
+                37
+            );
+            stepCheck (
+                ActionsManager.ACTION_STEP_OVER, 
+                "org.netbeans.api.debugger.jpda.testapps.StepApp", 
+                42
+            );
 
-            stepCheck(STEP_INTO, "org.netbeans.api.debugger.jpda.testapps.StepApp", 32);
-            stepCheck(STEP_INTO, "java.lang.Object", -1);
-            stepCheck(STEP_INTO, "org.netbeans.api.debugger.jpda.testapps.StepApp", 33);
-            stepCheck(STEP_INTO, "org.netbeans.api.debugger.jpda.testapps.StepApp", 24);
-            stepCheck(STEP_INTO, "org.netbeans.api.debugger.jpda.testapps.StepApp", 25);
-            stepCheck(STEP_INTO, "org.netbeans.api.debugger.jpda.testapps.StepApp", 36);
-            stepCheck(STEP_INTO, "org.netbeans.api.debugger.jpda.testapps.StepApp", 37);
-            stepCheck(STEP_INTO, "org.netbeans.api.debugger.jpda.testapps.StepApp", 42);
-
-            support.doContinue();
-            support.waitDisconnected(5000);
+            support.doContinue ();
+            support.waitState (JPDADebugger.STATE_DISCONNECTED);
         } finally {
-            support.doFinish();
+            support.doFinish ();
         }
     }
 
-    public void testStepOut() throws Exception {
+    public void testStepOut () throws Exception {
         try {
-            support = JPDASupport.listen("org.netbeans.api.debugger.jpda.testapps.StepApp");
+            support = JPDASupport.attach
+                ("org.netbeans.api.debugger.jpda.testapps.StepApp");
+            assertEquals (
+                "Execution stopped in wrong class", 
+                support.getDebugger ().getCurrentCallStackFrame ().
+                    getClassName (), 
+                "org.netbeans.api.debugger.jpda.testapps.StepApp"
+            );
+            assertEquals (
+                "Execution stopped at wrong line", 
+                24, 
+                support.getDebugger ().getCurrentCallStackFrame ().
+                    getLineNumber (null)
+            );
+            stepCheck (
+                ActionsManager.ACTION_STEP_OVER, 
+                "org.netbeans.api.debugger.jpda.testapps.StepApp", 
+                25
+            );
+            stepCheck (
+                ActionsManager.ACTION_STEP_INTO, 
+                "org.netbeans.api.debugger.jpda.testapps.StepApp", 
+                36
+            );
+            stepCheck (
+                ActionsManager.ACTION_STEP_OVER, 
+                "org.netbeans.api.debugger.jpda.testapps.StepApp", 
+                37
+            );
+            stepCheck (
+                ActionsManager.ACTION_STEP_INTO, 
+                "org.netbeans.api.debugger.jpda.testapps.StepApp", 
+                42
+            );
+            stepCheck (
+                ActionsManager.ACTION_STEP_OUT, 
+                "org.netbeans.api.debugger.jpda.testapps.StepApp", 
+                37
+            );
+            stepCheck (
+                ActionsManager.ACTION_STEP_OUT, 
+                "org.netbeans.api.debugger.jpda.testapps.StepApp", 
+                25
+            );
 
-            int line = support.getDebugger().getCurrentCallStackFrame().getLineNumber(null);
-            String cls = support.getDebugger().getCurrentCallStackFrame().getClassName();
-            assertEquals("Execution stopped in wrong class", cls, "org.netbeans.api.debugger.jpda.testapps.StepApp");
-            assertEquals("Execution stopped at wrong line", 24, line);
-
-            stepCheck(STEP_OVER, "org.netbeans.api.debugger.jpda.testapps.StepApp", 25);
-            stepCheck(STEP_INTO, "org.netbeans.api.debugger.jpda.testapps.StepApp", 36);
-            stepCheck(STEP_OVER, "org.netbeans.api.debugger.jpda.testapps.StepApp", 37);
-            stepCheck(STEP_INTO, "org.netbeans.api.debugger.jpda.testapps.StepApp", 42);
-
-            stepCheck(STEP_OUT, "org.netbeans.api.debugger.jpda.testapps.StepApp", 37);
-            stepCheck(STEP_OUT, "org.netbeans.api.debugger.jpda.testapps.StepApp", 25);
-
-            support.doContinue();
-            support.waitDisconnected(5000);
+            support.doContinue ();
+            support.waitState (JPDADebugger.STATE_DISCONNECTED);
         } finally {
-            support.doFinish();
+            support.doFinish ();
         }
     }
 
-    private void stepCheck(int stepType, String clsExpected, int lineExpected) {
-        switch (stepType) {
-        case STEP_INTO:
-            support.stepInto();
-            break;
-         case STEP_OVER:
-            support.stepOver();
-            break;
-         case STEP_OUT:
-            support.stepOut();
-            break;
-        }
-        String cls = support.getDebugger().getCurrentCallStackFrame().getClassName();
-        int line = support.getDebugger().getCurrentCallStackFrame().getLineNumber(null);
-        assertEquals("Execution stopped in wrong class", clsExpected, cls);
-        if (lineExpected != -1) assertEquals("Execution stopped at wrong line", lineExpected, line);
+    private void stepCheck (
+        Object stepType, 
+        String clsExpected, 
+        int lineExpected
+    ) {
+        support.step (stepType);
+        assertEquals(
+            "Execution stopped in wrong class", 
+            clsExpected, 
+            support.getDebugger ().getCurrentCallStackFrame ().getClassName ()
+        );
+        assertEquals (
+            "Execution stopped at wrong line", 
+            lineExpected, 
+            support.getDebugger ().getCurrentCallStackFrame ().
+                getLineNumber (null)
+        );
     }
-
 }

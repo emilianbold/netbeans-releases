@@ -17,96 +17,131 @@ import java.net.URL;
 import java.io.IOException;
 
 import com.sun.jdi.connect.IllegalConnectorArgumentsException;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.junit.NbTestCase;
 
 /**
  * Tests line breakpoints at various places.
  *
  * @author Maros Sandor
  */
-public class LineBreakpointTest extends DebuggerJPDAApiTestBase {
+public class LineBreakpointTest extends NbTestCase {
 
     private JPDASupport     support;
     private JPDADebugger    debugger;
     private String          urlString;
 
-    public LineBreakpointTest(String s) {
-        super(s);
+    public LineBreakpointTest (String s) {
+        super (s);
     }
 
-    protected void setUp() throws Exception {
-        super.setUp();
-        ClassLoader cl = this.getClass().getClassLoader();
-        URL url = cl.getResource("org/netbeans/api/debugger/jpda/testapps/LineBreakpointApp.class");
+    protected void setUp () throws Exception {
+        super.setUp ();
+        ClassLoader cl = this.getClass ().getClassLoader ();
+        URL url = cl.getResource (
+            "org/netbeans/api/debugger/jpda/testapps/LineBreakpointApp.class"
+        );
         urlString = url.toString();
     }
 
     public void testConditionalBreakpoint() throws Exception {
-        doTestBreakpointComplete(33, "x==22", DebuggerConstants.CONDITION_FALSE);
-        doTestBreakpointComplete(34, "x==60", DebuggerConstants.CONDITION_TRUE);
+        doTestBreakpointComplete (
+            33, 
+            "x==22", 
+            JPDABreakpointEvent.CONDITION_FALSE
+        );
+        doTestBreakpointComplete (
+            34, 
+            "x==60", 
+            JPDABreakpointEvent.CONDITION_TRUE
+        );
     }
 
-    public void testMultipleLineBreakpoints() throws Exception {
+    public void testMultipleLineBreakpoints () throws Exception {
         try {
-            LineBreakpoint lb1 = LineBreakpoint.create(urlString, 26);
-            LineBreakpoint lb2 = LineBreakpoint.create(urlString, 31);
-            LineBreakpoint lb3 = LineBreakpoint.create(urlString, 103);
-            LineBreakpoint lb4 = LineBreakpoint.create(urlString, 86);
-            LineBreakpoint lb5 = LineBreakpoint.create(urlString, 35);
+            LineBreakpoint lb1 = LineBreakpoint.create (urlString, 26);
+            LineBreakpoint lb2 = LineBreakpoint.create (urlString, 31);
+            LineBreakpoint lb3 = LineBreakpoint.create (urlString, 103);
+            LineBreakpoint lb4 = LineBreakpoint.create (urlString, 86);
+            LineBreakpoint lb5 = LineBreakpoint.create (urlString, 35);
 
-            dm.addBreakpoint(lb1);
-            dm.addBreakpoint(lb2);
-            dm.addBreakpoint(lb3);
-            dm.addBreakpoint(lb4);
-            dm.addBreakpoint(lb5);
+            DebuggerManager dm = DebuggerManager.getDebuggerManager ();
+            dm.addBreakpoint (lb1);
+            dm.addBreakpoint (lb2);
+            dm.addBreakpoint (lb3);
+            dm.addBreakpoint (lb4);
+            dm.addBreakpoint (lb5);
 
-            TestBreakpointListener tb1 = new TestBreakpointListener(lb1);
-            lb1.addJPDABreakpointListener(tb1);
-            TestBreakpointListener tb2 = new TestBreakpointListener(lb2);
-            lb2.addJPDABreakpointListener(tb2);
-            TestBreakpointListener tb3 = new TestBreakpointListener(lb3);
-            lb3.addJPDABreakpointListener(tb3);
-            TestBreakpointListener tb4 = new TestBreakpointListener(lb4);
-            lb4.addJPDABreakpointListener(tb4);
-            TestBreakpointListener tb5 = new TestBreakpointListener(lb5);
-            lb5.addJPDABreakpointListener(tb5);
+            TestBreakpointListener tb1 = new TestBreakpointListener (lb1);
+            lb1.addJPDABreakpointListener (tb1);
+            TestBreakpointListener tb2 = new TestBreakpointListener (lb2);
+            lb2.addJPDABreakpointListener (tb2);
+            TestBreakpointListener tb3 = new TestBreakpointListener (lb3);
+            lb3.addJPDABreakpointListener (tb3);
+            TestBreakpointListener tb4 = new TestBreakpointListener (lb4);
+            lb4.addJPDABreakpointListener (tb4);
+            TestBreakpointListener tb5 = new TestBreakpointListener (lb5);
+            lb5.addJPDABreakpointListener (tb5);
 
-            support = JPDASupport.listen("org.netbeans.api.debugger.jpda.testapps.LineBreakpointApp", false);
+            support = JPDASupport.attach (
+                "org.netbeans.api.debugger.jpda.testapps.LineBreakpointApp"
+            );
             debugger = support.getDebugger();
 
-            support.waitState(DebuggerConstants.STATE_STOPPED, 10000);  // 1st breakpoint hit
-            assertEquals("Debugger stopped at wrong line", lb1.getLineNumber(), debugger.getCurrentCallStackFrame().getLineNumber(null));
+            support.waitState (JPDADebugger.STATE_STOPPED);  // 1st breakpoint hit
+            assertEquals (
+                "Debugger stopped at wrong line", 
+                lb1.getLineNumber (), 
+                debugger.getCurrentCallStackFrame ().getLineNumber (null)
+            );
 
             support.doContinue();
-            support.waitState(DebuggerConstants.STATE_STOPPED, 10000);  // 2nd breakpoint hit
-            assertEquals("Debugger stopped at wrong line", lb2.getLineNumber(), debugger.getCurrentCallStackFrame().getLineNumber(null));
+            support.waitState (JPDADebugger.STATE_STOPPED);  // 2nd breakpoint hit
+            assertEquals (
+                "Debugger stopped at wrong line", 
+                lb2.getLineNumber (), 
+                debugger.getCurrentCallStackFrame ().getLineNumber (null)
+            );
 
-            support.doContinue();
-            support.waitState(DebuggerConstants.STATE_STOPPED, 10000);  // 3rd breakpoint hit
-            assertEquals("Debugger stopped at wrong line", lb3.getLineNumber(), debugger.getCurrentCallStackFrame().getLineNumber(null));
+            support.doContinue ();
+            support.waitState (JPDADebugger.STATE_STOPPED);  // 3rd breakpoint hit
+            assertEquals (
+                "Debugger stopped at wrong line", 
+                lb3.getLineNumber (), 
+                debugger.getCurrentCallStackFrame ().getLineNumber (null)
+            );
 
-            support.doContinue();
-            support.waitState(DebuggerConstants.STATE_STOPPED, 10000);  // 4th breakpoint hit
-            assertEquals("Debugger stopped at wrong line", lb4.getLineNumber(), debugger.getCurrentCallStackFrame().getLineNumber(null));
+            support.doContinue ();
+            support.waitState (JPDADebugger.STATE_STOPPED);  // 4th breakpoint hit
+            assertEquals (
+                "Debugger stopped at wrong line", 
+                lb4.getLineNumber (), 
+                debugger.getCurrentCallStackFrame ().getLineNumber (null)
+            );
 
-            support.doContinue();
-            support.waitState(DebuggerConstants.STATE_STOPPED, 10000);  // 5th breakpoint hit
-            assertEquals("Debugger stopped at wrong line", lb5.getLineNumber(), debugger.getCurrentCallStackFrame().getLineNumber(null));
+            support.doContinue ();
+            support.waitState (JPDADebugger.STATE_STOPPED);  // 5th breakpoint hit
+            assertEquals (
+                "Debugger stopped at wrong line", 
+                lb5.getLineNumber (), 
+                debugger.getCurrentCallStackFrame ().getLineNumber (null)
+            );
 
-            tb1.assertFailure();
-            tb2.assertFailure();
-            tb3.assertFailure();
-            tb4.assertFailure();
-            tb5.assertFailure();
+            tb1.assertFailure ();
+            tb2.assertFailure ();
+            tb3.assertFailure ();
+            tb4.assertFailure ();
+            tb5.assertFailure ();
 
-            dm.removeBreakpoint(lb1);
-            dm.removeBreakpoint(lb2);
-            dm.removeBreakpoint(lb3);
-            dm.removeBreakpoint(lb4);
-            dm.removeBreakpoint(lb5);
-            support.doContinue();
-            support.waitDisconnected(5000);
+            dm.removeBreakpoint (lb1);
+            dm.removeBreakpoint (lb2);
+            dm.removeBreakpoint (lb3);
+            dm.removeBreakpoint (lb4);
+            dm.removeBreakpoint (lb5);
+            support.doContinue ();
+            support.waitState (JPDADebugger.STATE_DISCONNECTED);
         } finally {
-            support.doFinish();
+            support.doFinish ();
         }
     }
 
@@ -129,21 +164,31 @@ public class LineBreakpointTest extends DebuggerJPDAApiTestBase {
         doTestBreakpointComplete(45);
     }
 
-    public void testInnerLineBreakpoint() throws Exception {
-        doTestBreakpointComplete(96);
-        doTestBreakpointComplete(99);
-        doTestBreakpointComplete(107);
+    public void testInnerLineBreakpoint () throws Exception {
+        doTestBreakpointComplete (96);
+        doTestBreakpointComplete (99);
+        doTestBreakpointComplete (107);
     }
 
-    private void doTestBreakpointComplete(int line, String condition, int conditionResult) throws IOException, IllegalConnectorArgumentsException,
-            DebuggerStartException {
+    private void doTestBreakpointComplete (
+        int line, 
+        String condition, 
+        int conditionResult
+    ) throws IOException, IllegalConnectorArgumentsException,
+    DebuggerStartException {
         try {
-            LineBreakpoint lb = doTestBreakpoint(line, condition, conditionResult);
-            if (condition == null || conditionResult == DebuggerConstants.CONDITION_TRUE) {
+            LineBreakpoint lb = doTestBreakpoint (
+                line, 
+                condition, 
+                conditionResult
+            );
+            if ( condition == null || 
+                 conditionResult == JPDABreakpointEvent.CONDITION_TRUE
+            ) {
                 support.doContinue();
-                support.waitDisconnected(5000);
+                support.waitState (JPDADebugger.STATE_DISCONNECTED);
             }
-            dm.removeBreakpoint(lb);
+            DebuggerManager.getDebuggerManager ().removeBreakpoint (lb);
         } finally {
             support.doFinish();
         }
@@ -151,24 +196,32 @@ public class LineBreakpointTest extends DebuggerJPDAApiTestBase {
 
     private void doTestBreakpointComplete(int line) throws IOException, IllegalConnectorArgumentsException,
             DebuggerStartException {
-        doTestBreakpointComplete(line, null, DebuggerConstants.CONDITION_NONE);
+        doTestBreakpointComplete(line, null, JPDABreakpointEvent.CONDITION_NONE);
     }
 
-    private LineBreakpoint doTestBreakpoint(int line, String condition, int conditionResult) throws IOException, IllegalConnectorArgumentsException,
-            DebuggerStartException {
-        LineBreakpoint lb = LineBreakpoint.create(urlString, line);
+    private LineBreakpoint doTestBreakpoint (
+        int line, 
+        String condition, 
+        int conditionResult
+    ) throws IOException, IllegalConnectorArgumentsException, 
+    DebuggerStartException {
+        LineBreakpoint lb = LineBreakpoint.create (urlString, line);
         lb.setCondition(condition);
-        TestBreakpointListener tbl = new TestBreakpointListener(lb, conditionResult);
-        lb.addJPDABreakpointListener(tbl);
-        dm.addBreakpoint(lb);
+        TestBreakpointListener tbl = new TestBreakpointListener 
+            (lb, conditionResult);
+        lb.addJPDABreakpointListener (tbl);
+        DebuggerManager.getDebuggerManager ().addBreakpoint(lb);
 
-        support = JPDASupport.listen("org.netbeans.api.debugger.jpda.testapps.LineBreakpointApp", false);
-        debugger = support.getDebugger();
+        support = JPDASupport.attach (
+            "org.netbeans.api.debugger.jpda.testapps.LineBreakpointApp"
+        );
+        debugger = support.getDebugger ();
 
-        if (condition == null || conditionResult == DebuggerConstants.CONDITION_TRUE) {
-            support.waitState(DebuggerConstants.STATE_STOPPED, 5000);
+        if ( condition == null || 
+             conditionResult == JPDABreakpointEvent.CONDITION_TRUE) {
+            support.waitState (JPDADebugger.STATE_STOPPED);
         } else {
-            support.waitState(DebuggerConstants.STATE_DISCONNECTED, 5000);
+            support.waitState (JPDADebugger.STATE_DISCONNECTED);
         }
 
         tbl.assertFailure();
@@ -184,7 +237,7 @@ public class LineBreakpointTest extends DebuggerJPDAApiTestBase {
         private AssertionError      failure;
 
         public TestBreakpointListener(LineBreakpoint bpt) {
-            this(bpt, DebuggerConstants.CONDITION_NONE);
+            this (bpt, JPDABreakpointEvent.CONDITION_NONE);
         }
 
         public TestBreakpointListener(LineBreakpoint bpt, int conditionResult) {
@@ -202,21 +255,35 @@ public class LineBreakpointTest extends DebuggerJPDAApiTestBase {
             }
         }
 
-        private void checkEvent(JPDABreakpointEvent event) {
+        private void checkEvent (JPDABreakpointEvent event) {
             this.event = event;
-            assertEquals("Breakpoint event: Wrong source", bpt, event.getSource());
-            assertNotNull("Breakpoint event: Context thread is null", event.getThread());
+            assertEquals (
+                "Breakpoint event: Wrong source", 
+                bpt, 
+                event.getSource ()
+            );
+            assertNotNull (
+                "Breakpoint event: Context thread is null", 
+                event.getThread ()
+            );
 
-            int result = event.getConditionResult();
-            if (result == DebuggerConstants.CONDITION_FAILED && conditionResult != DebuggerConstants.CONDITION_FAILED) {
-                failure = new AssertionError(event.getConditionException());
-            } else if (result != conditionResult) {
-                failure = new AssertionError("Unexpected breakpoint condition result: " + result);
-            }
+            int result = event.getConditionResult ();
+            if ( result == JPDABreakpointEvent.CONDITION_FAILED && 
+                 conditionResult != JPDABreakpointEvent.CONDITION_FAILED
+            )
+                failure = new AssertionError (event.getConditionException ());
+            else 
+            if (result != conditionResult)
+                failure = new AssertionError (
+                    "Unexpected breakpoint condition result: " + result
+                );
         }
 
-        public void assertFailure() {
-            if (event == null) throw new AssertionError("Breakpoint was not hit (listener was not notified)");
+        public void assertFailure () {
+            if (event == null) 
+                throw new AssertionError (
+                    "Breakpoint was not hit (listener was not notified)"
+                );
             if (failure != null) throw failure;
         }
     }

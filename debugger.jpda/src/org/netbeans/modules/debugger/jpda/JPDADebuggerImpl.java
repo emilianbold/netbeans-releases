@@ -552,12 +552,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
             System.out.println("\nS JPDADebuggerImpl.setRunning ()");
             JPDAUtils.printFeatures (vm);
         }
-        this.virtualMachine = vm;
+        virtualMachine = vm;
         
         initGenericsSupport ();
         
         operator = o;
-        Iterator i = vm.allThreads ().iterator ();
+        Iterator i = getVirtualMachine ().allThreads ().iterator ();
         while (i.hasNext ()) {
             ThreadReference tr = (ThreadReference) i.next ();
             if (tr.isSuspended ()) {

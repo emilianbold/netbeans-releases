@@ -43,10 +43,10 @@ public class LocalVariablesTest extends DebuggerJPDAApiTestBase {
             LineBreakpoint lb = LineBreakpoint.create(url.toString(), 34);
             dm.addBreakpoint(lb);
 
-            support = JPDASupport.listen(CLASS_NAME, false);
+            support = JPDASupport.attach (CLASS_NAME);
             debugger = support.getDebugger();
 
-            support.waitState(DebuggerConstants.STATE_STOPPED, 10000);  // breakpoint hit
+            support.waitState (JPDADebugger.STATE_STOPPED);  // breakpoint hit
 
             CallStackFrame sf = debugger.getCurrentCallStackFrame();
             assertEquals("Debugger stopped at wrong line", lb.getLineNumber(), sf.getLineNumber(null));

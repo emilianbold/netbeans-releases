@@ -29,32 +29,35 @@ public class BreakpointResumeTest  extends DebuggerJPDAApiTestBase {
     private DebuggerManager dm;
     private String          urlString;
 
-    public BreakpointResumeTest(String s) {
-        super(s);
+    public BreakpointResumeTest (String s) {
+        super (s);
     }
 
-    protected void setUp() throws Exception {
-        super.setUp();
-        dm = DebuggerManager.getDebuggerManager();
-        ClassLoader cl = this.getClass().getClassLoader();
-        URL url = cl.getResource("org/netbeans/api/debugger/jpda/testapps/LineBreakpointApp.class");
-        urlString = url.toString();
+    protected void setUp () throws Exception {
+        super.setUp ();
+        dm = DebuggerManager.getDebuggerManager ();
+        ClassLoader cl = this.getClass ().getClassLoader ();
+        URL url = cl.getResource (
+            "org/netbeans/api/debugger/jpda/testapps/LineBreakpointApp.class"
+        );
+        urlString = url.toString ();
     }
 
-    public void testBreakpointResume() throws Exception {
+    public void testBreakpointResume () throws Exception {
         try {
-            LineBreakpoint lb = LineBreakpoint.create(urlString, 30);
-            TestBreakpointListener tbl = new TestBreakpointListener();
-            lb.addJPDABreakpointListener(tbl);
-            dm.addBreakpoint(lb);
+            LineBreakpoint lb = LineBreakpoint.create (urlString, 30);
+            lb.addJPDABreakpointListener (new TestBreakpointListener ());
+            dm.addBreakpoint (lb);
 
-            support = JPDASupport.listen("org.netbeans.api.debugger.jpda.testapps.LineBreakpointApp", false);
-            debugger = support.getDebugger();
+            support = JPDASupport.attach (
+                "org.netbeans.api.debugger.jpda.testapps.LineBreakpointApp"
+            );
+            debugger = support.getDebugger ();
 
-            support.waitDisconnected(5000);
-            dm.removeBreakpoint(lb);
+            support.waitState (JPDADebugger.STATE_DISCONNECTED);
+            dm.removeBreakpoint (lb);
         } finally {
-            support.doFinish();
+            support.doFinish ();
         }
     }
 

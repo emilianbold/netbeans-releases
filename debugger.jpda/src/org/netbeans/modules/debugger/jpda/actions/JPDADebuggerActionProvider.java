@@ -49,6 +49,11 @@ implements PropertyChangeListener {
     
     protected abstract void checkEnabled (int debuggerState);
     
+    public boolean isEnabled (Object action) {
+        checkEnabled (debugger.getState ());
+        return super.isEnabled (action);
+    }
+    
     JPDADebuggerImpl getDebuggerImpl () {
         return debugger;
     }

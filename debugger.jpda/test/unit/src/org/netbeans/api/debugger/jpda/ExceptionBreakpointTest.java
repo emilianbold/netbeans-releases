@@ -40,12 +40,12 @@ public class ExceptionBreakpointTest extends DebuggerJPDAApiTestBase {
             eb1.addJPDABreakpointListener(tbl);
             dm.addBreakpoint(eb1);
 
-            support = JPDASupport.listen(CLASS_NAME, false);
+            support = JPDASupport.attach (CLASS_NAME);
             debugger = support.getDebugger();
 
             for (;;) {
-                support.waitStates(DebuggerConstants.STATE_STOPPED, DebuggerConstants.STATE_DISCONNECTED, 10000);
-                if (debugger.getState() == DebuggerConstants.STATE_DISCONNECTED) break;
+                support.waitState (JPDADebugger.STATE_STOPPED);
+                if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED) break;
                 support.doContinue();
             }
             tbl.assertFailure();
@@ -84,7 +84,7 @@ public class ExceptionBreakpointTest extends DebuggerJPDAApiTestBase {
             assertEquals("Breakpoint event: Bad exception location", CLASS_NAME, event.getReferenceType().name());
             assertEquals("Breakpoint event: Bad exception thrown", exceptionClass, event.getVariable ().getType ());
             assertSame("Breakpoint event: Bad event source", bpt, event.getSource());
-            assertEquals("Breakpoint event: Condition evaluation failed", DebuggerConstants.CONDITION_NONE, event.getConditionResult());
+            assertEquals("Breakpoint event: Condition evaluation failed", JPDABreakpointEvent.CONDITION_NONE, event.getConditionResult());
             assertNotNull("Breakpoint event: Context thread is null", event.getThread());
             hitCount++;
         }

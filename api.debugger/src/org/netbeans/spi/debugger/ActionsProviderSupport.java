@@ -44,7 +44,7 @@ public abstract class ActionsProviderSupport extends ActionsProvider {
      *
      * @param action action
      */
-    public final boolean isEnabled (Object action) {
+    public boolean isEnabled (Object action) {
         return this.enabled.contains (action);
     }
     

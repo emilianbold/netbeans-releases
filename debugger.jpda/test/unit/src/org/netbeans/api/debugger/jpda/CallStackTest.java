@@ -36,7 +36,9 @@ public class CallStackTest extends DebuggerJPDAApiTestBase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        support = JPDASupport.listen("org.netbeans.api.debugger.jpda.testapps.CallStackApp");
+        support = JPDASupport.attach (
+            "org.netbeans.api.debugger.jpda.testapps.CallStackApp"
+        );
         debugger = support.getDebugger();
     }
 

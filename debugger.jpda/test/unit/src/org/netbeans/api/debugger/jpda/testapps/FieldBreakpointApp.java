@@ -66,7 +66,7 @@ public class FieldBreakpointApp {
 
     private static class InnerStatic {
 
-        private static int q = 0;
+        private static int q = 1;
 
         static {
             q ++;
