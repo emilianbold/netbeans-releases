@@ -104,7 +104,7 @@ public final class HelpSetProcessor implements XMLDataObject.Processor, Instance
      * @throws ClassNotFoundException doesn't
      * @return the help set
      */
-    public Object instanceCreate() throws IOException, ClassNotFoundException {
+    public synchronized Object instanceCreate() throws IOException, ClassNotFoundException {
         if (hs == null) {
             Installer.err.log("creating help set from ref: " + xml.getPrimaryFile());
             try {
