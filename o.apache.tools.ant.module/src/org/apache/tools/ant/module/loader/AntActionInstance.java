@@ -40,13 +40,13 @@ import org.openide.awt.Actions;
 import org.openide.awt.Mnemonics;
 import org.openide.cookies.InstanceCookie;
 import org.openide.util.NbBundle;
-import org.openide.util.WeakListener;
 import org.openide.util.actions.Presenter;
 import org.openide.util.RequestProcessor;
 
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.run.TargetExecutor;
+import org.openide.util.WeakListeners;
 
 /** An instance cookie providing an action running a script.
  * The action provides the standard presenters, so may be used
@@ -65,7 +65,7 @@ public class AntActionInstance implements
     
     public AntActionInstance (AntProjectCookie proj) {
         this.proj = proj;
-        proj.addChangeListener (WeakListener.change (this, proj));
+        proj.addChangeListener(WeakListeners.change(this, proj));
     }
 
     private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
@@ -97,7 +97,7 @@ public class AntActionInstance implements
     
     public void actionPerformed (ActionEvent ignore) {
         // #21355 similar to fix of #16720 - don't do this in the event thread...
-        RequestProcessor.postRequest(new Runnable() {
+        RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 TargetExecutor exec = new TargetExecutor (proj, null);
                 try {

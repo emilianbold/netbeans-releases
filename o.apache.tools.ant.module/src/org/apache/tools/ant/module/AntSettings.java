@@ -109,7 +109,7 @@ public class AntSettings extends SystemOption implements ChangeListener {
     
     public void setCustomDefs (IntrospectedInfo ii) {
         putProperty (PROP_CUSTOM_DEFS, ii, true);
-        ii.addChangeListener(WeakListener.change(this, ii));
+        ii.addChangeListener(WeakListeners.change(this, ii));
         // Ideally would also remove listener from old one, but in practice
         // identity of this object never changes so it does not really matter...
     }
@@ -214,7 +214,7 @@ public class AntSettings extends SystemOption implements ChangeListener {
             Iterator it = aecpResult.allInstances().iterator();
             while (it.hasNext()) {
                 AutomaticExtraClasspathProvider provider = (AutomaticExtraClasspathProvider)it.next();
-                items.addAll(Arrays.asList(provider.getClasspathItems()));
+                items.addAll(Arrays.asList((Object[])provider.getClasspathItems()));
             }
             defAECP = new NbClassPath((File[])items.toArray(new File[items.size()]));
         }

@@ -116,7 +116,7 @@ public class RunTargetsAction extends CookieAction implements Presenter.Popup {
 
         public void performActionAt (final int index) {
             // #16720 part 2: don't do this in the event thread...
-            RequestProcessor.postRequest(new Runnable() {
+            RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     String target = (String) targets.get (index);
                     try {

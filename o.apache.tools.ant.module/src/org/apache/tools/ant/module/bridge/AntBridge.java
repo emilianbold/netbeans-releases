@@ -479,7 +479,7 @@ public final class AntBridge {
         }
         
         public String toString() {
-            return super.toString() + "[parent=" + getParent() + ",urls=" + Arrays.asList(getURLs()) + "]";
+            return super.toString() + "[parent=" + getParent() + ",urls=" + Arrays.asList((Object[])getURLs()) + "]";
         }
 
         /* Debugging:

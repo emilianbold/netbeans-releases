@@ -23,12 +23,12 @@ import javax.swing.event.ChangeListener;
 
 import org.openide.*;
 import org.openide.util.RequestProcessor;
-import org.openide.util.WeakListener;
 
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.AntSettings;
 import org.apache.tools.ant.module.bridge.*;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 
 // XXX in order to support Ant 1.6 interface addition types, need to keep
 // track of which classes implement a given interface
@@ -132,7 +132,7 @@ public final class IntrospectedInfo implements Serializable {
         }
         defaults.loadNetBeansSpecificDefinitions();
         if (listen) {
-            AntBridge.addChangeListener(WeakListener.change(antBridgeListener, AntBridge.class));
+            AntBridge.addChangeListener(WeakListeners.change(antBridgeListener, AntBridge.class));
         }
         if (AntModule.err.isLoggable(ErrorManager.INFORMATIONAL)) {
             AntModule.err.log("IntrospectedInfo.defaults=" + defaults);
@@ -643,7 +643,7 @@ public final class IntrospectedInfo implements Serializable {
         public String toString () {
             String tags;
             if (enumTags != null) {
-                tags = Arrays.asList(enumTags).toString();
+                tags = Arrays.asList((Object[])enumTags).toString();
             } else {
                 tags = "null"; // NOI18N
             }
@@ -700,7 +700,7 @@ public final class IntrospectedInfo implements Serializable {
         };
         ii.holder = l;
         for (int i = 0; i < proxied.length; i++) {
-            proxied[i].addChangeListener(WeakListener.change(l, proxied[i]));
+            proxied[i].addChangeListener(WeakListeners.change(l, proxied[i]));
             l.stateChanged(new ChangeEvent(proxied[i]));
         }
         return ii;
