@@ -492,9 +492,9 @@ public class ClassPathSupport {
             boolean result = includedInDeployment;
             if (getType() == TYPE_JAR) {
                 // at the moment we can't include folders in deployment
-                FileObject fo = FileUtil.toFileObject(getFile());
-                if (fo == null || fo.isFolder())
-                    return false;
+//                FileObject fo = FileUtil.toFileObject(getFile());
+//                if (fo == null || fo.isFolder())
+//                    return false;
             }
             return includedInDeployment;
         }

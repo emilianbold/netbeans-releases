@@ -306,11 +306,11 @@ public class ClassPathUiSupport {
         
         private Boolean getShowItemAsIncludedInDeployment(ClassPathSupport.Item item) {
             Boolean result = Boolean.valueOf(item.isIncludedInDeployment());
-            if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
-                FileObject fo = FileUtil.toFileObject(item.getFile());
-                if (fo == null || fo.isFolder())
-                    return null;
-            }
+//            if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
+//                FileObject fo = FileUtil.toFileObject(item.getFile());
+//                if (fo == null || fo.isFolder())
+//                    return null;
+//            }
             return result;
         }
     }
