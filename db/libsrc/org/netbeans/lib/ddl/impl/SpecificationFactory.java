@@ -39,7 +39,7 @@ public class SpecificationFactory implements DatabaseSpecificationFactory {
 	/** Database description file
 	* You should use PListReader to parse it.
 	*/		
-	private final String sfile = "com/netbeans/ddl/resources/DatabaseSpecification.plist";	
+	private final String sfile = "com/netbeans/ddl/resources/dbspec.plist";	
 			
 	/** Array of SpecificationFiles, found (but not read) files 
 	* which describes database products.
@@ -129,7 +129,7 @@ public class SpecificationFactory implements DatabaseSpecificationFactory {
 			Connection con = (jdbccon != null ? jdbccon : dbcon.createJDBCConnection());
 			DatabaseMetaData dmd = con.getMetaData();	
 			pn = dmd.getDatabaseProductName();
-			DatabaseSpecification spec = createSpecification(dbcon, pn);
+			DatabaseSpecification spec = createSpecification(dbcon, pn, con);
 			if (close) con.close();
 			return spec;
 		} catch (SQLException e) {
@@ -145,14 +145,14 @@ public class SpecificationFactory implements DatabaseSpecificationFactory {
 	* reads metadata as createSpecification(DBConnection connection), but always
 	* uses specified databaseProductName. This is not recommended technique.
 	*/
-	public DatabaseSpecification createSpecification(DBConnection connection, String databaseProductName) 
+	public DatabaseSpecification createSpecification(DBConnection connection, String databaseProductName, Connection c) 
 	throws DatabaseProductNotFoundException
 	{
 		HashMap product = (HashMap)specs.get(databaseProductName);
 		if (product == null) throw new DatabaseProductNotFoundException(databaseProductName);
 		HashMap specmap = deepUnion(product, (HashMap)specs.get("GenericDatabaseSystem"), true);
 		specmap.put("connection", connection);
-		DatabaseSpecification spec = new Specification(specmap);
+		DatabaseSpecification spec = new Specification(specmap, c);
 		spec.setSpecificationFactory(this);
 		return spec;
 	}
@@ -163,13 +163,13 @@ public class SpecificationFactory implements DatabaseSpecificationFactory {
 	* reads metadata as createSpecification(DBConnection connection), but always
 	* uses specified databaseProductName. This is not recommended technique.
 	*/
-	public DatabaseSpecification createSpecification(String databaseProductName) 
+	public DatabaseSpecification createSpecification(String databaseProductName, Connection c) 
 	throws DatabaseProductNotFoundException
 	{
 		HashMap product = (HashMap)specs.get(databaseProductName);
 		if (product == null) throw new DatabaseProductNotFoundException(databaseProductName);
 		HashMap specmap = deepUnion(product, (HashMap)specs.get("GenericDatabaseSystem"), true);
-		return new Specification(specmap);
+		return new Specification(specmap, c);
 	}
 
 	public DatabaseSpecification createSpecification(Connection c) 
@@ -256,6 +256,7 @@ public class SpecificationFactory implements DatabaseSpecificationFactory {
 
 /*
 * <<Log>>
+*  8    Gandalf   1.7         9/13/99  Slavek Psenicka 
 *  7    Gandalf   1.6         9/10/99  Slavek Psenicka 
 *  6    Gandalf   1.5         6/15/99  Slavek Psenicka adding support for live 
 *       connection

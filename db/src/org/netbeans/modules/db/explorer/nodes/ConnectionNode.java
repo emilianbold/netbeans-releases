@@ -28,7 +28,7 @@ import org.openide.util.datatransfer.*;
 import com.netbeans.ddl.*;
 import com.netbeans.ddl.impl.SpecificationFactory;
 import com.netbeans.ddl.impl.Specification;
-import com.netbeans.enterprise.modules.db.adaptors.DatabaseAdaptor;
+import com.netbeans.ddl.adaptors.*;
 import com.netbeans.enterprise.modules.db.explorer.infos.DatabaseNodeInfo;
 import com.netbeans.enterprise.modules.db.explorer.DatabaseNodeChildren;
 import com.netbeans.enterprise.modules.db.explorer.DatabaseConnection;
@@ -47,15 +47,43 @@ public class ConnectionNode extends DatabaseNode implements InstanceCookie
 		super.setInfo(nodeinfo);
 		DatabaseNodeInfo info = getInfo();
 		displayFormat = new java.text.MessageFormat((String)info.get("displayname"));
-		setName((String)info.get(DatabaseNodeInfo.DATABASE));
-		getInfo().addConnectionListener(new PropertyChangeListener() {
+		
+		String url = info.getDatabase();
+		DatabaseOption option = RootNode.getOption();
+		Vector cons = option.geConnections();
+		Enumeration cons = drvs.elements();
+		while (enu.hasMoreElements()) {
+			DatabaseConnection dburl = (DatabaseConnection)enu.nextElement();
+			if (dburl.getDatabase().equals(url)) {
+				String name = dburl.getName();
+				if (name != null && name.length() > 0) setDisplayName(dburl.getName());
+				else setDisplayName((String)info.get(DatabaseNodeInfo.DATABASE));
+			}
+		}
+		
+		info.addConnectionListener(new PropertyChangeListener() {
       		public void propertyChange(PropertyChangeEvent evt) {
       			if (evt.getPropertyName().equals(DatabaseNodeInfo.CONNECTION)) {
       				update((Connection)evt.getNewValue());
       			}
       		}
     	});
+    	
 	    getCookieSet().add(this);
+	}
+
+	public void setName(String name)
+	{
+		String url = getInfo().getDatabase();
+		DatabaseOption option = RootNode.getOption();
+		Vector cons = option.geConnections();
+		Enumeration cons = drvs.elements();
+		while (enu.hasMoreElements()) {
+			DatabaseConnection dburl = (DatabaseConnection)enu.nextElement();
+			if (dburl.getDatabase().equals(url)) {
+				dburl.setName(name);	
+			}
+		}
 	}
 
 	public String instanceName() 
@@ -124,21 +152,76 @@ public class ConnectionNode extends DatabaseNode implements InstanceCookie
 		
 		try {
 
-			DatabaseAdaptor adaptor = info.getDatabaseAdaptor();
-			adaptor.setConnection(connection);
-		
 			if (!connecting) {
 				children.remove(children.getNodes());
 			} else {
 	
-				DatabaseMetaData dmd = adaptor.getMetaData();
+				DatabaseMetaData dmd = info.getSpecification().getMetaData();
 				info.put(DatabaseNodeInfo.DBPRODUCT, dmd.getDatabaseProductName());
 				info.put(DatabaseNodeInfo.DBVERSION, dmd.getDatabaseProductVersion());
 				info.put(DatabaseNodeInfo.READONLYDB, new Boolean(dmd.isReadOnly()));
-				info.put(DatabaseNodeInfo.GROUPSUP, new Boolean(dmd.supportsGroupBy()));
-				info.put(DatabaseNodeInfo.OJOINSUP, new Boolean(dmd.supportsOuterJoins()));
-				info.put(DatabaseNodeInfo.UNIONSUP, new Boolean(dmd.supportsFullOuterJoins()));
-				
+	
+				try {
+					
+					info.put(DefaultAdaptor.PROP_MIXEDCASE_IDENTIFIERS, new Boolean(dmd.supportsMixedCaseIdentifiers()));
+					info.put(DefaultAdaptor.PROP_MIXEDCASE_QUOTED_IDENTIFIERS, new Boolean(dmd.supportsMixedCaseQuotedIdentifiers()));
+					info.put(DefaultAdaptor.PROP_ALTER_ADD, new Boolean(dmd.supportsAlterTableWithAddColumn()));
+					info.put(DefaultAdaptor.PROP_ALTER_DROP, new Boolean(dmd.supportsAlterTableWithDropColumn()));
+					info.put(DefaultAdaptor.PROP_CONVERT, new Boolean(dmd.supportsConvert()));
+					info.put(DefaultAdaptor.PROP_TABLE_CORRELATION_NAMES, new Boolean(dmd.supportsTableCorrelationNames()));
+					info.put(DefaultAdaptor.PROP_TABLE_CORRELATION_NAMES, new Boolean(dmd.supportsDifferentTableCorrelationNames()));
+					info.put(DefaultAdaptor.PROP_EXPRESSIONS_IN_ORDERBY, new Boolean(dmd.supportsExpressionsInOrderBy()));
+					info.put(DefaultAdaptor.PROP_ORDER_BY_UNRELATED, new Boolean(dmd.supportsOrderByUnrelated()));
+					info.put(DefaultAdaptor.PROP_GROUP_BY, new Boolean(dmd.supportsGroupBy()));
+					info.put(DefaultAdaptor.PROP_UNRELATED_GROUP_BY, new Boolean(dmd.supportsGroupByUnrelated()));
+					info.put(DefaultAdaptor.PROP_BEYOND_GROUP_BY, new Boolean(dmd.supportsGroupByBeyondSelect()));
+					info.put(DefaultAdaptor.PROP_ESCAPE_LIKE, new Boolean(dmd.supportsLikeEscapeClause()));
+					info.put(DefaultAdaptor.PROP_MULTIPLE_RS, new Boolean(dmd.supportsMultipleResultSets()));
+					info.put(DefaultAdaptor.PROP_MULTIPLE_TRANSACTIONS, new Boolean(dmd.supportsMultipleTransactions()));
+					info.put(DefaultAdaptor.PROP_NON_NULL_COLUMNSS, new Boolean(dmd.supportsNonNullableColumns()));
+					info.put(DefaultAdaptor.PROP_MINUMUM_SQL_GRAMMAR, new Boolean(dmd.supportsMinimumSQLGrammar()));
+					info.put(DefaultAdaptor.PROP_CORE_SQL_GRAMMAR, new Boolean(dmd.supportsCoreSQLGrammar()));
+					info.put(DefaultAdaptor.PROP_EXTENDED_SQL_GRAMMAR, new Boolean(dmd.supportsExtendedSQLGrammar()));
+					info.put(DefaultAdaptor.PROP_ANSI_SQL_GRAMMAR, new Boolean(dmd.supportsANSI92EntryLevelSQL()));
+					info.put(DefaultAdaptor.PROP_INTERMEDIATE_SQL_GRAMMAR, new Boolean(dmd.supportsANSI92IntermediateSQL()));
+					info.put(DefaultAdaptor.PROP_FULL_SQL_GRAMMAR, new Boolean(dmd.supportsANSI92FullSQL()));
+					info.put(DefaultAdaptor.PROP_INTEGRITY_ENHANCEMENT, new Boolean(dmd.supportsIntegrityEnhancementFacility()));
+					info.put(DefaultAdaptor.PROP_OUTER_JOINS, new Boolean(dmd.supportsOuterJoins()));
+					info.put(DefaultAdaptor.PROP_FULL_OUTER_JOINS, new Boolean(dmd.supportsFullOuterJoins()));
+					info.put(DefaultAdaptor.PROP_LIMITED_OUTER_JOINS, new Boolean(dmd.supportsLimitedOuterJoins()));
+					info.put(DefaultAdaptor.PROP_SCHEMAS_IN_DML, new Boolean(dmd.supportsSchemasInDataManipulation()));
+					info.put(DefaultAdaptor.PROP_SCHEMAS_IN_PROCEDURE_CALL, new Boolean(dmd.supportsSchemasInProcedureCalls()));
+					info.put(DefaultAdaptor.PROP_SCHEMAS_IN_TABLE_DEFINITION, new Boolean(dmd.supportsSchemasInTableDefinitions()));
+					info.put(DefaultAdaptor.PROP_SCHEMAS_IN_INDEX, new Boolean(dmd.supportsSchemasInIndexDefinitions()));
+					info.put(DefaultAdaptor.PROP_SCHEMAS_IN_PRIVILEGE_DEFINITION, new Boolean(dmd.supportsSchemasInPrivilegeDefinitions()));
+					info.put(DefaultAdaptor.PROP_CATALOGS_IN_DML, new Boolean(dmd.supportsCatalogsInDataManipulation()));
+					info.put(DefaultAdaptor.PROP_CATALOGS_IN_PROCEDURE_CALL, new Boolean(dmd.supportsCatalogsInProcedureCalls()));
+					info.put(DefaultAdaptor.PROP_CATALOGS_IN_TABLE_DEFINITION, new Boolean(dmd.supportsCatalogsInTableDefinitions()));
+					info.put(DefaultAdaptor.PROP_CATALOGS_IN_INDEX, new Boolean(dmd.supportsCatalogsInIndexDefinitions()));
+					info.put(DefaultAdaptor.PROP_CATALOGS_IN_PRIVILEGE_DEFINITION, new Boolean(dmd.supportsCatalogsInPrivilegeDefinitions()));
+					info.put(DefaultAdaptor.PROP_POSITIONED_DELETE, new Boolean(dmd.supportsPositionedDelete()));
+					info.put(DefaultAdaptor.PROP_POSITIONED_UPDATE, new Boolean(dmd.supportsPositionedUpdate()));
+					info.put(DefaultAdaptor.PROP_SELECT_FOR_UPDATE, new Boolean(dmd.supportsSelectForUpdate()));
+					info.put(DefaultAdaptor.PROP_STORED_PROCEDURES, new Boolean(dmd.supportsStoredProcedures()));
+					info.put(DefaultAdaptor.PROP_SUBQUERY_IN_COMPARSIONS, new Boolean(dmd.supportsSubqueriesInComparisons()));
+					info.put(DefaultAdaptor.PROP_SUBQUERY_IN_EXISTS, new Boolean(dmd.supportsSubqueriesInExists()));
+					info.put(DefaultAdaptor.PROP_SUBQUERY_IN_INS, new Boolean(dmd.supportsSubqueriesInIns()));
+					info.put(DefaultAdaptor.PROP_SUBQUERY_IN_QUANTIFIEDS, new Boolean(dmd.supportsSubqueriesInQuantifieds()));
+					info.put(DefaultAdaptor.PROP_CORRELATED_SUBQUERIES, new Boolean(dmd.supportsCorrelatedSubqueries()));
+					info.put(DefaultAdaptor.PROP_UNION, new Boolean(dmd.supportsUnion()));
+					info.put(DefaultAdaptor.PROP_UNION_ALL, new Boolean(dmd.supportsUnionAll()));
+					info.put(DefaultAdaptor.PROP_OPEN_CURSORS_ACROSS_COMMIT, new Boolean(dmd.supportsOpenCursorsAcrossCommit()));
+					info.put(DefaultAdaptor.PROP_OPEN_CURSORS_ACROSS_ROLLBACK, new Boolean(dmd.supportsOpenCursorsAcrossRollback()));
+					info.put(DefaultAdaptor.PROP_OPEN_STATEMENTS_ACROSS_COMMIT, new Boolean(dmd.supportsOpenStatementsAcrossCommit()));
+					info.put(DefaultAdaptor.PROP_OPEN_STATEMENTS_ACROSS_ROLLBACK, new Boolean(dmd.supportsOpenStatementsAcrossRollback()));
+					info.put(DefaultAdaptor.PROP_TRANSACTIONS, new Boolean(dmd.supportsTransactions()));
+					info.put(DefaultAdaptor.PROP_DDL_AND_DML_TRANSACTIONS, new Boolean(dmd.supportsDataDefinitionAndDataManipulationTransactions()));
+					info.put(DefaultAdaptor.PROP_DML_TRANSACTIONS_ONLY, new Boolean(dmd.supportsDataManipulationTransactionsOnly()));
+
+				} catch (Exception ex) {
+					ex.printStackTrace();				
+				}
+
 				// Create subnodes
 				
 				DatabaseNodeInfo innernfo;

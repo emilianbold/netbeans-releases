@@ -53,11 +53,15 @@ public class DatabaseConnection extends Object implements DBConnection
 	/** The support for firing property changes */
 	private PropertyChangeSupport propertySupport;
 
+	/** Connection name */
+	private String name;
+
 	public static final String PROP_DRIVER = "driver";
 	public static final String PROP_DATABASE = "database";
 	public static final String PROP_USER = "user";
 	public static final String PROP_PASSWORD = "password";
 	public static final String PROP_DRIVERNAME = "drivername";
+	public static final String PROP_NAME = "name";
 
 	/** Default constructor */
 	public DatabaseConnection()
@@ -145,6 +149,24 @@ public class DatabaseConnection extends Object implements DBConnection
 		String oldusr = usr;
 		usr = user;
 		propertySupport.firePropertyChange(PROP_USER, oldusr, usr);
+	}
+
+	/** Returns name of the connection */
+	public String getName()
+	{
+		return name;
+	}
+	
+	/** Sets user login name 
+	* Fires propertychange event.
+	* @param user New login name
+	*/
+	public void setName(String value)
+	{
+		if (name == null || name.equals(value)) return;
+		String old = name;
+		name = value;
+		propertySupport.firePropertyChange(PROP_NAME, old, name);
 	}
 
 	/** Returns if password should be remembered */
@@ -257,6 +279,7 @@ public class DatabaseConnection extends Object implements DBConnection
 		pwd = (String)in.readObject();
 //		rpwd = (Boolean)in.readObject();
 		rpwd = new Boolean(false);
+		name = (String)in.readObject();
 	}
 
 	/** Writes object to stream */
@@ -268,6 +291,7 @@ public class DatabaseConnection extends Object implements DBConnection
 		out.writeObject(usr);
 		out.writeObject(pwd);
 //		out.writeObject(rpwd);
+		out.writeObject(name);
 	}
 	
 	public String toString()

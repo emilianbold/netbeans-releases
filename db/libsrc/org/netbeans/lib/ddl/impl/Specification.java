@@ -19,6 +19,8 @@ import java.util.*;
 import com.netbeans.ddl.*;
 import com.netbeans.ddl.adaptors.*;
 
+import org.openide.*;
+
 /** 
 * @author Slavek Psenicka
 */
@@ -34,6 +36,7 @@ public class Specification implements DatabaseSpecification {
 	SpecificationFactory factory;
 	
 	/** Metadata adaptor */
+	String adaptorClass;
 	DatabaseMetaData dmdAdaptor;
 	
 	public static final String CREATE_TABLE = "CreateTableCommand";
@@ -58,7 +61,6 @@ public class Specification implements DatabaseSpecification {
 	public static final String DROP_FUNCTION = "DropFunctionCommand";
 	public static final String CREATE_TRIGGER = "CreateTriggerCommand";
 	public static final String DROP_TRIGGER = "DropTriggerCommand";
-	public static final String ADAPTOR_CLASS = "adaptorClass";
 	
 	/** Constructor */
 	public Specification(HashMap description)
@@ -101,7 +103,20 @@ public class Specification implements DatabaseSpecification {
 		factory = (SpecificationFactory)fac;
 	}
 
+	public String getMetaDataAdaptorClassName()
+	{
+		if (adaptorClass == null || adaptorClass.length() == 0) {
+			adaptorClass = "com.netbeans.ddl.adaptors.DefaultAdaptor";
+		}
+		
+		return adaptorClass;
+	}
 	
+	public void setMetaDataAdaptorClassName(String name)
+	{
+		adaptorClass = name;
+		dmdAdaptor = null;
+	}
 
 	/** Returns database metadata */
 	public DatabaseMetaData getMetaData() throws SQLException
@@ -110,13 +125,20 @@ public class Specification implements DatabaseSpecification {
 			
 			if (dmdAdaptor == null) {
 				if (jdbccon != null) {
-					String adaptorClass = (String)desc.get(ADAPTOR_CLASS);
-					if (adaptorClass != null) {
-						dmdAdaptor = (DatabaseMetaData)Beans.instantiate(null, adaptorClass);
+					String adc = getMetaDataAdaptorClassName();
+					if (adc != null) {
+						ClassLoader loader;
+						try {
+							loader = TopManager.getDefault().currentClassLoader();	
+						} catch (Exception ex) {
+							loader = null;
+						}
+						
+						dmdAdaptor = (DatabaseMetaData)Beans.instantiate(loader, adc);
 						if (dmdAdaptor instanceof DatabaseMetaDataAdaptor) {
 							((DatabaseMetaDataAdaptor)dmdAdaptor).setConnection(jdbccon);
 						} else throw new ClassNotFoundException("adaptor should implement DatabaseAdaptor interface");
-					} else throw new SQLException("adaptor requires an existing connection");
+					} else throw new ClassNotFoundException("unspecified adaptor class");
 				}
 			}
 				
@@ -479,6 +501,7 @@ public class Specification implements DatabaseSpecification {
 
 /*
 * <<Log>>
+*  7    Gandalf   1.6         9/13/99  Slavek Psenicka 
 *  6    Gandalf   1.5         9/10/99  Slavek Psenicka 
 *  5    Gandalf   1.4         5/14/99  Slavek Psenicka new version
 *  4    Gandalf   1.3         4/23/99  Slavek Psenicka Chyba v createSpec pri 

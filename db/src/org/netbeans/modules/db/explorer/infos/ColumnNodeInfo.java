@@ -72,7 +72,7 @@ public class ColumnNodeInfo extends DatabaseNodeInfo
 			CreateTable cmd = (CreateTable)spec.createCommandCreateTable("DUMMY");
 			String code = getCode();
 //			DatabaseMetaData dmd = getConnection().getMetaData();
-			DatabaseMetaData dmd = getDatabaseAdaptor().getMetaData();
+			DatabaseMetaData dmd = getSpecification().getMetaData();
 			
 			if (code.equals(DatabaseNode.PRIMARY_KEY)) {
 				col = (TableColumn)cmd.createPrimaryKeyColumn(getName());

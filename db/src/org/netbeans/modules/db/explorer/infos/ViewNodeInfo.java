@@ -34,7 +34,7 @@ public class ViewNodeInfo extends DatabaseNodeInfo
  			
 			ResultSet rs;
 //			DatabaseMetaData dmd = getConnection().getMetaData();
-			DatabaseMetaData dmd = getDatabaseAdaptor().getMetaData();
+			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			String user = getUser();
 			String view = (String)get(DatabaseNode.VIEW);

@@ -32,7 +32,7 @@ implements ProcedureOwnerOperations
 	{
  		try {
 //			DatabaseMetaData dmd = getConnection().getMetaData();
-			DatabaseMetaData dmd = getDatabaseAdaptor().getMetaData();
+			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			ResultSet rs = dmd.getProcedures(catalog, getUser(), null);
 			while (rs.next()) {

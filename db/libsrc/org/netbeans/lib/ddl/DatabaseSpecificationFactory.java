@@ -49,7 +49,7 @@ public interface DatabaseSpecificationFactory {
 	* directly from the database.
 	* @return Specification object.
 	*/
-	public DatabaseSpecification createSpecification(DBConnection connection) 
+	public DatabaseSpecification createSpecification(DBConnection connection, Connection c) 
 	throws DatabaseProductNotFoundException, DDLException;
 	
 	/** Creates instance of DatabaseSpecification class; a database-specification
@@ -60,8 +60,7 @@ public interface DatabaseSpecificationFactory {
 	* @param connection Database connection (is NOT used to obtain database product name)
 	* @return Specification object.
 	*/
-	public DatabaseSpecification createSpecification(DBConnection connection, String databaseProductName) 
-	throws DatabaseProductNotFoundException;
+	public DatabaseSpecification createSpecification(DBConnection connection, String databaseProductName, Connection c) throws DatabaseProductNotFoundException;
 
 	public DatabaseSpecification createSpecification(Connection c) 
 	throws DatabaseProductNotFoundException, SQLException;

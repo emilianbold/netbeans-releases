@@ -20,7 +20,7 @@ import com.netbeans.ddl.*;
 import com.netbeans.ddl.impl.*;
 import org.openide.*;
 import org.openide.nodes.*;
-import com.netbeans.enterprise.modules.db.adaptors.*;
+import com.netbeans.ddl.adaptors.*;
 import com.netbeans.enterprise.modules.db.explorer.*;
 import com.netbeans.enterprise.modules.db.explorer.dlg.*;
 import com.netbeans.enterprise.modules.db.explorer.nodes.*;
@@ -45,7 +45,7 @@ public class AddIndexAction extends DatabaseAction
 
 			Connection con = nfo.getConnection();
 //			DatabaseMetaData dmd = con.getMetaData();
-			DatabaseMetaData dmd = info.getDatabaseAdaptor().getMetaData();
+			DatabaseMetaData dmd = info.getSpecification().getMetaData();
 			Specification spec = (Specification)nfo.getSpecification();
 			String index = (String)nfo.get(DatabaseNode.INDEX);
 
@@ -70,6 +70,7 @@ public class AddIndexAction extends DatabaseAction
 					icmd.specifyColumn((String)enu.next());
 				}
 				
+				System.out.println(icmd.getCommand());
 				icmd.execute();
 				nfo.addIndex(dlg.getIndexName());
 			}

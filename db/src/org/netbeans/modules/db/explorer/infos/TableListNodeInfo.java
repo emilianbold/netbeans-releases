@@ -32,7 +32,7 @@ implements TableOwnerOperations
 	{
  		try {
 //			DatabaseMetaData dmd = getConnection().getMetaData();
-			DatabaseMetaData dmd = getDatabaseAdaptor().getMetaData();
+			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String[] filter = new String[] {"TABLE","BASE"};
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			ResultSet rs = dmd.getTables(catalog, getUser(), null, filter);
@@ -56,7 +56,7 @@ implements TableOwnerOperations
 	{
 		try {
 //			DatabaseMetaData dmd = getConnection().getMetaData();
-			DatabaseMetaData dmd = getDatabaseAdaptor().getMetaData();
+			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String[] filter = new String[] {"TABLE","BASE"};
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			boolean uc = dmd.storesUpperCaseIdentifiers();

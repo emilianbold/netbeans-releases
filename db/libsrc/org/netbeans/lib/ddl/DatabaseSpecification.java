@@ -30,6 +30,9 @@ public interface DatabaseSpecification {
 
 	/** Returns database metadata */
 	public DatabaseMetaData getMetaData() throws SQLException;	
+
+	public String getMetaDataAdaptorClassName();
+	public void setMetaDataAdaptorClassName(String name);
 	
 	/** Returns used connection */
 	public DBConnection getConnection();
@@ -81,6 +84,7 @@ public interface DatabaseSpecification {
 
 /*
 * <<Log>>
+*  2    Gandalf   1.1         9/13/99  Slavek Psenicka 
 *  1    Gandalf   1.0         9/10/99  Slavek Psenicka 
 * $
 */

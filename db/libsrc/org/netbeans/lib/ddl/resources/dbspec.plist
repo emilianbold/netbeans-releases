@@ -324,8 +324,27 @@
 		DatabaseProductVersion = 6;
 		TriggerEventListDelimiter = " OR ";
 		TypeMap = {
+			java.sql.Types.BIGINT = BIGINT;	
+			java.sql.Types.BINARY = BINARY;	
+			java.sql.Types.BIT = BIT;
+			java.sql.Types.BLOB = IMAGE;
+			java.sql.Types.CHAR = CHAR;		
+			java.sql.Types.CLOB = TEXT;
+			java.sql.Types.DATE = DATE;
+			java.sql.Types.DECIMAL = DECIMAL;	
+			java.sql.Types.DOUBLE = DOUBLE;
+			java.sql.Types.FLOAT = FLOAT;		
 			java.sql.Types.INTEGER = NUMBER;
-			java.sql.Types.VARCHAR = VARCHAR2;
+			java.sql.Types.LONGVARCHAR = "LONG VARCHAR";
+			java.sql.Types.LONGVARBINARY = "LONG BINARY";
+			java.sql.Types.NUMERIC = NUMERIC;			
+			java.sql.Types.REAL = REAL;		
+			java.sql.Types.SMALLINT = SMALLINT;	
+			java.sql.Types.TIME = TIME;		
+			java.sql.Types.TIMESTAMP = TIMESTAMP;	
+			java.sql.Types.TINYINT = TINYINT;		
+			java.sql.Types.VARBINARY = VARBINARY;		
+			java.sql.Types.VARCHAR = VARCHAR2;	
 		};
 		ProcedureArgumentMap = {
 			IN = IN;
@@ -471,6 +490,29 @@
 		DropTriggerCommand = {
 			Class = com.netbeans.ddl.impl.AbstractCommand;
 			Format = "drop trigger [{object.owner}.]{object.name}";
+		};
+
+		CreateIndexCommand = {
+			Class = com.netbeans.ddl.impl.CreateIndex;
+			Format = "create index {index.name} on [{object.owner}.]{object.name}[\n(\n\t{columns}\n)]";
+			Binding = {
+				COLUMN = ColumnName;
+			};
+		};
+		
+		DropIndexCommand = {
+			Class = com.netbeans.ddl.impl.AbstractCommand;
+			Format = "drop index [{object.owner}.]{object.name}";
+		};
+
+		CreateViewCommand = {
+			Class = com.netbeans.ddl.impl.CreateView;
+			Format = "create view [{object.owner}.]{object.name} as {query}";
+		};
+
+		DropViewCommand = {
+			Class = com.netbeans.ddl.impl.AbstractCommand;
+			Format = "drop view [{object.owner}.]{object.name}";
 		};
 	};
 

@@ -100,7 +100,7 @@ public class IndexNode extends DatabaseNode
 				try {
 					con = info.getConnection();
 //					dmd = con.getMetaData();
-					dmd = info.getDatabaseAdaptor().getMetaData();
+					dmd = info.getSpecification().getMetaData();
 					spec = (Specification)info.getSpecification();
 					catalog = (String)info.get(DatabaseNode.CATALOG);
 

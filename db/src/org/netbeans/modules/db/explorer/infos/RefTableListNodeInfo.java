@@ -31,7 +31,7 @@ public class RefTableListNodeInfo extends DatabaseNodeInfo
  		try {
 			ResultSet rs;
 //			DatabaseMetaData dmd = getConnection().getMetaData();
-			DatabaseMetaData dmd = getDatabaseAdaptor().getMetaData();
+			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			String user = getUser();
 			String table = (String)get(DatabaseNode.TABLE);

@@ -17,7 +17,7 @@ import java.sql.*;
 import java.util.*;
 import com.netbeans.ddl.*;
 import org.openide.nodes.Node;
-import com.netbeans.enterprise.modules.db.adaptors.*;
+import com.netbeans.ddl.adaptors.*;
 import com.netbeans.enterprise.modules.db.DatabaseException;
 import com.netbeans.enterprise.modules.db.explorer.DatabaseNodeChildren;
 import com.netbeans.enterprise.modules.db.explorer.infos.*;
@@ -31,20 +31,22 @@ public class IndexListNodeInfo extends DatabaseNodeInfo
 	{
  		try {
 //			DatabaseMetaData dmd = getConnection().getMetaData();
-			DatabaseMetaData dmd = getDatabaseAdaptor().getMetaData();
+			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			String table = (String)get(DatabaseNode.TABLE);
 			ResultSet rs = dmd.getIndexInfo(catalog,getUser(),table, true, false);
 			Set ixmap = new HashSet();
 			while (rs.next()) {
-				IndexNodeInfo info = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEX, rs);
-				if (info != null) {
-					if (!ixmap.contains(info.getName())) {
-						ixmap.add(info.getName());
-						info.put("index", info.getName());
-						children.add(info);
-					}
-				} else throw new Exception("unable to create node information for index");
+				if (rs.getString("INDEX_NAME") != null) {
+					IndexNodeInfo info = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEX, rs);
+					if (info != null) {
+						if (!ixmap.contains(info.getName())) {
+							ixmap.add(info.getName());
+							info.put("index", info.getName());
+							children.add(info);
+						}
+					} else throw new Exception("unable to create node information for index");
+				}
 			}
 			rs.close();
  		} catch (Exception e) {
@@ -56,20 +58,23 @@ public class IndexListNodeInfo extends DatabaseNodeInfo
 	throws DatabaseException
 	{
  		try {
-//			DatabaseMetaData dmd = getConnection().getMetaData();
-			DatabaseMetaData dmd = getDatabaseAdaptor().getMetaData();
+			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			String table = (String)get(DatabaseNode.TABLE);
 			ResultSet rs = dmd.getIndexInfo(catalog,getUser(),table, true, false);
 			while (rs.next()) {
 				String findex = rs.getString("INDEX_NAME");
-				if (findex.equals(name)) {
-					IndexNodeInfo info = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEX, rs);
-					if (info != null) ((DatabaseNodeChildren)getNode().getChildren()).createSubnode(info,true);
-				} else throw new Exception("unable to create node information for index");
+				System.out.println(findex);
+				if (findex != null) {
+					if (findex.equals(name)) {
+						IndexNodeInfo info = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEX, rs);
+						if (info != null) ((DatabaseNodeChildren)getNode().getChildren()).createSubnode(info,true);
+					} 
+				}
 			}
 			rs.close();
  		} catch (Exception e) {
+ 			e.printStackTrace();
 			throw new DatabaseException(e.getMessage());	
 		}
 	}

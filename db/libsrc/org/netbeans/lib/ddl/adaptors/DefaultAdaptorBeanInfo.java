@@ -27,7 +27,7 @@ public class DefaultAdaptorBeanInfo extends SimpleBeanInfo
 	static {
 		try {
 
-			ResourceBundle bundle = NbBundle.getBundle("com.netbeans.enterprise.modules.db.resources.Bundle");
+			ResourceBundle bundle = NbBundle.getBundle("com.netbeans.ddl.resources.Bundle");
 			desc = new PropertyDescriptor[] {
 				
 				// Basic properties: 65 items

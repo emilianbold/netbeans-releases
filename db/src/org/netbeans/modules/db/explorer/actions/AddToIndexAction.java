@@ -44,7 +44,7 @@ public class AddToIndexAction extends DatabaseAction
 
 			Connection con = nfo.getConnection();
 //			DatabaseMetaData dmd = con.getMetaData();
-			DatabaseMetaData dmd = info.getDatabaseAdaptor().getMetaData();
+			DatabaseMetaData dmd = info.getSpecification().getMetaData();
 			Specification spec = (Specification)nfo.getSpecification();
 			String index = (String)nfo.get(DatabaseNode.INDEX);
 
@@ -54,8 +54,10 @@ public class AddToIndexAction extends DatabaseAction
 			ResultSet rs = dmd.getIndexInfo(catalog,nfo.getUser(),tablename, true, false);
 			while (rs.next()) {
 				String ixname = rs.getString("INDEX_NAME");
-				String colname = rs.getString("COLUMN_NAME");
-				if (ixname.equals(index)) ixrm.add(colname);
+				if (ixname != null) {
+					String colname = rs.getString("COLUMN_NAME");
+					if (ixname.equals(index)) ixrm.add(colname);
+				}
 			}
 			rs.close();
 

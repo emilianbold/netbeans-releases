@@ -32,15 +32,17 @@ public class IndexNodeInfo extends TableNodeInfo
 	{
  		try {
 //			DatabaseMetaData dmd = getConnection().getMetaData();
-			DatabaseMetaData dmd = getDatabaseAdaptor().getMetaData();
+			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			String table = (String)get(DatabaseNode.TABLE);
 			ResultSet rs = dmd.getIndexInfo(catalog,getUser(),table, true, false);
 			Hashtable ixmap = new Hashtable();
 			while (rs.next()) {
+				System.out.println("index column "+rs.getString("INDEX_NAME"));
 				String ixname = (String)get("index");
 				DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEXCOLUMN, rs);
-				if (((String)info.get("ixname")).equals(ixname)) {
+				String newixname = (String)info.get("ixname");
+				if (ixname != null && newixname != null && newixname.equals(ixname)) {
 					String way = (String)info.get("ord");
 					if (way == null) way = "A";
 					info.put(DatabaseNodeInfo.ICONBASE, info.get(DatabaseNodeInfo.ICONBASE+way));
@@ -50,6 +52,7 @@ public class IndexNodeInfo extends TableNodeInfo
 			}
 			rs.close();
  		} catch (Exception e) {
+ 			e.printStackTrace();
 			throw new DatabaseException(e.getMessage());	
 		}
 	}

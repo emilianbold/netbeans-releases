@@ -19,7 +19,7 @@ import java.util.*;
 import com.netbeans.ddl.*;
 import com.netbeans.ddl.impl.*;
 import org.openide.nodes.Node;
-import com.netbeans.enterprise.modules.db.adaptors.*;
+import com.netbeans.ddl.adaptors.*;
 import com.netbeans.enterprise.modules.db.DatabaseException;
 import com.netbeans.enterprise.modules.db.explorer.DatabaseNodeChildren;
 import com.netbeans.enterprise.modules.db.explorer.infos.*;
@@ -41,7 +41,7 @@ public class TableNodeInfo extends DatabaseNodeInfo
  			
 			ResultSet rs;
 //			DatabaseMetaData dmd = getConnection().getMetaData();
-			DatabaseMetaData dmd = getDatabaseAdaptor().getMetaData();
+			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			String user = getUser();
 			String table = (String)get(DatabaseNode.TABLE);
@@ -179,7 +179,7 @@ public class TableNodeInfo extends DatabaseNodeInfo
 			Vector chvec = new Vector(1);
 			ResultSet rs;
 //			DatabaseMetaData dmd = getConnection().getMetaData();
-			DatabaseMetaData dmd = getDatabaseAdaptor().getMetaData();
+			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			String user = getUser();
 			String table = (String)get(DatabaseNode.TABLE);

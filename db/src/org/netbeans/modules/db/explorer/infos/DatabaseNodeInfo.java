@@ -25,7 +25,7 @@ import java.beans.PropertyChangeListener;
 import com.netbeans.ddl.util.PListReader;
 import com.netbeans.enterprise.modules.db.DatabaseException;
 import com.netbeans.enterprise.modules.db.explorer.*;
-import com.netbeans.enterprise.modules.db.adaptors.*;
+import com.netbeans.ddl.adaptors.*;
 import com.netbeans.enterprise.modules.db.explorer.nodes.*;
 import com.netbeans.enterprise.modules.db.explorer.actions.DatabaseAction;
 import org.openide.*;
@@ -310,23 +310,46 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
     	getDriverPCS().removePropertyChangeListener(l);
   	}
 
-	public DBSpecFactory getSpecificationFactory()
+	public DatabaseSpecificationFactory getSpecificationFactory()
 	{
-		return (DBSpecFactory)get(SPECIFICATION_FACTORY);
+		return (DatabaseSpecificationFactory)get(SPECIFICATION_FACTORY);
 	}
 	
-	public void setSpecificationFactory(DBSpecFactory fac)
+	public void setSpecificationFactory(DatabaseSpecificationFactory fac)
 	{
 		put(SPECIFICATION_FACTORY, fac);
 		put(SUPPORTED_DBS, fac.supportedDatabases());
 	}
 
-	public DBSpec getSpecification()
+	protected String getDatabaseAdaptorClassName()
 	{
-		return (DBSpec)get(SPECIFICATION);
+		String adac = null;
+		String drv = getDriver();
+		DatabaseOption option = RootNode.getOption();
+		Vector drvs = option.getAvailableDrivers();
+		Enumeration enu = drvs.elements();
+		while (enu.hasMoreElements()) {
+			DatabaseDriver driver = (DatabaseDriver)enu.nextElement();
+			if (driver.getURL().equals(drv)) adac = driver.getDatabaseAdaptor();
+		}
+
+		if (adac == null) adac = "com.netbeans.ddl.adaptors.DefaultAdaptor";
+		return adac;
+	}
+
+	public DatabaseSpecification getSpecification()
+	{
+		DatabaseSpecification spec = (DatabaseSpecification)get(SPECIFICATION);
+		if (spec == null) return spec;
+		String adaname = getDatabaseAdaptorClassName();
+		if (!spec.getMetaDataAdaptorClassName().equals(adaname)) {
+			spec.setMetaDataAdaptorClassName(adaname);
+		}
+		
+		return spec;
 	}
 	
-	public void setSpecification(DBSpec spec)
+	public void setSpecification(DatabaseSpecification spec)
 	{
 		put(SPECIFICATION, spec);
 	}
@@ -623,50 +646,5 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 	public void setReadOnly(boolean flag)
 	{
 		put(READONLY, new Boolean(flag));
-	}
-	
-	public String getDatabaseAdaptorClassName()
-	{
-		String adac = null;
-		String drv = getDriver();
-		DatabaseOption option = RootNode.getOption();
-		Vector drvs = option.getAvailableDrivers();
-		Enumeration enu = drvs.elements();
-		while (enu.hasMoreElements()) {
-			DatabaseDriver driver = (DatabaseDriver)enu.nextElement();
-			if (driver.getURL().equals(drv)) adac = driver.getDatabaseAdaptor();
-		}
-
-		if (adac == null) adac = "com.netbeans.enterprise.modules.db.adaptors.DefaultAdaptor";
-		return adac;
-	}
-	
-	public void setDatabaseAdaptorClassName(String name)
-	{
-		put(ADAPTOR_CLASSNAME, name);
-	}
-	
-	public DatabaseAdaptor getDatabaseAdaptor() throws SQLException
-	{
-		try {
-			Object ada = get(ADAPTOR);
-			if (ada == null) {
-				Connection con = getConnection();
-				if (con != null) {
-					ClassLoader cloader = TopManager.getDefault().currentClassLoader();
-					ada = Beans.instantiate(cloader, getDatabaseAdaptorClassName());
-					if (ada instanceof DatabaseAdaptor) {
-						((DatabaseAdaptor)ada).setConnection(con);
-						put(ADAPTOR, ada);
-					} else throw new ClassNotFoundException("adaptor should implement DatabaseAdaptor interface");
-				} else throw new DatabaseException("adaptor requires an existing connection");
-			}
-			
-			return (DatabaseAdaptor)ada;
-			
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			throw new SQLException(ex.getMessage());
-		}
 	}
 }

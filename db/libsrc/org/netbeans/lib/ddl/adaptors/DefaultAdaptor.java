@@ -19,7 +19,7 @@ import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DefaultAdaptor implements DatabaseMetaData, Serializable
+public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
 {
 	private transient Connection con;
 	private transient DatabaseMetaData dmd;

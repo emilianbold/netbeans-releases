@@ -234,7 +234,7 @@ public class AddTableColumnDialog
  
 			try {
 //				DatabaseMetaData dmd = nfo.getConnection().getMetaData();
-				DatabaseMetaData dmd = nfo.getDatabaseAdaptor().getMetaData();
+				DatabaseMetaData dmd = nfo.getSpecification().getMetaData();
 				String catalog = (String)nfo.get(DatabaseNode.CATALOG);
 				String table = (String)nfo.get(DatabaseNode.TABLE);
 				ResultSet rs = dmd.getIndexInfo(catalog,nfo.getUser(),table, true, false);
