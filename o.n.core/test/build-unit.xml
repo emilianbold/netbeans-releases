@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -155,7 +155,6 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
                 <!-- XXX -->
                 <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
-                <pathelement location="${openide/compiler.dir}/${nb.modules/autoload.dir}/openide-compiler.jar"/>
                 <pathelement location="${openide/execution.dir}/${nb.modules/autoload.dir}/openide-execution.jar"/>
                 <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/>
 
@@ -174,7 +173,6 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
                 <!-- XXX -->
                 <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
-                <pathelement location="${openide/compiler.dir}/${nb.modules/autoload.dir}/openide-compiler.jar"/>
                 <pathelement location="${openide/execution.dir}/${nb.modules/autoload.dir}/openide-execution.jar"/>
                 <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/> 
 		<pathelement location="${core.dir}/${nb.modules/autoload.dir}/terminalemulator.jar"/>
@@ -203,7 +201,6 @@ Microsystems, Inc. All Rights Reserved.
 
             <!-- XXX -->
            <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
-           <pathelement location="${openide/compiler.dir}/${nb.modules/autoload.dir}/openide-compiler.jar"/>
            <pathelement location="${openide/execution.dir}/${nb.modules/autoload.dir}/openide-execution.jar"/>
            <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/>
            <pathelement location="../output/src"/>
@@ -222,7 +219,6 @@ Microsystems, Inc. All Rights Reserved.
            <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
            <!-- XXX -->
            <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
-           <pathelement location="${openide/compiler.dir}/${nb.modules/autoload.dir}/openide-compiler.jar"/>
            <pathelement location="${openide/execution.dir}/${nb.modules/autoload.dir}/openide-execution.jar"/>
            <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/> 
            <pathelement location="${core.dir}/${nb.modules/autoload.dir}/terminalemulator.jar"/>

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -45,6 +45,7 @@ public class PatchByteCodeTest extends NbTestCase {
         );
     }
 
+    /* XXX This module is obsolete. Does the test do anything else useful?
     public void testCompilerGroupLoad () throws Exception {
         checkPatching (
             "org.openide.compiler.CompilerGroup", 
@@ -73,6 +74,7 @@ public class PatchByteCodeTest extends NbTestCase {
         m = c.getDeclaredMethod("removeCompilerListener", new Class[] { org.openide.compiler.CompilerListener.class });
         assertTrue ("Is not final", !Modifier.isFinal (m.getModifiers ()));
     }
+    */
     
     public void testClassCanBeAlsoInstantiated () throws Exception {
         Class c = checkPatching (
