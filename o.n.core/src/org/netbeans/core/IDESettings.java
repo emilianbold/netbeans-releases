@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -133,14 +133,15 @@ public class IDESettings extends SystemOption {
                 newProxyHost = props.getProperty("proxy_host"); //NOI18N
                 newProxyPort = props.getProperty("proxy_port"); //NOI18N
             } catch (IOException iox) {
-                return;// ProxyHost and ProxyPort won`t be overtaken
+                ;// ProxyHost and ProxyPort won`t be overtaken from installer
             }                      
-            
-            setProxyHost (newProxyHost);
-            setProxyPort(newProxyPort);                
-            setUseProxy (true);            
-        }        
 
+            if (newProxyHost != null && newProxyPort != null) {
+                setProxyHost (newProxyHost);
+                setProxyPort(newProxyPort);                
+                setUseProxy (newProxyHost.length() != 0 && newProxyPort.length() != 0);
+            }
+        }        
         putProperty(PROP_WWWBROWSER, "", false);
     }
             
@@ -340,7 +341,7 @@ public class IDESettings extends SystemOption {
         }
     }
 
-    /** Getter for proxy port.
+    /** Getter for proxy port. my ffjBuild -update 
     */
     public String getProxyPort () {
         return proxyPort;
@@ -404,10 +405,7 @@ public class IDESettings extends SystemOption {
         try {
             Object obj = getProperty (PROP_WWWBROWSER);
             
-            if (obj == null && isWriteExternal())
-                return null;
-            
-            if (obj instanceof String) {
+            if (obj instanceof String && !"".equals (obj)) {
                 // use new style
                 Lookup.Item item = Lookup.getDefault ().lookupItem (new Lookup.Template (HtmlBrowser.Factory.class, (String)obj, null));
                 return item == null ? null : (HtmlBrowser.Factory)item.getInstance ();
@@ -418,8 +416,7 @@ public class IDESettings extends SystemOption {
             //
                 
                 
-            Node.Handle hdl = (Node.Handle) obj;
-            if (hdl == null) {
+            if (obj == null || "".equals (obj)) {
                 Lookup.Result res = Lookup.getDefault ().lookup (new Lookup.Template (HtmlBrowser.Factory.class));
                 java.util.Iterator it = res.allInstances ().iterator ();
                 while (it.hasNext ()) {
@@ -447,19 +444,25 @@ public class IDESettings extends SystemOption {
                             }
                         }
                         // exceptions are thrown if module is uninstalled 
-                        catch (java.io.IOException ex) {}
-                        catch (ClassNotFoundException ex) {}
+                        catch (java.io.IOException ex) {
+                            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
+                        } catch (ClassNotFoundException ex) {
+                            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
+                        }
                     }
                     
                 }
                 return null;
             }
 
-            Node n = hdl.getNode ();
-            InstanceCookie ic = (InstanceCookie) n.getCookie (InstanceCookie.class);
-            if (ic != null) {
-                Object o = ic.instanceCreate ();
-                return (HtmlBrowser.Factory)o;
+            if (obj instanceof Node.Handle) {
+                Node.Handle hdl = (Node.Handle) obj;
+                Node n = hdl.getNode ();
+                InstanceCookie ic = (InstanceCookie) n.getCookie (InstanceCookie.class);
+                if (ic != null) {
+                    Object o = ic.instanceCreate ();
+                    return (HtmlBrowser.Factory)o;
+                }
             }
         }
         catch (java.io.IOException ex) {
@@ -486,7 +489,7 @@ public class IDESettings extends SystemOption {
         // Node.Handle is stored to refer to registered browser
         try {
             if (brow == null) {
-                putProperty(PROP_WWWBROWSER, null, true);    
+                putProperty(PROP_WWWBROWSER, "", true);    
                 return;
             }
             
@@ -496,12 +499,12 @@ public class IDESettings extends SystemOption {
             } else {
                 // strange
                 ErrorManager.getDefault().log ("IDESettings: Cannot find browser in lookup");// NOI18N
-                putProperty (PROP_WWWBROWSER, null, true);
+                putProperty (PROP_WWWBROWSER, "", true);
             }
             
 
-            //
-            // now the backward compatibility stuff for Radim
+            // 
+            // now the backward compatibility: actually only monitor uses this
             // 
             
             FileObject fo = Repository.getDefault ()
