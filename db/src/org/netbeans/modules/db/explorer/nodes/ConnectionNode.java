@@ -214,6 +214,18 @@ public class ConnectionNode extends DatabaseNode /*implements InstanceCookie*/ {
                     info.put(DefaultAdaptor.PROP_TRANSACTIONS, new Boolean(dmd.supportsTransactions()));
                     info.put(DefaultAdaptor.PROP_DDL_AND_DML_TRANSACTIONS, new Boolean(dmd.supportsDataDefinitionAndDataManipulationTransactions()));
                     info.put(DefaultAdaptor.PROP_DML_TRANSACTIONS_ONLY, new Boolean(dmd.supportsDataManipulationTransactionsOnly()));
+                    info.put(DefaultAdaptor.PROP_BATCH_UPDATES, new Boolean(dmd.supportsBatchUpdates()));
+                    info.put(DefaultAdaptor.PROP_CATALOG_AT_START, new Boolean(dmd.isCatalogAtStart()));
+                    info.put(DefaultAdaptor.PROP_COLUMN_ALIASING, new Boolean(dmd.supportsColumnAliasing()));
+                    info.put(DefaultAdaptor.PROP_DDL_CAUSES_COMMIT, new Boolean(dmd.dataDefinitionCausesTransactionCommit()));
+                    info.put(DefaultAdaptor.PROP_DDL_IGNORED_IN_TRANSACTIONS, new Boolean(dmd.dataDefinitionIgnoredInTransactions()));
+                    info.put(DefaultAdaptor.PROP_DIFF_TABLE_CORRELATION_NAMES, new Boolean(dmd.supportsDifferentTableCorrelationNames()));
+                    info.put(DefaultAdaptor.PROP_LOCAL_FILES, new Boolean(dmd.usesLocalFiles()));
+                    info.put(DefaultAdaptor.PROP_FILE_PER_TABLE, new Boolean(dmd.usesLocalFilePerTable()));
+                    info.put(DefaultAdaptor.PROP_ROWSIZE_INCLUDING_BLOBS, new Boolean(dmd.doesMaxRowSizeIncludeBlobs()));
+                    info.put(DefaultAdaptor.PROP_NULL_PLUS_NULL_IS_NULL, new Boolean(dmd.nullPlusNonNullIsNull()));
+                    info.put(DefaultAdaptor.PROP_PROCEDURES_ARE_CALLABLE, new Boolean(dmd.allProceduresAreCallable()));
+                    info.put(DefaultAdaptor.PROP_TABLES_ARE_SELECTABLE, new Boolean(dmd.allTablesAreSelectable()));
 
                     info.put(DefaultAdaptor.PROP_MAX_BINARY_LITERAL_LENGTH, new Integer(dmd.getMaxBinaryLiteralLength()));
                     info.put(DefaultAdaptor.PROP_MAX_CHAR_LITERAL_LENGTH, new Integer(dmd.getMaxCharLiteralLength()));
