@@ -345,7 +345,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module jarpackager..."/>
     <ant dir="../jarpackager" target="netbeans"/>
   </target>
-  <target name="all-java" depends="all-openide,all-java/api,all-classfile,all-java/srcmodel,all-openide/deprecated,all-openide/compiler,all-openide/execution,all-debuggercore/oldapi">
+  <target name="all-java" depends="all-openide,all-java/api,all-classfile,all-java/srcmodel,all-openide/compiler,all-openide/execution,all-debuggercore/oldapi">
     <echo message="Building module java..."/>
     <ant dir="../java" target="netbeans"/>
   </target>
