@@ -240,7 +240,11 @@ public final class MultiViewCloneableTopComponent extends CloneableTopComponent
     public HelpCtx getHelpCtx() {
         return peer.getHelpCtx();
     }
-    
+   
+    public String toString() {
+        return "MVCTC[name=" + getDisplayName() + ", peer=" + peer + "]"; // NOI18N
+    }
+ 
     /**
      * Get the undo/redo support for this component.
      * The default implementation returns a dummy support that cannot
