@@ -291,7 +291,6 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         gridBagConstraints.insets = new java.awt.Insets(2, 6, 6, 0);
         add(projectsPanel, gridBagConstraints);
 
-        jLabel3.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(TemplatesPanelGUI.class).getString("CTL_DescriptionMnemonic").charAt(0));
         jLabel3.setLabelFor(description);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getBundle(TemplatesPanelGUI.class).getString("CTL_Description"));
         gridBagConstraints = new java.awt.GridBagConstraints();
