@@ -73,7 +73,7 @@ public final class TransformableSupport implements TransformableCookie {
      *
      * @param transformSource source of transformation.
      * @param outputResult result of transformation.
-     * @param listener optional listener (<code>null</code> allowed)
+     * @param notifier optional listener (<code>null</code> allowed)
      *                 giving judgement details.
      * @throws TransformerException if an unrecoverable error occurs during the course of the transformation
      */

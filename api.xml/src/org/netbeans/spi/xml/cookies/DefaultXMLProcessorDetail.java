@@ -44,7 +44,6 @@ public class DefaultXMLProcessorDetail extends XMLProcessorDetail {
     /**
      * Create new DefaultXMLProcessorMessage based on SAXParseException.
      * @param spex SAX exception to be wrapped (never <code>null</code>).
-     * @param level One of message levels derived from <code>spex</code> source.
      */
     public DefaultXMLProcessorDetail(SAXParseException spex) {
         if (spex == null) throw new NullPointerException();
@@ -67,8 +66,7 @@ public class DefaultXMLProcessorDetail extends XMLProcessorDetail {
 
     /**
      * Create new DefaultXMLProcessorMessage based on TransformerException.
-     * @param spex TrAX exception to be wrapped (never <code>null</code>).
-     * @param level One of message levels derived from <code>trex</code> source.
+     * @param trex TrAX exception to be wrapped (never <code>null</code>).
      */
     public DefaultXMLProcessorDetail(TransformerException trex) {
         if (trex == null) throw new NullPointerException();
