@@ -128,14 +128,12 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
  C.f. issue 42256 - most of the delay may be called by contention in 
      ProxyLookup, but this fix will have some responsiveness benefits 
      even if that is fixed
- 
+*/ 
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
- */
                 doFirePropertyChange(PROP_ACTIVATED, old, activatedTopComponent);
-/**            }
+            }
         });
- */
 
         selectedNodesChanged(activatedTopComponent,
             activatedTopComponent == null ? null : activatedTopComponent.getActivatedNodes());
