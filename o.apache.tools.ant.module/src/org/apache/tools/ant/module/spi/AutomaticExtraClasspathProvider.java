@@ -36,6 +36,8 @@ public interface AutomaticExtraClasspathProvider {
      * The user may be able to override this path, so there is no
      * firm guarantee that the items will be available when Ant is run.
      * However by default they will be.
+     * @return zero or more directories or JARs to add to Ant's startup classpath
+     * @see org.openide.modules.InstalledFileLocator
      */
     File[] getClasspathItems();
     
