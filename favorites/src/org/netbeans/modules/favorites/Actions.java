@@ -21,18 +21,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.*;
-
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataFolder;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataShadow;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataShadow;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -363,8 +364,14 @@ public final class Actions extends Object {
                         }
                     }
                 }
-                retVal = FileUtil.toFileObject(selectedFile);
-                assert retVal != null;                        
+                //#50482: Check if selected file exists eg. user can enter any file name to text box.
+                if (!selectedFile.exists()) {
+                    String message = NbBundle.getMessage(Actions.class,"ERR_FileDoesNotExist",selectedFile.getPath());
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message));
+                } else {
+                    retVal = FileUtil.toFileObject(selectedFile);
+                    assert retVal != null;
+                }
             }
             return retVal;
         }
