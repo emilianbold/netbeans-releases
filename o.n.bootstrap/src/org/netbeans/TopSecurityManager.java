@@ -151,8 +151,27 @@ public class TopSecurityManager extends SecurityManager {
 
     /** Performance - all props accessible */
     public final void checkPropertyAccess(String x) {
+        if ("netbeans.debug.exceptions".equals(x)) { // NOI18N
+            // Get rid of this old system property.
+            Class[] ctxt = getClassContext();
+            for (int i = 0; i < ctxt.length; i++) {
+                Class c = ctxt[i];
+                if (c != TopSecurityManager.class &&
+                        c != System.class &&
+                        c != Boolean.class) {
+                    String n = c.getName();
+                    synchronized (warnedClassesNDE) {
+                        if (warnedClassesNDE.add(n)) {
+                            System.err.println("Warning: use of system property netbeans.debug.exceptions in " + n + " has been obsoleted in favor of ErrorManager"); // NOI18N
+                        }
+                    }
+                    break;
+                }
+            }
+        }
         return;
     }
+    private final Set warnedClassesNDE = new HashSet(25); // Set<String>
 
     /* ----------------- private methods ------------- */
 
