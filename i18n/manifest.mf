@@ -1,8 +1,8 @@
 OpenIDE-Module: com.netbeans.developer.modules.i18n/1
 OpenIDE-Module-Name: I18n Module
-OpenIDE-Module-Module-Dependencies: com.netbeans.developer.modules.loaders.properties/1, com.netbeans.developer.modules.loaders.form/1, com.netbeans.developer.modules.text/1
-OpenIDE-Module-Specification-Version: 0.9
-OpenIDE-Module-Implementation-Version: 0.9
+OpenIDE-Module-Module-Dependencies: com.netbeans.developer.modules.loaders.properties/1, com.netbeans.developer.modules.loaders.form/1 > 0.9.1, com.netbeans.developer.modules.text/1
+OpenIDE-Module-Specification-Version: 0.9.1
+OpenIDE-Module-Implementation-Version: 0.9.1
 OpenIDE-Module-Install: com/netbeans/developer/modules/i18n/PropertiesFormModule.class
 
 
