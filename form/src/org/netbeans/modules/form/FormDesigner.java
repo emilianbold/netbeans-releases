@@ -86,7 +86,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     private RADComponent connectionSource;
     private RADComponent connectionTarget;
 
-    private MultiViewElementCallback multiViewObserver;
+    MultiViewElementCallback multiViewObserver;
 
     /** The icons for FormDesigner */
     private static String iconURL =
