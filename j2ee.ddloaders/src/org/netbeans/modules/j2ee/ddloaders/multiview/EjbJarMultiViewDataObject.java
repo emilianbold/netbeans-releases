@@ -27,7 +27,6 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
-import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.dd.impl.ejb.EjbJarProxy;
 import org.netbeans.modules.j2ee.ddloaders.ejb.DDChangeEvent;
 import org.netbeans.modules.j2ee.ddloaders.ejb.DDChangeListener;
@@ -350,9 +349,6 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
     }
 
     public void fileRenamed(FileRenameEvent fileRenameEvent) {
-//        System.out.println("fileRenamed");                              //NOI18N
-//        System.out.println("fileRenameEvent : " + fileRenameEvent);     //NOI18N
-
         FileObject fo = fileRenameEvent.getFile();
         String resourceName = getPackageName(fo);
         if (resourceName != null) {
@@ -370,9 +366,6 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
     }
 
     public void fileDeleted(FileEvent fileEvent) {
-//        System.out.println("fileDeleted");                              //NOI18N
-//        System.out.println("fileEvent : " + fileEvent);                 //NOI18N
-
         FileObject fo = fileEvent.getFile();
         String resourceName = getPackageName(fo);
         if (resourceName != null) {
@@ -426,17 +419,12 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
     protected boolean createModelFromFileObject(FileObject fo) throws IOException {
         ejbJar = createEjbJar();
         if (ejbJar != null) {
-            org.xml.sax.SAXParseException error = ejbJar.getError();
-            setSaxError(error);
-            int status = ejbJar.getStatus();
-            if (status == EjbJar.STATE_INVALID_UNPARSABLE) {
-                return false;
-            } else {
-                return true;
-            }
+            setSaxError(ejbJar.getError());
+            parsable = ejbJar.getStatus() != EjbJar.STATE_INVALID_UNPARSABLE;
         } else {
-            return false;
+            parsable = false;
         }
+        return parsable;
     }
 
     /**
