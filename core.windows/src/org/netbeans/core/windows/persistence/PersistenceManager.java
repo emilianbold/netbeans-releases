@@ -1024,7 +1024,7 @@ public final class PersistenceManager implements PropertyChangeListener {
      * @return window system configuration
      */
     public WindowManagerConfig loadWindowSystem() {
-        long start = System.currentTimeMillis();
+        //long start = System.currentTimeMillis();
         
         //Clear set of used tc_id
         synchronized(LOCK_IDS) {
@@ -1052,9 +1052,9 @@ public final class PersistenceManager implements PropertyChangeListener {
             changeHandler = new ModuleChangeHandler();
             changeHandler.startHandling();
         }
-        long end = System.currentTimeMillis();
-        long diff = end - start;
-        System.out.println("Loading of window system takes " + diff + " ms");
+        //long end = System.currentTimeMillis();
+        //long diff = end - start;
+        //System.out.println("Loading of window system takes " + diff + " ms");
         return wmc;
     }
     
@@ -1062,20 +1062,20 @@ public final class PersistenceManager implements PropertyChangeListener {
      * @param wmc snapshot of windoes system configuration
      */
     public void saveWindowSystem(WindowManagerConfig wmc) {
-        long start, end, diff;
+        //long start, end, diff;
         WindowManagerParser wmParser = getWindowManagerParser();
         try {
-            start = System.currentTimeMillis();
+            //start = System.currentTimeMillis();
             saveTopComponents();
-            end = System.currentTimeMillis();
-            diff = end - start;
-            System.out.println("Saving of top components takes " + diff + " ms");
+            //end = System.currentTimeMillis();
+            //diff = end - start;
+            //System.out.println("Saving of top components takes " + diff + " ms");
             
-            start = System.currentTimeMillis();
+            //start = System.currentTimeMillis();
             wmParser.save(wmc);
-            end = System.currentTimeMillis();
-            diff = end - start;
-            System.out.println("Saving of window system takes " + diff + " ms");
+            //end = System.currentTimeMillis();
+            //diff = end - start;
+            //System.out.println("Saving of window system takes " + diff + " ms");
         } catch (IOException exc) {
             ErrorManager.getDefault().notify(
                 ErrorManager.WARNING, exc
