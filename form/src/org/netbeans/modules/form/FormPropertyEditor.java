@@ -66,6 +66,10 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
     currentEditor.addPropertyChangeListener (this);
     firePropertyChange();
   }
+
+  RADComponent getRADComponent () {
+    return radComponent;
+  }
   
   // -----------------------------------------------------------------------------
   // PropertyChangeListener implementation
@@ -279,6 +283,7 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
 
 /*
  * Log
+ *  6    Gandalf   1.5         6/22/99  Ian Formanek    
  *  5    Gandalf   1.4         6/22/99  Ian Formanek    Fixed setting 
  *       FormAwareEditor
  *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
