@@ -141,15 +141,6 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.project.ui.NewFileIterator.folderIterator" />
                 <attr name="templateCategory" stringvalue="simple-files"/>
             </folder>
-            <file name="file">
-                <![CDATA[]]>
-                <attr name="template" boolvalue="true"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/project/ui/resources/newFile.gif"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/project/ui/resources/templatesFile.html"/>
-                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.project.ui.NewFileIterator.emptyFileIterator" />
-                <attr name="templateCategory" stringvalue="simple-files"/>
-            </file>
         </folder>
     </folder>
     

@@ -81,4 +81,17 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="originalFileSystem" stringvalue="org.netbeans.modules.masterfs.MasterFileSystem" />
         </file>
     </folder>
+
+    <folder name="Templates" >
+        <folder name="Other" >
+            <file name="file">
+                <![CDATA[]]>
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.favorites.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/favorites/resources/newFile.gif"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/favorites/resources/templatesFile.html"/>
+            </file>
+        </folder>
+    </folder>
+ 
 </filesystem>
