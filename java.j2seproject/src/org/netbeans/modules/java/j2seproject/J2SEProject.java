@@ -120,7 +120,8 @@ final class J2SEProject implements Project, AntProjectListener {
             new ProjectXmlSavedHookImpl(),
             new ProjectOpenedHookImpl(),
             new UnitTestForSourceQueryImpl(helper),
-            SourceContainers.genericOnly( this ),
+            new J2SESourceGroup( helper ),
+            //SourceContainers.genericOnly( this ),
             fileBuilt,
         });
     }
