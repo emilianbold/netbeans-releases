@@ -17,7 +17,11 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
     <folder name="Templates">
         <folder name="Project">
-            
+            <attr name="Desktop/Import" boolvalue="true"/>
+            <attr name="Desktop/Web" boolvalue="true"/>
+            <attr name="Web/Import" boolvalue="true"/>
+
+            <folder name="Web">
             <!-- Add template for the J2SE project -->
             <file name="emptyWeb.xml">
                 <attr name="template" boolvalue="true"/>
@@ -26,7 +30,8 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/emptyProject.html"/>
             </file>
-        
+            </folder>
+            <folder name="Import">
             <file name="importWeb.xml">
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.project.ui.wizards.ImportWebProjectWizardIterator"/>
@@ -34,6 +39,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/importProject.html"/>
             </file>
+            </folder>
         </folder>
     </folder>
     <folder name="org-netbeans-api-project-libraries">

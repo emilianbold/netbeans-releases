@@ -35,6 +35,8 @@ public class OpenProjectListSettings extends SystemOption {
     private static final String RECENT_PROJECTS_DIR_NAMES = "RecentProjectsDirectoryNames"; //NOI18N
     private static final String PROP_PROJECTS_FOLDER = "projectsFolder";    //NOI18N
     private static final String TEMPLATE_USAGE_LRUS = "templateUsageLrus"; // NOI18N
+    private static final String PROP_PROJECT_CATEGORY = "lastSelectedProjectCategory";       //NOI18N
+    private static final String PROP_PROJECT_TYPE = "lastSelectedProjectType";                //NOI18N
     
     // PERSISTENCE
     private static final long serialVersionUID = 8754987489474L;
@@ -123,6 +125,22 @@ public class OpenProjectListSettings extends SystemOption {
     
     public void setTemplateUsageLRUs( Map map ) {
         putProperty( TEMPLATE_USAGE_LRUS, map, true  );
+    }
+    
+    public String getLastSelectedProjectCategory () {
+        return (String) getProperty (PROP_PROJECT_CATEGORY);
+    }
+    
+    public void setLastSelectedProjectCategory (String category) {
+        putProperty(PROP_PROJECT_CATEGORY,category,true);
+    }
+    
+    public String getLastSelectedProjectType () {
+        return (String) getProperty (PROP_PROJECT_TYPE);
+    }
+    
+    public void setLastSelectedProjectType (String type) {
+        putProperty(PROP_PROJECT_TYPE,type,true);
     }
 
 }

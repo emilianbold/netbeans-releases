@@ -56,8 +56,7 @@ public class NewProject extends BasicAction {
         }
 
         try {
-            Set newObjects = wizard.instantiate();
-
+            Set newObjects = wizard.instantiate ();
             Object mainProperty = wizard.getProperty( /* XXX Define somewhere */ "setAsMain" ); // NOI18N
             boolean setFirstMain = true;
             if ( mainProperty instanceof Boolean ) {

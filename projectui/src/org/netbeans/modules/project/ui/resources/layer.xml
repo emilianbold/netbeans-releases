@@ -129,6 +129,12 @@ Microsystems, Inc. All Rights Reserved.
             <!-- Project type providers should register their templates here -->
             <attr name="simple" boolvalue="false" /> <!-- do not show this in regular temlate wizard -->
             <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/project/ui/resources/ProjectTemplates.html"/>
+            
+            <!-- Generic import folder -->
+            <folder name="Import">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/project/ui/resources/import.html"/>
+            </folder>            
         </folder>
         <folder name="Folder_hidden"/>
         <folder name="Other">
