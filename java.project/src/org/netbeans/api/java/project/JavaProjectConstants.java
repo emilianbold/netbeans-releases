@@ -31,5 +31,15 @@ public interface JavaProjectConstants {
      * @see org.netbeans.api.project.ant.AntArtifact
      */
     String ARTIFACT_TYPE_JAR = "jar"; // NOI18N
+
+    /**
+     * Standard command for running javadoc on the project.
+     */
+    String COMMAND_JAVADOC = "javadoc"; // NOI18N
+    
+    /** 
+     * Standard command for reloading class ino VM and continue debugging.
+     */
+    String COMMAND_DEBUG_FIX = "debug.fix"; // NOI18N
     
 }
