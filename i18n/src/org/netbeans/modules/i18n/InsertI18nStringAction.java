@@ -263,7 +263,7 @@ public class InsertI18nStringAction extends CookieAction {
         if (topComponent == null) {
             JPanel panel = createPanel(sourceDataObject);
                         
-            String title = Util.getString("CTL_I18nDialogTitle");
+            String title = Util.getString("CTL_InsertI18nDialogTitle");
             URL icon = getClass().getResource("i18nAction.gif");                // NOI18N
             String name = sourceDataObject.getName();
             topComponent = I18nUtil.createTopComponent(panel, name, title, icon);
