@@ -21,6 +21,7 @@ import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.xml.actions.SAXDocumentHandlerWizardAction;
 import org.netbeans.jellytools.modules.xml.saxwizard.*;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.util.FolderContext;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.junit.AssertionFailedErrorException;
 import org.netbeans.tests.xml.JXTest;
@@ -42,9 +43,13 @@ public class SAXGeneratorJTest extends JXTest {
     /** Performs 'XSL Transformation...' action and checks output. */
     public void test() throws Exception {
         // clear output and display Transformation Dialog
-        deleteData("sax/BooksSAXBindings.xml");
-        deleteData("sax/BHImpl.java");
-        
+        FolderContext df = FolderContext.getDataFolder(this);
+        df.deleteDataObject("sax/BooksSAXBindings.xml");
+        df.deleteDataObject("sax/BHImpl.java");
+        df.deleteDataObject("sax/BHandler.java");
+        df.deleteDataObject("sax/BPImpl.java");
+        df.deleteDataObject("sax/BParser.java");
+        df.deleteDataObject("sax/BParslet.java");
         
         // perform SAX Wizard Action
         SAXDocumentHandlerWizardAction  saxAction = new SAXDocumentHandlerWizardAction();
