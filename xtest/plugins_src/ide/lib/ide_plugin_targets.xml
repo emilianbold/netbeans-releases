@@ -193,7 +193,7 @@ Microsystems, Inc. All Rights Reserved.
 -J-Dnetbeans.mainclass=org.netbeans.xtest.plugin.ide.Main 
 -J-Dnetbeans.full.hack=true 
 -J-Dnetbeans.windows=${xtest.ide.winsys} 
--J-Dnetbeans.systemclassloader.patches=${xtest.netbeans.systemclassloader.patches} 
+-J-Dnetbeans.systemclassloader.patches=&quot;${xtest.netbeans.systemclassloader.patches}&quot; 
 -J-Dtest.class=${test.class} 
 -J-Dtest.exit=${xtest.ide.exit} 
 -J-Dtest.reuse.ide=${xtest.ide.reuse.userdir} 
