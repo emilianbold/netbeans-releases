@@ -349,7 +349,7 @@ public class ImageViewer extends CloneableTopComponent {
     public void customZoom(int fx, int fy) {
         double oldScale = scale;
         
-        scale = fx / fy;
+        scale = (double)fx/fy;
         
         if(!isNewSizeOK()) {
             scale = oldScale;
