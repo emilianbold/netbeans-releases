@@ -99,6 +99,7 @@ public class EarProjectProperties extends ArchiveProjectProperties implements An
      * Utility field used by bound properties.
      */
     private java.beans.PropertyChangeSupport propertyChangeSupport =  new java.beans.PropertyChangeSupport (this);
+//    public static final String CLIENT_MODULE_URI = "client.module.uri"; //NOI18N
     
 //    // Special properties of the project
 //    public static final String WEB_PROJECT_NAME = "j2ee.ejbjarproject.name";
@@ -1197,17 +1198,6 @@ public class EarProjectProperties extends ArchiveProjectProperties implements An
                         wm = (WebModule) WebModule.getWebModule(tmp);
                     if (null != wm) {
                         w.setContextRoot(wm.getContextPath());
-                        // set the context path if it is not set...
-                        Object foo = get(EarProjectProperties.CONTEXT_PATH);
-                        if (null == foo) {
-                            put(EarProjectProperties.CONTEXT_PATH,wm.getContextPath());
-                        }
-                        if (foo instanceof String) {
-                            String bar = (String) foo;
-                            if (bar.length() < 1) {
-                                put(EarProjectProperties.CONTEXT_PATH,wm.getContextPath());
-                            }
-                        }
                     }
                     else {
                         int endex = path.length() - 4;
@@ -1216,7 +1206,8 @@ public class EarProjectProperties extends ArchiveProjectProperties implements An
                         }
                         w.setContextRoot(path.substring(0,endex));
                     }
-                    mod.setWeb(w);
+                    replaceEmptyClientModuleUri(path);
+                     mod.setWeb(w);
                 }
                 else if (jm.getModuleType() == J2eeModule.CONN) {
                     mod.setConnector(path);
@@ -1231,6 +1222,21 @@ public class EarProjectProperties extends ArchiveProjectProperties implements An
             org.openide.ErrorManager.getDefault ().log (cnfe.getLocalizedMessage ());
         }
         return mod;
+    }
+    
+    private void replaceEmptyClientModuleUri(String path) {
+        // set the context path if it is not set...
+        Object foo = get(EarProjectProperties.CLIENT_MODULE_URI);
+        if (null == foo) {
+            put(EarProjectProperties.CLIENT_MODULE_URI,path);
+        }
+        if (foo instanceof String) {
+            String bar = (String) foo;
+            if (bar.length() < 1) {
+                put(EarProjectProperties.CLIENT_MODULE_URI,path);
+            }
+        }
+        
     }
     
     private Module getModFromFile(File f, Application dd, String path) {
@@ -1266,8 +1272,8 @@ public class EarProjectProperties extends ArchiveProjectProperties implements An
                         if (endex < 1) {
                             endex = path.length();
                         }
-                        w.setContextRoot(path.substring(0,endex));
-//                    w.setContextRoot("/default"); // NOI18N
+                        w.setContextRoot("/"+path.substring(0,endex)); // NOI18N
+                        replaceEmptyClientModuleUri(path);
                     mod.setWeb(w);
                 } else if (null != ddf && null != mod) {
                     return null; // two timing jar file.

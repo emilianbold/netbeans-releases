@@ -85,16 +85,16 @@ public class CustomizerRun extends JPanel implements ArchiveCustomizerPanel, Hel
 //                }
 //            }
 //        };
-        if (webProperties.get(EarProjectProperties.CONTEXT_PATH) == null) {
+        if (webProperties.get(EarProjectProperties.CLIENT_MODULE_URI) == null) {
 //            EarProjectProperties.PropertyDescriptor propertyDescriptor = new EarProjectProperties.PropertyDescriptor(
-//                    EarProjectProperties.CONTEXT_PATH, null, EarProjectProperties.STRING_PARSER, contextPathSaver);
+//                    EarProjectProperties.CLIENT_MODULE_URI, null, EarProjectProperties.STRING_PARSER, contextPathSaver);
 //            final String contextPath = wm.getContextPath();
 //            EarProjectProperties.PropertyInfo propertyInfo =
 //                    webProperties.new PropertyInfo(propertyDescriptor, contextPath, contextPath);
-//            webProperties.initProperty(WebProjectProperties.CONTEXT_PATH, propertyInfo);
+//            webProperties.initProperty(WebProjectProperties.CLIENT_MODULE_URI, propertyInfo);
         }
 //
-        vps.register(jTextFieldContextPath, EarProjectProperties.CONTEXT_PATH);
+        vps.register(jTextFieldContextPath, EarProjectProperties.CLIENT_MODULE_URI);
 
         jTextFieldRelativeURL.setEditable(jCheckBoxDisplayBrowser.isSelected());
         initialized = true;
@@ -129,7 +129,7 @@ public class CustomizerRun extends JPanel implements ArchiveCustomizerPanel, Hel
         setBorder(new javax.swing.border.EtchedBorder());
         jLabelContextPath.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/earproject/ui/customizer/Bundle").getString("LBL_CustomizeRun_ContextPath_LabelMnemonic").charAt(0));
         jLabelContextPath.setLabelFor(jTextFieldContextPath);
-        jLabelContextPath.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_ContextPath_JLabel"));
+        jLabelContextPath.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_ClientModuleURI_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;

@@ -310,7 +310,7 @@ public class EarProjectGenerator {
         ep.setProperty(EarProjectProperties.JAR_COMPRESS, "false");
         ep.setProperty(EarProjectProperties.JAR_CONTENT_ADDITIONAL, "");
         
-        ep.setProperty(EarProjectProperties.CONTEXT_PATH, "");
+        ep.setProperty(EarProjectProperties.CLIENT_MODULE_URI, "");
         ep.setProperty(EarProjectProperties.LAUNCH_URL_RELATIVE, "");
         //ep.setProperty(EarProjectProperties.LAUNCH_URL_FULL, "");
         ep.setProperty(EarProjectProperties.DISPLAY_BROWSER, "true");

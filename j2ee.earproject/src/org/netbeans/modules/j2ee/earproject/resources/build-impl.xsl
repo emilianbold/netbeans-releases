@@ -117,7 +117,7 @@ is divided into following sections:
                 <condition property="do.display.browser">
                     <and>
                         <istrue value="${{display.browser}}"/>
-                        <contains string="${{context.path}}" substring="/"/>
+                        <contains string="${{client.module.uri}}" substring=".war"/>
                     </and>
                 </condition>
             </target>
@@ -396,7 +396,7 @@ is divided into following sections:
             
     <target name="run-deploy">
         <xsl:attribute name="depends">dist</xsl:attribute>
-        <nbdeploy debugmode="false" forceRedeploy="${{forceRedeploy}}" clientUrlPart="${{client.urlPart}}" contextRoot="${{context.path}}"/>
+        <nbdeploy debugmode="false" forceRedeploy="${{forceRedeploy}}" clientUrlPart="${{client.urlPart}}" clientModuleUri="${{client.module.uri}}"/>
     </target>
     
     <target name="verify">
@@ -421,7 +421,7 @@ is divided into following sections:
         <xsl:attribute name="description">Debug project in IDE.</xsl:attribute>
         <xsl:attribute name ="depends">init,compile</xsl:attribute>
         <xsl:attribute name="if">netbeans.home</xsl:attribute>
-        <nbdeploy debugmode="true" clientUrlPart="${{client.urlPart}}" contextRoot="${{context.path}}"/>
+        <nbdeploy debugmode="true" clientUrlPart="${{client.urlPart}}" clientModuleUri="${{client.module.uri}}"/>
         <nbjpdaconnect name="${{name}}" host="${{jpda.host}}" address="${{jpda.address}}" transport="${{jpda.transport}}">
             <classpath>
                 <path path="${{debug.classpath}}"/>
