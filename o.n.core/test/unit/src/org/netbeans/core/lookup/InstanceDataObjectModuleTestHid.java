@@ -50,15 +50,17 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
     private ModuleManager mgr;
     protected Module m1, m2;
 
-    private static Throwable first = null;
+//    private static Throwable first = null;
     
     protected void setUp() throws Exception {
+        /* Of course that setUp is called more than once
         if (first == null) {
             first = new Throwable("First called here:");
         } else {
             first.printStackTrace();
             new Throwable("I have been called twice!").printStackTrace();
         }
+         */
         mgr = NbTopManager.get().getModuleSystem().getManager();
         final File jar1 = toFile (InstanceDataObjectModuleTestHid.class.getResource("data/test1.jar"));
         final File jar2 = toFile (InstanceDataObjectModuleTestHid.class.getResource("data/test2.jar"));
@@ -94,7 +96,7 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
         java.io.FileOutputStream out = new java.io.FileOutputStream (f);
         org.openide.filesystems.FileUtil.copy (url.openStream (), out);
         out.close ();
-       //f.deleteOnExit ();
+        f.deleteOnExit ();
         
         return f;
     }

@@ -71,6 +71,7 @@ public class InstanceDataObjectModule38420Test extends InstanceDataObjectModuleT
             java.lang.ref.WeakReference ref = new java.lang.ref.WeakReference (found);
             found = null;
             again = null;
+            res = null;
             assertGC ("Content of lookup is hold by a weak reference", ref);
 
         } finally {
