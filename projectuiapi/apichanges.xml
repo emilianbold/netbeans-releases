@@ -75,7 +75,7 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
-
+        
         <change id="OpenProjects.open-close">
             <api name="general"/>
             <summary>Added open and close methods into <code>OpenProjects</code> class</summary>
@@ -112,6 +112,25 @@ is the proper place.
             <issue number="51468"/>
         </change>
 
+        <change id="ProjectCustomizer.addition">
+            <api name="general"/>
+            <summary>Added open and close methods into <code>OpenProjects</code> class</summary>
+            <version major="1" minor="4"/>
+            <date day="16" month="1" year="2005"/>
+            <author login="phrebejk"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added <code>org.netbeans.spi.project.ui.supportProjectCustomizer</code> 
+                    containing support methods for creating standard looking project customizer
+                    dialogs.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project.ui.support" name="ProjectCustomizer"/>
+            <issue number="49647"/>
+        </change>
+    
+        
     </changes>
 
     <!-- Now the surrounding HTML text and document structure: -->
