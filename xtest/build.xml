@@ -39,6 +39,7 @@ Microsystems, Inc. All Rights Reserved.
   
   <target name="compile-dependend-modules">
     <ant dir="../openide" antfile="build.xml" target="jars"/>
+    <ant dir="../openide/loaders" antfile="build.xml" target="jars"/>
     <ant dir="../openide/io" antfile="build.xml" target="jars"/>
     <ant dir="../openide/execution" antfile="build.xml" target="jars"/>
     <ant dir="../core" antfile="build.xml" target="jars"/>
@@ -182,6 +183,7 @@ Microsystems, Inc. All Rights Reserved.
   
   <target name="real-clean" depends="clean">
     <ant dir="../openide" antfile="build.xml" target="clean"/>
+    <ant dir="../openide/loaders" antfile="build.xml" target="clean"/>
     <ant dir="../openide/io" antfile="build.xml" target="clean"/>
     <ant dir="../openide/execution" antfile="build.xml" target="clean"/>
     <ant dir="../core" antfile="build.xml" target="clean"/>
