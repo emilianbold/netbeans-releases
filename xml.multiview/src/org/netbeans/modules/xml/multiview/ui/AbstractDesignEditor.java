@@ -64,13 +64,7 @@ public abstract class AbstractDesignEditor extends TopComponent implements Explo
         this.manager = new ExplorerManager();
         
         ActionMap map = this.getActionMap ();
-        
-        map.put(javax.swing.text.DefaultEditorKit.copyAction, ExplorerUtils.actionCopy(manager));
-        map.put(javax.swing.text.DefaultEditorKit.cutAction, ExplorerUtils.actionCut(manager));
-        map.put(javax.swing.text.DefaultEditorKit.pasteAction, ExplorerUtils.actionPaste(manager));
-        map.put("delete", ExplorerUtils.actionDelete(manager, true)); // or false
-        map.put("org-openide-actions-EditAction", org.openide.util.actions.SystemAction.get(org.openide.actions.EditAction.class));
-        map.put("org-openide-actions-NewAction", org.openide.util.actions.SystemAction.get(org.openide.actions.NewAction.class));
+
         // following line tells the top component which lookup should be associated with it
         associateLookup (ExplorerUtils.createLookup (manager, map));
         initComponents();
@@ -85,7 +79,6 @@ public abstract class AbstractDesignEditor extends TopComponent implements Explo
         this();
         this.contentView = contentView;
         setRootContext(contentView.getRoot());
-        //this.contentView.setPreferredSize(new Dimension(DEFAULT_WIDTH,DEFAULT_HEIGHT));
     }
     
     public void setContentView(PanelView panelView) {
