@@ -29,6 +29,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-openide-actions-CompileAction.instance"/>
             <file name="org-openide-actions-ExecuteAction.instance"/>
             <file name="org-netbeans-core-actions-NextOutJumpAction.instance"/>
+            <file name="org-netbeans-core-actions-PreviousOutJumpAction.instance"/>
             <file name="org-netbeans-core-actions-SetArgumentsAction.instance"/>
             <file name="org-netbeans-core-actions-StopCompileAction.instance"/>
         </folder>
