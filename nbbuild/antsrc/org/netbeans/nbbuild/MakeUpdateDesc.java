@@ -71,12 +71,14 @@ public class MakeUpdateDesc extends MatchingTask {
         desc = new File (desc_name);
     }
 
+    /** Module group to create **/
     public Group createGroup () {
 	Group g = new Group ();
 	groups.add (g);
 	return g;
     }
 
+    /** External XML entity include **/
     public Entityinclude createEntityinclude () {
         Entityinclude i = new Entityinclude ();
         entityincludes.add (i);
@@ -98,16 +100,16 @@ public class MakeUpdateDesc extends MatchingTask {
             char c = s.charAt(i);
             switch (c) {
                 case '<':
-                    s2.append("&lt;");
+                    s2.append("&lt;"); //NOI18N
                     break;
                 case '>':
-                    s2.append("&gt;");
+                    s2.append("&gt;"); //NOI18N
                     break;
                 case '&':
-                    s2.append("&amp;");
+                    s2.append("&amp;"); //NOI18N
                     break;
                 case '"':
-                    s2.append("&quot;");
+                    s2.append("&quot;"); //NOI18N
                     break;
                 default:
                     s2.append(c);
@@ -118,6 +120,14 @@ public class MakeUpdateDesc extends MatchingTask {
     }
 
     public void execute () throws BuildException {
+        Group root = new Group();
+        root.setName("root"); //NOI18N
+        // add fileset from MatchingTask (nested includes/excludes)
+        root.addFileSet(fileset);
+        for (int i=0; i < filesets.size(); i++) {
+            root.addFileSet((FileSet) filesets.elementAt(i));
+        }
+        groups.addElement(root);
 	if (desc.exists ()) {
 	    // Simple up-to-date check.
 	    long time = desc.lastModified ();
@@ -153,71 +163,66 @@ public class MakeUpdateDesc extends MatchingTask {
 	    java.io.OutputStream os = new java.io.FileOutputStream (desc);
 	    try {
                 
-                java.io.PrintWriter pw = new java.io.PrintWriter (new java.io.OutputStreamWriter (os, "UTF-8"));
-		pw.println ("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>");
+                java.io.PrintWriter pw = new java.io.PrintWriter (new java.io.OutputStreamWriter (os, "UTF-8")); //NOI18N
+		pw.println ("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"); //NOI18N
 		pw.println ();
-		java.text.SimpleDateFormat format = new java.text.SimpleDateFormat ("ss/mm/HH/dd/MM/yyyy");
-		format.setTimeZone (java.util.TimeZone.getTimeZone ("GMT"));
+		java.text.SimpleDateFormat format = new java.text.SimpleDateFormat ("ss/mm/HH/dd/MM/yyyy"); //NOI18N
+		format.setTimeZone (java.util.TimeZone.getTimeZone ("GMT")); //NOI18N
 		String date = format.format (new java.util.Date ());
                 
                 if ( entityincludes.size() > 0 ) {
                     // prepare .ent file
                     String ent_name=desc_name.toString();                
-                    int xml_idx = ent_name.indexOf(".xml");
+                    int xml_idx = ent_name.indexOf(".xml"); //NOI18N
                     if (xml_idx != -1) {
-                        ent_name = ent_name.substring (0, xml_idx) + ".ent";
+                        ent_name = ent_name.substring (0, xml_idx) + ".ent"; //NOI18N
                     } else {
-                        ent_name = ent_name + ".ent";
+                        ent_name = ent_name + ".ent"; //NOI18N
                     }
                     desc_ent = new File(ent_name);               
                     desc_ent.delete();
-                    pw.println ("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.0//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_0.dtd\" [");
+                    pw.println ("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.0//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_0.dtd\" ["); //NOI18N
                     // Would be better to follow order of groups and includes
-                    pw.println ("    <!ENTITY entity SYSTEM \"" + xmlEscape(desc_ent.getName()) + "\">");
+                    pw.println ("    <!ENTITY entity SYSTEM \"" + xmlEscape(desc_ent.getName()) + "\">"); //NOI18N
                     int inc_num=0;
                     for (int i=0; i<entityincludes.size(); i++) {
                         Entityinclude ei = (Entityinclude) entityincludes.elementAt(i);
-                        pw.println ("    <!ENTITY include" + i + " SYSTEM \"" + xmlEscape(ei.file) + "\">");
+                        pw.println ("    <!ENTITY include" + i + " SYSTEM \"" + xmlEscape(ei.file) + "\">"); //NOI18N
                     }
-                    pw.println ("]>");
+                    pw.println ("]>"); //NOI18N
                     pw.println ();
-                    pw.println ("<module_updates timestamp=\"" + xmlEscape(date) + "\">");
-                    pw.println ("    &entity;");
+                    pw.println ("<module_updates timestamp=\"" + xmlEscape(date) + "\">"); //NOI18N
+                    pw.println ("    &entity;"); //NOI18N
                     for (int i=0; i<entityincludes.size(); i++) {
-                        pw.println ("    &include" + i + ";");
+                        pw.println ("    &include" + i + ";"); //NOI18N
                     }
-                    pw.println ("</module_updates>");
+                    pw.println ("</module_updates>"); //NOI18N
                     pw.println ();
                     pw.flush ();
                     pw.close ();
                 
                     os = new java.io.FileOutputStream (desc_ent);
-                    pw = new java.io.PrintWriter (new java.io.OutputStreamWriter (os, "UTF-8"));
-                    pw.println ("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>");
+                    pw = new java.io.PrintWriter (new java.io.OutputStreamWriter (os, "UTF-8")); //NOI18N
+                    pw.println ("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"); //NOI18N
+                    pw.println ("<!-- external entity include " + date + " -->");
+                    pw.println ();
                     
                 } else {
-                    pw.println ("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.0//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_0.dtd\">");
-                    pw.println ("<module_updates timestamp=\"" + date + "\">");
+                    pw.println ("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.0//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_0.dtd\">"); //NOI18N
+                    pw.println ("<module_updates timestamp=\"" + date + "\">"); //NOI18N
                     pw.println ();
                 }
 
-                pw.println ("<!-- external entity include " + date + " -->");
                 pw.println ();
 		StringBuffer licenses = new StringBuffer ();
 		java.util.Set licenseNames = new java.util.HashSet (); // Set<String>
-                Group root = new Group();
-                root.setName("root"); //NOI18N
-                for (int i=0; i < filesets.size(); i++) {
-                    root.addFileSet((FileSet) filesets.elementAt(i));
-                }
-                groups.addElement(root);
                 
                 for (int gi=0; gi < groups.size(); gi++) {
 		    Group g = (Group) groups.elementAt(gi);
 		    // Don't indent; embedded descriptions would get indented otherwise.
                     log ("Creating group \"" + g.name + "\"");
-                    if ( ! g.name.equals("root")) {
-                        pw.println ("<module_group name=\"" + xmlEscape(g.name) + "\">");
+                    if ( ! g.name.equals("root")) { //NOI18N
+                        pw.println ("<module_group name=\"" + xmlEscape(g.name) + "\">"); //NOI18N
                         pw.println ();
                     }
                     for (int fsi=0; fsi < g.filesets.size(); fsi++) {
@@ -230,39 +235,39 @@ public class MakeUpdateDesc extends MatchingTask {
                                 long size = n_file.length ();
                                 java.util.zip.ZipFile zip = new java.util.zip.ZipFile (n_file);
                                 try {
-                                    java.util.zip.ZipEntry entry = zip.getEntry ("Info/info.xml");
+                                    java.util.zip.ZipEntry entry = zip.getEntry ("Info/info.xml"); //NOI18N
                                     if (entry == null)
                                         throw new BuildException ("NBM " + n_file + " was malformed: no Info/info.xml", location);
                                     java.io.InputStream is = zip.getInputStream (entry);
                                     try {
-                                        java.io.BufferedReader r = new java.io.BufferedReader (new java.io.InputStreamReader (is, "UTF-8"));
+                                        java.io.BufferedReader r = new java.io.BufferedReader (new java.io.InputStreamReader (is, "UTF-8")); //NOI18N
                                         String line = r.readLine ();
-                                        if (! line.startsWith ("<?xml"))
+                                        if (! line.startsWith ("<?xml")) //NOI18N
                                             throw new BuildException ("Strange info.xml line: " + line, location);
                                         // next line probably blank, no problem though
                                     INFOXML:
                                         while ((line = r.readLine ()) != null) {
-                                            String dummyDownloadSize = "downloadsize=\"0\"";
+                                            String dummyDownloadSize = "downloadsize=\"0\""; //NOI18N
                                             int idx = line.indexOf (dummyDownloadSize);
                                             if (idx != -1) {
                                                 line = line.substring (0, idx) +
-                                                    "downloadsize=\"" + size + "\"" +
+                                                    "downloadsize=\"" + size + "\"" + //NOI18N
                                                     line.substring (idx + dummyDownloadSize.length ());
                                             }
-                                            String dummyModuleName = "OpenIDE-Module-Name=\"";
+                                            String dummyModuleName = "OpenIDE-Module-Name=\""; //NOI18N
                                             idx = line.indexOf(dummyModuleName);
                                             if (idx != -1) {
                                                 String mn = line.substring (idx + dummyModuleName.length () - 1);
                                                 log (" Adding module   " + mn + " (" + n_file.getAbsolutePath() + ")");
                                             }
-                                            String docType = "<!DOCTYPE module";
+                                            String docType = "<!DOCTYPE module"; //NOI18N
                                             idx = line.indexOf(docType);
                                             if (idx != -1) 
                                                 continue; //Do nothing, it shouldn't be included
-                                            String licenseMarker = "<license name=\"";
+                                            String licenseMarker = "<license name=\""; //NOI18N
                                             idx = line.indexOf (licenseMarker);
                                             if (idx != -1) {
-                                                int idx2 = line.indexOf ("\"", idx + licenseMarker.length ());
+                                                int idx2 = line.indexOf ("\"", idx + licenseMarker.length ()); //NOI18N
                                                 if (idx2 == -1)
                                                     throw new BuildException ("Strange info.xml line: " + line, location);
                                                 String name = line.substring (idx + licenseMarker.length (), idx2);
@@ -272,10 +277,10 @@ public class MakeUpdateDesc extends MatchingTask {
                                                 do {
                                                     if (copy) {
                                                         licenses.append (line);
-                                                        licenses.append ('\n');
+                                                        licenses.append ('\n'); //NOI18N
                                                     }
-                                                    if (line.indexOf ("</license>") != -1) {
-                                                        licenses.append ('\n');
+                                                    if (line.indexOf ("</license>") != -1) { //NOI18N
+                                                        licenses.append ('\n'); //NOI18N
                                                         continue INFOXML;
                                                     }
                                                 } while ((line = r.readLine ()) != null);
@@ -296,14 +301,14 @@ public class MakeUpdateDesc extends MatchingTask {
                             }
                         }
 		    }
-                    if ( ! g.name.equals("root")) {
-                        pw.println ("</module_group>");
+                    if ( ! g.name.equals("root")) { //NOI18N
+                        pw.println ("</module_group>"); //NOI18N
                         pw.println ();
                     }
 		}
 		pw.print (licenses.toString ());
                 if ( entityincludes.size() <= 0 ) {
-                    pw.println ("</module_updates>");
+                    pw.println ("</module_updates>"); //NOI18N
                     pw.println ();
                 }
                 pw.flush ();
