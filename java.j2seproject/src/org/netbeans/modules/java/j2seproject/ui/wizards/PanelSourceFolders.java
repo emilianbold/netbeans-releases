@@ -182,6 +182,14 @@ public class PanelSourceFolders extends SettingsPanel {
             wizardDescriptor.putProperty( "WizardPanel_errorMessage", NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalSources"));
             return false;
         }
+        
+        String ploc = new File (this.projectLocation.getText ()).getAbsolutePath ();
+        String sloc = f.getAbsolutePath ();
+        if (ploc.equals (sloc) || ploc.startsWith (sloc)) {
+            wizardDescriptor.putProperty( "WizardPanel_errorMessage", NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalProjectFolder"));
+            return false;
+        }
+        
         fileName = tests.getText ();
         if (fileName.length()>0) {
             File tf = new File (fileName);
@@ -189,7 +197,7 @@ public class PanelSourceFolders extends SettingsPanel {
                 wizardDescriptor.putProperty( "WizardPanel_errorMessage", NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalTests"));
                 return false;
             }
-        }
+        }        
         wizardDescriptor.putProperty( "WizardPanel_errorMessage", "");  //NOI18N
         return true;
     }
