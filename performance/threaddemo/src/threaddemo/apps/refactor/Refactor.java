@@ -82,26 +82,15 @@ public class Refactor {
                     it.remove();
                     final Phadhail ph = (Phadhail)e.getKey();
                     final DomProvider p = (DomProvider)e.getValue();
-                    final String path = ph.getPath();
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            progress.setValue(progress.getValue() + 1);
-                            progressBar.setString(path);
-                        }
-                    });
                     ph.mutex().readAccess(new Mutex.Action() {
-                        // XXX this is purely a hack to deal with the fact that
-                        // trying to call CES.openDocument for the first time
-                        // within a write lock will deadlock, since CES uses a
-                        // separate thread to load the document and that needs
-                        // a read lock to get the input stream. Remove when CES
-                        // is fixed to do things in a normal way.
                         public Object run() {
-                            try {
-                                p.getDocument();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
+                            final String path = ph.getPath();
+                            SwingUtilities.invokeLater(new Runnable() {
+                                public void run() {
+                                    progress.setValue(progress.getValue() + 1);
+                                    progressBar.setString(path);
+                                }
+                            });
                             return null;
                         }
                     });
@@ -157,7 +146,7 @@ public class Refactor {
     }
     
     private static void refactor(DomProvider p) {
-        Document doc;
+        final Document doc;
         try {
             doc = p.getDocument();
         } catch (IOException e) {
@@ -169,23 +158,27 @@ public class Refactor {
         for (int i = 0; i < nl.getLength(); i++) {
             l.add(nl.item(i));
         }
-        Iterator it = l.iterator();
-        while (it.hasNext()) {
-            Element el = (Element)it.next();
-            String tagname = el.getTagName();
-            if (tagname.startsWith("tag-")) {
-                int n = Integer.parseInt(tagname.substring(4));
-                tagname = "tag-" + (n + 1);
-                Element el2 = doc.createElement(tagname);
-                Node parent = el.getParentNode();
-                parent.insertBefore(el2, el);
-                NodeList nl2 = el.getChildNodes();
-                while (nl2.getLength() > 0) {
-                    el2.appendChild(nl2.item(0));
+        final Iterator it = l.iterator();
+        p.isolatingChange(new Runnable() {
+            public void run() {
+                while (it.hasNext()) {
+                    Element el = (Element)it.next();
+                    String tagname = el.getTagName();
+                    if (tagname.startsWith("tag-")) {
+                        int n = Integer.parseInt(tagname.substring(4));
+                        tagname = "tag-" + (n + 1);
+                        Element el2 = doc.createElement(tagname);
+                        Node parent = el.getParentNode();
+                        parent.insertBefore(el2, el);
+                        NodeList nl2 = el.getChildNodes();
+                        while (nl2.getLength() > 0) {
+                            el2.appendChild(nl2.item(0));
+                        }
+                        parent.removeChild(el);
+                    }
                 }
-                parent.removeChild(el);
             }
-        }
+        });
         /*
         org.apache.xml.serialize.XMLSerializer ser = new org.apache.xml.serialize.XMLSerializer(System.err, new org.apache.xml.serialize.OutputFormat(doc, "UTF-8", true));
         try {
