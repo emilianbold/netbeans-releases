@@ -53,7 +53,6 @@ public class ImageViewer extends CloneableTopComponent {
   * @see #requestFocus
   */
   public void open (Workspace w) {
-    System.out.println ("Opening on workspace: "+w);
     Mode viewerMode = w.findMode(this);
     if (viewerMode == null) {
       Mode editorMode = w.findMode(EditorSupport.EDITOR_MODE);
@@ -63,7 +62,6 @@ public class ImageViewer extends CloneableTopComponent {
   }
   
   public Dimension getPreferredSize () {
-    System.out.println ("get Pref size...");
     Dimension pref = label.getPreferredSize ();
     return new Dimension (Math.max (DEFAULT_BORDER_WIDTH + pref.width, MINIMUM_WIDTH), Math.max (DEFAULT_BORDER_HEIGHT + pref.height, MINIMUM_HEIGHT));
   }
