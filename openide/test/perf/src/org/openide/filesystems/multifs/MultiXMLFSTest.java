@@ -97,7 +97,7 @@ public class MultiXMLFSTest extends FSTest implements DataManager {
             }
             
             if (i > 0) {
-                bases[i] = wrappers[i - 1].getFoBase() + wrappers[i - 1].getFoCount();
+                bases[i] = bases[i - 1] + foChunk;
             }
         }
         
