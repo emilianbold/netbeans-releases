@@ -269,7 +269,6 @@ public final class JSPJavacAntLogger extends AntLogger {
     /** Returns a SMAP file corresponding to the given file, if exists.
      */
     public static File getSMAPFileForFile(File javaFile) {
-        System.err.println("GetSmapeforFile");
         File f = FileUtil.normalizeFile(javaFile);
         File dir = f.getAbsoluteFile().getParentFile();
         String name = f.getName();
