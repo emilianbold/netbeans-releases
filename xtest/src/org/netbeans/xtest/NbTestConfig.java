@@ -421,9 +421,9 @@ public class NbTestConfig extends Task {
          BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
          javaprop.load(bis);
          bis.close();
-         Enumeration enum = javaprop.propertyNames();
-         while (enum.hasMoreElements()) {
-             String name2 = (String) enum.nextElement();
+         Enumeration en = javaprop.propertyNames();
+         while (en.hasMoreElements()) {
+             String name2 = (String) en.nextElement();
              table.put(name2,javaprop.getProperty(name2));
          }
        }

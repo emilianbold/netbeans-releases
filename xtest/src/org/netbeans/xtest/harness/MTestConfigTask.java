@@ -10,13 +10,6 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-/*
- * MTestConfigTask.java
- *
- * Created on 27. bøezen 2003, 15:19
- */
-
 package org.netbeans.xtest.harness;
 
 import org.apache.tools.ant.*;
@@ -145,9 +138,9 @@ public class MTestConfigTask extends Task {
             mconfig.setTesttype(testtype);
             ArrayList includes_list = new ArrayList();
             ArrayList excludes_list = new ArrayList();
-            Enumeration enum = additionalPatterns.elements();
-            while (enum.hasMoreElements()) {
-                PatternSet pattern = (PatternSet)enum.nextElement();
+            Enumeration en = additionalPatterns.elements();
+            while (en.hasMoreElements()) {
+                PatternSet pattern = (PatternSet)en.nextElement();
                 String include[] = pattern.getIncludePatterns(project);
                 String exclude[] = pattern.getExcludePatterns(project);
                 if (include != null)

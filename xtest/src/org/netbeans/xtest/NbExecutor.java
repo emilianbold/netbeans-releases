@@ -147,9 +147,9 @@ public class NbExecutor extends Task {
                 }
                 
                 Hashtable ps = project.getProperties();
-                Enumeration enum = ps.keys();
-                while (enum.hasMoreElements()) {
-                    String name = (String) enum.nextElement();
+                Enumeration en = ps.keys();
+                while (en.hasMoreElements()) {
+                    String name = (String) en.nextElement();
                     String value = (String) ps.get(name);
                     if (name.startsWith("xtest") || name.startsWith("_xtest")) {
                         callee.createArg().setValue("-D" + name + "=" + value);

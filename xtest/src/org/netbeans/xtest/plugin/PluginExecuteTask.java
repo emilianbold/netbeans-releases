@@ -171,9 +171,9 @@ public class PluginExecuteTask extends Task {
         
         // finally set user supplied properties
         if (properties != null) {
-            Enumeration enum = properties.elements();
-            while (enum.hasMoreElements()) {
-                Property variable = (Property)enum.nextElement();
+            Enumeration en = properties.elements();
+            while (en.hasMoreElements()) {
+                Property variable = (Property)en.nextElement();
                 Property newProperty = ant.createProperty();
                 newProperty.setName(variable.getName());
                 newProperty.setValue(variable.getValue());

@@ -81,9 +81,9 @@ public class UserPropertyWriter extends Task {
             file.getParentFile().mkdirs();
         
         Hashtable table = project.getProperties();
-        Enumeration enum = table.keys();
-        while (enum.hasMoreElements()) {
-            String key = (String) enum.nextElement();
+        Enumeration en = table.keys();
+        while (en.hasMoreElements()) {
+            String key = (String) en.nextElement();
             StringTokenizer attrtokens = new StringTokenizer(attribs,","); 
             while (attrtokens.hasMoreTokens()) {
                 String attr = attrtokens.nextToken();
