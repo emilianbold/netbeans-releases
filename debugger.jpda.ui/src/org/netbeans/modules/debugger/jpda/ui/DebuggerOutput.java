@@ -15,9 +15,12 @@ package org.netbeans.modules.debugger.jpda.ui;
 
 import com.sun.jdi.AbsentInformationException;
 import java.beans.PropertyChangeListener;
+import java.net.ConnectException;
+import java.net.UnknownHostException;
 import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.MissingResourceException;
 import java.util.Set;
 import org.netbeans.api.debugger.ActionsManager;
 
@@ -186,17 +189,24 @@ PropertyChangeListener {
             if (e == null)
                 print ("CTL_Debugger_finished", null, null);
             else {
-                if (e.getMessage () != null)
+                String message = e.getMessage ();
+                if (e instanceof ConnectException)
+                    message = NbBundle.getBundle (DebuggerOutput.class).
+                        getString ("CTL_Connection_refused");
+                if (e instanceof UnknownHostException)
+                    message = NbBundle.getBundle (DebuggerOutput.class).
+                        getString ("CTL_Unknown_host");
+                if (message != null) {
                     ioManager.println (
-                        e.getMessage (),
+                        message,
                         null
                     );
-                else
+                } else
                     ioManager.println (
                         e.toString (),
                         null
                     );
-                e.printStackTrace ();
+                //e.printStackTrace ();
             }
             ioManager.closeStream ();
         } else

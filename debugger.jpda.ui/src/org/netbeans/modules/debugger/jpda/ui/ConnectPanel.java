@@ -422,12 +422,17 @@ Controller, ActionListener {
         Map                 args,
         Connector           connector
     ) {
+        Map defaultValues = connector.defaultArguments ();
         Map argsToSave = new HashMap ();
         Iterator i = args.keySet ().iterator ();
         while (i.hasNext()) {
             String argName = (String) i.next ();
             Argument value = (Argument) args.get (argName);
-            if (value != null)
+            Argument defaultValue = (Argument) defaultValues.get (argName);
+            if ( value != null &&
+                 value != defaultValue &&
+                 !value.equals (defaultValue)
+            )
                 argsToSave.put (argName, value.value ());
         }
 
