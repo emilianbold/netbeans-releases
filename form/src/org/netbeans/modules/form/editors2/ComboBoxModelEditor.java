@@ -29,12 +29,16 @@ public class ComboBoxModelEditor extends StringArrayEditor {
     public void setValue(Object val) {
         if (val instanceof NbComboBoxModel) {
             comboModel = (NbComboBoxModel)val;
+            super.setValue(comboModel.data);
         }
         else if (val instanceof String[]) {
             comboModel = new NbComboBoxModel((String[])val);
+            super.setValue(comboModel.data);
         }
-        else return;
-        super.setValue(comboModel.data);
+        else {
+            comboModel = new NbComboBoxModel(new String[0]);
+            super.setValue(null);
+        }
     }
 
     public Object getValue() {

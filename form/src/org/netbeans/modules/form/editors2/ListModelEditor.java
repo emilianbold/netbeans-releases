@@ -29,12 +29,16 @@ public class ListModelEditor extends StringArrayEditor {
     public void setValue(Object val) {
         if (val instanceof NbListModel) {
             listModel = (NbListModel)val;
+            super.setValue(listModel.data);
         }
         else if (val instanceof String[]) {
             listModel = new NbListModel((String[])val);
+            super.setValue(listModel.data);
         }
-        else return;
-        super.setValue(listModel.data);
+        else {
+            listModel = new NbListModel(new String[0]);
+            super.setValue(null);
+        }
     }
 
     public Object getValue() {
