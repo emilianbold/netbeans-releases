@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+
+  <folder name="Templates">
+    <folder name="Other">
+      <file name="html.html" url="templates/html.html">
+         <attr name="template" boolvalue="true" />
+         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/html/TemplateHelp.html" />
+          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.Bundle"/>
+      </file>
+    </folder>
+  </folder>
+
+</filesystem>
