@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.actions;
@@ -15,11 +15,10 @@ package org.netbeans.jellytools.actions;
 import org.netbeans.jellytools.Bundle;
 
 /** Used to call "Explore From Here" popup menu item, 
- * "org.openide.actions.OpenLocalExplorer".
+ * "org.openide.actions.OpenLocalExplorerAction".
  * @see Action
  * @see org.netbeans.jellytools.nodes.FolderNode
  * @see org.netbeans.jellytools.nodes.GroupNode
- * @see org.netbeans.jellytools.nodes.FilesystemNode
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class ExploreFromHereAction extends Action {
     
