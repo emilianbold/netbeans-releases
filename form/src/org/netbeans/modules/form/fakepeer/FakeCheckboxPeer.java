@@ -48,7 +48,7 @@ class FakeCheckboxPeer extends FakeComponentPeer implements CheckboxPeer
     private class Delegate extends Component
     {
         Delegate() {
-            this.setBackground(SystemColor.control);
+//            this.setBackground(SystemColor.control);
             this.setForeground(SystemColor.controlText);
         }
         

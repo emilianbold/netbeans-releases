@@ -47,7 +47,7 @@ class FakeLabelPeer extends FakeComponentPeer implements LabelPeer
     private class Delegate extends Component 
     {
         Delegate() {
-            this.setBackground(SystemColor.control);
+//            this.setBackground(SystemColor.control);
             this.setForeground(SystemColor.controlText);
         }
         

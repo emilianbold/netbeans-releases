@@ -38,6 +38,11 @@ class FakePanelPeer extends FakeContainerPeer implements PanelPeer
 
     private class Delegate extends Component
     {
+        Delegate() {
+            this.setBackground(SystemColor.window);
+            this.setForeground(SystemColor.windowText);
+        }
+
         public void paint(Graphics g) {
             Dimension sz = _target.getSize();
 

@@ -111,7 +111,13 @@ class FakeTextComponentPeer extends FakeComponentPeer
             g.setColor(_target.getBackground());
             FakePeerUtils.drawLoweredBox(g,0,0,w,h);
 
-            g.setClip(1,1,w-3,h-3);
+            Rectangle r = g.getClipBounds();
+            if (r.x < 1) r.x = 1;
+            if (r.y < 1) r.y = 1;
+            if (r.width > w-3) r.width = w - 3;
+            if (r.height > h-3) r.height = h - 3;
+            g.setClip(r);
+//            g.setClip(1,1,w-3,h-3);
 
             if (_target.isEnabled()) {
                 g.setColor(_target.getForeground());

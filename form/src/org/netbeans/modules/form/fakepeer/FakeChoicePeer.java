@@ -56,7 +56,7 @@ class FakeChoicePeer extends FakeComponentPeer implements ChoicePeer
     {
         Delegate() {
             this.setBackground(SystemColor.window);
-            this.setBackground(SystemColor.controlText);
+            this.setForeground(SystemColor.controlText);
         }
         
         public void paint(Graphics g) {

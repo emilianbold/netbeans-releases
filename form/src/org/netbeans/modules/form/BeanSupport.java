@@ -11,7 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.form;
 
 import org.openide.nodes.Node;
@@ -24,6 +23,8 @@ import java.lang.ref.SoftReference;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ArrayList;
+
+import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 
 /**
  * BeanSupport is a utility class with various static methods supporting
@@ -91,6 +92,10 @@ public class BeanSupport
         Object defInstance = instancesCache.get(beanClass);
         if (defInstance == null) {
             defInstance = createBeanInstance(beanClass);
+            if (defInstance instanceof Component
+                    && !(defInstance instanceof javax.swing.JComponent)
+                    && !(defInstance instanceof javax.swing.RootPaneContainer))
+                FakePeerSupport.attachFakePeer((Component)defInstance);
             instancesCache.put(beanClass, defInstance);
         }
         return defInstance;

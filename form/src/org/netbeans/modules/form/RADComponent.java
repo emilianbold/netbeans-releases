@@ -13,7 +13,12 @@
 
 package org.netbeans.modules.form;
 
-import org.openide.explorer.propertysheet.editors.*;
+import java.beans.*;
+import java.util.*;
+import java.awt.Component;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 import org.openide.*;
 import org.openide.nodes.*;
 import org.openide.util.Utilities;
@@ -21,10 +26,7 @@ import org.openide.util.datatransfer.NewType;
 import org.openide.cookies.InstanceCookie;
 import org.openide.loaders.InstanceDataObject;
 
-import java.beans.*;
-import java.util.*;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 
 
 public class RADComponent implements FormDesignValue {
@@ -124,7 +126,6 @@ public class RADComponent implements FormDesignValue {
 
         this.beanClass = beanClass;
         setBeanInstance(createBeanInstance());
-//        beanInstance = createBeanInstance();
         beanInfo = null;
 
         // properties will be created on first request
@@ -223,6 +224,11 @@ public class RADComponent implements FormDesignValue {
      * other instance of another metacomponent needs to be modified too.
      */
     protected void setBeanInstance(Object beanInstance) {
+        if (beanInstance instanceof Component
+                && !(beanInstance instanceof javax.swing.JComponent)
+                && !(beanInstance instanceof javax.swing.RootPaneContainer))
+            FakePeerSupport.attachFakePeer((Component)beanInstance);
+
         this.beanInstance = beanInstance;
     }
 
