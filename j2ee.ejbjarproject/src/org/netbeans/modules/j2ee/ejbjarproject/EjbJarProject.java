@@ -263,16 +263,12 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 new UnitTestForSourceQueryImpl(getSourceRoots(),getTestSourceRoots()),
                 new SourceLevelQueryImpl(helper, evaluator()),
                 new EjbJarSources (helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
+                new EjbJarSharabilityQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
                 new EjbJarFileBuiltQuery (helper, evaluator(),getSourceRoots(),getTestSourceRoots()),
                 new RecommendedTemplatesImpl(),
                 refHelper,
-                helper.createSharabilityQuery(evaluator(),
-                    new String[] {"${"+EjbJarProjectProperties.SOURCE_ROOT+"}"},
-                    new String[] {
-                    "${"+EjbJarProjectProperties.BUILD_DIR+"}",
-                    "${"+EjbJarProjectProperties.DIST_DIR+"}"}
-                ),
                 new EjbJarProjectClassPathExtender(this, updateHelper, evaluator(), refHelper)
+                // TODO: AB: maybe add "this" to the lookup. You should not cast a Project to EjbJarProject, but use the lookup instead.
             });
     }
     
