@@ -381,6 +381,9 @@ public class HttpServerSettings extends SystemOption
 
     /** setter for port */
     public void setPort(int p) {
+        if (p <= 0 || p >65535)
+            throw new IllegalArgumentException (NbBundle.getMessage(HttpServerSettings.class, "ERR_PortNumberOutOfRange", new Integer (p)));
+        
         Object old = getProperty(PROP_PORT);
         int port = ((old == null) ? DEFAULT_PORT : ((Integer)old).intValue());
         
@@ -709,7 +712,7 @@ public class HttpServerSettings extends SystemOption
             clash |= getRepositoryBaseURL ().startsWith (getJavadocBaseURL ());
             
             if (clash) {
-                org.openide.util.RequestProcessor.postRequest (new Runnable () {
+                org.openide.util.RequestProcessor.getDefault().post (new Runnable () {
                     public void run () {
                         TopManager.getDefault ().notify (new NotifyDescriptor.Message (
                             NbBundle.getMessage (HttpServerSettings.class, "MSG_MappingsConflict")));
