@@ -15,7 +15,7 @@ package com.netbeans.developer.modules.loaders.form;
 
 import java.beans.*;
 import java.lang.reflect.Method;
-import java.util.Vector;
+import java.util.*;
 
 import com.netbeans.ide.TopManager;
 import com.netbeans.ide.util.Utilities;
@@ -139,24 +139,25 @@ public class PropertyPicker extends javax.swing.JDialog {
       propertyList.repaint ();
     } else {
       PropertyDescriptor[] descs = sel.getBeanInfo ().getPropertyDescriptors ();
-      Vector filtered = new Vector ();
+      ArrayList filtered = new ArrayList ();
       for (int i = 0; i < descs.length; i ++) {
         if ((descs[i].getReadMethod () != null) &&       // filter out non-readable properties
             (descs[i].getPropertyType () != null) &&  // indexed properties return null from getPropertyType
             requiredType.isAssignableFrom (descs[i].getPropertyType ())) {
-          filtered.addElement (descs[i]);
+          filtered.add (descs[i]);
         }
       }
-      descriptors = new PropertyDescriptor[filtered.size ()];
-      filtered.copyInto (descriptors);
-
+      
       // sort the properties by name
-/*      QuickSorter sorter = new QuickSorter () {
-        public final int compare(Object o1, Object o2) {
-          return (((PropertyDescriptor)o1).getName ()).compareTo(((PropertyDescriptor)o2).getName ());
+      Collections.sort (filtered, new Comparator () {
+          public int compare(Object o1, Object o2) {
+            return ((PropertyDescriptor)o1).getName ().compareTo (((PropertyDescriptor)o2).getName ());
+          }
         }
-      };
-      sorter.sort (descriptors); */ // [PENDING]
+      );
+      
+      descriptors = new PropertyDescriptor[filtered.size ()];
+      filtered.toArray (descriptors);
 
       String[] items = new String [descriptors.length];
       for (int i = 0; i < descriptors.length; i++)
@@ -323,6 +324,8 @@ public class PropertyPicker extends javax.swing.JDialog {
 
 /*
  * Log
+ *  4    Gandalf   1.3         5/17/99  Ian Formanek    Fixed bug 1810 - 
+ *       Connection Wizard: the items in list should be alphabetically sorted.
  *  3    Gandalf   1.2         5/15/99  Ian Formanek    
  *  2    Gandalf   1.1         5/14/99  Ian Formanek    
  *  1    Gandalf   1.0         5/13/99  Ian Formanek    

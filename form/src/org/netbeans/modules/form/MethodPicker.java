@@ -15,11 +15,9 @@ package com.netbeans.developer.modules.loaders.form;
 
 import java.beans.*;
 import java.lang.reflect.Method;
-import java.util.Vector;
+import java.util.*;
 
 import com.netbeans.ide.TopManager;
-//import com.netbeans.developer.util.QuickSorter;
-//import com.netbeans.developer.util.WindowToolkit;
 import com.netbeans.ide.util.Utilities;
 
 /** The MethodPicker is a form which allows user to pick one of methods 
@@ -144,25 +142,24 @@ public class MethodPicker extends javax.swing.JDialog {
       methodList.repaint ();
     } else {
       MethodDescriptor[] descs = sel.getBeanInfo ().getMethodDescriptors ();
-      Vector filtered = new Vector ();
+      ArrayList filtered = new ArrayList ();
       for (int i = 0; i < descs.length; i ++) {
         if (requiredType.isAssignableFrom (descs[i].getMethod ().getReturnType ()) &&            
             (descs[i].getMethod ().getParameterTypes ().length == 0)) // [PENDING - currently we allow only methods without params]
         {
-          filtered.addElement (descs[i]);
+          filtered.add (descs[i]);
         }
       }
-      descriptors = new MethodDescriptor[filtered.size ()];
-      filtered.copyInto (descriptors);
-
-      // sort the properties by name
-/*      QuickSorter sorter = new QuickSorter () {
-        public final int compare(Object o1, Object o2) {
-          return (((MethodDescriptor)o1).getName ()).compareTo(((MethodDescriptor)o2).getName ());
+      // sort the methods by name
+      Collections.sort (filtered, new Comparator () {
+          public int compare(Object o1, Object o2) {
+            return ((MethodDescriptor)o1).getName ().compareTo (((MethodDescriptor)o2).getName ());
+          }
         }
-      };
-      sorter.sort (descriptors); */ 
-      // [PENDING]
+      );
+
+      descriptors = new MethodDescriptor[filtered.size ()];
+      filtered.toArray (descriptors);
 
       String[] items = new String [descriptors.length];
       for (int i = 0; i < descriptors.length; i++)
@@ -346,6 +343,8 @@ public class MethodPicker extends javax.swing.JDialog {
 
 /*
  * Log
+ *  3    Gandalf   1.2         5/17/99  Ian Formanek    Fixed bug 1810 - 
+ *       Connection Wizard: the items in list should be alphabetically sorted.
  *  2    Gandalf   1.1         5/15/99  Ian Formanek    
  *  1    Gandalf   1.0         5/13/99  Ian Formanek    
  * $
