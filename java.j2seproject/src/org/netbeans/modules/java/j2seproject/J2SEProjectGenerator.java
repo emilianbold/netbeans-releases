@@ -18,15 +18,20 @@ import java.io.IOException;
 import java.util.Arrays;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
+import org.openide.ErrorManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -48,19 +53,48 @@ public class J2SEProjectGenerator {
      * @throws IOException in case something went wrong
      */
     public static AntProjectHelper createProject(File dir, String codename, String displayName, String mainClass ) throws IOException {
-        dir.mkdirs();
-        // XXX clumsy way to refresh, but otherwise it doesn't work for new folders
-        File rootF = dir;
-        while (rootF.getParentFile() != null) {
-            rootF = rootF.getParentFile();
+        FileObject dirFO = createProjectDir (dir);
+        AntProjectHelper h = createProject(dirFO, codename, displayName, "src", "test", mainClass); //NOI18N
+        Project p = ProjectManager.getDefault().findProject(dirFO);
+        ProjectManager.getDefault().saveProject(p);
+        FileObject srcFolder = dirFO.createFolder("src"); // NOI18N
+        dirFO.createFolder("test"); // NOI18N
+        if ( mainClass != null ) {
+            createMainClass( mainClass, srcFolder );
         }
-        FileObject dirFO = FileUtil.toFileObject(rootF);
-        assert dirFO != null : "At least disk roots must be mounted! " + rootF;
-        dirFO.getFileSystem().refresh(false);
-        dirFO = FileUtil.toFileObject(dir);
-        assert dirFO != null : "No such dir on disk: " + dir;
-        assert dirFO.isFolder() : "Not really a dir: " + dir;
-        assert dirFO.getChildren().length == 0 : "Dir must have been empty: " + dir;
+        return h;
+    }
+
+    public static AntProjectHelper createProject (final File dir, final String codename, final String displayName,
+                                                  final File sourceFolder, final File testFolder) throws IOException {
+        assert sourceFolder != null : "Source folder must be given";   //NOI18N
+        final FileObject dirFO = createProjectDir (dir);
+        final AntProjectHelper h = createProject(dirFO, codename, displayName, null, null, null);
+        final J2SEProject p = (J2SEProject) ProjectManager.getDefault().findProject(dirFO);
+        final ReferenceHelper refHelper = p.getReferenceHelper();
+        try {
+        ProjectManager.mutex().writeAccess( new Mutex.ExceptionAction () {
+            public Object run() throws Exception {
+                EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                String srcReference = refHelper.createForeignFileReference(sourceFolder, JavaProjectConstants.SOURCES_TYPE_JAVA);
+                props.put("src.dir",srcReference);          //NOI18N
+                if (testFolder !=null) {                    
+                    String testReference = refHelper.createForeignFileReference(testFolder, JavaProjectConstants.SOURCES_TYPE_JAVA);
+                    props.put("test.src.dir",testReference);    //NOI18N
+                }
+                h.putProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                ProjectManager.getDefault().saveProject (p);
+                return null;
+            }
+        });
+        } catch (MutexException me ) {
+            ErrorManager.getDefault().notify (me);
+        }
+        return h;
+    }
+
+    private static AntProjectHelper createProject(FileObject dirFO, String codename, String displayName,
+                                                  String srcRoot, String testRoot, String mainClass) throws IOException {
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, J2SEProjectType.TYPE, codename);
         h.setDisplayName( displayName == null ? codename : displayName ); // for now
         Element data = h.getPrimaryConfigurationData(true);
@@ -89,8 +123,10 @@ public class J2SEProjectGenerator {
         ep.setProperty("run.test.classpath", new String[]{"${javac.test.classpath}"+File.pathSeparatorChar,
             "${build.test.classes.dir}"});
         ep.setProperty("debug.test.classpath", new String[]{"${run.test.classpath}"});
-        ep.setProperty("src.dir", "src");
-        ep.setProperty("test.src.dir", "test");
+        ep.setProperty("src.dir", srcRoot == null ? "" : srcRoot);
+        if (testRoot != null) {
+            ep.setProperty("test.src.dir", testRoot);
+        }
         ep.setProperty("build.dir", "build");
         ep.setProperty("build.classes.dir", "${build.dir}/classes");
         ep.setProperty("build.test.classes.dir", "${build.dir}/test/classes");
@@ -99,7 +135,7 @@ public class J2SEProjectGenerator {
         ep.setProperty("dist.javadoc.dir", "${dist.dir}/javadoc");
         ep.setProperty("no.dependencies", "false");
         ep.setProperty("platform.active", "default_platform");
-        
+
         ep.setProperty(J2SEProjectProperties.JAVADOC_PRIVATE, "false"); // NOI18N
         ep.setProperty(J2SEProjectProperties.JAVADOC_NO_TREE, "false"); // NOI18N
         ep.setProperty(J2SEProjectProperties.JAVADOC_USE, "true"); // NOI18N
@@ -110,23 +146,33 @@ public class J2SEProjectGenerator {
         ep.setProperty(J2SEProjectProperties.JAVADOC_VERSION, "false"); // NOI18N
         ep.setProperty(J2SEProjectProperties.JAVADOC_WINDOW_TITLE, ""); // NOI18N
         ep.setProperty(J2SEProjectProperties.JAVADOC_ENCODING, ""); // NOI18N
-                
-        
+
+
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         ep.setProperty("application.args", "");
         ep.setProperty(J2SEProjectProperties.JAVADOC_PREVIEW, "true"); // NOI18N
         h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
-        Project p = ProjectManager.getDefault().findProject(dirFO);
-        ProjectManager.getDefault().saveProject(p);
-        FileObject srcFolder = dirFO.createFolder("src"); // NOI18N
-        dirFO.createFolder("test"); // NOI18N
-        if ( mainClass != null ) {
-            createMainClass( mainClass, srcFolder );
-        }
         return h;
     }
-    
+
+    private static FileObject createProjectDir (File dir) throws IOException {
+        dir.mkdirs();
+        // XXX clumsy way to refresh, but otherwise it doesn't work for new folders
+        File rootF = dir;
+        while (rootF.getParentFile() != null) {
+            rootF = rootF.getParentFile();
+        }
+        FileObject dirFO = FileUtil.toFileObject(rootF);
+        assert dirFO != null : "At least disk roots must be mounted! " + rootF;
+        dirFO.getFileSystem().refresh(false);
+        dirFO = FileUtil.toFileObject(dir);
+        assert dirFO != null : "No such dir on disk: " + dir;
+        assert dirFO.isFolder() : "Not really a dir: " + dir;
+        assert dirFO.getChildren().length == 0 : "Dir must have been empty: " + dir;
+        return dirFO;
+    }
+
     private static void createMainClass( String mainClassName, FileObject srcFolder ) throws IOException {
         
         int lastDotIdx = mainClassName.lastIndexOf( '.' );

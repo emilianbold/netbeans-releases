@@ -23,22 +23,27 @@ public class PanelOptionsVisual extends javax.swing.JPanel implements ActionList
     private PanelConfigureProject panel;
     
     /** Creates new form PanelOptionsVisual */
-    public PanelOptionsVisual( PanelConfigureProject panel, boolean isLibrary ) {
+    public PanelOptionsVisual( PanelConfigureProject panel, int type ) {
         initComponents();
         this.panel = panel;
-        
-        if ( isLibrary ) {
-            setAsMainCheckBox.setVisible( false );
-            createMainCheckBox.setVisible( false );
-            mainClassTextField.setVisible( false );
-        }
-        else {        
-            createMainCheckBox.addActionListener( this );
-            useExistingSourcesCheckBox.addActionListener( this );
 
-            createMainCheckBox.setSelected( lastMainClassCheck );
-            mainClassTextField.setEnabled( lastMainClassCheck );
+        switch (type) {
+            case NewJ2SEProjectWizardIterator.TYPE_LIB:
+                setAsMainCheckBox.setVisible( false );
+                createMainCheckBox.setVisible( false );
+                mainClassTextField.setVisible( false );
+                break;
+            case NewJ2SEProjectWizardIterator.TYPE_APP:
+                createMainCheckBox.addActionListener( this );
+                createMainCheckBox.setSelected( lastMainClassCheck );
+                mainClassTextField.setEnabled( lastMainClassCheck );
+                break;
+            case NewJ2SEProjectWizardIterator.TYPE_EXT:
+                createMainCheckBox.setVisible( false );
+                mainClassTextField.setVisible( false );
+                break;
         }
+
     }
 
     public void actionPerformed( ActionEvent e ) {
@@ -46,14 +51,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel implements ActionList
         if ( e.getSource() == createMainCheckBox ) {
             lastMainClassCheck = createMainCheckBox.isSelected();
             mainClassTextField.setEnabled( lastMainClassCheck );        
-        }        
-        else if ( e.getSource() == useExistingSourcesCheckBox && useExistingSourcesCheckBox.isSelected() ) {            
-            // XXX            
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                "Not implemented yet", 
-                 NotifyDescriptor.INFORMATION_MESSAGE ));
-        }
-        
+        }                
     }
     
     /** This method is called from within the constructor to
@@ -67,7 +65,6 @@ public class PanelOptionsVisual extends javax.swing.JPanel implements ActionList
         setAsMainCheckBox = new javax.swing.JCheckBox();
         createMainCheckBox = new javax.swing.JCheckBox();
         mainClassTextField = new javax.swing.JTextField();
-        useExistingSourcesCheckBox = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -96,16 +93,6 @@ public class PanelOptionsVisual extends javax.swing.JPanel implements ActionList
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
         add(mainClassTextField, gridBagConstraints);
 
-        useExistingSourcesCheckBox.setText("Use Existing Sources");
-        useExistingSourcesCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(useExistingSourcesCheckBox, gridBagConstraints);
-
     }//GEN-END:initComponents
     
     boolean valid() {
@@ -114,14 +101,13 @@ public class PanelOptionsVisual extends javax.swing.JPanel implements ActionList
 
     void store( WizardDescriptor d ) {
         d.putProperty( /*XXX Define somewhere */ "setAsMain", setAsMainCheckBox.isSelected() && setAsMainCheckBox.isVisible() ? Boolean.TRUE : Boolean.FALSE ); // NOI18N
-        d.putProperty( /*XXX Define somewhere */ "mainClass", createMainCheckBox.isSelected() && createMainCheckBox.isVisible() ? mainClassTextField.getText() : null ); // NOI18N      
+        d.putProperty( /*XXX Define somewhere */ "mainClass", createMainCheckBox.isSelected() && createMainCheckBox.isVisible() ? mainClassTextField.getText() : null ); // NOI18N
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox createMainCheckBox;
     private javax.swing.JTextField mainClassTextField;
     private javax.swing.JCheckBox setAsMainCheckBox;
-    private javax.swing.JCheckBox useExistingSourcesCheckBox;
     // End of variables declaration//GEN-END:variables
     
 }

@@ -38,39 +38,67 @@ import org.openide.loaders.TemplateWizard;
  * @author Jesse Glick
  */
 public class NewJ2SEProjectWizardIterator implements TemplateWizard.Iterator {
-    
+
+    static final int TYPE_APP = 0;
+    static final int TYPE_LIB = 1;
+    static final int TYPE_EXT = 2;
+
     private static final long serialVersionUID = 1L;
     
-    private boolean isLibrary;
+    private int type;
     
     /** Create a new wizard iterator. */
     public NewJ2SEProjectWizardIterator() {
-        this( false );
+        this(TYPE_APP);
     }
     
-    public NewJ2SEProjectWizardIterator( boolean isLibrary ) {
-        this.isLibrary = isLibrary;
+    public NewJ2SEProjectWizardIterator(int type) {
+        this.type = type;
     }
         
     public static NewJ2SEProjectWizardIterator library() {
-        return new NewJ2SEProjectWizardIterator( true );
+        return new NewJ2SEProjectWizardIterator( TYPE_LIB );
     }
     
     public static NewJ2SEProjectWizardIterator trada() {
         System.out.println("Trada");
         return new NewJ2SEProjectWizardIterator();
     }
-    
+
+    public static NewJ2SEProjectWizardIterator existing () {
+        return new NewJ2SEProjectWizardIterator( TYPE_EXT );
+    }
+
     private WizardDescriptor.Panel[] createPanels() {
-        return new WizardDescriptor.Panel[] {
-            new PanelConfigureProject( isLibrary ),
-        };
+        WizardDescriptor.Panel[] result = null;
+        if (this.type == TYPE_EXT) {
+            result =  new WizardDescriptor.Panel[] {
+                new PanelConfigureProject( this.type ),
+                new PanelSourceFolders.Panel ()
+            };
+        }
+        else {
+            result = new WizardDescriptor.Panel[] {
+                new PanelConfigureProject( this.type )
+            };
+        }
+        return result;
     }
     
     private String[] createSteps() {
-        return new String[] {
-            "Configure Project", // XXX I18N
-        };
+        String[] result = null;
+        if (this.type == TYPE_EXT) {
+            result = new String[] {
+                "Configure Project", // XXX I18N
+                "Set Source Root",         // XXX I18N
+            };
+        }
+        else {
+            result = new String[] {
+                "Configure Project", // XXX I18N
+            };
+        }
+        return result;
     }
     
     
@@ -79,7 +107,17 @@ public class NewJ2SEProjectWizardIterator implements TemplateWizard.Iterator {
         String codename = (String)wiz.getProperty("codename");
         String displayName = (String)wiz.getProperty("displayName");
         String mainClass = (String)wiz.getProperty("mainClass");
-        J2SEProjectGenerator.createProject(dirF, codename, displayName, mainClass );                        
+        if (this.type == TYPE_EXT) {
+            File sourceFolder = (File)wiz.getProperty("sourceRoot");        //NOI18N
+            File testFolder = (File)wiz.getProperty("testRoot");            //NOI18N
+            if (testFolder != null && !testFolder.exists()) {
+                testFolder.mkdirs();
+            }
+            J2SEProjectGenerator.createProject(dirF, codename, displayName, sourceFolder, testFolder );
+        }
+        else {
+            J2SEProjectGenerator.createProject(dirF, codename, displayName, mainClass );
+        }
         FileObject dir = FileUtil.toFileObject(dirF);
         Project p = ProjectManager.getDefault().findProject(dir);
         

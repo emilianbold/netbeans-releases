@@ -41,14 +41,14 @@ public class PanelConfigureProjectVisual extends JPanel {
     private PanelOptionsVisual optionsPanel;
     
     /** Creates new form PanelInitProject */
-    public PanelConfigureProjectVisual( PanelConfigureProject panel, boolean isLibrary ) {
+    public PanelConfigureProjectVisual( PanelConfigureProject panel, int type ) {
         this.panel = panel;
         initComponents();
                 
         projectLocationPanel = new PanelProjectLocationVisual( panel );
         locationContainer.add( projectLocationPanel, java.awt.BorderLayout.CENTER );
         
-        optionsPanel = new PanelOptionsVisual( panel, isLibrary );
+        optionsPanel = new PanelOptionsVisual( panel, type );
         optionsContainer.add( optionsPanel, java.awt.BorderLayout.CENTER );
         
         // Provide a name in the title bar.

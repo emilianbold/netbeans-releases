@@ -109,7 +109,11 @@ final class J2SEProject implements Project, AntProjectListener {
     PropertyEvaluator evaluator() {
         return eval;
     }
-    
+
+    ReferenceHelper getReferenceHelper () {
+        return this.refHelper;
+    }
+
     public Lookup getLookup() {
         return lookup;
     }

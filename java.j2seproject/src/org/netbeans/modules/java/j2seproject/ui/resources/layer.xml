@@ -34,7 +34,15 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.gif"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/j2seproject/ui/resources/emptyLibrary.html"/>
             </file>
-            
+
+            <file name="existingJ2SE.xml">
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.j2seproject.ui.wizards.NewJ2SEProjectWizardIterator.existing"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.j2seproject.ui.wizards.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.gif"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/j2seproject/ui/resources/existingProject.html"/>
+            </file>
+
         </folder>
     </folder>
     
@@ -55,6 +63,16 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
-        
-        
+
+    <folder name="Services">
+        <!-- Has to be in Services folder iorder to be able to use the
+             SystemOption. At least temporarily -->
+        <folder name="org-netbeans-modules-j2seproject-ui">
+            <file name="FoldersList.settings" url="foldersList.settings"/>
+        </folder>
+
+
+    </folder>
+
+
 </filesystem>
