@@ -51,7 +51,7 @@ public class FormEditorModule implements ModuleInstall {
 //    System.out.println("FormEditorModule: restored");
     // [PENDING - ugly workaround so that borders editor works - ideally, a FormPropertyEditorManager would be used for finding border's properties editors]
     java.beans.PropertyEditorManager.registerEditor (javax.swing.border.Border.class, com.netbeans.developer.explorer.propertysheet.editors.BorderEditor.class);
-//    BeanInstaller.autoLoadBeans ();
+    BeanInstaller.autoLoadBeans ();
   }
 
   /** Module was uninstalled. */
@@ -312,6 +312,8 @@ public class FormEditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  19   Gandalf   1.18        6/7/99   Ian Formanek    AutoLoad beans enabled 
+ *       again
  *  18   Gandalf   1.17        6/4/99   Ian Formanek    
  *  17   Gandalf   1.16        5/30/99  Ian Formanek    Minor property editors 
  *       tweaks, fixed problem with empty border's icon
