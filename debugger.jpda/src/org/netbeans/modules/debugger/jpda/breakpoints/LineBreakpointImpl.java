@@ -67,7 +67,11 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             new String[0],
             ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED
         );
-        chackLoadedClasses (className);
+        if (className.endsWith(".")) {
+            checkLoadedClasses(className, true);
+        } else {
+            checkLoadedClasses(className, false);
+        }
     }
     
     protected void classLoaded (ReferenceType referenceType) {

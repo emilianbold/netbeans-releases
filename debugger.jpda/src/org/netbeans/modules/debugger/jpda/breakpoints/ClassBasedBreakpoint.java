@@ -77,14 +77,25 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
         }
     }
     
-    protected void chackLoadedClasses (
-        String className
+    protected void checkLoadedClasses (
+        String className, 
+        boolean all
     ) {
         try {
-            Iterator i = getVirtualMachine ().classesByName (className).
-                iterator ();
+            Iterator i = null;
+            if (all) {
+                i = getVirtualMachine().allClasses().iterator ();
+            } else {
+                i = getVirtualMachine ().classesByName (className).iterator();
+            }
             while (i.hasNext ()) {
-                classLoaded ((ReferenceType) i.next ());
+                Object ref = i.next();
+                if (i != null) {
+                    String name = ((ReferenceType)ref).name();
+                    if (name.startsWith(className)) {
+                        classLoaded ((ReferenceType) ref);
+                    }
+                }
             }
         } catch (VMDisconnectedException e) {
         }
