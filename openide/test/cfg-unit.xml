@@ -78,6 +78,8 @@ Microsystems, Inc. All Rights Reserved.
 		<exclude name="org/openide/explorer/propertysheet/PropertyPanelTest.class"/>
                 <exclude name="org/openide/explorer/propertysheet/FindHelpTest.class"/>
                 <include name="org/openide/explorer/view/*.class"/>
+                <!-- #29435 calling vetoableChange outside EventQueue -->
+                <exclude name="org/openide/explorer/view/ListViewTest.class/testDestroySelectedNodes"/>
                 <include name="org/openide/util/UtilProgressCursorTest.class"/>
             </patternset>
         </testset>        
@@ -119,7 +121,7 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="failing" executor="ide" name="testbag_4" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
-                <!-- none -->
+		<include name="org/openide/explorer/view/ListViewTest.class/testDestroySelectedNodes"/>
             </patternset>
         </testset>      
     </testbag>
