@@ -53,7 +53,7 @@ public class ClasspathCustomEditorOperator extends NbDialogOperator {
     private JButtonOperator _btMoveUp;
 
 
-    /** Tries to find "Add Directory..." JButton in this dialog.
+    /** Tries to find Add Directory... JButton in this dialog.
      * @throws TimeoutExpiredException when component not found
      * @return JButtonOperator
      */
@@ -90,7 +90,7 @@ public class ClasspathCustomEditorOperator extends NbDialogOperator {
         return _lstClasspath;
     }
 
-    /** Tries to find "Add JAR/ZIP..." JButton in this dialog.
+    /** Tries to find Add JAR/ZIP... JButton in this dialog.
      * @throws TimeoutExpiredException when component not found
      * @return JButtonOperator
      */
@@ -129,7 +129,7 @@ public class ClasspathCustomEditorOperator extends NbDialogOperator {
         return _btMoveUp;
     }
 
-    /** clicks on "Add Directory..." JButton
+    /** clicks on Add Directory... JButton
      * @throws TimeoutExpiredException when JButton not found
      * @return FileCustomEditorOperator of directory selector */
     public FileCustomEditorOperator addDirectory() {
@@ -146,7 +146,7 @@ public class ClasspathCustomEditorOperator extends NbDialogOperator {
         btMoveDown().push();
     }
 
-    /** clicks on "Add JAR/ZIP..." JButton
+    /** clicks on Add JAR/ZIP... JButton
      * @throws TimeoutExpiredException when JButton not found
      * @return FileCustomEditorOperator of JAR or ZIP file selector */
     public FileCustomEditorOperator addJARZIP() {

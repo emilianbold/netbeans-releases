@@ -496,7 +496,7 @@ public class Action {
     }
     
     /** Returns default mode in which actions are performed.
-     * @returns default mode in which actions are performed
+     * @return default mode in which actions are performed
      * @see #POPUP_MODE
      * @see #MENU_MODE
      * @see #API_MODE
@@ -512,7 +512,7 @@ public class Action {
     /** Sets default mode in which actions are performed. If given mode value
      * is not valid, it sets {@link #POPUP_MODE} as default.
      * @param mode mode to be set
-     * @returns previous value
+     * @return previous value
      * @see #POPUP_MODE
      * @see #MENU_MODE
      * @see #API_MODE
@@ -539,7 +539,7 @@ public class Action {
     }
 
     /** Gets comparator set for this action instance.
-     * @returns comparator set for this action instance.
+     * @return comparator set for this action instance.
      */
     public Operator.StringComparator getComparator() {
         if(comparator == null) {

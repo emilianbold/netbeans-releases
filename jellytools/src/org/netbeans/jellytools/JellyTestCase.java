@@ -63,7 +63,7 @@ public class JellyTestCase extends NbTestCase {
     }
     
     /** Overriden method from JUnit framework execution to perform conditional
-     * screen shot and conversion from TimeoutExpiredException to AssertionFailedError.<br>
+     * screen shot and conversion from TimeoutExpiredException to AssertionFailedError. <br>
      * Redirects output and waits a second before test execution.
      * @throws Throwable Throwable
      */
@@ -106,7 +106,7 @@ public class JellyTestCase extends NbTestCase {
         }
     }
     
-    /** Method called in case of fail or error just after screen shot and XML dumps.<br>
+    /** Method called in case of fail or error just after screen shot and XML dumps. <br>
      * Override this method when you need to be notified about test failures or errors 
      * but avoid any exception to be throwed from this method.<br>
      * super.failNotify() does not need to be called because it is empty.

@@ -29,7 +29,7 @@ import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.Operator;
 
 /**
- * Provides access to the "Search Results" window.<br>
+ * Provides access to the "Search Results" window. <br>
  * Timeouts used:<br>
  * SearchResultsOperator.SearchTime - maximum time for search to be performed.
  */

@@ -59,7 +59,7 @@ public class ProcessDescriptorCustomEditorOperator extends NbDialogOperator {
         return _txtArgumentKey;
     }
 
-    /** Tries to find "..." JButton in this dialog.
+    /** Tries to find ... JButton in this dialog.
      * @throws TimeoutExpiredException when component not found
      * @return JButtonOperator
      */
@@ -98,7 +98,7 @@ public class ProcessDescriptorCustomEditorOperator extends NbDialogOperator {
         return txtArgumentKey().getText();
     }
 
-    /** clicks on "..." JButton
+    /** clicks on ... JButton
      * @throws TimeoutExpiredException when JButton not found
      * @return FileCustomEditorOperator */
     public FileCustomEditorOperator selectProcessExecutable() {

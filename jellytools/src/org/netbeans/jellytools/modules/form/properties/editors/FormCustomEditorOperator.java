@@ -54,7 +54,7 @@ public class FormCustomEditorOperator extends NbDialogOperator {
     private JButtonOperator _btDefault;
     private JComboBoxOperator _cboMode;
 
-    /** Tries to find "Advanced..." JButton in this dialog.
+    /** Tries to find Advanced... JButton in this dialog.
      * @throws TimeoutExpiredException when component not found
      * @return JButtonOperator
      */
@@ -86,7 +86,7 @@ public class FormCustomEditorOperator extends NbDialogOperator {
         return _cboMode;
     }
 
-    /** clicks on "Advanced..." JButton
+    /** clicks on Advanced... JButton.
      * @throws TimeoutExpiredException when JButton not found
      */
     public void advanced() {
