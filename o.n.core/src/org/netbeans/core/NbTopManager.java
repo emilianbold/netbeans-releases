@@ -438,25 +438,6 @@ public abstract class NbTopManager /*extends TopManager*/ {
         public void load();
         public void save();
     } // End of WindowSystem interface.
-    
-    public static boolean isModalDialogPresent() {
-        return hasModalDialog(WindowManager.getDefault().getMainWindow())
-            // XXX Trick to get the shared frame instance.
-            || hasModalDialog(new JDialog().getOwner());
-    }
-    
-    private static boolean hasModalDialog(Window w) {
-        Window[] ws = w.getOwnedWindows();
-        for(int i = 0; i < ws.length; i++) {
-            if(ws[i] instanceof Dialog && ((Dialog)ws[i]).isModal() && ws[i].isVisible()) {
-                return true;
-            } else if(hasModalDialog(ws[i])) {
-                return true;
-            }
-        }
-        
-        return false;
-    }
 
     
     private boolean doingExit=false;

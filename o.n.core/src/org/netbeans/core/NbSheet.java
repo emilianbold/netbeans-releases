@@ -395,7 +395,7 @@ public final class NbSheet extends TopComponent {
         Listener() {}
         public void propertyChange (PropertyChangeEvent ev) {
             if (ev.getPropertyName().equals( TopComponent.Registry.PROP_ACTIVATED_NODES )) {
-                if(!NbTopManager.isModalDialogPresent() && NbSheet.this.isShowing()) {
+                if(NbSheet.this.isShowing()) {
                     // update the nodes only in case when there is no
                     // modal dialog shown and the sheet is visible
                     activate();
