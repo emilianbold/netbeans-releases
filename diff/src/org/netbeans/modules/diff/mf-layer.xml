@@ -31,7 +31,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Hidden"> 
       <file name="org-netbeans-modules-diff-DiffSettings.settings" url="DiffSettings.settings">
-        <attr name="SystemFileSystem.layer" stringValue="project"/>
+        <attr name="SystemFileSystem.layer" stringvalue="project"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.diff.Bundle" />
         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/diff/diffSettingsIcon.gif" />
       </file>
@@ -39,7 +39,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <!--
     <file name="org-netbeans-modules-diff-DiffSettingsNode.instance">
-      <attr name="SystemFileSystem.layer" stringValue="project"/>
+      <attr name="SystemFileSystem.layer" stringvalue="project"/>
       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.diff.Bundle" />
       <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/diff/diffSettingsIcon.gif" />
     </file>

@@ -48,10 +48,10 @@ Microsystems, Inc. All Rights Reserved.
 	</folder>
 
         <folder name="SearchType">
-            <attr name="hidden" boolValue="true"/>
-            <attr name="SystemFileSystem.localizingBundle" stringValue="org.openidex.search.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlValue="nbresloc:/org/openidex/search/res/find.gif"/>
-            <attr name="SystemFileSystem.layer" stringValue="project"/>
+            <attr name="hidden" boolvalue="true"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.openidex.search.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openidex/search/res/find.gif"/>
+            <attr name="SystemFileSystem.layer" stringvalue="project"/>
        </folder>
    </folder>
 
@@ -72,8 +72,8 @@ SystemFileSystem
     <folder name="Templates">
         <folder name="Services">
             <folder name="SearchType">
-                <attr name="SystemFileSystem.localizingBundle" stringValue="org.openidex.search.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlValue="nbresloc:/org/openidex/search/res/find.gif"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.openidex.search.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openidex/search/res/find.gif"/>
             </folder>
         </folder>
     </folder>
