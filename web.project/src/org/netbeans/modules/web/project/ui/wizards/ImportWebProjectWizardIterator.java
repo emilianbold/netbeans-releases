@@ -126,7 +126,7 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
 
         String buildfile = getBuildfile();
         
-        WebProjectGenerator.importProject (dirF, name, wmFO, new File[] {FileUtil.toFile(javaRoot)}, new File[] {},docBase, libFolder, j2eeLevel, buildfile);
+        WebProjectGenerator.importProject (dirF, name, wmFO, new File[] {FileUtil.toFile(javaRoot)}, null, docBase, libFolder, j2eeLevel, buildfile);
         FileObject dir = FileUtil.toFileObject (dirF);
         Project p = ProjectManager.getDefault().findProject(dir);
         
