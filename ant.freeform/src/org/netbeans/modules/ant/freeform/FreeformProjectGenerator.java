@@ -57,7 +57,7 @@ public class FreeformProjectGenerator {
     private static final String[] viewElementsOrder = new String[]{"items", "context-menu"}; // NOI18N
     private static final String[] folderElementsOrder = new String[]{"source-folder", "build-folder"}; // NOI18N
     private static final String[] viewItemElementsOrder = new String[]{"source-folder", "source-file"}; // NOI18N
-    private static final String[] contextMenuElementsOrder = new String[]{"ide-action", "action"}; // NOI18N
+    private static final String[] contextMenuElementsOrder = new String[]{"ide-action", "separator", "action"}; // NOI18N
     
     private FreeformProjectGenerator() {}
 
