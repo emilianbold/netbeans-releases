@@ -16,7 +16,7 @@
 #set -x
 
 #
-# Extend classpath with JAXP and Xalan
+# Extends classpath with JAXP, Xerces and Xalan from NetBeans nbextra.
 #
 # Run it from this (xml/bin) directory: '. init-xalan.sh'.
 #
@@ -27,11 +27,13 @@ NBROOT=${XML_ROOT}/..
 BINROOT=${NBROOT}/../nbextra
 
 XML_APIS=${BINROOT}/core/release/lib/ext/xml-apis.jar
+XERCES=${BINROOT}/core/release/lib/ext/xerces.jar
 XALAN=${BINROOT}/libs/xalan/release/modules/autoload/ext/xalan-2.3.1.jar
 
 ##<debug>
 #ls -la ${XML_APIS}
+#ls -la ${XERCES}
 #ls -la ${XALAN}
 ##</debug>
 
-export CLASSPATH=${CLASSPATH}:${XML_APIS}:${XALAN}
+export CLASSPATH=${CLASSPATH}:${XML_APIS}:${XERCES}:${XALAN}

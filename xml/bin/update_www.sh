@@ -19,12 +19,13 @@
 # It is used as automatical update of XML web pages.
 #
 # You must specify $CVS_ROOT, which should contain nb_all/xml,
-#   nb_all/nbbuild with compiled nbantext.jar and
+#   nb_all/nbbuild with compiled nbantext.jar and plans folder and
 #   nbextra folder which contains actual binaries.
 # e.g.: CVS_ROOT=/tmp/cvs_netbeans_org
+# If necessary, you can specify proxy host and port
+#   HTTP_PROXYHOST, HTTP_PROXYPORT variables.
 #
 # You can run it anywhere, typically it is run by cron.
-# You should have implementation of xslt processor on classpath.
 #
 
 
@@ -38,17 +39,36 @@ set > $CVS_ROOT/"${DATE_STAMP}__0.set.txt"
 
 
 #
+# update nbbuild/plans
+#
+cd $CVS_ROOT/nb_all/nbbuild/plans
+echo "##########################" >> $CVS_ROOT/"${DATE_STAMP}__1.update.txt"
+echo "# cvs update nbbuild/plans" >> $CVS_ROOT/"${DATE_STAMP}__1.update.txt"
+cvs update -A -d -P 2>&1 >> $CVS_ROOT/"${DATE_STAMP}__1.update.txt"
+
+
+#
 # update xml
 #
 cd $CVS_ROOT/nb_all/xml
+echo "################" >> $CVS_ROOT/"${DATE_STAMP}__1.update.txt"
+echo "# cvs update xml" >> $CVS_ROOT/"${DATE_STAMP}__1.update.txt"
 cvs update -A -d -P 2>&1 >> $CVS_ROOT/"${DATE_STAMP}__1.update.txt"
+
+
+#
+# add xalan and xerces on classpath
+#
+cd bin
+. init-xalan.sh
+cd ..
 
 
 #
 # update content
 #
 cd www
-ant -logfile $CVS_ROOT/"${DATE_STAMP}__2.ant_all.txt" all 2>&1 >> $CVS_ROOT/"${DATE_STAMP}__2.ant_error.txt"
+ant -Dhttp.proxyPort=${HTTP_PROXYPORT} -Dhttp.proxyHost=${HTTP_PROXYHOST} -logfile $CVS_ROOT/"${DATE_STAMP}__2.ant_all.txt" all 2>&1 >> $CVS_ROOT/"${DATE_STAMP}__2.ant_error.txt"
 
 
 #
