@@ -7,6 +7,7 @@
 package org.netbeans.i18n.test;
 
 import java.io.File;
+import javax.swing.SwingUtilities;
 import org.netbeans.i18n.jelly.InternationalizeOperator;
 import org.netbeans.i18n.jelly.NewBundleOperator;
 import org.netbeans.jellytools.*;
@@ -20,6 +21,7 @@ import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbTest;
 import org.netbeans.junit.NbTestSuite;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -32,10 +34,14 @@ public class ComplexWalkthrough extends JellyTestCase {
     
     String formName = "TestFrame";
     String resources="resources";
+    String name;
+    
+    FileObject frameFO,propertiesFO, goldenFolder;
     
     /** Creates a new instance of ComplexWalkthrough */
     public ComplexWalkthrough(String testName) {
         super(testName);
+        name=testName;
     }
     
     /**
@@ -56,13 +62,17 @@ public class ComplexWalkthrough extends JellyTestCase {
     public void setUp() {
         try {
             dataMountPath = Utilities.getPath("data", dlm); // NOI18N
-            System.out.println(dataMountPath);
+            frameFO=Utilities.findFileObject("data", formName, "java");
+            propertiesFO=Utilities.findFileObject("data"+"."+resources, "properties", "properties");
+            goldenFolder=Utilities.findFileObject("data.goldenfiles.ComplexWalkthrough",null,null);
+            
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
     
     public void tearDown() {
+        compareReferenceFiles();
     }
     
     // -------------------------------------------------------------------------
@@ -71,34 +81,60 @@ public class ComplexWalkthrough extends JellyTestCase {
     public void testInternationalize() {
         RepositoryTabOperator tabOper = RepositoryTabOperator.invoke();//explorer.repositoryTab();
         JTreeOperator repoTreeOper = new JTreeOperator(tabOper);
-        Action addToProjectAction = new Action(null, toolsMenuItem+dlm+internationalizationMenuItem+dlm+internationalizeMenuItem);
+        Action internationalize = new Action(null, toolsMenuItem+dlm+internationalizationMenuItem+dlm+internationalizeMenuItem);
         
-        //invoke intern. on form
+        //invoke intern. on java source with form
         Node node1 = new Node(repoTreeOper, dataMountPath+dlm+formName); // NOI18N
-        addToProjectAction.perform(node1);
+        internationalize.perform(node1);
         InternationalizeOperator iop = new InternationalizeOperator();
+        
         //create new properties file in inter. dialog
         iop.clickNew();
         NewBundleOperator nbo = new NewBundleOperator();
         JTreeOperator newfs = new JTreeOperator(nbo);
-        node1 = new Node(newfs, dataMountPath+dlm+resources); // NOI18N
+        node1 = new Node(newfs, newfs.findPath(dataMountPath+dlm+resources,dlm)); // NOI18N
+        node1.select();
+        System.out.println("try to select: "+node1.getPath());
         nbo.ok();
+        new QueueTool().waitEmpty(200);
+        
+        //set comment, press replace
+        iop.makeComponentVisible();
         iop.setComment("test comment");
         iop.replace();
-        new QueueTool().waitEmpty(500);
+        
+        //skip
         iop.skip();
-        new QueueTool().waitEmpty(500);
+        
+        //info
         iop.info();
         JDialogOperator infod=new JDialogOperator(Bundle.getStringTrimmed("org.netbeans.modules.i18n.Bundle", "CTL_InfoPanelTitle"));
+        infod.makeComponentVisible();
         JButtonOperator okb=new JButtonOperator(infod, Bundle.getStringTrimmed("org.netbeans.modules.i18n.Bundle", "CTL_OKButton"));
         okb.pushNoBlock();
-        new QueueTool().waitEmpty(1100);
+        new QueueTool().waitEmpty(200);
+        
         iop.typeKey("hello_button");
         iop.replace();
-        new QueueTool().waitEmpty(500);
         iop.close();
-        System.out.println("OK");
+        
+        EditorOperator eop=new EditorOperator(formName);
+        eop.close(true);
     }
+    
+    public void compareReferenceFiles() {
+        try {
+            FileObject frameGolden = goldenFolder.getFileObject(name+".pass");
+            FileObject propertiesGolden = goldenFolder.getFileObject(name+"properties.pass");
+            System.out.println(frameGolden.getURL().getPath());
+            System.out.println(frameFO.getURL().getPath());
+            assertFile("Golden source file differ.",frameGolden.getURL().getPath(),frameFO.getURL().getPath(),null,new LineDiff(false));
+            assertFile("Golden properties file differ.",propertiesGolden.getURL().getPath(),propertiesFO.getURL().getPath(),null,new LineDiff(false));
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+    
     
     private static final String toolsMenuItem = Bundle.getStringTrimmed("org.openide.actions.Bundle", "CTL_Tools");
     private static final String internationalizationMenuItem = Bundle.getStringTrimmed("org.netbeans.modules.i18n.Bundle", "LBL_Internationalization");

@@ -86,7 +86,7 @@ public class Utilities extends Object {
             name+=_name;
         }
         if (_extension != null && _extension.length() > 0) {
-            name+=_extension;
+            name+="."+_extension;
         }
         //System.out.println("name="+name);
         FileObject f=Repository.getDefault().findResource(name);
