@@ -231,24 +231,18 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
             Exception e = new IllegalStateException("The data object " + getPrimaryFile() + " is invalid; you may not call getNodeDelegate on it any more; see #17020 and please fix your code"); // NOI18N
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
-        if (nodeDelegate == null) {
-            // synchronize on something private, so only one delegate can be created
-            // do not synchronize on this, because we could deadlock with
-            // subclasses could synchronize too.
-            Children.MUTEX.readAccess (new Runnable() {
-                public void run() {
-                    synchronized(nodeCreationLock) {
-                        if (nodeDelegate == null) {
-                            nodeDelegate = createNodeDelegate();
-                        }
-                    }
-                }
-            });
-
-            // JST: debuging code
+        // synchronize on something private, so only one delegate can be created
+        // do not synchronize on this, because we could deadlock with
+        // subclasses could synchronize too.
+        synchronized(nodeCreationLock) {
             if (nodeDelegate == null) {
-                throw new IllegalStateException("DataObject " + this + " has null node delegate"); // NOI18N
+                nodeDelegate = createNodeDelegate();
             }
+        }
+
+        // JST: debuging code
+        if (nodeDelegate == null) {
+            throw new IllegalStateException("DataObject " + this + " has null node delegate"); // NOI18N
         }
         return nodeDelegate;
     }
