@@ -48,7 +48,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.util.WeakListener;
+import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 
 
@@ -163,7 +163,7 @@ public abstract class ActionUtils {
             saveAction = (Action)SaveAction.get(SaveAction.class);
             putValue(Action.ACCELERATOR_KEY, saveAction.getValue(Action.ACCELERATOR_KEY));
             // fix of 40954 - weak listener instead of hard one
-            PropertyChangeListener weakL = WeakListener.propertyChange(this, saveAction);
+            PropertyChangeListener weakL = WeakListeners.propertyChange(this, saveAction);
             saveAction.addPropertyChangeListener(weakL);
             setEnabled(getSaveCookie(tc) != null);
         }
