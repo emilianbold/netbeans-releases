@@ -154,14 +154,15 @@ public class TargetExecutor implements Runnable {
             //System.err.println("execute #3: " + this);
         }
         //System.err.println("execute #5: " + this);
-        return new WrapperExecutorTask (task);
+        WrapperExecutorTask wrapper = new WrapperExecutorTask (task);
+        RequestProcessor.getDefault().post(wrapper);
+        return wrapper;
     }
     private class WrapperExecutorTask extends ExecutorTask {
         private ExecutorTask task;
         public WrapperExecutorTask (ExecutorTask task) {
             super (new WrapperRunnable (task));
             this.task = task;
-            this.run();
         }
         public void stop () {
             task.stop ();
