@@ -27,6 +27,10 @@ public class URLDataLoader extends UniFileLoader {
   /** Creates new URLDataLoader without the extension. */
   public URLDataLoader() {
     super(URLDataObject.class);
+  }
+
+  /** Initialize */
+  protected void initialize () {
     setDisplayName(NbBundle.getBundle(URLDataLoader.class).
                    getString("PROP_URLLoader_Name"));
     ExtensionList ext = new ExtensionList();
@@ -52,7 +56,6 @@ public class URLDataLoader extends UniFileLoader {
       SystemAction.get(ToolsAction.class),
       SystemAction.get(PropertiesAction.class),
     });
-
   }
 
   /** Creates the right data object for given primary file.
@@ -72,6 +75,8 @@ public class URLDataLoader extends UniFileLoader {
 
 /*
  * Log
+ *  8    Gandalf   1.7         10/1/99  Jaroslav Tulach Loaders extends 
+ *       SharedClassObject
  *  7    Gandalf   1.6         8/31/99  Ian Formanek    Correctly provides 
  *       FileSystemAction on its data objects
  *  6    Gandalf   1.5         7/11/99  Ian Formanek    employed EditAction

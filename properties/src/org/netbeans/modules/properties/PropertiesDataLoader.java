@@ -45,12 +45,11 @@ public final class PropertiesDataLoader extends MultiFileLoader {
   /** Creates new PropertiesDataLoader */
   public PropertiesDataLoader() {
     super(PropertiesDataObject.class);
-    initialize();
   }
 
   /** Does initialization. Initializes display name,
   * extension list and the actions. */
-  private void initialize () {
+  protected void initialize () {
     setDisplayName(NbBundle.getBundle(PropertiesDataLoader.class).
                    getString("PROP_PropertiesLoader_Name"));
     ExtensionList ext = new ExtensionList();
@@ -152,6 +151,8 @@ public final class PropertiesDataLoader extends MultiFileLoader {
 
 /*
 * <<Log>>
+*  11   Gandalf   1.10        10/1/99  Jaroslav Tulach Loaders extends 
+*       SharedClassObject
 *  10   Gandalf   1.9         8/31/99  Petr Jiricka    Allowed extension 
 *       settings, "impl" added to extensions
 *  9    Gandalf   1.8         7/16/99  Petr Jiricka    
