@@ -130,7 +130,7 @@ public class Utils {
         String filter = getServletClass(url);
         if (filter != null) {
             // get package only
-            filter = filter.substring(0, filter.lastIndexOf('.'));
+            filter = filter.substring(0, filter.lastIndexOf('.')) + ".*"; //NOI18N
         }
         return filter;
     }
