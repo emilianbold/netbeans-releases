@@ -123,7 +123,7 @@ public class JavadocModule extends ModuleInstall {
     }
     
     // Implementation of java.io.Externalizable ------------------
-
+/*
     public void readExternal(final java.io.ObjectInput objectInput )
     throws java.io.IOException, java.lang.ClassNotFoundException {
         super.readExternal( objectInput );
@@ -138,7 +138,7 @@ public class JavadocModule extends ModuleInstall {
         //Integer i = (Integer)getProperty(PROP_INSTALL_COUNT);
         //objectOutput.writeInt(i != null ? i.intValue() : 0);
     }
-
+*/
     private static void notify (Exception e) {        
         TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, e);
     }
