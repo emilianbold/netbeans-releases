@@ -134,7 +134,7 @@ class BiIconEditor extends PropertyEditorSupport {
     private BiImageIcon iconFromText(String string) throws IllegalArgumentException {
         BiImageIcon ii;
         try {
-            if (string.equals("null")) {
+            if (string.length() == 0 || string.equals("null")) {
                 ii = null;
             }
             else {
@@ -383,7 +383,7 @@ class BiIconEditor extends PropertyEditorSupport {
             BiImageIcon ii = null;
             String s = tfName.getText().trim();
             try {
-                if (rbClasspath.isSelected()) {
+                if (rbClasspath.isSelected() && s.length() != 0 ) {
                     URL url = TopManager.getDefault().currentClassLoader().getResource(s);
                     ii = new BiImageIcon(url);
                     ii.name = s;
