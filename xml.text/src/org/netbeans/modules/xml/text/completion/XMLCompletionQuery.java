@@ -188,7 +188,7 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
             doc.putProperty(DOCUMENT_GRAMMAR_BINDING_PROP, grammarBindingObj);
         }
         
-        return ((GrammarManager)grammarBindingObj).getGrammar(300);
+        return ((GrammarManager)grammarBindingObj).getGrammar();
     }       
     
     // Delegate queriing to performer ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
