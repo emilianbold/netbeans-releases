@@ -267,7 +267,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
         }
         org.openide.windows.TopComponent formWin = getFormTopComponent();
         if (formWin != null) {
-            formWin.setCloseOperation(org.openide.windows.TopComponent.CLOSE_EACH);
+            formWin.setCloseOperation(TopComponent.CLOSE_EACH);
             formWin.close();
         }
         FormEditor.getComponentInspector().focusForm(null);

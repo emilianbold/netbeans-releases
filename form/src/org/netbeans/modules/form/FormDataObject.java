@@ -110,12 +110,11 @@ public class FormDataObject extends JavaDataObject {
         return new org.openide.util.HelpCtx(FormDataObject.class);
     }
 
-    /** Provides node that should represent this data object. When a node for representation
-     * in a parent is requested by a call to getNode(parent) it is the exact copy of this node
-     * with only parent changed. This implementation creates instance
-     * <CODE>DataNode</CODE>.
-     * <P>
-     * This method is called only once.
+    /** Provides node that should represent this data object. When a node for
+     * representation in a parent is requested by a call to getNode(parent) it
+     * is the exact copy of this node with only parent changed. This
+     * implementation creates instance <CODE>DataNode</CODE>.  <P> This method
+     * is called only once.
      *
      * @return the node representation for this data object
      * @see DataNode
@@ -123,6 +122,24 @@ public class FormDataObject extends JavaDataObject {
     protected Node createNodeDelegate() {
         FormDataNode node = new FormDataNode(this);
         node.setDefaultAction(SystemAction.get(OpenAction.class));
+
+        node.addPropertyChangeListener(new java.beans.PropertyChangeListener () {
+            public void propertyChange(java.beans.PropertyChangeEvent e) {
+                if (Node.PROP_NAME.equals(e.getPropertyName())) {
+                    RADComponentNode rootNode =
+                        (RADComponentNode)formEditor.getFormRootNode();
+                    if (rootNode != null)
+                        rootNode.updateName();
+                    
+                    FormTopComponent topComp = formEditor.getFormTopComponent();
+                    if (topComp != null)
+                        topComp.setName(java.text.MessageFormat.format(
+                            FormEditor.getFormBundle ().getString("FMT_FormWindowTitle"),
+                            new Object[] { (String)e.getNewValue() }));
+                }
+            }
+        });
+        
         return node;
     }
 

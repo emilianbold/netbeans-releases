@@ -603,12 +603,12 @@ class JavaCodeGenerator extends CodeGenerator {
                         } else {
                             generateComponentAddCode(children[i],(RADVisualContainer)comp, initCodeWriter);
                         }
+                        initCodeWriter.write("\n"); // NOI18N
                     } // [PENDING - adding to non-visual containers]
-
                 } else {
+                    initCodeWriter.write("\n"); // NOI18N
                     initCodeWriter.flush();
                     initCodeBuffer.setIndentLevel(level + 1, oneIndent);
-                    initCodeWriter.write("\n"); // NOI18N
                     addInitCode(children[i], initCodeWriter, initCodeBuffer, level + 1);
 
                     if (comp instanceof RADVisualContainer) {
@@ -623,12 +623,13 @@ class JavaCodeGenerator extends CodeGenerator {
                         generateMenuAddCode(children[i],(RADMenuComponent)comp, initCodeWriter);
                     } // [PENDING - adding to non-visual containers]
 
+                    initCodeWriter.write("\n"); // NOI18N
                     initCodeWriter.flush();
                     initCodeBuffer.setIndentLevel(level, oneIndent);
                 }
             }
         }
-        initCodeWriter.write("\n"); // NOI18N
+        
     }
 
     private void generateComponentCreate(RADComponent comp,
