@@ -358,8 +358,8 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             }
             PathModel model = (PathModel) this.resources.getModel();
             model.removePath (indices);
-            if ( indices[indices.length-1]< this.resources.getModel().getSize() - 2) {
-                this.resources.setSelectedIndex (indices[indices.length-1]+1);
+            if ( indices[indices.length-1]-indices.length+1 < this.resources.getModel().getSize()) {
+                this.resources.setSelectedIndex (indices[indices.length-1]-indices.length+1);
             }
             else if (indices[0]>0) {
                 this.resources.setSelectedIndex (indices[0]-1);

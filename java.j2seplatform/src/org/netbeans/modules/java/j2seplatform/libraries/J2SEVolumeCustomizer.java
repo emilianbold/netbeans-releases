@@ -66,9 +66,10 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
         if (this.addURLButton != null) {
             this.addURLButton.setEnabled(enabled);
         }
-        this.removeButton.setEnabled(enabled && content.getSelectedIndex()!=-1);
-        this.downButton.setEnabled(enabled && content.getSelectedIndex()!=-1 && content.getSelectedIndex()!=model.getSize()-1);
-        this.upButton.setEnabled(enabled && content.getSelectedIndex()>0);
+        int[] indices = content.getSelectedIndices();
+        this.removeButton.setEnabled(enabled && indices.length > 0);
+        this.downButton.setEnabled(enabled && indices.length > 0 && indices[indices.length-1]<model.getSize()-1);
+        this.upButton.setEnabled(enabled && indices.length>0 && indices[0]>0);
     }
 
 
@@ -122,16 +123,10 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
             public void valueChanged(ListSelectionEvent e) {
                 if (e.getValueIsAdjusting())
                     return;
-                if (content.getSelectedIndex()==-1) {
-                    removeButton.setEnabled(false);
-                    upButton.setEnabled(false);
-                    downButton.setEnabled(false);
-                }
-                else {
-                    removeButton.setEnabled(true);
-                    upButton.setEnabled(content.getSelectedIndex()!=0);
-                    downButton.setEnabled(content.getSelectedIndex()!=model.getSize()-1);
-                }
+                int[] indices = content.getSelectedIndices();
+                removeButton.setEnabled(indices.length > 0);
+                downButton.setEnabled(indices.length > 0 && indices[indices.length-1]<model.getSize()-1);
+                upButton.setEnabled(indices.length>0 && indices[0]>0);
             }
         });
     }
@@ -248,34 +243,40 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
     }//GEN-END:initComponents
 
     private void downResource(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downResource
-        int index = this.content.getSelectedIndex();
-        if (index < 0 || content.getSelectedIndex()>=model.getSize()-1) {
+        int[] indices = this.content.getSelectedIndices();
+        if (indices.length == 0 || indices[0] < 0 || indices[indices.length-1]>=model.getSize()-1) {
             return;
         }
-        this.model.moveDown(index);
-        this.content.setSelectedIndex (index+1);
+        this.model.moveDown(indices);
+        for (int i=0; i< indices.length; i++) {
+            indices[i] = indices[i] + 1;
+        }
+        this.content.setSelectedIndices (indices);
     }//GEN-LAST:event_downResource
 
     private void upResource(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_upResource
-        int index = this.content.getSelectedIndex();
-        if (index <= 0) {
+        int[] indices = this.content.getSelectedIndices();
+        if (indices.length == 0 || indices[0] <= 0) {
             return;
         }
-        this.model.moveUp(index);
-        this.content.setSelectedIndex(index-1);
+        this.model.moveUp(indices);
+        for (int i=0; i< indices.length; i++) {
+            indices[i] = indices[i] - 1;
+        }
+        this.content.setSelectedIndices(indices);
     }//GEN-LAST:event_upResource
 
     private void removeResource(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeResource
-        int index =this.content.getSelectedIndex();
-        if (index < 0) {
+        int[] indices =this.content.getSelectedIndices();
+        if (indices.length == 0) {
             return;
         }
-        this.model.removeResource(index);
-        if (index < this.model.getSize()) {
-            this.content.setSelectedIndex(index);
+        this.model.removeResources(indices);
+        if (indices[indices.length-1]-indices.length+1 < this.model.getSize()) {
+            this.content.setSelectedIndex(indices[indices.length-1]-indices.length+1);
         }
-        else if (index  >= 1) {
-            this.content.setSelectedIndex (index-1);
+        else if (indices[0]  >= 1) {
+            this.content.setSelectedIndex (indices[0]-1);
         }
     }//GEN-LAST:event_removeResource
 
@@ -349,6 +350,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
 
 
     private void addFiles (File[] files) throws MalformedURLException {
+        int firstIndex = this.model.getSize();
         for (int i = 0; i < files.length; i++) {
             File f = files[i];
             //XXX: JFileChooser workaround (JDK bug #5075580), double click on folder returns wrong file
@@ -362,36 +364,43 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
             }
             URL url = f.toURI().toURL();
             this.model.addResource(url);
+        }        
+        int lastIndex = this.model.getSize()-1;
+        if (firstIndex<=lastIndex) {
+            int[] toSelect = new int[lastIndex-firstIndex+1];
+            for (int i = 0; i < toSelect.length; i++) {
+                toSelect[i] = firstIndex+i;
+            }
+            this.content.setSelectedIndices(toSelect);
         }
-        this.content.setSelectedIndex(this.model.getSize()-1);
     }
-
+    
     public void setObject(Object bean) {
         if (bean instanceof LibraryImplementation) {
             this.impl = (LibraryImplementation) bean;
             this.model = new VolumeContentModel(this.impl,this.volumeType);
-            this.content.setModel (model);
+            this.content.setModel(model);
             if (this.model.getSize()>0) {
-                this.content.setSelectedIndex (0);
+                this.content.setSelectedIndex(0);
             }
         }
         else {
-            throw new IllegalArgumentException ();
+            throw new IllegalArgumentException();
         }
     }
-
-
+    
+    
     private static class SimpleFileFilter extends FileFilter {
-
+        
         private String description;
         private Collection extensions;
-
-
-        public SimpleFileFilter (String description, String[] extensions) {
+        
+        
+        public SimpleFileFilter(String description, String[] extensions) {
             this.description = description;
             this.extensions = Arrays.asList(extensions);
         }
-
+        
         public boolean accept(File f) {
             if (f.isDirectory())
                 return true;
@@ -399,19 +408,19 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
             int index = name.lastIndexOf('.');   //NOI18N
             if (index <= 0 || index==name.length()-1)
                 return false;
-            String extension = name.substring (index+1).toUpperCase();
+            String extension = name.substring(index+1).toUpperCase();
             return this.extensions.contains(extension);
         }
-
+        
         public String getDescription() {
             return this.description;
         }
     }
-
-
+    
+    
     private static File lastFolder = null;
-
-
+    
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JList content;

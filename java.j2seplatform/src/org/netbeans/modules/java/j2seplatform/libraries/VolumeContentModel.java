@@ -69,24 +69,30 @@ class VolumeContentModel extends AbstractListModel/*<String>*/ {
         this.fireIntervalAdded(this,index,index);
     }
 
-    public void removeResource (int index) {
-        this.content.remove(index);
+    public void removeResources (int[] indices) {
+        for (int i=indices.length-1; i>=0; i--) {
+            this.content.remove(indices[i]);
+        }
         this.impl.setContent (this.volumeType, content);
-        this.fireIntervalRemoved(this,index,index);
+        this.fireIntervalRemoved(this,indices[0],indices[indices.length-1]);
     }
 
-    public void moveUp (int index) {
-        Object value = this.content.remove(index);
-        this.content.add(index-1,value);
+    public void moveUp (int[] indices) {
+        for (int i=0; i< indices.length; i++) {
+            Object value = this.content.remove(indices[i]);
+            this.content.add(indices[i]-1,value);
+        }
         this.impl.setContent (this.volumeType, content);
-        this.fireContentsChanged(this,index-1,index);
+        this.fireContentsChanged(this,indices[0]-1,indices[indices.length-1]);
     }
 
-    public void moveDown (int index) {
-        Object value = this.content.remove(index);
-        this.content.add(index+1,value);
+    public void moveDown (int[] indices) {
+        for (int i=indices.length-1; i>=0; i--) {
+            Object value = this.content.remove(indices[i]);
+            this.content.add(indices[i]+1,value);
+        }
         this.impl.setContent (this.volumeType, content);
-        this.fireContentsChanged(this,index,index+1);
+        this.fireContentsChanged(this,indices[0],indices[indices.length-1]+1);
     }
 
 }
