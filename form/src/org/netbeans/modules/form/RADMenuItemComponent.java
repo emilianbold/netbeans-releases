@@ -130,7 +130,7 @@ public class RADMenuItemComponent extends RADComponent {
     if (JMenuBar.class.isAssignableFrom(cl)) return T_JMENUBAR;
     if (JPopupMenu.class.isAssignableFrom(cl)) return T_JPOPUPMENU;
 
-    throw new InternalError ("Cannot create RADMenuItemComponent for nonmenu class:"+cl.getName());
+    throw new InternalError ("Cannot create RADMenuItemComponent for nonmenu class:"+cl.getName()); // NOI18N
   }
 
 
@@ -265,6 +265,7 @@ public class RADMenuItemComponent extends RADComponent {
 
 /*
  * Log
+ *  9    Gandalf   1.8         1/5/00   Ian Formanek    NOI18N
  *  8    Gandalf   1.7         12/2/99  Pavel Buzek     AWT menu is displayed in
  *       form at design time (a swing equivalent is created for each awt menu 
  *       and displyed instead)

@@ -43,43 +43,43 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
     try {
       desc = new PropertyDescriptor[] {
         new PropertyDescriptor (FormLoaderSettings.PROP_INDENT_AWT_HIERARCHY, FormLoaderSettings.class, 
-                                "getIndentAWTHierarchy", "setIndentAWTHierarchy"),
+                                "getIndentAWTHierarchy", "setIndentAWTHierarchy"), // NOI18N
         new PropertyDescriptor (FormLoaderSettings.PROP_SORT_EVENT_SETS, FormLoaderSettings.class, 
-                                "getSortEventSets", "setSortEventSets"),
+                                "getSortEventSets", "setSortEventSets"), // NOI18N
         new PropertyDescriptor (FormLoaderSettings.PROP_EVENT_VARIABLE_NAME, FormLoaderSettings.class, 
-                                "getEventVariableName", "setEventVariableName"),
+                                "getEventVariableName", "setEventVariableName"), // NOI18N
         new PropertyDescriptor (FormLoaderSettings.PROP_SHORT_BEAN_NAMES, FormLoaderSettings.class, 
-                                "getShortBeanNames", "setShortBeanNames"),
+                                "getShortBeanNames", "setShortBeanNames"), // NOI18N
         new PropertyDescriptor (FormLoaderSettings.PROP_SELECTION_BORDER_SIZE, FormLoaderSettings.class, 
-                                "getSelectionBorderSize", "setSelectionBorderSize"),
+                                "getSelectionBorderSize", "setSelectionBorderSize"), // NOI18N
         new PropertyDescriptor (FormLoaderSettings.PROP_SELECTION_BORDER_COLOR, FormLoaderSettings.class, 
-                                "getSelectionBorderColor", "setSelectionBorderColor"),
+                                "getSelectionBorderColor", "setSelectionBorderColor"), // NOI18N
         new PropertyDescriptor (FormLoaderSettings.PROP_CONNECTION_BORDER_COLOR, FormLoaderSettings.class, 
-                                "getConnectionBorderColor", "setConnectionBorderColor"),
+                                "getConnectionBorderColor", "setConnectionBorderColor"), // NOI18N
         new PropertyDescriptor (FormLoaderSettings.PROP_DRAG_BORDER_COLOR, FormLoaderSettings.class, 
-                                "getDragBorderColor", "setDragBorderColor"),
+                                "getDragBorderColor", "setDragBorderColor"), // NOI18N
         new PropertyDescriptor (FormLoaderSettings.PROP_SHOW_GRID, FormLoaderSettings.class, 
-                                "getShowGrid", "setShowGrid"),
+                                "getShowGrid", "setShowGrid"), // NOI18N
         new PropertyDescriptor (FormLoaderSettings.PROP_GRID_X, FormLoaderSettings.class, 
-                                "getGridX", "setGridX"),
+                                "getGridX", "setGridX"), // NOI18N
         new PropertyDescriptor (FormLoaderSettings.PROP_GRID_Y, FormLoaderSettings.class, 
-                                "getGridY", "setGridY"),
+                                "getGridY", "setGridY"), // NOI18N
         new PropertyDescriptor (FormLoaderSettings.PROP_APPLY_GRID_TO_POSITION, FormLoaderSettings.class, 
-                                "getApplyGridToPosition", "setApplyGridToPosition"),
+                                "getApplyGridToPosition", "setApplyGridToPosition"), // NOI18N
         new PropertyDescriptor (FormLoaderSettings.PROP_APPLY_GRID_TO_SIZE, FormLoaderSettings.class, 
-                                "getApplyGridToSize", "setApplyGridToSize"),
+                                "getApplyGridToSize", "setApplyGridToSize"), // NOI18N
         new PropertyDescriptor (FormLoaderSettings.PROP_VARIABLES_MODIFIER, FormLoaderSettings.class, 
-                                "getVariablesModifier", "setVariablesModifier"),
+                                "getVariablesModifier", "setVariablesModifier"), // NOI18N
         new PropertyDescriptor (FormLoaderSettings.PROP_EDITOR_SEARCH_PATH, FormLoaderSettings.class, 
-                                "getEditorSearchPath", "setEditorSearchPath"),
+                                "getEditorSearchPath", "setEditorSearchPath"), // NOI18N
         new PropertyDescriptor (FormLoaderSettings.PROP_REGISTERED_EDITORS, FormLoaderSettings.class, 
-                                "getRegisteredEditors", "setRegisteredEditors"),
+                                "getRegisteredEditors", "setRegisteredEditors"), // NOI18N
         new PropertyDescriptor (FormLoaderSettings.PROP_OUTPUT_LEVEL, FormLoaderSettings.class,
-                                "getOutputLevel", "setOutputLevel"),
+                                "getOutputLevel", "setOutputLevel"), // NOI18N
         new PropertyDescriptor (FormLoaderSettings.PROP_NULL_LAYOUT, FormLoaderSettings.class,
-                                "isNullLayout", "setNullLayout"),
+                                "isNullLayout", "setNullLayout"), // NOI18N
         new PropertyDescriptor (FormLoaderSettings.PROP_WORKSPACE, FormLoaderSettings.class,
-                                "getWorkspace", "setWorkspace"),
+                                "getWorkspace", "setWorkspace"), // NOI18N
       };
 
       desc[0].setDisplayName (formBundle.getString ("PROP_INDENT_AWT_HIERARCHY"));
@@ -153,11 +153,11 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
     if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
         (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
       if (icon == null)
-        icon = loadImage("/com/netbeans/developer/modules/loaders/form/resources/formSettings.gif");
+        icon = loadImage("/com/netbeans/developer/modules/loaders/form/resources/formSettings.gif"); // NOI18N
       return icon;
     } else {
       if (icon32 == null)
-        icon32 = loadImage ("/com/netbeans/developer/modules/loaders/form/resources/formSettings32.gif");
+        icon32 = loadImage ("/com/netbeans/developer/modules/loaders/form/resources/formSettings32.gif"); // NOI18N
       return icon32;
     }
   }
@@ -294,6 +294,7 @@ static final long serialVersionUID =7628317154007139777L;
 
 /*
  * Log
+ *  20   Gandalf   1.19        1/5/00   Ian Formanek    NOI18N
  *  19   Gandalf   1.18        1/1/00   Ian Formanek    Fixed bug w/ resource in
  *       WorkspaceEditor
  *  18   Gandalf   1.17        12/10/99 Pavel Buzek     

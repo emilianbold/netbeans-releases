@@ -40,10 +40,10 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
   
   public void setComponent (Class beanClass) {
     super.setComponent (beanClass);
-    Object value = getBeanInfo ().getBeanDescriptor ().getValue ("containerDelegate");
-    if ((value != null) && (value instanceof String) && ((String)value).equals ("getContentPane")) {
+    Object value = getBeanInfo ().getBeanDescriptor ().getValue ("containerDelegate"); // NOI18N
+    if ((value != null) && (value instanceof String) && ((String)value).equals ("getContentPane")) { // NOI18N
       try {
-        java.lang.reflect.Method m = beanClass.getMethod ("getContentPane", new Class [0]);
+        java.lang.reflect.Method m = beanClass.getMethod ("getContentPane", new Class [0]); // NOI18N
         containerDelegate = (Container) m.invoke (getBeanInstance (), new Object [0]);
       } catch (Exception e) { // effectively ignored - simply no containerDelegate
       }
@@ -80,7 +80,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
   /** Must be called after initSubComponents!!! */
   public void setDesignLayout (DesignLayout layout) {
     if (designLayout instanceof DesignSupportLayout) {
-      throw new InternalError ("Cannot change a design layout on this container");
+      throw new InternalError ("Cannot change a design layout on this container"); // NOI18N
     }
     if (designLayout != null) {
       if (layout.getClass().equals (designLayout.getClass())) return;
@@ -109,9 +109,9 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
   */
   public String getContainerGenName () {
     if (containerDelegate != null) {
-      return getName () + ".getContentPane ().";
+      return getName () + ".getContentPane ()."; // NOI18N
     }
-    return getName () + ".";
+    return getName () + "."; // NOI18N
   }
 
 // -----------------------------------------------------------------------------
@@ -181,16 +181,17 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 // Debug methods
 
   public String toString () {
-    String ret = super.toString () + ", layout: ---------------\n";
-    ret = ret + "current: "+ designLayout +"\n";
-    ret = ret + "previous: "+ previousLayout + "\n";
-    return ret + "---------------------------";
+    String ret = super.toString () + ", layout: ---------------\n"; // NOI18N
+    ret = ret + "current: "+ designLayout +"\n"; // NOI18N
+    ret = ret + "previous: "+ previousLayout + "\n"; // NOI18N
+    return ret + "---------------------------"; // NOI18N
   }
   
 }
 
 /*
  * Log
+ *  25   Gandalf   1.24        1/5/00   Ian Formanek    NOI18N
  *  24   Gandalf   1.23        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  23   Gandalf   1.22        10/6/99  Ian Formanek    Better handling of 

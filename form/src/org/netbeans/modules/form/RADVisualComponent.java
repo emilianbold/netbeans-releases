@@ -105,18 +105,19 @@ public class RADVisualComponent extends RADComponent {
 // Debug methods
 
   public String toString () {
-    String ret = super.toString () + ", constraints: ---------------\n";
+    String ret = super.toString () + ", constraints: ---------------\n"; // NOI18N
     for (Iterator it = constraints.keySet ().iterator (); it.hasNext (); ) {
       Object key = it.next ();
-      ret = ret + "class: "+ key + ", constraints: "+constraints.get (key) + "\n";
+      ret = ret + "class: "+ key + ", constraints: "+constraints.get (key) + "\n"; // NOI18N
     }
-    return ret + "---------------------------";
+    return ret + "---------------------------"; // NOI18N
   }
   
 }
 
 /*
  * Log
+ *  14   Gandalf   1.13        1/5/00   Ian Formanek    NOI18N
  *  13   Gandalf   1.12        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  12   Gandalf   1.11        7/5/99   Ian Formanek    Fixed last change

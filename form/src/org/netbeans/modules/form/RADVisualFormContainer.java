@@ -31,13 +31,13 @@ import java.util.Hashtable;
 * @author Ian Formanek
 */
 public class RADVisualFormContainer extends RADVisualContainer implements FormContainer {
-  public static final String PROP_MENU_BAR = "menuBar";
-  public static final String PROP_FORM_SIZE_POLICY = "formSizePolicy";
-  public static final String PROP_FORM_SIZE = "formSize";
-  public static final String PROP_FORM_POSITION = "formPosition";
-  public static final String PROP_GENERATE_POSITION = "generatePosition";
-  public static final String PROP_GENERATE_SIZE = "generateSize";
-  public static final String PROP_GENERATE_CENTER = "generateCenter";
+  public static final String PROP_MENU_BAR = "menuBar"; // NOI18N
+  public static final String PROP_FORM_SIZE_POLICY = "formSizePolicy"; // NOI18N
+  public static final String PROP_FORM_SIZE = "formSize"; // NOI18N
+  public static final String PROP_FORM_POSITION = "formPosition"; // NOI18N
+  public static final String PROP_GENERATE_POSITION = "generatePosition"; // NOI18N
+  public static final String PROP_GENERATE_SIZE = "generateSize"; // NOI18N
+  public static final String PROP_GENERATE_CENTER = "generateCenter"; // NOI18N
 
   public static final Hashtable encodingList = new Hashtable ();
   static {
@@ -86,7 +86,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     encodingList.put ("EBCDIC-CP-IS (EBCDIC: Iceland)", "EBCDIC-CP-IS");
     encodingList.put ("EBCDIC-CP-AR2 (EBCDIC: Urdu)", "EBCDIC-CP-AR2");
   }
-  protected static final String AUX_MENU_COMPONENT = "RADVisualFormContainer_MenuComponent";
+  protected static final String AUX_MENU_COMPONENT = "RADVisualFormContainer_MenuComponent"; // NOI18N
 
   public static final int GEN_BOUNDS = 0;
   public static final int GEN_PACK = 1;
@@ -393,7 +393,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
       public Object getValue () {
         Object value = getFormManager ().getEncoding ();
         if (value == null) {
-          value = "";
+          value = ""; // NOI18N
         }
         return value;
       }
@@ -585,6 +585,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
 /*
  * Log
+ *  21   Gandalf   1.20        1/5/00   Ian Formanek    NOI18N
  *  20   Gandalf   1.19        12/14/99 Pavel Buzek     
  *  19   Gandalf   1.18        12/13/99 Pavel Buzek     
  *  18   Gandalf   1.17        11/24/99 Pavel Buzek     list of encodings for 

@@ -197,16 +197,16 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
       if (requiredType.equals (String.class)) {
         String s = valueField.getText ();
         s = Utilities.replaceString (s, "\\", "\\\\"); // fixes bug 835
-        s = Utilities.replaceString (s, "\"", "\\\"");
-        return "\""+s+"\"";
+        s = Utilities.replaceString (s, "\"", "\\\""); // NOI18N
+        return "\""+s+"\""; // NOI18N
       }
       else
-        return (valueField.getText () != null) ? valueField.getText () : "";
+        return (valueField.getText () != null) ? valueField.getText () : ""; // NOI18N
     } else if (codeButton.isSelected ()) {
       return codeArea.getText ();
     } else if (beanButton.isSelected ()) {
       if (selectedComponent instanceof FormContainer) {
-        return "this"; 
+        return "this"; // NOI18N
       } else {
         return (selectedComponent.getName ());
       }
@@ -214,38 +214,38 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
       StringBuffer sb = new StringBuffer ();
       if (!(selectedComponent instanceof FormContainer)) {
         sb.append (selectedComponent.getName ());
-        sb.append (".");
+        sb.append ("."); // NOI18N
       }
       if (selectedProperty != null) {
         sb.append (selectedProperty.getReadMethod ().getName ());
-        sb.append (" ()");
+        sb.append (" ()"); // NOI18N
       } else {
-        sb.append ("???");
+        sb.append ("???"); // NOI18N
       }
       return  sb.toString ();
     } else if (methodButton.isSelected ()) {
       StringBuffer sb = new StringBuffer ();
       if (!(selectedComponent instanceof FormContainer)) {
         sb.append (selectedComponent.getName ());
-        sb.append (".");
+        sb.append ("."); // NOI18N
       }
       sb.append (selectedMethod.getName ()); // [FUTURE: - method parameters]
-      sb.append (" ()");
+      sb.append (" ()"); // NOI18N
       return  sb.toString ();
-    } else return "";
+    } else return ""; // NOI18N
   }
 
   public boolean isFilled () {
     if (codeButton.isSelected ()) {
       if (requiredType.equals (String.class)) return true;
-      else return !"".equals (codeArea.getText ());
+      else return !"".equals (codeArea.getText ()); // NOI18N
     } else if (beanButton.isSelected ()) {
       return (selectedComponent != null);
     } else if (propertyButton.isSelected ()) {
       return (selectedProperty != null);
     } else if (valueButton.isSelected ()) {
       if (requiredType.equals (String.class)) return true;
-      else return !"".equals (valueField.getText ());
+      else return !"".equals (valueField.getText ()); // NOI18N
     } else if (methodButton.isSelected ()) {
       return (selectedMethod != null);
     } else return false;
@@ -555,6 +555,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
 
 /*
  * Log
+ *  17   Gandalf   1.16        1/5/00   Ian Formanek    NOI18N
  *  16   Gandalf   1.15        11/27/99 Patrik Knakal   
  *  15   Gandalf   1.14        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment

@@ -202,7 +202,7 @@ public class MethodPicker extends javax.swing.JDialog {
 
       propertiesScrollPane.setViewportView (methodList);
 
-    insidePanel.add (propertiesScrollPane, "Center");
+    insidePanel.add (propertiesScrollPane, "Center"); // NOI18N
 
       jPanel1 = new javax.swing.JPanel ();
       jPanel1.setLayout (new java.awt.BorderLayout (8, 0));
@@ -210,7 +210,7 @@ public class MethodPicker extends javax.swing.JDialog {
         componentLabel = new javax.swing.JLabel ();
         componentLabel.setText ("Component:");
 
-      jPanel1.add (componentLabel, "West");
+      jPanel1.add (componentLabel, "West"); // NOI18N
 
         componentsCombo = new javax.swing.JComboBox ();
         componentsCombo.addItemListener (new java.awt.event.ItemListener () {
@@ -222,10 +222,10 @@ public class MethodPicker extends javax.swing.JDialog {
 
       jPanel1.add (componentsCombo, "Center");
 
-    insidePanel.add (jPanel1, "North");
+    insidePanel.add (jPanel1, "North"); // NOI18N
 
 
-    getContentPane ().add (insidePanel, "Center");
+    getContentPane ().add (insidePanel, "Center"); // NOI18N
 
     buttonsPanel = new javax.swing.JPanel ();
     buttonsPanel.setLayout (new java.awt.BorderLayout ());
@@ -238,7 +238,7 @@ public class MethodPicker extends javax.swing.JDialog {
 
 //      leftButtonsPanel.add (parametersButton);
 
-    buttonsPanel.add (leftButtonsPanel, "West");
+    buttonsPanel.add (leftButtonsPanel, "West"); // NOI18N
 
       rightButtonsPanel = new javax.swing.JPanel ();
       rightButtonsPanel.setLayout (new java.awt.FlowLayout (2, 5, 5));
@@ -255,7 +255,7 @@ public class MethodPicker extends javax.swing.JDialog {
       rightButtonsPanel.add (okButton);
 
         cancelButton = new javax.swing.JButton ();
-        cancelButton.setText ("Cancel");
+        cancelButton.setText ("Cancel"); // NOI18N
         cancelButton.addActionListener (new java.awt.event.ActionListener () {
             public void actionPerformed (java.awt.event.ActionEvent evt) {
               cancelButtonActionPerformed (evt);
@@ -265,10 +265,10 @@ public class MethodPicker extends javax.swing.JDialog {
 
       rightButtonsPanel.add (cancelButton);
 
-    buttonsPanel.add (rightButtonsPanel, "East");
+    buttonsPanel.add (rightButtonsPanel, "East"); // NOI18N
 
 
-    getContentPane ().add (buttonsPanel, "South");
+    getContentPane ().add (buttonsPanel, "South"); // NOI18N
 
   }//GEN-END:initComponents
 
@@ -336,6 +336,7 @@ public class MethodPicker extends javax.swing.JDialog {
 
 /*
  * Log
+ *  15   Gandalf   1.14        1/5/00   Ian Formanek    NOI18N
  *  14   Gandalf   1.13        11/27/99 Patrik Knakal   
  *  13   Gandalf   1.12        11/25/99 Ian Formanek    Uses Utilities module
  *  12   Gandalf   1.11        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
