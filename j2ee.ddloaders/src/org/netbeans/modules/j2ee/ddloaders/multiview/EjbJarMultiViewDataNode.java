@@ -25,6 +25,8 @@ import org.openide.util.NbBundle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+
 /**
  * A node to represent this ejb-jar.xml object.
  *
@@ -96,12 +98,25 @@ public class EjbJarMultiViewDataNode extends DataNode {
         ss.setShortDescription(NbBundle.getMessage(EjbJarMultiViewDataNode.class, "HINT_deploymentSet"));
         ss.setValue("helpID", "TBD---Ludo ejbjar node");   // NOI18N
 
-        Property p = new PropertySupport.ReadOnly(PROPERTY_DOCUMENT_TYPE,
+        Property p = new PropertySupport.ReadWrite(PROPERTY_DOCUMENT_TYPE,
                 String.class,
                 NbBundle.getBundle(EjbJarMultiViewDataNode.class).getString("PROP_documentDTD"),
                 NbBundle.getBundle(EjbJarMultiViewDataNode.class).getString("HINT_documentDTD")) {
             public Object getValue() {
-                return dataObject.getEjbJar().getVersion();
+                java.math.BigDecimal version = dataObject.getEjbJar().getVersion();
+                return (version==null?"":version.toString());
+            }
+            
+            public void setValue(Object value) {
+                String val = (String)value;
+                if (EjbJar.VERSION_2_1.equals(val) && !val.equals(dataObject.getEjbJar().getVersion().toString())) {
+                    dataObject.getEjbJar().setVersion(new java.math.BigDecimal(val));
+                    try {
+                        dataObject.getEjbJar().write(dataObject.getPrimaryFile());
+                    } catch (java.io.IOException ex) {
+                       org.openide.ErrorManager.getDefault().notify(ex);
+                    }
+                }
             }
         };
         ss.put(p);
