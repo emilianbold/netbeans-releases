@@ -173,6 +173,7 @@ public class CreateTableDialog
 			table.setDefaultEditor(String.class, new DataCellEditor(new JTextField()));
 			table.getColumn("type").setCellEditor(new DefaultCellEditor(combo));
 			table.getColumn("size").setCellEditor(new DataCellEditor(new ValidableTextField(new TextFieldValidator.integer())));
+			table.getColumn("scale").setCellEditor(new DataCellEditor(new ValidableTextField(new TextFieldValidator.integer())));
 
        		// Button pane
        		
@@ -235,15 +236,16 @@ public class CreateTableDialog
 								while (enu.hasMoreElements()) {
 									ColumnItem enuele = (ColumnItem)enu.nextElement();
 									String name = enuele.getName();
-									if (enuele.isPrimaryKey()) {
+									if (enuele.isPrimaryKey())
 										cmdcol = (com.netbeans.ddl.impl.TableColumn)cmd.createPrimaryKeyColumn(name);
-									} else if (enuele.isUnique()) {
-										cmdcol = (com.netbeans.ddl.impl.TableColumn)cmd.createUniqueColumn(name);
-									} else cmdcol = (com.netbeans.ddl.impl.TableColumn)cmd.createColumn(name);
-									
-//									System.out.println(enuele.getSize());
+									else
+                    if (enuele.isUnique())
+										  cmdcol = (com.netbeans.ddl.impl.TableColumn)cmd.createUniqueColumn(name);
+									  else
+                      cmdcol = (com.netbeans.ddl.impl.TableColumn)cmd.createColumn(name);
 									cmdcol.setColumnType(Specification.getType(enuele.getType().getType()));
 									cmdcol.setColumnSize(enuele.getSize());
+									cmdcol.setDecimalSize(enuele.getScale());
 									cmdcol.setNullAllowed(enuele.allowsNull());
 									String defval = enuele.getDefaultValue();
 									if (defval != null && defval.length()>0) cmdcol.setDefaultValue(defval);
@@ -340,25 +342,25 @@ public class CreateTableDialog
 		}
 	}
 
-	class DataCellEditor extends DefaultCellEditor 
-	{
-          static final long serialVersionUID =3855371868128838794L;
-    	public DataCellEditor(final JTextField x)  
-    	{        
-    		super(x);  
-    		setClickCountToStart(1); 
-			x.addFocusListener(new FocusListener() {
-				public void focusGained(FocusEvent e) {
-					SwingUtilities.invokeLater(new FocusInvoker(x));
-				}
-				public void focusLost(FocusEvent e) {
-				}
-			});
-    	}
+	class DataCellEditor extends DefaultCellEditor {
+    static final long serialVersionUID =3855371868128838794L;
+    
+    public DataCellEditor(final JTextField x) {
+      super(x);  
+      setClickCountToStart(1); 
+      x.addFocusListener(new FocusListener() {
+        public void focusGained(FocusEvent e) {
+          SwingUtilities.invokeLater(new FocusInvoker(x));
+        }
+        public void focusLost(FocusEvent e) {
+        }
+      });
     }
+  }
 }
 /*
  * <<Log>>
+ *  12   Gandalf   1.11        3/3/00   Radko Najman    scale field fixed
  *  11   Gandalf   1.10        11/27/99 Patrik Knakal   
  *  10   Gandalf   1.9         11/18/99 Radko Najman    dmd.getUserName()
  *  9    Gandalf   1.8         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
