@@ -43,7 +43,7 @@ import org.openide.awt.HtmlBrowser;
 /**
  * Formerly HtmlBrowser.BrowserComponent.
  */
-class HtmlBrowserComponent extends CloneableTopComponent {
+class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChangeListener {
     /** generated Serialized Version UID */
     static final long                   serialVersionUID = 2912844785502987960L;
 
@@ -82,25 +82,26 @@ class HtmlBrowserComponent extends CloneableTopComponent {
         setLayout (new BorderLayout ());
         add (browserComponent = new HtmlBrowser (fact, toolbar, statusLine), "Center"); // NOI18N
 
-        // listen on changes of title and set name of top component
-        class L implements PropertyChangeListener {
-            public void propertyChange (PropertyChangeEvent e) {
-                if (!e.getPropertyName ().equals (HtmlBrowser.Impl.PROP_TITLE)) return;
-                String title = browserComponent.getBrowserImpl().getTitle ();
-                if ((title == null) || (title.length () < 1)) return;
-                HtmlBrowserComponent.this.setName (title);
-            }
-        }
-        browserComponent.getBrowserImpl().addPropertyChangeListener (new L ());
+        browserComponent.getBrowserImpl().addPropertyChangeListener (this);
 
         // Ensure closed browsers are not stored:
-        putClientProperty("PersistenceType", "OnlyOpened"); // NOI18N
         if (browserComponent.getBrowserComponent() != null) {
             putClientProperty("InternalBrowser", Boolean.TRUE); // NOI18N
         }
         setToolTipText(NbBundle.getBundle(HtmlBrowser.class).getString("HINT_WebBrowser"));
-
     }
+    
+    public int getPersistenceType() {
+        return PERSISTENCE_ONLY_OPENED;
+    }
+    
+    public void propertyChange (PropertyChangeEvent e) {
+        if (!e.getPropertyName ().equals (HtmlBrowser.Impl.PROP_TITLE)) return;
+        String title = browserComponent.getBrowserImpl().getTitle ();
+        if ((title == null) || (title.length () < 1)) return;
+        HtmlBrowserComponent.this.setName (title);
+        HtmlBrowserComponent.this.setDisplayName(title);
+    }    
     
     /** always open this top component in our special mode, if
     * no mode for this component is specified yet */
