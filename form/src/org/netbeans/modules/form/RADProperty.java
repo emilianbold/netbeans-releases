@@ -120,6 +120,9 @@ public class RADProperty extends FormProperty {
             // source code for details
             && !"debugGraphicsOptions".equals(descriptor.getName()) // NOI18N
             ) {
+            if ("mnemonic".equals(descriptor.getName())) {
+                return new org.netbeans.modules.form.editors.MnemonicEditor();
+            }                
             Object[] enumerationValues =
                 (Object[]) descriptor.getValue("enumerationValues"); // NOI18N
             if (enumerationValues != null) {
