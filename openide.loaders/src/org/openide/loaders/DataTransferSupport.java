@@ -20,7 +20,9 @@ package org.openide.loaders;
 
 import org.openide.cookies.InstanceCookie;
 import org.openide.util.HelpCtx;
+import org.openide.util.RequestProcessor;
 import org.openide.NotifyDescriptor;
+import org.openide.ErrorManager;
 import org.openide.util.datatransfer.*;
 import org.openide.filesystems.*;
 
@@ -110,11 +112,28 @@ abstract class DataTransferSupport {
         }
         /** Paste all DataObjects */
         public final Transferable paste () throws IOException {
-            for (int i = 0; i < objs.length; i++)
-                handlePaste (objs[i]);
+            if (javax.swing.SwingUtilities.isEventDispatchThread()) {
+	        RequestProcessor.getDefault().post(new Runnable() {
+		    public void run() {
+	                try {
+			    doPaste();
+	                } catch (IOException ioe) {
+	                    ErrorManager.getDefault().notify(ioe);
+	                }
+		    }
+		});
+	    } else {
+	        doPaste();
+	    }
             // clear clipboard or preserve content
             return cleanClipboard () ? ExTransferable.EMPTY : null;
         }
+	
+	private void doPaste() throws IOException {
+            for (int i = 0; i < objs.length; i++)
+                handlePaste (objs[i]);
+	}
+	
         public final void setDataObjects (DataObject objs []) {
             this.objs = objs;
         }
