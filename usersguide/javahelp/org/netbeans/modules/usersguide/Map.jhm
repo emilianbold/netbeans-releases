@@ -47,11 +47,6 @@
 <mapID target="project.deleting" url="project/project_deleting.html" />
 
 <mapID target="objects" url="objects/objects.html" />
-<mapID target="browser" url="objects/browser.html" />
-<mapID target="browser.member" url="objects/browser/browser_member.html" />
-<mapID target="browser.object" url="objects/browser/browser_object.html" />
-<mapID target="browser.package" url="objects/browser/browser_package.html" />
-<mapID target="browser.packagefilter" url="objects/browser/browser_packagefilter.html" />
 
 <mapID target="explorer" url="objects/explorer.html" />
 
@@ -734,8 +729,6 @@
    <mapID target="org.netbeans.modules.beans.PatternGroupNode.dialogMultiCastES" url="pending.html" />
    <mapID target="org.netbeans.modules.beans.PatternNode" url="pending.html" />
    <mapID target="org.netbeans.modules.beans.PropertyPatternNode" url="pending.html" />
-   <mapID target="org.netbeans.modules.objectbrowser.PackageFilterPanel" url="objects/browser/browser_packagefilter.html" />
-   <mapID target="org.netbeans.modules.objectbrowser.ShowBrowserAction" url="objects/browser.html" />
    <mapID target="org.netbeans.modules.debugger.core.CoreDebugger.dialog" url="pending.html" />
    <mapID target="org.netbeans.modules.debugger.session.actions.StartSessionAction" url="pending.html" />
    <mapID target="org.netbeans.modules.debugger.support.actions.SuspendDebuggerAction" url="pending.html" />
@@ -779,7 +772,6 @@
    <mapID target="org.netbeans.modules.beans.GenerateBeanInfoAction.dialog" url="pending.html" /> 
    <mapID target="org.netbeans.modules.beans.beaninfo.GenerateBeanInfoAction" url="pending.html" /> 
    <mapID target="org.netbeans.modules.beans.beaninfo.GenerateBeanInfoAction.dialog" url="pending.html" /> 
-   <mapID target="org.netbeans.modules.objectbrowser.ClassBrowserHierarchyTranslator.dialog" url="pending.html" />
    <mapID target="org.netbeans.modules.clazz.ClassDataObject" url="pending.html" />
    <mapID target="org.netbeans.modules.clazz.SerDataObject" url="pending.html" />
    <mapID target="org.netbeans.modules.form.FormDataObject" url="pending.html" />
@@ -826,7 +818,6 @@
    <mapID target="org.netbeans.modules.debugger.support.nodes.WatchesView" url="pending.html" />
    <mapID target="org.netbeans.modules.form.FormEditor$ComponentInspector" url="pending.html" />
    <mapID target="org.netbeans.modules.form.FormTopComponent" url="pending.html" />
-   <mapID target="org.netbeans.modules.objectbrowser.ObjectBrowser" url="objects/browser.html" />
    <mapID target="org.netbeans.beaninfo.editors.ServiceTypePanel" url="pending.html" />
    <mapID target="org.netbeans.modules.form.ConnectionWizard1" url="pending.html" />
    <mapID target="org.netbeans.modules.form.ConnectionWizard2" url="pending.html" />
@@ -1162,7 +1153,6 @@
    <mapID target="org.netbeans.core.JavaHelp$HelpComponent" url="pending.html" />  
    <mapID target="org.openide.actions.OpenLocalExplorerAction" url="pending.html" />
    <mapID target="org.openide.actions.PrintAction" url="pending.html" />
-   <mapID target="org.netbeans.modules.objectbrowser.ObjectBrowserSettings" url="pending.html" />
    <mapID target="java.awt.Button" url="pending.html" />
    <mapID target="java.awt.Label" url="pending.html" />
    <mapID target="java.awt.TextField" url="pending.html" /> 

@@ -64,13 +64,7 @@
   
   <tocitem text="Managing Objects in the IDE" target="objects">
   <tocitem text="The Explorer" target="explorer" />
-  <tocitem text="The Object Browser" target="browser">
-     <tocitem text="Packages Pane in the Object Browser" target="browser.package" />
-     <tocitem text="Creating a Custom Package Filter" target="browser.packagefilter" />
-     <tocitem text="Objects Pane in the Object Browser" target="browser.object" />
-     <tocitem text="Members Pane in the Object Browser" target="browser.member" />
-  </tocitem>
-  <tocitem text="Node Icons in the Explorer and the Object Browser" target="objects.icons" />
+  <tocitem text="Node Icons in the Explorer" target="objects.icons" />
   <tocitem text="Creating a New File" target="objects.new" />
   <tocitem text="Creating a Group of Files" target="objects.group" />
   <tocitem text="Opening a File in the IDE" target="objects.opening" />
