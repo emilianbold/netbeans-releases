@@ -246,15 +246,16 @@ implements AWTEventListener, DragSourceListener {
         
         TopComponent tc = null;
 
-        if (shiftDown || ctrlDown) {
-            if (srcComp instanceof TopComponent) {
-                tc = (TopComponent) srcComp;
-            }
-            else {
-                tc = (TopComponent) SwingUtilities.getAncestorOfClass(
-                    TopComponent.class, srcComp);
-            }
-        }
+        // #38849 Don't want to start drag when used from inside TopComponent.
+//        if (shiftDown || ctrlDown) {
+//            if (srcComp instanceof TopComponent) {
+//                tc = (TopComponent) srcComp;
+//            }
+//            else {
+//                tc = (TopComponent) SwingUtilities.getAncestorOfClass(
+//                    TopComponent.class, srcComp);
+//            }
+//        }
 
         // JDK 1.4 SCROLL_TAB_LAYOUT JTabbedPane is very special.  The tab
         // handle is not part of the component
