@@ -649,12 +649,12 @@ public class TestUtil {
      * array does not contain any <code>null</code> elements.
      *
      * @param  objs  array to copy
-     * @param  type  the type of the array to return
+     * @param  type  an empty array of the correct type to be returned
      * @return  array containing the same objects as the passed array, in the
      *          same order, just with <code>null</code> elements missing
      * @author  Marian Petras
      */
-    public static Object[] skipNulls(final Object[] objs, Object [] type) {
+    public static Object[] skipNulls(final Object[] objs, final Object [] type) {
         List resultList = new ArrayList(objs.length);
         
         for (int i = 0; i < objs.length; i++) {
@@ -663,7 +663,7 @@ public class TestUtil {
             }
         }
         
-        return resultList.isEmpty() ? type : resultList.toArray(type);
+        return resultList.toArray(type);
     }
     
     /**
