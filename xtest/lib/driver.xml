@@ -21,6 +21,7 @@ Microsystems, Inc. All Rights Reserved.
 
    <property name="ide.installto" location="../ide" />
    <property name="java.path" location="${java.home}"/>
+   <property name="ide.nbm.temp" location="${ide.installto}/nbmtemp"/>
    
    <property name="ide.installator.edition" value="ce"/>
    <property name="ide.installator.params" value=""/>
@@ -45,6 +46,7 @@ Microsystems, Inc. All Rights Reserved.
      	<taskdef name="setproperty" classname="org.netbeans.xtest.driver.PropertySetter"/>
         <taskdef name="reportinfo" classname="org.netbeans.xtest.pe.XTestResultsReportTask"/>
         <taskdef name="buildinfo" classname="org.netbeans.xtest.pe.ParseBuildInfo"/>
+        <taskdef name="unzip2" classname="org.netbeans.xtest.driver.UnzipExt"/>
      </nbtaskdef>
    </target>
    
@@ -129,7 +131,7 @@ Microsystems, Inc. All Rights Reserved.
    </target>
    
    <target name="ship-results" if="xtest.ship.results.to">
-        <copy file="${archive.file}" todir="${xtest.ship.results.to}"/>
+        <copy overwrite="yes" file="${archive.file}" todir="${xtest.ship.results.to}"/>
         <chmod perm="ugo+rw" file="${xtest.ship.results.to}/${archive.filename}"/>
         <!-- now just for pilot project -->
         <copy file="${archive.file}" todir="${xtest.results}/../"/>        
@@ -218,7 +220,7 @@ Microsystems, Inc. All Rights Reserved.
   <!-- IDE installlation  -->
   <!-- ================= -->
 
-  <target name="install-ide" depends="install-from,find-installed-ide,check-installed-ide,make-bin-executable"/>
+  <target name="install-ide" depends="install-from,find-installed-ide,check-installed-ide,make-bin-executable,install-nbms"/>
   
   <target name="install-from" depends="install-from-zip,install-from-installator,install-from-dir"/>
      
@@ -280,6 +282,23 @@ Microsystems, Inc. All Rights Reserved.
       <condition property="ide.install.type.dir">
           <equals arg1="${ide.install.type}" arg2="dir"/>
       </condition>
+  </target>
+  
+  <target name="install-nbms" if="ide.nbm.list">
+     <antcall target="install-nbms-2"/>
+  </target>
+  
+  <target name="install-nbms-2" if="xtest.execute_actions.install-ide">
+     <for list="${ide.nbm.list}" delimiters="," property="xtest.nbmfile">
+       <antcall target="install-one-nbm"/>
+     </for> 
+     <delete dir="${ide.nbm.temp}"/>
+  </target>
+  
+  <target name="install-one-nbm">
+     <echo message="Installing nbm ${xtest.nbmfile}"/>
+     <unzip2 src="${ide.nbm.zipfile}" dest="${ide.nbm.temp}" files="${xtest.nbmfile}"/>   
+     <unzip2 src="${ide.nbm.temp}/${xtest.nbmfile}" files="netbeans" shift="true" dest="${ide.home}"/> 
   </target>
   
   <!-- ======== -->
