@@ -229,6 +229,7 @@ Microsystems, Inc. All Rights Reserved.
         <xsl:variable name="type" select="@type" />
         <xsl:variable name="category" select="@category" />
         <xsl:variable name="url" select="@url" />
+        <xsl:variable name="description" select="node()" />
 
         <tr class="tabler">
             <td>
@@ -275,6 +276,11 @@ Microsystems, Inc. All Rights Reserved.
 
             <td> <!-- url -->
                 <a href="{$url}"><xsl:value-of select="$url"/></a>
+                <xsl:if test="$description" >
+                    <p>
+                        <xsl:apply-templates select="$description" />
+                    </p>
+                </xsl:if>
             </td>
         </tr>
 
