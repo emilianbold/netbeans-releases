@@ -69,10 +69,10 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   private static String host = LOCALHOST;
 
   /** mapping of repository to URL */
-  private static String repositoryBaseURL = "/repository/";
+  private static String repositoryBaseURL = "/repository";
   
   /** mapping of classpath to URL */
-  private static String classpathBaseURL = "/classpath/";
+  private static String classpathBaseURL = "/classpath";
                                         
   /** addresses which have been granted access to the web server */
   private static String grantedAddresses = "";
@@ -99,8 +99,6 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   
   public HttpServerSettings() {
     // set the writer
-    com.mortbay.Base.Log.instance()._out = new NullWriter();
-
     if (OPTIONS == null) {
       OPTIONS = this;  
       // register the server
@@ -172,6 +170,22 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   private String getCanonicalRelativeURL(String url) {
     String newURL;
     if (url.length() == 0)
+      newURL = "";
+    else {
+      if (url.charAt(0) != '/')
+        newURL = "/" + url;
+      else
+        newURL = url;
+      if (newURL.charAt(newURL.length() - 1) == '/')
+        newURL = newURL.substring(0, newURL.length() - 1);
+    }      
+    return newURL;                               
+  }
+  
+  /** Returns a relative directory URL with a leading and a trailing slash */
+/*  private String getCanonicalRelativeURL(String url) {
+    String newURL;
+    if (url.length() == 0)
       newURL = "/";
     else {
       if (url.charAt(0) != '/')
@@ -182,7 +196,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
         newURL = newURL + "/";
     }      
     return newURL;                               
-  }
+  }*/
   
   /** setter for running status */
   public void setRunning(boolean running) {
@@ -305,8 +319,6 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
     firePropertyChange (name, oldVal, newVal);
   }
                                        
-  /* Implementation of HttpServer interface */
-  
   /** Returns string for localhost */
   private String getLocalHost() {                                  
     try {
@@ -317,17 +329,19 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
     }
   }              
                                        
+  /* Implementation of HttpServer.Impl interface */
+  
   /** Maps a file object to a URL. Should ensure that the file object is accessible on the given URL. */
   public URL getRepositoryURL(FileObject fo) throws MalformedURLException, UnknownHostException {
     setRunning(true);                                                           
     return new URL("http", getLocalHost(), getPort(), 
-      getRepositoryBaseURL() + fo.getPackageNameExt('/','.'));
+      getRepositoryBaseURL() + "/" + fo.getPackageNameExt('/','.'));
   }
                              
   /** Maps the repository root to a URL. This URL should serve a page from which repository objects are accessible. */
   public URL getRepositoryRoot() throws MalformedURLException, UnknownHostException {
     setRunning(true);                                                           
-    return new URL("http", getLocalHost(), getPort(), getRepositoryBaseURL());
+    return new URL("http", getLocalHost(), getPort(), getRepositoryBaseURL() + "/");
   }
                                                                                                                      
   /** Maps a resource path to a URL. Should ensure that the resource is accessible on the given URL.
@@ -338,7 +352,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   public URL getResourceURL(String resourcePath) throws MalformedURLException, UnknownHostException {
     setRunning(true);                                                           
     return new URL("http", getLocalHost(), getPort(), getClasspathBaseURL() + 
-      (resourcePath.startsWith("/") ? resourcePath.substring(1) : resourcePath));
+      (resourcePath.startsWith("/") ? resourcePath : ("/" + resourcePath)));
   }
     
   /** Maps a resource root to a URL. Should ensure that all resources under the root are accessible under an URL
@@ -349,10 +363,10 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   */
   public URL getResourceRoot() throws MalformedURLException, UnknownHostException {
     setRunning(true);                                                           
-    return new URL("http", getLocalHost(), getPort(), getClasspathBaseURL());
+    return new URL("http", getLocalHost(), getPort(), getClasspathBaseURL() + "/");
   }                                   
   
-  public void mapServlet(String urlPath, String className) {
+/*  public void mapServlet(String urlPath, String className) {
     lastUsedName++;
     String name = "NONAME" + lastUsedName;
     nameMap.put(urlPath, name);
@@ -384,7 +398,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
       mappedServlets.remove("SERVLET." + name + ".Loader"); 
       restartIfNecessary(false);
     }  
-  }
+  }*/
 
   /** Requests access for address addr. If necessary asks the user. Returns true it the access 
   * has been granted. */  
@@ -452,6 +466,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
 
 /*
  * Log
+ *  20   Gandalf   1.19        9/30/99  Petr Jiricka    Jetty -> JSWDK
  *  19   Gandalf   1.18        9/13/99  Petr Jiricka    Default port moved to 
  *       8082
  *  18   Gandalf   1.17        9/8/99   Petr Jiricka    Fixed 
