@@ -75,10 +75,12 @@ public final class FileInfo {
     }
 
     public final boolean isWindowsFloppy() {
+        if (!org.openide.util.Utilities.isWindows ()) return false;
         return getTypeCode() == FileInfo.TYPE_WINDOWS_FLOPPY;
     }
 
     public final boolean isUNCFolder() {
+        if (!org.openide.util.Utilities.isWindows ()) return false;
         return getTypeCode() == FileInfo.TYPE_UNC_FOLDER;
     }
 
