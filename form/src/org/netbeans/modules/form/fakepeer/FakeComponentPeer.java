@@ -134,7 +134,7 @@ abstract class FakeComponentPeer implements FakePeer
             if (g != null) {
                 Rectangle bounds = _target.getBounds();
                 g.translate(bounds.x, bounds.y);
-                g.setClip(bounds);
+                g.setClip(0, 0, bounds.width, bounds.height);
             }
             return g;
         }
