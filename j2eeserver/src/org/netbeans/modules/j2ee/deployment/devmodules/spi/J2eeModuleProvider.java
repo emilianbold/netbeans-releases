@@ -21,6 +21,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import javax.enterprise.deploy.model.DDBean;
 import javax.enterprise.deploy.shared.ModuleType;
+import javax.enterprise.deploy.spi.Target;
 import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
 import org.netbeans.modules.j2ee.deployment.common.api.ValidationException;
 import org.netbeans.modules.j2ee.deployment.config.*;
@@ -32,6 +33,8 @@ import org.netbeans.modules.j2ee.deployment.impl.Server;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ServerString;
+import org.netbeans.modules.j2ee.deployment.impl.ServerTarget;
+import org.netbeans.modules.j2ee.deployment.impl.TargetServer;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.j2ee.deployment.common.api.SourceFileMap;
@@ -84,8 +87,18 @@ public abstract class J2eeModuleProvider {
     
     public final ServerDebugInfo getServerDebugInfo () {
         ServerInstance si = ServerRegistry.getInstance ().getServerInstance (getServerInstanceID ());
+        Target target = null;
         if (si != null) {
-            return si.getStartServer().getDebugInfo(null);
+            ServerTarget[] sts = si.getTargets();
+            for (int i=0; i<sts.length; i++) {
+                if (si.getStartServer().isAlsoTargetServer(sts[i].getTarget())) {
+                    target = sts[i].getTarget();
+                }
+            }
+            if (target == null && sts.length > 0) {
+                target = sts[0].getTarget();
+            }
+            return si.getStartServer().getDebugInfo(target);
         }
         return null;
     }
