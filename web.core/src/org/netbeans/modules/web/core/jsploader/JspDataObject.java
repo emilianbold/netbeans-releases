@@ -455,57 +455,6 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie,
         if (cookie!=null) getCookieSet().remove(cookie);
     }
 
-    /* Creates new object from template. Inserts the correct ";charset=..." clause to the object
-    * @exception IOException
-    */
-    protected DataObject handleCreateFromTemplate (
-        DataFolder df, String name
-    ) throws IOException {
-        
-        DataObject dobj = super.handleCreateFromTemplate(df, name);
-        if (dobj instanceof JspDataObject) {
-            JspDataObject jspDO = (JspDataObject)dobj;
-            FileObject prim = jspDO.getPrimaryFile();
-            String encoding = jspDO.getFileEncoding(false);
-            if (!"ISO-8859-1".equals(encoding)) {
-                // write the encoding to file
-                sun.io.CharToByteConverter.getConverter(encoding);
-                Util.setFileEncoding(prim, encoding);
-                
-                // change in the file
-                // warning: the following approach will only work if the page does not 
-                // contain any strange characters. That's the case right after creation 
-                // from template, so we are safe here
-                EditorCookie edit = (EditorCookie)jspDO.getCookie(EditorCookie.class);
-                if (edit != null) {
-                    try {
-                        StyledDocument doc = edit.openDocument();
-                        int offset = findEncodingOffset(doc);
-                        if (offset != -1) {
-                            doc.insertString(offset, ";charset=" + encoding, null);
-                            SaveCookie sc = (SaveCookie)jspDO.getCookie(SaveCookie.class);
-                            if (sc != null) {
-                                sc.save();
-                            }
-                        }
-                    }
-                    catch (BadLocationException e) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                    }
-                }
-            }
-        }
-        return dobj;
-    }
-    
-    private int findEncodingOffset(StyledDocument doc) throws BadLocationException {
-        String text = doc.getText(0, doc.getLength());
-        String toFind = "contentType=\"";
-        int index1 = text.indexOf(toFind);
-        if (index1 == -1) return -1;
-        int index2 = text.indexOf("\"", index1 + toFind.length());
-        return index2;
-    }
 
     public String getURL() {
         String url = JspCompileUtil.findRelativeContextPath(JspCompileUtil.getContextRoot(getPrimaryFile()), getPrimaryFile());
