@@ -31,7 +31,6 @@ import java.awt.event.ActionListener;
 public class EntityOverviewPanel extends EntityOverviewForm {
 
     private EjbJarMultiViewDataObject dataObject;
-    private static final String COMPOUND = "compound"; //NOI18N
     private Entity entity;
 
     /**
@@ -82,7 +81,7 @@ public class EntityOverviewPanel extends EntityOverviewForm {
             primaryKeyClassComboBox.setVisible(true);
             primaryKeyClassTextField.setVisible(false);
 
-            primaryKeyFieldComboBox.addItem(COMPOUND);
+            primaryKeyFieldComboBox.addItem(Utils.getBundleMessage("LBL_Compound_PK"));
             CmpField[] cmpFields = entity.getCmpField();
             for (int i = 0; i < cmpFields.length; i++) {
                 CmpField cmpField = cmpFields[i];
