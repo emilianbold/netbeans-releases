@@ -94,6 +94,17 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="javadoc" description="Javadoc for jellytools">
+        <uptodate property="jelly.javadoc.uptodate" targetfile="javadoc/jelly-nb-javadoc.zip" >
+    	      <srcfiles dir= "src/org/netbeans/test/oo" includes="**/*.java"/>
+        </uptodate>
+        <antcall target="create-jelly-javadoc"/>
+        <uptodate property="jelly2.javadoc.uptodate" targetfile="javadoc/jelly2-nb-javadoc.zip" >
+    	      <srcfiles dir= "src/org/netbeans/jellytools" includes="**/*.java"/>
+        </uptodate>
+        <antcall target="create-jelly2-javadoc"/>
+    </target>
+
+    <target name="create-jelly-javadoc" unless="jelly.javadoc.uptodate">
         <mkdir dir="javadoc/jelly-nb-javadoc"/>
         <javadoc destdir="javadoc/jelly-nb-javadoc" packagenames="org.netbeans.test.oo.*" Windowtitle="Jellytools API">
             <sourcepath>
@@ -104,6 +115,9 @@ Microsystems, Inc. All Rights Reserved.
             </classpath>
         </javadoc>
         <zip zipfile="javadoc/jelly-nb-javadoc.zip" basedir="javadoc/jelly-nb-javadoc" includes="**"/>
+    </target>
+
+    <target name="create-jelly2-javadoc" unless="jelly2.javadoc.uptodate">
         <mkdir dir="javadoc/jelly2-nb-javadoc"/>
         <!-- Javadoc for jelly2 -->
         <javadoc destdir="javadoc/jelly2-nb-javadoc" packagenames="org.netbeans.jellytools.*" Windowtitle="Jellytools API">
