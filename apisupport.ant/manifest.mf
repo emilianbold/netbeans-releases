@@ -1,3 +1,4 @@
+Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.apisupport.ant
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/apisupport/ant/TemplateNames.properties
 OpenIDE-Module-Layer: org/netbeans/modules/apisupport/ant/mf-layer.xml
