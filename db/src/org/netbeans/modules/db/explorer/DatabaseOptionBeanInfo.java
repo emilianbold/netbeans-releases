@@ -19,7 +19,6 @@ import java.sql.Connection;
 import java.util.ResourceBundle;
 
 import org.openide.util.NbBundle;
-import com.netbeans.sql.editors.*;
 
 /** A BeanInfo for DatabaseOption
 *
