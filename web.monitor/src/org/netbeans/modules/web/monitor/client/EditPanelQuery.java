@@ -41,7 +41,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
 import org.openide.NotifyDescriptor;
-import org.openide.TopManager;
+import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.web.monitor.data.*;
@@ -392,7 +392,7 @@ public class EditPanelQuery extends DataDisplay {
 				 options,
 				 NotifyDescriptor.CANCEL_OPTION);
 
-	TopManager.getDefault().notify(confirmDialog);
+	DialogDisplayer.getDefault().notify(confirmDialog);
 	if(confirmDialog.getValue().equals(NotifyDescriptor.OK_OPTION)) 
 	    setParams = true;
 	else 
@@ -411,7 +411,7 @@ public class EditPanelQuery extends DataDisplay {
 				 options,
 				 NotifyDescriptor.OK_OPTION);
 
-	TopManager.getDefault().notify(errorDialog);
+	DialogDisplayer.getDefault().notify(errorDialog);
     }
 
 

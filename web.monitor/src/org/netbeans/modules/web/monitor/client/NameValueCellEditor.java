@@ -38,9 +38,6 @@ import java.awt.Insets;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.*;
-
-import org.openide.TopManager;
-import org.openide.DialogDescriptor;
 import org.openide.util.HelpCtx;
 
 import org.openide.util.NbBundle;

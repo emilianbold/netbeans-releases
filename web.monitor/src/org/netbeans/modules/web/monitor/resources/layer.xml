@@ -59,9 +59,8 @@ Microsystems, Inc. All Rights Reserved.
   <folder name="Toolbars">
 
     <folder name="DebugFull">
-
-      <file name="HTTP Transaction Monitor[org-netbeans-modules-web-monitor-client-MonitorAction].instance" />
-	<attr name="org-openide-actions-AddWatchAction.instance/HTTP Transaction Monitor[org-netbeans-modules-web-monitor-client-MonitorAction].instance" boolvalue="true" />
+        <attr name="instanceClass" stringvalue="org.netbeans.modules.web.monitor.client.MonitorAction"/>
+	<attr name="org-openide-actions-AddWatchAction.instance/org.netbeans.modules.web.monitor.client.MonitorAction" boolvalue="true" />
 
     </folder>
   </folder>

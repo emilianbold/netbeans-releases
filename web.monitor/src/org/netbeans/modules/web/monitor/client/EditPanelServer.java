@@ -35,7 +35,7 @@ import java.awt.event.*;
 import java.net.URL;
 import java.net.MalformedURLException;
 import org.openide.NotifyDescriptor;
-import org.openide.TopManager;
+import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.web.monitor.data.*;
@@ -199,7 +199,7 @@ public class EditPanelServer extends DataDisplay {
 				 options,
 				 NotifyDescriptor.OK_OPTION);
 
-	TopManager.getDefault().notify(errorDialog);
+	DialogDisplayer.getDefault().notify(errorDialog);
     }
 
     void log(String s) {

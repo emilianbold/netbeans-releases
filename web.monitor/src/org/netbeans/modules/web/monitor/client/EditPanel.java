@@ -55,8 +55,8 @@ import javax.swing.event.*;
 
 import java.util.*;
 
-import org.openide.TopManager;
 import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
@@ -186,7 +186,7 @@ public class EditPanel extends javax.swing.JPanel implements
 					  new HelpCtx("monitor_resend"), //NOI18N
 					  this);
 	
-	dialog = TopManager.getDefault().createDialog(editDialog);
+	dialog = DialogDisplayer.getDefault().createDialog(editDialog);
 	dialog.pack();
 	//dialog.setSize(size);
 	dialog.show();
@@ -261,7 +261,7 @@ public class EditPanel extends javax.swing.JPanel implements
 			 NotifyDescriptor.INFORMATION_MESSAGE,
 			 options,
 			 options[0]);
-		TopManager.getDefault().notify(noServerDialog);
+		DialogDisplayer.getDefault().notify(noServerDialog);
 		displayType = DISPLAY_TYPE_SERVER;
 		showData();
 	    }
@@ -287,7 +287,7 @@ public class EditPanel extends javax.swing.JPanel implements
 			 NotifyDescriptor.INFORMATION_MESSAGE,
 			 options,
 			 options[0]);
-		TopManager.getDefault().notify(noServerDialog);
+		DialogDisplayer.getDefault().notify(noServerDialog);
 	    }
 	}
 	else if(str.equals(NbBundle.getBundle(EditPanel.class).getString("MON_Cancel")))

@@ -37,7 +37,6 @@ import java.io.*;           // I/O
 import java.text.*;         // I/O
 import java.util.*;         // local GUI
 
-import org.openide.TopManager;
 import org.openide.awt.SplittedPanel;
 import org.openide.awt.ToolbarButton;
 import org.openide.awt.ToolbarToggleButton;

@@ -47,7 +47,8 @@ import java.text.MessageFormat;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 
-import org.openide.TopManager;
+import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.InstanceCookie;
@@ -57,6 +58,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import org.openide.nodes.Node;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -252,14 +254,11 @@ public class Controller  {
 	if(debug) log("Now in createDirectories()"); // NOI18N
 
 	FileLock lock = null;
-
-	TopManager tm = TopManager.getDefault();
-	if(debug) log("TopManager: " + tm.toString()); // NOI18N
 	
 	FileObject rootdir = 
-	    tm.getRepository().getDefaultFileSystem().getRoot();
+	    Repository.getDefault().getDefaultFileSystem().getRoot();
 	if(debug) {
-	    log("Root directory is " +  rootdir.getName()); // NOI18N
+	    log("Root directory is " + rootdir.getName()); // NOI18N
 	    File rootF = FileUtil.toFile(rootdir);
 	    log("Root directory abs path " + // NOI18N
 		rootF.getAbsolutePath());
@@ -487,7 +486,7 @@ public class Controller  {
 				     NotifyDescriptor.INFORMATION_MESSAGE,
 				     options,
 				     options[0]);
-	    TopManager.getDefault().notify(noServerDialog);
+	    DialogDisplayer.getDefault().notify(noServerDialog);
 
 	}
 	catch(IOException ioe) {
@@ -511,7 +510,7 @@ public class Controller  {
 				     NotifyDescriptor.INFORMATION_MESSAGE,
 				     options,
 				     options[0]);
-	    TopManager.getDefault().notify(noServerDialog);
+	    DialogDisplayer.getDefault().notify(noServerDialog);
 	}
     }
 
@@ -1261,7 +1260,7 @@ public class Controller  {
 				     NotifyDescriptor.INFORMATION_MESSAGE,
 				     options,
 				     options[0]);
-	    TopManager.getDefault().notify(noServerDialog);
+	    DialogDisplayer.getDefault().notify(noServerDialog);
 	}
 	return serverRunning;
     }
@@ -1330,7 +1329,7 @@ public class Controller  {
 	try {
 
 	    FileObject fo = 
-		TopManager.getDefault().getRepository().getDefaultFileSystem()
+		Repository.getDefault().getDefaultFileSystem()
 		.findResource("Services/Browsers"); //NOI18N
 	    DataFolder folder = DataFolder.findFolder(fo);
 	    DataObject[] dobjs = folder.getChildren();
@@ -1381,7 +1380,7 @@ public class Controller  {
 	    else return null;
 	}
 	catch (Exception ex) {
-	    TopManager.getDefault ().notifyException (ex);
+	    ErrorManager.getDefault().notify(ex);
 	}
 	return null;	 
     }
@@ -1391,7 +1390,8 @@ public class Controller  {
      * browser has changed on the system. 
      */
     private void registerBrowserListener() {
-        FileObject fo = TopManager.getDefault ().getRepository().getDefaultFileSystem().findResource("Services/org-netbeans-core-IDESettings.settings"); // NOI18N
+        FileObject fo =	Repository.getDefault().getDefaultFileSystem()
+	    .findResource("Services/org-netbeans-core-IDESettings.settings"); // NOI18N
         if (fo != null) {
             try {
                 DataObject dobj = DataObject.find(fo);
@@ -1410,7 +1410,7 @@ public class Controller  {
                 }
             }
             catch (DataObjectNotFoundException ex) {
-                if(debug)TopManager.getDefault().notifyException(ex);
+                if(debug) ErrorManager.getDefault().notify(ex);
             }
         }
     }

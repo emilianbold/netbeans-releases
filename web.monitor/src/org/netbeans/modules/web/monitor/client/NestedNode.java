@@ -16,7 +16,6 @@ package org.netbeans.modules.web.monitor.client;
 import org.openide.nodes.Children;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.*;
-import org.openide.TopManager;
 import org.openide.util.HelpCtx;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.actions.SystemAction;

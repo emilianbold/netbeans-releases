@@ -38,7 +38,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.*;
 
-import org.openide.TopManager;
+import org.openide.DialogDisplayer;
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
@@ -234,7 +234,7 @@ public class ParamEditor extends javax.swing.JPanel implements ActionListener {
 				     null,
 				     this);
 	}
-	dialog = TopManager.getDefault().createDialog(editDialog);
+	dialog = DialogDisplayer.getDefault().createDialog(editDialog);
 	dialog.pack();
 	dialog.setSize(size);
 	dialog.show();
@@ -287,7 +287,7 @@ public class ParamEditor extends javax.swing.JPanel implements ActionListener {
 				 NotifyDescriptor.ERROR_MESSAGE,
 				 options,
 				 options[0]);
-	TopManager.getDefault().notify(badInputDialog);
+	DialogDisplayer.getDefault().notify(badInputDialog);
     }
 
 
