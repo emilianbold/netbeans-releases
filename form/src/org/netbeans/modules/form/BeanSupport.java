@@ -151,7 +151,7 @@ public class BeanSupport {
   * @returns The icon of specified JavaBean or null if not defined
   */
   public static Image getBeanIcon (Class beanClass, int iconType) {
-    // [PENDING - icon according to instance data object]
+    // [FUTURE: the icon should be obtained from the InstanceCookie somehow, and customizable by the user]
     BeanInfo bi = createBeanInfo (beanClass);
     if (bi != null) {
       return bi.getIcon (iconType);
@@ -224,6 +224,7 @@ public class BeanSupport {
 
 /*
  * Log
+ *  7    Gandalf   1.6         7/30/99  Ian Formanek    changed comment
  *  6    Gandalf   1.5         7/28/99  Ian Formanek    Fixed bug 2147 - 
  *       horizontalAlignment property displays number instead of text.
  *  5    Gandalf   1.4         6/9/99   Ian Formanek    ---- Package Change To 
