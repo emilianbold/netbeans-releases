@@ -78,34 +78,35 @@ public class Installer {
         InputStream is=Installer.class.getClassLoader().getResourceAsStream(fileName);
         if (is==null) {
             is=Installer.class.getClassLoader().getResourceAsStream("nb/"+fileName);
-            if (is==null) err("Missing [nb/]"+fileName+" !");
+            if (is==null) err("Missing "+fileName+" !");
         }
         return new ZipInputStream(is);
     }
     
     private static void testTarget(String target) {
-        File test=new File(targetFolder, target);
-        if (test.isFile()) test=test.getParentFile();
-        if (new File(test, "CVS").isDirectory()) {
-            System.err.println("Folder "+test.getAbsolutePath()+" contains CVS information !");
-            if (!ignoreCVS) {
-                System.err.println("Overriding files from CVS repository may cause collisions during next update !");
-                System.err.println("Do you want to continue (Y/n) ?");
-                try {
+        try {
+            File test=new File(targetFolder, target).getCanonicalFile();
+            if (test.isFile()) test=test.getParentFile();
+            if (new File(test, "CVS").isDirectory()) {
+                System.err.println("Folder "+test.getAbsolutePath()+" contains CVS information !");
+                if (!ignoreCVS) {
+                    System.err.println("Overriding files from CVS repository may cause collisions during next update !");
+                    System.err.println("Do you want to continue (Y/n) ?");
                     if (Character.toUpperCase((char)System.in.read())=='Y') ignoreCVS=true;
                     else err("Installation interrupted !");
-                } catch (IOException ioe) {
-                    err(ioe.getMessage());
                 }
             }
+        } catch  (IOException ioe) {
+            err(ioe.getMessage());
         }
     }
     
     private static void unzipFile(ZipInputStream in, String target) {
-        File file=new File(targetFolder, target);
-        createFolder(file.getParentFile());
         FileOutputStream out=null;
+        File file=new File(targetFolder, target);
         try {
+            file=file.getCanonicalFile();
+            createFolder(file.getParentFile());
             out=new FileOutputStream(file);
             int i;
             while ((i=in.read(buff))>0) {
@@ -122,7 +123,11 @@ public class Installer {
     }
     
     private static void createFolder(String folder) {
-        createFolder(new File(targetFolder, folder));
+        try {
+            createFolder(new File(targetFolder, folder).getCanonicalFile());
+        } catch (IOException ioe) {
+            err(ioe.getMessage());
+        }
     }
     
     private static void createFolder(File dir) {
@@ -138,8 +143,10 @@ public class Installer {
     public static void main(String[] args) {
         if (args.length>0) {
             targetFolder=args[0];
-        } else {
-            System.out.println("NetBeans root directory (\"nb_all\") is not defined as command-line argument, using "+new File(targetFolder).getAbsolutePath());
+        } else try {
+            System.out.println("NetBeans root directory (\"nb_all\") is not defined as command-line argument, using "+new File(targetFolder).getCanonicalPath());
+        } catch (IOException ioe) {
+            err(ioe.getMessage());
         }
         testTarget(jemmyTarget);
         testTarget(jellyTarget);
@@ -184,6 +191,7 @@ public class Installer {
             jellyNBM.close();
             xtestNBM.close();
             System.out.println("Finished.");
+            System.out.println("Warning: Several files were also installed into parent directory structure ("+new File(targetFolder, "../nbextra").getCanonicalPath()+").");
         } catch (IOException ioe) {
             err(ioe.getMessage());
         }
