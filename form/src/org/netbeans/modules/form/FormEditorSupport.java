@@ -75,6 +75,7 @@ public class FormEditorSupport extends JavaEditor
 
     // listeners
     private FormModelListener formListener;
+    private PropertyChangeListener dataObjectListener;
     private static PropertyChangeListener workspacesListener;
     private static PropertyChangeListener settingsListener;
     private static PropertyChangeListener topcompsListener;
@@ -411,16 +412,6 @@ public class FormEditorSupport extends JavaEditor
             super.notifyModified();
     }
 
-    void updateFormName(String name) {
-        if (!formLoaded)
-            return;
-
-        formModel.setName(name);
-        formModel.getFormDesigner().updateName(name);
-        formRootNode.updateName(name);
-        formModel.fireFormChanged();
-    }
-
     void updateNodeChildren(ComponentContainer metacont) {
         FormNode node;
 
@@ -590,6 +581,7 @@ public class FormEditorSupport extends JavaEditor
                                           .add(new Node[] { formRootNode });
 
         attachFormListener();
+        attachDataObjectListener();
         attachSettingsListener();
         attachTopComponentsListener();
         attachPaletteListener();
@@ -815,6 +807,7 @@ public class FormEditorSupport extends JavaEditor
 
         // remove listeners
         detachFormListener();
+        detachDataObjectListener();
         if (openForms.isEmpty()) {
             if (formDesigner != null)
                 formDesigner.setModel(null);
@@ -994,6 +987,32 @@ public class FormEditorSupport extends JavaEditor
         if (formListener != null) {
             formModel.removeFormModelListener(formListener);
             formListener = null;
+        }
+    }
+
+    private void attachDataObjectListener() {
+        if (dataObjectListener != null)
+            return;
+
+        dataObjectListener = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent ev) {
+                if (DataObject.PROP_NAME.equals(ev.getPropertyName())) {
+                    String name = formDataObject.getName();
+                    formModel.setName(name);
+                    getFormDesigner().updateName(name);
+                    formRootNode.updateName(name);
+                    formModel.fireFormChanged();
+                }
+            }
+        };
+
+        formDataObject.addPropertyChangeListener(dataObjectListener);
+    }
+
+    private void detachDataObjectListener() {
+        if (dataObjectListener != null) {
+            formDataObject.removePropertyChangeListener(dataObjectListener);
+            dataObjectListener = null;
         }
     }
 

@@ -147,15 +147,6 @@ public class FormDataObject extends JavaDataObject {
     protected Node createNodeDelegate() {
         FormDataNode node = new FormDataNode(this);
         node.setDefaultAction(SystemAction.get(OpenAction.class));
-
-        node.addPropertyChangeListener(new java.beans.PropertyChangeListener () {
-            public void propertyChange(java.beans.PropertyChangeEvent e) {
-                if (Node.PROP_NAME.equals(e.getPropertyName())) {
-                    formEditor.updateFormName(FormDataObject.this.getName());
-                }
-            }
-        });
-        
         return node;
     }
 
