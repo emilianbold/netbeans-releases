@@ -67,22 +67,22 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
         <attr name="helpID" stringvalue="org.netbeans.modules.url.BookmarksNode"/>
 
-        <file name="jdc.url" url="jdc.url">
+        <file name="jdc.url" url="nbresloc:/org/netbeans/modules/utilities/jdc.url">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
         </file>
-        <file name="java-web-site.url" url="java-web-site.url">
+        <file name="java-web-site.url" url="nbresloc:/org/netbeans/modules/utilities/java-web-site.url">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
         </file>
-        <file name="apis-online.url" url="apis-online.url">
+        <file name="apis-online.url" url="nbresloc:/org/netbeans/modules/utilities/apis-online.url">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
         </file>
-        <file name="swing.url" url="swing.url">
+        <file name="swing.url" url="nbresloc:/org/netbeans/modules/utilities/swing.url">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
         </file>
-        <file name="netbeans-faq.url" url="netbeans-faq.url">
+        <file name="netbeans-faq.url" url="nbresloc:/org/netbeans/modules/utilities/netbeans-faq.url">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
         </file>
-        <file name="ffj-kb.url" url="ffj-kb.url">
+        <file name="ffj-kb.url" url="nbresloc:/org/netbeans/modules/utilities/ffj-kb.url">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
         </file>
 
@@ -130,7 +130,7 @@ Microsystems, Inc. All Rights Reserved.
 
         <folder name="Help">
             <attr name="Separator1.instance/netbeans-web-link.url" boolvalue="true"/>
-            <file name="netbeans-web-link.url" url="netbeans-web-link.url">
+            <file name="netbeans-web-link.url" url="nbresloc:/org/netbeans/modules/utilities/netbeans-web-link.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/url/webLink.gif"/>
             </file>
@@ -140,7 +140,7 @@ Microsystems, Inc. All Rights Reserved.
 	    </file>
             <attr name="org-netbeans-core-actions-ModuleHelpAction$ShortcutsOnly.instance/submit-feedback-link.url" boolvalue="true"/>
             <!-- [PENDING] this is none too useful... (some bug is filed to this effect) -->
-            <file name="submit-feedback-link.url" url="submit-feedback-link.url">
+            <file name="submit-feedback-link.url" url="nbresloc:/org/netbeans/modules/utilities/submit-feedback-link.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/url/webLink.gif"/>
             </file>
