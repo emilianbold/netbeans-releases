@@ -39,6 +39,24 @@ public class OpenFile extends Object implements ModuleInstall, Runnable {
   private static boolean stop;
   
   public void installed () {
+    try {
+      DataFolder folder = DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().menus (), "File");
+      DataObject[] oldkids = folder.getChildren ();
+      InstanceDataObject inst = InstanceDataObject.create (folder, "OpenFile", OpenFileAction.class);
+      DataObject[] newkids = new DataObject[oldkids.length + 1];
+      boolean found = false;
+      // Try to put it after the open-Explorer action, else at the end of the menu.
+      for (int i = 0, j = 0; i < oldkids.length; i++, j++) {
+        newkids[j] = oldkids[i];
+        if (! found && (i == oldkids.length - 1 || oldkids[i].getName ().equals ("OpenExplorer"))) {
+          newkids[++j] = inst;
+          found = true;
+        }
+      }
+      folder.setOrder (newkids);
+    } catch (IOException e) {
+      TopManager.getDefault ().notifyException (e);
+    }
     restored ();
   }
 
@@ -49,6 +67,13 @@ public class OpenFile extends Object implements ModuleInstall, Runnable {
 
   public void uninstalled () {
     stop = true;
+    try {
+      DataFolder folder = DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().menus (), "File");
+      if (! InstanceDataObject.remove (folder, "OpenFile", OpenFileAction.class))
+        throw new IOException ("Could not remove action");
+    } catch (IOException e) {
+      TopManager.getDefault ().notifyException (e);
+    }
   }
 
   public boolean closing () {
