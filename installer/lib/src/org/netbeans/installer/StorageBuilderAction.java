@@ -277,7 +277,9 @@ public class StorageBuilderAction extends ProductAction {
     public long getCheckSum() {
         //Need to set according to JDK version for 1.5.0 it is 64MB
         //for 1.4.2_06 42MB
-        return 67000000L;
+        //return 67000000L;
+        //just indexing src.zip no deep parsing
+        return 16000000L;
         //return 44000000L;
     }
     
@@ -286,15 +288,19 @@ public class StorageBuilderAction extends ProductAction {
      * @see com.installshield.product.RequiredBytesTable
      */
     public RequiredBytesTable getRequiredBytes() throws ProductException {
+        RequiredBytesTable req = new RequiredBytesTable();
+        
+        nbInstallDir = resolveString("$P(absoluteInstallLocation)");
+        logEvent(this, Log.DBG,"getRequiredBytes nbInstallDir: " + nbInstallDir);
+        req.addBytes(nbInstallDir, getCheckSum());
+        
         //#48948: We must set dirs here because init() is not run yet when getRequiredBytes
         //is called.
         tempPath = resolveString("$J(temp.dir)");
-        
-        RequiredBytesTable req = new RequiredBytesTable();
-        logEvent(this, Log.DBG, "tempPath: " + tempPath);
+        logEvent(this, Log.DBG, "getRequiredBytes tempPath: " + tempPath);
         
         //Storage is first built to temp dir then it is copied to destination
-        req.addBytes(tempPath, 50000000L);
+        req.addBytes(tempPath, getCheckSum());
 	logEvent(this, Log.DBG, "Total (not necessarily on one disk when tempdir is redirected) Mbytes = " + (req.getTotalBytes()>>20));
         logEvent(this, Log.DBG, "RequiredBytesTable: " + req);
         return req;
