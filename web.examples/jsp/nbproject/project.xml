@@ -3,7 +3,7 @@
     <type>org.netbeans.modules.web.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/web-project/1">
-            <name>JSP Examples</name>
+            <name>TomcatJSPExamples</name>
             <minimum-ant-version>1.6</minimum-ant-version>
             <web-module-libraries>
                 <library>

@@ -55,7 +55,11 @@ public class WebSampleProjectIterator implements TemplateWizard.Iterator {
     
     public void initialize (org.openide.loaders.TemplateWizard templateWizard) {
         this.wiz = templateWizard;
-        templateWizard.putProperty (WizardProperties.NAME, templateWizard.getTemplate().getNodeDelegate ().getDisplayName ());
+        String name = templateWizard.getTemplate().getNodeDelegate().getDisplayName();
+        if (name != null) {
+            name = name.replaceAll(" ", ""); //NOI18N
+        }
+        templateWizard.putProperty (WizardProperties.NAME, name);
         basicPanel = new PanelConfigureProject();
         currentIndex = 0;
         updateStepsList ();

@@ -33,6 +33,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     public PanelProjectLocationVisual(PanelConfigureProject panel) {
         initComponents();
         this.panel = panel;
+        projectNameTextField.setEditable(false);
         
         // Register listener on the textFields to make the automatic updates
         projectNameTextField.getDocument().addDocumentListener(this);
@@ -152,7 +153,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     public void addNotify() {
         super.addNotify();
         //same problem as in 31086, initial focus on Cancel button
-        projectNameTextField.requestFocus();
+        projectLocationTextField.requestFocus();
     }
     
     boolean valid(WizardDescriptor wizardDescriptor) {
@@ -193,18 +194,24 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             projectLocation = projectLocation.getParentFile();
         
         projectLocationTextField.setText(projectLocation.getAbsolutePath());
+        projectLocationTextField.selectAll();
         
+        String formater = null;
         String projectName = (String) settings.getProperty(WizardProperties.NAME);
+        
         if (projectName == null) {
+            formater = NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NPW1_DefaultProjectName"); //NOI18N
+        } else {
+            formater = projectName + "{0}"; //NOI18N
+        }
+        if ((projectName == null) || (validFreeProjectName(projectLocation, projectName) == null)) {
             int baseCount = FoldersListSettings.getDefault().getNewProjectCount() + 1;
-            String formater = NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NPW1_DefaultProjectName");
             while ((projectName = validFreeProjectName(projectLocation, formater, baseCount)) == null)
                 baseCount++;
 //            settings.putProperty(NewWebProjectWizardIterator.PROP_NAME_INDEX, new Integer(baseCount));
         }
         
         projectNameTextField.setText(projectName);                
-        projectNameTextField.selectAll();
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -231,6 +238,11 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         return file.exists() ? null : name;
     }
 
+    private String validFreeProjectName(final File parentFolder, final String name) {
+        File file = new File(parentFolder, name);
+        return file.exists() ? null : name;
+    }
+    
     // Implementation of DocumentListener --------------------------------------
     public void changedUpdate(DocumentEvent e) {
         updateTexts(e);
