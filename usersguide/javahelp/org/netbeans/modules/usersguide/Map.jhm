@@ -1207,7 +1207,33 @@
    <mapID target="org.netbeans.modules.vcscore.ui.VerifyGroupPanel" url="vcs-nb/vcsgroups/vcs_groupsresolve.html" />
    <!--csh for Javacvs Customizer-->
    <mapID target="org.netbeans.modules.cvsclient.customizer.NbJavaCvsCustomizer" url="vcs-nb/cvs-nb/cvs_customizer.html" />
+   <!--csh for Javacvs actions-->
+   <mapID target="org.netbeans.modules.vcscore.actions.ClusteringAction.org.netbeans.modules.cvsclient.actions.JRefreshCommandAction" url="vcs-nb/cvs-nb/cvs_calling.html" />
+   <mapID target="org.netbeans.modules.vcscore.actions.ClusteringAction.org.netbeans.modules.cvsclient.actions.JRefreshCommandAction" url="vcs-nb/cvs-nb/cvs_calling.html" />
+   <mapID target="org.netbeans.modules.vcscore.actions.ClusteringAction.org.netbeans.modules.cvsclient.actions.JCommitCommandAction" url="vcs-nb/cvs-nb/cvs_calling.html" />
+   <mapID target="org.netbeans.modules.vcscore.actions.ClusteringAction.org.netbeans.modules.cvsclient.actions.JUpdateCommandAction" url="vcs-nb/cvs-nb/cvs_calling.html" />
+   <mapID target="org.netbeans.modules.vcscore.actions.ClusteringAction.org.netbeans.modules.cvsclient.actions.JDiffCommandAction" url="vcs-nb/cvs-nb/cvs_calling.html" />
+   <mapID target="org.netbeans.modules.vcscore.actions.ClusteringAction.org.netbeans.modules.cvsclient.actions.JStatusCommandAction" url="vcs-nb/cvs-nb/cvs_calling.html" />
+   <mapID target="org.netbeans.modules.vcscore.actions.ClusteringAction.org.netbeans.modules.cvsclient.actions.JLogCommandAction" url="vcs-nb/cvs-nb/cvs_calling.html" />
+   <mapID target="org.netbeans.modules.vcscore.actions.ClusteringAction.org.netbeans.modules.cvsclient.actions.JAnnotateCommandAction" url="vcs-nb/cvs-nb/cvs_calling.html" />
+   <mapID target="org.netbeans.modules.vcscore.actions.ClusteringAction.org.netbeans.modules.cvsclient.actions.JCheckoutCommandAction" url="vcs-nb/cvs-nb/cvs_calling.html" />
+   <mapID target="org.netbeans.modules.vcscore.actions.ClusteringAction.org.netbeans.modules.cvsclient.actions.JImportCommandAction" url="vcs-nb/cvs-nb/cvs_calling.html" />
+   <mapID target="org.netbeans.modules.vcscore.actions.ClusteringAction.org.netbeans.modules.cvsclient.actions.JExportCommandAction" url="vcs-nb/cvs-nb/cvs_calling.html" />
+   <mapID target="org.netbeans.modules.vcscore.actions.ClusteringAction.org.netbeans.modules.cvsclient.actions.JTagCommandAction" url="vcs-nb/cvs-nb/cvs_calling.html" />
+   <mapID target="org.netbeans.modules.vcscore.actions.ClusteringAction.org.netbeans.modules.cvsclient.actions.JListModulesCommandAction" url="vcs-nb/cvs-nb/cvs_calling.html" />
+   <!--csh for filesystems-->
+   <mapID target="org.netbeans.modules.cvsclient.NbJavaCvsFileSystem" url="vcs-nb/cvs-nb/cvs_settings.html" />
+   <mapID target="org.netbeans.modules.vcs.advanced.CommandLineVcsFileSystem" url="vcs-nb/vcsgeneric/vcsgeneric_settings.html" />
+   <!--csh for versioning menu items-->
+   <mapID target="org.netbeans.modules.cvsclient.login.LoginManagerAction" url="vcs-nb/cvs-nb/cvs_password.html" />
+   <mapID target="org.netbeans.modules.cvsclient.CvsMenuAction" url="vcs-nb/cvs-nb/cvs_calling.html" />
+   <mapID target="org.netbeans.modules.vcscore.grouping.VcsGroupMenuAction" url="vcs-nb/vcsgroups/vcs_groups.html" />
+   <mapID target="org.netbeans.modules.vcs.advanced.CommandLineVcsFileSystem" url="vcs-nb/vcsgeneric/vcsgeneric_mounting.html" />
 
+   <!--csh for java actions-->
+   <mapID target="org.netbeans.modules.java.imptool.ImpToolAction" url="java/imt/import.html" />
+   <mapID target="org.netbeans.modules.java.ui.actions.SynchronizeAction" url="java/synchronizing/intro.html" />
+   
    <mapID target="org.netbeans.editor.GO_TO_DECLARATION" url="pending.html" />
    <mapID target="org.netbeans.editor.REFORMAT_CODE" url="pending.html" />
    <mapID target="org.netbeans.modules.web.wizards.beanjsp.ide.netbeans.JSPPageWizardAction" url="pending.html" />
