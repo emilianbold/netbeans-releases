@@ -221,7 +221,6 @@ public class AntProjectHelperTest extends NbTestCase {
         l.reset();
         assertEquals("global.prop is correct", "value5a", pev.getProperty("global.prop"));
         assertEquals("global.prop.2 is correct", "globalvalue2", pev.getProperty("global.prop.2"));
-        // XXX try the same when user.properties.file is not defined
         // #42147: try modifying project.properties and private.properties on disk.
         FileObject projectProperties = projdir.getFileObject("nbproject/project.properties");
         assertNotNull("have project.properties", projectProperties);
@@ -272,6 +271,42 @@ public class AntProjectHelperTest extends NbTestCase {
         assertEquals("one property fired", Collections.singleton("derived.prop"), l.changed);
         l.reset();
         assertEquals("derived.prop is back", "value2a:${shared.prop}:${undefined.prop.2}", pev.getProperty("derived.prop"));
+        // #44213 cont'd: change user.properties.file and make sure the new definitions are read
+        FileObject buildProperties2 = scratch.getFileObject("userdir").createData("build2.properties");
+        lock = buildProperties2.lock();
+        os = buildProperties2.getOutputStream(lock);
+        p = new Properties();
+        p.setProperty("global.prop", "value5b"); // modified
+        p.setProperty("global.prop.2", "globalvalue2"); // same
+        p.store(os, null);
+        os.close();
+        lock.releaseLock();
+        lock = privateProperties.lock();
+        os = privateProperties.getOutputStream(lock);
+        p = new Properties();
+        p.setProperty("private.prop", "value2a"); // same
+        p.setProperty("overridden.prop", "value4"); // same
+        p.setProperty("tempdir", "${java.io.tmpdir}/foo"); // same
+        p.setProperty("user.properties.file", "../userdir/build2.properties"); // changed
+        p.store(os, null);
+        os.close();
+        lock.releaseLock();
+        assertEquals("two properties fired", new HashSet(Arrays.asList(new String[] {"user.properties.file", "global.prop"})), l.changed);
+        l.reset();
+        assertEquals("user.properties.file is correct", "../userdir/build2.properties", pev.getProperty("user.properties.file"));
+        assertEquals("global.prop is correct", "value5b", pev.getProperty("global.prop"));
+        lock = buildProperties2.lock();
+        os = buildProperties2.getOutputStream(lock);
+        p = new Properties();
+        p.setProperty("global.prop", "value5b"); // same
+        // no global.prop.2
+        p.store(os, null);
+        os.close();
+        lock.releaseLock();
+        assertEquals("one property fired", Collections.singleton("global.prop.2"), l.changed);
+        l.reset();
+        assertEquals("global.prop.2 is gone", null, pev.getProperty("global.prop.2"));
+        // XXX try eval when user.properties.file is not defined (tricky, need to preset netbeans.user)
     }
     
     /**
@@ -367,6 +402,7 @@ public class AntProjectHelperTest extends NbTestCase {
         // XXX try modifying several property files and saving in a batch
         // XXX try storing unmodified properties and see what happens
         // XXX try storing a fresh EditableProperties object not returned from getProperties
+        // XXX #42147: changes made on disk should fire changes to AntProjectListener, not just to the PropertyEvaluator
     }
     
     /**
@@ -419,6 +455,7 @@ public class AntProjectHelperTest extends NbTestCase {
         // XXX try modifying both XML files, or different parts of the same, and saving in a batch
         // XXX try storing unmodified XML fragments and see what happens
         // XXX try storing a fresh Element not returned from getPrimaryConfigurationData
+        // XXX #42147: changes made on disk should result in firing of an AntProjectEvent
     }
     
     /**

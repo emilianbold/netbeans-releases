@@ -12,6 +12,8 @@
  */
 
 package org.netbeans.spi.project.support.ant;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,12 +29,13 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 import java.io.File;
 import java.util.Properties;
-import java.util.Collections;
 import org.netbeans.modules.project.ant.FileChangeSupport;
 import org.netbeans.modules.project.ant.FileChangeSupportListener;
 import org.netbeans.modules.project.ant.FileChangeSupportEvent;
 import org.openide.filesystems.FileSystem;
 import java.io.OutputStream;
+import java.util.Collections;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileLock;
 
 /**
@@ -281,26 +284,7 @@ final class ProjectProperties {
                     getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH),
                 }
             );
-            String userPropertiesFile = findUserPropertiesFile.getProperty("user.properties.file"); // NOI18N
-            // XXX listen to changes in textual value of this property
-            if (userPropertiesFile == null && PropertyUtils.USER_BUILD_PROPERTIES != null) {
-                // Use the in-IDE default.
-                userPropertiesFile = PropertyUtils.USER_BUILD_PROPERTIES.getAbsolutePath();
-            }
-            PropertyProvider globalProperties;
-            if (userPropertiesFile != null) {
-                // Have some defined global properties file, so read it and listen to changes in it.
-                File f = PropertyUtils.resolveFile(FileUtil.toFile(dir), userPropertiesFile);
-                if (f.equals(PropertyUtils.USER_BUILD_PROPERTIES)) {
-                    // Just to share the cache.
-                    globalProperties = PropertyUtils.globalPropertyProvider();
-                } else {
-                    globalProperties = PropertyUtils.propertiesFilePropertyProvider(f);
-                }
-            } else {
-                // Should not normally happen.
-                globalProperties = PropertyUtils.fixedPropertyProvider(Collections.EMPTY_MAP);
-            }
+            PropertyProvider globalProperties = new UserPropertiesProvider(findUserPropertiesFile);
             standardPropertyEvaluator = PropertyUtils.sequentialPropertyEvaluator(
                 getStockPropertyPreprovider(),
                 new PropertyProvider[] {
@@ -311,6 +295,35 @@ final class ProjectProperties {
             );
         }
         return standardPropertyEvaluator;
+    }
+    private PropertyProvider computeDelegate(PropertyEvaluator findUserPropertiesFile) {
+        String userPropertiesFile = findUserPropertiesFile.getProperty("user.properties.file"); // NOI18N
+        if (userPropertiesFile != null) {
+            // Have some defined global properties file, so read it and listen to changes in it.
+            File f = PropertyUtils.resolveFile(FileUtil.toFile(dir), userPropertiesFile);
+            if (f.equals(PropertyUtils.USER_BUILD_PROPERTIES)) {
+                // Just to share the cache.
+                return PropertyUtils.globalPropertyProvider();
+            } else {
+                return PropertyUtils.propertiesFilePropertyProvider(f);
+            }
+        } else {
+            // Use the in-IDE default.
+            return PropertyUtils.globalPropertyProvider();
+        }
+    }
+    private final class UserPropertiesProvider extends PropertyUtils.DelegatingPropertyProvider implements PropertyChangeListener {
+        private final PropertyEvaluator findUserPropertiesFile;
+        public UserPropertiesProvider(PropertyEvaluator findUserPropertiesFile) {
+            super(computeDelegate(findUserPropertiesFile));
+            this.findUserPropertiesFile = findUserPropertiesFile;
+            findUserPropertiesFile.addPropertyChangeListener(this);
+        }
+        public void propertyChange(PropertyChangeEvent ev) {
+            if ("user.properties.file".equals(ev.getPropertyName())) { // NOI18N
+                setDelegate(computeDelegate(findUserPropertiesFile));
+            }
+        }
     }
     
 }

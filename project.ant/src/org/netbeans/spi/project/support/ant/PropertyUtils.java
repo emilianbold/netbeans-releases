@@ -245,18 +245,22 @@ public class PropertyUtils {
         }
 
         public void fileCreated(FileChangeSupportEvent event) {
-            //System.err.println("GP: " + event);
+            //System.err.println("FPP: " + event);
             fireChange();
         }
 
         public void fileDeleted(FileChangeSupportEvent event) {
-            //System.err.println("GP: " + event);
+            //System.err.println("FPP: " + event);
             fireChange();
         }
 
         public void fileModified(FileChangeSupportEvent event) {
-            //System.err.println("GP: " + event);
+            //System.err.println("FPP: " + event);
             fireChange();
+        }
+        
+        public String toString() {
+            return "FilePropertyProvider[" + properties + ":" + getProperties() + "]"; // NOI18N
         }
         
     }
@@ -737,6 +741,64 @@ public class PropertyUtils {
                 defs[i] = providers[i].getProperties();
             }
             return evaluateAll(predefs, Arrays.asList(defs));
+        }
+        
+    }
+    
+    /**
+     * Property provider that delegates to another source.
+     * Currently attaches a strong listener to it.
+     */
+    static abstract class DelegatingPropertyProvider implements PropertyProvider, ChangeListener {
+        
+        private PropertyProvider delegate;
+        private final List/*<ChangeListener>*/ listeners = new ArrayList();
+        
+        protected DelegatingPropertyProvider(PropertyProvider delegate) {
+            this.delegate = delegate;
+            delegate.addChangeListener(this);
+        }
+        
+        protected final void setDelegate(PropertyProvider delegate) {
+            if (delegate == this.delegate) {
+                return;
+            }
+            this.delegate.removeChangeListener(this);
+            this.delegate = delegate;
+            delegate.addChangeListener(this);
+            fireChange();
+        }
+
+        public final Map getProperties() {
+            return delegate.getProperties();
+        }
+
+        public synchronized final void addChangeListener(ChangeListener listener) {
+            // XXX could listen to delegate only when this has listeners
+            listeners.add(listener);
+        }
+        
+        public synchronized final void removeChangeListener(ChangeListener listener) {
+            listeners.add(listener);
+        }
+        
+        private void fireChange() {
+            ChangeListener[] ls;
+            synchronized (this) {
+                if (listeners.isEmpty()) {
+                    return;
+                }
+                ls = (ChangeListener[]) listeners.toArray(new ChangeListener[listeners.size()]);
+            }
+            ChangeEvent ev = new ChangeEvent(this);
+            for (int i = 0; i < ls.length; i++) {
+                ls[i].stateChanged(ev);
+            }
+        }
+
+        public final void stateChanged(ChangeEvent changeEvent) {
+            //System.err.println("DPP: change from current provider " + delegate);
+            fireChange();
         }
         
     }
