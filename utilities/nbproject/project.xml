@@ -64,7 +64,7 @@ Microsystems, Inc. All Rights Reserved.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>2-3</release-version>
+                        <release-version>3</release-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>

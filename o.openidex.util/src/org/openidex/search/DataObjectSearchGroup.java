@@ -18,6 +18,7 @@ package org.openidex.search;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -29,7 +30,10 @@ import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
 import org.openide.nodes.Node;
+
+//import org.netbeans.api.project.FileOwnerQuery;
 
 
 /**
@@ -69,14 +73,24 @@ public class DataObjectSearchGroup extends SearchGroup {
      * Implements superclass abstract method.
      */
     public void doSearch() {
-        DataObject.Container[] roots = getContainers();
-        for (int i = 0; i < roots.length; i++) {
-            if (!scanContainer(roots[i])) {
-                return;
+        Node[] nodes = normalizeNodes(
+                (Node[]) searchRoots.toArray(new Node[searchRoots.size()]));
+        for (int i = 0; i < nodes.length; i++) {
+            Node node = nodes[i];
+            SearchInfo info = Utils.getSearchInfo(node);
+            if (info == null) {
+                System.out.println("info == null");
+            } else {
+                System.out.println("info class: " + info.getClass().getName());
+            }
+            if (info != null) {
+                for (Iterator j = info.objectsToSearch(); j.hasNext(); ) {
+                    processSearchObject(/*DataObject*/ j.next());
+                }
             }
         }
     }
-    
+
     /**
      * Gets data folder roots on which to search.
      *
@@ -86,6 +100,14 @@ public class DataObjectSearchGroup extends SearchGroup {
         List children = null;
         Node[] nodes = normalizeNodes(
                 (Node[]) searchRoots.toArray(new Node[searchRoots.size()]));
+        
+        for (int i = 0; i < nodes.length; i++) {
+            Node node = nodes[i];
+            if (node.getParentNode() == null) {
+                
+                /* it should be the root of some project */
+            }
+        }
 
         /* test whether to scan whole repository: */
         if (nodes.length == 1) {
