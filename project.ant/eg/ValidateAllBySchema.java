@@ -47,16 +47,18 @@ public class ValidateAllBySchema {
                       "http://www.w3.org/2001/XMLSchema");
         p.setProperty("http://java.sun.com/xml/jaxp/properties/schemaSource",
                       schemaUris);
+        int exit = 0;
         for (int i = 0; i < xmls.length; i++) {
             System.err.println("Parsing " + xmls[i] + "...");
             try {
                 p.parse(xmls[i].toURI().toString(), new Handler());
             } catch (SAXParseException e) {
                 System.err.println(e.getSystemId() + ":" + e.getLineNumber() + ": " + e.getLocalizedMessage());
-                System.exit(1);
+                exit = 1;
             }
         }
         System.err.println("All files validated.");
+        System.exit(exit);
     }
     private static final class Handler extends DefaultHandler {
         public void warning(SAXParseException e) throws SAXException {
