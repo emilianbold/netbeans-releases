@@ -58,7 +58,11 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
                                                "getShowToolTipsInIDE", "setShowToolTipsInIDE"), // NOI18N
                        new PropertyDescriptor (IDESettings.PROP_IGNORED_FILES, IDESettings.class,
                                                "getIgnoredFiles", "setIgnoredFiles"), // NOI18N
-                       
+                       // needs to add fake properties to import proxy settings from older IDE
+                       new PropertyDescriptor ("proxyHost", IDESettings.class,
+                                               null, "readOldProxyHost"), // NOI18N
+                       new PropertyDescriptor ("proxyPort", IDESettings.class,
+                                               null, "readOldProxyPort"), // NOI18N
                    };
 
             desc[0].setDisplayName (NbBundle.getMessage (Main.class, "PROP_CONFIRM_DELETE"));
@@ -97,7 +101,9 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
             desc[11].setDisplayName (NbBundle.getMessage (Main.class, "PROP_ignoredFiles"));
             desc[11].setShortDescription (NbBundle.getMessage (Main.class,"HINT_ignoredFiles"));            
             
-
+            desc[12].setHidden (true);
+            desc[13].setHidden (true);
+            
             return desc;
         } catch (IntrospectionException ex) {
 	    ErrorManager.getDefault().notify(ex);

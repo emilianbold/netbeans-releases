@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -215,7 +215,7 @@ public class IDESettings extends SystemOption {
     }
 
     /** Getter for proxy set flag.
-     * @deprecated Use <code>setProxyType(int)</code>
+     * @deprecated Use <code>getProxyType()</code>
     */
     public boolean getUseProxy () {
         return useProxy;
@@ -290,7 +290,7 @@ public class IDESettings extends SystemOption {
     public String getUserProxyPort () {
         return userProxyPort;
     }
-   
+    
     /**
      * Sets name of proxy host, will used if the proxy type <code>MANUAL_SET_PROXY</code> is set.
      * @param proxy host
@@ -341,7 +341,15 @@ public class IDESettings extends SystemOption {
         assert false : "Unknown proxy type " + getProxyType ();
         return null;
     }
-
+    
+    public void readOldProxyHost (String value) {
+        setUserProxyHost (value);
+    }
+    
+    public void readOldProxyPort (String value) {
+        setUserProxyPort (value);
+    }
+    
     /** Setter for proxy host, sets the HTTP proxy host if and only if proxy type is <code>MANUAL_SET_PROXY</code>.
      * @deprecated Use setUserProxyHost(String)
      * @param proxy host
