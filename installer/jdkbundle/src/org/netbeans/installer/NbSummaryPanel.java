@@ -54,7 +54,7 @@ public class NbSummaryPanel extends TextDisplayPanel
             (productURL, "beanNB", "installLocation");
             logEvent(this, Log.DBG, "queryEnter nbInstallDir: " + nbInstallDir);
             if (type == ProductService.POST_INSTALL) {
-                logEvent(this, Log.DBG, "queryEnter POSTINSTALL PANEL");
+                logEvent(this, Log.DBG, "queryEnter POST_INSTALL PANEL");
                 ProductTree pt = service.getSoftwareObjectTree(productURL);
                 GenericSoftwareObject gso = (GenericSoftwareObject) pt.getRoot();
                 
@@ -71,18 +71,26 @@ public class NbSummaryPanel extends TextDisplayPanel
                 } else {
                     //setText(resolveString("$L(org.netbeans.installer.Bundle, SummaryPanel.description)"));
                     logEvent(this, Log.DBG, "queryEnter INSTALLATION SUCCESSFUL");
-                    logEvent(this, Log.DBG, "queryEnter summaryPostMsg:'" + getPostSummaryMessage() + "'");
-                    setText(getPostSummaryMessage());
+                    logEvent(this, Log.DBG, "queryEnter summaryPostInstallMsg:'" + getPostInstallSummaryMessage() + "'");
+                    setText(getPostInstallSummaryMessage());
                 }
-            } else {
+            } else if (type == ProductService.PRE_INSTALL) {
                 /*Properties summary = service.getProductSummary(
                 ProductService.DEFAULT_PRODUCT_SOURCE,
                 type,
                 ProductService.HTML);
                 setText(summary.getProperty(ProductService.SUMMARY_MSG));*/
-                logEvent(this, Log.DBG, "queryEnter PREINSTALL PANEL");
-                logEvent(this, Log.DBG, "summaryPreMsg:'" + getPreSummaryMessage() + "'");
-                setText(getPreSummaryMessage());
+                logEvent(this, Log.DBG, "queryEnter PRE_INSTALL PANEL");
+                logEvent(this, Log.DBG, "summaryPreInstallMsg:'" + getPreInstallSummaryMessage() + "'");
+                setText(getPreInstallSummaryMessage());
+            } else if (type == ProductService.POST_UNINSTALL) {
+                logEvent(this, Log.DBG, "queryEnter POST_UNINSTALL PANEL");
+                logEvent(this, Log.DBG, "summaryPostUninstallMsg:'" + getPostUninstallSummaryMessage() + "'");
+                setText(getPostUninstallSummaryMessage());
+            } else if (type == ProductService.PRE_UNINSTALL) {
+                logEvent(this, Log.DBG, "queryEnter PRE_UNINSTALL PANEL");
+                logEvent(this, Log.DBG, "summaryPreUninstallMsg:'" + getPreUninstallSummaryMessage() + "'");
+                setText(getPreUninstallSummaryMessage());
             }
         } catch (ServiceException e) {
             logEvent(this, Log.ERROR, e);
@@ -90,7 +98,7 @@ public class NbSummaryPanel extends TextDisplayPanel
         return okay;
     }
     
-    private String getPostSummaryMessage() {
+    private String getPostInstallSummaryMessage() {
         String j2seInstallDir = (String) System.getProperties().get("j2seInstallDir");
         
         String summaryMessage = "$L(org.netbeans.installer.Bundle,SummaryPanel.description1)";
@@ -127,7 +135,7 @@ public class NbSummaryPanel extends TextDisplayPanel
         return summaryMessage;
     }
     
-    private String getPreSummaryMessage() {
+    private String getPreInstallSummaryMessage() {
         String j2seInstallDir = (String) System.getProperties().get("j2seInstallDir");
         
         String summaryMessage = "$L(org.netbeans.installer.Bundle,Product.displayName)"
@@ -147,6 +155,21 @@ public class NbSummaryPanel extends TextDisplayPanel
         summaryMessage = summaryMessage + "<br>"
         + "$L(org.netbeans.installer.Bundle,PreviewPanel.previewSize)" + "<br>"
         + getTotalSize();
+        return summaryMessage;
+    }
+    
+    private String getPostUninstallSummaryMessage() {
+        String summaryMessage = "$L(org.netbeans.installer.Bundle,PreviewPanel.previewPostUninstallMessage," 
+        + "$L(org.netbeans.installer.Bundle,Product.displayName))";
+        
+        return summaryMessage;
+    }
+    
+    private String getPreUninstallSummaryMessage() {
+        String summaryMessage = "$L(org.netbeans.installer.Bundle,PreviewPanel.previewPreUninstallMessage," 
+        + "$L(org.netbeans.installer.Bundle,Product.displayName),"
+        + nbInstallDir + ")";
+        
         return summaryMessage;
     }
     
