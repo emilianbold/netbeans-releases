@@ -67,6 +67,10 @@ Microsystems, Inc. All Rights Reserved.
     <delete dir="Info"/>
   </target>
 
+  <target name="test" depends="netbeans">
+    <ant dir="tst/function"/>
+  </target>
+
 </project>
 
 
