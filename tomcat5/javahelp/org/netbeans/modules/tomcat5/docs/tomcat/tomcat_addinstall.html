@@ -1,0 +1,100 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ *     	  Copyright © 2004 Sun Microsystems, Inc. All rights reserved. 
+ *	  Use is subject to license terms.
+-->
+
+<html>
+<head>
+<meta name="lastupdated" content="4Feb04">
+<!-- p1 -->
+
+<title>Adding a Tomcat Server</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="StyleSheet" href="../../../../usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Adding a Tomcat Server</h2>
+<p><small> 
+<a href="#seealso">See Also</a> 
+</small></p> 
+<p>When you install the IDE, the installer automatically adds the bundled Tomcat 
+  servlet container. You can also configure the IDE to deploy web 
+  modules to other installations of supported versions of Tomcat, as
+  shown in the following steps.</p>
+<table cellpadding="3" cellspacing="0" border="0">
+  <tr valign="top"> 
+    <td><img src="../images/tip.gif" alt="tip">&nbsp;</td>
+    <td> Before you can add a server, you must have a Tomcat username that 
+      has the manager role associated with it. By default, there are no Tomcat 
+      user names with the manager role. You must either create a user and associate 
+      the manager role with the user or you must add the manager role to an existing 
+      username. For more information, see http://jakarta.apache.org/tomcat/tomcat-5.0-doc/manager-howto.html.</td>
+  </tr>
+</table>
+<p><b>To add a Tomcat Server:</b></p>
+<ol>
+  <li>Make sure the server is not running. If the server is running and there 
+  is a port number conflict with other installed servers, the IDE will not
+  be able to resolve the conflict.</li>
+  <li>In the Runtime window, expand the Server Registry node, right-click the 
+    Tomcat 5 Servers node, and choose Add New Server from the contextual menu 
+    to display the Add New Server dialog box.</li>
+  <li>In the Install Directory text box, type or browse to the Tomcat installation 
+    directory on your local system. Note that the system verifies that you have 
+    specified a valid Tomcat home directory.</li>
+  <li>(Optional) If you expect to use Tomcat in a multi-user configuration, select 
+    the Shared Installation checkbox. and, in the Base Directory text box, type 
+    or browse to the base directory. Typically, a base directory is placed under 
+    a user's directory. If you associate a base directory with the server, the 
+    base directory must have the following subdirectoies. In addition, the <tt>conf</tt> 
+    directory must have a <tt>server.xml</tt> file.</li>
+  <ul>
+    <li><b><tt>conf.</tt></b> Directory for server configuration files</li>
+    <li><b><tt>logs.</tt></b> Directory for log and output files</li>
+    <li><b><tt>webapps.</tt></b> Directory for automatically loaded web applications</li>
+    <li><b><tt>work.</tt></b> Temporary working directory for web applications</li>
+  </ul>
+  <li>Type a user name and password. The user must be a Tomcat user who has a 
+    manager role.</li>
+  <li>(Optional) If you are using the server for production purposes only, you 
+    may want to clear the Enable HTTP Monitor checkbox to reduce its impact on 
+    the server's performance. The HTTP Monitor is useful for debugging web modules. 
+    You can also enable and disable the monitor from the server's property sheet.</li>
+  <li>Click OK. The IDE displays the server's port number in the server node's 
+    text. If another server instance is using this port, you must change one of 
+    the servers' port numbers. To change a port number, right-click the server's 
+    node, choose Start/Stop Server from the contextual menu, and stop the server. 
+    Next, right-click the server node and choose Properties from the contextual 
+    menu. Change the server port number and restart the server.</li>
+  <li>(Optional) If you want the IDE to use this server for executing web modules, 
+    right-click the server's node and choose Set as Default from the contextual 
+    menu. The URL for the default server appears in parentheses next to the Server 
+    Registry node.</li>
+</ol>
+<p>If you want to change any setting that you entered in the New Server Dialog box,
+right-click the server's node in the Runtime window and choose Properties
+from the contextual menu.</p>
+<table>
+<tr> 
+<th colspan=2 align=left><a name="seealso">See Also</a></th>
+</tr>
+<tr>
+<td width="23"></td>
+    <td> <a href="tomcat_internal_node.html">Tomcat Installation Node</a><br>
+      <a href="tomcat_internal_props.html">Setting Tomcat Installation Properties</a> 
+    </td>
+</tr>
+</table>
+
+
+<hr>
+<small><a href="../credits.html">Legal Notices</a> 
+<table cellpadding="150" border="0"> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+
+</small></body></html>

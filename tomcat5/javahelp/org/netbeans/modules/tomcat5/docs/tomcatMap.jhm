@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE map
+  PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 1.0//EN"
+         "http://java.sun.com/products/javahelp/map_1_0.dtd">
+<map version="1.0">
+
+<!-- last updated 05Feb04 -->
+
+<!-- 
+help\
+    tomcat\
+
+*JavaHelp metadata files*
+-->
+
+	<mapID target="tomcat_addinstall" url="tomcat/tomcat_addinstall.html" />
+	<mapID target="tomcat_context_add" url="tomcat/tomcat_context_add.html" />
+	<mapID target="tomcat_context_delete" url="tomcat/tomcat_context_delete.html" />
+	<mapID target="tomcat_context_node" url="tomcat/tomcat_context_node.html" />
+	<mapID target="tomcat_context_props" url="tomcat/tomcat_context_props.html" />
+	<mapID target="tomcat_edit_config" url="tomcat/tomcat_edit_config.html" />
+	<mapID target="tomcat_internal" url="tomcat/tomcat_internal.html" />
+	<mapID target="tomcat_internal_node" url="tomcat/tomcat_internal_node.html" />
+	<mapID target="tomcat_internal_props" url="tomcat/tomcat_internal_props.html" />
+	<mapID target="tomcat_plugin" url="tomcat/tomcat_plugintro.html" />
+	<mapID target="tomcat_start" url="tomcat/tomcat_start.html" />
+	<mapID target="tomcat_top_node" url="tomcat/tomcat_top_node.html" />
+	<mapID target="tomcat_classload" url="tomcat/tomcat_classload.html" />
+        <!-- these appear in the web module help -->
+        <mapID target="webmod_singletest" url="webmod/mod_singletest.html" />
+        <mapID target="jsp_run" url="create_jsp/jsp_run.html" />
+        <mapID target="servlet_run" url="servlet/servlet_run.html" />
+	<mapID target="tomcat_default" url="tomcat/tomcat_default.html" />
+</map>

@@ -1,0 +1,70 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ *     	  Copyright © 2004 Sun Microsystems, Inc. All rights reserved. 
+ *	  Use is subject to license terms.
+-->
+
+<html>
+<head>
+<meta name="lastupdated" content="4Feb04">
+<!-- p1 -->
+
+<title>Tomcat Web Module Context Node</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="StyleSheet" href="../../../../usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Tomcat Web Module Context Node</h2>
+<p><small> 
+<a href="#seealso">See Also</a> 
+</small></p> 
+<p>The context node <img src="../images/context_node.jpg" width="21" height="15"> 
+  represents a web module context that has been deployed to the server. It appears 
+  in the Web Modules folder under the server's node in the Runtime window. </p>
+<p>The IDE creates a web module's context node the first time you execute the 
+  web module from the IDE.</p>
+<p>When the server receives the HTTP request, the server selects the web module 
+  for processing the request by matching the longest possible prefix of the Request 
+  URI against all of the defined context paths.</p>
+<h3>Working With This Node</h3>
+<p>If you right-click this node and display the contextual menu, you see a list 
+  of menu items that enable you to work with this node. The following list describes 
+  these menu items and provides links to topics that explain more.</p>
+<ul>
+  <li><b>Start.</b> Restarts a stopped web module.</li>
+  <li><b>Stop.</b> Disables the web module so that no one can run the module. 
+    You can use this action to prevent others from using the module while fixing 
+    or modifying the module. If someone tries to run a stopped web module, the 
+    server returns HTTP Status 503, which indicates that the application is not 
+    currently available.</li>
+  <li><a href="tomcat_context_delete"><b>Undeploy.</b></a> Removes the web 
+    module's context from the server. The IDE 
+    will recreate the context if the web module is subsequently executed from 
+    the IDE.</li>
+</ul>
+<table>
+  <tr> 
+    <th colspan=2 align=left><a name="seealso">See Also</a></th>
+  </tr>
+  <tr> 
+    <td width="23"></td>
+    <td><a href="tomcat_context_props.html">Setting Context Properties</a><br>
+      <a href="tomcat_context_add.html">Adding a Context</a><br>
+      <a href="tomcat_context_delete.html">Deleting a Context</a></td>
+  </tr>
+</table>
+
+
+<hr>
+<small><a href="../credits.html">Legal Notices</a> 
+<table cellpadding="150" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table> 
+
+</small></body></html>
