@@ -25,14 +25,15 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.WeakListeners;
+import org.openide.util.Mutex;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-
-// XXX should not use synchronization, rather PM.mutex() -jglick
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.ProjectManager;
 
 /**
  * This class represents a project source roots. It is used to obtain roots as Ant properties, FileObject's
@@ -78,79 +79,104 @@ public final class SourceRoots {
      * It may contain empty strings but not null.
      * @return an array of String
      */
-    public synchronized  String[] getRootNames () {
-        if (this.sourceRootNames == null) {
-            readProjectMetadata();
-        }
-        return (String[]) this.sourceRootNames.toArray (new String[this.sourceRootNames.size()]);
+    public   String[] getRootNames () {
+        return (String[]) ProjectManager.mutex().readAccess(new Mutex.Action() {
+            public Object run() {
+                synchronized (SourceRoots.this) {
+                    if (sourceRootNames == null) {
+                        readProjectMetadata();
+                    }
+                }
+                return sourceRootNames.toArray (new String[sourceRootNames.size()]);
+            }
+        });
     }
 
     /**
      * Returns names of Ant properties in the project.properties file holding the source roots.
      * @return an array of String
      */
-    public synchronized String[] getRootProperties () {
-        if (this.sourceRootProperties == null) {
-            readProjectMetadata();
-        }
-        return (String[]) this.sourceRootProperties.toArray (new String[this.sourceRootProperties.size()]);
+    public String[] getRootProperties () {
+        return (String[]) ProjectManager.mutex().readAccess(new Mutex.Action() {
+            public Object run() {
+                synchronized (SourceRoots.this) {
+                    if (sourceRootProperties == null) {
+                        readProjectMetadata();
+                    }
+                }
+                return sourceRootProperties.toArray (new String[sourceRootProperties.size()]);
+            }
+        });
     }
 
     /**
      * Returns the source roots
      * @return an array of FileObject
      */
-    public synchronized FileObject[] getRoots () {
-        if (this.sourceRoots == null) {
-            String[] srcProps = this.getRootProperties();
-            List result = new ArrayList();
-            for (int i = 0; i<srcProps.length; i++) {
-                String prop = this.evaluator.getProperty(srcProps[i]);
-                if (prop != null) {
-                    FileObject f = helper.resolveFileObject(prop);
-                    if (f == null) {
-                        continue;
+    public FileObject[] getRoots () {
+        return (FileObject[]) ProjectManager.mutex().readAccess(new Mutex.Action () {
+                public Object run () {
+                    synchronized (this) {
+                        //Local caching
+                        if (sourceRoots == null) {
+                            String[] srcProps = getRootProperties();
+                            List result = new ArrayList();
+                            for (int i = 0; i<srcProps.length; i++) {
+                                String prop = evaluator.getProperty(srcProps[i]);
+                                if (prop != null) {
+                                    FileObject f = helper.resolveFileObject(prop);
+                                    if (f == null) {
+                                        continue;
+                                    }
+                                    if (FileUtil.isArchiveFile(f)) {
+                                        f = FileUtil.getArchiveRoot(f);
+                                    }
+                                    result.add(f);
+                                }
+                            }
+                            sourceRoots = Collections.unmodifiableList(result);
+                        }
                     }
-                    if (FileUtil.isArchiveFile(f)) {
-                        f = FileUtil.getArchiveRoot(f);
-                    }
-                    result.add(f);
+                    return sourceRoots.toArray(new FileObject[sourceRoots.size()]);
                 }
-            }
-            this.sourceRoots = Collections.unmodifiableList (result);
-        }
-        return (FileObject[]) this.sourceRoots.toArray(new FileObject[sourceRoots.size()]);
+        });                
     }
 
     /**
      * Returns the source roots as URLs.
      * @return an array of URL
      */
-    public synchronized URL[] getRootURLs() {
-        if (this.sourceRootURLs == null) {
-            String[] srcProps = this.getRootProperties();
-            List result = new ArrayList();
-            for (int i = 0; i<srcProps.length; i++) {
-                String prop = this.evaluator.getProperty(srcProps[i]);
-                if (prop != null) {
-                    File f = helper.resolveFile (prop);
-                    try {
-                        URL url = f.toURI().toURL();
-                        if (FileUtil.isArchiveFile(url)) {
-                            url = FileUtil.getArchiveRoot(url);
+    public URL[] getRootURLs() {
+        return (URL[]) ProjectManager.mutex().readAccess(new Mutex.Action () {
+            public Object run () {
+                synchronized (this) {
+                    //Local caching
+                    if (sourceRootURLs == null) {
+                        String[] srcProps = getRootProperties();
+                        List result = new ArrayList();
+                        for (int i = 0; i<srcProps.length; i++) {
+                            String prop = evaluator.getProperty(srcProps[i]);
+                            if (prop != null) {
+                                File f = helper.resolveFile(prop);
+                                try {
+                                    URL url = f.toURI().toURL();
+                                    if (FileUtil.isArchiveFile(url)) {
+                                        url = FileUtil.getArchiveRoot(url);
+                                    } else if (!f.exists()) {
+                                        url = new URL(url.toExternalForm() + "/"); // NOI18N
+                                    }
+                                    result.add(url);
+                                } catch (MalformedURLException e) {
+                                    ErrorManager.getDefault().notify(e);
+                                }
+                            }
                         }
-                        else if (!f.exists()) {
-                            url = new URL(url.toExternalForm() + "/"); // NOI18N
-                        }
-                        result.add(url);
-                    } catch (MalformedURLException e) {
-                        ErrorManager.getDefault().notify(e);
+                        sourceRootURLs = Collections.unmodifiableList(result);
                     }
                 }
+                return sourceRootURLs.toArray(new URL[sourceRootURLs.size()]);
             }
-            this.sourceRootURLs = Collections.unmodifiableList (result);
-        }
-        return (URL[]) this.sourceRootURLs.toArray(new URL[sourceRootURLs.size()]);
+        });                
     }
 
     /**
@@ -172,14 +198,14 @@ public final class SourceRoots {
     private void resetCache (boolean isXMLChange, String propName) {
         boolean fire = false;
         synchronized (this) {
+            //In case of change reset local cache
             if (isXMLChange) {
                 this.sourceRootProperties = null;
                 this.sourceRootNames = null;
                 this.sourceRoots = null;
                 this.sourceRootURLs = null;
                 fire = true;
-            }
-            else if (propName == null || (this.sourceRootProperties != null && this.sourceRootProperties.contains(propName))) {
+            } else if (propName == null || (sourceRootProperties != null && sourceRootProperties.contains(propName))) {
                 this.sourceRoots = null;
                 this.sourceRootURLs = null;
                 fire = true;
@@ -204,11 +230,10 @@ public final class SourceRoots {
             NodeList roots = ((Element)nl.item(0)).getElementsByTagNameNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "root");    //NOI18N
             for (int i=0; i<roots.getLength(); i++) {
                 Element root = (Element) roots.item(i);
-                // XXX do *not* use namespace-qualified attributes -jglick
-                String value = root.getAttributeNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "id");  //NOI18N
+                String value = root.getAttribute("id");  //NOI18N
                 assert value.length() > 0 : "Illegal project.xml";
                 rootProps.add(value);
-                value = root.getAttributeNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");  //NOI18N
+                value = root.getAttribute("name");  //NOI18N
                 rootNames.add (value);
             }
         }

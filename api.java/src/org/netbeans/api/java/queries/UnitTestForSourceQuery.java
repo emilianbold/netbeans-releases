@@ -22,7 +22,6 @@ import org.netbeans.spi.java.queries.MultipleRootsUnitTestForSourceQueryImplemen
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
-// XXX missing @since on findUnitTests and findSources -jglick
 
 /**
  * Query to find Java package root of unit tests for Java package root of 
@@ -64,6 +63,7 @@ public class UnitTestForSourceQuery {
      * @return corresponding java package roots with unit tests. The
      *     returned URLs do not have to point to existing file. It can be an empty
      *     array when mapping from source to unit test is not known but can't be null.
+     * @since org.netbeans.api.java/1 1.7
      */
     public static URL[] findUnitTests(FileObject source) {
         if (source == null) {
@@ -108,6 +108,7 @@ public class UnitTestForSourceQuery {
      * @param unitTest java package root with unit tests
      * @return corresponding java package roots with sources. It can be an empty array
      *     when mapping from unit test to source is not known but it can't be null.
+     * @since org.netbeans.api.java/1 1.7
      */
     public static URL[] findSources (FileObject unitTest) {
         if (unitTest == null) {

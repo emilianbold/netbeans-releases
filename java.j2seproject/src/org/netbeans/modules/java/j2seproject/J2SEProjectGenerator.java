@@ -119,15 +119,14 @@ public class J2SEProjectGenerator {
         data.appendChild(minant);
         Element sourceRoots = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");  //NOI18N
         Element root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
-        // XXX no! should *not* be using namespace-qualified attributes, only elements!
-        root.setAttributeNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"id","src.dir");   //NOI18N
-        root.setAttributeNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"name",NbBundle.getMessage(J2SEProjectGenerator.class, "NAME_src.dir"));
+        root.setAttribute ("id","src.dir");   //NOI18N
+        root.setAttribute ("name",NbBundle.getMessage(J2SEProjectGenerator.class, "NAME_src.dir"));
         sourceRoots.appendChild(root);
         data.appendChild (sourceRoots);
         Element testRoots = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
         root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
-        root.setAttributeNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"id","test.src.dir");   //NOI18N
-        root.setAttributeNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"name",NbBundle.getMessage(J2SEProjectGenerator.class, "NAME_test.src.dir"));
+        root.setAttribute ("id","test.src.dir");   //NOI18N
+        root.setAttribute ("name",NbBundle.getMessage(J2SEProjectGenerator.class, "NAME_test.src.dir"));
         testRoots.appendChild (root);
         data.appendChild (testRoots);
         h.putPrimaryConfigurationData(data, true);

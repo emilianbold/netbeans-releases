@@ -115,19 +115,10 @@ public class J2SESources implements Sources, PropertyChangeListener  {
             }
             _listeners = (ChangeListener[])listeners.toArray(new ChangeListener[listeners.size()]);
         }
-        final ChangeListener[] finalListeners = _listeners;
-        //XXX: Has to be fired asynchronously, otherwise causes deadlock with Children's mutex
-        // XXX That is NOT a valid reason to fire asynch changes. Fix the deadlock on the node side if necessary. -jglick
-        RequestProcessor.getDefault().post(
-                new Runnable () {
-                    public void run () {
-                        ChangeEvent ev = new ChangeEvent(this);
-                        for (int i = 0; i < finalListeners.length; i++) {
-                            finalListeners[i].stateChanged(ev);
-                        }
-                    }
-                }
-        );        
+        ChangeEvent ev = new ChangeEvent(this);
+        for (int i = 0; i < _listeners.length; i++) {
+            _listeners[i].stateChanged(ev);
+        }
     }
 
     public void propertyChange(PropertyChangeEvent evt) {

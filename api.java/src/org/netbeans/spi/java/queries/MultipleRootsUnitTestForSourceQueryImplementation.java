@@ -15,7 +15,6 @@ package org.netbeans.spi.java.queries;
 import java.net.URL;
 import org.openide.filesystems.FileObject;
 
-// XXX missing @since tag -jglick
 
 /**
  * Query to find Java package roots of unit tests for Java package root of
@@ -37,6 +36,7 @@ import org.openide.filesystems.FileObject;
  * @see <a href="@PROJECTS/PROJECTAPI/org/netbeans/api/project/Project.html#getLookup"><code>Project.getLookup()</code></a>
  * @see org.netbeans.api.java.queries.UnitTestForSourceQuery
  * @author Tomas Zezula
+ * @since org.netbeans.api.java/1 1.7
  */
 public interface MultipleRootsUnitTestForSourceQueryImplementation {
 

@@ -41,8 +41,7 @@ Microsystems, Inc. All Rights Reserved.
                 <xsd:element name="source-roots">
                     <xsd:complexType>
                         <xsd:sequence>
-                            <!-- XXX why minOccurs="1"? why not ="0"? AFAIK there is no reason. -jglick -->
-                            <xsd:element name="root" minOccurs="1" maxOccurs="unbounded">
+                            <xsd:element name="root" minOccurs="0" maxOccurs="unbounded">
                                 <xsd:complexType>
                                     <xsd:attribute name="id" use="required" type="xsd:token"/>
                                     <xsd:attribute name="name" use="optional" type="xsd:token"/>

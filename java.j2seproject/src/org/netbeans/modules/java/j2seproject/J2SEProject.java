@@ -181,21 +181,20 @@ public final class J2SEProject implements Project, AntProjectListener {
     
     // Package private methods -------------------------------------------------
 
-    // XXX should not be synchronized; should be using PM.mutex()
     /**
      * Returns the source roots of this project
      * @return project's source roots
      */
-    public synchronized SourceRoots getSourceRoots() {
-        if (this.sourceRoots == null) {
-            this.sourceRoots = new SourceRoots(this.helper, evaluator(),"source-roots"); //NOI18N
+    public synchronized SourceRoots getSourceRoots() {        
+        if (this.sourceRoots == null) { //Local caching, no project metadata access
+            this.sourceRoots = new SourceRoots(helper, evaluator(),"source-roots"); //NOI18N
         }
         return this.sourceRoots;
     }
     
     synchronized SourceRoots getTestSourceRoots() {
-        if (this.testRoots == null) {
-            this.testRoots = new SourceRoots(this.helper, evaluator(),"test-roots"); //NOI18N
+        if (this.testRoots == null) { //Local caching, no project metadata access
+            this.testRoots = new SourceRoots(helper, evaluator(),"test-roots"); //NOI18N
         }
         return this.testRoots;
     }
@@ -243,12 +242,12 @@ public final class J2SEProject implements Project, AntProjectListener {
             copyDocument (doc, element, newRoot);
             Element sourceRoots = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");  //NOI18N
             Element root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
-            root.setAttributeNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"id","src.dir");   //NOI18N
+            root.setAttribute ("id","src.dir");   //NOI18N
             sourceRoots.appendChild(root);
             newRoot.appendChild (sourceRoots);
             Element testRoots = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
             root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
-            root.setAttributeNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"id","test.src.dir");   //NOI18N
+            root.setAttribute ("id","test.src.dir");   //NOI18N
             testRoots.appendChild (root);
             newRoot.appendChild (testRoots);
             helper.putPrimaryConfigurationData (newRoot, true);
