@@ -82,7 +82,7 @@ public class JavadocModule implements ModuleInstall {
           return;
         }
 
-        Enumeration en = TopManager.getDefault().getLoaderPool().producersOf(JavaDataObject.class);
+        Enumeration en = TopManager.getDefault().getLoaderPool().producersOf( jdoClass );
 
         while ( en.hasMoreElements() ) {
           DataLoader loader =  (DataLoader)en.nextElement();
@@ -149,6 +149,7 @@ public class JavadocModule implements ModuleInstall {
 
 /* 
  * Log
+ *  6    Gandalf   1.5         5/11/99  Petr Hrebejk    
  *  5    Gandalf   1.4         5/11/99  Petr Hrebejk    
  *  4    Gandalf   1.3         5/7/99   Petr Hrebejk    
  *  3    Gandalf   1.2         4/27/99  Petr Hrebejk    GenerateDocAction for 
