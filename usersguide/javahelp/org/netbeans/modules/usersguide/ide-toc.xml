@@ -101,6 +101,7 @@
 <tocitem text="Editing Source Files" target="editing.intro">
   <tocitem text="Source Editor" target="editing.editorwindow"/>
   <tocitem text="Opening a File in the Source Editor" target="editing.opening"/>
+  <tocitem text="Working With Large Files in the Source Editor" target="workspace.clone"/>
   <tocitem text="Creating New Java Code" target="editing.newcode"/>
   <tocitem text="Error Marking" target="editing_error-marks"/>
   <tocitem text="Formatting Code" target="editing.formatting"/>
@@ -598,7 +599,6 @@
     <tocitem text="Changing the Toolbar Configuration for a Workspace" target="workspace.customize"/>
     <tocitem text="Deleting a Workspace" target="workspace.delete"/>
     <tocitem text="Docking and Undocking Views" target="workspace.dock"/>
-    <tocitem text="Cloning the Source Editor" target="workspace.clone"/>
   </tocitem>
   <tocitem text="Configuring Menus" target="configure.menu" >
     <tocitem text="Customizing the Display of Commands in a Menu" target="configure.menucommands" />
