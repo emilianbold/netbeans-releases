@@ -20,6 +20,8 @@
 package org.netbeans.modules.classfile;
 
 import java.io.*;
+import java.util.Collection;
+import java.util.HashMap;
 
 /**
  * Base class for variables and methods.
@@ -31,8 +33,9 @@ public abstract class Field {
     /* name and type are lazily initialized, so must be
      * kept private. 
      */
-    CPUTF8Info utfName;
-    CPUTF8Info utfType;
+    private CPUTF8Info utfName;
+    private CPUTF8Info utfType;
+    private String typeSignature;
     private String _name;
     private String _type;
 
@@ -40,6 +43,7 @@ public abstract class Field {
     ClassFile classFile;
     private boolean deprecated = false;
     private boolean synthetic = false;
+    private HashMap annotations;
 
     /** Creates new Field */
     Field(DataInputStream in, ConstantPool pool, ClassFile classFile) throws IOException {
@@ -56,8 +60,14 @@ public abstract class Field {
             throw new IOException("internal error");
         }
     }
+
+    Field(String name, String type) {
+	_name = name;
+	_type = type;
+    }
     
     final void loadAttributes(DataInputStream in, ConstantPool pool) throws IOException {       
+	annotations = new HashMap(2);
         int n = in.readUnsignedShort();
         for (int i = 0; i < n; i++) {
             CPUTF8Info entry = (CPUTF8Info)pool.get(in.readUnsignedShort());
@@ -67,6 +77,12 @@ public abstract class Field {
                 deprecated = true;
             else if (name.equals("Synthetic"))
                 synthetic = true;
+	    else if (name.equals("RuntimeVisibleAnnotations")) { //NOI18N
+		ClassFile.skip(in, len); //FIXME
+	    }
+	    else if (name.equals("RuntimeInvisibleAnnotations")) { //NOI18N
+		ClassFile.skip(in, len); //FIXME
+	    }
             else if (!loadAttribute(name, len, in, pool))  {
                 // ignore attribute...
 		ClassFile.skip(in, len);
@@ -78,15 +94,15 @@ public abstract class Field {
         DataInputStream in, ConstantPool pool) throws IOException;
     
     public final String getName() {
-	if (_name == null) {
+	if (_name == null && utfName != null) {
             _name = utfName.getName();
 	    utfName = null;              // release for gc
 	}
         return _name;
     }
-    
+
     public final String getDescriptor() {
-	if (_type == null) {
+	if (_type == null && utfType != null) {
             _type = utfType.getName();
 	    utfType = null;              // release for gc
 	}
@@ -135,15 +151,60 @@ public abstract class Field {
         return classFile;
     }
     
+    /**
+     * Returns the generic type information associated with this field.  
+     * If this field does not have generic type information, then null 
+     * is returned.
+     */
+    public String getTypeSignature() {
+	return typeSignature;
+    }
+
+    void setTypeSignature(String sig) {
+	typeSignature = sig;
+    }
+
+    /**
+     * Returns all runtime annotations defined for this field.  Inherited
+     * annotations are not included in this collection.
+     */
+    public final Collection getAnnotations() {
+	return annotations.values();
+    }
+
+    /**
+     * Returns the annotation for a specified annotation type, or null if
+     * no annotation of that type exists for this field.
+     */
+    public final Annotation getAnnotation(final ClassName annotationClass) {
+	return (Annotation)annotations.get(annotationClass);
+    }
+    
+    /**
+     * Returns true if an annotation of the specified type is defined for
+     * this field.
+     */
+    public final boolean isAnnotationPresent(final ClassName annotationClass) {
+	return annotations.get(annotationClass) != null;
+    }
+    
     public String toString() {
         StringBuffer sb = new StringBuffer();
-        sb.append(getName());
+	String name = getName();
+	if (name != null) {
+	    sb.append(getName());
+	    sb.append(' ');
+	}
         if (synthetic)
-            sb.append(" (synthetic)"); //NOI18N
+            sb.append("(synthetic)"); //NOI18N
         if (deprecated)
-            sb.append(" (deprecated)"); //NOI18N
-        sb.append(" type="); //NOI18N
+            sb.append("(deprecated)"); //NOI18N
+        sb.append("type="); //NOI18N
         sb.append(getDescriptor());
+	if (typeSignature != null) {
+	    sb.append(", signature="); //NOI18N
+	    sb.append(typeSignature);
+	}
         sb.append(", access="); //NOI18N
         sb.append(Access.toString(access));
         return sb.toString();

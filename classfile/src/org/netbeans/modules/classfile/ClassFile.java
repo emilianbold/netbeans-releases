@@ -41,8 +41,11 @@ public class ClassFile {
     boolean synthetic = false;
     InnerClass[] innerClasses;
     private HashMap attributes;
+    private HashMap annotations;
     short majorVersion;
     short minorVersion;
+    String typeSignature;
+    EnclosingMethod enclosingMethod;
     
     /** size of buffer in buffered input streams */
     private static final int BUFFER_SIZE = 4096;
@@ -51,9 +54,6 @@ public class ClassFile {
      * Create a new ClassFile object.
      * @param classData   an InputStream from which the defining bytes of this
      *                    class or interface are read.
-     * @param includeCode true if this classfile should support operations
-     *                    at the bytecode level.  Specify false to conserve
-     *                    memory if code access isn't needed.
      * @throws IOException if InputStream can't be read, or if the class data
      *         is malformed.
      */
@@ -186,39 +186,54 @@ public class ClassFile {
       throws IOException {        
         int count = in.readUnsignedShort();
         attributes = new HashMap(count + 1, (float)1.0);
+	annotations = new HashMap(2);
         for (int i = 0; i < count; i++) {
-            CPUTF8Info entry;
             try {
-                entry = (CPUTF8Info)pool.get(in.readUnsignedShort());
+		CPUTF8Info entry = 
+		    (CPUTF8Info)pool.get(in.readUnsignedShort());
+
+		int len = in.readInt();
+		String name = entry.getName();
+		if (name.equals("Deprecated")){
+		    attributes.put(name, null);
+		    deprecated = true;
+		}
+		else if (name.equals("Synthetic")){
+		    attributes.put(name, null);
+		    synthetic = true;
+		}
+		else if (name.equals("SourceFile")) { //NOI18N
+		    entry = (CPUTF8Info)pool.get(in.readUnsignedShort());
+		    sourceFileName = entry.getName();
+		    attributes.put(name, sourceFileName);
+		} else if (name.equals("InnerClasses")){
+		    innerClasses = InnerClass.loadInnerClasses(in, pool);
+		    attributes.put(name, innerClasses);
+		}
+		else if (name.equals("Signature")) { //NOI18N
+                    entry = (CPUTF8Info)pool.get(in.readUnsignedShort());
+		    typeSignature = entry.getName();
+		    attributes.put(name, typeSignature);
+		}
+		else if (name.equals("EnclosingMethod")) { //NOI18N
+		    int classIndex = in.readUnsignedShort();
+		    int natIndex = in.readUnsignedShort();
+		    enclosingMethod = 
+			new EnclosingMethod(pool, classIndex, natIndex);
+		    attributes.put(name, enclosingMethod);
+		}
+		else if (name.equals("RuntimeVisibleAnnotations")) { //NOI18N
+		    skip(in, len); //FIXME
+		}
+		else if (name.equals("RuntimeInvisibleAnnotations")) { //NOI18N
+		    skip(in, len); //FIXME
+		}
+		else {
+		    skip(in, len);
+		    attributes.put(name, null);
+		}
             } catch (ClassCastException e) {
                 throw new IOException("invalid constant pool entry");
-            }
-
-            int len = in.readInt();
-            String name = entry.getName();
-            if (name.equals("Deprecated")){
-                attributes.put(name, null);
-                deprecated = true;
-            }
-            else if (name.equals("Synthetic")){
-                attributes.put(name, null);
-                synthetic = true;
-            }
-            else if (name.equals("SourceFile")) { //NOI18N
-                try {
-                    entry = (CPUTF8Info)pool.get(in.readUnsignedShort());
-                } catch (ClassCastException e) {
-                    throw new IOException("invalid constant pool entry");
-                }
-                sourceFileName = entry.getName();
-                attributes.put(name, sourceFileName);
-            } else if (name.equals("InnerClasses")){
-                innerClasses = InnerClass.loadInnerClasses(in, pool);
-                attributes.put(name, innerClasses);
-            }
-            else {
-		skip(in, len);
-                attributes.put(name, null);
             }
         }
         if (innerClasses == null)
@@ -355,7 +370,23 @@ public class ClassFile {
     }
 
     public final boolean isSynthetic() {
-        return synthetic;
+        return synthetic ||
+	    (classAccess & Access.SYNTHETIC) == Access.SYNTHETIC;
+    }
+
+
+    /**
+     * Returns true if this class is an annotation type.
+     */
+    public final boolean isAnnotation() {
+	return (classAccess & Access.ANNOTATION) == Access.ANNOTATION;
+    }
+            
+    /**
+     * Returns true if this class defines an enum type.
+     */
+    public final boolean isEnum() {
+	return (classAccess & Access.ENUM) == Access.ENUM;
     }
             
     public final Map getAttributes(){
@@ -378,6 +409,50 @@ public class ClassFile {
      */
     public int getMinorVersion() {
 	return minorVersion;
+    }
+
+    /**
+     * Returns the generic type information associated with this class.  
+     * If this class does not have generic type information, then null 
+     * is returned.
+     */
+    public String getTypeSignature() {
+	return typeSignature;
+    }
+
+    /**
+     * Returns the enclosing method for this class.  A class will have an
+     * enclosing class if and only if it is a local class or an anonymous
+     * class, and has been compiled with a compiler target level of 1.5 
+     * or above.  If no such attribute is present in the classfile, then
+     * null is returned.
+     */
+    public EnclosingMethod getEnclosingMethod() {
+	return enclosingMethod;
+    }
+
+    /**
+     * Returns all runtime annotations defined for this class.  Inherited
+     * annotations are not included in this collection.
+     */
+    public final Collection getAnnotations() {
+	return annotations.values();
+    }
+
+    /**
+     * Returns the annotation for a specified annotation type, or null if
+     * no annotation of that type exists for this class.
+     */
+    public final Annotation getAnnotation(final ClassName annotationClass) {
+	return (Annotation)annotations.get(annotationClass);
+    }
+    
+    /**
+     * Returns true if an annotation of the specified type is defined for
+     * this class.
+     */
+    public final boolean isAnnotationPresent(final ClassName annotationClass) {
+	return annotations.get(annotationClass) != null;
     }
     
     /* Return the collection of all unique class references in this class.
@@ -432,6 +507,14 @@ public class ClassFile {
         sb.append(sourceFileName);
         sb.append("\n   super: "); //NOI18N
         sb.append(superClassInfo);
+	if (typeSignature != null) {
+	    sb.append("\n   signature: "); //NOI18N
+	    sb.append(typeSignature);
+	}
+	if (enclosingMethod != null) {
+	    sb.append("\n   enclosing method: "); //NOI18N
+	    sb.append(enclosingMethod);
+	}
         sb.append("\n   ");
         if (interfaces.length > 0) {
             sb.append(arrayToString("interfaces", interfaces)); //NOI18N

@@ -21,6 +21,8 @@ package org.netbeans.modules.classfile;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.List;
+import java.util.Arrays;
 
 /**
  * A Java method object.
@@ -32,6 +34,7 @@ public final class Method extends Field {
     private boolean includeCode;
     private Code code;
     private CPClassInfo[] exceptions;
+    private Parameter[] parameters;
 
     static Method[] loadMethods(DataInputStream in, ConstantPool pool,
 				ClassFile cls, boolean includeCode) 
@@ -63,9 +66,28 @@ public final class Method extends Field {
             exceptions = ClassFile.getCPClassList(in, pool);
             return true;
         }
+	else if (name.equals("Signature")) { //NOI18N
+            CPUTF8Info entry;
+	    try {
+		entry = (CPUTF8Info)pool.get(in.readUnsignedShort());
+	    } catch (ClassCastException e) {
+		throw new IOException("invalid constant pool entry");
+	    }
+	    setTypeSignature(entry.getName());
+	    return true;
+	}
+	else if (name.equals("RuntimeVisibleParameterAnnotations")) { //NOI18N
+	    return false; //FIXME
+	}
+	else if (name.equals("RuntimeInvisibleParameterAnnotations")) { //NOI18N
+	    return false; //FIXME
+	}
+	else if (name.equals("AnnotationDefault")) { //NOI18N
+	    return false; //FIXME
+	}
         return false;
     }
-    
+
     /** 
      * Get the bytecodes of this method.
      *
@@ -81,18 +103,42 @@ public final class Method extends Field {
         return exceptions;
     }
     
+    /**
+     * Returns true if this method is a generics bridge method defined
+     * by the compiler.
+     */
+    public final boolean isBridge() {
+	return (access & Access.BRIDGE) == Access.BRIDGE;
+    }
+            
+    /**
+     * Returns true if this method is declared with a variable number
+     * of arguments.
+     */
+    public final boolean isVarArgs() {
+	return (access & Access.VARARGS) == Access.VARARGS;
+    }
+
+    /**
+     * Returns the parameters for this method as a declaration-ordered list.
+     */
+    public final List getParameters() {
+	if (parameters == null)
+	    parameters = Parameter.makeParams(this);
+	return Arrays.asList(parameters);
+    }
+            
     public String toString() {
-        String s = super.toString();
+        StringBuffer sb = new StringBuffer(super.toString());
         CPClassInfo[] ec = getExceptionClasses();
         if (ec.length > 0) {
-            StringBuffer sb = new StringBuffer(s);
             sb.append(", throws"); //NOI18N
             for (int i = 0; i < ec.length; i++) {
                 sb.append(' '); //NOI18N
                 sb.append(ec[i].getName());
             }
-        }
-        return s;
+	}
+        return sb.toString();
     }
 
     public final String getDeclaration() {

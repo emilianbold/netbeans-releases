@@ -1,5 +1,5 @@
 /*
- * LocalVariableTable.java
+ * LocalVariableTypeTable.java
  *
  *                 Sun Public License Notice
  * 
@@ -23,29 +23,34 @@ import java.io.DataInputStream;
 import java.io.IOException;
 
 /**
- * An entry in the local variable table of a method's code attribute.
+ * An entry in the local variable type table of a method's code attribute.
+ * This table is similar to the local variable table, but differs in that
+ * it only contains the type information for those variables that are generic
+ * reference types.  Local variables that are generic reference types have
+ * entries in both tables, while other local variable types are only defined
+ * in the local variable table.
  *
  * @author  Thomas Ball
  */
-public final class LocalVariableTableEntry {
+public final class LocalVariableTypeTableEntry {
     
     int startPC;
     int length;
     String name;
-    String description;
+    String signature;
     int index;
 
-    static LocalVariableTableEntry[] loadLocalVariableTable(DataInputStream in, ConstantPool pool) 
+    static LocalVariableTypeTableEntry[] loadLocalVariableTypeTable(DataInputStream in, ConstantPool pool) 
       throws IOException {
         int n = in.readUnsignedShort();
-        LocalVariableTableEntry[] entries = new LocalVariableTableEntry[n];
+        LocalVariableTypeTableEntry[] entries = new LocalVariableTypeTableEntry[n];
         for (int i = 0; i < n; i++)
-            entries[i] = new LocalVariableTableEntry(in, pool);
+            entries[i] = new LocalVariableTypeTableEntry(in, pool);
         return entries;
     }
 
-    /** Creates new LocalVariableTableEntry */
-    LocalVariableTableEntry(DataInputStream in, ConstantPool pool) 
+    /** Creates new LocalVariableTypeTableEntry */
+    LocalVariableTypeTableEntry(DataInputStream in, ConstantPool pool) 
       throws IOException {
         loadLocalVariableEntry(in, pool);
     }
@@ -57,7 +62,7 @@ public final class LocalVariableTableEntry {
           CPUTF8Info entry = (CPUTF8Info)pool.get(in.readUnsignedShort());
           name = entry.getName();
           entry = (CPUTF8Info)pool.get(in.readUnsignedShort());
-          description = entry.getName();
+          signature = entry.getName();
           index = in.readUnsignedShort();
     }
 
@@ -84,10 +89,10 @@ public final class LocalVariableTableEntry {
     }
 
     /**
-     * Returns the signature (type) of this variable.
+     * Returns the generic field type signature of this variable.
      */
-    public final String getDescription() {
-        return description;
+    public final String getSignature() {
+        return signature;
     }
 
     /**

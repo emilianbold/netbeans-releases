@@ -36,6 +36,7 @@ public final class Code {
     private ExceptionTableEntry[] exceptionTable;
     private int[] lineNumberTable;
     private LocalVariableTableEntry[] localVariableTable;
+    private LocalVariableTypeTableEntry[] localVariableTypeTable;
 
     /** Creates a new Code object */
     /* package-private */ Code(DataInputStream in, ConstantPool pool) throws IOException {
@@ -69,6 +70,9 @@ public final class Code {
             else if (name.equals("LocalVariableTable")) //NOI18N
                 localVariableTable = 
                     LocalVariableTableEntry.loadLocalVariableTable(in, pool);
+            else if (name.equals("LocalVariableTypeTable")) //NOI18N
+                localVariableTypeTable = 
+                    LocalVariableTypeTableEntry.loadLocalVariableTypeTable(in, pool);
             else {
 		if (debug)
 		    System.out.println("skipped unknown code attribute: " + name);
@@ -105,14 +109,27 @@ public final class Code {
     }
 
     /**
-     * @return an array of int pairs consisting of a start_pc and a line_number;
-     * i.e. [0] = first pc, [1] = first line, [1] = second pc, etc.
+     * Returns an array of int pairs consisting of a start_pc and a 
+     * line_number.  For example, [0] = first pc, [1] = first line, 
+     * [2] = second pc, etc.
      */
     public final int[] getLineNumberTable() {
         return lineNumberTable;
     }
 
+    /**
+     * Returns the local variable table for this code.
+     */
     public final LocalVariableTableEntry[] getLocalVariableTable() {
         return localVariableTable;
+    }
+
+    /**
+     * Returns the local variable type table for this code, which 
+     * describes the generic reference type for those variables which
+     * are generic.
+     */
+    public final LocalVariableTypeTableEntry[] getLocalVariableTypeTable() {
+        return localVariableTypeTable;
     }
 }

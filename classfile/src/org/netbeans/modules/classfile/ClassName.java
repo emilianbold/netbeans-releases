@@ -84,27 +84,28 @@ public final class ClassName implements Comparable, Comparator, Serializable {
         if (classType == null || classType.length() == 0)
 	    return null;
 
-        ClassName cn;
-        synchronized (cache) {
-	    cn = getCacheEntry(classType);
-	    if (cn == null) {
-	        // check for valid class type
-	        int i = classType.indexOf('L');
-		String _type;
-		char lastChar = classType.charAt(classType.length()-1);
-		if (i != -1 && lastChar == ';') {
-		    _type = classType.substring(i+1, classType.length()-1);
-		    cn = getCacheEntry(_type);
-		    if (cn != null)
-		        return cn;
-		} else {
-		    _type = classType;
-		}
+        ClassName cn = getCacheEntry(classType);
+	if (cn == null)
+	    synchronized (cache) {
+		cn = getCacheEntry(classType);
+		if (cn == null) {
+		    // check for valid class type
+		    int i = classType.indexOf('L');
+		    String _type;
+		    char lastChar = classType.charAt(classType.length()-1);
+		    if (i != -1 && lastChar == ';') {
+			_type = classType.substring(i+1, classType.length()-1);
+			cn = getCacheEntry(_type);
+			if (cn != null)
+			    return cn;
+		    } else {
+			_type = classType;
+		    }
 
-		cn = new ClassName(_type);
-		cache.put(_type, new WeakReference(cn));
+		    cn = new ClassName(_type);
+		    cache.put(_type, new WeakReference(cn));
+		}
 	    }
-	}
 	return cn;
     }
 
@@ -171,9 +172,12 @@ public final class ClassName implements Comparable, Comparator, Serializable {
      * shown as having one or more "[]" characters behind the 
      * base classname, such as "java.io.Files[]".
      */
-    public synchronized String getExternalName(boolean suppressArrays) {
-        if (externalName == null)
-	    externalName = externalizeClassName();
+    public String getExternalName(boolean suppressArrays) {
+        if (externalName == null) 
+	    synchronized (this) {
+		if (externalName == null) 
+		    externalName = externalizeClassName();
+	    }
 
         int i;
         if (suppressArrays && (i = externalName.indexOf('[')) != -1)
@@ -184,19 +188,20 @@ public final class ClassName implements Comparable, Comparator, Serializable {
     /**
      * Return the package portion of this classname.
      */
-    public synchronized String getPackage() {
-        if (packageName == null) {
-	    int i = internalName.lastIndexOf('/');
-	    if (i == -1)
-	        packageName = "";
-	    else
-	        packageName = internalName.substring(0, i).replace('/', '.');
-	}
+    public String getPackage() {
+        if (packageName == null)
+	    synchronized (this) {
+		if (packageName == null) {
+		    int i = internalName.lastIndexOf('/');
+		    packageName = (i != -1) ? 
+			internalName.substring(0, i).replace('/', '.') : "";
+		}
+	    }
 	return packageName;
     }
 
     /**
-     * @return the classname without any package specification.
+     * Returns the classname without any package specification.
      */
     public String getSimpleName() {
 	if (simpleName == null) {
@@ -223,7 +228,7 @@ public final class ClassName implements Comparable, Comparator, Serializable {
      * ClassName, this function compares the ClassName's types.  Otherwise,
      * it throws a <code>ClassCastException</code>.
      *
-     * @param   o the <code>Object</code> to be compared.
+     * @param   obj the <code>Object</code> to be compared.
      * @return  the value <code>0</code> if the argument is a string
      *		lexicographically equal to this string; a value less than
      *		<code>0</code> if the argument is a string lexicographically 
@@ -267,6 +272,7 @@ public final class ClassName implements Comparable, Comparator, Serializable {
         return getExternalName();
     }
 
+    // Called from synchronization block, do not call out!
     private String externalizeClassName() {
         StringBuffer sb = new StringBuffer(type);
 	int arrays = 0;

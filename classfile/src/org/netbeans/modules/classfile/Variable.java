@@ -61,14 +61,43 @@ public final class Variable extends Field {
             value = cpe.getValue();
             return true;
         }
+	else if (name.equals("Signature")) { //NOI18N
+            CPUTF8Info entry;
+	    try {
+		entry = (CPUTF8Info)pool.get(in.readUnsignedShort());
+	    } catch (ClassCastException e) {
+		throw new IOException("invalid constant pool entry");
+	    }
+	    setTypeSignature(entry.getName());
+	    return true;
+	}
         return false;
     }
 
+    /**
+     * Returns true if the variable is a constant; that is, a final
+     * static variable.
+     * @see #getConstantValue
+     */
     public final boolean isConstant() {
         return constant;
     }
-    
+
+    /**
+     * Returns the value object of this variable if it is a constant,
+     * otherwise null.
+     * @deprecated replaced by <code>Object getConstantValue()</code>.
+     */
     public final Object getValue() {
+        return value;
+    }
+    
+    /**
+     * Returns the value object of this variable if it is a constant,
+     * otherwise null.
+     * @see #isConstant
+     */
+    public final Object getConstantValue() {
         return value;
     }
     
@@ -87,10 +116,19 @@ public final class Variable extends Field {
 	return sb.toString();
     }
 
+    /**
+     * Returns true if this field defines an enum constant.
+     */
+    public final boolean isEnumConstant() {
+	return (access & Access.ENUM) == Access.ENUM;
+    }
+            
     public String toString() {
-        String s = super.toString();
-        if (isConstant())
-            s += ", const value=" + getValue(); //NOI18N
-        return s;
+        StringBuffer sb = new StringBuffer(super.toString());
+        if (isConstant()) {
+	    sb.append(", const value="); //NOI18N
+	    sb.append(getValue());
+	}
+        return sb.toString();
     }
 }
