@@ -64,6 +64,7 @@ public class WrapperServlet extends NbBaseServlet {
                 path = orig;
 
             HttpServerSettings settings = (HttpServerSettings)SharedClassObject.findObject(HttpServerSettings.class, true);
+            settings.setRunning (true);
             URL newURL = new URL ("http",   // NOI18N
                                   InetAddress.getLocalHost ().getHostName (), 
                                   settings.getPort (),
