@@ -234,6 +234,7 @@
 	<mapID target="server_context" url="server/server_context.html" />
 	<mapID target="server_start" url="server/server_start.html" />
 	<mapID target="server_remove" url="server/server_remove.html" />
+        <mapID target="server_aboutdbconnect" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/db/docs/server_aboutdbconnect.html" />
 
 <mapID target="nodes_server_registry_node_html" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/files/files_runtime.html" />
 	
