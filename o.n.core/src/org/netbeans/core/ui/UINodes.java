@@ -43,16 +43,16 @@ public final class UINodes extends Object {
     private static java.util.ResourceBundle bundle = NbBundle.getBundle (org.netbeans.core.NbTopManager.class);
 
     /** Default icons for nodes */
-    private static final String DESKTOP_ICON_BASE="/org/netbeans/core/resources/desktop"; // NOI18N
-    private static final String PROJECT_SETTINGS_ICON_BASE="/org/netbeans/core/resources/controlPanel"; // NOI18N
+    private static final String DESKTOP_ICON_BASE = "org/netbeans/core/resources/desktop"; // NOI18N
+    private static final String PROJECT_SETTINGS_ICON_BASE = "org/netbeans/core/resources/controlPanel"; // NOI18N
 
 
-    private final static String templatesIconURL=  "/org/netbeans/core/resources/templates.gif"; // NOI18N
-    private final static String templatesIcon32URL="/org/netbeans/core/resources/templates32.gif"; // NOI18N
-    private final static String startupIconURL=    "/org/netbeans/core/resources/startup.gif"; // NOI18N
-    private final static String startupIcon32URL=  "/org/netbeans/core/resources/startup32.gif"; // NOI18N
-    private final static String objectTypesIconURL=    "/org/netbeans/core/resources/objectTypes.gif"; // NOI18N
-    private final static String objectTypesIcon32URL=  "/org/netbeans/core/resources/objectTypes32.gif"; // NOI18N
+    private final static String templatesIconURL = "org/netbeans/core/resources/templates.gif"; // NOI18N
+    private final static String templatesIcon32URL = "org/netbeans/core/resources/templates32.gif"; // NOI18N
+    private final static String startupIconURL = "org/netbeans/core/resources/startup.gif"; // NOI18N
+    private final static String startupIcon32URL = "org/netbeans/core/resources/startup32.gif"; // NOI18N
+    private final static String objectTypesIconURL = "org/netbeans/core/resources/objectTypes.gif"; // NOI18N
+    private final static String objectTypesIcon32URL = "org/netbeans/core/resources/objectTypes32.gif"; // NOI18N
 
     /** empty array of property sets */
     private static final PropertySet[] NO_PROPERTY_SETS = {};
