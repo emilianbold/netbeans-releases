@@ -394,10 +394,15 @@ public class RADComponentNode extends AbstractNode
 
                 for (int i=0; i < properties.length; i++) {
                     RADProperty prop = properties[i];
+                    if (FormUtils.isIgnoredProperty(component.getBeanClass(),
+                                                    prop.getName()))
+                        continue;
+
                     try {
                         prop.reinstateProperty();
-                        prop.firePropertyValueChange(evt.getOldValue(),
-                                                     evt.getNewValue());
+                        if (prop.isChanged())
+                            prop.firePropertyValueChange(evt.getOldValue(),
+                                                         evt.getNewValue());
                     }
                     catch (Exception ex) { // unlikely to happen
                         if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
