@@ -142,7 +142,10 @@ Microsystems, Inc. All Rights Reserved.
 
   <folder name="Mount">
       <folder name="java">
-          <file name="org-netbeans-modules-web-core-resources-library-servlet.xml" url="servlet-23-library.xml">
+          <file name="org-netbeans-modules-web-core-resources-library-servlet.xml" url="servlet-24-library.xml">
+              <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle" />
+          </file>
+          <file name="org-netbeans-modules-web-core-resources-library-jsp.xml" url="jsp-20-library.xml">
               <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle" />
           </file>
       </folder>
