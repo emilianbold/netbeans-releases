@@ -14,6 +14,15 @@ Use is subject to license terms.  *-->
 you can use the IDE to implement it. The WSDL file is an agreement on the data and  messages 
  that will be exchanged as well as how these messages will be sent and received. 
  In the IDE, you can use the WSDL file to implement the web service.</p>
+<table cellpadding="3" cellspacing="0" border="0">
+<tr valign="top"> 
+<td><img src="../../images/tip.gif" alt="tip">&nbsp;</td>
+<td>If the WSDL file imports schemas, other WSDL files, or both, from the local file system, the web service will only work
+	if the imported schemas and WSDL files are copied beforehand into the <tt>WEB-INF/wsdl</tt> (or <tt>META-INF/wsdl</tt>)
+       	folder. If you do not do this,
+	the <tt>wscompile</tt> tool will not be able to locate these imported files at the end of the procedure below.</td>
+</tr>
+</table>
  <p><b>To create a web service from a WSDL file:</b></p>
 <ol>
 <li>Depending on the <a href="about_implement_ws.html">implementation form</a>, do one of the following:
@@ -38,29 +47,32 @@ and choose New <img src="../../images/arrow.gif" alt="and choose" >&nbsp;Web Ser
 <ul>
 <li>Browse to a WSDL file on your filesystem.</li>
 <li>Specify a URL to an online WSDL file.</li></ul>
+
+</li>
 <li>Click Finish.
-<p>The IDE does the following:
+<p>The IDE runs the <tt>wscompile</tt> tool, which does the following:
 <ul>
 	
-<li>A new WSDL file is created. The abstract portion is copied as is from the original file, 
+<li>Creates a new WSDL file. The abstract portion is copied as is from the original file, 
 while the concrete portion is "normalized" from the original. 
 See <a href="../build/about_wsdl.html">About the WSDL File</a> for abstract and concrete definitions in the WSDL file.
 For example, a <a href="../build/about_wsdl.html#binding">SOAP binding element</a> is created if it did
 not exist in the WSDL file. Also, the <a href="../build/about_wsdl.html#abstract">service element</a> is created to be compatible with
 binding, and receives the web service name that you specified in the wizard, replacing the service element 
 in the original WSDL file.</li>
-<li>It creates the Service Endpoint Interface (the "interface"), which declares the web service's operations. 
+<li>Creates the Service Endpoint Interface (the "interface"), which declares the web service's operations. 
 In the IDE, the interface class is identified by the name of the 
 <a href="../build/about_wsdl.html#abstract">portType element</a> defined in the WSDL.
 The IDE automatically populates the interface with a declaration for each web service operation
  from the WSDL file.</li>
- <li>It creates the class for the implementation of the interface. The operations found
+ <li>Creates the class for the implementation of the interface. The operations found
  in the WSDL file are added to this class.
 In the IDE, an implementation class is identified by the name of the 
 <a href="../build/about_wsdl.html#abstract">portType element</a> defined in the WSDL together with the suffix "_Impl" (for web applications)
 or "_Bean" (for EJB modules).</li></ul>
-By default, both files are housed in a package within your project's <tt>src</tt> folder (in the Files window)
-and you can access it in the Source Packages node (in the Projects window).
+By default, the WSDL file is housed in the <tt>WEB-INF/wsdl</tt> (or <tt>META-INF/wsdl</tt>) folder. The 
+ interface and the implementation class are housed in a package within your project's <tt>src</tt> folder (in the Files window)
+and you can access them in the Source Packages node (in the Projects window).
 </ul>
 <table cellpadding="3" cellspacing="0" border="0">
 <tr valign="top"> 
