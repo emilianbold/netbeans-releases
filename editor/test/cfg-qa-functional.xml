@@ -24,26 +24,10 @@ Microsystems, Inc. All Rights Reserved.
 		<include name="org/netbeans/test/editor/app/tests/*Performer.class"/>
                 <exclude name="org/netbeans/test/editor/app/tests/IndentationPerformer.class/testDoWhile" />
                 <exclude name="org/netbeans/test/editor/app/tests/IndentationPerformer.class/testTwoBrackets" />
-                <exclude name="org/netbeans/test/editor/app/tests/CompletionPerformer.class/testRepository" />
-                <exclude name="org/netbeans/test/editor/app/tests/CompletionPerformer.class/testInstantSubstitution" />
-                <exclude name="org/netbeans/test/editor/app/tests/CompletionPerformer.class/testCCAfterMethods" />
+                <exclude name="org/netbeans/test/editor/app/tests/CompletionPerformer.class" />
             </patternset>
         </testset>
     </testbag>
-
-    <!-- Editor Application non-validation tests -->
-    
-    <testbag testattribs="all,failing,apps" name="TestApplicationFailings">
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="org/netbeans/test/editor/app/tests/IndentationPerformer.class/testDoWhile" />
-                <include name="org/netbeans/test/editor/app/tests/IndentationPerformer.class/testTwoBrackets" />
-                <include name="org/netbeans/test/editor/app/tests/CompletionPerformer.class/testRepository" />
-                <include name="org/netbeans/test/editor/app/tests/CompletionPerformer.class/testInstantSubstitution" />
-                <include name="org/netbeans/test/editor/app/tests/CompletionPerformer.class/testCCAfterMethods" />
-            </patternset>
-        </testset>
-    </testbag>    
         
     <!-- Code completion Validation tests: -->
     <testbag testattribs="all,validation,full" name="Completion-Validation">
@@ -58,8 +42,32 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <!-- Code completion non-validation tests: (and three from test editor application) -->
+    
+    <!-- Editor Application non-validation tests -->
 
+    <testbag testattribs="all,apps" name="TestApplicationNon-validation">
+        <testset dir="qa-functional/src">
+            <patternset>  
+                <include name="org/netbeans/test/editor/app/tests/CompletionPerformer.class" />
+                <exclude name="org/netbeans/test/editor/app/tests/CompletionPerformer.class/testRepository" />
+                <exclude name="org/netbeans/test/editor/app/tests/CompletionPerformer.class/testInstantSubstitution" />                
+            </patternset>
+        </testset>
+    </testbag>    
+        
+    <testbag testattribs="all,failing,apps" name="TestApplicationFailings">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="org/netbeans/test/editor/app/tests/IndentationPerformer.class/testDoWhile" />
+                <include name="org/netbeans/test/editor/app/tests/IndentationPerformer.class/testTwoBrackets" />
+                <include name="org/netbeans/test/editor/app/tests/CompletionPerformer.class/testRepository" />
+                <include name="org/netbeans/test/editor/app/tests/CompletionPerformer.class/testInstantSubstitution" />
+            </patternset>
+        </testset>
+    </testbag>    
+                        
+    <!-- Code completion non-validation tests: (and three from test editor application) -->
+    
     <testbag testattribs="all,failing" name="completion-failing">
         <testset dir="qa-functional/src">
             <patternset>
