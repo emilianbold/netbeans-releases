@@ -55,9 +55,8 @@ Microsystems, Inc. All Rights Reserved.
 <!ELEMENT public-id EMPTY>
 <!ATTLIST public-id id CDATA #REQUIRED>
 
-<!-- ??? "It matches root element name and ." -->
 <!---
-  Matches a root element, for which the name may be specified.
+  Matches a root element by specified name, attributes or namespace.
   <p>
   The namespace <code>ns</code> attribute or the presence of any <code>ns</code> subelements 
   implies that the <code>name</code> attribute represents a local element name,
@@ -79,10 +78,9 @@ Microsystems, Inc. All Rights Reserved.
 <!---
   Element attribute template, also used for pseudo-attributes in processing instructions.
   <p>
-  The <code>name</code> attribute contains the full element name (QName), unless
-  this <code>attr</code> is enclosed in an <code>element</code> for which one or
-  more namespace URIs were specified, in which case
-  the <code>name</code> attribute contains just the local element name. 
+  The <code>name</code> attribute contains the full attribute name (QName).
+  This is inteded to be used for documents that cannot be indentified by public ID nor
+  root element namespace.
   </p>
   If <code>text</code> is specified then the attribute's normalized text must
   exactly match the specified text, otherwise the attribute just needs to be present.
