@@ -127,10 +127,6 @@ Microsystems, Inc. All Rights Reserved.
         <file name="org-netbeans-core-actions-NewTemplateCallableAction.instance">
             <attr name="welcomeDescription" urlvalue="nbresloc:/org/netbeans/docs/startup/info-NewTemplateAction.html" />
         </file>
-        <attr name="org-netbeans-core-actions-NewTemplateCallableAction.instance/org-netbeans-core-ui-ProxySettingsAction.instance" boolvalue="true" />
-        <file name="org-netbeans-core-ui-ProxySettingsAction.instance">
-            <attr name="welcomeDescription" urlvalue="nbresloc:/org/netbeans/docs/startup/info-ProxySettingsAction.html" />
-        </file>
     </folder>
 
     <folder name="Menu">
