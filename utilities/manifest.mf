@@ -1,8 +1,9 @@
-OpenIDE-Module: org.openidex.util/1
-OpenIDE-Module-Name: Utilities
-OpenIDE-Module-Specification-Version: 0.9.2
-OpenIDE-Module-Implementation-Version: 0.9.2
+OpenIDE-Module: com.netbeans.developer.modules.utilities/1
+OpenIDE-Module-Name: User Utilities
+OpenIDE-Module-Specification-Version: 0.9.3
+OpenIDE-Module-Implementation-Version: 0.9.3
 OpenIDE-Module-Install: com/netbeans/developer/modules/utilities/Installer.class
+OpenIDE-Module-Module-Dependencies: org.openidex.util/1 > 0.9.3
 Class-Path: ext/regexp.jar
 
 Name: com/netbeans/developer/modules/search/types/FullTextType.class
