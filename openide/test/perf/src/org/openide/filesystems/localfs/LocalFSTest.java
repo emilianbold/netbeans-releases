@@ -42,7 +42,7 @@ public class LocalFSTest extends FSTest {
     /** Set up given number of FileObjects */
     protected FileObject[] setUpFileObjects(int foCount) throws Exception {
         mnt = createTempFolder();
-        createFiles(foCount, mnt);
+        createFiles(foCount, 0, mnt);
         
         localFS = new LocalFileSystem();
         localFS.setRootDirectory(mnt);
@@ -58,11 +58,12 @@ public class LocalFSTest extends FSTest {
     }
     
     /** Creates a given number of files in a given folder (actually in a subfolder)
+     * @param 
      * @retun a folder in which reside the created files (it is a sub folder of destRoot)
      */
-    public static File createFiles(int foCount, File destRoot) throws Exception {
+    public static File createFiles(int foCount, int foBase, File destRoot) throws Exception {
         InputStream is = LocalFSTest.class.getClassLoader().getResourceAsStream(RES);
-        StringResult result = load(is, foCount);
+        StringResult result = load(is, foCount, foBase);
         return makeCopies(destRoot, foCount, result);
     }
     
@@ -94,10 +95,10 @@ public class LocalFSTest extends FSTest {
     /** Loads content of the given stream, searching for predefined pattern, replacing
      * that pattern with a new pattern.
      */
-    private static StringResult load(InputStream is, int foCount) throws Exception {
+    private static StringResult load(InputStream is, int foCount, int foBase) throws Exception {
         try {
-            int paddingSize = Utilities.expPaddingSize(foCount);
-            StringResult ret = new StringResult(paddingSize);
+            int paddingSize = Utilities.expPaddingSize(foCount + foBase);
+            StringResult ret = new StringResult(paddingSize, foBase);
             Reader reader = new BufferedReader(new InputStreamReader(is));
             
             Matcher matcher = new Matcher();
@@ -170,12 +171,14 @@ public class LocalFSTest extends FSTest {
         private List positions;
         private int version;
         private int patternLength;
+        private boolean shouldRunPadding;
         
-        StringResult(int patternLength) {
+        StringResult(int patternLength, int foBase) {
             buffer = new StringBuffer(10000);
             positions = new ArrayList(10);
-            version = 0;
+            version = foBase;
             this.patternLength = patternLength;
+            this.shouldRunPadding = true;
         }
         
         void append(char c) {
@@ -189,8 +192,13 @@ public class LocalFSTest extends FSTest {
         
         void increment() {
             version++;
+            runPadding();
+        }
+        
+        private void runPadding() {
             String versStr = getVersionString();
             newPadding(versStr);
+            shouldRunPadding = false;
         }
         
         private void newPadding(String str) {
@@ -207,6 +215,9 @@ public class LocalFSTest extends FSTest {
         }
         
         public String toString() {
+            if (shouldRunPadding) {
+                runPadding();
+            }
             return buffer.toString();
         }
     }
@@ -214,7 +225,7 @@ public class LocalFSTest extends FSTest {
     /*
     public static void main(String[] args) throws Exception {
         LocalFSTest lfstest = new LocalFSTest("first test");
-        lfstest.setUpFileObjects(1500);
+        lfstest.setUpFileObjects(500);
     }
-     */
+    */
 }

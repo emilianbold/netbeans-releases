@@ -31,8 +31,8 @@ public abstract class ReadOnlyFSTest extends Benchmark {
     
     /** Arguments - number of files */
     private static final Object[] ARGS = new Object[] { 
-        new Object[] { new Integer(1000), new Integer(10) },
-        new Object[] { new Integer(1000), new Integer(100) }
+        new Object[] { new Integer(10), new Integer(2) },
+        new Object[] { new Integer(10), new Integer(5) }
     };
     
     /** number of files for given run */
@@ -60,7 +60,7 @@ public abstract class ReadOnlyFSTest extends Benchmark {
         foCount = ((Integer) param[0]).intValue();
         attrsCount = ((Integer) param[1]).intValue();
         iterations = getIterationCount();
-        files = new FileObject[foCount];
+        files = setUpFileObjects(foCount);
         pairs = generateRandomStrings(new String[files.length][2]);
         perm = shuffleIntArray(fillIntArray(new int[files.length]));
     }

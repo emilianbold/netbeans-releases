@@ -48,8 +48,8 @@ public class XMLFSTest extends ReadOnlyFSTest {
     /** Set up given number of FileObjects */
     protected FileObject[] setUpFileObjects(int foCount) throws Exception {
         tmp = createTempFolder();
-        destFolder = LocalFSTest.createFiles(foCount, tmp);
-        File xmlbase = generateXMLFile(destFolder, foCount, 0);
+        destFolder = LocalFSTest.createFiles(foCount, 0, tmp);
+        File xmlbase = generateXMLFile(destFolder, foCount, 0, LocalFSTest.RES_EXT);
         xmlfs = new XMLFileSystem();
         xmlfs.setXmlUrl(xmlbase.toURL(), false);
         
@@ -69,13 +69,13 @@ public class XMLFSTest extends ReadOnlyFSTest {
      * @param fileno - how many files should be in that filesystem
      * @param base
      */
-    protected static final File generateXMLFile(File folder, int fileNo, int base) throws Exception {
+    public static final File generateXMLFile(File folder, int fileNo, int base, String resExt) throws Exception {
         String name = MF_NAME + '-' + String.valueOf(base);
         File dest = new File(folder, name.concat(".xml"));
         
         OutputStream os = new FileOutputStream(dest);
         Writer writer = new OutputStreamWriter(os);
-        writer.write(generate(fileNo, base));
+        writer.write(generate(fileNo, base, resExt));
         writer.close();
         os.close();
         
@@ -87,11 +87,11 @@ public class XMLFSTest extends ReadOnlyFSTest {
      * @param base
      * @return a String that is an xml document describing a filesystem
      */
-    public static String generate(int fileNo, int base) throws Exception {
+    public static String generate(int fileNo, int base, String resExt) throws Exception {
         StringBuffer buffer = new StringBuffer(50000);
         buffer.append(HEADER).append('\n');
         buffer.append("<filesystem>").append('\n');
-        generateFolder(buffer, fileNo, base);
+        generateFolder(buffer, fileNo, base, resExt);
         buffer.append("</filesystem>").append('\n');
         
         return buffer.toString();
@@ -102,9 +102,9 @@ public class XMLFSTest extends ReadOnlyFSTest {
      * @param buffer - where to place the description
      * @param base
      */
-    private static final void generateFolder(StringBuffer buffer, int fileNo, int base) throws Exception {
+    private static final void generateFolder(StringBuffer buffer, int fileNo, int base, String resExt) throws Exception {
         buffer.append(FOLDER_START);
-        generateFiles(buffer, fileNo, base);
+        generateFiles(buffer, fileNo, base, resExt);
         buffer.append(FOLDER_END);
     }
 
@@ -113,10 +113,10 @@ public class XMLFSTest extends ReadOnlyFSTest {
      * @param buffer - where to place the description
      * @param base
      */
-    private static final void generateFiles(StringBuffer buffer, final int fileNo, final int base) throws Exception {
+    private static final void generateFiles(StringBuffer buffer, final int fileNo, final int base, String resExt) throws Exception {
         int paddingSize = Utilities.expPaddingSize(fileNo);
         for (int i = 0; i < fileNo; i++) {
-            generateOneFile(buffer, paddingSize, base + i);
+            generateOneFile(buffer, paddingSize, base + i, resExt);
         }
     }
     
@@ -126,9 +126,9 @@ public class XMLFSTest extends ReadOnlyFSTest {
      * base is 793 and paddingSize is 5 so the generated file name ends with 00793.
      * @param base
      */
-    private static void generateOneFile(StringBuffer buffer, int paddingSize, int fileBase) throws Exception {
+    private static void generateOneFile(StringBuffer buffer, int paddingSize, int fileBase, String resExt) throws Exception {
         buffer.append('\n');
-        String fname = generateOneFileString(paddingSize, fileBase);
+        String fname = generateOneFileString(paddingSize, fileBase, resExt);
         addFileHeader(buffer, fname);
         generateAttributes(buffer, paddingSize);
         addFileEnd(buffer);
@@ -194,11 +194,11 @@ public class XMLFSTest extends ReadOnlyFSTest {
     }
     
     /** Generates string that describes one file via XML */
-    private static String generateOneFileString(int paddingSize, int base) {
+    private static String generateOneFileString(int paddingSize, int base, String resExt) {
         StringBuffer sbuffer = new StringBuffer(20);
         sbuffer.append(LocalFSTest.RES_NAME);
         Utilities.appendNDigits(base, paddingSize, sbuffer);
-        sbuffer.append(LocalFSTest.RES_EXT);
+        sbuffer.append(resExt);
         return sbuffer.toString();
     }
 
