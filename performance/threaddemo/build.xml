@@ -38,10 +38,10 @@ Microsystems, Inc. All Rights Reserved.
     <path id="run.cp">
         <path refid="build.cp"/>
         <pathelement location="threaddemo.jar"/>
-        <!-- NbEM:
+        <!-- NbEM:-->
         <pathelement location="${nbroot}/core/netbeans/lib/core.jar"/>
         <pathelement location="${nbroot}/core/netbeans/lib/ext/boot.jar"/>
-        -->
+        <!---->
         <fileset dir="${nbroot}/libs/external">
             <include name="xerces*.jar"/>
             <include name="xml-commons-dom-ranges*.jar"/>
@@ -95,7 +95,7 @@ Microsystems, Inc. All Rights Reserved.
             <arg file="${testdir}"/>
             <jvmarg value="-Xmx64m"/>
             <jvmarg value="-ea"/>
-            <!-- NbEM: <sysproperty key="threaddemo.data" value="0"/> -->
+            <!-- NbEM: --><sysproperty key="threaddemo.util" value="0"/><!-- -->
         </java>
     </target>
     
