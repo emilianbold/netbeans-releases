@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
@@ -77,10 +77,6 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/javadoc/resources/JavadocSettings.gif"/>
         </file>
 
-        <file name="org-netbeans-modules-javadoc-httpfs-HTTPURLMapper.instance">
-            <attr name="instanceOf" stringvalue="org.openide.filesystems.URLMapper"/>
-        </file>
-
         <folder name="JavadocSearchType">
             <attr name="hidden" boolvalue="true"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.search.Bundle"/>
@@ -98,32 +94,5 @@ Microsystems, Inc. All Rights Reserved.
             </file>
         </folder>  
     </folder>
-
-
-<!--  Templates part -->
-
-  <folder name="Templates">
-      <folder name="Services">
-
-          <folder name="JavadocSearchType">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.search.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javadoc/resources/searchDoc.gif"/>
-            <attr name="helpID" stringvalue="org.netbeans.modules.javadoc.search.JavaDocSearchType"/>
-
-            <file name="org-netbeans-modules-javadoc-search-Jdk12SearchType.settings" url="javadoc_search.settings">
-              <attr name="template" boolvalue="true"/>
-              <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.search.Bundle"/>
-              <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/javadoc/resources/searchDoc.gif"/>
-            </file>
-            <file name="org-netbeans-modules-javadoc-search-Jdk12SearchType_japan.settings" url="javadoc_japan_search.settings">
-              <attr name="template" boolvalue="true"/>
-              <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.search.Bundle"/>
-              <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/javadoc/resources/searchDoc.gif"/>
-            </file>
-          </folder>  
-
-      </folder>
-   </folder>
-
 
 </filesystem>
