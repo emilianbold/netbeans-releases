@@ -30,6 +30,7 @@ class Util {
     
     // COPIED FROM org.netbeans.modules.project.ant:
     // (except for namespace == null support in findElement)
+    // (and support for comments in findSubElements)
     
     /**
      * Search for an XML element in the direct children of a parent.
@@ -82,7 +83,7 @@ class Util {
      * Find all direct child elements of an element.
      * More useful than {@link Element#getElementsByTagNameNS} because it does
      * not recurse into recursive child elements.
-     * Children which are all-whitespace text nodes are ignored; others cause
+     * Children which are all-whitespace text nodes or comments are ignored; others cause
      * an exception to be thrown.
      * @param parent a parent element in a DOM tree
      * @return a list of direct child elements (may be empty)
@@ -100,6 +101,8 @@ class Util {
                 if (text.trim().length() > 0) {
                     throw new IllegalArgumentException("non-ws text encountered in " + parent + ": " + text); // NOI18N
                 }
+            } else if (n.getNodeType() == Node.COMMENT_NODE) {
+                // OK, ignore
             } else {
                 throw new IllegalArgumentException("unexpected non-element child of " + parent + ": " + n); // NOI18N
             }
