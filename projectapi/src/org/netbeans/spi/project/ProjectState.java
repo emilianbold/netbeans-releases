@@ -17,7 +17,16 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 
 /**
- * Callback permitting {@link Project}s to communicate with the {@link ProjectManager}.
+ * Callback permitting {@link Project}s to inform the {@link ProjectManager}
+ * of important lifecycle events.
+ * Currently the only available event is modification of the project metadata.
+ * However in the future other events may be added, such as moving or deleting
+ * the project, which the project manager would need to be informed of.
+ * <p>
+ * This interface may only be implemented by the project manager. A
+ * {@link ProjectFactory} will receive an instance in
+ * {@link ProjectFactory#loadProject}.
+ * </p>
  * @author Jesse Glick
  */
 public interface ProjectState {
