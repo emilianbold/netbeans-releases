@@ -65,8 +65,8 @@ Microsystems, Inc. All Rights Reserved.
   <target name="open-apis-noproxy" unless="proxy">
     <exec dir="." command="perl api/doc/build --output OpenAPIs --noshowstatus --jdkurl ${jdkdocs} --zip zip --zipbare --zipandkill --nofastlinks" os="Linux" output="OpenAPIs.log" failonerror="yes"/>
     <exec dir="." command="perl api/doc/build --output OpenAPIs --noshowstatus --jdkurl ${jdkdocs} --zip zip --zipbare --zipandkill --nofastlinks" os="SunOS" output="OpenAPIs.log" failonerror="yes"/>
-    <exec dir="." command="echo Sorry, no Windows support for building OpenAPIs documentation yet" os="Windows NT" output="con:"/>
-    <exec dir="." command="echo Sorry, no Windows support for building OpenAPIs documentation yet" os="Windows 2000" output="con:"/>
+    <!-- Missing initial W intentional: -->
+    <exec dir="." command="echo Sorry, no Windows support for building OpenAPIs documentation yet" os="indows" output="con:"/>
   </target>
   <target name="open-apis-proxy" if="proxy">
     <exec dir="." command="perl api/doc/build --output OpenAPIs --noshowstatus --jdkurl ${jdkdocs} --zip zip --zipbare --zipandkill --nofastlinks --proxy ${proxy}" os="Linux" output="OpenAPIs.log" failonerror="yes"/>
