@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="xtest-qa-functional" basedir="." default="all">
+
+    <!-- Root folder of modules -->
+    <dirname property="nb_all" file="${ant.file.xtest-qa-functional}/../.."/>
+    
+    <target name="init">
+        <property file="../nbproject/private/private.properties"/>
+        <property file="../nbproject/project.properties"/>
+        <property name="build.compiler.debug" value="true"/>
+        <property name="build.compiler.source" value="1.4"/>
+        <property name="build.compiler.deprecation" value="true"/>
+        <property name="build.sysclasspath" value="ignore"/>
+    </target>
+
+    <target name="init-cp">
+        <!-- path reference used in both compiler and executor -->
+        <path id="jemmy.and.jelly.path">
+            <pathelement location="${nb_all}/jemmy/builds/jemmy.jar"/>
+            <pathelement location="${nb_all}/jellytools/builds/jelly2-nb.jar"/>
+        </path>
+        <path id="test.qa-functional.compile.cp">
+            <path refid="jemmy.and.jelly.path"/>
+            <pathelement path="${test.qa-functional.cp.extra}"/>
+        </path>
+        <!-- This property cannot be undefined. -->
+        <property name="test.qa-functional.run.cp.extra" value=""/>
+        <path id="test.qa-functional.run.cp">
+            <path refid="jemmy.and.jelly.path"/>
+            <pathelement path="${test.qa-functional.run.cp.extra}"/>
+        </path>
+    </target>
+    
+    <!-- ========= -->
+    <!-- Compilers -->
+    <!-- ========= -->
+    
+    <target name="qa-functional-compiler" depends="init,init-cp">
+        <buildTests srcdir="qa-functional/src" compileexcludes="**/data/**">
+            <classpath refid="test.qa-functional.compile.cp"/>
+        </buildTests>
+    </target>
+    
+    <!-- ========= -->
+    <!-- Executors -->
+    <!-- ========= -->
+    
+    <target name="runidetest" depends="init,init-cp">
+        <executeTests pluginname="ide">
+            <classpath refid="test.qa-functional.run.cp"/>
+        </executeTests>
+    </target>
+</project>
+
