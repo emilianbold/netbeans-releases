@@ -193,6 +193,10 @@
 <mapID target="org.netbeans.modules.java.settings.JavaSettings" url="java/java_sources.html" />
 <!--csh page for projects|settings|Java Source|Import Management Tool Settings-->
 <mapID target="org.netbeans.modules.java.imptool.ImpToolSettings" url="java/imt/configuring.html" />
+<!--csh page for Import Management Tool panels-->
+<mapID target="org.netbeans.modules.java.import.FqnPanel" url="java/imt/resolve-ids.html" />
+<mapID target="org.netbeans.modules.java.import.ImportPanel" url="java/imt/create-imports.html" />
+<mapID target="org.netbeans.modules.java.import.ResolvePanel" url="java/imt/remove-unused.html" />
 <!-- Following csh page hooked to sync intro for now; should write a more specific page -->
 <mapID target="java.sync.csh.confirmchanges" url="java/synchronizing/intro.html" />
 <!-- Following csh page hooked to both method and constructor customizer dialogs -->
@@ -406,6 +410,9 @@
 <mapID target="vcs.output" url="vcs-nb/vcs_output.html" />
 <mapID target="vcs.status" url="vcs-nb/vcs_status.html" />
 <mapID target="vcs.diffs" url="vcs-nb/vcs_diffs.html" />
+<mapID target="vcs.cygwin" url="vcs-nb/vcs_cygwin.html" />
+<mapID target="vcs.globalsettings" url="vcs-nb/vcs_globalsettings.html" />
+<mapID target="vcs.refresh" url="vcs-nb/vcs_refresh.html" />
 <mapID target="vcs.groups" url="vcs-nb/vcsgroups/vcs_groups.html" />
 <mapID target="vcs.groupsadd" url="vcs-nb/vcsgroups/vcs_groupsadd.html" />
 <mapID target="vcs.groupsaddfile" url="vcs-nb/vcsgroups/vcs_groupsaddfile.html" />
@@ -414,32 +421,39 @@
 <mapID target="vcs.groupsproperties" url="vcs-nb/vcsgroups/vcs_groupsproperties.html" />
 <mapID target="vcs.groupsresolve" url="vcs-nb/vcsgroups/vcs_groupsresolve.html" />
 <mapID target="vcs.groupsverify" url="vcs-nb/vcsgroups/vcs_groupsverify.html" />
-<mapID target="vcs.filesystemsettings" url="vcs-nb/vcs_filesystemsettings.html" />
 <mapID target="vcs.binary" url="vcs-nb/vcs_binary.html" />
 <mapID target="vcs.cvs-intro" url="vcs-nb/cvs-nb/cvs_intro.html" />
 <mapID target="cvs.create-fs" url="vcs-nb/cvs-nb/cvs_create-fs.html" />
 <mapID target="cvs.calling" url="vcs-nb/cvs-nb/cvs_calling.html" />
 <mapID target="cvs.mountpoint" url="vcs-nb/cvs-nb/cvs_mountpoint.html" />
+<mapID target="cvs.filesystemproperties" url="vcs-nb/cvs-nb/cvs_fsproperties.html" />
 <mapID target="cvs.settings" url="vcs-nb/cvs-nb/cvs_settings.html" />
+<mapID target="cvs.customizer" url="vcs-nb/cvs-nb/cvs_customizer.html" />
+<mapID target="cvs.customizer-basic" url="vcs-nb/cvs-nb/cvs_customizer-basic.html" />
+<mapID target="cvs.customizer-server" url="vcs-nb/cvs-nb/cvs_customizer-server.html" />
+<mapID target="cvs.customizer-mount" url="vcs-nb/cvs-nb/cvs_customizer-mount.html" />
 <mapID target="cvs.commands" url="vcs-nb/cvs-nb/cvs_commands.html" />
+<mapID target="cvs.commandopts-save" url="vcs-nb/cvs-nb/cvs_commandopts-save.html" />
+<mapID target="cvs.merge" url="vcs-nb/cvs-nb/cvs_merge.html" />
 <mapID target="cvs.password" url="vcs-nb/cvs-nb/cvs_password.html" />
 <mapID target="cvs.local" url="vcs-nb/cvs-nb/cvs_local.html" />
+<mapID target="cvs.commandopts" url="vcs-nb/cvs-nb/cvs_commandopts-save.html" />
 <mapID target="cvs.wizard" url="vcs-nb/cvs-nb/cvs_wizard.html" />
 <mapID target="vcs.vcsgeneric" url="vcs-nb/vcsgeneric/vcs_vcsgeneric.html" />
 <mapID target="vcsgeneric.mounting" url="vcs-nb/vcsgeneric/vcsgeneric_mounting.html" />
 <mapID target="vcsgeneric.calling" url="vcs-nb/vcsgeneric/vcsgeneric_calling.html" />
+<mapID target="vcsgeneric.command-opts" url="vcs-nb/vcsgeneric/vcsgeneric_command-opts.html" />
 <mapID target="vcsgeneric.modifying" url="vcs-nb/vcsgeneric/vcsgeneric_modifying.html" />
 <mapID target="vcsgeneric.custom-pvcs" url="vcs-nb/vcsgeneric/vcsgeneric_custom-pvcs.html" />
 <mapID target="vcsgeneric.custom-vss" url="vcs-nb/vcsgeneric/vcsgeneric_custom-vss.html" />
 <mapID target="vcsgeneric.command-props" url="vcs-nb/vcsgeneric/vcsgeneric_command-props.html" />
 <mapID target="vcsgeneric.list" url="vcs-nb/vcsgeneric/vcsgeneric_list.html" />
+<mapID target="vcsgeneric.settings" url="vcs-nb/vcsgeneric/vcsgeneric_settings.html" />
+<mapID target="vcsgeneric.filesystemproperties" url="vcs-nb/vcsgeneric/vcsgeneric_fsproperties.html" />
 <mapID target="vcsgeneric.variables" url="vcs-nb/vcsgeneric/vcsgeneric_variables.html" />
 <mapID target="vcs.revexplorer" url="vcs-nb/vcs_revexplorer.html" />
 <mapID target="vcsgeneric.add-command" url="vcs-nb/vcsgeneric/vcsgeneric_add-command.html" />
 <mapID target="vcsgeneric.newprofile" url="vcs-nb/vcsgeneric/vcsgeneric_newprofile.html" />
-<mapID target="vcs.cygwin" url="vcs-nb/vcs_cygwin.html" />
-<mapID target="vcs.globalsettings" url="vcs-nb/vcs_globalsettings.html" />
-<mapID target="vcs.refresh" url="vcs-nb/vcs_refresh.html" />
 <mapID target="vcsgeneric.vars-basic" url="vcs-nb/vcsgeneric/vcsgeneric_vars-basic.html" />
 <mapID target="vcsgeneric.vars-creating" url="vcs-nb/vcsgeneric/vcsgeneric_vars-creating.html" />
 <mapID target="vcsgeneric.vars-runtime" url="vcs-nb/vcsgeneric/vcsgeneric_vars-runtime.html" />
@@ -942,6 +956,14 @@
    <mapID target="org.netbeans.modules.vcs.RetrievingDialog" url="pending.html" />
    <mapID target="org.netbeans.modules.debugger.support.nodes.DebuggerView" url="pending.html" />
    <mapID target="org.netbeans.modules.group.CreateGroupAction" url="pending.html" />
+   <!--Mount CVS Wizard; Versioning | Mount CVS; on all wizard panes-->
+   <mapID target="org.netbeans.modules.vcscore.wizard.mountcvs.WDPanel" url="vcs-nb/cvs-nb/cvs_wizard.html" />
+   <!--csh for CVS Password Manager-->
+   <mapID target="org.netbeans.modules.cvsclient.login.LoginManagerAction" url="vcs-nb/cvs-nb/cvs_password.html" />
+   <!--csh for Verify VCS Group-->
+   <mapID target="org.netbeans.modules.vcscore.ui.VerifyGroupPanel" url="vcs-nb/vcsgroups/vcs_groupsverify.html" />
+   <!--csh for Javacvs Customizer-->
+   <mapID target="org.netbeans.modules.cvsclient.customizers.NbJavaCvsCustomizer" url="vcs-nb/cvs-nb/cvs_customizer.html" />
 
    <mapID target="org.netbeans.editor.GO_TO_DECLARATION" url="pending.html" />
    <mapID target="org.netbeans.editor.REFORMAT_CODE" url="pending.html" />
@@ -1024,8 +1046,6 @@
    <!--Mount Filesystem Dialogue-->
    <mapID target="org.netbeans.beaninfo.editors.FileEditor" url="pending.html" />
    <!--Property Viewer: Working Directory (File) dialogue; Project | Settings | Filesystems Settings | (mounted CVS client)| Working Directory-->
-   <mapID target="org.netbeans.modules.vcscore.wizard.mountcvs.WDPanel" url="vcs-nb/cvs-nb/cvs_wizard.html" />
-   <!--Mount CVS Wizard; Versioning | Mount CVS; on all wizard panes-->
    <mapID target="org.netbeans.modules.jarpackager.DataObjectListEditor" url="jarpackager/jarpackager_contentpane.html" />
    <!--Property Editor: Contents(Jar Content) dialogue; In Explorer, select a JAR Contents object | Properties | Contents-->
    <mapID target="org.netbeans.modules.jarpackager.FilterEditor" url="jarpackager/jarpackager_filter.html" />
