@@ -135,7 +135,7 @@ public class IndexSearch
 
         splitPanel = new org.openide.awt.SplittedPanel ();
         //splitPanel.setLayout (new java.awt.FlowLayout ());
-        splitPanel.setSplitType( org.openide.awt.SplittedPanel.HORIZONTAL );
+        splitPanel.setSplitType( org.openide.awt.SplittedPanel.VERTICAL );
         splitPanel.setSplitAbsolute( false );
         splitPanel.setSplitPosition( oldSplit = 50 );
         splitPanel.setSplitDragable( true );
@@ -468,7 +468,7 @@ public class IndexSearch
             if ( e != null ) {
                 OpenCookie oc = (OpenCookie)e.getCookie( OpenCookie.class );
                 if ( oc != null ) {
-                    System.out.println( oc );
+                    //System.out.println( oc );
                     oc.open();
                 }
                 else {
@@ -483,7 +483,7 @@ public class IndexSearch
 
         }
         catch ( java.net.MalformedURLException e ) {
-            System.out.println( e  );
+            //System.out.println( e  );
         }
     }
 
