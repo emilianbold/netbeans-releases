@@ -408,9 +408,21 @@ public class PackageViewTest extends NbTestCase {
         n.destroy();        
         assertFileObjects( srcRoot, new String[]{ "a" } );
         assertFileObjects( a, new String[]{ "aa" } );
-        
-        
-                
+
+        //Issue #49075
+        srcRoot = FileUtil.createFolder(root, "issue49075");
+        a = srcRoot.createFolder("a");
+        FileObject b = FileUtil.createFolder( a, "b" );
+        FileObject c = FileUtil.createFolder( b, "c" );
+        group = new SimpleSourceGroup( srcRoot );
+        rootNode = PackageView.createPackageView( group );
+        assertNodes(rootNode.getChildren(), new String[] { "a.b.c" },true );
+        File cFile = FileUtil.toFile(c);
+        File bFile = FileUtil.toFile(b);
+        cFile.delete();
+        bFile.delete();
+        a.getFileSystem().refresh(false);
+        assertNodes(rootNode.getChildren(), new String[] { "a" },true );
     }
     
     

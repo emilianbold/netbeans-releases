@@ -235,7 +235,21 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         assert path != null : "Removing wrong folder" + fo;
         names2nodes.remove( path );
     }
-    
+
+    private void removeSubTree (FileObject fo) {
+        String path = FileUtil.getRelativePath( root, fo );
+        assert path != null : "Removing wrong folder" + fo;
+        Collection keys = new HashSet (names2nodes.keySet());
+        names2nodes.remove(path);
+        path = path + '/';  //NOI18N
+        for (Iterator it = keys.iterator(); it.hasNext();) {
+            String key = (String) it.next();
+            if (key.startsWith(path)) {
+                names2nodes.remove(key);
+            }
+        }
+    }
+
     private PackageNode get( FileObject fo ) {
         String path = FileUtil.getRelativePath( root, fo );        
         assert path != null : "Asking for wrong folder" + fo;
@@ -310,7 +324,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                                   /* Hack for MasterFS see #42464 */
             if ( fo.isFolder() || get( fo ) != null ) {
                 // System.out.println("REMOVING FODER " + fo );                
-                remove( fo );
+                removeSubTree( fo );
                 // Now add the parent if necessary 
                 FileObject parent = fo.getParent();
                 if ( ( FileUtil.isParentOf( root, parent ) || root.equals( parent ) ) && get( parent ) == null && parent.isValid() ) {
