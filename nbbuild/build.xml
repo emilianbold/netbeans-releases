@@ -217,7 +217,7 @@ workspaceswitcher
     <echo message="Building module innertesters..."/>
     <ant dir="../innertesters" target="netbeans"/>
   </target>
-  <target name="all-j2eeserver" depends="setup-jdkhome-4,all-openide,all-jarpackager,all-debuggercore,all-debuggerjpda,all-logger">
+  <target name="all-j2eeserver" depends="setup-jdkhome-4,all-openide,all-jarpackager,all-debuggercore,all-debuggerjpda">
     <echo message="Building module j2eeserver..."/>
     <ant dir="../j2eeserver" target="netbeans"/>
   </target>
