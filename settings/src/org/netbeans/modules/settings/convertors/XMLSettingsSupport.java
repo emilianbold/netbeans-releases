@@ -715,7 +715,23 @@ final class XMLSettingsSupport {
             
             try {
                 if (header) {
-                    in = source.getInputStream();
+                    if (err.isLoggable (err.INFORMATIONAL) && source.getSize () < 12000) {
+                        // log the content of the stream 
+                        byte[] arr = new byte[(int)source.getSize ()];
+                        InputStream temp = source.getInputStream ();
+                        int len = temp.read (arr);
+                        if (len != arr.length) {
+                            throw new IOException ("Could not read " + arr.length + " bytes from " + source + " just " + len); // NOI18N
+                        }
+                        
+                        err.log ("Parsing:" + new String (arr));
+                        
+                        temp.close ();
+                        
+                        in = new ByteArrayInputStream (arr);
+                    } else {
+                        in = new BufferedInputStream (source.getInputStream ());
+                    }
                     Set iofs = quickParse(new BufferedInputStream(in));
                     if (iofs != null) {
                         instanceOf = iofs;
