@@ -449,7 +449,7 @@
 <!-- Projects window -->
 <mapID target="ProjectTab_Projects" url="pending.html" />
 
-<!-- New Wizard tempaltes page -->
+<!-- New Wizard templates page -->
 <mapID target="org.netbeans.modules.project.ui.TemplatesPanel" url="project/proj_templates.html" />
 
 <!-- New J2SE lib, J2SE app, and J2SE project from existing sources -->
@@ -472,8 +472,21 @@
 <!-- Add Libraries dialog box (from Project Properties -> Compiling Classes-->
 <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.LibrariesChooser" url="pending.html" />
 
+<!-- Tags wizard -->
+<mapID target="org.netbeans.modules.web.dd.wizards.TagInfoPanel" url="web/taglib/edit_taghandler.html" />
+<mapID target="org.netbeans.modules.web.dd.wizards.TargetChooserPanel_taglibrary" url="web/taglib/createtaglib.html" />
+
+<!-- JSP, HTML and Tag wizard -->
+<mapID target="org.netbeans.modules.web.dd.wizards.TargetChooserPanel_jsptag" url="web/webmod/mod_tagf_add.html" />
+<mapID target="org.netbeans.modules.web.dd.wizards.TargetChooserPanel_html" url="web/concepts/html.html" />
+
+<!-- Servlet and Filter wizards -->
+<mapID target="org.netbeans.modules.web.dd.wizards.DeployDataPanel_filter" url="web/servlet/filter_create.html" />
+<mapID target="org.netbeans.modules.web.dd.wizards.DeployDataExtraPanel" url="web/servlet/filter_create.html" />
+<mapID target="org.netbeans.modules.web.dd.wizards.DeployDataPanel_servlet" url="web/servlet/servlet_create.html" />
+
 <!-- Library Manager -->
-<mapID target="org.netbeans.modules.project.libraries.ui.LibrariesCustomizer" url="pending.html" />
+<mapID target="org.netbeans.modules.project.libraries.ui.LibrariesCustomizer" url="web/taglibUI/ctx_repaddto.html" />
 
 <mapID target="org.netbeans.modules.i18n.InsertI18nStringAction" url="internationalize/manualinsert.html" />
 
