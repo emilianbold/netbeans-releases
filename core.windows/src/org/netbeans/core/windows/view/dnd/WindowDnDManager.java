@@ -54,6 +54,7 @@ import org.netbeans.core.windows.view.ModeView;
 import org.netbeans.core.windows.view.ViewElement;
 import org.netbeans.core.windows.view.SplitView;
 import org.netbeans.core.windows.view.ui.MainWindow;
+import org.netbeans.core.windows.view.ui.ModeComponent;
 import org.netbeans.core.windows.ModeImpl; // PENDING
 import org.netbeans.core.windows.WindowManagerImpl; // PENDING
 
@@ -721,7 +722,14 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             || constr == Constants.BOTTOM) { // XXX around area
                 controller.userDroppedTopComponentsAround(tcArray, (String)constr);
             } else if(constr instanceof Rectangle) { // XXX free area
-                controller.userDroppedTopComponentsIntoFreeArea(tcArray, (Rectangle)constr);
+                Rectangle bounds = (Rectangle)constr;
+                // #38657 Refine bounds.
+                Component modeComp = SwingUtilities.getAncestorOfClass(ModeComponent.class, tcArray[0]);
+                if(modeComp != null) {
+                    bounds.setSize(modeComp.getWidth(), modeComp.getHeight());
+                }
+                
+                controller.userDroppedTopComponentsIntoFreeArea(tcArray, bounds);
             }
         }
 
