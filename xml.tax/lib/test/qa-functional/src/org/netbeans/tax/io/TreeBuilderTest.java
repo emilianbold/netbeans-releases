@@ -18,7 +18,7 @@ import java.io.PrintStream;
 import java.lang.reflect.Constructor;
 import java.util.Iterator;
 import junit.textui.TestRunner;
-import org.netbeans.modules.xml.core.tree.ParserLoader;
+import org.netbeans.modules.xml.tax.parser.ParserLoader;
 import org.netbeans.tax.TreeDTD;
 import org.netbeans.tax.TreeDocument;
 import org.netbeans.tax.TreeDocumentRoot;

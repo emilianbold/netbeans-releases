@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import junit.textui.TestRunner;
 import org.netbeans.modules.xml.core.XMLDataObject;
+import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
 import org.netbeans.tax.TreeNamedObjectMap.KeyListener;
 import org.netbeans.tax.event.TreeEventChangeSupport;
 import org.netbeans.tax.event.TreeEventManager;
@@ -80,7 +81,8 @@ public class XMLCloneTest extends XTest {
     };
     
     public void testClone() throws Exception {
-        TreeDocument document = ((XMLDataObject) TestUtil.THIS.findData("Bookss.xml")).getTreeDocument();
+        TreeEditorCookie cake = (TreeEditorCookie) TestUtil.THIS.findData("Bookss.xml").getCookie(TreeEditorCookie.class);
+        TreeDocument document = (TreeDocument) cake.openDocumentRoot();
         nodeTest(document);
     }
     

@@ -15,6 +15,7 @@ package org.netbeans.tax;
 import junit.textui.TestRunner;
 import org.netbeans.modules.xml.core.DTDDataObject;
 import org.netbeans.modules.xml.core.XMLDataObject;
+import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
 import org.netbeans.tests.xml.XTest;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -73,12 +74,13 @@ public class CreateXMLTest extends XTest {
             // create new Data Object
             DataFolder dataFolder = DataFolder.findFolder(TestUtil.THIS.findData("").getPrimaryFile());
             XMLDataObject xmlDataObject = (XMLDataObject) TestUtil.createDataObject(dataFolder, DOCUMENT_NAME, XML_EXT, content);
-            TreeDocument document = xmlDataObject.getTreeDocument();
+            TreeEditorCookie cake = (TreeEditorCookie) xmlDataObject.getCookie(TreeEditorCookie.class);
+            TreeDocument document = (TreeDocument) cake.openDocumentRoot();
             
             // Create Document Type
             DTDDataObject dtdDataObject = (DTDDataObject) TestUtil.THIS.findData(INTERNAL_DTD);
-            TreeDTD treeDTD = dtdDataObject.getTreeDTD();
-            //TreeDocumentType docType = document.getDocumentType();
+            cake = (TreeEditorCookie) dtdDataObject.getCookie(TreeEditorCookie.class);
+            TreeDTD treeDTD = (TreeDTD) cake.openDocumentRoot();
             TreeDocumentType docType = new TreeDocumentType(DOCUMENT_NAME);
             docType.setSystemId(DTD_SYS_ID);
             TreeChild child = treeDTD.getFirstChild();
@@ -120,6 +122,7 @@ public class CreateXMLTest extends XTest {
             ref(TestUtil.nodeToString(document));
             compareReferenceFiles();
         } catch (Exception ex) {
+            log("\nCreating XML fails due:\n", ex);
             ex.printStackTrace();
             fail("\nCreating XML fails due:\n" + ex);
         }

@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import junit.textui.TestRunner;
 import org.netbeans.modules.xml.core.XMLDataObject;
+import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
 import org.netbeans.tests.xml.XTest;
 import org.openide.cookies.CloseCookie;
 import org.openide.filesystems.FileSystem;
@@ -63,14 +64,16 @@ public class EncodingTest extends XTest {
     public void testEncoding() throws Exception {
         final String DATA_OBJECT = "encoding.xml";
         final String NDATA_OBJECT = "newEncoding.xml";
+        TreeEditorCookie cake;
         
         // prepare data
         XMLDataObject original = (XMLDataObject) TestUtil.THIS.findData(DATA_OBJECT);
         if (original == null) {
             fail("\"" + DATA_OBJECT + "\" data object not found!");
         }
-        TreeElement docRoot = original.getTreeDocument().getDocumentElement();
-        String defEncoding =  original.getTreeDocument().getEncoding();
+        cake = (TreeEditorCookie) original.getCookie(TreeEditorCookie.class);        
+        TreeElement docRoot = ((TreeDocument)cake.openDocumentRoot()).getDocumentElement();
+        String defEncoding =  cake.getDocumentRoot().getEncoding();
         String gString = TestUtil.THIS.nodeToString(docRoot);
         Iterator encodings = TreeUtilities.getSupportedEncodings().iterator();
         
@@ -94,14 +97,16 @@ public class EncodingTest extends XTest {
                 
                 // create new document, set encoding, save and close it
                 XMLDataObject xdao = (XMLDataObject) original.createFromTemplate(dataFolder, encoding);
-                TreeDocument newDoc = xdao.getTreeDocument();
+                cake = (TreeEditorCookie) xdao.getCookie(TreeEditorCookie.class);        
+                TreeDocument newDoc = (TreeDocument) cake.openDocumentRoot();
                 newDoc.setEncoding(encoding);
                 TestUtil.THIS.saveDataObject(xdao);
                 CloseCookie cc = (CloseCookie) xdao.getCookie(CloseCookie.class);
                 cc.close();
                 
                 // read the document and check his content
-                TreeElement newRoot = xdao.getTreeDocument().getDocumentElement();
+                cake = (TreeEditorCookie) xdao.getCookie(TreeEditorCookie.class);        
+                TreeElement newRoot = ((TreeDocument) cake.getDocumentRoot()).getDocumentElement();
                 String nString = TestUtil.THIS.nodeToString(newRoot);
                 assertEquals("Encoding: " + encoding + ", documents are differ", gString, nString);
             } catch (Exception ex) {
