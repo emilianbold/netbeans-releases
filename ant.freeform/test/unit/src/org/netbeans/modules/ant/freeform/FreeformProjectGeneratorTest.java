@@ -35,6 +35,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.Sources;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -171,8 +172,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         assertNotNull("Project was not created", p);
         assertEquals("Project folder is incorrect", base, p.getProjectDirectory());
         
-        Sources ss = (Sources)p.getLookup().lookup(Sources.class);
-        assertNotNull("Project does not have Sources instance in lookup", ss);
+        Sources ss = ProjectUtils.getSources(p);
         assertEquals("Project must have one java source group", 1, ss.getSourceGroups("java").length);
         assertEquals("Project cannot have csharp source group", 0, ss.getSourceGroups("csharp").length);
 
@@ -193,11 +193,13 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         sf.location = test.getAbsolutePath();
         sfs.add(sf);
         FreeformProjectGenerator.putSourceFolders(helper, sfs);
-        // XXX: updating not implement in Freeform project:
-//        assertEquals("Project must have one java source group", 2, ss.getSourceGroups("java").length);
-//        assertEquals("Project cannot have csharp source group", 0, ss.getSourceGroups("csharp").length);
-//        assertEquals("Number of fired events does not match", 1, l.count);
-//        l.reset();
+        assertEquals("Project must have one java source group", 2, ss.getSourceGroups("java").length);
+        assertEquals("Project cannot have csharp source group", 0, ss.getSourceGroups("csharp").length);
+        // XXX still crude impl that does not try to fire a minimal number of changes:
+        /*
+        assertEquals("Number of fired events does not match", 1, l.count);
+         */
+        l.reset();
         
         n = lvp.createLogicalView();
         // expected subnodes: #1) src folder and #2) build.xml and #3) tests

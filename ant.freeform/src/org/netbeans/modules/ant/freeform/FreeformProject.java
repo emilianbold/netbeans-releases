@@ -43,7 +43,9 @@ import org.netbeans.modules.ant.freeform.ui.ProjectCustomizerProvider;
 import org.netbeans.modules.ant.freeform.ui.View;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -235,24 +237,51 @@ public final class FreeformProject implements Project {
      * XXX Workaround for the fact that SourcesHelper does not yet support
      * changing its configuration dynamically. Should be done differently.
      */
-    private final class SourcesProxy implements Sources {
+    private final class SourcesProxy implements Sources, AntProjectListener {
         
         private Sources delegate;
+        private final List/*<ChangeListener>*/ listeners = new ArrayList();
+        
+        public SourcesProxy() {
+            helper().addAntProjectListener(this);
+        }
         
         public synchronized SourceGroup[] getSourceGroups(String str) {
             if (delegate == null) {
                 delegate = initSources();
-                // XXX listen to changes in project.xml and refire changes
             }
             return delegate.getSourceGroups(str);
         }
         
-        public void addChangeListener(ChangeListener changeListener) {
-            // XXX
+        public synchronized void addChangeListener(ChangeListener changeListener) {
+            listeners.add(changeListener);
         }
         
-        public void removeChangeListener(ChangeListener changeListener) {
-            // XXX
+        public synchronized void removeChangeListener(ChangeListener changeListener) {
+            listeners.remove(changeListener);
+        }
+        
+        private void fireChange() {
+            ChangeListener[] _listeners;
+            synchronized (this) {
+                delegate = null;
+                if (listeners.isEmpty()) {
+                    return;
+                }
+                _listeners = (ChangeListener[])listeners.toArray(new ChangeListener[listeners.size()]);
+            }
+            ChangeEvent ev = new ChangeEvent(this);
+            for (int i = 0; i < _listeners.length; i++) {
+                _listeners[i].stateChanged(ev);
+            }
+        }
+        
+        public void configurationXmlChanged(AntProjectEvent ev) {
+            fireChange();
+        }
+        
+        public void propertiesChanged(AntProjectEvent ev) {
+            // ignore
         }
         
     }
