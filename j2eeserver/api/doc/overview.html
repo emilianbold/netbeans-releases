@@ -1,0 +1,249 @@
+
+<html>
+<body>
+
+<h2>
+           Creating an App/Webserver FFJ integration module using the
+           Server Integration APIS
+</h2>
+
+Note: Refer to the server integration <a href="userview_api.html">user
+view/api call document</a> for
+greater detail.
+
+<pre>
+I. Introduction
+
+   The jsp, ejb, and assembly modules provide a complete J2EE
+   development environment.  To provide integrated development with
+   application servers, a single set of server integration apis were
+   created for these modules to communicate with application servers.
+   Under this architecture, each server vendor supplies a Netbeans
+   module called the server integration module which implements the
+   server integration apis and provides communication with the given
+   application server.  This document describes the server
+   integration module and how it should be implemented.
+
+II. Architecture
+
+   The Forte4j jsp, ejb, and assembly modules use an executor,
+   compiler, and debugger that relies on the server integration apis
+   for perform the actual work.  The server integration apis exist as
+   a Forte4j module that the above three modules depend on.  The
+   server integration modules do not interact directly with the IDE,
+   they only interact through the server integration apis.  The three
+   development modules do not communicate directly with the server
+   integration modules, using the server integration apis for all
+   communication.  
+
+   Likewise, the server integration modules communicate with the
+   web/app server running in the separate process.  The server
+   integration apis never directly communicate with the server
+   process, relying on the server integration modules for all
+   communication.
+
+   This architecture is summed up by the following diagram:
+
+
+       NB virtual machine                |      External processes
+                                         |
+                                         |
+  EJB <---+              /->Tomcat <-----+-------> Tomcat server
+          |             /   Module       |
+          +-> Server <-/                 |
+  JSP <---> Integration <-+              |
+           +-> APIS       |              |
+           |      ^       +-> RI   <-----+--->Reference Implmentation
+Assembly <-+      |         Module       |        Server
+                  |                      |
+                  |                      |
+                  |         Other        |
+                  +--> Server Module <---+----->  Other server
+                                         |
+
+III. Server Integration Module Class structure
+
+   The server integration apis are layered; there are base classes in
+   the package org.netbeans.modules.j2ee.server which provide basic
+   server functionality.  The package
+   org.netbeans.modules.j2ee.server.web provides webserver
+   functionality and extend the basic server functionality.  The
+   package org.netbeans.modules.j2ee.server.{app,ejb,ejbmodule} provide
+   application server functionality and extend the webserver
+   functionality.
+
+   Server, extending Server.  Server provides
+   three methods; getDisplayName() (used in displaying the server in menus
+   and dialogs),  getNode() (used to generate a Netbeans Node for
+   displaying the server and its instances), and getServerInstances()
+   which returns a list of server instances.  An implementation of the
+   Server class represents information about an application server
+   type.  A ServerInstance object represents information about a
+   specific server or virtual server which can be the target of
+   deployment.  There should be actions supplied on the node return by
+   getNode() that deal with adding ServerInstances, and the node is
+   responsible for graphically displaying information about its
+   ServerInstances as Children of the node.
+
+   WebServer and Appserver in addition supply additional methods
+   get*ConfigSupport(), which allows the server integration module to
+   supply user interfaces to configure individual j2ee components for
+   the target server.  Configuration of individual components is done
+   by two groups of classes; StandardData classes, implementation of
+   which is provided by the forte modules, and which provides standard
+   information about the individual components; and CustomData classes,
+   provided by the server plugin, that provide the user interface for
+   specifying the server specific information.
+
+   ServerInstance has two methods, getDisplayName(), and
+   getTestRunSupport(), which returns an instance of ServerExecution.
+   The ServerExecution class controls the run-time behavior of a single
+   ServerInstance.  WebServerInstance and AppServerInstance
+	 extend ServerInstance to allow deployment and testrun of j2ee
+	 components to servers.  A single j2ee application or module is
+	 executed at any one time.
+	 *ServerInstance.setTestComponent(StandardData) is used to
+	 specify this component.
+
+   ServerExecution provides several important methods.
+   startExecution() indicates that the associated ServerInstance
+   should be running.  startExecution() is called on any
+   ServerInstance that is associated with any J2EE components
+   currently mounted into the NB repository.  stopExecution() is
+   called when there is no longer any association.  synchronize() is
+   called when the IDE needs to be assured that the server is up to
+   date with the current state of the J2EE components.  synchronize()
+   should block until the server is up to date and ready.
+
+   Summary:   
+   - Server ; provides information about the server type,
+     allows access to any number of ServerInstances of that type
+   - ServerInstace; provides information/access
+     to a specific instance of a server, each instance has a
+     ServerExecution object attached to it that controls the runtime server.
+   - *Configsupport/*StandardData/*CustomData provides a way for a server to
+     customize specific J2EE components.
+
+
+      User View with API calls (sequential)
+
+-  User installs server integration module
+
+   (Module) ServerRegistry.add()
+
+-  User looks at Runtime tab
+
+   (API) Server.getNode(), Server.getDisplayName()
+      to display server.
+
+-  User sets up a server instance
+
+   (Module) proprietary code 
+      to find/create server instance
+
+-  User sets default server instance
+
+  (Module or API) ServerRegistry.setDefault{Web,App}Instance()
+   (API) Server.getInstances()
+      to find instances for a server.
+   (API) ServerInstance.getDisplayName()
+      to display instances.
+   (API) ServerRegistry.getDefaultInstance()
+     to get the default instance
+
+-  User mounts/creates a j2ee component (web module, ejb, etc.)
+
+   No api activity except as in the next action.
+
+-  User configures application/module to use specific server instance 
+   (this happens with the default instance automatically)
+
+   (API) WebConfigSupport.addWebModule(), EjbConfigSupport.getTopItem()
+      to get the server-specific gui
+
+-  User creates/loads new jsp
+
+   (API) WebCustomData.WebModule.addJsp()
+      to get the server-specific gui
+
+-  User adds an ejb to an ejbmodule.
+
+   (API) EjbModuleCustomData.Module.addEjb()
+      to get the server-specific gui
+
+-  User executes a component
+
+   (API) WebServerInstance.setTestComponent(AppStandardData.WebApplication)
+      or AppServerInstance.setTestComponent(AppStandardData.J2eeApplication)
+      or AppServerInstance.setTestComponent(EjbModuleStandardData.Module)
+      to give the component to the server instance
+   (API) ServerExecution.synchronize()
+      to make sure the server is up to date
+   (API) WebServerTestExecution.getURL()
+      to get the server URL if pertinent
+   See packaging step
+
+-  User compiles jsp
+   (API) JspCompileContext, SourceMangler
+      to get server-specific compile
+
+-  User creates/loads new servlet in a web module.
+
+   (API) WebStandardData.WebModule.addServlet()
+      to get the server-specific gui
+   (API) WebChangeListener.fireWebChangeEvent()
+      to inform the server of a new creation.
+
+-  User edits a servlet's properties
+
+   (API) activates WebData.WebServlet.PropertyListener()
+      to inform about changes in the standard web.xml
+   (Module) WebCustomData.ServletConfigurator
+      to record changes in server-specific info
+
+-  User executes jsp
+
+   (API) ServerExecution.synchronize()
+      to make sure the server is up to date
+
+-  User edits jsp
+
+   (API) WebChangeListener.fireWebChangeEvent()
+      to inform the server of a changed jsp
+
+-  User debugs jsp
+
+   (API) ServerExecution.setDebug(true)
+   (API) ServerExecution.getDebugInfo()
+      to get the debug port
+   (API) ServerExecution.synchronize()
+      to make sure the server is up to date
+   (API) WebServerTestExecution.getURL()
+      to get the server URL 
+
+-  User creates a J2ee application
+    (API) app-level assembly configuration apis not yet defined
+
+-  User chooses a server instance for a J2ee application
+    (API) AppServerInstance.setTestComponent(AppStandardData.J2eeApplication)
+
+-  User adds a web module to a J2ee application
+    (API) app-level assembly configuration apis not yet defined
+    (API) AppChangeListener.fireAppChangeEvent()
+
+-  User executes the J2ee application component
+
+   See execute a component above
+
+-  User deploys Ear File
+   (API) AppServerInstance.deploy(AppStandardData.J2eeApplication)
+   See packaging step
+
+Packaging Step (after component has been deployed/given to the instance):
+
+   (plugin) *StandardData.getResource().getJarFile()
+   (API) *CustomData.getPackager().getJarInput(),getFinalJarInput(),validate()
+      to create the jar file to give back to the plugin.
+</pre>
+</body>
+</html>

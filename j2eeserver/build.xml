@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="netbeans" name="j2eeserver">
+
+  <property name="nbroot" value="../../nb_all"/>
+  <property name="nbext" value="${nbroot}/nbbuild"/>
+
+  <taskdef classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext}/nbantext.jar" name="locjar"/>
+  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext}/nbantext.jar"/>
+
+  <!-- These are the primary targets. -->
+
+  <target depends="jars" name="netbeans"/>
+
+  <target name="nbm" depends="netbeans">
+    <makenbm file="j2eeserver.nbm"
+             topdir="."
+             manifest="manifest-subst.mf"
+             homepage="http://${homepage.base}/j2eeserver.html"
+             distribution="${dist.base}/j2eeserver.nbm">
+      <license file="${license.file}" />
+      <signature keystore="${keystore}" storepass="${storepass}" alias="nb_ide"/>
+      <exclude name="**/nondist/**" />
+    </makenbm>
+  </target>
+
+  <target name="clean">
+    <delete>
+      <fileset dir="src">
+        <include name="**/*.class"/>
+        <include name="**/*.jar"/>
+      </fileset>
+    </delete>
+    <delete dir="netbeans"/>
+    <delete dir="Info"/>
+    <delete file="j2eeserver.nbm"/>
+    <delete file="manifest-subst.mf"/>
+  </target>
+
+  <target name="javadoc">
+    <mkdir dir="doc/"/>
+    <taskdef classname="org.netbeans.nbbuild.GenerateJavadoc" classpath="${nbroot}/nbbuild/nbantext.jar" name="genjavadoc"/>
+    <genjavadoc destdir="doc/" modules="j2eeserver">
+       <topdir path="${nbroot}"/>
+     </genjavadoc>
+  </target>
+
+  <target name="apidoc">
+    <property name="jdk-docs-location" value="http://java.sun.com/j2se/1.3/docs/api"/>
+    <tstamp/>
+    <property name="open-apis-footer" value="&lt;font size=-2
+    color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 2000-2001 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;"/>
+    <echo message="Build Server Integration API documentation..."/>
+    <mkdir dir="serverdoc"/>
+    <javadoc destdir="serverdoc"
+             packagenames="org.netbeans.modules.j2ee.server,org.netbeans.modules.j2ee.server.web,org.netbeans.modules.j2ee.server.ejb,org.netbeans.modules.j2ee.server.datamodel,org.netbeans.modules.j2ee.server.ejbmodule,org.netbeans.modules.j2ee.server.app,org.netbeans.modules.j2ee.server.appasm"
+             doctitle="Forte4j Server Integration APIs"
+             windowtitle="Forte4j Server Integration APIs"
+             overview="api/doc/overview.html"
+             bottom="${open-apis-footer}"
+             use="true"
+             splitindex="true"
+             author="false"
+             version="false"
+             maxmemory="64m"
+    >
+      <sourcepath>
+        <pathelement location="api/doc"/>
+        <pathelement location="src"/>
+      </sourcepath>
+      <classpath>
+        <pathelement location="${nbroot}/openide/openide-13javac-workaround.jar"/>
+        <fileset dir="${nbroot}/openide/netbeans/lib">
+                <include name="openide*.jar"/>
+        </fileset>
+        <pathelement location="${nbroot}/openidex/netbeans/modules/openidex.jar"/>
+        <pathelement location="${nbroot}/logger/netbeans/lib/ext/logger.jar"/>
+        <pathelement location="${nbroot}/jarpackager/netbeans/modules/jarpackager.jar"/>
+        <pathelement location="${nbroot}/debuggerjpda/netbeans/modules/jpdaDebugger.jar"/>
+      </classpath>
+      <link href="${jdk-docs-location}"
+            offline="true"
+            packagelistLoc="api/doc"
+      />
+      <group title="&lt;a href=&quot;@TOP@org/netbeans/modules/j2ee/server/doc-files/api.html&quot;&gt;Generic server integration api&lt;/a&gt;"
+             packages="org/netbeans/modules/j2ee/server"/>
+      <group title="&lt;a href=&quot;@TOP@org/netbeans/modules/j2ee/server/datamodel/doc-files/api.html&quot;&gt;Server integration data model&lt;/a&gt;"
+             packages="org/netbeans/modules/j2ee/server/datamodel"/>
+      <group title="&lt;a href=&quot;@TOP@org/netbeans/modules/j2ee/server/web/doc-files/api.html&quot;&gt;Web server integration api&lt;/a&gt;"
+             packages="org/netbeans/modules/j2ee/server/web"/>
+      <group title="&lt;a href=&quot;@TOP@org/netbeans/modules/j2ee/server/ejb/doc-files/api.html&quot;&gt;Ejb server integration api&lt;/a&gt;"
+             packages="org/netbeans/modules/j2ee/server/ejb"/>
+      <group title="&lt;a href=&quot;@TOP@org/netbeans/modules/j2ee/server/ejbmodule/doc-files/api.html&quot;&gt;Ejbmodule server integration api&lt;/a&gt;"
+             packages="org/netbeans/modules/j2ee/server/ejbmodule"/>
+      <group title="&lt;a href=&quot;@TOP@org/netbeans/modules/j2ee/server/appasm/doc-files/api.html&quot;&gt;Application Assembly server integration api&lt;/a&gt;"
+             packages="org/netbeans/modules/j2ee/server/appasm"/>
+      <group title="&lt;a href=&quot;@TOP@org/netbeans/modules/j2ee/server/app/doc-files/api.html&quot;&gt;Application server integration api&lt;/a&gt;"
+             packages="org/netbeans/modules/j2ee/server/app"/>
+    </javadoc>
+    <zip zipfile="serverintegration.zip" basedir="serverdoc"/>
+  </target>
+
+  <!-- These are the secondary targets. -->
+
+  <target depends="compile" name="jars">
+    <mkdir dir="netbeans/modules"/>
+    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
+    <copy file="manifest.mf" tofile="manifest-subst.mf"
+          filtering="on"/>
+
+    <locjar compress="false" jarfile="netbeans/modules/j2eeserver.jar" manifest="manifest-subst.mf">
+      <locale name="ja"/>
+      <branding name="f4j"/>
+      <branding name="f4j_ce"/>
+      <branding name="f4j_ie"/>
+      <fileset dir="src" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
+    </locjar>
+  </target>
+  
+  <target name="compile">
+    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+      <classpath>
+        <pathelement location="${nbroot}/openide/openide-13javac-workaround.jar"/>
+        <fileset dir="${nbroot}/openide/netbeans/lib">
+                <include name="openide*.jar"/>
+        </fileset>
+        <pathelement location="${nbroot}/openidex/netbeans/modules/openidex.jar"/>
+        <pathelement location="${nbroot}/logger/netbeans/lib/ext/logger.jar"/>
+        <pathelement location="${nbroot}/jarpackager/netbeans/modules/jarpackager.jar"/>
+        <pathelement location="${nbroot}/debuggerjpda/netbeans/modules/jpdaDebugger.jar"/>
+        <pathelement location="${nbroot}/debuggercore/netbeans/modules/debuggerCore.jar"/>
+      </classpath>
+    </javac>
+  </target>
+
+  <!-- This target will only work *inside* the IDE! -->
+  <target depends="" description="Test the module inside the running IDE." name="test">
+    <taskdef classname="org.netbeans.modules.apisupport.ant.InstallModuleTask" name="nbinstaller"/>
+    <nbinstaller action="reinstall" module="netbeans/modules/j2eeserver.jar"/>
+  </target>
+
+
+</project>
