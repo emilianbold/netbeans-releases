@@ -27,13 +27,13 @@ import org.openide.util.WeakListener;
 
 
 /** 
- * Structure of bunlde of .properties files. Provides structure of entries (which each corresponds
+ * Structure of bundle of .properties files. Provides structure of entries (which each corresponds
  * to one .properties file) for one <code>PropertiesDataObject</code>.
- * <br>This structure provides support for sorting <code>entries</code> and fast mapping of integers to <code>entries</code>.
+ * <p>This structure provides support for sorting <code>entries</code> and fast mapping of integers to <code>entries</code>.
  *
  * @author Petr Jiricka
  */
-public class BundleStructure {
+public class BundleStructure extends Object {
     
     /** <code>PropertiesDataObject</code> which structure is provided. */
     PropertiesDataObject obj;
@@ -54,9 +54,6 @@ public class BundleStructure {
     /** Listens to changes on the underlying dataobject. */
     private PropertyChangeListener propListener;
 
-    /** Generated Serialized Version UID. */
-    static final long serialVersionUID =-7537975919604619884L;
-    
     
     /** Create a data node for a given data object.
      * The provided children object will be used to hold all child nodes.
@@ -72,6 +69,7 @@ public class BundleStructure {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName().equals(PropertiesDataObject.PROP_FILES)) {
                     updateEntries();
+                    
                     propBundleSupport.fireBundleStructureChanged();
                 }
             }
@@ -201,7 +199,7 @@ public class BundleStructure {
     }
 
     /** Helper method. Updates internal entries from the underlying <code>PropertiesDataObject<code>. */
-    private synchronized void updateEntries() {
+    private void updateEntries() {
         TreeMap tm = new TreeMap(PropertiesDataObject.getSecondaryFilesComparator());
         PropertiesFileEntry pfe;
         for (Iterator it = obj.secondaryEntries().iterator(); it.hasNext(); ) {
@@ -209,18 +207,20 @@ public class BundleStructure {
             tm.put(pfe.getFile().getName(), pfe);
         }
 
-        // move the entries
-        entries = new PropertiesFileEntry[tm.size() + 1];
-        entries[0] = (PropertiesFileEntry)obj.getPrimaryEntry();
-        int index = 0;
-        for (Iterator it = tm.keySet().iterator(); it.hasNext(); )
-            entries[++index] = (PropertiesFileEntry)tm.get(it.next());
+        synchronized(this) {
+            // Move the entries.
+            entries = new PropertiesFileEntry[tm.size() + 1];
+            entries[0] = (PropertiesFileEntry)obj.getPrimaryEntry();
+            int index = 0;
+            for (Iterator it = tm.keySet().iterator(); it.hasNext(); )
+                entries[++index] = (PropertiesFileEntry)tm.get(it.next());
+        }
 
         buildKeySet();
     }
 
     /** Helper method. Constructs a set of keys from the entries (from scratch). */
-    private synchronized void buildKeySet() {
+    private void buildKeySet() {
         keyList = new ArrayList() {
             public boolean equals(Object obj) {
                 if(!(obj instanceof ArrayList))
