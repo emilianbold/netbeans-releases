@@ -58,7 +58,7 @@ All Rights Reserved.
         <echo append="true" file="release/nb-launch.jnlp">
 <![CDATA[        
     </resources>
-    <application-desc main-class="org.netbeans.core.Main"/>
+    <application-desc main-class="org.netbeans.jnlp.Main"/>
 </jnlp>
 ]]></echo>
         <!-- replace back accidentally replaced name of the directory -->
@@ -107,7 +107,7 @@ All Rights Reserved.
             </fileset>
         </copy>
         <!-- now they can be signed -->
-        <signjar alias="${jnlp.signjar.alias}" storepass="${jnlp.signjar.password}">
+        <signjar alias="${jnlp.signjar.alias}" keystore="${jnlp.signjar.keystore}" storepass="${jnlp.signjar.password}">
             <fileset dir=".">
                 <include name="release/*.jar"/>
             </fileset>
@@ -141,7 +141,7 @@ All Rights Reserved.
     </target>
 
     <path id="cp">
-        <pathelement location="${nb_all}/core/netbeans/lib/ext/boot.jar"/>
+        <pathelement location="${nb_all}/core/netbeans/lib/core.jar"/>
         <pathelement location="${jnlp-api.file.location}"/>
         <pathelement location="${nb_all}/web/external/servlet-2.3.jar"/>
     </path>
@@ -155,6 +155,13 @@ All Rights Reserved.
         <delete file="jars/core/regexp-1.2.jar"/>
         <delete file="jars/core/xml-apis-1.0b2.jar"/>
 <!--        <delete file="jars/core/xerces-2.0.2.jar"/> -->
+        <mkdir dir="jars"/>
+        <jar compress="false"
+             jarfile="jars/nbjnlpinstaller.jar">
+             <fileset dir="src" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt">
+             </fileset>
+        </jar>
+
     </target>
 
     <target name="buildjar">

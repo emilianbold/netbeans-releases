@@ -33,4 +33,5 @@ All Rights Reserved.
         <property name="org.openide.util.lookup.MetaInfServicesLookup.DEBUG" value="true"/>
         End Debugging -->
 
+        <jar main="true" href="nbjnlpinstaller.jar"/>
         <!-- The rest of this file is appended by the build.xml script -->
