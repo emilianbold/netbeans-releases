@@ -16,9 +16,13 @@ package com.netbeans.enterprise.modules.db.explorer.nodes;
 import java.util.*;
 import java.beans.*;
 import java.sql.*;
+import java.io.IOException;
+import java.awt.datatransfer.Transferable;
 
+import org.openide.cookies.InstanceCookie;
 import org.openide.util.MapFormat;
 import org.openide.nodes.*;
+import org.openide.util.datatransfer.*;
 
 import com.netbeans.ddl.*;
 import com.netbeans.ddl.impl.SpecificationFactory;
@@ -27,12 +31,14 @@ import com.netbeans.enterprise.modules.db.explorer.infos.DatabaseNodeInfo;
 import com.netbeans.enterprise.modules.db.explorer.DatabaseNodeChildren;
 import com.netbeans.enterprise.modules.db.explorer.DatabaseConnection;
 import com.netbeans.enterprise.modules.db.explorer.dlg.ConnectDialog;
+import com.netbeans.developer.modules.loaders.form.RADComponentNode;
+import com.netbeans.developer.modules.loaders.form.RADComponent;
 
 /** 
 * Node representing open or closed connection to database.
 */
 
-public class ConnectionNode extends DatabaseNode
+public class ConnectionNode extends DatabaseNode implements InstanceCookie
 {
 	public void setInfo(DatabaseNodeInfo nodeinfo)
 	{
@@ -47,6 +53,27 @@ public class ConnectionNode extends DatabaseNode
       			}
       		}
     	});
+	    getCookieSet().add(this);
+	}
+
+	public String instanceName() 
+	{
+		return "com.netbeans.sql.ConnectionSource";
+    }    
+
+	public Class instanceClass() throws IOException, ClassNotFoundException
+	{
+		return Class.forName("com.netbeans.sql.ConnectionSource");
+	}
+	
+	public Object instanceCreate()
+	{
+		try {
+			Object obj = Beans.instantiate(null, instanceName());
+			return obj; 				
+		} catch (Exception ex) {
+			return null;
+		}
 	}
 
 	private void update(Connection connection)
