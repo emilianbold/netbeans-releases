@@ -22,12 +22,28 @@ Microsystems, Inc. All Rights Reserved.
 
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../nbbuild/nbantext.jar"/>
+
+  <target name="setup-jdkhome-1">
+    <!-- Note: user-configured -Djavahome=... will always override this: -->
+    <property name="javahome" location="${java.home}"/>
+    <available property="javahome-valid" file="${javahome}/lib/tools.jar"/>
+  </target>
+  <target name="setup-jdkhome-2" depends="setup-jdkhome-1" if="javahome-valid">
+    <property name="jdkhome" value="${javahome}"/>
+    <property name="jdkhome-valid" value="true"/>
+  </target>
+  <target name="setup-jdkhome-3" depends="setup-jdkhome-1" unless="javahome-valid">
+    <property name="jdkhome" location="${javahome}/.."/>
+    <available property="jdkhome-valid" file="${jdkhome}/lib/tools.jar"/>
+  </target>
+  <target name="setup-jdkhome" depends="setup-jdkhome-2,setup-jdkhome-3" unless="jdkhome-valid">
+    <fail message="No tools.jar found in ${javahome}! Set -Djavahome=... as needed."/>
+  </target>
   
-  <target name="compile">
+  <target name="compile" depends="setup-jdkhome">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
 	<pathelement location="../openide/openide-13javac-workaround.jar"/>
-        <!-- Hopefully set up bu nbbuild/build.xml: -->
         <pathelement location="${jdkhome}/lib/tools.jar"/>
         <fileset dir="../openide/netbeans/lib">
           <include name="openide*.jar" />
