@@ -29,8 +29,6 @@ import java.util.Set;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.openide.filesystems.FileObject;
 
-// XXX do not use nested public classes (Listener & Event)
-
 /**
  * Maintains a global registry of "interesting" classpaths of various kinds.
  * You may add and remove different kinds of {@link ClassPath}s to the registry
@@ -260,9 +258,6 @@ public final class GlobalPathRegistry {
                 while (it2.hasNext()) {
                     ClassPath.Entry entry = (ClassPath.Entry)it2.next();
                     FileObject[] someRoots = SourceForBinaryQuery.findSourceRoots(entry.getURL()).getRoots();
-                    // XXX it seems that currently PlatformSourceForBinaryQuery
-                    // misbehaves and returns src.zip, not its root... so currently
-                    // stack trace hyperlinking does not always work for JRE classes
                     sourceRoots.addAll(Arrays.asList(someRoots));
                 }
             }
