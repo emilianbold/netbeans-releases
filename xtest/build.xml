@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='ISO-8859-1' ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
                 Sun Public License Notice
 
@@ -12,229 +12,170 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<!DOCTYPE xtest [
-  <!ENTITY cfg-default SYSTEM "cfg-default.xml">
+<!DOCTYPE test [
+    <!ENTITY master-config SYSTEM "master-config.xml">
 ]>
 
-<project name="xtest_master" default="netbeans" basedir=".">
+<project basedir="." default="all" name="changeme">
 
-    <!-- Properties -->
-    <property name="netbeans.home" location="../nbbuild/netbeans"/>
-    <property name="netbeans.test.home" value="${netbeans.home}"/>
-
-    <property name="xtest.home" location="."/>
-    <property name="xtest.mode" value="code"/>
-
-    <property name="xtest.config" value="default"/>
-    <property name="xtest.uploaddir" location="results"/>
-    <property name="xtest.distdir" location="dist"/>
     <property name="xtest.basedir" location=".."/>
-    <property name="xtest.mail.all" value=""/>
-    <property name="xtest.mail.failed" value=""/>
+    <property name="xtest.uploaddir" location="results"/>
+    
+    <property name="xtest.hostname" location="amos.czech"/>
 
-    <property name="build.compiler.deprecation" value="off"/>
-    <property name="build.compiler.debug" value="off"/>
-
-    <!-- build up the xtest framework -->
-    <target name="bootstrap" unless="xtest.noboot">
-        <echo message="Bootstrapping XTest-specific Ant extensions..."/>
-        <ant antfile="xtest.xml" target="netbeans"/>
-    </target>
-
-    <target name="init" depends="bootstrap">
-        <tstamp/>
-        <property name="buildnumber" value="${DSTAMP}-${TSTAMP}"/>
-        <property name="xtest.distname" value="nb-xtest-${buildnumber}"/>
-
-        <taskdef name="nbtaskdef" classname="org.netbeans.xtest.NbMultiTaskDef" classpath="lib/xtest.jar"/>
-
+    <property name="xtest.mail.all" value="milan@sun.com"/>
+    <property name="xtest.mail.failed" value="milan@sun.com"/>
+    
+    <target name="init" depends="check">
+        <taskdef name="nbtaskdef" classname="org.netbeans.xtest.NbMultiTaskDef" 
+                 classpath="lib/xtest.jar"/>
         <nbtaskdef classpath="lib/xtest.jar">
-            <taskdef name="xtestconfig" classname="org.netbeans.xtest.NbTestConfig"/>
-            <taskdef name="xtestconfig-print" classname="org.netbeans.xtest.NbTestConfigPrint"/>
-            <taskdef name="xtest" classname="org.netbeans.xtest.NbExecutor"/>
-        </nbtaskdef>
-
-        <nbtaskdef classpath="lib/xtest.jar;lib/xerces.jar;lib/xalan.jar">
-            <taskdef name="xreport" classname="org.netbeans.xtest.NbReport"/>
+            <taskdef name="master-config" classname="org.netbeans.xtest.NbTestConfig2"/>
+            <taskdef name="xtest-runner" classname="org.netbeans.xtest.NbExecutor2"/>
+            <taskdef name="xreport" classname="org.netbeans.xtest.NbReport"/>            
+        </nbtaskdef>        
+        <nbtaskdef classpath="lib/xtest.jar;lib/xalan.jar;lib/old/xerces.jar">                                    
             <taskdef name="xalan" classname="org.netbeans.xtest.XalanLauncher"/>
-        </nbtaskdef>
-
-        <!-- Configuration defines modules, tests and patterns to be executed -->
-        <xtestconfig config="${xtest.config}">
-          &cfg-default;
-        </xtestconfig>
+        </nbtaskdef>        
+    </target>
+    
+    <target name="check" depends="check-for-xtest" unless="xtest-ready">
+        <fail message="You should build xtest first, run 'ant buildxtest'."/>
+    </target>
+    
+    <target name="check-for-xtest">
+        <available file="lib/xtest.jar" property="xtest-ready"/>
+    </target>
+    
+    <!-- ============= -->
+    <!-- CONFIGURATION -->
+    <!-- ============= -->
+    <target name="configuration" depends="init">
+        <master-config config="config-1">
+            &master-config;
+        </master-config>
     </target>
 
-    <!-- ================================== -->
-    <!-- Helper targets, called by executor -->
-    <!-- ================================== -->
-
-    <!-- =========================================================================== -->
-    <!-- build test distribution helper, called by executor                          -->
-    <!-- Build test of module and upload results to the test distribution directory. -->
-    <target name="build-test-distribution">
-        <echo message="Building ${xtest.testtype} test of ${xtest.module}..."/>
-
-        <mkdir dir="${xtest.distdir}/${xtest.module}/test/${xtest.testtype}"/>
-        <ant dir="${xtest.basedir}/${xtest.module}/test/${xtest.testtype}" target="build">
-            <property name="xtest.build" 
-                      value="${xtest.distdir}/${xtest.module}/test/${xtest.testtype}"/>
-        </ant>
-
-        <copy   file="${xtest.basedir}/${xtest.module}/test/${xtest.testtype}/build.xml" 
-                toDir="${xtest.distdir}/${xtest.module}/test/${xtest.testtype}"/>
+    <target name="all">
+        <echo message="You should provide target to execute, see 'ant -projecthelp'"/>
     </target>
-
-    <!-- ============================================== -->
-    <!-- build test helper, called by executor          -->
-    <!-- Build test of module in its default directory. -->
-    <target name="build-test">
-        <echo message="Building ${xtest.testtype} test of ${xtest.module}..."/>
-        <ant dir="${xtest.basedir}/${xtest.module}/test/${xtest.testtype}" target="build"/>
-    </target>
-
-    <!-- ====================================== -->
-    <!-- run test helper, called by executor    -->
-    <!-- Run test of module nad upload results. -->
-    <target name="run-test" depends="clean-up-ide">
-        <echo message="Running ${xtest.testtype} test of ${xtest.module}..."/>
-        <ant dir="${xtest.basedir}/${xtest.module}/test/${xtest.testtype}" target="test">
-            <property name="xtest.results" 
-                      value="${xtest.basedir}/${xtest.module}/test/${xtest.testtype}/results"/>
-        </ant>
-
-        <mkdir dir="${xtest.uploaddir}/${xtest.module}/${xtest.testtype}"/>
-        <copy todir="${xtest.uploaddir}/${xtest.module}/${xtest.testtype}">
-            <fileset dir="${xtest.basedir}/${xtest.module}/test/${xtest.testtype}/results"/>
-        </copy>
-    </target>
-
-    <!-- ==================================================================================== -->
-    <!-- create new fresh IDE installation                                                    -->
-    <!-- Brings IDE to state before fisrt start. It removes IDE configuration, use carefully! -->
-    <target name="clean-up-ide" if="xtest.clean-up-ide">
-        <delete>
-            <fileset dir="${netbeans.test.home}">
-                <include name="system/project.last"/>
-                <include name="modules/externalizedModules.ser"/>
-                <include name="system/ide.log"/>
-            </fileset>
-        </delete>
-        <delete dir="${netbeans.test.home}/system/Projects"/>
-        <delete dir="${xtest.userdir}"/>
-        <mkdir dir="${xtest.userdir}"/>
-    </target>
-
-    <!-- ============================================= -->
-    <!-- clean test results helper, called by executor -->
-    <!-- Clean up test results of module.              -->
-    <target name="clean-test-results">
-        <echo message="Cleaning results of ${xtest.module} ${xtest.testtype} test..."/>
-        <ant dir="${xtest.basedir}/${xtest.module}/test/${xtest.testtype}" target="clean_results">
-            <property name="xtest.results" 
-                      value="${xtest.basedir}/${xtest.module}/test/${xtest.testtype}/results"/>
-        </ant>
-    </target>
-
-    <!-- =========================================== -->
-    <!-- clean test build helper, called by executor -->
-    <!-- Clean up build of module test.              -->
-    <target name="clean-test-build">
-        <echo message="Cleaning build of ${xtest.module} ${xtest.testtype} test..."/>
-        <ant dir="${xtest.basedir}/${xtest.module}/test/${xtest.testtype}" target="clean_build"/>
-    </target>
-
-
-    <!-- =================================== -->
-    <!-- Main executor, calls helper targets -->
-    <!-- =================================== -->
-
-    <!-- ================================================================================================== -->
-    <!-- main executor                                                                                      -->
-    <!-- Iterate through all modules and tests defined by selected configuration and call specified target. -->
-    <target name="executor">
-        <xtest targetname="${target.name}"
-               targetParamModule="xtest.module"
-               targetParamTesttype="xtest.testtype"
-               targetParamIncludes="xtest.includes"
-               targetParamExcludes="xtest.excludes">
-        </xtest>
-    </target>
-
-
-    <!-- =========================== -->
-    <!-- Entry points, call executor -->
-    <!-- =========================== -->
-
-    <!-- ================================== -->
-    <!-- main entrypoint for building tests -->
-    <target name="build" depends="init"
-            description="Build all tests of all modules according selected configuration.">
+    
+    <target name="runtests" depends="configuration"
+            description="Main target for running tests according to config and creating report.">
+    
         <antcall target="executor">
-            <param name="target.name" value="build-test"/>
+            <param name="target.name" value="runtest-helper"/>
         </antcall>
-    </target>
-
-    <!-- ============================================== -->
-    <!-- main entrypoint for building test distribution -->
-    <target name="build-distribution" depends="init"
-            description="Build all tests of all modules to distribution directory and ZIP it.">
-
-        <delete dir="${xtest.distdir}"/>
-        <delete file="${xtest.distname}.zip"/>
-
-        <antcall target="executor">
-            <param name="target.name" value="build-test-distribution"/>
-        </antcall>
-
-        <!-- zip task not well suited to making final build, as it does not set +x bits -->
-        <!-- so on Unix try to use native ZIP first -->
-        <exec executable="zip" dir="${xtest.distdir}" os="Linux SunOS Solaris" failonerror="false">
-	    <arg value="-9"/>
-            <arg value="-r"/>
-            <arg value="${xtest.distname}.zip"/>
-            <arg value="."/>
-	    <arg value="-i"/>
-	    <arg value="*"/>
-        </exec>
-	<move todir=".">
-	    <fileset dir="${xtest.distdir}" includes="${xtest.distname}.zip"/>
-	</move>
-
-        <zip zipfile="${xtest.distname}.zip" basedir="${xtest.distdir}"/>
-    </target>
-
-    <target name="unzip-distribution" if="distname-zip"
-            description="Unzips distribution to dist folder, you must provide name of zipfile -Ddistname-zip">
-        <delete dir="${xtest.distdir}"/>
-	<unzip src="${distname-zip}" dest="${xtest.distdir}"/>
-    </target>
-
-    <!-- =========================================================== -->
-    <!-- Run all tests of all modules and create summary of results. -->
-    <target name="test-runner" depends="init, clean-results, clean-uploaded-results">
-        <antcall target="executor">
-            <param name="target.name" value="run-test"/>
-        </antcall>
-
-        <!-- make summary  -->
+        
         <xreport tofile="summary.xml" 
                  resultsdir="${xtest.uploaddir}"
                  statusfailed="xtest.failed">
-            <reporter testtype="unit" classname="org.netbeans.xtest.UnitTestReporter"/>
+            <reporter testtype="unit" classname="org.netbeans.xtest.UnitTestReporter2"/>
         </xreport>
-
-        <!-- format HTML & plain summary  -->
-        <xalan srcfile="${xtest.uploaddir}/summary.xml" trgfile="${xtest.uploaddir}/summary.txt" xslt="xslt/summary-txt.xsl"/>
-        <xalan srcfile="${xtest.uploaddir}/summary.xml" trgfile="${xtest.uploaddir}/summary.html" xslt="xslt/summary-html.xsl"/>
+        
+        <xalan srcfile="${xtest.uploaddir}/summary.xml" 
+               trgfile="${xtest.uploaddir}/summary.html" 
+               xslt="xslt/summary-html.xsl"/>
+        <xalan srcfile="${xtest.uploaddir}/summary.xml" 
+               trgfile="${xtest.uploaddir}/summary.txt" 
+               xslt="xslt/summary-txt.xsl"/>
+        
         <copy file="xslt/stylesheet.css" todir="${xtest.uploaddir}"/>
+        
+        <antcall target="mail"/>
+               
     </target>
 
-    <!-- ================================= -->
-    <!-- main entrypoint for running tests -->
-    <target name="test" depends="test-runner, mail"
-            description="Run tests and mail summary of results."/>
+    <target name="buildtests" depends="configuration"
+            description="Main target for building all tests according to config.">
+        <antcall target="executor">
+            <param name="target.name" value="buildtest-helper"/>
+        </antcall>
+    </target>
+    
+    <target name="cleantests" depends="configuration"
+            description="Performs clean in all modules according to config.">        
+        <antcall target="executor">
+            <param name="target.name" value="cleantests-helper"/>
+        </antcall>
+    </target>
+    
+    <target name="cleanresults" depends="configuration"
+            description="Cleans results in all modules according to config.">
+        <antcall target="executor">
+            <param name="target.name" value="cleanresults-helper"/>
+        </antcall>
+    </target>
+    
+    <target name="realclean" depends="configuration"
+            description="Clean of tests, results and xtest framework. Use Carefully!">
+        <antcall target="executor">
+            <param name="target.name" value="realclean-helper"/>
+        </antcall>
+        <antcall target="real-clean"/>
+    </target>
+    
+    <!-- helper can be executed only by target executor -->
+    <target name="runtest-helper">
+        <echo message="Running tests for ${xtest.module}, testtype ${xtest.testtype}"/>
+        <ant dir="${xtest.basedir}/${xtest.module}/test" target="runtests">
+            <property name="xtest.testtype" value="${xtest.testtype}"/>
+            <property name="xtest.attributes" value="${xtest.attributes}"/>
+        </ant>        
+        <mkdir dir="${xtest.uploaddir}/${xtest.module}/${xtest.testtype}"/>
+        <copy todir="${xtest.uploaddir}/${xtest.module}/${xtest.testtype}">
+            <fileset dir="${xtest.basedir}/${xtest.module}/test/results/${xtest.testtype}/"/>
+        </copy>
+    </target>
 
+    <!-- helper can be executed only by target executor -->
+    <target name="buildtest-helper">
+        <echo message="Building tests for ${xtest.module}"/>
+        <ant dir="${xtest.basedir}/${xtest.module}/test" target="buildtests"/>        
+    </target>
+    
+    <!-- helper can be executed only by target executor -->
+    <target name="cleantests-helper">
+        <echo message="Cleaning tests for ${xtest.module}"/>
+        <ant dir="${xtest.basedir}/${xtest.module}/test" target="cleantests"/>
+    </target>
+    
+    <!-- helper can be executed only by target executor -->
+    <target name="cleanresults-helper">
+        <echo message="Cleaning results for ${xtest.module}"/>
+        <ant dir="${xtest.basedir}/${xtest.module}/test" target="cleanresults"/>
+    </target>
+    
+    <!-- helper can be executed only by target executor -->
+    <target name="realclean-helper">
+        <echo message="Cleaning everything for ${xtest.module}"/>
+        <ant dir="${xtest.basedir}/${xtest.module}/test" target="realclean"/>
+    </target>
+    
+    <target name="executor">
+        <xtest-runner targetname="${target.name}"
+                      targetParamModule="xtest.module"
+                      targetParamTesttype="xtest.testtype"
+                      targetParamTestAttributes="xtest.attributes"/>        
+    </target>
+
+    <target name="buildxtest"
+            description="Builds XTest framework.">
+        <ant antfile="xtest.xml"/>
+    </target>
+    
+    <target name="cleanxtest"
+            description="Cleans XTest framework.">
+        <ant antfile="xtest.xml" target="clean"/>
+    </target>
+    
+    <target name="real-clean" depends="cleanxtest">
+        <delete dir="results"/>
+    </target>
+    
+    <!-- =============== -->
+    <!-- Mailing results -->
+    <!-- =============== -->
     <target name="mail" if="xtest.mail">
         <antcall target="mail-all"/>
         <antcall target="mail-failed"/>
@@ -242,156 +183,14 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="mail-all">
         <echo message="Mailing test results..."/>
-
-        <mail from="XTest" tolist="${xtest.mail.all}" subject="Results of Netbeans tests"
+        <mail from="XTest" tolist="${xtest.mail.all}" subject="Results of Netbeans XTests from ${xtest.hostname}"
               files="${xtest.uploaddir}/summary.txt" mailhost="sunpraha.czech.sun.com"/>
     </target>
     
     <target name="mail-failed" if="xtest.failed">
         <echo message="Tests failed mailing results..."/>
-
-        <mail from="XTest" tolist="${xtest.mail.failed}" subject="Netbeans tests failed"
+        <mail from="XTest" tolist="${xtest.mail.failed}" subject="Netbeans XTests failed on ${xtest.hostname}"
               files="${xtest.uploaddir}/summary.txt" mailhost="sunpraha.czech.sun.com"/>
     </target>
-
-    <!-- ===================================== -->
-    <!-- default target, builds and runs tests -->
-    <target name="netbeans" depends="build, test"
-            description="Build and run tests."/>
-
-    <!-- ================ -->
-    <!-- Cleaning targets -->
-    <!-- ================ -->
-
-    <target name="clean-distribution"
-            description="Delete distribution directory.">
-        <echo message="Cleaning tests distribution..."/>
-        <delete dir="${xtest.distdir}"/>
-    </target>
-
-    <target name="real-clean" depends="clean, clean-distribution"
-            description="Clean up built tests, distribution and XTest framework">
-        <!-- Add clean up code here (if neccessary) -->
-        <echo message="Cleaning old tests..."/>
-        <delete>
-            <fileset dir=".">
-                <include name="nb-xtest-*.zip"/>
-            </fileset>
-        </delete>
-
-        <!-- This step must be last: -->
-        <echo message="Cleaning XTest framework..."/>
-        <ant antfile="xtest.xml" target="clean"/>
-    </target>
-
-    <target name="clean-uploaded-results"
-            description="Delete directory with uploaded results.">
-        <echo message="Cleaning uploaded old test results..."/>
-        <delete dir="${xtest.uploaddir}"/>
-    </target>
-
-    <target name="clean-results" depends="init"
-            description="Clean up results of all tests of all modules.">
-        <echo message="Cleaning old test results..."/>
-        <antcall target="executor">
-            <param name="target.name" value="clean-test-results"/>
-        </antcall>
-    </target>
-
-    <target name="clean-build" depends="init"
-            description="Clean up builds of all module tests.">
-        <echo message="Cleaning built tests..."/>
-        <antcall target="executor">
-            <param name="target.name" value="clean-test-build"/>
-        </antcall>
-    </target>
-
-    <!-- ================================== -->
-    <!-- main entrypoint for cleaning tests -->
-    <target name="clean" depends="clean-build, clean-results" 
-            description="Clean up built tests, test results and distribution."/>
-
-    <target name="print-test-config" depends="init"
-            description="Print modules, tests and patterns from selected configuration.">
-        <xtestconfig-print/>
-    </target>
-
-    <target name="usage">
-        <echo message="Usage: ant [properties] target"/>
-        <echo message=""/>
-        <echo message="The most important targets:"/>
-        <echo message="==========================="/>
-        <echo message=""/>
-        <echo message="build      ... build tests"/>
-        <echo message="clean      ... clean built tests and test results"/>
-        <echo message="test       ... execute tests"/>
-        <echo message="netbeans   ... build and execute tests (default target)"/>
-        <echo message="real-clean ... clean up tests, results, test distributions and XTest framework"/>
-        <echo message=""/>
-        <echo message="The most important properties:"/>
-        <echo message="=============================="/>
-        <echo message=""/>
-        <echo message="xtest.config  ... test configuration name"/>
-        <echo message="xtest.basedir ... absolute path to the root of modules"/>
-        <echo message=""/>
-    </target>
-
-    <!-- Creates zipfile with all files needed for running xtest framework -->
-    <target name="build-xtestdist">
-        <delete dir="workdir"/>
-	<delete file="xtestdist.zip"/>
-
-	<ant antfile="xtest.xml"/>
-
-	<!-- 'build-distribution' or 'unzip-distribution' targets should be called -->
-	<!-- before creating xtest distribution explicitly -->
-	<!-- <antcall target="build-distribution"/> -->
-
-	<mkdir dir="workdir/xtest/lib"/>
-	<mkdir dir="workdir/xtest/dist"/>
-	<mkdir dir="workdir/xtest/xslt"/>
-	<copy todir="workdir/xtest/lib">
-	    <fileset dir="lib"/>
-	</copy>
-	<copy todir="workdir/xtest/dist">
-	    <fileset dir="dist"/>
-	</copy>
-	<copy todir="workdir/xtest/xslt">
-	    <fileset dir="xslt"/>
-	</copy>
-	<copy todir="workdir/xtest">
-	  <fileset dir=".">
-	      <include name="build.xml"/>
-	      <include name="cfg-default.xml"/>
-	  </fileset>
-	</copy>
-
-	<exec executable="zip" dir="workdir" os="Linux SunOS Solaris" failonerror="false">
-	    <arg value="-9"/>
-            <arg value="-r"/>
-            <arg value="xtestdist.zip"/>
-            <arg value="."/>
-	    <arg value="-i"/>
-	    <arg value="*"/>
-        </exec>
-	<move todir=".">
-	    <fileset dir="workdir" includes="xtestdist.zip"/>
-	</move>
-
-        <zip zipfile="xtestdist.zip" basedir="workdir"/>
-	<delete dir="workdir"/>
-    </target>
-
-    <!-- ============================================================================== -->
-    <!-- build and test examples, it can be used for verification of XTest instalation  -->
-    <!-- you can run examples directly by following command                             -->
-    <!-- ant -Dxtest.config=examples -Dxtest.basedir=${xtest.home}/examples             -->
-    <!-- replace ${xtest.home} by the absolute path of your XTest's home directory      -->
-    <target name="examples">
-       <ant dir="." target="netbeans">
-           <property name="xtest.config" value="examples"/>
-           <property name="xtest.basedir" location="examples"/>
-       </ant>
-    </target>
-
+    
 </project>
