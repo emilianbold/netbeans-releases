@@ -125,11 +125,11 @@ Microsystems, Inc. All Rights Reserved.
                 </folder>
                 <folder name="Toolbars">
                     <folder name="Default">
-                        <attr name="stop-macro-recording/Separator6.instance" boolvalue="true"/>
-                        <file name="Separator6.instance">
+                        <attr name="stop-macro-recording/Separator-before-comment.instance" boolvalue="true"/>
+                        <file name="Separator-before-comment.instance">
                             <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         </file>
-                        <attr name="Separator6.instance/comment" boolvalue="true"/>
+                        <attr name="Separator-before-comment.instance/comment" boolvalue="true"/>
                         <file name="comment"/>
                         <attr name="comment/uncomment" boolvalue="true"/>
                         <file name="uncomment"/>

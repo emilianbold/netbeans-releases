@@ -47,52 +47,21 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Editors">
         <folder name="text">
             <folder name="base">
-                <!-- Registration into editor actions not implemented yet.
-                <folder name="Actions">
-                    <file name="bookmark-toggle.instance">
-                        <attr name="instanceClass" stringvalue="org.netbeans.lib.editor.bookmarks.actions.ToggleBookmarkAction"/>
-                    </file>
-                    <file name="bookmark-next.instance">
-                        <attr name="instanceClass" stringvalue="org.netbeans.lib.editor.bookmarks.actions.GotoBookmarkAction"/>
-                        <attr name="instanceCreate" methodvalue="org.netbeans.lib.editor.bookmarks.actions.GotoBookmarkAction.createNext"/>
-                    </file>
-                    <file name="bookmark-previous.instance">
-                        <attr name="instanceClass" stringvalue="org.netbeans.lib.editor.bookmarks.actions.GotoBookmarkAction"/>
-                        <attr name="instanceCreate" methodvalue="org.netbeans.lib.editor.bookmarks.actions.GotoBookmarkAction.createPrevious"/>
-                    </file>
-                </folder>
-
                 <folder name="Toolbars">
                     <folder name="Default">
-                        <attr name="Separator2.instance/bookmark-toggle" boolvalue="true"/>
-                        <file name="bookmark-toggle"/>
-                        <attr name="bookmark-toggle/bookmark-next" boolvalue="true"/>
-                        <file name="bookmark-next"/>
-			<attr name="bookmark-next/bookmark-previous" boolvalue="true"/>
-			<file name="bookmark-previous"/>
-                        <attr name="bookmark-previous/Separator-after-bookmarks.instance" boolvalue="true"/>
-                        <file name="Separator-after-bookmarks.instance">
-                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        </file>
-                        <attr name="Separator-after-bookmarks.instance/word-match-next" boolvalue="true"/>
-                    </folder>
-                </folder>
-                -->
-                <folder name="Toolbars">
-                    <folder name="Default">
-                        <attr name="Separator2.instance/bookmark-toggle.shadow" boolvalue="true"/>
+                        <attr name="Separator-after-toggle-highlight-search.instance/bookmark-toggle.shadow" boolvalue="true"/>
                         <file name="bookmark-toggle.shadow">
                             <attr name="originalFile" stringvalue="Actions/Edit/bookmark-toggle.instance"/>
                         </file>
-                        <attr name="bookmark-toggle/bookmark-next" boolvalue="true"/>
+                        <attr name="bookmark-toggle.shadow/bookmark-next.shadow" boolvalue="true"/>
                         <file name="bookmark-next.shadow">
                             <attr name="originalFile" stringvalue="Actions/Edit/bookmark-next.instance"/>
                         </file>
-			<attr name="bookmark-next/bookmark-previous" boolvalue="true"/>
+			<attr name="bookmark-next.shadow/bookmark-previous.shadow" boolvalue="true"/>
                         <file name="bookmark-previous.shadow">
                             <attr name="originalFile" stringvalue="Actions/Edit/bookmark-previous.instance"/>
                         </file>
-                        <attr name="bookmark-previous/Separator-after-bookmarks.instance" boolvalue="true"/>
+                        <attr name="bookmark-previous.shadow/Separator-after-bookmarks.instance" boolvalue="true"/>
                         <file name="Separator-after-bookmarks.instance">
                             <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         </file>

@@ -24,6 +24,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -66,6 +67,7 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.TopologicalSortException;
 import org.openide.util.actions.Presenter;
 
 /**
@@ -446,67 +448,28 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
      */
     static List getToolbarObjects(DataFolder baseFolder, DataFolder mimeFolder) {
         Map name2dob = new HashMap();
-        List names = new ArrayList(); // list of its names
-        List sortPairs = new ArrayList(); // each member of every pair added to the list sequentially
+        Map edges = new HashMap();
 
-        if (mimeFolder != null) {
-            addDataObjects(name2dob, names, mimeFolder.getChildren());
-        }
         if (baseFolder != null) {
-            addDataObjects(name2dob, names, baseFolder.getChildren());
+            addDataObjects(name2dob, baseFolder.getChildren());
         }
-        
         if (mimeFolder != null) {
-            addSortPairs(mimeFolder, sortPairs);
+            addDataObjects(name2dob, mimeFolder.getChildren());
         }
+        
         if (baseFolder != null) {
-            addSortPairs(baseFolder, sortPairs);
+            addEdges(edges, name2dob, baseFolder);
+        }
+        if (mimeFolder != null) {
+            addEdges(edges, name2dob, mimeFolder);
         }
 
-        SortSupport sortSupport = new SortSupport();
-        for (Iterator it = sortPairs.iterator(); it.hasNext();) {
-            Object firstName = it.next();
-            Object secondName = it.next(); // would throw exc. which is OK - shouldn't happen
-            if (name2dob.containsKey(firstName) && name2dob.containsKey(secondName)) {
-                sortSupport.addEdge(firstName, secondName);
-            } else { // edge not added
-                if (debugSort) {
-                    System.out.println("Edge not added: " // NOI18N
-                        + firstName + " -> " + name2dob.containsKey(firstName) // NOI18N
-                        + ", " + secondName + " -> " + name2dob.containsKey(secondName) // NOI18N
-                    );
-                }
-            }
+        try {
+            return org.openide.util.Utilities.topologicalSort(name2dob.values(), edges);
+        } catch (TopologicalSortException ex) {
+            ErrorManager.getDefault().notify(ex);
+            return ex.partialSort();
         }
-
-        if (debugSort) {
-            System.out.println("Names: " + names + "\nsortSupport:" + sortSupport); // NOI18N
-        }
-
-        List standalones = sortSupport.eliminateMultipleStarts(names, true);
-        if (debugSort) {
-            System.out.println("Eliminated multiple starts: " + sortSupport // NOI18N
-                + "\nStandalones: " + standalones); // NOI18N
-        }
-
-        List sortedNameList = sortSupport.createSortedList();
-        if (debugSort) {
-            System.out.println("Sorted Name List: " + sortedNameList); // NOI18N
-        }
-
-        sortedNameList.addAll(standalones);
-
-        int sortedNameListSize = sortedNameList.size();
-        List dobList = new ArrayList(sortedNameListSize);
-        for (int i = 0; i < sortedNameListSize; i++) {
-            dobList.add(name2dob.get(sortedNameList.get(i)));
-        }
-        
-        if (dobList.indexOf(null) != -1) {
-            throw new IllegalStateException();
-        }
-        
-        return dobList;
     }
     
     /** Append array of dataobjects to the existing list of dataobjects. Also
@@ -516,27 +479,19 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
      * @param names valid existing list of names of the dataobjects from dobs list.
      * @param addDobs dataobjects to be added.
      */
-    private static void addDataObjects(Map name2dob, List names, DataObject[] addDobs) {
+    private static void addDataObjects(Map name2dob, DataObject[] addDobs) {
         int addDobsLength = addDobs.length;
-        List addNamesList = new ArrayList(addDobsLength);
-
         for (int i = 0; i < addDobsLength; i++) {
             DataObject dob = addDobs[i];
             String dobName = dob.getPrimaryFile().getNameExt();
-            if (names.indexOf(dobName) == -1 && addNamesList.indexOf(dobName) == -1) {
-                name2dob.put(dobName, dob);
-                addNamesList.add(dobName);
-            }
+            name2dob.put(dobName, dob);
         }
-
-        // Insert at the begining of existing names
-        names.addAll(0, addNamesList);
     }
 
     /** Append the pairs - first dob name then second dob name to the list
      * of sort pairs for the dataobjects from the given folder.
      */
-    private static void addSortPairs(DataFolder toolbarFolder, List sortPairs) {
+    private static void addEdges(Map edges, Map name2dob, DataFolder toolbarFolder) {
         FileObject primaryFile = toolbarFolder.getPrimaryFile();
         for (Enumeration e = primaryFile.getAttributes();
             e.hasMoreElements();
@@ -546,176 +501,33 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
             if (slashIndex != -1) { //NOI18N
                 Object value = primaryFile.getAttribute(name);
                 if ((value instanceof Boolean) && ((Boolean) value).booleanValue()){
-                    sortPairs.add(name.substring(0, slashIndex));
-                    sortPairs.add(name.substring(slashIndex + 1));
+                    String name1 = name.substring(0, slashIndex);
+                    String name2 = name.substring(slashIndex + 1);
+                    if (debugSort) {
+                        System.err.println("SORT-PAIR: [" + name1 + ", " + name2 + "]"); // NOI18N
+                    }
+                    
+                    DataObject dob = (DataObject)name2dob.get(name1);
+                    DataObject target = (DataObject)name2dob.get(name2);
+                    if (dob != null && target != null) {
+                        Collection targetVertices = (Collection)edges.get(dob);
+                        if (targetVertices == null) { // none target vertices yet
+                            // Use just singleton list to save space
+                            targetVertices = Collections.singletonList(target);
+                            edges.put(dob, targetVertices);
+
+                        } else if (targetVertices.size() == 1) { // singleton list
+                            targetVertices = new HashSet(targetVertices);
+                            targetVertices.add(target);
+                            edges.put(dob, targetVertices);
+
+                        } else {
+                            targetVertices.add(target);
+                        }
+                    }
                 }
             }
         }
     }
     
-    /** Support for topological sort of the oriented acyclic graph.
-     * No synchronization.
-     */
-    private static final class SortSupport {
-       
-        /** Map of [vertex, edge-end] pairs. */
-        private Map vert2edges;
-        
-        /** Set of ends of edges. Vertices that are not members
-         * of this set are not ends of any edge. They
-         * can still have one or more edges starting from them.
-         */
-        private Set edgesEnds;
-        
-        /** Visited vertices in the modified DFS algorithm. */
-        private Set mdfsVisited;
-        
-        /** Finished vertices in the modified DFS algorithm. */
-        private List mdfsFinished;
-        
-        SortSupport() {
-            vert2edges = new HashMap();
-            edgesEnds = new HashSet();
-            mdfsVisited = new HashSet();
-            mdfsFinished = new ArrayList();
-        }
-        
-        /** Add a new edge from the start vertex into end vertex.
-         */
-        void addEdge(Object start, Object end) {
-            if (start == null || end == null) {
-                throw new IllegalStateException();
-            }
-            
-            if (start.equals(end)) {
-                return; // edge to itself - do not add
-            }
-            
-            edgesEnds.add(end);
-            List verts = (List)vert2edges.get(start);
-            boolean addedNewList = false;
-            if (verts == null) {
-                verts = new ArrayList(2);
-                vert2edges.put(start, verts);
-                addedNewList = true;
-            }
-            if (verts.indexOf(end) == -1) { // not yet added
-                verts.add(end);
-                if (debugSort) {
-                    System.out.println("added edge " + start + " -> " + end); // NOI18N
-                }
-                if (mdfs(start)) { // cycle created by added edge
-                    verts.remove(verts.size() - 1);
-                    if (addedNewList) {
-                        vert2edges.remove(start);
-                    }
-                    if (debugSort) {
-                        System.out.println("REMOVED edge " + start + " -> " + end); // NOI18N
-                    }
-                }
-            }
-        }
-        
-        /** Eliminate multiple starts (vertices not present in edgesEnds set)
-         * by walking through the given list and deriving the order
-         * of the vertices from the given list. The missing edges are added
-         * so that there is just one starting vertex after this method
-         * completes.
-         * @param vertList complete list of vertices.
-         * @param omitStandalones If true the standalone vertices that do not
-         *  participate in any edge will be returned in the list. If false
-         *  there will be an artificial edge made like for other start vertices.
-         * @return valid list of the standalone vertices or null
-            if the omitStandalones parameter was false.
-         */
-        List eliminateMultipleStarts(List vertList, boolean omitStandalones) {
-            Object first = null;
-            Object lastStart = null;
-            List standalones = omitStandalones ? new ArrayList() : null;
-            int vertListSize = vertList.size();
-            for (int i = 0; i < vertListSize; i++) {
-                Object start = vertList.get(i);
-                if (!edgesEnds.contains(start)) { // not end of any edge
-                    if (omitStandalones && !vert2edges.containsKey(start)) {
-                        standalones.add(start);
-                    } else { // not standalone or standalones not maintained
-                        if (first == null) {
-                            first = start;
-                            lastStart = start;
-
-                        } else { // some vert already first
-                            addEdge(lastStart, start); // add extra edge
-                        }
-                    }
-                }
-            }
-            
-            return standalones;
-        }
-                        
-        /** Create list (sorted topologically) derived from the information
-         * about the edges. It's necessary to have just one starting vertex
-         * so it may be necessary to call eliminateMultipleStarts() first.
-         */
-        List createSortedList() {
-            Set allVerts = new HashSet(vert2edges.keySet());
-            allVerts.removeAll(edgesEnds);
-            Iterator it = allVerts.iterator();
-            if (!it.hasNext()) {
-                throw new IllegalStateException("No first item"); // NOI18N
-            }
-            Object first = it.next();
-            if (it.hasNext()) { // [PENDING] 
-                throw new IllegalStateException("More than one start item"); // NOI18N
-            }
-            
-            mdfs(first);
-            
-            
-            Collections.reverse(mdfsFinished);
-
-            return mdfsFinished;
-        }
-
-        private boolean mdfs(Object v) {
-            //mdfsOpCount = 0;
-            mdfsVisited.clear();
-            mdfsFinished.clear();
-            return mdfsRec(v);
-            //boolean ret = mdfsRec(v); System.out.println("MDFSOpCount=" + mdfsOpCount); return ret;
-        }
-
-        //private int mdfsOpCount; // counter used for debugging the mdfs op count
-        
-        /** Modified Depth First Search algorithm.
-         * @param v vertex to be processed by the algorithm.
-         */
-        private boolean mdfsRec(Object v) {
-            //mdfsOpCount++;
-            if (mdfsVisited.contains(v)) {
-                return true; // cycle found
-            }
-            
-            mdfsVisited.add(v);
-            List verts = (List)vert2edges.get(v);
-            if (verts != null) {
-                int vertsSize = verts.size();
-                for (int i = 0; i < vertsSize; i++) {
-                    if (mdfsRec(verts.get(i))) {
-                        return true; // stop due to cycle found
-                    }
-                }
-                
-            }
-            mdfsFinished.add(v);
-            return false; // not yet found
-        }
-
-        public String toString() {
-            return "edgesEnds=" + edgesEnds // NOI18N
-                + "\n\n vert2edges=" + vert2edges; // NOI18N
-        }
-
-    }
-
 }
