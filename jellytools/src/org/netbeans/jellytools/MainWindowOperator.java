@@ -114,21 +114,18 @@ public class MainWindowOperator extends JFrameOperator {
      * @return  true if IDE is in MDI mode; false otherwise (SDI mode)
      */
     public static boolean isMDI() {
-        return ((WindowManagerImpl)WindowManager.getDefault()).
-                            uiModeManager().getUIMode() == UIModeManager.MDI_MODE;
+        return UIModeManager.getDefault().getUIMode() == UIModeManager.MDI_MODE;
     }
     
     /** Makes IDE to switch to MDI (full screen) mode. */
     public static void setMDI() {
-        ((WindowManagerImpl)WindowManager.getDefault()).
-                            uiModeManager().setUIMode(UIModeManager.MDI_MODE);
+        UIModeManager.getDefault().setUIMode(UIModeManager.MDI_MODE);
         new EventTool().waitNoEvent(1000);
     }
     
     /** Makes IDE to switch to SDI (multiple smaller windows) mode. */
     public static void setSDI() {
-        ((WindowManagerImpl)WindowManager.getDefault()).
-                            uiModeManager().setUIMode(UIModeManager.SDI_MODE);
+        UIModeManager.getDefault().setUIMode(UIModeManager.SDI_MODE);
         new EventTool().waitNoEvent(1000);
     }
     
