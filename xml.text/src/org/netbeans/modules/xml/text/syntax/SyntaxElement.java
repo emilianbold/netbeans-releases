@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,7 +21,7 @@ import javax.swing.text.*;
 
 import org.netbeans.editor.ext.*;
 import org.netbeans.editor.*;
-import org.netbeans.modules.xml.spi.dom.UOException;
+import org.openide.ErrorManager;
 
 /**
  *
@@ -82,8 +82,9 @@ public abstract class SyntaxElement {
                 if( previous != null ) {
                     previous.next = this;
                     if (previous.first.getOffset() == first.getOffset()) {
-                        //throw new IllegalStateException("Previous cannot be the same as current element!");
-                        throw new UOException();
+                        Exception ex = new IllegalStateException("Previous cannot be the same as current element at offset " + first.getOffset() + " " + first.getImage());
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                        return null;
                     }                    
                 }
             }
@@ -105,8 +106,9 @@ public abstract class SyntaxElement {
                 if( next != null ) {
                     next.previous = this;
                     if (next.first.getOffset() == first.getOffset()) {
-                        //throw new IllegalStateException("Next cannot be the same as current element!");
-                        throw new UOException();
+                        Exception ex = new IllegalStateException("Next cannot be the same as current element at offset " + first.getOffset() + " " + first.getImage());
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                        return null;
                     }
                 }
             }
