@@ -454,7 +454,7 @@ final class J2SEProject implements Project, AntProjectListener {
         
         private static final String[] PRIVILEGED_NAMES = new String[] {
             "Templates/Classes/Class.java", // NOI18N
-            "Templates/Package", // NOI18N
+            "Templates/Classes/Package", // NOI18N
             "Templates/Classes/Interface.java", // NOI18N
             "Templates/GUIForms/JPanel.java", // NOI18N
             "Templates/GUIForms/JFrame.java", // NOI18N
