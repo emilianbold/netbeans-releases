@@ -74,7 +74,6 @@ public class ReconfigureReaderPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 12);
         add(currentViewerLabel, gridBagConstraints);
 
-        viewerField.setEditable(false);
         viewerField.setText(settings.getPDFViewer() != null ? settings.getPDFViewer().getPath() : PDFOpenSupport.FALLBACK_VIEWER_NAME);
         viewerField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
@@ -113,16 +112,22 @@ public class ReconfigureReaderPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_viewerFieldFocusGained
 
     private void chooseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooseButtonActionPerformed
-        File dir = defaultViewer.getParentFile ();
-        JFileChooser chooser = ((dir != null) ? new JFileChooser (dir) : new JFileChooser ());
-        if (chooser.showDialog (this, bundle.getString ("LBL_select_viewer")) ==
-                JFileChooser.APPROVE_OPTION) {
-            File nue = chooser.getSelectedFile ();
-            settings.setPDFViewer (nue);
-            viewerField.setText (nue.getPath ());
+        File dir = defaultViewer.getParentFile();
+        JFileChooser chooser = (dir != null)
+                               ? new JFileChooser(dir)
+                               : new JFileChooser();
+        String chooserTitle = bundle.getString("LBL_select_viewer");    //NOI18N
+        if (chooser.showDialog (this, chooserTitle)
+                == JFileChooser.APPROVE_OPTION) {
+            viewerField.setText(chooser.getSelectedFile().getPath());
         }
     }//GEN-LAST:event_chooseButtonActionPerformed
 
+    /**
+     */
+    File getSelectedFile() {
+        return new File(viewerField.getText().trim());
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton chooseButton;

@@ -53,46 +53,52 @@ class PDFOpenSupport implements OpenCookie {
 
     public void open() {
         Settings sett = Settings.getDefault();
-        File viewer = sett.getPDFViewer();
-        final boolean viewerUnset = (viewer == null);
-        if (viewerUnset) {
-            viewer = findViewer();
-        }
-        try {
-            Process p = Runtime.getRuntime().exec(
-                    new String[] {viewer.getPath(),
-                                  f.getAbsolutePath()
-            });
+        
+        boolean tryAgain = true;
+        while (tryAgain) {
+            File viewer = sett.getPDFViewer();
+            final boolean viewerUnset = (viewer == null);
             if (viewerUnset) {
-                sett.setPDFViewer(viewer);
+                viewer = findViewer();
             }
-            // [PENDING] redirect p's output
-        } catch (IOException ioe) {
-            // Try to reconfigure.
-            String excmessage = ioe.getLocalizedMessage();
-            String exceptionType = ioe.getClass().getName();
-            int idx = exceptionType.lastIndexOf('.');
-            if (idx != -1) {
-                exceptionType = exceptionType.substring(idx + 1);
-            }
-            /* [PENDING] does not work (no properties show in sheet, though node has them):
-            Node n;
             try {
-                n = new BeanNode (sett);
-            } catch (IntrospectionException ie) {
-                TopManager.getDefault ().notifyException (ie);
-                return;
-            }
-            PropertySheet sheet = new PropertySheet ();
-            sheet.setNodes (new Node[] { n });
-            //TopManager.getDefault ().getNodeOperation ().explore (n);
-             */
-            DialogDescriptor d = new DialogDescriptor(
-                new ReconfigureReaderPanel(viewer, excmessage), // content pane
-                NbBundle.getMessage(PDFOpenSupport.class,
-                                    "TITLE_pick_a_viewer"));            //NOI18N
-            if (DialogDescriptor.OK_OPTION == DialogDisplayer.getDefault().notify(d)) {
-                open ();
+                Process p = Runtime.getRuntime().exec(
+                        new String[] {viewer.getPath(),
+                                      f.getAbsolutePath()
+                });
+                if (viewerUnset) {
+                    sett.setPDFViewer(viewer);
+                }
+                tryAgain = false;
+                // [PENDING] redirect p's output
+            } catch (IOException ioe) {
+                // Try to reconfigure.
+                String excmessage = ioe.getLocalizedMessage();
+                /* [PENDING] does not work (no properties show in sheet, though node has them):
+                Node n;
+                try {
+                    n = new BeanNode (sett);
+                } catch (IntrospectionException ie) {
+                    TopManager.getDefault ().notifyException (ie);
+                    return;
+                }
+                PropertySheet sheet = new PropertySheet ();
+                sheet.setNodes (new Node[] { n });
+                //TopManager.getDefault ().getNodeOperation ().explore (n);
+                 */
+                ReconfigureReaderPanel configPanel
+                        = new ReconfigureReaderPanel(viewer, excmessage);
+                String title = NbBundle.getMessage(
+                                       PDFOpenSupport.class,
+                                       "TITLE_pick_a_viewer");          //NOI18N
+                DialogDescriptor d = new DialogDescriptor(configPanel, title);
+                if (DialogDisplayer.getDefault().notify(d)
+                        == DialogDescriptor.OK_OPTION) {
+                    sett.setPDFViewer(configPanel.getSelectedFile());
+                    tryAgain = true;
+                } else {
+                    tryAgain = false;
+                }
             }
         }
     }
