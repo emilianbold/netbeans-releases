@@ -237,19 +237,15 @@
 	 	<tocitem text="Using a Database" target="use_a_database" />
 		<tocitem text="Sending a JMS Message" target="send_JMS_message" />
   	 </tocitem>
-         <tocitem text="Configuring Web Services" >
-	        <tocitem text="Configuring Web Service Clients" target="create_ws_customize" />
-	        <tocitem text="Configuring Web Service Operations" target="webservicesxml" />
-         </tocitem>
          <tocitem text="Building and Exposing Web Services" >
-		<tocitem text="Building a Web Service" target="tbd" />
-	        <tocitem text="Exposing a Web Service" target="tbd" />
+		<tocitem text="Building a Web Service" target="build_ws" />
+	        <tocitem text="Exposing a Web Service" target="expose_ws" />
 	 </tocitem>
-	 <tocitem text="Debugging and Testing Web Services" >
-                 <tocitem text="Debugging a Web Service" target="tbd" />
+	 <tocitem text="Testing and Consuming Web Services" >
 		 <tocitem text="Testing a Web Service" target="test_ws" />
 	         <tocitem text="Creating a Web Service Client" target="create_wsc" />
-	         <tocitem text="Calling a Web Service Operation" target="call_ws_operation" />
+		 <tocitem text="Calling a Web Service Operation" target="call_ws_operation" />
+	         <tocitem text="Configuring a Web Service Client" target="create_ws_customize" />
 	 </tocitem>
 	
       </tocitem> <!-- Working With Web Service Clients -->
