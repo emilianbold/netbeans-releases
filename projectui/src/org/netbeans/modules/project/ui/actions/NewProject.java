@@ -37,12 +37,20 @@ public class NewProject extends BasicAction {
     private static final Icon ICON = new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/newProject.gif" ) ); //NOI18N    
     private static final String NAME = NbBundle.getMessage( NewProject.class, "LBL_NewProjectAction_Name" ); // NOI18N
     
+    private boolean isWelcome = false;
     
     private static NewProjectWizard wizard;
 
     public NewProject() {
         super( NAME, ICON );
         putValue("iconBase","org/netbeans/modules/project/ui/resources/newProject.gif"); //NOI18N
+    }
+    
+    public static NewProject newSample() {
+        NewProject np = new NewProject();
+        np.setDisplayName( "New Sample" ); 
+        np.isWelcome = true;
+        return np;
     }
 
     public void actionPerformed( ActionEvent evt ) {
@@ -54,6 +62,13 @@ public class NewProject extends BasicAction {
         else {
             //Reset the inline message
             wizard.putProperty( "WizardPanel_errorMessage", "");  //NOI18N
+        }
+        
+        if ( isWelcome ) {
+            wizard.putProperty( "PRESELECT_CATEGORY", "Samples/Standard"); 
+        }
+        else {
+            wizard.putProperty( "PRESELECT_CATEGORY", null ); 
         }
 
         try {

@@ -57,8 +57,12 @@ public class TemplatesPanel implements WizardDescriptor.Panel {
         if (templatesFolder != null && templatesFolder.isFolder() && wd.getTemplate() == null) {
             TemplatesPanelGUI gui = (TemplatesPanelGUI)this.getComponent();
             gui.setTemplatesFolder (templatesFolder);
+            
+            // Uggly hack for the WelcomeScreen action
+            // XXX Delete after WS is redesigned
+            String preselectedCategory = (String)wd.getProperty( "PRESELECT_CATEGORY" );            
             String selectedCategory = OpenProjectListSettings.getInstance().getLastSelectedProjectCategory ();
-            gui.setSelectedCategoryByName(selectedCategory);
+            gui.setSelectedCategoryByName( preselectedCategory != null ? preselectedCategory : selectedCategory );
             String selectedTemplate = OpenProjectListSettings.getInstance().getLastSelectedProjectType ();
             gui.setSelectedTemplateByName(selectedTemplate);
         }
