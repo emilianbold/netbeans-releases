@@ -220,7 +220,6 @@ Microsystems, Inc. All Rights Reserved.
 
         <folder name="Borders">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
-            <attr name="hidden_category" boolvalue="true"/>
 
             <file name="EmptyBorder.palette_item" url="palette/EmptyBorder.palette_item" />
             <file name="LineBorder.palette_item" url="palette/LineBorder.palette_item" />
@@ -469,11 +468,10 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
 
-    <!-- default workspaces, frames and their layout defined by core-->
+    <!-- default workspaces, frames and their layout defined by core -->
     <folder name="Windows2">
         <folder name="Modes">
-            <file name="inspector.wsmode" url="windowmanager/inspector.wsmode" />
-            <folder name="inspector">
+            <folder name="navigator">
                 <file name="ComponentInspector.wstcref" url="windowmanager/inspector/ComponentInspector.wstcref" />
             </folder>
             <file name="palette.wsmode" url="windowmanager/palette.wsmode" />

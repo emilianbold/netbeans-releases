@@ -14,6 +14,7 @@
 package org.netbeans.modules.form;
 
 import java.util.*;
+import java.beans.BeanInfo;
 import org.openide.options.SystemOption;
 import org.openide.util.HelpCtx;
 import org.openide.util.SharedClassObject;
@@ -83,6 +84,8 @@ public class FormLoaderSettings extends SystemOption {
     public static final String PROP_PALETTE_IN_TOOLBAR = "toolBarPalette"; // NOI18N
     /** Property name of the showComponentsNames property */
     public static final String PROP_SHOW_COMPONENTS_NAMES = "showComponentsNames"; // NOI18N
+    /** Property name of the paletteIconSize property. */
+    public static final String PROP_PALETTE_ICON_SIZE = "paletteIconSize"; // NOI18N
 
 //    public static final String PROP_CONTAINER_BEANS = "containerBeans"; // NOI18N
 
@@ -148,7 +151,8 @@ public class FormLoaderSettings extends SystemOption {
     private static String [][] registeredEditors = new String [][] {{}};
 
     private static boolean toolBarPalette = false;
-    private static boolean showComponentsNames = false;
+    private static boolean showComponentsNames = true;
+    private static int paletteIconSize = BeanInfo.ICON_COLOR_16x16;
 
     private static final int MIN_SELECTION_BORDER_SIZE = 1;
     private static final int MAX_SELECTION_BORDER_SIZE = 15;
@@ -506,6 +510,18 @@ public class FormLoaderSettings extends SystemOption {
         firePropertyChange(PROP_SHOW_COMPONENTS_NAMES,
                            !value ? Boolean.TRUE : Boolean.FALSE,
                            value ? Boolean.TRUE : Boolean.FALSE);
+    }
+    
+    public int getPaletteIconSize() {
+        return paletteIconSize;
+    }
+    
+    public void setPaletteIconSize(int size) {
+        if (size == paletteIconSize) return;
+        int oldSize = paletteIconSize;
+        paletteIconSize = size;
+        firePropertyChange(PROP_PALETTE_ICON_SIZE,
+            new Integer(oldSize), new Integer(size));
     }
 
     /** Getter for the formDesignerBackgroundColor option */

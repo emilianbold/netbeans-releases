@@ -16,6 +16,7 @@ package org.netbeans.modules.form.palette;
 import java.util.*;
 import java.io.*;
 import java.beans.*;
+import javax.swing.Action;
 
 import org.xml.sax.*;
 import org.xml.sax.helpers.DefaultHandler;
@@ -59,8 +60,6 @@ class PaletteItemDataObject extends MultiDataObject {
     static final String TAG_ICON32 = "icon32"; // NOI18N
     // component types: "visual", "menu", "layout", "border"
     // classpath resource types: "jar", "library", "project" (defined in ClassSource)
-
-    private static SystemAction[] staticActions;
 
     private static final Node.PropertySet[] NO_PROPERTIES = new Node.PropertySet[0];
 
@@ -288,6 +287,7 @@ class PaletteItemDataObject extends MultiDataObject {
 
     /** Node representing the palette item (node delegate for the DataObject). */
     class ItemNode extends DataNode {
+        private Action[] actions;
 
         ItemNode() {
             super(PaletteItemDataObject.this, Children.LEAF);
@@ -370,22 +370,25 @@ class PaletteItemDataObject extends MultiDataObject {
             // TODO badged icon for invalid item?
         }
 
-        public SystemAction[] getActions() {
-            if (staticActions == null)
-                staticActions = new SystemAction[] {
-                    SystemAction.get(MoveUpAction.class),
-                    SystemAction.get(MoveDownAction.class),
+        public Action[] getActions(boolean context) {
+            if (actions == null) {
+                Node categoryNode = PaletteItemDataObject.this.getFolder().getNodeDelegate();
+                actions = new Action[] {
+                    new PaletteUtils.ShowNamesAction(),
+                    new PaletteUtils.ChangeIconSizeAction(),
                     null,
-                    SystemAction.get(CutAction.class),
-                    SystemAction.get(CopyAction.class),
+                    new PaletteUtils.CutBeanAction(this),
+                    new PaletteUtils.CopyBeanAction(this),
+                    new PaletteUtils.PasteBeanAction(categoryNode),
                     null,
-                    SystemAction.get(DeleteAction.class),
+                    new PaletteUtils.RemoveBeanAction(this),
                     null,
-                    SystemAction.get(ToolsAction.class),
-                    SystemAction.get(PropertiesAction.class),
+                    new PaletteUtils.ReorderCategoryAction(categoryNode)
                 };
-            return staticActions;
+            }
+            return actions;
         }
+
 
         // TODO properties
         public Node.PropertySet[] getPropertySets() {
