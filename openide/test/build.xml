@@ -166,6 +166,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- This calls target which will call compilers according to cfg file.
          You should not change this target unless you realy know what you are doing -->
     <target name="buildtests">
+       <ant dir="unit/src/org/openide/util/data"/>
        <ant dir="." antfile="${xtest.module_harness.antfile}"
              target="compiler-launcher"/>
     </target>
@@ -175,6 +176,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="cleantests">
        <ant dir="." antfile="${xtest.module_harness.antfile}"
              target="cleantests"/>
+       <ant dir="unit/src/org/openide/util/data" target="clean"/>
     </target> 
 
     <!-- This target runs tests. You should not change this --> 
