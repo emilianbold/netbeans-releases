@@ -43,6 +43,7 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 
 import java.lang.reflect.Field;
@@ -50,6 +51,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Properties;
 import java.util.Vector;
@@ -346,8 +349,9 @@ public class GUIBrowser extends JFrame{
 		count++;
 	    }
 	    Class[] interfaces = clzz.getInterfaces();
-	    ClassNode[] result = new ClassNode[count + interfaces.length];
-	    count = 0;
+	    ClassNode[] result = new ClassNode[count + interfaces.length + 1];
+	    result[0] = new SuperClassNode(clzz);
+	    count = 1;
 	    parent = clzz;
 	    while((parent = parent.getSuperclass()) != null) {
 		result[count] = new SuperClassNode(parent);
@@ -369,14 +373,32 @@ public class GUIBrowser extends JFrame{
 	    return(new ClassModel(this));
 	}
 	public ClassNode[] getSubNodes() {
+	    Vector res = new Vector();
 	    Field[] fields = clzz.getFields();
+	    Arrays.sort(fields, new Comparator() {
+		    public int compare(Object o1, Object o2) {
+			return(((Field)o1).getName().compareTo(((Field)o2).getName()));
+		    }
+		});
 	    Method[] mtds = clzz.getMethods();
-	    ClassNode[] result = new ClassNode[fields.length + mtds.length];
+	    Arrays.sort(mtds, new Comparator() {
+		    public int compare(Object o1, Object o2) {
+			return(((Method)o1).getName().compareTo(((Method)o2).getName()));
+		    }
+		});
 	    for(int i = 0; i < fields.length; i++) {
-		result[i] = new FieldNode(fields[i]);
+		if(fields[i].getDeclaringClass().getName().equals(clzz.getName())) {
+		    res.add(new FieldNode(fields[i]));
+		}
 	    }
-	    for(int i = fields.length; i < fields.length + mtds.length; i++) {
-		result[i] = new MethodNode(mtds[i - fields.length]);
+	    for(int i = 0; i < mtds.length; i++) {
+		if(mtds[i].getDeclaringClass().getName().equals(clzz.getName())) {
+		    res.add(new MethodNode(mtds[i]));
+		}
+	    }
+	    ClassNode[] result = new ClassNode[res.size()];
+	    for(int i = 0; i < result.length; i++) {
+		result[i] = (ClassNode)res.get(i);
 	    }
 	    return(result);
 	}

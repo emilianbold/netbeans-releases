@@ -328,6 +328,34 @@ public class JTabbedPaneOperator extends JComponentOperator
     }
 
     /**
+     * Waits for a page to be selected.
+     * @param pageIndex
+     */
+    public void waitSelected(final int pageIndex) {
+	getOutput().printLine("Wait " + Integer.toString(pageIndex) + "'th page to be " +
+			      " selected in component \n    : "+
+			      getSource().toString());
+	getOutput().printGolden("Wait " + Integer.toString(pageIndex) + "'th page to be " +
+				" selected");
+	waitState(new ComponentChooser() {
+		public boolean checkComponent(Component comp) {
+		    return(getSelectedIndex() == pageIndex);
+		}
+		public String getDescription() {
+		    return(Integer.toString(pageIndex) + "'th page has been selected");
+		}
+	    });
+    }
+
+    /**
+     * Waits for a page to be selected.
+     * @param pageTitle
+     */
+    public void waitSelected(final String pageTitle) {
+	waitSelected(findPage(pageTitle));
+    }
+
+    /**
      * Returns information about component.
      */
     public Hashtable getDump() {

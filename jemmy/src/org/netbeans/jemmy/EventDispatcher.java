@@ -387,7 +387,8 @@ public class EventDispatcher implements Outputable, Timeoutable {
      */
     public void dispatchMouseEvent(int id, int mods, int clickCount, int x, int y, 
 				   boolean popup) {
-	MouseEvent event = new MouseEvent(component, id, 0, mods, x, y, clickCount, popup);
+	MouseEvent event = new MouseEvent(component, id, System.currentTimeMillis(), 
+					  mods, x, y, clickCount, popup);
 	dispatchEvent(event);
     }
 
@@ -424,7 +425,8 @@ public class EventDispatcher implements Outputable, Timeoutable {
      * @param keyCode Key code,
      */
     public void dispatchKeyEvent(int id, int mods, int keyCode) {
-	KeyEvent event = new KeyEvent(component, id, 0, mods, keyCode);
+	KeyEvent event = new KeyEvent(component, id, System.currentTimeMillis()
+				      , mods, keyCode);
 	dispatchEvent(event);
     }
 
@@ -437,7 +439,8 @@ public class EventDispatcher implements Outputable, Timeoutable {
      * @param keyChar Char to be tiped
      */
     public void dispatchKeyEvent(int id, int mods, int keyCode, char keyChar) {
-	KeyEvent event = new KeyEvent(component, id, 0, mods, keyCode, keyChar);
+	KeyEvent event = new KeyEvent(component, id, System.currentTimeMillis(), 
+				      mods, keyCode, keyChar);
 	dispatchEvent(event);
     }
 
