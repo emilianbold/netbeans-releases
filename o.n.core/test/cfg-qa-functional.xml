@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mconfig PUBLIC "-//NetBeans//DTD XTest cfg 1.0//EN" "http://www.netbeans.org/dtds/xtest-cfg-1_0.dtd">
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!-- 
+  These classes are excluded by default (defined in build.xml):
+    "**/*Suite.class"
+    "**/*$$*.class"
+    "**/data/**"
+    "**/hidden/**"
+    "**/*Hidden.*"
+    "**/*Hid.*"
+-->
+
+<mconfig name="core qa-functional test config">
+  
+    <testbag testattribs="stable" executor="ide" name="testbag_1" resultsprocessor="unit">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <!-- Add your own code tests -->
+            </patternset>
+        </testset>
+    </testbag>
+
+    <testbag testattribs="stable" executor="code" name="testbag_2" resultsprocessor="unit">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <!-- Add your own code tests -->
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="dev" executor="code" name="testbag_dev" resultsprocessor="unit">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <!-- Add your own code tests -->
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <executor name="code" antfile="build-qa-functional.xml" target="runcodetest"/>
+    
+    <executor name="ide" antfile="build-qa-functional.xml" target="runidetest"/>
+
+    <compiler name="QAcompiler" antfile="build-qa-functional.xml" target="QAcompiler" default="true"/>
+
+    <resultsprocessor name="unit" antfile="build.xml" target="test_report" default="true"/>
+
+</mconfig>

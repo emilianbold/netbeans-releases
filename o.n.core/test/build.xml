@@ -14,275 +14,85 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="core tests" basedir="." default="all">
 
+    <!-- Ant property. Value 'ignore' means that system classpath is ignored
+         and only classpath specified in build file is used. -->
     <property name="build.sysclasspath" value="ignore"/>
 
+    <!-- Points to directory with IDE to test-->
     <property name="netbeans.home" location="../../nbbuild/netbeans"/>
-    <property name="netbeans.test.home" value="${netbeans.home}"/>
     
-    <!-- says how to create classpath for code tests -->
-    <!-- can have values src, jar, ide               -->
-    <property name="xtest.source.location" value="src"/>
+    <!-- Name of tested module -->
+    <property name="xtest.module" value="core"/>
     
+    <!-- Home of XTest -->
     <property name="xtest.home" location="../../xtest"/>
-
-    <property name="xtest.build" location="."/>    
-    <property name="xtest.file.name" value="test.jar"/>
-    <property name="xtest.file.location" value="lib"/>
-    
-    <!-- default testtypes, attributes and executors -->
+   
+    <!-- default testtypes, attributes used when no value is supplied from command line -->
     <property name="xtest.testtype" value="unit"/>
-    <property name="xtest.attribs" value="stable"/>
-    <property name="xtest.executors" value="code,ide"/>
+    <property name="xtest.attribs" value="stable,all,code,ide"/>
     
-    <!-- properties just for compiler -->
-    <property name="build.compiler.deprecation" value="off"/>
-    <!-- should be default ON, because it helps to find problems -->
-    <property name="build.compiler.debug" value="on"/>
+    <!-- Points to antfile with module's harness. 
+         Targets from that antfile is called from this build.xml -->
+    <property name="xtest.module_harness.antfile" location="${xtest.home}/lib/module_harness.xml"/>
+
+    <!-- Says how to create classpath for compilation and for execution code tests by default.
+         Can have values src, jar, ide -->
+    <property name="xtest.source.location" value="src"/>
+
     
-    <!-- These in/excludes will be added to xtest.pattern    -->
-    <!-- if you want to use these properties, you should use -->
-    <!-- config with empty testbag                           -->
-    <property name="xtest.includes" value=""/>
-    <property name="xtest.excludes" value=""/>   
-    
-    <property name="xtest.results" location="results"/>
-    
-    <property name="xtest.general.antfile" location="${xtest.home}/lib/module_harness.xml"/>
-    
-    <!-- =========== -->
-    <!-- Init target -->
-    <!-- =========== -->
-    
-    <target name="init">
-        <taskdef name="nbpath" classname="org.netbeans.xtest.NbPath" classpath="${xtest.home}/lib/xtest.jar"/>
-        <nbpath nbhome="${netbeans.test.home}" xthome="${xtest.home}" xtexhome="${xtest.home}"/>
-    </target>
-    
+ 
     <!-- ============ -->
     <!-- Main targets -->
     <!-- ============ -->
     
     <target name="all" depends="runtests"/>
     
-    <!-- This target builds tests -->
+    <!-- This calls target which will call compilers according to cfg file.
+         You should not change this target unless you realy know what you are doing -->
     <target name="buildtests">
-       <antcall target="jars"/>
+       <ant dir="." antfile="${xtest.module_harness.antfile}"
+             target="compiler-launcher"/>
     </target>
     
-    <!-- This target cleans tests -->
+    <!-- This calls common clean process. -->
+    <!-- You can write your own if you need something special -->
     <target name="cleantests">
-       <antcall target="clean"/>    
+       <ant dir="." antfile="${xtest.module_harness.antfile}"
+             target="cleantests"/>
+        <ant dir="unit/src/org/netbeans/core/modules" target="clean"/>
+        <ant dir="unit/src/org/netbeans/core/projects" target="clean"/>
+        <ant dir="unit/src/org/netbeans/core/lookup/data" target="clean"/>             
     </target> 
 
     <!-- This target runs tests. You should not change this --> 
     <!-- target unless you realy know what you are doing -->
     <target name="runtests" depends="buildtests">
-        <ant dir="." antfile="${xtest.general.antfile}"
+        <echo message="Module: Running tests for ${xtest.module}, testtype ${xtest.testtype}, attribs=${xtest.attribs}"/>
+        <ant dir="." antfile="${xtest.module_harness.antfile}"
              target="runtests"/>
     </target>
-    
-    <!-- This target is executed from test-executor in newly created Project -->
-    <!-- Name of this task is defined in cfg-xxx.xml -->
-    <!-- This target executes tests inside IDE -->
-    <target name="runidetest">
-        <path id="idetest.classpath">
-          <pathelement path="${tbag.classpath}"/>
-        </path>
-        <property name="idetest.classpath" refid="idetest.classpath"/>
-        <ant dir="." antfile="${xtest.general.antfile}"
-             target="test">
-           <property name="xtest.exectype" value="ide"/>
-           <!-- <property name="xtest.ide.commandline.suffix" value=""/> -->
-	</ant>
-    </target>
-    
-    <!-- This target is executed from test-executor in newly created Project -->
-    <!-- Name of this task is defined in cfg-xxx.xml -->
-    <!-- This target executes standalone tests -->
-    <target name="runcodetest" depends="prepare-codetest-classpath">
-        <path id="codetest.complete.classpath">
-          <path refid="codetest.classpath"/>
-          <pathelement path="${tbag.classpath}"/>
-        </path>
-        <property name="codetest.classpath" refid="codetest.complete.classpath"/>
-        <ant dir="." antfile="${xtest.general.antfile}"
-             target="test">
-           <property name="xtest.exectype" value="code"/>
-        </ant>
-    </target>
-    
+   
     <!-- This target is executed from test-executor in newly created Project -->
     <!-- Name of this task is defined in cfg-xxx.xml -->
     <target name="test_report">
-       <ant dir="." antfile="${xtest.general.antfile}"
+        <ant dir="." antfile="${xtest.module_harness.antfile}"
              target="test_report"/>
     </target>
     
     <target name="cleanresults">
-        <ant dir="." antfile="${xtest.general.antfile}"
+        <ant dir="." antfile="${xtest.module_harness.antfile}"
              target="cleanresults"/>
     </target>
     
     <target name="realclean" depends="cleantests,cleanresults">
-        <ant dir="." antfile="${xtest.general.antfile}"
-             target="realclean"/>
+        <ant dir="." antfile="${xtest.module_harness.antfile}"
+             target="realclean"/>             
     </target>
     
     <target name="printconfig">
         <echo message="Default config is testtype: ${xtest.testtype}, attributes: ${xtest.attribs}."/>
     </target>
-
-   <!-- ========================================================== -->
-   <!-- ========================================================== -->
-
-    <target name="which-classpath">
-        <!-- this "switch" will decide how to create classpath for code tests -->
-        <condition property="jarcode.classpath">
-            <equals arg1="${xtest.source.location}" arg2="jar"/>
-        </condition>
-        <condition property="srccode.classpath">
-            <equals arg1="${xtest.source.location}" arg2="src"/>
-        </condition>
-        <condition property="idecode.classpath">
-            <equals arg1="${xtest.source.location}" arg2="ide"/>
-        </condition>
-    </target>
-
-    <!-- ======== -->
-    <!-- Building -->
-    <!-- ======== -->
     
-    <!-- Compiles all tests -->
-    <target name="compile" depends="prepare-compile-classpath" unless="xtest.distexec">
-        <ant dir="unit/src/org/netbeans/core/modules"/>
-        <ant dir="unit/src/org/netbeans/core/projects"/>
-        <ant dir="unit/src/org/netbeans/core/lookup/data"/>
-        <javac srcdir="unit/src" 
-               deprecation="${build.compiler.deprecation}"
-               debug="${build.compiler.debug}">
-            <classpath refid="compiletest.classpath"/>
-            <exclude name="**/data/"/>
-            <exclude name="org/netbeans/core/modules/jars/"/>
-        </javac>
-    </target>
-    
-    <!-- Creates lib/test.jar with all tests for this module,       -->
-    <!-- maybe there should be more includes here, not just classes -->
-    <target name="jars" depends="compile" unless="xtest.distexec">
-        <mkdir dir="${xtest.build}/${xtest.file.location}"/>
-        <jar basedir="." 
-             jarfile="${xtest.build}/${xtest.file.location}/${xtest.file.name}"
-             includesfile="${xtest.home}/standard-test-includes.txt"
-             excludesfile="${xtest.home}/standard-test-excludes.txt">
-        </jar>
-    </target>
-    
-    <target name="clean">
-        <delete>
-            <fileset dir=".">
-                <include name="**/src/**/*.class"/>
-            </fileset>
-        </delete>
-        <delete dir="${xtest.file.location}"/>
-        <ant dir="unit/src/org/netbeans/core/modules" target="clean"/>
-        <ant dir="unit/src/org/netbeans/core/projects" target="clean"/>
-        <ant dir="unit/src/org/netbeans/core/lookup/data" target="clean"/>
-    </target>
-
-    <!-- ========================= -->
-    <!-- Classpath for compilation -->
-    <!-- ========================= -->
-    
-    <target name="prepare-compile-classpath"
-         depends="jarcompile-classpath,srccompile-classpath,idecompile-classpath"/>
-    
-    <target name="jarcompile-classpath" depends="init,which-classpath" if="jarcode.classpath">
-        <echo message="Using jars classpath for compilation."/>
-    	<!-- this classpath will be used for compiling tests against jars -->
-	<path id="compiletest.classpath">        
-	    	<pathelement location="../../openide/openide-13javac-workaround.jar"/>
-	    	<pathelement location="../netbeans/lib/core.jar"/>
-	    	<fileset dir="../../openide/netbeans/lib">
-                    <include name="openide*.jar"/>
-             	</fileset>
-             	<pathelement path="${junit.path}"/>
-	    	<pathelement path="${xerces.path}"/>
-	</path>
-    </target>
-        
-    <target name="srccompile-classpath" depends="init,which-classpath" if="srccode.classpath">
-        <echo message="Using srcs classpath for compilation."/>
-    	<!-- this classpath will be used for compiling tests against sources -->
-    	<path id="compiletest.classpath">        
-	        <pathelement location="../../openide/openide-13javac-workaround.jar"/>
-	        <pathelement location="../src"/>
-	        <fileset dir="../../openide/netbeans/lib">
-                    <include name="openide*.jar"/>
-                </fileset>
-	        <pathelement path="${junit.path}"/>
-		<pathelement path="${xerces.path}"/>
-	</path>
-    </target>
-    
-    <target name="idecompile-classpath" depends="init,which-classpath" if="idecode.classpath">
-        <echo message="Using IDE classpath for compilation."/>
-    	<!-- this classpath will be used for compiling tests against installed IDE -->
-    	<path id="compiletest.classpath">        
-    		<pathelement location="${xtest.home}/lib/openide-13javac-workaround.jar"/>
-	        <pathelement location="${netbeans.home}/lib/core.jar"/>
-	        <fileset dir="${netbeans.home}/lib">
-                    <include name="openide*.jar"/>
-                </fileset>
-	        <pathelement path="${junit.path}"/>
-		<pathelement path="${xerces.path}"/>
-    	</path>
-    </target>
-    
-    <!-- ================================== -->
-    <!-- Classpath for execution code tests -->
-    <!-- ================================== -->
-    
-    <target name="prepare-codetest-classpath" 
-            depends="jartest-classpath,srctest-classpath,idetest-classpath"/>
-    
-    <target name="jartest-classpath" depends="which-classpath" if="jarcode.classpath">
-        <echo message="Using jars classpath."/>
-        <!-- this classpath will be used for executing tests against jars -->
-	<path id="codetest.classpath">
-        	<fileset dir="../netbeans/lib">
-            		<include name="core.jar"/>
-            		<include name="ext/*.jar"/>
-        	</fileset>
-        	<pathelement location="../../openide/netbeans/lib/openide.jar"/>
-    	</path>
-    </target>
-        
-    <target name="srctest-classpath" depends="which-classpath" if="srccode.classpath">
-        <echo message="Using srcs classpath."/>
-        <!-- this classpath will be used for executing tests against sources -->
-    	<path id="codetest.classpath">
-        <!-- Working sources should take precedence over core.jar: -->
-           <pathelement location="../src"/>
-        	<fileset dir="../netbeans/lib">
-              	    <!-- But loading core.jar means its manifest is available to module system: -->
-           	    <include name="core.jar"/>
-           	    <include name="ext/*.jar"/>
-        	</fileset>
-           <pathelement location="../../openide/netbeans/lib/openide.jar"/>
-    	</path>
-    </target>
-    
-    <target name="idetest-classpath" depends="which-classpath" if="idecode.classpath">
-        <echo message="Using IDE classpath."/>
-        <!-- this classpath will be used for executing tests against installed IDE -->
-    	<path id="codetest.classpath">
-        	<fileset dir="${netbeans.home}/lib">
-            		<include name="core.jar"/>
-            		<include name="ext/*.jar"/>
-        	</fileset>
-        	<pathelement location="${netbeans.home}/lib/openide.jar"/>        
-    	</path>
-    </target>
-    
+   
 </project>
 
