@@ -116,12 +116,12 @@ final class PhadhailLook extends Look implements PhadhailListener, PhadhailEdito
     
     public void addSaveCookie(Phadhail ph, SaveCookie s) {
         saveCookies.put(ph, s);
-        fireLookupItemsChange(ph, SaveCookie.class);
+        fireLookupItemsChange(ph);
     }
     
     public void removeSaveCookie(Phadhail ph) {
         saveCookies.remove(ph);
-        fireLookupItemsChange(ph, SaveCookie.class);
+        fireLookupItemsChange(ph);
     }
     
     // cache of editor supports; need to retain identity since they have state
