@@ -19,6 +19,9 @@ package org.netbeans.jellytools;
  * Created on June 26, 2002, 4:08 PM
  */
 
+import java.awt.Component;
+import java.awt.Window;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -97,25 +100,36 @@ public class JellyTestCase extends NbTestCase {
     
     /** Closes all opened modal dialogs. Non-modal stay opened. */
     public static void closeAllModal() {
-        JDialogOperator oper = null;
-        // find some JDialog
-        JDialog jDialog = JDialogOperator.findJDialog(ComponentSearcher.getTrueChooser(""));
-        // number of opened non-modal
-        int nonModal = 0;
-        // until any modal dialog is opened
-        while(jDialog!=null) {
-            oper = new JDialogOperator(jDialog);
-            if(oper.isModal()) {
-                // close if modal
-                oper.close();
-            } else {
-                // increment nonModal
-                nonModal++;
+        JDialog dialog;
+        ComponentChooser chooser = new ComponentChooser() {
+            public boolean checkComponent(Component comp) {
+                return(comp instanceof JDialog &&
+                       comp.isShowing());
             }
-            // use nonModal variable as index to skip opened non-modal dialogs
-            jDialog = JDialogOperator.findJDialog(ComponentSearcher.getTrueChooser(""), nonModal);
+            public String getDescription() {
+                return("Modal dialog");
+            }
+        };
+        while((dialog = (JDialog)DialogWaiter.getDialog(chooser)) != null) {
+            closeDialogs(findBottomDialog(dialog, chooser), chooser);
         }
     }
 
-
+    private static JDialog findBottomDialog(JDialog dialog, ComponentChooser chooser) {
+        Window owner = dialog.getOwner();
+        if(chooser.checkComponent(owner)) {
+            return(findBottomDialog((JDialog)owner, chooser));
+        }
+        return(dialog);
+    }
+    
+    private static void closeDialogs(JDialog dialog, ComponentChooser chooser) {
+        Window[] ownees = dialog.getOwnedWindows();
+        for(int i = 0; i < ownees.length; i++) {
+            if(chooser.checkComponent(ownees[i])) {
+                closeDialogs((JDialog)ownees[i], chooser);
+            }
+        }
+        new JDialogOperator(dialog).close();
+    }
 }
