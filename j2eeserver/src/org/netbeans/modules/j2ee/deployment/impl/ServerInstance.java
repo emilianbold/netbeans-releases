@@ -30,7 +30,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ServerStatusBar;
 import org.openide.util.RequestProcessor;
-//import org.netbeans.modules.j2ee.deployment.impl.ui.actions.ShowEventWindowsAction;
 
 public class ServerInstance implements Node.Cookie {
     

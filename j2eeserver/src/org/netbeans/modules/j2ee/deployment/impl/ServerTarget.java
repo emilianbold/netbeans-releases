@@ -16,9 +16,9 @@ package org.netbeans.modules.j2ee.deployment.impl;
 
 import org.openide.nodes.Node;
 import javax.enterprise.deploy.spi.Target;
-import javax.management.ObjectName;
-import javax.management.Notification;
-import javax.management.NotificationListener;
+//import javax.management.ObjectName;
+//import javax.management.Notification;
+//import javax.management.NotificationListener;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.deployment.impl.ui.DeployProgressUI;
