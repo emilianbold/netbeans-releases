@@ -14,16 +14,17 @@
 <p><small><a href="#seealso">See Also</a></small></p>
 <p>There are two ways to deploy an EJB module:</p>
 <ul>
+  <li><b>As part of an enterprise application.</b> When an EJB module is part 
+    of an enterprise application, its enterprise beans can be accessed from external 
+    clients and web application modules through its remote interfaces, and by 
+    other modules in the enterprise application through its local interfaces. 
+    All of the JAR files needed for execution are packaged in the in the enterprise 
+    application's EAR file and the classpath to these JAR files are written in 
+    the EJB module's manifest file. This is the most common way of deploying an 
+    EJB module. </li>
   <li><b>As a stand-alone EJB module.</b> Enterprise beans in a stand-alone EJB 
     modules can only be accessed through their remote interfaces. All of the JAR 
     files needed for execution are packaged in the EJB JAR file itself.</li>
-  <li><b>As part of an enterprise application.</b> When an EJB module is part 
-    of an enterprise application, its enterprise beans can be accessed from external 
-    clients and web application modules through its remote interfaces, and by other modules 
-    in the enterprise application through its local interfaces. All of the JAR 
-    files needed for execution are packaged in the in the enterprise application's 
-    EAR file and the classpath to these JAR files are written in the EJB module's 
-    manifest file.</li>
 </ul>
 <p>There are two commands you can use to deploy an EJB module or an enterprise 
   application:</p>
@@ -35,15 +36,15 @@
     applications, this command also opens the client module's default URL in the 
     external browser.</li>
 </ul>
-<p><b>To deploy or undeploy a stand-alone EJB module:</b></p>
-<ul>
-  <li>In the Projects window, right-click the EJB module project and choose Run 
-    Project or Deploy Project.</li>
-</ul>
-<p><b>To deploy or undeploy an enterprise application:</b></p>
+<p><b>To deploy an enterprise application:</b></p>
 <ul>
   <li>In the Projects window, right-click the enterprise application project and 
     choose Run Project or Deploy Project.</li>
+</ul>
+<p><b>To deploy a stand-alone EJB module:</b></p>
+<ul>
+  <li>In the Projects window, right-click the EJB module project and choose Run 
+    Project or Deploy Project.</li>
 </ul>
 <table border="0">
   <tr> 
@@ -67,8 +68,7 @@
   -->
 <hr>
 <small> <a href="../../credits.html">Legal Notices</a></small> 
-<table cellpadding="150" border="0">
-  <tr>
+<table cellpadding="20" border="0"> <tr>
     <td>&nbsp;</td>
   </tr>
   <tr>

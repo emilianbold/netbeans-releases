@@ -23,12 +23,27 @@
   <li>Right-click the project's node in the Projects window and choose Build Project. 
   </li>
   </ul>
-<p>When you build a project, the IDE calls the corresponding target 
-  in the project's Ant build script. The IDE compiles the source files and builds 
-  a packaged build output, an EAR file in the <tt>dist</tt> folder. 
-<p>The IDE displays the Ant output and any compilation errors in the Output window. 
-  You can double-click any error to go to the location in the source code where 
-  the error occurred. 
+<p>When you build an EJB module as part of an enterprise application, the IDE 
+  does the following:
+<ul>
+  <li>Compiles the classes for each of the enterpise application's modules to 
+    the module projects' <tt>build/ear-module</tt> folder.</li>
+  <li>Places any JAR files, libraries, or directories that are on the classpath 
+    of the module projects and are scheduled for inclusion in deployment in the 
+    enterprise project's <tt>build</tt> folder.</li>
+  <li>Builds each module's JAR file or WAR file to the module project's <tt>dist</tt> 
+    folder and copies it to the enterprise application project's <tt>build</tt> 
+    folder. The module JAR files and WAR files do not contain any of the module's 
+    classpath elements. </li>
+  <li>Puts a <tt>Class-path</tt> entry in each of the modules' manifest file for 
+    all included JAR files and puts a <tt>.</tt> entry if there is at least one 
+    directory on the project's classpath scheduled for inclusion in deployment. 
+    This mechanism ensures that the JAR files and directories can be used from 
+    the modules even if they reside in the EAR project and not in the modules 
+    themselves. </li>
+  <li>Builds the enterprise application EAR file to the enterprise application 
+    project's <tt>dist</tt> folder.</li>
+</ul>
 <table>
   <tr> 
     <th colspan=2 align=left><a name="seealso">See also</a></th>
@@ -37,7 +52,9 @@
     <td width="23"></td>
     <td><a href="about_ent_apps.html">About Enterprise Applications</a><br>
       <a href="ent_app_verify.html">Verifying an Enterprise Application</a><br>
-	    <a href="ent_app_deploy.html">Deploying an Enterprise Application</a></td>
+      <a href="ent_app_deploy.html">Deploying an Enterprise Application</a><br>
+      <a href="../../ejb/deploy/build_ejb.html">Building an EJB Module<br>
+      </a> <a href="../../web/build/build_warfile.html">Building a Web Application</a></td>
   </tr>
 </table>
 

@@ -14,26 +14,11 @@
 <p><small><a href="#seealso">See Also</a></small></p>
 <p>There are two ways to build an EJB module:</p>
 <ul>
-  <li><b>As a stand-alone EJB module.</b> The IDE packages the necessary JAR files 
-    with the EJB module JAR file. </li>
   <li><b>As part of a J2EE application.</b> The IDE packages all of the necessary 
     JAR files as part of the J2EE application and not as part of the individual 
-    modules.</li>
-</ul>
-<p><b>To build a stand-alone EJB module:</b></p>
-<ul>
-  <li>Right-click the EJB module project in the Projects window and choose Build 
-    Project. Or, if the EJB module project is the main project, choose Build <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Build 
-    Main Project (F11).</li>
-</ul>
-<p>When you build a EJB module project as a stand-alone module, the IDE does the 
-  following:</p>
-<ul>
-  <li>Compiles the classes to the project's <tt>build/jar</tt> folder.</li>
-  <li>Places any JAR files that are one your project's classpath and are scheduled 
-    for inclusion in deployment into the <tt>build/jar</tt> folder.</li>
-  <li>Builds the EJB module's JAR file to the EJB module's <tt>dist</tt> folder. 
-    The JAR file includes any classpath items scheduled for inclusion in deployment.</li>
+    modules. This is the most common way of building an EJB module.</li>
+  <li><b>As a stand-alone EJB module.</b> The IDE packages the necessary JAR files 
+    with the EJB module JAR file. </li>
 </ul>
 <p><b>To build an EJB module as part of an enterprise application:</b></p>
 <ol>
@@ -49,14 +34,37 @@
 <p>When you build an EJB module as part of an enterprise application, the IDE 
   does the following:</p>
 <ul>
-  <li>Compiles the classes to the project's <tt>build/jar</tt> folder.</li>
-  <li>Places any JAR files that are one your project's classpath and are scheduled 
-    for inclusion in deployment into the enterprise project's <tt>build</tt> folder.</li>
+  <li>Compiles the classes to the project's <tt>build/ear-module</tt> folder.</li>
+  <li>Places any JAR files, libraries, or directories that are on your project's 
+    classpath and are scheduled for inclusion in deployment in the enterprise 
+    project's <tt>build</tt> folder.</li>
   <li>Builds the EJB module's JAR file to the EJB module project's <tt>dist</tt> 
-    folder and to the enterprise application project's <tt>build</tt> folder. 
-    The EJB modue JAR file does not contain any of the classpath elements. </li>
+    folder and copies it to the enterprise application project's <tt>build</tt> 
+    folder. The EJB module JAR file does not contain any of the classpath elements. 
+  </li>
+  <li>Puts a <tt>Class-path</tt> entry in the EJB module's manifest file for all 
+    included JAR files and puts a <tt>.</tt> entry if there is at least one directory 
+    on the project's classpath scheduled for inclusion in deployment. This mechanism 
+    ensures that the JAR files and directories can be used from the EJB module 
+    even if they reside in the EAR project and not in the EJB module itself. </li>
   <li>Builds the enterprise application EAR file to the enterprise application 
     project's <tt>dist</tt> folder.</li>
+</ul>
+<p><b>To build a stand-alone EJB module:</b>
+<ul>
+  <li>Right-click the EJB module project in the Projects window and choose Build 
+    Project. Or, if the EJB module project is the main project, choose Build <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Build 
+    Main Project (F11).</li>
+</ul>
+<p>When you build a EJB module project as a stand-alone module, the IDE does the 
+  following:</p>
+<ul>
+  <li>Compiles the classes to the project's <tt>build/jar</tt> folder.</li>
+  <li>Places any JAR files, libraries, or directories that are on your project's 
+    classpath and are scheduled for inclusion in deployment into the <tt>build/jar</tt> 
+    folder.</li>
+  <li>Builds the EJB module's JAR file to the EJB module's <tt>dist</tt> folder. 
+    The JAR file includes all classpath items scheduled for inclusion in deployment.</li>
 </ul>
 <p><b>Notes:</b> 
 <ul>
@@ -110,8 +118,7 @@
   -->
 <hr>
 <small> <a href="../../credits.html">Legal Notices</a></small> 
-<table cellpadding="150" border="0">
-  <tr>
+<table cellpadding="20" border="0"> <tr>
     <td>&nbsp;</td>
   </tr>
   <tr>
