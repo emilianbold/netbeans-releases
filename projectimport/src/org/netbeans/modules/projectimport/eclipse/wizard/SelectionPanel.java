@@ -330,7 +330,7 @@ final class SelectionPanel extends JPanel {
         gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 0);
         add(note, gridBagConstraints);
 
     }
