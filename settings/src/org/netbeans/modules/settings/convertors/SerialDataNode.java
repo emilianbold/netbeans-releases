@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collection;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.Action;
@@ -40,6 +41,7 @@ import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.util.*;
+import org.openide.util.Utilities;
 import org.openide.util.actions.*;
 import org.openide.nodes.*;
 
@@ -188,19 +190,16 @@ public final class SerialDataNode extends DataNode {
     private boolean notifyResolvePropertyChange = true;
         
 
-    /** try to register PropertyChangeListener to instance to fire its changes.*/
-    private void initPList () {
+    /** try to register PropertyChangeListener to instance to fire its changes.
+     * @param bean     */
+    private void initPList (Object bean, BeanInfo bInfo, BeanNode.Descriptor descr) {
+        java.beans.EventSetDescriptor[] descs  = bInfo.getEventSetDescriptors();
         try {
-            InstanceCookie ic = ic();
-            if (ic == null) return;
-            BeanInfo info = Utilities.getBeanInfo(ic.instanceClass());
-            java.beans.EventSetDescriptor[] descs = info.getEventSetDescriptors();
             Method setter = null;
             for (int i = 0; descs != null && i < descs.length; i++) {
                 setter = descs[i].getAddListenerMethod();
-                if (setter != null && setter.getName().equals("addPropertyChangeListener")) { // NOI18N
-                    Object bean = ic.instanceCreate();
-                    propertyChangeListener = new PropL();
+                if (setter != null && setter.getName().equals("addPropertyChangeListener")) { // NOI18N                    
+                    propertyChangeListener = new PropL(createSupportedPropertyNames(descr));
                     setter.invoke(bean, new Object[] {WeakListeners.propertyChange(propertyChangeListener, bean)});
                     setSettingsInstance(bean);
                 }
@@ -209,7 +208,26 @@ public final class SerialDataNode extends DataNode {
             // ignore
         }
     }
-    
+
+    private Collection createSupportedPropertyNames(BeanNode.Descriptor descr) {
+        ArrayList supportedPropertyNames = new ArrayList();
+        if (descr.property != null) {
+            for (int i = 0; i < descr.property.length; i++) {
+                Property property = descr.property[i];
+                supportedPropertyNames.add(property.getName());
+            }
+        }
+
+        if (descr.expert != null) {
+            for (int i = 0; i < descr.expert.length; i++) {
+                Property property = descr.property[i];
+                supportedPropertyNames.add(property.getName());
+            }
+        }
+
+        return supportedPropertyNames;
+    }
+
     private Image initIcon (int type) {
         Image beanInfoIcon = null;
         try {
@@ -404,59 +422,69 @@ public final class SerialDataNode extends DataNode {
     }
     
     protected Sheet createSheet () {
-        Sheet orig = new Sheet();
-        changeSheet (orig);
-        
-        return orig;
-    }
-        
-        
-    private void changeSheet (Sheet orig) {
-        Sheet.Set props = orig.get (Sheet.PROPERTIES);
+        Sheet retVal = new Sheet();
+        InstanceCookie ic = ic();
 
-        try {
-            InstanceCookie ic = ic();
-            if (ic == null) return;
-            // properties
-            BeanInfo beanInfo = Utilities.getBeanInfo (ic.instanceClass ());
-            BeanNode.Descriptor descr = BeanNode.computeProperties (ic.instanceCreate (), beanInfo);
-            BeanDescriptor bd = beanInfo.getBeanDescriptor();
-            initPList();
+        if (ic != null) {
+            
+            try {
+                Class instanceClass = ic.instanceClass ();
+                Object bean = ic.instanceCreate ();
+                BeanInfo beanInfo = Utilities.getBeanInfo (instanceClass);
+                
+                BeanNode.Descriptor descr = BeanNode.computeProperties (bean, beanInfo);
+                BeanDescriptor bd = beanInfo.getBeanDescriptor();
+                
+                initPList(bean, beanInfo, descr);
+                
+                retVal.put (createPropertiesSet(descr, bd));
 
-            props = Sheet.createPropertiesSet();
-            if (descr.property != null) {
-                convertProps (props, descr.property, this);
-            }
-            if (bd != null) {
-                // #29550: help from the beaninfo on property tabs
-                Object helpID = bd.getValue("propertiesHelpID"); // NOI18N
-                if (helpID != null && helpID instanceof String) {
-                    props.setValue("helpID", helpID); // NOI18N
-                }
-            }
-            orig.put (props);
-
-            if (descr.expert != null && descr.expert.length != 0) {
-                Sheet.Set p = Sheet.createExpertSet();
-                convertProps (p, descr.expert, this);
-                if (bd != null) {
-                    Object helpID = bd.getValue("expertHelpID"); // NOI18N
-                    if (helpID != null && helpID instanceof String) {
-                        p.setValue("helpID", helpID); // NOI18N
-                    }
-                }
-                orig.put (p);
-            }
-        } catch (ClassNotFoundException ex) {
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
-        } catch (IOException ex) {
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
-        } catch (IntrospectionException ex) {
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
+                if (descr.expert != null && descr.expert.length != 0) {
+                    retVal.put (createExpertSet(descr, bd));
+                }                
+                
+            } catch (ClassNotFoundException ex) {
+                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
+            } catch (IOException ex) {
+                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
+            } catch (IntrospectionException ex) {
+                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
+            }            
         }
+
+        return retVal;
     }
-    
-    
+
+
+    private Sheet.Set createExpertSet(BeanNode.Descriptor descr, BeanDescriptor bd) {
+        Sheet.Set p = Sheet.createExpertSet();
+        convertProps (p, descr.expert, this);
+        if (bd != null) {
+            Object helpID = bd.getValue("expertHelpID"); // NOI18N
+            if (helpID != null && helpID instanceof String) {
+                p.setValue("helpID", helpID); // NOI18N
+            }
+        }
+        return p;
+    }
+
+    private Sheet.Set createPropertiesSet(BeanNode.Descriptor descr, BeanDescriptor bd) {
+        Sheet.Set props;
+        props = Sheet.createPropertiesSet();
+        if (descr.property != null) {
+            convertProps (props, descr.property, this);
+        }
+        if (bd != null) {
+            // #29550: help from the beaninfo on property tabs
+            Object helpID = bd.getValue("propertiesHelpID"); // NOI18N
+            if (helpID != null && helpID instanceof String) {
+                props.setValue("helpID", helpID); // NOI18N
+            }
+        }
+        return props;
+    }
+
+
     /** Method that converts properties of an object.
      * @param set set to add properties to
      * @param arr array of Node.Property and Node.IndexedProperty
@@ -1022,23 +1050,33 @@ public final class SerialDataNode extends DataNode {
     * also the name of the node (sometimes)
     */
     private final class PropL extends Object implements PropertyChangeListener {
-        PropL() {}
+        private Collection supportedPropertyNames;        
+        PropL(Collection supportedPropertyNames) {
+            this.supportedPropertyNames = supportedPropertyNames;
+        }
+        
         private boolean isChanged = false;
         public void propertyChange(PropertyChangeEvent e) {
             isChanged = true;
             String name = e.getPropertyName();
-            firePropertyChange (name, e.getOldValue (), e.getNewValue ());
+
+            if (isSupportedName(name)) {
+                firePropertyChange (name, e.getOldValue (), e.getNewValue ());
             
-            if (name == null) return;
-            if (name.equals("name")) { // NOI18N
-                SerialDataNode.this.isNameChanged = true;
-                // ensure the display name is updated also for ServiceTypes
-                SerialDataNode.this.fireDisplayNameChange(null, null);
-            } else if (name.equals("displayName")) { // NOI18N
-                SerialDataNode.this.isNameChanged = true;
+                if (name.equals("name")) { // NOI18N
+                    SerialDataNode.this.isNameChanged = true;
+                    // ensure the display name is updated also for ServiceTypes
+                    SerialDataNode.this.fireDisplayNameChange(null, null);
+                } else if (name.equals("displayName")) { // NOI18N
+                    SerialDataNode.this.isNameChanged = true;
+                }
             }
         }
-        
+
+        private boolean isSupportedName(String name) {
+            return name != null && supportedPropertyNames.contains(name);
+        }
+
         public boolean getChangeAndReset() {
             boolean wasChanged = isChanged;
             isChanged = false;
