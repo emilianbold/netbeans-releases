@@ -19,8 +19,6 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
 
     private VisualPropertySupport vps;
     private VisualClasspathSupport vcs;
-    private String[] jvm;
-    private String[] jvmValues;
     
     /** Creates new form CustomizerCompile */
     public CustomizerCompile(WebProjectProperties webProperties) {
@@ -36,26 +34,9 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
             jButtonRemove,
             jButtonMoveUp,
             jButtonMoveDown);
-        
-        jvm = new String[] {
-            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_JVM_JComboBox_11"),
-            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_JVM_JComboBox_12"),
-            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_JVM_JComboBox_13"),
-            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_JVM_JComboBox_14"),
-            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_JVM_JComboBox_15")
-        };
-        jvmValues = new String[] {
-            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_JVM_JComboBox_11_Value"),
-            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_JVM_JComboBox_12_Value"),
-            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_JVM_JComboBox_13_Value"),
-            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_JVM_JComboBox_14_Value"),
-            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_JVM_JComboBox_15_Value")
-        };
-
     }
 
     public void initValues() {
-        vps.register(jvmComboBox, jvm, jvmValues, WebProjectProperties.JAVAC_TARGET);
         vps.register(jCheckBoxDebugInfo, WebProjectProperties.JAVAC_DEBUG);
         vps.register(jCheckBoxDeprecation, WebProjectProperties.JAVAC_DEPRECATION);
         vps.register(vcs, WebProjectProperties.JAVAC_CLASSPATH);
@@ -69,8 +50,6 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
     private void initComponents() {//GEN-BEGIN:initComponents
         java.awt.GridBagConstraints gridBagConstraints;
 
-        jvmLabel = new javax.swing.JLabel();
-        jvmComboBox = new javax.swing.JComboBox();
         jCheckBoxDebugInfo = new javax.swing.JCheckBox();
         jCheckBoxDeprecation = new javax.swing.JCheckBox();
         jPanel2 = new javax.swing.JPanel();
@@ -88,26 +67,12 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
         setLayout(new java.awt.GridBagLayout());
 
         setBorder(new javax.swing.border.CompoundBorder(new javax.swing.border.EtchedBorder(), new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 12, 12))));
-        jvmLabel.setLabelFor(jvmComboBox);
-        jvmLabel.setText(NbBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeCompile_Compiler_JVM_JComboBox"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 12);
-        add(jvmLabel, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
-        add(jvmComboBox, gridBagConstraints);
-
         jCheckBoxDebugInfo.setText(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_DebugInfo_JCheckBox"));
         jCheckBoxDebugInfo.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(jCheckBoxDebugInfo, gridBagConstraints);
 
         jCheckBoxDeprecation.setText(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_Deprecation_JCheckBox"));
@@ -115,8 +80,7 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(jCheckBoxDeprecation, gridBagConstraints);
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
@@ -152,11 +116,12 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
 
         jButtonAddJar.setText(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Classpath_AddJar_JButton"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         jPanel2.add(jButtonAddJar, gridBagConstraints);
 
         jButtonAddLibrary.setText(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Classpath_AddLibrary_JButton"));
@@ -169,10 +134,11 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
 
         jButtonAddProject.setText(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Classpath_AddProject_JButton"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         jPanel2.add(jButtonAddProject, gridBagConstraints);
 
         jButtonRemove.setText(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Classpath_Remove_JButton"));
@@ -234,8 +200,6 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollClasspath;
     private javax.swing.JTable jTableClasspath;
-    private javax.swing.JComboBox jvmComboBox;
-    private javax.swing.JLabel jvmLabel;
     // End of variables declaration//GEN-END:variables
 
 }
