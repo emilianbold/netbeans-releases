@@ -126,11 +126,26 @@ Microsystems, Inc. All Rights Reserved.
         <javac srcdir="${src.dir}" destdir="${build.classes.dir}" debug="${build.compiler.debug}" deprecation="${build.compiler.deprecation}" optimize="${build.compiler.optimize}" source="${javac.source}" includeantruntime="false">
             <classpath refid="cp"/>
         </javac>
+        <!-- Sanity check: -->
+        <pathconvert pathsep=":" property="class.files.in.src">
+            <path>
+                <fileset dir="${src.dir}">
+                    <include name="**/*.class"/>
+                </fileset>
+            </path>
+        </pathconvert>
+        <fail>
+            <condition>
+                <not>
+                    <equals arg1="${class.files.in.src}" arg2=""/>
+                </not>
+            </condition>
+            You have stray *.class files in ${src.dir} which you must remove.
+            Probably you failed to clean your sources before updating them from CVS.
+        </fail>
+        <!-- OK, continue: -->
         <copy todir="${build.classes.dir}">
-          <fileset dir="${src.dir}" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt">
-            <!-- don't copy *.class leftover from pre-projectized builds -->
-            <exclude name="**/*.class"/>
-          </fileset>
+          <fileset dir="${src.dir}" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
         </copy>
     </target>
 
