@@ -94,7 +94,8 @@ public class DefaultSourceMap extends SourceFileMap {
     
     public File getDistributionPath(FileObject sourceFile) {
         for (Iterator i=rootFiles.iterator(); i.hasNext();) {
-            FileObject root = (FileObject) i.next();
+            File rootFile = (File) i.next();
+            FileObject root = FileUtil.toFileObject(rootFile);
             String relative = FileUtil.getRelativePath(root, sourceFile);
             if (relative != null && ! relative.trim().equals("")) { //NOI18N
                 return new File(relative);
