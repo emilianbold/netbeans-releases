@@ -137,26 +137,11 @@ final class NbErrorManager extends ErrorManager {
         lastException.remove (Thread.currentThread ());
 
         Exc ex = new Exc (t, severity, ann);
-
-
-        PrintWriter ps = getLogWriter ();
-
-        if (prefix != null) ps.print ("[" + prefix + "] "); // NOI18N
-        ps.println ("*********** Exception occurred ************"); // NOI18N
-        ps.flush ();
-
-
-        /** If netbeans.debug.exceptions is set, print the exception to console */
-        if (System.getProperty ("netbeans.debug.exceptions") != null) { // NOI18N
-            PrintWriter pw = new PrintWriter (System.err);
-            ex.printStackTrace (pw);
-            pw.flush();
-            // This will show up in the log too, of course.
-        } else {
-            ex.printStackTrace(ps);
-        }
-
-        ps.flush();
+        
+        if (prefix != null)
+            System.err.print ("[" + prefix + "] "); // NOI18N
+        System.err.println ("*********** Exception occurred ************"); // NOI18N
+        ex.printStackTrace(System.err);
 
         if (ex.getSeverity () > INFORMATIONAL) {
             NotifyException.notify (ex);
@@ -180,13 +165,12 @@ final class NbErrorManager extends ErrorManager {
                     throw new IllegalStateException("prefix != null yet uniquifier == 0");
                 }
                 if (showUniquifier) {
-                    getLogWriter ().print ("[" + prefix + " #" + uniquifier + "] "); // NOI18N
+                    System.err.print ("[" + prefix + " #" + uniquifier + "] "); // NOI18N
                 } else {
-                    getLogWriter ().print ("[" + prefix + "] "); // NOI18N
+                    System.err.print ("[" + prefix + "] "); // NOI18N
                 }
             }
-            getLogWriter().println(s);
-            getLogWriter().flush(); 
+            System.err.println(s);
         }
     }
     
@@ -344,14 +328,6 @@ final class NbErrorManager extends ErrorManager {
         return arr;
     }
 
-    /** Lazy getter for the writer */
-    private PrintWriter getLogWriter() {
-        if (logWriter == null) {
-            logWriter = NbTopManager.get ().createErrorLogger (minLogSeverity);
-        }
-        return logWriter;
-    }
-    
     /** Implementation of annotation interface.
     */
     private static final class Ann extends Object
@@ -412,10 +388,12 @@ final class NbErrorManager extends ErrorManager {
         }
     } // end of Ann
 
-    /** Another final class that is used to communicate with
-    * NotifyException and provides enough information to the dialog.
-    */
-    final class Exc extends Object {
+    /**
+     * Another final class that is used to communicate with
+     * NotifyException and provides enough information to the dialog.
+     */
+    final class Exc
+    {
         /** the original throwable */
         private Throwable t;
 
@@ -423,25 +401,25 @@ final class NbErrorManager extends ErrorManager {
         private int severity;
 
         /** @param severity if -1 then we will compute the
-        * severity from annotations
-        */
-        public Exc (Throwable t, int severity, Annotation[] arr) {
+         * severity from annotations
+         */
+        Exc (Throwable t, int severity, Annotation[] arr) {
             this.t = t;
             this.severity = severity;
             this.arr = arr == null ? new Annotation[0] : arr;
         }
 
         /** @return message */
-        public String getMessage () {
+        String getMessage () {
             return (String)find (1);
         }
 
         /** @return localized message */
-        public String getLocalizedMessage () {
+        String getLocalizedMessage () {
             return (String)find (2);
         }
 	
-	public boolean isLocalized() {
+        boolean isLocalized() {
 	    if (find(2, false) == null) {
 		String locMsg = getLocalizedMessage();
 		return locMsg != null && !locMsg.equals(getMessage());
@@ -451,12 +429,12 @@ final class NbErrorManager extends ErrorManager {
 	}
 
         /** @return class name of the exception */
-        public String getClassName () {
+        String getClassName () {
             return (String)find (3);
         }
 
         /** @return the severity of the exception */
-        public int getSeverity () {
+        int getSeverity () {
             if (severity != UNKNOWN) {
                 return severity;
             }
@@ -477,17 +455,25 @@ final class NbErrorManager extends ErrorManager {
         }
 
         /** @return date assigned to the exception */
-        public Date getDate () {
+        Date getDate () {
             return (Date)find (4);
         }
 
         /** Prints stack trace of all annotations and if
-        * there is no annotation trace then of the exception
-        */
-        public void printStackTrace (PrintWriter pw) {
+         * there is no annotation trace then of the exception
+         */
+        void printStackTrace (PrintStream ps) {
+            printStackTrace(new PrintWriter(ps, true));
+        }
+        
+        /** Prints stack trace of all annotations and if
+         * there is no annotation trace then of the exception
+         */
+        void printStackTrace (PrintWriter pw) {
             // #19487: don't go into an endless loop here
             printStackTrace(pw, new HashSet(10));
         }
+        
         private void printStackTrace(PrintWriter pw, Set/*<Throwable>*/ nestingCheck) {
             if (t != null && !nestingCheck.add(t)) {
                 // Unlocalized log message - this is for developers of NB, not users
@@ -534,7 +520,8 @@ final class NbErrorManager extends ErrorManager {
                 if (annotation == null && thr != null) annotation = thr.getMessage();
                 
                 if (annotation != null) {
-                    if (thr != null) pw.println ("Nested annotation: "+annotation);// NOI18N
+                    if (thr != null)
+                        pw.println ("Nested annotation: "+annotation);// NOI18N
                     else pw.println ("Annotation: "+annotation);// NOI18N
                 }                
             }            
@@ -590,22 +577,24 @@ final class NbErrorManager extends ErrorManager {
             return lines;
         }
 
-        /** Method that iterates over annotations to find out
-        * the first annotation that brings the requested value.
-        *
-        * @param kind what to look for (1, 2, 3, 4, ...);
-        * @return the found object
-        */
+        /**
+         * Method that iterates over annotations to find out
+         * the first annotation that brings the requested value.
+         *
+         * @param kind what to look for (1, 2, 3, 4, ...);
+         * @return the found object
+         */
         private Object find (int kind) {
 	    return find(kind, true);
 	}
 
-        /** Method that iterates over annotations to find out
-        * the first annotation that brings the requested value.
-        *
-        * @param kind what to look for (1, 2, 3, 4, ...);
-        * @return the found object
-        */
+        /**
+         * Method that iterates over annotations to find out
+         * the first annotation that brings the requested value.
+         *
+         * @param kind what to look for (1, 2, 3, 4, ...);
+         * @return the found object
+         */
         private Object find (int kind, boolean def) {
             for (int i = 0; i < arr.length; i++) {
                 Annotation a = arr[i];
@@ -651,10 +640,9 @@ final class NbErrorManager extends ErrorManager {
         }
     }
 
-    // part of bugfix #6120
     /** Instances are created in awt.EventDispatchThread */
-    public static final class AWTHandler {
-
+    public static final class AWTHandler
+    {
         /** The name MUST be handle and MUST be public */
         public static void handle(Throwable t) {
             if (t instanceof org.netbeans.core.execution.ExitSecurityException) {
@@ -663,5 +651,4 @@ final class NbErrorManager extends ErrorManager {
             ErrorManager.getDefault().notify((ERROR << 1), t);
         }
     }
-
 }

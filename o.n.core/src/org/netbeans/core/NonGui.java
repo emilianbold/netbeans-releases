@@ -106,21 +106,19 @@ public class NonGui extends NbTopManager implements Runnable {
     /** The flag for accessibility */
     public static boolean accessibility = false;
     
-    /** Getter for home directory.
-    */
+    /** Getter for home directory. */
     protected static String getHomeDir () {
         if (homeDir == null) {
             homeDir = System.getProperty ("netbeans.home");
             if (homeDir == null) {
-                System.out.println(NbBundle.getBundle("org.netbeans.core.Bundle",java.util.Locale.getDefault(),Main.class.getClassLoader()).getString("CTL_Netbeanshome_property"));
+                System.err.println(NbBundle.getBundle("org.netbeans.core.Bundle",java.util.Locale.getDefault(),Main.class.getClassLoader()).getString("CTL_Netbeanshome_property"));
                 doExit (1);
             }
         }
         return homeDir;
     }
 
-    /** Getter for user home directory.
-    */
+    /** Getter for user home directory. */
     protected static String getUserDir () {
         if (userDir == null) {
             userDir = System.getProperty ("netbeans.user");
@@ -140,7 +138,7 @@ public class NonGui extends NbTopManager implements Runnable {
                 makedir (systemDirFile);
                 if (! userDir.equals (homeDir)) {
                     // Need to set up a multiuser user directory. Formerly in launcher.
-                    System.out.println (getString ("MSG_setting_up_user_dir", userDir));
+
                     touch (new File (systemDirFile, "project.last_hidden")); // NOI18N
                     touch (new File (systemDirFile, "project.basic_hidden")); // NOI18N
                     File projDir = new File (systemDirFile, "Projects"); // NOI18N
@@ -162,13 +160,13 @@ public class NonGui extends NbTopManager implements Runnable {
     private static void makedir (File f) {
         if (f.isFile ()) {
             Object[] arg = new Object[] {f};
-            System.out.println (new MessageFormat(getString("CTL_CannotCreate_text")).format(arg));
+            System.err.println (new MessageFormat(getString("CTL_CannotCreate_text")).format(arg));
             doExit (6);
         }
         if (! f.exists ()) {
             if (! f.mkdirs ()) {
                 Object[] arg = new Object[] {f};
-                System.out.println (new MessageFormat(getString("CTL_CannotCreateSysDir_text")).format(arg));
+                System.err.println (new MessageFormat(getString("CTL_CannotCreateSysDir_text")).format(arg));
                 doExit (7);
             }
         }
@@ -178,7 +176,7 @@ public class NonGui extends NbTopManager implements Runnable {
         try {
             new FileOutputStream (f).close ();
         } catch (IOException ioe) {
-            System.out.println (ioe);
+            System.err.println (ioe);
             doExit (8);
         }
     }
@@ -205,19 +203,19 @@ public class NonGui extends NbTopManager implements Runnable {
         File homeDirFile = new File (getHomeDir ());
         File userDirFile = new File (getUserDir ());
         if (!homeDirFile.exists ()) {
-            System.out.println (getString("CTL_Netbeanshome_notexists"));
+            System.err.println (getString("CTL_Netbeanshome_notexists"));
             doExit (2);
         }
         if (!homeDirFile.isDirectory ()) {
-            System.out.println (getString("CTL_Netbeanshome1"));
+            System.err.println (getString("CTL_Netbeanshome1"));
             doExit (3);
         }
         if (!userDirFile.exists ()) {
-            System.out.println (getString("CTL_Netbeanshome2"));
+            System.err.println (getString("CTL_Netbeanshome2"));
             doExit (4);
         }
         if (!userDirFile.isDirectory ()) {
-            System.out.println (getString("CTL_Netbeanshome3"));
+            System.err.println (getString("CTL_Netbeanshome3"));
             doExit (5);
         }
 
@@ -241,7 +239,7 @@ public class NonGui extends NbTopManager implements Runnable {
             if (exc != null) {
                 exc.printStackTrace ();
                 Object[] arg = new Object[] {systemDir};
-                System.out.println (new MessageFormat(getString("CTL_Cannot_mount_systemfs")).format(arg));
+                System.err.println (new MessageFormat(getString("CTL_Cannot_mount_systemfs")).format(arg));
                 doExit (3);
             }
         }
