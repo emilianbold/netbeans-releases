@@ -316,6 +316,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
         }
         SourceChildren sc =(SourceChildren)formObject.getNodeDelegate().getChildren();
         sc.remove(new RADComponentNode [] { formRootNode });
+        RADMenuItemComponent.freeDesignTimeMenus(formManager);
         formRootNode = null;
         formManager = null;
         FormEditor.getFormSettings().removePropertyChangeListener(settingsListener);

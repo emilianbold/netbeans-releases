@@ -176,12 +176,22 @@ public class RADMenuItemComponent extends RADComponent {
         }
     }
     
+    static void freeDesignTimeMenus(FormManager2 manager) {
+        DesignTimeMenus dtm =(DesignTimeMenus) menusByFM.remove(manager);
+        if (dtm != null) {
+            manager.removeFormListener(dtm.listener);
+            dtm.listener = null;
+        }
+    }
+    
     // -----------------------------------------------------------------------------
     // Inner classes
     static class DesignTimeMenus {
         final java.util.HashMap designTimeMenus = new java.util.HashMap();
+        FormListener listener;
+        
         DesignTimeMenus(FormManager2 fm) {
-            fm.addFormListener(new FormAdapter() {
+            listener = new FormAdapter() {
                 public void propertyChanged(FormPropertyEvent evt) {
                     if (evt.getRADComponent() instanceof RADMenuItemComponent) {
                         RADMenuItemComponent comp =(RADMenuItemComponent) evt.getRADComponent();
@@ -194,7 +204,8 @@ public class RADMenuItemComponent extends RADComponent {
                         copyMenuProperties(menu, getDesignTime(menu));
                     }
                 }
-            });
+            };
+            fm.addFormListener(listener);
         }
 
         Object getDesignTime(Object awtMenu) {
