@@ -32,6 +32,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     public static final String PROP_GENERATE_POSITION = "generatePosition"; // NOI18N
     public static final String PROP_GENERATE_SIZE = "generateSize"; // NOI18N
     public static final String PROP_GENERATE_CENTER = "generateCenter"; // NOI18N
+    public static final String PROP_DESIGNER_SIZE = "designerSize"; // NOI18N
 
     public static final int GEN_BOUNDS = 0;
     public static final int GEN_PACK = 1;
@@ -44,6 +45,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     private boolean generateSize = true;
     private boolean generateCenter = true;
     private int formSizePolicy = GEN_NOTHING;
+    private Dimension designerSize;
 
 
     public String getJavaContainerDelegateString() {
@@ -119,8 +121,33 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     public void setFormSize(Dimension value) {
         Object old = formSize;
         formSize = value;
-        getFormModel().fireSyntheticPropertyChanged(this, PROP_FORM_SIZE,
-                                                    old, value);
+        getFormModel().fireSyntheticPropertyChanged(this, PROP_FORM_SIZE, old, value);
+        
+        if (getFormSizePolicy() == GEN_BOUNDS && !getDesignerSize().equals(value)) {
+            setDesignerSize(value);
+        }
+        
+        if (getNodeReference() != null) { // propagate the change to node
+            getNodeReference().firePropertyChangeHelper(PROP_FORM_SIZE, old, value);
+        }
+    }
+    
+    public Dimension getDesignerSize() {
+        if (designerSize == null) {
+            designerSize = new Dimension(400, 300);
+        }
+        return designerSize;
+    }
+
+    public void setDesignerSize(Dimension value) {
+        Object old = designerSize;
+        designerSize = value;
+        getFormModel().fireSyntheticPropertyChanged(this, PROP_DESIGNER_SIZE, old, value);
+
+        if (getFormSizePolicy() == GEN_BOUNDS && !getFormSize().equals(value)) {
+            setFormSize(value);
+        }        
+        
     }
 
     public boolean getGeneratePosition() {
@@ -169,6 +196,8 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
         // [PENDING - set as aux value]
         int old = formSizePolicy;
         formSizePolicy = value;
+        if (value == GEN_BOUNDS)
+            setFormSize(getDesignerSize());
         getFormModel().fireSyntheticPropertyChanged(this, PROP_FORM_SIZE_POLICY,
                                         new Integer(old), new Integer(value));
     }
@@ -187,6 +216,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 //                return new Node.Property[0];
 //            }
         } */
+        
 
         Node.Property policyProperty = new PropertySupport.ReadWrite(PROP_FORM_SIZE_POLICY, Integer.TYPE,
                                                                      FormEditor.getFormBundle().getString("MSG_FormSizePolicy"),
@@ -308,6 +338,25 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
                 return !isReadOnly();
             }
         };
+        
+        Node.Property designerSizeProperty = new PropertySupport.ReadWrite(PROP_DESIGNER_SIZE, Dimension.class,
+                                                                   FormEditor.getFormBundle().getString("MSG_DesignerSize"),
+                                                                   FormEditor.getFormBundle().getString("MSG_DesignerSize")) {
+            public Object getValue() throws
+                IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
+                return getDesignerSize();
+            }
+
+            public void setValue(Object val) throws IllegalAccessException,
+                                                    IllegalArgumentException, java.lang.reflect.InvocationTargetException {
+                if (!(val instanceof Dimension)) throw new IllegalArgumentException();
+                setDesignerSize((Dimension)val);
+            }
+
+            public boolean canWrite() {
+                return false;
+            }
+        };
 
         java.util.List propList = new java.util.ArrayList();
 
@@ -321,6 +370,8 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
             propList.add(genSizeProperty);
             propList.add(genCenterProperty);
         }
+        
+        propList.add(designerSizeProperty);
 
         Node.Property[] props = new Node.Property[propList.size()];
         propList.toArray(props);

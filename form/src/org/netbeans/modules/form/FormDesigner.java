@@ -314,7 +314,7 @@ public class FormDesigner extends TopComponent
             handleLayer.setViewOnly(formModel.isReadOnly());
             RADComponent topRADComponent = formModel.getTopRADComponent();
             if (topRADComponent instanceof RADVisualFormContainer) {
-                Dimension formSize = ((RADVisualFormContainer)topRADComponent).getFormSize();
+                Dimension formSize = ((RADVisualFormContainer)topRADComponent).getDesignerSize();
                 fdPanel.updatePanel(formSize);
             }
             else fdPanel.updatePanel(null);
@@ -824,13 +824,14 @@ public class FormDesigner extends TopComponent
         public void componentPropertyChanged(FormModelEvent e) {
             placeUpdateTask(UpdateTask.PROPERTY, e.getComponentProperty());
         }
-        
+
         public void syntheticPropertyChanged(FormModelEvent e) {
-            if (RADVisualFormContainer.PROP_FORM_SIZE.equals(e.getPropertyName())) {
+            if (RADVisualFormContainer.PROP_DESIGNER_SIZE.equals(e.getPropertyName())) {
                 Dimension formSize = (Dimension)e.getPropertyNewValue();
                 fdPanel.updatePanel(formSize);
             }
         }
+        
     }
 
     // --------
@@ -1140,8 +1141,9 @@ public class FormDesigner extends TopComponent
             if (resizingFinished) {
                 RADComponent component = formDesigner.getModel().getTopRADComponent();
                 if (component instanceof RADVisualFormContainer)
-                    ((RADVisualFormContainer) component).setFormSize(new Dimension(w, h));
+                    ((RADVisualFormContainer) component).setDesignerSize(new Dimension(w, h));
             }
+            
             setStatusText("FMT_MSG_RESIZING_FORMDESIGNER", // NOI18N
                             new Object[] { new Integer(w).toString(), new Integer(h).toString() } );
         }
