@@ -174,10 +174,9 @@ Microsystems, Inc. All Rights Reserved.
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.runSingle"/>
                     </file>
                     
-                    <attr name="org-netbeans-modules-project-ui-RunSingle.instance/SeparatorBeforeCut.instance" boolvalue="true"/>
-                    <attr name="format/org-netbeans-modules-project-ui-RunSingle.instance" boolvalue="true"/>
-                    <attr name="SeparatorAfterFormat.instance/org-netbeans-modules-project-ui-RunSingle.instance" boolvalue="true"/>
-                    <attr name="org-netbeans-modules-project-ui-RunSingle.instance/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance" boolvalue="true"/>
+                    <attr name="Separator5.instance/org-netbeans-modules-project-ui-RunSingle.instance" boolvalue="true"/>
+                    <attr name="org-netbeans-modules-project-ui-RunSingle.instance/org-netbeans-modules-web-core-jsploader-EditServletAction.shadow" boolvalue="true"/>
+                    <attr name="org-netbeans-modules-web-core-jsploader-EditServletAction.shadow/SeparatorJSP.instance" boolvalue="true"/>
 
                 </folder>
             </folder>

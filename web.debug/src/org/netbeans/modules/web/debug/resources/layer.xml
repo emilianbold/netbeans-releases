@@ -6,20 +6,28 @@
         <folder name="text">
             <folder name="x-jsp">
                 <folder name="Popup">
-                    <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+                    <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+                    </file>                    
                     <file name="org-netbeans-modules-web-debug-actions-AddJspWatchAction.instance"/>
                     <file name="SeparatorJSP.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file>
-                    <attr boolvalue="true" name="SeparatorJSP.instance/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
-                    <attr boolvalue="true" name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance/org-netbeans-modules-web-debug-actions-AddJspWatchAction.instance"/>
-                    <attr boolvalue="true" name="org-netbeans-modules-web-debug-actions-AddJspWatchAction.instance/Separator4.instance"/>
+                    <file name="SeparatorAfterToggle.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr boolvalue="true" name="SeparatorJSP.instance/org-netbeans-modules-web-debug-actions-AddJspWatchAction.instance"/>
+                    <attr boolvalue="true" name="org-netbeans-modules-web-debug-actions-AddJspWatchAction.instance/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow"/>
+                    <attr boolvalue="true" name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow/SeparatorAfterToggle.instance"/>
+                    <attr boolvalue="true" name="SeparatorAfterToggle.instance/org-openide-actions-CutAction.instance"/>
                 </folder>
                 <folder name="ToolTips">
                     <file name="org-netbeans-modules-web-debug-JspToolTipAnnotation.instance"/>
                 </folder>
                 <folder name="GlyphGutterActions">
-                    <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+                    <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+                    </file>
                 </folder>
             </folder>
         </folder>
