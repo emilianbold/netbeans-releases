@@ -26,7 +26,7 @@ Microsystems, Inc. All Rights Reserved.
 <mconfig name="core qa-functional test config">
 <!-- Start Property Editors testbag -->
 
-    <testbag testattribs="validation or full or ide or pe" executor="ide" name="Property Editors tests" resultsprocessor="unit">
+    <testbag testattribs="validation or full or ide or pe" executor="ide" name="Property Editors tests">
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/propertyeditors/PropertyType_BooleanO.class"/>
@@ -54,7 +54,7 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
 
-    <testbag testattribs="validation or full or ide or pe" executor="ide" name="Property Customizers tests" resultsprocessor="unit">
+    <testbag testattribs="validation or full or ide or pe" executor="ide" name="Property Customizers tests">
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/propertyeditors/PropertyType_Color.class"/>
@@ -85,7 +85,7 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
 
-    <testbag testattribs="platform" executor="platform" name="Property Editors - platform" resultsprocessor="unit">
+    <testbag testattribs="platform" executor="platform" name="Property Editors - platform">
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/propertyeditors/PropertyType_BooleanO.class"/>
@@ -113,7 +113,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="platform" executor="platform" name="Property Customizers - platform" resultsprocessor="unit">
+    <testbag testattribs="platform" executor="platform" name="Property Customizers - platform">
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/propertyeditors/PropertyType_Color.class"/>
@@ -166,7 +166,7 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
     
-    <testbag testattribs="platform_debug" executor="ide" name="Platform debug" resultsprocessor="unit">
+    <testbag testattribs="platform_debug" executor="ide" name="Platform debug">
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/propertyeditors/PlatformDebug.class"/>
@@ -179,7 +179,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <!-- START javahelp testbag -->
 
-    <testbag testattribs="full or validation or javahelp" executor="ide" name="Javahelp tests" resultsprocessor="unit">
+    <testbag testattribs="full or validation or javahelp" executor="ide" name="Javahelp tests">
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/javahelp/JavaHelpDialogTest.class"/>
@@ -190,7 +190,6 @@ Microsystems, Inc. All Rights Reserved.
 <!-- END javahelp testbag -->
     
     <executor name="code" antfile="build-qa-functional.xml" target="runcodetest"/>
-    
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest"/>
 
     <executor name="ide_firststart_mdi" antfile="build-qa-functional.xml" target="runidetest_firststart_mdi"/>
@@ -201,7 +200,5 @@ Microsystems, Inc. All Rights Reserved.
     <executor name="platform" antfile="build-qa-functional.xml" target="runplatformtest"/>
 
     <compiler name="QAcompiler" antfile="build-qa-functional.xml" target="QAcompiler" default="true"/>
-    
-    <resultsprocessor name="unit" antfile="build.xml" target="test_report" default="true"/>
 
 </mconfig>
