@@ -323,7 +323,7 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
             int i = getIndex (swingColorNames, color.getID());
             if (i < 0) return "new java.awt.Color(" + color.getRed() + ", " + color.getGreen() + // NOI18N
                                   ", " + color.getBlue() + ")"; // NOI18N
-            return "(java.awt.Color) javax.swing.UIManager.getDefaults().get(\"" + // NOI18N
+            return "javax.swing.UIManager.getDefaults().getColor(\"" + // NOI18N
                    color.getID() + "\")"; // NOI18N
         }
     }
