@@ -54,7 +54,7 @@ public class TomcatModule implements TargetModuleID {
     
 //    // PENDING
     public String getWebURL () {
-        return target.getServerUri () + path;
+        return target.getServerUri () + path.replaceAll(" ", "%20");
 //        try {
 //            return new java.net.URL ("http", "localhost", target.getPort (), path).toExternalForm ();
 //        }

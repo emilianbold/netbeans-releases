@@ -333,7 +333,9 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
 
                 // Create a connection for this command
                 String uri = tm.getPlainUri ();
-                urlToConnectTo = new URL(uri + command);
+                String withoutSpaces = (uri + command).replaceAll(" ", "%20");  //NOI18N
+                urlToConnectTo = new URL(withoutSpaces);
+                
                 if (Boolean.getBoolean("org.netbeans.modules.tomcat5.LogManagerCommands")) { // NOI18N
                     String message = "Tomcat 5 sending manager command: " + urlToConnectTo;
                     System.out.println(message);
