@@ -335,7 +335,25 @@ public abstract class J2eeModuleProvider {
             }
         }
         public void fileRenamed(FileRenameEvent e) {
-            fileDeleted(e);
+            FileObject fo = e.getFile();
+            if (isConfigFileName(fo.getNameExt())) {
+                synchronized(listenedFOs) {
+                    if (!listenedFOs.contains(fo)) {
+                        listenedFOs.add(fo);
+                        fo.addFileChangeListener(this);
+                    }
+                }
+                fireConfigurationFilesChanged(true, fo);
+            } else {
+                if (isConfigFileName(e.getName() + "." + e.getExt())) {
+                    synchronized(listenedFOs) {
+                        listenedFOs.remove(fo);
+                        fo.removeFileChangeListener(this);
+                    }
+                    fireConfigurationFilesChanged(false, fo);
+                }
+            }
+            startListening();
         }
         public void fileAttributeChanged(FileAttributeEvent e) {};
         public void fileChanged(FileEvent e) {}
