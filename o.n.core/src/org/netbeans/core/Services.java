@@ -155,6 +155,7 @@ final class Services extends ServiceType.Registry {
   private void setServiceTypesImpl (final java.util.List arr) {
     Children.MUTEX.postWriteRequest (new Runnable () {
       public void run () {
+        current = null;
         FIRST.changeAll (arr);
         firePropertyChange ();
       }
@@ -221,12 +222,7 @@ final class Services extends ServiceType.Registry {
         if (debug ()) ex.printStackTrace();
       } catch (ClassNotFoundException ex) {
         if (debug ()) ex.printStackTrace();
-      } catch (RuntimeException e) {
-        if ((e.getClass() != RuntimeException.class) ||
-            (e.getMessage().indexOf("java.lang.RuntimeException: Platform") < 0)) { // NOI18N
-          throw e;
-        } // else ignore
-      }
+      } 
     }
 
     setServiceTypesImpl (ll);
@@ -286,20 +282,7 @@ final class Services extends ServiceType.Registry {
     public final void add (ManifestSection.ServiceSection section) 
     throws InstantiationException {
 
-      ServiceType stype;
-      
-      try {
-        stype = section.getServiceType();
-      } catch (InstantiationException e) {
-        if (e.getMessage().indexOf("java.lang.RuntimeException: Platform") >= 0) { // NOI18N
-          ///// [PENDING] hack
-          return;
-        } else {
-          throw e;
-        }
-      }
-      
-      Object key = key (stype);
+      Object key = key (section.getServiceType());
 
       if (map == null) {
         map = new HashMap (11);
@@ -332,21 +315,7 @@ final class Services extends ServiceType.Registry {
     public final boolean remove (ManifestSection.ServiceSection section) 
     throws InstantiationException {
 
-      ServiceType stype;
-      
-      try {
-        stype = section.getServiceType();
-      } catch (InstantiationException e) {
-        if (e.getMessage().indexOf("java.lang.RuntimeException: Platform") >= 0) { // NOI18N
-          ///// [PENDING] hack
-          return true;
-        } else {
-          throw e;
-        }
-      }
-      
-      
-      Object key = key (stype);
+      Object key = key (section.getServiceType());
       
       Node subNode = (Node)map.get (key);
       Level l = (Level)subNode.getChildren ();
@@ -393,17 +362,31 @@ final class Services extends ServiceType.Registry {
     * @param c collection of ServiceTypes
     */
     public void changeAll (Collection c) {
+      
+      java.util.Map unusedEntries = (java.util.Map) ((java.util.HashMap) map).clone();
       Iterator it = c.iterator ();
       LinkedList newKeys = new LinkedList ();
       while (it.hasNext ()) {
         ServiceType s = (ServiceType)it.next ();
         // if the key is not there yet
         try {
-          Node n = (Node)map.get (key (s));
+          Object key = key(s);
+          Node n = (Node)map.get(key);
           if (n != null && !newKeys.contains (n)) {
             newKeys.add (n);
+            unusedEntries.remove(key);
           }
         } catch (InstantiationException e) {
+        }
+      }
+      
+      // and vice versa - remove non used entries
+      it = unusedEntries.entrySet().iterator();
+      if (it.hasNext()) {
+        while (it.hasNext()) {
+          java.util.Map.Entry entry = (java.util.Map.Entry) it.next();
+          map.remove(entry.getKey());
+          nodes.remove((Node) entry.getValue());
         }
       }
       
@@ -424,14 +407,12 @@ final class Services extends ServiceType.Registry {
         }
       }
       
-
       Enumeration en = nodes ();
       while (en.hasMoreElements ()) {
         Node n = (Node)en.nextElement ();
         Level l = (Level)n.getChildren ();
         l.changeAll (c);
       }
-
       // reorder without firing
       super.reorder (perm);
     }
@@ -735,6 +716,7 @@ final class Services extends ServiceType.Registry {
 
 /*
 * Log
+*  20   Jaga      1.16.2.2    3/24/00  Ales Novak      setServiceTypes fixed
 *  19   Jaga      1.16.2.1    2/24/00  Ian Formanek    Jaga changes
 *  18   Jaga      1.16.2.0    2/24/00  Ian Formanek    Changes for Jaga
 *  17   Gandalf   1.16        1/14/00  Martin Ryzl     bug in setting new 
