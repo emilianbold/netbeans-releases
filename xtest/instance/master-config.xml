@@ -53,9 +53,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="i18n"   	testtypes="qa-functional"  attributes="stable"/>
       <module name="java"   	testtypes="qa-functional"  attributes="stable"/>
       <module name="openide"  	testtypes="qa-functional"  attributes="stable"/>
- <!-- Commented out because it fails on jdk1.3
       <module name="projects" 	testtypes="qa-functional"  attributes="stable,jdk13"/> 
-   -->
       <module name="qa"       	testtypes="serialization"  attributes="nb34"/>
       <module name="qa"       	testtypes="qa-functional"  attributes="stable"/>
       <module name="vcsgeneric"	testtypes="qa-functional"  attributes="stable"/>      
