@@ -148,7 +148,13 @@ public class NbTopManager extends TopManager {
   /** Creates new dialog.
   */
   public Dialog createDialog (DialogDescriptor d) {
-    return new NbDialog (d);
+    if (NbPresenter.currentModalDialog != null) {
+      return new NbDialog(d, NbPresenter.currentModalDialog);
+    }
+    return new NbDialog(
+      d, 
+      TopManager.getDefault().getWindowManager().getMainWindow()
+    );
   }
 
   /** Interesting places.
@@ -221,7 +227,17 @@ public class NbTopManager extends TopManager {
     while ((win != null) && (!(win instanceof Window))) win = win.getParent ();
     if (win != null) focusOwner = ((Window)win).getFocusOwner ();
 
-    final NbPresenter presenter = new NbPresenter(descriptor);
+    // set different owner if some modal dialog now active
+    NbPresenter presenter = null;
+    if (NbPresenter.currentModalDialog != null) {
+      presenter = new NbPresenter(descriptor, NbPresenter.currentModalDialog);
+    } else {
+      presenter = new NbPresenter(
+        descriptor, 
+        TopManager.getDefault().getWindowManager().getMainWindow()
+      );
+    }
+      
     presenter.setVisible(true);
 
     if (focusOwner != null) { // if the focusOwner is null (meaning that MainWindow was focused before), the focus will be back on main window
