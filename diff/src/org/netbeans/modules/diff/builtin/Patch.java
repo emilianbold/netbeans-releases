@@ -209,6 +209,7 @@ public class Patch extends Reader {
                 try {
                     char c = (char) source.read();
                     if (c != '\n') source.unread(c);
+                    else readStr += c;
                 } catch (IOException ioex) {}
             }
             readStr = adjustTextNL(readStr);
