@@ -485,8 +485,12 @@ class OpenFile extends Object {
         if (pkgLevel != -1) {
             String guessed = (String) pkgs.get(pkgLevel);
             Object yesOption = new JButton (SettingsBeanInfo.getString ("LBL_quickMountYes"));
+            ((JButton)yesOption).getAccessibleContext().setAccessibleDescription(SettingsBeanInfo.getString ("ACS_LBL_quickMountYes"));
             Object noOption = new JButton (SettingsBeanInfo.getString ("LBL_quickMountNo"));
+            ((JButton)noOption).setMnemonic((SettingsBeanInfo.getString ("LBL_quickMountNo_Mnem")).charAt(0));  
+            ((JButton)noOption).getAccessibleContext().setAccessibleDescription(SettingsBeanInfo.getString ("ACS_LBL_quickMountNo"));
             Object cancelOption = new JButton(SettingsBeanInfo.getString("LBL_cancelButton"));
+            ((JButton)cancelOption).getAccessibleContext().setAccessibleDescription(SettingsBeanInfo.getString ("ACS_LBL_cancelButton")); 
             Object result = TopManager.getDefault ().notify (new NotifyDescriptor
                             ("".equals (guessed) ? // NOI18N
                              SettingsBeanInfo.getString ("MSG_quickMountDefault", f.getName ()) :

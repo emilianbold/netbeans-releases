@@ -61,6 +61,8 @@ public class PackagePanel extends JPanel {
         this.pkgs = pkgs;
         
         initComponents2();
+        
+        initAccessibility();
     }
     
     
@@ -85,7 +87,7 @@ public class PackagePanel extends JPanel {
         setLayout (new BorderLayout (0, 5));
         setBorder (new javax.swing.border.EmptyBorder (8, 8, 8, 8));
 
-        JTextArea textArea = new JTextArea ();
+        textArea = new JTextArea ();
         //textArea.setBackground (new Color(204, 204, 204));
         textArea.setDisabledTextColor (javax.swing.UIManager.getColor ("Label.foreground"));
         //textArea.setFont (new Font ("SansSerif", Font.PLAIN, 11)); // NOI18N
@@ -96,10 +98,7 @@ public class PackagePanel extends JPanel {
         textArea.setOpaque (false);
         textArea.setLineWrap (true);
         textArea.setWrapStyleWord (true);
-        add (textArea, BorderLayout.NORTH);
-
-        // accessibility
-        this.getAccessibleContext ().setAccessibleDescription (textArea.getText ());
+        add (textArea, BorderLayout.NORTH);        
         
         list.setVisibleRowCount (5);
         list.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
@@ -140,6 +139,8 @@ public class PackagePanel extends JPanel {
         //add (label, BorderLayout.SOUTH);
         field.setEditable(false);
         field.setEnabled(true);
+	//Accessibility
+        field.getAccessibleContext ().setAccessibleDescription (SettingsBeanInfo.getString ("ACS_Field"));
         field.selectAll();
         field.addFocusListener(new FocusListener() {
             public void focusGained(FocusEvent e) {
@@ -161,6 +162,14 @@ public class PackagePanel extends JPanel {
         updateLabelEtcFromList (field, list, dirs, okButton);
     }
 
+    private void initAccessibility() {        
+        this.getAccessibleContext ().setAccessibleDescription (textArea.getText ());
+        okButton.getAccessibleContext ().setAccessibleDescription (SettingsBeanInfo.getString ("ACS_LBL_okButton"));
+        cancelButton.getAccessibleContext ().setAccessibleDescription (SettingsBeanInfo.getString ("ACS_LBL_cancelButton"));
+        list.getAccessibleContext().setAccessibleName(SettingsBeanInfo.getString ("ACSN_List"));
+        list.getAccessibleContext ().setAccessibleDescription (SettingsBeanInfo.getString ("ACSD_List"));       
+    }
+        
     /** Updates label and enables/disables ok button. */
     private static void updateLabelEtcFromList (JTextField field, JList list, List dirs, JButton okButton) {
         int idx = list.getSelectedIndex ();
@@ -192,6 +201,7 @@ public class PackagePanel extends JPanel {
     private JButton okButton;
     private JButton cancelButton;
     private JList list;
+    private JTextArea textArea;
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
 
