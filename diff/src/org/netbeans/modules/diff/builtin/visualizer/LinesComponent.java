@@ -130,10 +130,7 @@ public class LinesComponent extends JComponent {
     }
     
     public void addEmptyLines(int line, int count) {
-        boolean appending = false;
-        if (line > linesList.size()) {
-            appending = true;
-        }
+        boolean appending = line > linesList.size();
         for (int i = 0; i < count; i++) {
             if (appending) {
                 linesList.add("");
@@ -143,9 +140,26 @@ public class LinesComponent extends JComponent {
         }
     }
     
+    /**
+     * Insert line numbers. If at the end, then line numbers are added to the end of the component.
+     * If in the middle, subsequent lines are overwritten.
+     */
+    public void insertNumbers(int line, int startNum, int count) {
+        boolean appending = line > linesList.size();
+        if (appending) {
+            for (int i = 0; i < count; i++, startNum++) {
+                linesList.add(Integer.toString(startNum));
+            }
+        } else {
+            for (int i = 0; i < count; i++, startNum++, line++) {
+                linesList.set(line, Integer.toString(startNum));
+            }
+        }
+    }
+    
     /** Update colors, fonts, sizes and invalidate itself. This method is
      * called from EditorUI.update() */
-    public void update() {
+    private void update() {
         Class kitClass = editorPane.getEditorKit().getClass();
         Object value = Settings.getValue(kitClass, SettingsNames.LINE_HEIGHT_CORRECTION);
         if (!(value instanceof Float) || ((Float)value).floatValue() < 0) {
