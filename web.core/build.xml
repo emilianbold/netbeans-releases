@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -39,7 +39,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${nb_root}/jarpackager/netbeans/modules/jarpackager.jar"/>
         <pathelement location="${nb_root}/debuggercore/netbeans/modules/autoload/debuggerCore.jar"/>
         <pathelement location="${nb_root}/debuggercore/oldapi/netbeans/modules/autoload/openide-debugger.jar"/>
-        <pathelement location="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beans.jar" />
+        <pathelement location="${nb_root}/schema2beans/rt/netbeans/modules/autoload/schema2beans.jar" />
         <pathelement location="${nb_root}/openide/netbeans/lib/openide.jar"/>
         <pathelement location="${nb_root}/openide/loaders/netbeans/lib/openide-loaders.jar"/>
         <pathelement location="${nb_root}/openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/> <!-- XXX: Needed for compilation ServletDO extends JDO that implements ElementCookie -->

@@ -8,10 +8,9 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
 
 <project name="schema2beans" default="netbeans" basedir=".">
 
@@ -33,7 +32,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="nbm" depends="netbeans">
 	<delete file="Info/info.xml"/>
-    <makenbm file="../schema2beans.nbm"
+    <makenbm file="schema2beans.nbm"
              topdir="."
              module="netbeans/modules/autoload/schema2beans.jar"
 	     homepage="http://${homepage.base}/schema2beans.html"
@@ -55,6 +54,9 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="manifest-subst.mf"/>
     <delete file="schema2beans.nbm"/>
     <delete dir="Info"/>
+    <!-- Because build includes just rt and we need to clean other libs during real-clean: -->
+    <ant dir="../dev" target="clean"/>
+    <ant dir="../anttask" target="clean"/>
   </target>
 
 

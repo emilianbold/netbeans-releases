@@ -412,7 +412,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../j2eeserver/deprecated" target="netbeans"/>
   </target>
   -->
-  <target name="all-j2eeserver" depends="all-openide,all-schema2beans,all-debuggercore,all-debuggerjpda,all-openide/deprecated,all-java/srcmodel,all-openide/compiler,all-openide/execution,all-openide/io,all-debuggercore/oldapi,all-j2eeserver/j2eeapis,all-xml/api">
+  <target name="all-j2eeserver" depends="all-openide,all-debuggercore,all-debuggerjpda,all-openide/deprecated,all-java/srcmodel,all-openide/compiler,all-openide/execution,all-openide/io,all-debuggercore/oldapi,all-j2eeserver/j2eeapis,all-xml/api,build-schema2beans/anttask">
     <echo message="Building module j2eeserver..."/>
     <ant dir="../j2eeserver" target="netbeans"/>
   </target>
@@ -494,7 +494,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module metrics..."/>
     <ant dir="../metrics" target="netbeans"/>
   </target>
-  <target name="all-monitor" depends="all-openide,all-web/core,all-schema2beans,all-html,all-httpserver,all-tomcatint/tomcat5/bundled">
+  <target name="all-monitor" depends="all-openide,all-web/core,all-schema2beans/rt,all-html,all-httpserver,all-tomcatint/tomcat5/bundled">
     <echo message="Building module monitor..."/>
     <ant dir="../monitor" target="netbeans"/>
   </target>
@@ -534,9 +534,18 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module rmi..."/>
     <ant dir="../rmi" target="netbeans"/>
   </target>
-  <target name="all-schema2beans" depends="all-openide">
-    <echo message="Building module schema2beans..."/>
-    <ant dir="../schema2beans" target="netbeans"/>
+  <target name="all-schema2beans/rt" depends="all-openide">
+    <echo message="Building module schema2beans/rt..."/>
+    <ant dir="../schema2beans/rt" target="netbeans"/>
+  </target>
+  <!-- Not a module: -->
+  <target name="build-schema2beans/anttask" depends="all-schema2beans/rt,all-schema2beans/dev">
+    <echo message="Building schema2beans/anttask..."/>
+    <ant dir="../schema2beans/anttask" target="jars"/>
+  </target>
+  <target name="all-schema2beans/dev" depends="all-schema2beans/rt">
+    <echo message="Building module schema2beans/dev..."/>
+    <ant dir="../schema2beans/dev" target="netbeans"/>
   </target>
   <!-- XXX illegal dependence on core! -->
   <target name="all-scripting" depends="all-openide,all-openidex,all-core,all-openide/deprecated,all-openide/execution,all-openide/io">
@@ -618,7 +627,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module tomcatint/tomcat32..."/>
     <ant dir="../tomcatint/tomcat32" target="netbeans"/>
   </target>
-  <target name="all-tomcatint/tomcat40" depends="all-openide,all-web/core,all-schema2beans,all-openide/deprecated,all-java/srcmodel,all-openide/execution,all-openide/compiler,all-openide/io,all-debuggercore/oldapi">
+  <target name="all-tomcatint/tomcat40" depends="all-openide,all-web/core,all-schema2beans/rt,all-openide/deprecated,all-java/srcmodel,all-openide/execution,all-openide/compiler,all-openide/io,all-debuggercore/oldapi,build-schema2beans/anttask">
     <echo message="Building module tomcatint/tomcat40..."/>
     <ant dir="../tomcatint/tomcat40" target="netbeans"/>
   </target>
@@ -630,7 +639,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module tomcatint/tomcat40autocompile..."/>
     <ant dir="../tomcatint/tomcat40autocompile" target="netbeans"/>
   </target>
-  <target name="all-tomcatint/tomcat5" depends="all-openide,all-ant,all-schema2beans,all-java/srcmodel,all-openide/execution,all-openide/io,all-debuggercore/oldapi,all-j2eeserver,all-web/ddapi">
+  <target name="all-tomcatint/tomcat5" depends="all-openide,all-ant,all-schema2beans/rt,all-java/srcmodel,all-openide/execution,all-openide/io,all-debuggercore/oldapi,all-j2eeserver,all-web/ddapi,build-schema2beans/anttask">
     <echo message="Building module tomcatint/tomcat5..."/>
     <ant dir="../tomcatint/tomcat5" target="netbeans"/>
   </target>
@@ -714,12 +723,12 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module web/servletapi24..."/>
     <ant dir="../web/servletapi24" target="netbeans"/>
   </target>
-  <target name="all-web/ddapi" depends="all-openide,all-schema2beans">
+  <target name="all-web/ddapi" depends="all-openide,all-schema2beans/rt,build-schema2beans/anttask">
     <echo message="Building module web/ddapi..."/>
     <ant dir="../web/ddapi" target="netbeans"/>
   </target>
   <!-- XXX illegal dependence on core! -->
-  <target name="all-web/core" depends="all-openide,all-java,all-core,all-editor,all-web/ddapi,all-j2eeserver,all-html,all-httpserver,all-jarpackager,all-debuggercore,all-openidex,all-schema2beans,all-xml/api,all-xml/catalog,all-openide/deprecated,all-java/srcmodel,all-openide/compiler,all-openide/execution,all-openide/io,all-debuggercore/oldapi,all-projects,all-web/jspsyntax">
+  <target name="all-web/core" depends="all-openide,all-java,all-core,all-editor,all-web/ddapi,all-j2eeserver,all-html,all-httpserver,all-jarpackager,all-debuggercore,all-openidex,all-schema2beans/rt,all-xml/api,all-xml/catalog,all-openide/deprecated,all-java/srcmodel,all-openide/compiler,all-openide/execution,all-openide/io,all-debuggercore/oldapi,all-projects,all-web/jspsyntax">
     <echo message="Building module web/core..."/>
     <ant dir="../web/core" target="netbeans"/>
   </target>

@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -37,7 +37,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${nb_root}/openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
         <pathelement location="${nb_root}/openide/loaders/netbeans/lib/openide-loaders.jar"/>
         <pathelement location="${nb_root}/debuggercore/oldapi/netbeans/modules/autoload/openide-debugger.jar"/> <!-- XXX -->
-        <pathelement location="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beans.jar"/>
+        <pathelement location="${nb_root}/schema2beans/rt/netbeans/modules/autoload/schema2beans.jar"/>
         <pathelement location="${nb_root}/j2eeserver/netbeans/modules/autoload/j2eeserver.jar"/>
         <pathelement location="${nb_root}/j2eeserver/external/ejb20.jar"/>
         <pathelement location="${nb_root}/j2eeserver/external/jmxri.jar"/>
@@ -56,8 +56,8 @@ Microsystems, Inc. All Rights Reserved.
   <target name="s2binit">
 	<taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
 	  <classpath>
-		<pathelement path="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beans.jar" />
-		<pathelement path="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beansdev.jar" />
+		<pathelement path="${nb_root}/schema2beans/rt/netbeans/modules/autoload/schema2beans.jar" />
+		<pathelement path="${nb_root}/schema2beans/dev/netbeans/modules/autoload/schema2beansdev.jar" />
 		<pathelement path="${nb_root}/schema2beans/anttask/s2banttask.jar"/>
 	  </classpath>
 	</taskdef>

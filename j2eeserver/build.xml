@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -33,7 +33,7 @@ Microsystems, Inc. All Rights Reserved.
     <pathelement location="${nbroot}/openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/> <!-- XXX -->
     <pathelement location="${nbroot}/debuggercore/oldapi/netbeans/modules/autoload/openide-debugger.jar"/> <!-- XXX -->
     <pathelement location="${nbroot}/debuggercore/netbeans/modules/autoload/debuggerCore.jar"/> <!-- XXX -->
-    <pathelement location="${nbroot}/schema2beans/netbeans/modules/autoload/schema2beans.jar"/>
+    <pathelement location="${nbroot}/schema2beans/rt/netbeans/modules/autoload/schema2beans.jar"/>
     <pathelement location="${nbroot}/openide/io/netbeans/modules/autoload/openide-io.jar"/> 
     <pathelement location="${nbroot}/core/settings/netbeans/modules/autoload/core-settings.jar"/>
     <pathelement location="${nbroot}/xml/api/netbeans/modules/autoload/xml-api.jar" />
@@ -55,8 +55,8 @@ Microsystems, Inc. All Rights Reserved.
   <target name="s2binit">
 	<taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
 	  <classpath>
-		<pathelement path="${nbroot}/schema2beans/netbeans/modules/autoload/schema2beans.jar" />
-		<pathelement path="${nbroot}/schema2beans/netbeans/modules/autoload/schema2beansdev.jar" />
+		<pathelement path="${nbroot}/schema2beans/rt/netbeans/modules/autoload/schema2beans.jar" />
+		<pathelement path="${nbroot}/schema2beans/dev/netbeans/modules/autoload/schema2beansdev.jar" />
 		<pathelement path="${nbroot}/schema2beans/anttask/s2banttask.jar"/>
 	  </classpath>
 	</taskdef>
@@ -183,8 +183,8 @@ Microsystems, Inc. All Rights Reserved.
      <echo message="Generated schema2beans from ${dtdfile}"/>
      <java classname="org.netbeans.modules.schema2beansdev.GenBeans" fork="yes">
        <classpath>
-          <pathelement path="${nbroot}/schema2beans/netbeans/modules/autoload/schema2beans.jar" />
-          <pathelement path="${nbroot}/schema2beans/netbeans/modules/autoload/schema2beansdev.jar" />
+          <pathelement path="${nbroot}/schema2beans/rt/netbeans/modules/autoload/schema2beans.jar" />
+          <pathelement path="${nbroot}/schema2beans/dev/netbeans/modules/autoload/schema2beansdev.jar" />
           <fileset dir = "${nbroot}/openide">
                 <include name="netbeans/lib/openide*.jar"/>
                 <include name="loaders/netbeans/lib/openide-loaders.jar"/>

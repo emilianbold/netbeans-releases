@@ -130,7 +130,7 @@ Microsystems, Inc. All Rights Reserved.
     The need for this target will be removed when we move the the
     projects based deployment of the monitor. 
     --> 
-    <copy file="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beans.jar" tofile="${nb_root}/tomcatint/tomcat5/bundled/netbeans/jakarta-tomcat-5.0.19/common/lib/schema2beans.jar"/>
+    <copy file="${nb_root}/schema2beans/rt/netbeans/modules/autoload/schema2beans.jar" tofile="${nb_root}/tomcatint/tomcat5/bundled/netbeans/jakarta-tomcat-5.0.19/common/lib/schema2beans.jar"/>
     <copy file="netbeans/modules/ext/httpmonitor.jar"                      tofile="${nb_root}/tomcatint/tomcat5/bundled/netbeans/jakarta-tomcat-5.0.19/common/lib/httpmonitor.jar"/>
   </target>
 
@@ -151,7 +151,7 @@ Microsystems, Inc. All Rights Reserved.
        <classpath>
          <pathelement location="${nb_root}/openide/openide-13javac-workaround.jar"/>
          <pathelement location="${nb_root}/openide/netbeans/lib/openide.jar"/>
-         <pathelement location="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beans.jar"/>
+         <pathelement location="${nb_root}/schema2beans/rt/netbeans/modules/autoload/schema2beans.jar"/>
          <pathelement location="${nb_root}/openide/loaders/netbeans/lib/openide-loaders.jar"/>
          <pathelement location="${servlet22}"/>
        </classpath>
@@ -166,7 +166,7 @@ Microsystems, Inc. All Rights Reserved.
        excludes="**/SCCS/**, **/CVS/**">
 
        <classpath>
-         <pathelement location="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beans.jar"/>
+         <pathelement location="${nb_root}/schema2beans/rt/netbeans/modules/autoload/schema2beans.jar"/>
          <pathelement location="${servlet23}"/>	
        </classpath>
      </javac>
