@@ -289,16 +289,20 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
             }
 
             // get the JspCompilationInfo
-            JspParserAPI parser = JspCompileUtil.getJspParser();
-            if (parser == null) {
-                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, 
-                new NullPointerException());
+            JspParserAPI.ParseResult result = null;
+            // this switch is here because of bug 33678
+            if (shouldParse()) {
+                JspParserAPI parser = JspCompileUtil.getJspParser();
+                if (parser == null) {
+                    ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, 
+                    new NullPointerException());
+                }
+                result = parser.analyzePage(this, JspCompileUtil.getContextPath(getPrimaryFile()), 
+                    true, JspParserAPI.ERROR_REPORT_ACCURATE);
             }
-            JspParserAPI.ParseResult result = parser.analyzePage(this, JspCompileUtil.getContextPath(getPrimaryFile()), 
-                true, JspParserAPI.ERROR_REPORT_ACCURATE);
-            if (result.isParsingSuccess()) {
+            if ((result == null) || result.isParsingSuccess()) {
                 // parse success
-                JspInfo jspInfo = result.getPageInfo();
+                JspInfo jspInfo = (result == null) ? null : result.getPageInfo();
                 
                 JspCompilationInfo compInfo = new JspCompilationInfo(jspInfo, getPrimaryFile());
                 // update information about pages included in this page
@@ -392,10 +396,12 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
                 }
             } // end of successful parse branch
             else {
-                // parse failure
-                JspParserAPI.ErrorDescriptor[] errors = result.getErrors();
-                Compiler failure = new FailureCompiler(errors);
-                job.add(failure);
+                if (result != null) {
+                    // parse failure
+                    JspParserAPI.ErrorDescriptor[] errors = result.getErrors();
+                    Compiler failure = new FailureCompiler(errors);
+                    job.add(failure);
+                }
             } // end of parse failure branch
             
         }
@@ -424,6 +430,10 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         if (fs.isReadOnly())
             return false;
         return true;
+    }
+    
+    private boolean shouldParse() {
+        return Boolean.valueOf(System.getProperty("netbeans.jspcompile.shouldparse", "true")).booleanValue();
     }
 
     public boolean isUpToDate() {
