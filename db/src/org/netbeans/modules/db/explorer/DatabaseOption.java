@@ -143,7 +143,7 @@ public class DatabaseOption extends SystemOption
 	/** Name of the option */
 	public String displayName() 
 	{
-    	return "Database explorer";
+    	return "Database Explorer";
   	}
 
 	/** Description of object */
