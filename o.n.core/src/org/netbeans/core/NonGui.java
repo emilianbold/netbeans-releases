@@ -374,7 +374,18 @@ public class NonGui extends NbTopManager implements Runnable {
         // -----------------------------------------------------------------------------------------------------
 
         StatusDisplayer.getDefault().setStatusText (getString("MSG_IDEInit"));
-
+        
+        
+        // -------------------------------------------------------------------------------------------------------
+        // 6. Set delegating naming initial context factory builder
+        try {
+            javax.naming.spi.NamingManager.setInitialContextFactoryBuilder(
+                new ProxyInitialContextFactoryBuilder());
+            StartLog.logProgress("Delegating InitialContextFactoryBuilder registered"); // NOI18N
+        } catch (javax.naming.NamingException ne) { 
+            ErrorManager.getDefault().notify(ne);
+        }
+        
 
         // -----------------------------------------------------------------------------------------------------
         // 7. Initialize FileSystems
