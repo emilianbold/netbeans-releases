@@ -4,6 +4,7 @@
     <module name="org.netbeans.modules.debugger.core/2"/>
     <instanceof class="org.openide.ServiceType"/>
     <instanceof class="org.openide.debugger.DebuggerType"/>
+    <instanceof class="org.netbeans.modules.debugger.AbstractDebuggerType"/>
     <instanceof class="org.netbeans.modules.debugger.support.ProcessDebuggerType"/>
     <instanceof class="org.netbeans.modules.debugger.delegator.DefaultDebuggerType"/>
     <instance class="org.netbeans.modules.debugger.delegator.DefaultDebuggerType"/>
