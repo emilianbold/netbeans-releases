@@ -300,19 +300,25 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
             return NbBundle.getMessage (JavaTargetChooserPanel.class, "MSG_fs_is_readonly"); // NOI18N
         }
         
-        if (targetFolder.getFileObject (relFileName) != null) {
+        
+        if (existFileName(targetFolder, relFileName)) {
             return NbBundle.getMessage (JavaTargetChooserPanel.class, "MSG_file_already_exist", newObjectName); // NOI18N
         }
         
-        FileObject existingFolder = folderName == null ? targetFolder : targetFolder.getFileObject( folderName );
-        if (Utilities.isWindows () &&  existingFolder != null ) {
-            if (checkCaseInsensitiveName (existingFolder, newObjectName)) {
-                return NbBundle.getMessage (JavaTargetChooserPanel.class, "MSG_file_already_exist", newObjectName); // NOI18N
-            }
-        }
-
         // all ok
         return null;
+    }
+
+    private static boolean existFileName(FileObject targetFolder, String relFileName) {
+        boolean result = false;
+        File fileForTargetFolder = FileUtil.toFile(targetFolder);
+        if (fileForTargetFolder.exists()) {
+            result = new File (fileForTargetFolder, relFileName).exists();
+        } else {
+            result = targetFolder.getFileObject (relFileName) != null;
+        }
+        
+        return result;
     }
     
     // helper check for windows, its filesystem is case insensitive (workaround the bug #33612)

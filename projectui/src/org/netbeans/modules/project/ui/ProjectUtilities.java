@@ -15,12 +15,14 @@ package org.netbeans.modules.project.ui;
 
 import java.awt.event.ActionEvent;
 import java.util.*;
+import java.io.File;
 
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
@@ -176,19 +178,24 @@ public class ProjectUtilities {
             return NbBundle.getMessage (ProjectUtilities.class, "MSG_fs_is_readonly"); // NOI18N
         }
         
-        if (targetFolder.getFileObject (relFileName) != null) {
+        if (existFileName(targetFolder, relFileName)) {
             return NbBundle.getMessage (ProjectUtilities.class, "MSG_file_already_exist", newObjectName); // NOI18N
         }
         
-        FileObject existingFolder = folderName == null ? targetFolder : targetFolder.getFileObject( folderName );
-        if (Utilities.isWindows () &&  existingFolder != null ) {
-            if (checkCaseInsensitiveName (existingFolder, newObjectName)) {
-                return NbBundle.getMessage (ProjectUtilities.class, "MSG_file_already_exist", newObjectName); // NOI18N
-            }
-        }
-
         // all ok
         return null;
+    }
+    
+    private static boolean existFileName(FileObject targetFolder, String relFileName) {
+        boolean result = false;
+        File fileForTargetFolder = FileUtil.toFile(targetFolder);
+        if (fileForTargetFolder.exists()) {
+            result = new File (fileForTargetFolder, relFileName).exists();
+        } else {
+            result = targetFolder.getFileObject (relFileName) != null;
+        }
+        
+        return result;
     }
     
     // helper check for windows, its filesystem is case insensitive (workaround the bug #33612)
