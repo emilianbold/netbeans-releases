@@ -38,7 +38,6 @@ public class ListImageEditor extends PropertyEditorSupport implements ExProperty
     public static final String PROP_VALUES = "values"; //NOI18N
     public static final String PROP_DESCRIPTIONS = "descriptions"; //NOI18N
     
-    private PropertyEnv env = null;
     private boolean canWrite = true;
     private boolean canRead = true;
 
@@ -52,7 +51,6 @@ public class ListImageEditor extends PropertyEditorSupport implements ExProperty
     }
 
     public void attachEnv (PropertyEnv env) {
-        this.env = env;
         FeatureDescriptor d = env.getFeatureDescriptor ();
         if (d instanceof Node.Property) {
             canWrite = ((Node.Property)d).canWrite ();
@@ -63,9 +61,18 @@ public class ListImageEditor extends PropertyEditorSupport implements ExProperty
         Integer vals [] = (Integer [])d.getValue (PROP_VALUES);
         String descs [] = (String [])d.getValue (PROP_DESCRIPTIONS);
         
-        int length = imgs.length < vals.length ? imgs.length : vals.length;
-        if (descs != null && descs.length < length)
+        int length = 0;
+        if(imgs != null) {
+            length = imgs.length;
+        } 
+
+        if(vals != null && vals.length < length)  {
+            length = vals.length;
+        }
+        
+        if (descs != null && descs.length < length) {
             length = descs.length;
+        }
         
         images = new Image [length];
         values = new Integer [length];
@@ -116,17 +123,9 @@ public class ListImageEditor extends PropertyEditorSupport implements ExProperty
     }
     
     public String getJavaInitializationString () {
-        return "new Integer(" + getValue () + ")";
+        return "new Integer(" + getValue () + ")"; // NOI18N
     }
     
-    public java.awt.Component getCustomEditor () {
-        return null;
-    }
-    
-    public boolean supportsCustomEditor () {
-        return false;
-    }
-
     private Object findObject (Object [] objs, int i) {
         if (objs == null || i < 0 || i >= objs.length)
             return null;
