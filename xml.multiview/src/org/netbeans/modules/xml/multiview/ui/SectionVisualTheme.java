@@ -33,8 +33,8 @@ public class SectionVisualTheme {
      static Color documentBackgroundColor =  new java.awt.Color(255, 255, 255);
      static Color documentMarginColor = new java.awt.Color(153, 153, 153);
      static Color sectionHeaderColor = new java.awt.Color(255, 255, 255);
-     static Color sectionHeaderActiveColor = new java.awt.Color(224, 224, 224);
-     static Color fillerColor = new java.awt.Color(224, 224, 224);
+     static Color sectionHeaderActiveColor = javax.swing.UIManager.getDefaults().getColor("Button.focus");
+     static Color fillerColor = javax.swing.UIManager.getDefaults().getColor("Button.background");
      static Color tableHeaderColor = new java.awt.Color(204, 204, 204);
      static Color tableGridColor = new java.awt.Color(255, 255, 255);
      static Color sectionHeaderLineColor = new java.awt.Color(204, 204, 204);
