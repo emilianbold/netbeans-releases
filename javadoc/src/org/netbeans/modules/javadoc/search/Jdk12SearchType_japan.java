@@ -73,7 +73,7 @@ public class Jdk12SearchType_japan extends JavadocSearchType {
      * @return Value of property encoding.
     */
     public java.lang.String getJapanEncoding() {
-        return ( japanEncoding != null ) ? japanEncoding : "KOI8";
+        return ( japanEncoding != null ) ? japanEncoding : "JISAutoDetect";
     }
     
     /** Setter for property encoding.
@@ -128,6 +128,6 @@ public class Jdk12SearchType_japan extends JavadocSearchType {
      */    
     public IndexSearchThread getSearchThread( String toFind, FileObject fo, IndexSearchThread.DocIndexItemConsumer diiConsumer ){
         //here you can send one more parameter .. getJapanEncoding
-        return new SearchThreadJdk12_japan ( toFind, fo, diiConsumer, isCaseSensitive() );
+        return new SearchThreadJdk12_japan ( toFind, fo, diiConsumer, isCaseSensitive(), getJapanEncoding() );
     }    
 }

@@ -44,11 +44,13 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
     private int currentIndexNumber;
     private FileObject folder = null;
     private boolean caseSensitive;
+    private String JapanEncoding;
     
-    public SearchThreadJdk12_japan(String toFind, FileObject fo, IndexSearchThread.DocIndexItemConsumer diiConsumer, boolean caseSensitive) {
+    public SearchThreadJdk12_japan(String toFind, FileObject fo, IndexSearchThread.DocIndexItemConsumer diiConsumer, boolean caseSensitive, String JapanEncoding) {
 
         super( toFind, fo, diiConsumer );
         this.caseSensitive = caseSensitive;
+	this.JapanEncoding = JapanEncoding;
         
         if ( fo.isFolder() ) {
             // Documentation uses splited index - resolve the right file
@@ -127,7 +129,8 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
             }
 
             try {    
-                in = new BufferedReader( new InputStreamReader( fo.getInputStream (), "JISAutoDetect" ));        
+                in = new BufferedReader( new InputStreamReader( fo.getInputStream (), JapanEncoding ));        
+		// System.out.println("Encoding: " + JapanEncoding);
                 pd.parse( in, sc = new SearchCallbackJdk12_japan( splitedIndex, caseSensitive ), true );
             }
             catch ( java.io.IOException e ) {
