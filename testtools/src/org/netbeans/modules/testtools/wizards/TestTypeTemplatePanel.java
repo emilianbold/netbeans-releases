@@ -43,13 +43,82 @@ import org.openide.util.NbBundle;
 /** Wizard Panel with Test Type Template selection
  * @author  <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
  */
-public class TestTypeTemplatePanel extends JPanel implements WizardDescriptor.Panel {
+public class TestTypeTemplatePanel extends JPanel {
     
     static final long serialVersionUID = 2893559646017815470L;
     
     private ChangeListener listener=null;
     private static final String DEFAULT_NAME=NbBundle.getMessage(TestTypeTemplatePanel.class, "CTL_DefaultName"); // NOI18N
     boolean modified=true;
+    
+    public final Panel panel = new Panel();
+    
+    private class Panel extends Object implements WizardDescriptor.Panel {
+        
+        /** adds ChangeListener of current Panel
+         * @param changeListener ChangeListener */    
+        public void addChangeListener(ChangeListener changeListener) {
+            if (listener != null) throw new IllegalStateException ();
+            listener = changeListener;
+        }    
+
+        /** returns current Panel
+         * @return Component */    
+        public Component getComponent() {
+            return TestTypeTemplatePanel.this;
+        }    
+
+        /** returns Help Context
+         * @return HelpCtx */    
+        public HelpCtx getHelp() {
+            return new HelpCtx(TestTypeTemplatePanel.class);
+        }
+
+        /** read settings from given Object
+         * @param obj TemplateWizard with settings */    
+        public void readSettings(Object obj) {}
+
+        /** removes Change Listener of current Panel
+         * @param changeListener ChangeListener */    
+        public void removeChangeListener(ChangeListener changeListener) {
+            listener = null;
+        }
+
+        /** stores settings to given Object
+         * @param obj TemplateWizard with settings */    
+        public void storeSettings(Object obj) {
+            WizardSettings set=WizardSettings.get(obj);
+            String name=nameField.getText();
+            if (DEFAULT_NAME.equals(name))
+                name=null;
+            set.typeName=name;
+            set.typeTemplate=(DataObject)templateCombo.getSelectedItem();
+            if (modified) {
+                set.readTypeSettings();
+                modified=false;
+            }
+        }
+
+        private void fireStateChanged() {
+            SwingUtilities.invokeLater (new Runnable () {
+                public void run () {
+                    if (listener != null) {
+                        listener.stateChanged (new ChangeEvent (this));
+                    }
+                    if (nameField.getText().equals ("")) { // NOI18N
+                        nameField.setText(DEFAULT_NAME);
+                        nameField.selectAll();
+                    }
+                }
+            });            
+        }
+
+        /** test current Panel state for data validity
+         * @return boolean true if data are valid and Wizard can continue */    
+        public boolean isValid() {
+            return DEFAULT_NAME.equals(nameField.getText())||nameField.getText().indexOf(' ')<0;
+        }
+    }
     
     /** Creates new form TestTypeTemplatePanel */
     public TestTypeTemplatePanel() {
@@ -59,12 +128,12 @@ public class TestTypeTemplatePanel extends JPanel implements WizardDescriptor.Pa
         templateCombo.setModel(new DefaultComboBoxModel(WizardIterator.getTestTypeTemplates()));
         templateComboActionPerformed(null);
         DocumentListener list=new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) {fireStateChanged();}
-            public void removeUpdate(DocumentEvent e) {fireStateChanged();}
-            public void changedUpdate(DocumentEvent e) {fireStateChanged();}
+            public void insertUpdate(DocumentEvent e) {panel.fireStateChanged();}
+            public void removeUpdate(DocumentEvent e) {panel.fireStateChanged();}
+            public void changedUpdate(DocumentEvent e) {panel.fireStateChanged();}
         };
         nameField.getDocument().addDocumentListener(list);
-        fireStateChanged();
+        panel.fireStateChanged();
     }
     
     /** This method is called from within the constructor to
@@ -86,7 +155,7 @@ public class TestTypeTemplatePanel extends JPanel implements WizardDescriptor.Pa
 
         setLayout(new java.awt.GridBagLayout());
 
-        nameLabel.setDisplayedMnemonic('N');
+        nameLabel.setDisplayedMnemonic(NbBundle.getMessage(TestTypeTemplatePanel.class, "MNM_TestTypeName").charAt(0) );
         nameLabel.setLabelFor(nameField);
         nameLabel.setText(org.openide.util.NbBundle.getMessage(TestTypeTemplatePanel.class, "LBL_TestTypeName"));
         nameLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestTypeTemplatePanel.class, "TTT_TestTypeName"));
@@ -118,7 +187,7 @@ public class TestTypeTemplatePanel extends JPanel implements WizardDescriptor.Pa
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         add(nameField, gridBagConstraints);
 
-        templateLabel.setDisplayedMnemonic('T');
+        templateLabel.setDisplayedMnemonic(NbBundle.getMessage(TestTypeTemplatePanel.class, "MNM_TestTypeTemplate").charAt(0) );
         templateLabel.setLabelFor(templateCombo);
         templateLabel.setText(org.openide.util.NbBundle.getMessage(TestTypeTemplatePanel.class, "LBL_TestTypeTemplate"));
         templateLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestTypeTemplatePanel.class, "TTT_TestTypeTemplate"));
@@ -150,7 +219,7 @@ public class TestTypeTemplatePanel extends JPanel implements WizardDescriptor.Pa
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         add(templateCombo, gridBagConstraints);
 
-        descriptionLabel.setDisplayedMnemonic('D');
+        descriptionLabel.setDisplayedMnemonic(NbBundle.getMessage(TestTypeTemplatePanel.class, "MNM_TestTypeDescription").charAt(0) );
         descriptionLabel.setLabelFor(htmlBrowser);
         descriptionLabel.setText(org.openide.util.NbBundle.getMessage(TestTypeTemplatePanel.class, "LBL_TestTypeTemplateDescription"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -209,70 +278,7 @@ public class TestTypeTemplatePanel extends JPanel implements WizardDescriptor.Pa
         nameField.selectAll();
     }//GEN-LAST:event_nameFieldFocusGained
 
-    /** adds ChangeListener of current Panel
-     * @param changeListener ChangeListener */    
-    public void addChangeListener(ChangeListener changeListener) {
-        if (listener != null) throw new IllegalStateException ();
-        listener = changeListener;
-    }    
-    
-    /** returns current Panel
-     * @return Component */    
-    public Component getComponent() {
-        return this;
-    }    
-    
-    /** returns Help Context
-     * @return HelpCtx */    
-    public HelpCtx getHelp() {
-        return new HelpCtx(TestTypeTemplatePanel.class);
-    }
-    
-    /** read settings from given Object
-     * @param obj TemplateWizard with settings */    
-    public void readSettings(Object obj) {}
-    
-    /** removes Change Listener of current Panel
-     * @param changeListener ChangeListener */    
-    public void removeChangeListener(ChangeListener changeListener) {
-        listener = null;
-    }
-    
-    /** stores settings to given Object
-     * @param obj TemplateWizard with settings */    
-    public void storeSettings(Object obj) {
-        WizardSettings set=WizardSettings.get(obj);
-        String name=nameField.getText();
-        if (DEFAULT_NAME.equals(name))
-            name=null;
-        set.typeName=name;
-        set.typeTemplate=(DataObject)templateCombo.getSelectedItem();
-        if (modified) {
-            set.readTypeSettings();
-            modified=false;
-        }
-    }
-
-    private void fireStateChanged() {
-        SwingUtilities.invokeLater (new Runnable () {
-            public void run () {
-                if (listener != null) {
-                    listener.stateChanged (new ChangeEvent (this));
-                }
-                if (nameField.getText().equals ("")) { // NOI18N
-                    nameField.setText(DEFAULT_NAME);
-                    nameField.selectAll();
-                }
-            }
-        });            
-    }
-    
-    /** test current Panel state for data validity
-     * @return boolean true if data are valid and Wizard can continue */    
-    public boolean isValid() {
-        return DEFAULT_NAME.equals(nameField.getText())||nameField.getText().indexOf(' ')<0;
-    }
-    
+            
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private org.openide.awt.HtmlBrowser htmlBrowser;
     private javax.swing.JLabel noDescription;

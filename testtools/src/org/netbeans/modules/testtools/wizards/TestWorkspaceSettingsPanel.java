@@ -41,7 +41,7 @@ import org.openide.util.NbBundle;
 /** Wizard Panel with Test Workspace Settings configuration
  * @author  <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
  */
-public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescriptor.FinishPanel {
+public class TestWorkspaceSettingsPanel extends JPanel {
     
     static final long serialVersionUID = 6910738027583517330L;
     
@@ -54,18 +54,104 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
     private String jellyHome=jellyPath;
     private TemplateWizard wizard;
     private ChangeListener listener=null;
+    private static File netHome=new File(System.getProperty("netbeans.home",".")); // NOI18N
 
+    public final Panel panel = new Panel();
+    
+    private class Panel extends Object implements WizardDescriptor.FinishPanel {
+    
+        /** adds ChangeListener of current Panel
+         * @param changeListener ChangeListener */    
+        public void addChangeListener(ChangeListener changeListener) {
+            if (listener != null) throw new IllegalStateException ();
+            listener = changeListener;
+        }    
+
+        /** returns current Panel
+         * @return Component */    
+        public Component getComponent() {
+            return TestWorkspaceSettingsPanel.this;
+        }    
+
+        /** returns Help Context
+         * @return HelpCtx */    
+        public HelpCtx getHelp() {
+            return new HelpCtx(TestWorkspaceSettingsPanel.class);
+        }
+
+        /** read settings from given Object
+         * @param obj TemplateWizard with settings */    
+        public void readSettings(Object obj) {
+            WizardSettings set=WizardSettings.get(obj);
+            wizard=(TemplateWizard)obj;
+            DataFolder df=null;
+            stop=true;
+            try {
+                df=wizard.getTargetFolder();
+                stop=(wizard.getTargetName()!=null && wizard.getTargetName().indexOf(' ')>=0) 
+                || WizardIterator.detectBuildScript(df);
+            } catch (Exception e) {}
+            if (stop)
+                ((CardLayout)getLayout()).show(TestWorkspaceSettingsPanel.this, "stop"); // NOI18N
+            else {
+                ((CardLayout)getLayout()).show(TestWorkspaceSettingsPanel.this, "ok"); // NOI18N
+                if (set.workspaceLevel<0)
+                    levelCombo.setSelectedIndex(WizardIterator.detectWorkspaceLevel(df));
+                if (set.defaultType!=null) 
+                    typeField.setText(set.defaultType);
+                if (set.defaultAttributes!=null) 
+                    attrField.setText(set.defaultAttributes);
+                updatePanel();
+            }
+        }
+
+        /** removes Change Listener of current Panel
+         * @param changeListener ChangeListener */    
+        public void removeChangeListener(ChangeListener changeListener) {
+            listener = null;
+        }
+
+        /** stores settings to given Object
+         * @param obj TemplateWizard with settings */    
+        public void storeSettings(Object obj) {
+            WizardSettings set=WizardSettings.get(obj);
+            set.workspaceLevel=levelCombo.getSelectedIndex();
+            set.netbeansHome=netbeansField.getText();
+            set.xtestHome=xtestField.getText();
+            set.defaultType=typeField.getText();
+            set.defaultAttributes=attrField.getText();
+            set.typeJemmyHome=jemmyHome;
+            set.typeJellyHome=jellyHome;
+        }
+
+        /** test current Panel state for data validity
+         * @return boolean true if data are valid and Wizard can continue */    
+        public boolean isValid() {
+            return (!stop)&&(!netHome.equals(new File(netbeansField.getText())));
+        }
+
+        private void fireStateChanged() {
+            SwingUtilities.invokeLater (new Runnable () {
+                public void run () {
+                    if (listener != null) {
+                        listener.stateChanged (new ChangeEvent (this));
+                    }
+                }
+            });            
+        }
+    }
+    
     /** Creates new form TestWorkspacePanel */
     public TestWorkspaceSettingsPanel() {
         setName(NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "LBL_TestWorkspacePanelName")); // NOI18N
         initComponents();
         DocumentListener list=new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) {fireStateChanged();}
-            public void removeUpdate(DocumentEvent e) {fireStateChanged();}
-            public void changedUpdate(DocumentEvent e) {fireStateChanged();}
+            public void insertUpdate(DocumentEvent e) {panel.fireStateChanged();}
+            public void removeUpdate(DocumentEvent e) {panel.fireStateChanged();}
+            public void changedUpdate(DocumentEvent e) {panel.fireStateChanged();}
         };
         netbeansField.getDocument().addDocumentListener(list);
-        fireStateChanged();
+        panel.fireStateChanged();
     }
     
     /** This method is called from within the constructor to
@@ -76,7 +162,7 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
     private void initComponents() {//GEN-BEGIN:initComponents
         java.awt.GridBagConstraints gridBagConstraints;
 
-        panel = new javax.swing.JPanel();
+        panel2 = new javax.swing.JPanel();
         levelLabel = new javax.swing.JLabel();
         levelCombo = new javax.swing.JComboBox();
         typeLabel = new javax.swing.JLabel();
@@ -96,9 +182,9 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
 
         setLayout(new java.awt.CardLayout());
 
-        panel.setLayout(new java.awt.GridBagLayout());
+        panel2.setLayout(new java.awt.GridBagLayout());
 
-        levelLabel.setDisplayedMnemonic('W');
+        levelLabel.setDisplayedMnemonic(NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "MNM_TestWorkspaceLevel").charAt(0) );
         levelLabel.setLabelFor(levelCombo);
         levelLabel.setText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "LBL_TestWorkspaceLevel"));
         levelLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "TTT_TestWorkspaceLevel"));
@@ -110,7 +196,7 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
-        panel.add(levelLabel, gridBagConstraints);
+        panel2.add(levelLabel, gridBagConstraints);
 
         levelCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "On top of the module (repository / module)", "One level lower (repository / module / package)", "Two levels lower (repository / module / package / package)", "Out of CVS structute (for local use only)" }));
         levelCombo.setToolTipText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "TTT_TestWorkspaceLevel"));
@@ -129,9 +215,9 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
-        panel.add(levelCombo, gridBagConstraints);
+        panel2.add(levelCombo, gridBagConstraints);
 
-        typeLabel.setDisplayedMnemonic('T');
+        typeLabel.setDisplayedMnemonic(NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "MNM_TestWorkspaceDefaultType").charAt(0) );
         typeLabel.setLabelFor(typeField);
         typeLabel.setText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "LBL_TestWorkspaceDefaultTestType"));
         typeLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "TTT_TestWorkspaceDefaultTT"));
@@ -144,7 +230,7 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
-        panel.add(typeLabel, gridBagConstraints);
+        panel2.add(typeLabel, gridBagConstraints);
 
         typeField.setToolTipText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "TTT_TestWorkspaceDefaultTT"));
         typeField.setEnabled(false);
@@ -163,9 +249,9 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
-        panel.add(typeField, gridBagConstraints);
+        panel2.add(typeField, gridBagConstraints);
 
-        attrLabel.setDisplayedMnemonic('A');
+        attrLabel.setDisplayedMnemonic(NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "MNM_TestWorkspaceDefaultAttrs").charAt(0) );
         attrLabel.setLabelFor(attrField);
         attrLabel.setText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "LBL_TestWorkspaceDefaultAttributes"));
         attrLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "TTT_TestWorkspaceAttrs"));
@@ -178,7 +264,7 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
-        panel.add(attrLabel, gridBagConstraints);
+        panel2.add(attrLabel, gridBagConstraints);
 
         attrField.setToolTipText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "TTT_TestWorkspaceAttrs"));
         attrField.setEnabled(false);
@@ -197,7 +283,7 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
-        panel.add(attrField, gridBagConstraints);
+        panel2.add(attrField, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -207,8 +293,9 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.weightx = 0.01;
         gridBagConstraints.weighty = 0.01;
         gridBagConstraints.insets = new java.awt.Insets(17, 0, 0, 11);
-        panel.add(separator1, gridBagConstraints);
+        panel2.add(separator1, gridBagConstraints);
 
+        advancedCheck.setMnemonic(NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "MNM_TestWorkspaceAdvanced").charAt(0) );
         advancedCheck.setText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "LBL_AdvancedSettings"));
         advancedCheck.setToolTipText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "TTT_AdvancedSettings"));
         advancedCheck.addActionListener(new java.awt.event.ActionListener() {
@@ -223,9 +310,9 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.weightx = 0.01;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(17, 12, 0, 0);
-        panel.add(advancedCheck, gridBagConstraints);
+        panel2.add(advancedCheck, gridBagConstraints);
 
-        netbeansLabel.setDisplayedMnemonic('N');
+        netbeansLabel.setDisplayedMnemonic(NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "MNM_TestWorkspaceNetbeansHome").charAt(0) );
         netbeansLabel.setLabelFor(netbeansField);
         netbeansLabel.setText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "LBL_TestWorkspaceNetbeansHome"));
         netbeansLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "TTT_NetbeansHome"));
@@ -238,7 +325,7 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
-        panel.add(netbeansLabel, gridBagConstraints);
+        panel2.add(netbeansLabel, gridBagConstraints);
 
         netbeansField.setToolTipText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "TTT_NetbeansHome"));
         netbeansField.setEnabled(false);
@@ -257,9 +344,9 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
-        panel.add(netbeansField, gridBagConstraints);
+        panel2.add(netbeansField, gridBagConstraints);
 
-        xtestLabel.setDisplayedMnemonic('X');
+        xtestLabel.setDisplayedMnemonic(NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "MNM_TestWorkspaceXTestHome").charAt(0) );
         xtestLabel.setLabelFor(xtestField);
         xtestLabel.setText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "LBL_TestWorkspaceXTestHome"));
         xtestLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "TTT_XTestHome"));
@@ -272,7 +359,7 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
-        panel.add(xtestLabel, gridBagConstraints);
+        panel2.add(xtestLabel, gridBagConstraints);
 
         xtestField.setToolTipText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "TTT_XTestHome"));
         xtestField.setEnabled(false);
@@ -291,7 +378,7 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 11, 0);
-        panel.add(xtestField, gridBagConstraints);
+        panel2.add(xtestField, gridBagConstraints);
 
         netbeansButton.setText("...");
         netbeansButton.setToolTipText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "TTT_NetbeansHome"));
@@ -312,7 +399,7 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.weightx = 0.01;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
-        panel.add(netbeansButton, gridBagConstraints);
+        panel2.add(netbeansButton, gridBagConstraints);
         netbeansButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "CTL_NetbeansHomeCust"));
 
         xtestButton.setText("...");
@@ -334,7 +421,7 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.weightx = 0.01;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
-        panel.add(xtestButton, gridBagConstraints);
+        panel2.add(xtestButton, gridBagConstraints);
         xtestButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "TTT_XTestHomeCust"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -344,9 +431,9 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 0.01;
         gridBagConstraints.insets = new java.awt.Insets(17, 5, 0, 0);
-        panel.add(separator2, gridBagConstraints);
+        panel2.add(separator2, gridBagConstraints);
 
-        add(panel, "ok");
+        add(panel2, "ok");
 
         stopLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         stopLabel.setText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "MSG_TestWorkspaceExists"));
@@ -435,89 +522,8 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         }
     }
     
-    /** adds ChangeListener of current Panel
-     * @param changeListener ChangeListener */    
-    public void addChangeListener(ChangeListener changeListener) {
-        if (listener != null) throw new IllegalStateException ();
-        listener = changeListener;
-    }    
-    
-    /** returns current Panel
-     * @return Component */    
-    public Component getComponent() {
-        return this;
-    }    
-    
-    /** returns Help Context
-     * @return HelpCtx */    
-    public HelpCtx getHelp() {
-        return new HelpCtx(TestWorkspaceSettingsPanel.class);
-    }
-    
-    /** read settings from given Object
-     * @param obj TemplateWizard with settings */    
-    public void readSettings(Object obj) {
-        WizardSettings set=WizardSettings.get(obj);
-        wizard=(TemplateWizard)obj;
-        DataFolder df=null;
-        stop=true;
-        try {
-            df=wizard.getTargetFolder();
-            stop=(wizard.getTargetName()!=null && wizard.getTargetName().indexOf(' ')>=0) 
-            || WizardIterator.detectBuildScript(df);
-        } catch (Exception e) {}
-        if (stop)
-            ((CardLayout)getLayout()).show(this, "stop"); // NOI18N
-        else {
-            ((CardLayout)getLayout()).show(this, "ok"); // NOI18N
-            if (set.workspaceLevel<0)
-                levelCombo.setSelectedIndex(WizardIterator.detectWorkspaceLevel(df));
-            if (set.defaultType!=null) 
-                typeField.setText(set.defaultType);
-            if (set.defaultAttributes!=null) 
-                attrField.setText(set.defaultAttributes);
-            updatePanel();
-        }
-    }
-    
-    /** removes Change Listener of current Panel
-     * @param changeListener ChangeListener */    
-    public void removeChangeListener(ChangeListener changeListener) {
-        listener = null;
-    }
-    
-    /** stores settings to given Object
-     * @param obj TemplateWizard with settings */    
-    public void storeSettings(Object obj) {
-        WizardSettings set=WizardSettings.get(obj);
-        set.workspaceLevel=levelCombo.getSelectedIndex();
-        set.netbeansHome=netbeansField.getText();
-        set.xtestHome=xtestField.getText();
-        set.defaultType=typeField.getText();
-        set.defaultAttributes=attrField.getText();
-        set.typeJemmyHome=jemmyHome;
-        set.typeJellyHome=jellyHome;
-    }
-
-    private static File netHome=new File(System.getProperty("netbeans.home",".")); // NOI18N
-
-    /** test current Panel state for data validity
-     * @return boolean true if data are valid and Wizard can continue */    
-    public boolean isValid() {
-        return (!stop)&&(!netHome.equals(new File(netbeansField.getText())));
-    }
-
-    private void fireStateChanged() {
-        SwingUtilities.invokeLater (new Runnable () {
-            public void run () {
-                if (listener != null) {
-                    listener.stateChanged (new ChangeEvent (this));
-                }
-            }
-        });            
-    }
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel panel2;
     private javax.swing.JSeparator separator2;
     private javax.swing.JSeparator separator1;
     private javax.swing.JComboBox levelCombo;
@@ -533,7 +539,6 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
     private javax.swing.JLabel xtestLabel;
     private javax.swing.JTextField attrField;
     private javax.swing.JCheckBox advancedCheck;
-    private javax.swing.JPanel panel;
     private javax.swing.JLabel attrLabel;
     // End of variables declaration//GEN-END:variables
     

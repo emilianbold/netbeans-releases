@@ -13,7 +13,9 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="nameLabel">
       <Properties>
-        <Property name="displayedMnemonic" type="int" value="110"/>
+        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="NbBundle.getMessage(TestBagSettingsPanel.class, &quot;MNM_TestBagName&quot;).charAt(0)" type="code"/>
+        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection component="nameField" type="bean"/>
         </Property>
@@ -47,7 +49,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="executorLabel">
       <Properties>
-        <Property name="displayedMnemonic" type="int" value="88"/>
+        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="NbBundle.getMessage(TestBagSettingsPanel.class, &quot;MNM_TestBagExecutor&quot;).charAt(0)" type="code"/>
+        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/testtools/wizards/Bundle.properties" key="LBL_TestBagExecutor" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -63,7 +67,9 @@
     </Component>
     <Component class="javax.swing.JRadioButton" name="ideRadio">
       <Properties>
-        <Property name="mnemonic" type="int" value="68"/>
+        <Property name="mnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="NbBundle.getMessage(TestBagSettingsPanel.class, &quot;MNM_TestBagExecIDE&quot;).charAt(0)" type="code"/>
+        </Property>
         <Property name="selected" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/testtools/wizards/Bundle.properties" key="LBL_TestBagExecutorIDE" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -83,7 +89,9 @@
     </Component>
     <Component class="javax.swing.JRadioButton" name="codeRadio">
       <Properties>
-        <Property name="mnemonic" type="int" value="67"/>
+        <Property name="mnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="NbBundle.getMessage(TestBagSettingsPanel.class, &quot;MNM_TestBagExecCode&quot;).charAt(0)" type="code"/>
+        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/testtools/wizards/Bundle.properties" key="LBL_TestBagExecutorCode" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -102,7 +110,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="attrLabel">
       <Properties>
-        <Property name="displayedMnemonic" type="int" value="65"/>
+        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="NbBundle.getMessage(TestBagSettingsPanel.class, &quot;MNM_TestBagAttrs&quot;).charAt(0)" type="code"/>
+        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection component="attrField" type="bean"/>
         </Property>
@@ -136,7 +146,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="includeLabel">
       <Properties>
-        <Property name="displayedMnemonic" type="int" value="73"/>
+        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="NbBundle.getMessage(TestBagSettingsPanel.class, &quot;MNM_TestBagExecInclude&quot;).charAt(0)" type="code"/>
+        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection component="includeField" type="bean"/>
         </Property>
@@ -170,7 +182,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="excludeLabel">
       <Properties>
-        <Property name="displayedMnemonic" type="int" value="69"/>
+        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="NbBundle.getMessage(TestBagSettingsPanel.class, &quot;MNM_TestBagExecExclude&quot;).charAt(0)" type="code"/>
+        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection component="excludeField" type="bean"/>
         </Property>

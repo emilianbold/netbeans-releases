@@ -11,7 +11,7 @@
 
   <Layout class="org.netbeans.modules.form.compat2.layouts.DesignCardLayout"/>
   <SubComponents>
-    <Container class="javax.swing.JPanel" name="panel">
+    <Container class="javax.swing.JPanel" name="panel2">
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
           <CardConstraints cardName="ok"/>
@@ -22,7 +22,9 @@
       <SubComponents>
         <Component class="javax.swing.JCheckBox" name="defaultCheck">
           <Properties>
-            <Property name="mnemonic" type="int" value="100"/>
+            <Property name="mnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="NbBundle.getMessage(TestTypeSettingsPanel.class, &quot;MNM_TestTypeSetDefault&quot;).charAt(0) " type="code"/>
+            </Property>
             <Property name="selected" type="boolean" value="true"/>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/testtools/wizards/Bundle.properties" key="LBL_TestTypeSetTestAsDefault" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -39,7 +41,9 @@
         </Component>
         <Component class="javax.swing.JLabel" name="systemLabel">
           <Properties>
-            <Property name="displayedMnemonic" type="int" value="87"/>
+            <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="NbBundle.getMessage(TestTypeSettingsPanel.class, &quot;MNM_TestTypeWindowSystem&quot;).charAt(0) " type="code"/>
+            </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/testtools/wizards/Bundle.properties" key="LBL_TestTypeWindowsSystem" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
@@ -55,7 +59,9 @@
         </Component>
         <Component class="javax.swing.JRadioButton" name="sdiRadio">
           <Properties>
-            <Property name="mnemonic" type="int" value="115"/>
+            <Property name="mnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="NbBundle.getMessage(TestTypeSettingsPanel.class, &quot;MNM_TestTypeSDI&quot;).charAt(0) " type="code"/>
+            </Property>
             <Property name="selected" type="boolean" value="true"/>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/testtools/wizards/Bundle.properties" key="LBL_TestTypeSDI" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -75,7 +81,9 @@
         </Component>
         <Component class="javax.swing.JRadioButton" name="mdiRadio">
           <Properties>
-            <Property name="mnemonic" type="int" value="109"/>
+            <Property name="mnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="NbBundle.getMessage(TestTypeSettingsPanel.class, &quot;MNM_TestTypeMDI&quot;).charAt(0) " type="code"/>
+            </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/testtools/wizards/Bundle.properties" key="LBL_TestTypeMDI" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
@@ -94,7 +102,9 @@
         </Component>
         <Component class="javax.swing.JCheckBox" name="jemmyCheck">
           <Properties>
-            <Property name="mnemonic" type="int" value="106"/>
+            <Property name="mnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="NbBundle.getMessage(TestTypeSettingsPanel.class, &quot;MNM_TestTypeUseJemmy&quot;).charAt(0) " type="code"/>
+            </Property>
             <Property name="selected" type="boolean" value="true"/>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/testtools/wizards/Bundle.properties" key="LBL_TestTypeUseJemmy" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>

@@ -244,7 +244,7 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
             if ((i>0)&&(i<4))
                 return i-1;
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
         return 0;
     }
@@ -328,7 +328,7 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         try {
             set.workspaceScript=set.workspaceTemplate.createFromTemplate(set.typeTarget, "build"); // NOI18N
         } catch (IOException ioe) {
-            throw new IOException(NbBundle.getMessage(WizardIterator.class, "Could_not_create_new_Test_Workspace_in_package_\"", new Object[] {set.typeTarget.getPrimaryFile().getPackageName('/'), ioe.getMessage()})); // NOI18N
+            throw new IOException(NbBundle.getMessage(WizardIterator.class, "ERR_CreateTestWorkspace", new Object[] {set.typeTarget.getPrimaryFile().getPackageName('/'), ioe.getMessage()})); // NOI18N
         }
         res.add(set.workspaceScript);
         

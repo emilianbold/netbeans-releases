@@ -33,12 +33,84 @@ import org.openide.util.NbBundle;
 /** Wizard Panel with Test Type Settings configuration
  * @author  <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
  */
-public class TestTypeSettingsPanel extends JPanel implements WizardDescriptor.Panel {
+public class TestTypeSettingsPanel extends JPanel {
 
     static final long serialVersionUID = 7939826033813572286L;
     
     private boolean stop=true;
     private String name=null;
+    
+    public final Panel panel = new Panel();
+    
+    private class Panel extends Object implements WizardDescriptor.Panel {
+
+        /** adds ChangeListener of current Panel
+         * @param l ChangeListener */    
+        public void addChangeListener(ChangeListener l) {
+        }    
+
+        /** returns current Panel
+         * @return Component */    
+        public Component getComponent() {
+            return TestTypeSettingsPanel.this;
+        }    
+
+        /** returns Help Context
+         * @return HelpCtx */    
+        public HelpCtx getHelp() {
+            return new HelpCtx(TestTypeSettingsPanel.class);
+        }
+
+        /** read settings from given Object
+         * @param obj TemplateWizard with settings */    
+        public void readSettings(Object obj) {
+            TemplateWizard wizard=(TemplateWizard)obj;
+            WizardSettings set=WizardSettings.get(obj);
+            try {
+                if (set.startFromType) {
+                    name=wizard.getTargetName();
+                    stop=(name!=null) && (name.indexOf(' ')>=0);
+                    if (name==null)
+                        name=wizard.getTemplate().getPrimaryFile().getName();
+                    stop=stop||WizardIterator.detectTestType(wizard.getTargetFolder(), name);
+                } else {
+                    name=set.typeName;
+                    stop=(name!=null) && (!Utilities.isJavaIdentifier(name));
+                    if (name==null)
+                        name=set.typeTemplate.getPrimaryFile().getName();
+                }
+            } catch (Exception e) {}
+            if (stop)
+                ((CardLayout)getLayout()).show(TestTypeSettingsPanel.this, "stop"); // NOI18N
+            else {
+                ((CardLayout)getLayout()).show(TestTypeSettingsPanel.this, "ok"); // NOI18N
+                jemmyCheck.setSelected(set.typeUseJemmy);
+                sdiRadio.setSelected(set.typeSDI);
+                mdiRadio.setSelected(!set.typeSDI);
+            }
+        }
+
+        /** removes Change Listener of current Panel
+         * @param l ChangeListener */    
+        public void removeChangeListener(ChangeListener l) {
+        }
+
+        /** stores settings to given Object
+         * @param obj TemplateWizard with settings */    
+        public void storeSettings(Object obj) {
+            WizardSettings set=WizardSettings.get(obj);
+            set.typeUseJemmy=jemmyCheck.isSelected();
+            set.typeSDI=sdiRadio.isSelected();
+            if (defaultCheck.isSelected())
+                set.defaultType=name;
+        }
+
+        /** test current Panel state for data validity
+         * @return boolean true if data are valid and Wizard can continue */    
+        public boolean isValid() {
+            return !stop;
+        }
+    }
     
     /** Creates new form TestTypeSettingsPanel */
     public TestTypeSettingsPanel() {
@@ -55,7 +127,7 @@ public class TestTypeSettingsPanel extends JPanel implements WizardDescriptor.Pa
         java.awt.GridBagConstraints gridBagConstraints;
 
         buttonGroup = new javax.swing.ButtonGroup();
-        panel = new javax.swing.JPanel();
+        panel2 = new javax.swing.JPanel();
         defaultCheck = new javax.swing.JCheckBox();
         systemLabel = new javax.swing.JLabel();
         sdiRadio = new javax.swing.JRadioButton();
@@ -65,9 +137,9 @@ public class TestTypeSettingsPanel extends JPanel implements WizardDescriptor.Pa
 
         setLayout(new java.awt.CardLayout());
 
-        panel.setLayout(new java.awt.GridBagLayout());
+        panel2.setLayout(new java.awt.GridBagLayout());
 
-        defaultCheck.setMnemonic('d');
+        defaultCheck.setMnemonic(NbBundle.getMessage(TestTypeSettingsPanel.class, "MNM_TestTypeSetDefault").charAt(0) );
         defaultCheck.setSelected(true);
         defaultCheck.setText(org.openide.util.NbBundle.getMessage(TestTypeSettingsPanel.class, "LBL_TestTypeSetTestAsDefault"));
         defaultCheck.setToolTipText(org.openide.util.NbBundle.getMessage(TestTypeSettingsPanel.class, "TTT_TestTypeSetDefault"));
@@ -77,9 +149,9 @@ public class TestTypeSettingsPanel extends JPanel implements WizardDescriptor.Pa
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
-        panel.add(defaultCheck, gridBagConstraints);
+        panel2.add(defaultCheck, gridBagConstraints);
 
-        systemLabel.setDisplayedMnemonic('W');
+        systemLabel.setDisplayedMnemonic(NbBundle.getMessage(TestTypeSettingsPanel.class, "MNM_TestTypeWindowSystem").charAt(0) );
         systemLabel.setText(org.openide.util.NbBundle.getMessage(TestTypeSettingsPanel.class, "LBL_TestTypeWindowsSystem"));
         systemLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestTypeSettingsPanel.class, "TTT_TestTypeWindowSystem"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -89,9 +161,9 @@ public class TestTypeSettingsPanel extends JPanel implements WizardDescriptor.Pa
         gridBagConstraints.weightx = 0.01;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 0);
-        panel.add(systemLabel, gridBagConstraints);
+        panel2.add(systemLabel, gridBagConstraints);
 
-        sdiRadio.setMnemonic('s');
+        sdiRadio.setMnemonic(NbBundle.getMessage(TestTypeSettingsPanel.class, "MNM_TestTypeSDI").charAt(0) );
         sdiRadio.setSelected(true);
         sdiRadio.setText(org.openide.util.NbBundle.getMessage(TestTypeSettingsPanel.class, "LBL_TestTypeSDI"));
         sdiRadio.setToolTipText(org.openide.util.NbBundle.getMessage(TestTypeSettingsPanel.class, "TTT_TestTypeWindowSystem"));
@@ -103,9 +175,9 @@ public class TestTypeSettingsPanel extends JPanel implements WizardDescriptor.Pa
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
-        panel.add(sdiRadio, gridBagConstraints);
+        panel2.add(sdiRadio, gridBagConstraints);
 
-        mdiRadio.setMnemonic('m');
+        mdiRadio.setMnemonic(NbBundle.getMessage(TestTypeSettingsPanel.class, "MNM_TestTypeMDI").charAt(0) );
         mdiRadio.setText(org.openide.util.NbBundle.getMessage(TestTypeSettingsPanel.class, "LBL_TestTypeMDI"));
         mdiRadio.setToolTipText(org.openide.util.NbBundle.getMessage(TestTypeSettingsPanel.class, "TTT_TestTypeWindowSystem"));
         buttonGroup.add(mdiRadio);
@@ -116,9 +188,9 @@ public class TestTypeSettingsPanel extends JPanel implements WizardDescriptor.Pa
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 10.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 11, 11, 11);
-        panel.add(mdiRadio, gridBagConstraints);
+        panel2.add(mdiRadio, gridBagConstraints);
 
-        jemmyCheck.setMnemonic('j');
+        jemmyCheck.setMnemonic(NbBundle.getMessage(TestTypeSettingsPanel.class, "MNM_TestTypeUseJemmy").charAt(0) );
         jemmyCheck.setSelected(true);
         jemmyCheck.setText(org.openide.util.NbBundle.getMessage(TestTypeSettingsPanel.class, "LBL_TestTypeUseJemmy"));
         jemmyCheck.setToolTipText(org.openide.util.NbBundle.getMessage(TestTypeSettingsPanel.class, "TTT_TestTypeUseJemmy"));
@@ -130,9 +202,9 @@ public class TestTypeSettingsPanel extends JPanel implements WizardDescriptor.Pa
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
-        panel.add(jemmyCheck, gridBagConstraints);
+        panel2.add(jemmyCheck, gridBagConstraints);
 
-        add(panel, "ok");
+        add(panel2, "ok");
 
         stopLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         stopLabel.setText(org.openide.util.NbBundle.getMessage(TestTypeSettingsPanel.class, "MSG_TestTypeTestExists"));
@@ -140,75 +212,10 @@ public class TestTypeSettingsPanel extends JPanel implements WizardDescriptor.Pa
 
     }//GEN-END:initComponents
 
-    /** adds ChangeListener of current Panel
-     * @param l ChangeListener */    
-    public void addChangeListener(ChangeListener l) {
-    }    
-    
-    /** returns current Panel
-     * @return Component */    
-    public Component getComponent() {
-        return this;
-    }    
-    
-    /** returns Help Context
-     * @return HelpCtx */    
-    public HelpCtx getHelp() {
-        return new HelpCtx(TestTypeSettingsPanel.class);
-    }
-    
-    /** read settings from given Object
-     * @param obj TemplateWizard with settings */    
-    public void readSettings(Object obj) {
-        TemplateWizard wizard=(TemplateWizard)obj;
-        WizardSettings set=WizardSettings.get(obj);
-        try {
-            if (set.startFromType) {
-                name=wizard.getTargetName();
-                stop=(name!=null) && (name.indexOf(' ')>=0);
-                if (name==null)
-                    name=wizard.getTemplate().getPrimaryFile().getName();
-                stop=stop||WizardIterator.detectTestType(wizard.getTargetFolder(), name);
-            } else {
-                name=set.typeName;
-                stop=(name!=null) && (!Utilities.isJavaIdentifier(name));
-                if (name==null)
-                    name=set.typeTemplate.getPrimaryFile().getName();
-            }
-        } catch (Exception e) {}
-        if (stop)
-            ((CardLayout)getLayout()).show(this, "stop"); // NOI18N
-        else {
-            ((CardLayout)getLayout()).show(this, "ok"); // NOI18N
-            jemmyCheck.setSelected(set.typeUseJemmy);
-            sdiRadio.setSelected(set.typeSDI);
-            mdiRadio.setSelected(!set.typeSDI);
-        }
-    }
-    
-    /** removes Change Listener of current Panel
-     * @param l ChangeListener */    
-    public void removeChangeListener(ChangeListener l) {
-    }
-    
-    /** stores settings to given Object
-     * @param obj TemplateWizard with settings */    
-    public void storeSettings(Object obj) {
-        WizardSettings set=WizardSettings.get(obj);
-        set.typeUseJemmy=jemmyCheck.isSelected();
-        set.typeSDI=sdiRadio.isSelected();
-        if (defaultCheck.isSelected())
-            set.defaultType=name;
-    }
-
-    /** test current Panel state for data validity
-     * @return boolean true if data are valid and Wizard can continue */    
-    public boolean isValid() {
-        return !stop;
-    }
-    
+            
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel panel2;
     private javax.swing.ButtonGroup buttonGroup;
     private javax.swing.JCheckBox jemmyCheck;
     private javax.swing.JRadioButton mdiRadio;
@@ -216,7 +223,6 @@ public class TestTypeSettingsPanel extends JPanel implements WizardDescriptor.Pa
     private javax.swing.JLabel stopLabel;
     private javax.swing.JCheckBox defaultCheck;
     private javax.swing.JLabel systemLabel;
-    private javax.swing.JPanel panel;
     // End of variables declaration//GEN-END:variables
     
 }

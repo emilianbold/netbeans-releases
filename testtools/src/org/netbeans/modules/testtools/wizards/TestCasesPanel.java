@@ -40,7 +40,58 @@ import org.openide.util.NbBundle;
 /** Wizard Panel with Test Cases configuration
  * @author  <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
  */
-public class TestCasesPanel extends JPanel implements WizardDescriptor.FinishPanel {
+public class TestCasesPanel extends JPanel {
+    
+    public final Panel panel = new Panel();
+    
+    private class Panel extends Object implements WizardDescriptor.FinishPanel {
+    
+        /** adds ChangeListener of current Panel
+         * @param changeListener ChangeListener */    
+        public void addChangeListener(ChangeListener changeListener) {}    
+
+        /** returns current Panel
+         * @return Component */    
+        public Component getComponent() {
+            return TestCasesPanel.this;
+        }    
+
+        /** returns Help Context
+         * @return HelpCtx */    
+        public HelpCtx getHelp() {
+            return new HelpCtx(TestCasesPanel.class);
+        }
+
+        /** read settings from given Object
+         * @param obj TemplateWizard with settings */    
+        public void readSettings(Object obj) {
+            WizardSettings set=WizardSettings.get(obj);
+            if (set.methods==null) {
+                testCaseTypes.setModel(new DefaultComboBoxModel(set.templateMethods));
+                listData.removeAllElements();
+                testCases.setListData(listData);
+            }
+            refreshAdd();
+            refreshButtons();
+        }
+
+        /** removes Change Listener of current Panel
+         * @param changeListener ChangeListener */    
+        public void removeChangeListener(ChangeListener changeListener) {
+        }
+
+        /** stores settings to given Object
+         * @param obj TemplateWizard with settings */    
+        public void storeSettings(Object obj) {
+            WizardSettings.get(obj).methods=(WizardIterator.CaseElement[])listData.toArray(new WizardIterator.CaseElement[listData.size()]);
+        }
+
+        /** test current Panel state for data validity
+         * @return boolean true if data are valid and Wizard can continue */    
+        public boolean isValid() {
+            return true;
+        }
+    }
     
     private Vector listData;
     static final long serialVersionUID = 981620069379306317L;
@@ -123,7 +174,7 @@ public class TestCasesPanel extends JPanel implements WizardDescriptor.FinishPan
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(caseName, gridBagConstraints);
 
-        add.setMnemonic('a');
+        add.setMnemonic(NbBundle.getMessage(TestCasesPanel.class, "MNM_TestCasesAdd").charAt(0));
         add.setText(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "LBL_TestCasesAdd"));
         add.setToolTipText(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "TTT_TestCaseAdd", new Object[] {}));
         add.setMinimumSize(new java.awt.Dimension(80, 27));
@@ -145,7 +196,7 @@ public class TestCasesPanel extends JPanel implements WizardDescriptor.FinishPan
         gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
         add(add, gridBagConstraints);
 
-        remove.setMnemonic('r');
+        remove.setMnemonic(NbBundle.getMessage(TestCasesPanel.class, "MNM_TestCasesRemove").charAt(0));
         remove.setText(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "LBL_TestCasesRemove"));
         remove.setToolTipText(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "TTT_TestCaseRemove", new Object[] {}));
         remove.setMinimumSize(new java.awt.Dimension(80, 27));
@@ -167,7 +218,7 @@ public class TestCasesPanel extends JPanel implements WizardDescriptor.FinishPan
         gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
         add(remove, gridBagConstraints);
 
-        up.setMnemonic('u');
+        up.setMnemonic(NbBundle.getMessage(TestCasesPanel.class, "MNM_TestCasesUp").charAt(0));
         up.setText(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "LBL_TestCasesUp"));
         up.setToolTipText(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "TTT_TestCaseUp", new Object[] {}));
         up.setMinimumSize(new java.awt.Dimension(80, 27));
@@ -189,7 +240,7 @@ public class TestCasesPanel extends JPanel implements WizardDescriptor.FinishPan
         gridBagConstraints.insets = new java.awt.Insets(17, 11, 0, 11);
         add(up, gridBagConstraints);
 
-        down.setMnemonic('d');
+        down.setMnemonic(NbBundle.getMessage(TestCasesPanel.class, "MNM_TestCasesDown").charAt(0));
         down.setText(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "LBL_TestCasesDown"));
         down.setToolTipText(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "TTT_TestCaseDown", new Object[] {}));
         down.setMinimumSize(new java.awt.Dimension(80, 27));
@@ -228,7 +279,7 @@ public class TestCasesPanel extends JPanel implements WizardDescriptor.FinishPan
         gridBagConstraints.insets = new java.awt.Insets(11, 12, 11, 0);
         add(scroll, gridBagConstraints);
 
-        nameLabel.setDisplayedMnemonic('n');
+        nameLabel.setDisplayedMnemonic(NbBundle.getMessage(TestCasesPanel.class, "MNM_TestCasesName").charAt(0));
         nameLabel.setLabelFor(caseName);
         nameLabel.setText(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "LBL_TestCasesName"));
         nameLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "TTT_TestCaseName", new Object[] {}));
@@ -241,7 +292,7 @@ public class TestCasesPanel extends JPanel implements WizardDescriptor.FinishPan
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(nameLabel, gridBagConstraints);
 
-        templateLabel.setDisplayedMnemonic('t');
+        templateLabel.setDisplayedMnemonic(NbBundle.getMessage(TestCasesPanel.class, "MNM_TestCasesTemplate").charAt(0));
         templateLabel.setLabelFor(testCaseTypes);
         templateLabel.setText(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "LBL_TestCasesTemplate"));
         templateLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "TTT_TestCaseTemplate", new Object[] {}));
@@ -328,52 +379,6 @@ public class TestCasesPanel extends JPanel implements WizardDescriptor.FinishPan
         remove.setEnabled(index>-1);
         up.setEnabled(index>0);
         down.setEnabled((index>-1)&&(index<listData.size()-1));
-    }
-    
-    /** adds ChangeListener of current Panel
-     * @param changeListener ChangeListener */    
-    public void addChangeListener(ChangeListener changeListener) {}    
-    
-    /** returns current Panel
-     * @return Component */    
-    public Component getComponent() {
-        return this;
-    }    
-    
-    /** returns Help Context
-     * @return HelpCtx */    
-    public HelpCtx getHelp() {
-        return new HelpCtx(TestCasesPanel.class);
-    }
-    
-    /** read settings from given Object
-     * @param obj TemplateWizard with settings */    
-    public void readSettings(Object obj) {
-        WizardSettings set=WizardSettings.get(obj);
-        if (set.methods==null) {
-            testCaseTypes.setModel(new DefaultComboBoxModel(set.templateMethods));
-            listData.removeAllElements();
-            testCases.setListData(listData);
-        }
-        refreshAdd();
-        refreshButtons();
-    }
-
-    /** removes Change Listener of current Panel
-     * @param changeListener ChangeListener */    
-    public void removeChangeListener(ChangeListener changeListener) {
-    }
-    
-    /** stores settings to given Object
-     * @param obj TemplateWizard with settings */    
-    public void storeSettings(Object obj) {
-        WizardSettings.get(obj).methods=(WizardIterator.CaseElement[])listData.toArray(new WizardIterator.CaseElement[listData.size()]);
-    }
-
-    /** test current Panel state for data validity
-     * @return boolean true if data are valid and Wizard can continue */    
-    public boolean isValid() {
-        return true;
     }
     
     

@@ -13,7 +13,9 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="excludesLabel">
       <Properties>
-        <Property name="displayedMnemonic" type="int" value="88"/>
+        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, &quot;MNM_TestTypeCompExclude&quot;).charAt(0) " type="code"/>
+        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection component="excludesField" type="bean"/>
         </Property>
@@ -48,7 +50,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="compileLabel">
       <Properties>
-        <Property name="displayedMnemonic" type="int" value="67"/>
+        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, &quot;MNM_TestTypeCompClassPath&quot;).charAt(0) " type="code"/>
+        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection component="compileField" type="bean"/>
         </Property>
@@ -109,7 +113,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="executeLabel">
       <Properties>
-        <Property name="displayedMnemonic" type="int" value="69"/>
+        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, &quot;MNM_TestTypeExecExtraJARs&quot;).charAt(0) " type="code"/>
+        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection component="executeField" type="bean"/>
         </Property>
@@ -170,7 +176,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jvmLabel">
       <Properties>
-        <Property name="displayedMnemonic" type="int" value="83"/>
+        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, &quot;MNM_TestTypeCMDSuffix&quot;).charAt(0) " type="code"/>
+        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection component="jvmField" type="bean"/>
         </Property>
@@ -204,7 +212,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jemmyLabel">
       <Properties>
-        <Property name="displayedMnemonic" type="int" value="77"/>
+        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, &quot;MNM_TestTypeJemmyHome&quot;).charAt(0) " type="code"/>
+        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection component="jemmyField" type="bean"/>
         </Property>
@@ -268,7 +278,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jellyLabel">
       <Properties>
-        <Property name="displayedMnemonic" type="int" value="76"/>
+        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, &quot;MNM_TestTypeJellyHome&quot;).charAt(0) " type="code"/>
+        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection component="jellyField" type="bean"/>
         </Property>

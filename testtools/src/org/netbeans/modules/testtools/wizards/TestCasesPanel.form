@@ -40,7 +40,9 @@
     </Component>
     <Component class="javax.swing.JButton" name="add">
       <Properties>
-        <Property name="mnemonic" type="int" value="97"/>
+        <Property name="mnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="NbBundle.getMessage(TestCasesPanel.class, &quot;MNM_TestCasesAdd&quot;).charAt(0)" type="code"/>
+        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/testtools/wizards/Bundle.properties" key="LBL_TestCasesAdd" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -66,7 +68,9 @@
     </Component>
     <Component class="javax.swing.JButton" name="remove">
       <Properties>
-        <Property name="mnemonic" type="int" value="114"/>
+        <Property name="mnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="NbBundle.getMessage(TestCasesPanel.class, &quot;MNM_TestCasesRemove&quot;).charAt(0)" type="code"/>
+        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/testtools/wizards/Bundle.properties" key="LBL_TestCasesRemove" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -92,7 +96,9 @@
     </Component>
     <Component class="javax.swing.JButton" name="up">
       <Properties>
-        <Property name="mnemonic" type="int" value="117"/>
+        <Property name="mnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="NbBundle.getMessage(TestCasesPanel.class, &quot;MNM_TestCasesUp&quot;).charAt(0)" type="code"/>
+        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/testtools/wizards/Bundle.properties" key="LBL_TestCasesUp" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -118,7 +124,9 @@
     </Component>
     <Component class="javax.swing.JButton" name="down">
       <Properties>
-        <Property name="mnemonic" type="int" value="100"/>
+        <Property name="mnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="NbBundle.getMessage(TestCasesPanel.class, &quot;MNM_TestCasesDown&quot;).charAt(0)" type="code"/>
+        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/testtools/wizards/Bundle.properties" key="LBL_TestCasesDown" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -171,7 +179,9 @@
     </Container>
     <Component class="javax.swing.JLabel" name="nameLabel">
       <Properties>
-        <Property name="displayedMnemonic" type="int" value="110"/>
+        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="NbBundle.getMessage(TestCasesPanel.class, &quot;MNM_TestCasesName&quot;).charAt(0)" type="code"/>
+        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection component="caseName" type="bean"/>
         </Property>
@@ -190,7 +200,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="templateLabel">
       <Properties>
-        <Property name="displayedMnemonic" type="int" value="116"/>
+        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="NbBundle.getMessage(TestCasesPanel.class, &quot;MNM_TestCasesTemplate&quot;).charAt(0)" type="code"/>
+        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection component="testCaseTypes" type="bean"/>
         </Property>

@@ -9,7 +9,9 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="nameLabel">
       <Properties>
-        <Property name="displayedMnemonic" type="int" value="78"/>
+        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="NbBundle.getMessage(TestTypeTemplatePanel.class, &quot;MNM_TestTypeName&quot;).charAt(0) " type="code"/>
+        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection component="nameField" type="bean"/>
         </Property>
@@ -43,7 +45,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="templateLabel">
       <Properties>
-        <Property name="displayedMnemonic" type="int" value="84"/>
+        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="NbBundle.getMessage(TestTypeTemplatePanel.class, &quot;MNM_TestTypeTemplate&quot;).charAt(0) " type="code"/>
+        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection component="templateCombo" type="bean"/>
         </Property>
@@ -77,7 +81,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="descriptionLabel">
       <Properties>
-        <Property name="displayedMnemonic" type="int" value="68"/>
+        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="NbBundle.getMessage(TestTypeTemplatePanel.class, &quot;MNM_TestTypeDescription&quot;).charAt(0) " type="code"/>
+        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection component="htmlBrowser" type="bean"/>
         </Property>

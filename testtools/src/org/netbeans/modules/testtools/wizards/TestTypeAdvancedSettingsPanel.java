@@ -31,20 +31,94 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
+import org.openide.util.NbBundle;
 
 /** Wizard Panel with Test Type Advanced Settings configuration
  * @author  <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
  */
-public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescriptor.Panel {
+public class TestTypeAdvancedSettingsPanel extends JPanel {
 
     static final long serialVersionUID = 2537129285375022017L;
 
     private File baseDir=null;
     private String netbeansHome=null;
     
+    public final Panel panel = new Panel();
+
+    private class Panel extends Object implements WizardDescriptor.Panel {
+
+        /** adds ChangeListener of current Panel
+         * @param l ChangeListener */    
+        public void addChangeListener(ChangeListener l) {}    
+
+        /** returns current Panel
+         * @return Component */    
+        public Component getComponent() {
+            return TestTypeAdvancedSettingsPanel.this;
+        }    
+
+        /** returns Help Context
+         * @return HelpCtx */    
+        public HelpCtx getHelp() {
+            return new HelpCtx(TestTypeAdvancedSettingsPanel.class);
+        }
+
+        /** read settings from given Object
+         * @param obj TemplateWizard with settings */    
+        public void readSettings(Object obj) {
+            WizardSettings set=WizardSettings.get(obj);
+            if (set.typeJVMSuffix!=null)
+                jvmField.setText(set.typeJVMSuffix);
+            if (set.typeExcludes!=null)
+                compileField.setText(set.typeExcludes);
+            if (set.typeCompPath!=null)
+                compileField.setText(set.typeCompPath);
+            if (set.typeExecPath!=null)
+                executeField.setText(set.typeExecPath);
+            if (set.typeJemmyHome!=null)
+                jemmyField.setText(set.typeJemmyHome);
+            if (set.typeJellyHome!=null)
+                jellyField.setText(set.typeJellyHome);
+            TemplateWizard wizard=(TemplateWizard)obj;
+            if (baseDir==null) try {
+                baseDir=FileUtil.toFile(wizard.getTargetFolder().getPrimaryFile());
+                if (set.startFromWorkspace) {
+                    netbeansHome=set.netbeansHome;
+                } else {
+                    baseDir=baseDir.getParentFile();
+                    XMLDocument doc=new XMLDocument(DataObject.find(wizard.getTargetFolder().getPrimaryFile().getFileObject("build","xml"))); // NOI18N
+                    netbeansHome=doc.getProperty("netbeans.home","location"); // NOI18N
+                }
+            } catch (Exception e) {}
+        }
+
+        /** removes Change Listener of current Panel
+         * @param l ChangeListener */    
+        public void removeChangeListener(ChangeListener l) {}
+
+        /** stores settings to given Object
+         * @param obj TemplateWizard with settings */    
+        public void storeSettings(Object obj) {
+            WizardSettings set=WizardSettings.get(obj);
+            set.typeJVMSuffix=jvmField.getText();
+            set.typeExcludes=excludesField.getText();
+            set.typeCompPath=compileField.getText();
+            set.typeExecPath=executeField.getText();
+            set.typeJemmyHome=jemmyField.getText();
+            set.typeJellyHome=jellyField.getText();
+        }
+
+        /** test current Panel state for data validity
+         * @return boolean true if data are valid and Wizard can continue */    
+        public boolean isValid() {
+            return true;
+        }
+
+    }
+    
     /** Creates new form TestTypeAdvancedSettingsPanel */
     public TestTypeAdvancedSettingsPanel() {
-        setName(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "LBL_TestTypeAdvancedPanelName")); // NOI18N
+        setName(NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "LBL_TestTypeAdvancedPanelName")); // NOI18N
         initComponents();
     }
     
@@ -76,7 +150,7 @@ public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescr
 
         setLayout(new java.awt.GridBagLayout());
 
-        excludesLabel.setDisplayedMnemonic('X');
+        excludesLabel.setDisplayedMnemonic(NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "MNM_TestTypeCompExclude").charAt(0) );
         excludesLabel.setLabelFor(excludesField);
         excludesLabel.setText(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "LBL_TestTypeCompExclPattern"));
         excludesLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "TTT_TestTypeCompExc"));
@@ -109,7 +183,7 @@ public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescr
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         add(excludesField, gridBagConstraints);
 
-        compileLabel.setDisplayedMnemonic('C');
+        compileLabel.setDisplayedMnemonic(NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "MNM_TestTypeCompClassPath").charAt(0) );
         compileLabel.setLabelFor(compileField);
         compileLabel.setText(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "LBL_TestTypeCompClassPath"));
         compileLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "TTT_CompileClassPath"));
@@ -161,7 +235,7 @@ public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescr
         add(compileButton, gridBagConstraints);
         compileButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "CTL_CompClassPathCust"));
 
-        executeLabel.setDisplayedMnemonic('E');
+        executeLabel.setDisplayedMnemonic(NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "MNM_TestTypeExecExtraJARs").charAt(0) );
         executeLabel.setLabelFor(executeField);
         executeLabel.setText(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "LBL_TestTypeExtraJARs"));
         executeLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "TTT_ExecExtraJARs"));
@@ -213,7 +287,7 @@ public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescr
         add(executeButton, gridBagConstraints);
         executeButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "CTL_ExecutionExtraJarsCust"));
 
-        jvmLabel.setDisplayedMnemonic('S');
+        jvmLabel.setDisplayedMnemonic(NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "MNM_TestTypeCMDSuffix").charAt(0) );
         jvmLabel.setLabelFor(jvmField);
         jvmLabel.setText(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "LBL_TestTypeCommandLineSuffix"));
         jvmLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "TTT_TestTypeSuffix"));
@@ -245,7 +319,7 @@ public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescr
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         add(jvmField, gridBagConstraints);
 
-        jemmyLabel.setDisplayedMnemonic('M');
+        jemmyLabel.setDisplayedMnemonic(NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "MNM_TestTypeJemmyHome").charAt(0) );
         jemmyLabel.setLabelFor(jemmyField);
         jemmyLabel.setText(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "LBL_TestTypeJemmyJARHome"));
         jemmyLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "TTT_JemmyJARHome"));
@@ -298,7 +372,7 @@ public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescr
         add(jemmyButton, gridBagConstraints);
         jemmyButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "CTL_JemmyJARHomeCust"));
 
-        jellyLabel.setDisplayedMnemonic('L');
+        jellyLabel.setDisplayedMnemonic(NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "MNM_TestTypeJellyHome").charAt(0) );
         jellyLabel.setLabelFor(jellyField);
         jellyLabel.setText(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "LBL_TestTypeJellyJARHome"));
         jellyLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "TTT_JellyJarHome"));
@@ -386,27 +460,27 @@ public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescr
     }    
     
     private void executeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_executeButtonActionPerformed
-        File elem=WizardIterator.showFileChooser(this, org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "LBL_TestTypeSelectJAR"), false, true); // NOI18N
+        File elem=WizardIterator.showFileChooser(this, NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "LBL_TestTypeSelectJAR"), false, true); // NOI18N
         if (elem!=null) {
             executeField.setText(add(executeField.getText(), elem));
         }
     }//GEN-LAST:event_executeButtonActionPerformed
 
     private void compileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compileButtonActionPerformed
-        File jar=WizardIterator.showFileChooser(this, org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "LBL_TestTypeSelectClassPathElement"), true, true); // NOI18N
+        File jar=WizardIterator.showFileChooser(this, NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "LBL_TestTypeSelectClassPathElement"), true, true); // NOI18N
         if (jar!=null) {
             compileField.setText(add(compileField.getText(), jar));
         }
     }//GEN-LAST:event_compileButtonActionPerformed
 
     private void jellyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jellyButtonActionPerformed
-        File home=WizardIterator.showFileChooser(this, org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "LBL_TestTypeSelectJellyHome"), true, false); // NOI18N
+        File home=WizardIterator.showFileChooser(this, NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "LBL_TestTypeSelectJellyHome"), true, false); // NOI18N
         if (home!=null) 
             jellyField.setText(home.getAbsolutePath());
     }//GEN-LAST:event_jellyButtonActionPerformed
 
     private void jemmyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jemmyButtonActionPerformed
-        File home=WizardIterator.showFileChooser(this, org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "LBL_TestTypeSelectJemmyHome"), true, false); // NOI18N
+        File home=WizardIterator.showFileChooser(this, NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "LBL_TestTypeSelectJemmyHome"), true, false); // NOI18N
         if (home!=null) 
             jemmyField.setText(home.getAbsolutePath());
     }//GEN-LAST:event_jemmyButtonActionPerformed
@@ -434,74 +508,6 @@ public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescr
     private void excludesFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_excludesFieldFocusGained
         excludesField.selectAll();
     }//GEN-LAST:event_excludesFieldFocusGained
-
-    /** adds ChangeListener of current Panel
-     * @param l ChangeListener */    
-    public void addChangeListener(ChangeListener l) {}    
-    
-    /** returns current Panel
-     * @return Component */    
-    public Component getComponent() {
-        return this;
-    }    
-    
-    /** returns Help Context
-     * @return HelpCtx */    
-    public HelpCtx getHelp() {
-        return new HelpCtx(TestTypeAdvancedSettingsPanel.class);
-    }
-    
-    /** read settings from given Object
-     * @param obj TemplateWizard with settings */    
-    public void readSettings(Object obj) {
-        WizardSettings set=WizardSettings.get(obj);
-        if (set.typeJVMSuffix!=null)
-            jvmField.setText(set.typeJVMSuffix);
-        if (set.typeExcludes!=null)
-            compileField.setText(set.typeExcludes);
-        if (set.typeCompPath!=null)
-            compileField.setText(set.typeCompPath);
-        if (set.typeExecPath!=null)
-            executeField.setText(set.typeExecPath);
-        if (set.typeJemmyHome!=null)
-            jemmyField.setText(set.typeJemmyHome);
-        if (set.typeJellyHome!=null)
-            jellyField.setText(set.typeJellyHome);
-        TemplateWizard wizard=(TemplateWizard)obj;
-        if (baseDir==null) try {
-            baseDir=FileUtil.toFile(wizard.getTargetFolder().getPrimaryFile());
-            if (set.startFromWorkspace) {
-                netbeansHome=set.netbeansHome;
-            } else {
-                baseDir=baseDir.getParentFile();
-                XMLDocument doc=new XMLDocument(DataObject.find(wizard.getTargetFolder().getPrimaryFile().getFileObject("build","xml"))); // NOI18N
-                netbeansHome=doc.getProperty("netbeans.home","location"); // NOI18N
-            }
-        } catch (Exception e) {}
-    }
-    
-    /** removes Change Listener of current Panel
-     * @param l ChangeListener */    
-    public void removeChangeListener(ChangeListener l) {}
-    
-    /** stores settings to given Object
-     * @param obj TemplateWizard with settings */    
-    public void storeSettings(Object obj) {
-        WizardSettings set=WizardSettings.get(obj);
-        set.typeJVMSuffix=jvmField.getText();
-        set.typeExcludes=excludesField.getText();
-        set.typeCompPath=compileField.getText();
-        set.typeExecPath=executeField.getText();
-        set.typeJemmyHome=jemmyField.getText();
-        set.typeJellyHome=jellyField.getText();
-    }
-
-    /** test current Panel state for data validity
-     * @return boolean true if data are valid and Wizard can continue */    
-    public boolean isValid() {
-        return true;
-    }
-    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel executeLabel;

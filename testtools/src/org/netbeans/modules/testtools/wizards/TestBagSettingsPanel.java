@@ -32,22 +32,92 @@ import org.openide.util.NbBundle;
 
 /** Wizard Panel with Test Bag Settings configuration
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
-public class TestBagSettingsPanel extends JPanel implements WizardDescriptor.FinishPanel {
+public class TestBagSettingsPanel extends JPanel {
 
     static final long serialVersionUID = 6692306744377282694L;
     private static final String DEFAULT_NAME=NbBundle.getMessage(TestBagSettingsPanel.class, "CTL_DefaultName"); // NOI18N
+    
+    public final Panel panel = new Panel();
+    
+    private class Panel extends Object implements WizardDescriptor.FinishPanel {
+        
+        /** adds ChangeListener of current Panel
+         * @param changeListener ChangeListener */    
+        public void addChangeListener(ChangeListener changeListener) {}    
+
+        /** returns current Panel
+         * @return Component */    
+        public Component getComponent() {
+            return TestBagSettingsPanel.this;
+        }    
+
+        /** returns Help Context
+         * @return HelpCtx */    
+        public HelpCtx getHelp() {
+            return new HelpCtx(TestBagSettingsPanel.class);
+        }
+
+        /** read settings from given Object
+         * @param obj TemplateWizard with settings */    
+        public void readSettings(Object obj) {
+            WizardSettings set=WizardSettings.get(obj);
+            if (set.bagAttrs!=null)
+                attrField.setText(set.bagAttrs);
+            if (set.bagIncludes!=null)
+                includeField.setText(set.bagIncludes);
+            if (set.bagExcludes!=null)
+                excludeField.setText(set.bagExcludes);
+            ideRadio.setSelected(set.bagIDEExecutor);
+            codeRadio.setSelected(!set.bagIDEExecutor);
+        }
+
+        /** removes Change Listener of current Panel
+         * @param changeListener ChangeListener */    
+        public void removeChangeListener(ChangeListener changeListener) {}
+
+        /** stores settings to given Object
+         * @param obj TemplateWizard with settings */    
+        public void storeSettings(Object obj) {
+            WizardSettings set=WizardSettings.get(obj);
+            String name=nameField.getText();
+            if (DEFAULT_NAME.equals(name))
+                name=null;
+            set.bagName=name;
+            set.bagAttrs=attrField.getText();
+            set.bagIncludes=includeField.getText();
+            set.bagExcludes=excludeField.getText();
+            set.bagIDEExecutor=ideRadio.isSelected();
+        }
+
+        /** test current Panel state for data validity
+         * @return boolean true if data are valid and Wizard can continue */    
+        public boolean isValid() {
+            return true;
+        }
+
+        private void fireStateChanged() {
+            SwingUtilities.invokeLater (new Runnable () {
+                public void run () {
+                    if (nameField.getText().equals ("")) { // NOI18N
+                        nameField.setText(DEFAULT_NAME);
+                        nameField.selectAll();
+                    }
+                }
+            });            
+        }
+    }
     
     /** Creates new form TestBagPanel */
     public TestBagSettingsPanel() {
         setName(NbBundle.getMessage(TestBagSettingsPanel.class, "LBL_TestBagSettings")); // NOI18N
         initComponents();
         DocumentListener list=new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) {fireStateChanged();}
-            public void removeUpdate(DocumentEvent e) {fireStateChanged();}
-            public void changedUpdate(DocumentEvent e) {fireStateChanged();}
+            public void insertUpdate(DocumentEvent e) {panel.fireStateChanged();}
+            public void removeUpdate(DocumentEvent e) {panel.fireStateChanged();}
+            public void changedUpdate(DocumentEvent e) {panel.fireStateChanged();}
         };
         nameField.getDocument().addDocumentListener(list);
-        fireStateChanged();
+        panel.fireStateChanged();
     }
     
     /** This method is called from within the constructor to
@@ -73,7 +143,7 @@ public class TestBagSettingsPanel extends JPanel implements WizardDescriptor.Fin
 
         setLayout(new java.awt.GridBagLayout());
 
-        nameLabel.setDisplayedMnemonic('n');
+        nameLabel.setDisplayedMnemonic(NbBundle.getMessage(TestBagSettingsPanel.class, "MNM_TestBagName").charAt(0));
         nameLabel.setLabelFor(nameField);
         nameLabel.setText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "LBL_TestBagName"));
         nameLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "TTT_BagName", new Object[] {}));
@@ -103,7 +173,7 @@ public class TestBagSettingsPanel extends JPanel implements WizardDescriptor.Fin
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         add(nameField, gridBagConstraints);
 
-        executorLabel.setDisplayedMnemonic('X');
+        executorLabel.setDisplayedMnemonic(NbBundle.getMessage(TestBagSettingsPanel.class, "MNM_TestBagExecutor").charAt(0));
         executorLabel.setText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "LBL_TestBagExecutor"));
         executorLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "TTT_TestBagExecutor", new Object[] {}));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -115,7 +185,7 @@ public class TestBagSettingsPanel extends JPanel implements WizardDescriptor.Fin
         gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 12);
         add(executorLabel, gridBagConstraints);
 
-        ideRadio.setMnemonic('D');
+        ideRadio.setMnemonic(NbBundle.getMessage(TestBagSettingsPanel.class, "MNM_TestBagExecIDE").charAt(0));
         ideRadio.setSelected(true);
         ideRadio.setText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "LBL_TestBagExecutorIDE"));
         ideRadio.setToolTipText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "TTT_TestBagExecutor", new Object[] {}));
@@ -129,7 +199,7 @@ public class TestBagSettingsPanel extends JPanel implements WizardDescriptor.Fin
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 11);
         add(ideRadio, gridBagConstraints);
 
-        codeRadio.setMnemonic('C');
+        codeRadio.setMnemonic(NbBundle.getMessage(TestBagSettingsPanel.class, "MNM_TestBagExecCode").charAt(0));
         codeRadio.setText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "LBL_TestBagExecutorCode"));
         codeRadio.setToolTipText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "TTT_TestBagExecutor", new Object[] {}));
         buttonGroup.add(codeRadio);
@@ -142,7 +212,7 @@ public class TestBagSettingsPanel extends JPanel implements WizardDescriptor.Fin
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(codeRadio, gridBagConstraints);
 
-        attrLabel.setDisplayedMnemonic('A');
+        attrLabel.setDisplayedMnemonic(NbBundle.getMessage(TestBagSettingsPanel.class, "MNM_TestBagAttrs").charAt(0));
         attrLabel.setLabelFor(attrField);
         attrLabel.setText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "LBL_TestBagAttributes"));
         attrLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "TTT_TestBagAttributes", new Object[] {}));
@@ -174,7 +244,7 @@ public class TestBagSettingsPanel extends JPanel implements WizardDescriptor.Fin
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         add(attrField, gridBagConstraints);
 
-        includeLabel.setDisplayedMnemonic('I');
+        includeLabel.setDisplayedMnemonic(NbBundle.getMessage(TestBagSettingsPanel.class, "MNM_TestBagExecInclude").charAt(0));
         includeLabel.setLabelFor(includeField);
         includeLabel.setText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "LBL_TestBagExecInclude"));
         includeLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "TTT_TestBagInclude", new Object[] {}));
@@ -204,7 +274,7 @@ public class TestBagSettingsPanel extends JPanel implements WizardDescriptor.Fin
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         add(includeField, gridBagConstraints);
 
-        excludeLabel.setDisplayedMnemonic('E');
+        excludeLabel.setDisplayedMnemonic(NbBundle.getMessage(TestBagSettingsPanel.class, "MNM_TestBagExecExclude").charAt(0));
         excludeLabel.setLabelFor(excludeField);
         excludeLabel.setText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "LBL_TestBagExecExclude"));
         excludeLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "TTT_TestBagExclude", new Object[] {}));
@@ -254,70 +324,6 @@ public class TestBagSettingsPanel extends JPanel implements WizardDescriptor.Fin
         nameField.selectAll();
     }//GEN-LAST:event_nameFieldFocusGained
 
-    /** adds ChangeListener of current Panel
-     * @param changeListener ChangeListener */    
-    public void addChangeListener(ChangeListener changeListener) {}    
-    
-    /** returns current Panel
-     * @return Component */    
-    public Component getComponent() {
-        return this;
-    }    
-    
-    /** returns Help Context
-     * @return HelpCtx */    
-    public HelpCtx getHelp() {
-        return new HelpCtx(TestBagSettingsPanel.class);
-    }
-    
-    /** read settings from given Object
-     * @param obj TemplateWizard with settings */    
-    public void readSettings(Object obj) {
-        WizardSettings set=WizardSettings.get(obj);
-        if (set.bagAttrs!=null)
-            attrField.setText(set.bagAttrs);
-        if (set.bagIncludes!=null)
-            includeField.setText(set.bagIncludes);
-        if (set.bagExcludes!=null)
-            excludeField.setText(set.bagExcludes);
-        ideRadio.setSelected(set.bagIDEExecutor);
-        codeRadio.setSelected(!set.bagIDEExecutor);
-    }
-    
-    /** removes Change Listener of current Panel
-     * @param changeListener ChangeListener */    
-    public void removeChangeListener(ChangeListener changeListener) {}
-    
-    /** stores settings to given Object
-     * @param obj TemplateWizard with settings */    
-    public void storeSettings(Object obj) {
-        WizardSettings set=WizardSettings.get(obj);
-        String name=nameField.getText();
-        if (DEFAULT_NAME.equals(name))
-            name=null;
-        set.bagName=name;
-        set.bagAttrs=attrField.getText();
-        set.bagIncludes=includeField.getText();
-        set.bagExcludes=excludeField.getText();
-        set.bagIDEExecutor=ideRadio.isSelected();
-    }
-
-    /** test current Panel state for data validity
-     * @return boolean true if data are valid and Wizard can continue */    
-    public boolean isValid() {
-        return true;
-    }
-
-    private void fireStateChanged() {
-        SwingUtilities.invokeLater (new Runnable () {
-            public void run () {
-                if (nameField.getText().equals ("")) { // NOI18N
-                    nameField.setText(DEFAULT_NAME);
-                    nameField.selectAll();
-                }
-            }
-        });            
-    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel excludeLabel;

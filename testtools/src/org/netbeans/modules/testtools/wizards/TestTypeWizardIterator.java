@@ -68,18 +68,18 @@ public class TestTypeWizardIterator extends WizardIterator {
         set.store(wizard);
         panels=new WizardDescriptor.Panel[] {
             wizard.targetChooser(),
-            new TestTypeSettingsPanel(),
-            new TestTypeAdvancedSettingsPanel(),
-            new TestBagSettingsPanel(),
-            new TestSuiteTargetPanel(),
-            new TestCasesPanel()
+            new TestTypeSettingsPanel().panel,
+            new TestTypeAdvancedSettingsPanel().panel,
+            new TestBagSettingsPanel().panel,
+            new TestSuiteTargetPanel().panel,
+            new TestCasesPanel().panel
         };
         names = new String[panels.length];
         for (int i=0; i<panels.length; i++) {
-            ((javax.swing.JComponent)panels[i]).putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
-            names[i]=((javax.swing.JComponent)panels[i]).getName();
+            ((javax.swing.JComponent)panels[i].getComponent()).putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
+            names[i]=((javax.swing.JComponent)panels[i].getComponent()).getName();
         }
-        ((javax.swing.JComponent)panels[0]).putClientProperty("WizardPanel_contentData", names);  // NOI18N
+        ((javax.swing.JComponent)panels[0].getComponent()).putClientProperty("WizardPanel_contentData", names);  // NOI18N
         current=0;
     }
     

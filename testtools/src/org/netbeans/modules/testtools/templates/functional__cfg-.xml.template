@@ -6,7 +6,7 @@
  		<testset dir="qa-functional/src">
 			<patternset>
 				<include name="**/*.class"/>
-				<exclude name="**/data"/>
+				<exclude name="**/data/**"/>
  			</patternset>
  		</testset>
 	</testbag>
