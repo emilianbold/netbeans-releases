@@ -81,7 +81,8 @@ public class CmpFieldHelper {
             MethodElement method = entityHelper.beanClass.getMethod(Identifier.create("ejbCreate"), origArguments);
             changeParameterType(method, newType);
             changeReturnType(method, newType);
-
+            method = entityHelper.beanClass.getMethod(Identifier.create("ejbPostCreate"), origArguments);
+            changeParameterType(method, newType);
         }
         ClassElement localBusinessInterfaceClass = entityHelper.getLocalBusinessInterfaceClass();
         ClassElement remoteBusinessInterfaceClass = entityHelper.getRemoteBusinessInterfaceClass();
