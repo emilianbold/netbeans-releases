@@ -846,8 +846,7 @@ public class DataNode extends AbstractNode {
         }
         
         public Iterator iterator() {
-            lazyInitialization();
-            return obj_files.iterator();
+            return new FilesIterator ();
         }
         
         public boolean remove(Object o) {
@@ -880,6 +879,54 @@ public class DataNode extends AbstractNode {
             return obj_files.toArray(a);
         }
         
+        /** Iterator for FilesSet. It returns the primaryFile first and 
+         * then initialize the delegate iterator for secondary files.
+         */
+        private final class FilesIterator implements Iterator {
+            /** Was the first element (primary file) already returned?
+             */
+            private boolean first = true;
+
+            /** Delegation iterator for secondary files. It is lazy initialized after
+             * the first element is returned.
+             */
+            private Iterator itDelegate = null;
+
+            FilesIterator() {}
+
+            public boolean hasNext() {
+                return first ? true : getIteratorDelegate().hasNext();
+            }
+
+            public Object next() {
+                if (first) {
+                    first = false;
+                    return obj.getPrimaryFile ();
+                }
+                else {
+                    return getIteratorDelegate().next();
+                }
+            }
+
+            public void remove() {
+                getIteratorDelegate().remove();
+            }
+
+            /** Initialize the delegation iterator.
+             */
+            private Iterator getIteratorDelegate() {
+                if (itDelegate == null) {
+                    lazyInitialization ();
+                    // this should return iterator of all files of the MultiDataObject...
+                    itDelegate = obj_files.iterator ();
+                    // ..., so it is necessary to skip the primary file
+                    itDelegate.next();
+                }
+                return itDelegate;
+            }
+        }
     }    
+    
+    
     
 }
