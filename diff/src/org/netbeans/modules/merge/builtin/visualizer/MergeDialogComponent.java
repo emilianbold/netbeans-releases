@@ -240,6 +240,8 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
                 }
                 if (ioException != null) {
                     ErrorManager.getDefault().notify(ioException);
+                    // cancel the close - there was an error on save
+                    return ;
                 }
             }
         }

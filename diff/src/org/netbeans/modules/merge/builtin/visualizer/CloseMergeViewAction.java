@@ -40,6 +40,10 @@ public class CloseMergeViewAction extends CookieAction {
         return MODE_EXACTLY_ONE;
     }
     
+    protected boolean asynchronous() {
+        return false;
+    }
+    
     protected void performAction(org.openide.nodes.Node[] node) {
         if (node.length == 0) return;
         CloseCookie cc = (CloseCookie) node[0].getCookie (CloseCookie.class);
