@@ -56,6 +56,7 @@ import org.netbeans.core.windows.PersistenceManager;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.WorkspaceImpl;
 import org.netbeans.core.windows.frames.WindowTypesManager;
+import org.openide.ErrorManager;
 
 /** Action that opens explorer view which displays global
 * options of the IDE.
@@ -280,10 +281,18 @@ public class OptionsAction extends CallableSystemAction {
                 return;
             }
             
+            // bugfix #19939, get selected node for set back after expanding view
+            Node[] selectedNodes = getExplorerManager ().getSelectedNodes ();
             prepareNodes ();
             
             TTW ttw = (TTW)view;
             ttw.expandTheseNodes (toExpand, getExplorerManager ().getRootContext ());
+            try {
+                getExplorerManager ().setSelectedNodes (selectedNodes);
+            } catch (java.beans.PropertyVetoException pve) {
+                // notify non-success during set selected nodes back
+                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, pve);
+            }
             
             expanded = true;
         }
@@ -301,6 +310,8 @@ public class OptionsAction extends CallableSystemAction {
                 singleton = this;
             }
             singleton.scheduleValidation();
+            // set deserialized root node
+            rootNode = getRootContext ();
             return singleton;
         }
         
