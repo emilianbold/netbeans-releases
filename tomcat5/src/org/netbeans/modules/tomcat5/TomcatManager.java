@@ -114,7 +114,7 @@ public class TomcatManager implements DeploymentManager {
      */
     public String getUri () {
         return ((catalinaHome != null)? "home="+catalinaHome + ":": "") +// NOI18N
-            ((catalinaBase != null)? "base="+catalinaHome + ":": "") +   // NOI18N
+            ((catalinaBase != null)? "base="+catalinaBase + ":": "") +   // NOI18N
             uri;
     }
     
