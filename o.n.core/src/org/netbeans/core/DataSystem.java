@@ -16,6 +16,7 @@ package org.netbeans.core;
 import java.awt.Component;
 import java.beans.*;
 import java.util.*;
+import javax.swing.Action;
 
 import org.openide.actions.NewTemplateAction;
 import org.openide.loaders.DataFolder;
@@ -30,7 +31,8 @@ import org.openide.util.actions.SystemAction;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.ErrorManager;
 import org.openide.loaders.RepositoryNodeFactory;
-import org.openide.util.actions.CallableSystemAction;
+
+import org.netbeans.core.actions.RefreshAllFilesystemsAction;
 
 /** Data system encapsulates logical structure of more file systems.
 * It also allows filtering of content of DataFolders
@@ -118,18 +120,11 @@ implements RepositoryListener, NewTemplateAction.Cookie {
     }
 
 
-    /** Getter for set of actions that should be present in the
-    * popup menu of this node. This set is used in construction of
-    * menu returned from getContextMenu and specially when a menu for
-    * more nodes is constructed.
-    *
-    * @return array of system actions that should be in popup menu
-    */
-    public org.openide.util.actions.SystemAction[] createActions() {
-        return new SystemAction[] {
+    public Action[] getActions(boolean context) {
+        return new Action[] {
                    SystemAction.get (org.openide.actions.FindAction.class),
                    null,
-                   SystemAction.get(RefreshAllAction.class), // #31047
+                   new RefreshAllFilesystemsAction(), // #31047
                    null,
 /*
                    SystemAction.get (org.netbeans.core.actions.AddFSAction.class),
@@ -289,26 +284,4 @@ implements RepositoryListener, NewTemplateAction.Cookie {
         
     }
     
-    public static final class RefreshAllAction extends CallableSystemAction {
-        
-        public String getName() {
-            return NbBundle.getMessage(DataSystem.class, "LAB_refresh_all_filesystems");
-        }
-        
-        public void performAction() {
-            Enumeration e = Repository.getDefault().fileSystems();
-            while (e.hasMoreElements()) {
-                // Do not restrict to just visible filesystems; hidden ones
-                // may be important too for various reasons.
-                FileSystem fs = (FileSystem)e.nextElement();
-                fs.refresh(false);
-            }
-        }
-        
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx(DataSystem.class);
-        }
-        
-    }
-
 }

@@ -71,6 +71,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-core-actions-NewTemplateCallableAction.instance"/>
             <file name="org-netbeans-core-actions-SetupWizardAction.instance"/>
             <file name="org-netbeans-core-actions-MemoryMeterAction.instance"/>
+            <file name="org-netbeans-core-actions-RefreshAllFilesystemsAction.instance"/>
         </folder>
         
         <folder name="View">
@@ -122,7 +123,9 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-openide-actions-SaveAction.instance"/>
             <attr name="org-openide-actions-SaveAction.instance/org-openide-actions-SaveAllAction.instance" boolvalue="true" />
             <file name="org-openide-actions-SaveAllAction.instance"/>
-            <attr name="org-openide-actions-SaveAllAction.instance/Separator3.instance" boolvalue="true" />
+            <attr name="org-openide-actions-SaveAllAction.instance/org-netbeans-core-actions-RefreshAllFilesystemsAction.instance" boolvalue="true" />
+            <file name="org-netbeans-core-actions-RefreshAllFilesystemsAction.instance"/>
+            <attr name="org-netbeans-core-actions-RefreshAllFilesystemsAction.instance/Separator3.instance" boolvalue="true" />
             <file name="Separator3.instance">
 		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
 	    </file>
