@@ -462,7 +462,7 @@ public class JavaActionsTest extends TestBase {
             "        <nbjpdastart addressproperty=\"jpda.address\" name=\"Simple Freeform Project\" transport=\"dt_socket\">\n" +
             "            <classpath path=\"${cp}\"/>\n" +
             "        </nbjpdastart>\n" +
-            "        <java classpath=\"${cp}\">\n" +
+            "        <java classpath=\"${cp}\" fork=\"true\">\n" +
             "            <stuff/>\n" +
             "            <jvmarg value=\"-Xdebug\"/>\n" +
             "            <jvmarg value=\"-Xnoagent\"/>\n" +
@@ -490,7 +490,7 @@ public class JavaActionsTest extends TestBase {
             "            <classpath refid=\"cp\"/>\n" +
             "        </nbjpdastart>\n" +
             "        <!---->\n" +
-            "        <java classname=\"some.main.Class\">\n" +
+            "        <java classname=\"some.main.Class\" fork=\"true\">\n" +
             "            <classpath refid=\"cp\"/>\n" +
             "            <jvmarg value=\"-Xdebug\"/>\n" +
             "            <jvmarg value=\"-Xnoagent\"/>\n" +
