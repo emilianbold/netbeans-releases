@@ -167,6 +167,7 @@ public class BridgeImpl implements BridgeInterface {
                 AntModule.err.log("CCL when configureProject is called: " + Thread.currentThread().getContextClassLoader());
             }
             ProjectHelper projhelper = ProjectHelper.getProjectHelper();
+            // Cf. Ant #32668 & #32216; ProjectHelper.configureProject undeprecated in 1.7
             project.addReference("ant.projectHelper", projhelper); // NOI18N
             projhelper.parse(project, buildFile);
             
