@@ -305,18 +305,7 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
             throw STOP;
         }
 
-        protected void customizeInputSource(InputSource in) {
-            try {
-                Reader r = new InputStreamReader(in.getByteStream(), "UTF8");
-                in.setCharacterStream(r);
-            } catch (Exception ex) {
-                ErrorManager emgr = (ErrorManager) Lookup.getDefault().lookup(ErrorManager.class);
-                emgr.notify(ex);
-            }
-        }
-        
-        
-        public void fatalError(SAXParseException exception) throws SAXException {
+       public void fatalError(SAXParseException exception) throws SAXException {
 
             // it may be caused by wrong user XML document
             ErrorManager emgr = (ErrorManager) Lookup.getDefault().lookup(ErrorManager.class);           
