@@ -2035,7 +2035,11 @@ implements Outputable, Timeoutable {
 			    return(false);
 			}
 		    }
-		    return(comparator.equals(((JTable)comp).getValueAt(r, c).toString(),
+                    Object value = ((JTable)comp).getValueAt(r, c);
+                    if(value == null) {
+                        return(false);
+                    }
+		    return(comparator.equals(value.toString(),
 					     label));
 		}
 	    }

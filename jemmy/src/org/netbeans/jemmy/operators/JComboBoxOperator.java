@@ -375,7 +375,11 @@ implements Timeoutable, Outputable {
      * @return new JButtonOperator instance.
      */
     public JButtonOperator getButton() {
-	init();
+	if(button == null) {
+	    button = new JButtonOperator(findJButton());
+	    button.copyEnvironment(this);
+	    button.setOutput(getOutput().createErrorOutput());
+	}
 	return(button);
     }
 
@@ -385,7 +389,11 @@ implements Timeoutable, Outputable {
      * @return new JTextField instance.
      */
     public JTextFieldOperator getTextField() {
-	init();
+        if(((JComboBox)getSource()).isEditable()) {
+            text = new JTextFieldOperator(findJTextField());
+            text.copyEnvironment(this);
+            text.setOutput(getOutput().createErrorOutput());
+        }
 	return(text);
     }
 

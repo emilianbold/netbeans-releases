@@ -95,26 +95,46 @@ public class ImageTool {
     }
 
     /**
-     * Substracts second image from first one.
-     * Could be used to save file difference for future analysis.
-     * @param minuend an image to substract from.
-     * @param deduction an image to substract.
+     * @deprecated Use subtractImage(BufferedImage, BufferedImage) instead.
+     * @param minuend an image to subtract from.
+     * @param deduction an image to subtract.
      * @return a result image.
      */
     public static BufferedImage substractImage(BufferedImage minuend, BufferedImage deduction) {
-        return(substractImage(minuend, deduction, 0, 0));
+        return(subtractImage(minuend, deduction));
     }
 
     /**
-     * Substracts subimage from image.
+     * Subtracts second image from first one.
      * Could be used to save file difference for future analysis.
-     * @param minuend an image to substract from.
-     * @param deduction an image to substract.
+     * @param minuend an image to subtract from.
+     * @param deduction an image to subtract.
+     * @return a result image.
+     */
+    public static BufferedImage subtractImage(BufferedImage minuend, BufferedImage deduction) {
+        return(subtractImage(minuend, deduction, 0, 0));
+    }
+
+    /**
+     * @deprecated Use subtractImage(BufferedImage, BufferedImage, int, int) instead.
+     * @param minuend an image to subtract from.
+     * @param deduction an image to subtract.
+     * @return a result image.
+     */
+    public static BufferedImage substractImage(BufferedImage minuend, BufferedImage deduction, int relativeX, int relativeY) {
+        return(subtractImage(minuend, deduction, relativeX, relativeY));
+    }
+
+    /**
+     * Subtracts subimage from image.
+     * Could be used to save file difference for future analysis.
+     * @param minuend an image to subtract from.
+     * @param deduction an image to subtract.
      * @param relativeX - deduction-in-minuend X coordinate
      * @param relativeY - deduction-in-minuend Y coordinate
      * @return a result image.
      */
-    public static BufferedImage substractImage(BufferedImage minuend, BufferedImage deduction, int relativeX, int relativeY) {
+    public static BufferedImage subtractImage(BufferedImage minuend, BufferedImage deduction, int relativeX, int relativeY) {
         int mWidth  = minuend.getWidth();
         int mHeight = minuend.getHeight();
         int dWidth  = deduction.getWidth();
@@ -141,22 +161,22 @@ public class ImageTool {
                 } else {
                     dColor = deduction.getRGB(x - relativeX, y - relativeY);
                 }
-                result.setRGB(x, y, substractColors(mColor, dColor));
+                result.setRGB(x, y, subtractColors(mColor, dColor));
             }
         }
         return(result);
     }
 
-    private static int substractColors(int mRGB, int dRGB) {
+    private static int subtractColors(int mRGB, int dRGB) {
         Color mColor = new Color(mRGB);
         Color dColor = new Color(dRGB);
-        int red   = substractColor(mColor.getRed()  , dColor.getRed());
-        int green = substractColor(mColor.getGreen(), dColor.getGreen());
-        int blue  = substractColor(mColor.getBlue() , dColor.getBlue());
+        int red   = subtractColor(mColor.getRed()  , dColor.getRed());
+        int green = subtractColor(mColor.getGreen(), dColor.getGreen());
+        int blue  = subtractColor(mColor.getBlue() , dColor.getBlue());
         return(new Color(red, green, blue).getRGB());
     }
 
-    private static int substractColor(int mColor, int dColor) {
+    private static int subtractColor(int mColor, int dColor) {
         if(mColor >= dColor) {
             return(mColor - dColor);
         } else {

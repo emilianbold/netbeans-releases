@@ -203,6 +203,7 @@ public class jemmy_031 extends JemmyTest {
     }
 
     void invoke() {
+        doSleep(2000);
         dotButtonOper.pushNoBlock();
         chooseOper = new JFileChooserOperator();
     }

@@ -9,6 +9,8 @@ import javax.swing.tree.*;
 
 public class Application_024 extends TestFrame {
 
+    JTable tbl;
+
     public Application_024() {
 	super("Application_024");
 
@@ -25,7 +27,10 @@ public class Application_024 extends TestFrame {
 		tableItems[j][i] = Integer.toString(i) + Integer.toString(j);
 	    }
 	}
-	JTable tbl = new JTable(tableItems, tableColumns);
+        tableItems[0][1] = null;
+        tableItems[1][0] = null;
+        tableItems[3][2] = null;
+	tbl = new JTable(tableItems, tableColumns);
 	tbl.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
 	tp.add("Table Page", new JScrollPane(tbl));
@@ -79,6 +84,9 @@ public class Application_024 extends TestFrame {
     }
 
     public static void main(String[] argv) {
-	(new Application_024()).show();
+        Application_024 app = new Application_024();
+        app.show();
+        System.out.println(app.tbl.getValueAt(1, 0));
+        System.out.println(app.tbl.getValueAt(1, 0));
     }
 }

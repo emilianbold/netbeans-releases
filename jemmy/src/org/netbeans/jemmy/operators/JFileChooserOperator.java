@@ -1111,7 +1111,12 @@ public class JFileChooserOperator extends JComponentOperator
 		    }
 		    int current = (param != null) ? ((Integer)param).intValue() : 0;
 		    if(list.getCellBounds(current, current) != null) {
-			return(list.getCellBounds(last_one, last_one));
+                        try {
+                            return(list.getCellBounds(last_one, last_one));
+                        } catch(NullPointerException e) {
+                            //somtimes thrown when item exists but not painted
+                            return(null);
+                        }
 		    } else {
 			return(null);
 		    }

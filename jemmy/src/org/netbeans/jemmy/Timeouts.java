@@ -209,14 +209,16 @@ public class Timeouts extends Object{
      */
     public long getTimeout(String name) {
 	if(contains(name)) {
-	    return(((Long)(timeouts.get(name))).longValue());
-	} else {
-	    if(this != defaults) {
-		return(getDefault(name));
-	    } else {
-		return(-1);
-	    }
-	}
+            Long value = (Long)timeouts.get(name);
+            if(value != null) {
+                return(value.longValue());
+            }
+        }
+        if(this != defaults) {
+            return(getDefault(name));
+        } else {
+            return(-1);
+        }
     }
 
     /**

@@ -43,6 +43,8 @@ public class jemmy_024 extends JemmyTest {
 	       compTop >= areaTop && compBottom <=areaBottom);
     }
 
+    JTableOperator tabOper;
+
     public int runIt(Object obj) {
 
 	try {
@@ -75,7 +77,7 @@ public class jemmy_024 extends JemmyTest {
 
 	    Demonstrator.setTitle("jemmy_024 test");
 
-	    JTableOperator tabOper = new JTableOperator(JTableOperator.
+	    tabOper = new JTableOperator(JTableOperator.
 							findJTable(win, null, false, false, -1, -1));
 	    
 	    tabOper.clickOnCell(0, 0);
@@ -155,6 +157,28 @@ public class jemmy_024 extends JemmyTest {
 
 	    tabOper.scrollToCell(tabOper.findCellRow("-1-1", true, true),
 				 tabOper.findCellColumn("-1-1", true, true));
+
+	    Demonstrator.nextStep("Check 33930 bugfix");
+
+            new Thread(new Runnable() {
+                    public void run() {
+                        try {
+                            Thread.sleep(1000);
+                            tabOper.changeCellObject(1, 0, "non null text");
+                        } catch(Exception e) {
+                            getOutput().printStackTrace(e);
+                        }
+                    }
+                }).start();
+
+            tabOper.waitCell("non null text", 1, 0);
+
+            tabOper.setComparator(new RegExComparator());
+            if(tabOper.findCellRow("-1-1") != 49) {
+		getOutput().printError("Wrong line index!");
+		finalize();
+		return(1);
+            }
 
 	    Demonstrator.nextStep("Scroll tree to \"49\" node");
 

@@ -17,6 +17,8 @@
 
 package org.netbeans.jemmy.drivers.lists;
 
+import javax.swing.UIManager;
+
 import org.netbeans.jemmy.drivers.DriverManager;
 import org.netbeans.jemmy.drivers.LightSupportiveDriver;
 import org.netbeans.jemmy.drivers.ListDriver;
@@ -44,8 +46,12 @@ public class JComboMouseDriver extends LightSupportiveDriver implements ListDriv
     public void selectItem(ComponentOperator oper, int index) {
 	JComboBoxOperator coper = (JComboBoxOperator)oper;
 	if(!coper.isPopupVisible()) {
-	    DriverManager.getButtonDriver(coper.getButton()).
-		push(coper.getButton());
+            if(UIManager.getLookAndFeel().getClass().getName().equals("com.sun.java.swing.plaf.motif.MotifLookAndFeel")) {
+                oper.clickMouse(oper.getWidth() - 2, oper.getHeight()/2, 1);
+            } else {
+                DriverManager.getButtonDriver(coper.getButton()).
+                    push(coper.getButton());
+            }
 	}
 	JListOperator list = new JListOperator(coper.waitList());
         list.copyEnvironment(coper);

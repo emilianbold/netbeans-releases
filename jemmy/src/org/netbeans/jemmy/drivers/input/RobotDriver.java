@@ -51,6 +51,8 @@ public class RobotDriver extends LightSupportiveDriver {
      */
     protected QueueTool qtool;
 
+    protected Timeout autoDelay;
+
     /**
      * Constructs a RobotDriver object.
      * @param autoDelay Time for <code>Robot.setAutoDelay(long)</code> method.
@@ -60,27 +62,7 @@ public class RobotDriver extends LightSupportiveDriver {
 	super(supported);
 	qtool = new QueueTool();
 	qtool.setOutput(TestOut.getNullOutput());
-	try {
-	    ClassReference robotClassReverence = new ClassReference("java.awt.Robot");
-	    robotReference = new ClassReference(robotClassReverence.newInstance(null, null));
-	    robotReference.invokeMethod("setAutoDelay", 
-					new Object[] {new Integer((int)((autoDelay != null) ?
-									autoDelay.getValue() :
-									0))}, 
-					new Class[] {Integer.TYPE});
-	} catch(InvocationTargetException e) {
-	    throw(new JemmyException("Exception during java.awt.Robot accessing", e));
-	} catch(IllegalStateException e) {
-	    throw(new JemmyException("Exception during java.awt.Robot accessing", e));
-	} catch(NoSuchMethodException e) {
-	    throw(new JemmyException("Exception during java.awt.Robot accessing", e));
-	} catch(IllegalAccessException e) {
-	    throw(new JemmyException("Exception during java.awt.Robot accessing", e));
-	} catch(ClassNotFoundException e) {
-	    throw(new JemmyException("Exception during java.awt.Robot accessing", e));
-	} catch(InstantiationException e) {
-	    throw(new JemmyException("Exception during java.awt.Robot accessing", e));
-	}
+        this.autoDelay = autoDelay;
     }
 
     /**
@@ -124,6 +106,9 @@ public class RobotDriver extends LightSupportiveDriver {
      * @param paramClasses method parameters classes
      */
     protected void makeAnOperation(final String method, final Object[] params, final Class[] paramClasses) {
+        if(robotReference == null) {
+            initRobot();
+        }
         try {
             robotReference.invokeMethod(method, params, paramClasses);
             synchronizeRobot();
@@ -143,6 +128,9 @@ public class RobotDriver extends LightSupportiveDriver {
     protected void synchronizeRobot() {
         if(!qtool.isDispatchThread()) {
             if ((JemmyProperties.getCurrentDispatchingModel() & JemmyProperties.QUEUE_MODEL_MASK) != 0) {
+                if(robotReference == null) {
+                    initRobot();
+                }
                 try {
                     robotReference.invokeMethod("waitForIdle", null, null);
                 } catch(Exception e) {
@@ -185,6 +173,30 @@ public class RobotDriver extends LightSupportiveDriver {
 	    releaseKey(oper, KeyEvent.VK_META,      modifiers & ~InputEvent.META_MASK);
 	} else if((modifiers & InputEvent.CTRL_MASK) != 0) {
 	    releaseKey(oper, KeyEvent.VK_CONTROL,   modifiers & ~InputEvent.CTRL_MASK);
+	}
+    }
+
+    private void initRobot() {
+	try {
+	    ClassReference robotClassReverence = new ClassReference("java.awt.Robot");
+	    robotReference = new ClassReference(robotClassReverence.newInstance(null, null));
+	    robotReference.invokeMethod("setAutoDelay", 
+					new Object[] {new Integer((int)((autoDelay != null) ?
+									autoDelay.getValue() :
+									0))}, 
+					new Class[] {Integer.TYPE});
+	} catch(InvocationTargetException e) {
+	    throw(new JemmyException("Exception during java.awt.Robot accessing", e));
+	} catch(IllegalStateException e) {
+	    throw(new JemmyException("Exception during java.awt.Robot accessing", e));
+	} catch(NoSuchMethodException e) {
+	    throw(new JemmyException("Exception during java.awt.Robot accessing", e));
+	} catch(IllegalAccessException e) {
+	    throw(new JemmyException("Exception during java.awt.Robot accessing", e));
+	} catch(ClassNotFoundException e) {
+	    throw(new JemmyException("Exception during java.awt.Robot accessing", e));
+	} catch(InstantiationException e) {
+	    throw(new JemmyException("Exception during java.awt.Robot accessing", e));
 	}
     }
 }

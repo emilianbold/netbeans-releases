@@ -33,11 +33,17 @@ public class RegExComparator implements StringComparator {
     private static final int IGNORE_SIMBOL = -999;
 
     public boolean equals(String caption, String match) {
+        if(match == null) {
+            return(true);
+        }
+        if(caption == null) {
+            return(false);
+        }
         if(System.getProperty("java.version").startsWith("1.4")) {
             try {
                 Object result = new ClassReference("java.util.regex.Pattern").
                     invokeMethod("matches", 
-                                 new Object[] {match, caption}, 
+                                 new Object[] {match, (caption == null) ? "" : caption}, 
                                  new Class[]  {String.class, Class.forName("java.lang.CharSequence")});
                 return(((Boolean)result).booleanValue());
             } catch(InvocationTargetException e) {
