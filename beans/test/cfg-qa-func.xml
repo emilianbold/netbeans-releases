@@ -8,14 +8,14 @@
                 <!-- Tonga tests converted to XTest -->
                 <!-- <include name="**/XTest*"/> -->
                 <!-- Simple gui test -->
-<!--                <include name="gui/BeanInfoGeneration.class"/>  -->
+                <include name="gui/BeanInfoGeneration.class"/> 
                 <include name="gui/BeansTemplates.class"/> 
-<!--                <include name="gui/ChangingOfBeanPropertyProperties.class"/> 
+                <include name="gui/ChangingOfBeanPropertyProperties.class"/> 
                 <include name="gui/CreateNewIndexedProperty.class"/> 
                 <include name="gui/CreateNewNonIndexedProperty.class"/> 
                 <include name="gui/NewMulticastEventSource.class"/> 
                 <include name="gui/NewUnicastEventSource.class"/> 
--->                <!-- Exclude all Tonga examples -->
+                <!-- Exclude all Tonga examples -->
                 <exclude name="**/*Tonga*"/>
             </patternset>
         </testset>
