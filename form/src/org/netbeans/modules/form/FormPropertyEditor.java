@@ -237,6 +237,11 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
      */
 
     public java.awt.Component getCustomEditor() {
+        if (modifiedEditor.supportsCustomEditor()) {
+            java.awt.Component customEditor = modifiedEditor.getCustomEditor();
+            if (customEditor instanceof java.awt.Window)
+                return customEditor;
+        }
         return new FormCustomEditor(this);
     }
 

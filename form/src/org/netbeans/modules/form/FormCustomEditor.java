@@ -84,12 +84,13 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
 
             allEditors[0].setValue(editor.getValue());
 
-            if (allEditors[0].supportsCustomEditor()) {
-                add(allCustomEditors[0] = allEditors[0].getCustomEditor(), BorderLayout.CENTER);
-            } else {
-                // [FUTURE - add property sheet line component]
-                add(allCustomEditors[0] = new JLabel(FormEditor.getFormBundle().getString("CTL_PropertyEditorDoesNot")), BorderLayout.CENTER);
-            }
+            Component custEd = null;
+            if (!allEditors[0].supportsCustomEditor()
+                  || (custEd = allEditors[0].getCustomEditor()) instanceof java.awt.Window)
+                custEd = new JLabel(FormEditor.getFormBundle().getString("CTL_PropertyEditorDoesNot"));
+
+            allCustomEditors[0] = custEd;
+            add(custEd, BorderLayout.CENTER);
 
         } else {
             tabs = new JTabbedPane();
@@ -136,12 +137,13 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
                 } else {
                     tabName = Utilities.getShortClassName(allEditors[i].getClass());
                 }
-                if (allEditors[i].supportsCustomEditor()) {
-                    tabs.addTab(tabName, allCustomEditors[i] = allEditors[i].getCustomEditor());
-                } else {
-                    // [FUTURE - add property sheet line component]
-                    tabs.addTab(tabName, allCustomEditors[i] = new JLabel(FormEditor.getFormBundle().getString("CTL_PropertyEditorDoesNot")));
-                }
+                Component custEd = null;
+                if (!allEditors[i].supportsCustomEditor()
+                      || (custEd = allEditors[i].getCustomEditor()) instanceof java.awt.Window)
+                    custEd = new JLabel(FormEditor.getFormBundle().getString("CTL_PropertyEditorDoesNot"));
+
+                allCustomEditors[i] = custEd;
+                tabs.addTab(tabName, custEd);
             }
 
             add(tabs, BorderLayout.CENTER);
