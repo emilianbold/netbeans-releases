@@ -61,7 +61,7 @@ public class LocalizedJar extends MatchingTask {
     private boolean checkPathLocale = true ;
     private boolean warnMissingDir = false ;
     private boolean warnMissingDirSet = false ;
-    private boolean preserveModuleJar = false;
+    private boolean preserveModuleJar = true;
 
     /** Locale or branding specifier.
      * Represents a complete locale or branding suffix,
