@@ -183,7 +183,7 @@ abstract class Lookup {
                     BufferedReader br = new BufferedReader (
                         new InputStreamReader (is)
                     );
-                    String s = br.readLine ().trim ();
+                    String s = br.readLine ();
                     while (s != null) {
                         if (s.startsWith ("#")) continue;
                         if (s.length () == 0) continue;
