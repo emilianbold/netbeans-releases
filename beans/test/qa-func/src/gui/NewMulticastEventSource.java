@@ -91,7 +91,7 @@ public class NewMulticastEventSource extends NbTestCase {
         explorer.pushPopupMenu("Delete", myObject);
         new JelloYesNoDialog("Confirm Object Deletion").yes();
 //        JamUtilities.waitEventQueueEmpty(1500);
-        
+        new JelloSaveCancelDialog("Question").cancel(); 
         if (unmount) {
             explorer.pushPopupMenu("Unmount Filesystem", sampleDir);
             
