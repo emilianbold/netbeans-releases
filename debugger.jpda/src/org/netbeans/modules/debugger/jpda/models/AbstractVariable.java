@@ -85,7 +85,7 @@ public class AbstractVariable implements ObjectVariable {
         if (v == null) return "null";
         if (v instanceof VoidValue) return "void";
         if (v instanceof CharValue)
-            return "\'" + convertToStringInitializer (v.toString ()) + "\'";
+            return "\'" + convertToCharInitializer (v.toString ()) + "\'";
         if (v instanceof PrimitiveValue)
             return v.toString ();
         if (v instanceof StringReference)
@@ -223,14 +223,21 @@ public class AbstractVariable implements ObjectVariable {
      */
     public String getToStringValue () throws InvalidExpressionException {
         try {
-            if (this.getInnerValue() == null) return null;
-            if (!(this.getInnerValue().type() instanceof ClassType)) return getValue ();
-            if (this.getInnerValue() instanceof StringReference)
-                return "\"" + ((StringReference) this.getInnerValue()).value () + "\"";
-            Method toStringMethod = ((ClassType) this.getInnerValue().type()).
+            Value v = getInnerValue ();
+            if (v == null) return null;
+            
+            if (!(v.type () instanceof ClassType)) 
+                return getValue ();
+            if (v instanceof CharValue)
+                return "\'" + convertToCharInitializer (v.toString ()) + "\'";
+            if (v instanceof StringReference)
+                return "\"" + convertToStringInitializer (
+                    ((StringReference) v).value ()
+                ) + "\"";
+            Method toStringMethod = ((ClassType) v.type ()).
                 concreteMethodByName ("toString", "()Ljava/lang/String;");
-            return ((StringReference) getModel().getDebugger ().invokeMethod (
-                (ObjectReference) this.getInnerValue(),
+            return ((StringReference) getModel ().getDebugger ().invokeMethod (
+                (ObjectReference) v,
                 toStringMethod,
                 new Value [0]
             )).value ();
@@ -556,6 +563,38 @@ public class AbstractVariable implements ObjectVariable {
                     break;
                 case '\"':
                     sb.append ("\\\"");
+                    break;
+                default:
+                    sb.append (s.charAt (i));
+            }
+        return new String (sb);
+    }
+    
+    private static String convertToCharInitializer (String s) {
+        StringBuffer sb = new StringBuffer ();
+        int i, k = s.length ();
+        for (i = 0; i < k; i++)
+            switch (s.charAt (i)) {
+                case '\b':
+                    sb.append ("\\b");
+                    break;
+                case '\f':
+                    sb.append ("\\f");
+                    break;
+                case '\\':
+                    sb.append ("\\\\");
+                    break;
+                case '\t':
+                    sb.append ("\\t");
+                    break;
+                case '\r':
+                    sb.append ("\\r");
+                    break;
+                case '\n':
+                    sb.append ("\\n");
+                    break;
+                case '\'':
+                    sb.append ("\\\'");
                     break;
                 default:
                     sb.append (s.charAt (i));
