@@ -39,7 +39,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <mapID target="dbmod" url="dbmod.html" />
 
-<mapID target="org.netbeans.modules.db.explorer.nodes.DriverNode" url="dbdrivernodes.html" />
-<mapID target="org.netbeans.modules.db.explorer.nodes.DriverListNode" url="dbdrivernodes.html" />
+<mapID target="org.netbeans.modules.db.explorer.nodes.DriverNode" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/files/files_runtime.html" />
+<mapID target="org.netbeans.modules.db.explorer.nodes.DriverListNode" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/files/files_runtime.html" />
 
 </map>
