@@ -20,6 +20,10 @@ import javax.swing.JButton;
 import org.netbeans.modules.web.project.classpath.ClassPathSupport;
 import org.netbeans.modules.web.project.ui.customizer.ClassPathUiSupport;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -74,7 +78,7 @@ public class UpdateHelper {
         this.genFileHelper = genFileHelper;
         this.notifier = notifier;
     }
-
+   
     /**
      * Returns the AntProjectHelper.getProperties(), {@link AntProjectHelper#getProperties(String)}
      * @param path a relative URI in the project directory.
@@ -224,9 +228,10 @@ public class UpdateHelper {
 
         //add properties needed by 4.1 project
         if(props != null) {
-            props.put("test.src.dir", "test");
-            props.put("build.test.classes.dir", "");
-            props.put("build.test.results.dir", "");
+            props.put("test.src.dir", "test"); //NOI18N
+            props.put("build.test.classes.dir", ""); //NOI18N
+            props.put("build.test.results.dir", ""); //NOI18N
+            props.put("conf.dir","${source.root}/conf"); //NOI18N
         }
 
         ProjectManager.getDefault().saveProject (this.project);
@@ -236,6 +241,20 @@ public class UpdateHelper {
  
         //fire project updated
         projectUpdateListener.projectUpdated();
+        
+        //create conf dir if doesn't exist and copy default manifest inside
+        try {
+            //I cannot use ${conf.dir} since the PE doesn't know about it
+            String confDir = helper.getStandardPropertyEvaluator().evaluate("${source.root}/conf"); //NOI18N 
+            FileObject prjFO = project.getProjectDirectory();
+            // folder creation will throw IOE if already exists
+            FileObject confDirFO = prjFO.createFolder(confDir); 
+            // copyfile will throw IOE if the file already exists
+            FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-project/MANIFEST.MF"), confDirFO, "MANIFEST"); //NOI18N
+        }catch(IOException e) {
+            //just ignore
+        }
+            
     }
 
     private synchronized Element getUpdatedSharedConfigurationData () {
