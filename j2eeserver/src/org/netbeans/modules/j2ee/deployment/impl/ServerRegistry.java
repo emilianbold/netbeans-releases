@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -59,7 +59,8 @@ public final class ServerRegistry implements java.io.Serializable {
     private transient Map servers = null;
     private transient Map instances = null;
     private transient Collection pluginListeners = new HashSet();
-    private transient Collection instanceListeners = new LinkedList();
+    private transient Collection instanceListeners = new ArrayList();
+    private transient InstanceListener[] instanceListenersArray;
     
     // This is the serializable portion of ServerRegistry
     private ServerString defaultInstance;
@@ -149,7 +150,7 @@ public final class ServerRegistry implements java.io.Serializable {
     class LayerListener implements FileChangeListener {
         
         public void fileAttributeChanged(FileAttributeEvent fae) {
-            java.util.logging.Logger.global.log(java.util.logging.Level.FINEST,"Attribute changed event");
+            java.util.logging.Logger.global.log(java.util.logging.Level.FINEST,"Attribute changed event"); // NOI18N
         }
         public void fileChanged(FileEvent fe) {
         }
@@ -347,17 +348,27 @@ public final class ServerRegistry implements java.io.Serializable {
     }
     
     public Collection getInstances(InstanceListener il) {
-        if (il != null)
-            instanceListeners.add(il);
+        if (il != null) {
+            synchronized(instanceListeners) {
+                instanceListenersArray = null;
+                instanceListeners.add(il);
+            }
+        }
         return getInstances();
     }
     
-    public synchronized void addInstanceListener(InstanceListener il) {
-        instanceListeners.add(il);
+    public void addInstanceListener(InstanceListener il) {
+        synchronized(instanceListeners) {
+            instanceListenersArray = null;
+            instanceListeners.add(il);
+        }
     }
     
-    public synchronized void removeInstanceListener(InstanceListener il) {
-        instanceListeners.remove(il);
+    public void removeInstanceListener(InstanceListener il) {
+        synchronized(instanceListeners) {
+            instanceListenersArray = null;
+            instanceListeners.remove(il);
+        }
     }
     
     public synchronized void removePluginListener(PluginListener pl) {
@@ -373,18 +384,34 @@ public final class ServerRegistry implements java.io.Serializable {
 	configNamesByType = null;
     }
     
+    
+    private InstanceListener[] getInstanceListeners() {
+        InstanceListener[]  retValue = null;
+        synchronized (instanceListeners) {
+            retValue = instanceListenersArray;
+            if (retValue == null) {
+                retValue = (InstanceListener[])instanceListeners.toArray(new InstanceListener[instanceListeners.size()]);
+                instanceListenersArray = retValue;
+            }
+        }
+        return retValue;
+    }
+    
     private void fireInstanceListeners(String instance, boolean add) {
-        for(Iterator i = instanceListeners.iterator();i.hasNext();) {
-            InstanceListener pl = (InstanceListener)i.next();
-            if(add) pl.instanceAdded(instance);
-            else pl.instanceRemoved(instance);
+        InstanceListener[] instListeners = getInstanceListeners();
+        for(int i = 0; i < instListeners.length; i++) {
+            if(add) {
+                instListeners[i].instanceAdded(instance);
+            } else {
+                instListeners[i].instanceRemoved(instance);
+            }
         }
     }
     
     private void fireDefaultInstance(String oldInstance, String newInstance) {
-        for(Iterator i = instanceListeners.iterator();i.hasNext();) {
-            InstanceListener pl = (InstanceListener)i.next();
-            pl.changeDefaultInstance(oldInstance, newInstance);
+        InstanceListener[] instListeners = getInstanceListeners();
+        for(int i = 0; i < instListeners.length; i++) {
+            instListeners[i].changeDefaultInstance(oldInstance, newInstance);
         }
     }
     
@@ -412,7 +439,7 @@ public final class ServerRegistry implements java.io.Serializable {
         FileLock lock = null;
         Writer writer = null;
         try {
-            String pathName = DIR_INSTALLED_SERVERS + "/" + FILE_DEFAULT_INSTANCE;
+            String pathName = DIR_INSTALLED_SERVERS + "/" + FILE_DEFAULT_INSTANCE; // NOI18N
             FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(pathName);
             if (fo != null)
                 fo.delete();
@@ -422,7 +449,7 @@ public final class ServerRegistry implements java.io.Serializable {
     }
 
     private ServerString getInstallerDefaultPlugin() {
-        File propFile = InstalledFileLocator.getDefault ().locate ("config/install.properties", null, false);
+        File propFile = InstalledFileLocator.getDefault ().locate ("config/install.properties", null, false); // NOI18N
         Properties installProp = readProperties(propFile); //NOI18N
         
         String j2eeDefaultServerFileName = installProp.getProperty(J2EE_DEFAULT_SERVER);
