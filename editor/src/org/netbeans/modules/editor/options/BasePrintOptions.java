@@ -53,7 +53,13 @@ public class BasePrintOptions extends OptionSupport {
   }
 
   public String displayName() {
-    return getString(OPTIONS_PREFIX + PRINT_PREFIX + getTypeName());
+    String name;
+    try {
+      name = getString(OPTIONS_PREFIX + PRINT_PREFIX + getTypeName());
+    } catch (Throwable t) {
+      name = super.displayName();
+    }
+    return name;
   }
 
   public HelpCtx getHelpCtx () {
@@ -81,6 +87,7 @@ public class BasePrintOptions extends OptionSupport {
 
 /*
  * Log
+ *  12   Gandalf   1.11        1/18/00  Miloslav Metelka displayName()
  *  11   Gandalf   1.10        1/13/00  Miloslav Metelka Localization
  *  10   Gandalf   1.9         1/11/00  Petr Nejedly    Fix for missing print 
  *       options
