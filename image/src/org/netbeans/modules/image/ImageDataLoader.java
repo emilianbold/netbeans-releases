@@ -53,13 +53,15 @@ public class ImageDataLoader extends UniFileLoader {
         
         final String mimeType = fo.getMIMEType();
         if (mimeType.startsWith("image/") && mimeType.length() > 6) {   //NOI18N
-            Object supported = imageTypeSupport.get(mimeType);
+            final String imgType = mimeType.substring(6);
+            Object supported = imageTypeSupport.get(imgType);
             if (supported != null) {
                 return (supported == Boolean.TRUE) ? fo : null;
             } else {
                 boolean hasReader = ImageIO.getImageReadersByMIMEType(mimeType)
                                     .hasNext();
-                imageTypeSupport.put(mimeType, Boolean.valueOf(hasReader));
+                imageTypeSupport.put(new String(imgType),
+                                     Boolean.valueOf(hasReader));
                 return hasReader ? fo : null;
             }
         } else {
