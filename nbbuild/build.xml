@@ -2328,7 +2328,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../j2ee/ejbapi" target="netbeans"/>
 
-  </target>  <target name="all-j2ee/ddloaders" depends="init">
+  </target>  <target name="all-j2ee/ddloaders" depends="init, all-j2ee/ejbapi, all-xml/multiview">
     <echo message="Building module j2ee/ddloaders.."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
