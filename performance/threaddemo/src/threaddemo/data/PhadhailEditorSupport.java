@@ -143,6 +143,10 @@ final class PhadhailEditorSupport extends CloneableEditorSupport implements Open
                 supp.saveDocument();
             }
             
+            public String toString() {
+                return "Save[" + ph + "]";
+            }
+            
         }
         
         public void unmarkModified() {
