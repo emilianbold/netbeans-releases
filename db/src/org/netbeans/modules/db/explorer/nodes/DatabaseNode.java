@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.*;
 import org.openide.*;
 import org.openide.nodes.*;
+import org.openide.util.HelpCtx;
 import org.openide.util.MapFormat;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -288,5 +289,9 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie {
         } catch (Exception e) {
             throw new DatabaseException(e.getMessage());
         }
+    }
+    
+    public HelpCtx getHelpCtx () {
+        return new HelpCtx ("dbexpovew");
     }
 }
