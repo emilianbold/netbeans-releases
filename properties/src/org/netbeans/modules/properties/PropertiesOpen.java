@@ -75,7 +75,11 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
     this.obj = (PropertiesDataObject)fe.getDataObject();
     this.obj.addPropertyChangeListener(new WeakListener.PropertyChange(modifL =
       new ModifiedListener()));
-  }        
+  }
+  
+  void setRef(CloneableTopComponent.Ref ref) {
+    allEditors = ref;
+  }
   
   /** A method to create a new component. Must be overridden in subclasses.
   * @return the cloneable top component for this support
@@ -209,6 +213,9 @@ System.out.println("creating new open for " + obj.getPrimaryFile().getPackageNam
     }
     
     private void initMe() {
+      // add to OpenSupport - patch for a bug in deserialization
+      dobj.getOpenSupport().setRef(getReference());
+    
       setName(dobj.getNodeDelegate().getDisplayName());
       
       // listen to saving
@@ -223,13 +230,10 @@ System.out.println("creating new open for " + obj.getPrimaryFile().getPackageNam
       initComponents();
 
       // dock into editor mode if possible
-System.out.println("docking " + getName());      
       Workspace[] currentWs = TopManager.getDefault().getWindowManager().getWorkspaces();
       for (int i = currentWs.length; --i >= 0; ) {
-System.out.println("docking ws " + i);      
         Mode editorMode = currentWs[i].findMode(EditorSupport.EDITOR_MODE);
         if (editorMode == null) {
-System.out.println("creating " + i + " name " + getName());      
           editorMode = currentWs[i].createMode(
             EditorSupport.EDITOR_MODE, getName(),
             EditorSupport.class.getResource(
@@ -238,7 +242,6 @@ System.out.println("creating " + i + " name " + getName());
           );
         }
         editorMode.dockInto(this);
-System.out.println("docked ws " + i);      
       }
     }
 
