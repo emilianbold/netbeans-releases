@@ -18,6 +18,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.ObjectInput;
 import java.util.ResourceBundle;
+import java.util.Hashtable;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.StringTokenizer;
@@ -50,6 +51,9 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   *  Becomes true if a "running" getter or setter is called
   */
   static boolean inited = false;
+  
+  /** Contains threads which are or will be asking for access for the given IP address. */
+  private static Hashtable /* InetAddress -> Thread */ whoAsking = new Hashtable();
   
   public static final int SERVER_STARTUP_TIMEOUT = 3000;
 
@@ -411,24 +415,42 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   public boolean allowAccess(InetAddress addr) {
     if (accessAllowedNow(addr))
       return true;
-    
-    // now ask the user       
-    synchronized (HttpServerSettings.class) {
+
+    Thread askThread = null;
+    synchronized (whoAsking) {  
       // one more test in the synchronized block
       if (accessAllowedNow(addr))
         return true;
+
+      askThread = (Thread)whoAsking.get(addr);
+      if (askThread == null) {
+        askThread = Thread.currentThread();
+        whoAsking.put(addr, askThread);
+      }  
+    }  
     
-      MessageFormat format = new MessageFormat(NbBundle.getBundle(HttpServerSettings.class).getString("MSG_AddAddress"));
-        String msg = format.format(new Object[] { addr.getHostAddress() });
-        NotifyDescriptor nd = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_OPTION);
-        Object ret = TopManager.getDefault().notify(nd);
+    // now ask the user       
+    synchronized (HttpServerSettings.class) {
+      if (askThread != Thread.currentThread()) {
+        return accessAllowedNow(addr);
+      }
+     
+      try {
+        MessageFormat format = new MessageFormat(NbBundle.getBundle(HttpServerSettings.class).getString("MSG_AddAddress"));
+          String msg = format.format(new Object[] { addr.getHostAddress() });
+          NotifyDescriptor nd = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_OPTION);
+          Object ret = TopManager.getDefault().notify(nd);
   
-        if (NotifyDescriptor.YES_OPTION.equals(ret)) {
-          appendAddressToGranted(addr.getHostAddress());
-          return true;
-        }
-        else
-          return false;
+          if (NotifyDescriptor.YES_OPTION.equals(ret)) {
+            appendAddressToGranted(addr.getHostAddress());
+            return true;
+          }
+          else
+            return false;
+      }
+      finally {
+        whoAsking.remove(addr);
+      }    
     } // end synchronized
   }     
    
@@ -486,6 +508,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
 
 /*
  * Log
+ *  29   Gandalf   1.28        1/11/00  Petr Jiricka    Fixed 5133
  *  28   Gandalf   1.27        1/9/00   Petr Jiricka    Cleanup
  *  27   Gandalf   1.26        1/4/00   Petr Jiricka    Added to project options
  *  26   Gandalf   1.25        1/3/00   Petr Jiricka    Bugfix 5133
