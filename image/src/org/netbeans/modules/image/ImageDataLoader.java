@@ -61,8 +61,8 @@ public class ImageDataLoader extends UniFileDataLoader {
   * @return the data object for this file
   * @exception DataObjectExistsException if the primary file already has data object
   */
-  protected abstract MultiDataObject createMultiObject (FileObject primaryFile)
-  throws DataObjectExistsException, java.io.IOException;
+  protected MultiDataObject createMultiObject (FileObject primaryFile)
+  throws DataObjectExistsException, java.io.IOException {
     return new ImageDataObject(fo);
   }
 
@@ -70,6 +70,7 @@ public class ImageDataLoader extends UniFileDataLoader {
 
 /*
  * Log
+ *  3    Gandalf   1.2         1/6/99   Jan Jancura     
  *  2    Gandalf   1.1         1/6/99   Ian Formanek    Updated to new 
  *       DataSystem
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
