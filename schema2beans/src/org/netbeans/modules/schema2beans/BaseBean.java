@@ -1054,6 +1054,20 @@ public abstract class BaseBean implements Cloneable {
                        getMessage("CantWriteBeanNotInDOMTree_msg"));
     }
 
+    public void writeNode(java.io.Writer out) throws IOException {
+        if (graphManager == null) {
+            throw new IllegalStateException(Common.
+                       getMessage("CantWriteBeanNotInDOMTree_msg"));
+        }
+        Node myNode = binding.getNode();
+        try {
+            graphManager.write(out, myNode);
+        } catch (Schema2BeansException e) {
+            // This exception does not make sense for our signature.
+            throw new RuntimeException(e);
+        }
+    }
+
     /**
      * Rearrange the internal whitespace so that when it gets printed
      * out, it looks pretty.
