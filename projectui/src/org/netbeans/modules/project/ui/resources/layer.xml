@@ -166,19 +166,9 @@ Microsystems, Inc. All Rights Reserved.
         
     </folder>
         
-    <!-- Private folder for module settings -->
-    
     <folder name="Services">
-        <!-- Has to be in Services folder iorder to be able to use the
-             SystemOption. At least temporarily -->
-        <folder name="org-netbeans-modules-project-ui">
-            <file name="OpenProjectList.settings" url="openProjectList.settings"/>
-        </folder>
-        
-        
+        <file name="org-netbeans-modules-project-ui-OpenProjectList.settings" url="openProjectList.settings"/>
     </folder>
-    
-    <!-- XXX Strange hacks - to be removed later -->
     
     <folder name="Menu"> <!-- Hacking menus -->
     
@@ -518,12 +508,6 @@ Microsystems, Inc. All Rights Reserved.
 	    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-logical-tab-action.instance"/>
         </file>
 
-<!-- sadly, AWT steals CS-1 to dump the AWT hierarchy
-
-        <file name="CS-1.shadow">
-	    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-SelectInProjects.instance"/>
-        </file>
--->
         <file name="C-2.shadow">
 	    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-physical-tab-action.instance"/>
 	</file>
@@ -582,15 +566,5 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
-    
         
 </filesystem>
-
-<!--
-
-<file name="org-netbeans-modules-project-ui-.shadow">
-    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-.instance"/>
-</file>
-    
--->
-        

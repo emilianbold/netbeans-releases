@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <?xml-stylesheet type="text/xml" href="http://openide.netbeans.org/fs/filesystem.xsl"?>
@@ -17,6 +17,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Templates">
         <folder name="Project">
+            <!-- XXX why are these here? should be moved elsewhere -->
             <attr name="Web/Standard" boolvalue="true"/>
             <attr name="Web/Mobile" boolvalue="true"/>
             <attr name="Mobile/Standard" boolvalue="true"/>
@@ -25,11 +26,6 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.j2seproject.ui.wizards.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/j2seproject/ui/resources/desktop.html"/>
 
-                <attr name="emptyJ2SE.xml/emptyJ2SElibrary.xml" boolvalue="true"/>
-                <attr name="emptyJ2SElibrary.xml/existingJ2SE.xml" boolvalue="true"/>
-                <attr name="emptyJ2SE.xml/existingJ2SE.xml" boolvalue="true"/>
-
-                <!-- Add template for the J2SE project -->
                 <file name="emptyJ2SE.xml">
                     <attr name="template" boolvalue="true"/>
                     <attr name="instantiatingIterator" newvalue="org.netbeans.modules.java.j2seproject.ui.wizards.NewJ2SEProjectWizardIterator"/>
@@ -38,6 +34,8 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/j2seproject/ui/resources/emptyProject.html"/>
                 </file>
         
+                <attr name="emptyJ2SE.xml/emptyJ2SElibrary.xml" boolvalue="true"/>
+
                 <file name="emptyJ2SElibrary.xml">
                     <attr name="template" boolvalue="true"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.java.j2seproject.ui.wizards.NewJ2SEProjectWizardIterator.library"/>
@@ -46,6 +44,8 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/j2seproject/ui/resources/emptyLibrary.html"/>
                 </file>                
 
+                <attr name="emptyJ2SElibrary.xml/existingJ2SE.xml" boolvalue="true"/>
+
                 <file name="existingJ2SE.xml">
                     <attr name="template" boolvalue="true"/>
                     <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.j2seproject.ui.wizards.NewJ2SEProjectWizardIterator.existing"/>
@@ -53,42 +53,13 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.gif"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/j2seproject/ui/resources/existingProject.html"/>
                 </file>
-            </folder>
-        </folder>
-    </folder>
-    
 
-    <!--    
-    Removing this action in accordance with UI spec:
-    http://ui.netbeans.org/docs/hi/promoD/editorMenus.html
-    
-    <folder name="Editors">
-        <folder name="text">
-            <folder name="x-java">
-                <folder name="Popup">
-                                
-                      <attr name="Separator1.instance/org-netbeans-modules-project-ui-CompileSingle.shadow" boolvalue="true"/>
-                      
-                      <file name="org-netbeans-modules-project-ui-CompileSingle.shadow">
-                          <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CompileSingle.instance"/>
-                      </file>
-                      
-                      <attr name="org-netbeans-modules-project-ui-CompileSingle.shadow/Separator7.instance" boolvalue="true"/>
-                </folder>
             </folder>
         </folder>
     </folder>
-    -->
 
     <folder name="Services">
-        <!-- Has to be in Services folder iorder to be able to use the
-             SystemOption. At least temporarily -->
-        <folder name="org-netbeans-modules-j2seproject-ui">
-            <file name="FoldersList.settings" url="foldersList.settings"/>
-        </folder>
-
-
+        <file name="org-netbeans-modules-j2seproject-ui-FoldersList.settings" url="foldersList.settings"/>
     </folder>
-
 
 </filesystem>
