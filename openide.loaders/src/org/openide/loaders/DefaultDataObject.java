@@ -155,7 +155,7 @@ implements org.openide.cookies.OpenCookie {
     /** Getter for cookie.
      * @param force if true, there are no checks for content of the file
      */
-    private org.openide.nodes.Node.Cookie getCookie (Class c, boolean force) {
+    final org.openide.nodes.Node.Cookie getCookie (Class c, boolean force) {
         if (c == org.openide.cookies.OpenCookie.class) {
             return this;
         }

@@ -55,7 +55,7 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
      * @param obj data object to work on
      * @param set set to add/remove save cookie from
      */
-    DefaultES (DataObject obj, MultiDataObject.Entry entry, CookieSet set) {
+    DefaultES (DefaultDataObject obj, MultiDataObject.Entry entry, CookieSet set) {
         super(obj, new Environment(obj, entry));
         this.set = set;
         setMIMEType("text/plain"); // NOI18N
@@ -138,7 +138,12 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
          * @return text editor support (instance of enclosing class)
          */
         public CloneableOpenSupport findCloneableOpenSupport() {
-            return (DefaultES)getDataObject().getCookie(DefaultES.class);
+            DataObject obj = getDataObject ();
+            if (obj instanceof DefaultDataObject) {
+                return (DefaultES)((DefaultDataObject)obj).getCookie (DefaultES.class, true);
+            } else {
+                return (DefaultES)getDataObject().getCookie(DefaultES.class);
+            }
         }
     } // End of nested Environment class.
 
