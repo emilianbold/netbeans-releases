@@ -1738,8 +1738,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
             }
 
             CodeStructure codeStructure = formModel.getCodeStructure();
+            String varName = comp.getName(); // get the original name
             codeStructure.removeExpressionFromVariable(exp);
-            codeStructure.createVariableForExpression(exp, varType, comp.getName());
+            codeStructure.createVariableForExpression(exp, varType, varName);
         }
     }
 
