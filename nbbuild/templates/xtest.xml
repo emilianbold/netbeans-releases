@@ -14,8 +14,10 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="xtest" default="all" basedir=".">
-    <import file="../default.xml"/>
 
+    <import file="../default.xml"/>
+    <import file="emma.xml"/>
+    
     <!-- Home of XTest -->
     <property name="xtest.home" location="${nb_all}/xtest"/>
     
