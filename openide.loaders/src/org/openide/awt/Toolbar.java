@@ -1059,6 +1059,14 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         }
         return hintsMap;
     }
+
+    public void setUI(javax.swing.plaf.ToolBarUI ui) {
+        super.setUI(ui);
+        if( null != backingFolder && null != processor ) {
+            //recreate the toolbar buttons as their borders need to be reset
+            processor.recreate();
+        }
+    }
     
     private final class ToolbarXP extends JPanel {
         /** Width of grip */
