@@ -54,7 +54,7 @@
     
     <tocitem text="Creating and Editing Web Applications">
 	   <tocitem text="About Creating Web Applications" target="webmod_struct" />
-	   <tocitem text="Creating a Web Application Project" target="tbd" />
+	   <tocitem text="Creating a Web Application Project" target="proj_creating" />
 	   <tocitem text="Upgrading to the J2EE 1.4 Specification" target="spec_version" />
       <tocitem text="JSP"> 
           <tocitem text="About JavaServer Pages Technology" target="concepts_jsp" />
@@ -142,22 +142,19 @@
            </tocitem> 
 	   <tocitem text="Adding a Web Application to a J2EE Application" target="tbd" />
         </tocitem>
-    <tocitem text="Building Web Applications"> 
-            <tocitem text="About Building Web Applications" target="concepts_war"  />
-    <!--    <tocitem text="Unpacking and Mounting WAR Files" target="war_unpack" /> -->	
+	<tocitem text="Building and Deploying Web Applications"> 
+	    <tocitem text="About Building Web Applications" target="concepts_war"  />
+            <tocitem text="About Running Web Applications" target="webmod_servconfig" />
+	    <tocitem text="Running Tasks: Quick Reference" target="deploying_tasks" />
+            <!--    <tocitem text="Unpacking and Mounting WAR Files" target="war_unpack" /> -->	
             <tocitem text="Building a WAR File" target="webmod_packagewar" />
-            <tocitem text="Adding an External Resource to a WAR File" target="war_xtrafiles" />
+	    <tocitem text="Adding External Resources to a WAR File">
+            <tocitem text="Adding a General External Resource to a WAR File" target="war_xtrafiles" />
             <tocitem text="Adding a Servlet JAR File to a WAR File" target="webmod_addservlet" />
             <tocitem text="Adding a Tag Library to a WAR File" target="tagsupport_fromfilesys" />
 	    <tocitem text="Adding an Applet JAR File to a WAR File" target="webmod_addcompapplet"/>
-    <!--	<tocitem text="Viewing the Contents of a WAR File" target="war_viewcont" />  -->
-            <tocitem text="Removing a WAR File" target="war_delete"/>        
-    </tocitem> <!-- Packaging Web Applications -->
-
-    <tocitem text="Running Web Applications"> 
-            <tocitem text="About Running Web Applications" target="webmod_servconfig" />
-            <tocitem text="Running Tasks: Quick Reference" target="deploying_tasks" />
-            <tocitem text="Passing Request Parameters" target="jsp_queryparams"/>
+            </tocitem>
+             <tocitem text="Passing Request Parameters" target="jsp_queryparams"/>
             <tocitem text="Setting a Username and Password for the Tomcat Manager" target="password_tomcat_manager" />
             <tocitem text="Running a Web Application" target="run_webapp" />
 	    <tocitem text="Running Web Components">
@@ -166,13 +163,14 @@
             <tocitem text="Running a Filter" target="filter_run"/>
 	    <tocitem text="Running a Web Application Listener" target="listener_run"/>
 	    <tocitem text="Running an Applet" target="webmod_runapplet"/>
-   	    </tocitem>
+            </tocitem>
             <tocitem text="Changing Web Servers" target="webmod_server_set" />
             <tocitem text="Changing Web Browsers" target="webmod_browser" />
-             
-       </tocitem> <!-- Deploying Web Applications-->
+            <!--	<tocitem text="Viewing the Contents of a WAR File" target="war_viewcont" />  -->
+            <tocitem text="Removing a WAR File" target="war_delete"/>        
+    </tocitem> <!-- Packaging Web Applications -->
        
-       <tocitem text="Debugging and Testing Web Applications"> 
+    <tocitem text="Debugging and Testing Web Applications"> 
             <tocitem text="About Debugging and Testing Web Applications" target="jsp_debug"/>
     <!--    <tocitem text="Validating JSP Syntax" target="jsp_validate" />  -->
     	    <tocitem text="Viewing a JSP's Servlet" target="jsp_servletview" />
@@ -223,22 +221,34 @@
         </tocitem>
 </tocitem>
 <tocitem text="Developing Web Services">
-	 <tocitem text="About Web Services" target="about_web_service" />
-	 <tocitem text="Working with Web Services" target="ws_process" />
-	 <tocitem text="Deciding How to Implement a Web Service" target="decide_ws" />
-	 <tocitem text="Creating a Web Service" target="create_ws" />
-	 <tocitem text="Configuring Web Service Creation" target="create_ws_customize" />
-	 <tocitem text="Adding a Web Service Operation" target="add_ws_operation" />
-	 <tocitem text="Configuring Web Service Operations" target="webservicesxml" />
-	 <tocitem text="Adding a SOAP Message Handler" target="add_soap_message" />
-	 <tocitem text="Adding an Enterprise Resource" >
-	 <tocitem text="About Adding an Enterprise Resource" target="add_enterprise_resource" />
-	 <tocitem text="Calling an Enterprise Bean" target="call_ejb" />
+         <tocitem text="About Web Services" >
+	        <tocitem text="About Web Services" target="about_web_service" />
+		<tocitem text="Working with Web Services" target="ws_process" />
+		<tocitem text="Web Service Tasks: Quick Reference" target="tbd" />
+  	 </tocitem>
+	 <tocitem text="Creating and Editing Web Services" >
+                <tocitem text="Deciding How to Implement a Web Service" target="decide_ws" />
+	        <tocitem text="Creating a Web Service" target="create_ws" />
+    	        <tocitem text="Adding a Web Service Operation" target="add_ws_operation" />
+	        <tocitem text="Adding a SOAP Message Handler" target="add_soap_message" />
+	        <tocitem text="Calling an Enterprise Bean" target="call_ejb" />
 	 	<tocitem text="Using a Database" target="use_a_database" />
 		<tocitem text="Sending a JMS Message" target="send_JMS_message" />
-	 </tocitem>  
-	 <tocitem text="Testing a Web Service" target="test_ws" />
-	 <tocitem text="Creating a Web Service Client" target="create_wsc" />
-	 <tocitem text="Calling a Web Service Operation" target="call_ws_operation" />
+  	 </tocitem>
+         <tocitem text="Configuring Web Services" >
+		<tocitem text="Configuring How Web Services Are Created" target="create_ws_customize" />
+	        <tocitem text="Configuring Web Service Operations" target="webservicesxml" />
+         </tocitem>
+         <tocitem text="Building and Exposing Web Services" >
+		<tocitem text="Building a Web Service" target="tbd" />
+	        <tocitem text="Exposing a Web Service" target="tbd" />
+	 </tocitem>
+	 <tocitem text="Debugging and Testing Web Services" >
+                 <tocitem text="Debugging a Web Service" target="tbd" />
+		 <tocitem text="Testing a Web Service" target="test_ws" />
+	         <tocitem text="Creating a Web Service Client" target="create_wsc" />
+	         <tocitem text="Calling a Web Service Operation" target="call_ws_operation" />
+	 </tocitem>
+	
       </tocitem> <!-- Working With Web Service Clients -->
 </toc>
