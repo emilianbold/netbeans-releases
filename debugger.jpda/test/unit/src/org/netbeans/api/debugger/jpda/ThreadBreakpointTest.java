@@ -81,7 +81,21 @@ public class ThreadBreakpointTest extends DebuggerJPDAApiTestBase {
 //            ThreadBreakpoint tb = (ThreadBreakpoint) event.getSource();
             assertEquals("Breakpoint event: Condition evaluation failed", DebuggerConstants.CONDITION_NONE, event.getConditionResult());
             assertNotNull("Breakpoint event: Context thread is null", event.getThread());
-            if (event.getThread().getName().startsWith("test-")) hitCount++;
+            JPDAThread thread = event.getThread();
+            if (thread.getName().startsWith("test-"))
+            {
+                JPDAThreadGroup group = thread.getParentThreadGroup();
+                assertEquals("Wrong thread group", "testgroup", group.getName());
+                assertEquals("Wrong parent thread group", "main", group.getParentThreadGroup().getName());
+                assertEquals("Wrong number of child thread groups", 0, group.getThreadGroups().length);
+                JPDAThread [] threads = group.getThreads();
+                for (int i = 0; i < threads.length; i++) {
+                    JPDAThread jpdaThread = threads[i];
+                    if (!jpdaThread.getName().startsWith("test-")) throw new AssertionError("Thread group contains an alien thread");
+                    assertSame("Child/parent mismatch", jpdaThread.getParentThreadGroup(), group);
+                }
+                hitCount++;
+            }
         }
 
         public void assertFailure() {
