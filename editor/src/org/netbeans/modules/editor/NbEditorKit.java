@@ -303,6 +303,7 @@ public class NbEditorKit extends ExtKit {
             } else {
                 item = new JMenuItem(action);
                 Mnemonics.setLocalizedText(item, item.getText());
+                if (item.getIcon() != null) item.setIcon(null); //filter out icons
             }
             return item;
         }
