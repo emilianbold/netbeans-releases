@@ -32,6 +32,7 @@ import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -81,7 +82,13 @@ public class MainWindowOperator extends JFrameOperator {
      * title "NetBeans IDE..." or "Forte...".
      */
     private MainWindowOperator() {
-        super((JFrame)WindowManager.getDefault().getMainWindow());
+        // run in dispatch thread
+        super((JFrame)new QueueTool().invokeSmoothly(new QueueTool.QueueAction("getMainWindow") {    // NOI18N
+            public Object launch() {
+                return WindowManager.getDefault().getMainWindow(); //NOI18N
+            }
+        })
+        );
     }
     
     /** Returns instance of MainWindowOperator. It is singleton, so this method
@@ -108,21 +115,45 @@ public class MainWindowOperator extends JFrameOperator {
     /** Checks whether NetBeans are in joined (full screen) or
      * separated (multiple smaller windows) mode.
      * @return  true if IDE is in joined mode; false otherwise (separated mode)
+     * @deprecated Use {@link #isCompactMode} instead.
      */
     public static boolean isMDI() {
         // TODO names of states will be changed http://www.netbeans.org/issues/show_bug.cgi?id=36933
         return WindowManagerImpl.getInstance().getEditorAreaState() == Constants.EDITOR_AREA_JOINED;
     }
     
-    /** Makes IDE to switch to joined (full screen) mode. */
+    /** Makes IDE to switch to joined (full screen) mode. 
+     * @deprecated Use {@link #setCompactMode} instead.
+     */
     public static void setMDI() {
         WindowManagerImpl.getInstance().setEditorAreaState(Constants.EDITOR_AREA_JOINED);
         new EventTool().waitNoEvent(1000);
     }
     
-    /** Makes IDE to switch to separated (multiple smaller windows) mode. */
+    /** Makes IDE to switch to separated (multiple smaller windows) mode. 
+     * @deprecated Use {@link #setSeparateMode} instead.
+     */
     public static void setSDI() {
-        // TODO - deprecate setSDI, setMDI; add new methods
+        WindowManagerImpl.getInstance().setEditorAreaState(Constants.EDITOR_AREA_SEPARATED);
+        new EventTool().waitNoEvent(1000);
+    }
+
+    /** Checks whether NetBeans are in compact (full screen) or
+     * separate (multiple smaller windows) mode.
+     * @return  true if IDE is in compact mode; false otherwise (separate mode)
+     */
+    public static boolean isCompactMode() {
+        return WindowManagerImpl.getInstance().getEditorAreaState() == Constants.EDITOR_AREA_JOINED;
+    }
+
+    /** Makes IDE to switch to compact mode (former MDI). */
+    public static void setCompactMode() {
+        WindowManagerImpl.getInstance().setEditorAreaState(Constants.EDITOR_AREA_JOINED);
+        new EventTool().waitNoEvent(1000);
+    }
+
+    /** Makes IDE to switch to separate (multiple smaller windows) mode (former SDI). */
+    public static void setSeparateMode() {
         WindowManagerImpl.getInstance().setEditorAreaState(Constants.EDITOR_AREA_SEPARATED);
         new EventTool().waitNoEvent(1000);
     }
