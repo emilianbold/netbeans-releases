@@ -25,7 +25,8 @@ import org.w3c.dom.Node;
 
 /**
  * Helper class used in XMLCompletionQuery and other classes that use grammar
- * Instances of this class should only be constructed and used from the AWT dispatch thread.
+ * Instances of this class must only be constructed and used from the AWT
+ * dispatch thread, because this implementation is not reentrant (see ctx field).
  *
  * @author  asgeir@dimonsoftware.com
  */

@@ -92,8 +92,15 @@ public class DTDGrammar implements GrammarQuery {
     public Enumeration queryAttributes(HintContext ctx) {
         if (attrDecls == null) return EmptyEnumeration.EMPTY;
         
-        Element el = ((Attr)ctx).getOwnerElement();
+        Element el = null;
+        // Support two versions of GrammarQuery contract
+        if (ctx instanceof Attr) {
+            el = ((Attr)ctx).getOwnerElement();
+        } else if (ctx instanceof Element) {
+            el = (Element) ctx;
+        }
         if (el == null) return EmptyEnumeration.EMPTY;
+        
         NamedNodeMap existingAttributes = el.getAttributes();        
         
         Set possibleAttributes = (Set) attrDecls.get(el.getTagName());
