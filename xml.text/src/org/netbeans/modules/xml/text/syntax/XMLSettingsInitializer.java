@@ -78,7 +78,7 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
 
             List dtdActionNames = new ArrayList (Arrays.asList
                                                  (new String[] {
-                                                     "org.netbeans.modules.xml.action.CheckDTDAction", // NOI18N
+                                                     "org.netbeans.modules.xml.tools.actions.CheckDTDAction", // NOI18N
                                                      null,
                                                  }));
             dtdActionNames.addAll (commonActionNames);
@@ -97,8 +97,8 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
 
             List xmlActionNames = new ArrayList (Arrays.asList
                                                  (new String[] {
-                                                     "org.netbeans.modules.xml.action.CheckAction", // NOI18N
-                                                     "org.netbeans.modules.xml.action.ValidateAction", // NOI18N
+                                                     "org.netbeans.modules.xml.tools.actions.CheckAction", // NOI18N
+                                                     "org.netbeans.modules.xml.tools.actions.ValidateAction", // NOI18N
 //                                                       "org.netbeans.modules.xml.action.FormatAction", // NOI18N
                                                      null,
                                                  }));
