@@ -509,7 +509,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../metrics" target="netbeans"/>
   </target>
   <!-- XXX remove dep on all-web/servletapi23 when possible (unused at runtime) -->
-  <target name="all-monitor" depends="build-platform,all-web/core,all-schema2beans/rt,all-html,all-httpserver,all-tomcatint/tomcat5/bundled,all-httpserver/servletapi,all-web/servletapi23">
+  <target name="all-monitor" depends="build-platform,all-web/core,all-schema2beans/rt,all-html,all-httpserver,all-httpserver/servletapi,all-web/servletapi23">
     <echo message="Building module monitor..."/>
     <ant dir="../monitor" target="netbeans"/>
   </target>
@@ -667,7 +667,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module tomcatint/tomcat5..."/>
     <ant dir="../tomcatint/tomcat5" target="netbeans"/>
   </target>
-  <target name="all-tomcatint/tomcat5/bundled" depends="build-platform,all-tomcatint/tomcat5">
+  <target name="all-tomcatint/tomcat5/bundled" depends="build-platform,all-tomcatint/tomcat5,all-monitor">
     <echo message="Building module tomcatint/tomcat5/bundled..."/>
     <ant dir="../tomcatint/tomcat5/bundled" target="netbeans"/>
   </target>
