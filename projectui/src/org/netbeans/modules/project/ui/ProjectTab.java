@@ -470,7 +470,7 @@ public class ProjectTab extends TopComponent
             TreeNode rtn = Visualizer.findVisualizer( rootNode );
             TreePath tp = new TreePath( rtn ); // Get the root
             
-            for( Enumeration exPaths = tree.getExpandedDescendants( tp ); exPaths.hasMoreElements(); ) {
+            for( Enumeration exPaths = tree.getExpandedDescendants( tp ); exPaths != null && exPaths.hasMoreElements(); ) {
                 TreePath ep = (TreePath)exPaths.nextElement();
                 Node en = Visualizer.findNode( ep.getLastPathComponent() );                
                 String[] path = NodeOp.createPath( en, rootNode );
