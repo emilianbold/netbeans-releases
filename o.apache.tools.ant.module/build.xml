@@ -119,7 +119,6 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     <delete dir="Info"/>
     <delete dir="javahelp/org/apache/tools/ant/module/docs/JavaHelpSearch2"/>
     <delete dir="javahelp/org/apache/tools/ant/module/docs/ant-docs"/>
-    <delete dir="test"/>
   </target>
 
   <target name="real-clean" depends="clean">
@@ -127,8 +126,3 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
   </target>
 
 </project>
-
-
-
-
-
