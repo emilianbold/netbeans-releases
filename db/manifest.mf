@@ -5,6 +5,8 @@ OpenIDE-Module-Specification-Version: 1.3
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Description: org.netbeans.modules.db.docs.HelpSet
 OpenIDE-Module-Display-Category: Database
+OpenIDE-Module-Short-Description: Views and modifies the structure of the connected database.
+OpenIDE-Module-Long-Description: Uses the Explorer to view the current structure of the connected database tables and their data while you are developing database applications or applets within the IDE.
 
 Name: org/netbeans/modules/db/explorer/nodes/RootNode.class
 OpenIDE-Module-Class: Node
