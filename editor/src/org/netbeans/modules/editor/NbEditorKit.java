@@ -464,16 +464,23 @@ public class NbEditorKit extends ExtKit {
 
         private BaseOptions bo;
         
+        // no options for the kit, bugfix of #27568
+        private boolean lineNumbersVisible = false;
+        
         public NbToggleLineNumbersAction() {
             bo = BaseOptions.getOptions(NbEditorKit.this.getClass());
         }
         
         protected boolean isLineNumbersVisible() {
-            return bo.getLineNumberVisible();
+            return (bo != null) ? bo.getLineNumberVisible() : lineNumbersVisible;
         }
         
         protected void toggleLineNumbers() {
-            bo.setLineNumberVisible(!isLineNumbersVisible());
+            if (bo != null){
+                bo.setLineNumberVisible(!isLineNumbersVisible());
+            }else{
+                lineNumbersVisible = !lineNumbersVisible;
+            }
         }
         
     }
