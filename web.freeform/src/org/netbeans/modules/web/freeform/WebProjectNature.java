@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -30,6 +30,7 @@ import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -108,6 +109,7 @@ public class WebProjectNature implements ProjectNature {
     
     private static Lookup initLookup(Project project, AntProjectHelper projectHelper, PropertyEvaluator projectEvaluator, AuxiliaryConfiguration aux) {
         return Lookups.fixed(new Object[] {
+            new PrivilegedTemplatesImpl(),           // List of templates in New action popup
             new WebModules(project, projectHelper, projectEvaluator), // WebModuleProvider, ClassPathProvider
         });
     }
@@ -151,4 +153,24 @@ public class WebProjectNature implements ProjectNature {
         }
         
     }
+    
+    private static final class PrivilegedTemplatesImpl implements PrivilegedTemplates {
+        
+        private static final String[] PRIVILEGED_NAMES = new String[] {
+            "Templates/JSP_Servlet/JSP.jsp",
+            "Templates/JSP_Servlet/Html.html",
+            "Templates/JSP_Servlet/Servlet.java",
+            "Templates/Classes/Class.java",
+            "Templates/Other/Folder",
+            "Templates/JSP_Servlet/WebService",
+            "Templates/JSP_Servlet/MessageHandler",
+            "Templates/JSP_Servlet/WebServiceClient"
+        };
+        
+        public String[] getPrivilegedTemplates() {
+            return PRIVILEGED_NAMES;
+        }
+        
+    }
+    
 }

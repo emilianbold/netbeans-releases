@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -35,6 +35,7 @@ import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -118,6 +119,8 @@ public class JavaProjectNature implements ProjectNature {
             new SourceForBinaryQueryImpl(projectHelper, projectEvaluator, aux), // SourceForBinaryQueryImplementation
             new OpenHook(cp), // ProjectOpenedHook
             new TestQuery(project), // UnitTestForSourceQueryImplementation
+            new PrivilegedTemplatesImpl(),           // List of templates in New action popup
+            new LookupMergerImpl(),
         });
     }
     
@@ -179,6 +182,20 @@ public class JavaProjectNature implements ProjectNature {
         
         public void propertiesChanged(AntProjectEvent ev) {
             // ignore
+        }
+        
+    }
+    
+    private static final class PrivilegedTemplatesImpl implements PrivilegedTemplates {
+        
+        private static final String[] PRIVILEGED_NAMES = new String[] {
+            "Templates/Classes/Class.java", // NOI18N
+            "Templates/Classes/Package", // NOI18N
+            "Templates/Classes/Interface.java", // NOI18N
+        };
+        
+        public String[] getPrivilegedTemplates() {
+            return PRIVILEGED_NAMES;
         }
         
     }

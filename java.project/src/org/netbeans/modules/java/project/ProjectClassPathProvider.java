@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -33,17 +33,15 @@ public class ProjectClassPathProvider implements ClassPathProvider {
     public ClassPath findClassPath(FileObject file, String type) {
         Project p = FileOwnerQuery.getOwner(file);
         if (p != null) {
-            // check all instances of classpath provider; e.g. freeform project can have more than one
-            Iterator it = p.getLookup().lookup(new Lookup.Template(ClassPathProvider.class)).allInstances().iterator();
-            while (it.hasNext()) {
-                ClassPathProvider cpp = (ClassPathProvider)it.next();
-                ClassPath cp = cpp.findClassPath(file, type);
-                if (cp != null) {
-                    return cp;
-                }
+            ClassPathProvider cpp = (ClassPathProvider)p.getLookup().lookup(ClassPathProvider.class);
+            if (cpp != null) {
+                return cpp.findClassPath(file, type);
+            } else {
+                return null;
             }
+        } else {
+            return null;
         }
-        return null;
     }
     
 }

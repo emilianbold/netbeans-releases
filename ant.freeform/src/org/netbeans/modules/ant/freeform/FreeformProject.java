@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,6 +15,7 @@ package org.netbeans.modules.ant.freeform;
 
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -23,6 +24,7 @@ import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.ant.freeform.spi.LookupMerger;
 import org.netbeans.modules.ant.freeform.spi.ProjectNature;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.modules.ant.freeform.ui.ProjectCustomizerProvider;
@@ -31,7 +33,7 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.netbeans.spi.project.ui.PrivilegedTemplates;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -77,9 +79,9 @@ public final class FreeformProject implements Project {
             new ProjectCustomizerProvider(this, helper, eval), // CustomizerProvider
             aux, // AuxiliaryConfiguration
             helper().createCacheDirectoryProvider(), // CacheDirectoryProvider
-            new PrivilegedTemplatesImpl(),           // List of templates in New action popup
             new Subprojects(this), // SubprojectProvider
             new ArtifactProvider(this), // AntArtifactProvider
+            new LookupMergerImpl(), // LookupMerger
         });
         return new FreeformLookup(baseLookup, this, helper, eval, aux);
     }
@@ -140,20 +142,6 @@ public final class FreeformProject implements Project {
         
     }
     
-    private static final class PrivilegedTemplatesImpl implements PrivilegedTemplates {
-        
-        private static final String[] PRIVILEGED_NAMES = new String[] {
-            "Templates/Classes/Class.java", // NOI18N
-            "Templates/Classes/Package", // NOI18N
-            "Templates/Classes/Interface.java", // NOI18N
-        };
-        
-        public String[] getPrivilegedTemplates() {
-            return PRIVILEGED_NAMES;
-        }
-        
-    }
-    
     private static final class FreeformLookup extends ProxyLookup implements LookupListener {
 
         private final Lookup baseLookup;
@@ -161,6 +149,8 @@ public final class FreeformProject implements Project {
         private final PropertyEvaluator evaluator;
         private final FreeformProject project;
         private final AuxiliaryConfiguration aux;
+        private Lookup.Result/*<LookupMerger>*/ mergers;
+        private WeakReference listenerRef;
         
         public FreeformLookup(Lookup baseLookup, FreeformProject project, AntProjectHelper helper, PropertyEvaluator evaluator, AuxiliaryConfiguration aux) {
             super(new Lookup[0]);
@@ -185,8 +175,39 @@ public final class FreeformProject implements Project {
                 ProjectNature pn  = (ProjectNature) it.next();
                 lookups.add(pn.getLookup(project, helper, evaluator, aux));
             }
-            setLookups((Lookup[]) lookups.toArray(new Lookup[lookups.size()]));
+            Lookup lkp = new ProxyLookup((Lookup[]) lookups.toArray(new Lookup[lookups.size()]));
+            
+            //merge:
+            ArrayList filtredClasses = new ArrayList();
+            ArrayList mergedInstances = new ArrayList();
+            LookupListener l = listenerRef != null ? (LookupListener)listenerRef.get() : null;
+            if (l != null) {
+                mergers.removeLookupListener(l);
+            }
+            mergers = lkp.lookup(new Lookup.Template(LookupMerger.class));
+            l = (LookupListener) WeakListeners.create(LookupListener.class, this, mergers);
+            listenerRef = new WeakReference(l);
+            mergers.addLookupListener(l);
+            it = mergers.allInstances().iterator();
+            while (it.hasNext()) {
+                LookupMerger lm = (LookupMerger)it.next();
+                Class[] classes = lm.getMergeableClasses();
+                for (int i=0; i<classes.length; i++) {
+                    if (filtredClasses.contains(classes[i])) {
+                        ErrorManager.getDefault().log(ErrorManager.WARNING, 
+                            "Two LookupMerger registered for class "+classes[i]+
+                            ". Only first one will be used"); // NOI18N
+                        continue;
+                    }
+                    filtredClasses.add(classes[i]);
+                    mergedInstances.add(lm.merge(lkp, classes[i]));
+                }
+            }
+            lkp = Lookups.exclude(lkp, (Class[])filtredClasses.toArray(new Class[filtredClasses.size()]));
+            Lookup fixed = Lookups.fixed(mergedInstances.toArray(new Object[mergedInstances.size()]));
+            setLookups(new Lookup[]{fixed, lkp});
         }
+        
     }
     
 }
