@@ -23,6 +23,7 @@ import java.lang.reflect.*;
 import java.io.*;
 import java.util.*;
 import org.netbeans.junit.diff.*;
+
 /**
  *
  * @author  vstejskal
@@ -112,7 +113,7 @@ public class Manager extends Object {
     
     
     public static File getNbJUnitHome() throws IOException {
-        File nbJUnitHome = new File(getNbJUnitHomePath());
+        File nbJUnitHome = normalizeFile(new File(getNbJUnitHomePath()));
         if (nbJUnitHome.isDirectory()) {            
             return nbJUnitHome;
         } else {
@@ -193,5 +194,31 @@ public class Manager extends Object {
             catch (IOException e1) {
             }
         }
+    }
+
+    /**
+     * Normalize java.io.File, that is make sure that returned File has
+     * normalized case on Windows; that old Windows 8.3 filename is normalized;
+     * that Unix symlinks are not followed; that relative path is changed to 
+     * absolute; etc.
+     * @param file file to normalize
+     * @return normalized file
+     */
+    public static File normalizeFile(File file) {
+        // taken from org.openide.util.FileUtil
+        if (System.getProperty ("os.name").startsWith("Windows")) { // NOI18N
+            // On Windows, best to canonicalize.
+            try {
+                file = file.getCanonicalFile();
+            } catch (IOException e) {
+                System.out.println("getCanonicalFile() on file "+file+" failed. "+ e.toString()); // NOI18N
+                // OK, so at least try to absolutize the path
+                file = file.getAbsoluteFile();
+            }
+        } else {
+            // On Unix, do not want to traverse symlinks.
+            file = new File(file.toURI().normalize()).getAbsoluteFile();
+        }
+        return file;
     }
 }

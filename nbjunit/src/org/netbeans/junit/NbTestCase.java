@@ -391,7 +391,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         
         // now we have path, so if not available, create workdir
         String path = getWorkDirPath();
-        File workdir = new File(path);
+        File workdir = Manager.normalizeFile(new File(path));
         if (workdir.exists()) {
             if (!workdir.isDirectory()) {
                 // work dir exists, but is not directory - this should not happen
@@ -656,7 +656,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      * @return data directory
      */
     public File getDataDir() {
-        return new File(System.getProperty("xtest.data"));
+        return Manager.normalizeFile(new File(System.getProperty("xtest.data")));
     }
     
     /** Get the default testmethod specific golden file from
