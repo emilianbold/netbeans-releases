@@ -225,7 +225,6 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
     }
     
     protected boolean uichange() {
-        tabDisplayer.updateUI();
         installBorders();
         return false;
     }    

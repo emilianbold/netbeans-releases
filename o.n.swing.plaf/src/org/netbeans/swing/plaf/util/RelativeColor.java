@@ -135,6 +135,22 @@ public class RelativeColor implements UIDefaults.LazyValue {
         this (base, target, actual, null);
     }
     
+    public void clear() {
+        value = null;
+        if (actualColorKey != null) {
+            actualColor = null;
+        }
+        if (targetColorKey != null) {
+            targetColor = null;
+        }
+        if (mustContrastColorKey != null) {
+            mustContrastColor = null;
+        }
+        if (baseColorKey != null) {
+            baseColor = null;
+        }
+    }
+    
     public Object createValue(UIDefaults table) {
         if (value != null) {
             return value;

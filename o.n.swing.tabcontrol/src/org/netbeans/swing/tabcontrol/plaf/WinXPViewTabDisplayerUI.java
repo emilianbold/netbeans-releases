@@ -106,13 +106,6 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         return prefSize;
     }
 
-    /**
-     * Overrides basic paint mathod, inits colors first
-     */
-    public void paint(Graphics g, JComponent c) {
-        super.paint(g, c);
-    }
-
     protected void paintTabContent(Graphics g, int index, String text, int x,
                                    int y, int width, int height) {
         FontMetrics fm = getTxtFontMetrics();

@@ -231,7 +231,6 @@ public final class TabDisplayer extends JComponent {
         if (!initialized) {
             return;
         }
-        
         if (type == TYPE_TOOLBAR) {
             setUI (new ToolbarTabDisplayerUI(this));
             return;

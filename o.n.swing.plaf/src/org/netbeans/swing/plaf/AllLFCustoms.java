@@ -60,29 +60,7 @@ final class AllLFCustoms extends LFCustoms {
             SLIDING_BUTTON_UI, "org.netbeans.swing.tabcontrol.SlidingButtonUI", //NOI18N
                 
         
-            //XXX convert to derived colors
-            "tab_unsel_fill", UIUtils.adjustColor (
-                new GuaranteedValue("InternalFrame.inactiveTitleGradient",
-                    Color.GRAY).getColor(),
-                -12, -15, -22),
-
-            "tab_sel_fill", new GuaranteedValue("text", Color.WHITE),
-
-            "tab_bottom_border", UIUtils.adjustColor (
-                new GuaranteedValue("InternalFrame.borderShadow",
-                    Color.GRAY).getColor(),
-                20, 17, 12),
-
-
-             "winclassic_tab_sel_gradient",
-                new RelativeColor (
-                    new Color(7, 28, 95),
-                    new Color(152, 177, 208),
-                    "InternalFrame.activeTitleBackground"),
-
             SCROLLPANE_BORDER_COLOR, new Color(127, 157, 185),
-
-
         }; //NOI18N
         return uiDefaults;
     }
@@ -124,11 +102,13 @@ final class AllLFCustoms extends LFCustoms {
                new GuaranteedValue ("ComboBox.font",
                new Font ("Dialog", Font.PLAIN, fontsize)),
 
+            //Colors below are used by windows UI which is used for unknown
+            //look and feels
+/*
              "InternalFrame.activeTitleBackground",
                 new GuaranteedValue("InternalFrame.activeTitleBackground",
                 Color.BLUE),
-            //Colors below are used by windows UI which is used for unknown
-            //look and feels
+                
             "InternalFrame.borderShadow",
                 new GuaranteedValue("InternalFrame.borderShadow", Color.gray),
 
@@ -152,7 +132,8 @@ final class AllLFCustoms extends LFCustoms {
 
             "TabbedPane.highlight",
                 new GuaranteedValue("TabbedPane.highlight", Color.WHITE),
-
+ */
+                
         };
         return uiDefaults;
     }

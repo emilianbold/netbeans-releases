@@ -76,8 +76,21 @@ public abstract class LFCustoms {
         return guaranteedKeysAndValues;
     }
 
+    /**
+     * Get all keys this LFCustoms installs in UIManager.  This is used to 
+     * delete unneeded elements from UIManager if the look and feel is changed
+     * on the fly (for example, the user switches Windows from Classic to XP
+     * look).
+     */
     Object[] allKeys() {
-        int size = (appKeysAndValues.length / 2) + (guaranteedKeysAndValues.length / 2);
+        Object[] additional = additionalKeys();
+        int size = additional == null ? 0 : additional.length;
+        if (appKeysAndValues != null) {
+            size += appKeysAndValues.length / 2;
+        }
+        if (guaranteedKeysAndValues != null) {
+            size += guaranteedKeysAndValues.length / 2;
+        }
         if (lfKeysAndValues != null) {
             size += (lfKeysAndValues.length / 2);
         }
@@ -90,13 +103,33 @@ public abstract class LFCustoms {
                 result[ct++] = lfKeysAndValues[i];
             }
         }
-        for (int i=0; i < guaranteedKeysAndValues.length; i+=2) {
-            result[ct++] = guaranteedKeysAndValues[i];
+        if (guaranteedKeysAndValues != null) {
+            for (int i=0; i < guaranteedKeysAndValues.length; i+=2) {
+                result[ct++] = guaranteedKeysAndValues[i];
+            }
         }
-        for (int i=0; i < appKeysAndValues.length; i+=2) {
-            result[ct++] = appKeysAndValues[i];
+        if (appKeysAndValues != null) {
+            for (int i=0; i < appKeysAndValues.length; i+=2) {
+                result[ct++] = appKeysAndValues[i];
+            }
+        }
+        if (additional != null) {
+            for (int i=0; i < additional.length; i++) {
+                result[ct++] = additional[i];
+            }
         }
         return result;
+    }
+    
+    /**
+     * LFCustoms implementations which use UIBootstrapValue.Lazy should return
+     * any keys that it will install here, so they can be merged into the list
+     * of things to clear on L&F change.
+     *
+     * @return an array of objects or null.
+     */
+    protected Object[] additionalKeys() {
+        return null;
     }
 
     /** Dispose the value part of all arrays - no need to hold onto lazy value instances
@@ -114,7 +147,7 @@ public abstract class LFCustoms {
 
     /** Null every other element of an array */
     private void disposeValues (Object[] arr) {
-        for (int i=0; i < arr.length; i+=2) {
+        for (int i=1; i < arr.length; i+=2) {
             arr[i] = null;
         }
     }

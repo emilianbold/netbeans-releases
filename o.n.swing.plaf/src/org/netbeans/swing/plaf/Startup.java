@@ -13,7 +13,13 @@
 
 package org.netbeans.swing.plaf;
 
+import java.awt.Toolkit;
+import org.netbeans.swing.plaf.aqua.AquaLFCustoms;
+import org.netbeans.swing.plaf.gtk.GtkLFCustoms;
+import org.netbeans.swing.plaf.metal.MetalLFCustoms;
 import org.netbeans.swing.plaf.util.NbTheme;
+import org.netbeans.swing.plaf.util.RelativeColor;
+import org.netbeans.swing.plaf.util.UIBootstrapValue;
 import org.netbeans.swing.plaf.util.UIUtils;
 
 import javax.swing.*;
@@ -24,6 +30,8 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.swing.plaf.winclassic.WindowsLFCustoms;
+import org.netbeans.swing.plaf.winxp.XPLFCustoms;
 
 /** Singleton, manages customizers for various LFs. Installs, uninstalls them on LF change.
  * LF customizers works with Swing UIManager, putting info about various UI elements
@@ -88,18 +96,6 @@ public final class Startup {
         }
         // overall defaults for all LFs
         // defaults for supported LFs
-
-        //XXX may have to abandon this technique - form.FormLAF is resolving them all anyway
-        UIManager.put(MetalCustomsKey,
-            new UIDefaults.ProxyLazyValue(MetalCustomsClass));
-        UIManager.put(WinCustomsKey,
-            new UIDefaults.ProxyLazyValue(WinCustomsClass));
-        UIManager.put(XPCustomsKey,
-            new UIDefaults.ProxyLazyValue(XPCustomsClass));
-        UIManager.put(AquaCustomsKey,
-            new UIDefaults.ProxyLazyValue(AquaCustomsClass));
-        UIManager.put(GtkCustomsKey,
-            new UIDefaults.ProxyLazyValue(GtkCustomsClass));
 
         try {
             if (lf != UIManager.getLookAndFeel()) {
@@ -166,8 +162,10 @@ public final class Startup {
         if (installed) {
             return;
         }
-        globalCustoms = new AllLFCustoms();
-        installLFCustoms (new AllLFCustoms());
+        if (globalCustoms == null) {
+            globalCustoms = new AllLFCustoms();
+            installLFCustoms (globalCustoms);
+        }
 
         installPerLFDefaults();
 
@@ -181,10 +179,16 @@ public final class Startup {
     }
 
     private void installPerLFDefaults() {
-        assert curCustoms == null;
+        boolean isLFChange = curCustoms != null;
+        
         curCustoms = findCustoms();
         if (curCustoms != null) {
             installLFCustoms (curCustoms);
+            if (isLFChange) {
+                //make sure UIBootstrapValue.Lazy instances really get a chance
+                //to replace their values
+                loadAllLazyValues (curCustoms);
+            }
             curCustoms.disposeValues();
 
             Integer in = (Integer) UIManager.get(LFCustoms.CUSTOM_FONT_SIZE); //NOI18N
@@ -194,6 +198,31 @@ public final class Startup {
 
             if (in != null) {
                 AllLFCustoms.initCustomFontSize (in.intValue());
+            }
+        }
+    }
+    
+    private void loadAllLazyValues (LFCustoms customs) {
+        if (globalCustoms != null) {
+            loadLazy (globalCustoms.getApplicationSpecificKeysAndValues());
+            loadLazy (globalCustoms.getGuaranteedKeysAndValues());
+            loadLazy (globalCustoms.getLookAndFeelCustomizationKeysAndValues());
+        }
+        loadLazy (customs.getApplicationSpecificKeysAndValues());
+        loadLazy (customs.getGuaranteedKeysAndValues());
+        loadLazy (customs.getLookAndFeelCustomizationKeysAndValues());
+    }
+    
+    private void loadLazy (Object[] o) {
+        if (o.length > 0) {
+            UIDefaults uidefaults = UIManager.getDefaults();
+            for (int i=1; i < o.length; i+=2) {
+                if (o[i] instanceof UIBootstrapValue.Lazy) {
+                    ((UIBootstrapValue.Lazy) o[i]).createValue(uidefaults);
+                }
+                if (o[i] instanceof RelativeColor) {
+                    ((RelativeColor) o[i]).clear();
+                }
             }
         }
     }
@@ -212,13 +241,14 @@ public final class Startup {
                 }
             }
         }
-        curCustoms = null;
     }
 
     private void attachListener() {
         assert listener == null;
         listener = new LFListener();
         UIManager.addPropertyChangeListener(listener);
+        Toolkit.getDefaultToolkit().addPropertyChangeListener(
+            "win.xpstyle.themeActive", listener); //NOI18N
     }
 
     private void installLFCustoms (LFCustoms customs) {
@@ -229,7 +259,7 @@ public final class Startup {
         //Install entries for custom NetBeans components, such as borders and
         //colors
         defaults.putDefaults (customs.getApplicationSpecificKeysAndValues());
-
+        
         if (!NO_CUSTOMIZATIONS) {
             //See issue nnn - Nokia uses a custom metal-based look and feel,
             //and do not want fonts or other things customized
@@ -254,10 +284,41 @@ public final class Startup {
                 buf.append("LFCustoms"); //NOI18N
             }
         }
-        LFCustoms result = (LFCustoms)UIManager.get(buf.toString());
+        LFCustoms result = null;
+        try {
+            result = (LFCustoms)UIManager.get(buf.toString());
+        } catch (ClassCastException cce) {
+            //do nothing - the look and feel happens to have something matching
+            //our generated key there
+        }
+        if (result == null) {
+            String[] knownLFs = new String[] {
+                    "Metal", "Windows", "Aqua", "GTK" //NOI18N
+                };
+            switch (Arrays.asList(knownLFs).indexOf(UIManager.getLookAndFeel().getID())) {
+                case 1 :
+                    if (UIUtils.isXPLF()) {
+                        result = new XPLFCustoms();
+                    } else {
+                        result = new WindowsLFCustoms();
+                    }
+                    break;
+                case 0 :
+                    result = new MetalLFCustoms();
+                    break;
+                case 2 :
+                    result = new AquaLFCustoms();
+                    break;
+                case 3 :
+                    result = new GtkLFCustoms();
+                    break;
+                default :
+                    result = new WindowsLFCustoms();
+            }
+        }
         return result;
     }
-
+    
     /**
      * Initialize values in UIDefaults which need to be there for NetBeans' components; apply customizations such
      * as setting up a custom font size and loading a theme.
@@ -313,14 +374,9 @@ public final class Startup {
     private LFListener listener = null;
     private class LFListener implements PropertyChangeListener {
         public void propertyChange (PropertyChangeEvent pcl) {
-            if ("lookAndFeel".equals(pcl.getPropertyName())) { //NOI18N
-                System.err.println("\n\n\nLOOK AND FEEL CHANGED!\n\n");
-                Thread.dumpStack();
+            if ("lookAndFeel".equals(pcl.getPropertyName()) || "win.xpstyle.themeActive".equals(pcl.getPropertyName())) { //NOI18N
                 uninstallPerLFDefaults();
                 installPerLFDefaults();
-            } else {
-                System.err.println ("Look and feel property change: " +
-                    pcl.getPropertyName() + " old " + pcl.getOldValue() + " new " + pcl.getNewValue());
             }
         }
     }

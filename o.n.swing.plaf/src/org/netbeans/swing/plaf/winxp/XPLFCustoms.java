@@ -123,6 +123,22 @@ public final class XPLFCustoms extends LFCustoms {
             UIManager.put (key, new ColorUIResource(c));
         }
     }
+    
+    protected Object[] additionalKeys() {
+        Object[] kv = new XPEditorColorings("").createKeysAndValues();
+        Object[] kv2 = new XPPropertySheetColorings().createKeysAndValues();
+        Object[] result = new Object[(kv.length / 2) + (kv2.length / 2)];
+        int ct = 0;
+        for (int i=0; i < kv.length; i+=2) {
+            result[ct] = kv[i];
+            ct++;
+        }
+        for (int i=0; i < kv2.length; i+=2) {
+            result[ct] = kv2[i];
+            ct++;
+        }
+        return result;
+    }    
 
     private class XPEditorColorings extends UIBootstrapValue.Lazy {
         public XPEditorColorings (String name) {

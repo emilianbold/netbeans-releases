@@ -761,10 +761,16 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
             this.pressedIcons = pressedIcons;
             this.rolloverIcons = rolloverIcons;
             setFocusable(false);
-            setBorder(null);
             setContentAreaFilled(false);
             setRolloverEnabled(rolloverIcons != null);
             setOrientation(TabDisplayer.ORIENTATION_CENTER);
+        }
+        
+        public void updateUI() {
+            super.updateUI();
+            setFocusable(false);
+            setContentAreaFilled(false);
+            setBorder (BorderFactory.createEmptyBorder());
         }
         
         public Object getOrientation () {

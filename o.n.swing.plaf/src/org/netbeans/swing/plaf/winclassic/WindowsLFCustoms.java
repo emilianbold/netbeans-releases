@@ -15,6 +15,7 @@ package org.netbeans.swing.plaf.winclassic;
 
 import org.netbeans.swing.plaf.LFCustoms;
 import org.netbeans.swing.plaf.util.GuaranteedValue;
+import org.netbeans.swing.plaf.util.RelativeColor;
 import org.netbeans.swing.plaf.util.UIBootstrapValue;
 import org.netbeans.swing.plaf.util.UIUtils;
 
@@ -73,10 +74,75 @@ public final class WindowsLFCustoms extends LFCustoms {
             EDITOR_TAB_DISPLAYER_UI, "org.netbeans.swing.tabcontrol.plaf.WinClassicEditorTabDisplayerUI",
             SLIDING_BUTTON_UI, "org.netbeans.swing.tabcontrol.plaf.WindowsSlidingButtonUI",
             VIEW_TAB_DISPLAYER_UI, "org.netbeans.swing.tabcontrol.plaf.WinClassicViewTabDisplayerUI",
+            
+            //XXX convert to derived colors
+            "tab_unsel_fill", UIUtils.adjustColor (
+                new GuaranteedValue("InternalFrame.inactiveTitleGradient",
+                    Color.GRAY).getColor(),
+                -12, -15, -22),
+
+            "tab_sel_fill", new GuaranteedValue("text", Color.WHITE),
+
+            "tab_bottom_border", UIUtils.adjustColor (
+                new GuaranteedValue("InternalFrame.borderShadow",
+                    Color.GRAY).getColor(),
+                20, 17, 12),
+
+
+             "winclassic_tab_sel_gradient",
+                new RelativeColor (
+                    new Color(7, 28, 95),
+                    new Color(152, 177, 208),
+                    "InternalFrame.activeTitleBackground"),
+
+            
         }; //NOI18N
 
         return result;
     }
+    
+    public Object[] createGuaranteedKeysAndValues() {
+        return new Object[] {
+             "InternalFrame.activeTitleBackground",
+                new GuaranteedValue("InternalFrame.activeTitleBackground",
+                Color.BLUE),
+                
+            "InternalFrame.borderShadow",
+                new GuaranteedValue("InternalFrame.borderShadow", Color.gray),
+
+            "InternalFrame.borderHighlight",
+                new GuaranteedValue("InternalFrame.borderHighlight",
+                Color.white),
+
+            "InternalFrame.borderDarkShadow",
+                new GuaranteedValue("InternalFrame.borderDarkShadow",
+                Color.darkGray),
+
+            "InternalFrame.borderLight",
+                new GuaranteedValue("InternalFrame.borderLight",
+                Color.lightGray),
+
+            "TabbedPane.background",
+                new GuaranteedValue("TabbedPane.background", Color.LIGHT_GRAY),
+
+            "TabbedPane.focus",
+                new GuaranteedValue("TabbedPane.focus", Color.GRAY),
+
+            "TabbedPane.highlight",
+                new GuaranteedValue("TabbedPane.highlight", Color.WHITE),
+        };
+    }
+    
+    protected Object[] additionalKeys() {
+        Object[] kv = new WinClassicPropertySheetColorings().createKeysAndValues();
+        Object[] result = new Object[kv.length / 2];
+        int ct = 0;
+        for (int i=0; i < kv.length; i+=2) {
+            result[ct] = kv[i];
+            ct++;
+        }
+        return result;
+    }    
 
     private class WinClassicPropertySheetColorings extends UIBootstrapValue.Lazy {
         public WinClassicPropertySheetColorings () {
