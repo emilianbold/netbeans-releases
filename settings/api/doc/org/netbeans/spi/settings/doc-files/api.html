@@ -234,11 +234,11 @@ Otherwise you can place the file under own folder and use
 <a href="@OPENIDE@/org/openide/loaders/doc-files/api.html">DataSystem API
 </a> to get the object.
 <pre>
-<font class="type">FileSystem</font> <font class="variable-name">fs</font> = Repository.getDefault().getDefaultFilesystem()
+<font class="type">FileSystem</font> <font class="variable-name">fs</font> = Repository.getDefault().getDefaultFileSystem();
 <font class="type">FileObject</font> <font class="variable-name">fo</font> = fs.findResource(<font class="string">"YourFolder/YourSetting.settings"</font>);
 <font class="type">DataObject</font> <font class="variable-name">dobj</font> = DataObject.find(fo);
 <font class="type">InstanceCookie</font> <font class="variable-name">ic</font> = (<font class="type">InstanceCookie</font>) dobj.getCookie(InstanceCookie.<font class="keyword">class</font>);
-<font class="type">Object</font> <font class="variable-name">setting</font> = ic.createInstance();
+<font class="type">Object</font> <font class="variable-name">setting</font> = ic.instanceCreate();
 </pre>
 
 
