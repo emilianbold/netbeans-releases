@@ -1165,8 +1165,8 @@
 				expert = YES;
 			},
 			{
-				code = catalogSepa;
-				name = catalogSepa;
+				code = catalogSeparator;
+				name = catalogSeparator;
 				class = java.lang.String;
 				writable = NO;
 				expert = YES;
