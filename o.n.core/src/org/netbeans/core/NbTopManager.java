@@ -115,12 +115,7 @@ public class NbTopManager extends TopManager {
   * @param helpCtx thehelp to be shown
   */
   public void showHelp(HelpCtx helpCtx) {
-    URL helpURL = helpCtx.getHelp();
-    if (helpURL != null)
-      showUrl(helpURL);
-    else
-      notify(new NotifyDescriptor.Message(
-        NbBundle.getBundle(getClass()).getString("MSG_NoURL")));
+    Help.getDefault ().showHelp (helpCtx);
   }
 
   /** Provides support for www documents.
