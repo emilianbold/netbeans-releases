@@ -18,6 +18,8 @@ import com.sun.jdi.VMDisconnectedException;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Set;
+import org.netbeans.api.debugger.ActionsManager;
+
 
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -41,7 +43,7 @@ public class KillActionProvider extends JPDADebuggerActionProvider {
     }
     
     public Set getActions () {
-        return Collections.singleton (DebuggerManager.ACTION_KILL);
+        return Collections.singleton (ActionsManager.ACTION_KILL);
     }
         
     public void doAction (Object action) {
@@ -49,6 +51,6 @@ public class KillActionProvider extends JPDADebuggerActionProvider {
     }
     
     protected void checkEnabled (int debuggerState) {
-        setEnabled (DebuggerManager.ACTION_KILL, true);
+        setEnabled (ActionsManager.ACTION_KILL, true);
     }
 }

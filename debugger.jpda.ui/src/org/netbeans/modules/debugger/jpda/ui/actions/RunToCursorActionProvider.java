@@ -19,6 +19,8 @@ import java.beans.PropertyChangeListener;
 
 import java.util.Collections;
 import java.util.Set;
+import org.netbeans.api.debugger.ActionsManager;
+
 
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -56,7 +58,7 @@ public class RunToCursorActionProvider extends ActionsProviderSupport implements
     
     public void propertyChange (PropertyChangeEvent evt) {
         setEnabled (
-            DebuggerManager.ACTION_RUN_TO_CURSOR,
+            ActionsManager.ACTION_RUN_TO_CURSOR,
             (debugger.getState () == debugger.STATE_STOPPED) &&
             (EditorContextBridge.getCurrentLineNumber () >= 0) && 
             (EditorContextBridge.getCurrentURL ().endsWith (".java"))
@@ -72,7 +74,7 @@ public class RunToCursorActionProvider extends ActionsProviderSupport implements
     }
     
     public Set getActions () {
-        return Collections.singleton (DebuggerManager.ACTION_RUN_TO_CURSOR);
+        return Collections.singleton (ActionsManager.ACTION_RUN_TO_CURSOR);
     }
     
     public void doAction (Object action) {
@@ -87,7 +89,7 @@ public class RunToCursorActionProvider extends ActionsProviderSupport implements
         breakpoint.setHidden (true);
         DebuggerManager.getDebuggerManager ().addBreakpoint (breakpoint);
         session.getEngineForLanguage ("Java").getActionsManager ().doAction (
-            DebuggerManager.ACTION_CONTINUE
+            ActionsManager.ACTION_CONTINUE
         );
     }
 }

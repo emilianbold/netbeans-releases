@@ -17,6 +17,8 @@ import com.sun.jdi.request.EventRequestManager;
 
 import java.util.Collections;
 import java.util.Set;
+import org.netbeans.api.debugger.ActionsManager;
+
 
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -39,7 +41,7 @@ public class ContinueActionProvider extends JPDADebuggerActionProvider {
     }
     
     public Set getActions () {
-        return Collections.singleton (DebuggerManager.ACTION_CONTINUE);
+        return Collections.singleton (ActionsManager.ACTION_CONTINUE);
     }
     
     public void doAction (Object action) {
@@ -48,7 +50,7 @@ public class ContinueActionProvider extends JPDADebuggerActionProvider {
     
     protected void checkEnabled (int debuggerState) {
         setEnabled (
-            DebuggerManager.ACTION_CONTINUE,
+            ActionsManager.ACTION_CONTINUE,
             debuggerState == getDebuggerImpl ().STATE_STOPPED
         );
     }

@@ -105,53 +105,6 @@ import org.netbeans.spi.debugger.SessionProvider;
  */
 public final class DebuggerManager {
     
-    /** Action constant for Step Over Action. */
-    public static final Object              ACTION_STEP_OVER = "stepOver";
-    
-    /** Action constant for breakpoint hit action. */
-    public static final Object              ACTION_RUN_INTO_METHOD = "runIntoMethod";
-    
-    /** Action constant for Step Into Action. */
-    public static final Object              ACTION_STEP_INTO = "stepInto";
-    
-    /** Action constant for Step Out Action. */
-    public static final Object              ACTION_STEP_OUT = "stepOut";
-    
-    /** Action constant for Continue Action. */
-    public static final Object              ACTION_CONTINUE = "continue";
-    
-    /** Action constant for Start Action. */
-    public static final Object              ACTION_START = "start";
-    
-    /** Action constant for Kill Action. */
-    public static final Object              ACTION_KILL= "kill";
-    
-    /** Action constant for Make Caller Current Action. */
-    public static final Object              ACTION_MAKE_CALLER_CURRENT = "makeCallerCurrent";
-    
-    /** Action constant for Make Callee Current Action. */
-    public static final Object              ACTION_MAKE_CALLEE_CURRENT = "makeCalleeCurrent";
-    
-    /** Action constant for Pause Action. */
-    public static final Object              ACTION_PAUSE = "pause";
-    
-    /** Action constant for Run to Cursor Action. */
-    public static final Object              ACTION_RUN_TO_CURSOR = "runToCursor";
-    
-    /** Action constant for Pop Topmost Call Action. */
-    public static final Object              ACTION_POP_TOPMOST_CALL = "popTopmostCall";
-    
-    /** Action constant for Fix Action. */
-    public static final Object              ACTION_FIX = "fix";
-    
-    /** Action constant for Restart Action. */
-    public static final Object              ACTION_RESTART = "restart";
-
-    /** Action constant for Restart Action. */
-    public static final Object              ACTION_TOGGLE_BREAKPOINT = "toggleBreakpoint";
-
-
-    
     /** Name of property for the set of breakpoints in the system. */
     public static final String                PROP_BREAKPOINTS_INIT = "breakpointsInit"; // NOI18N
     
@@ -368,7 +321,7 @@ public final class DebuggerManager {
         k = engines.size ();
         for (i = 0; i < k; i++) {
             ((DebuggerEngine) engines.get (i)).getActionsManager ().doAction 
-                (ACTION_START);
+                (ActionsManager.ACTION_START);
         }
         
         if (sessionToStart != null)
@@ -391,7 +344,7 @@ public final class DebuggerManager {
         int i, k = ds.length;
         for (i = 0; i < k; i++)
             ds [i].getCurrentEngine ().getActionsManager ().
-                doAction (ACTION_KILL);
+                doAction (ActionsManager.ACTION_KILL);
     }
     
     /**

@@ -18,6 +18,8 @@ import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import org.netbeans.api.debugger.ActionsManager;
+
 
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.ActionsManagerListener;
@@ -286,16 +288,16 @@ PropertyChangeListener {
     public void actionPerformed (Object action, boolean success) {
         if (!success) return;
         //print ("CTL_Debugger_running", where, null, null);
-        if (action == DebuggerManager.ACTION_CONTINUE)
+        if (action == ActionsManager.ACTION_CONTINUE)
             print ("CTL_Continue", null, null);
         else
-        if (action == DebuggerManager.ACTION_STEP_INTO)
+        if (action == ActionsManager.ACTION_STEP_INTO)
             print ("CTL_Step_Into", null, null);
         else
-        if (action == DebuggerManager.ACTION_STEP_OUT)
+        if (action == ActionsManager.ACTION_STEP_OUT)
             print ("CTL_Step_Out", null, null);
         else
-        if (action == DebuggerManager.ACTION_STEP_OVER)
+        if (action == ActionsManager.ACTION_STEP_OVER)
             print ("CTL_Step_Over", null, null);
     }
 

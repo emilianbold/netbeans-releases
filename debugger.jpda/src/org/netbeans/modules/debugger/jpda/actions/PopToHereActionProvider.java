@@ -15,6 +15,8 @@ package org.netbeans.modules.debugger.jpda.actions;
 
 import java.util.Collections;
 import java.util.Set;
+import org.netbeans.api.debugger.ActionsManager;
+
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
@@ -41,7 +43,7 @@ public class PopToHereActionProvider extends JPDADebuggerActionProvider {
     }
     
     public Set getActions () {
-        return Collections.singleton (DebuggerManager.ACTION_POP_TOPMOST_CALL);
+        return Collections.singleton (ActionsManager.ACTION_POP_TOPMOST_CALL);
     }
 
     public void doAction (Object action) {
@@ -57,19 +59,19 @@ public class PopToHereActionProvider extends JPDADebuggerActionProvider {
             JPDAThread t = getDebuggerImpl ().getCurrentThread ();
             if (t == null) {
                 setEnabled (
-                    DebuggerManager.ACTION_POP_TOPMOST_CALL,
+                    ActionsManager.ACTION_POP_TOPMOST_CALL,
                     false
                 );
                 return;
             }
             setEnabled (
-                DebuggerManager.ACTION_POP_TOPMOST_CALL,
+                ActionsManager.ACTION_POP_TOPMOST_CALL,
                 t.getStackDepth () > 1
             );
             return;
         }
         setEnabled (
-            DebuggerManager.ACTION_POP_TOPMOST_CALL,
+            ActionsManager.ACTION_POP_TOPMOST_CALL,
             false
         );
     }

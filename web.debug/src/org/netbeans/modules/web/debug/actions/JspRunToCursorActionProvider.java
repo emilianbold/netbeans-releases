@@ -49,11 +49,11 @@ public class JspRunToCursorActionProvider extends ActionsProviderSupport {
         TopComponent.getRegistry ().addPropertyChangeListener (listener);
         DebuggerManager.getDebuggerManager ().addDebuggerListener (listener);
 
-        setEnabled(DebuggerManager.ACTION_RUN_TO_CURSOR, shouldBeEnabled());
+        setEnabled(ActionsManager.ACTION_RUN_TO_CURSOR, shouldBeEnabled());
     }
     
     public Set getActions() {
-        return Collections.singleton (DebuggerManager.ACTION_RUN_TO_CURSOR);
+        return Collections.singleton (ActionsManager.ACTION_RUN_TO_CURSOR);
     }
     
     public void doAction (Object action) {
@@ -115,7 +115,7 @@ public class JspRunToCursorActionProvider extends ActionsProviderSupport {
     private class Listener implements PropertyChangeListener, DebuggerManagerListener {
         public void propertyChange (PropertyChangeEvent e) {
             setEnabled (
-                DebuggerManager.ACTION_RUN_TO_CURSOR,
+                ActionsManager.ACTION_RUN_TO_CURSOR,
                 shouldBeEnabled ()
             );
         }

@@ -48,7 +48,7 @@ public class JspGoToCursorActionProvider extends ActionsProviderSupport implemen
     
     public void propertyChange (PropertyChangeEvent evt) {
         setEnabled (
-            DebuggerManager.ACTION_RUN_TO_CURSOR,
+            ActionsManager.ACTION_RUN_TO_CURSOR,
             (debugger.getState () == debugger.STATE_STOPPED) &&
             (Utils.isJsp(Context.getCurrentURL()))
         );
@@ -62,7 +62,7 @@ public class JspGoToCursorActionProvider extends ActionsProviderSupport implemen
     }
     
     public Set getActions () {
-        return Collections.singleton (DebuggerManager.ACTION_RUN_TO_CURSOR);
+        return Collections.singleton (ActionsManager.ACTION_RUN_TO_CURSOR);
     }
     
     public void doAction (Object action) {
@@ -77,7 +77,7 @@ public class JspGoToCursorActionProvider extends ActionsProviderSupport implemen
         breakpoint.setHidden(true);
         DebuggerManager.getDebuggerManager().addBreakpoint (breakpoint);
         session.getEngineForLanguage ("JSP").getActionsManager ().doAction (
-            DebuggerManager.ACTION_CONTINUE
+            ActionsManager.ACTION_CONTINUE
         );
     }
 }

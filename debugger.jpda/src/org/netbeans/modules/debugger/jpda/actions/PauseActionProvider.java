@@ -15,6 +15,8 @@ package org.netbeans.modules.debugger.jpda.actions;
 
 import java.util.Collections;
 import java.util.Set;
+import org.netbeans.api.debugger.ActionsManager;
+
 
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -38,7 +40,7 @@ public class PauseActionProvider extends JPDADebuggerActionProvider {
     }
     
     public Set getActions () {
-        return Collections.singleton (DebuggerManager.ACTION_PAUSE);
+        return Collections.singleton (ActionsManager.ACTION_PAUSE);
     }
 
     public void doAction (Object action) {
@@ -47,7 +49,7 @@ public class PauseActionProvider extends JPDADebuggerActionProvider {
     
     protected void checkEnabled (int debuggerState) {
         setEnabled (
-            DebuggerManager.ACTION_PAUSE,
+            ActionsManager.ACTION_PAUSE,
             debuggerState == getDebuggerImpl ().STATE_RUNNING
         );
     }

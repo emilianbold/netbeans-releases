@@ -18,6 +18,8 @@ import com.sun.jdi.VirtualMachine;
 import java.util.Collections;
 
 import java.util.Set;
+import org.netbeans.api.debugger.ActionsManager;
+
 
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -49,7 +51,7 @@ public class StartActionProvider extends ActionsProvider {
     }
     
     public Set getActions () {
-        return Collections.singleton (DebuggerManager.ACTION_START);
+        return Collections.singleton (ActionsManager.ACTION_START);
     }
     
     public void doAction (Object action) {

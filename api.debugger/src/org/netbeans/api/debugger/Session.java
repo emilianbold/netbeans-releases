@@ -248,7 +248,7 @@ public final class Session {
         Iterator i = dead.iterator ();
         while (i.hasNext ())
             ((DebuggerEngine) i.next ()).getActionsManager ().
-                doAction (DebuggerManager.ACTION_KILL);
+                doAction (ActionsManager.ACTION_KILL);
     }
 
     /**

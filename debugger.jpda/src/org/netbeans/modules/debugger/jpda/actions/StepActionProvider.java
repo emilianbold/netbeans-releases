@@ -36,6 +36,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.api.debugger.ActionsManager;
+
 
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -74,9 +76,9 @@ implements Executor {
 
 
     private static int getJDIAction (Object action) {
-        if (action == DebuggerManager.ACTION_STEP_OUT) 
+        if (action == ActionsManager.ACTION_STEP_OUT) 
             return StepRequest.STEP_OUT;
-        if (action == DebuggerManager.ACTION_STEP_OVER) 
+        if (action == ActionsManager.ACTION_STEP_OVER) 
             return StepRequest.STEP_OVER;
         throw new IllegalArgumentException ();
     }
@@ -95,8 +97,8 @@ implements Executor {
     
     public Set getActions () {
         return new HashSet (Arrays.asList (new Object[] {
-            DebuggerManager.ACTION_STEP_OUT,
-            DebuggerManager.ACTION_STEP_OVER
+            ActionsManager.ACTION_STEP_OUT,
+            ActionsManager.ACTION_STEP_OVER
         }));
     }
     
@@ -184,7 +186,7 @@ implements Executor {
             boolean stepInto = ((StepRequest) ev.request ()).depth () == 
                             StepRequest.STEP_INTO;
             getStepIntoActionProvider ().doAction 
-                (DebuggerManager.ACTION_STEP_INTO);
+                (ActionsManager.ACTION_STEP_INTO);
             return true; // resume
 
         }

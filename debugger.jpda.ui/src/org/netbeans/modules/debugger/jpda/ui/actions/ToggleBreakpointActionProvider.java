@@ -17,6 +17,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.Set;
+import org.netbeans.api.debugger.ActionsManager;
+
 
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -58,7 +60,7 @@ implements PropertyChangeListener {
     
     public void propertyChange (PropertyChangeEvent evt) {
         setEnabled (
-            DebuggerManager.ACTION_TOGGLE_BREAKPOINT,
+            ActionsManager.ACTION_TOGGLE_BREAKPOINT,
             (EditorContextBridge.getCurrentLineNumber () >= 0) && 
             (EditorContextBridge.getCurrentURL () != null) &&
             (EditorContextBridge.getCurrentURL ().endsWith (".java"))
@@ -70,7 +72,7 @@ implements PropertyChangeListener {
     }
     
     public Set getActions () {
-        return Collections.singleton (DebuggerManager.ACTION_TOGGLE_BREAKPOINT);
+        return Collections.singleton (ActionsManager.ACTION_TOGGLE_BREAKPOINT);
     }
     
     public void doAction (Object action) {

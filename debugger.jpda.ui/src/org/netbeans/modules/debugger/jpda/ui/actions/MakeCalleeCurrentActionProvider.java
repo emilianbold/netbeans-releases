@@ -15,6 +15,8 @@ package org.netbeans.modules.debugger.jpda.ui.actions;
 
 import java.util.Collections;
 import java.util.Set;
+import org.netbeans.api.debugger.ActionsManager;
+
 
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -43,7 +45,7 @@ public class MakeCalleeCurrentActionProvider extends JPDADebuggerAction {
     }
     
     public Set getActions () {
-        return Collections.singleton (DebuggerManager.ACTION_MAKE_CALLEE_CURRENT);
+        return Collections.singleton (ActionsManager.ACTION_MAKE_CALLEE_CURRENT);
     }
 
     public void doAction (Object action) {
@@ -63,14 +65,14 @@ public class MakeCalleeCurrentActionProvider extends JPDADebuggerAction {
                 int i = MakeCallerCurrentActionProvider.getCurrentCallStackFrameIndex 
                     (getDebuggerImpl ());
                 setEnabled (
-                    DebuggerManager.ACTION_MAKE_CALLEE_CURRENT,
+                    ActionsManager.ACTION_MAKE_CALLEE_CURRENT,
                     i > 0
                 );
                 return;
             }
         }
         setEnabled (
-            DebuggerManager.ACTION_MAKE_CALLEE_CURRENT,
+            ActionsManager.ACTION_MAKE_CALLEE_CURRENT,
             false
         );
     }

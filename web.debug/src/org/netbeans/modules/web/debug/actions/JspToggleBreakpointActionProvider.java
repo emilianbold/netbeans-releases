@@ -55,7 +55,7 @@ public class JspToggleBreakpointActionProvider extends ActionsProviderSupport im
     
     public void propertyChange (PropertyChangeEvent evt) {
         boolean isJsp = Utils.isJsp(Context.getCurrentURL());
-        setEnabled(DebuggerManager.ACTION_TOGGLE_BREAKPOINT, isJsp);
+        setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, isJsp);
         if ( debugger != null && 
              debugger.getState () == debugger.STATE_DISCONNECTED
         ) 
@@ -63,7 +63,7 @@ public class JspToggleBreakpointActionProvider extends ActionsProviderSupport im
     }
     
     public Set getActions () {
-        return Collections.singleton (DebuggerManager.ACTION_TOGGLE_BREAKPOINT);
+        return Collections.singleton (ActionsManager.ACTION_TOGGLE_BREAKPOINT);
     }
     
     public void doAction (Object action) {

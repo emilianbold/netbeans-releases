@@ -18,6 +18,8 @@ import com.sun.jdi.ThreadReference;
 import java.util.Collections;
 import java.util.Set;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.debugger.ActionsManager;
+
 
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -50,7 +52,7 @@ public class MakeCallerCurrentActionProvider extends JPDADebuggerAction {
     }
     
     public Set getActions () {
-        return Collections.singleton (DebuggerManager.ACTION_MAKE_CALLER_CURRENT);
+        return Collections.singleton (ActionsManager.ACTION_MAKE_CALLER_CURRENT);
     }
 
     public void doAction (Object action) {
@@ -67,14 +69,14 @@ public class MakeCallerCurrentActionProvider extends JPDADebuggerAction {
             if (t != null) {
                 int i = getCurrentCallStackFrameIndex (getDebuggerImpl ());
                 setEnabled (
-                    DebuggerManager.ACTION_MAKE_CALLER_CURRENT,
+                    ActionsManager.ACTION_MAKE_CALLER_CURRENT,
                     i < (t.getStackDepth () - 1)
                 );
                 return;
             }
         }
         setEnabled (
-            DebuggerManager.ACTION_MAKE_CALLER_CURRENT,
+            ActionsManager.ACTION_MAKE_CALLER_CURRENT,
             false
         );
     }

@@ -25,6 +25,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import org.netbeans.api.debugger.ActionsManager;
+
 
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -76,7 +78,7 @@ implements Executor, PropertyChangeListener {
     
     public Set getActions () {
         return new HashSet (Arrays.asList (new Object[] {
-            DebuggerManager.ACTION_STEP_INTO,
+            ActionsManager.ACTION_STEP_INTO,
         }));
     }
     
