@@ -1287,13 +1287,14 @@ public class TomcatManager implements DeploymentManager {
                 dest.mkdirs ();
             }
             // copy config files
+            final String ADMIN_XML = "conf/Catalina/localhost/admin.xml";
             String [] files = new String [] { 
                 "conf/catalina.policy",   // NOI18N
                 "conf/catalina.properties",   // NOI18N
                 "conf/server.xml",   // NOI18N
                 "conf/tomcat-users.xml",   // NOI18N
                 "conf/web.xml",   // NOI18N
-                //"conf/Catalina/localhost/admin.xml",   // NOI18N For bundled tomcat 5.0.x 
+                ADMIN_XML,   // NOI18N For bundled tomcat 5.0.x 
                 "conf/Catalina/localhost/manager.xml",   // NOI18N
                 //"conf/Catalina/localhost/balancer.xml"   // NOI18N For bundled tomcat 5.0.x 
             };
@@ -1303,7 +1304,7 @@ public class TomcatManager implements DeploymentManager {
                 "</Host>",   // NOI18N
                 "</tomcat-users>",   // NOI18N
                 null,
-                //"docBase=\"../server/webapps/admin\"",    // NOI18N For bundled tomcat 5.0.x 
+                "docBase=\"../server/webapps/admin\"",    // NOI18N For bundled tomcat 5.0.x 
                 "docBase=\"../server/webapps/manager\"",    // NOI18N
                 //"docBase=\"balancer\""                    // NOI18N For bundled tomcat 5.0.x 
             };
@@ -1320,9 +1321,9 @@ public class TomcatManager implements DeploymentManager {
                 //"<Context path=\"/jsp-examples\" docBase=\""+new File (homeDir, "webapps/jsp-examples").getAbsolutePath ()+"\" debug=\"0\"/>\n"+
                 //"<Context path=\"/servlets-examples\" docBase=\""+new File (homeDir, "webapps/servlets-examples").getAbsolutePath ()+"\" debug=\"0\"/>\n"+
                 "</Host>",   // NOI18N
-                passwd != null ? "<user username=\"ide\" password=\"" + passwd + "\" roles=\"manager\"/>\n</tomcat-users>" : null,   // NOI18N
+                passwd != null ? "<user username=\"ide\" password=\"" + passwd + "\" roles=\"manager,admin\"/>\n</tomcat-users>" : null,   // NOI18N
                 null, 
-                //"docBase=\"${catalina.home}/server/webapps/admin\"",   // NOI18N For bundled tomcat 5.0.x
+                "docBase=\"${catalina.home}/server/webapps/admin\"",   // NOI18N For bundled tomcat 5.0.x
                 "docBase=\"${catalina.home}/server/webapps/manager\"",   // NOI18N 
                 //"docBase=\""+new File (homeDir, "webapps/balancer").getAbsolutePath ()+"\""   // NOI18N For bundled tomcat 5.0.x
             };
@@ -1362,8 +1363,10 @@ public class TomcatManager implements DeploymentManager {
                         patternFrom[i],
                         patternTo[i]
                         )) {
-                        ErrorManager.getDefault ().log (ErrorManager.INFORMATIONAL, "Cannot create config file "+files[i]);
-                        return null;
+                        if (!(ADMIN_XML.equals(files[i]) && !(new File (fromDir, files[i].substring (slash+1))).exists()) ){
+                            ErrorManager.getDefault ().log (ErrorManager.INFORMATIONAL, "Cannot create config file "+files[i]);
+                            return null;
+                        }
                     }
                 }
             }        
@@ -1384,6 +1387,8 @@ public class TomcatManager implements DeploymentManager {
     private boolean copyAndPatch (File src, File dst, String from, String to) {
         java.io.Reader r = null;
         java.io.Writer out = null;
+        if (!src.exists())
+            return false;
         try {
             r = new BufferedReader (new InputStreamReader (new FileInputStream (src), "utf-8")); // NOI18N
             StringBuffer sb = new StringBuffer ();
