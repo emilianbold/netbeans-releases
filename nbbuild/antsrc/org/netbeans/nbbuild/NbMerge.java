@@ -181,11 +181,12 @@ public class NbMerge extends Task {
         List todo = new ArrayList(fullList.subList(0, fullList.indexOf(dummy)));
         todo.removeAll(doneList.subList(0, doneList.indexOf(getOwningTarget())));
         Iterator targit = todo.iterator();
-        System.out.println(""); System.out.println("<nbmerge> Going to execute targets \"" + todo.toString() + "\"");
+        log("Going to execute targets " + todo);
         while (targit.hasNext()) {
             Target nexttargit = (Target)targit.next();
             String targetname = nexttargit.getName();
             if ( builttargets.indexOf(targetname) < 0 ) {
+                // XXX poor replacement for Project.fireTargetStarted etc.
                 System.out.println(""); System.out.println(targetname + ":");
                 nexttargit.execute();
                 builttargets.addElement(targetname);
@@ -193,8 +194,8 @@ public class NbMerge extends Task {
         }
 
         builtmodules.addAll(buildfixedmodules); // add already built fixed modules to the list
-        log("fixedmodules=\"" + buildfixedmodules.toString() + "\"", Project.MSG_DEBUG);
-        log("builtmodules=\"" + builtmodules.toString() + "\"", Project.MSG_VERBOSE);
+        log("fixedmodules=" + buildfixedmodules, Project.MSG_DEBUG);
+        log("builtmodules=" + builtmodules, Project.MSG_VERBOSE);
     }
     
     /** Execute targets which can fail _without_ throwing BuildException */
@@ -231,13 +232,13 @@ public class NbMerge extends Task {
                     }
                     builtmodules.addElement(module);
                 } catch (BuildException BE) {
-                        log(BE.toString());
+                        log(BE.toString(), Project.MSG_WARN);
                         BE.printStackTrace();
                         failedmodules.addElement(module);
                 }
             }
-            log("builtmodules=\"" + builtmodules.toString() + "\"", Project.MSG_VERBOSE);
-            log("failedmodules=\"" + failedmodules.toString() + "\"", Project.MSG_VERBOSE);
+            log("builtmodules=" + builtmodules, Project.MSG_VERBOSE);
+            log("failedmodules=" + failedmodules, Project.MSG_VERBOSE);
         }
     }
     
@@ -274,11 +275,11 @@ public class NbMerge extends Task {
 
         // display build success status
         if (builtmodules.size() > 0 ) {
-            log("builtmodules=\"" + builtmodules.toString() + "\"");
-            log("builttargets=\"" + builttargets.toString() + "\"");
+            log("builtmodules=" + builtmodules);
+            log("builttargets=" + builttargets);
             if (failedmodules.size() > 0 ) {
                 log("SOME MODULES FAILED TO BUILD, BUT THEIR BuildException WAS CAUGHT.", Project.MSG_WARN);
-                log("failedmodules=\"" + failedmodules.toString() + "\"", Project.MSG_WARN);
+                log("failedmodules=" + failedmodules, Project.MSG_WARN);
             }
             
             if ( mergemodules.size() > 0 ) {
@@ -293,7 +294,7 @@ public class NbMerge extends Task {
                         String bm = setmodules.toString();
                         bm = bm.substring( 1, bm.length() - 1);
                         if (bm.length() > 0 ) {
-                            log("Setting property \"" + builtmodulesproperty + "\" to new value \"" + bm + "\""); //, Project.MSG_VERBOSE);
+                            log("Setting property \"" + builtmodulesproperty + "\" to new value " + bm); //, Project.MSG_VERBOSE);
                             project.setUserProperty(builtmodulesproperty, bm);
                         }
                     }
@@ -363,7 +364,7 @@ public class NbMerge extends Task {
                 copy.execute ();
             }
         }
-        log("mergedmodules=\"" + mergemodules.toString() + "\"");
+        log("mergedmodules=" + mergemodules);
         it = suppressedlocales.iterator ();
         UpdateTracking tr = new UpdateTracking( dest.getAbsolutePath() );
         log ( dest.getAbsolutePath() );
