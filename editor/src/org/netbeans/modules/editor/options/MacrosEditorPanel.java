@@ -14,6 +14,7 @@
 package org.netbeans.modules.editor.options;
 
 import java.awt.Dialog;
+import java.awt.Window;
 import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
@@ -54,6 +55,13 @@ public class MacrosEditorPanel extends javax.swing.JPanel {
         addButton.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_MEP_Add")); // NOI18N
         editButton.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_MEP_Edit")); // NOI18N
         removeButton.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_MEP_Remove")); // NOI18N
+        macrosTable.registerKeyboardAction(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) { 
+                SwingUtilities.getAncestorOfClass(Window.class, MacrosEditorPanel.this).hide();
+            }},
+            KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+            JComponent.WHEN_FOCUSED
+        );
     }
 
     private String getBundleString(String s) {
@@ -300,5 +308,5 @@ public class MacrosEditorPanel extends javax.swing.JPanel {
             return retVal;
         }
     }
-
+    
 }

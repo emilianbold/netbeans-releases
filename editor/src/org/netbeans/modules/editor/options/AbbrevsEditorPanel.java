@@ -14,6 +14,7 @@
 package org.netbeans.modules.editor.options;
 
 import java.awt.Dialog;
+import java.awt.Window;
 import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
@@ -53,6 +54,13 @@ public class AbbrevsEditorPanel extends javax.swing.JPanel {
         addButton.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_AEP_Add")); // NOI18N
         editButton.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_AEP_Edit")); // NOI18N
         removeButton.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_AEP_Remove")); // NOI18N
+        abbrevsTable.registerKeyboardAction(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) { 
+                SwingUtilities.getAncestorOfClass(Window.class, AbbrevsEditorPanel.this).hide();
+            }},
+            KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+            JComponent.WHEN_FOCUSED
+        );
     }
     
     private String getBundleString(String s) {
