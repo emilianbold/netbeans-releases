@@ -180,7 +180,7 @@ public class ClassPathSupport {
         }
         return libraryPrefix + item.getLibrary().getName() + librarySuffix;        
     }
-        
+    
     // Private methods ---------------------------------------------------------
 
     private boolean isWellKnownPath( String property ) {
@@ -302,7 +302,7 @@ public class ClassPathSupport {
         public String getReference() {
             return property;
         }
-        
+                        
         public int hashCode() {
         
             int hash = getType();
@@ -323,13 +323,13 @@ public class ClassPathSupport {
             return hash;
         }
     
-        public boolean equals( Object object ) {
+        public boolean equals( Object itemObject ) {
 
-            if ( !( object instanceof Item ) ) {
+            if ( !( itemObject instanceof Item ) ) {
                 return false;
             }
             
-            Item item = (Item)object;
+            Item item = (Item)itemObject;
 
             if ( getType() != item.getType() ) {
                 return false;
