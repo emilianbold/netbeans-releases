@@ -857,7 +857,7 @@ public class TomcatManager implements DeploymentManager {
     
     public Integer getServerPort() {
         
-        boolean upToDate = true;
+        boolean upToDate = false;
         InstanceProperties ip = getInstanceProperties();
         if (ip == null) {
             return null;   
@@ -902,7 +902,7 @@ public class TomcatManager implements DeploymentManager {
     }
     
     public Integer getAdminPort() {
-        boolean upToDate = true;
+        boolean upToDate = false;
         InstanceProperties ip = getInstanceProperties();
         if (ip == null) {
             return null;
@@ -1029,7 +1029,7 @@ public class TomcatManager implements DeploymentManager {
                 return true;
             }
         }
-        return true;
+        return false;
     }
     
     public void setServerPort(Integer port) {

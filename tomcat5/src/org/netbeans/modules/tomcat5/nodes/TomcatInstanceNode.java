@@ -26,9 +26,13 @@ import org.netbeans.modules.tomcat5.util.TomcatInstallUtil;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.tomcat5.nodes.actions.SharedContextLogAction;
+import org.netbeans.modules.tomcat5.nodes.actions.EditServerXmlAction;
 import org.netbeans.modules.tomcat5.ide.MonitorSupport;
 import org.openide.actions.PropertiesAction;
 import org.openide.util.HelpCtx;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.cookies.EditorCookie;
 
 
 /**
@@ -176,7 +180,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
     public javax.swing.Action[] getActions(boolean context) {
         return new SystemAction[] {
                    null,
-                   //SystemAction.get (AccessLogAction.class),
+                   SystemAction.get (EditServerXmlAction.class),
                    SystemAction.get (SharedContextLogAction.class),
                    null,
                    SystemAction.get(PropertiesAction.class)
@@ -584,5 +588,43 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
             return base.getFileObject("conf/server.xml"); //NOI18N
         }
         return null;
-    }    
+    }
+    
+    /**
+     * Open server.xml file in editor.
+     */
+    public void editServerXml() {
+        FileObject fileObject = getTomcatConf();
+        if (fileObject != null) {
+            DataObject dataObject = null;
+            try {
+                dataObject = DataObject.find(fileObject);
+            } catch(DataObjectNotFoundException ex) {// ignore it
+            }
+            if (dataObject != null) {
+                EditorCookie editorCookie = (EditorCookie)dataObject.getCookie(EditorCookie.class);
+                if (editorCookie == null) return;
+                editorCookie.open();
+            }
+        }
+    }
+
+    /**
+     * Is server.xml file accessible?
+     *
+     * @return <code>true</code> if server.xml file is accessible,
+     *         <code>false</code> otherwise.
+     */
+    public boolean isServerXmlAccessible() {
+        FileObject fileObject = getTomcatConf();
+        if (fileObject != null) {
+            DataObject dataObject = null;
+            try {
+                dataObject = DataObject.find(fileObject);
+                return true;
+            } catch(DataObjectNotFoundException ex) {// ignore it
+            }
+        }
+        return false;
+    }
 }
