@@ -148,7 +148,7 @@ public class Installer extends ModuleInstall {
             // install into menu
             Utilities2.createAction (BookmarksAction.class,
                                      DataFolder.create (TopManager.getDefault ().getPlaces ().folders().menus (), "Help"), // NOI18N
-                                     "SubmitFeedback", true, false, false, false // NOI18N
+                                     "JavaIDEResources", true, false, false, false // NOI18N
                                     );
 
             // OpenFile:
