@@ -1521,8 +1521,12 @@ class JavaCodeGenerator extends CodeGenerator {
             else lastLineEmpty = false;
 
             // adjust indentation level for the line
-            if (firstClosingBr && indentLevel > minIndentLevel)
-                indentLevel--;
+            if (firstClosingBr) { // the line starts with } or )
+                if (indentLevel > minIndentLevel)
+                    indentLevel--;
+                if (brackets < 0)
+                    brackets = 0; // don't change indentation for the next line
+            }
 
             // write indentation space
             for (int j=0; j < indentLevel; j++)
