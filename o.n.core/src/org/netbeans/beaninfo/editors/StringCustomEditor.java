@@ -43,6 +43,13 @@ public class StringCustomEditor extends javax.swing.JPanel implements EnhancedCu
         textArea.getAccessibleContext().setAccessibleName(NbBundle.getBundle(StringCustomEditor.class).getString("ACS_TextArea"));
         textArea.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(StringCustomEditor.class).getString("ACSD_TextArea"));
         getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(StringCustomEditor.class).getString("ACSD_CustomStringEditor"));
+        if ( !editable ) {
+            // hack to fix #9219
+            JTextField hack = new JTextField();
+            hack.setEditable( false );
+            textArea.setBackground( hack.getBackground() );
+            textArea.setForeground( hack.getForeground() );
+        }
     }
 
     /**
