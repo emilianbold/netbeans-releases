@@ -19,31 +19,32 @@ package org.netbeans.modules.testtools.wizards;
  * Created on April 10, 2002, 1:46 PM
  */
 
-import org.openide.WizardDescriptor;
-import org.openide.util.HelpCtx;
 import java.util.Vector;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.JDialog;
+import java.awt.Component;
+import javax.swing.JPanel;
 import javax.swing.DefaultComboBoxModel;
-import org.netbeans.modules.java.JavaDataObject;
-import org.openide.loaders.TemplateWizard;
-import org.openide.src.MethodElement;
 import javax.swing.DefaultListCellRenderer;
-import org.openide.util.Utilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
-/**
- *
+import org.openide.util.HelpCtx;
+import org.openide.util.Utilities;
+import org.openide.WizardDescriptor;
+import org.openide.src.MethodElement;
+import org.openide.loaders.TemplateWizard;
+
+/** Wizard Panel with Test Cases configuration
  * @author  <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
  */
-public class TestCasesPanel extends javax.swing.JPanel implements WizardDescriptor.FinishPanel {
+public class TestCasesPanel extends JPanel implements WizardDescriptor.FinishPanel {
     
     private Vector listData;
 
     
-    /** Creates new form TestSuitePanel2 */
+    /** Creates new form TestCasesPanel */
     public TestCasesPanel() {
         initComponents();
         caseName.getDocument().addDocumentListener(new DocumentListener() {
@@ -278,7 +279,7 @@ public class TestCasesPanel extends javax.swing.JPanel implements WizardDescript
         refreshAdd();
     }//GEN-LAST:event_addActionPerformed
     
-    public void refreshAdd() {
+    private void refreshAdd() {
         String name=caseName.getText();
         boolean b=true;
         for (int i=0; b&&i<listData.size(); i++)
@@ -286,24 +287,31 @@ public class TestCasesPanel extends javax.swing.JPanel implements WizardDescript
         add.setEnabled(Utilities.isJavaIdentifier(name)&&b);
     }
     
-    public void refreshButtons() {
+    private void refreshButtons() {
         int index=testCases.getSelectedIndex();
         remove.setEnabled(index>-1);
         up.setEnabled(index>0);
         down.setEnabled((index>-1)&&(index<listData.size()-1));
     }
     
-    public void addChangeListener(javax.swing.event.ChangeListener changeListener) {
-    }    
+    /** adds ChangeListener of current Panel
+     * @param changeListener ChangeListener */    
+    public void addChangeListener(ChangeListener changeListener) {}    
     
-    public java.awt.Component getComponent() {
+    /** returns current Panel
+     * @return Component */    
+    public Component getComponent() {
         return this;
     }    
     
-    public org.openide.util.HelpCtx getHelp() {
+    /** returns Help Context
+     * @return HelpCtx */    
+    public HelpCtx getHelp() {
         return new HelpCtx(TestCasesPanel.class);
     }
     
+    /** read settings from given Object
+     * @param obj TemplateWizard with settings */    
     public void readSettings(Object obj) {
         WizardSettings set=WizardSettings.get(obj);
         if (set.methods==null) {
@@ -315,13 +323,19 @@ public class TestCasesPanel extends javax.swing.JPanel implements WizardDescript
         refreshButtons();
     }
 
-    public void removeChangeListener(javax.swing.event.ChangeListener changeListener) {
+    /** removes Change Listener of current Panel
+     * @param changeListener ChangeListener */    
+    public void removeChangeListener(ChangeListener changeListener) {
     }
     
+    /** stores settings to given Object
+     * @param obj TemplateWizard with settings */    
     public void storeSettings(Object obj) {
         WizardSettings.get(obj).methods=(WizardIterator.CaseElement[])listData.toArray(new WizardIterator.CaseElement[listData.size()]);
     }
 
+    /** test current Panel state for data validity
+     * @return boolean true if data are valid and Wizard can continue */    
     public boolean isValid() {
         return true;
     }

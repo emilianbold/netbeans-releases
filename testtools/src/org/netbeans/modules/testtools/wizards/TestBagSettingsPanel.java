@@ -19,17 +19,19 @@ package org.netbeans.modules.testtools.wizards;
  * Created on April 10, 2002, 1:45 PM
  */
 
-import org.openide.WizardDescriptor;
-import org.openide.util.HelpCtx;
-import javax.swing.event.DocumentListener;
+import java.awt.Component;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentListener;
 
-/**
- *
- * @author  <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
- */
-public class TestBagSettingsPanel extends javax.swing.JPanel implements WizardDescriptor.FinishPanel {
+import org.openide.util.HelpCtx;
+import org.openide.WizardDescriptor;
+
+/** Wizard Panel with Test Bag Settings configuration
+ * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
+public class TestBagSettingsPanel extends JPanel implements WizardDescriptor.FinishPanel {
 
     private static final String DEFAULT_NAME="<default name>";
     
@@ -238,17 +240,24 @@ public class TestBagSettingsPanel extends javax.swing.JPanel implements WizardDe
         nameField.selectAll();
     }//GEN-LAST:event_nameFieldFocusGained
 
-    public void addChangeListener(javax.swing.event.ChangeListener changeListener) {
-    }    
+    /** adds ChangeListener of current Panel
+     * @param changeListener ChangeListener */    
+    public void addChangeListener(ChangeListener changeListener) {}    
     
-    public java.awt.Component getComponent() {
+    /** returns current Panel
+     * @return Component */    
+    public Component getComponent() {
         return this;
     }    
     
-    public org.openide.util.HelpCtx getHelp() {
+    /** returns Help Context
+     * @return HelpCtx */    
+    public HelpCtx getHelp() {
         return new HelpCtx(TestBagSettingsPanel.class);
     }
     
+    /** read settings from given Object
+     * @param obj TemplateWizard with settings */    
     public void readSettings(Object obj) {
         WizardSettings set=WizardSettings.get(obj);
         if (set.bagAttrs!=null)
@@ -261,9 +270,12 @@ public class TestBagSettingsPanel extends javax.swing.JPanel implements WizardDe
         codeRadio.setSelected(!set.bagIDEExecutor);
     }
     
-    public void removeChangeListener(javax.swing.event.ChangeListener changeListener) {
-    }
+    /** removes Change Listener of current Panel
+     * @param changeListener ChangeListener */    
+    public void removeChangeListener(ChangeListener changeListener) {}
     
+    /** stores settings to given Object
+     * @param obj TemplateWizard with settings */    
     public void storeSettings(Object obj) {
         WizardSettings set=WizardSettings.get(obj);
         String name=nameField.getText();
@@ -276,6 +288,8 @@ public class TestBagSettingsPanel extends javax.swing.JPanel implements WizardDe
         set.bagIDEExecutor=ideRadio.isSelected();
     }
 
+    /** test current Panel state for data validity
+     * @return boolean true if data are valid and Wizard can continue */    
     public boolean isValid() {
         return true;
     }

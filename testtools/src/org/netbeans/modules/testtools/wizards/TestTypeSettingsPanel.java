@@ -19,23 +19,25 @@ package org.netbeans.modules.testtools.wizards;
  * Created on April 10, 2002, 1:44 PM
  */
 
-import org.openide.WizardDescriptor;
-import org.openide.util.HelpCtx;
-import javax.swing.event.ChangeListener;
-import org.openide.loaders.TemplateWizard;
+import java.awt.Component;
 import java.awt.CardLayout;
-import org.openide.util.Utilities;
+import javax.swing.JPanel;
+import javax.swing.event.ChangeListener;
 
-/**
- *
+import org.openide.util.HelpCtx;
+import org.openide.util.Utilities;
+import org.openide.WizardDescriptor;
+import org.openide.loaders.TemplateWizard;
+
+/** Wizard Panel with Test Type Settings configuration
  * @author  <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
  */
-public class TestTypeSettingsPanel extends javax.swing.JPanel implements WizardDescriptor.Panel {
+public class TestTypeSettingsPanel extends JPanel implements WizardDescriptor.Panel {
     
     private boolean stop=true;
     private String name=null;
     
-    /** Creates new form TestTypePanel */
+    /** Creates new form TestTypeSettingsPanel */
     public TestTypeSettingsPanel() {
         initComponents();
     }
@@ -129,17 +131,25 @@ public class TestTypeSettingsPanel extends javax.swing.JPanel implements WizardD
 
     }//GEN-END:initComponents
 
-    public void addChangeListener(javax.swing.event.ChangeListener l) {
+    /** adds ChangeListener of current Panel
+     * @param l ChangeListener */    
+    public void addChangeListener(ChangeListener l) {
     }    
     
-    public java.awt.Component getComponent() {
+    /** returns current Panel
+     * @return Component */    
+    public Component getComponent() {
         return this;
     }    
     
-    public org.openide.util.HelpCtx getHelp() {
+    /** returns Help Context
+     * @return HelpCtx */    
+    public HelpCtx getHelp() {
         return new HelpCtx(TestTypeSettingsPanel.class);
     }
     
+    /** read settings from given Object
+     * @param obj TemplateWizard with settings */    
     public void readSettings(Object obj) {
         TemplateWizard wizard=(TemplateWizard)obj;
         WizardSettings set=WizardSettings.get(obj);
@@ -167,9 +177,13 @@ public class TestTypeSettingsPanel extends javax.swing.JPanel implements WizardD
         }
     }
     
-    public void removeChangeListener(javax.swing.event.ChangeListener l) {
+    /** removes Change Listener of current Panel
+     * @param l ChangeListener */    
+    public void removeChangeListener(ChangeListener l) {
     }
     
+    /** stores settings to given Object
+     * @param obj TemplateWizard with settings */    
     public void storeSettings(Object obj) {
         WizardSettings set=WizardSettings.get(obj);
         set.typeUseJemmy=jemmyCheck.isSelected();
@@ -178,6 +192,8 @@ public class TestTypeSettingsPanel extends javax.swing.JPanel implements WizardD
             set.defaultType=name;
     }
 
+    /** test current Panel state for data validity
+     * @return boolean true if data are valid and Wizard can continue */    
     public boolean isValid() {
         return !stop;
     }

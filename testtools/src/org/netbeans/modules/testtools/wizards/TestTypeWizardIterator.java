@@ -19,39 +19,44 @@ package org.netbeans.modules.testtools.wizards;
  * Created on April 11, 2002, 11:46 AM
  */
 
-import org.openide.loaders.TemplateWizard;
-import org.openide.WizardDescriptor;
-import org.openide.loaders.DataObject;
-import org.openide.TopManager;
-import org.openide.loaders.DataFolder;
-import java.util.HashSet;
-import org.openide.filesystems.LocalFileSystem;
-import org.openide.filesystems.Repository;
-import org.openide.filesystems.FileUtil;
 import java.io.File;
-import org.netbeans.modules.java.JavaDataObject;
+import java.util.Set;
 import java.util.Vector;
-import org.openide.src.MethodElement;
+import java.util.HashSet;
 import java.io.IOException;
 
-/**
- *
+import org.openide.TopManager;
+import org.openide.WizardDescriptor;
+import org.openide.src.MethodElement;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.TemplateWizard;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.filesystems.LocalFileSystem;
+
+
+/** Test Type Wizard Iterator class
  * @author  <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
  */
 public class TestTypeWizardIterator extends WizardIterator {
     
     private static TestTypeWizardIterator iterator;
     
-    /** Creates a new instance of WorkspaceWizardIterator */
+    /** Creates a new instance of TestTypeWizardIterator */
     public TestTypeWizardIterator() {
     }
     
+    /** singleton method
+     * @return TestSuiteWizardIterator singleton instance */    
     public static synchronized TestTypeWizardIterator singleton() {
         if (iterator==null)
             iterator=new TestTypeWizardIterator();
         return iterator;
     }
 
+    /** perform initialization of Wizard Iterator
+     * @param wizard TemplateWizard instance requested Wizard Iterator */    
     public void initialize(TemplateWizard wizard) {
         this.wizard=wizard;
         WizardSettings set=new WizardSettings();
@@ -83,7 +88,11 @@ public class TestTypeWizardIterator extends WizardIterator {
         current=0;
     }
     
-    public java.util.Set instantiate(TemplateWizard wizard) throws IOException {
+    /** perform instantiation of templates
+     * @param wizard TemplateWizard instance requested Wizard Iterator
+     * @throws IOException when some IO problems
+     * @return Set of newly created Data Objects */    
+    public Set instantiate(TemplateWizard wizard) throws IOException {
         WizardSettings set=WizardSettings.get(wizard);
         set.typeTarget=wizard.getTargetFolder();
         set.typeName=wizard.getTargetName();

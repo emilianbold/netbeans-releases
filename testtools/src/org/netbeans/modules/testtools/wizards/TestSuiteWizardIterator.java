@@ -19,35 +19,40 @@ package org.netbeans.modules.testtools.wizards;
  * Created on April 11, 2002, 11:46 AM
  */
 
-import org.openide.loaders.TemplateWizard;
-import org.openide.WizardDescriptor;
-import org.openide.loaders.DataObject;
-import org.openide.TopManager;
-import java.util.HashSet;
+import java.util.Set;
 import java.util.Vector;
-import org.netbeans.modules.java.JavaDataObject;
+import java.util.HashSet;
+
+import org.openide.TopManager;
+import org.openide.ErrorManager;
+import org.openide.WizardDescriptor;
 import org.openide.src.MethodElement;
 import org.openide.src.SourceException;
-import org.openide.ErrorManager;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.TemplateWizard;
 
-/**
- *
- * @author  <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
- */
+import org.netbeans.modules.java.JavaDataObject;
+
+/** Test Suite Wizard Iterator class
+ * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class TestSuiteWizardIterator extends WizardIterator {
     
     private static TestSuiteWizardIterator iterator;
     
-    /** Creates a new instance of WorkspaceWizardIterator */
+    /** Creates a new instance of TestSuiteWizardIterator */
     public TestSuiteWizardIterator() {
     }
     
+    /** singleton method
+     * @return TestSuiteWizardIterator singleton instance */    
     public static synchronized TestSuiteWizardIterator singleton() {
         if (iterator==null)
             iterator=new TestSuiteWizardIterator();
         return iterator;
     }
 
+    /** perform initialization of Wizard Iterator
+     * @param wizard TemplateWizard instance requested Wizard Iterator */    
     public void initialize(TemplateWizard wizard) {
         this.wizard=wizard;
         WizardSettings set=new WizardSettings();
@@ -72,7 +77,11 @@ public class TestSuiteWizardIterator extends WizardIterator {
         current=0;
     }
     
-    public java.util.Set instantiate(TemplateWizard wizard) throws java.io.IOException {
+    /** perform instantiation of templates
+     * @param wizard TemplateWizard instance requested Wizard Iterator
+     * @throws IOException when some IO problems
+     * @return Set of newly created Data Objects */    
+    public Set instantiate(TemplateWizard wizard) throws java.io.IOException {
         WizardSettings set=WizardSettings.get(wizard);
         set.suiteTarget=wizard.getTargetFolder();
         set.suiteName=wizard.getTargetName();

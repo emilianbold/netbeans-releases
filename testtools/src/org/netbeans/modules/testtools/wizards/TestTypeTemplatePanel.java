@@ -19,35 +19,36 @@ package org.netbeans.modules.testtools.wizards;
  * Created on April 10, 2002, 1:46 PM
  */
 
-import org.openide.WizardDescriptor;
-import org.openide.util.HelpCtx;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeEvent;
+import java.net.URL;
+import java.awt.Component;
+import java.awt.CardLayout;
 import java.util.StringTokenizer;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.DocumentEvent;
+import javax.swing.JPanel;
 import javax.swing.JDialog;
 import javax.swing.text.Document;
 import javax.swing.SwingUtilities;
-import org.openide.util.Utilities;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.DocumentEvent;
 import javax.swing.DefaultComboBoxModel;
-import org.openide.loaders.TemplateWizard;
-import org.netbeans.modules.java.JavaDataObject;
-import java.awt.CardLayout;
-import org.openide.loaders.DataObject;
-import java.net.URL;
 
-/**
- *
+import org.openide.util.HelpCtx;
+import org.openide.util.Utilities;
+import org.openide.WizardDescriptor;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.TemplateWizard;
+
+/** Wizard Panel with Test Type Template selection
  * @author  <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
  */
-public class TestTypeTemplatePanel extends javax.swing.JPanel implements WizardDescriptor.Panel {
+public class TestTypeTemplatePanel extends JPanel implements WizardDescriptor.Panel {
     
     private ChangeListener listener=null;
     private static final String DEFAULT_NAME="<default name>";
     boolean modified=true;
     
-    /** Creates new form TestSuitePanel1 */
+    /** Creates new form TestTypeTemplatePanel */
     public TestTypeTemplatePanel() {
         initComponents();
         templateCombo.setRenderer(new WizardIterator.MyCellRenderer());
@@ -199,26 +200,37 @@ public class TestTypeTemplatePanel extends javax.swing.JPanel implements WizardD
         nameField.selectAll();
     }//GEN-LAST:event_nameFieldFocusGained
 
+    /** adds ChangeListener of current Panel
+     * @param changeListener ChangeListener */    
     public void addChangeListener(ChangeListener changeListener) {
         if (listener != null) throw new IllegalStateException ();
         listener = changeListener;
     }    
     
-    public java.awt.Component getComponent() {
+    /** returns current Panel
+     * @return Component */    
+    public Component getComponent() {
         return this;
     }    
     
-    public org.openide.util.HelpCtx getHelp() {
+    /** returns Help Context
+     * @return HelpCtx */    
+    public HelpCtx getHelp() {
         return new HelpCtx(TestSuiteTargetPanel.class);
     }
     
-    public void readSettings(Object obj) {
-    }
+    /** read settings from given Object
+     * @param obj TemplateWizard with settings */    
+    public void readSettings(Object obj) {}
     
+    /** removes Change Listener of current Panel
+     * @param changeListener ChangeListener */    
     public void removeChangeListener(ChangeListener changeListener) {
         listener = null;
     }
     
+    /** stores settings to given Object
+     * @param obj TemplateWizard with settings */    
     public void storeSettings(Object obj) {
         WizardSettings set=WizardSettings.get(obj);
         String name=nameField.getText();
@@ -246,6 +258,8 @@ public class TestTypeTemplatePanel extends javax.swing.JPanel implements WizardD
         });            
     }
     
+    /** test current Panel state for data validity
+     * @return boolean true if data are valid and Wizard can continue */    
     public boolean isValid() {
         return DEFAULT_NAME.equals(nameField.getText())||nameField.getText().indexOf(' ')<0;
     }

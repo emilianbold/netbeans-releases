@@ -19,33 +19,37 @@ package org.netbeans.modules.testtools.wizards;
  * Created on April 11, 2002, 11:46 AM
  */
 
-import org.openide.loaders.TemplateWizard;
+import java.util.Set;
+import java.util.HashSet;
+
+import org.openide.TopManager;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.DataObject;
-import org.openide.TopManager;
-import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
-import java.util.HashSet;
-import org.w3c.dom.Document;
+import org.openide.loaders.TemplateWizard;
+import org.openide.filesystems.FileObject;
 
-/**
- *
+/** Test Workspace Wizard Iterator class
  * @author  <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
  */
 public class TestWorkspaceWizardIterator extends WizardIterator {
     
     private static TestWorkspaceWizardIterator iterator;
     
-    /** Creates a new instance of WorkspaceWizardIterator */
+    /** Creates a new instance of TestWorkspaceWizardIterator */
     public TestWorkspaceWizardIterator() {
     }
     
+    /** singleton method
+     * @return TestSuiteWizardIterator singleton instance */    
     public static synchronized TestWorkspaceWizardIterator singleton() {
         if (iterator==null)
             iterator=new TestWorkspaceWizardIterator();
         return iterator;
     }
 
+    /** perform initialization of Wizard Iterator
+     * @param wizard TemplateWizard instance requested Wizard Iterator */    
     public void initialize(TemplateWizard wizard) {
         this.wizard=wizard;
         WizardSettings set=new WizardSettings();
@@ -83,7 +87,11 @@ public class TestWorkspaceWizardIterator extends WizardIterator {
 
     }
     
-    public java.util.Set instantiate(TemplateWizard wizard) throws java.io.IOException {
+    /** perform instantiation of templates
+     * @param wizard TemplateWizard instance requested Wizard Iterator
+     * @throws IOException when some IO problems
+     * @return Set of newly created Data Objects */    
+    public Set instantiate(TemplateWizard wizard) throws java.io.IOException {
         WizardSettings set=WizardSettings.get(wizard);
         set.workspaceTarget=wizard.getTargetFolder();
         set.workspaceName=wizard.getTargetName();

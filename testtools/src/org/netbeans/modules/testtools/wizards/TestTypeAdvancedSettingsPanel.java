@@ -19,26 +19,28 @@ package org.netbeans.modules.testtools.wizards;
  * Created on April 10, 2002, 1:44 PM
  */
 
-import org.openide.WizardDescriptor;
-import org.openide.util.HelpCtx;
-import javax.swing.event.ChangeListener;
-import org.openide.loaders.TemplateWizard;
-import java.awt.CardLayout;
 import java.io.File;
+import java.awt.Component;
+import java.awt.CardLayout;
+import javax.swing.JPanel;
+import java.util.StringTokenizer;
+import javax.swing.event.ChangeListener;
+
+import org.openide.util.HelpCtx;
+import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import java.util.StringTokenizer;
+import org.openide.loaders.TemplateWizard;
 
-/**
- *
+/** Wizard Panel with Test Type Advanced Settings configuration
  * @author  <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
  */
-public class TestTypeAdvancedSettingsPanel extends javax.swing.JPanel implements WizardDescriptor.Panel {
+public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescriptor.Panel {
     
     private File baseDir=null;
     private String netbeansHome=null;
     
-    /** Creates new form TestTypePanel */
+    /** Creates new form TestTypeAdvancedSettingsPanel */
     public TestTypeAdvancedSettingsPanel() {
         initComponents();
     }
@@ -408,17 +410,24 @@ public class TestTypeAdvancedSettingsPanel extends javax.swing.JPanel implements
         excludesField.selectAll();
     }//GEN-LAST:event_excludesFieldFocusGained
 
-    public void addChangeListener(javax.swing.event.ChangeListener l) {
-    }    
+    /** adds ChangeListener of current Panel
+     * @param l ChangeListener */    
+    public void addChangeListener(ChangeListener l) {}    
     
-    public java.awt.Component getComponent() {
+    /** returns current Panel
+     * @return Component */    
+    public Component getComponent() {
         return this;
     }    
     
-    public org.openide.util.HelpCtx getHelp() {
+    /** returns Help Context
+     * @return HelpCtx */    
+    public HelpCtx getHelp() {
         return new HelpCtx(TestTypeAdvancedSettingsPanel.class);
     }
     
+    /** read settings from given Object
+     * @param obj TemplateWizard with settings */    
     public void readSettings(Object obj) {
         WizardSettings set=WizardSettings.get(obj);
         if (set.typeJVMSuffix!=null)
@@ -446,9 +455,12 @@ public class TestTypeAdvancedSettingsPanel extends javax.swing.JPanel implements
         } catch (Exception e) {}
     }
     
-    public void removeChangeListener(javax.swing.event.ChangeListener l) {
-    }
+    /** removes Change Listener of current Panel
+     * @param l ChangeListener */    
+    public void removeChangeListener(ChangeListener l) {}
     
+    /** stores settings to given Object
+     * @param obj TemplateWizard with settings */    
     public void storeSettings(Object obj) {
         WizardSettings set=WizardSettings.get(obj);
         set.typeJVMSuffix=jvmField.getText();
@@ -459,6 +471,8 @@ public class TestTypeAdvancedSettingsPanel extends javax.swing.JPanel implements
         set.typeJellyHome=jellyField.getText();
     }
 
+    /** test current Panel state for data validity
+     * @return boolean true if data are valid and Wizard can continue */    
     public boolean isValid() {
         return true;
     }

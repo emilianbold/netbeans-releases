@@ -19,16 +19,17 @@ package org.netbeans.modules.testtools.wizards;
  * Created on April 24, 2002, 3:45 PM
  */
 
+import java.io.IOException;
+
+import org.openide.src.MethodElement;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.src.MethodElement;
 import org.openide.loaders.TemplateWizard;
-import org.netbeans.modules.group.GroupShadow;
-import java.io.IOException;
 import org.openide.filesystems.FileObject;
 
+import org.netbeans.modules.group.GroupShadow;
+
 /**
- *
  * @author  <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
  */
 class WizardSettings extends Object {

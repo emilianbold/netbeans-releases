@@ -19,26 +19,28 @@ package org.netbeans.modules.testtools.wizards;
  * Created on April 10, 2002, 1:43 PM
  */
 
-import org.openide.WizardDescriptor;
-import org.openide.util.HelpCtx;
-import org.openide.loaders.TemplateWizard;
-import java.awt.CardLayout;
-import org.openide.loaders.DataFolder;
 import java.io.File;
+import java.awt.Component;
+import java.awt.CardLayout;
+import javax.swing.JPanel;
 import javax.swing.JFileChooser;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Utilities;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.ChangeEvent;
-import javax.swing.SwingUtilities;
 
-/**
- *
+import org.openide.WizardDescriptor;
+import org.openide.util.HelpCtx;
+import org.openide.util.Utilities;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.TemplateWizard;
+import org.openide.filesystems.FileUtil;
+
+/** Wizard Panel with Test Workspace Settings configuration
  * @author  <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
  */
-public class TestWorkspaceSettingsPanel extends javax.swing.JPanel implements WizardDescriptor.FinishPanel {
+public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescriptor.FinishPanel {
     
     private boolean stop=true;
     private static final String netbeansPath="../../../nb_all/nbbuild/netbeans";
@@ -414,19 +416,27 @@ public class TestWorkspaceSettingsPanel extends javax.swing.JPanel implements Wi
         }
     }
     
-    public void addChangeListener(javax.swing.event.ChangeListener changeListener) {
+    /** adds ChangeListener of current Panel
+     * @param changeListener ChangeListener */    
+    public void addChangeListener(ChangeListener changeListener) {
         if (listener != null) throw new IllegalStateException ();
         listener = changeListener;
     }    
     
-    public java.awt.Component getComponent() {
+    /** returns current Panel
+     * @return Component */    
+    public Component getComponent() {
         return this;
     }    
     
-    public org.openide.util.HelpCtx getHelp() {
+    /** returns Help Context
+     * @return HelpCtx */    
+    public HelpCtx getHelp() {
         return new HelpCtx(TestWorkspaceSettingsPanel.class);
     }
     
+    /** read settings from given Object
+     * @param obj TemplateWizard with settings */    
     public void readSettings(Object obj) {
         WizardSettings set=WizardSettings.get(obj);
         wizard=(TemplateWizard)obj;
@@ -451,10 +461,14 @@ public class TestWorkspaceSettingsPanel extends javax.swing.JPanel implements Wi
         }
     }
     
-    public void removeChangeListener(javax.swing.event.ChangeListener changeListener) {
+    /** removes Change Listener of current Panel
+     * @param changeListener ChangeListener */    
+    public void removeChangeListener(ChangeListener changeListener) {
         listener = null;
     }
     
+    /** stores settings to given Object
+     * @param obj TemplateWizard with settings */    
     public void storeSettings(Object obj) {
         WizardSettings set=WizardSettings.get(obj);
         set.workspaceLevel=levelCombo.getSelectedIndex();
@@ -467,6 +481,9 @@ public class TestWorkspaceSettingsPanel extends javax.swing.JPanel implements Wi
     }
 
     private static File netHome=new File(System.getProperty("netbeans.home"));
+
+    /** test current Panel state for data validity
+     * @return boolean true if data are valid and Wizard can continue */    
     public boolean isValid() {
         return (!stop)&&(!netHome.equals(new File(netbeansField.getText())));
     }

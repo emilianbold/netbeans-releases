@@ -19,77 +19,80 @@ package org.netbeans.modules.testtools.wizards;
  * Created on April 10, 2002, 1:51 PM
  */
 
-import java.io.IOException;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.StringTokenizer;
-import java.lang.reflect.Modifier;
-import javax.swing.event.ChangeListener;
-
-import org.openide.WizardDescriptor;
-import org.openide.src.Type;
-import org.openide.src.Identifier;
-import org.openide.src.ClassElement;
-import org.openide.src.MethodElement;
-import org.openide.src.SourceException;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.TemplateWizard;
-import org.openide.filesystems.FileObject;
-
-import org.netbeans.modules.java.JavaDataObject;
-import java.util.Vector;
-import org.openide.loaders.DataFolder;
-import java.util.HashSet;
-import org.openide.ErrorManager;
-import java.util.Set;
-import java.util.Enumeration;
-import org.openide.filesystems.Repository;
-import javax.swing.JList;
-import javax.swing.DefaultListCellRenderer;
+import java.io.*;
+import java.util.*;
 import java.awt.Component;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.LocalFileSystem;
-import java.io.File;
-import org.netbeans.modules.group.GroupShadow;
-import org.openide.TopManager;
-import org.openide.NotifyDescriptor;
-import org.openide.cookies.EditorCookie;
-import java.util.Iterator;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
+import javax.swing.JList;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.event.ChangeListener;
+import java.lang.reflect.Modifier;
 
-/**
- *
- * @author  <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
- */
+import org.openide.src.*;
+import org.openide.TopManager;
+import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
+import org.openide.WizardDescriptor;
+import org.openide.util.Utilities;
+import org.openide.cookies.EditorCookie;
+import org.openide.util.RequestProcessor;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.TemplateWizard;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
+import org.openide.filesystems.LocalFileSystem;
+
+import org.netbeans.modules.group.GroupShadow;
+import org.netbeans.modules.java.JavaDataObject;
+
+/** Abstract Wizard Iterator class for all Test Tools Wizard Iterators
+ * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public abstract class WizardIterator implements TemplateWizard.Iterator {
     
     
-    public static class CaseElement extends Object {
+    static class CaseElement extends Object {
         String name;
         MethodElement template;
-        public CaseElement(String name, MethodElement template) {
+        /**
+         * @param name
+         * @param template  */        
+        CaseElement(String name, MethodElement template) {
             this.name=name;
             this.template=template;
         }
-        public String getName() {
+        /**
+         * @return  */        
+        String getName() {
             return name;
         }
-        public MethodElement getTemplate() {
+        /**
+         * @return  */        
+        MethodElement getTemplate() {
             return template;
         }
+        /** returns String representation of CaseElement class
+         * @return String representation of CaseElement class */        
         public String toString() {
             return name+" ["+template.getName().getName()+"]";
         }
     }
     
-    public static class MyCellRenderer extends DefaultListCellRenderer {
-        public MyCellRenderer() {
+    static class MyCellRenderer extends DefaultListCellRenderer {
+
+        MyCellRenderer() {
             super();
         }
+        
+        /** Cell Renderer implemention method
+         * @param list Jlist
+         * @param value Object value
+         * @param index int value index
+         * @param isSelected boolean
+         * @param cellHasFocus boolean
+         * @return Component of rendered cell (JLabel) */        
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             if (value instanceof MethodElement)
                 value=((MethodElement)value).getName().getName();
@@ -99,47 +102,61 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         }
     }
 
-    protected transient WizardDescriptor.Panel[] panels;
-    protected transient String[] names;
-    protected transient int current = 0;
-    protected transient TemplateWizard wizard;
+    transient WizardDescriptor.Panel[] panels;
+    transient String[] names;
+    transient int current = 0;
+    transient TemplateWizard wizard;
     
-    public void addChangeListener(javax.swing.event.ChangeListener changeListener) {
-    }
+    /** adds Change Listener
+     * @param changeListener ChangeListener */    
+    public void addChangeListener(ChangeListener changeListener) {}
     
-    public org.openide.WizardDescriptor.Panel current() {
+    /** returns current Wizard Panel
+     * @return current WizardDescripto.Panel */    
+    public WizardDescriptor.Panel current() {
         return panels[current];
     }
     
+    /** test if current Panel is not last
+     * @return boolean true if current Panel is not last */    
     public boolean hasNext() {
         return (current+1)<panels.length;
     }
     
+    /** test if current Panel is not first
+     * @return boolean true if current Panel is not first */    
     public boolean hasPrevious() {
         return current>0;
     }
     
+    /** returns name of current Panel
+     * @return name of current Panel */    
     public String name() {
         return names[current];
     }
     
+    /** goes to the next Panel */    
     public void nextPanel() {
         current++;
     }
     
+    /** goes to the previous Panel */    
     public void previousPanel() {
         current--;
     }
     
-    public void removeChangeListener(ChangeListener changeListener) {
-    }
+    /** removes Change Listener
+     * @param changeListener ChangeListener */    
+    public void removeChangeListener(ChangeListener changeListener) {}
     
+    /** performs unitialization of Wizard Iterator
+     * @param wizard TemplateWizard instance requested unitialization */    
     public void uninitialize(TemplateWizard wizard) {
         panels=null;
         names=null;
     }
     
-    protected static MethodElement[] getTemplateMethods(JavaDataObject source) {
+    static MethodElement[] getTemplateMethods(JavaDataObject source) {
         ClassElement clel = source.getSource().getClass(Identifier.create(source.getName()));
         MethodElement[] methods = clel.getMethods();
         ArrayList templates = new ArrayList();
@@ -152,7 +169,7 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         return (MethodElement[])templates.toArray(new MethodElement[templates.size()]);
     }
             
-    protected static void transformTemplateMethods(JavaDataObject source, CaseElement[] methods, MethodElement[] templates) throws SourceException, IOException {
+    static void transformTemplateMethods(JavaDataObject source, CaseElement[] methods, MethodElement[] templates) throws SourceException, IOException {
         ClassElement clel = source.getSource().getClass(Identifier.create(source.getName()));
 
         // removing old template methods
@@ -184,7 +201,7 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         clel.getMethod(Identifier.create("suite"), null).setBody(suite.toString());
     }
 
-    protected static void createGoldenFile(JavaDataObject source, String name) throws IOException {
+    static void createGoldenFile(JavaDataObject source, String name) throws IOException {
         FileObject fo=source.getFolder().getPrimaryFile();
         FileObject fo2=fo.getFileObject("data");
         if ((fo2==null)||(!fo2.isFolder()))
@@ -198,15 +215,15 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         fo2.createData(name,"pass");
     }
     
-    protected static boolean detectBuildScript(DataFolder folder) {
+    static boolean detectBuildScript(DataFolder folder) {
         FileObject fo=folder.getPrimaryFile();
         return (fo!=null)&&
                ((fo=fo.getFileObject("test"))!=null)&&
                (fo.isFolder())&&
                (fo.getFileObject("build","xml")!=null);
-   }
+    }
     
-    protected static boolean detectTestType(DataFolder folder, String name) {
+    static boolean detectTestType(DataFolder folder, String name) {
         FileObject fo=folder.getPrimaryFile();
         if (fo==null)  return false;
         return (fo.getFileObject(name)!=null)||
@@ -214,7 +231,7 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
                (fo.getFileObject("build-"+name,"xml")!=null);
     }
     
-    protected static int detectWorkspaceLevel(DataFolder folder) {
+    static int detectWorkspaceLevel(DataFolder folder) {
         try {
             BufferedReader br=new BufferedReader(new InputStreamReader(folder.getPrimaryFile().getFileObject("CVS").getFileObject("Repository").getInputStream()));
             StringTokenizer repository=new StringTokenizer(br.readLine(),"/");
@@ -228,7 +245,7 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         return 0;
     }
     
-    protected static Set instantiateTestSuite(WizardSettings set) throws IOException {
+    static Set instantiateTestSuite(WizardSettings set) throws IOException {
         if (set.suiteName!=null && !Utilities.isJavaIdentifier(set.suiteName))
             throw new IOException("Selected Test Suite name is not valid identifier.");
         try {
@@ -251,7 +268,7 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         return res;
     }
 
-    protected static Set instantiateTestType(WizardSettings set) throws IOException {
+    static Set instantiateTestType(WizardSettings set) throws IOException {
         if (set.typeName!=null && set.typeName.indexOf(' ')>=0)
             throw new IOException("Selected Test Type name is not valid identifier.");
         HashSet res=new HashSet();
@@ -296,7 +313,7 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         return res;
     }
     
-    protected static Set instantiateTestWorkspace(WizardSettings set) throws IOException {
+    static Set instantiateTestWorkspace(WizardSettings set) throws IOException {
         if (set.workspaceName!=null && set.workspaceName.indexOf(' ')>=0)
             throw new IOException("Selected Test Workspace name is not valid identifier.");
         HashSet res=new HashSet();
@@ -323,7 +340,7 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         return res;
     }
     
-    public static DataObject[] getSuiteTemplates() {
+    static DataObject[] getSuiteTemplates() {
         Enumeration enum=Repository.getDefault().getDefaultFileSystem().findResource("Templates").getFileObject("TestTools").getData(false);
         ArrayList list=new ArrayList();
         DataObject o;
@@ -335,7 +352,7 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         return (DataObject[])list.toArray(new DataObject[list.size()]);
     }
     
-    public static DataObject[] getTestTypeTemplates() {
+    static DataObject[] getTestTypeTemplates() {
         Enumeration enum=Repository.getDefault().getDefaultFileSystem().findResource("Templates").getFileObject("TestTools").getData(false);
         ArrayList list=new ArrayList();
         DataObject o;
@@ -347,7 +364,7 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         return (DataObject[])list.toArray(new DataObject[list.size()]);
     }
     
-    public static void save(final DataObject dob) throws IOException {
+    static void save(final DataObject dob) throws IOException {
             Runnable run=new Runnable() {
                 public void run() {
                     try {
@@ -360,21 +377,32 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
             RequestProcessor.postRequest(run, 1000);
             //and after 5 seconds for sure
             RequestProcessor.postRequest(run, 5000);
-   }
+    }
    
-   private  static File target=new File(".");
+    private  static File target=new File(".");
     
     private static class JarAndZipFilter extends FileFilter {
+        /** FileFilter implementation method
+         * @param f file to be accepted
+         * @return boolean true if file accepted (is Jar, Zip or directory) */        
         public boolean accept(File f) {
             if (f.isDirectory ()) return true;
             String s = f.getPath().toLowerCase();
             return s.endsWith(".jar") || s.endsWith(".zip");
         }
+        /** return description of FileFilter
+         * @return String description of FileFilter */        
         public String getDescription() {
             return "Jar and Zip File Filter";
         }
     }
    
+    /** shows File Chooser Dialog and returns selected file or directory
+     * @param parent parent Component (usually JFrame)
+     * @param title String title of the Dialog
+     * @param selectDirectories boolean switch if directory can be selected
+     * @param selectJars boolean switch if filter for Jars and Zips should be applied
+     * @return selected File of null when Cancel was user canceled operation */    
    public static File showFileChooser(Component parent, String title, boolean selectDirectories, boolean selectJars) {
         JFileChooser f=new JFileChooser(target);
         f.setDialogTitle(title);
@@ -394,5 +422,4 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         }
         return null;
    }
-
 }
