@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.Locale;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.ChangeEvent;
@@ -606,24 +607,41 @@ public abstract class NbTopManager /*extends TopManager*/ {
         String envfile = System.getProperty("netbeans.osenv"); // NOI18N
         if (envfile != null) {
             try {
+                // XXX is any non-ASCII encoding even defined? unclear...
                 BufferedReader in = new BufferedReader(new InputStreamReader(
                     new FileInputStream(envfile)));
-                
+                // #30621: use \0 when possible, \n as a fallback
+                char sep = Boolean.getBoolean("netbeans.osenv.nullsep") ? '\0' : '\n';
+                StringBuffer key = new StringBuffer(100);
+                StringBuffer value = new StringBuffer(1000);
+                boolean inkey = true;
                 while (true) {
-                    String line = in.readLine();
-                    if (line == null)
+                    int c = in.read();
+                    if (c == -1) {
                         break;
-                    
-                    int i = line.indexOf("="); // NOI18N
-                    if (i == -1) {
-                        continue;
                     }
-
-                    String key = line.substring(0, i);
-                    String value = line.substring(i + 1);
-                    if (i >= 0) {
-                        env.put("Env-" + key, value); // NOI18N
-                        env.put("env-" + key.toLowerCase (), value); // NOI18N
+                    char cc = (char)c;
+                    if (inkey) {
+                        if (cc == sep) {
+                            throw new IOException("null-term'd key"); // NOI18N
+                        } else if (cc == '=') {
+                            inkey = false;
+                        } else {
+                            key.append(cc);
+                        }
+                    } else {
+                        if (cc == sep) {
+                            inkey = true;
+                            String k = key.toString();
+                            String v = value.toString();
+                            env.put("Env-" + k, v); // NOI18N
+                            // E.g. on Turkish Unix, want env-display not env-d\u0131splay:
+                            env.put("env-" + k.toLowerCase(Locale.US), v); // NOI18N
+                            key.setLength(0);
+                            value.setLength(0);
+                        } else {
+                            value.append(cc);
+                        }
                     }
                 }
             }
