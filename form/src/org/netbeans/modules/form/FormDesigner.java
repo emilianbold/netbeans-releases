@@ -126,27 +126,36 @@ public class FormDesigner extends TopComponent
     public void open(Workspace workspace) {
         if (formModel == null)
             return;
+        if (isOpened())
+            return;
         
         if (workspace == null)
             workspace = TopManager.getDefault().getWindowManager().getCurrentWorkspace();
 
         String formName = "Form " + formModel.getFormDataObject().getName(); // NOI18N
-        Mode mode = workspace.findMode(formName);
+        String modeName = formName;
+        int modeVar = 0;
 
-        if (mode != null) { // try to reuse mode
+        Mode mode = workspace.findMode(modeName);
+        while (mode != null) {
             TopComponent[] comps = mode.getTopComponents();
             int i;
             for (i=0; i < comps.length; i++)
-                if (comps[i].isOpened()) break;
+                if (comps[i].isOpened())
+                    break;
 
-            if (i == comps.length) // all top components closed
+            if (i == comps.length) { // all top components closed
                 mode.dockInto(this);
-            else mode = null;
+                break;
+            }
+
+            modeName = formName + "_" + (++modeVar); // NOI18N
+            mode = workspace.findMode(modeName);
         }
 
         if (mode == null) { // create new mode
             mode = workspace.createMode(
-                     formName,
+                     modeName,
                      FormEditor.getFormBundle().getString("CTL_FormWindowTitle"), // NOI18N
                      null);
             mode.dockInto(this);
