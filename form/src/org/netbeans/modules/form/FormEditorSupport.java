@@ -65,11 +65,12 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
     // load the form
     synchronized (OPEN_FORM_LOCK) {
-      if (!formLoaded)
+      if (!formLoaded) {
         if (!loadForm ()) {
           TopManager.getDefault ().setStatusText ("");
           return;
         }
+      }
     }
 
     // 1. open editor
@@ -148,7 +149,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
           break;
         }
       } catch (IOException e) {
-        // ignore error and thy the next manager
+        // ignore error and try the next manager
       }
     }
 
@@ -174,7 +175,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
         
       formLoaded = true;
     } catch (IOException e) {
-      e.printStackTrace (); // [PENDING - notify user]
+      TopManager.getDefault ().notifyException (e);
       return false;
     }
 
@@ -261,6 +262,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  23   Gandalf   1.22        7/12/99  Ian Formanek    Notifies form load 
+ *       exceptions
  *  22   Gandalf   1.21        7/11/99  Ian Formanek    
  *  21   Gandalf   1.20        7/11/99  Ian Formanek    Better work with 
  *       persistence managers, supportsAdvancedFeatures added
