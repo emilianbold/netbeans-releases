@@ -15,24 +15,18 @@
 package org.netbeans.modules.properties;
 
 
-import java.awt.Color;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.SystemColor;
-import java.awt.Toolkit;
+import java.awt.*;
+import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.ResourceBundle;
+import javax.swing.*;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
@@ -53,7 +47,6 @@ import org.openide.windows.Workspace;
  * @author  Petr Jiricka
  */
 public class BundleEditPanel extends javax.swing.JPanel {
-
     private DataObject dobj;
     private PropertiesTableModel ptm;
 
@@ -62,24 +55,30 @@ public class BundleEditPanel extends javax.swing.JPanel {
 
     static final long serialVersionUID =-843810329041244483L;
 
-    /** Default implementation of PropertiesColors inetrface. */
-    public static final PropertiesColors DEFAULTCOLORS = new PropertiesColors() {
+    /** Default implementation of PropertiesColors interface. */
+    public static final PropertiesSettings DEFAULT_SETTINGS = new PropertiesSettings() {
         public Color getKeyColor() {return Color.blue;}
-        public Color getValueColor() {return Color.magenta;}
-        public Color getShadowColor() {return new Color(SystemColor.controlHighlight.getRGB());}
         public Color getKeyBackground() {return Color.white;}
+        public Color getValueColor() {return Color.magenta;}
         public Color getValueBackground() {return Color.white;}
+        public Color getHighlightColor() {return Color.black;}
+        public Color getHighlightBackground() {return Color.yellow;}
+        public Color getShadowColor() {return new Color(SystemColor.controlHighlight.getRGB());}
 
-        public void colorsUpdated() {}
+        public KeyStroke[] getKeyStrokesFindNext() {return new KeyStroke[] {KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0)};}
+        public KeyStroke[] getKeyStrokesFindPrevious() {return new KeyStroke[] {KeyStroke.getKeyStroke(KeyEvent.VK_F3, Event.SHIFT_MASK)};}
+        public KeyStroke[] getKeyStrokesToggleHighlight() {return new KeyStroke[] {KeyStroke.getKeyStroke(KeyEvent.VK_H, Event.SHIFT_MASK | Event.ALT_MASK)};}
+       
+        public void settingsUpdated() {}
         public void addPropertyChangeListener(PropertyChangeListener listener) {}
         public void removePropertyChangeListener(PropertyChangeListener listener) {}
     };
     
     /** Class representing colors in table view. */
-    private static PropertiesColors colors;
+    static PropertiesSettings settings;
     
     /** Listener on color changes. */    
-    private PropertyChangeListener colorsListener;
+    private PropertyChangeListener settingsListener;
 
     
     /** Creates new form BundleEditPanel */
@@ -89,7 +88,7 @@ public class BundleEditPanel extends javax.swing.JPanel {
 
         initComponents ();
         
-        initColors();
+        initSettings();
         
         // header renderer
         final javax.swing.table.DefaultTableCellRenderer headerRenderer = new javax.swing.table.DefaultTableCellRenderer() {
@@ -156,21 +155,55 @@ public class BundleEditPanel extends javax.swing.JPanel {
                 
                 // Set background color.
                 if(sp.isKeyType())
-                    c.setBackground(colors.getKeyBackground());
+                    c.setBackground(settings.getKeyBackground());
                 else {
                     if( sp.getValue() != null)
-                        c.setBackground(colors.getValueBackground());
+                        c.setBackground(settings.getValueBackground());
                     else
-                        c.setBackground(colors.getShadowColor());
+                        c.setBackground(settings.getShadowColor());
                 }
 
                 // Set foregound color.
                 if(sp.isKeyType())
-                    c.setForeground(colors.getKeyColor());
+                    c.setForeground(settings.getKeyColor());
                 else
-                    c.setForeground(colors.getValueColor());
+                    c.setForeground(settings.getValueColor());
                 
                 return c;
+            }
+
+            // Overrides superclass method. It adds the highlighting of search occurences in it.
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+
+                // If there is a highlihgt flag set do additional drawings.
+                if(FindPerformer.getFindPerformer(BundleEditPanel.this.theTable).isHighlightSearch()) {
+                    String text = getText();
+                    String findString = FindPerformer.getFindPerformer(BundleEditPanel.this.theTable).getFindString();
+
+                    // If there is a findString and the cell could contain it go ahead.
+                    if(text.length()>0 && findString != null && findString.length()>0) {
+                        int index = 0;
+                        int width = (int)g.getFontMetrics().getStringBounds(findString, g).getWidth();
+
+                        Color oldColor = g.getColor();                    
+                        // In each iteration highlight one occurence of findString in this cell.
+                        while((index = text.indexOf(findString, index)) >= 0) {
+
+                            int x = (int)g.getFontMetrics().getStringBounds(text.substring(0, index), g).getWidth()+getInsets().left;
+
+                            g.setColor(settings.getHighlightBackground());
+                            g.fillRect(x, 0, width, g.getClipBounds().height);
+
+                            g.setColor(settings.getHighlightColor());
+                            g.drawString(findString, x, -(int)g.getFontMetrics().getStringBounds(findString, g).getY());
+
+                            index += findString.length();
+                        }
+                        // Reset original color.
+                        g.setColor(oldColor);
+                    }
+                }
             }
         });
 
@@ -195,7 +228,7 @@ public class BundleEditPanel extends javax.swing.JPanel {
         // property change listener - listens to editing state of the table
         theTable.addPropertyChangeListener(new PropertyChangeListener() {
                                                public void propertyChange(PropertyChangeEvent evt) {
-                                                   if (evt.getPropertyName().equals("tableCellEditor")) {
+                                                   if (evt.getPropertyName().equals("tableCellEditor")) { // NOI18N
                                                        updateEnabled();
                                                    }
                                                }
@@ -337,14 +370,14 @@ public class BundleEditPanel extends javax.swing.JPanel {
         return theTable;
     }
 
-    /** Initializes colors variable. */
-    private void initColors() {
+    /** Initializes #settings variable. */
+    private void initSettings() {
         try {
             Class options = Class.forName
                             ("org.netbeans.modules.properties.syntax.PropertiesOptions",
                              false, this.getClass().getClassLoader());
-            Method colorsMethod = options.getMethod ("getColors", null);
-            colors = (PropertiesColors)colorsMethod.invoke (options.newInstance(), null);
+            Method settingsMethod = options.getMethod ("getSettings", null);
+            settings = (PropertiesSettings)settingsMethod.invoke (options.newInstance(), null);
         } catch (ClassNotFoundException e) {
         } catch (NoSuchMethodException e) {
         } catch (InvocationTargetException e) {
@@ -352,17 +385,17 @@ public class BundleEditPanel extends javax.swing.JPanel {
         } catch (InstantiationException e) {
         }
 
-        // colors were not gained (editor module is probably not installed), use our defaults
-        if(colors == null)
-            colors = DEFAULTCOLORS;        
+        // settings were not gained (editor module is probably not installed), use our defaults
+        if(settings == null)
+            settings = DEFAULT_SETTINGS;        
 
-        // listen on changes of color settings
-        colors.addPropertyChangeListener(WeakListener.propertyChange(colorsListener = new PropertyChangeListener() {
+        // listen on changes of setting settings
+        settings.addPropertyChangeListener(WeakListener.propertyChange(settingsListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                // colors changed repaint table
+                // settings changed repaint table
                 BundleEditPanel.this.repaint();
             }
-        }, colors));
+        }, settings));
     }
     
     /** This method is called from within the constructor to
@@ -610,20 +643,27 @@ public class BundleEditPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
 
-    /** Inner interface used for gainng colors for table view. There are two implemenations.
-     * The default one in this class, containing default colors, and implementaion 
-     * in syntax/PropertiesOptions class which passes colors from editor settings. That 
+    /** Inner interface used for gaining colors and keystrokes for table view, from
+     * editor module via soft dependence. There are two implemenations.
+     * The default one in this class, containing default colors and key strokes, and implementaion 
+     * in syntax/PropertiesOptions class which passes colors and keystrokes from editor settings. That 
      * implementaiton is available only when Editor module is installed. */
-    public interface PropertiesColors {
+    public interface PropertiesSettings {
         public Color getKeyColor();
-        public Color getValueColor();
-        public Color getShadowColor();
         public Color getKeyBackground();
+        public Color getValueColor();
         public Color getValueBackground();
+        public Color getHighlightColor();
+        public Color getHighlightBackground();
+        public Color getShadowColor();
 
-        public void colorsUpdated();
+        public KeyStroke[] getKeyStrokesFindNext();
+        public KeyStroke[] getKeyStrokesFindPrevious();
+        public KeyStroke[] getKeyStrokesToggleHighlight();
+        
+        public void settingsUpdated();
         public void addPropertyChangeListener(PropertyChangeListener listener);
         public void removePropertyChangeListener(PropertyChangeListener listener);
-   } // end of inner inaterface PropertiesColors
+   } // end of inner inaterface PropertiesSettings
    
 }
