@@ -9,3 +9,7 @@ OpenIDE-Module-Package-Dependencies: org.apache.regexp[RE]
 
 Name: org/netbeans/modules/diff/DiffAction.class
 OpenIDE-Module-Class: Action
+
+Name: org/netbeans/modules/diff/PatchAction.class
+OpenIDE-Module-Class: Action
+
