@@ -291,7 +291,7 @@ class HandleLayer extends JPanel
     }
 
     /**
-     * returns metacomponent at given position.
+     * Returns metacomponent at given position.
      * @param point - position on component layer
      * @param mode - what to get:
      *   COMP_DEEPEST - get the deepest component
@@ -305,19 +305,22 @@ class HandleLayer extends JPanel
      *     for COMP_UNDER_SELETCED the top component is returned
      */
     private RADComponent getMetaComponentAt(Point point, int mode) {
-        Component componentLayer = formDesigner.getComponentLayer();
-//        point = SwingUtilities.convertPoint(this, point, componentLayer);
-        Component comp = SwingUtilities.getDeepestComponentAt(
-            componentLayer, point.x, point.y);
+        Component[] deepComps = getDeepestComponentsAt(
+                                    formDesigner.getComponentLayer(), point);
+        if (deepComps.length == 0)
+            return null;
 
-        RADComponent topMetaComp = formDesigner.getTopDesignComponent(),
-                     firstMetaComp = null,
-                     currMetaComp,
-                     prevMetaComp = null;
+        int dIndex = mode == COMP_DEEPEST ? deepComps.length - 1 : 0;
+        Component comp = deepComps[dIndex];
 
-        while (comp != null) {
+        // find the component satisfying point and mode
+        RADComponent topMetaComp = formDesigner.getTopDesignComponent();
+        RADComponent firstMetaComp = null;
+        RADComponent currMetaComp;
+        RADComponent prevMetaComp = null;
+
+        do {
             currMetaComp = formDesigner.getMetaComponent(comp);
-
             if (currMetaComp != null) {
                 if (firstMetaComp == null)
                     firstMetaComp = currMetaComp;
@@ -352,9 +355,56 @@ class HandleLayer extends JPanel
 
                 prevMetaComp = currMetaComp;
             }
-            comp = comp.getParent();
+
+            comp = dIndex + 1 < deepComps.length ?
+                   deepComps[++dIndex] : comp.getParent();
         }
+        while (comp != null);
+
         return firstMetaComp;
+    }
+
+    private static Component[] getDeepestComponentsAt(Container parent,
+                                                      Point point)
+    {
+        Component comp = SwingUtilities.getDeepestComponentAt(parent,
+                                                              point.x,
+                                                              point.y);
+        if (comp == null)
+            return new Component[0];
+
+        Container deepestParent = comp.getParent();
+        Component[] deepestComponents = deepestParent.getComponents();
+        Point deepestPosition =
+            SwingUtilities.convertPoint(parent, point, deepestParent);
+
+        // in most cases there will be just one component...
+        Component[] componentsAtPoint = new Component[1];
+        ArrayList compList = null;
+
+        for (int i=0; i < deepestComponents.length; i++) {
+            comp = deepestComponents[i];
+            Point p = comp.getLocation();
+            if (comp.contains(deepestPosition.x - p.x, deepestPosition.y - p.y)) {
+                if (componentsAtPoint[0] == null)
+                    componentsAtPoint[0] = comp;
+                else {
+                    if (compList == null) {
+                        compList = new ArrayList();
+                        compList.add(componentsAtPoint[0]);
+                    }
+                    compList.add(comp);
+                }
+            }
+        }
+
+        if (compList == null)
+            return componentsAtPoint[0] != null ?
+                     componentsAtPoint : new Component[0];
+
+        componentsAtPoint = new Component[compList.size()];
+        compList.toArray(componentsAtPoint);
+        return componentsAtPoint;
     }
 
     RADVisualContainer getMetaContainerAt(Point point) {
@@ -410,8 +460,7 @@ class HandleLayer extends JPanel
                 if (!formDesigner.isComponentSelected(hitMetaComp))
                     formDesigner.setSelectedComponent(hitMetaComp);
             }
-            else
-                formDesigner.clearSelection();
+            else formDesigner.clearSelection();
         }
 
         repaint();
@@ -1129,7 +1178,7 @@ class HandleLayer extends JPanel
                                 designerResizer = new DesignerResizer();
                         }
                         else if (!mouseOnVisual(lastLeftMousePoint)) {
-                            if (resizeType == 0) // designerResizeType
+                            if (resizeType == 0)
                                 selectOtherComponentsNode();
                         }
                         else if (resizeType == 0
