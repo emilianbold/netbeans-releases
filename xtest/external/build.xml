@@ -48,5 +48,8 @@ Microsystems, Inc. All Rights Reserved.
     <target name="clean">
         <delete file="ant-1.4.1.jar"/>
         <delete file="junit-3.8.1.jar"/>
+        <delete file="emma.jar" />
+        <delete file="emma_ant.jar" />
+        <delete file="emma-2.0.4217-lib.zip" />
     </target>
 </project>
