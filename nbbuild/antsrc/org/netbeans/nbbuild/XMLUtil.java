@@ -59,10 +59,16 @@ public final class XMLUtil extends Object {
     }
     
     public static Document createDocument(String rootQName) throws DOMException {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        org.w3c.dom.Document doc = null;
         
-        DOMImplementation impl = getDOMImplementation();
-
-        return impl.createDocument(null, rootQName, null);
+        try {
+            doc = factory.newDocumentBuilder().newDocument();
+        } catch (ParserConfigurationException ex) {
+            throw new DOMException(DOMException.NOT_SUPPORTED_ERR , "Cannot create parser satisfying configuration parameters");  //NOI18N
+        }        
+        
+        return doc;
     }
     
     private static DOMImplementation getDOMImplementation() throws DOMException { //can be made public
@@ -76,7 +82,7 @@ public final class XMLUtil extends Object {
         }        
     }
     
-    static void write(Document doc, OutputStream out) throws IOException {
+    static void write(Document doc, Writer out) throws IOException {
         write( doc, out, null );
     }
         

@@ -16,8 +16,8 @@ package org.netbeans.nbbuild;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
+import java.io.FileWriter;
+import java.io.Writer;
 import java.io.IOException;
 import java.util.*;
 
@@ -236,8 +236,8 @@ public class UpdateTracking {
     }
     
     void write( ) {
-        //Document document = XMLUtil.createDocument(ELEMENT_MODULES);  
-        com.sun.xml.tree.XmlDocument document = new com.sun.xml.tree.XmlDocument();
+        Document document = XMLUtil.createDocument(ELEMENT_MODULES);  
+//        com.sun.xml.tree.XmlDocument document = new com.sun.xml.tree.XmlDocument();
         Element root = document.createElement(ELEMENT_MODULES);        
         //document.getDocumentElement();
         document.appendChild( root );
@@ -274,9 +274,9 @@ public class UpdateTracking {
         //document.getDocumentElement().normalize();
 
         try {
-            OutputStream os = new FileOutputStream( trackingFile );
-            //XMLUtil.write(document, os);
-            document.write (os);
+            Writer os = new FileWriter( trackingFile );
+            XMLUtil.write(document, os);
+            //document.write (os);
             os.close();
         } catch (Exception e) {
             e.printStackTrace();
