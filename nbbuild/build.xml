@@ -618,6 +618,51 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../beans" target="netbeans"/>
   </target>
+  <target name="all-coyote/common" depends="all-openide">
+    <echo message="Building module coyote common..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../coyote/common" target="netbeans"/>
+  </target>
+  <target name="all-coyote/groovy" depends="all-openide,all-coyote/common,all-editor/plain">
+    <echo message="Building module coyote groovy..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../coyote/groovy" target="netbeans"/>
+  </target>
+  <target name="all-coyote/jython" depends="all-openide,all-coyote/common,all-editor/plain">
+    <echo message="Building module coyote jython..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../coyote/jython" target="netbeans"/>
+  </target>
+  <target name="all-coyote/groovyproject" depends="all-openide,all-coyote/common,all-coyote/groovy">
+    <echo message="Building module coyote groovyproject..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../coyote/groovyproject" target="netbeans"/>
+  </target>
+  <target name="all-coyote/jythonproject" depends="all-openide,all-coyote/common,all-coyote/jython">
+    <echo message="Building module coyote jythonproject..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../coyote/jythonproject" target="netbeans"/>
+  </target>
   <target name="all-classfile" depends="init">
     <echo message="Building module classfile..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
