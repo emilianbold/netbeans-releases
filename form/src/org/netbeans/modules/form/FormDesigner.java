@@ -121,11 +121,15 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     }
 
     public void initialize() {
+        // add FormDataObject and FormDesigner to lookup so they can be obtained
+        // from multiview TopComponent
         Lookup lookup = ComponentInspector.getInstance().setupActionMap(getActionMap());
         associateLookup(new ProxyLookup(new Lookup[] {
             lookup,
-            Lookups.singleton(formEditorSupport.getFormDataObject())
+            Lookups.fixed(new Object[] { formEditorSupport.getFormDataObject(),
+                                         this })
         }));
+
         updateWholeDesigner();
     }
 
@@ -149,7 +153,6 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             formModel.addFormModelListener(formModelListener);
             formEditorSupport = FormEditorSupport.getFormEditor(formModel);
             resetTopDesignComponent(false);
-            setName(formModel.getName());
             handleLayer.setViewOnly(formModel.isReadOnly());
             componentLayer.updateDesignerSize(getStoredDesignerSize());
         }
@@ -805,13 +808,9 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
     public void componentClosed() {
         super.componentClosed();
-        formEditorSupport.closeForm();
+        if (formModel != null)
+            setModel(null);
     }
-
-//    protected boolean closeLast() {
-//        formEditorSupport.closeForm();
-//        return true;
-//    }
 
     public void componentShowing() {
         super.componentShowing();
@@ -828,6 +827,10 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     }
 
     public CloseOperationState canCloseElement() {
+        // if this is not the last cloned designer, closing is OK
+        if (!FormEditorSupport.isLastView(multiViewObserver.getTopComponent()))
+            return CloseOperationState.STATE_OK;
+
         // return a placeholder state - to be sure our CloseHandler is called
         return MultiViewFactory.createUnsafeCloseState(
             "ID_FORM_CLOSING", // dummy ID // NOI18N

@@ -133,11 +133,11 @@ class FormToolBar extends JToolBar {
         add(Box.createHorizontalStrut(6));
 //        add(separator2);
 //        add(Box.createHorizontalStrut(4));
-        add(testButton);
+        add(pmButton);
         add(Box.createHorizontalStrut(6));
 //        add(separator3);
 //        add(Box.createHorizontalStrut(4));
-        add(pmButton);
+        add(testButton);
         add(Box.createHorizontalGlue());
         add(addLabel);
 

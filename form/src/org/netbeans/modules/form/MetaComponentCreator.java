@@ -138,10 +138,6 @@ public class MetaComponentCreator {
 
     // --------
 
-    private FormDesigner getDesigner() {
-        return formModel.getFormDesigner();
-    }
-
     private RADComponent createAndAddComponent(final Class compClass,
                                                final RADComponent targetComp,
                                                final Object constraints)
@@ -798,7 +794,10 @@ public class MetaComponentCreator {
             return null;
         }
 
-        getDesigner().setSelectedComponent(targetComp);
+        FormDesigner designer = FormEditorSupport.getFormDesigner(formModel);
+        if (designer != null)
+            designer.setSelectedComponent(targetComp);
+
         return targetComp;
     }
 
@@ -817,7 +816,9 @@ public class MetaComponentCreator {
             return;
         }
 
-        getDesigner().setSelectedComponent(targetComp);
+        FormDesigner designer = FormEditorSupport.getFormDesigner(formModel);
+        if (designer != null)
+            designer.setSelectedComponent(targetComp);
     }
 
     private RADComponent copyAndApplyBorder(RADComponent sourceComp,

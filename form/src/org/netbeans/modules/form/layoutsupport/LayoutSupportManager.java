@@ -303,7 +303,8 @@ public final class LayoutSupportManager implements LayoutSupportContext {
             newConstraints[i] = metacomp.getLayoutConstraints(
                                              layoutDelegate.getClass());
 
-            Component comp = (Component) designer.getComponent(metacomp);
+            Component comp = designer != null ?
+                            (Component) designer.getComponent(metacomp) : null;
             designComps[i] = comp != null ? comp : metacomp.getComponent();
         }
 

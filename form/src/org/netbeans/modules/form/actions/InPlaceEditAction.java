@@ -40,8 +40,12 @@ public class InPlaceEditAction extends NodeAction {
                                             .getCookie(RADComponentCookie.class);
             RADComponent metacomp = radCookie == null ? null :
                                       radCookie.getRADComponent();
-            if (metacomp != null)
-                metacomp.getFormModel().getFormDesigner().startInPlaceEditing(metacomp);
+            if (metacomp != null) {
+                FormDesigner designer = FormEditorSupport.getFormDesigner(
+                                            metacomp.getFormModel());
+                if (designer != null)
+                    designer.startInPlaceEditing(metacomp);
+            }
         }
     }
 
@@ -62,8 +66,12 @@ public class InPlaceEditAction extends NodeAction {
                                             .getCookie(RADComponentCookie.class);
             RADComponent metacomp = radCookie == null ? null :
                                       radCookie.getRADComponent();
-            if (metacomp != null)
-                return metacomp.getFormModel().getFormDesigner().isEditableInPlace(metacomp);
+            if (metacomp != null) {
+                FormDesigner designer = FormEditorSupport.getFormDesigner(
+                                            metacomp.getFormModel());
+                if (designer != null)
+                    return designer.isEditableInPlace(metacomp);
+            }
         }
         return false;
     }
