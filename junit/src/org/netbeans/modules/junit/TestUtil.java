@@ -385,6 +385,41 @@ class TestUtil extends Object {
         return false;
     }    
     
+    
+    // is class an exception
+    static boolean isClassElementException(ClassElement ce) {
+        boolean result = false;
+        ClassElement classElement = ce;
+        while (classElement != null) {
+            parseClassElement(classElement);
+            Identifier superClass = classElement.getSuperclass();
+            Identifier[] interfaces = classElement.getInterfaces();            
+            // check the supperclass (if available)            
+            if (superClass != null) {
+                String superClassName = superClass.getFullName();                
+                // shortcut !!!
+                classElement = ClassElement.forName(superClassName);                
+                if (classElement != null) {                    
+                    //System.err.println("!! Tested SuperClassElement.getVMName()"+classElement.getVMName());
+                    parseClassElement(classElement);
+                    if ("java.lang.Throwable".equals(classElement.getVMName())) {
+                        return true;
+                    }
+                } else {
+                    //System.err.println("!!! superClassElement is null !!!!!");
+                }
+            } else {
+                // no super class - go on
+                //System.err.println("No superclass");
+                classElement = null;
+            }            
+        }
+        // not implemented (or class has no superclass)
+        return false;
+        
+    }
+    
+    
     static ClassElement[] getAllClassElementsFromFileObject(FileObject fo) throws DataObjectNotFoundException {
         return getAllClassElementsFromDataObject(DataObject.find(fo));
     }

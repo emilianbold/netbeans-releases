@@ -135,7 +135,7 @@ public class TestCreator extends java.lang.Object {
         if ( ((0 != (classModifiers & Modifier.PUBLIC)) || 
                 ( settings.isIncludePackagePrivateClasses() && (0 == ( classModifiers & Modifier.PRIVATE )))
               ) &&
-             (settings.isGenerateExceptionClasses() || ! isException(ce)) &&
+             (settings.isGenerateExceptionClasses() || ! TestUtil.isClassElementException(ce)) &&
              (!ce.isInner() || 0 != (classModifiers & Modifier.STATIC)) &&
              (0 == (classModifiers & Modifier.ABSTRACT) || settings.isGenerateAbstractImpl()) &&
               hasTestableMethods(ce)) {
@@ -528,24 +528,11 @@ public class TestCreator extends java.lang.Object {
         return false;
     }
     
-    static private boolean isException(ClassElement element) {
-// @@        ClassElement newElement = (ClassElement)element.clone();
-        ClassElement newElement = element;
-        Identifier identifier = null;
-        String superClassName = null;
-        while ((identifier = newElement.getSuperclass()) != null) {
-            superClassName = identifier.getFullName();
-            if (superClassName.equals("java.lang.Throwable")) {
-                return true;
-            } else {
-                    newElement = ClassElement.forName(superClassName);
-                    if (newElement == null) {
-                        return isException(superClassName);
-                    }
-            }
-        }
-        return false;
+    /*
+     static private boolean isException(ClassElement element) {
+        return TestUtil.isClassElementException(element);
     }
+     */
 
     static private boolean isException(String className) {
         //System.err.println("!!!! JUNIT !!!! isException !!!!");

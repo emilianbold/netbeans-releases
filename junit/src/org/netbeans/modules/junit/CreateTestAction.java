@@ -137,7 +137,7 @@ public class CreateTestAction extends CookieAction {
                         createTest(fsTest, fo, doTestTempl, doSuiteTempl, null);
                     else {
                         // @@ log - the node has no file associated
-                        System.out.println("@@ log - the node has no file associated");
+                        // System.out.println("@@ log - the node has no file associated");
                     }
                 }
             }
@@ -190,7 +190,7 @@ public class CreateTestAction extends CookieAction {
         }
         catch (Exception e) {
             // @@ log - the suite file creation failure
-            System.out.println("@@ log - the suite file creation failure");
+            // System.out.println("@@ log - the suite file creation failure");
         }
     }
     
@@ -254,13 +254,13 @@ public class CreateTestAction extends CookieAction {
                     }
                     else {
                         // @@ log - the tested class file can't be parsed
-                        System.out.println("@@ log - the tested class file can't be parsed.");
+                        // System.out.println("@@ log - the tested class file can't be parsed.");
                     }
                 }
             }
             catch (Exception e) {
                 // @@ log - the test file creation failure
-                System.out.println("@@ log - the test file creation failure");
+                // System.out.println("@@ log - the test file creation failure");
                 e.printStackTrace();
             }
         }
