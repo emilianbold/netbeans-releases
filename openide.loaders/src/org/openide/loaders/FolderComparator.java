@@ -111,9 +111,7 @@ class FolderComparator extends DataFolder.SortMode implements Comparator {
         }
 
         // otherwise compare by names
-        return obj1.getName ().compareTo (
-                   obj2.getName ()
-               );
+        return compareNames(obj1, obj2);
     }
 
     /** for sorting data objects by their classes */
@@ -122,9 +120,7 @@ class FolderComparator extends DataFolder.SortMode implements Comparator {
         Class c2 = obj2.getClass ();
 
         if (c1 == c2) {
-            return obj1.getName ().compareTo (
-                       obj2.getName ()
-                   );
+            return compareNames(obj1, obj2);
         }
 
         // sort by classes
@@ -144,13 +140,11 @@ class FolderComparator extends DataFolder.SortMode implements Comparator {
             boolean r1 = clazz.isAssignableFrom (c1);
             boolean r2 = clazz.isAssignableFrom (c2);
 
-            if (r1 && r2) return obj1.getName ().compareTo (obj2.getName ());
+            if (r1 && r2) return compareNames(obj1, obj2);
             if (r1) return -1;
             if (r2) return 1;
         }
-        return obj1.getName ().compareTo (
-                   obj2.getName ()
-               );
+        return compareNames(obj1, obj2);
     }
 
     /**
