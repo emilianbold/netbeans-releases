@@ -101,18 +101,14 @@ public class XMLFormatter extends ExtFormatter {
                     Util.debug ("+             ::indentNewLine: indent   = " + indent); // NOI18N
                 }
 
-                StringBuffer sb = new StringBuffer();
-                for (int i = 0; i < indent; i++) {
-                    sb.append (' ');
-                };
-
                 if ( DEBUG ) {
                     Util.debug ("+             ::indentNewLine: offset   = " + offset); // NOI18N
-                    Util.debug ("+             ::indentNewLine: sb       = '" + sb.toString() + "'"); // NOI18N
+//                    Util.debug ("+             ::indentNewLine: sb       = '" + sb.toString() + "'"); // NOI18N
                 }
 
-                bdoc.insertString (offset, sb.toString(), null);
-                offset += indent;
+                String indentation = getIndentString(bdoc, indent);
+                bdoc.insertString (offset, indentation, null);
+                offset += indentation.length();
 
                 if ( DEBUG ) {
                     Util.debug ("+             ::indentNewLine: offset = " + offset); // NOI18N
