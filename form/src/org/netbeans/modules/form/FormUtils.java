@@ -597,10 +597,8 @@ public class FormUtils
 
         String beanClassName = beanClass.getName();
         for (int i=0; i < forbiddenContainers.length; i++)
-            if (beanClassName.equals(forbiddenContainers[i])) {
-                System.out.println("container forbidden: "+beanClassName);
+            if (beanClassName.equals(forbiddenContainers[i]))
                 return false;
-            }
 
         Object isContainerValue = null;
         try {
