@@ -107,7 +107,7 @@ public class Utils {
                        return "text/x-jsp".equals(fo.getMIMEType());   //NOI18N
                     }    
                 } catch (IllegalArgumentException ex) {
-                    System.err.println("url: " + url);
+//                    System.err.println("url: " + url);
                     ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, ex.toString());
                     return false;
                 }
@@ -130,7 +130,7 @@ public class Utils {
                         return f.getName();
                     }
                 } catch (IllegalArgumentException ex) {
-                    System.err.println("url: " + url);
+//                    System.err.println("url: " + url);
                     ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, ex.toString());
                 }
             }
