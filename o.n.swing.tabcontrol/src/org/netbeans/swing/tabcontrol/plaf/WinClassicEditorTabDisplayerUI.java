@@ -55,7 +55,7 @@ public final class WinClassicEditorTabDisplayerUI extends BasicScrollingTabDispl
         r.y = 0;
         r.height = displayer.getHeight();
         return r;
-    }
+    }  
 
     public void install() {
         super.install();
@@ -225,15 +225,6 @@ public final class WinClassicEditorTabDisplayerUI extends BasicScrollingTabDispl
         return new Insets(0, 0, 0, 55);
     }
     
-    protected boolean isAntialiased() {
-        if (isGenericUI) {
-            return ColorUtil.gtkShouldAntialias();
-        } else {
-            return super.isAntialiased();
-        }
-    }
-    
-
     private class WCLayout implements LayoutManager {
 
         public void addLayoutComponent(String name, Component comp) {

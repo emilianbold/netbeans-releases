@@ -93,7 +93,7 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
      * adds painting of overall border
      */
     public void paint(Graphics g, JComponent c) {
-        if (isGenericUI && ColorUtil.gtkShouldAntialias()) {
+        if (ColorUtil.shouldAntialias()) {
             ColorUtil.setupAntialiasing(g);
         }
         paintOverallBorder(g, c);

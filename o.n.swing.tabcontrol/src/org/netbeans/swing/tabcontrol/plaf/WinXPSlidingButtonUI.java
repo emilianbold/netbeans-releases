@@ -89,6 +89,9 @@ public class WinXPSlidingButtonUI extends WindowsSlidingButtonUI {
     }   
     
     public void paint(Graphics g, JComponent c) {
+        if (ColorUtil.shouldAntialias()) {
+            ColorUtil.setupAntialiasing(g);
+        }
         AbstractButton button = (AbstractButton)c;
         hiddenToggle.setBorderPainted(button.isBorderPainted());
         hiddenToggle.setRolloverEnabled(button.isRolloverEnabled());

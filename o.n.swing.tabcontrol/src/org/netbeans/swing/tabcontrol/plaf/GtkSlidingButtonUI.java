@@ -80,7 +80,7 @@ public class GtkSlidingButtonUI extends SlidingButtonUI {
     }   
     
     public void paint(Graphics g, JComponent c) {
-        if (ColorUtil.gtkShouldAntialias()) {
+        if (ColorUtil.shouldAntialias()) {
             ColorUtil.setupAntialiasing(g);
         }
         

@@ -310,7 +310,7 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
     }
 
     protected boolean isAntialiased() {
-        return false;
+        return ColorUtil.shouldAntialias();
     }
 
     /**

@@ -177,14 +177,20 @@ final class ColorUtil {
         ((Graphics2D) g).addRenderingHints(getHints());
     }
     
-    private static Boolean gtkAA = null;
-    public static final boolean gtkShouldAntialias() {
-        if (gtkAA == null) {
-            Object o = Toolkit.getDefaultToolkit().getDesktopProperty("gnome.Xft/Antialias"); //NOI18N
-            gtkAA = new Integer(1).equals(o) ? Boolean.TRUE : Boolean.FALSE;
-            
-        }
-        return gtkAA.booleanValue();
+    private static final boolean antialias = Boolean.getBoolean(
+        "nb.cellrenderer.antialiasing") || //NOI18N
+        ("GTK".equals(UIManager.getLookAndFeel().getID()) && //NOI18N
+        gtkShouldAntialias()) || 
+        Boolean.getBoolean ("swing.aatext") || //NOI18N
+        "Aqua".equals(UIManager.getLookAndFeel().getID()); 
+    
+    public static final boolean shouldAntialias() {
+        return antialias;
+    }
+    
+    private static final boolean gtkShouldAntialias() {
+        Object o = Toolkit.getDefaultToolkit().getDesktopProperty("gnome.Xft/Antialias"); //NOI18N
+        return new Integer(1).equals(o);
     }
 
     //**************Some static utility methods for color manipulation**********

@@ -123,6 +123,9 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
     protected abstract Controller createController();
 
     public void paint(Graphics g, JComponent c) {
+        if (ColorUtil.shouldAntialias()) {
+            ColorUtil.setupAntialiasing(g);
+        }        
         TabData tabData;
         int x, y, width, height;
         String text;

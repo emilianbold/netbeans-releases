@@ -94,7 +94,7 @@ public final class WinXPEditorTabDisplayerUI extends BasicScrollingTabDisplayerU
         }
         return new Dimension(displayer.getWidth(), prefHeight);
     }
-
+    
     private static final Icon createIcon(int i) {
         return new ImageIcon(loadImage(iconNames[i]));
     }
