@@ -58,7 +58,7 @@ public class NbErrorManagerTest extends NbTestCase {
     }
     
     public void testLog() throws Exception {
-        assertTrue(!err.isLoggable(ErrorManager.INFORMATIONAL));
+        assertFalse(err.isLoggable(ErrorManager.INFORMATIONAL));
         err.log("some msg");
         String s = w.toString();
         assertTrue(s.indexOf("some msg") == -1);
@@ -67,7 +67,7 @@ public class NbErrorManagerTest extends NbTestCase {
         s = w.toString();
         assertTrue(s.indexOf("another msg") != -1);
         ErrorManager err2 = err.getInstance("foo.bar.baz");
-        assertTrue(!err2.isLoggable(ErrorManager.INFORMATIONAL));
+        assertFalse(err2.isLoggable(ErrorManager.INFORMATIONAL));
         err2.log("sub msg #1");
         s = w.toString();
         assertTrue(s.indexOf("sub msg #1") == -1);
@@ -203,7 +203,7 @@ public class NbErrorManagerTest extends NbTestCase {
         assertEquals(ErrorManager.EXCEPTION, x.getSeverity());
         assertEquals("unloc msg", x.getMessage());
         assertEquals("unloc msg", x.getLocalizedMessage());
-        assertTrue(!x.isLocalized());
+        assertFalse(x.isLocalized());
         
         // Same when there is unloc debug info attached.
         t = new IOException("unloc msg");
@@ -212,7 +212,7 @@ public class NbErrorManagerTest extends NbTestCase {
         assertEquals(ErrorManager.EXCEPTION, x.getSeverity());
         assertEquals("unloc msg", x.getMessage());
         assertEquals("unloc msg", x.getLocalizedMessage());
-        assertTrue(!x.isLocalized());
+        assertFalse(x.isLocalized());
         
         // Nested exceptions don't necessarily change anything severity-wise.
         t = new IOException("unloc msg");
@@ -222,7 +222,7 @@ public class NbErrorManagerTest extends NbTestCase {
         assertEquals(ErrorManager.EXCEPTION, x.getSeverity());
         assertEquals("unloc msg", x.getMessage());
         assertEquals("unloc msg", x.getLocalizedMessage());
-        assertTrue(!x.isLocalized());
+        assertFalse(x.isLocalized());
         
         // But annotations at a particular severity level (usually localized) do
         // set the severity for the exception.

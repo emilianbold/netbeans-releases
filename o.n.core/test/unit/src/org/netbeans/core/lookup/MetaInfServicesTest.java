@@ -151,7 +151,7 @@ public class MetaInfServicesTest extends NbTestCase {
         // Expect to not get anything: wrong xface version
         l.count = 0;
         twiddle(m1, TWIDDLE_ENABLE);
-        // not really important: assertTrue(!l.gotSomething());
+        // not really important: assertFalse(l.gotSomething());
         instances = new ArrayList(r.allInstances());
         assertEquals(0, instances.size());
         systemClassLoader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);

@@ -45,7 +45,7 @@ public class NbKeymapTest extends NbTestCase {
         Action d = new DummyAction("d");
         KeyStroke k1 = KeyStroke.getKeyStroke("X");
         KeyStroke k2 = KeyStroke.getKeyStroke("Y");
-        assertTrue(!k1.equals(k2));
+        assertFalse(k1.equals(k2));
         assertNull(km.getAction(k1));
         assertNull(km.getAction(k2));
         assertEquals(Collections.EMPTY_LIST, Arrays.asList(km.getBoundActions()));
@@ -88,7 +88,7 @@ public class NbKeymapTest extends NbTestCase {
         NbKeymap km = new NbKeymap();
         O o = new O();
         km.addObserver(o);
-        assertTrue(!o.changed);
+        assertFalse(o.changed);
         Action a1 = new DummyAction("a1");
         Action a2 = new DummyAction("a2");
         KeyStroke k1 = KeyStroke.getKeyStroke("X");
@@ -112,7 +112,7 @@ public class NbKeymapTest extends NbTestCase {
         assertNull(a2.getValue(Action.ACCELERATOR_KEY));
         AccL l = new AccL();
         a1.addPropertyChangeListener(l);
-        assertTrue(!l.changed);
+        assertFalse(l.changed);
         km.addActionForKeyStroke(k1, a1);
         assertEquals(k1, a1.getValue(Action.ACCELERATOR_KEY));
         assertTrue(l.changed);
