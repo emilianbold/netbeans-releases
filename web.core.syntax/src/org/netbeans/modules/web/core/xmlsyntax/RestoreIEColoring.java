@@ -33,10 +33,14 @@ public class RestoreIEColoring {
         LocaleSupport.addLocalizer(new LocaleSupport.Localizer() {
             public String getString(String key) {
                 try {
-                    return NbBundle.getBundle(RestoreIEColoring.class).getString(key);
+                    if (key.startsWith("EXAMPLE_coloring_jsp-xml")
+                    ||  key.startsWith("NAME_coloring_jsp-xml")) {
+                        return NbBundle.getMessage (RestoreIEColoring.class, key);
+                    }
                 } catch (MissingResourceException e) {
-                    return null;
+                    // harmless
                 }
+                return null;
             }
         });
 
