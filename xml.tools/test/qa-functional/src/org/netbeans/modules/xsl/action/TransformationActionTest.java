@@ -12,16 +12,18 @@
  */
 package org.netbeans.modules.xsl.action;
 
-import java.io.InputStreamReader;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.EditorWindowOperator;
+import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.xml.XSLTransformationDialog;
+import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.oo.gui.jelly.Explorer;
 import org.netbeans.test.oo.gui.jelly.xml.nodes.XMLNode;
 import org.netbeans.tests.xml.JXTest;
-import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 
 /** Checks XSL Transformation action. */
@@ -37,26 +39,42 @@ public class TransformationActionTest extends JXTest {
     
     /** Performs 'XSL Transformation...' action and checks output. */
     public void testTransformation() throws Exception {
+        fail("\n<a href='http://www.netbeans.org/issues/show_bug.cgi?id=27214'>Fail due #27214</a>");
+        
+        final String OUT_FILE = "../out/document.html";
+        //final String OUT_FILE = "output.html"; //!!!
+        final String OUT_NODE = "out" + DELIM + "document";
+        //final String OUT_NODE = "sources" + DELIM + "output"; //!!!
+        
         // clear output and display Transformation Dialog
-        DataObject dao = TestUtil.THIS.findData("out/document.html");
+        DataObject dao = TestUtil.THIS.findData(OUT_FILE);
         if (dao != null) /* then */ dao.delete();
         XSLTransformationDialog dialog = transformXML("sources" + DELIM + "document");
         
         // fill in the TransformationDialog and execute transformation
-        dialog.cboXSLTScript().clearText();
         dialog.cboXSLTScript().enterText("../styles/doc2html.xsl");
         dialog.cboOutput().clearText();
-        dialog.cboOutput().typeText("../out/document.html");
+        dialog.cboOutput().typeText(OUT_FILE);
         dialog.cboJComboBox().selectItem(dialog.ITEM_DONOTHING);
         dialog.oK();
         
         // check the transformation's output
         char[] cbuf = new char[4000];
-        FileObject fo = TestUtil.THIS.findData("out/document.html").getPrimaryFile();
-        InputStreamReader isr = new InputStreamReader(fo.getInputStream());
-        isr.read(cbuf);
-        boolean result = String.valueOf(cbuf).indexOf("<h1>Testing Document</h1>") != -1;
-        assertTrue("Cannot find control substring.", (result));
+        Node htmlNode = findDataNode(OUT_NODE);
+        new OpenAction().perform(htmlNode);
+        // force editor to reload document
+        EditorWindowOperator ewo = new EditorWindowOperator();
+        EditorOperator eo = ewo.getEditor(htmlNode.getText());
+        eo.setCaretPositionToLine(1);
+        eo.insert("\n");
+        eo.waitModified(true);
+        eo.deleteLine(1);
+        eo.save();
+        
+        String substring = "<h1>Testing Document</h1>";
+        boolean result = eo.getText().indexOf(substring) != -1;
+        assertTrue("Cannot find control substring:\n" + substring, (result));
+        ewo.close();
     }
     
     /** Displays XSL Transformation Dialog and vrerifies it */
