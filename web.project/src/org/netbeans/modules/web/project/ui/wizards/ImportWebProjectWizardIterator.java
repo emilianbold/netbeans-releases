@@ -65,6 +65,8 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
     private String buildfileName = GeneratedFilesHelper.BUILD_XML_PATH;
     private boolean imp = true;
     
+    private String moduleLoc;
+    
     /** Create a new wizard iterator. */
     public ImportWebProjectWizardIterator () {}
     
@@ -386,19 +388,8 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
             WizardDescriptor d = (WizardDescriptor) settings;
             panel.store(d);
             ((WizardDescriptor) d).putProperty ("NewProjectWizard_Title", null); //NOI18N
-                       
-            String moduleLoc = panel.moduleLocationTextField.getText().trim();
-            if (moduleLoc.length() > 0) {
-                File f = new File(moduleLoc);
-                FileObject fo;
-                try {
-                    fo = FileUtil.toFileObject(f);
-                } catch (IllegalArgumentException exc) {
-                    return; //invalid file object
-                }
-                if (fo != null)
-                    presetSecondPanel(fo, moduleLoc);
-            }
+            
+            moduleLoc = panel.moduleLocationTextField.getText().trim();
         }
         
         private boolean isWebModule (FileObject dir) {
@@ -413,25 +404,6 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
                 && (srcRoot == null || FileUtil.isParentOf (dir, srcRoot));
         }
     
-        private void presetSecondPanel(FileObject fo, String sourceRoot) {
-            FileObject guessFO;
-            String webPages = ""; //NOI18N
-            String javaSources = ""; //NOI18N
-            String libraries = ""; //NOI18N
-            
-            guessFO = guessDocBase(fo);
-            if (guessFO != null)
-                webPages = FileUtil.toFile(guessFO).getPath();
-            guessFO = guessJavaRoot(fo);
-            if (guessFO != null)
-                javaSources = FileUtil.toFile(guessFO).getPath();
-            guessFO = guessLibrariesFolder(fo);
-            if (guessFO != null)
-                libraries = FileUtil.toFile(guessFO).getPath();
-            
-            ((ImportWebLocationsVisual) panels[1].getComponent()).initValues(sourceRoot, webPages, javaSources, libraries);
-        }
-        
         //extra finish dialog        
         private Dialog dialog;
             
@@ -572,6 +544,7 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         }
         
         public void readSettings (Object settings) {
+            presetSecondPanel(moduleLoc);
         }
         
         public void storeSettings (Object settings) {
@@ -580,6 +553,36 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
             d.putProperty(WizardProperties.DOC_BASE, panel.jTextFieldWebPages.getText().trim());
             d.putProperty(WizardProperties.JAVA_ROOT, panel.jTextFieldJavaSources.getText().trim());
             d.putProperty(WizardProperties.LIB_FOLDER, panel.jTextFieldLibraries.getText().trim());
+        }
+        
+        private void presetSecondPanel(String sourceRoot) {
+            if (sourceRoot.length() > 0) {
+                File f = new File(sourceRoot);
+                FileObject fo;
+                try {
+                    fo = FileUtil.toFileObject(f);
+                } catch (IllegalArgumentException exc) {
+                    return; //invalid file object
+                }
+                if (fo != null) {
+                    FileObject guessFO;
+                    String webPages = ""; //NOI18N
+                    String javaSources = ""; //NOI18N
+                    String libraries = ""; //NOI18N
+
+                    guessFO = guessDocBase(fo);
+                    if (guessFO != null)
+                        webPages = FileUtil.toFile(guessFO).getPath();
+                    guessFO = guessJavaRoot(fo);
+                    if (guessFO != null)
+                        javaSources = FileUtil.toFile(guessFO).getPath();
+                    guessFO = guessLibrariesFolder(fo);
+                    if (guessFO != null)
+                        libraries = FileUtil.toFile(guessFO).getPath();
+
+                    ((ImportWebLocationsVisual) panels[1].getComponent()).initValues(sourceRoot, webPages, javaSources, libraries);
+                }
+            }
         }
     }
 }
