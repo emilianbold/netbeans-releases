@@ -29,15 +29,17 @@ Microsystems, Inc. All Rights Reserved.
   <property name="jdk-docs-location" value="http://java.sun.com/j2se/1.4/docs/api"/>
   <property name="openide-docs-location" value="http://www.netbeans.org/download/apis"/>
   <property name="openide.package-list.loc" location="doc/external/openide"/>
+  
+  <path id="cp">
+    <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
+    <fileset dir="${nb_all}/openide/netbeans/lib">
+        <include name="openide*.jar" />
+    </fileset>
+  </path>
 
   <target name="compile">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-      <classpath>
-        <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
-        <fileset dir="${nb_all}/openide/netbeans/lib">
-          <include name="openide*.jar" />
-        </fileset>
-      </classpath>
+      <classpath refid="cp"/>
     </javac>
   </target>
 
@@ -79,6 +81,18 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="java-support-apis">
+    <property name="_cp" refid="cp"/>
+    <ant dir="../../nbbuild" antfile="template.xml" target="javadoc">
+	<property name="javadoc.base" location="."/>
+	<property name="javadoc.name" value="JavaSupportAPIs"/>
+	<property name="javadoc.title" value="Java Support APIs"/>
+	<property name="javadoc.packages" value="org.netbeans.api.java.classpath"/>
+	<property name="javadoc.classpath" value="${_cp}"/>
+	<property name="javadoc.main.page" value="org/netbeans/api/java/classpath/doc-files/api.html"/>
+    </ant>
+  </target>
+
+  <target name="java-support-apis2">
     <delete dir="JavaSupportAPIs"/>
     <mkdir dir="JavaSupportAPIs"/>
     <tstamp/>
