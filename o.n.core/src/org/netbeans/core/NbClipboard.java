@@ -121,26 +121,34 @@ public final class NbClipboard extends ExClipboard
         fireClipboardChange();
     }
 
-    public synchronized Transferable getContents(Object requestor) {
+    public Transferable getContents(Object requestor) {
+        Transferable prev;
+
         try {
-            Transferable prev = slowSystemClipboard ? super.getContents (requestor) : systemClipboard.getContents (requestor);
-			if (log.isLoggable (log.INFORMATIONAL)) {
-                log.log (log.INFORMATIONAL, "getContents by " + requestor); // NOI18N
-                logFlavors (prev.getTransferDataFlavors ());
+            if (slowSystemClipboard) {
+                prev = super.getContents (requestor);
+            } else {
+                syncTask.waitFinished ();
+                prev = systemClipboard.getContents (requestor);
             }
-            Transferable res = convert (prev);
-			if (log.isLoggable (log.INFORMATIONAL)) {
-                log.log (log.INFORMATIONAL, "getContents by " + requestor); // NOI18N
-                logFlavors (res.getTransferDataFlavors ());
-                
-                res = new LoggableTransferable (res);
+
+            synchronized (this) {
+                if (log.isLoggable (log.INFORMATIONAL)) {
+                    log.log (log.INFORMATIONAL, "getContents by " + requestor); // NOI18N
+                    logFlavors (prev.getTransferDataFlavors ());
+                }
+                Transferable res = convert (prev);
+                if (log.isLoggable (log.INFORMATIONAL)) {
+                    log.log (log.INFORMATIONAL, "getContents by " + requestor); // NOI18N
+                    logFlavors (res.getTransferDataFlavors ());
+
+                    res = new LoggableTransferable (res);
+                }
+                return res;
             }
-            return res;
-        }
-        catch (ThreadDeath ex) {
+        } catch (ThreadDeath ex) {
             throw ex;
-        }
-        catch (Throwable ex) {
+        } catch (Throwable ex) {
             return null;
         }
     }
