@@ -39,15 +39,20 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
 
     private Project project;
     private SourceGroup[] folders;
+    private WizardDescriptor.Panel bottomPanel;
     
-    SimpleTargetChooserPanel( Project project, SourceGroup[] folders ) {
+    SimpleTargetChooserPanel( Project project, SourceGroup[] folders, WizardDescriptor.Panel bottomPanel ) {
         this.folders = folders;
         this.project = project;
+        this.bottomPanel = bottomPanel;
+        if ( bottomPanel != null ) {
+            bottomPanel.addChangeListener( this );
+        }
     }
 
     public Component getComponent() {
         if (gui == null) {
-            gui = new SimpleTargetChooserPanelGUI( project, folders );
+            gui = new SimpleTargetChooserPanelGUI( project, folders, bottomPanel == null ? null : bottomPanel.getComponent() );
             gui.addChangeListener(this);
         }
         return gui;
@@ -59,7 +64,8 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
     }
 
     public boolean isValid() {
-        return gui != null && gui.getTargetName() != null && gui.getTargetFolder() != null;
+        return gui != null && gui.getTargetName() != null && gui.getTargetFolder() != null &&
+               ( bottomPanel == null || bottomPanel.isValid() );
     }
 
     public void addChangeListener(ChangeListener l) {
@@ -98,10 +104,17 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
             // Init values
             gui.initValues( project, Templates.getTemplate( wd ), targetFolder );
         }
+        
+        if ( bottomPanel != null ) {
+            bottomPanel.readSettings( settings );
+        }
     }
 
     public void storeSettings(Object settings) { 
         if( isValid() ) {
+            if ( bottomPanel != null ) {
+                bottomPanel.storeSettings( settings );
+            }
             // XXX Better test for canWrite
             String folderName = gui.getTargetFolder();
             File f = new File( folderName );

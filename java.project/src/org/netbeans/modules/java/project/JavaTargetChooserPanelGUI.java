@@ -55,8 +55,13 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     private final List/*<ChangeListener>*/ listeners = new ArrayList();
     
     /** Creates new form SimpleTargetChooserGUI */
-    public JavaTargetChooserPanelGUI() {
+    public JavaTargetChooserPanelGUI( Component bottomPanel ) {
         initComponents();
+        if ( bottomPanel != null ) {
+            bottomPanelContainer.add( bottomPanel, java.awt.BorderLayout.CENTER );
+        }
+        
+        
         //initValues( project, null, null );
         documentNameTextField.getDocument().addDocumentListener( this );
         
@@ -156,7 +161,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         jLabel4 = new javax.swing.JLabel();
         fileTextField = new javax.swing.JTextField();
         targetSeparator = new javax.swing.JSeparator();
-        jPanel3 = new javax.swing.JPanel();
+        bottomPanelContainer = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -241,18 +246,21 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(targetSeparator, gridBagConstraints);
 
+        bottomPanelContainer.setLayout(new java.awt.BorderLayout());
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weighty = 1.0;
-        add(jPanel3, gridBagConstraints);
+        add(bottomPanelContainer, gridBagConstraints);
 
     }//GEN-END:initComponents
 
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel bottomPanelContainer;
     private javax.swing.JTextField documentNameTextField;
     private javax.swing.JTextField fileTextField;
     private javax.swing.JLabel jLabel1;
@@ -261,7 +269,6 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel3;
     private javax.swing.JComboBox packageComboBox;
     private javax.swing.JTextField projectTextField;
     private javax.swing.JComboBox rootComboBox;

@@ -38,18 +38,23 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
 
     private final List/*<ChangeListener>*/ listeners = new ArrayList();
     private JavaTargetChooserPanelGUI gui;
+    private WizardDescriptor.Panel bottomPanel;
 
     private Project project;
     private SourceGroup folders[];
     
-    public JavaTargetChooserPanel( Project project, SourceGroup folders[] ) {
+    public JavaTargetChooserPanel( Project project, SourceGroup folders[], WizardDescriptor.Panel bottomPanel ) {
         this.project = project;
         this.folders = folders;
+        this.bottomPanel = bottomPanel;
+        if ( bottomPanel != null ) {
+            bottomPanel.addChangeListener( this );
+        }
     }
 
     public Component getComponent() {
         if (gui == null) {
-            gui = new JavaTargetChooserPanelGUI();
+            gui = new JavaTargetChooserPanelGUI( bottomPanel == null ? null : bottomPanel.getComponent() );
             gui.addChangeListener(this);
         }
         return gui;
@@ -61,7 +66,8 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
     }
 
     public boolean isValid() {
-        return gui != null && gui.getTargetName() != null;
+        return gui != null && gui.getTargetName() != null &&
+               ( bottomPanel == null || bottomPanel.isValid() );
     }
 
     public void addChangeListener(ChangeListener l) {
@@ -100,10 +106,16 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
             // Init values
             gui.initValues( project, folders, Templates.getTemplate( wizard ), targetFolder );
         }
+        if ( bottomPanel != null ) {
+            bottomPanel.readSettings( settings );
+        }        
     }
 
     public void storeSettings(Object settings) { 
         if( isValid() ) {
+            if ( bottomPanel != null ) {
+                bottomPanel.storeSettings( settings );
+            }
             FileObject rootFolder = gui.getRootFolder();
             String packageFileName = gui.getPackageFileName();
             FileObject folder = rootFolder.getFileObject( packageFileName );            

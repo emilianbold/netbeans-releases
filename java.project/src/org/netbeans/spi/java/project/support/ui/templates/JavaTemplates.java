@@ -38,9 +38,27 @@ public class JavaTemplates {
      * @return a wizard panel(s) prompting the user to choose a name and package
      */
     public static WizardDescriptor.Panel createPackageChooser(Project project, SourceGroup[] folders) {       
-        return new JavaTargetChooserPanel(project, folders);
+        return createPackageChooser(project, folders, null);
     }
     
+    /**
+     * Create a Java-oriented target chooser suitable for templates which are Java
+     * sources or otherwise intended to reside in a Java package.
+     * The user is prompted to choose a package location for the new file and a (base) name.
+     * Resulting panel can be decorated with additional panel. Which will
+     * be placed below the standard package chooser.
+     * @param template the file to use as a template (see {@link org.openide.loaders.DataObject#createFromTemplate})
+     * @param folders a list of possible Java package roots to create the new file in
+     * @param bottomPanel panel which should be placed underneth the default chooser
+     * @return a wizard panel(s) prompting the user to choose a name and package
+     */
+    public static WizardDescriptor.Panel createPackageChooser(Project project, SourceGroup[] folders, WizardDescriptor.Panel bottomPanel ) {
+        return new JavaTargetChooserPanel(project, folders, bottomPanel );
+    }
+    
+    /** Creates new WizardIterator containing standard Package chooser
+     * @return WizardIterator consisting of one panel containing package chooser
+     */
     public static WizardDescriptor.InstantiatingIterator createJavaTemplateIterator () {
         return new NewJavaFileWizardIterator ();
     }

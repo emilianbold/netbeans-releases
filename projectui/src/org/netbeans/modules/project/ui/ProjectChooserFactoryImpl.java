@@ -34,8 +34,8 @@ public class ProjectChooserFactoryImpl implements ProjectChooserFactory {
         return ProjectChooserAccessory.createProjectChooser( false );
     }
 
-    public WizardDescriptor.Panel createSimpleTargetChooser( Project project, SourceGroup[] folders ) {
-        return new SimpleTargetChooserPanel( project, folders );
+    public WizardDescriptor.Panel createSimpleTargetChooser( Project project, SourceGroup[] folders, WizardDescriptor.Panel bottomPanel ) {
+        return new SimpleTargetChooserPanel( project, folders, bottomPanel );
     }
     
 }

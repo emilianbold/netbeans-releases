@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.project.ui;
 
+import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
@@ -42,10 +43,13 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     private SourceGroup[] folders;
     
     /** Creates new form SimpleTargetChooserGUI */
-    public SimpleTargetChooserPanelGUI( Project project, SourceGroup[] folders ) {
+    public SimpleTargetChooserPanelGUI( Project project, SourceGroup[] folders, Component bottomPanel ) {
         this.project = project;
         this.folders=folders;
         initComponents();
+        if ( bottomPanel != null ) {
+            bottomPanelContainer.add( bottomPanel, java.awt.BorderLayout.CENTER );
+        }
         initValues( project, null, null );
         browseButton.addActionListener( this );
         documentNameTextField.getDocument().addDocumentListener( this );
@@ -128,7 +132,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         jLabel4 = new javax.swing.JLabel();
         fileTextField = new javax.swing.JTextField();
         targetSeparator = new javax.swing.JSeparator();
-        jPanel3 = new javax.swing.JPanel();
+        bottomPanelContainer = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -154,30 +158,30 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
 
         jLabel1.setText("Project:");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(jLabel1, gridBagConstraints);
 
         projectTextField.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
         add(projectTextField, gridBagConstraints);
 
         jLabel2.setText("Folder:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(jLabel2, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(folderTextField, gridBagConstraints);
 
         browseButton.setText("Browse...");
@@ -189,16 +193,16 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
 
         jLabel4.setText("Created File:");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(jLabel4, gridBagConstraints);
 
         fileTextField.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(fileTextField, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -207,18 +211,21 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(targetSeparator, gridBagConstraints);
 
+        bottomPanelContainer.setLayout(new java.awt.BorderLayout());
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weighty = 1.0;
-        add(jPanel3, gridBagConstraints);
+        add(bottomPanelContainer, gridBagConstraints);
 
     }//GEN-END:initComponents
 
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel bottomPanelContainer;
     private javax.swing.JButton browseButton;
     private javax.swing.JTextField documentNameTextField;
     private javax.swing.JTextField fileTextField;
@@ -228,7 +235,6 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel3;
     private javax.swing.JTextField projectTextField;
     private javax.swing.JSeparator targetSeparator;
     // End of variables declaration//GEN-END:variables

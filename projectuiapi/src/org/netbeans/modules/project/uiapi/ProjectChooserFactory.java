@@ -35,6 +35,6 @@ public interface ProjectChooserFactory {
     
     public JFileChooser createProjectChooser(); 
     
-    public WizardDescriptor.Panel createSimpleTargetChooser( Project project, SourceGroup[] folders );
+    public WizardDescriptor.Panel createSimpleTargetChooser( Project project, SourceGroup[] folders, WizardDescriptor.Panel bottomPanel );
             
 }
