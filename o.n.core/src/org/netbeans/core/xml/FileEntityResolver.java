@@ -125,6 +125,10 @@ public class FileEntityResolver extends EntityCatalog implements Environment.Pro
      * @return lookup provided by the obj or null if none has been found
      */
     private static Lookup findLookup (XMLDataObject obj, DataObject source) {
+        if (source == null) {
+            return null;
+        }
+        
         try {
             InstanceCookie cookie = (InstanceCookie)source.getCookie (InstanceCookie.class);
             
