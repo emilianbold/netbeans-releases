@@ -148,7 +148,9 @@ public class FormUtils
         { javax.swing.JDialog.class, CLASS_AND_SUBCLASSES,
                 "title", PROP_PREFERRED },
         { javax.swing.JDialog.class, CLASS_EXACTLY,
-                "layout", PROP_HIDDEN }
+                "layout", PROP_HIDDEN },
+        { javax.swing.JMenuBar.class, CLASS_EXACTLY,
+                "helpMenu", PROP_HIDDEN }
     };
 
     /** The properties whose changes are ignored in JComponent subclasses */
