@@ -23,7 +23,6 @@ import org.openide.TopManager;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
-import org.netbeans.core.windows.dnd.WindowDragDropKeyPropertyEditor;
 import org.netbeans.core.windows.nodes.TabbedContainerUIPropertyEditor;
 import org.netbeans.core.windows.nodes.UIModePropertyEditor;
 
@@ -65,9 +64,7 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
                        new PropertyDescriptor (IDESettings.PROP_UIMODE, IDESettings.class, 
                                                "getUIMode", "setUIMode"), // NOI18N
                        new PropertyDescriptor (IDESettings.PROP_TABBEDCONTAINERUI, IDESettings.class, 
-                                               "getTabbedContainerUI", "setTabbedContainerUI"), // NOI18N
-                       new PropertyDescriptor (IDESettings.PROP_WINDOWSDRAGDROPKEY, IDESettings.class, 
-                                               "getWindowsDragDropKey", "setWindowsDragDropKey") // NOI18N
+                                               "getTabbedContainerUI", "setTabbedContainerUI") // NOI18N
                    };
 
             desc[0].setDisplayName (Main.getString ("PROP_SHOW_TIPS_ON_STARTUP"));
@@ -107,10 +104,6 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
             desc[12].setDisplayName(bundleTabbedContainerUI.getString("PROP_TabbedContainerUI"));
             desc[12].setShortDescription(bundleTabbedContainerUI.getString("HINT_TabbedContainerUI"));
             desc[12].setPropertyEditorClass(TabbedContainerUIPropertyEditor.class);
-
-            desc[13].setDisplayName(Main.getString("PROP_WindowsDragDropKey"));
-            desc[13].setShortDescription(Main.getString("HINT_WindowsDragDropKey"));
-            desc[13].setPropertyEditorClass(WindowDragDropKeyPropertyEditor.class);
 
 	    return desc;
         } catch (IntrospectionException ex) {

@@ -74,8 +74,6 @@ public class IDESettings extends SystemOption {
     public static final String PROP_UIMODE = "UIMode"; // NOI18N
     /** UI of JTabbedPane component */
     public static final String PROP_TABBEDCONTAINERUI = "TabbedContainerUI"; // NOI18N
-    /** Key for drag and drop in windows system */
-    public static final String PROP_WINDOWSDRAGDROPKEY = "WindowsDragDropKey"; // NOI18N
 
     /** proxy host VM property key */
     public static final String KEY_PROXY_HOST = "http.proxyHost"; // NOI18N
@@ -465,13 +463,5 @@ public class IDESettings extends SystemOption {
             tabbedContainerUIManager = WindowManagerImpl.getDefault().tabbedContainerUIManager();
         }
         return tabbedContainerUIManager;
-    }
-
-    public void setWindowsDragDropKey (int key) {
-        WindowManagerImpl.getDefault().gestureDetector().setDragKeyCode(key);
-    }
-
-    public int getWindowsDragDropKey () {
-        return WindowManagerImpl.getDefault().gestureDetector().getDragKeyCode();
     }
 }
