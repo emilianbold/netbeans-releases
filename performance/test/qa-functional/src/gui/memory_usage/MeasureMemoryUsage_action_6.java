@@ -29,6 +29,8 @@ public class MeasureMemoryUsage_action_6 {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
 
+        suite.addTest(new EmptyTestCase("measureMemoryUsage", "Empty test case"));
+        
         suite.addTest(new RefreshFolder("testRefreshFolderWith50JavaFiles", "Refresh folder with 50 java files"));
         suite.addTest(new RefreshFolder("testRefreshFolderWith100JavaFiles", "Refresh folder with 100 java files"));
         suite.addTest(new RefreshFolder("testRefreshFolderWith100XmlFiles", "Refresh folder with 100 xml files"));

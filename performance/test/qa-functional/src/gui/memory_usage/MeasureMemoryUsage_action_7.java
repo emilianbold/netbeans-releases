@@ -29,6 +29,8 @@ public class MeasureMemoryUsage_action_7 {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         
+        suite.addTest(new EmptyTestCase("measureMemoryUsage", "Empty test case"));
+        
         suite.addTest(new CreateProject("testCreateJavaApplicationProject", "Create Java Application project"));
         suite.addTest(new CreateProject("testCreateJavaLibraryProject", "Create Java Library project"));
         suite.addTest(new CreateProject("testCreateWebApplicationProject", "Create Web Application project"));

@@ -29,6 +29,8 @@ public class MeasureMemoryUsage_action_2 {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         
+        suite.addTest(new EmptyTestCase("measureMemoryUsage", "Empty test case"));
+        
         suite.addTest(new OpenFiles("testOpening20kBJavaFile", "Open Java file (20kB)"));
         suite.addTest(new OpenFilesWithOpenedEditor("testOpening20kBJavaFile", "Open Java file (20kB) if Editor opened"));
         

@@ -29,6 +29,8 @@ public class MeasureMemoryUsage_dialog_7 {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         
+        suite.addTest(new EmptyTestCase("measureMemoryUsage", "Empty test case"));
+        
         suite.addTest(new RefactorFindUsagesDialog("doMeasurement", "Refactor find usages dialog open"));
         suite.addTest(new RefactorRenameDialog("doMeasurement", "Refactor rename dialog open"));
         suite.addTest(new RefactorMoveClassDialog("doMeasurement", "Refactor move class dialog open"));

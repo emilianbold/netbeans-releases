@@ -29,6 +29,8 @@ public class MeasureMemoryUsage_dialog_2 {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         
+        suite.addTest(new EmptyTestCase("measureMemoryUsage", "Empty test case"));
+        
         suite.addTest(new FilesWindow("doMeasurement", "Files window open"));
         suite.addTest(new ProjectsWindow("doMeasurement", "Projects window open"));
         suite.addTest(new RuntimeWindow("doMeasurement", "Runtime window open"));

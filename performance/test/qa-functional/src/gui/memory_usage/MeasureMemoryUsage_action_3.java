@@ -29,6 +29,8 @@ public class MeasureMemoryUsage_action_3 {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         
+        suite.addTest(new EmptyTestCase("measureMemoryUsage", "Empty test case"));
+        
         suite.addTest(new PasteInEditor("doMeasurement", "Paste in the editor"));
         suite.addTest(new PageUpPageDownInEditor("doMeasurement", "Press Page Up in the editor", true));
         suite.addTest(new PageUpPageDownInEditor("doMeasurement", "Press Page Down in the editor", false));

@@ -29,6 +29,8 @@ public class MeasureMemoryUsage_action_5 {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         
+        suite.addTest(new EmptyTestCase("measureMemoryUsage", "Empty test case"));
+        
         suite.addTest(new SelectCategoriesInNewFile("testSelectGUIForms","Select GUI Forms in New File"));
         suite.addTest(new SelectCategoriesInNewFile("testSelectXML","Select XML in New File"));
         suite.addTest(new SelectCategoriesInNewFile("testSelectOther","Select Other in New File"));

@@ -24,24 +24,17 @@ import gui.action.*;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class MeasureMemoryUsage_action_4 {
+public class MeasureMemoryUsage_menu_7 {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-
+        
         suite.addTest(new EmptyTestCase("measureMemoryUsage", "Empty test case"));
         
-        suite.addTest(new CloseEditor("testClosing20kBJavaFile", "Close Java file (20kB)"));
-//TODO Form designer isn't TopComponent        suite.addTest(new CloseEditor("testClosing20kBFormFile", "Close Form file (20kB)"));
-
-        suite.addTest(new CloseAllEditors("testClosingAllJavaFiles", "Close All Documents if 10 Java files opened"));
+        suite.addTest(new RuntimeViewPopupMenu("testServerRegistryPopupMenuRuntime", "Server Registry node popup in Runtime View"));
+        suite.addTest(new RuntimeViewPopupMenu("testTomcatPopupMenuRuntime", "Tomcat node popup in Runtime View"));
+        suite.addTest(new RuntimeViewPopupMenu("testHttpTomcatPopupMenuRuntime", "http localhost node popup in Runtime View"));
         
-        suite.addTest(new CloseEditorTab("testClosingTab", "Close on tab from Editor window"));
-        
-        suite.addTest(new CloseEditorModified("testClosingModifiedJavaFile", "Close modified Java file"));
-        
-        suite.addTest(new SaveModifiedFile("testSaveModifiedJavaFile", "Save modified Java file"));
-
         return suite;
     }
     

@@ -29,6 +29,8 @@ public class MeasureMemoryUsage_dialog_6 {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         
+        suite.addTest(new EmptyTestCase("measureMemoryUsage", "Empty test case"));
+        
         // dialogs and windows which first open a file in the editor
         suite.addTest(new GotoClassDialog("doMeasurement", "Go To Class dialog open"));
         suite.addTest(new OverrideMethods("doMeasurement", "Override and Implement Methods dialog open"));
