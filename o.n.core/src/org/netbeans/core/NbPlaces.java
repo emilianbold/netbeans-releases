@@ -15,6 +15,7 @@ package com.netbeans.developer.impl;
 
 import com.netbeans.ide.*;
 import com.netbeans.ide.loaders.*;
+import com.netbeans.ide.filesystems.*;
 import com.netbeans.ide.util.NotImplementedException;
 import com.netbeans.ide.nodes.*;
 import com.netbeans.developer.impl.desktop.DesktopPoolContext;
@@ -87,10 +88,23 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
     throw new NotImplementedException ();
   }
 
+  /** Default folder for toolbars.
+  */
+  public DataFolder toolbars () {
+    DataFolder df = null;
+    try {
+      FileObject fo = FileSystemPool.getDefault().findResource("Toolbars");
+      df = DataFolder.findFolder(fo);
+    } catch (Exception ex) {
+      ex.printStackTrace();
+    }
+    return df;
+  }
 }
 
 /*
 * Log
+*  3    Gandalf   1.2         1/20/99  David Peroutka  
 *  2    Gandalf   1.1         1/6/99   Jan Jancura     
 *  1    Gandalf   1.0         1/5/99   Ian Formanek    
 * $
