@@ -7,7 +7,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -49,7 +49,7 @@ HTML contents of the document, with substitutions.
 
 <!ELEMENT api %Flow; >
 <!ATTLIST api
-          group (java|lookup|property|dtd|layer|java.io.File|javax.swing.UIManager|jmi) 'java'
+          group (java|lookup|property|dtd|layer|java.io.File|javax.swing.UIManager|jmi|org.apache.tools.ant.Task) #REQUIRED
           name NMTOKEN #REQUIRED
           type (import|export) #REQUIRED
           category %category; #REQUIRED
