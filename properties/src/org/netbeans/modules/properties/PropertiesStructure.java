@@ -207,8 +207,9 @@ public class PropertiesStructure extends Element {
             synchronized(getParent()) {
                 PositionBounds pos = getBounds();
                 
-                pos.insertAfter("\n" + item.printString()); // NOI18N
-                
+                PositionBounds itemBounds = pos.insertAfter("\n").insertAfter(item.printString()); // NOI18N
+                item.bounds = itemBounds;
+
                 //#17044 update in-memory model
                 item.setParent(this);
                 items.put(key, item);  

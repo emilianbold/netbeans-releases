@@ -84,12 +84,12 @@ public class PropertiesTableModel extends AbstractTableModel {
         
         if(column == 0)
             // Get StringPair for key.
-            return stringPairForKey(row);//bs.getNthKey(row);
+            return stringPairForKey(row);//bs.keyAt(row);
         else {
             // Get StringPair for value.
             Element.ItemElem item;
             try {
-                item = bs.getItem(column - 1, row);
+                item = bs.getItem(column - 1, bs.keyAt(row));
             } catch (ArrayIndexOutOfBoundsException aie) {
                 item = null;
             }
@@ -100,12 +100,12 @@ public class PropertiesTableModel extends AbstractTableModel {
     /** Gets string pair for a key in an item (may be null). */
     private StringPair stringPairForKey(int row) {
         BundleStructure bs = obj.getBundleStructure();
-        Element.ItemElem item = bs.getItem(0, row);
+        Element.ItemElem item = bs.getItem(0, bs.keyAt(row));
         StringPair sp;
         if (item == null)
-            sp = new StringPair("", bs.getNthKey(row), true); // NOI18N
+            sp = new StringPair("", bs.keyAt(row), true); // NOI18N
         else
-            sp = new StringPair(item.getComment(), bs.getNthKey(row), true);
+            sp = new StringPair(item.getComment(), bs.keyAt(row), true);
         
         if (obj.getBundleStructure().getEntryCount() > 1)
             sp.setCommentEditable(false);
@@ -157,7 +157,7 @@ public class PropertiesTableModel extends AbstractTableModel {
         // Is key.
         if (columnIndex == 0) {
             BundleStructure bs = obj.getBundleStructure();
-            String oldValue = (String)bs.getNthKey(rowIndex);
+            String oldValue = (String)bs.keyAt(rowIndex);
             if (oldValue == null)
                 return;
             String newValue = ((StringPair)aValue).getValue();
@@ -194,7 +194,7 @@ public class PropertiesTableModel extends AbstractTableModel {
         } else {
             // Property value.
             PropertiesFileEntry entry = obj.getBundleStructure().getNthEntry(columnIndex - 1);
-            String key = obj.getBundleStructure().getNthKey(rowIndex);
+            String key = obj.getBundleStructure().keyAt(rowIndex);
             if (entry != null && key != null) {
                 PropertiesStructure ps = entry.getHandler().getStructure();
                 if (ps != null) {

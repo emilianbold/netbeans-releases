@@ -849,6 +849,7 @@ implements EditCookie, EditorCookie, PrintCookie, CloseCookie, Serializable {
             // #21850. Don't reparse invalid or virtual file.
             if(entry.getFile().isValid() && !entry.getFile().isVirtual()) {
                 if(!((PropertiesEditorSupport)cloneableEditorSupport()).hasOpenedTableComponent()) {
+                    //!!! performed on IDE shutdown, what is the purpose?
                     entry.getHandler().reparseNowBlocking();
                 }
             }

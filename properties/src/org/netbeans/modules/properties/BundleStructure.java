@@ -32,6 +32,8 @@ import org.openide.util.WeakListener;
  * to one .properties file) for one <code>PropertiesDataObject</code>.
  * <p>
  * This structure provides support for sorting <code>entries</code> and fast mapping of integers to <code>entries</code>.
+ * <p>
+ * The sorting support in this class is design flaw and consider it deprecated.
  *
  * @author Petr Jiricka
  */
@@ -44,11 +46,13 @@ public class BundleStructure extends Object {
      * @see PropertiesFileEntry */
     private PropertiesFileEntry[] entries;
 
-    /** List of keys. */
+    /** Sorted list of keys. */
     private ArrayList keyList;
     
-    /** Compartor which sorts keylist. Default set is sort according keys in ascending order. */
-    private KeyComparator comparator = new KeyComparator(0, true);
+    /** Compartor which sorts keylist.
+     * Default set is sort according keys in file order.
+     * */
+    private KeyComparator comparator = new KeyComparator();
 
     /** Support for firing events when changes made on this bundle. */
     private PropertyBundleSupport propBundleSupport = new PropertyBundleSupport(this);
@@ -125,6 +129,8 @@ public class BundleStructure extends Object {
         return entries.length;
     }
 
+    // Sorted keys management ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
     /** Retrieves all keys in bundle. */
     public String[] getKeys() {
         if (keyList == null)
@@ -137,8 +143,11 @@ public class BundleStructure extends Object {
         return stringArray;
     }
 
-    /** Retrieves n-th key from the list, indexed from 0. */
-    public String getNthKey(int keyIndex) {
+    /**
+     * Retrieves n-th key from the list, indexed from 0.
+     * @param keyIndex index accrding to current sort order
+     * */
+    public String keyAt(int keyIndex) {
         if (keyList == null)
             throw new IllegalStateException("Resource Bundles: KeyList not initialized"); // NOI18N
         
@@ -148,7 +157,11 @@ public class BundleStructure extends Object {
         return (String)keyList.get(keyIndex);
     }
 
-    /** Retrieves index for a key from the list, by name. */
+    /**
+     * Retrieves index for a key from the list, by name.
+     * @param keyName key name
+     * @return 0-based position of key in current sort order or -1 it it does not exist
+     */
     public int getKeyIndexByName(String keyName) {
         return keyList.indexOf(keyName);
     }
@@ -158,16 +171,21 @@ public class BundleStructure extends Object {
      *  or null if the entry does not contain the key or entry doesn't exist
      */
     public Element.ItemElem getItem(int entryIndex, int keyIndex) {
+        String key = keyAt(keyIndex);
+        return getItem(entryIndex, key);
+    }
+
+    public Element.ItemElem getItem(int entryIndex, String key) {
+        if (key == null) return null;
         PropertiesFileEntry pfe = getNthEntry(entryIndex);
-        if(pfe == null)
-            return null;
-        
-        String key = getNthKey(keyIndex);
+        if(pfe == null) return null;
+
         PropertiesStructure ps = pfe.getHandler().getStructure();
         if (ps != null)
             return ps.getItem(key);
         else
             return null;
+
     }
 
     /** Retrieves number of all keys. */
@@ -190,15 +208,17 @@ public class BundleStructure extends Object {
     }
 
     /** Gets index accoring which is bundle key list sorted.
-     * @return index, 0 means accrding keys, -1 means sorting as in default
+     * @return index, 0 means according keys, -1 means sorting as in default
      * properties file
      */
     public int getSortIndex() {
         return comparator.getIndex();
     }
     
-    /** Gets current order of sort. 
-     @return true if ascending, alse descending order */
+    /**
+     * Gets current order of sort.
+     * @return true if ascending, alse descending order (until sort index is -1, then unsorted)
+     */
     public boolean getSortOrder() {
         return comparator.isAscending();
     }
@@ -328,14 +348,19 @@ public class BundleStructure extends Object {
 
         
         /** Constructor. */
-        public KeyComparator(int index, boolean ascending) {
-            this.index = index;
-            this.ascending = ascending;
+        public KeyComparator() {
+            this.index = -1;
+            ascending = false;
         }
         
         
-        /** Setter for <code>index</code> property. */
+        /**
+         * Setter for <code>index</code> property.
+         * ascending -> descending -> primary file key order -> ....
+         * @param index interval 0 .. entry count
+         * */
         public void setIndex(int index) {
+            if (index == -1) throw new IllegalArgumentException();
             // if same column toggle order
             if(this.index == index) {
                 if (ascending) {
@@ -351,7 +376,10 @@ public class BundleStructure extends Object {
             this.index = index;
         }
 
-        /** Getter for <code>index</code> property. */
+        /**
+         * Getter for <code>index</code> property.
+         * @return -1 .. entry count, -1 means unsorted
+         * */
         public int getIndex() {
             return index;
         }
@@ -361,24 +389,22 @@ public class BundleStructure extends Object {
             return ascending;
         }
 
-        /** Impements <code>Comparator</code>. */
+        /**
+         * Impements <code>Comparator</code>.
+         * It;s strange as it access just being compared list
+         */
         public int compare(Object o1, Object o2) {
             String str1;
             String str2;
             
             // sort as in default properties file
             if (index < 0) {
-                Element.ItemElem item1 = getItem(0, getKeyIndexByName((String)o1));
-                Element.ItemElem item2 = getItem(0, getKeyIndexByName((String)o2));
+                Element.ItemElem item1 = getItem(0, (String)o1);
+                Element.ItemElem item2 = getItem(0, (String)o2);
                 if (item1 != null && item2 != null) {
-                    int item1Pos = item1.getBounds ().getBegin ().getOffset ();
-                    int item2Pos = item2.getBounds ().getBegin ().getOffset ();
-                    if (item1Pos < item2Pos)
-                        return -1;
-                    else if (item1Pos == item2Pos)
-                        return 0;
-                    else
-                        return 1;
+                    int i1 = item1.getBounds().getBegin().getOffset();
+                    int i2 = item2.getBounds().getBegin().getOffset();
+                    return i1 - i2;
                 } else if (item1 != null) {
                     return -1;
                 } else if (item2 != null) {
@@ -395,8 +421,8 @@ public class BundleStructure extends Object {
                 str1 = (String)o1;
                 str2 = (String)o2;
             } else {
-                Element.ItemElem item1 = getItem(index-1, getKeyIndexByName((String)o1));
-                Element.ItemElem item2 = getItem(index-1, getKeyIndexByName((String)o2));
+                Element.ItemElem item1 = getItem(index-1, (String)o1);
+                Element.ItemElem item2 = getItem(index-1, (String)o2);
                 if(item1 == null) {
                     if(item2 == null)
                         return 0;
