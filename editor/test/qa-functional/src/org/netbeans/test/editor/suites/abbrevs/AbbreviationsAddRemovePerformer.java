@@ -22,7 +22,6 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.junit.NbTestCase;
 import java.io.File;
 import org.netbeans.test.editor.LineDiff;
-import org.netbeans.test.editor.suites.componenets.Utilities;
 
 /**This is test in very development stage. I put it into the CVS mainly because
  * it simplifies testing on different platforms. This test may or may not

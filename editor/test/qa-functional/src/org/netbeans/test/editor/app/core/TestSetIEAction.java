@@ -99,8 +99,6 @@ public class TestSetIEAction extends TestSetAction {
 		} else {
 	            System.err.println("TestSetIEAction: perform kit class " + kitClass + " not found.");
 		}
-		
-                System.err.println("TestSetIEAction: perform: I was not able to find proper options for kit class: " + kitClass);*/
             }
         });
     }
