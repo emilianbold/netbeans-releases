@@ -16,6 +16,7 @@ package org.netbeans.modules.javadoc.search;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallableSystemAction;
+import javax.swing.SwingUtilities;
 
 /**
 * Search doc action.
@@ -53,14 +54,17 @@ public class SearchDocAction extends CallableSystemAction {
      */
     public void performAction () {
 
-        IndexSearch indexSearch = IndexSearch.getDefault();
+        final IndexSearch indexSearch = IndexSearch.getDefault();
 
         String toFind = GetJavaWord.getCurrentJavaWord();
 
         if (toFind != null)
             indexSearch.setTextToFind( toFind );
 
-        indexSearch.open ();
-        indexSearch.requestFocus();
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                indexSearch.open ();
+            }
+        });
     }
 }

@@ -580,6 +580,7 @@ public class IndexSearch
         }
 
         quickFind = null;
+        searchComboBox.getEditor().selectAll();
     }
 
     java.awt.Dimension getPrefferedSize() {
