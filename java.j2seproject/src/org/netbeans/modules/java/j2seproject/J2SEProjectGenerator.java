@@ -246,8 +246,8 @@ public class J2SEProjectGenerator {
     private static FileObject createProjectDir (File dir) throws IOException {
         FileObject dirFO;
         if(!dir.exists()) {
-            //Refresh before mkdir not to depend on window focus
-            refreshFileSystem (dir);
+            //Refresh before mkdir not to depend on window focus, refreshFileSystem does not work correctly
+            refreshFolder (dir);
             if (!dir.mkdirs()) {
                 throw new IOException ("Can not create project folder.");   //NOI18N
             }
@@ -255,9 +255,10 @@ public class J2SEProjectGenerator {
         }        
         dirFO = FileUtil.toFileObject(dir);
         assert dirFO != null : "No such dir on disk: " + dir; // NOI18N
-        assert dirFO.isFolder() : "Not really a dir: " + dir; // NOI18N
+        assert dirFO.isFolder() : "Not really a dir: " + dir; // NOI18N        
         return dirFO;
-    }
+    }   
+    
 
     private static void createMainClass( String mainClassName, FileObject srcFolder ) throws IOException {
         
@@ -303,6 +304,16 @@ public class J2SEProjectGenerator {
         FileObject dirFO = FileUtil.toFileObject(rootF);
         assert dirFO != null : "At least disk roots must be mounted! " + rootF; // NOI18N
         dirFO.getFileSystem().refresh(false);
+    }
+    
+    private static void refreshFolder (File dir) {
+        while (!dir.exists()) {
+            dir = dir.getParentFile();
+        }        
+        FileObject fo = FileUtil.toFileObject(dir);
+        if (fo != null) {
+            fo.refresh(false);
+        }
     }
 }
 
