@@ -13,18 +13,25 @@
 
 package com.netbeans.developer.modules.loaders.image;
 
-import org.openide.windows.CloneableTopComponent;
+import java.awt.Dimension;
+
+import org.openide.text.EditorSupport;
 import org.openide.util.HelpCtx;
+import org.openide.windows.*;
 
 /** Top component providing a viewer for images.
 *
 * @author Petr Hamernik, Ian Formanek
 */
 public class ImageViewer extends CloneableTopComponent {
-  /** generated Serialized Version UID */
-//  static final long serialVersionUID = 6017254068843460960L; // [PENDING SUID]
+  private static final int MINIMUM_WIDTH = 200;
+  private static final int MINIMUM_HEIGHT = 150;
+
+  private static final int DEFAULT_BORDER_WIDTH = 40;
+  private static final int DEFAULT_BORDER_HEIGHT = 40;
 
   private ImageDataObject storedObject;
+  private javax.swing.JLabel label;
 
   /** Create a new image viewer.
   * @param obj the data object holding the image
@@ -32,11 +39,35 @@ public class ImageViewer extends CloneableTopComponent {
   public ImageViewer(ImageDataObject obj) {
     super(obj);
     storedObject = obj;
-    javax.swing.JScrollPane scroll = new javax.swing.JScrollPane(new javax.swing.JLabel(new NBImageIcon(obj)));
+    javax.swing.JScrollPane scroll = new javax.swing.JScrollPane(label = new javax.swing.JLabel(new NBImageIcon(obj)));
     setLayout(new java.awt.BorderLayout());
     add(scroll, "Center");
   }
 
+  /** Show the component on given workspace. If given workspace is
+  * not active, component will be shown only after given workspace
+  * will become visible.
+  * Note that this method only makes it visible, but does not
+  * give it focus.
+  * @param workspace Workspace on which component should be opened.
+  * @see #requestFocus
+  */
+  public void open (Workspace w) {
+    System.out.println ("Opening on workspace: "+w);
+    Mode viewerMode = w.findMode(this);
+    if (viewerMode == null) {
+      Mode editorMode = w.findMode(EditorSupport.EDITOR_MODE);
+      if (editorMode != null) editorMode.dockInto(this);
+    }
+    super.open (w);
+  }
+  
+  public Dimension getPreferredSize () {
+    System.out.println ("get Pref size...");
+    Dimension pref = label.getPreferredSize ();
+    return new Dimension (Math.max (DEFAULT_BORDER_WIDTH + pref.width, MINIMUM_WIDTH), Math.max (DEFAULT_BORDER_HEIGHT + pref.height, MINIMUM_HEIGHT));
+  }
+  
   public HelpCtx getHelpCtx () {
     return new HelpCtx(ImageViewer.class);
   }
