@@ -190,4 +190,47 @@ public class JellyTestCase extends NbTestCase {
         throw new AssertionFailedErrorException(t);
     }
     
+    
+    /*
+     * methods for managing failures of group of dependent tests
+     * Usage: each method involved in a group must start with 
+     * startTest() call and when finished it must perform endTest().
+     * To clear the test status (new group of tests does not depend on 
+     * previous tests), method must call clearTestStatus() prior to startTest()
+     * Example:
+     * public void myTest() {
+     *     startTest();
+     *      // do my stuff
+     *     endTest();
+     * }
+     */
+    
+    /** private variable for holding state whether test was finished
+     */
+    private boolean testStatus = true;
+    
+    /** Checks whether previus test finished correctly and
+     *  sets test status to 'not finished' state
+     *
+     */
+    protected void startTest() {
+        if (!testStatus) {
+            fail("Depending on previous test, but it failed");
+        }
+        testStatus = false;
+    }
+    
+    /** Sets the test status to 'finished' state (test passed)
+     */
+    protected void endTest() {
+        testStatus = true;
+    }
+    
+    /** Clears test status (used when test does not depend on previous test)
+     */
+    protected void clearTestStatus() {
+        testStatus = true;
+    }
+    
+    
 }
