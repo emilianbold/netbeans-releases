@@ -13,9 +13,12 @@
 
 package com.netbeans.developer.modules.loaders.form;
 
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.beans.*;
-import java.util.Vector;
-import java.util.Enumeration;
+import java.util.ArrayList;
+import java.util.Iterator;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -44,6 +47,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
 
     javax.swing.ButtonGroup bg = new javax.swing.ButtonGroup ();
     bg.add (valueButton);
+    bg.add (beanButton);
     bg.add (propertyButton);
     bg.add (methodButton);
     bg.add (codeButton);
@@ -60,12 +64,45 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
       new javax.swing.border.EtchedBorder (), " " + FormEditor.getFormBundle ().getString ("CTL_CW_GetParametersFrom") + " "), // "Get Parameter From:"
       new javax.swing.border.EmptyBorder (new java.awt.Insets(5, 5, 5, 5))));
     valueButton.setText (FormEditor.getFormBundle ().getString ("CTL_CW_Value")); // "Value:"
+    beanButton.setText (FormEditor.getFormBundle ().getString ("CTL_CW_Bean")); // "Bean:"
     propertyButton.setText (FormEditor.getFormBundle ().getString ("CTL_CW_Property")); // "Property:"
     propertyLabel.setText (FormEditor.getFormBundle ().getString ("CTL_CW_NoProperty")); // "<No Property Selected>"
     methodButton.setText (FormEditor.getFormBundle ().getString ("CTL_CW_Method")); // "Method Call:"
     methodLabel.setText (FormEditor.getFormBundle ().getString ("CTL_CW_NoMethod")); // "<No Method Selected>"
     codeButton.setText (FormEditor.getFormBundle ().getString ("CTL_CW_UserCode")); // "User Code:"
 
+    beansList = new ArrayList ();
+    DefaultComboBoxModel beanComboModel = new DefaultComboBoxModel ();
+    beanComboModel.addElement (FormEditor.getFormBundle ().getString ("CTL_CW_SelectBean"));
+    for (Iterator it = sourceComponent.getFormManager ().getAllComponents ().iterator (); it.hasNext ();) {
+      RADComponent radComp = (RADComponent)it.next ();
+      if (requiredType.isAssignableFrom (radComp.getBeanClass ())) {
+        beansList.add (radComp);
+        if (radComp instanceof RADFormContainer) {
+          beanComboModel.addElement (FormEditor.getFormBundle ().getString ("CTL_FormTopContainerName"));
+        } else {
+          beanComboModel.addElement (radComp.getName ());
+        }
+      }
+    }
+    if (beansList.size () > 0) {
+      beanCombo.setModel (beanComboModel);
+      beanCombo.addItemListener (new ItemListener () {
+          public void itemStateChanged (ItemEvent evt) {
+            int index = beanCombo.getSelectedIndex ();
+            if (index == 0) {
+              selectedComponent = null;
+            } else {
+              selectedComponent = (RADComponent)beansList.get (index - 1);
+            }
+            fireStateChange ();
+          }
+        }
+      );
+    } else {
+      beanButton.setEnabled (false);    // no beans on the form are of the required type
+    }
+    
     updateParameterTypes ();
     currentFilledState = isFilled ();
 
@@ -79,6 +116,16 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
       case RADConnectionPropertyEditor.RADConnectionDesignValue.TYPE_VALUE:
         valueButton.setSelected (true);
         valueField.setText (value.value);
+        break;
+      case RADConnectionPropertyEditor.RADConnectionDesignValue.TYPE_BEAN:
+        beanButton.setSelected (true);
+        selectedComponent = value.radComponent;
+        int index = beansList.indexOf (selectedComponent);
+        if (index == -1) {
+          beanCombo.setSelectedIndex (0); 
+        } else {
+          beanCombo.setSelectedIndex (index+1);
+        }
         break;
       case RADConnectionPropertyEditor.RADConnectionDesignValue.TYPE_PROPERTY:
         propertyButton.setSelected (true);
@@ -123,6 +170,9 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
     if (!isFilled ()) throw new IllegalStateException ();
     if (valueButton.isSelected ()) {
       return new RADConnectionPropertyEditor.RADConnectionDesignValue (requiredType, valueField.getText ());
+    } else if (beanButton.isSelected ()) {
+      System.out.println("Returning selectedComponent: "+selectedComponent);
+      return new RADConnectionPropertyEditor.RADConnectionDesignValue (selectedComponent);
     } else if (codeButton.isSelected ()) {
       return new RADConnectionPropertyEditor.RADConnectionDesignValue (codeArea.getText ());
     } else if (propertyButton.isSelected ()) {
@@ -158,14 +208,24 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         return (valueField.getText () != null) ? valueField.getText () : "";
     } else if (codeButton.isSelected ()) {
       return codeArea.getText ();
+    } else if (beanButton.isSelected ()) {
+      if (selectedComponent instanceof FormContainer) {
+        return "this"; 
+      } else {
+        return (selectedComponent.getName ());
+      }
     } else if (propertyButton.isSelected ()) {
       StringBuffer sb = new StringBuffer ();
       if (!(selectedComponent instanceof FormContainer)) {
         sb.append (selectedComponent.getName ());
         sb.append (".");
       }
-      sb.append (selectedProperty.getReadMethod ().getName ());
-      sb.append (" ()");
+      if (selectedProperty != null) {
+        sb.append (selectedProperty.getReadMethod ().getName ());
+        sb.append (" ()");
+      } else {
+        sb.append ("???");
+      }
       return  sb.toString ();
     } else if (methodButton.isSelected ()) {
       StringBuffer sb = new StringBuffer ();
@@ -183,8 +243,10 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
     if (codeButton.isSelected ()) {
       if (requiredType.equals (String.class)) return true;
       else return !"".equals (codeArea.getText ());
-    } else if (propertyButton.isSelected ()) {
+    } else if (beanButton.isSelected ()) {
       return (selectedComponent != null);
+    } else if (propertyButton.isSelected ()) {
+      return (selectedProperty != null);
     } else if (valueButton.isSelected ()) {
       if (requiredType.equals (String.class)) return true;
       else return !"".equals (valueField.getText ());
@@ -195,23 +257,23 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
 
   public synchronized void addChangeListener (ChangeListener l) {
     if (listeners == null)
-      listeners = new Vector ();
-    listeners.addElement (l);
+      listeners = new ArrayList ();
+    listeners.add (l);
   }
 
   public synchronized void removeListener (ChangeListener l) {
     if (listeners == null)
       return;
-    listeners.removeElement (l);
+    listeners.remove (l);
   }
 
   private synchronized void fireStateChange () {
     if (listeners == null)
       return;
-    Vector v = (Vector)listeners.clone ();
+    ArrayList list = (ArrayList)listeners.clone ();
     ChangeEvent evt = new ChangeEvent (this);
-    for (Enumeration e = v.elements (); e.hasMoreElements ();)
-      ((ChangeListener)e.nextElement ()).stateChanged (evt);
+    for (Iterator it = list.iterator (); it.hasNext ();)
+      ((ChangeListener)it.next ()).stateChanged (evt);
   }
 
   /** This method is called from within the constructor to
@@ -219,156 +281,181 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
    * WARNING: Do NOT modify this code. The content of this method is
    * always regenerated by the FormEditor.
    */
-  private void initComponents () {//GEN-BEGIN:initComponents
-    setLayout (new java.awt.GridBagLayout ());
-    java.awt.GridBagConstraints gridBagConstraints1;
+    private void initComponents () {//GEN-BEGIN:initComponents
+      setLayout (new java.awt.GridBagLayout ());
+      java.awt.GridBagConstraints gridBagConstraints1;
 
-    valueButton = new javax.swing.JRadioButton ();
-    valueButton.setText ("Value:");
-    valueButton.setSelected (true);
-    valueButton.addActionListener (new java.awt.event.ActionListener () {
+      valueButton = new javax.swing.JRadioButton ();
+      valueButton.setText ("Value:");
+      valueButton.setSelected (true);
+      valueButton.addActionListener (new java.awt.event.ActionListener () {
         public void actionPerformed (java.awt.event.ActionEvent evt) {
           typeButtonPressed (evt);
         }
       }
-    );
+      );
 
 
-    gridBagConstraints1 = new java.awt.GridBagConstraints ();
-    gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-    add (valueButton, gridBagConstraints1);
+      gridBagConstraints1 = new java.awt.GridBagConstraints ();
+      gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
+      add (valueButton, gridBagConstraints1);
 
-    valueField = new javax.swing.JTextField ();
-    valueField.addCaretListener (new javax.swing.event.CaretListener () {
+      valueField = new javax.swing.JTextField ();
+      valueField.addCaretListener (new javax.swing.event.CaretListener () {
         public void caretUpdate (javax.swing.event.CaretEvent evt) {
           updateState (evt);
         }
       }
-    );
+      );
 
 
-    gridBagConstraints1 = new java.awt.GridBagConstraints ();
-    gridBagConstraints1.gridwidth = 0;
-    gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-    gridBagConstraints1.weightx = 1.0;
-    add (valueField, gridBagConstraints1);
+      gridBagConstraints1 = new java.awt.GridBagConstraints ();
+      gridBagConstraints1.gridwidth = 0;
+      gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
+      gridBagConstraints1.insets = new java.awt.Insets (0, 0, 5, 0);
+      gridBagConstraints1.weightx = 1.0;
+      add (valueField, gridBagConstraints1);
 
-    propertyButton = new javax.swing.JRadioButton ();
-    propertyButton.setText ("Property:");
-    propertyButton.addActionListener (new java.awt.event.ActionListener () {
+      beanButton = new javax.swing.JRadioButton ();
+      beanButton.setText ("Bean:");
+      beanButton.addActionListener (new java.awt.event.ActionListener () {
         public void actionPerformed (java.awt.event.ActionEvent evt) {
           typeButtonPressed (evt);
         }
       }
-    );
+      );
 
 
-    gridBagConstraints1 = new java.awt.GridBagConstraints ();
-    gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-    add (propertyButton, gridBagConstraints1);
+      gridBagConstraints1 = new java.awt.GridBagConstraints ();
+      gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
+      add (beanButton, gridBagConstraints1);
 
-    propertyLabel = new javax.swing.JLabel ();
-    propertyLabel.setText ("<No Property Selected>");
-    propertyLabel.setEnabled (false);
+      beanCombo = new javax.swing.JComboBox ();
 
 
-    gridBagConstraints1 = new java.awt.GridBagConstraints ();
-    gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-    gridBagConstraints1.weightx = 1.0;
-    add (propertyLabel, gridBagConstraints1);
+      gridBagConstraints1 = new java.awt.GridBagConstraints ();
+      gridBagConstraints1.gridwidth = 0;
+      gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
+      gridBagConstraints1.insets = new java.awt.Insets (0, 0, 5, 0);
+      add (beanCombo, gridBagConstraints1);
 
-    propertyDetailsButton = new javax.swing.JButton ();
-    propertyDetailsButton.setText ("...");
-    propertyDetailsButton.addActionListener (new java.awt.event.ActionListener () {
+      propertyButton = new javax.swing.JRadioButton ();
+      propertyButton.setText ("Property:");
+      propertyButton.addActionListener (new java.awt.event.ActionListener () {
+        public void actionPerformed (java.awt.event.ActionEvent evt) {
+          typeButtonPressed (evt);
+        }
+      }
+      );
+
+
+      gridBagConstraints1 = new java.awt.GridBagConstraints ();
+      gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
+      add (propertyButton, gridBagConstraints1);
+
+      propertyLabel = new javax.swing.JLabel ();
+      propertyLabel.setText ("<No Property Selected>");
+      propertyLabel.setEnabled (false);
+
+
+      gridBagConstraints1 = new java.awt.GridBagConstraints ();
+      gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
+      gridBagConstraints1.weightx = 1.0;
+      add (propertyLabel, gridBagConstraints1);
+
+      propertyDetailsButton = new javax.swing.JButton ();
+      propertyDetailsButton.setText ("...");
+      propertyDetailsButton.addActionListener (new java.awt.event.ActionListener () {
         public void actionPerformed (java.awt.event.ActionEvent evt) {
           propertyDetailsButtonActionPerformed (evt);
         }
       }
-    );
+      );
 
 
-    gridBagConstraints1 = new java.awt.GridBagConstraints ();
-    gridBagConstraints1.gridwidth = 0;
-    gridBagConstraints1.insets = new java.awt.Insets (5, 0, 0, 0);
-    add (propertyDetailsButton, gridBagConstraints1);
+      gridBagConstraints1 = new java.awt.GridBagConstraints ();
+      gridBagConstraints1.gridwidth = 0;
+      gridBagConstraints1.insets = new java.awt.Insets (5, 0, 0, 0);
+      add (propertyDetailsButton, gridBagConstraints1);
 
-    methodButton = new javax.swing.JRadioButton ();
-    methodButton.setText ("Method Call:");
-    methodButton.addActionListener (new java.awt.event.ActionListener () {
+      methodButton = new javax.swing.JRadioButton ();
+      methodButton.setText ("Method Call:");
+      methodButton.addActionListener (new java.awt.event.ActionListener () {
         public void actionPerformed (java.awt.event.ActionEvent evt) {
           typeButtonPressed (evt);
         }
       }
-    );
+      );
 
 
-    gridBagConstraints1 = new java.awt.GridBagConstraints ();
-    gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-    add (methodButton, gridBagConstraints1);
+      gridBagConstraints1 = new java.awt.GridBagConstraints ();
+      gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
+      add (methodButton, gridBagConstraints1);
 
-    methodLabel = new javax.swing.JLabel ();
-    methodLabel.setText ("<No Method Selected>");
-    methodLabel.setEnabled (false);
+      methodLabel = new javax.swing.JLabel ();
+      methodLabel.setText ("<No Method Selected>");
+      methodLabel.setEnabled (false);
 
 
-    gridBagConstraints1 = new java.awt.GridBagConstraints ();
-    gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-    gridBagConstraints1.weightx = 1.0;
-    add (methodLabel, gridBagConstraints1);
+      gridBagConstraints1 = new java.awt.GridBagConstraints ();
+      gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
+      gridBagConstraints1.weightx = 1.0;
+      add (methodLabel, gridBagConstraints1);
 
-    methodDetailsButton = new javax.swing.JButton ();
-    methodDetailsButton.setText ("...");
-    methodDetailsButton.addActionListener (new java.awt.event.ActionListener () {
+      methodDetailsButton = new javax.swing.JButton ();
+      methodDetailsButton.setText ("...");
+      methodDetailsButton.addActionListener (new java.awt.event.ActionListener () {
         public void actionPerformed (java.awt.event.ActionEvent evt) {
           methodDetailsButtonActionPerformed (evt);
         }
       }
-    );
+      );
 
 
-    gridBagConstraints1 = new java.awt.GridBagConstraints ();
-    gridBagConstraints1.gridwidth = 0;
-    gridBagConstraints1.insets = new java.awt.Insets (5, 0, 0, 0);
-    add (methodDetailsButton, gridBagConstraints1);
+      gridBagConstraints1 = new java.awt.GridBagConstraints ();
+      gridBagConstraints1.gridwidth = 0;
+      gridBagConstraints1.insets = new java.awt.Insets (5, 0, 0, 0);
+      add (methodDetailsButton, gridBagConstraints1);
 
-    codeButton = new javax.swing.JRadioButton ();
-    codeButton.setText ("User Code:");
-    codeButton.addActionListener (new java.awt.event.ActionListener () {
+      codeButton = new javax.swing.JRadioButton ();
+      codeButton.setText ("User Code:");
+      codeButton.addActionListener (new java.awt.event.ActionListener () {
         public void actionPerformed (java.awt.event.ActionEvent evt) {
           typeButtonPressed (evt);
         }
       }
-    );
-
-
-    gridBagConstraints1 = new java.awt.GridBagConstraints ();
-    gridBagConstraints1.anchor = java.awt.GridBagConstraints.NORTHWEST;
-    add (codeButton, gridBagConstraints1);
-
-    codeScrollPane = new javax.swing.JScrollPane ();
-
-      codeArea = new javax.swing.JEditorPane ();
-      codeArea.setEnabled (false);
-      codeArea.setContentType ("text/x-java");
-      codeArea.addCaretListener (new javax.swing.event.CaretListener () {
-          public void caretUpdate (javax.swing.event.CaretEvent evt) {
-            updateState (evt);
-          }
-        }
       );
 
-    codeScrollPane.setViewportView (codeArea);
+
+      gridBagConstraints1 = new java.awt.GridBagConstraints ();
+      gridBagConstraints1.anchor = java.awt.GridBagConstraints.NORTHWEST;
+      add (codeButton, gridBagConstraints1);
+
+      codeScrollPane = new javax.swing.JScrollPane ();
+
+      codeArea = new javax.swing.JTextArea ();
+      codeArea.setEnabled (false);
+      codeArea.addCaretListener (new javax.swing.event.CaretListener () {
+        public void caretUpdate (javax.swing.event.CaretEvent evt) {
+          updateState (evt);
+        }
+      }
+      );
+
+      codeScrollPane.setViewportView (codeArea);
 
 
-    gridBagConstraints1 = new java.awt.GridBagConstraints ();
-    gridBagConstraints1.gridwidth = 0;
-    gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
-    gridBagConstraints1.insets = new java.awt.Insets (5, 0, 0, 0);
-    gridBagConstraints1.weightx = 1.0;
-    gridBagConstraints1.weighty = 1.0;
-    add (codeScrollPane, gridBagConstraints1);
+      gridBagConstraints1 = new java.awt.GridBagConstraints ();
+      gridBagConstraints1.gridwidth = 0;
+      gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
+      gridBagConstraints1.insets = new java.awt.Insets (5, 0, 0, 0);
+      gridBagConstraints1.weightx = 1.0;
+      gridBagConstraints1.weighty = 1.0;
+      add (codeScrollPane, gridBagConstraints1);
 
-  }//GEN-END:initComponents
+    }//GEN-END:initComponents
+
+
 
   private void methodDetailsButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_methodDetailsButtonActionPerformed
     MethodPicker picker = new MethodPicker (null, manager, sourceComponent, requiredType);
@@ -412,10 +499,20 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
 
   private void typeButtonPressed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_typeButtonPressed
     updateParameterTypes ();
+    if (beanButton.isSelected ()) {
+      beanCombo.requestFocus ();
+    } else if (codeButton.isSelected ()) {
+      codeArea.requestFocus ();
+    } else if (propertyButton.isSelected ()) {
+      propertyDetailsButton.requestFocus ();
+    } else if (methodButton.isSelected ()) {
+      methodDetailsButton.requestFocus ();
+    }
   }//GEN-LAST:event_typeButtonPressed
 
   private void updateParameterTypes () {
     valueField.setEnabled (valueButton.isSelected ());
+    beanCombo.setEnabled (beanButton.isSelected ());
     propertyLabel.setEnabled (propertyButton.isSelected ());
     propertyLabel.repaint ();
     propertyDetailsButton.setEnabled (propertyButton.isSelected ());
@@ -425,10 +522,12 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
     codeArea.setEnabled (codeButton.isSelected ());
     fireStateChange ();
   }
-
-// Variables declaration - do not modify//GEN-BEGIN:variables
+  
+  // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JRadioButton valueButton;
   private javax.swing.JTextField valueField;
+  private javax.swing.JRadioButton beanButton;
+  private javax.swing.JComboBox beanCombo;
   private javax.swing.JRadioButton propertyButton;
   private javax.swing.JLabel propertyLabel;
   private javax.swing.JButton propertyDetailsButton;
@@ -437,8 +536,8 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
   private javax.swing.JButton methodDetailsButton;
   private javax.swing.JRadioButton codeButton;
   private javax.swing.JScrollPane codeScrollPane;
-  private javax.swing.JEditorPane codeArea;
-// End of variables declaration//GEN-END:variables
+  private javax.swing.JTextArea codeArea;
+  // End of variables declaration//GEN-END:variables
 
   private FormManager2 manager;
   private RADComponent sourceComponent;
@@ -448,15 +547,20 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
   private MethodPicker methodPicker;
 
   private String selectedPropertyText = null;
-  private Vector listeners;
+  private ArrayList listeners;
   private boolean currentFilledState;
   private RADComponent selectedComponent;
   private PropertyDescriptor selectedProperty;
   private MethodDescriptor selectedMethod;
+  
+  private ArrayList beansList;
+  private DefaultComboBoxModel beanComboModel;
 }
 
 /*
  * Log
+ *  12   Gandalf   1.11        8/15/99  Ian Formanek    Extended 
+ *       ParametersPicker with "Bean" value
  *  11   Gandalf   1.10        7/31/99  Ian Formanek    Cleaned up comments
  *  10   Gandalf   1.9         7/11/99  Ian Formanek    JEditorPane instead of 
  *       JTextArea for user code (WARNING: in guarded code, so opening the form 
