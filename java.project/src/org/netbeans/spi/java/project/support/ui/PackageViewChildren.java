@@ -352,6 +352,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         
         private final FileObject root;
         private DataFolder dataFolder;
+        private boolean isDefaultPackage;
 
         public PackageNode( FileObject root, DataFolder dataFolder ) {
             super( dataFolder.getNodeDelegate(), 
@@ -360,6 +361,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                                                  Lookups.singleton(new SimpleSearchInfo(dataFolder, false))}));
             this.root = root;
             this.dataFolder = dataFolder;
+            this.isDefaultPackage = root.equals( dataFolder.getPrimaryFile() );
         }
                        
         public String getName() {
@@ -367,8 +369,22 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         }
         
         public boolean canRename() {
-            // XXX for now - pending UI spec
-            return false;
+            if ( isDefaultPackage ) {
+                return false;
+            }
+            else {         
+                // XXX for now - pending UI spec
+                return false;
+            }
+        }
+        
+        public boolean canDestroy() {
+            if ( isDefaultPackage ) {
+                return false;
+            }
+            else {
+                return true;
+            }
         }
         
         public void setName(String name) {
