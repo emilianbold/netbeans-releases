@@ -17,6 +17,7 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -38,6 +39,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.UserQuestionException;
+import org.openide.util.Utilities;
 
 /**
  * Helps a project type (re-)generate, and manage the state and versioning of,
@@ -249,7 +251,7 @@ public final class GeneratedFilesHelper {
                             try {
                                 FileLock lock = buildScriptXml.lock();
                                 try {
-                                    OutputStream os = buildScriptXml.getOutputStream(lock);
+                                    OutputStream os = new EolFilterOutputStream(buildScriptXml.getOutputStream(lock));
                                     try {
                                         os.write(resultData);
                                     } finally {
@@ -520,4 +522,31 @@ public final class GeneratedFilesHelper {
                          GeneratedFilesHelper.FLAG_OLD_STYLESHEET)) != 0;
     }
 
+     // #45373 - workaround: on Windows make sure that all lines end with CRLF.
+    private static class EolFilterOutputStream extends FilterOutputStream {
+
+        private boolean isActive = Utilities.isWindows();
+        private int last = -1;
+        
+        public EolFilterOutputStream(OutputStream os) {
+            super(os);
+        }
+        
+        public void write(byte[] b, int off, int len) throws IOException {
+            for (int i=off; i<off+len; i++) {
+                write(b[i]);
+            }
+        }
+
+        public void write(int b) throws IOException {
+            if (isActive) {
+                if (b == '\n' && last != '\r') {
+                    super.write('\r');
+                }
+                last = b;
+            }
+            super.write(b);
+        }
+
+    }
 }

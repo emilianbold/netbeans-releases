@@ -25,6 +25,7 @@ import org.netbeans.modules.project.ant.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -182,6 +183,30 @@ public class GeneratedFilesHelperTest extends NbTestCase {
         String crcCr = GeneratedFilesHelper.computeCrc32(new ByteArrayInputStream(testDataCr.getBytes("UTF-8")));
         assertEquals("CRNL normalized -> NL", crcNl, crcCrNl);
         assertEquals("CR normalized -> NL", crcNl, crcCr);
+    }
+
+    public void testEolOnWindows() throws Exception {
+        if (Utilities.isWindows()) {
+            URL xslt = GeneratedFilesHelperTest.class.getResource("data/build.xsl");
+            String path = GeneratedFilesHelper.BUILD_XML_PATH;
+            assertEquals("initially there is no build.xml",
+                GeneratedFilesHelper.FLAG_MISSING, gfh.getBuildScriptState(path, xslt));
+            gfh.generateBuildScriptFromStylesheet(path, xslt);
+            assertEquals("now build.xml is there and clean",
+                0, gfh.getBuildScriptState(path, xslt));
+            File buildXml= FileUtil.toFile(projdir.getFileObject("build.xml"));
+            StringBuffer sb = new StringBuffer(AntBasedTestUtil.slurpText(h, path));
+            boolean ok = true;
+            for (int i=1; i<sb.length(); i++) {
+                if (sb.charAt(i) == '\n') {
+                    if (sb.charAt(i-1) != '\r') {
+                        ok = false;
+                        break;
+                    }
+                }
+            }
+            assertTrue("generated file has platform line endings", ok);
+        }
     }
     
 }

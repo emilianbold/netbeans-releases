@@ -10,6 +10,10 @@
     
 <xsl:variable name="name" select="/project:project/project:configuration/shared:data/shared:name"/>
 <project name="{$name}" default="all" basedir=".">
+    <xsl:comment> Some
+    multiline
+    comment.
+    </xsl:comment>
     <target name="all" description="Build everything."/>
 </project>
 
