@@ -641,6 +641,8 @@ final class Services extends ServiceType.Registry {
 
 /*
 * Log
+*  10   Gandalf   1.9         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
+*       Microsystems Copyright in File Comment
 *  9    Gandalf   1.8         10/15/99 Jaroslav Tulach Enterprise debugger can 
 *       be autoupdated.
 *  8    Gandalf   1.7         10/5/99  Jaroslav Tulach Handles missing sections 

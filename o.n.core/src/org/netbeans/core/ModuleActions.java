@@ -163,6 +163,8 @@ class ModuleActions extends Object implements ToolsAction.Model, PropertyChangeL
 
 /*
 * Log
+*  7    Gandalf   1.6         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
+*       Microsystems Copyright in File Comment
 *  6    Gandalf   1.5         9/2/99   Jaroslav Tulach #3637
 *  5    Gandalf   1.4         8/5/99   Jaroslav Tulach Tools & New action in 
 *       editor.

@@ -170,6 +170,8 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
 
 /*
  * Log
+ *  12   Gandalf   1.11        10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  11   Gandalf   1.10        8/7/99   Ian Formanek    Cleaned loading of icons
  *  10   Gandalf   1.9         8/1/99   Ian Formanek    Got rid of Output 
  *       Details property

@@ -68,6 +68,8 @@ public class DimensionEditor extends ArrayOfIntSupport {
 
 /*
  * Log
+ *  5    Gandalf   1.4         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  4    Gandalf   1.3         7/19/99  Ian Formanek    XML Serialization
  *  3    Gandalf   1.2         6/8/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----

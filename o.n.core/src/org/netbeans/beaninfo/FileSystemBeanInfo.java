@@ -61,6 +61,8 @@ public class FileSystemBeanInfo extends SimpleBeanInfo {
 
 /*
  * Log
+ *  10   Gandalf   1.9         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  9    Gandalf   1.8         7/24/99  Ian Formanek    Printing stack trace on 
  *       netbeans.debug.exceptions property only
  *  8    Gandalf   1.7         6/8/99   Ian Formanek    ---- Package Change To 

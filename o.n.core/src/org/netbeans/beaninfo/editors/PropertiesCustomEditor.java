@@ -91,6 +91,8 @@ static final long serialVersionUID =2473843831910895646L;
 
 /*
  * Log
+ *  7    Gandalf   1.6         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  6    Gandalf   1.5         8/18/99  Ian Formanek    Fixed bug 2322 - Some PE
  *       couldn't be initialized - en exception is issued
  *  5    Gandalf   1.4         8/9/99   Ian Formanek    Generated Serial Version

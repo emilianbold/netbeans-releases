@@ -64,6 +64,8 @@ public class ClassEditor extends java.beans.PropertyEditorSupport {
 
 /*
  * Log
+ *  3    Gandalf   1.2         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  2    Gandalf   1.1         6/22/99  Ian Formanek    Changed loading class 
  *       and throwing exception if it fails
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    

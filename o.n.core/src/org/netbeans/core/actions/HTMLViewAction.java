@@ -55,6 +55,8 @@ public class HTMLViewAction extends CallableSystemAction {
 
 /*
  * Log
+ *  12   Gandalf   1.11        10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  11   Gandalf   1.10        6/24/99  Jesse Glick     Gosh-honest HelpID's.
  *  10   Gandalf   1.9         6/22/99  Ian Formanek    employed DEFAULT_HELP
  *  9    Gandalf   1.8         6/8/99   Ian Formanek    ---- Package Change To 

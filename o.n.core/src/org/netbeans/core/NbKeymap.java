@@ -191,6 +191,8 @@ final class NbKeymap implements Keymap {
 
 /*
 * Log
+*  6    src-jtulach1.5         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
+*       Microsystems Copyright in File Comment
 *  5    src-jtulach1.4         5/5/99   Jaroslav Tulach Speeded up a bit.
 *  4    src-jtulach1.3         4/1/99   David Simonek   concurrent writing bug 
 *       fixed (hopefully)

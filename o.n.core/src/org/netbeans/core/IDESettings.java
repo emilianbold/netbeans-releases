@@ -242,6 +242,8 @@ public class IDESettings extends SystemOption {
 
 /*
  * Log
+ *  13   Gandalf   1.12        10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  12   Gandalf   1.11        9/20/99  Jaroslav Tulach #1603
  *  11   Gandalf   1.10        8/1/99   Ian Formanek    Got rid of Output 
  *       Details property

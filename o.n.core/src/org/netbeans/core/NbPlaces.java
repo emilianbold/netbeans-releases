@@ -257,6 +257,8 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
 
 /*
 * Log
+*  31   Gandalf   1.30        10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
+*       Microsystems Copyright in File Comment
 *  30   Gandalf   1.29        9/10/99  Jaroslav Tulach Services API.
 *  29   Gandalf   1.28        8/3/99   Jaroslav Tulach Project settings node.
 *  28   Gandalf   1.27        8/1/99   Jaroslav Tulach MainExplorer now listens 

@@ -710,6 +710,8 @@ implements ItemListener, Runnable {
 
 /*
 * Log
+*  40   Gandalf   1.39        10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
+*       Microsystems Copyright in File Comment
 *  39   Gandalf   1.38        10/7/99  David Simonek   request focus related 
 *       bugs repaired
 *  38   Gandalf   1.37        9/22/99  Jaroslav Tulach Solving class cast 

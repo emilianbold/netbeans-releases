@@ -48,6 +48,8 @@ public class StringEditor extends PropertyEditorSupport {
 
 /*
  * Log
+ *  4    Gandalf   1.3         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  3    Gandalf   1.2         9/14/99  Ian Formanek    Fixed bug 3875 - The 
  *       code generated for tabs in string properties should be "\t" instead of 
  *       the tab, which is expanded to spaces by the editor.

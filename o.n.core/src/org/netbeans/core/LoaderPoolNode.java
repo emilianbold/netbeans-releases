@@ -678,6 +678,8 @@ public final class LoaderPoolNode extends AbstractNode {
 
 /*
 * Log
+*  28   Gandalf   1.27        10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
+*       Microsystems Copyright in File Comment
 *  27   Gandalf   1.26        10/8/99  Jaroslav Tulach Prints exceptions only to
 *       console.
 *  26   Gandalf   1.25        9/30/99  Jaroslav Tulach DataLoader is now 
