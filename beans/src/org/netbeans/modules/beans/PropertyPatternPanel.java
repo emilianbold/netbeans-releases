@@ -122,7 +122,7 @@ public class PropertyPatternPanel extends javax.swing.JPanel
           java.awt.GridBagConstraints gridBagConstraints2;
           propertyPanel.setBorder(new javax.swing.border.TitledBorder(
           new javax.swing.border.EtchedBorder(java.awt.Color.white, new java.awt.Color (149, 142, 130)), 
-          "propertyPanel", 4, 2, new java.awt.Font ("Dialog", 0, 11), java.awt.Color.black));
+          "propertyPanel", 0, 2, new java.awt.Font ("Dialog", 0, 11), java.awt.Color.black));
   
           nameLabel.setText("nameLabel");
             gridBagConstraints2 = new java.awt.GridBagConstraints();
@@ -236,7 +236,7 @@ public class PropertyPatternPanel extends javax.swing.JPanel
           java.awt.GridBagConstraints gridBagConstraints3;
           optionsPanel.setBorder(new javax.swing.border.TitledBorder(
           new javax.swing.border.EtchedBorder(java.awt.Color.white, new java.awt.Color (149, 142, 130)), 
-          "optionsPanel", 4, 2, new java.awt.Font ("Dialog", 0, 11), java.awt.Color.black));
+          "optionsPanel", 0, 2, new java.awt.Font ("Dialog", 0, 11), java.awt.Color.black));
   
           fieldCheckBox.setText("fieldCheckBox");
             fieldCheckBox.addActionListener(new java.awt.event.ActionListener() {

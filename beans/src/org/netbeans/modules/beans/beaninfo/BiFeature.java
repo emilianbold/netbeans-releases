@@ -570,6 +570,18 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
         this.me = me;
       }
       
+      private String getTypeClass(Class type) {
+          if (type.equals(Integer.TYPE)) return "Integer.TYPE";
+          else if (type.equals(Boolean.TYPE)) return "Boolean.TYPE";
+          else if (type.equals(Character.TYPE)) return "Character.TYPE";
+          else if (type.equals(Long.TYPE)) return "Long.TYPE";
+          else if (type.equals(Short.TYPE)) return "Short.TYPE";
+          else if (type.equals(Byte.TYPE)) return "Byte.TYPE";
+          else if (type.equals(Float.TYPE)) return "Float.TYPE";
+          else if (type.equals(Double.TYPE)) return "Double.TYPE";
+          else return "Class.forName(\"" + type.getName() + "\")";
+      }
+      
       public String getToolTip() {
             StringBuffer sb = new StringBuffer( 100 );
             sb.append( this.element.getName().getFullName() + "("); // NOI18N
@@ -600,14 +612,14 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
             
             for (int i = 0; i < parameters.length; i ++) {
                 try {
-                    sb.append("Class.forName(\"" + parameters[i].getType().toClass().getName() + "\")"); // NOI18N
+                    sb.append(getTypeClass(parameters[i].getType().toClass())); // NOI18N
                 } catch (Exception e) {
                       e.printStackTrace();
                 }
                 if (i < (parameters.length - 1)) sb.append(", "); // NOI18N
             }
             
-            sb.append("})"); // NOI18N
+            sb.append("}))"); // NOI18N
             return sb.toString();
         }
 

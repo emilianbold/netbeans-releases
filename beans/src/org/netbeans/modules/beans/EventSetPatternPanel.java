@@ -98,7 +98,7 @@ public class EventSetPatternPanel extends javax.swing.JPanel
           java.awt.GridBagConstraints gridBagConstraints2;
           eventSetPanel.setBorder(new javax.swing.border.TitledBorder(
           new javax.swing.border.EtchedBorder(java.awt.Color.white, new java.awt.Color (149, 142, 130)), 
-          "eventSetPanel", 4, 2, new java.awt.Font ("Dialog", 0, 11), java.awt.Color.black));
+          "eventSetPanel", 0, 2, new java.awt.Font ("Dialog", 0, 11), java.awt.Color.black));
   
           typeLabel.setText("typeLabel");
             gridBagConstraints2 = new java.awt.GridBagConstraints();
@@ -137,7 +137,7 @@ public class EventSetPatternPanel extends javax.swing.JPanel
           java.awt.GridBagConstraints gridBagConstraints3;
           optionsPanel.setBorder(new javax.swing.border.TitledBorder(
           new javax.swing.border.EtchedBorder(java.awt.Color.white, new java.awt.Color (149, 142, 130)), 
-          "optionsPanel", 4, 2, new java.awt.Font ("Dialog", 0, 11), java.awt.Color.black));
+          "optionsPanel", 0, 2, new java.awt.Font ("Dialog", 0, 11), java.awt.Color.black));
   
           emptyRadioButton.setLabel("emptyRadioButton");
             emptyRadioButton.setSelected(true);
