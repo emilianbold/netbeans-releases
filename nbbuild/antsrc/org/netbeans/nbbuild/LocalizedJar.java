@@ -138,16 +138,16 @@ public class LocalizedJar extends MatchingTask {
     /** Turn on or off compression (default off).
      * Compare Ant's <samp>&lt;jar&gt;</samp> task.
      */
-    public void setCompress (String compress) {
-        doCompress = Project.toBoolean (compress);
+    public void setCompress(boolean compress) {
+        doCompress = compress;
     }
 
     /** Turn on/off preserving original module jars with 'code'
      *  Set it to 'true' to not allow overwriting of module jars
      *  with localization/branding stuff
      */
-    public void setPreserveModuleJar (String pmj) {
-        preserveModuleJar = Project.toBoolean (pmj);
+    public void setPreserveModuleJar(boolean pmj) {
+        preserveModuleJar = pmj;
     }
 
     /** A set of files to JAR up.
