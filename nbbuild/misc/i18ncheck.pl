@@ -96,10 +96,10 @@ LOOP:
             }
         }
 
-#        # skip line comment
-#        if (m,(//.*$),) {
-#            $_ = $`;
-#        }
+        # skip line comment
+        if (m,(^ *//.*$),) {
+            $_ = $`;
+        }
         
         if (checkline($_)) {
             if ($fixmode) {
@@ -185,7 +185,7 @@ sub checkline {
             && ! m,setIconBase\s*\(,
             && ! m,loadImage\s*\(,
             && ! m,getResource(AsStream)?\s*\(,
-            && m,".*", 
+            && m,".+", 
            ); 
 }
 
