@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,16 +16,18 @@ package org.netbeans.modules.web.project.ui.wizards;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModuleContainer;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.web.project.WebProjectGenerator;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
 public class PanelOptionsVisual extends javax.swing.JPanel {
-    
-//    private static boolean lastMainClassCheck = false; // XXX Store somewhere
     
     private PanelConfigureProject panel;
     private String sourceStructure;
@@ -35,6 +37,8 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
     
     private static final String J2EE_SPEC_13_LABEL = NbBundle.getMessage(PanelOptionsVisual.class, "J2EESpecLevel_13"); //NOI18N
     private static final String J2EE_SPEC_14_LABEL = NbBundle.getMessage(PanelOptionsVisual.class, "J2EESpecLevel_14"); //NOI18N
+
+    private List earProjects;
     
     /** Creates new form PanelOptionsVisual */
     public PanelOptionsVisual(PanelConfigureProject panel) {
@@ -42,6 +46,10 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         this.panel = panel;
         initServerInstances();
         initJSrcStructureSpecs();
+        initEnterpriseApplications();
+        
+        if (jComboBoxEnterprise.getSelectedIndex() == -1)
+            jCheckBoxEnterprise.setEnabled(false);
     }
     
     /** This method is called from within the constructor to
@@ -52,118 +60,26 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
     private void initComponents() {//GEN-BEGIN:initComponents
         java.awt.GridBagConstraints gridBagConstraints;
 
-        setAsMainCheckBox = new javax.swing.JCheckBox();
-        jLabelContextPath = new javax.swing.JLabel();
-        jTextFieldContextPath = new javax.swing.JTextField();
-        j2eeSpecLabel = new javax.swing.JLabel();
-        j2eeSpecComboBox = new javax.swing.JComboBox();
-        j2eeSpecDescLabel = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        j2eeSpecDescTextPane = new javax.swing.JTextPane();
         srcStructLabel = new javax.swing.JLabel();
         srcStructComboBox = new javax.swing.JComboBox();
-        serverInstanceComboBox = new javax.swing.JComboBox();
+        jCheckBoxEnterprise = new javax.swing.JCheckBox();
+        jComboBoxEnterprise = new javax.swing.JComboBox();
         serverInstanceLabel = new javax.swing.JLabel();
+        serverInstanceComboBox = new javax.swing.JComboBox();
+        j2eeSpecLabel = new javax.swing.JLabel();
+        j2eeSpecComboBox = new javax.swing.JComboBox();
+        jLabelContextPath = new javax.swing.JLabel();
+        jTextFieldContextPath = new javax.swing.JTextField();
+        setAsMainCheckBox = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.GridBagLayout());
-
-        setAsMainCheckBox.setMnemonic(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_SetAsMain_CheckBoxMnemonic").charAt(0));
-        setAsMainCheckBox.setSelected(true);
-        setAsMainCheckBox.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_SetAsMain_CheckBox"));
-        setAsMainCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
-        add(setAsMainCheckBox, gridBagConstraints);
-        setAsMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NWP1_SetAsMain_A11YDesc"));
-
-        jLabelContextPath.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_ContextPath_CheckBoxMnemonic").charAt(0));
-        jLabelContextPath.setLabelFor(jTextFieldContextPath);
-        jLabelContextPath.setText(NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_ContextPath_Label"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
-        add(jLabelContextPath, gridBagConstraints);
-
-        jTextFieldContextPath.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                jTextFieldContextPathKeyReleased(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
-        add(jTextFieldContextPath, gridBagConstraints);
-        jTextFieldContextPath.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NWP1_ContextPath_A11YDesc"));
-
-        j2eeSpecLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_J2EESpecLevel_CheckBoxMnemonic").charAt(0));
-        j2eeSpecLabel.setLabelFor(j2eeSpecComboBox);
-        j2eeSpecLabel.setText(NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_J2EESpecLevel_Label"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
-        add(j2eeSpecLabel, gridBagConstraints);
-
-        j2eeSpecComboBox.setMinimumSize(new java.awt.Dimension(100, 24));
-        j2eeSpecComboBox.setPreferredSize(new java.awt.Dimension(100, 24));
-        j2eeSpecComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                j2eeSpecComboBoxActionPerformed(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
-        add(j2eeSpecComboBox, gridBagConstraints);
-        j2eeSpecComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NPW1_J2EESpecLevel_A11YDesc"));
-
-        j2eeSpecDescLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_Description_LabelMnemonic").charAt(0));
-        j2eeSpecDescLabel.setLabelFor(j2eeSpecDescTextPane);
-        j2eeSpecDescLabel.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_J2EESpecLevelDesc_Label"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 0);
-        add(j2eeSpecDescLabel, gridBagConstraints);
-
-        j2eeSpecDescTextPane.setEditable(false);
-        j2eeSpecDescTextPane.setEnabled(false);
-        j2eeSpecDescTextPane.setFocusable(false);
-        jScrollPane1.setViewportView(j2eeSpecDescTextPane);
-        j2eeSpecDescTextPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NWP1_J2EESpecLevelDesc_A11YDesc"));
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
-        add(jScrollPane1, gridBagConstraints);
 
         srcStructLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_SourceStructure_CheckBoxMnemonic").charAt(0));
         srcStructLabel.setLabelFor(srcStructComboBox);
         srcStructLabel.setText(NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_SourceStructure_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(srcStructLabel, gridBagConstraints);
@@ -178,10 +94,46 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(srcStructComboBox, gridBagConstraints);
+
+        jCheckBoxEnterprise.setMnemonic(NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_AddToEnterprise_LabelMnemonic").charAt(0));
+        jCheckBoxEnterprise.setText(NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_AddToEnterprise_Label"));
+        jCheckBoxEnterprise.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCheckBoxEnterpriseActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
+        add(jCheckBoxEnterprise, gridBagConstraints);
+        jCheckBoxEnterprise.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NWP1_AddToEnterpriseComboBox_A11YDesc"));
+
+        jComboBoxEnterprise.setEnabled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
+        add(jComboBoxEnterprise, gridBagConstraints);
+        jComboBoxEnterprise.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NWP1_AddToEnterpriseComboBox_A11YDesc"));
+
+        serverInstanceLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_Server_LabelMnemonic").charAt(0));
+        serverInstanceLabel.setText(NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_Server"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 11);
+        add(serverInstanceLabel, gridBagConstraints);
 
         serverInstanceComboBox.setMinimumSize(new java.awt.Dimension(150, 24));
         serverInstanceComboBox.setPreferredSize(new java.awt.Dimension(150, 24));
@@ -193,24 +145,81 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(serverInstanceComboBox, gridBagConstraints);
         serverInstanceComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_NWP1_Server_ComboBox_A11YDesc"));
 
-        serverInstanceLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_Server_Mnemonic").charAt(0));
-        serverInstanceLabel.setText(NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_Server"));
+        j2eeSpecLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_J2EESpecLevel_CheckBoxMnemonic").charAt(0));
+        j2eeSpecLabel.setLabelFor(j2eeSpecComboBox);
+        j2eeSpecLabel.setText(NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_J2EESpecLevel_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 11);
+        add(j2eeSpecLabel, gridBagConstraints);
+
+        j2eeSpecComboBox.setMinimumSize(new java.awt.Dimension(100, 24));
+        j2eeSpecComboBox.setPreferredSize(new java.awt.Dimension(100, 24));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
+        add(j2eeSpecComboBox, gridBagConstraints);
+        j2eeSpecComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NPW1_J2EESpecLevel_A11YDesc"));
+
+        jLabelContextPath.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_ContextPath_CheckBoxMnemonic").charAt(0));
+        jLabelContextPath.setLabelFor(jTextFieldContextPath);
+        jLabelContextPath.setText(NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_ContextPath_Label"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
-        add(serverInstanceLabel, gridBagConstraints);
+        add(jLabelContextPath, gridBagConstraints);
+
+        jTextFieldContextPath.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                jTextFieldContextPathKeyReleased(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
+        add(jTextFieldContextPath, gridBagConstraints);
+        jTextFieldContextPath.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NWP1_ContextPath_A11YDesc"));
+
+        setAsMainCheckBox.setMnemonic(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_SetAsMain_CheckBoxMnemonic").charAt(0));
+        setAsMainCheckBox.setSelected(true);
+        setAsMainCheckBox.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_SetAsMain_CheckBox"));
+        setAsMainCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
+        add(setAsMainCheckBox, gridBagConstraints);
+        setAsMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NWP1_SetAsMain_A11YDesc"));
 
     }//GEN-END:initComponents
+
+    private void jCheckBoxEnterpriseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBoxEnterpriseActionPerformed
+        jComboBoxEnterprise.setEnabled(jCheckBoxEnterprise.isSelected());
+    }//GEN-LAST:event_jCheckBoxEnterpriseActionPerformed
 
     private void serverInstanceComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverInstanceComboBoxActionPerformed
         String prevSelectedItem = (String)j2eeSpecComboBox.getSelectedItem();
@@ -236,15 +245,6 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
     private void jTextFieldContextPathKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextFieldContextPathKeyReleased
         contextModified = true;
     }//GEN-LAST:event_jTextFieldContextPathKeyReleased
-
-    private void j2eeSpecComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_j2eeSpecComboBoxActionPerformed
-        Object specVer = j2eeSpecComboBox.getSelectedItem();
-        if (specVer != null && specVer.equals(J2EE_SPEC_14_LABEL)) {
-            j2eeSpecDescTextPane.setText(NbBundle.getMessage(PanelOptionsVisual.class, "J2EESpecLevel_Desc_14")); //NOI18N
-        } else {
-            j2eeSpecDescTextPane.setText(NbBundle.getMessage(PanelOptionsVisual.class, "J2EESpecLevel_Desc_13")); //NOI18N
-        }
-    }//GEN-LAST:event_j2eeSpecComboBoxActionPerformed
     
     boolean valid(WizardDescriptor wizardDescriptor) {
         if (getSelectedServer() == null) {
@@ -261,6 +261,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         d.putProperty(WizardProperties.SOURCE_STRUCTURE, sourceStructure);
         d.putProperty(WizardProperties.J2EE_LEVEL, getSelectedJ2eeSpec());
         d.putProperty(WizardProperties.CONTEXT_PATH, jTextFieldContextPath.getText().trim());
+        d.putProperty(WizardProperties.EAR_APPLICATION, getSelectedEarApplication());
     }
     
     void read(WizardDescriptor d) {
@@ -268,11 +269,10 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox j2eeSpecComboBox;
-    private javax.swing.JLabel j2eeSpecDescLabel;
-    private javax.swing.JTextPane j2eeSpecDescTextPane;
     private javax.swing.JLabel j2eeSpecLabel;
+    private javax.swing.JCheckBox jCheckBoxEnterprise;
+    private javax.swing.JComboBox jComboBoxEnterprise;
     private javax.swing.JLabel jLabelContextPath;
-    private javax.swing.JScrollPane jScrollPane1;
     protected javax.swing.JTextField jTextFieldContextPath;
     private javax.swing.JComboBox serverInstanceComboBox;
     private javax.swing.JLabel serverInstanceLabel;
@@ -320,6 +320,27 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
     protected boolean isContextModified() {
          return contextModified;
     }
+
+    private Project getSelectedEarApplication() {
+        int idx = jComboBoxEnterprise.getSelectedIndex();
+        return (idx == -1 || !jCheckBoxEnterprise.isSelected()) ? null : (Project) earProjects.get(idx);
+    }
     
+    private void initEnterpriseApplications() {
+        Project[] allProjects = OpenProjects.getDefault().getOpenProjects();
+        earProjects = new ArrayList();
+        for (int i = 0; i < allProjects.length; i++) {
+            J2eeModuleContainer container = (J2eeModuleContainer) allProjects[i].getLookup().lookup(J2eeModuleContainer.class);
+            ProjectInformation projectInfo = (ProjectInformation) allProjects[i].getLookup().lookup(ProjectInformation.class);
+            if (container != null && projectInfo != null) {
+                earProjects.add(projectInfo.getProject());
+                jComboBoxEnterprise.addItem(projectInfo.getDisplayName());
+            }
+        }
+        if (earProjects.size() > 0) {
+            jComboBoxEnterprise.setSelectedIndex(0);
+        }
+    }
+
 }
 

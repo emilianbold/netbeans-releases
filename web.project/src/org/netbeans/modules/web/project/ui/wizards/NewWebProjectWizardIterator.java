@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -18,27 +18,26 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.HashSet;
-
 import java.util.NoSuchElementException;
 import java.util.Set;
 
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-
-import org.netbeans.modules.web.project.WebProjectGenerator;
-import org.netbeans.modules.web.project.ui.FoldersListSettings;
-
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 
-import org.openide.util.NbBundle;
+import org.netbeans.modules.web.project.WebProject;
+import org.netbeans.modules.web.project.WebProjectGenerator;
+import org.netbeans.modules.web.project.ui.FoldersListSettings;
 
 /**
  * Wizard to create a new Web project.
@@ -94,6 +93,15 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.Instantiati
         }
         wiz.putProperty(WizardProperties.NAME, null); // reset project name
 
+        Project earProject = (Project) wiz.getProperty(WizardProperties.EAR_APPLICATION);
+        WebProject createdWebProject = (WebProject) ProjectManager.getDefault().findProject(dir);
+        if (earProject != null && createdWebProject != null) {
+            Ear ear = Ear.getEar(earProject.getProjectDirectory());
+            if (ear != null) {
+                ear.addWebModule(createdWebProject.getAPIWebModule());
+            }
+        }
+        
         // save last project location
         dirF = (dirF != null) ? dirF.getParentFile() : null;
         if (dirF != null && dirF.exists()) {

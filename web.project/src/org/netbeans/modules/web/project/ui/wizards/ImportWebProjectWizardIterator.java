@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -35,7 +35,6 @@ import javax.swing.event.ChangeListener;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
@@ -48,13 +47,14 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 
+import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.ProjectWebModule;
 import org.netbeans.modules.web.project.WebProjectGenerator;
-import org.netbeans.modules.web.project.Utils;
+import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.ui.FoldersListSettings;
-import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 
 /**
  * Wizard to create a new Web project for an existing web module.
@@ -73,7 +73,7 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
             new ImportWebProjectWizardIterator.ThePanel(),
-            new ImportWebProjectWizardIterator.SecondPanel()
+            new PanelSourceFolders.Panel()
         };
     }
     
@@ -86,11 +86,17 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
     
     public Set/*<DataObject>*/ instantiate(TemplateWizard wiz) throws IOException/*, IllegalStateException*/ {
         File dirF = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
+        if (dirF != null) {
+            dirF = FileUtil.normalizeFile(dirF);
+        }
+        
         File dirSrcF = (File) wiz.getProperty (WizardProperties.SOURCE_ROOT);
+        
         String name = (String) wiz.getProperty(WizardProperties.NAME);
         String contextPath = (String) wiz.getProperty(WizardProperties.CONTEXT_PATH);
         String docBaseName = (String) wiz.getProperty(WizardProperties.DOC_BASE);
-        String javaRootName = (String) wiz.getProperty(WizardProperties.JAVA_ROOT);
+        File[] sourceFolders = (File[]) wiz.getProperty(WizardProperties.JAVA_ROOT);
+        File[] testFolders = (File[]) wiz.getProperty(WizardProperties.TEST_ROOT);
         String libName = (String) wiz.getProperty(WizardProperties.LIB_FOLDER);
         String serverInstanceID = (String) wiz.getProperty(WizardProperties.SERVER_INSTANCE_ID);
         String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);
@@ -99,7 +105,6 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         assert wmFO != null : "No such dir on disk: " + dirSrcF;
         assert wmFO.isFolder() : "Not really a dir: " + dirSrcF;
         
-        FileObject javaRoot;
         FileObject docBase;
         FileObject libFolder;
         if (docBaseName == null || docBaseName.equals("")) //NOI18N
@@ -108,12 +113,12 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
             File f = new File(docBaseName);
             docBase = FileUtil.toFileObject(f);
         }
-        if (javaRootName == null || javaRootName.equals("")) //NOI18N
-            javaRoot = guessJavaRoot(wmFO);
-        else {
-            File f = new File(javaRootName);
-            javaRoot = FileUtil.toFileObject(f);
-        }
+//        if (javaRootName == null || javaRootName.equals("")) //NOI18N
+//            javaRoot = guessJavaRoot(wmFO);
+//        else {
+//            File f = new File(javaRootName);
+//            javaRoot = FileUtil.toFileObject(f);
+//        }
         if (libName == null || libName.equals("")) //NOI18N
             libFolder = guessLibrariesFolder(wmFO);
         else {
@@ -127,10 +132,19 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
 
         String buildfile = getBuildfile();
         
-        WebProjectGenerator.importProject (dirF, name, wmFO, new File[] {FileUtil.toFile(javaRoot)}, null, docBase, libFolder, j2eeLevel, serverInstanceID, buildfile);
-        FileObject dir = FileUtil.toFileObject (dirF);
-        Project p = ProjectManager.getDefault().findProject(dir);
+        WebProjectGenerator.importProject (dirF, name, wmFO, sourceFolders, testFolders, docBase, libFolder, j2eeLevel, serverInstanceID, buildfile);
         
+        FileObject dir = FileUtil.toFileObject(dirF);
+        Project earProject = (Project) wiz.getProperty(WizardProperties.EAR_APPLICATION);
+        WebProject createdWebProject = (WebProject) ProjectManager.getDefault().findProject(dir);
+        if (earProject != null && createdWebProject != null) {
+            Ear ear = Ear.getEar(earProject.getProjectDirectory());
+            if (ear != null) {
+                ear.addWebModule(createdWebProject.getAPIWebModule());
+            }
+        }
+
+        Project p = ProjectManager.getDefault().findProject(dir);        
         ProjectWebModule wm = (ProjectWebModule) p.getLookup ().lookup (ProjectWebModule.class);
         if (wm != null) //should not be null
             wm.setContextPath(contextPath);
@@ -141,8 +155,6 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         }
         wiz.putProperty(WizardProperties.NAME, null); // reset project name
 
-        // Returning set of DataObject of project diretory.
-        // Project will be open and set as main
         return Collections.singleton(DataObject.find(dir));
     }
     
@@ -209,37 +221,6 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
     // If nothing unusual changes in the middle of the wizard, simply:
     public final void addChangeListener(ChangeListener l) {}
     public final void removeChangeListener(ChangeListener l) {}
-    // If something changes dynamically (besides moving between panels),
-    // e.g. the number of panels changes in response to user input, then
-    // uncomment the following and call when needed:
-    // fireChangeEvent();
-    /*
-    private transient Set listeners = new HashSet(1); // Set<ChangeListener>
-    public final void addChangeListener(ChangeListener l) {
-        synchronized(listeners) {
-            listeners.add(l);
-        }
-    }
-    public final void removeChangeListener(ChangeListener l) {
-        synchronized(listeners) {
-            listeners.remove(l);
-        }
-    }
-    protected final void fireChangeEvent() {
-        Iterator it;
-        synchronized (listeners) {
-            it = new HashSet(listeners).iterator();
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
-        }
-    }
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        listeners = new HashSet(1);
-    }
-     */
 
     private FileObject guessDocBase (FileObject dir) {
         Enumeration ch = dir.getChildren (true);
@@ -439,205 +420,4 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
 
     }
     
-    public final class SecondPanel implements WizardDescriptor.FinishablePanel, WizardDescriptor.ValidatingPanel {
-        private ImportWebLocationsVisual panel;
-        private WizardDescriptor wizardDescriptor;
-
-        private SecondPanel () {
-        }
-        
-        public boolean isFinishPanel() {
-            return true;
-        }
-        
-        public java.awt.Component getComponent () {
-            if (panel == null)
-                panel = new ImportWebLocationsVisual(this);
-            
-            return panel;
-        }
-        
-        public HelpCtx getHelp() {
-            return new HelpCtx(SecondPanel.class);
-        }
-        
-        public boolean isValid() {
-            if (panel.getSelectedServerInstanceID() == null) {
-                setErrorMessage("MSG_NoServer"); //NOI18N
-                return false;
-            }
-            final String webPages = panel.jTextFieldWebPages.getText().trim();
-            if (webPages.length() == 0) {
-                setErrorMessage("MSG_WebPagesMandatory"); //NOI18N
-                return false;
-            }
-            final File webPagesDir = new File(webPages);
-            if (!webPagesDir.exists()) {
-                setErrorMessage("MSG_WebPagesFolderDoesNotExist"); //NOI18N
-                return false;
-            }
-            File projectDir = (File) wizardDescriptor.getProperty(WizardProperties.PROJECT_DIR);
-            if(Utils.isParentOrEqual(webPagesDir, projectDir)) {
-                setErrorMessage("MSG_WebPagesFolderOverlapsProjectFolder"); //NOI18N
-                return false;
-            }
-            final String javaSources = panel.jTextFieldJavaSources.getText().trim();
-            if (javaSources.length() == 0) {
-                setErrorMessage("MSG_JavaSourcesMandatory"); //NOI18N
-                return false;
-            }
-            if(!new File(javaSources).exists()) {
-                setErrorMessage("MSG_JavaSourcesFolderDoesNotExist"); //NOI18N
-                return false;
-            }
-            final String libraries = panel.jTextFieldLibraries.getText().trim();
-            if (libraries.length() > 0) {
-                if(!new File(libraries).exists()) {
-                    setErrorMessage("MSG_LibrariesFolderDoesNotExist"); //NOI18N
-                    return false;
-                }
-            }
-            setErrorMessage(null);
-            return true;
-        }
-
-        private void setErrorMessage(final String msg) {
-            String s = (msg == null) ? null : NbBundle.getMessage(ImportWebProjectWizardIterator.class, msg);
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", s); //NOI18N
-        }
-
-        private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
-        public final void addChangeListener(ChangeListener l) {
-            synchronized (listeners) {
-                listeners.add(l);
-            }
-        }
-        
-        public final void removeChangeListener(ChangeListener l) {
-            synchronized (listeners) {
-                listeners.remove(l);
-            }
-        }
-        
-        protected final void fireChangeEvent() {
-            Iterator it;
-            synchronized (listeners) {
-                it = new HashSet(listeners).iterator();
-            }
-            ChangeEvent ev = new ChangeEvent(this);
-            while (it.hasNext()) {
-                ((ChangeListener)it.next()).stateChanged(ev);
-            }
-        }
-        
-        public void readSettings (Object settings) {
-            wizardDescriptor = (WizardDescriptor) settings;
-            presetSecondPanel(moduleLoc);
-            
-            // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
-            // this name is used in NewProjectWizard to modify the title
-            Object substitute = ((JComponent) panel).getClientProperty("NewProjectWizard_Title"); //NOI18N
-            if (substitute != null)
-                wizardDescriptor.putProperty("NewProjectWizard_Title", substitute); //NOI18N
-        }
-        
-        public void storeSettings (Object settings) {
-            WizardDescriptor d = (WizardDescriptor) settings;
-            
-            d.putProperty(WizardProperties.DOC_BASE, panel.jTextFieldWebPages.getText().trim());
-            d.putProperty(WizardProperties.JAVA_ROOT, panel.jTextFieldJavaSources.getText().trim());
-            d.putProperty(WizardProperties.LIB_FOLDER, panel.jTextFieldLibraries.getText().trim());
-            d.putProperty(WizardProperties.SERVER_INSTANCE_ID, panel.getSelectedServerInstanceID());
-            d.putProperty(WizardProperties.J2EE_LEVEL, panel.getSelectedJ2eeSpec());
-
-            d.putProperty("NewProjectWizard_Title", null); //NOI18N
-        }
-        
-        private void presetSecondPanel(String sourceRoot) {
-            if (sourceRoot.length() > 0) {
-                File f = new File(sourceRoot);
-                FileObject fo;
-                try {
-                    fo = FileUtil.toFileObject(f);
-                } catch (IllegalArgumentException exc) {
-                    return; //invalid file object
-                }
-                if (fo != null) {
-                    FileObject guessFO;
-                    String webPages = ""; //NOI18N
-                    String javaSources = ""; //NOI18N
-                    String libraries = ""; //NOI18N
-
-                    guessFO = guessDocBase(fo);
-                    if (guessFO != null)
-                        webPages = FileUtil.toFile(guessFO).getPath();
-                    guessFO = guessJavaRoot(fo);
-                    if (guessFO != null)
-                        javaSources = FileUtil.toFile(guessFO).getPath();
-                    guessFO = guessLibrariesFolder(fo);
-                    if (guessFO != null)
-                        libraries = FileUtil.toFile(guessFO).getPath();
-
-                    ((ImportWebLocationsVisual) panels[1].getComponent()).initValues(sourceRoot, webPages, javaSources, libraries);
-                }
-            }
-        }
-
-        public void validate() throws WizardValidationException {
-            panel.validateLocations();
-            
-            //delete existing class files
-            searchClassFiles (FileUtil.toFileObject (FileUtil.normalizeFile(new File (panel.jTextFieldJavaSources.getText ()))));
-        }
-        
-        private void searchClassFiles (FileObject folder) throws WizardValidationException {
-            Enumeration en = folder.getData (true);
-            boolean found = false;
-            while (!found && en.hasMoreElements ()) {
-                Object obj = en.nextElement ();
-                assert obj instanceof FileObject : "Instance of FileObject: " + obj; // NOI18N
-                FileObject fo = (FileObject) obj;
-                found = "class".equals (fo.getExt ()); // NOI18N
-            }
-
-            if (found) {
-
-                Object DELETE_OPTION = NbBundle.getMessage (ImportWebProjectWizardIterator.class, "TXT_DeleteOption"); // NOI18N
-                Object KEEP_OPTION = NbBundle.getMessage (ImportWebProjectWizardIterator.class, "TXT_KeepOption"); // NOI18N
-                Object CANCEL_OPTION = NbBundle.getMessage (ImportWebProjectWizardIterator.class, "TXT_CancelOption"); // NOI18N
-                NotifyDescriptor desc = new NotifyDescriptor (
-                        NbBundle.getMessage (ImportWebProjectWizardIterator.class, "MSG_FoundClassFiles"), // NOI18N
-                        NbBundle.getMessage (ImportWebProjectWizardIterator.class, "MSG_FoundClassFiles_Title"), // NOI18N
-                        NotifyDescriptor.YES_NO_CANCEL_OPTION,
-                        NotifyDescriptor.QUESTION_MESSAGE,
-                        new Object[] {DELETE_OPTION, KEEP_OPTION, CANCEL_OPTION},
-                        null
-                        );
-
-                Object result = DialogDisplayer.getDefault().notify(desc);
-                if (DELETE_OPTION.equals (result)) {
-                    deleteClassFiles (folder);
-                } else if (!KEEP_OPTION.equals (result)) {
-                    // cancel, back to wizard
-                    throw new WizardValidationException (panel.jTextFieldJavaSources, "", ""); // NOI18N
-                }            
-            }
-        }
-
-        private void deleteClassFiles (FileObject folder) {
-            Enumeration en = folder.getData (true);
-            while (en.hasMoreElements ()) {
-                Object obj = en.nextElement ();
-                assert obj instanceof FileObject : "Instance of FileObject: " + obj;
-                FileObject fo = (FileObject) obj;
-                try {
-                    if ("class".equals(fo.getExt())) //NOI18N
-                        fo.delete ();
-                } catch (IOException ioe) {
-                    ErrorManager.getDefault ().notify (ioe);
-                }
-            }
-        }
-
-    }
 }

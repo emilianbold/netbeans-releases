@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -27,4 +27,7 @@ public class WizardProperties {
     public static final String DOC_BASE = "docBase"; //NOI18N
     public static final String JAVA_ROOT = "javaRoot"; //NOI18N
     public static final String LIB_FOLDER = "libFolder"; //NOI18N
+    public static final String TEST_ROOT = "testRoot"; //NOI18N
+    
+    public static final String EAR_APPLICATION = "earApplication"; //NOI18N
 }
