@@ -1821,6 +1821,16 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <ant dir="../libs/xalan" target="netbeans"/>
   </target>
 
+  <target name="all-libs/commons_logging" depends="init">
+      <echo message="Building module libs/commons_logging..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+      <ant dir="../libs/commons_logging" target="netbeans"/>
+  </target>
+
   <target name="all-libs/jaxp" depends="init">
       <echo message="Building module libs/jaxp..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>

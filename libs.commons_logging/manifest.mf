@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.libs.commons_logging/1
+OpenIDE-Module-Localizing-Bundle: org/netbeans/libs/commons_logging/Bundle.properties
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 3.17
+OpenIDE-Module-Specification-Version: @COMMONS-LOGGING_SPEC_VERS_SUBST@
+OpenIDE-Module-Implementation-Version: @COMMONS-LOGGING_IMPL_VERS_SUBST@
+Class-Path: ext/commons-logging-api.jar

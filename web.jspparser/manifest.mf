@@ -5,5 +5,5 @@ OpenIDE-Module-Layer: org/netbeans/modules/web/jspparser/layer.xml
 OpenIDE-Module-Specification-Version: 2.1
 OpenIDE-Module-Requires: org.openide.windows.IOProvider
 OpenIDE-Module-Package-Dependencies: [javax.servlet.ServletException], [org.apache.commons.logging.LogFactory]
-Class-Path: autoload/ext/commons-logging-api.jar autoload/ext/commons-el.jar
+Class-Path: autoload/ext/commons-el.jar
 
