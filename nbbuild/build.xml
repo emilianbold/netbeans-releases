@@ -14,14 +14,20 @@ Microsystems, Inc. All Rights Reserved.
 
 <!--
 ToDo:
+- precheck for downloaded binaries; if not found, immediately
+  give an error with explanation of what was wrong and how to fix
+- target to check out repository fresh in a special area (where??)
+  and do a clean build there; should only check out required modules;
+  should it export, or should there be support for updating as well?
+  Updating is complicated by the fact that a root CVS dir must be
+  created specially (CVSROOT/Emptydir).
 - use nested classpath tags in javac for modules:
-  html httpserver i18n icebrowser image jarpackager java javadoc
+  html httpserver icebrowser image jarpackager java javadoc
   objectbrowser projects properties utilities vcscvs web
 - handle Japanese sanely
 - proper NBM task (with Info.xml, etc.)
 - build validator DTD for this build system
 - if experimental <obsolete> task can be used, do so for netbeans/firststart dirs, maybe
-- clean targets
 - see how many JARs can actually be moved from lib/ext/ (or modules/patches/) to modules/ext/
 - delete obsolete jars.cfg (from trunk anyway)
 Modules:
@@ -39,6 +45,9 @@ treefs
 -->
 
 <project name="nbbuild" default="depucelee" basedir=".">
+
+  <taskdef name="cleanall" classname="org.netbeans.nbbuild.CleanAll"/>
+  <taskdef name="nbmerge" classname="org.netbeans.nbbuild.NbMerge"/>
 
   <!-- Override this with the Ant command, e.g. -Dmodules=... -->
   <property name="modules" value="apisupport,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,jarpackager,java,javadoc,objectbrowser,openidex,projects,properties,text,usersguide,utilities,vcscvs,web"/>
@@ -179,7 +188,6 @@ treefs
     <echo message="Selected modules: ${modules}"/>
   </target>
   <target name="netbeans" depends="netbeans-messaging">
-    <taskdef name="nbmerge" classname="org.netbeans.nbbuild.NbMerge"/>
     <!-- Automatically include openide and core, these are mandatory -->
     <nbmerge upperdir="." topdir=".." modules="openide,core,${modules}" targetprefix="all-"/>
   </target>
@@ -196,6 +204,7 @@ treefs
     <echo message="Starting the IDE..."/>
     <echo message="(This both acts as a test, and primes some files"/>
     <echo message="to make the first user start faster and better.)"/>
+    <!-- XXX should perhaps preset JAVA_PATH to ${java.home} or something? -->
     <!-- XXX check these OS names... -->
     <exec os="Windows" dir="firststart/bin" command="forte4j.exe ${firststart.args}" output="firststart.log" failonerror="yes"/>
     <!-- XXX chmod does not work reliably...investigate -->
@@ -217,6 +226,17 @@ treefs
     <echo message="Build created; see NetBeans-${buildnumber}.zip (in nbbuild/)."/>
     <echo message="If you like, you may run the IDE straight from"/>
     <echo message="the nbbuild/firststart/bin/ directory."/>
+  </target>
+
+  <target name="localclean">
+    <deltree dir="netbeans"/>
+    <deltree dir="firststart"/>
+    <delete file="firststart.log"/>
+    <echo message="Manually delete unwanted builds as needed."/>
+  </target>
+
+  <target name="clean" depends="localclean">
+    <cleanall topdir=".." modules="openide,core,${modules}" targetname="clean"/>
   </target>
 
 </project>
