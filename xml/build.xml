@@ -115,11 +115,14 @@ Microsystems, Inc. All Rights Reserved.
             </classpath>
         </taskdef>
         <validatexml basedir="." catalog="${nbroot}/www/www/dtds/catalog" warnings="true">
-<!--            <include name="**/src/**/*.xml"/>-->
-            <include name="**/src/**/mf-layer.xml"/>
             <include name="**/build.xml"/>
-<!--            <include name="**/TODO.xml"/>-->
-<!--            <include name="www/**/*.xml"/>-->
+            <include name="**/TODO.xml"/>
+            <include name="**/src/**/mf-layer.xml"/>
+            <exclude name="core/src/org/netbeans/modules/xml/core/resources/mf-layer.xml"/>
+            <exclude name="schema/src/org/netbeans/modules/xml/schema/resources/mf-layer.xml"/>
+            <!-- WWW -->
+            <include name="www/**/data/**/*.xml"/>
+            <exclude name="www/**/qa/**/data/*.xml"/>
         </validatexml>
     </target>
 
