@@ -140,7 +140,7 @@ cause it to fail.
         <ant dir="../../libs/external" target="unscramble"/>
         <xmlvalidate file="${javadoc.apichanges}" failonerror="true"/>
         <style in="${javadoc.apichanges}" out="${javadoc.out.dir}/apichanges.html" style="apichanges.xsl">
-            <param name="javadoc-url-base" expression="${javadoc.web.root}/${javadoc.name}"/>
+            <param name="javadoc-url-base" expression="."/>
         </style>
     </target>
 
