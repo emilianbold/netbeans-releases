@@ -27,6 +27,7 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Node;
 import threaddemo.model.Phadhail;
 import org.netbeans.api.nodes2looks.Nodes;
+import org.netbeans.spi.looks.Selectors;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.NodeMemberEvent;
@@ -75,13 +76,13 @@ public class PhadhailViews {
     
     /** use Looks and Nodes API with an Explorer view */
     public static Component lookNodeView(Phadhail root) {
-        return nodeBasedView(Nodes.node(root, null, new PhadhailLookSelector()));
+        return nodeBasedView(Nodes.node(root, null, Selectors.selector( new PhadhailLookProvider())));
     }
     
     /** use raw Looks API with a JTree */
     public static Component lookView(Phadhail root) {
         // XXX pending a stable API...
-        return new JScrollPane(new LookTreeView(root, new PhadhailLookSelector()));
+        return new JScrollPane(new LookTreeView(root, Selectors.selector( new PhadhailLookProvider() )));
     }
     
     /** use Phadhail directly in a JTree */

@@ -21,6 +21,7 @@ import javax.swing.*;
 import javax.swing.tree.TreePath;
 import org.netbeans.spi.looks.*;
 import org.netbeans.api.nodes2looks.Nodes;
+import org.netbeans.spi.looks.Selectors;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
@@ -75,11 +76,7 @@ class PopupHandler extends MouseAdapter {
         // Looks.node(o, l) does *not* work; it still tries to find
         // the node for the root, based on the default selector (naming).
         // Looks.defaultTypes is called but the result is ignored...
-        return Nodes.node(n.getData(), l, new LookSelector() {
-            public Enumeration getLooks(Object o) {
-                return new SingletonEnumeration(l);
-            }
-        });
+        return Nodes.node(n.getData(), l, Selectors.singleton( l ) );
     }
     
     private final class DeleteAction extends AbstractAction {
