@@ -37,6 +37,8 @@ import org.netbeans.core.api.multiview.*;
 
 import org.netbeans.modules.java.JavaEditor;
 import org.netbeans.modules.form.palette.CPManager;
+import org.openide.text.EditorSupport;
+import org.openide.text.PositionRef;
 
 /**
  *
@@ -100,6 +102,7 @@ public class FormEditorSupport extends JavaEditor
     /** Table of FormModel instances (FormModel to FormEditorSupport map) */
     private static Hashtable openForms = new Hashtable();
 
+    private boolean openForm = false;
     // --------------
     // constructor
 
@@ -117,10 +120,13 @@ public class FormEditorSupport extends JavaEditor
      */
     public void openFormEditor() {
         // set status text "Opening Form: ..."
-        if (multiviewTC == null)
-            multiviewTC = createMultiViewTC(true);
-
-        multiviewTC.open();
+        openForm = true;
+        openCloneableTopComponent();
+//        if (multiviewTC == null)
+//            multiviewTC = createMultiViewTC(true);
+//
+//        multiviewTC.open();
+        openForm = false;
         multiviewTC.requestActive();
     }
 
@@ -1070,11 +1076,13 @@ public class FormEditorSupport extends JavaEditor
             descs, descs[formDefault ? 1:0], new CloseHandler(formDataObject));
     }
 
+
     /** Overriden from JavaEditor. Gets called if java editor is opened first
      * via EditCookie. */
     protected CloneableTopComponent createCloneableTopComponent() {
-        if (multiviewTC == null)
-            multiviewTC = createMultiViewTC(false);
+        if (multiviewTC == null) {
+            multiviewTC = createMultiViewTC(openForm);
+        } 
         return multiviewTC;
     }
 
@@ -1175,6 +1183,7 @@ public class FormEditorSupport extends JavaEditor
             JavaEditor javaEditor = getJavaEditor();
             if (javaEditor != null) {
                 javaEditor.prepareDocument();
+                
                 return (MultiViewElement) new JavaEditorTopComponent(dataObject);
             }
             return MultiViewFactory.BLANK_ELEMENT;
@@ -1231,17 +1240,17 @@ public class FormEditorSupport extends JavaEditor
 
         JavaEditorTopComponent(DataObject dobj) {
             super(dobj);
-            // for multiview - propagate activated nodes
-            addPropertyChangeListener(new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent e) {
-                    if ("activatedNodes".equals(e.getPropertyName())) {
-                        TopComponent tc = multiViewObserver != null ?
-                                    multiViewObserver.getTopComponent() : null;
-                        if (tc != null)
-                            tc.setActivatedNodes((Node[])e.getNewValue());
-                    }
-                }
-            });
+//            // for multiview - propagate activated nodes
+//            addPropertyChangeListener(new PropertyChangeListener() {
+//                public void propertyChange(PropertyChangeEvent e) {
+//                    if ("activatedNodes".equals(e.getPropertyName())) {
+//                        TopComponent tc = multiViewObserver != null ?
+//                                    multiViewObserver.getTopComponent() : null;
+//                        if (tc != null)
+//                            tc.setActivatedNodes((Node[])e.getNewValue());
+//                    }
+//                }
+//            });
         }
 
         public JComponent getToolbarRepresentation() {
