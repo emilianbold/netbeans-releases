@@ -29,10 +29,12 @@
 -->
  <answer id="arch-overall">
   <api group="java" name="AntProjectAPI" type="export" category="devel">
+   <p>
    Mostly an SPI for creating project types centered around the Ant build tool.
    Permits Ant-based project types to be registered and supplies various support
    implementations to help satisfy the contract of <code>Project</code> and
    various optional interfaces.
+   </p>
   </api>
  </answer>
 
