@@ -25,16 +25,16 @@ Microsystems, Inc. All Rights Reserved.
     <patternset id="web/jspparser.files">
       <include name="${nb.modules/autoload.dir}/jsp-parser.jar"/>
       <include name="${nb.modules/autoload.dir}/ext/jsp-parser-ext.jar"/>
-      <include name="${nb.modules/autoload.dir}/ext/jasper-compiler-5.0.19.jar"/>
-      <include name="${nb.modules/autoload.dir}/ext/jasper-runtime-5.0.19.jar"/>
+      <include name="${nb.modules/autoload.dir}/ext/jasper-compiler-5.0.24.jar"/>
+      <include name="${nb.modules/autoload.dir}/ext/jasper-runtime-5.0.24.jar"/>
       <include name="${nb.modules/autoload.dir}/ext/commons-logging-api.jar"/>
       <include name="${nb.modules/autoload.dir}/ext/commons-el.jar"/>
     </patternset>
     <path id="cp">
       <pathelement location="${web/servletapi24.dir}/${nb.modules/autoload.dir}/ext/servlet-api-2.4.jar"/>
       <pathelement location="../external/jsp-api-2.0.jar"/>
-      <pathelement location="../external/jasper-compiler-5.0.19.jar"/>
-      <pathelement location="../external/jasper-runtime-5.0.19.jar"/>
+      <pathelement location="../external/jasper-compiler-5.0.24.jar"/>
+      <pathelement location="../external/jasper-runtime-5.0.24.jar"/>
       <pathelement location="../external/commons-logging-api.jar"/>
       <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
       <pathelement location="${java/api.dir}/${nb.modules.dir}/org-netbeans-api-java.jar"/>
@@ -75,8 +75,8 @@ Microsystems, Inc. All Rights Reserved.
     <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/ext"/>
     <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/ext">
       <fileset dir="../external">
-        <include name="jasper-compiler-5.0.19.jar"/>
-        <include name="jasper-runtime-5.0.19.jar"/>
+        <include name="jasper-compiler-5.0.24.jar"/>
+        <include name="jasper-runtime-5.0.24.jar"/>
         <include name="commons-logging-api.jar"/>
         <include name="commons-el.jar"/>
       </fileset>
