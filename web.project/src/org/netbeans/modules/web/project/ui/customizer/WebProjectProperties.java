@@ -616,7 +616,7 @@ public class WebProjectProperties {
                 VisualClassPathItem vcpi = (VisualClassPathItem)it.next();
                 
                 //do not add applet libraries to classpath
-                if (vcpi.getPathInWAR () == VisualClassPathItem.PATH_IN_WAR_NONE)
+                if (VisualClassPathItem.PATH_IN_WAR_APPLET.equals (vcpi.getPathInWAR ()))
                     continue;
                 
                 switch( vcpi.getType() ) {
