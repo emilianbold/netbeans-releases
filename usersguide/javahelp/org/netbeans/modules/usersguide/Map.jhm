@@ -552,7 +552,7 @@
 <mapID target="args_global" url="vcs-nb/cvs-nb/args/args_global.html"/>
 <mapID target="args_log" url="vcs-nb/cvs-nb/args/args_log.html"/>
 <mapID target="args_remove" url="vcs-nb/cvs-nb/args/args_remove.html"/>
-<mapID target="args_status" url="vcs-nb/cvs-nb/args/args_status.html"/>
+<!--<mapID target="args_status" url="vcs-nb/cvs-nb/args/args_status.html"/>-->
 <mapID target="args_tag" url="vcs-nb/cvs-nb/args/args_tag.html"/>
 <mapID target="args_update" url="vcs-nb/cvs-nb/args/args_update.html"/>
 <mapID target="cvs_args_intro" url="vcs-nb/cvs-nb/args/cvs_args_intro.html"/>

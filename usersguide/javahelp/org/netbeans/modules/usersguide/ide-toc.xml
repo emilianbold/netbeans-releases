@@ -446,6 +446,7 @@
     <tocitem text="VCS Command Output" target="vcs.output" />
     <tocitem text="Versioning Window" target="vcs.revexplorer" />
     <tocitem text="Refreshing VCS File Status Information" target="vcs.refresh" />
+    <tocitem text="Comparing File Revisions Visually" target="vcs.diffs" />
     <tocitem text="Adding a Binary File to a VCS Repository" target="vcs.binary" />         
     <tocitem text="Searching for a File by VCS Status" target="search.status" />
     <tocitem text="VCS Support on Windows 95, Windows 98, and Windows ME" target="vcs.cygwin" />
@@ -454,7 +455,6 @@
       <tocitem text="About" target="vcs.cvs-intro" />
       <tocitem text="Getting Files from a CVS Repository" target="cvs.checkout" />
       <tocitem text="CVS Commands" target="cvs.commands" />
-      <tocitem text="Comparing File Revisions Visually" target="vcs.diffs" />
       <tocitem text="Merging File Revisions" target="cvs.merge" />
       <tocitem text="Resolving Merge Conflicts" target="cvs.merge-resolve" />
       <tocitem text="Creating and Applying a Patch" target="vcs.patch" />
@@ -468,7 +468,7 @@
         <tocitem text="Global Arguments" target="args_global"/>
         <tocitem text="Log Arguments" target="args_log"/>
         <tocitem text="Remove Arguments" target="args_remove"/>
-        <tocitem text="Status Arguments" target="args_status"/>
+<!--        <tocitem text="Status Arguments" target="args_status"/>-->
         <tocitem text="Tag Arguments" target="args_tag"/>
         <tocitem text="Update Arguments" target="args_update"/>
       </tocitem>
