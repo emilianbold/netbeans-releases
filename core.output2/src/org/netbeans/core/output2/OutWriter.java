@@ -669,7 +669,7 @@ class OutWriter extends OutputWriter implements Runnable {
             lineStartList.add (start);
         
             if (Controller.verbose) Controller.log (this + ": Wrote " + ((ByteBuffer)bb.flip()).asCharBuffer() + " at " + start);
-            if (lineStartList.size() == 20 || lineStartList.size() == 10) { //Fire again after the first 20 lines
+            if (lineStartList.size() == 20 || lineStartList.size() == 10 || lineStartList.size() == 1) { //Fire again after the first 20 lines
                 if (Controller.log) Controller.log ("Firing initial write event");
                 fire();
             }
