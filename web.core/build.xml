@@ -49,7 +49,7 @@ Microsystems, Inc. All Rights Reserved.
       <pathelement location="${web/ddapi.dir}/${nb.modules.dir}/org-netbeans-api-web-dd.jar" />
       <pathelement location="${java/api.dir}/${nb.modules.dir}/org-netbeans-api-java.jar"/>
       <pathelement location="${java/project.dir}/${nb.modules.dir}/org-netbeans-modules-java-project.jar"/>
-      <pathelement location="${libs/xerces.dir}/${nb.modules/autoload.dir}/ext/xerces-2.6.0.jar"/>
+      <pathelement location="${libs/xerces.dir}/${nb.modules/autoload.dir}/ext/xerces-2.6.2.jar"/>
     </path>
   </target>
 
