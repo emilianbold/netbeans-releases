@@ -139,7 +139,7 @@ public class ScrollPopupMenu extends JPopupMenu {
     }
     
     public static void doNotCancelPopupHack(JComponent component) {
-        if (System.getProperty("java.version").startsWith("1.5")) {
+        if (System.getProperty("java.version").startsWith("1.5")) { // NOI18N
             try {
                 Class clazz = javax.swing.plaf.basic.BasicComboBoxUI.class;
                 Field field = clazz.getDeclaredField("HIDE_POPUP_KEY"); // NOI18N
