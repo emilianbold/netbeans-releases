@@ -1,19 +1,9 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.j2eeserver/3
 OpenIDE-Module-Specification-Version: 1.2
-OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Layer: org/netbeans/modules/j2ee/deployment/impl/layer.xml
 OpenIDE-Module-Install: org/netbeans/modules/j2ee/deployment/impl/Install.class
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2ee/deployment/impl/Bundle.properties
-OpenIDE-Module-Public-Packages: org.netbeans.modules.j2ee.deployment.devmodules.**, org.netbeans.modules.j2ee.deployment.plugins.** org.netbeans.modules.j2ee.deployment.common.api.**
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 4.13
-OpenIDE-Module-Module-Dependencies: org.openide.io > 1.0,
- org.netbeans.modules.projectapi/0 > 1.0,
- org.netbeans.modules.schema2beans/1,
- org.netbeans.api.xml/1,
- org.netbeans.libs.j2eeeditor/1,
- org.netbeans.modules.settings/1,
- org.netbeans.modules.j2eeapis/1
 
 Name: org/netbeans/modules/j2ee/deployment/config/ConfigDataLoader.class
 OpenIDE-Module-Class: Loader

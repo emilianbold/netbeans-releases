@@ -42,19 +42,41 @@ Microsystems, Inc. All Rights Reserved.
                     <code-name-base>org.netbeans.modules.settings</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
-                    <run-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                    </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.projectapi</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
-                    <run-dependency/>
+                    <run-dependency>
+                        <release-version>0</release-version>
+                    </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.api.xml</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
-                    <run-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.j2eeapis</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.libs.j2eeeditor</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                    </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.openide</code-name-base>
@@ -67,8 +89,9 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>                
             </module-dependencies>
             <public-packages>
-                <package>org.netbeans.modules.j2ee.deployment.devmodules</package>
-                <package>org.netbeans.modules.j2ee.deployment.plugins</package>
+                <package>org.netbeans.modules.j2ee.deployment.devmodules.api</package>
+                <package>org.netbeans.modules.j2ee.deployment.devmodules.spi</package>
+                <package>org.netbeans.modules.j2ee.deployment.plugins.api</package>
                 <package>org.netbeans.modules.j2ee.deployment.common.api</package>
             </public-packages>
         </data>
