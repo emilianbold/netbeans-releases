@@ -261,9 +261,14 @@ public class TopComponentOperator extends JComponentOperator {
         org.openide.nodes.Node[] nodes = ((TopComponent)getSource()).getActivatedNodes();
         // TopComponent like Execution doesn't have any nodes associated
         if(nodes != null) {
+            // cycle only covers cases when nodes.length=[0,1]
             for(int i=0;i<nodes.length;i++) {
                 DataObject dob = (DataObject)nodes[i].getCookie(DataObject.class);
-                return dob.isModified();
+                if(dob != null) {
+                    return dob.isModified();
+                } else {
+                    return false;
+                }
             }
         }
         // it cannot be modified at all
