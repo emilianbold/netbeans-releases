@@ -17,6 +17,7 @@ package org.netbeans.modules.form;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import org.openide.TopManager;
 
 /**
  *
@@ -25,7 +26,8 @@ import java.util.Iterator;
 public abstract class PersistenceManager {
 
     private static ArrayList managers = new ArrayList(5);
-
+    private static ArrayList managersByName = new ArrayList();
+    
     // -----------------------------------------------------------------------------
     // Static accessors to registered PersistenceManagers
 
@@ -33,7 +35,23 @@ public abstract class PersistenceManager {
         managers.add(manager);
     }
 
+    static void registerManager(String managerClassName) {
+        managersByName.add(managerClassName);
+    }
+
     public static Iterator getManagers() {
+        Iterator iter = managersByName.iterator();
+        while (iter.hasNext()) {
+            try {
+                String classname = (String) iter.next();
+                PersistenceManager manager = (PersistenceManager) Class.forName(classname).newInstance();
+                managers.add(manager);
+            }
+            catch (Exception ex) {
+                TopManager.getDefault().getErrorManager().notify(ex);
+            }
+        }
+        managersByName.clear();
         return managers.iterator();
     }
 
