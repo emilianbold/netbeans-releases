@@ -139,8 +139,43 @@ public class BaseDocumentUnitTestCase extends NbTestCase {
     protected void assertDocumentText(String msg, String expectedText) {
         String docText = getDocumentText();
         if (!docText.equals(expectedText)) {
-            fail(msg + " - expected text:\n-----\n" + expectedText + "\n-------\n" + docText + "\n-----\n");
+            StringBuffer sb = new StringBuffer();
+            sb.append(msg);
+            sb.append("\n----- expected text: -----\n");
+            appendDebugText(sb, expectedText);
+            sb.append("\n----- document text: -----\n");
+            appendDebugText(sb, docText);
+            sb.append("\n-----\n");
+
+            fail(sb.toString());
         }
+    }
+    
+    protected final void appendDebugChar(StringBuffer sb, char ch) {
+        switch (ch) {
+            case '\n':
+                sb.append("\\n\n");
+                break;
+            case '\t':
+                sb.append("\\t");
+                break;
+
+            default:
+                sb.append(ch);
+                break;
+        }
+    }
+    
+    protected final void appendDebugText(StringBuffer sb, String text) {
+        for (int i = 0; i < text.length(); i++) {
+            appendDebugChar(sb, text.charAt(i));
+        }
+    }
+    
+    protected final String debugText(String text) {
+        StringBuffer sb = new StringBuffer();
+        appendDebugText(sb, text);
+        return sb.toString();
     }
 
     /**
