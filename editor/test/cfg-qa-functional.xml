@@ -55,56 +55,14 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="all,completion-15,completion-15-all" name="JDK1.5 Completion" compiler="qa-functional-compiler-completion">
+    <testbag testattribs="all,completion-15" name="JDK1.5 Completion" compiler="qa-functional-compiler-completion">
         <testset dir="qa-functional/src">
             <patternset>
 		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15*" />
-
-		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest4biunsorted" />
-		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest4biiunsorted" />
-		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest4biiiunsorted" />
-		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest7biiunsorted" />
-
-		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest8iiunsorted" />
-		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest8iiiunsorted" />
-		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest9biiunsorted" />
-		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest9biiiunsorted" />
-		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest10biiunsorted" />
-		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest10biiiunsorted" />
             </patternset>
         </testset>
     </testbag>
 
-    <!--These tests represent testcases, that are currently failing, but the golden files are known, and so should
-        start passing once the problems are fixed.
-      -->
-    <testbag testattribs="all,completion-15-should-pass,completion-15-all" name="JDK1.5 Completion Should Pass" compiler="qa-functional-compiler-completion">
-        <testset dir="qa-functional/src">
-            <patternset>
-		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest4biunsorted" />
-		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest4biiunsorted" />
-		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest4biiiunsorted" />
-		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest7biiunsorted" />
-            </patternset>
-        </testset>
-    </testbag>
-
-    <!--These tests represent testcases, that are currently failing and will require some work to make them pass (the golden file
-        are not known for these testcases.
-      -->
-    <testbag testattribs="all,completion-15-will-fail,completion-15-all" name="JDK1.5 Completion Will Fail" compiler="qa-functional-compiler-completion">
-        <testset dir="qa-functional/src">
-            <patternset>
-		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest8iiunsorted" />
-		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest8iiiunsorted" />
-		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest9biiunsorted" />
-		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest9biiiunsorted" />
-		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest10biiunsorted" />
-		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest10biiiunsorted" />
-            </patternset>
-        </testset>
-    </testbag>
-    
     <!-- Editor Application non-validation tests -->
 
     <testbag testattribs="all,apps" name="TestApplication Non-Validation">

@@ -1,4 +1,5 @@
 public final int length
+public Object clone()
 public boolean equals(Object obj)
 public final native Class<Object> getClass()
 public native int hashCode()
