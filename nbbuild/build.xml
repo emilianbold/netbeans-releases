@@ -480,7 +480,7 @@ the ${netbeans.dest}/bin/ directory.
     </nbmerge>
     <chmod perm="ugo+x">
       <fileset dir="${netbeans.dest}/bin">
-        <include name="*.sh"/>
+        <include name="**/*.sh"/>
         <include name="fastjavac/fastjavac.linux"/>
         <include name="fastjavac/fastjavac.sun"/>
         <include name="fastjavac/fastjavac.sun.intel"/>
