@@ -14,6 +14,7 @@
 package org.netbeans.modules.editor.errorstripe;
 
 import java.awt.BorderLayout;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -178,12 +179,16 @@ public class AnnotationViewTest extends TestCase {
             largeBuffer.append('\n');
         }
         
+        List contents = new ArrayList();
         String large = largeBuffer.toString();
         
-        String small = "\n\n\n\n\n\n\n\n";
-        String medium = large.substring(0, 300);
+        for (int lines = 7; lines < 300; lines++) {
+            contents.add(large.substring(0, lines + 1));
+        }
         
-        return new String[] {small, medium, large};
+        contents.add(large);
+        
+        return (String[] ) contents.toArray(new String[0]);
     }
     
     private static void performTest(final Action action) throws Exception {

@@ -360,6 +360,11 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
     private void registerMark(Mark mark) {
         int[] span = mark.getAssignedLines();
         
+        if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
+            ERR.log("AnnotationView.registerMark mark: " + mark);
+            ERR.log("AnnotationView.registerMark lines from-to: " + span[0] + "-" + span[1]);
+        }
+        
         for (int line = span[0]; line <= span[1]; line++) {
             Integer lineInt = new Integer(line);
             
@@ -375,6 +380,11 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
     
     private void unregisterMark(Mark mark) {
         int[] span = mark.getAssignedLines();
+        
+        if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
+            ERR.log("AnnotationView.unregisterMark mark: " + mark);
+            ERR.log("AnnotationView.unregisterMark lines from-to: " + span[0] + "-" + span[1]);
+        }
         
         for (int line = span[0]; line <= span[1]; line++) {
             Integer lineInt = new Integer(line);
@@ -603,6 +613,10 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
                 int    blocksCount = (int) (getUsableHeight() / (PIXELS_FOR_LINE + LINE_SEPARATOR_SIZE));
                 int    block = (int) ((offset - HEIGHT_OFFSET) / (PIXELS_FOR_LINE + LINE_SEPARATOR_SIZE));
                 double yPos = (getComponentHeight() * block) / blocksCount;
+                
+                if (yPos == (int) yPos)
+                    yPos -= 1;
+                
                 int    positionOffset = pane.viewToModel(new Point(0, (int) yPos));
                 int    line = Utilities.getLineOffset(doc, positionOffset) + 1;
                 int[] span = getLinesSpan(line);
