@@ -17,6 +17,7 @@ package org.netbeans.core.actions;
 import org.openide.util.NbBundle;
 
 import java.awt.*;
+import javax.swing.UIManager;
 
 /**
  * @author Radek Matous
@@ -38,14 +39,19 @@ public class InitPanel extends javax.swing.JPanel implements org.openide.util.As
         super();
         this.oPanel = oPanel;        
         initComponents();
-    }
+    }   
 
     protected void initComponents() {        
         if (!oPanel.isPrepared()) {
             initComponent = new javax.swing.JLabel(NbBundle.getMessage (InitPanel.class, "LBL_computing"));//NOI18N
             initComponent.setPreferredSize(new Dimension(850, 450));
             // avoid flicking ?
-            initComponent.setBackground((java.awt.Color) javax.swing.UIManager.getDefaults().get("Tree.background"));    // NOI18N            
+            Color c = UIManager.getColor ("Tree.background");
+            if (c == null) {
+                //GTK 1.4.2 will return null for Tree.background
+                c = Color.WHITE;
+            }
+            initComponent.setBackground(c);    // NOI18N               
             initComponent.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);        
             initComponent.setOpaque(true);
             
