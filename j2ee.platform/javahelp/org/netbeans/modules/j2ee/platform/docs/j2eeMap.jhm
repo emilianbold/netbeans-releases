@@ -121,6 +121,7 @@
 <mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerRun" url="web/overvw/WebCustomizerRun.html" />
 <mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerRunTest" url="web/overvw/WebCustomizerRunTest.html" />
 <mapID target="org.netbeans.modules.web.project.ui.customizer.WebCustomizer" url="web/overvw/WebCustomizer.html" />
+<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerLibraries" url="web/overvw/WebCustomizerLibraries.html" />
 
 <!-- Other web-related dialog boxes -->
 <mapID target="org.netbeans.modules.project.libraries.ui.LibrariesCustomizer" url="web/taglibUI/ctx_repaddto.html" />
