@@ -670,6 +670,16 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
         if (delegateIC == null) return this;
         return delegateIC.instanceCreate ();
     }
+    
+    /** Checks whether the instance was created by this object.
+     */
+    final boolean creatorOf (Object inst) {
+        InstanceCookie delegateIC = delegateIC ();
+        if (delegateIC instanceof Ser) {
+            return ((Ser)delegateIC).creatorOf (inst);
+        }
+        return false;
+    }
 
     /* Overriden to return only first part till the bracket */
     public String getName () {
@@ -1152,6 +1162,14 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             return o;
         }
 
+        /** Checks whether the instance was created by this object.
+         */
+        final boolean creatorOf (Object inst) {
+            java.lang.ref.Reference r = bean;
+            return r != null && r.get () == inst;
+        }
+        
+        
         public void run () {
             try {
                 saving = true;

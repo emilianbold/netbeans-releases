@@ -531,7 +531,13 @@ public class FolderLookup extends FolderInstance {
          */
         protected boolean creatorOf(Object obj) {
             WeakReference w = ref;
-            return w != null && w.get () == obj;
+            if (w != null && w.get () == obj) {
+                return true;
+            }
+            if (this.obj instanceof InstanceDataObject) {
+                return ((InstanceDataObject)this.obj).creatorOf (obj);
+            }
+            return false;
         }
 
         /** The class of this item.
