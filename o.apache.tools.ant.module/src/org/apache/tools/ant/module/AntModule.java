@@ -47,16 +47,6 @@ public class AntModule extends ModuleInstall {
     }
      */
 
-    public void readExternal (ObjectInput in) throws IOException, ClassNotFoundException {
-        super.readExternal (in);
-        in.readObject (); // was install count
-    }
-
-    public void writeExternal (ObjectOutput out) throws IOException {
-        super.writeExternal (out);
-        out.writeObject (null); // was install count
-    }
-    
     /** @deprecated no longer used */
     public static final class GlobalJarFileSystem extends JarFileSystem {
         private static final long serialVersionUID = -2165058869503900139L;
