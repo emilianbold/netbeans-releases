@@ -40,12 +40,12 @@ public class FormDataObject extends JavaDataObject {
     //--------------------------------------------------------------------
     // Private variables
 
-    /** If true, a postInit method is called after reparsing - used after createFromTemplate */
-    transient private boolean templateInit;
-    /** If true, the form is marked as modified after regeneration - used if created from template */
-    transient private boolean modifiedInit;
-    /** A flag to prevent multiple registration of ComponentRefListener */
-    transient private boolean componentRefRegistered;
+//    /** If true, a postInit method is called after reparsing - used after createFromTemplate */
+//    transient private boolean templateInit;
+//    /** If true, the form is marked as modified after regeneration - used if created from template */
+//    transient private boolean modifiedInit;
+//    /** A flag to prevent multiple registration of ComponentRefListener */
+//    transient private boolean componentRefRegistered;
 
     transient private FormEditorSupport formEditor;
 
@@ -59,17 +59,16 @@ public class FormDataObject extends JavaDataObject {
 
     static final long serialVersionUID =-975322003627854168L;
 
-    public FormDataObject(FileObject jfo, FormDataLoader loader) throws DataObjectExistsException {
+    public FormDataObject(FileObject ffo, FileObject jfo, FormDataLoader loader)
+        throws DataObjectExistsException
+    {
         super(jfo, loader);
+        formEntry = (FileEntry)registerEntry(ffo);
         init();
     }
 
     /** Initalizes the FormDataObject after deserialization */
     private void init() {
-        templateInit = false;
-        modifiedInit = false;
-        componentRefRegistered = false;
-
         getCookieSet().add(new Class[] { OpenCookie.class, EditCookie.class},
                            this);
     }
@@ -100,7 +99,7 @@ public class FormDataObject extends JavaDataObject {
     }
 
     public FileObject getFormFile() {
-        return getFormEntry().getFile();
+        return formEntry.getFile();
     }
 
     public boolean isReadOnly() {
@@ -125,7 +124,6 @@ public class FormDataObject extends JavaDataObject {
     }
 
     FileEntry getFormEntry() {
-        files(); // XXX Forces to create the secondary entries.
         return formEntry;
     }
 

@@ -120,37 +120,25 @@ public class FormDataLoader extends JavaDataLoader {
      * @exception DataObjectExistsException if the primary file already has data object
      */
     protected MultiDataObject createMultiObject(FileObject primaryFile)
-        throws DataObjectExistsException, java.io.IOException {
-        //    Thread.dumpStack();
-        return new FormDataObject(primaryFile, this);
+        throws DataObjectExistsException, java.io.IOException
+    {
+        return new FormDataObject(findFile(primaryFile, FORM_EXTENSION),
+                                  primaryFile,
+                                  this);
     }
 
-    /** Creates the right primary entry for given primary file.
-     *
-     * @param primaryFile primary file recognized by this loader
-     * @return primary entry for that file
-     * /
-     protected MultiDataObject.Entry createPrimaryEntry(MultiDataObject obj, FileObject primaryFile) {
-     return new JavaLoader.JavaEntry(obj, primaryFile);
-     }
-
-     /** Creates right secondary entry for given file. The file is said to
-     * belong to an object created by this loader.
-     *
-     * @param secondaryFile secondary file for which we want to create entry
-     * @return the entry
-     */
-    protected MultiDataObject.Entry createSecondaryEntry(MultiDataObject obj, FileObject secondaryFile) {
-        //    Thread.dumpStack();
-        String ext = secondaryFile.getExt();
-        if (ext.equals(CLASS_EXTENSION)) {
-            secondaryFile.setImportant(false);
-            return new FileEntry.Numb(obj, secondaryFile);             // entries for .class file
-        } else if (ext.equals(FORM_EXTENSION)) {
+    // from JavaDataLoader
+    // [?] Probably needed in case FormDataObject is deserialized, then the
+    // secondary entry is created additionally.
+    protected MultiDataObject.Entry createSecondaryEntry(MultiDataObject obj,
+                                                         FileObject secondaryFile)
+    {
+        if (secondaryFile.getExt().equals(FORM_EXTENSION)) {
             secondaryFile.setImportant(true);
-            FileEntry formEntry = new FileEntry(obj, secondaryFile);   // entries for .form files
+            FileEntry formEntry = new FileEntry(obj, secondaryFile);
             ((FormDataObject)obj).formEntry = formEntry;
             return formEntry;
-        } else return null;
+        }
+        return super.createSecondaryEntry(obj, secondaryFile);
     }
 }
