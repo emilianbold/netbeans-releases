@@ -156,8 +156,10 @@
 	
 	<!-- The Library Manager dialog box: -->
 	<mapID target="org.netbeans.modules.project.libraries.ui.LibrariesCustomizer" url="web/create/tag/taglib/taglib_manage.html" />
+	<!-- The Server Manager dialog box (this help id will be moved to server section later): : -->
+	<mapID target="org.netbeans.modules.j2ee.deployment.impl.ui.ServerManagerDialog" url="server/server_register.html" />
 	<!-- The Test Web Service Operation dialog box (this help id will be moved to web service section later): -->
-	<mapID target="projrave_ui_elements_server_nav_add_websvcdb" url="web/webservice/websvcdb.html" />
+	<mapID target="projrave_ui_elements_server_nav_add_websvcdb" url="webservice/csh/websvcdb.html" />
 
 <!-- End of CSH for Web Applications -->
 
