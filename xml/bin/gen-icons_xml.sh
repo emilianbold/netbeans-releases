@@ -29,7 +29,7 @@ GENERATE=true
 BASE=`pwd`
 WWW=$BASE/www
 
-for dir in api catalog core css tax text-edit tools tree-edit xsl; do
+for dir in api catalog core css tax text-edit tools tree-edit xsl schema; do
     cd $BASE/$dir
 
     ICONS=$WWW/$dir/images/icons
