@@ -131,6 +131,7 @@ Microsystems, Inc. All Rights Reserved.
                 
                 <!-- run also wizard's tests -->
                 <include name="org/openide/WizardDescTest.class"/>
+                <include name="org/openide/InstantiatingIteratorTest.class"/>
             </patternset>
         </testset>
     </testbag>
