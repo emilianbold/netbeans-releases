@@ -102,6 +102,17 @@ public class FormModelEvent extends EventObject
     {
         setComponentAndContainer(metacomp, metacont);
         createdDeleted = addedNew;
+
+        if (component instanceof RADVisualComponent
+            && container instanceof RADVisualContainer)
+        {
+            componentIndex = container.getIndexOf(component);
+            if (componentIndex >= 0) {
+                LayoutSupportManager laysup =
+                    ((RADVisualContainer)container).getLayoutSupport();
+                constraints = laysup.getConstraints(componentIndex);
+            }
+        }
     }
 
     void setRemoveData(RADComponent metacomp,
