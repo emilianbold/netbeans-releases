@@ -16,6 +16,7 @@ package org.netbeans.modules.form;
 import java.beans.*;
 import java.util.*;
 import java.awt.Cursor;
+import java.awt.EventQueue;
 import java.io.*;
 import javax.swing.*;
 import javax.swing.text.Document;
@@ -754,7 +755,7 @@ public class FormEditorSupport extends JavaEditor
         boolean alreadyModified = isModified();
         boolean retVal = super.notifyModified();
         if ((multiviewTC != null) && !alreadyModified) {
-            multiviewTC.setDisplayName(getMVTCDisplayName(formDataObject));
+            updateMVTCDisplayName();
         }
         return retVal;
     }
@@ -762,7 +763,7 @@ public class FormEditorSupport extends JavaEditor
     protected void notifyUnmodified () {
         super.notifyUnmodified();
         if (multiviewTC != null)
-            multiviewTC.setDisplayName(getMVTCDisplayName(formDataObject));
+            updateMVTCDisplayName();
     }
 
     /** Closes the form. Used when closing the form editor or reloading
@@ -928,10 +929,10 @@ public class FormEditorSupport extends JavaEditor
                 if (DataObject.PROP_NAME.equals(ev.getPropertyName())) {
                     String name = formDataObject.getName();
                     formModel.setName(name);
-                    getFormDesigner().setName(name);
+                    updateFormDesignerName(name);
                     formRootNode.updateName(name);
                     if (multiviewTC != null)
-                        multiviewTC.setToolTipText(getMVTCToolTipText(formDataObject));
+                        updateMVTCToolTipText();
                     formModel.fireFormChanged(); // regenerate code
                 }
                 else if (DataObject.PROP_COOKIE.equals(ev.getPropertyName())) {
@@ -1105,6 +1106,46 @@ public class FormEditorSupport extends JavaEditor
         return FormUtils.getFormattedBundleString("FMT_FormMVTCTitle", // NOI18N
             new Object[] {new Integer(version), formDataObject.getName()});
     }
+    
+    private void updateMVTCDisplayName() {
+        final TopComponent multiview = multiviewTC;
+        final String name = getMVTCDisplayName(formDataObject);
+        if (EventQueue.isDispatchThread()) {
+            multiviewTC.setDisplayName(name);
+        } else {
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    multiviewTC.setDisplayName(name);
+                }
+            });
+        }
+    }
+    
+    private void updateMVTCToolTipText() {
+        final TopComponent multiview = multiviewTC;
+        final String name = getMVTCToolTipText(formDataObject);
+        if (EventQueue.isDispatchThread()) {
+            multiviewTC.setToolTipText(name);
+        } else {
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    multiviewTC.setToolTipText(name);
+                }
+            });
+        }
+    }
+    
+    private void updateFormDesignerName(final String name) {
+        if (EventQueue.isDispatchThread()) {
+            getFormDesigner().setName(name);
+        } else {
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    getFormDesigner().setName(name);
+                }
+            });
+        }
+    }
 
     /**
      * deserialization of elements will drop the reference here, needed at open() etc.
@@ -1112,8 +1153,8 @@ public class FormEditorSupport extends JavaEditor
      */
     void setTopComponent(TopComponent topComp) {
         multiviewTC = (CloneableTopComponent)topComp;
-        multiviewTC.setDisplayName(getMVTCDisplayName(formDataObject));
-        multiviewTC.setToolTipText(getMVTCToolTipText(formDataObject));
+        updateMVTCDisplayName();
+        updateMVTCToolTipText();
     }
 
     public static FormEditorSupport getFormEditor(TopComponent tc) {
