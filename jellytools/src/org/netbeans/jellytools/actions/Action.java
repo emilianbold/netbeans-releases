@@ -250,6 +250,12 @@ public class Action {
      * @param component component to be action performed on
      * @throws UnsupportedOperationException when action does not support menu mode */    
     public void performMenu(ComponentOperator component) {
+        component.getFocus();
+        try {
+            Thread.sleep(SELECTION_WAIT_TIME);
+        } catch (Exception e) {
+            throw new JemmyException("Sleeping interrupted", e);
+        }
         performMenu();
     }
     
@@ -351,6 +357,12 @@ public class Action {
      * @param component component to be action performed on
      * @throws UnsupportedOperationException when action does not support API mode */    
     public void performAPI(ComponentOperator component) {
+        component.getFocus();
+        try {
+            Thread.sleep(SELECTION_WAIT_TIME);
+        } catch (Exception e) {
+            throw new JemmyException("Sleeping interrupted", e);
+        }
         performAPI();
     }
     
@@ -396,6 +408,12 @@ public class Action {
      * @param component component to be action performed on
      * @throws UnsupportedOperationException when action does not support shortcut mode */    
     public void performShortcut(ComponentOperator component) {
+        component.getFocus();
+        try {
+            Thread.sleep(SELECTION_WAIT_TIME);
+        } catch (Exception e) {
+            throw new JemmyException("Sleeping interrupted", e);
+        }
         performShortcut();
     }
     
