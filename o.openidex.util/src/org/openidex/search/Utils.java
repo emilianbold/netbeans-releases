@@ -104,16 +104,6 @@ public class Utils {
                                            supportedNodeTypes)) {
                     continue;
                 }
-                //String projectType = getProjectType(node);
-                //if (projectType != null) {
-                //    String[] supportedProjectTypes
-                //            = infoProvider.getSupportedProjectTypes();
-                //    if (supportedProjectTypes != null
-                //            && !isListedString(projectType,
-                //                               supportedProjectTypes))  {
-                //        continue;
-                //    }
-                //}
                 info = infoProvider.getSearchInfo(node);
                 if (info != null) {
                     return info;
@@ -127,17 +117,6 @@ public class Utils {
                ? new SimpleSearchInfo((DataObject.Container) container, true)
                : SimpleSearchInfo.EMPTY_SEARCH_INFO;
     }
-
-    ///**
-    // */
-    //private String getProjectType(Node node) {
-    //    Project project = node.getLookup().lookup(Project.class);
-    //    if ((project == null) && (node instanceof DataNode)) {
-    //        DataObject dataObject = ((DataNode) node).getDataObject();
-    //        project = FileOwnerQuery.getOwner(dataObject.getPrimaryFile());
-    //    }
-    //    return (project != null) ? project.getClass().getName() : null;
-    //}
 
     /**
      */
