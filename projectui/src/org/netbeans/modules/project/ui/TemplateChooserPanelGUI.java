@@ -14,11 +14,14 @@
 package org.netbeans.modules.project.ui;
 
 import java.awt.Component;
+import java.awt.ContainerOrderFocusTraversalPolicy;
+import java.awt.FocusTraversalPolicy;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -92,15 +95,16 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
         btv.setBorder( descriptionScrollPane.getBorder() );
         btv.setDefaultActionAllowed(false);
         btv.setPopupAllowed(false);       
-        // btv.setFocusCycleRoot( true );
         templatesPanel.add( btv, java.awt.BorderLayout.CENTER );
-    }
+                
+     }
     
     /** Called from readSettings, to initialize the GUI with proper components
      */
     public void initValues( Project p ) {
         // Populate the combo box with list of projects
         Project openProjects[] = OpenProjectList.getDefault().getOpenProjects();
+        Arrays.sort( openProjects, OpenProjectList.PROJECT_BY_DISPLAYNAME );
         DefaultComboBoxModel projectsModel = new DefaultComboBoxModel( openProjects );
         projectsComboBox.setModel( projectsModel );                
         projectsComboBox.setSelectedItem( p );
@@ -258,7 +262,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
     
     private static final Comparator NATURAL_NAME_SORT = Collator.getInstance();
     
-    private final class TemplateChildren extends Children.Keys/*<DataObject>*/ implements ChangeListener, Comparator/*<DataObject>*/ {
+    private final class TemplateChildren extends Children.Keys/*<DataObject>*/ implements ChangeListener /*, Comparator/*<DataObject>*/ {
         
         private final DataFolder folder;
         
@@ -279,7 +283,8 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
         }
         
         private void updateKeys() {
-            SortedSet/*<DataObject>*/ l = new TreeSet(this);
+            // SortedSet/*<DataObject>*/ l = new TreeSet(this);
+            List l = new ArrayList();
             DataObject[] kids = folder.getChildren();
             for (int i = 0; i < kids.length; i++) {
                 DataObject d = kids[i];
@@ -317,6 +322,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
             updateKeys();
         }
         
+        /** Uncoment if you want to have the templates sorted alphabeticaly
         public int compare(Object o1, Object o2) {
             DataObject d1 = (DataObject)o1;
             DataObject d2 = (DataObject)o2;
@@ -328,6 +334,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
                 return NATURAL_NAME_SORT.compare(d1.getNodeDelegate().getDisplayName(), d2.getNodeDelegate().getDisplayName());
             }
         }
+        */
 
         private boolean acceptTemplate( DataObject d, FileObject primaryFile ) {
             
@@ -343,7 +350,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
     
     // Private innerclasses ----------------------------------------------------
 
-    // Just to make the tree non-editable
+    // Just to make the tree non-editable 
     private static final class TemplatesTreeView extends BeanTreeView {
         
         TemplatesTreeView() {
@@ -351,6 +358,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
         }
                 
     }
+    
     
     private static class ProjectCellRenderer extends javax.swing.plaf.basic.BasicComboBoxRenderer implements ListCellRenderer {
         

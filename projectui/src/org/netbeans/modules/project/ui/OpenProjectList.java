@@ -23,8 +23,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.text.Collator;
+import java.util.Comparator;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.modules.project.uiapi.ProjectOpenedTrampoline;
@@ -39,6 +42,8 @@ import org.openide.filesystems.Repository;
  * @author Jesse Glick, Petr Hrebejk
  */
 public final class OpenProjectList {
+    
+    public static final Comparator PROJECT_BY_DISPLAYNAME = new ProjectByDisplayNameComparator();
     
     // Property names
     public static final String PROPERTY_OPEN_PROJECTS = "OpenProjects";
@@ -421,6 +426,37 @@ public final class OpenProjectList {
             
             return -1;
         }        
+        
+    }
+    
+    public static class ProjectByDisplayNameComparator implements Comparator {
+        
+        private static Comparator COLLATOR = Collator.getInstance();
+        
+        public int compare(Object o1, Object o2) {
+            
+            if ( !( o1 instanceof Project ) ) {
+                return 1;
+            }
+            if ( !( o2 instanceof Project ) ) {
+                return -1;
+            }
+            
+            Project p1 = (Project)o1;
+            Project p2 = (Project)o2;
+            
+//            Uncoment to make the main project be the first one
+//            but then needs to listen to main project change
+//            if ( OpenProjectList.getDefault().isMainProject( p1 ) ) {
+//                return -1;
+//            }
+//            
+//            if ( OpenProjectList.getDefault().isMainProject( p2 ) ) {
+//                return 1;
+//            }
+            
+            return COLLATOR.compare(ProjectUtils.getInformation(p1).getDisplayName(), ProjectUtils.getInformation(p2).getDisplayName());
+        }
         
     }
     

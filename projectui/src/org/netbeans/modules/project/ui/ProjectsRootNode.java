@@ -177,65 +177,13 @@ public class ProjectsRootNode extends AbstractNode {
         
         public Collection getKeys() {
             List projects = Arrays.asList( OpenProjectList.getDefault().getOpenProjects() );
-            Collections.sort( projects, ProjectComparator.INSTANCE );
+            Collections.sort( projects, OpenProjectList.PROJECT_BY_DISPLAYNAME );
             
             return projects;
         }
                                                 
     }
-    
-    private static class ProjectComparator implements Comparator {
         
-        private static Comparator INSTANCE = new ProjectComparator();        
-        private static Comparator COLLATOR = Collator.getInstance();
-        
-        public int compare(Object o1, Object o2) {
-            
-            if ( !( o1 instanceof Project ) ) {
-                return 1;
-            }
-            if ( !( o2 instanceof Project ) ) {
-                return -1;
-            }
-            
-            Project p1 = (Project)o1;
-            Project p2 = (Project)o2;
-            
-//            Uncoment to make the main project be the first one
-//            but then needs to listen to main project change
-//            if ( OpenProjectList.getDefault().isMainProject( p1 ) ) {
-//                return -1;
-//            }
-//            
-//            if ( OpenProjectList.getDefault().isMainProject( p2 ) ) {
-//                return 1;
-//            }
-            
-            return COLLATOR.compare(ProjectUtils.getInformation(p1).getDisplayName(), ProjectUtils.getInformation(p2).getDisplayName());
-        }
-        
-    }
-    
-    /*
-    private static class NodeOpenProjectAction extends OpenProjectAction {
-        
-        public String getName() {
-            return NbBundle.getMessage( ProjectsRootNode.class, "LBL_NodeOpenProjectAction_Name" );
-        }
-        
-        
-    }
-    
-    private static class NodeNewProjectAction extends PlaceHolderAction.NewProject {
-        
-        public String getName() {
-            return NbBundle.getMessage( ProjectsRootNode.class, "LBL_NodeNewProjectAction_Name" );
-        }
-        
-        
-    }
-     */
-    
     private static final class BadgingNode extends FilterNode implements PropertyChangeListener {
 
         private static Image mainProjectBadge = Utilities.loadImage( "org/netbeans/modules/project/ui/resources/mainProjectBadge.gif" ); // NOI18N
