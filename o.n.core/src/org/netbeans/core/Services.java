@@ -296,7 +296,7 @@ final class Services extends ServiceType.Registry implements Comparator {
     throws IOException, ClassNotFoundException {
         if (current.contains (t)) {
             // if adding already existing service, create its clone
-            t = (ServiceType) new NbMarshalledObject (t).get ();
+            t = t.createClone ();
         }
         
         uniquifyName (t);
@@ -524,6 +524,9 @@ final class Services extends ServiceType.Registry implements Comparator {
 
 /*
 * $Log$
+* Revision 1.39  2000/11/30 17:08:33  jtulach
+* ServiceType.createClone ()
+*
 * Revision 1.38  2000/11/30 10:57:02  anovak
 * #8671 - deadlock
 *
