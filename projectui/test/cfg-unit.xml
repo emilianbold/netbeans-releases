@@ -15,6 +15,12 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="projects/projectui">
     
+    <testbag testattribs="dev" executor="unit-executor" name="projects/projectui">
+        <testset dir="unit/src">
+            <patternset/>
+        </testset>
+    </testbag>
+    
     <testbag testattribs="stable" executor="unit-executor" name="projects/projectui">
         <testset dir="unit/src">
             <patternset>

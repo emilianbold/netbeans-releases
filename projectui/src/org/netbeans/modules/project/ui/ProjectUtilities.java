@@ -67,6 +67,74 @@ public class ProjectUtilities {
     static final String OPEN_FILES_ELEMENT = "open-files"; // NOI18N
     static final String FILE_ELEMENT = "file"; // NOI18N
     
+    // support class for xtesting in OpenProjectListTest
+    static OpenCloseProjectDocument OPEN_CLOSE_PROJECT_DOCUMENT_IMPL = new OpenCloseProjectDocument () {
+        public boolean open (FileObject fo) {
+            DataObject dobj;
+            try {
+                dobj = DataObject.find (fo);
+            } catch (DataObjectNotFoundException donfo) {
+                assert false : "DataObject must exist for " + fo;
+                return false;
+            }
+            EditCookie ec = (EditCookie) dobj.getCookie (EditCookie.class);
+            OpenCookie oc = (OpenCookie) dobj.getCookie (OpenCookie.class);
+            if (ec != null) {
+                ((EditCookie) ec).edit ();
+            } else if (oc != null) {
+                ((OpenCookie) oc).open ();
+            } else {
+                if (ERR.isLoggable (ErrorManager.INFORMATIONAL)) ERR.log ("No EditCookie nor OpenCookie for " + dobj);
+                return false;
+            }
+            return true;
+        }
+        
+        public Map/*<Project, SortedSet<String>>*/ close (Project[] projects) {
+            List/*<Project>*/ listOfProjects = Arrays.asList (projects);
+            Set/*<DataObject>*/ openFiles = new HashSet ();
+            Set/*<TopComponent>*/ tc2close = new HashSet ();
+            Map/*<Project, SortedSet<String>>*/ urls4project = new HashMap ();
+            Mode editorMode = WindowManager.getDefault ().findMode (CloneableEditorSupport.EDITOR_MODE);
+            TopComponent[] openTCs = editorMode.getTopComponents ();
+            for (int i = 0; i < openTCs.length; i++) {
+                DataObject dobj = (DataObject) openTCs[i].getLookup ().lookup (DataObject.class);
+                if (dobj != null) {
+                  FileObject fobj = dobj.getPrimaryFile ();
+                  Project owner = FileOwnerQuery.getOwner (fobj);
+                  if (listOfProjects.contains (owner)) {
+                      openFiles.add (dobj);
+                      tc2close.add (openTCs[i]);
+                      if (!urls4project.containsKey (owner)) {
+                          // add project
+                          urls4project.put (owner, new TreeSet ());
+                      }
+                      URL url = null;
+                      try {
+                          url = dobj.getPrimaryFile ().getURL ();
+                          ((SortedSet)urls4project.get (owner)).add (url.toExternalForm ());
+                      } catch (FileStateInvalidException fsie) {
+                          assert false : "FileStateInvalidException in " + dobj.getPrimaryFile ();
+                      }
+                  }
+                }
+            }
+
+            if (!openFiles.isEmpty () && ExitDialog.showDialog (openFiles)) {
+                // close documents
+                Iterator it = tc2close.iterator ();
+                while (it.hasNext ()) {
+                    ((TopComponent)it.next ()).close ();
+                }
+            } else {
+                // signal that close was vetoed
+                urls4project = null;
+            }
+            
+            return urls4project;
+        }
+    };
+    
     private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(ProjectUtilities.class.getName());
     
     private ProjectUtilities() {}
@@ -261,43 +329,10 @@ public class ProjectUtilities {
             // no projects to close, no documents will be closed
             return true;
         }
-
-        List/*<Project>*/ listOfProjects = Arrays.asList (projects);
-        Set/*<DataObject>*/ openFiles = new HashSet ();
-        Set/*<TopComponent>*/ tc2close = new HashSet ();
-        Map/*<Project, SortedSet<String>>*/ urls4project = new HashMap ();
-        Mode editorMode = WindowManager.getDefault ().findMode (CloneableEditorSupport.EDITOR_MODE);
-        TopComponent[] openTCs = editorMode.getTopComponents ();
-        for (int i = 0; i < openTCs.length; i++) {
-            DataObject dobj = (DataObject) openTCs[i].getLookup ().lookup (DataObject.class);
-            if (dobj != null) {
-              FileObject fobj = dobj.getPrimaryFile ();
-              Project owner = FileOwnerQuery.getOwner (fobj);
-              if (listOfProjects.contains (owner)) {
-                  openFiles.add (dobj);
-                  tc2close.add (openTCs[i]);
-                  if (!urls4project.containsKey (owner)) {
-                      // add project
-                      urls4project.put (owner, new TreeSet ());
-                  }
-                  URL url = null;
-                  try {
-                      url = dobj.getPrimaryFile ().getURL ();
-                      ((SortedSet)urls4project.get (owner)).add (url.toExternalForm ());
-                  } catch (FileStateInvalidException fsie) {
-                      assert false : "FileStateInvalidException in " + dobj.getPrimaryFile ();
-                  }
-              }
-            }
-        }
-
-        if (openFiles.isEmpty ()) {
-            return true;
-        }
         
-        boolean result = ExitDialog.showDialog (openFiles);
-        
-        if (result) {
+        Map/*<Project, SortedSet<String>>*/ urls4project = OPEN_CLOSE_PROJECT_DOCUMENT_IMPL.close (projects);
+
+        if (urls4project != null) {
             // store project's documents
             // loop all project being closed
             Iterator loop = urls4project.keySet ().iterator ();
@@ -306,25 +341,9 @@ public class ProjectUtilities {
                 p = (Project) loop.next ();
                 storeProjectOpenFiles (p, (SortedSet)urls4project.get (p));
             }
-            
-            // close documents
-            Iterator it = tc2close.iterator ();
-            while (it.hasNext ()) {
-                ((TopComponent)it.next ()).close ();
-            }
         }
         
-        return result;
-    }
-    
-    static private void cleaupAuxiliaryConfiguration (Project[] projects) {
-        for (int i = 0; i < projects.length; i++) {
-            AuxiliaryConfiguration aux = (AuxiliaryConfiguration) projects[i].getLookup ().lookup (AuxiliaryConfiguration.class);
-            if (aux != null) {
-                // clean-up files before adding new one
-                aux.removeConfigurationFragment (OPEN_FILES_ELEMENT, OPEN_FILES_NS, false);
-            }
-        }
+        return urls4project != null;
     }
     
     static private void storeProjectOpenFiles (Project p, SortedSet/*<String>*/ urls) {
@@ -391,26 +410,24 @@ public class ProjectUtilities {
                 if (dolog) ERR.log("Could not find " + url);
                 continue;
             }
-            DataObject dobj;
-            try {
-                dobj = DataObject.find (fo);
-            } catch (DataObjectNotFoundException donfo) {
-                assert false : "DataObject must exist for " + fo;
-                continue;
-            }
-            EditCookie ec = (EditCookie) dobj.getCookie (EditCookie.class);
-            OpenCookie oc = (OpenCookie) dobj.getCookie (OpenCookie.class);
-            if (ec != null) {
-                ((EditCookie) ec).edit ();
-            } else if (oc != null) {
-                ((OpenCookie) oc).open ();
-            } else {
-                if (dolog) ERR.log("No EditCookie nor OpenCookie for " + dobj);
-            }
+            
+            OPEN_CLOSE_PROJECT_DOCUMENT_IMPL.open (fo);
         }
         
         // clean-up stored files
         aux.removeConfigurationFragment (OPEN_FILES_ELEMENT, OPEN_FILES_NS, false);
+    }
+    
+    // interface for handling project's documents stored in project private.xml
+    // it serves for a unit test of OpenProjectList
+    static interface OpenCloseProjectDocument {
+        
+        // opens stored document in the document area
+        public boolean open (FileObject fo);
+        
+        // closes documents of given projects and returns mapped document's urls by project
+        // it's used as base for storing documents in project private.xml
+        public Map/*<Project, SortedSet<String>>*/ close (Project[] projects);
     }
     
 }

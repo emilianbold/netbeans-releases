@@ -20,7 +20,6 @@ import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.TestUtil;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.project.ui.actions.TestSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.filesystems.FileObject;
@@ -36,8 +35,9 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import org.netbeans.junit.NbTestCase;
 
-/**
+/** Tests storing and reloading project's documents in case of open/close project.
  *
  * @author Jiri Rechtacek
  */
@@ -57,6 +57,7 @@ public class ProjectUtilitiesTest extends NbTestCase {
 
     protected void setUp () throws Exception {
         super.setUp ();
+        
         TestUtil.setLookup (new Object[] { 
                                 TestSupport.testProjectFactory (),
                                 TestSupport.createAuxiliaryConfiguration ()}, 
@@ -144,7 +145,6 @@ public class ProjectUtilitiesTest extends NbTestCase {
         closeProjectWithOpenedFiles ();
 
         OpenProjectList.getDefault ().open (project1, false);
-        ProjectUtilities.openProjectFiles (project1);
 
         Mode editor = WindowManager.getDefault ().findMode (CloneableEditorSupport.EDITOR_MODE);
         assertNotNull ("Editor mode found.", editor);
