@@ -23,7 +23,7 @@ import org.netbeans.modules.db.explorer.infos.*;
 import org.netbeans.modules.db.explorer.nodes.*;
 import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 
-public class IndexColumnNodeInfo extends DatabaseNodeInfo
+public class IndexColumnNodeInfo extends ColumnNodeInfo
 {
     static final long serialVersionUID =861029499015830000L;
 }
