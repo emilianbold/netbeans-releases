@@ -304,7 +304,8 @@ class OpenFile extends Object {
   */
   private static void askForMountPoint (File f, int pkgLevel, final File[] dirToMount, final String[] mountPackage) {
     final JPanel panel = new JPanel ();
-    panel.setLayout (new BorderLayout ());
+    panel.setLayout (new BorderLayout (0, 5));
+    panel.setBorder (new javax.swing.border.EmptyBorder (8, 8, 8, 8));
     
     JTextArea textArea = new JTextArea ();
     textArea.setBackground (Color.lightGray);
