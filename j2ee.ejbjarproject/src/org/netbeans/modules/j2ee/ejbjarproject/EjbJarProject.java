@@ -19,9 +19,9 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.*;
-import java.io.File;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
@@ -60,6 +60,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
@@ -86,6 +87,7 @@ import org.w3c.dom.Text;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.api.webservices.WebServicesClientSupport;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
+import org.openide.NotifyDescriptor;
 
 /**
  * Represents one ejb module project
@@ -532,6 +534,62 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
     private String getProperty(String path, String name) {
         return helper.getProperties(path).getProperty(name);
     }
+    
+    /**
+     * Refreshes the build-impl.xml script. If it was modified by the user, it 
+     * displays a confirmation dialog.
+     *
+     * @param askUserIfFlags only display the dialog if the state of the build script
+     * contains these flags (along with {@link GeneratedFilesHelper#FLAG_MODIFIED}, 
+     * which is always checked)
+     * @param askInCurrentThread if false, asks in another thread
+     */
+    private void refreshBuildImplXml(int askUserIfFlags, boolean askInCurrentThread) {
+        askUserIfFlags |= GeneratedFilesHelper.FLAG_MODIFIED;
+        int flags = genFilesHelper.getBuildScriptState(
+            GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+            EjbJarProject.class.getResource("resources/build-impl.xsl")); // NOI18N
+        if ((flags & askUserIfFlags) == askUserIfFlags) {
+            Runnable run = new Runnable () {
+                public void run () {
+                    JButton updateOption = new JButton (NbBundle.getMessage(EjbJarProject.class, "CTL_Regenerate"));
+                    if (DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor (NbBundle.getMessage(EjbJarProject.class,"TXT_BuildImplRegenerate"),
+                            NbBundle.getMessage(EjbJarProject.class,"TXT_BuildImplRegenerateTitle"),
+                            NotifyDescriptor.DEFAULT_OPTION,
+                            NotifyDescriptor.WARNING_MESSAGE,
+                            new Object[] {
+                                updateOption,
+                                NotifyDescriptor.CANCEL_OPTION
+                            },
+                            updateOption)) == updateOption) {
+                        try {
+                            genFilesHelper.generateBuildScriptFromStylesheet(
+                                GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                                EjbJarProject.class.getResource("resources/build-impl.xsl")); // NOI18N
+                        } catch (IOException e) {
+                            ErrorManager.getDefault().notify(e);
+                        } catch (IllegalStateException e) {
+                            ErrorManager.getDefault().notify(e);
+                        }
+                    }
+                }
+            };
+            if (askInCurrentThread)
+                run.run();
+            else
+                RequestProcessor.getDefault().post(run);
+        } else {
+            try {
+                genFilesHelper.refreshBuildScript(
+                    GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                    EjbJarProject.class.getResource("resources/build-impl.xsl"), // NOI18N
+                    false);
+            } catch (IOException e) {
+                ErrorManager.getDefault().notify(e);
+            }
+        }
+    }
 
     // Private innerclasses ----------------------------------------------------
     
@@ -576,14 +634,12 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         ProjectXmlSavedHookImpl() {}
         
         protected void projectXmlSaved() throws IOException {
+            refreshBuildImplXml(0, false);
+            
             genFilesHelper.refreshBuildScript(
-            GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-            EjbJarProject.class.getResource("resources/build-impl.xsl"),
-            false);
-            genFilesHelper.refreshBuildScript(
-            getBuildXmlName(),
-            EjbJarProject.class.getResource("resources/build.xsl"),
-            false);
+                getBuildXmlName(),
+                EjbJarProject.class.getResource("resources/build.xsl"),
+                false);
         }
         
     }
@@ -626,14 +682,13 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 }
                 
                 // Check up on build scripts.
+                
+                refreshBuildImplXml( GeneratedFilesHelper.FLAG_OLD_PROJECT_XML, true);
+                
                 genFilesHelper.refreshBuildScript(
-                GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                EjbJarProject.class.getResource("resources/build-impl.xsl"),
-                true);
-                genFilesHelper.refreshBuildScript(
-                getBuildXmlName(),
-                EjbJarProject.class.getResource("resources/build.xsl"),
-                true);
+                    getBuildXmlName(),
+                    EjbJarProject.class.getResource("resources/build.xsl"),
+                    true);
                 
                 String servInstID = getProperty(AntProjectHelper.PRIVATE_PROPERTIES_PATH, EjbJarProjectProperties.J2EE_SERVER_INSTANCE);
                 J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(servInstID);
