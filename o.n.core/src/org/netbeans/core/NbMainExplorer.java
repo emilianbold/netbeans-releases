@@ -803,17 +803,17 @@ public final class NbMainExplorer extends CloneableTopComponent {
         /** Creator/accessor method of Runtime tab singleton. Instance is properly
          * deserialized by winsys.
          */
-        public static MainTab createEnvironmentTab () {
+        public static MainTab findEnvironmentTab () {
             return (MainTab)getExplorer().createTC(
                 NbPlaces.getDefault().environment(), true
             );
         }
         
         /** Creator/accessor method used ONLY by winsys for first time instantiation
-         * of Runtime tab. Use <code>createEnvironmentTab</code> to properly deserialize
+         * of Runtime tab. Use <code>findEnvironmentTab</code> to properly deserialize
          * singleton instance.
          */
-        public static MainTab createEnvironmentTabWinSys() {
+        public static MainTab createEnvironmentTab () {
             return (MainTab)getExplorer().createTC(
             NbPlaces.getDefault().environment(), false
             );
@@ -908,17 +908,17 @@ public final class NbMainExplorer extends CloneableTopComponent {
         /** Creator/accessor method of Filesystems tab singleton. Instance is properly
          * deserialized by winsys.
          */
-        public static RepositoryTab createRepositoryTab () {
+        public static RepositoryTab findRepositoryTab () {
             return (RepositoryTab)getExplorer().createTC(
                 RepositoryNodeFactory.getDefault().repository(DataFilter.ALL), true
             );
         }
         
         /** Creator/accessor method used ONLY by winsys for first time instantiation
-         * of Filesystems tab. Use <code>createRepositoryTab</code> to properly deserialize
+         * of Filesystems tab. Use <code>findRepositoryTab</code> to properly deserialize
          * singleton instance.
          */
-        public static RepositoryTab createRepositoryTabWinSys() {
+        public static RepositoryTab createRepositoryTab() {
             return (RepositoryTab)getExplorer().createTC(
             RepositoryNodeFactory.getDefault().repository(DataFilter.ALL), false
             );

@@ -43,7 +43,7 @@ implements HelpCtx.Provider {
     
     
     public void actionPerformed(ActionEvent evt) {
-        final TopComponent runtimeTab = NbMainExplorer.MainTab.createEnvironmentTab();
+        final TopComponent runtimeTab = NbMainExplorer.MainTab.findEnvironmentTab();
         runtimeTab.open();
         runtimeTab.requestActive();
     }
