@@ -412,7 +412,7 @@
       <tocitem text="About Tag Libraries" target="webmod_addtglb"/>
       <tocitem text="About the JSTL" target="webmod_jstl" />
       <tocitem text="Tag Libraries" >
-      <tocitem text="Using the Library Manager" target="ctx_repaddto"/>
+      <tocitem text="Managing Libraries" target="ctx_repaddto"/>
       <tocitem text="Creating a Separate Tag Library"  target="taglib_packlib"/>
       <tocitem text="Adding a Tag Library to a WAR File" target="tagsupport_fromfilesys" />        
       <tocitem text="Using a Tag Library in a JSP File" target="webmod_usetags"/>
