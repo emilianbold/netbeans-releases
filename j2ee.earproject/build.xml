@@ -46,6 +46,7 @@ Microsystems, Inc. All Rights Reserved.
  org.netbeans.modules.project.ant/1,
  org.netbeans.modules.projectapi/1,
  org.netbeans.modules.project.libraries/1,
+ org.netbeans.modules.j2ee.api.ejbmodule,
  org.netbeans.modules.projectuiapi/1,
  org.netbeans.modules.queries/1,
  org.openide.loaders"/>
