@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.web.project;
 
+import java.awt.Dialog;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -22,6 +23,7 @@ import java.lang.ref.SoftReference;
 import java.util.*;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -66,6 +68,12 @@ import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.netbeans.modules.web.api.webmodule.SourcesGroupTypes;
+import org.netbeans.modules.web.project.ui.BrokenReferencesAlertPanel;
+import org.netbeans.modules.web.project.ui.FoldersListSettings;
+import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 /**
  * Represents one plain Web project.
@@ -146,7 +154,7 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
             spp,
             webModule,
             new WebActionProvider( this, helper, refHelper ),
-            new WebPhysicalViewProvider(this, helper, spp),
+            new WebPhysicalViewProvider(this, helper, evaluator (), spp, refHelper),
             new WebCustomizerProvider( this, helper, refHelper ),
             new ClassPathProviderImpl(helper),
             new CompiledSourceForBinaryQuery(helper),
@@ -225,6 +233,50 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
             }
         }
     }
+    
+    /** Last time in ms when the Broken References alert was shown. */
+    private static long brokenAlertLastTime = 0;
+    
+    /** Is Broken References alert shown now? */
+    private static boolean brokenAlertShown = false;
+
+    /** Timeout within which request to show alert will be ignored. */
+    private static int BROKEN_ALERT_TIMEOUT = 1000;
+    
+    private static synchronized void showBrokenReferencesAlert() {
+        // Do not show alert if it is already shown or if it was shown
+        // in last BROKEN_ALERT_TIMEOUT milliseconds or if user do not wish it.
+        if (brokenAlertShown || 
+            brokenAlertLastTime+BROKEN_ALERT_TIMEOUT > System.currentTimeMillis() ||
+            !FoldersListSettings.getDefault().isShowAgainBrokenRefAlert()) {
+                return;
+        }
+        brokenAlertShown = true;
+        SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    try {
+                        Object ok = NbBundle.getMessage(BrokenReferencesAlertPanel.class,"MSG_Broken_References_OK");
+                        DialogDescriptor dd = new DialogDescriptor(new BrokenReferencesAlertPanel(), 
+                            NbBundle.getMessage(BrokenReferencesAlertPanel.class, "MSG_Broken_References_Title"),
+                            true, new Object[] {ok}, ok, DialogDescriptor.DEFAULT_ALIGN, null, null);
+                        Dialog dlg = null;
+                        try {
+                            dlg = DialogDisplayer.getDefault().createDialog(dd);
+                            dlg.setVisible(true);
+                        } finally {
+                            if (dlg != null)
+                                dlg.dispose();
+                        }
+                    } finally {
+                        synchronized (WebProject.class) {
+                            brokenAlertLastTime = System.currentTimeMillis();
+                            brokenAlertShown = false;
+                        }
+                    }
+                }
+            });
+    }
+    
     // Private innerclasses ----------------------------------------------------
     
     private final class Info implements ProjectInformation {
@@ -353,6 +405,23 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
             GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
             GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
             
+            // Make it easier to run headless builds on the same machine at least.
+            ProjectManager.mutex().writeAccess(new Mutex.Action() {
+                public Object run() {
+                    EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                    ep.setProperty("netbeans.user", System.getProperty("netbeans.user"));
+                    helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+                    try {
+                        ProjectManager.getDefault().saveProject(WebProject.this);
+                    } catch (IOException e) {
+                        ErrorManager.getDefault().notify(e);
+                    }
+                    return null;
+                }
+            });
+            if (WebPhysicalViewProvider.hasBrokenLinks(evaluator())) {
+                showBrokenReferencesAlert();
+            }
         }
         
         protected void projectClosed() {
