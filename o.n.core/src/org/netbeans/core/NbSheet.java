@@ -195,7 +195,8 @@ public final class NbSheet extends TopComponent {
     }
     
     public HelpCtx getHelpCtx () {
-        return ExplorerPanel.getHelpCtx (nodes, new HelpCtx (NbSheet.class));
+        // #40372 fix - for non-global properties display (assumed to be in a dialog), don't show the help button
+        return (global ? ExplorerPanel.getHelpCtx (nodes, new HelpCtx (NbSheet.class)) : null);
     }
 
     /** Transfer the focus to the property sheet.
