@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -31,7 +31,6 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Lookup;
 
@@ -42,7 +41,7 @@ import org.openide.util.Lookup;
  */
 public class SourceLevelQueryImplTest extends NbTestCase {
     
-    public SourceLevelQueryImplTest(java.lang.String testName) {
+    public SourceLevelQueryImplTest(String testName) {
         super(testName);
     }
     
@@ -60,7 +59,7 @@ public class SourceLevelQueryImplTest extends NbTestCase {
             new org.netbeans.modules.java.project.ProjectSourceLevelQueryImpl(),
             new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation(),
             new TestPlatformProvider ()
-        }, SourceLevelQueryImpl.class.getClassLoader());
+        });
         Properties p = System.getProperties();
         if (p.getProperty ("netbeans.user") == null) {
             p.put("netbeans.user", FileUtil.toFile(TestUtil.makeScratchDir(this)).getAbsolutePath());
@@ -71,7 +70,6 @@ public class SourceLevelQueryImplTest extends NbTestCase {
         scratch = null;
         projdir = null;
         pm = null;
-        TestUtil.setLookup(Lookup.EMPTY);
         super.tearDown();
     }
     

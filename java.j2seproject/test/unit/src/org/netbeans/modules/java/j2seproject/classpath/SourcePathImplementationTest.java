@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -28,19 +28,12 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.modules.java.j2seproject.queries.SourceLevelQueryImpl;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
-
 import org.netbeans.modules.java.j2seproject.SourceRootsTest;
-
-
-
-
-
 
 public class SourcePathImplementationTest extends NbTestCase {
 
-    public SourcePathImplementationTest (java.lang.String testName) {
+    public SourcePathImplementationTest(String testName) {
         super(testName);
     }
 
@@ -53,11 +46,6 @@ public class SourcePathImplementationTest extends NbTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        TestUtil.setLookup(new Object[] {
-            new org.netbeans.modules.java.j2seproject.J2SEProjectType(),
-            new org.netbeans.modules.java.project.ProjectSourceLevelQueryImpl(),
-            new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation(),
-        }, SourceLevelQueryImpl.class.getClassLoader());
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
         helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj",null,null); //NOI18N
@@ -70,7 +58,6 @@ public class SourcePathImplementationTest extends NbTestCase {
         scratch = null;
         projdir = null;
         pm = null;
-        TestUtil.setLookup(Lookup.EMPTY);
         super.tearDown();
     }
 

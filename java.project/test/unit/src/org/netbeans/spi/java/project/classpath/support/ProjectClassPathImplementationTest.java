@@ -13,34 +13,23 @@
 
 package org.netbeans.spi.java.project.classpath.support;
 
-
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntBasedTestUtil;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
 
 /**
@@ -68,7 +57,7 @@ public class ProjectClassPathImplementationTest extends NbTestCase {
         TestUtil.setLookup(new Object[] {
             new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation(),
             AntBasedTestUtil.testAntBasedProjectType(),
-        }, ProjectClassPathImplementation.class.getClassLoader());
+        });
     }
 
     protected void tearDown() throws Exception {

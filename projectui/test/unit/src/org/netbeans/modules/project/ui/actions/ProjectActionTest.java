@@ -7,38 +7,27 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.project.ui.actions;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import junit.framework.*;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
-
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.LocalFileSystem;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 public class ProjectActionTest extends NbTestCase {
     
@@ -61,8 +50,9 @@ public class ProjectActionTest extends NbTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        TestUtil.setLookup( new Object[] { TestSupport.testProjectFactory() }, 
-                           ProjectActionTest.class.getClassLoader() );        
+        TestUtil.setLookup(new Object[] {
+            TestSupport.testProjectFactory()
+        });
         clearWorkDir();
         FileObject workDir = FileUtil.toFileObject(getWorkDir());
     

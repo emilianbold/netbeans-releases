@@ -117,7 +117,7 @@ public class ReferenceHelperTest extends NbTestCase {
         TestUtil.setLookup(new Object[] {
             AntBasedTestUtil.testAntBasedProjectType(),
             AntBasedTestUtil.testCollocationQueryImplementation(getWorkDir()),
-        }, ReferenceHelperTest.class.getClassLoader());
+        });
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
         TestUtil.createFileFromContent(ReferenceHelperTest.class.getResource("data/project.xml"), projdir, "nbproject/project.xml");

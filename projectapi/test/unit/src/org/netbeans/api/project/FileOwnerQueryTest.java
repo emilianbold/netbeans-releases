@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,7 +15,6 @@ package org.netbeans.api.project;
 
 import java.io.OutputStream;
 import java.net.URI;
-import java.net.URL;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -23,8 +22,6 @@ import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.Lookup;
 
 /**
@@ -50,7 +47,7 @@ public class FileOwnerQueryTest extends NbTestCase {
     protected void setUp() throws Exception {
         TestUtil.setLookup(new Object[] {
             TestUtil.testProjectFactory(),
-        }, FileOwnerQueryTest.class.getClassLoader());
+        });
         ProjectManager.getDefault().reset();
         FileOwnerQuery.reset();
         scratch = TestUtil.makeScratchDir(this);
@@ -105,7 +102,6 @@ public class FileOwnerQueryTest extends NbTestCase {
         randomfile = null;
         projfile = null;
         p = null;
-        TestUtil.setLookup(Lookup.EMPTY);
     }
     
     public void testFileOwner() throws Exception {

@@ -7,38 +7,27 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.java.j2seproject.queries;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
 import java.util.Properties;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.modules.java.j2seproject.SourceRootsTest;
-import org.netbeans.modules.java.platform.JavaPlatformProvider;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.modules.SpecificationVersion;
 import org.openide.util.Lookup;
 
 /**
@@ -48,7 +37,7 @@ import org.openide.util.Lookup;
  */
 public class CompiledSourceForBinaryQueryTest extends NbTestCase {
     
-    public CompiledSourceForBinaryQueryTest(java.lang.String testName) {
+    public CompiledSourceForBinaryQueryTest(String testName) {
         super(testName);
     }
     
@@ -66,7 +55,7 @@ public class CompiledSourceForBinaryQueryTest extends NbTestCase {
             new org.netbeans.modules.java.j2seproject.J2SEProjectType(),
             new org.netbeans.modules.java.project.ProjectSourceForBinaryQuery(),
             new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation(),
-        }, CompiledSourceForBinaryQuery.class.getClassLoader());
+        });
         Properties p = System.getProperties();
     }
 

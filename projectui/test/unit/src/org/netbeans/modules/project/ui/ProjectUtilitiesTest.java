@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -20,6 +20,7 @@ import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.TestUtil;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.project.ui.actions.TestSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.filesystems.FileObject;
@@ -35,7 +36,6 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-import org.netbeans.junit.NbTestCase;
 
 /** Tests storing and reloading project's documents in case of open/close project.
  *
@@ -57,11 +57,10 @@ public class ProjectUtilitiesTest extends NbTestCase {
 
     protected void setUp () throws Exception {
         super.setUp ();
-        
-        TestUtil.setLookup (new Object[] { 
-                                TestSupport.testProjectFactory (),
-                                TestSupport.createAuxiliaryConfiguration ()}, 
-                    ProjectUtilitiesTest.class.getClassLoader() );
+        TestUtil.setLookup(new Object[] { 
+            TestSupport.testProjectFactory(),
+            TestSupport.createAuxiliaryConfiguration(),
+        });
                                 
         clearWorkDir ();
         

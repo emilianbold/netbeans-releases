@@ -7,11 +7,11 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.modules.java.j2seproject;
 
+package org.netbeans.modules.java.j2seproject;
 
 import java.io.File;
 import org.w3c.dom.Element;
@@ -29,15 +29,11 @@ import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 
-
-
 public class J2SESharabilityQueryTest extends NbTestCase {
 
-    public J2SESharabilityQueryTest (String testName) {
+    public J2SESharabilityQueryTest(String testName) {
         super(testName);
     }
-
-
 
     private FileObject scratch;
     private FileObject projdir;
@@ -49,13 +45,12 @@ public class J2SESharabilityQueryTest extends NbTestCase {
     private J2SEProject pp;
     private AntProjectHelper helper;
 
-
     protected void setUp() throws Exception {
         super.setUp();
         TestUtil.setLookup(new Object[] {
             new J2SEProjectType(),
             new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation()
-        }, J2SEActionProvider.class.getClassLoader());
+        });
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
         helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj",null,null); //NOI18N

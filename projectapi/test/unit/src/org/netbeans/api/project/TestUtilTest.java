@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -29,6 +29,11 @@ public class TestUtilTest extends NbTestCase {
     
     public TestUtilTest(String name) {
         super(name);
+    }
+    
+    protected void tearDown() throws Exception {
+        TestUtil.setLookup(new Object[0]);
+        super.tearDown();
     }
     
     public void testSetLookup() throws Exception {

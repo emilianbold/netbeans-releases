@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,7 +21,6 @@ import javax.swing.Icon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
-
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
@@ -30,7 +29,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
-
 
 public class FileCommandActionTest extends NbTestCase {
     
@@ -53,8 +51,9 @@ public class FileCommandActionTest extends NbTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        TestUtil.setLookup( new Object[] { TestSupport.testProjectFactory() }, 
-                           ProjectActionTest.class.getClassLoader() );        
+        TestUtil.setLookup(new Object[] {
+            TestSupport.testProjectFactory(),
+        });
         clearWorkDir();
         FileObject workDir = FileUtil.toFileObject(getWorkDir());
     

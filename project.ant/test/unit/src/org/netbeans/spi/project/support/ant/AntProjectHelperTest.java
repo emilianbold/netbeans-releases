@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -25,16 +25,13 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.netbeans.modules.project.ant.Util;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
 import org.openide.util.Mutex;
-import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -87,10 +84,9 @@ public class AntProjectHelperTest extends NbTestCase {
         TestUtil.createFileFromContent(AntProjectHelperTest.class.getResource("data/project.properties"), projdir, "nbproject/project.properties");
         TestUtil.createFileFromContent(AntProjectHelperTest.class.getResource("data/private.properties"), projdir, "nbproject/private/private.properties");
         TestUtil.createFileFromContent(AntProjectHelperTest.class.getResource("data/global.properties"), scratch, "userdir/build.properties");
-        TestUtil.setLookup(Lookups.fixed(new Object[] {
-            new AntBasedProjectFactorySingleton(),
+        TestUtil.setLookup(new Object[] {
             AntBasedTestUtil.testAntBasedProjectType(),
-        }));
+        });
         pm = ProjectManager.getDefault();
         p = pm.findProject(projdir);
         h = (AntProjectHelper)p.getLookup().lookup(AntProjectHelper.class);
@@ -104,7 +100,6 @@ public class AntProjectHelperTest extends NbTestCase {
         p = null;
         h = null;
         l = null;
-        TestUtil.setLookup(Lookup.EMPTY);
         super.tearDown();
     }
 
@@ -718,5 +713,38 @@ public class AntProjectHelperTest extends NbTestCase {
         // XXX test that saving the project fires no additional changes
         // XXX test changes fired if file modified (or created or removed) on disk
     }
+
+    /* XXX unable to simulate #50198 in a test environment:
+    public void testMultithreadedAccessToXmlData() throws Exception {
+        class R implements Runnable {
+            private final int x;
+            public R(int x) {
+                this.x = x;
+            }
+            public void run() {
+                System.out.println("starting #" + x);
+                for (int i = 0; i < 1000; i++) {
+                    Element data = h.getPrimaryConfigurationData(true);
+                    Util.findSubElements(data);
+                    if (i % 100 == 0) {
+                        System.out.println("in the middle of #" + x);
+                        try {
+                            Thread.sleep((long) (Math.random() * 25));
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                System.out.println("finishing #" + x);
+            }
+        }
+        Thread t1 = new Thread(new R(1));
+        Thread t2 = new Thread(new R(2));
+        t1.start();
+        t2.start();
+        t1.join();
+        t2.join();
+    }
+     */
 
 }

@@ -7,14 +7,12 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.spi.project.support.ant;
 
-import java.util.HashMap;
-import java.util.Map;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -58,7 +56,7 @@ public final class SourcesHelperTest extends NbTestCase {
         super.setUp();
         TestUtil.setLookup(new Object[] {
             AntBasedTestUtil.testAntBasedProjectType(),
-        }, SourcesHelperTest.class.getClassLoader());
+        });
         scratch = TestUtil.makeScratchDir(this);
         scratch.createData("otherfile");
         maindir = scratch.createFolder("dir");

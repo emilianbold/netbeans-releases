@@ -15,15 +15,15 @@ package org.netbeans.spi.project.support.ant;
 
 import java.io.File;
 import java.net.URI;
+import java.util.Arrays;
+import java.util.Collections;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 
 /**
  * Test functionality of SimpleAntArtifact.
@@ -43,10 +43,9 @@ public class SimpleAntArtifactTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         scratch = TestUtil.makeScratchDir(this);
-        TestUtil.setLookup(Lookups.fixed(new Object[] {
-            new AntBasedProjectFactorySingleton(),
+        TestUtil.setLookup(new Object[] {
             AntBasedTestUtil.testAntBasedProjectType(),
-        }));
+        });
         pm = ProjectManager.getDefault();
         sisterprojdir = FileUtil.createFolder(scratch, "proj2");
         sisterh = ProjectGenerator.createProject(sisterprojdir, "test");
@@ -76,7 +75,7 @@ public class SimpleAntArtifactTest extends NbTestCase {
         assertEquals("correct artifact location", URI.create("build/proj2.jar"), art.getArtifactLocations()[0]);
         assertEquals("no artifact file yet", 0, art.getArtifactFiles().length);
         FileObject artfile = FileUtil.createData(sisterprojdir, "build/proj2.jar");
-        assertEquals("now have an artifact file", artfile, art.getArtifactFiles()[0]);
+        assertEquals("now have an artifact file", Collections.singletonList(artfile), Arrays.asList(art.getArtifactFiles()));
         assertEquals("correct script location", new File(FileUtil.toFile(sisterprojdir), "build.xml"), art.getScriptLocation());
         assertEquals("no script file yet", null, art.getScriptFile());
         FileObject scriptfile = FileUtil.createData(sisterprojdir, "build.xml");

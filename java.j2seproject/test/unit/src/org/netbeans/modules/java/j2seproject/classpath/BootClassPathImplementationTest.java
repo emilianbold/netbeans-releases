@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,7 +21,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.Specification;
@@ -30,14 +29,11 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.platform.JavaPlatformProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Lookup;
 
@@ -63,9 +59,9 @@ public class BootClassPathImplementationTest extends NbTestCase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        FileObject platforms = TestUtil.makeScratchDir(this);
-        this.defaultPlatformBootRoot = platforms.createFolder("DefaultPlatformBootRoot");
-        this.explicitPlatformBootRoot = platforms.createFolder("ExplicitPlatformBootRoot");
+        scratch = TestUtil.makeScratchDir(this);
+        this.defaultPlatformBootRoot = scratch.createFolder("DefaultPlatformBootRoot");
+        this.explicitPlatformBootRoot = scratch.createFolder("ExplicitPlatformBootRoot");
         ClassPath defBCP = ClassPathSupport.createClassPath(new URL[]{defaultPlatformBootRoot.getURL()});
         ClassPath expBCP = ClassPathSupport.createClassPath(new URL[]{explicitPlatformBootRoot.getURL()});
         tp = new TestPlatformProvider (defBCP, expBCP);
@@ -73,7 +69,7 @@ public class BootClassPathImplementationTest extends NbTestCase {
             new org.netbeans.modules.java.j2seproject.J2SEProjectType(),
             new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation(),
             tp
-        }, BootClassPathImplementation.class.getClassLoader());
+        });
     }
 
     protected void tearDown() throws Exception {
@@ -86,7 +82,6 @@ public class BootClassPathImplementationTest extends NbTestCase {
     
     
     private void prepareProject (String platformName) throws IOException {
-        scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
         AntProjectHelper helper = ProjectGenerator.createProject(projdir, "org.netbeans.modules.java.j2seproject");
         pm = ProjectManager.getDefault();

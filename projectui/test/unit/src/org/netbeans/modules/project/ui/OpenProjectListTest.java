@@ -27,6 +27,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.TestUtil;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.project.ui.actions.TestSupport;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.filesystems.FileObject;
@@ -36,8 +37,6 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.lookup.Lookups;
-
-import org.netbeans.junit.NbTestCase;
 
 /** Tests fix of issue 56454.
  *
@@ -56,11 +55,10 @@ public class OpenProjectListTest extends NbTestCase {
 
     protected void setUp () throws Exception {
         super.setUp ();
-        TestUtil.setLookup (new Object[] { 
-                                TestSupport.testProjectFactory (),
-                                TestSupport.createAuxiliaryConfiguration ()}, 
-                    ProjectUtilitiesTest.class.getClassLoader () );
-                                
+        TestUtil.setLookup(new Object[] { 
+            TestSupport.testProjectFactory(),
+            TestSupport.createAuxiliaryConfiguration(),
+        });
         clearWorkDir ();
         
         ProjectUtilities.OPEN_CLOSE_PROJECT_DOCUMENT_IMPL = handler;

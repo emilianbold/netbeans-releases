@@ -7,9 +7,10 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.java.j2seproject;
 
 import java.net.URL;
@@ -18,7 +19,6 @@ import java.beans.PropertyChangeEvent;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Collections;
-
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -32,14 +32,11 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Document;
 
-
 public class SourceRootsTest extends NbTestCase {
 
-    public SourceRootsTest (java.lang.String testName) {
+    public SourceRootsTest (String testName) {
         super(testName);
     }
-
-
 
     private FileObject scratch;
     private FileObject projdir;
@@ -49,13 +46,12 @@ public class SourceRootsTest extends NbTestCase {
     private J2SEProject pp;
     private AntProjectHelper helper;
 
-
     protected void setUp() throws Exception {
         super.setUp();
         TestUtil.setLookup(new Object[] {
             new org.netbeans.modules.java.j2seproject.J2SEProjectType(),
             new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation()
-        }, J2SEActionProvider.class.getClassLoader());
+        });
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
         helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj",null,null); //NOI18N

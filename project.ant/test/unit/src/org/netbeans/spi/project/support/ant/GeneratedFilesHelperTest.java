@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -20,13 +20,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.netbeans.modules.project.ant.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
 import org.openide.util.Utilities;
-import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -53,10 +50,9 @@ public class GeneratedFilesHelperTest extends NbTestCase {
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
         TestUtil.createFileFromContent(GeneratedFilesHelperTest.class.getResource("data/project.xml"), projdir, "nbproject/project.xml");
-        TestUtil.setLookup(Lookups.fixed(new Object[] {
-            new AntBasedProjectFactorySingleton(),
+        TestUtil.setLookup(new Object[] {
             AntBasedTestUtil.testAntBasedProjectType(),
-        }));
+        });
         pm = ProjectManager.getDefault();
         p = pm.findProject(projdir);
         h = (AntProjectHelper)p.getLookup().lookup(AntProjectHelper.class);
@@ -71,7 +67,6 @@ public class GeneratedFilesHelperTest extends NbTestCase {
         p = null;
         h = null;
         gfh = null;
-        TestUtil.setLookup(Lookup.EMPTY);
         super.tearDown();
     }
     

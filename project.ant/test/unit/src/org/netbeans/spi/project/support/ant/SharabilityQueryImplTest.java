@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -42,7 +42,7 @@ public class SharabilityQueryImplTest extends NbTestCase {
         clearWorkDir();
         TestUtil.setLookup(new Object[] {
             AntBasedTestUtil.testAntBasedProjectType(),
-        }, SharabilityQueryImplTest.class.getClassLoader());
+        });
         FileObject scratch = TestUtil.makeScratchDir(this);
         scratchF = FileUtil.toFile(scratch);
         FileObject projdir = scratch.createFolder("projdir");

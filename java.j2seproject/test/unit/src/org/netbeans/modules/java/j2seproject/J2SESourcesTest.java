@@ -10,13 +10,13 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.java.j2seproject;
 
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
-
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -30,7 +30,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Document;
 
-
 /**
  * Tests J2SESources
  * Tests if SourceForBinaryQuery works fine on external build folder.
@@ -39,11 +38,9 @@ import org.w3c.dom.Document;
  */
 public class J2SESourcesTest extends NbTestCase {
 
-    public J2SESourcesTest (java.lang.String testName) {
+    public J2SESourcesTest(String testName) {
         super(testName);
     }
-
-
 
     private FileObject scratch;
     private FileObject projdir;
@@ -54,13 +51,12 @@ public class J2SESourcesTest extends NbTestCase {
     private J2SEProject pp;
     private AntProjectHelper helper;
 
-
     protected void setUp() throws Exception {
         super.setUp();
         TestUtil.setLookup(new Object[] {
             new org.netbeans.modules.java.j2seproject.J2SEProjectType(),
             new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation()
-        }, J2SEActionProvider.class.getClassLoader());
+        });
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");        
         helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj",null,null); //NOI18N        

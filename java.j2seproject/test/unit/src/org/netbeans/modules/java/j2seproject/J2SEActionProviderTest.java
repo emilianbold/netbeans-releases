@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -23,13 +23,11 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.j2seproject.applet.AppletSupport;
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassChooser;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataFolder;
@@ -42,10 +40,9 @@ import org.openide.util.lookup.Lookups;
  *
  * @author David Konecny
  */
-public class
-        J2SEActionProviderTest extends NbTestCase {
+public class J2SEActionProviderTest extends NbTestCase {
     
-    public J2SEActionProviderTest(java.lang.String testName) {
+    public J2SEActionProviderTest(String testName) {
         super(testName);
     }
 
@@ -73,7 +70,7 @@ public class
         TestUtil.setLookup(new Object[] {
             new org.netbeans.modules.java.j2seproject.J2SEProjectType(),
             new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation()
-        }, J2SEActionProvider.class.getClassLoader());
+        });
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
         helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj","foo.Main","manifest.mf"); //NOI18N

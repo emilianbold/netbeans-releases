@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,9 +16,6 @@ package org.netbeans.spi.project.support.ant;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
-import java.util.Enumeration;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.api.queries.FileBuiltQuery;
@@ -27,7 +24,6 @@ import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.LocalFileSystem;
 import org.openide.loaders.DataObject;
 
 // XXX testChangesFromAntPropertyChanges
@@ -41,7 +37,7 @@ public class GlobFileBuiltQueryTest extends NbTestCase {
     static {
         TestUtil.setLookup(new Object[] {
             AntBasedTestUtil.testAntBasedProjectType(),
-        }, GlobFileBuiltQueryTest.class.getClassLoader());
+        });
     }
     
     public GlobFileBuiltQueryTest(String name) {

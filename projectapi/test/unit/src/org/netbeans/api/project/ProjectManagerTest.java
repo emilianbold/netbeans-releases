@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,7 +24,6 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.projectapi.TimedWeakReference;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 
 // To debug tests add to nbproject/private/private.properties:
 // test-unit-sys-prop.org.netbeans.api.project.ProjectManager.LOG_WARN=true
@@ -70,10 +69,11 @@ public class ProjectManagerTest extends NbTestCase {
         badproject = scratch.createFolder("bad");
         badproject.createFolder("testproject").createData("broken");
         mysteryproject = scratch.createFolder("mystery");
-        TestUtil.setLookup(Lookups.singleton(TestUtil.testProjectFactory()));
+        TestUtil.setLookup(new Object[] {TestUtil.testProjectFactory()});
         pm = ProjectManager.getDefault();
         pm.reset();
         TestUtil.BROKEN_PROJECT_LOAD_LOCK = null;
+        ProjectManager.quiet = true;
     }
     
     protected void tearDown() throws Exception {
@@ -82,7 +82,6 @@ public class ProjectManagerTest extends NbTestCase {
         badproject = null;
         mysteryproject = null;
         pm = null;
-        TestUtil.setLookup(Lookup.EMPTY);
         super.tearDown();
     }
     

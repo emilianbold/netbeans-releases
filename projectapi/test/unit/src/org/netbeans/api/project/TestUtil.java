@@ -7,14 +7,12 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.api.project;
 
-import java.awt.Image;
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +31,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.Repository;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -54,13 +53,13 @@ public final class TestUtil extends ProxyLookup {
     public TestUtil() {
         Assert.assertNull(DEFAULT);
         DEFAULT = this;
-        setLookups(new Lookup[] {
-            Lookups.singleton(TestUtil.class.getClassLoader()),
-        });
+        setLookup(new Object[0]);
     }
     
     /**
      * Set the global default lookup.
+     * Caution: if you don't include Lookups.metaInfServices, you may have trouble,
+     * e.g. {@link #makeScratchDir} will not work.
      */
     public static void setLookup(Lookup l) {
         DEFAULT.setLookups(new Lookup[] {l});
@@ -69,14 +68,16 @@ public final class TestUtil extends ProxyLookup {
     /**
      * Set the global default lookup with some fixed instances including META-INF/services/*.
      */
-    public static void setLookup(Object[] instances, ClassLoader cl) {
+    public static void setLookup(Object[] instances) {
+        ClassLoader l = TestUtil.class.getClassLoader();
         DEFAULT.setLookups(new Lookup[] {
             Lookups.fixed(instances),
-            Lookups.metaInfServices(cl),
-            Lookups.singleton(cl),
+            Lookups.metaInfServices(l),
+            Lookups.singleton(l),
         });
     }
     
+    private static boolean warned = false;
     /**
      * Create a scratch directory for tests.
      * Will be in /tmp or whatever, and will be empty.
@@ -88,9 +89,16 @@ public final class TestUtil extends ProxyLookup {
         assert root.isDirectory() && root.list().length == 0;
         FileObject fo = FileUtil.toFileObject(root);
         if (fo != null) {
-            // Presumably using masterfs.
             return fo;
         } else {
+            if (!warned) {
+                warned = true;
+                System.err.println("No FileObject for " + root + " found.\n" +
+                                    "Maybe you need ${openide/masterfs.dir}/${nb.modules.dir}/org-netbeans-modules-masterfs.jar\n" +
+                                    "in test.unit.run.cp.extra, or make sure Lookups.metaInfServices is included in Lookup.default, so that\n" +
+                                    "Lookup.default<URLMapper>=" + Lookup.getDefault().lookup(new Lookup.Template(URLMapper.class)).allInstances() + " includes MasterURLMapper\n" +
+                                    "e.g. by using TestUtil.setLookup(Object[]) rather than TestUtil.setLookup(Lookup).");
+            }
             // For the benefit of those not using masterfs.
             LocalFileSystem lfs = new LocalFileSystem();
             try {

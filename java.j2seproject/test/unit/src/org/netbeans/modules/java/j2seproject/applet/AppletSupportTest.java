@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.Collection;
 import java.util.List;
 import java.util.Collections;
-
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -36,12 +35,6 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
 import org.netbeans.modules.java.platform.JavaPlatformProvider;
-
-
-
-
-
-
 
 public class AppletSupportTest extends NbTestCase {
 
@@ -62,15 +55,12 @@ public class AppletSupportTest extends NbTestCase {
         JavaPlatform platform2 = new TestPlatform("TP2","tp2",new Specification("j2se", new SpecificationVersion("1.5")));
         JavaPlatform platform3 = new TestPlatform("TP2","tp3",new Specification("j2se", new SpecificationVersion("1.5.1")));
         TestUtil.setLookup(new Object[] {
-            new org.netbeans.modules.java.j2seproject.J2SEProjectType(),
-            new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation(),
             new PlatformProviderImpl(new JavaPlatform[] {
                 platform1,
                 platform2,
                 platform3
-            })
-
-        }, AppletSupportTest.class.getClassLoader());
+            }),
+        });
         scratch = TestUtil.makeScratchDir(this);
         FileObject folderWithSpaces = scratch.createFolder("Folder With Spaces");
         projdir = folderWithSpaces.createFolder("proj");
@@ -91,10 +81,8 @@ public class AppletSupportTest extends NbTestCase {
         scratch = null;
         projdir = null;
         helper = null;
-        TestUtil.setLookup(Lookup.EMPTY);
         super.tearDown();
     }
-
 
     public void testgenerateHtmlFileURL () throws Exception {
         //Tests the JDK issue #6193279

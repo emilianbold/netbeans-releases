@@ -7,12 +7,11 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.spi.java.project.support.ui;
-
 
 import java.awt.datatransfer.Transferable;
 import java.beans.PropertyChangeListener;
@@ -53,6 +52,14 @@ public class PackageViewTest extends NbTestCase {
     
     protected void setUp() throws Exception {
         super.setUp();
+        // XXX causes problems: DataObjectNotFoundException when finding nodes
+        // for folders which do not in fact exist on disk.
+        // Maybe due to differences of behavior between LocalFileSystem and MasterFileSystem?
+        /*
+        TestUtil.setLookup(new Object[] {
+            new VQImpl(),
+        });
+         */
         TestUtil.setLookup( Lookups.fixed( new Object[] { new VQImpl(), PackageViewTest.class.getClassLoader() } ) ); 
         clearWorkDir();
     }

@@ -18,8 +18,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
-import org.netbeans.modules.project.ant.StandardAntArtifactQueryImpl;
 import org.netbeans.spi.project.support.ant.AntBasedTestUtil;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -27,7 +25,6 @@ import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 
 /* XXX tests needed:
  * - testFindArtifactFromNonexistentFile
@@ -57,7 +54,7 @@ public class AntArtifactQueryTest extends NbTestCase {
         TestUtil.setLookup(new Object[] {
             AntBasedTestUtil.testAntBasedProjectType(),
             TestUtil.testProjectFactory(),
-        }, AntArtifactQuery.class.getClassLoader());
+        });
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
         ProjectGenerator.createProject(projdir, "test");

@@ -7,33 +7,23 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.java.j2seproject.queries;
 
-import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URL;
-import junit.framework.*;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.TestUtil;
-import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.modules.java.j2seproject.SourceRootsTest;
-import org.netbeans.spi.java.queries.UnitTestForSourceQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.ProjectGenerator;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Lookup;
 
@@ -44,13 +34,8 @@ import org.openide.util.Lookup;
  */
 public class UnitTestForSourceQueryImplTest extends NbTestCase {
     
-    public UnitTestForSourceQueryImplTest(java.lang.String testName) {
+    public UnitTestForSourceQueryImplTest(String testName) {
         super(testName);
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(UnitTestForSourceQueryImplTest.class);
-        return suite;
     }
     
     private FileObject scratch;
@@ -68,7 +53,7 @@ public class UnitTestForSourceQueryImplTest extends NbTestCase {
             new org.netbeans.modules.java.j2seproject.J2SEProjectType(),
             new org.netbeans.modules.java.project.UnitTestForSourceQueryImpl(),
             new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation()
-        }, UnitTestForSourceQueryImpl.class.getClassLoader());
+        });
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
         helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj",null,null);
@@ -82,7 +67,6 @@ public class UnitTestForSourceQueryImplTest extends NbTestCase {
         scratch = null;
         projdir = null;
         pm = null;
-        TestUtil.setLookup(Lookup.EMPTY);
         super.tearDown();
     }
     

@@ -141,6 +141,9 @@ public final class ProjectManager {
         proj2Factory.clear();
     }
     
+    /** For use from unit tests. */
+    static boolean quiet = false;
+    
     /**
      * Find an open project corresponding to a given project directory.
      * Will be created in memory if necessary.
@@ -282,13 +285,13 @@ public final class ProjectManager {
     // its helperRef cache) then only this second fail is logged, but the cause - 
     // the failure to create project - is never logged. So, better log it here:
                 } catch (Error e) {
-                    ErrorManager.getDefault().notify(e);
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                     throw e;
                 } catch (RuntimeException e) {
-                    ErrorManager.getDefault().notify(e);
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                     throw e;
                 } catch (IOException e) {
-                    ErrorManager.getDefault().notify(e);
+                    if (!quiet) ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                     throw e;
                 }
                 }
