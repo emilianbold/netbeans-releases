@@ -23,6 +23,7 @@ import javax.swing.text.DefaultEditorKit;
 import org.openide.util.actions.SystemAction;
 import org.openide.actions.*;
 import org.openide.nodes.*;
+import org.netbeans.modules.xml.multiview.Error;
 
 /**
  * The ComponentPanel three pane editor. This is basically a container that implements the ExplorerManager
@@ -83,6 +84,10 @@ public class ToolBarDesignEditor extends AbstractDesignEditor implements org.ope
     
     public ErrorPanel getErrorPanel() {
         return errorPanel;
+    }
+    
+    public Error getError() {
+        return(errorPanel==null?null:errorPanel.getError());
     }
     
     private ErrorPanel createErrorPanel() {

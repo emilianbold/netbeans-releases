@@ -45,5 +45,13 @@ public interface NodeSectionPanel {
     /** Scrolls the panel to be visibel in scrollPane.
      */        
     public void scroll();
+    
+    /** Sets panel index.
+     */     
+    void setIndex(int index);
+    
+    /** Gets panel index.
+     */     
+    int getIndex();
 
 }

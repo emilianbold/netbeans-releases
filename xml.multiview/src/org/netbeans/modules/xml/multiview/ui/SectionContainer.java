@@ -26,7 +26,7 @@ import org.openide.nodes.Node;
  *
  * @author  mkuchtiak
  */
-public class SectionContainer extends javax.swing.JPanel implements NodeSectionPanel {
+public class SectionContainer extends javax.swing.JPanel implements NodeSectionPanel, ContainerPanel {
     
     //private HashMap map = new HashMap();
     //private JScrollPane scrollPane;
@@ -36,6 +36,7 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
     private Node root;
     private boolean active;
     private int sectionCount=0;
+    private int index;
     /** Creates new form SectionContainer */
     
     public SectionContainer(SectionView sectionView, Node root, String title) {
@@ -93,18 +94,22 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
 
     /** Maps section to a node
     */
-    public void mapSection(Node key, NodeSectionPanel panel){
+    private void mapSection(Node key, NodeSectionPanel panel){
         sectionView.mapSection(key,panel);
     }
     
-    /** Gets section for a node
+    /** Maps section to a node
     */
+    private void deleteSection(Node key){
+        sectionView.deleteSection(key);
+    }
+    
+    /** Method from ContainerPanel interface */
     public NodeSectionPanel getSection(Node key){
         return sectionView.getSection(key);
     }
     
-    /** Adds new section and maps it to a node
-    */
+    /** Method from ContainerPanel interface */
     public void addSection(NodeSectionPanel section){
         GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -114,9 +119,42 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         contentPanel.add((JPanel)section,gridBagConstraints);  
-        
+        section.setIndex(sectionCount);
         mapSection(section.getNode(), section);
         sectionCount++;
+    }
+    /** Method from ContainerPanel interface */
+    public void removeSection(NodeSectionPanel section) {
+        int panelIndex = section.getIndex();
+        contentPanel.remove((JPanel)section);
+        
+        // the rest components have to be moved up
+        java.awt.Component[] components = contentPanel.getComponents();
+        java.util.AbstractList removedPanels = new java.util.ArrayList(); 
+        for (int i=0;i<components.length;i++) {
+            if (components[i] instanceof NodeSectionPanel) {
+                NodeSectionPanel pan = (NodeSectionPanel)components[i];
+                int index = pan.getIndex();
+                if (index>panelIndex) {
+                    contentPanel.remove((JPanel)pan);
+                    pan.setIndex(index-1);
+                    removedPanels.add(pan);
+                }
+            }
+        }
+        for (int i=0;i<removedPanels.size();i++) {
+            NodeSectionPanel pan = (NodeSectionPanel)removedPanels.get(i);
+            java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+            gridBagConstraints.gridx = 0;
+            gridBagConstraints.gridy = pan.getIndex();
+            gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+            gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+            gridBagConstraints.weightx = 1.0;
+            //gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 6);
+            contentPanel.add((JPanel)pan,gridBagConstraints);
+        }
+        deleteSection(section.getNode());
+        sectionCount--;
     }
     
     /** This method is called from within the constructor to
@@ -221,4 +259,13 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
     private javax.swing.JButton titleButton;
     // End of variables declaration//GEN-END:variables
     
+    /** Method from NodeSectionPanel interface */
+    public void setIndex(int index) {
+        this.index=index;
+    }
+    
+    /** Method from NodeSectionPanel interface */
+    public int getIndex() {
+        return index;
+    }  
 }

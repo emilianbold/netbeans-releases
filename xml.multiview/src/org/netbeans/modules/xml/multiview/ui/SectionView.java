@@ -22,13 +22,23 @@ import org.netbeans.modules.xml.multiview.cookies.SectionFocusCookie;
  *
  * @author mkuchtiak
  */
-public class SectionView extends PanelView implements SectionFocusCookie {
+public class SectionView extends PanelView implements SectionFocusCookie, ContainerPanel {
     private JPanel scrollPanel, filler;
     javax.swing.JScrollPane scrollPane;
     private java.util.Hashtable map;
     private int sectionCount=0;
     private NodeSectionPanel activePanel;
-    boolean sectionSelected; 
+    private CustomPanelFactory factory;
+    boolean sectionSelected;
+    
+    public SectionView(CustomPanelFactory factory) {
+        super();
+        this.factory=factory;
+    }
+    
+    public SectionView() {
+        super();
+    }
     
     public void initComponents() {
         super.initComponents();
@@ -75,19 +85,28 @@ public class SectionView extends PanelView implements SectionFocusCookie {
         }
     }
     
-    public void mapSection(NodeSectionPanel panel){
-        mapSection(panel.getNode(),panel);
+    void mapSection(Node key, NodeSectionPanel panel){
+        map.put(key,panel);
     }
     
-    public void mapSection(Node key, NodeSectionPanel panel){
-        map.put(key,panel);
+    void deleteSection(Node key){
+        map.remove(key);
     }
     
     public NodeSectionPanel getSection(Node key){
         return (NodeSectionPanel)map.get(key);
-    }    
+    }
     
-    public void addSection(NodeSectionPanel section){
+    public void addSection(NodeSectionPanel section, boolean open) {
+        addSection(section);
+        if (open) {
+            section.open();
+            section.scroll();
+            section.setActive(true);
+        }
+    }
+    
+    public void addSection(NodeSectionPanel section) {
         scrollPanel.remove(filler);
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -96,16 +115,64 @@ public class SectionView extends PanelView implements SectionFocusCookie {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         //gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 6);
-        scrollPanel.add((JPanel)section,gridBagConstraints);  
+        scrollPanel.add((JPanel)section,gridBagConstraints);
+        section.setIndex(sectionCount);
         
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = sectionCount+1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weighty = 2.0;
-        scrollPanel.add(filler,gridBagConstraints);  
+        //gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 6);
+        scrollPanel.add(filler,gridBagConstraints);
         
         mapSection(section.getNode(), section);
         sectionCount++;
+    }
+    
+    public void removeSection(Node key) {
+        NodeSectionPanel section = getSection(key);
+        java.awt.Container cont = ((java.awt.Component)section).getParent();
+        System.out.println("1:cont="+cont);
+        while (cont!=null && !(cont instanceof ContainerPanel)) {
+            cont = cont.getParent();
+             System.out.println("2:cont="+cont);
+        }
+        if ( cont!= null) {
+            ((ContainerPanel)cont).removeSection(section);
+        }
+    }
+    
+    public void removeSection(NodeSectionPanel panel){
+        int panelIndex = panel.getIndex();
+        scrollPanel.remove((JPanel)panel);
+        
+        // the rest components have to be moved up
+        java.awt.Component[] components = scrollPanel.getComponents();
+        java.util.AbstractList removedPanels = new java.util.ArrayList(); 
+        for (int i=0;i<components.length;i++) {
+            if (components[i] instanceof NodeSectionPanel) {
+                NodeSectionPanel pan = (NodeSectionPanel)components[i];
+                int index = pan.getIndex();
+                if (index>panelIndex) {
+                    scrollPanel.remove((JPanel)pan);
+                    pan.setIndex(index-1);
+                    removedPanels.add(pan);
+                }
+            }
+        }
+        for (int i=0;i<removedPanels.size();i++) {
+            NodeSectionPanel pan = (NodeSectionPanel)removedPanels.get(i);
+            java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+            gridBagConstraints.gridx = 0;
+            gridBagConstraints.gridy = pan.getIndex();
+            gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+            gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+            gridBagConstraints.weightx = 1.0;
+            //gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 6);
+            scrollPanel.add((JPanel)pan,gridBagConstraints);
+        }
+        deleteSection(panel.getNode());
+        sectionCount--;
     }
 
     public void setActivePanel(NodeSectionPanel activePanel) {
@@ -159,6 +226,14 @@ public class SectionView extends PanelView implements SectionFocusCookie {
             }
         }
         return null;
+    }
+    
+    CustomPanelFactory getCustomPanelFactory() {
+        return factory;
+    }
+    
+    public void setCustomPanelFactory(CustomPanelFactory factory) {
+        this.factory=factory;
     }
     
 }

@@ -24,49 +24,48 @@ import org.netbeans.modules.xml.multiview.cookies.ErrorComponentContainer;
  */
 public class ErrorPanel extends javax.swing.JPanel {
     
-    private javax.swing.JButton errorButton;
-    private javax.swing.JComponent focusableComponent;
-    private ErrorComponentContainer errorContainer;
-    private String errorId;
+    private Error error;
+    private ErrorLabel errorLabel;
+    //private ErrorComponentContainer errorContainer;
+    private String errorMessage;
     
     
     /** Creates new form ErrorPanel */
     public ErrorPanel() {
         initComponents();
-        errorButton = new ErrorButton();
-        errorButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                javax.swing.JComponent comp = ErrorPanel.this.getFocusableComponent();
-                if (comp!=null) {
-                    comp.requestFocus();
-                    return;
-                }
-                ErrorComponentContainer errorCont = ErrorPanel.this.getErrorComponentContainer();
-                if (errorCont!=null) {
-                    if (errorCont instanceof SectionPanel) {
-                        SectionPanel sectPanel = (SectionPanel)errorCont;
-                        if (sectPanel.getCustomPanel()==null) sectPanel.open();
-                        sectPanel.scroll();                   
+        
+        errorLabel = new ErrorLabel();
+        errorLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                Error error = getError();
+                if (error!=null) {
+                    ErrorComponentContainer errorCont = error.getErrorComponentContainer();
+                    if (errorCont!=null) {
+                        if (errorCont instanceof SectionPanel) {
+                            SectionPanel sectPanel = (SectionPanel)errorCont;
+                            if (sectPanel.getCustomPanel()==null) sectPanel.open();
+                            sectPanel.scroll();                   
+                        }
+                        javax.swing.JComponent errorComp = errorCont.getErrorComponent(error.getErrorId());
+                        if (errorComp!=null) errorComp.requestFocus();
                     }
-                    javax.swing.JComponent errorComp = errorCont.getErrorComponent(ErrorPanel.this.getErrorId());
-                    if (errorComp!=null) errorComp.requestFocus();
                 }
             }
         });
-        add(errorButton,java.awt.BorderLayout.CENTER);
+        add(errorLabel,java.awt.BorderLayout.CENTER);
         
     }
-    
-    public javax.swing.JComponent getFocusableComponent() {
-        return focusableComponent;
+
+    public String getErrorMessage() {
+        return errorMessage;
     }
-    
+    /*
     public ErrorComponentContainer getErrorComponentContainer() {
         return errorContainer;
     }
-    
-    public String getErrorId() {
-        return errorId;
+    */
+    public Error getError() {
+        return error;
     }
     
     /** This method is called from within the constructor to
@@ -88,54 +87,52 @@ public class ErrorPanel extends javax.swing.JPanel {
     public void setError(Error error) {
         switch (error.getErrorType()) {
             case Error.ERROR_MESSAGE : {
-                errorButton.setText("Error: "+error.getErrorMessage());
+                errorMessage="Error: "+error.getErrorMessage();
                 break;
             }
             case Error.WARNING_MESSAGE : {
-                errorButton.setText("Warning: "+error.getErrorMessage());
+                errorMessage="Warning: "+error.getErrorMessage();
                 break;
             }
             case Error.MISSING_VALUE_MESSAGE : {
-                System.out.println("MissingValue");
-                errorButton.setText("Missing Value: "+error.getErrorMessage());
+                errorMessage="Missing Value: "+error.getErrorMessage();
                 break;
             }            
             case Error.DUPLICATE_VALUE_MESSAGE : {
-                errorButton.setText("Duplicate Value: "+error.getErrorMessage());
+                errorMessage="Duplicate Value: "+error.getErrorMessage();
                 break;
             }
         }
-        focusableComponent = error.getFocusableComponent();
-        errorContainer = error.getErrorComponentContainer();
-        errorId = error.getErrorId();
-        errorButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/xml/multiview/resources/error-glyph.gif")));
+        this.error=error;
+        //errorContainer = error.getErrorComponentContainer();
+        
+        errorLabel.setText(errorMessage, (error.getErrorComponentContainer()==null?false:true));
+        errorLabel.setIcon(new javax.swing.ImageIcon(
+            getClass().getResource("/org/netbeans/modules/xml/multiview/resources/error-glyph.gif"))); //NOI18N
     }
     
     public void clearError() {
-        //errorButton.setVisible(false);
-        errorButton.setIcon(null);
-        errorButton.setText("");
+        error=null;
+        errorLabel.setIcon(null);
+        errorLabel.setText(" ");
+        //errorContainer=null;
+        errorMessage="";
     }
     
-    private class ErrorButton extends javax.swing.JButton {
-    
-        /** Creates a new instance of LinkButton */
-        public ErrorButton() {
+    private class ErrorLabel extends javax.swing.JLabel {
+        ErrorLabel() {
             super();
             //setForeground(SectionVisualTheme.hyperlinkColor);
             setForeground(UIManager.getDefaults().getColor("ToolBar.dockingForeground")); //NOI18N
             setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-            setMargin(new java.awt.Insets(2, 2, 2, 2));
-            setText("");
-            setFocusPainted(false);
-            setOpaque(false);
+            setText(" "); //NOI18N
         }
-
-        public void setText(String text) {
-            if (text.length()==0) {
-                super.setText(" ");
-            } else super.setText("<html><u>"+text+"</u></html>");
-        }        
+        
+        void setText(String text, boolean link) {
+            if (link) setText("<html><u>"+text+"</u></html>"); //NOI18N
+            else setText(text);
+        }
+       
     }
     
 

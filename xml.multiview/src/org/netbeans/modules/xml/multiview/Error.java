@@ -22,29 +22,59 @@ import org.netbeans.modules.xml.multiview.cookies.ErrorComponentContainer;
  */
 public class Error {
 
+    public static final int TYPE_FATAL=0;
+    public static final int TYPE_WARNING=1;
+    
     public static final int ERROR_MESSAGE=0;
     public static final int WARNING_MESSAGE=1;
     public static final int MISSING_VALUE_MESSAGE=2;
     public static final int DUPLICATE_VALUE_MESSAGE=3;
 
     private int errorType;
+    private int severityLevel;
     private String errorMessage, errorId;
-    javax.swing.JComponent focusableComponent;
-    ErrorComponentContainer errorContainer;
-
+    private javax.swing.JComponent focusableComponent;
+    private ErrorComponentContainer errorContainer;
+    
+    /*
     public Error(int errorType, String errorMessage, javax.swing.JComponent focusableComponent) {
+        this(TYPE_WARNING, errorType, errorMessage, focusableComponent);
+    }
+
+    public Error(int severityLevel, int errorType, String errorMessage, javax.swing.JComponent focusableComponent) {
+        this.severityLevel=severityLevel;
         this.errorType=errorType;
         this.errorMessage=errorMessage;
         this.focusableComponent=focusableComponent;
     }
+    */
+    public Error(int errorType, String errorMessage, javax.swing.JComponent focusableComponent) {
+        this(TYPE_WARNING ,errorType, errorMessage, focusableComponent);
+    }
+        
+    public Error(int severityLevel, int errorType, String errorMessage, javax.swing.JComponent focusableComponent) {
+        this.severityLevel=severityLevel;
+        this.errorType=errorType;
+        this.errorMessage=errorMessage;
+        this.focusableComponent=focusableComponent;
+    }  
     
     public Error(int errorType, String errorMessage, ErrorComponentContainer errorContainer, String errorId) {
+        this(TYPE_WARNING,errorType, errorMessage, errorContainer, errorId);
+    }   
+    
+    public Error(int severityLevel, int errorType, String errorMessage, ErrorComponentContainer errorContainer, String errorId) {
+        this.severityLevel=severityLevel;
         this.errorType=errorType;
         this.errorMessage=errorMessage;
         this.errorContainer=errorContainer;
         this.errorId=errorId;
     }
 
+    public int getSeverityLevel() {
+        return severityLevel;
+    }
+    
     public int getErrorType() {
         return errorType;
     }
@@ -56,13 +86,17 @@ public class Error {
     public javax.swing.JComponent getFocusableComponent() {
         return focusableComponent;
     }
-    
+
     public ErrorComponentContainer getErrorComponentContainer() {
         return errorContainer;
     }
     
     public String getErrorId() {
         return errorId;
+    }
+    
+    public boolean isEditError() {
+        return (focusableComponent!=null);
     }
     
 }

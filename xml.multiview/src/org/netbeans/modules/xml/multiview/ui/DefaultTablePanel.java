@@ -96,15 +96,14 @@ public class DefaultTablePanel extends javax.swing.JPanel {
         );
         if (reordable) {
             moveUpButton = new JButton(NbBundle.getMessage(DefaultTablePanel.class,"LBL_Move_Up"));
+            moveUpButton.setMnemonic(org.openide.util.NbBundle.getMessage(DefaultTablePanel.class, "LBL_Move_Up_mnem").charAt(0));
             moveDownButton = new JButton(NbBundle.getMessage(DefaultTablePanel.class,"LBL_Move_Down"));
+            moveDownButton.setMnemonic(org.openide.util.NbBundle.getMessage(DefaultTablePanel.class, "LBL_Move_Down_mnem").charAt(0));
             moveUpButton.setEnabled(false);
             moveDownButton.setEnabled(false);
             buttonPanel.add(moveUpButton);
             buttonPanel.add(moveDownButton);
         }
-        addButton.setText(NbBundle.getMessage(DefaultTablePanel.class,"LBL_New"));
-        editButton.setText(NbBundle.getMessage(DefaultTablePanel.class,"LBL_Edit"));
-        removeButton.setText(NbBundle.getMessage(DefaultTablePanel.class,"LBL_Remove"));
     }
     
     /** This method is called from within the constructor to
@@ -124,11 +123,17 @@ public class DefaultTablePanel extends javax.swing.JPanel {
 
         setBackground(new java.awt.Color(255, 255, 255));
         buttonPanel.setBackground(new java.awt.Color(255, 255, 255));
+        addButton.setMnemonic(org.openide.util.NbBundle.getMessage(DefaultTablePanel.class, "LBL_Add_mnem").charAt(0));
+        addButton.setText(org.openide.util.NbBundle.getBundle(DefaultTablePanel.class).getString("LBL_Add"));
         buttonPanel.add(addButton);
 
+        editButton.setMnemonic(org.openide.util.NbBundle.getMessage(DefaultTablePanel.class, "LBL_Edit_mnem").charAt(0));
+        editButton.setText(org.openide.util.NbBundle.getBundle(DefaultTablePanel.class).getString("LBL_Edit"));
         editButton.setEnabled(false);
         buttonPanel.add(editButton);
 
+        removeButton.setMnemonic(org.openide.util.NbBundle.getMessage(DefaultTablePanel.class, "LBL_Remove_mnem").charAt(0));
+        removeButton.setText(org.openide.util.NbBundle.getBundle(DefaultTablePanel.class).getString("LBL_Remove"));
         removeButton.setEnabled(false);
         buttonPanel.add(removeButton);
 
@@ -182,5 +187,9 @@ public class DefaultTablePanel extends javax.swing.JPanel {
         label.setFont(new java.awt.Font("Dialog", 0, 14)); // NOI18N
         label.setBorder(new javax.swing.border.EmptyBorder(5,5,5,0));
         add(label, java.awt.BorderLayout.NORTH);
+    }
+    
+    public javax.swing.JTable getTable() {
+        return jTable1;
     }
 }
