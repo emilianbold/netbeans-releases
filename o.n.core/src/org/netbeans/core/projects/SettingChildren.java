@@ -16,8 +16,11 @@ package org.netbeans.core.projects;
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.*;
-import org.openide.loaders.InstanceDataObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataFolder;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -48,10 +51,19 @@ public final class SettingChildren extends FilterNode.Children {
     public SettingChildren (Node original) {
         super (original);
     }
-    
+
     protected Node copyNode (Node node) {
-        InstanceDataObject ido = (InstanceDataObject) node.getCookie (InstanceDataObject.class);
-        return ido != null ? new SettingFilterNode (node) : 
+        boolean filter = false;
+        try {
+            DataObject d = (DataObject) node.getCookie (DataObject.class);
+            DataFolder folder = (DataFolder) node.getCookie (DataFolder.class);
+            FileSystem fs = d == null || folder != null ? null : d.getPrimaryFile ().getFileSystem ();
+            filter = fs == null ? false : fs.equals (TopManager.getDefault ().getRepository ().getDefaultFileSystem ());
+        } catch (FileStateInvalidException e) {
+            // ignore
+        }
+
+        return filter ? new SettingFilterNode (node) : 
             new FilterNode (node, node.isLeaf() ? Children.LEAF : new SettingChildren (node));
     }
 
@@ -250,7 +262,7 @@ public final class SettingChildren extends FilterNode.Children {
         public SettingFilterNode (Node original) {
             super (original);
 
-            FileObject pf = ((InstanceDataObject) getCookie (InstanceDataObject.class)).getPrimaryFile ();
+            FileObject pf = ((DataObject) getCookie (DataObject.class)).getPrimaryFile ();
             weakL = new FSL (this);
             FileStateManager.getDefault ().addFileStatusListener (weakL, pf);
         }
@@ -285,7 +297,7 @@ public final class SettingChildren extends FilterNode.Children {
             hidden.setHidden (!Boolean.getBoolean ("netbeans.options.sheet"));
             s.put (hidden);
 
-            FileObject pf = ((InstanceDataObject) getCookie (InstanceDataObject.class)).getPrimaryFile ();
+            FileObject pf = ((DataObject) getCookie (DataObject.class)).getPrimaryFile ();
             
             hidden.put (new IndicatorProperty (pf));
             hidden.put (new FileStateProperty (pf, FileStateManager.LAYER_PROJECT, PROP_LAYER_PROJECT, false));
