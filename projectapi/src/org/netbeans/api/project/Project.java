@@ -51,13 +51,15 @@ public interface Project extends Lookup.Provider {
      * object in lookup (e.g. <code>ExtensibleMetadataProvider</code>) but in most
      * cases you should not; in the case of queries, always call the static query
      * API helper method, rather than looking for the query implementation objects
-     * yourself.</p>
+     * yourself. In the case of <code>ProjectInformation</code> and <code>Sources</code>,
+     * use {@link ProjectUtils} rather than directly searching the project lookup.
+     * </p>
      * <p>The following abilities are recommended:</p>
      * <ol>
-     * <li>{@link org.netbeans.spi.project.ProjectInformation}</li>
+     * <li>{@link org.netbeans.api.project.ProjectInformation}</li>
      * <li><a href="@PROJECTS/PROJECTUIAPI@/org/netbeans/spi/project/ui/LogicalViewProvider.html"><code>LogicalViewProvider</code></a></li>
      * <li><a href="@PROJECTS/PROJECTUIAPI@/org/netbeans/spi/project/ui/CustomizerProvider.html"><code>CustomizerProvider</code></a></li>
-     * <li>{@link org.netbeans.spi.project.Sources}</li>
+     * <li>{@link org.netbeans.api.project.Sources}</li>
      * <li>{@link org.netbeans.spi.project.ActionProvider}</li>
      * <li>{@link org.netbeans.spi.project.SubprojectProvider}</li>
      * <li>{@link org.netbeans.spi.project.AuxiliaryConfiguration}</li>

@@ -19,9 +19,9 @@ import org.netbeans.api.project.Project;
 
 /**
  * General information about a project.
+ * Use {@link ProjectUtils#getInformation} as a client.
+ * Use {@link Project#getLookup} as a provider.
  * @author Jesse Glick
- * @see Project#getLookup
- * @see ProjectUtils#getInformation
  */
 public interface ProjectInformation {
 

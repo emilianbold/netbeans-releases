@@ -19,14 +19,13 @@ import org.openide.filesystems.FileObject;
 /**
  * Optional interface for a project to enumerate folders containing sources
  * of various kinds.
- * If not present in the project's lookup, a sensible default is
- * {@link org.netbeans.spi.project.support.GenericSources#genericOnly}.
+ * Use {@link ProjectUtils#getSources} as a client.
+ * Use {@link Project#getLookup} as a provider.
  * <p class="nonnormative">
- * May be used by new-from-template wizards, find-in-files, etc.
+ * May be used by the New File wizard, Find in Files, to-do task scanning,
+ * the Files tab, etc.
  * </p>
- * @see org.netbeans.api.project.Project#getLookup
  * @see <a href="@ANT/PROJECT@/org/netbeans/spi/project/support/ant/SourcesHelper.html"><code>SourcesHelper</code></a>
- * @see org.netbeans.api.java.project.JavaProjectConstants#SOURCES_TYPE_JAVA
  * @author Jesse Glick
  */
 public interface Sources {
@@ -40,7 +39,8 @@ public interface Sources {
     
     /**
      * Find all root source folders matching a given type.
-     * @param type a kind of folder, e.g. {@link #TYPE_GENERIC}
+     * @param type a kind of folder, e.g. {@link #TYPE_GENERIC} or
+     *             {@link org.netbeans.api.java.project.JavaProjectConstants#SOURCES_TYPE_JAVA}
      * @return a list of top-level source folders of that kind (may be empty but not null)
      */
     SourceGroup[] getSourceGroups(String type);

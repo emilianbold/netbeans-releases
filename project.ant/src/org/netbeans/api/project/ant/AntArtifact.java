@@ -53,7 +53,8 @@ public abstract class AntArtifact {
      * <p>
      * Particular type identifiers should be agreed upon between
      * providers and clients.
-     * {@link #TYPE_JAR} is predefined for convenience.
+     * For example, {@link JavaProjectConstants.ARTIFACT_TYPE_JAR}
+     * is defined for JAR outputs.
      * Others may be defined as needed; for example, tag library JARs,
      * WARs, EJB JARs, deployment descriptor fragments, etc.
      * XXX format - NMTOKEN maybe
