@@ -44,12 +44,12 @@
    <i>base-dir</i><tt></tt> directory.
 </p>
 <p>You can edit the <tt>server.xml</tt> file that is in the <i>base-dir</i><tt>/conf</tt> directory
-by using the Tomcat Manager or you can edit the file by hand. Be aware that you hand-edit the <tt>server.xml
+by using the Tomcat Admintool or you can edit the file by hand. Be aware that you hand-edit the <tt>server.xml
 </tt> file at your own risk; the IDE cannot repair a damaged <tt>server.xml</tt> 
 file. You are strongly encouraged to create a backup version of your working 
 <tt>server.xml</tt> file before beginning to edit by hand. It is recommended that only advanced users
 edit the <tt>server.xml</tt> file by hand.</p>
-<p><b>To edit the server.xml file in the Tomcat Manager:</b>
+<p><b>To edit the server.xml file in the Tomcat Admintool:</b>
 <ol><li>In the Runtime window, expand the Server Registry node and the Tomcat 5 Servers node.</li>
 <li>If the text to the right of the Tomcat instance node does not end with "[running]",
 start the server by right-clicking the Tomcat instance node and choosing Start/Stop Server.
@@ -60,6 +60,9 @@ Server Administration Tool opens in the IDE's default web browser.</li>
 <li>Type a User Name and Password for a Tomcat user to whom the "admin" role has been assigned. Click login.
 The "Tomcat Web Server Administration Tool" (the Admin tool) should open
 in the IDE's default web browser.</li>
+<li>Make your changes. For example, add a data source to a context.</li>
+<li>Click Save. Then click Commit Changes. Then click Log Out.</li>
+</ol>
 
 <table>
   <tr> 
