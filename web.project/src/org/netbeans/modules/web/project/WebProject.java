@@ -402,17 +402,21 @@ public final class WebProject implements Project, AntProjectListener, FileChange
     }
 
     private void checkLibraryFolder (FileObject fo) {
+        if (!FileUtil.isArchiveFile(fo))
+            return;
+        
         if (fo.getParent ().equals (libFolder)) {
-            WebProjectProperties wpp = getWebProjectProperties();
-            List cpItems = (List) wpp.get (WebProjectProperties.JAVAC_CLASSPATH);
-            if (addLibrary (cpItems, fo)) {
-                wpp.put (WebProjectProperties.JAVAC_CLASSPATH, cpItems);
-                wpp.store ();
-                try {
-                    ProjectManager.getDefault ().saveProject (this);
-                } catch (IOException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                }
+            WebProjectClassPathExtender cpExt = (WebProjectClassPathExtender)getLookup ().lookup (WebProjectClassPathExtender.class);
+            if (cpExt == null) {
+                ErrorManager.getDefault().log ("WebProjectClassPathExtender not found in the project lookup of project: " + getProjectDirectory().getPath()); //NOI18N
+                return;
+            }
+
+            try {
+                cpExt.addArchiveFile(fo);
+            }
+            catch (IOException e) {
+                ErrorManager.getDefault().notify(e);
             }
         }
     }
@@ -542,36 +546,6 @@ public final class WebProject implements Project, AntProjectListener, FileChange
         
     }
     
-    private boolean addLibrary (List cpItems, FileObject lib) {
-        boolean needsAdding = true;
-        if (!lib.getExt().equalsIgnoreCase("jar") && !lib.getExt().equalsIgnoreCase("zip")) {
-            return false;
-        }
-        for (Iterator vcpsIter = cpItems.iterator (); vcpsIter.hasNext ();) {
-            ClassPathSupport.Item vcpi = (ClassPathSupport.Item) vcpsIter.next ();
-
-            if (vcpi.getType () != ClassPathSupport.Item.TYPE_JAR) {
-                continue;
-            }
-            FileObject fo = helper.resolveFileObject(helper.getStandardPropertyEvaluator ().evaluate (vcpi.getEvaluated ()));
-            if (lib.equals (fo)) {
-                needsAdding = false;
-                break;
-            }
-        }
-        if (needsAdding) {
-            String file = "${"+WebProjectProperties.LIBRARIES_DIR+"}/"+lib.getNameExt ();
-            String eval = helper.getStandardPropertyEvaluator ().evaluate (file);
-            File f = null;
-            if (eval != null) {
-                f = helper.resolveFile(eval);
-            }
-            ClassPathSupport.Item cpItem = ClassPathSupport.Item.create ( f, null, ClassPathSupport.Item.PATH_IN_WAR_LIB);
-            cpItems.add (cpItem);
-        }
-        return needsAdding;
-    }
-    
     private final class ProjectOpenedHookImpl extends ProjectOpenedHook {
         
         ProjectOpenedHookImpl() {}
@@ -595,8 +569,15 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                     WebProjectClassPathExtender cpExt = (WebProjectClassPathExtender) WebProject.this.getLookup().lookup(WebProjectClassPathExtender.class);
                     libFolder = helper.resolveFileObject(libFolderName);
                     if (cpExt != null) {
-                        FileObject libs [] = libFolder.getChildren ();
-                        cpExt.addArchiveFiles(WebProjectProperties.JAVAC_CLASSPATH, libs, ClassPathSupport.TAG_WEB_MODULE_LIBRARIES);
+                        FileObject children [] = libFolder.getChildren ();
+                        List libs = new LinkedList();
+                        for (int i = 0; i < children.length; i++) {
+                            if (FileUtil.isArchiveFile(children[i]))
+                                libs.add(children[i]);
+                        }
+                        FileObject[] libsArray = new FileObject[libs.size()];
+                        libs.toArray(libsArray);
+                        cpExt.addArchiveFiles(WebProjectProperties.JAVAC_CLASSPATH, libsArray, ClassPathSupport.TAG_WEB_MODULE_LIBRARIES);
                         libFolder.addFileChangeListener (WebProject.this);
                     }
                     else
