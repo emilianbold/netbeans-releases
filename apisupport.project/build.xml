@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- You may freely edit this file. -->
+<!-- The names of existing targets are significant to the IDE. -->
+<project basedir="." default="netbeans" name="apisupport/project">
+    <target description="Build complete module." name="netbeans">
+        <ant target="netbeans" antfile="nbproject/build-impl.xml"/>
+    </target>
+    <target name="compile-single">
+        <ant target="compile-single" antfile="nbproject/build-impl.xml"/>
+    </target>
+    <target description="Reload module from within IDE." name="reload">
+        <ant target="reload" antfile="nbproject/build-impl.xml"/>
+    </target>
+    <target description="Build NBM archive." name="nbm">
+        <ant target="nbm" antfile="nbproject/build-impl.xml"/>
+    </target>
+    <target description="Clean build products." name="clean">
+        <ant target="clean" antfile="nbproject/build-impl.xml"/>
+    </target>
+</project>

@@ -22,11 +22,11 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
  * Factory for NetBeans module projects.
  * @author Jesse Glick
  */
-public class NbModuleProjectType implements AntBasedProjectType {
+public final class NbModuleProjectType implements AntBasedProjectType {
     
     private static final String TYPE = "org.netbeans.modules.apisupport.project"; // NOI18N
     private static final String NAME_SHARED = "data"; // NOI18N
-    private static final String NAMESPACE_SHARED = "http://www.netbeans.org/ns/nb-module-project/1"; // NOI18N
+    static final String NAMESPACE_SHARED = "http://www.netbeans.org/ns/nb-module-project/1"; // NOI18N
     private static final String NAME_PRIVATE = "data"; // NOI18N
     private static final String NAMESPACE_PRIVATE = "http://www.netbeans.org/ns/nb-module-project-private/1"; // NOI18N
     
