@@ -38,6 +38,7 @@ public class FormDataLoader extends JavaDataLoader {
     setActions(new SystemAction[] {
       SystemAction.get (OpenAction.class),
       SystemAction.get (CustomizeBeanAction.class),
+      SystemAction.get (FileSystemAction.class),
       null,
       SystemAction.get (CompileAction.class),
       null,
@@ -142,6 +143,8 @@ public class FormDataLoader extends JavaDataLoader {
 
 /*
  * Log
+ *  18   Gandalf   1.17        8/31/99  Ian Formanek    Correctly provides 
+ *       FileSystemAction on its data objects
  *  17   Gandalf   1.16        8/2/99   Ian Formanek    Fixes potential 
  *       deserialization problem
  *  16   Gandalf   1.15        7/20/99  Ian Formanek    

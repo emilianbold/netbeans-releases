@@ -36,6 +36,7 @@ public class URLDataLoader extends UniFileLoader {
     setActions(new SystemAction[] {
       SystemAction.get(OpenAction.class),
       SystemAction.get(OpenInNewWindowAction.class),
+      SystemAction.get(FileSystemAction.class),
       null,
       SystemAction.get(EditAction.class),
       null,
@@ -71,6 +72,8 @@ public class URLDataLoader extends UniFileLoader {
 
 /*
  * Log
+ *  7    Gandalf   1.6         8/31/99  Ian Formanek    Correctly provides 
+ *       FileSystemAction on its data objects
  *  6    Gandalf   1.5         7/11/99  Ian Formanek    employed EditAction
  *  5    Gandalf   1.4         6/9/99   Ian Formanek    ToolsAction
  *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
