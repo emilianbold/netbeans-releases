@@ -17,21 +17,66 @@
 
 <h2>Generating CMP Entity Beans from a Database</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
+<p>In addition to generating CMP <a href="../general/about_entity_beans.html">entity 
+  beans</a> from scratch, you can also generate a set of CMP entity beans for 
+  an existing database. You can generate CMP entity beans from an existing database 
+  connection or from a database schema.</p>
 <ol>
-  <li>In the Projects window, select any existing EJB module project. </li>
-  <li>If the PointBase database server is not running, choose Tools <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;PointBase 
-    Database <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Start 
-    Local PointBase Database. The Output window shows any errors (why would it 
-    fail? What would it look like?)</li>
-  <li>Choose File <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;New 
-    (Ctrl-N) from the main window.</li>
-  <li>From the Enterprise category, select Entity Beans from Database.</li>
-  <li>Follow the directions in the rest of the wizard.</li>
+  <li>Make sure that you have access to the database source from which you want 
+    to generate: 
+    <ul>
+      <li>If you want to generate entity beans from an existing database connection, 
+        make sure the database is running and you have 
+		<a href="nbdocs://org.netbeans.modules.db/org/netbeans/modules/db/docs/connectdb.html">registered a connection</a> 
+        to it in the Runtime window.</li>
+      <li>If you want to use a database schema, make sure the database schema 
+        file exists in your project's <tt>conf</tt> folder.</li>
+    </ul>
+  </li>
+  <li>Right-click the EJB module project node in the Projects window and choose 
+    New <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Entity 
+    Beans from Database.</li>
+  <li>Select the database source: 
+    <ul>
+      <li><b>JDBC Connection.</b> The combo box lists all your registered database 
+        connections. You can add a database connection by choosing Add Connection 
+        from the combo box.</li>
+      <li><b>Database Schema.</b> The combo box lists all of the database schema 
+        files in your project's <tt>conf</tt> folder. If your project does not 
+        contain any database schema files, this option is disabled.</li>
+    </ul>
+  </li>
+  <li>In the Location combo box, select the source root to which you want to add 
+    the enterprise beans .</li>
+  <li>In the Package combo box, select an existing package or type a new package 
+    name.</li>
+  <li>Specify whether to generate finder methods for all CMP fields. </li>
+  <li>Specify whether to add the CMP Fields and CMR fields to the local interfaces. 
+    (Why would you not want to?)</li>
+  <li>Click Next.</li>
+  <li>Select any table in from the list on the left and click Add. Then click 
+    Finish. </li>
 </ol>
 <p>When you generate entity beans from a database, the IDE does the following: 
 </p>
 <ul>
-  <li>To come</li>
+  <li>If creating the entity beans from a database connection, grabs the database 
+    structure and stores it in a database schema file in your project's <tt>conf</tt> 
+    folder.</li>
+  <li>Creates an entity bean each of the selected tables and any tables the selected 
+    tables reference. A node for each entity bean is displayed in the project's 
+    Enterprise Beans node. By default, the generated entity beans only have local 
+    interfaces. Each entity bean contains a CMP field for each column in the table 
+    and a CMR field for any column that references another table. </li>
+  <li>Configures any container-managed relationships in the EJB module's <tt>ejb-jar.xml</tt> 
+    deployment descriptor. You can view and edit relationships by expanding the 
+    project's Configuration Files node, double-clicking <tt>ejb-jar.xml</tt>, 
+    and clicking CMP Relationships in the top of the visual editor.</li>
+  <li>Creates a <tt>sun-cmp-mappings.xml</tt> file in your configuration files 
+    folder that contains CMP mapping information for the entity beans. The IDE 
+    maps all CMP fields to the correct columns in the database. You can view and 
+    edit CMP mappings by double-clicking <tt>sun-ejb-jar.xml</tt> or <tt>sun-cmp-mappings.xml</tt>, 
+    selecting the bean in the visual editor, and selecting the CMP Mapping tab.</li>
 </ul>
 <table border="0">
   <tr>
@@ -45,7 +90,8 @@
       <a href="../../web/create/about/about_create_webapps.html">About Creating 
       Web Applications</a><br>
       <a href="call_ejb.html">Creating an Enterprise Bean</a> <br>
-      <a href="../general/about_entity_beans.html">About Entity Beans</a> </td>
+      <a href="../general/about_entity_beans.html">About Entity Beans</a> <br>
+      <a href="nbdocs://org.netbeans.modules.dbschema/org/netbeans/modules/dbschema/docs/dbschema.html">Creating a Database Schema</a></td>
   </tr>
 </table>
  

@@ -62,56 +62,36 @@
   container. Depending on whether the bean manages its own transactions or relies on the container's transaction management, the bean can access different 
   methods of <tt>MessageDrivenContext</tt> to handle transactions.</p>
 <ul>
-  
-<li><b>Bean-managed transactions.</b> The bean sets up its own transactions. 
+  <li><b>Bean-managed transactions.</b> The bean sets up its own transactions. 
     The bean instance can call the <tt>MessageDrivenContext</tt> method <tt>getUserTransaction</tt> 
-    to get the <tt>javax.transaction.UserTransaction</tt> interface. The bean instance can then use the interface to demarcate transactions and obtain transaction status. 
-    
-<p> If the bean uses this<tt></tt> interface to demarcate transactions, the 
+    to get the <tt>javax.transaction.UserTransaction</tt> interface. The bean 
+    instance can then use the interface to demarcate transactions and obtain transaction 
+    status. 
+    <p> If the bean uses this<tt></tt> interface to demarcate transactions, the 
       message receipt that causes the bean to be invoked is not part of the transaction. 
       If you want the message receipt to be part of the transaction, you must 
       use container-managed transactions. </p>
-<p>A message-driven bean&#146;s <tt>newInstance</tt>, <tt>setMessageDrivenContext</tt>, 
+    <p>A message-driven bean&#146;s <tt>newInstance</tt>, <tt>setMessageDrivenContext</tt>, 
       <tt>ejbCreate</tt>, and <tt>ejbRemove</tt> methods are called with an unspecified 
       transaction context. There is never a client transaction context available 
       when a message-driven bean is invoked because a transaction context does 
       not flow with a JMS message.</p>
-</li>
-<li><b>Container-managed transactions.</b> The bean uses transactions started 
+  </li>
+  <li><b>Container-managed transactions.</b> The bean uses transactions started 
     by the EJB container. The <tt>onMessage</tt> method is invoked in the scope 
     of a transaction determined by the transaction property specified in the bean's 
-    DD editor<!--property sheet-->. If the bean is using container-managed transactions, the IDE 
-    specifies <tt>Required</tt> for the transaction property. 
-    
-<p>The bean can use the following <tt>MessageDrivenContext</tt> methods:</p>
-<ul>
-      
-<li>The <tt>setRollbackOnly</tt> method enables  the instance to mark the 
+    DD editor
+    <!--property sheet-->
+    . If the bean is using container-managed transactions, the IDE specifies <tt>Required</tt> 
+    for the transaction property. 
+    <p>The bean can use the following <tt>MessageDrivenContext</tt> methods:</p>
+    <ul>
+      <li>The <tt>setRollbackOnly</tt> method enables the instance to mark the 
         current transaction and force the outcome of the transaction to be a rollback.</li>
-<li>The <tt>getRollbackOnly</tt> method enables  the instance to test if the 
-        current transaction has been marked for rollback.</li>
-</ul>
-</li>
-</ul>
-<p>For more information, see the following web pages:</p>
-<ul>
-  
-  <li>The Sun tutorial section on message-driven beans at 
-    <p>
-<object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-    <param name="content" value="http://java.sun.com/j2ee/tutorial/1_3-fcs/doc/MDB.html">
-    <param name="text" value="<html><u>http://java.sun.com/j2ee/tutorial/1_3-fcs/doc/MDB.html</u></html>">
-    <param name="textFontSize" value="medium">
-    <param name="textColor" value="blue">
-</object></li>
-  <li>The Sun tutorial section on Java Message Service (JMS) technology at 
-    <p>
-<object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-    <param name="content" value="http://java.sun.com/products/jms/tutorial/index.html">
-    <param name="text" value="<html><u>http://java.sun.com/products/jms/tutorial/index.html</u></html>">
-    <param name="textFontSize" value="medium">
-    <param name="textColor" value="blue">
-</object></li>
+      <li>The <tt>getRollbackOnly</tt> method enables the instance to test if 
+        the current transaction has been marked for rollback.</li>
+    </ul>
+  </li>
 </ul>
 <table border="0">
   
