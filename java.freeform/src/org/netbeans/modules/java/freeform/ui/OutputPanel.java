@@ -54,11 +54,19 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         output.setModel(listModel);
         // XXX: for now only single selection
         output.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        javadoc.addFocusListener(new FocusAdapter () {
-            public void focusLost(FocusEvent e) {
+        javadoc.getDocument().addDocumentListener(new javax.swing.event.DocumentListener () {
+            public void insertUpdate(DocumentEvent e) {
                 update ();
             }
-        });
+    
+            public void removeUpdate(DocumentEvent e) {
+                update ();
+            }
+    
+            public void changedUpdate(DocumentEvent e) {
+                update ();
+            }
+        });        
         jTextArea1.setDisabledTextColor(jLabel2.getForeground());
     }    
     
