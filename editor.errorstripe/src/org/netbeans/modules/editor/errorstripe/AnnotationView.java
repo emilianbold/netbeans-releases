@@ -675,21 +675,25 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
             ERR.log(VIEW_TO_MODEL_IMPORTANCE, "AnnotationView.getAnnotationForPoint: a=" + a); // NOI18N
         }
         
-        for (short relative = 1; relative < UPPER_HANDLE + 1 && a == null; relative++) {
-            a = getMarkForPointImpl(point + relative);
-
-            if (ERR.isLoggable(VIEW_TO_MODEL_IMPORTANCE)) {
-                ERR.log(VIEW_TO_MODEL_IMPORTANCE, "AnnotationView.getAnnotationForPoint: a=" + a); // NOI18N
-                ERR.log(VIEW_TO_MODEL_IMPORTANCE, "AnnotationView.getAnnotationForPoint: relative=" + relative); // NOI18N
-            }
-        }
+        int relativeMax = Math.max(UPPER_HANDLE + 1, LOWER_HANDLE + 1);
         
-        for (short relative = 1; relative < LOWER_HANDLE + 1 && a == null; relative++) {
-            a = getMarkForPointImpl(point - relative);
-
-            if (ERR.isLoggable(VIEW_TO_MODEL_IMPORTANCE)) {
-                ERR.log(VIEW_TO_MODEL_IMPORTANCE, "AnnotationView.getAnnotationForPoint: a=" + a); // NOI18N
-                ERR.log(VIEW_TO_MODEL_IMPORTANCE, "AnnotationView.getAnnotationForPoint: relative=-" + relative); // NOI18N
+        for (short relative = 1; relative < relativeMax && a == null; relative++) {
+            if (relative <= UPPER_HANDLE) {
+                a = getMarkForPointImpl(point + relative);
+                
+                if (ERR.isLoggable(VIEW_TO_MODEL_IMPORTANCE)) {
+                    ERR.log(VIEW_TO_MODEL_IMPORTANCE, "AnnotationView.getAnnotationForPoint: a=" + a); // NOI18N
+                    ERR.log(VIEW_TO_MODEL_IMPORTANCE, "AnnotationView.getAnnotationForPoint: relative=" + relative); // NOI18N
+                }
+            }
+            
+            if (relative <= LOWER_HANDLE && a == null) {
+                a = getMarkForPointImpl(point - relative);
+                
+                if (ERR.isLoggable(VIEW_TO_MODEL_IMPORTANCE)) {
+                    ERR.log(VIEW_TO_MODEL_IMPORTANCE, "AnnotationView.getAnnotationForPoint: a=" + a); // NOI18N
+                    ERR.log(VIEW_TO_MODEL_IMPORTANCE, "AnnotationView.getAnnotationForPoint: relative=-" + relative); // NOI18N
+                }
             }
         }
         
