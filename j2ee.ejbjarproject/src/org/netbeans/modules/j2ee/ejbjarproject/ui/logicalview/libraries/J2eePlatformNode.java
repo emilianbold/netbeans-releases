@@ -53,7 +53,7 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener {
     private static final String BROKEN_PROJECT_BADGE = "org/netbeans/modules/j2ee/ejbjarproject/ui/resources/brokenProjectBadge.gif"; //NOI18N
     
     private static final Icon icon = new ImageIcon(Utilities.loadImage(ARCHIVE_ICON));
-    // TODO: AB: can this be done better?
+    
     private static final Image brokenIcon = Utilities.mergeImages(
             Utilities.loadImage(DEFAULT_ICON),
             Utilities.loadImage(BROKEN_PROJECT_BADGE), 
@@ -62,13 +62,6 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener {
     private final PropertyEvaluator evaluator;
     private final String platformPropName;
     private J2eePlatform platformCache;
-    
-    /*private final PropertyChangeListener displayNameListener = new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent evt) {
-            fireNameChange((String)evt.getOldValue(), (String)evt.getNewValue());
-            fireDisplayNameChange((String)evt.getOldValue(), (String)evt.getNewValue());
-        }
-    };*/
     
     private final PropertyChangeListener platformListener = new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
