@@ -81,6 +81,8 @@ final class SpunPhadhail extends Spin {
             // I.e. from getChildren(). Need to wrap result phadhails.
             List phs = (List)result; // List<Phadhail>
             return new SpunChildrenList(phs);
+        } else if (method.getName().equals("toString")) {
+            return "SpunPhadhail<" + result + ">";
         } else {
             // Just pass on the call.
             return result;

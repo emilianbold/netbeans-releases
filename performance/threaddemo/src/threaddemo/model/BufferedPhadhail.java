@@ -131,4 +131,8 @@ final class BufferedPhadhail implements Phadhail, PhadhailListener {
         // ignore
     }
     
+    public String toString() {
+        return "BufferedPhadhail<" + ph + ">";
+    }
+    
 }

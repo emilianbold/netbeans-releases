@@ -191,4 +191,8 @@ final class LockedPhadhail implements Phadhail {
         }
     }
     
+    public String toString() {
+        return "LockedPhadhail<" + ph + ">";
+    }
+    
 }
