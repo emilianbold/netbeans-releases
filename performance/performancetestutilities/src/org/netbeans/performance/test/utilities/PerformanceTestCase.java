@@ -69,20 +69,17 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
     /**
      * Expected time in which the measured action should be completed.
      * Usualy should be set to WINDOW_OPEN or UI_RESPONSE.
-     * <br><b>default</b> = UI_RESPONSE
-     */
+     * <br><b>default</b> = UI_RESPONSE */
     public long expectedTime = UI_RESPONSE;
     
     /**
      * Maximum number of iterations to wait for last paint on component/container.
-     * <br><b>default</b> = 10 iterations
-     */
+     * <br><b>default</b> = 10 iterations */
     public int MAX_ITERATION = 10;
     
     /**
      * Defines delay between checks if the component/container is painted.
-     * <br><b>default</b> = 1000 ms
-     */
+     * <br><b>default</b> = 1000 ms */
     public int WAIT_PAINT = 1000;
     
     /** Wait No Event in the Event Queue after call method <code>open()</code>.
@@ -97,19 +94,15 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      * <br><b>default</b> = 1000 ms */
     public int WAIT_AFTER_CLOSE = 250;
     
-    /** Number of the paint we'll measure
-     * <br><b>default</b> = 0  and measured time will be last paint until WAIT_AFTER_OPEN after user event.*/
-    public int MEASURE_PAINT_NUMBER = 0;
-    
     /** Factor for wait_after_open_heuristic timeout, negative HEURISTIC_FACTOR
      * disables heuristic */
     public double HEURISTIC_FACTOR = 1.25;
     
     /** Count of repeats */
-    protected int repeat = Integer.getInteger("org.netbeans.performance.repeat", 1).intValue();
+    protected static int repeat = Integer.getInteger("org.netbeans.performance.repeat", 1).intValue();
     
     /** Count of repeats for measure memory usage */
-    protected int repeat_memory = Integer.getInteger("org.netbeans.performance.memory.repeat", -1).intValue();
+    protected static int repeat_memory = Integer.getInteger("org.netbeans.performance.memory.repeat", -1).intValue();
     
     /** Performance data. */
     private static java.util.ArrayList data;
@@ -125,12 +118,14 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
     private static LoggingEventQueue leq;
     
     static {
-        // XXX load our EQ and repaint manager
-        tr = ActionTracker.getInstance();
-        rm = new LoggingRepaintManager(tr);
-        rm.setEnabled(true);
-        leq = new LoggingEventQueue(tr);
-        leq.setEnabled(true);
+        if(repeat_memory == -1) {
+            // XXX load our EQ and repaint manager
+            tr = ActionTracker.getInstance();
+            rm = new LoggingRepaintManager(tr);
+            rm.setEnabled(true);
+            leq = new LoggingEventQueue(tr);
+            leq.setEnabled(true);
+        }
     }
     
     /** Tested component operator. */
@@ -240,7 +235,6 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         tr.startNewEventList("test beggining"); // XXX add test name
         tr.add(tr.TRACK_APPLICATION_MESSAGE, "expectedTime "+expectedTime+", "+
                 "repeat "+repeat+", "+
-                "paint_number "+MEASURE_PAINT_NUMBER+", "+
                 "after_prepare "+WAIT_AFTER_PREPARE+", "+
                 "after_open "+WAIT_AFTER_OPEN+", "+
                 "after_close "+WAIT_AFTER_CLOSE+", "+
