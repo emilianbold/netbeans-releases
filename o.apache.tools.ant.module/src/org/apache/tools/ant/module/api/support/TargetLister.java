@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -17,7 +17,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -26,14 +25,12 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
-import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.xml.AntProjectSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -79,7 +76,8 @@ public class TargetLister {
      * @throws IOException in case there is a problem reading the script (or a subscript)
      */
     public static Set/*<Target>*/ getTargets(AntProjectCookie script) throws IOException {
-        Script main = new Script(null, script);
+        Set/*<File>*/ alreadyImported = new HashSet();
+        Script main = new Script(null, script, alreadyImported);
         Set/*<Target>*/ targets = new HashSet();
         Set/*<AntProjectCookie>*/ visitedScripts = new HashSet();
         traverseScripts(main, targets, visitedScripts);
@@ -236,6 +234,7 @@ public class TargetLister {
         private final String defaultTarget;
         private final List/*<Script>*/ imports;
         private final String name;
+        private final Set/*<File>*/ alreadyImported;
         
         private static final Set/*<String>*/ TRUE_VALS = new HashSet(5);
         static {
@@ -244,12 +243,17 @@ public class TargetLister {
             TRUE_VALS.add("on"); // NOI18N
         }
         
-        public Script(Script importingScript, AntProjectCookie apc) throws IOException {
+        public Script(Script importingScript, AntProjectCookie apc, Set/*<File>*/ alreadyImported) throws IOException {
             this.importingScript = importingScript;
             this.apc = apc;
+            this.alreadyImported = alreadyImported;
             Element prj = apc.getProjectElement();
             if (prj == null) {
                 throw new IOException("Could not parse " + apc); // NOI18N
+            }
+            File prjFile = apc.getFile();
+            if (prjFile != null) {
+                alreadyImported.add(prjFile);
             }
             String _defaultTarget = prj.getAttribute("default"); // NOI18N
             defaultTarget = _defaultTarget.length() > 0 ? _defaultTarget : null;
@@ -270,7 +274,6 @@ public class TargetLister {
             if (_basedir.isAbsolute()) {
                 basedir = _basedir;
             } else {
-                File prjFile = apc.getFile();
                 if (prjFile != null) {
                     basedir = new File(prjFile.getParentFile(), basedirS);
                 } else {
@@ -306,18 +309,21 @@ public class TargetLister {
                     if (_file.isAbsolute()) {
                         file = _file;
                     } else {
-                        File prjFile = apc.getFile();
                         if (prjFile == null) {
                             throw new IOException("Cannot import relative path " + fileS + " from a diskless script"); // NOI18N
                         }
                         // #50087: <import> resolves file against the script, *not* the basedir.
                         file = new File(prjFile.getParentFile(), fileS);
                     }
+                    if (alreadyImported.contains(file)) {
+                        // #55263: avoid a stack overflow on a recursive import.
+                        continue;
+                    }
                     if (file.canRead()) {
                         FileObject fileObj = FileUtil.toFileObject(FileUtil.normalizeFile(file));
                         assert fileObj != null : file;
                         AntProjectCookie importedApc = getAntProjectCookie(fileObj);
-                        imports.add(new Script(this, importedApc));
+                        imports.add(new Script(this, importedApc, alreadyImported));
                     } else {
                         String optionalS = el.getAttribute("optional"); // NOI18N
                         boolean optional = TRUE_VALS.contains(optionalS.toLowerCase(Locale.US));

@@ -171,7 +171,20 @@ public class TargetListerTest extends NbTestCase {
         assertEquals("correct qname #3", "importing4.subtarget4", t.getQualifiedName());
         assertFalse("not overridden #3", t.isOverridden());
         assertFalse("not default #3", t.isDefault());
-        
+    }
+
+    /** Cf. #55263: stack overflow error */
+    public void testRecursiveImport() throws Exception {
+        FileObject rec1 = testdir.getFileObject("targetlister/recursive1.xml");
+        assertNotNull("recursive1.xml found", rec1);
+        List/*<TargetLister.Target>*/ targets = getTargets(rec1);
+        assertEquals("two targets", 2, targets.size());
+        TargetLister.Target t = (TargetLister.Target) targets.get(0);
+        assertEquals("correct qname #1", "recursive1.x", t.getQualifiedName());
+        assertTrue("default #1", t.isDefault());
+        t = (TargetLister.Target) targets.get(1);
+        assertEquals("correct qname #2", "recursive2.y", t.getQualifiedName());
+        assertFalse("not default #2", t.isDefault());
     }
     
     private static List/*<TargetLister.Target>*/ getTargets(FileObject fo) throws IOException {
