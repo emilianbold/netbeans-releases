@@ -223,7 +223,7 @@ public class PropertiesTableModel extends AbstractTableModel {
             if (oldValue == null)
                 return;
             String newValue = ((StringPair)aValue).getValue();
-            if ((newValue == null) || (newValue.length() == 0)) {
+            if (newValue == null) { // key can be an empty string
                 // remove from all files
                 return;
                 /*for (int i=0; i < obj.getBundleStructure().getEntryCount(); i++) {
@@ -235,8 +235,7 @@ public class PropertiesTableModel extends AbstractTableModel {
                     }
                   }  
             }*/
-            }
-            else {
+            } else {
                 // set in all files
                 for (int i=0; i < obj.getBundleStructure().getEntryCount(); i++) {
                     PropertiesFileEntry entry = obj.getBundleStructure().getNthEntry(i);
@@ -245,7 +244,7 @@ public class PropertiesTableModel extends AbstractTableModel {
                         if (ps != null) {
                             // set the key
                             if (!oldValue.equals(newValue)) {
-                                ps.renameItem(oldValue, newValue);
+                                ps.renameItem(oldValue, Util.escapeKey(newValue)); 
                             }
                             // set the comment
                             if (i == 0) {
@@ -270,12 +269,12 @@ public class PropertiesTableModel extends AbstractTableModel {
                 if (ps != null) {
                     Element.ItemElem item = ps.getItem(key);
                     if (item != null) {
-                        item.setValue(((StringPair)aValue).getValue());
+                        item.setValue(Util.escapeValue(((StringPair)aValue).getValue()));
                         item.setComment(((StringPair)aValue).getComment());
                     }
                     else {
                         if ((((StringPair)aValue).getValue().length() > 0) || (((StringPair)aValue).getComment().length() > 0))
-                            ps.addItem(key, ((StringPair)aValue).getValue(), ((StringPair)aValue).getComment());
+                            ps.addItem(key, Util.escapeValue(((StringPair)aValue).getValue()), ((StringPair)aValue).getComment());
                     }
                 }
             }

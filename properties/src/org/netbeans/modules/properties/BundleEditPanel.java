@@ -383,23 +383,16 @@ public class BundleEditPanel extends javax.swing.JPanel {
                                                NbBundle.getBundle(BundleEditPanel.class).getString("CTL_NewPropertyTitle"));
 
         boolean okPressed = TopManager.getDefault ().notify (descr).equals (NotifyDescriptor.OK_OPTION);
-        if (okPressed && (descr.getInputText().trim().length() == 0)) {
-            TopManager.getDefault().notify(new NotifyDescriptor.Message(
-                                               NbBundle.getBundle(NewPropertyDialog.class).getString ("ERR_PropertyEmpty"),
-                                               NotifyDescriptor.ERROR_MESSAGE));
-            return;
-        }
 
         if (okPressed) {
             if (((PropertiesFileEntry)((MultiDataObject)dobj).getPrimaryEntry()).
                     getHandler().getStructure().addItem(
-                        descr.getInputText(), "", ""))
-                ;
+                        Util.escapeKey(descr.getInputText()), "", ""));
             else {
                 NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
                                                    java.text.MessageFormat.format(
                                                        NbBundle.getBundle(BundleEditPanel.class).getString("MSG_KeyExists"),
-                                                       new Object[] {descr.getInputText()}),
+                                                       new Object[] {Util.escapeKey(descr.getInputText())}),
                                                    NotifyDescriptor.ERROR_MESSAGE);
                 TopManager.getDefault().notify(msg);
             }
