@@ -381,6 +381,8 @@ public final class MainWindow extends JFrame {
         } 
         invalidate();
         validate();
+        if( !firstTimeHack )
+            repaint();
     }
 
     // XXX PENDING used in DnD only.
@@ -494,8 +496,10 @@ public final class MainWindow extends JFrame {
     protected Graphics waitingForPaintDummyGraphic; 
     
     public void setVisible( boolean flag ) {
-        waitingForPaintDummyImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
-        waitingForPaintDummyGraphic = waitingForPaintDummyImage.getGraphics();
+        if( firstTimeHack ) {
+            waitingForPaintDummyImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
+            waitingForPaintDummyGraphic = waitingForPaintDummyImage.getGraphics();
+        }
         super.setVisible(flag);
     }
     
@@ -507,7 +511,7 @@ public final class MainWindow extends JFrame {
         }
     }
 
-    boolean firstTimeHack = true;
+    boolean firstTimeHack = !System.getProperty( "java.version" ).startsWith( "1.6" );
     public void setExtendedState(int state) {
 
         int prevState = getExtendedState();
