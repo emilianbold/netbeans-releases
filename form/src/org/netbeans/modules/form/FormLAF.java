@@ -16,6 +16,7 @@ package org.netbeans.modules.form;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.plaf.metal.*;
+import org.openide.util.Mutex;
 
 /**
  *
@@ -29,9 +30,34 @@ class FormLAF
     private static int useIdeLaf = -1;
     private static DefaultMetalTheme defMetalTheme;
     private static MetalTheme ideMetalTheme;
+    private static String lastLAFName;
     
     private FormLAF() {}
 
+    static Object executeWithLookAndFeel(String lafclassname,
+                                         Mutex.ExceptionAction act)
+        throws Exception
+    {
+        boolean restoreAfter = true;
+        UIDefaults defaults = UIManager.getDefaults();
+        synchronized (defaults) {
+            try {
+                if (lafclassname.equals(lastLAFName))
+                    restoreAfter = false;
+                else {
+                    lastLAFName = lafclassname;
+                    useLookAndFeel(lafclassname);
+                    restoreAfter = true;
+                }
+                return act.run();
+            }
+            finally {
+                if (restoreAfter)
+                    useIDELookAndFeel();
+            }
+        }
+    }
+    
     private static boolean checkUseIdeLaf() {
         if (useIdeLaf == -1) {
             if (System.getProperty("netbeans.form.use_idelaf") != null) // NOI18N
@@ -57,7 +83,7 @@ class FormLAF
         copyMap(ideDefaults, defaults);
     }
 
-    static void useLookAndFeel(String lafClassName) {
+    private static void useLookAndFeel(String lafClassName) {
         if (checkUseIdeLaf())
             return;
         
@@ -74,7 +100,7 @@ class FormLAF
         useLookAndFeel(laf);
     }
     
-    static void useLookAndFeel(LookAndFeel laf) {
+    private static void useLookAndFeel(LookAndFeel laf) {
         if (checkUseIdeLaf())
             return;
         
@@ -95,7 +121,7 @@ class FormLAF
         }
     }
 
-    static void useIDELookAndFeel() {
+    private static void useIDELookAndFeel() {
         if (checkUseIdeLaf())
             return;
         

@@ -23,6 +23,7 @@ import java.beans.*;
 import java.lang.reflect.*;
 import java.util.*;
 import java.io.*;
+import java.util.List;
 
 import org.openide.*;
 import org.openide.windows.*;
@@ -230,8 +231,8 @@ public class FormDesigner extends TopComponent
         return (RADComponent) compToMetaComp.get(comp);
     }
 
-    Iterator getSelectedComponents() {
-        return selectedComponents.iterator();
+    List getSelectedComponents() {
+        return selectedComponents;
     }
 
     void setSelectedComponent(RADComponent metacomp) {
@@ -515,14 +516,21 @@ public class FormDesigner extends TopComponent
         compToMetaComp.clear();
 
         try {
-            Container cont = cloneTopContainerInstance();
-            componentLayer.add(cont, BorderLayout.CENTER);
+            FormLAF.executeWithLookAndFeel(
+                UIManager.getLookAndFeel().getClass().getName(),
+                new Mutex.ExceptionAction () {
+                    public Object run() throws Exception {
+                        Container cont = cloneTopContainerInstance();
+                        componentLayer.add(cont, BorderLayout.CENTER);
 
-            metaCompToComp.put(topDesignContainer, cont);
-            compToMetaComp.put(cont, topDesignContainer);
+                        metaCompToComp.put(topDesignContainer, cont);
+                        compToMetaComp.put(cont, topDesignContainer);
 
-            walkVisualComps(cont, topDesignContainer);
-            handleLayer.requestFocus();
+                        walkVisualComps(cont, topDesignContainer);
+                        handleLayer.requestFocus();
+                        return null;
+                    }
+                });
         }
         catch (Exception ex) {
             ex.printStackTrace();

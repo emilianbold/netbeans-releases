@@ -69,6 +69,19 @@ public class RADContainer extends RADComponent implements ComponentContainer {
         return subComponents.indexOf(comp);
     }
 
+    public boolean isAncestorOf(RADComponent comp) {
+        int index = getIndexOf(comp);
+        if (index >= 0)
+            return true;
+        
+        RADComponent comps[] = getSubBeans();
+        for (int i = 0; i < comps.length; i++) {
+            RADComponent c = comps[i];
+            if (c instanceof RADContainer && ((RADContainer)c).isAncestorOf(comp))
+                return true;
+        }
+        return false;
+    }
 
     /** Called to obtain a Java code to be used to generate code to access the container for adding subcomponents.
      * It is expected that the returned code is either ""(in which case the form is the container) or is a name of variable

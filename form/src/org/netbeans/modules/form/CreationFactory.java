@@ -16,6 +16,7 @@ package org.netbeans.modules.form;
 import java.util.*;
 import java.lang.reflect.*;
 import javax.swing.*;
+import org.openide.util.Mutex;
 
 /** Factory for creating objects, registering CreationDescriptor classes
  * and related utility methods.
@@ -57,36 +58,34 @@ public class CreationFactory {
     // -----------
     // creation methods
 
-    public static Object createDefaultInstance(Class cls)
-        throws InstantiationException, IllegalAccessException,
-               IllegalArgumentException, InvocationTargetException {
-        CreationDescriptor cd = getDescriptor(cls);
-        try {
-            //FormLAF.useLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel"); // NOI18N
-            FormLAF.useLookAndFeel(UIManager.getLookAndFeel().getClass().getName());
-            return cd != null ? cd.createDefaultInstance() : cls.newInstance();
-        }
-        finally {
-            FormLAF.useIDELookAndFeel();
-        }
+    public static Object createDefaultInstance(final Class cls)
+        throws Exception
+    {
+        final CreationDescriptor cd = getDescriptor(cls);
+        
+        return FormLAF.executeWithLookAndFeel(
+            UIManager.getLookAndFeel().getClass().getName(),
+            new Mutex.ExceptionAction () {
+                public Object run() throws Exception {
+                    return cd != null ? cd.createDefaultInstance() : cls.newInstance();
+                }
+            });
     }
 
-    public Object createInstance(Class cls, FormProperty[] props, int style)
-        throws InstantiationException, IllegalAccessException,
-               IllegalArgumentException, InvocationTargetException {
-
+    public Object createInstance(Class cls, final FormProperty[] props, int style)
+        throws Exception
+    {
         CreationDescriptor cd = getDescriptor(cls);
         if (cd != null) {
-            CreationDescriptor.Creator creator = cd.findBestCreator(props, style);
+            final CreationDescriptor.Creator creator = cd.findBestCreator(props, style);
             if (creator != null) {
-                try {
-                    //FormLAF.useLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel"); // NOI18N
-                    FormLAF.useLookAndFeel(UIManager.getLookAndFeel().getClass().getName());
-                    return creator.createInstance(props);
-                }
-                finally {
-                    FormLAF.useIDELookAndFeel();
-                }
+                return FormLAF.executeWithLookAndFeel(
+                    UIManager.getLookAndFeel().getClass().getName(),
+                    new Mutex.ExceptionAction () {
+                        public Object run() throws Exception {
+                            return creator.createInstance(props);
+                        }
+                    });
             }
         }
         return null;
