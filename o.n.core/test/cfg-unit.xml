@@ -49,8 +49,8 @@ Microsystems, Inc. All Rights Reserved.
             <patternset>
                 <include name="org/netbeans/core/modules/ModuleManagerTest.class"/>
                 <include name="org/netbeans/core/modules/ModuleListTest.class"/>
-                <include name="org/netbeans/core/modules/NbInstallerTest.class"/>
-                <exclude name="org/netbeans/core/modules/NbInstallerTest.class/testDependencyLayerOverrides2"/><!-- XXX #23609 -->
+                <include name="org/netbeans/core/modules/NbInstallerTest?.class"/>
+                <exclude name="org/netbeans/core/modules/NbInstallerTest5.class"/><!-- XXX #23609 -->
                 <include name="org/netbeans/core/projects/SystemFileSystemTest.class"/>
                 <include name="org/netbeans/core/PlainTest.class"/>
                 <include name="org/netbeans/core/AutomountSupportTest.class"/>
@@ -67,7 +67,7 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- Under investigation why it fails (probably "as designed"): -->
                 <include name="org/netbeans/core/lookup/InstanceDataObjectModuleTest4.class"/>
                 <!-- XXX #23609: possible bug in XMLFileSystem, move to stable when fixed: -->
-                <include name="org/netbeans/core/modules/NbInstallerTest.class/testDependencyLayerOverrides2"/>
+                <include name="org/netbeans/core/modules/NbInstallerTest5.class"/>
             </patternset>
         </testset>
     </testbag>
