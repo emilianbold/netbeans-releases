@@ -102,7 +102,12 @@ public class PropertiesLocaleNode extends FileEntryNode {
   /** Clones this node */
   public Node cloneNode() {
     return new PropertiesLocaleNode((PropertiesFileEntry)getFileEntry());
-  }                                                               
+  }                                
+                
+  /** This node can be renamed. */              
+  public boolean canRename() {
+    return getFileEntry().isDeleteAllowed ();
+  }
                                       
   /** Returns a string from my bundle. */                                    
   private String getString(String what) {
@@ -152,6 +157,7 @@ public class PropertiesLocaleNode extends FileEntryNode {
 
 /*
  * <<Log>>
+ *  5    Gandalf   1.4         6/10/99  Petr Jiricka    
  *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  3    Gandalf   1.2         6/6/99   Petr Jiricka    

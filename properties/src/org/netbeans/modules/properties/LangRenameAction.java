@@ -35,6 +35,14 @@ public class LangRenameAction extends RenameAction {
   /** generated Serialized Version UID */
 //  static final long serialVersionUID = 1261145028106838566L;
 
+/*  protected boolean enable (Node[] activatedNodes) {
+    boolean en = super.enable(activatedNodes);
+    if (activatedNodes[0] instanceof PropertiesLocaleNode) {
+      if ...
+    }  
+    return en;
+  }*/
+
 
   protected void performAction (Node[] activatedNodes) {
     Node n = activatedNodes[0]; // we supposed that one node is activated

@@ -173,7 +173,6 @@ System.out.println("updating entries");
     PropertiesFileEntry pfe;
     for (Iterator it = obj.secondaryEntries().iterator(); it.hasNext(); ) {
       pfe = (PropertiesFileEntry)it.next();
-System.out.println("entry " + pfe.getFile().getName());
       tm.put(pfe.getFile().getName(), pfe);
     }  
     
