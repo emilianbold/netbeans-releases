@@ -187,7 +187,6 @@ public abstract class PanelView extends javax.swing.JPanel {
       */
     
     public void addNotify() {
-        System.out.println("PanelView:addNotify()");
         super.addNotify();
         
         // Enter key in the tree
