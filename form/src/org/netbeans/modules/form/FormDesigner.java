@@ -44,7 +44,9 @@ import org.netbeans.modules.form.layoutsupport.LayoutSupportManager;
 
 public class FormDesigner extends TopComponent
 {
-    public static final String PROP_DESIGNER_SIZE = "designerSize"; // NOI18N
+    static final String FORM_MODE_NAME = "Form"; // NOI18N
+    static final String PROP_DESIGNER_SIZE = "designerSize"; // NOI18N
+
     private JLayeredPane layeredPane;
 
     private ComponentLayer componentLayer;
@@ -722,17 +724,25 @@ public class FormDesigner extends TopComponent
 
     public void open(Workspace workspace) {
         if (workspace == null)
-            workspace = TopManager.getDefault().getWindowManager().getCurrentWorkspace();
+            workspace = TopManager.getDefault().getWindowManager()
+                                                 .getCurrentWorkspace();
 
         if (isOpened(workspace))
             return;
 
-        Mode mode = workspace.findMode("Form"); // NOI18N
+        Mode mode = workspace.findMode(FORM_MODE_NAME); // NOI18N
         if (mode != null) {
             mode.dockInto(this);
         }
 
         super.open(workspace);
+    }
+
+    public boolean canClose(Workspace workspace, boolean last) {
+        boolean canClose = super.canClose(workspace, last);
+        if (canClose && isOpened() && formEditorSupport != null)
+            formEditorSupport.designerToBeClosed(workspace);
+        return canClose;
     }
 
     protected void componentActivated() {

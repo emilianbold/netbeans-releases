@@ -28,7 +28,6 @@ import org.openide.windows.*;
 
 import org.netbeans.modules.java.JavaEditor;
 import org.netbeans.modules.form.palette.*;
-import org.netbeans.modules.form.actions.FormEditorAction;
 
 /**
  *
@@ -748,6 +747,7 @@ public class FormEditorSupport extends JavaEditor
         formModel.fireFormToBeClosed();
 
         openForms.remove(formModel);
+        formLoaded = false;
 
         // remove nodes hierarchy
         if (formDataObject.isValid())
@@ -787,8 +787,47 @@ public class FormEditorSupport extends JavaEditor
         formDesigner = null;
         persistenceManager = null;
         persistenceErrors = null;
-        formLoaded = false;
         formModel = null;
+    }
+
+    // called by FormDesigner when it is about to close
+    void designerToBeClosed(Workspace ws) {
+        if (!formLoaded || formDesigner == null)
+            return;
+
+        if (ws == null)
+            ws = TopManager.getDefault().getWindowManager()
+                                          .getCurrentWorkspace();
+        Mode mode = ws.findMode(formDesigner);
+        if (mode != null && FormDesigner.FORM_MODE_NAME.equals(mode.getName())) {
+            TopComponent inspector = null;
+            TopComponent palette = null;
+            TopComponent[] modeComponents = mode.getTopComponents();
+            for (int i=0; i < modeComponents.length; i++) {
+                TopComponent tc = modeComponents[i];
+                if (tc.isOpened(ws))
+                    if (tc instanceof FormDesigner) {
+                        if (tc != formDesigner) { // other designers still opened
+                            palette = null;
+                            inspector = null;
+                            break;
+                        }
+                    }
+                    else if (tc instanceof ComponentInspector)
+                        inspector = tc;
+                    else if (tc instanceof PaletteTopComponent)
+                        palette = tc;
+            }
+
+            if (inspector != null) {
+                inspector.setCloseOperation(TopComponent.CLOSE_LAST);
+                inspector.close(ws);
+            }
+            if (palette != null) {
+                palette.setCloseOperation(TopComponent.CLOSE_LAST);
+                palette.close(ws);
+            }
+        }
     }
 
     // -----------
