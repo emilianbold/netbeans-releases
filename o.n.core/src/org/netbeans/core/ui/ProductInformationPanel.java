@@ -50,23 +50,9 @@ public class ProductInformationPanel extends JPanel {
     public ProductInformationPanel() {
         dialog = null;
         initComponents();
-        if (Boolean.getBoolean("netbeans.accessibility"))
-        {
-            ((NbLabelA11y)productInformationLabel).setA11yFocus(true);
-            ((NbLabelA11y)productVersionValueLabel).setA11yAll(true, fromBundle("LBL_ProductVersion") + getProductVersionValue(), "");
-            ((NbLabelA11y)ideVersioningValueLabel).setA11yAll(true, fromBundle("LBL_IDEVersioning") + getIDEVersioningValue(), "");
-            ((NbLabelA11y)operatingSystemValueLabel).setA11yAll(true, fromBundle("LBL_OperationgSystem") + getOperatingSystemValue(), "");
-            ((NbLabelA11y)javaValueLabel).setA11yAll(true, fromBundle("LBL_Java") + getJavaValue(), "");
-            ((NbLabelA11y)vmValueLabel).setA11yAll(true, fromBundle("LBL_VM") + getVMValue(), "");
-            ((NbLabelA11y)vendorValueLabel).setA11yAll(true, fromBundle("LBL_Vendor") + getVendorValue(), "");
-            ((NbLabelA11y)javaHomeValueLabel).setA11yAll(true, fromBundle("LBL_JavaHome") + getJavaHomeValue(), "");
-            ((NbLabelA11y)systemLocaleValueLabel).setA11yAll(true, fromBundle("LBL_SystemLocale") + getSystemLocaleValue(), "");
-            ((NbLabelA11y)homeDirValueLabel).setA11yAll(true, fromBundle("LBL_HomeDir") + getHomeDirValue(), "");
-            ((NbLabelA11y)currentDirValueLabel).setA11yAll(true, fromBundle("LBL_CurrentDir") + getCurrentDirValue(), "");
-            ((NbLabelA11y)ideInstallValueLabel).setA11yAll(true, fromBundle("LBL_IDEInstall") + getIDEInstallValue(), "");
-            ((NbLabelA11y)userDirValueLabel).setA11yAll(true, fromBundle("LBL_UserDir") + getUserDirValue(), "");
-        }
-  
+        
+        initAccessibility();
+        
         updateLabelFont(productInformationLabel, Font.BOLD, FONT_SIZE_PLUS, COLOR);
         updateLabelFont(productVersionLabel, Font.BOLD, COLOR);
         updateLabelFont(ideVersioningLabel, Font.BOLD, COLOR);
@@ -112,19 +98,19 @@ public class ProductInformationPanel extends JPanel {
         ideInstallLabel = new javax.swing.JLabel();
         userDirLabel = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
-        productInformationLabel = new fLabel();
-        productVersionValueLabel = new fLabel();
-        ideVersioningValueLabel = new fLabel();
-        operatingSystemValueLabel = new fLabel();
-        javaValueLabel = new fLabel();
-        vmValueLabel = new fLabel();
-        vendorValueLabel = new fLabel();
-        javaHomeValueLabel = new fLabel();
-        systemLocaleValueLabel = new fLabel();
-        homeDirValueLabel = new fLabel();
-        currentDirValueLabel = new fLabel();
-        ideInstallValueLabel = new fLabel();
-        userDirValueLabel = new fLabel();
+        productInformationLabel = new FocusableLabel();
+        productVersionValueLabel = new FocusableLabel();
+        ideVersioningValueLabel = new FocusableLabel();
+        operatingSystemValueLabel = new FocusableLabel();
+        javaValueLabel = new FocusableLabel();
+        vmValueLabel = new FocusableLabel();
+        vendorValueLabel = new FocusableLabel();
+        javaHomeValueLabel = new FocusableLabel();
+        systemLocaleValueLabel = new FocusableLabel();
+        homeDirValueLabel = new FocusableLabel();
+        currentDirValueLabel = new FocusableLabel();
+        ideInstallValueLabel = new FocusableLabel();
+        userDirValueLabel = new FocusableLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -506,11 +492,11 @@ public class ProductInformationPanel extends JPanel {
     
     /**
      */
-    class fLabel extends JLabel {
+    class FocusableLabel extends JLabel {
     
         private boolean isFocused = false;
 
-        public fLabel(){
+        public FocusableLabel(){
             addFocusListener(
             new java.awt.event.FocusListener() {
                 public void focusGained(java.awt.event.FocusEvent event) {
@@ -524,6 +510,7 @@ public class ProductInformationPanel extends JPanel {
             });
             setLabelFor(this);
             getAccessibleContext().setAccessibleDescription(getText());
+            getAccessibleContext().setAccessibleName(getText());
         }
         
         public boolean isFocusTraversable() {
@@ -547,5 +534,27 @@ public class ProductInformationPanel extends JPanel {
             }
         }
         
+    }
+
+    
+   /** Initilizes accessible contexts
+     */
+    private void initAccessibility(){
+        
+        //java.util.ResourceBundle bundle;
+        //bundle = org.openide.util.NbBundle.getBundle(this.getClass());
+
+        productVersionValueLabel.getAccessibleContext().setAccessibleName(productVersionLabel.getText() + productVersionValueLabel.getText()); 
+        ideVersioningValueLabel.getAccessibleContext().setAccessibleName(ideVersioningLabel.getText() + ideVersioningValueLabel.getText()); 
+        operatingSystemValueLabel.getAccessibleContext().setAccessibleName(operatingSystemLabel.getText() + operatingSystemValueLabel.getText());
+        javaValueLabel.getAccessibleContext().setAccessibleName(javaLabel.getText() + vmValueLabel.getText());
+        vmValueLabel.getAccessibleContext().setAccessibleName(vmLabel.getText() + vmValueLabel.getText());
+        vendorValueLabel.getAccessibleContext().setAccessibleName(vendorLabel.getText() + vendorValueLabel.getText());
+        javaHomeValueLabel.getAccessibleContext().setAccessibleName(javaHomeLabel.getText() + javaHomeValueLabel.getText());
+        systemLocaleValueLabel.getAccessibleContext().setAccessibleName(systemLocaleLabel.getText() + systemLocaleValueLabel.getText());
+        homeDirValueLabel.getAccessibleContext().setAccessibleName(homeDirLabel.getText() + homeDirValueLabel.getText());
+        currentDirValueLabel.getAccessibleContext().setAccessibleName(currentDirLabel.getText() + currentDirValueLabel.getText());
+        ideInstallValueLabel.getAccessibleContext().setAccessibleName(ideInstallLabel.getText() + ideInstallValueLabel.getText());
+        userDirValueLabel.getAccessibleContext().setAccessibleName(userDirLabel.getText() + userDirValueLabel.getText());
     }
 }
