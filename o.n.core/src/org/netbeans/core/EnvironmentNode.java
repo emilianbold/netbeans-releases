@@ -19,6 +19,7 @@ import org.openide.options.*;
 import org.openide.actions.PropertiesAction;
 import org.openide.actions.ToolsAction;
 import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
 import org.openide.util.actions.*;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
@@ -59,15 +60,24 @@ final class EnvironmentNode extends AbstractNode {
     
     /** Finds the node for given name.
      */
-    public static EnvironmentNode find (String name) {
-        synchronized (lock) {
-            EnvironmentNode n = (EnvironmentNode)types.get (name);
-            if (n == null) {
-                n = new EnvironmentNode (name);
-                types.put (name, n);
-            }
-            return n;
+    public static EnvironmentNode find (final String name) {
+        Object retValue = 
+            Children.MUTEX.readAccess(new Mutex.Action() {
+                public Object run() {
+                    synchronized (lock) {
+                        EnvironmentNode n = (EnvironmentNode)types.get (name);
+                        if (n == null) {
+                            n = new EnvironmentNode (name);
+                            types.put (name, n);
+                        }
+                        return n;
+                    }
+                }
+            });
+        if (retValue != null) {
+            return (EnvironmentNode)retValue;
         }
+        throw new IllegalStateException();
     }
     
 
