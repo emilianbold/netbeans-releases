@@ -1059,6 +1059,9 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
     void notifyFileDeleted(FileEvent fe) {
     }
 
+    void notifyFileChanged(FileEvent fe) {
+    }
+    
     void notifyFileDataCreated(FileEvent fe) {
     }
     

@@ -26,6 +26,7 @@ import org.openide.filesystems.FileSystem; // override java.io.FileSystem
 import org.openide.loaders.*;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.*;
+import org.openide.util.Utilities;
 import org.openide.util.actions.*;
 import org.openide.nodes.*;
 import java.util.List;
@@ -299,12 +300,13 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
     private static InstanceDataObject storeSettings (DataFolder df, String name, Object obj, ModuleInfo mi)
     throws IOException {
         FileObject fo = df.getPrimaryFile ();
+        FileObject newFile = fo.getFileObject (name, XML_EXT);
         String fullname = fo.getPath() + '/' + name + '.' + XML_EXT;
         InstanceDataObject ido;
         boolean attachWithSave = false;
         try {
-            FileObject newFile = fo.getFileObject (name, XML_EXT);
-            if (newFile == null) {
+            
+            if (newFile == null) {                
                 System.setProperty("InstanceDataObject.current.file", fo.getPath() + "/" + name + "." + XML_EXT); // NOI18N
                 final ByteArrayOutputStream buf = storeThroughConvertor(obj, new FileObjectContext(fo, name));
                 System.setProperty("InstanceDataObject.current.file", ""); // NOI18N
@@ -526,8 +528,15 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
 
     /** delegate .getCookie to Environment.Provider */
     private Object getCookieFromEP(Class clazz) {
-        updateLookup();
-        return cookiesLkp.lookup(clazz);
+        //updateLookup(false);
+        return getCookiesLookup().lookup(clazz);
+    }
+
+    void notifyFileChanged(FileEvent fe) {
+        super.notifyFileChanged(fe);
+        if (!Creator.isFiredFromMe(fe)) {
+            getCookiesLookup(true);
+        }
     }
 
     /* Serve up editor cookies where requested. */
@@ -550,62 +559,62 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
     private Lookup.Result nodeResult = null;
     private Lookup cookiesLkp = null;
     private LookupListener cookiesLsnr = null;
+    private LookupListener nodeLsnr = null;
 
-    private Lookup findLookup() {
+    private Lookup getCookiesLookup() {
+        return getCookiesLookup(false);       
+    }
+    
+    private Lookup getCookiesLookup(boolean reinit) {
         synchronized (getLock()) {
-            if (cookiesLkp != null) return cookiesLkp;
-        }
-
-        Lookup envLkp = Environment.findForOne (InstanceDataObject.this);
-
-        synchronized (getLock()) {
-            if (cookiesLkp == null) {
-                if (envLkp == null) {
-                    cookiesLkp = Lookup.EMPTY;
-                } else {
-                    cookiesLkp = envLkp;
-                }
+            if (!reinit && cookiesLkp != null) {
+                return cookiesLkp;
             }
+        }
+        Lookup envLkp = Environment.findForOne(InstanceDataObject.this);
+
+        synchronized (getLock()) {
+            if (cookiesLkp == null || envLkp == null || !envLkp.getClass().equals(cookiesLkp.getClass())) {
+                cookiesLkp = (envLkp == null) ? Lookup.EMPTY : envLkp;
+                initCookieResult();
+                initNodeResult();                    
+            } 
             return cookiesLkp;
         }
     }
 
-    /** init delegation to Environment.Provider */
-    private void updateLookup () {
-        synchronized (getLock()) {
-            if (cookieResult != null) return;
+    private void initNodeResult() {
+        if (nodeResult != null && nodeLsnr != null) {
+            nodeResult.removeLookupListener(nodeLsnr);
+        }            
+        
+        if (cookiesLkp != null && !cookiesLkp.equals(Lookup.EMPTY)) {
+            nodeResult = cookiesLkp.lookup(new Lookup.Template(InstanceCookie.class));
+            nodeLsnr = new LookupListener() {
+                        public void resultChanged(LookupEvent lookupEvent) {
+                            if (InstanceDataObject.this.un != null) {
+                                un.update();
+                            }
+                        }
+                    };
+            nodeResult.addLookupListener(nodeLsnr);
+            nodeResult.allItems();
         }
+    }
 
-        findLookup();
-
-        boolean initialize = false;
-        synchronized (getLock()) {
-            if (cookieResult != null) return;
-            // listen to Node.Cookie changes and fire them
-            cookieResult = cookiesLkp.lookup (new Lookup.Template(Node.Cookie.class));
+    private void initCookieResult() {
+        if (cookieResult != null && cookiesLsnr != null) {
+            cookieResult.removeLookupListener(cookiesLsnr);
+        }                    
+        if (cookiesLkp != null && !cookiesLkp.equals(Lookup.EMPTY)) {
+            cookieResult = cookiesLkp.lookup(new Lookup.Template(Node.Cookie.class));
             cookiesLsnr = new LookupListener() {
-                public void resultChanged(org.openide.util.LookupEvent lookupEvent) {
-                    firePropertyChange (DataObject.PROP_COOKIE, null, null);
+                public void resultChanged(LookupEvent lookupEvent) {
+                    firePropertyChange(DataObject.PROP_COOKIE, null, null);
                 }
             };
-            cookieResult.addLookupListener (cookiesLsnr);
-
-            // listen to InstanceCookie changes and update proper node
-            nodeResult = cookiesLkp.lookup(new Lookup.Template(InstanceCookie.class));
-            nodeResult.addLookupListener(new LookupListener() {
-                public void resultChanged(org.openide.util.LookupEvent lookupEvent) {
-                    if (InstanceDataObject.this.un != null) {
-                        un.update();
-                    }
-                }
-            });
-            initialize = true;
-        }
-
-        if (initialize) {
-            // init listening
+            cookieResult.addLookupListener(cookiesLsnr);
             cookieResult.allItems();
-            nodeResult.allItems();
         }
     }
 
@@ -1372,13 +1381,15 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             } else {
                 String escapedFileName = escape(filename);
                 // do not cut if such file already exist
-                if (fo.getFileObject (escapedFileName, XML_EXT) == null) {
+                FileObject newFile = fo.getFileObject (escapedFileName, XML_EXT);
+                if (newFile == null) {
                     filename = escapeAndCut(filename);
                 } else {
                     filename = escapedFileName;
                 }
 
-                if (create) {
+                
+                if (create /*|| (newFile == null && Utilities.isWindows()) */) {
                     filename = FileUtil.findFreeFileName(fo, filename, XML_EXT);
                 }
             }
@@ -1484,12 +1495,10 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
     }
 
     /** propagate instance to convertor; obj can be null */
-    private void attachToConvertor(Object obj, boolean save) throws IOException {
-        findLookup();
-
+    private void attachToConvertor(Object obj, boolean save) throws IOException {        
         // InstanceCookie subclass has to implement
         // void setInstance(Object inst)
-        Object ic = cookiesLkp.lookup(InstanceCookie.class);
+        Object ic = getCookiesLookup().lookup(InstanceCookie.class);
         if (ic == null) {
             throw new IllegalStateException(
                 "Trying to store object " + obj // NOI18N

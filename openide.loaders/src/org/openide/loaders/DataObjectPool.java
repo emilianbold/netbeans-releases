@@ -529,6 +529,13 @@ implements ChangeListener {
             return toNotify.iterator();
         }
 
+        public void fileChanged(FileEvent fe) {
+            for( Iterator it = getTargets(fe); it.hasNext(); ) {
+                DataObject dobj = ((Item)it.next()).getDataObjectOrNull();
+                if (dobj != null) dobj.notifyFileChanged(fe);
+            }
+        }
+
         public void fileRenamed (FileRenameEvent fe) {
             for( Iterator it = getTargets(fe); it.hasNext(); ) {
                 DataObject dobj = ((Item)it.next()).getDataObjectOrNull();
