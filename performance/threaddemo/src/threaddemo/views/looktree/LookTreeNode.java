@@ -200,48 +200,27 @@ abstract class LookTreeNode implements LookListener {
     
     // Implementation of LookListener ------------------------------------------
     
-    public void nameChange(LookEvent evt) {
-        fireDisplayChange(this);
-    }
-    
-    public void iconChange(LookEvent evt) {
-        fireDisplayChange(this);
-    }
-    
-    public void displayNameChange(LookEvent evt) {
-        fireDisplayChange(this);
-    }
-    
-    public void objectDestroyed(LookEvent evt) {
-        // XXX what is this supposed to do? nothing probably...
+    public void change( LookEvent evt ) {
+        long mask = evt.getMask();
         
-        // phrebejk: notify the view about removing object from
-        // underlying data structutre
+        // XXX Look.GET_PROPERTY_SETS not impl.
+        
+        if ( ( mask & 
+             ( Look.GET_NAME | Look.GET_DISPLAY_NAME | Look.GET_ICON | 
+               Look.GET_OPENED_ICON | Look.GET_SHORT_DESCRIPTION ) ) > 0 ) {
+         
+            fireDisplayChange( this );       
+        }
+        
+        if ( ( mask & Look.GET_CHILD_OBJECTS ) > 0 ) {
+            forgetChildren();
+            fireChildrenChange(this);
+        }
     }
     
-    public void openedIconChange(LookEvent evt) {
-        fireDisplayChange(this);
-    }
     
     public void propertyChange(LookEvent evt) {
         // XXX prop sets not impl
     }
-    
-    public void propertySetsChange(LookEvent evt) {
-        // XXX prop sets not impl
-    }
-    
-    public void shortDescriptionChange(LookEvent evt) {
-        fireDisplayChange(this);
-    }
-    
-    public void refreshChildren(LookEvent evt) {
-        forgetChildren();
-        fireChildrenChange(this);
-    }
-    
-    public void lookupItemsChange(LookEvent evt) {
-    }    
-    
-    
+            
 }

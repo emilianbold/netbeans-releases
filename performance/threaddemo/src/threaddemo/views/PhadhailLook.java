@@ -90,7 +90,7 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
                         children.put(o, new WeakReference(getChildObjects(o, null)));
-                        fireChildrenChange(o);
+                        fireChange(o, Look.GET_CHILD_OBJECTS);
                     }
                 });
                 return null;
@@ -152,7 +152,7 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
         Phadhail ph = (Phadhail)o;
         ph.delete();
         // XXX since this fires no changes of its own...
-        fireObjectDestroyed(ph);
+        fireChange(ph, Look.DESTROY);
     }
     
     public Action[] getActions(Object o, Lookup e) {
@@ -198,18 +198,18 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
         Lookup.Result r = (Lookup.Result)ev.getSource();
         Phadhail ph = (Phadhail)results2Phadhails.get(r);
         assert ph != null;
-        fireLookupItemsChange(ph);
+        fireChange(ph, Look.GET_LOOKUP_ITEMS);
     }
     
     public void childrenChanged(PhadhailEvent ev) {
         assert ev.getPhadhail().mutex().canRead();
-        fireChildrenChange(ev.getPhadhail());
+        fireChange(ev.getPhadhail(), Look.GET_CHILD_OBJECTS);
     }
     
     public void nameChanged(PhadhailNameEvent ev) {
         assert ev.getPhadhail().mutex().canRead();
-        fireNameChange(ev.getPhadhail(), ev.getOldName(), ev.getNewName());
-        fireDisplayNameChange(ev.getPhadhail(), ev.getOldName(), ev.getNewName());
+        fireChange(ev.getPhadhail(), Look.GET_NAME);
+        fireChange(ev.getPhadhail(), Look.GET_DISPLAY_NAME);
     }
     
     public void stateChanged(ChangeEvent e) {
@@ -217,7 +217,7 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
         DomProvider p = (DomProvider)e.getSource();
         Phadhail ph = (Phadhail)domProviders2Phadhails.get(p);
         assert ph != null;
-        fireChildrenChange(ph);
+        fireChange(ph, Look.GET_CHILD_OBJECTS);
     }
     
 }

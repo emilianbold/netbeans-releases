@@ -50,7 +50,7 @@ public class ElementLook extends Look implements EventListener {
     public void handleEvent(Event evt) {
         Node parent = ((MutationEvent)evt).getRelatedNode();
         if (parent instanceof Element) {
-            fireChildrenChange(parent);
+            fireChange(parent, Look.GET_CHILD_OBJECTS);
         }
     }
     
