@@ -100,4 +100,87 @@ Microsystems, Inc. All Rights Reserved.
 
   </folder>
 
+  <folder name="AnnotationTypes"> 
+   <folder name="Debugger"> 
+
+      <file name="Breakpoint">
+        <![CDATA[<?xml version="1.0"?>
+        <!DOCTYPE annotationtype PUBLIC "-//NetBeans//DTD annotation type 1.0//EN"
+          "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
+          <type visible="true"
+            glyph="/org/netbeans/modules/debugger/resources/breakpoint.gif"
+            highlight="0xRGB"
+            wholeline="true">
+        ]]>
+      </file>
+
+      <file name="DisabledBreakpoint">
+        <![CDATA[<?xml version="1.0"?>
+        <!DOCTYPE annotationtype PUBLIC "-//NetBeans//DTD annotation type 1.0//EN"
+          "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
+          <type visible="true"
+            glyph="/org/netbeans/modules/debugger/resources/breakpoint.gif"
+            highlight="0xRGB"
+            wholeline="false">
+        ]]>
+      </file>
+
+      <file name="CondBreakpoint">
+        <![CDATA[<?xml version="1.0"?>
+        <!DOCTYPE annotationtype PUBLIC "-//NetBeans//DTD annotation type 1.0//EN"
+          "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
+          <type visible="true"
+            glyph="/org/netbeans/modules/debugger/resources/breakpoint.gif"
+            highlight="0xRGB"
+            wholeline="true">
+        ]]>
+      </file>
+
+      <file name="DisabledCondBreakpoint">
+        <![CDATA[<?xml version="1.0"?>
+        <!DOCTYPE annotationtype PUBLIC "-//NetBeans//DTD annotation type 1.0//EN"
+          "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
+          <type visible="true"
+            glyph="/org/netbeans/modules/debugger/resources/breakpoint.gif"
+            highlight="0xRGB"
+            wholeline="false">
+        ]]>
+      </file>
+
+      <file name="CurrentPC">
+        <![CDATA[<?xml version="1.0"?>
+        <!DOCTYPE annotationtype PUBLIC "-//NetBeans//DTD annotation type 1.0//EN"
+          "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
+          <type visible="true"
+            glyph="/org/netbeans/modules/debugger/resources/breakpoint.gif"
+            highlight="0xRGB"
+            wholeline="true">
+        ]]>
+      </file>
+
+      <file name="CallSite">
+        <![CDATA[<?xml version="1.0"?>
+        <!DOCTYPE annotationtype PUBLIC "-//NetBeans//DTD annotation type 1.0//EN"
+          "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
+          <type visible="true"
+            glyph="/org/netbeans/modules/debugger/resources/breakpoint.gif"
+            highlight="0xRGB"
+            wholeline="true">
+        ]]>
+      </file>
+
+      <file name="BreakpointableLine">
+        <![CDATA[<?xml version="1.0"?>
+        <!DOCTYPE annotationtype PUBLIC "-//NetBeans//DTD annotation type 1.0//EN"
+          "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
+          <type visible="true"
+            glyph="/org/netbeans/modules/debugger/resources/breakpoint.gif"
+            highlight="0xRGB"
+            wholeline="false">
+        ]]>
+      </file>
+
+   </folder> 
+  </folder> 
+
 </filesystem>
