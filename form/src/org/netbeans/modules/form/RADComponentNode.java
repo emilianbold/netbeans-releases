@@ -51,6 +51,7 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
   private final static MessageFormat formNameFormat = new MessageFormat (NbBundle.getBundle (RADComponentNode.class).getString ("FMT_FormName"));
   
   private RADComponent component;
+  private RADComponentInstance radComponentInstance;
   
   // FINALIZE DEBUG METHOD
   public void finalize () throws Throwable {
@@ -63,6 +64,7 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
   public RADComponentNode (RADComponent component) {
     super ((component instanceof ComponentContainer) ? new RADChildren ((ComponentContainer)component) : Children.LEAF);
     this.component = component;
+    radComponentInstance = new RADComponentInstance (component);
     component.setNodeReference (this);
     getCookieSet ().add (this);
     if (component instanceof ComponentContainer) {
@@ -255,6 +257,9 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
   * @return the cookie or <code>null</code>
   */
   public Node.Cookie getCookie (Class type) {
+    if (InstanceCookie.class.equals (type)) {
+      return radComponentInstance;
+    }
     Node.Cookie inh = super.getCookie (type);
     if (inh == null) {
       if (CompilerCookie.class.isAssignableFrom (type) || 
@@ -514,6 +519,7 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
         }
         copyComponent.initialize (pasteManager);
         copyComponent.setComponent (radComponent.getBeanClass ());
+//        copyComponent.setName
 //          formManager2.getVariablesPool ().createVariable (nodes[i].componentName, nodes[i].beanClass);
         if (copyComponent instanceof RADVisualContainer) {
 // [PENDING]  ((RADVisualContainer)copyComponent).setDesignLayout (((RADContainerNode)nodes[i]).designLayout);
@@ -642,6 +648,7 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
 
 /*
  * Log
+ *  29   Gandalf   1.28        7/28/99  Ian Formanek    Provides InstanceCookie
  *  28   Gandalf   1.27        7/28/99  Ian Formanek    Formatting of top-level 
  *       form node name
  *  27   Gandalf   1.26        7/25/99  Ian Formanek    Fixed bug with too many 
