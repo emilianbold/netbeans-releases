@@ -66,6 +66,19 @@ Microsystems, Inc. All Rights Reserved.
             <![CDATA[http://java.sun.com/products/jfc/tsc/]]>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
         </file>
+        <file name="netbeans-faq.url">
+            <![CDATA[http://www.netbeans.org/articles/faqs/index.html]]>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
+        </file>
+        <file name="ffj-kb.url">
+            <![CDATA[http://forte.sun.com/cgi-bin/WebX?customFaqs@111.39R7apexaKh^1@.ee6c6df]]>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
+        </file>
+        <attr name="netbeans-faq.url/ffj-kb.url" boolvalue="true"/>
+        <attr name="ffj-kb.url/apis-online.url" boolvalue="true"/>
+        <attr name="apis-online.url/java-web-site.url" boolvalue="true"/>
+        <attr name="java-web-site.url/jdc.url" boolvalue="true"/>
+        <attr name="jdc.url/swing.url" boolvalue="true"/>
     </folder>
     <folder name="Actions">
         <folder name="Help">
