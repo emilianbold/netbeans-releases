@@ -82,7 +82,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     */
     protected abstract boolean updateModelFromDocument() throws java.io.IOException;
     
-    /** Similar to updateModelFromDocument() except but data model is not modified.
+    /** Similar to updateModelFromDocument() but data model is not modified.
      */
     protected void validateSource(){
     }
