@@ -652,14 +652,24 @@ public class WebProjectProperties {
         save();
     }
     
-    /**
-     * TODO: AB: temporary fix for #54544. We need a way to set properties
-     * without resorting to WPP.
-     */
-    public void setServerInstance(String serverInstanceID) {
-        J2eePlatformUiSupport.setSelectedPlatform(J2EE_SERVER_INSTANCE_MODEL, serverInstanceID);
+    public static void setServerInstance(final Project project, final UpdateHelper helper, final String serverInstanceID) {
+        ProjectManager.mutex().writeAccess(new Runnable() {
+            public void run() {
+                try {
+                    EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                    setNewServerInstanceValue(serverInstanceID, project, projectProps, privateProps);
+                    helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
+                    helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
+                    ProjectManager.getDefault().saveProject(project);
+                }
+                catch (IOException e) {
+                    ErrorManager.getDefault().notify();
+                }
+            }
+        });
     }
-
+    
     /* This is used by CustomizerWSServiceHost */
     void putAdditionalProperty(String propertyName, String propertyValue) {
         additionalProperties.setProperty(propertyName, propertyValue);

@@ -56,13 +56,13 @@ public final class ProjectWebModule extends J2eeModuleProvider
     public static final String FILE_DD        = "web.xml";//NOI18N
 
     private WebProject project;
-    private AntProjectHelper helper;
+    private UpdateHelper helper;
     private Set versionListeners = null;
     private String fakeServerInstId = null; // used to get access to properties of other servers
 
     private long notificationTimeout = 0; // used to suppress repeating the same messages
 
-    ProjectWebModule (WebProject project, AntProjectHelper helper) {
+    ProjectWebModule (WebProject project, UpdateHelper helper) {
         this.project = project;
         this.helper = helper;
         project.evaluator ().addPropertyChangeListener (this);
@@ -128,8 +128,8 @@ public final class ProjectWebModule extends J2eeModuleProvider
     public FileObject getDocumentBase (boolean silent) {
         FileObject docBase = getFileObject(WebProjectProperties.WEB_DOCBASE_DIR);
         if (docBase == null && !silent) {
-            String relativePath = helper.getStandardPropertyEvaluator().getProperty(WebProjectProperties.WEB_DOCBASE_DIR);
-            String path = (relativePath != null ? helper.resolvePath(relativePath) : ""); // NOI18N
+            String relativePath = helper.getAntProjectHelper().getStandardPropertyEvaluator().getProperty(WebProjectProperties.WEB_DOCBASE_DIR);
+            String path = (relativePath != null ? helper.getAntProjectHelper().resolvePath(relativePath) : ""); // NOI18N
             showErrorMessage(NbBundle.getMessage(ProjectWebModule.class, "MSG_DocBase_Corrupted", //NOI18N
                     project.getName(), path));
         }
@@ -178,18 +178,18 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
     
     private FileObject getFileObject(String propname) {
-        String prop = helper.getStandardPropertyEvaluator().getProperty(propname);
+        String prop = helper.getAntProjectHelper().getStandardPropertyEvaluator().getProperty(propname);
         if (prop != null) {
-            return helper.resolveFileObject(prop);
+            return helper.getAntProjectHelper().resolveFileObject(prop);
         } else {
             return null;
         }
     }
     
     private File getFile(String propname) {
-        String prop = helper.getStandardPropertyEvaluator().getProperty(propname);
+        String prop = helper.getAntProjectHelper().getStandardPropertyEvaluator().getProperty(propname);
         if (prop != null) {
-            return helper.resolveFile(prop);
+            return helper.getAntProjectHelper().resolveFile(prop);
         } else {
             return null;
         }
@@ -249,19 +249,17 @@ public final class ProjectWebModule extends J2eeModuleProvider
                 return id;
             }
         }
-        return helper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.J2EE_SERVER_TYPE);
+        return helper.getAntProjectHelper().getStandardPropertyEvaluator ().getProperty (WebProjectProperties.J2EE_SERVER_TYPE);
     }
 
     public String getServerInstanceID () {
         if (fakeServerInstId != null)
             return fakeServerInstId;
-        return helper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.J2EE_SERVER_INSTANCE);
+        return helper.getAntProjectHelper().getStandardPropertyEvaluator ().getProperty (WebProjectProperties.J2EE_SERVER_INSTANCE);
     }
     
     public void setServerInstanceID(String severInstanceID) {
-        WebProjectProperties wpp = project.getWebProjectProperties();
-        wpp.setServerInstance(severInstanceID);
-        wpp.save();
+        WebProjectProperties.setServerInstance(project, helper, severInstanceID);
     }
     
     public Iterator getArchiveContents () throws java.io.IOException {
@@ -406,7 +404,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
 
     public String getJ2eePlatformVersion () {
-        return helper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.J2EE_PLATFORM);
+        return helper.getAntProjectHelper().getStandardPropertyEvaluator ().getProperty (WebProjectProperties.J2EE_PLATFORM);
     }
     
     public FileObject getDD() {

@@ -237,13 +237,13 @@ public final class WebProject implements Project, AntProjectListener, FileChange
         aux = helper.createAuxiliaryConfiguration();
         refHelper = new ReferenceHelper(helper, aux, eval);
         genFilesHelper = new GeneratedFilesHelper(helper);
-        webModule = new ProjectWebModule (this, helper);
+        this.updateHelper = new UpdateHelper (this, this.helper, this.aux, this.genFilesHelper, UpdateHelper.createDefaultNotifier());
+        webModule = new ProjectWebModule (this, updateHelper);
         apiWebModule = WebModuleFactory.createWebModule (webModule);
         webProjectWebServicesSupport = new WebProjectWebServicesSupport(this, helper, refHelper);
         apiWebServicesSupport = WebServicesSupportFactory.createWebServicesSupport (webProjectWebServicesSupport);
         apiWebServicesClientSupport = WebServicesSupportFactory.createWebServicesClientSupport (webProjectWebServicesSupport);
         enterpriseResourceSupport = new WebContainerImpl(this, refHelper, helper);
-        this.updateHelper = new UpdateHelper (this, this.helper, this.aux, this.genFilesHelper, UpdateHelper.createDefaultNotifier());
         classPathExtender = new WebProjectClassPathExtender(this, updateHelper, evaluator(), refHelper);
         lookup = createLookup(aux);
         helper.addAntProjectListener(this);
@@ -648,8 +648,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                     J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(servInstID);
                     if (platform != null) {
                         // updates j2ee.platform.cp & wscompile.cp & reg. j2ee platform listener
-                        wpp.setServerInstance(servInstID);
-                        wpp.store();
+                        WebProjectProperties.setServerInstance(WebProject.this, WebProject.this.updateHelper, servInstID);
                     } else {
                         // if there is some server instance of the type which was used
                         // previously do not ask and use it
@@ -657,8 +656,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                         if (serverType != null) {
                             String[] servInstIDs = Deployment.getDefault().getInstancesOfServer(serverType);
                             if (servInstIDs.length > 0) {
-                                wpp.setServerInstance(servInstIDs[0]);
-                                wpp.store();
+                                WebProjectProperties.setServerInstance(WebProject.this, WebProject.this.updateHelper, servInstIDs[0]);
                                 platform = Deployment.getDefault().getJ2eePlatform(servInstIDs[0]);
                             }
                         }

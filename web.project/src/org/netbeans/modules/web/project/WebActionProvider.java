@@ -1135,9 +1135,7 @@ class WebActionProvider implements ActionProvider {
     }
     
     private void setServerInstance(String serverInstanceId) {
-        WebProjectProperties wpp = new WebProjectProperties (project, updateHelper, project.evaluator(), project.getReferenceHelper());
-        wpp.setServerInstance(serverInstanceId);
-        wpp.store ();
+        WebProjectProperties.setServerInstance(project, updateHelper, serverInstanceId);
     }
     
     private boolean isDDServlet(Lookup context, FileObject javaClass) {
