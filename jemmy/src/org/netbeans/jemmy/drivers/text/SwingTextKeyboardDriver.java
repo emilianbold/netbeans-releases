@@ -79,8 +79,8 @@ public class SwingTextKeyboardDriver extends TextKeyboardDriver {
 	    result[6] = new HomeKey(KeyEvent.VK_HOME, InputEvent.CTRL_MASK);
 	    result[7] = new  EndKey(KeyEvent.VK_END , InputEvent.CTRL_MASK, this, oper);
 	} else {
-	    result[2] = new HomeKey(KeyEvent.VK_HOME, InputEvent.CTRL_MASK);
-	    result[3] = new  EndKey(KeyEvent.VK_END , InputEvent.CTRL_MASK, this, oper);
+	    result[2] = new HomeKey(KeyEvent.VK_HOME, 0);
+	    result[3] = new  EndKey(KeyEvent.VK_END , 0, this, oper);
 	}
 	return(result);
     }

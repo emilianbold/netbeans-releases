@@ -23,7 +23,7 @@ public class jemmy_028 extends JemmyTest {
 
 	try {
 
-	    if((JemmyProperties.getCurrentDispatchingModel() & JemmyProperties.ROBOT_MODEL_MASK) > 0) {
+	    if(!System.getProperty("java.version").startsWith("1.2")) {
 		Operator.setDefaultComponentVisualizer(new MouseVisualizer());
 	    } else {
 		Operator.setDefaultComponentVisualizer(new DefaultVisualizer());

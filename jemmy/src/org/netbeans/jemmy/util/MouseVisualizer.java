@@ -24,6 +24,8 @@ import org.netbeans.jemmy.Timeouts;
 
 import org.netbeans.jemmy.drivers.DriverManager;
 
+import org.netbeans.jemmy.drivers.input.MouseRobotDriver;
+
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JInternalFrameOperator;
 import org.netbeans.jemmy.operators.JScrollPaneOperator;
@@ -88,7 +90,7 @@ public class MouseVisualizer extends DefaultVisualizer {
 	if(winOper.getFocusOwner() == null) {
 	    super.activate(winOper);
 	    Point p = getClickPoint(winOper);
-	    DriverManager.getMouseDriver(WindowOperator.class).
+	    new MouseRobotDriver(winOper.getTimeouts().create("EventDispatcher.RobotAutoDelay")).
 		clickMouse(winOper, p.x, p.y,
 			   1, winOper.getDefaultMouseButton(),
 			   0, 
