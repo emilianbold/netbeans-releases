@@ -41,6 +41,7 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
     private final EditorCookie.Observable edit;
     
     private StyledDocument document = null;
+    private int listenerCount = 0; // for assertions only
     private final Listener listener;
 
     /**
@@ -89,16 +90,25 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
      * are attached to it and not its predecessor.
      */
     private void refreshDocument() throws IOException {
+        System.err.println("rD begin");//XXX
         StyledDocument oldDocument = document;
         // XXX is openDocument safe to call from any thread? probably yes, for now...
-        document = edit.openDocument();
+        edit.removePropertyChangeListener(listener);
+        try {
+            document = edit.openDocument();
+        } finally {
+            edit.addPropertyChangeListener(listener);
+        }
         assert document != null;
         if (document != oldDocument) {
             if (oldDocument != null) {
                 oldDocument.removeDocumentListener(listener);
+                assert --listenerCount == 0;
             }
             document.addDocumentListener(listener);
+            assert ++listenerCount == 1 : listenerCount;
         }
+        System.err.println("rD end");//XXX
     }
     
     /**
@@ -157,10 +167,15 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
         final Exception[] exc = new Exception[1];
         Runnable r = new Runnable() {
             public void run() {
+                document.removeDocumentListener(listener);
+                assert --listenerCount == 0;
                 try {
                     val[0] = doRecreate(document, oldValue, derivedDelta);
                 } catch (Exception e) {
                     exc[0] = e;
+                } finally {
+                    document.addDocumentListener(listener);
+                    assert ++listenerCount == 1;
                 }
             }
         };
@@ -201,6 +216,8 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
      * Listens to changes in identity or content of the text document.
      */
     private final class Listener implements DocumentListener, PropertyChangeListener {
+        
+        // XXX getting >1 i/rU for one change?
         
         public void insertUpdate(DocumentEvent e) {
             System.err.println("DPS.iU");//XXX
