@@ -582,7 +582,7 @@ public abstract class NbTopManager {
                     char cc = (char)c;
                     if (inkey) {
                         if (cc == sep) {
-                            throw new IOException("null-term'd key"); // NOI18N
+                            throw new IOException("Environment variable name starting with '" + key + "' contained the separator (char)" + (int)sep); // NOI18N
                         } else if (cc == '=') {
                             inkey = false;
                         } else {
