@@ -87,9 +87,7 @@ public class RootNodeInfo extends DatabaseNodeInfo implements ConnectionOwnerOpe
             ninfo.setDatabaseConnection(cinfo);
             cons.add(cinfo);
             DatabaseNode cnode = children.createSubnode(ninfo, true);
-            if (usr != null && usr.length() > 0 && pwd != null && pwd.length() > 0) {
-                ((ConnectionNodeInfo)cnode.getInfo()).connect();
-            }
+            ((ConnectionNodeInfo)cnode.getInfo()).connect();
         } catch (Exception e) {
             e.printStackTrace();
             throw new DatabaseException(e.getMessage());
