@@ -81,6 +81,7 @@ class ChooseProjectWizardPanel implements WizardDescriptor.Panel {
         if (projectChooser != null) {
             File file = projectChooser.getSelectedFile();
             if (file != null) {
+                file = FileUtil.normalizeFile(file);
                 FileObject projectDir = FileUtil.toFileObject(file);
                 try {
                     Project project = ProjectManager.getDefault()
@@ -107,6 +108,7 @@ class ChooseProjectWizardPanel implements WizardDescriptor.Panel {
         File file = projectChooser.getSelectedFile();
         if (file == null)
             return;
+        file = FileUtil.normalizeFile(file);
 
         Project project = null;
         try {
