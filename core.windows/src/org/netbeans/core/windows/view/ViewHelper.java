@@ -156,12 +156,6 @@ final class ViewHelper {
     
     private static ElementAccessor createSplitAccessor(ModeStructureSnapshot.SplitSnapshot splitSnapshot) {
         List visibleChildren = splitSnapshot.getVisibleChildSnapshots();
-        // Prepare how to distribute the rest of weights.
-        double visibleResizeWeights = 0D;
-        for(Iterator it = visibleChildren.iterator(); it.hasNext(); ) {
-            ModeStructureSnapshot.ElementSnapshot next = (ModeStructureSnapshot.ElementSnapshot)it.next();
-            visibleResizeWeights += next.getResizeWeight();
-        }
         
         List invisibleChildren = splitSnapshot.getChildSnapshots();
         invisibleChildren.removeAll(visibleChildren);
@@ -171,17 +165,14 @@ final class ViewHelper {
             invisibleWeights += splitSnapshot.getChildSnapshotSplitWeight(next);
         }
         
+        double delta = invisibleWeights;
         // Get the refined weights to work with.
         Map visibleChild2refinedWeight = new HashMap();
         for(Iterator it = visibleChildren.iterator(); it.hasNext(); ) {
             ModeStructureSnapshot.ElementSnapshot next = (ModeStructureSnapshot.ElementSnapshot)it.next();
-            double refinedWeight;
-            if(visibleResizeWeights > 0D) {
-                refinedWeight = splitSnapshot.getChildSnapshotSplitWeight(next)
-                    + ((next.getResizeWeight() / visibleResizeWeights) * invisibleWeights);
-            } else {
-                refinedWeight = splitSnapshot.getChildSnapshotSplitWeight(next);
-            }
+            double refinedWeight = splitSnapshot.getChildSnapshotSplitWeight(next);
+            if( !it.hasNext() )
+                refinedWeight += delta; //add the weight of invisible children to the last element
             
             visibleChild2refinedWeight.put(next, new Double(refinedWeight));
         }
@@ -251,6 +242,7 @@ final class ViewHelper {
     public static boolean computeSplitWeights(double location, SplitAccessor splitAccessor,
     ElementAccessor firstAccessor, ElementAccessor secondAccessor, ControllerHandler controllerHandler) {
         ModeStructureSnapshot.SplitSnapshot splitSnapshot = (ModeStructureSnapshot.SplitSnapshot)splitAccessor.getSnapshot();
+
         if(splitSnapshot == null) {
             return false;
         }
@@ -298,10 +290,32 @@ final class ViewHelper {
             remainingWeights += childWeight;
         }
         
-        double firstWeight = location * (currentFirstWeight + remainingWeights);
+        double invisibleFirstWeight = 0.0D;
+        int indexOfFirst = allChildren.indexOf( first );
+        for( int i=0; i<indexOfFirst; i++ ) {
+            ElementSnapshot es = (ElementSnapshot)allChildren.get( i );
+            if( !visibleChildren.contains( es ) ) {
+                double childWeight = splitSnapshot.getChildSnapshotSplitWeight(es);
+                invisibleFirstWeight += childWeight;
+            }
+        }
+        
+        double firstWeight = location * (currentFirstWeight + invisibleFirstWeight + remainingWeights);
+
         double delta = currentFirstWeight - firstWeight;
 
         double secondWeight = currentSecondWeight + delta;
+
+        //just a safeguard so that the model doesn't fall apart
+        if( secondWeight <= 0.0 )
+            secondWeight = 0.001;
+        if( secondWeight >= 1.0 )
+            secondWeight = 0.999;
+
+        if( firstWeight <= 0.0 )
+            firstWeight = 0.001;
+        if( firstWeight >= 1.0 )
+            firstWeight = 0.999;
 
         controllerHandler.userChangedSplit(first.getOriginator(), firstWeight, second.getOriginator(), secondWeight);
 
