@@ -17,8 +17,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyEditor;
 import java.lang.IllegalAccessException;
+import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.WeakHashMap;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 
@@ -256,7 +258,7 @@ public class TreeModelNode extends AbstractNode {
         private CompoundModel       model;
         private TreeModelRoot       treeModelRoot;
         private Object              object;
-        private HashMap             objectToNode = new HashMap ();
+        private WeakHashMap         objectToNode = new WeakHashMap ();
         
         
         TreeModelChildren (
@@ -288,19 +290,20 @@ public class TreeModelNode extends AbstractNode {
                     model.getChildrenCount (object)
                 );
                 int i, k = ch.length; 
-                HashMap newObjectToNode = new HashMap ();
+                WeakHashMap newObjectToNode = new WeakHashMap ();
                 for (i = 0; i < k; i++) {
                     if (ch [i] == null) {
                         System.out.println("model: " + model);
                         System.out.println("parent: " + object);
                         throw new NullPointerException ();
                     }
-                    TreeModelNode tmn = (TreeModelNode) objectToNode.get 
+                    WeakReference wr = (WeakReference) objectToNode.get 
                         (ch [i]);
-                    if (tmn != null) {
-                        tmn.setObject (ch [i]);
-                        newObjectToNode.put (ch [i], tmn);
-                    }
+                    if (wr == null) continue;
+                    TreeModelNode tmn = (TreeModelNode) wr.get ();
+                    if (tmn == null) continue;
+                    tmn.setObject (ch [i]);
+                    newObjectToNode.put (ch [i], wr);
                 }
                 objectToNode = newObjectToNode;
                 setKeys (ch);
@@ -339,7 +342,7 @@ public class TreeModelNode extends AbstractNode {
                 treeModelRoot, 
                 object
             );
-            objectToNode.put (object, tmn);
+            objectToNode.put (object, new WeakReference (tmn));
             return new Node[] {tmn};
         }
     } // ItemChildren
