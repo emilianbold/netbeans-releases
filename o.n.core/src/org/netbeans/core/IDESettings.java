@@ -56,10 +56,12 @@ public class IDESettings extends SystemOption {
     public static final String PROP_HOME_PAGE = "homePage"; // NOI18N
     /** use proxy property name */
     public static final String PROP_USE_PROXY = "useProxy"; // NOI18N
+    /** use proxy property name */
+    public static final String PROP_PROXY_TYPE = "proxyType"; // NOI18N
     /** proxy host property name */
-    public static final String PROP_PROXY_HOST = "proxyHost"; // NOI18N
+    public static final String PROP_PROXY_HOST = "userProxyHost"; // NOI18N
     /** proxy port property name */
-    public static final String PROP_PROXY_PORT = "proxyPort"; // NOI18N
+    public static final String PROP_PROXY_PORT = "userProxyPort"; // NOI18N
     /** show file extensions property name */
     public static final String PROP_SHOW_FILE_EXTENSIONS = "showFileExtensions"; // NOI18N
     /** sorting style of Modules node */
@@ -92,6 +94,14 @@ public class IDESettings extends SystemOption {
     public static final int MODULES_SORT_URL = 4;
     public static final int MODULES_SORT_CATEGORY = 5;
 
+    /** No proxy is used to connect.*/
+    public static final int DIRECT_CONNECTION = 0;
+    /** Proxy setting is automaticaly detect in OS.*/
+    public static final int AUTO_DETECT_PROXY = 1; // as default
+    /** Manualy set proxy host and port.
+     * @see setUserProxyHost, setUserProxyPort
+     */
+    public static final int MANUAL_SET_PROXY = 2;
     // ------------------------------------------
     // properties
 
@@ -102,8 +112,9 @@ public class IDESettings extends SystemOption {
     private static int modulesSortMode = MODULES_SORT_CATEGORY;
 
     private static boolean useProxy = false;
-    private static String proxyHost = System.getProperty(KEY_PROXY_HOST, "");
-    private static String proxyPort = System.getProperty(KEY_PROXY_PORT, "");
+    private static int proxyType = -1; // not initialized
+    private static String userProxyHost = System.getProperty(KEY_PROXY_HOST, "");
+    private static String userProxyPort = System.getProperty(KEY_PROXY_PORT, "");
     
     private static int uiMode = 2; // MDI default
     
@@ -112,42 +123,12 @@ public class IDESettings extends SystemOption {
      */ 
     private static String ignoredFiles = "^(CVS|SCCS|vssver\\.scc|#.*#|%.*%|\\.(cvsignore|svn|DS_Store))$|^\\.[#_]|~$"; //NOI18N    
 
-    /** Getter for properties file with proxy properties. Installer provides
-     * this file.*/
-    private static Properties getPreInitProxyProps () throws IOException {
-        final String ideHome = System.getProperty("netbeans.home"); //NOI18N
-        final String propsRelPath = "installer/pre-settings.properties"; //NOI18N        
-        final InputStream propsIStream = new FileInputStream (new File(ideHome, propsRelPath));
-        
-        Properties propsRetVal = new Properties ();
-        propsRetVal.load(propsIStream);
-        propsIStream.close();
-        return propsRetVal;
-    }
-    
     // do NOT use constructore for setting default values
     protected void initialize () {
         // Set default values of properties        
         super.initialize ();
-        
-        /** default values for proxy properties taken from installer **/
-        String newProxyHost = proxyHost;
-        String newProxyPort =  proxyPort ;
-        if (proxyHost.length() == 0 || proxyPort.length() == 0) {
-            try {
-                Properties props =  getPreInitProxyProps();
-                newProxyHost = props.getProperty("proxy_host"); //NOI18N
-                newProxyPort = props.getProperty("proxy_port"); //NOI18N
-            } catch (IOException iox) {
-                ;// ProxyHost and ProxyPort won`t be overtaken from installer
-            }                      
-
-            if (newProxyHost != null && newProxyPort != null) {
-                setProxyHost (newProxyHost);
-                setProxyPort(newProxyPort);                
-                setUseProxy (newProxyHost.length() != 0 && newProxyPort.length() != 0);
-            }
-        }        
+        System.setProperty (KEY_PROXY_HOST, getProxyHost ());
+        System.setProperty (KEY_PROXY_PORT, getProxyPort ());
         putProperty(PROP_WWWBROWSER, "", false);
     }
             
@@ -234,71 +215,182 @@ public class IDESettings extends SystemOption {
     }
 
     /** Getter for proxy set flag.
+     * @deprecated Use <code>setProxyType(int)</code>
     */
     public boolean getUseProxy () {
         return useProxy;
     }
 
     /** Setter for proxy set flag.
+     * @deprecated Use <code>getProxyType()</code>
     */
     public void setUseProxy (boolean value) {
         if (useProxy != value) {
-            boolean oldValue = useProxy;
-            useProxy = value;
             if (value) {
-                // apply the current proxyHost:proxyPort settings
-                System.setProperty(KEY_PROXY_HOST, getProxyHost());
-                System.setProperty(KEY_PROXY_PORT, getProxyPort());
-                System.setProperty(KEY_NON_PROXY_HOSTS, getDefaultNonProxyHosts());
+                setProxyType (MANUAL_SET_PROXY);
             } else {
-                // reset properties so that they don't apply
-                System.setProperty(KEY_PROXY_HOST, ""); // NOI18N
-                System.setProperty(KEY_PROXY_PORT, ""); // NOI18N
-                System.setProperty(KEY_NON_PROXY_HOSTS, ""); // NOI18N
+                // do auto-detect rather then direct connection
+                setProxyType (AUTO_DETECT_PROXY);
             }
-            // notify listeners
-            firePropertyChange(PROP_USE_PROXY,
-                               oldValue ? Boolean.TRUE : Boolean.FALSE,
-                               value ? Boolean.TRUE : Boolean.FALSE);
+        }
+    }
+    
+    /**
+     * Gets the type of proxy, the dafault value is <code>AUTO_DETECT_PROXY</code>.
+     * @see getProxyType
+     * @return type of proxy settings
+     */
+    public int getProxyType () {
+        return (proxyType == -1) ? AUTO_DETECT_PROXY /* as default */: proxyType;
+    }
+    
+    /**
+     * Sets the type of proxy. Possible values are:
+     * <ul>
+     * <li>IDESettings.DIRECT_CONNECTION</li>
+     * <li>IDESettings.AUTO_DETECT_PROXY</li>
+     * <li>IDESettings.MANUAL_SET_PROXY</li>
+     * </ul>
+     * @param type of proxy settings
+     */
+    public void setProxyType (int value) {
+        if (proxyType != value) {
+            int oldProxyType = proxyType;
+            boolean oldUseProxy = getUseProxy ();
+            String oldHost = getProxyHost ();
+            String oldPort = getProxyPort ();
+            this.proxyType = value;
+            
+            if (oldUseProxy != getUseProxy ()) {
+                firePropertyChange (PROP_USE_PROXY, oldUseProxy ? Boolean.TRUE : Boolean.FALSE, getUseProxy () ? Boolean.TRUE : Boolean.FALSE);
+            }
+            if (!oldHost.equals (getProxyHost ())) {
+                firePropertyChange (PROP_PROXY_HOST, oldHost, getProxyHost ());
+            }
+            if (!oldPort.equals (getProxyPort ())) {
+                firePropertyChange (PROP_PROXY_PORT, oldPort, getProxyPort ());
+            }
+            System.setProperty (KEY_PROXY_HOST, getProxyHost ());
+            System.setProperty (KEY_PROXY_PORT, getProxyPort ());
         }
     }
 
-    /** Getter for proxy host.
-    */
+    /**
+     * Returns name of proxy host.
+     * @return proxy host
+     */
+    public String getUserProxyHost () {
+        return userProxyHost;
+    }
+   
+    /**
+     * Returns name of proxy port.
+     * @return proxy port
+     */
+    public String getUserProxyPort () {
+        return userProxyPort;
+    }
+   
+    /**
+     * Sets name of proxy host, will used if the proxy type <code>MANUAL_SET_PROXY</code> is set.
+     * @param proxy host
+     */
+    public void setUserProxyHost (String value) {
+        value = value == null ? "" : value;
+        String oldUserHost = getUserProxyHost ();
+        if (!value.equals (oldUserHost)) {
+            this.userProxyHost = value;
+            if (MANUAL_SET_PROXY == getProxyType ()) {
+                System.setProperty (KEY_PROXY_HOST, value);
+                firePropertyChange (PROP_PROXY_HOST, oldUserHost, value);
+            }
+        }
+    }
+   
+    /**
+     * Sets name of proxy port, will used if the proxy type <code>MANUAL_SET_PROXY</code> is set.
+     * @param proxy port
+     */
+    public void setUserProxyPort (String value) {
+        value = value == null ? "" : value;
+        String oldUserPort = getUserProxyPort ();
+        if (!value.equals (oldUserPort)) {
+            this.userProxyPort = value;
+            if (MANUAL_SET_PROXY == getProxyType ()) {
+                System.setProperty (KEY_PROXY_PORT, value);
+                firePropertyChange (PROP_PROXY_PORT, oldUserPort, value);
+            }
+        }
+    }
+    
+    /**
+     * Getter for proxy host.
+     * Same value returns <code>System.getValue("http.proxyHost")</code>.
+     * @return proxy host
+     */
     public String getProxyHost () {
-        return proxyHost;
+        switch (getProxyType ()) {
+            case AUTO_DETECT_PROXY :
+                return getSystemProxyHost ();
+            case MANUAL_SET_PROXY :
+                return getUserProxyHost ();
+            case DIRECT_CONNECTION :
+                return ""; // NOI18N
+        }
+        
+        assert false : "Unknown proxy type " + getProxyType ();
+        return null;
     }
 
-    /** Setter for proxy host.
-    */
+    /** Setter for proxy host, sets the HTTP proxy host if and only if proxy type is <code>MANUAL_SET_PROXY</code>.
+     * @deprecated Use setUserProxyHost(String)
+     * @param proxy host
+     */
     public void setProxyHost (String value) {
-        if (!proxyHost.equals(value)) {
-            String oldValue = proxyHost;
-            proxyHost = value;
-            if (getUseProxy()) {
-                System.setProperty(KEY_PROXY_HOST, proxyHost);
+        value = value == null ? "" : value;
+        if (MANUAL_SET_PROXY == getProxyType ()) {
+            if (!getUserProxyHost().equals (value)) {
+                String oldHost = getUserProxyHost ();
+                setUserProxyHost (value);
+                System.setProperty (KEY_PROXY_HOST, value);
             }
-            firePropertyChange(PROP_PROXY_HOST, oldValue, proxyHost);
         }
+        assert false : "Don't set proxy host if proxy type " + getProxyType ();
     }
 
-    /** Getter for proxy port. my ffjBuild -update 
-    */
+    /**
+     * Getter for proxy port.
+     * Same value returns <code>System.getValue("http.proxyPort")</code>
+     * @return proxy port
+     */
     public String getProxyPort () {
-        return proxyPort;
+        switch (getProxyType ()) {
+            case AUTO_DETECT_PROXY :
+                return getSystemProxyPort ();
+            case MANUAL_SET_PROXY :
+                return getUserProxyPort ();
+            case DIRECT_CONNECTION :
+                return ""; // NOI18N
+        }
+        
+        assert false : "Unknown proxy type " + getProxyType ();
+        return null;
     }
 
-    /** Setter for proxy port.
-    */
+    /** Setter for proxy port, sets the HTTP proxy port if and only if proxy type is <code>MANUAL_SET_PROXY</code>.
+     * @deprecated Use setUserProxyPort(String)
+     * @param proxy port
+     */
     public void setProxyPort (String value) {
-        if (!proxyPort.equals(value)) {
-            String oldValue = proxyPort;
-            proxyPort = value;
-            if (getUseProxy()) {
-                System.setProperty (KEY_PROXY_PORT, proxyPort);
+        value = value == null ? "" : value;
+        if (MANUAL_SET_PROXY == getProxyType ()) {
+            if (!getUserProxyPort ().equals (value)) {
+                String oldPort = getUserProxyPort ();
+                setUserProxyPort (value);
+                System.setProperty (KEY_PROXY_PORT, getProxyPort ());
             }
-            firePropertyChange(PROP_PROXY_PORT, oldValue, proxyPort);
         }
+        assert false : "Don't set proxy port if proxy type " + getProxyType ();
     }
 
     /** Getter for showing file extensions.
@@ -465,4 +557,33 @@ public class IDESettings extends SystemOption {
             }
         }
     }
+    
+    private String getSystemProxyHost () {
+        String systemProxy = System.getProperty ("netbeans.system_http_proxy"); // NOI18N
+        if (systemProxy == null) {
+            return ""; // NOI18N
+        }
+
+        int i = systemProxy.indexOf (":"); // NOI18N
+        if (i <= 0 || i >= systemProxy.length () - 1) {
+            return ""; // NOI18N
+        }
+
+        return systemProxy.substring (0, i);
+    }
+   
+    private String getSystemProxyPort () {
+        String systemProxy = System.getProperty ("netbeans.system_http_proxy"); // NOI18N
+        if (systemProxy == null) {
+            return ""; // NOI18N
+         }
+
+        int i = systemProxy.indexOf (":"); // NOI18N
+        if (i <= 0 || i >= systemProxy.length () - 1) {
+            return ""; // NOI18N
+        }
+
+        return systemProxy.substring (i+1);
+    }
+    
 }
