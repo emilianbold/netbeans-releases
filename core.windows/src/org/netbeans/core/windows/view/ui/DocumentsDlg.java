@@ -56,6 +56,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.cookies.SaveCookie;
 
+import org.netbeans.core.NbTopManager; // XXX core dependency.
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.WindowManagerImpl;
@@ -66,7 +67,7 @@ import org.netbeans.core.windows.WindowManagerImpl;
  * @author  Marek Slama
  */
 public class DocumentsDlg extends javax.swing.JPanel
-implements HelpCtx.Provider, PropertyChangeListener {
+implements PropertyChangeListener {
     
     private static DocumentsDlg defaultInstance;
     
@@ -82,6 +83,10 @@ implements HelpCtx.Provider, PropertyChangeListener {
         jButtonSave.setText(NbBundle.getMessage(DocumentsDlg.class, "LBL_SaveDocuments"));
         explorerLabel.setText(NbBundle.getMessage(DocumentsDlg.class, "LBL_Documents"));
         descriptionLabel.setText(NbBundle.getMessage(DocumentsDlg.class, "LBL_Description"));
+        
+        closeButton.setText(NbBundle.getMessage(DocumentsDlg.class, "LBL_Close"));
+        helpButton.setText(NbBundle.getMessage(DocumentsDlg.class, "LBL_Help"));
+            
         // Mnemonics
         jButtonActivate.setMnemonic(NbBundle.getMessage(DocumentsDlg.class, "LBL_Activate_Mnemonic").charAt(0));
         jButtonClose.setMnemonic(NbBundle.getMessage(DocumentsDlg.class, "LBL_CloseDocuments_Mnemonic").charAt(0));
@@ -89,9 +94,15 @@ implements HelpCtx.Provider, PropertyChangeListener {
         explorerLabel.setDisplayedMnemonic(NbBundle.getMessage(DocumentsDlg.class, "LBL_Documents_Mnemonic").charAt(0));
         descriptionLabel.setDisplayedMnemonic(NbBundle.getMessage(DocumentsDlg.class, "LBL_Description_Mnemonic").charAt(0));
         
+        closeButton.setMnemonic(NbBundle.getMessage(DocumentsDlg.class, "LBL_Close_Mnemonic").charAt(0));
+        helpButton.setMnemonic(NbBundle.getMessage(DocumentsDlg.class, "LBL_Help_Mnemonic").charAt(0));
+        
         // Set labels for.
         explorerLabel.setLabelFor(listView);
         descriptionLabel.setLabelFor(descriptionArea);
+        
+        // Accessible context.
+        closeButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DocumentsDlg.class, "ACSD_Close"));
     }
     
 
@@ -124,31 +135,32 @@ implements HelpCtx.Provider, PropertyChangeListener {
         jButtonActivate = new javax.swing.JButton();
         jButtonClose = new javax.swing.JButton();
         jButtonSave = new javax.swing.JButton();
+        closeButton = new javax.swing.JButton();
+        helpButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
         setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 0, 11)));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         add(explorerLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         add(descriptionLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridheight = 3;
+        gridBagConstraints.gridheight = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(explorerPanel, gridBagConstraints);
 
         jScrollPane1.setPreferredSize(new java.awt.Dimension(3, 60));
@@ -157,9 +169,11 @@ implements HelpCtx.Provider, PropertyChangeListener {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridheight = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
         add(jScrollPane1, gridBagConstraints);
 
         jButtonActivate.addActionListener(new java.awt.event.ActionListener() {
@@ -173,6 +187,7 @@ implements HelpCtx.Provider, PropertyChangeListener {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         add(jButtonActivate, gridBagConstraints);
 
         jButtonClose.addActionListener(new java.awt.event.ActionListener() {
@@ -186,6 +201,7 @@ implements HelpCtx.Provider, PropertyChangeListener {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         add(jButtonClose, gridBagConstraints);
 
         jButtonSave.addActionListener(new java.awt.event.ActionListener() {
@@ -198,11 +214,50 @@ implements HelpCtx.Provider, PropertyChangeListener {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.weighty = 1.0;
         add(jButtonSave, gridBagConstraints);
 
+        closeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                closeButtonActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
+        gridBagConstraints.weighty = 0.1;
+        add(closeButton, gridBagConstraints);
+
+        helpButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                helpButtonActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
+        add(helpButton, gridBagConstraints);
+
     }//GEN-END:initComponents
+
+    private void helpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpButtonActionPerformed
+        // XXX
+        NbTopManager.get().showHelp(getHelpCtx());
+    }//GEN-LAST:event_helpButtonActionPerformed
+
+    private void closeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeButtonActionPerformed
+        closeDialog();
+    }//GEN-LAST:event_closeButtonActionPerformed
 
     private void saveDocuments(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveDocuments
         // Add your handling code here:
@@ -308,14 +363,11 @@ implements HelpCtx.Provider, PropertyChangeListener {
 
     public static void showDocumentsDialog() {
         DocumentsDlg documentsPanel = getDefault();
-        JButton closeButton = new JButton(NbBundle.getMessage(DocumentsDlg.class, "CTL_Close"));
-        closeButton.setMnemonic(NbBundle.getMessage(DocumentsDlg.class, "CTL_Close_Mnemonic").charAt(0));
-        closeButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DocumentsDlg.class, "ACSD_Close"));
         DialogDescriptor dlgDesc = new DialogDescriptor(
             documentsPanel,
             NbBundle.getMessage(DocumentsDlg.class, "CTL_DocumentsTitle"),
             true, // is modal!!
-            new Object[] {closeButton},
+            new Object[0],
             // make "switcch to document" button default
             getDefault().jButtonActivate,
             DialogDescriptor.DEFAULT_ALIGN,
@@ -430,10 +482,12 @@ implements HelpCtx.Provider, PropertyChangeListener {
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton closeButton;
     private javax.swing.JTextArea descriptionArea;
     private javax.swing.JLabel descriptionLabel;
     private javax.swing.JLabel explorerLabel;
     private javax.swing.JPanel explorerPanel;
+    private javax.swing.JButton helpButton;
     private javax.swing.JButton jButtonActivate;
     private javax.swing.JButton jButtonClose;
     private javax.swing.JButton jButtonSave;
