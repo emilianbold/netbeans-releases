@@ -190,7 +190,7 @@ public final class ActionUtils {
         }
         return (FileObject[])files.toArray(new FileObject[files.size()]);
     }
-
+    
     /**
      * Create an "includes" string such as is accepted by many Ant commands
      * as well as filesets.
@@ -203,6 +203,22 @@ public final class ActionUtils {
      * @throws IllegalArgumentException in case some file is not in the directory
      */
     public static String antIncludesList(FileObject[] files, FileObject dir) throws IllegalArgumentException {
+        return antIncludesList (files, dir, true);
+    }
+
+    /**
+     * Create an "includes" string such as is accepted by many Ant commands
+     * as well as filesets.
+     * <samp>/</samp> is always used as the separator in the relative paths.
+     * @param files a list of files or folders to include, in the case of folder
+     * the generated include contains recursively all files under the folder.
+     * @param dir a directory in which all the files reside
+     * @param recursive if true the include list for directory is recursive
+     * @return a comma-separated list of relative file paths suitable for use by Ant
+     *         (the empty string in case there are no files)
+     * @throws IllegalArgumentException in case some file is not in the directory
+     */
+    public static String antIncludesList(FileObject[] files, FileObject dir, boolean recursive) throws IllegalArgumentException {
         if (!dir.isFolder()) {
             throw new IllegalArgumentException("Not a folder: " + dir); // NOI18N
         }
@@ -215,14 +231,16 @@ public final class ActionUtils {
             if (i > 0) {
                 b.append(',');
             }            
-            if (path.length() > 0) {
-                b.append(path);
-                if (files[i].isFolder()) {
-                    b.append('/');
-                }
-            } else {
+            b.append(path);
+            if (files[i].isFolder()) {
                 // files[i] == dir, cannot use "/".
-                b.append("**");
+                if (path.length() > 0) {                    
+                    b.append('/');  //NOI18N
+                }
+                b.append('*');  //NOI18N
+                if (recursive) {
+                    b.append('*'); //NOI18N
+                }
             }
         }
         return b.toString();

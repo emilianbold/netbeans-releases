@@ -103,11 +103,17 @@ public class ActionUtilsTest extends NbTestCase {
     public void testAntIncludesList() throws Exception {
         assertEquals("2 includes", "f1.data,sub/f3.data", ActionUtils.antIncludesList(new FileObject[] {f1, f3}, dir));
         assertEquals("1 include", "f1.data", ActionUtils.antIncludesList(new FileObject[] {f1}, dir));
-        assertEquals("no includes", "", ActionUtils.antIncludesList(new FileObject[0], dir));
-        assertEquals("1 folder include","sub/",ActionUtils.antIncludesList(new FileObject[]{subdir}, dir));
-        assertEquals("root folder include","**",ActionUtils.antIncludesList(new FileObject[]{dir}, dir));        
-        assertEquals("2 folder includes","sub/,subdir2/sub/",ActionUtils.antIncludesList(new FileObject[]{subdir, subsubdir}, dir));
-        assertEquals("mixed files and folder includes","sub/f3.data,subdir2/sub/",ActionUtils.antIncludesList(new FileObject[]{f3, subsubdir}, dir));
+        assertEquals("no includes", "", ActionUtils.antIncludesList(new FileObject[0], dir));                
+        assertEquals("1 folder include","sub/**",ActionUtils.antIncludesList(new FileObject[]{subdir}, dir, true));
+        assertEquals("root folder include","**",ActionUtils.antIncludesList(new FileObject[]{dir}, dir, true));        
+        assertEquals("2 folder includes","sub/**,subdir2/sub/**",ActionUtils.antIncludesList(new FileObject[]{subdir, subsubdir}, dir, true));
+        assertEquals("mixed files and folder includes","sub/f3.data,subdir2/sub/**",ActionUtils.antIncludesList(new FileObject[]{f3, subsubdir}, dir, true));        
+        assertEquals("1 folder include","sub/*",ActionUtils.antIncludesList(new FileObject[]{subdir}, dir, false));
+        assertEquals("root folder include","*",ActionUtils.antIncludesList(new FileObject[]{dir}, dir, false));        
+        assertEquals("2 folder includes","sub/*,subdir2/sub/*",ActionUtils.antIncludesList(new FileObject[]{subdir, subsubdir}, dir, false));
+        assertEquals("mixed files and folder includes","sub/f3.data,subdir2/sub/*",ActionUtils.antIncludesList(new FileObject[]{f3, subsubdir}, dir, false));
+        assertEquals("antIncludeList(FileObject[], FileObject) delegates to antIncludeList(FileObject[], FileObject, true)",ActionUtils.antIncludesList(new FileObject[]{subdir}, dir) ,ActionUtils.antIncludesList(new FileObject[]{subdir}, dir, true));
+        assertEquals("antIncludeList(FileObject[], FileObject) delegates to antIncludeList(FileObject[], FileObject, true)",ActionUtils.antIncludesList(new FileObject[]{dir}, dir),ActionUtils.antIncludesList(new FileObject[]{dir}, dir, true));        
     }
     
     public void testRegexpMapFiles() throws Exception {
