@@ -294,12 +294,10 @@ public final class NbMainExplorer extends CloneableTopComponent
         Places.Nodes ns = TopManager.getDefault().getPlaces().nodes();
         // build the list of roots
         LinkedList result = new LinkedList();
-        // repository goes first
+        // workplace
+        result.add(ns.projectDesktop ());
+        // repository
         result.add(ns.repository());
-        // projects tab (only if projects module is installed)
-        if (NbProjectOperation.hasProjectDesktop()) {
-            result.add(NbProjectOperation.getProjectDesktop());
-        }
         // roots added by modules (javadoc etc...)
         result.addAll(Arrays.asList(ns.roots()));
         // runtime
@@ -314,7 +312,7 @@ public final class NbMainExplorer extends CloneableTopComponent
         // switch according to the type of the root context
         MainTab panel = null;
         Places.Nodes ns = TopManager.getDefault().getPlaces().nodes();
-        if (rc.equals(NbProjectOperation.getProjectDesktop())) {
+        if (rc.equals(ns.projectDesktop ())) {
             // projects tab
             panel = new ProjectsTab();
         } else if (rc.equals(ns.repository())) {
@@ -757,7 +755,7 @@ public final class NbMainExplorer extends CloneableTopComponent
         /** Exchanges deserialized root context to projects root context
         * to keep the uniquennes. */
         protected void validateRootContext () {
-            Node projectsRc = NbProjectOperation.getProjectDesktop();
+            Node projectsRc = TopManager.getDefault ().getPlaces ().nodes ().projectDesktop ();
             setRootContext(projectsRc);
             registerRootContext(projectsRc);
         }

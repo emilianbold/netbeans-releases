@@ -129,7 +129,7 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
     /** Workspace node for current project. This node can change when project changes.
     */
     public Node projectDesktop () {
-        return NbProjectOperation.getProjectDesktop ();
+        return org.netbeans.core.ui.WorkplaceNode.getDefault();
     }
 
     /** Root nodes.
