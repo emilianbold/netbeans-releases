@@ -633,7 +633,7 @@ static final long serialVersionUID =3851021533468196849L;
         component.getFormManager ().getFormTopComponent ().validate();
         component.getFormManager ().fireFormChange ();
       } else { // non-visual component
-        RADComponent newRADComponent = new RADVisualComponent();
+        RADComponent newRADComponent = new RADComponent();
         newRADComponent.initialize (component.getFormManager ());
         newRADComponent.setInstance (pasteInstance);
         component.getFormManager ().addNonVisualComponent (newRADComponent, null);
@@ -682,6 +682,9 @@ static final long serialVersionUID =3851021533468196849L;
 
 /*
  * Log
+ *  38   Gandalf   1.37        9/22/99  Ian Formanek    Fixed bug 3977 - When I 
+ *       paste ConnectionSource into a form from DBExplorer and then I want 
+ *       delete the ConnectionSource, exception throws (see description)
  *  37   Gandalf   1.36        9/17/99  Ian Formanek    Fixed bug 1825 - 
  *       Property sheets are not synchronized 
  *  36   Gandalf   1.35        9/12/99  Ian Formanek    FormAwareEditor.setRADComponent
