@@ -189,6 +189,7 @@ public class PropertiesStructure extends Element {
                 return false;
             try {
                 item.getBounds().setText(""); // NOI18N
+                //??? what about items.remove(key);
                 return true;
             } catch (IOException e) {
                 // PENDING
@@ -211,13 +212,19 @@ public class PropertiesStructure extends Element {
         item = new Element.ItemElem(null,
                                     new Element.KeyElem    (null, key),
                                     new Element.ValueElem  (null, value),
-                                    new Element.CommentElem(null, comment));
+                                    new Element.CommentElem(null, comment));        
         // find the position where to add it
         try {
             synchronized(getParent()) {
                 PositionBounds pos = getBounds();
                 
                 pos.insertAfter("\n" + item.printString()); // NOI18N
+                
+                //#17044 update in-memory model
+                item.setParent(this);
+                items.put(key, item);  
+                //structureChanged();
+                
                 return true;
             }
         } catch (IOException ioe) {
