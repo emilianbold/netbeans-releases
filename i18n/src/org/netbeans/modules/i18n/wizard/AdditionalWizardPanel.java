@@ -20,6 +20,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -72,9 +73,23 @@ public class AdditionalWizardPanel extends JPanel {
 
         addAdditionalComponent();
 
-        sourceCombo.setModel(new DefaultComboBoxModel(sourceMap.keySet().toArray()));
+        setComboModel(sourceMap);
     }
 
+    
+    /** Sets combo model only for source which support provides additional customizing. */
+    private void setComboModel(Map sourceMap) {
+        Object[] sources = sourceMap.keySet().toArray();
+        
+        ArrayList nonEmptySources = new ArrayList();
+
+        for(int i = 0; i < sources.length; i++) {
+            if(((SourceData)sourceMap.get(sources[i])).getSupport().hasAdditionalCustomizer())
+                nonEmptySources.add(sources[i]);
+        }
+        
+        sourceCombo.setModel(new DefaultComboBoxModel(nonEmptySources.toArray()));
+    }
 
     /** Does additional init of components. */
     private void postInitComponents() {
@@ -97,7 +112,7 @@ public class AdditionalWizardPanel extends JPanel {
         this.sourceMap.clear();
         this.sourceMap.putAll(sourceMap);
         
-        sourceCombo.setModel(new DefaultComboBoxModel(sourceMap.keySet().toArray()));
+        setComboModel(sourceMap);
     }
     
     /** Inits additonal component. */
@@ -150,14 +165,14 @@ public class AdditionalWizardPanel extends JPanel {
     private void sourceComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sourceComboActionPerformed
         Object selected = sourceCombo.getSelectedItem();
 
-        if(selected == null)
-            return;
-
-        I18nSupport support = ((SourceData)sourceMap.get(selected)).getSupport();
+        I18nSupport support = null;
+        
+        if(selected != null)
+            support = ((SourceData)sourceMap.get(selected)).getSupport();
 
         remove(additionalComponent);
         
-        if(support.hasAdditionalCustomizer()) {
+        if(support != null && support.hasAdditionalCustomizer()) {
             additionalComponent = support.getAdditionalCustomizer();
             viewedSources.add(selected);
         } else {
@@ -179,8 +194,17 @@ public class AdditionalWizardPanel extends JPanel {
      * @see org.openide.WizardDescriptor.Panel*/
     public static class Panel extends I18nWizardDescriptor.Panel {
 
+        /** Empty label component. */
+        private final JLabel emptyLabel;
+        
         /** Component. */
         private final AdditionalWizardPanel additionalPanel = new AdditionalWizardPanel();
+
+        {
+            emptyLabel = new JLabel(NbBundle.getBundle(TestStringWizardPanel.class).getString("TXT_HasNoAdditonal"));
+            emptyLabel.setHorizontalAlignment(JLabel.CENTER);
+            emptyLabel.setVerticalAlignment(JLabel.CENTER);
+        }        
         
         
         /** Gets component to display. Implements superclass abstract method. 
@@ -205,6 +229,27 @@ public class AdditionalWizardPanel extends JPanel {
         /** Reads settings at the start when the panel comes to play. Overrides superclass method. */
         public void readSettings(Object settings) {
             additionalPanel.setSourceMap((Map)settings);
+            
+            JPanel panel = (JPanel)getComponent();
+            if(hasAdditional((Map)settings)) {
+                if(panel.isAncestorOf(emptyLabel)) {
+                    panel.remove(emptyLabel);
+                    GridBagConstraints constraints = new GridBagConstraints();
+                    constraints.weightx = 1.0;
+                    constraints.weighty = 1.0;
+                    constraints.fill = GridBagConstraints.BOTH;
+                    panel.add(additionalPanel, constraints);
+                }
+            } else {
+                if(panel.isAncestorOf(additionalPanel)) {
+                    panel.remove(additionalPanel);
+                    GridBagConstraints constraints = new GridBagConstraints();
+                    constraints.weightx = 1.0;
+                    constraints.weighty = 1.0;
+                    constraints.fill = GridBagConstraints.BOTH;
+                    panel.add(emptyLabel, constraints);
+                }
+            }
         }
 
         /** Stores settings at the end of panel show. Overrides superclass abstract method. */
@@ -292,6 +337,20 @@ public class AdditionalWizardPanel extends JPanel {
         /** Gets help. Implements superclass abstract method. */
         public HelpCtx getHelp() {
             return new HelpCtx(I18nUtil.HELP_ID_WIZARD);
+        }
+        
+        /** Indicates if there are additional customizers in any of selected sources. 
+         * @return true if at least one source suport has additional customizer. */
+        private static boolean hasAdditional(Map sourceMap) {
+            Iterator it = sourceMap.keySet().iterator();
+
+            while(it.hasNext()) {
+                SourceData sourceData = (SourceData)sourceMap.get(it.next());
+                if(sourceData.getSupport().hasAdditionalCustomizer())
+                    return true;
+            }
+
+            return false;
         }
         
     } // End of nested Panel class.

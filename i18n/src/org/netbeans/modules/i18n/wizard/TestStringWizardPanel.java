@@ -25,6 +25,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.Insets;
+import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -93,9 +94,23 @@ public class TestStringWizardPanel extends JPanel {
         
         initTable();
 
-        sourceCombo.setModel(new DefaultComboBoxModel(sourceMap.keySet().toArray()));
+        setComboModel(sourceMap);
     }
 
+    
+    /** Sets combo model only for source which were some found strings in. */
+    private void setComboModel(Map sourceMap) {
+        Object[] sources = sourceMap.keySet().toArray();
+        
+        ArrayList nonEmptySources = new ArrayList();
+        
+        for(int i = 0; i < sources.length; i++) {
+            if(!((SourceData)sourceMap.get(sources[i])).getStringMap().isEmpty())
+                nonEmptySources.add(sources[i]);
+        }
+        
+        sourceCombo.setModel(new DefaultComboBoxModel(nonEmptySources.toArray()));
+    }
     
     /** Adds additional init of components. */
     private void postInitComponents() {
@@ -115,7 +130,7 @@ public class TestStringWizardPanel extends JPanel {
         this.sourceMap.clear();
         this.sourceMap.putAll(sourceMap);
         
-        sourceCombo.setModel(new DefaultComboBoxModel(sourceMap.keySet().toArray()));
+        setComboModel(sourceMap);
     }
     
     /** Gets string map for specified source data object. Utility method. */
@@ -471,7 +486,6 @@ public class TestStringWizardPanel extends JPanel {
      * @see org.openide.WizardDescriptor.Panel*/
     public static class Panel extends I18nWizardDescriptor.Panel 
     implements WizardDescriptor.FinishPanel, I18nWizardDescriptor.ProgressMonitor {
-
 
         /** Empty label component. */
         private final JLabel emptyLabel;
