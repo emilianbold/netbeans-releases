@@ -185,6 +185,10 @@ public class MainClassChooser extends JPanel {
         return null;
     }
     
+    // Used only from unit tests to suppress check of main method. If value
+    // is different from null it will be returned instead.
+    public static Boolean unitTestingSupport_hasMainMethodResult = null;
+    
     /** Checks if given file object contains the main method.
      *
      * @param classFO file object represents java 
@@ -194,6 +198,10 @@ public class MainClassChooser extends JPanel {
     public static boolean hasMainMethod (FileObject classFO) {
         if (classFO == null) {
             return false;
+        }
+        // support for unit testing
+        if (unitTestingSupport_hasMainMethodResult != null) {
+            return unitTestingSupport_hasMainMethodResult.booleanValue();
         }
         try {
             DataObject classDO = DataObject.find (classFO);

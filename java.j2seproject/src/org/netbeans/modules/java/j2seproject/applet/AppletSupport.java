@@ -45,9 +45,17 @@ public class AppletSupport {
 
     private AppletSupport() {}
 
+    // Used only from unit tests to suppress detection of applet. If value
+    // is different from null it will be returned instead.
+    public static Boolean unitTestingSupport_isApplet = null;
+    
     public static boolean isApplet(FileObject file) {
         if (file == null) {
             return false;
+        }
+        // support for unit testing
+        if (unitTestingSupport_isApplet != null) {
+            return unitTestingSupport_isApplet.booleanValue();
         }
         try {
             DataObject classDO = DataObject.find(file);

@@ -121,12 +121,35 @@ class J2SEActionProvider implements ActionProvider {
     }
     
     public void invokeAction( String command, Lookup context ) throws IllegalArgumentException {
-        Properties p;
+        Properties p = new Properties();
         String[] targetNames;
         
+        targetNames = getTargetNames(command, context, p);
+        if (targetNames == null) {
+            return;
+        }
+        if (targetNames.length == 0) {
+            targetNames = null;
+        }
+        if (p.keySet().size() == 0) {
+            p = null;
+        }
+        try {
+            ActionUtils.runTarget(findBuildXml(), targetNames, p);
+        } 
+        catch (IOException e) {
+            ErrorManager.getDefault().notify(e);
+        }
+    }
+        
+
+    /**
+     * @return array of targets or null to stop execution; can return empty array
+     */
+    /*private*/ String[] getTargetNames(String command, Lookup context, Properties p) throws IllegalArgumentException {
+        String[] targetNames = new String[0];
         if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
             FileObject[] files = findSources( context );
-            p = new Properties();
             if (files != null) {
                 p.setProperty("javac.includes", ActionUtils.antIncludesList(files, project.getSourceDirectory())); // NOI18N
                 targetNames = new String[] {"compile-single"}; // NOI18N
@@ -139,7 +162,6 @@ class J2SEActionProvider implements ActionProvider {
         } 
         else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
             FileObject[] files = findTestSources(context, true);
-            p = new Properties();
             p.setProperty("test.includes", ActionUtils.antIncludesList(files, project.getTestSourceDirectory())); // NOI18N
             p.setProperty("javac.includes", ActionUtils.antIncludesList(files, project.getTestSourceDirectory())); // NOI18N
             targetNames = new String[] {"test-single"}; // NOI18N
@@ -148,14 +170,12 @@ class J2SEActionProvider implements ActionProvider {
             FileObject[] files = findTestSources(context, true);
             String path = FileUtil.getRelativePath(project.getTestSourceDirectory(), files[0]);
             // Convert foo/FooTest.java -> foo.FooTest
-            p = new Properties();
             p.setProperty("test.class", path.substring(0, path.length() - 5).replace('/', '.')); // NOI18N
             targetNames = new String[] {"debug-test"}; // NOI18N
         } 
         else if ( command.equals( JavaProjectConstants.COMMAND_DEBUG_FIX ) ) {
             FileObject[] files = findSources( context );
             String path = null;
-            p = new Properties();
             if (files != null) {
                 path = FileUtil.getRelativePath(project.getSourceDirectory(), files[0]);
                 targetNames = new String[] {"debug-fix"}; // NOI18N
@@ -179,13 +199,12 @@ class J2SEActionProvider implements ActionProvider {
             while (!isSetMainClass (project.getSourceDirectory(), mainClass)) {
                 // show warning, if cancel then return
                 if (showMainClassWarning (mainClass, ProjectUtils.getInformation(project).getDisplayName(), ep)) {
-                    return ;
+                    return null;
                 }
                 mainClass = (String)ep.get ("main.class"); // NOI18N
                 antProjectHelper.putProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
             }
 
-            p = new Properties();
             p.setProperty("main.class", mainClass); // NOI18N
             targetNames = (String[])commands.get(command);
             if (targetNames == null) {
@@ -194,7 +213,6 @@ class J2SEActionProvider implements ActionProvider {
         } else if (command.equals (COMMAND_RUN_SINGLE) || command.equals (COMMAND_DEBUG_SINGLE)) {
             FileObject file = findSources(context)[0];
             String clazz = FileUtil.getRelativePath(project.getSourceDirectory(), file);
-            p = new Properties();
             p.setProperty("javac.includes", clazz); // NOI18N
             // Convert foo/FooTest.java -> foo.FooTest
             if (clazz.endsWith(".java")) { // NOI18N
@@ -223,7 +241,7 @@ class J2SEActionProvider implements ActionProvider {
                         //ingore
                     } catch (IOException ioe) {
                         ErrorManager.getDefault().notify(ioe);
-                        return;
+                        return null;
                     }
                     if (command.equals (COMMAND_RUN_SINGLE)) {
                         targetNames = new String[] {"run-applet"}; // NOI18N
@@ -236,7 +254,7 @@ class J2SEActionProvider implements ActionProvider {
                 } else {
                     NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(J2SEActionProvider.class, "LBL_No_Main_Classs_Found", clazz), NotifyDescriptor.INFORMATION_MESSAGE);
                     DialogDisplayer.getDefault().notify(nd);
-                    return;
+                    return null;
                 }
             } else {
                 if (command.equals (COMMAND_RUN_SINGLE)) {
@@ -248,21 +266,12 @@ class J2SEActionProvider implements ActionProvider {
                 }
             }
         } else {
-            p = null;
             targetNames = (String[])commands.get(command);
             if (targetNames == null) {
                 throw new IllegalArgumentException(command);
             }
         }
-        
-        try {
-            ActionUtils.runTarget(findBuildXml(), targetNames, p);
-        } 
-        catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
-        }
-        
-            
+        return targetNames;
     }
     
     public boolean isActionEnabled( String command, Lookup context ) {
@@ -352,9 +361,9 @@ class J2SEActionProvider implements ActionProvider {
             return false;
         }
         // replace '.' with '/'
-        mainClass = mainClass.replace ('.', File.separatorChar); // XXX // NOI18N
+        mainClass = mainClass.replace ('.', '/'); // XXX // NOI18N
         // find mainclass's FileObject
-        FileObject mainFO = sourcesRoot.getFileObject (mainClass, "java"); // XXX // NOI18N
+        FileObject mainFO = sourcesRoot.getFileObject (mainClass+".java"); // XXX // NOI18N
         return MainClassChooser.hasMainMethod (mainFO);
     }
     
