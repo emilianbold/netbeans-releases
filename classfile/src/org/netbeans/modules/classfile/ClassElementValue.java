@@ -24,27 +24,27 @@ import java.io.IOException;
 
 /**
  * ClassElementValue:  the value part of a single element for
- * those annotations that are a class type.  The value for these 
- * annotations is a CPClassInfo constant pool entry, which describes 
- * the class.
+ * those annotations that are a class type.
  *
  * @author  Thomas Ball
  */
 public final class ClassElementValue extends ElementValue {
-    CPClassInfo value;
+    String name;
 
     ClassElementValue(ConstantPool pool, int iValue) {
-	this.value = (CPClassInfo)pool.get(iValue);
+	// getName() works for either the old CPClassInfo or now
+	// CPUTF8Info entries, changed after 1.5 beta 1.
+	this.name = ((CPName)pool.get(iValue)).getName();
     }
 
     /**
      * Returns the value of this component, as a class constant pool entry.
      */
-    public final CPClassInfo getClassValue() {
-	return value;
+    public final ClassName getClassName() {
+	return ClassName.getClassName(name);
     }
 
     public String toString() {
-	return "class=" + value;
+	return "class=" + name;
     }
 }

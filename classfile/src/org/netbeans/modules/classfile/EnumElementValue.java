@@ -24,9 +24,7 @@ import java.io.IOException;
 
 /**
  * EnumElementValue:  a single annotation on a program element for
- * those annotations that are enum constants.  The value for these 
- * annotations is a CPNameAndTypeInfo constant pool entry, which
- * describes the enum declaration class and constant.
+ * those annotations that are enum constants.  
  *
  * @author  Thomas Ball
  */
