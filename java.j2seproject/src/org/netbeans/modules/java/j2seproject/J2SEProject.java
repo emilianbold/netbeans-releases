@@ -154,9 +154,6 @@ final class J2SEProject implements Project, AntProjectListener {
                 sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
             }
         });
-        EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        // if the project has no main class, it's not really an application
-        final boolean isLibrary = ep.getProperty (J2SEProjectProperties.MAIN_CLASS) == null || "".equals (ep.getProperty (J2SEProjectProperties.MAIN_CLASS)); // NOI18N
         return Lookups.fixed(new Object[] {
             new Info(),
             aux,
@@ -182,7 +179,7 @@ final class J2SEProject implements Project, AntProjectListener {
                 "${build.dir}", // NOI18N
             }),
             fileBuilt,
-            new RecommendedTemplatesImpl (isLibrary),
+            new RecommendedTemplatesImpl (helper),
             new J2SEProjectClassPathExtender(this, helper, eval,refHelper),
             new AntProjectHelperProvider ()
         });
@@ -410,11 +407,11 @@ final class J2SEProject implements Project, AntProjectListener {
     }
     
     private static final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
-        RecommendedTemplatesImpl (boolean isLibrary) {
-            this.isLibrary = isLibrary;
+        RecommendedTemplatesImpl (AntProjectHelper helper) {
+            this.helper = helper;
         }
         
-        private boolean isLibrary;
+        private AntProjectHelper helper;
         
         // List of primarily supported templates
         
@@ -461,6 +458,10 @@ final class J2SEProject implements Project, AntProjectListener {
         };
         
         public String[] getRecommendedTypes() {
+            
+            EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            // if the project has no main class, it's not really an application
+            boolean isLibrary = ep.getProperty (J2SEProjectProperties.MAIN_CLASS) == null || "".equals (ep.getProperty (J2SEProjectProperties.MAIN_CLASS)); // NOI18N
             return isLibrary ? LIBRARY_TYPES : APPLICATION_TYPES;
         }
         
