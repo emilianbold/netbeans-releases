@@ -38,6 +38,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.LifecycleManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -303,6 +304,17 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
             NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(ndd);
         }
+
+        // Would be nice if we could do this to save the server specific configuration
+        // but saveConfiguration is to available in the interface (though it is in
+        // ConfigSupportImpl which implements this interface.)
+        // We will have to force a saveAll to make sure that any server specific changes
+        // have been persisted.  See IZ 55181 and 55414
+//        J2eeModuleProvider.ConfigSupport configSupport = project.getWebModule().getConfigSupport();
+//        if(configSupport != null) {
+//            configSupport.saveConfiguration();
+//        }
+        LifecycleManager.getDefault().saveAll();
     }
     
     public AntProjectHelper getAntProjectHelper() {
