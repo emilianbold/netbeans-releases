@@ -1132,6 +1132,8 @@ the ${netbeans.dest}/bin/ directory.
         <pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/>
         <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
         <pathelement location="${binroot}/nbbuild/lib/jhall.jar"/>
+        <!-- For XMLValidate: -->
+        <pathelement location="${binroot}/xml/catalog/release/modules/ext/resolver-1_1_nb.jar"/>
       </classpath>
     </javadoc>
   </target>

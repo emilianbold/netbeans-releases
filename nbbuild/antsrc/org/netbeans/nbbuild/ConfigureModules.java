@@ -32,7 +32,7 @@ public class ConfigureModules extends Task {
     /** You must add a <samp>&lt;config&gt;</samp> nested element for each configuration. */
     public class Config {
 	public String name, modules;
-        /** Name of the configuration (as used in <samp>-Dmoduleconfig=...</samp>). */
+        /** Name of the configuration. Used in <samp>-Dmoduleconfig=...</samp> option. */
 	public void setName (String n) {
 	    name = n;
 	    //checkMyself ();

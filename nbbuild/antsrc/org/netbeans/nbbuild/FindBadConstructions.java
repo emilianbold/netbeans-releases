@@ -73,7 +73,7 @@ public class FindBadConstructions extends Task {
             message = m;
         }
         /** Set whether to display the matching text (by default no), and if so which part.
-         * 0 means complete match; 1 or higher means that-numbered parenthesis.
+         * @param s 0 means complete match; 1 or higher means that-numbered parenthesis
          */
         public void setShowMatch(int s) {
             show = s;
