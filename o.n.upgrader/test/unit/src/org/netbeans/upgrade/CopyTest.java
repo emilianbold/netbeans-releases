@@ -17,6 +17,7 @@ import java.util.*;
 import org.openide.filesystems.FileObject;
 
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.MultiFileSystem;
 
 /** Tests to check that copy of files works.
  *
@@ -170,6 +171,26 @@ public final class CopyTest extends org.netbeans.junit.NbTestCase {
         String content = new String (arr, 0, len);
         
         assertEquals ("The content is kept from project", content, "content-project");
+    }
+    
+    public void testDoesNotCopyHiddenFiles () throws Exception {
+        String[] res = {
+            "root/Yes.txt", 
+            "root/X.txt_hidden", 
+        };
+        FileSystem fs = org.openide.filesystems.TestUtilHid.createLocalFileSystem (getName (), res);
+        MultiFileSystem mfs = new MultiFileSystem (new FileSystem[] { fs });
+        
+        FileObject fo = mfs.findResource ("root");
+        FileObject tg = mfs.getRoot().createFolder ("target");
+        
+        HashSet set = new HashSet ();
+        set.add ("Yes.txt");
+        set.add ("X.txt_hidden");
+        Copy.copyDeep (fo, tg, set);
+        
+        assertEquals ("One file copied", 1, tg.getChildren().length);
+        assertEquals ("Name is Yes.txt", "Yes.txt", tg.getChildren ()[0].getNameExt());
     }
     
     private static void writeTo (FileSystem fs, String res, String content) throws java.io.IOException {

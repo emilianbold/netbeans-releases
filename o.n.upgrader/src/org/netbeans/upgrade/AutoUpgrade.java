@@ -138,8 +138,14 @@ public final class AutoUpgrade {
             );
 
             File oldConfig = new File (source, "system"); // NOI18N
-            LocalFileSystem old = new LocalFileSystem ();
-            old.setRootDirectory (oldConfig);
+            org.openide.filesystems.FileSystem old;
+            {
+                LocalFileSystem lfs = new LocalFileSystem ();
+                lfs.setRootDirectory (oldConfig);
+                old = new org.openide.filesystems.MultiFileSystem (
+                    new org.openide.filesystems.FileSystem[] { lfs }
+                );
+            }
             org.openide.filesystems.FileSystem mine = Repository.getDefault ().getDefaultFileSystem ();
             
             FileObject defaultProject = old.findResource ("Projects/Default/"); // NOI18N
