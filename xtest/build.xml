@@ -21,6 +21,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="build.sysclasspath" value="ignore"/>
 
     <property name="xtest.home" location="."/>
+    <property name="xtest.extra.home" location="../../nbextra/xtest"/>
     <property name="xtest.basedir" location=".."/>
     <property name="xtest.uploaddir" location="results"/>
     <property name="xtest.distdir" location="dist"/>
@@ -38,7 +39,7 @@ Microsystems, Inc. All Rights Reserved.
             <taskdef name="xtest-runner" classname="org.netbeans.xtest.NbExecutor2"/>
             <taskdef name="xreport" classname="org.netbeans.xtest.NbReport"/>
         </nbtaskdef>
-        <nbtaskdef classpath="lib/xtest.jar;lib/xalan.jar;lib/xerces.jar">
+        <nbtaskdef classpath="lib/xtest.jar;${xtest.extra.home}/lib/xalan.jar;${xtest.extra.home}/lib/xerces.jar">
             <taskdef name="xalan" classname="org.netbeans.xtest.XalanLauncher"/>
         </nbtaskdef>
         <property name="tasks-defined" value="true"/>
