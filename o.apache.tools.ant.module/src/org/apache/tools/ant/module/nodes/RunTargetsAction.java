@@ -99,7 +99,11 @@ public class RunTargetsAction extends CookieAction implements Presenter.Popup {
             this.action = action;
         }
 
-        public int getCount() {
+        public int getCount () {
+            // Apparently when >1 Ant script is selected and you right-click,
+            // it gets here though targets==null (as it should since the action
+            // should not be enabled!). Not clear why this happens.
+            if (targets == null) return 0;
             return targets.size ();
         }
 
