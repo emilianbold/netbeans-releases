@@ -385,19 +385,21 @@ final class Services extends ServiceType.Registry {
                 }
             }
 
-            // and vice versa - remove non used entries
-            it = unusedEntries.entrySet().iterator();
-            if (it.hasNext()) {
-                while (it.hasNext()) {
-                    java.util.Map.Entry entry = (java.util.Map.Entry) it.next();
-                    map.remove(entry.getKey());
-                    nodes.remove((Node) entry.getValue());
+            if (this.getClass () != TypeLevel.class) {
+                // and vice versa - remove non used entries
+                it = unusedEntries.entrySet().iterator();
+                if (it.hasNext()) {
+                    while (it.hasNext()) {
+                        java.util.Map.Entry entry = (java.util.Map.Entry) it.next();
+                        map.remove(entry.getKey());
+                        nodes.remove((Node) entry.getValue());
+                    }
                 }
-            }
 
-            // refresh the nodes because they could be updated by
-            // previous loop
-            refresh ();
+                // refresh the nodes because they could be updated by
+                // previous loop
+                refresh ();
+            }
 
             // now compute the permutation to be applied
             Node[] current = getNodes ();
