@@ -63,10 +63,11 @@ public final class ClassName implements Comparable, Comparator, Serializable {
      *   java.awt.Point[][]       [[java/awt/Point
      * </CODE><PRE>
      * <P>
-     * This method also accepts type strings which begin with
+     * This method also accepts type strings which contain with
      * 'L' and end with ';' characters.  This format is used
      * to reference a class in other type names, such as
-     * method arguments.
+     * method arguments.  These two characters are removed from the
+     * type string.
      * <P>
      * Because ClassNames are immutable, multiple requests to
      * get the same type string may return identical object
@@ -94,7 +95,11 @@ public final class ClassName implements Comparable, Comparator, Serializable {
 		    String _type;
 		    char lastChar = classType.charAt(classType.length()-1);
 		    if (i != -1 && lastChar == ';') {
+                        // remove 'L' and ';' from type
 			_type = classType.substring(i+1, classType.length()-1);
+                        if (i > 0)
+                            // add array prefix
+                            _type = classType.substring(0, i) + _type;
 			cn = getCacheEntry(_type);
 			if (cn != null)
 			    return cn;
@@ -301,6 +306,13 @@ public final class ClassName implements Comparable, Comparator, Serializable {
 	}
 
         return sb.toString();
+    }
+    
+    /**
+     * Empties the cache -- used by unit tests.
+     */
+    static void clearCache() {
+        cache.clear();
     }
 
     /**
