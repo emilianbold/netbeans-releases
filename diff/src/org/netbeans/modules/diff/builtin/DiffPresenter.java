@@ -290,6 +290,9 @@ public class DiffPresenter extends javax.swing.JPanel {
         if (visualizer != null) {
             visualizerPanel.add(visualizer, java.awt.BorderLayout.CENTER);
             java.lang.reflect.Method showing = null;
+            // Some TopComponents are initialized on this method.
+            // In case the visualizer component need an initialization, it must
+            // made this method publicly available, so that it can be called here.
             try {
                 showing = visualizer.getClass().getMethod("componentShowing", null);
             } catch (NoSuchMethodException nsmex) {
