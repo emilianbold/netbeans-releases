@@ -25,6 +25,7 @@ import org.openide.modules.InstalledFileLocator;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 
 
 /** class WebServiceModuleInstaller
@@ -32,15 +33,14 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
  *  ModuleInstall for the web service registry module.  Handles reading
  *  the registry on module startup and saving any changes on module shutdown.
  */
-public class WebServiceModuleInstaller extends ModuleInstall {
+public class WebServiceModuleInstaller extends ModuleInstall implements InstanceListener {
     
     private static ExtensionClassLoader specialLoader = null;
     private static boolean registryInstalled = false;
-    
-    private PersistenceManagerInterface pmi = null;
-    
+        
     public void restored() {
-        restoreds();
+            restoreds();
+           Deployment.getDefault().addInstanceListener(this);
         
         if(registryInstalled) {
             try {
@@ -70,7 +70,7 @@ public class WebServiceModuleInstaller extends ModuleInstall {
         close();
     }
     
-    public static void restoreds() {
+    public  void restoreds() {
         if(specialLoader == null) {
             try {
                 specialLoader = new ExtensionClassLoader(new Empty().getClass().getClassLoader());
@@ -85,7 +85,7 @@ public class WebServiceModuleInstaller extends ModuleInstall {
         return specialLoader;
     }
     
-    public static void updatesSecialLoader(ExtensionClassLoader loader) throws Exception {
+    public  void updatesSecialLoader(ExtensionClassLoader loader) throws Exception {
         try {
             String serverInstanceIDs[] = Deployment.getDefault().getServerInstanceIDs();
             J2eePlatform platform = null;
@@ -96,24 +96,9 @@ public class WebServiceModuleInstaller extends ModuleInstall {
                     break;
                 }
             }
-            File f1 = platform == null ? null : platform.getPlatformRoots() [0];
+             File f1 = platform == null ? null : platform.getPlatformRoots() [0];
             if(f1 != null && f1.exists()) {
                 String installRoot = f1.getAbsolutePath();
-                //				if(installRoot == null) {
-                //					// !PW What will this do on UNIX?
-                //					File temp = new File("c:\\sun\\appserver\\lib\\appserv-admin.jar"); // NOI18N
-                //					// need also to check on Unix system the defautl location
-                //					if(temp.exists()) {
-                //						installRoot = "c:\\sun\\appserver"; // NOI18N
-                //						System.setProperty("com.sun.aas.installRoot", installRoot); // NOI18N
-                //					} else {
-                //						// !PW due to null check on f1, I don't think this entire block
-                //						// is even necessary or useful anymore, but just in case,
-                //						// add a return here so we don't get a NPE later.
-                //						return;
-                //					}
-                //				}
-                
                 InstalledFileLocator locator = InstalledFileLocator.getDefault();
                 
                 File f = locator.locate("modules/ext/websvcregistry.jar", null, true); // NOI18N
@@ -172,6 +157,28 @@ public class WebServiceModuleInstaller extends ModuleInstall {
         }
         return fileName;
     }    
+
+    public void changeDefaultInstance(String oldServerInstanceID, String newServerInstanceID) {
+    }
+    
+    public void instanceAdded(String serverInstanceID) {
+        if (registryInstalled==false){
+            specialLoader = null;
+            restoreds();
+            try {
+                PersistenceManagerInterface persistenceManager = (PersistenceManagerInterface)
+                specialLoader.loadClass("org.netbeans.modules.websvc.registry.WebServicePersistenceManager").newInstance(); //NOI18N
+                persistenceManager.load(specialLoader);
+            } catch(Exception ex) {
+                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+            }
+            
+            firePropertyChange("specialLoader", null,"specialLoader");//NOI18N
+        }
+    }
+
+    public void instanceRemoved(String serverInstanceID) {
+    }
         /*
          * Used to get the netbeans classloader of this class.
          *

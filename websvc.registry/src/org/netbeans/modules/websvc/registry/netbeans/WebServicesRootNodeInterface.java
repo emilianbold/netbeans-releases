@@ -34,5 +34,5 @@ public interface WebServicesRootNodeInterface{
     public Action[] getActions(boolean context);
     public Action getPreferredAction() ;
     public HelpCtx getHelpCtx();
-    
+    public  Node.Cookie getCookie (Class type);
 }

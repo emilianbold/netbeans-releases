@@ -31,10 +31,12 @@ import org.netbeans.modules.websvc.api.registry.WebServicesRegistryView;
  *
  * @author  ludo
  */
-public class RegisterViewImplNetBeansSide implements WebServicesRegistryView {
+public class RegisterViewImplNetBeansSide implements WebServicesRegistryView, PropertyChangeListener {
     WebServicesRegistryView delegate;
     /** Creates a new instance of RegisterViewImplNetBeansSide */
     public RegisterViewImplNetBeansSide() {
+      WebServiceModuleInstaller.findObject(WebServiceModuleInstaller.class).addPropertyChangeListener(this);
+      
         try{
             delegate = (WebServicesRegistryView) WebServiceModuleInstaller.getExtensionClassLoader().loadClass("org.netbeans.modules.websvc.registry.RegistryViewImpl").newInstance();//NOI18N            
         }
@@ -89,5 +91,16 @@ public class RegisterViewImplNetBeansSide implements WebServicesRegistryView {
 			delegate.removePropertyChangeListener(listener);
 		}
 	}
+
+    public void propertyChange(java.beans.PropertyChangeEvent evt) {
+       // System.out.println("propertyChange RegisterViewImplNetBeansSide");
+        try{
+            delegate = (WebServicesRegistryView) WebServiceModuleInstaller.getExtensionClassLoader().loadClass("org.netbeans.modules.websvc.registry.RegistryViewImpl").newInstance();//NOI18N            
+        }
+        catch (Exception e){
+          //  System.out.println("----- lacking app server classes");
+            delegate = null;
+    }
+    }
 	
 }
