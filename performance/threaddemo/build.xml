@@ -11,95 +11,72 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<!-- REQUIRES ANT 1.6.1+ -->
 <project basedir="." default="run" name="performance/threaddemo"
          xmlns="antlib:org.apache.tools.ant"
          xmlns:nbj="antlib:org.netbeans.modules.debugger.jpda.ant"
          xmlns:nbb="antlib:org.netbeans.modules.ant.browsetask">
 
-    <!-- Put any overrides here (check for "???" below): -->
+    <!-- Put any overrides here (check against build.properties): -->
     <property file="user.build.properties"/>
-
-    <property name="nbroot" location="../.."/>
-    <property name="openide" location="${nbroot}/openide"/>
-    <property name="util.jar" location="${openide}/util/netbeans/lib/openide-util.jar"/>
-    <property name="nodes.jar" location="${openide}/nodes/netbeans/lib/openide-nodes.jar"/>
-    <property name="actions.jar" location="${openide}/actions/netbeans/lib/openide-actions.jar"/>
-    <property name="explorer.jar" location="${openide}/explorer/netbeans/lib/openide-explorer.jar"/>
-    <property name="text.jar" location="${openide}/text/netbeans/lib/openide-text.jar"/>
-    <property name="dialogs.jar" location="${openide}/dialogs/netbeans/lib/openide-dialogs.jar"/>
-    <property name="windows.jar" location="${openide}/windows/netbeans/lib/openide-windows.jar"/>
-    <property name="awt.jar" location="${openide}/awt/netbeans/lib/openide-awt.jar"/>
-    <property name="options.jar" location="${openide}/options/netbeans/lib/openide-options.jar"/>
-    <property name="looks" location="${openide}/looks"/>
-    <property name="looks.jar" location="${looks}/netbeans/modules/autoload/openide-looks.jar"/>
-    <property name="registry.jar" location="${openide}/registry/netbeans/modules/org-netbeans-modules-registry.jar"/>
-    <property name="Spin.jar" location="???/spin-1.1/Spin.jar"/>
-    <!-- only needed for optit target: -->
-    <property name="optit" location="???/optit"/>
-    <property name="junit.jar" location="${nbroot}/junit/external/junit-3.8.1.jar"/>
     
-    <!-- Root directory of the file browsers: -->
-    <property name="testdir" location="/tmp"/>
+    <!-- Main definitions: -->
+    <property file="build.properties"/>
 
-    <!-- Logging config file: -->
-    <property name="logging.properties" location="logging.properties"/>
-
-    <path id="build.cp">
-        <pathelement location="${util.jar}"/>
-        <pathelement location="${nodes.jar}"/>
-        <pathelement location="${actions.jar}"/>
-        <pathelement location="${explorer.jar}"/>
-        <pathelement location="${text.jar}"/>
-        <pathelement location="${dialogs.jar}"/>
-        <!-- Just for CloneableEditorSupport: -->
-        <pathelement location="${windows.jar}"/>
-        <pathelement location="${looks.jar}"/>
-        <pathelement location="${Spin.jar}"/>
-    </path>
-    
-    <path id="run.cp">
-        <path refid="build.cp"/>
-        <!-- Only because Looks links against it (but will not use it): -->
-        <pathelement location="${registry.jar}"/>
-        <!-- explorer.jar uses it: -->
-        <pathelement location="${awt.jar}"/>
-        <!-- NbDocument links against it currently (but will not use it): -->
-        <pathelement location="${options.jar}"/>
-        <!-- Crimson is useless: -->
-        <fileset dir="${nbroot}/libs/external">
-            <include name="xerces*.jar"/>
-            <include name="xml-commons-dom-ranges*.jar"/>
-        </fileset>
-        <pathelement location="threaddemo.jar"/>
-    </path>
-    
     <target name="init">
+        <!-- For benefit of various modules: -->
         <property name="build.compiler.debug" value="true"/>
+        <condition property="openide.available">
+            <available file="${util.jar}"/>
+        </condition>
+        <condition property="looks.and.registry.available">
+            <and>
+                <available file="${looks.jar}"/>
+                <available file="${registry.jar}"/>
+            </and>
+        </condition>
+        <condition property="should.build.openide">
+            <and>
+                <not>
+                    <isset property="openide.available"/>
+                </not>
+                <!-- Building openide/looks will build openide automatically: -->
+                <isset property="looks.and.registry.available"/>
+            </and>
+        </condition>
     </target>
     
-    <target name="build-looks" depends="init">
-        <ant dir="${nbroot}/nbbuild" target="all-openide/looks"/>
-        <!-- all-openide is implied by that -->
+    <target name="build-openide" depends="init" if="should.build.openide">
+        <ant dir="${nbbuild}" target="all-openide"/>
     </target>
     
-    <target name="compile" depends="build-looks">
-        <javac srcdir="src" destdir="src" debug="true" deprecation="true" source="1.4">
-            <classpath refid="build.cp"/>
+    <target name="build-looks" depends="init" unless="looks.and.registry.available">
+        <ant dir="${nbbuild}" target="all-openide/looks"/>
+    </target>
+    
+    <target name="compile" depends="build-openide,build-looks">
+        <mkdir dir="${build.classes.dir}"/>
+        <javac srcdir="src" destdir="${build.classes.dir}" debug="true" deprecation="true" source="1.4">
+            <classpath path="${build.cp}"/>
         </javac>
+        <copy todir="${build.classes.dir}">
+            <fileset dir="src">
+                <exclude name="**/*.java"/>
+                <exclude name="**/package.html"/>
+                <exclude name="**/doc-files/"/>
+            </fileset>
+        </copy>
     </target>
 
     <target name="build" depends="compile">
-        <jar jarfile="threaddemo.jar" manifest="manifest.mf" compress="false">
-            <fileset dir="src">
-                <include name="**/*.class"/>
-            </fileset>
+        <jar jarfile="${threaddemo.jar}" manifest="manifest.mf" compress="false">
+            <fileset dir="${build.classes.dir}"/>
         </jar>
     </target>
     
     <target name="build-complete" depends="compile">
-        <jar jarfile="threaddemo-complete.jar" manifest="manifest.mf" compress="true">
+        <jar jarfile="${threaddemo-complete.jar}" manifest="manifest.mf" compress="true">
             <fileset dir="src"/>
+            <fileset dir="${build.classes.dir}"/>
             <zipfileset src="${util.jar}"/>
             <zipfileset src="${nodes.jar}"/>
             <zipfileset src="${actions.jar}"/>
@@ -109,17 +86,16 @@ Microsystems, Inc. All Rights Reserved.
             <zipfileset src="${windows.jar}"/>
             <zipfileset src="${looks.jar}"/>
             <zipfileset src="${Spin.jar}"/>
-            <!-- Xerces -->
-            <zipgroupfileset dir="${nbroot}/libs/external">
-                <include name="xerces*.jar"/>
-                <include name="xml-commons-dom-ranges*.jar"/>
-            </zipgroupfileset>
+            <zipfileset src="${xerces.jar}"/>
+            <zipfileset src="${dom-ranges.jar}"/>
         </jar>
     </target>
 
     <target name="run" depends="build">
+        <available property="xerces.classes" classname="org.apache.xerces.jaxp.DocumentBuilderFactoryImpl" classpath="${run.cp}"/>
+        <fail unless="xerces.classes">Could not find Xerces in ${run.cp}</fail>
         <java classname="threaddemo.Main" fork="true" failonerror="true">
-            <classpath refid="run.cp"/>
+            <classpath path="${run.cp}"/>
             <arg file="${testdir}"/>
             <jvmarg value="-Xmx256m"/>
             <jvmarg value="-ea"/>
@@ -131,7 +107,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="do-debug">
         <java classname="threaddemo.Main" fork="true" failonerror="true">
-            <classpath refid="run.cp"/>
+            <classpath path="${run.cp}"/>
             <arg file="${testdir}"/>
             <jvmarg value="-Xmx64m"/>
             <jvmarg value="-ea"/>
@@ -145,9 +121,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="debug-nb" depends="build">
         <nbj:nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="threaddemo">
-            <!-- XXX when buildsys is merged, add:
-            <nbj:classpath refid="run.cp"/>
-            -->
+            <nbj:classpath path="${run.cp}"/>
         </nbj:nbjpdastart>
         <antcall target="do-debug"/>
     </target>
@@ -155,7 +129,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="optit" depends="build">
         <java classname="intuitive.audit.Audit" fork="true" failonerror="true">
             <classpath>
-                <path refid="run.cp"/>
+                <pathelement path="${run.cp}"/>
                 <pathelement location="${optit}/lib/optit.jar"/>
             </classpath>
             <arg value="-startCPUprofiler:type=sampler,samplingPeriod=1,onlyCPU=true"/>
@@ -176,10 +150,9 @@ Microsystems, Inc. All Rights Reserved.
         <property name="javadoc.web.root" value="http://www.netbeans.org/download/dev/javadoc"/>
         <property name="javadoc.docs.openide" value="${javadoc.web.root}/OpenAPIs"/>
         <property name="javadoc.docs.openide/looks" value="${javadoc.web.root}/LooksAPI"/>
-        <javadoc destdir="javadoc" source="1.4">
-            <classpath>
-                <path refid="build.cp"/>
-            </classpath>
+        <mkdir dir="${build.javadoc.dir}"/>
+        <javadoc destdir="${build.javadoc.dir}" source="1.4">
+            <classpath path="${build.cp}"/>
             <sourcepath>
                 <pathelement location="src"/>
             </sourcepath>
@@ -191,59 +164,43 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="javadoc-nb" depends="javadoc">
-        <nbb:nbbrowse file="javadoc/overview-summary.html"/>
+        <nbb:nbbrowse file="${build.javadoc.dir}/overview-summary.html"/>
     </target>
     
     <target name="test-build" depends="build">
         <ant dir="${nbroot}/junit/external"/>
-        <javac srcdir="test" destdir="test" debug="true" deprecation="true">
-            <classpath>
-                <path refid="build.cp"/>
-                <pathelement location="threaddemo.jar"/>
-                <pathelement location="${junit.jar}"/>
-            </classpath>
+        <mkdir dir="${build.test.classes.dir}"/>
+        <javac srcdir="test" destdir="${build.test.classes.dir}" debug="true" deprecation="true">
+            <classpath path="${test.build.cp}"/>
         </javac>
+        <!-- copy resources if it becomes necessary -->
     </target>
     
     <target name="test" depends="test-build">
-        <mkdir dir="test-results"/>
+        <mkdir dir="${build.test.results.dir}"/>
         <junit printsummary="withOutAndErr" failureproperty="test.failed" showoutput="true" fork="true">
-            <batchtest todir="test-results">
+            <batchtest todir="${build.test.results.dir}">
                 <fileset dir="test">
                     <include name="**/*Test.java"/>
                 </fileset>
             </batchtest>
-            <classpath>
-                <path refid="build.cp"/>
-                <pathelement location="threaddemo.jar"/>
-                <pathelement location="test"/>
-            </classpath>
+            <classpath path="${test.run.cp}"/>
             <formatter type="xml"/>
         </junit>
-        <junitreport todir="test-results">
-            <fileset dir="test-results">
+        <junitreport todir="${build.test.results.dir}">
+            <fileset dir="${build.test.results.dir}">
                 <include name="TEST-*.xml"/>
             </fileset>
-            <report format="noframes" todir="test-results"/>
+            <report format="noframes" todir="${build.test.results.dir}"/>
         </junitreport>
     </target>
     
     <target name="test-nb" depends="test">
-        <nbb:nbbrowse file="test-results/junit-noframes.html"/>
+        <nbb:nbbrowse file="${build.test.results.dir}/junit-noframes.html"/>
     </target>
     
     <target name="clean">
-        <delete file="threaddemo.jar"/>
-        <delete>
-            <fileset dir="src">
-                <include name="**/*.class"/>
-            </fileset>
-            <fileset dir="test">
-                <include name="**/*.class"/>
-            </fileset>
-        </delete>
-        <delete dir="javadoc"/>
-        <delete dir="test-results"/>
+        <delete dir="${build.dir}"/>
     </target>
     
 </project>
