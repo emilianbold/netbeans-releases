@@ -469,4 +469,18 @@ public class Common {
             return "mandatory";
         }
     }
+
+    /**
+     * Return the widest instance set.  Widest as in has the most elements.
+     * For instance, TYPE_0_N is widder than TYPE_1.
+     */
+    static public int widestInstance(int instance1, int instance2) {
+        if (instance1 == TYPE_0_N || instance2 == TYPE_0_N)
+            return TYPE_0_N;
+        if (instance1 == TYPE_1_N || instance2 == TYPE_1_N)
+            return TYPE_1_N;
+        if (instance1 == TYPE_0_1 || instance2 == TYPE_0_1)
+            return TYPE_0_1;
+        return instance1;
+    }
 }
