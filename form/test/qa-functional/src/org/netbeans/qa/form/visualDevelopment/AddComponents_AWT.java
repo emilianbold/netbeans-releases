@@ -12,6 +12,7 @@
  */
 package org.netbeans.qa.form.visualDevelopment;
 
+import java.awt.Point;
 
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.jemmy.TimeoutExpiredException;
@@ -110,7 +111,10 @@ public class AddComponents_AWT extends JellyTestCase {
             String component = comp.getDisplayName();
             System.out.println("component: " + component);
             sleep(1000);
-            formeditor.addComponent(categoryName, component, formDesigner.componentLayer().getSource()  );            
+           //formeditor.addComponent(categoryName, component, formDesigner.componentLayer().getSource());
+            formeditor.palette().selectPage(categoryName);
+            formeditor.palette().selectComponent(component);
+            formeditor.designer().clickOnComponent(formDesigner.componentLayer().getSource(), new Point(20,100));
         }        
         
         // close form editor window
