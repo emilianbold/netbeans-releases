@@ -744,7 +744,9 @@
    <mapID target="org.netbeans.modules.java.JavaDataObject" url="java/nodes/source.html" /> 
    <mapID target="org.netbeans.modules.form.FormDataObject" url="java/nodes/form.html" /> 
    <mapID target="org.netbeans.modules.clazz.SerDataObject" url="java/nodes/prototype.html" /> 
+   <mapID target="org.netbeans.modules.clazz.ClassDataObject" url="java/nodes/class.html" />
    <mapID target="org.openide.src.nodes.InterfaceNode" url="java/nodes/interface.html" /> 
+
    <mapID target="org.netbeans.modules.text.TXTDataObject" url="pending.html" />
    <mapID target="org.netbeans.modules.beans.EventSetPatternNode" url="pending.html" />
    <mapID target="org.netbeans.modules.beans.IdxPropertyPatternNode" url="java/nodes/beanprop.html" />
