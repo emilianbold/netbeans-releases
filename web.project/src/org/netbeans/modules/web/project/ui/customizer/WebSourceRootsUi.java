@@ -169,7 +169,12 @@ final class WebSourceRootsUi {
                 FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
                 chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
                 chooser.setMultiSelectionEnabled( true );
-                chooser.setDialogTitle( NbBundle.getMessage( WebSourceRootsUi.class, "LBL_SourceFolder_DialogTitle" )); // NOI18N
+                
+                if (sourceRoots.isTest())                
+                    chooser.setDialogTitle( NbBundle.getMessage( WebSourceRootsUi.class, "LBL_TestFolder_DialogTitle" )); // NOI18N
+                else
+                    chooser.setDialogTitle( NbBundle.getMessage( WebSourceRootsUi.class, "LBL_SourceFolder_DialogTitle" )); // NOI18N
+                
                 File curDir = FileUtil.toFile(this.project.getProjectDirectory());
                 if (curDir != null) {
                     chooser.setCurrentDirectory (curDir);
