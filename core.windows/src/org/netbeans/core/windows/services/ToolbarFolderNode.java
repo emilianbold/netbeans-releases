@@ -99,14 +99,6 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
                            newToolbar();
                        }
                    },
-                   new NewType () {
-                       public String getName () {
-                           return NbBundle.getBundle (ToolbarFolderNode.class).getString ("PROP_newToolbarConfigName");
-                       }
-                       public void create () throws IOException {
-                           newConfiguration();
-                       }
-                   }
                };
     }
     
@@ -135,38 +127,6 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
                                 Boolean.TRUE
                             );
                         }
-                    }
-                } catch (IOException e) {
-                    ErrorManager.getDefault ().notify (e);
-                }
-            }
-        }
-    }
-
-    void newConfiguration () {
-        ResourceBundle bundle = NbBundle.getBundle (ToolbarFolderNode.class);
-        NotifyDescriptor.InputLine il = new NotifyDescriptor.InputLine
-                                        (bundle.getString ("PROP_newToolbarConfigLabel"),
-                                         bundle.getString ("PROP_newToolbarConfigDialog"));
-        il.setInputText (bundle.getString ("PROP_newToolbarConfig"));
-
-        Object ok = org.openide.DialogDisplayer.getDefault ().notify (il);
-        if (ok == NotifyDescriptor.OK_OPTION) {
-            String s = il.getInputText();
-            if (!s.equals ("")) { // NOI18N
-                String lastName = getLastName();
-                ToolbarConfiguration tc = new ToolbarConfiguration (s, s);
-                try {
-                    tc.writeDocument();
-
-                    // #13015. Set new item as last one.
-                    if(lastName != null) {
-                        folder.getPrimaryFile().setAttribute(
-                            // XXX hardcoded extension,
-                            // see ToolbarConfiguration.EXT_XML
-                            lastName + "/" + s + ".xml", // NOI18N
-                            Boolean.TRUE
-                        );
                     }
                 } catch (IOException e) {
                     ErrorManager.getDefault ().notify (e);
@@ -211,33 +171,7 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
 
     /** Creates properties for this node */
     public Node.PropertySet[] getPropertySets () {
-        ResourceBundle bundle = NbBundle.getBundle (ToolbarFolderNode.class);
-        Sheet sheet = Sheet.createDefault();
-        sheet.get(Sheet.PROPERTIES).put(
-            new PropertySupport.ReadWrite(
-                "configuration", // NOI18N
-                String.class,
-                bundle.getString("PROP_ToolbarConfiguration"),
-                bundle.getString("HINT_ToolbarConfiguration")
-            ) {
-                public void setValue(Object conf) {
-                    WindowManagerImpl.getInstance().setToolbarConfigName((String)conf);
-                }
-
-                public Object getValue() {
-                    return ToolbarPool.getDefault().getConfiguration();
-                }
-
-                public java.beans.PropertyEditor getPropertyEditor() {
-                    return new java.beans.PropertyEditorSupport() {
-                        public String[] getTags() {
-                            return ToolbarPool.getDefault().getConfigurations();
-                        }
-                    };
-                }
-            }
-        );
-        return sheet.toArray();
+        return new Node.PropertySet[] { };
     }
 
     /** Supports index cookie in addition to standard support.
@@ -301,9 +235,18 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
             if (node.getCookie (org.openide.loaders.InstanceDataObject.class) != null) {
                 return new ToolbarItemNode(node);
             } else {
-                // #18650. If is ToolbarConfiguration, use special node,
-                // which sets help ctx, and later also an icon for that.
-                InstanceCookie ic = (InstanceCookie)node.getCookie(InstanceCookie.class);
+                return node.cloneNode();
+            }
+        }
+
+        protected Node[] createNodes(Object key) {
+            Node[] retValue;
+            
+            retValue = super.createNodes(key);
+
+            if( retValue.length == 1 ) {
+                //hide ToolbarConfiguration nodes
+                InstanceCookie ic = (InstanceCookie)retValue[0].getCookie(InstanceCookie.class);
                 
                 boolean isConfig = false;
                 
@@ -322,11 +265,10 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
                 }
                 
                 if(isConfig) {
-                    return new ToolbarConfigurationNode(node);
-                } else {
-                    return node.cloneNode();
+                    retValue = new Node[] {};
                 }
             }
+            return retValue;
         }
     }
 
@@ -360,42 +302,6 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
 
     } // end of ToolbarIndex
     */
-    
-    /** Filter node for toolbar configuration which provides help
-     * context and special icon (see bug #18650), also special actions. */
-    private static class ToolbarConfigurationNode extends FilterNode {
-        
-        private ToolbarConfigurationNode(Node filter) {
-            super(filter, Children.LEAF);
-        }
-        
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx(ToolbarConfiguration.class);
-        }
-        
-        public Image getIcon(int type) {
-            return org.openide.util.Utilities.loadImage(
-                "org/netbeans/core/resources/toolbarConfiguration.gif"); // NOI18N
-        }
-        
-        public SystemAction[] getActions () {
-            return new SystemAction[] {
-                SystemAction.get(FileSystemAction.class),
-                null, 
-                SystemAction.get(CutAction.class),
-                SystemAction.get(CopyAction.class),
-                SystemAction.get(PasteAction.class),
-                null,
-                SystemAction.get(DeleteAction.class),
-                SystemAction.get(RenameAction.class),
-                null,
-                SystemAction.get(ToolsAction.class),
-                SystemAction.get(PropertiesAction.class),
-            };
-        }
-        
-    } // End of class ToolbarConfigurationNode.
-    
 
     static final class ToolbarItemNode extends FilterNode {
 
@@ -457,7 +363,6 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
              */
             return new Node.PropertySet[] { };
         }
-
     } // end of ToolbarItemNode
 
     /** Toolbar folder node.

@@ -808,33 +808,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
         menu.add (cbmi);
         
         menu.add (new JPopupMenu.Separator());
-        // generate list of available toolbar configurations
-        List configList = Arrays.asList (ToolbarPool.getDefault ().getConfigurations ());
-        // ignore when there is only one toolbar config #39906
-        if (configList.size() > 1) {
-            it = configList.iterator ();
-            ButtonGroup bg = new ButtonGroup ();
-            final String current = ToolbarPool.getDefault ().getConfiguration ();
-            
-            while (it.hasNext()) {
-                final String name = (String)it.next ();
-                String displayName = findConfiguration(name).getDisplayName();
-                JRadioButtonMenuItem mi = new JRadioButtonMenuItem (
-                    displayName, (name != null && name.equals(current))
-                );
-                mi.addActionListener (new ActionListener () {
-                    public void actionPerformed (ActionEvent e) {
-                        ErrorManager.getDefault().getInstance(getClass().getName()).log
-                        ("Triggered a change in toolbar config from " + current + " to " + name + "."); //NOI18N
-                        WindowManagerImpl.getInstance().setToolbarConfigName (name);
-                        rebuildMenu();
-                    }
-                });
-                bg.add (mi);
-                menu.add (mi);
-            }
-            menu.add (new JPopupMenu.Separator());
-        }
+
         JMenuItem menuItem = new JMenuItem(NbBundle.getMessage(ToolbarConfiguration.class, "CTL_DisplayToolbars"));
         menuItem.addActionListener(new ActionListener() {
             public void actionPerformed (ActionEvent event) {
@@ -846,34 +820,6 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
             }
         });
         menu.add(menuItem);
-        JMenuItem mi = new JMenuItem (getBundleString("PROP_saveAs")); // NOI18N
-        mi.addActionListener (new ActionListener () {
-                                  public void actionPerformed (ActionEvent e) {
-                                      NotifyDescriptor.InputLine il = new NotifyDescriptor.InputLine
-                                                                      (getBundleString("PROP_saveLabel"), // NOI18N
-                                                                       getBundleString("PROP_saveDialog")); // NOI18N
-                                      il.setInputText (getBundleString("PROP_saveName")); // NOI18N
-
-                                      Object ok = org.openide.DialogDisplayer.getDefault ().notify (il);
-                                      if (ok == NotifyDescriptor.OK_OPTION) {
-                                          String s = il.getInputText();
-                                          if (s.length() != 0) {
-                                              try {
-                                                  String newName = il.getInputText();
-                                                  if (tryWriteDocument (newName)) {
-                                                      WindowManagerImpl.getInstance().setToolbarConfigName (newName);
-                                                  }
-                                              } catch (IOException ioe) {
-                                                  // Bugfix #10779 04 Sep 2001 by Jiri Rechtacek
-                                                  // show a error message
-                                                  ErrorManager.getDefault().notify (ioe);
-                                              }
-                                          }
-                                      }
-                                  }
-                              });
-        menu.add (mi);
-
     } // getContextMenu
 
     /** Make toolbar visible/invisible in this configuration
@@ -937,44 +883,6 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
     }
 
     //// writting
-
-    /** Try write document to file. It is asked for replacing if there is configuration of same name.
-     * @param cn configuration file name
-     * @return false if don't want replace
-     */
-    boolean tryWriteDocument (String cn) throws IOException {
-        final FileObject tbFO = NbPlaces.getDefault().toolbars().getPrimaryFile();
-        FileObject newFO = tbFO.getFileObject(cn, EXT_XML);
-
-        // Bugfix #10779 04 Sep 2001 by Jiri Rechtacek
-        // Windows are case-insensitive, find for a file by lower-case name
-        if(Utilities.isWindows() && (newFO == null)) {
-            FileObject children[] = tbFO.getChildren();
-            for(int i=0; i < children.length; i++)
-                if(children[i].getExt().equals(EXT_XML)
-                    && cn.toLowerCase().equals(children[i].getName().toLowerCase())) {
-
-                        // there is a file with same name by lower-case
-                        newFO = children[i];
-                        cn = children[i].getName();
-                }
-                
-        }
-        // enf of bugfix #10779
-        
-        if (newFO != null) {
-            NotifyDescriptor replaceD = new NotifyDescriptor.Confirmation
-                                        (MessageFormat.format (getBundleString("MSG_replaceConfiguration"), // NOI18N
-                                                               new String [] { cn }),
-                                         NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.WARNING_MESSAGE);
-            org.openide.DialogDisplayer.getDefault().notify (replaceD);
-            if (replaceD.getValue() != DialogDescriptor.OK_OPTION) {
-                return false;
-            }
-        }
-        writeDocument (cn);
-        return true;
-    }
 
     /** Write actual toolbar configuration. */
     public void writeDocument () throws IOException {
