@@ -75,7 +75,7 @@ public class MainWithProjects implements Main.MainWithProjectsInterface {
         String displayName = "XTestProject";
         String mainClass = null;
         try {
-            J2SEProjectGenerator.createProject(dir, codename, displayName, mainClass);
+            J2SEProjectGenerator.createProject(dir, codename, displayName, mainClass, null);
             openProject(dir);
         } catch (IOException e) {
             ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
