@@ -543,24 +543,7 @@ implements Serializable, DataObject.Container {
     * @return the new object
     */
     protected DataObject handleCopy (DataFolder f) throws IOException {
-        if (f.equals(this)) {
-            throw (IOException) ErrorManager.getDefault().annotate(
-                new IOException("Error Copying File or Folder"), //NOI18N
-                NbBundle.getMessage(getClass(), "EXC_CannotCopyTheSame", getName()) //NOI18N
-            );
-        }
-        else {
-            DataFolder testFolder = f.getFolder();
-            while (testFolder != null) {
-                if (testFolder.equals(this)) {
-                    throw (IOException) ErrorManager.getDefault().annotate(
-                        new IOException("Error Copying File or Folder"), //NOI18N
-                        NbBundle.getMessage(getClass(), "EXC_CannotCopySubfolder", getName()) //NOI18N
-                    );
-                }
-                testFolder = testFolder.getFolder();
-            }
-        }
+        testNesting(f);
         
         Enumeration en = children ();
 
@@ -586,6 +569,27 @@ implements Serializable, DataObject.Container {
         return newFolder;
     }
 
+    // test whether the "f" is not parent of "this" -> not allowed
+    private void testNesting(DataFolder f) throws IOException {
+        if (f.equals(this)) {
+            throw (IOException) ErrorManager.getDefault().annotate(
+                new IOException("Error Copying File or Folder"), //NOI18N
+                NbBundle.getMessage(getClass(), "EXC_CannotCopyTheSame", getName()) //NOI18N
+            );
+        } else {
+            DataFolder testFolder = f.getFolder();
+            while (testFolder != null) {
+                if (testFolder.equals(this)) {
+                    throw (IOException) ErrorManager.getDefault().annotate(
+                        new IOException("Error Copying File or Folder"), //NOI18N
+                        NbBundle.getMessage(getClass(), "EXC_CannotCopySubfolder", getName()) //NOI18N
+                    );
+                }
+                testFolder = testFolder.getFolder();
+            }
+        }
+    }
+    
     /* Deals with deleting of the object. Must be overriden in children.
     * @exception IOException if an error occures
     */
@@ -807,6 +811,9 @@ implements Serializable, DataObject.Container {
     * @return the shadow
     */
     protected DataShadow handleCreateShadow (DataFolder f) throws IOException {
+        // #33871 - prevent creation of recursive folder structure
+        testNesting(f);
+        
         String name;
         if (getPrimaryFile ().isRoot ()) {
             name = FileUtil.findFreeFileName (
