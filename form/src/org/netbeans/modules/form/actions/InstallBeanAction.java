@@ -26,6 +26,10 @@ public class InstallBeanAction extends CallableSystemAction {
 
     private static String name;
 
+    protected boolean asynchronous() {
+        return false;
+    }
+
     /** Human presentable name of the action. This should be
      * presented as an item in a menu.
      * @return the name of the action

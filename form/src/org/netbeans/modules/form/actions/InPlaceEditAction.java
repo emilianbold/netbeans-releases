@@ -45,6 +45,10 @@ public class InPlaceEditAction extends NodeAction {
         }
     }
 
+    protected boolean asynchronous() {
+        return false;
+    }
+
     /**
     * Test whether the action should be enabled based
     * on the currently activated nodes.

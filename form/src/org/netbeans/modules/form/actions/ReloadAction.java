@@ -21,7 +21,7 @@ import org.netbeans.modules.form.FormEditorSupport;
  * @author Tomas Pavek
  */
 
-public class ReloadAction extends CallableSystemAction implements Runnable {
+public class ReloadAction extends CallableSystemAction {
 
     private static String name;
 
@@ -29,6 +29,10 @@ public class ReloadAction extends CallableSystemAction implements Runnable {
 
     public ReloadAction() {
         setEnabled(false);
+    }
+
+    protected boolean asynchronous() {
+        return false;
     }
 
     public String getName() {
@@ -43,13 +47,6 @@ public class ReloadAction extends CallableSystemAction implements Runnable {
     }
 
     public void performAction() {
-        if (java.awt.EventQueue.isDispatchThread())
-            run();
-        else
-            java.awt.EventQueue.invokeLater(this);
-    }
-
-    public void run() {
         if (formEditorSupport != null)
             formEditorSupport.reloadForm();
     }
