@@ -32,7 +32,14 @@ import org.xml.sax.*;
  * @author Nenik
  */
 public class FactoriesTest extends NbTestCase {
-    
+    static SAXParserFactory origSAX;
+    static DocumentBuilderFactory origDOM;
+    static {
+        origSAX = SAXParserFactory.newInstance();
+        origDOM = DocumentBuilderFactory.newInstance();
+        SAXFactoryImpl.install();
+        DOMFactoryImpl.install();
+    }
     /** Creates a new instance of FactoriesTest */
     public FactoriesTest(String testName) {
         super(testName);
@@ -140,7 +147,7 @@ public class FactoriesTest extends NbTestCase {
         }
         
         public SAXParser newSAXParser() throws ParserConfigurationException, SAXException {
-            SAXParser parser = new org.apache.crimson.jaxp.SAXParserFactoryImpl().newSAXParser();
+            SAXParser parser = origSAX.newSAXParser();
             testMap.put(parser, supported);
             return parser;
         }
@@ -175,7 +182,7 @@ public class FactoriesTest extends NbTestCase {
         }
         
         public DocumentBuilder newDocumentBuilder() throws ParserConfigurationException {
-            DocumentBuilder builder = new org.apache.crimson.jaxp.DocumentBuilderFactoryImpl().newDocumentBuilder();
+            DocumentBuilder builder = origDOM.newDocumentBuilder();
             testMap.put(builder, supported);
             return builder;
         }
@@ -194,6 +201,13 @@ public class FactoriesTest extends NbTestCase {
             } else {
                 throw new IllegalArgumentException(name + " not supported"  );
             }
+        }
+
+        public boolean getFeature(java.lang.String name) throws javax.xml.parsers.ParserConfigurationException {
+            return false;
+        }
+
+        public void setFeature(java.lang.String name, boolean value) throws javax.xml.parsers.ParserConfigurationException {
         }
     }
     

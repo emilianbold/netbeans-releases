@@ -80,6 +80,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/core/lookup/*Test?.class"/>
                 <exclude name="org/netbeans/core/lookup/InstanceDataObjectModuleTest4.class"/>
                 <include name="org/netbeans/*Test.class"/>
+                <include name="org/netbeans/core/xml/*Test.class"/>
                 <!-- these tests are run in IDE mode-->
                 <exclude  name="**/ValidateLayer*Test.class"/> 
             </patternset>
