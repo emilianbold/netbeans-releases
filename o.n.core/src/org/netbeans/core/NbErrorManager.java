@@ -269,7 +269,12 @@ final class NbErrorManager extends ErrorManager {
         List l = (List)map.get (t);
         // MissingResourceException should be printed nicely... --jglick
         if (t instanceof MissingResourceException) {
-            if (l == null) l = new ArrayList ();
+            if (l == null) {
+                l = new ArrayList(1);
+            } else {
+                // #17045: the original l may have been read-only
+                l = new ArrayList(l);
+            }
             MissingResourceException mre = (MissingResourceException) t;
             String cn = mre.getClassName ();
             if (cn != null) {
@@ -286,7 +291,11 @@ final class NbErrorManager extends ErrorManager {
             // longer be necessary... would be able to use a single call.
             Throwable t2 = extractNestedThrowable(t);
             if (t2 != null) {
-                if (l == null) l = new ArrayList();
+                if (l == null) {
+                    l = new ArrayList(1);
+                } else {
+                    l = new ArrayList(l);
+                }
                 l.add(new Ann(EXCEPTION, null, null, t2, null));
             }
         }
