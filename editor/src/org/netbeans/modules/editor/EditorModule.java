@@ -68,6 +68,7 @@ import org.netbeans.modules.editor.NbImplementationProvider;
 import java.util.Iterator;
 import org.openide.text.CloneableEditor;
 import java.util.HashSet;
+import org.netbeans.modules.editor.options.BasePrintOptions;
 
 
 /**
@@ -150,6 +151,10 @@ implements JavaCompletion.JCFinderInitializer, PropertyChangeListener, Runnable 
 
         // Options
         PrintSettings ps = (PrintSettings) SharedClassObject.findObject(PrintSettings.class, true);
+
+        // Start listening on addition/removal of print options
+        BasePrintOptions bpo = (BasePrintOptions) BasePrintOptions.findObject(BasePrintOptions.class, true);
+        bpo.init();
         
         for (int i = 0; i < printOpts.length; i++) {
             ps.addOption((SystemOption)SharedClassObject.findObject(printOpts[i], true));

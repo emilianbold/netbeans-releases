@@ -22,6 +22,7 @@ import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.BaseKit;
 
+import org.openide.text.PrintSettings;
 import org.openide.util.HelpCtx;
 
 /**
@@ -52,7 +53,7 @@ public class BasePrintOptions extends OptionSupport {
     }
 
     private transient Settings.Initializer printColoringMapInitializer;
-
+    
     public BasePrintOptions(Class kitClass, String typeName) {
         super(kitClass, typeName);
     }
@@ -67,6 +68,16 @@ public class BasePrintOptions extends OptionSupport {
         return name;
     }
 
+    public void init(){
+        refreshContextListeners();
+    }
+    
+    private void refreshContextListeners() {
+        PrintSettings ps = (PrintSettings) PrintSettings.findObject(PrintSettings.class, true);
+        // Start listening on AllOptions and PrintSettings
+        ContextOptionsListener.processExistingAndListen(ps);
+    }    
+    
     public HelpCtx getHelpCtx () {
         return new HelpCtx (HELP_ID);
     }
