@@ -62,19 +62,29 @@ public class TemplatesPanel implements WizardDescriptor.Panel {
         String preselectedCategory = (String)wd.getProperty( "PRESELECT_CATEGORY" );        
         if ( templatesFolder != null && templatesFolder.isFolder() && 
             ( wd.getTemplate() == null || preselectedCategory != null || needsReselect ) ) {
+            
+            String preselectedTemplate = (String)wd.getProperty( "PRESELECT_TEMPLATE" );        
+            String template;
             String selectedCategory = OpenProjectListSettings.getInstance().getLastSelectedProjectCategory ();
             String selectedTemplate = OpenProjectListSettings.getInstance().getLastSelectedProjectType ();
+
+            if (preselectedTemplate == null) {
+                template = preselectedCategory != null ? null : selectedTemplate;
+            } else {
+                template = preselectedCategory != null ? preselectedTemplate : selectedTemplate;
+            }
+            
             TemplatesPanelGUI p = (TemplatesPanelGUI) this.getComponent();
             if (isWarmUpActive()) {
                 WarmupJob wup = getWarmUp();
                 wup.setTemplatesFolder (templatesFolder);
                 wup.setSelectedCategory( preselectedCategory != null ? preselectedCategory : selectedCategory );
-                wup.setSelectedTemplate( preselectedCategory != null ? null : selectedTemplate);
+                wup.setSelectedTemplate( template );
             }
             else {
                 p.setTemplatesFolder(templatesFolder);
                 p.setSelectedCategoryByName (preselectedCategory != null ? preselectedCategory : selectedCategory);
-                p.setSelectedTemplateByName (preselectedCategory != null ? null : selectedTemplate);
+                p.setSelectedTemplateByName (template);
             }
 
         }

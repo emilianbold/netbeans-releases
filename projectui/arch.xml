@@ -473,7 +473,20 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-component">
   <p>
-   No.
+    Yes, the <code>org.netbeans.modules.project.ui.TemplatesPanel</code> reads the properties:
+    <api group="property" name="PRESELECT_CATEGORY" type="export" category="private">
+     <p>
+      Path to a category of project type, e.g. Sample/Standard.
+     </p>
+    </api>
+    <api group="property" name="PRESELECT_TEMPLATE" type="export" category="private">
+     <p>
+       Name of a project type, e.g. emptyWeb.
+     </p>
+    </api>
+    These properties affect which category and project are preselected in 1st panel
+    of <code>NewProjectWizard</code>. If properties are empty (as default) then 
+    category/project are selected by UI spec.
   </p>
  </answer>
 
