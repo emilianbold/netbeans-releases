@@ -47,11 +47,11 @@ public class ImportBuildfile extends javax.swing.JPanel implements DocumentListe
     
     private void resize() {
         int width = (new Double(jLabelDesc.getFontMetrics(jLabelDesc.getFont()).getStringBounds(jLabelDesc.getText(), getGraphics()).getWidth() / 2.7)).intValue() + 40;
-        int height = (jLabelDesc.getFont().getSize() * 5) + 70;        
+        int height = (jLabelDesc.getFont().getSize() * 5) + 100;
         if (width < 400)
             width = 400;
-        if (height < 125)
-            height = 125;
+        if (height < 160)
+            height = 160;
         java.awt.Dimension dim = new java.awt.Dimension(width, height);
         setMinimumSize(dim);
         setPreferredSize(dim);
