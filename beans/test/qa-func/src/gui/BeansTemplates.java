@@ -100,6 +100,7 @@ public class BeansTemplates extends JellyTestCase {
     }
     
     private void writeResult(String name) {
+        new EventTool().waitNoEvent(1000);
         new EditorWindowOperator().getEditor(name);
         ref(Utilities.unify(Utilities.getAsString(name+".java")));
         new EventTool().waitNoEvent(500);
