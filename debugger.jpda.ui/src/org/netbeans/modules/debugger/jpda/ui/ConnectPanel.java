@@ -40,6 +40,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.TreeSet;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -138,6 +139,7 @@ Controller, ActionListener {
             // selector
                 c = new GridBagConstraints ();
                 c.insets = new Insets (0, 0, 3, 3);
+                c.anchor = c.WEST;
                 JLabel lblConnectors = new JLabel (
                     NbBundle.getMessage (ConnectPanel.class, "CTL_Connector") // NOI18N
                 );
@@ -158,6 +160,7 @@ Controller, ActionListener {
         // second line => transport
             c = new GridBagConstraints ();
             c.insets = new Insets (3, 0, 0, 6);
+            c.anchor = c.WEST;
             JLabel lblTransport = new JLabel (
                 NbBundle.getMessage (ConnectPanel.class, "CTL_Transport")
             );
@@ -189,7 +192,7 @@ Controller, ActionListener {
         // other lines
         Map args = getSavedArgs (connector);
         tfParams = new JTextField [args.size ()];
-        Iterator it = args.keySet ().iterator ();
+        Iterator it = new TreeSet (args.keySet ()).iterator ();
         int i = 0;
         while (it.hasNext ()) {
             String name = (String) it.next ();
@@ -201,6 +204,7 @@ Controller, ActionListener {
                 c.anchor = GridBagConstraints.WEST;
                 JLabel iLabel = new JLabel (label);
                 iLabel.setDisplayedMnemonic (mnemonic);
+                iLabel.setToolTipText (a.description ());
             add (iLabel, c);
                 JTextField tfParam = new JTextField (a.value ());
                 iLabel.setLabelFor (tfParam);
@@ -210,6 +214,7 @@ Controller, ActionListener {
                         ConnectPanel.class, "ACSD_CTL_Argument"
                     )).format (new Object[] { a.label() })
                 ); 
+                tfParam.setToolTipText (a.description ());
                 c = new GridBagConstraints ();
                 c.gridwidth = GridBagConstraints.REMAINDER;
                 c.insets = new Insets (6, 3, 0, 0);
@@ -378,7 +383,7 @@ Controller, ActionListener {
             String paramName = tf.getName ();
             String paramValue = tf.getText ();
             Argument a = (Argument) args.get (paramName);
-            while ( (!a.isValid (paramValue)) ||
+            while ( ((!a.isValid (paramValue)) && (!paramValue.equals (""))) ||
                     ( paramValue.equals ("") && a.mustSpecify () )
             ) {
                 NotifyDescriptor.InputLine in = null;
@@ -445,6 +450,8 @@ Controller, ActionListener {
             return NbBundle.getMessage (ConnectPanel.class, "CTL_ConnectorArgument_DebugServer");
         if (str.equalsIgnoreCase ("PID"))
             return NbBundle.getMessage (ConnectPanel.class, "CTL_ConnectorArgument_PID");
+        if (str.equalsIgnoreCase ("Name"))
+            return NbBundle.getMessage (ConnectPanel.class, "CTL_ConnectorArgument_Name");
         if (str.equalsIgnoreCase ("Timeout"))
             return NbBundle.getMessage (ConnectPanel.class, "CTL_ConnectorArgument_Timeout");
         if (str.equalsIgnoreCase ("Local Address"))
@@ -467,6 +474,8 @@ Controller, ActionListener {
             return NbBundle.getMessage(ConnectPanel.class, "CTL_ConnectorArgument_DebugServer_mnemonic").charAt(0);
         if (str.equalsIgnoreCase("PID"))
             return NbBundle.getMessage(ConnectPanel.class, "CTL_ConnectorArgument_PID_mnemonic").charAt(0);
+        if (str.equalsIgnoreCase("Name"))
+            return NbBundle.getMessage(ConnectPanel.class, "CTL_ConnectorArgument_Name_mnemonic").charAt(0);
         if (str.equalsIgnoreCase("Timeout"))
             return NbBundle.getMessage(ConnectPanel.class, "CTL_ConnectorArgument_Timeout_mnemonic").charAt(0);
         if (str.equalsIgnoreCase("Local Address"))
