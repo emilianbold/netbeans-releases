@@ -113,22 +113,44 @@ public class NbTestSuite extends TestSuite implements NbTest {
      * @param repeat number of times to repeat the test
      */
     public static NbTestSuite speedSuite (Class clazz, int slowness, int repeat) {
-        return new SpeedSuite (clazz, repeat, slowness);
+        return new SpeedSuite (clazz, repeat, slowness, SpeedSuite.CONSTANT);
     }
-        
+    
+    /** Factory method to create a special execution suite that not only
+     * executes the tests but also measures the times each execution took.
+     * It then compares the times devided by the size of query 
+     * and files if the difference is too big.
+     * Test tests can be executed more times to eliminate the effect
+     * of GC and hotspot compiler.
+     *
+     * @param clazz the class to create tests for (from methods starting with test)
+     * @param slowness this must be true: slowness * min < max
+     * @param repeat number of times to repeat the test
+     */
+    public static NbTestSuite linearSpeedSuite (Class clazz, int slowness, int repeat) {
+        return new SpeedSuite (clazz, repeat, slowness, SpeedSuite.LINEAR);
+    }
+
+    
     /** Allows enhanced execution and comparition of speed of a set of 
      * tests.
      */
     private static final class SpeedSuite extends NbTestSuite {
+        public static final int CONSTANT = 0;
+        public static final int LINEAR = 1;
+        
         /** number of repeats to try, if there is a failure */
         private int repeat;
         /** the maximum difference between the slowest and fastest test */
         private int slowness;
+        /** type of query CONSTANT, LINEAR, etc. */
+        private int type;
         
-        public SpeedSuite (Class clazz, int repeat, int slowness) {
+        public SpeedSuite (Class clazz, int repeat, int slowness, int type) {
             super (clazz);
             this.repeat = repeat;
             this.slowness = slowness;
+            this.type = type;
         }
         
         public void run (junit.framework.TestResult result) {
@@ -169,6 +191,11 @@ public class NbTestSuite extends TestSuite implements NbTest {
                         Object t = en.nextElement ();
                         if (t instanceof NbTestCase) {
                             long l = ((NbTestCase)t).getExecutionTime ();
+                            
+                            if (type == LINEAR) {
+                                l = l / ((NbTestCase)t).getTestNumber ();
+                            }
+                            
                             if (l > max) max = l;
                             if (l < min) min = l;
                         }
@@ -184,8 +211,19 @@ public class NbTestSuite extends TestSuite implements NbTest {
             }
             
             result.addFailure (this, new junit.framework.AssertionFailedError (
-                "Too big differences in execution times of tests:\n" + error.toString ()
+                "Too big differences in execution times of tests:\n" +
+                "the results are supposed to be " + typeName () + "\n"
+                + error.toString ()
             ));
+        }
+        
+        private String typeName () {
+            switch (type) {
+                case CONSTANT: return "constant"; 
+                case LINEAR: return "linear";
+                default: NbTestCase.fail ("This is not supported type: " + type);
+            }
+            return null;
         }
     }        
 }
