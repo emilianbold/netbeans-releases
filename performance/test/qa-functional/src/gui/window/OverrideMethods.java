@@ -52,7 +52,8 @@ public class OverrideMethods extends testUtilities.PerformanceTestCase {
     }
     
     public void prepare() {
-        // do nothing
+        editor.makeComponentVisible();
+        editor.setCaretPositionToLine(31);
    }
     
     public ComponentOperator open() {
