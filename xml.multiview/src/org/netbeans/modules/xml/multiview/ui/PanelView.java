@@ -65,7 +65,16 @@ public abstract class PanelView extends javax.swing.JPanel {
         return errorPanel;
     }
     
-    public abstract org.netbeans.modules.xml.multiview.Error validateView();
+    protected abstract org.netbeans.modules.xml.multiview.Error validateView();
+    
+    public final void checkValidity() {
+        org.netbeans.modules.xml.multiview.Error error = validateView();
+        if (error!=null) {
+            errorPanel.setError(error);
+        } else {
+            errorPanel.clearError();
+        }
+    }
     
     /**
      * Gets the current root Node.

@@ -46,12 +46,7 @@ public abstract class EjbJarMultiviewElement extends ToolBarMultiViewElement {
         if (view instanceof SectionNodeView) {
             ((SectionNodeView) view).getRootNode().refreshSubtree();
         }
-        org.netbeans.modules.xml.multiview.Error error = view.validateView();
-        if (error != null) {
-            comp.getErrorPanel().setError(error);
-        } else {
-            comp.getErrorPanel().clearError();
-        }
+        view.checkValidity();
         super.componentShowing();
         Object lastActive = comp.getLastActive();
         final SectionNode node;

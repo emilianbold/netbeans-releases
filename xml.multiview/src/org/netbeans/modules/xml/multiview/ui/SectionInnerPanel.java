@@ -146,10 +146,10 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
                             tc.requestFocus();
                         } else if (opt.equals(RefreshSaveDialog.OPTION_REFRESH)) {
                             rollbackValue(tc);
-                            sectionView.validateView();
+                            sectionView.checkValidity();
                         } else {
                             setValue(tc, tc.getText());
-                            sectionView.validateView();
+                            sectionView.checkValidity();
                         }
                     } else {
                         org.openide.DialogDescriptor desc = new RefreshDialog(sectionView.getErrorPanel());
@@ -160,16 +160,16 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
                             tc.requestFocus();
                         } else if (opt.equals(RefreshDialog.OPTION_REFRESH)) {
                             rollbackValue(tc);
-                            sectionView.validateView();
+                            sectionView.checkValidity();
                         }
                     }
                 } else {
                     if (!tc.getText().equals(orgValue)) {
                         setValue(tc, tc.getText());
-                        sectionView.validateView();
+                        sectionView.checkValidity();
                     } else {
                         if (viewIsBuggy) {
-                            sectionView.validateView();
+                            sectionView.checkValidity();
                         }
                     }
                 }

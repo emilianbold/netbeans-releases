@@ -227,7 +227,7 @@ public class SectionView extends PanelView implements SectionFocusCookie, Contai
         this.sectionSelected=sectionSelected;
     }
     
-    public org.netbeans.modules.xml.multiview.Error validateView() {
+    protected org.netbeans.modules.xml.multiview.Error validateView() {
         return null;
     }
     
