@@ -475,6 +475,9 @@ public class FormDesigner extends TopComponent
 
         public void componentRemoved(FormModelEvent e) {
             RADComponent removed = e.getComponent();
+            if (isComponentSelected(removed))
+                removeComponentFromSelection(removed);
+
             if (removed instanceof RADVisualContainer) {
                 // test whether topDesignContainer or some of its parents
                 // were not removed

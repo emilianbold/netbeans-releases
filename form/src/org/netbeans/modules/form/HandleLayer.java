@@ -524,7 +524,11 @@ class HandleLayer extends JPanel
     }
 
     private void showContextMenu(Point popupPos) {
-        Node[] selectedNodes = ComponentInspector.getInstance().getSelectedNodes();
+        ComponentInspector ci = ComponentInspector.getInstance();
+        if (ci.getFocusedForm() != formDesigner.getModel())
+            formDesigner.componentActivated(); // might happen in one case...
+
+        Node[] selectedNodes = ci.getSelectedNodes();
         JPopupMenu popup = NodeOp.findContextMenu(selectedNodes);
         if (popup != null) {
             popup.show(HandleLayer.this, popupPos.x, popupPos.y);
@@ -793,6 +797,9 @@ class HandleLayer extends JPanel
     private class HandleLayerMouseListener implements MouseListener
     {
         public void mouseClicked(MouseEvent e) {
+            if (MouseUtils.isRightMouseButton(e) && componentDragger == null) {
+                showContextMenu(e.getPoint());
+            }
             e.consume();
         }
 
@@ -800,13 +807,7 @@ class HandleLayer extends JPanel
             if (!HandleLayer.this.isVisible())
                 return;
 
-            if (MouseUtils.isRightMouseButton(e)) {
-                if (componentDragger == null) {
-                    showContextMenu(e.getPoint());
-                }
-                e.consume();
-            }
-            else if (MouseUtils.isLeftMouseButton(e)) {
+            if (MouseUtils.isLeftMouseButton(e)) {
                 if (componentDragger != null) {
                     componentDragger.dropComponents(e.getPoint());
                     componentDragger = null;
@@ -827,10 +828,11 @@ class HandleLayer extends JPanel
 
                 prevLeftMousePoint = lastLeftMousePoint;
                 lastLeftMousePoint = null;
-                e.consume();
             }
+
+            e.consume();
         }
-        
+
         public void mouseEntered(MouseEvent e) {
         }
 
