@@ -111,9 +111,12 @@ Microsystems, Inc. All Rights Reserved.
          <echo message="Shipping results for build ${ide.build}"/>
          <property name="ide.build" value="unknown"/>
          <property name="xtest.machine" value="unknown"/>
-         <property name="archive.filename" value="${xtest.results}/../${xtest.machine}-${ide.build}.zip"/>
+         <property name="xtest.tested.project" value="unknown"/>
+         <property name="xtest.testing.group" value="unknown"/>
+         <property name="xtest.tested.type" value="unknown"/>
+         <property name="archive.filename" value="${xtest.results}/xtr-${xtest.tested.project}-${ide.build}-${xtest.testing.group}-${xtest.tested.type}-${xtest.machine}.zip"/>
          <zip zipfile="${archive.filename}">
-            <fileset dir="${xtest.results}"/>
+            <fileset dir="${xtest.results}" excludes="xtr*.zip"/>                          
          </zip>
    </target>
 
