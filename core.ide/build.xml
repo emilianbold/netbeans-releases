@@ -8,46 +8,25 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
 <project name="core/ide" default="netbeans" basedir=".">
-    <import file="../../nbbuild/default.xml"/> 
-  
 
-    <target name="init" depends="default.init">
-      <patternset id="core/ide.files">
-        <include name="${nb.modules.dir}/core-ide.jar"/>
-        <include name="${nb.bin.dir}/icons/*"/>
-        <include name="${nb.docs.dir}/NetBeansWeb.html"/>
-        <include name="README.html"/>
-        <include name="netbeans.css"/>
-        <include name="shortcuts.pdf"/>
-      </patternset>
-      <path id="cp">
-        <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
-        <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-        <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
-      </path>
+    <import file="../../nbbuild/templates/projectized.xml"/> 
+
+    <target name="files-init" depends="basic-init">
+        <patternset id="module.files">
+            <include name="${module.jar}"/>
+            <include name="${nb.bin.dir}/icons/*"/>
+            <include name="${nb.docs.dir}/NetBeansWeb.html"/>
+            <include name="README.html"/>
+            <include name="netbeans.css"/>
+            <include name="shortcuts.pdf"/>
+        </patternset>
     </target>
 
-    <target name="compile" depends="init">
-        <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-            <classpath refID="cp"/>
-        </javac>
-    </target>
-
-    <target name="jars" depends="compile">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}"/>
-        <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-        <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/core-ide.jar"
-             basedir="src"
-             manifest="manifest-subst.mf"
-             excludesfile="../../nbbuild/standard-jar-excludes.txt"
-	     compress="false"/>
-    </target>
+    <target name="netbeans" depends="release,projectized.netbeans" description="Build complete module."/>
 
     <target name="release" depends="init">
         <!-- Note: this will indeed modify working sources if there is a change. -->
@@ -69,38 +48,6 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="shortcuts.pdf"/>
             </fileset>
         </copy>
-    </target>
-
-    <target name="netbeans" depends="jars,release">
-        <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/core-ide.jar">
-          <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-             <patternset refID="core/ide.files"/>
-          </fileset>
-        </genlist>
-    </target>
-
-    <target name="nbm" depends="netbeans">
-        <makenbm file="core-ide.nbm"
-                 productdir="${netbeans.dest.dir}/${cluster.dir}"
-                 module="${nb.modules.dir}/core-ide.jar"
-                 homepage="http://core.${homepage.base}/"
-                 distribution="http://${dist.base}/core-ide.nbm">
-            <license file="${license.file}"/>
-            <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-        </makenbm>
-    </target>
-
-    <target name="clean" depends="init">
-        <delete>
-            <fileset dir="src">
-                <include name="**/*.class"/>
-            </fileset>
-            <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-              <patternset refID="core/ide.files"/>
-            </fileset>
-        </delete>
-        <delete file="core-ide.nbm"/>
-        <delete file="manifest-subst.mf"/>
     </target>
 
 </project>
