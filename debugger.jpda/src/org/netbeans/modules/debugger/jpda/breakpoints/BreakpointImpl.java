@@ -166,8 +166,10 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
         try {
             getDebugger().setAltCSF(thread.frame(0));
         } catch (com.sun.jdi.IncompatibleThreadStateException e) {
-            e.printStackTrace();
-        }
+            e.printStackTrace(); 
+        } catch (java.lang.IndexOutOfBoundsException e) {
+            // No frame in case of Thread and "Main" class breakpoints, PATCH 56540 
+        } 
         
         if ((condition == null) || condition.equals ("")) {
             JPDABreakpointEvent e = new JPDABreakpointEvent (
