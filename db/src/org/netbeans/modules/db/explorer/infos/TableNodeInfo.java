@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -135,25 +135,22 @@ public class TableNodeInfo extends DatabaseNodeInfo {
             String nextKey = keys.nextElement().toString();
             
             /*  existing properties are not overwritten*/
-            if (target.get(nextKey) == null) {
+            if (target.get(nextKey) == null)
                 target.put(nextKey, source.get(nextKey));
-            }
         }
     }
     
-    public void setProperty(String key, Object obj)
-    {
+    public void setProperty(String key, Object obj) {
         try {
-            if (key.equals("remarks")) setRemarks((String)obj); //NOI18N
+            if (key.equals("remarks"))
+                setRemarks((String)obj); //NOI18N
             put(key, obj);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
 
-    public void setRemarks(String rem)
-    throws DatabaseException
-    {
+    public void setRemarks(String rem) throws DatabaseException {
         String tablename = (String)get(DatabaseNode.TABLE);
         Specification spec = (Specification)getSpecification();
         try {
@@ -169,8 +166,7 @@ public class TableNodeInfo extends DatabaseNodeInfo {
         //???
     }
 
-    public void refreshChildren() throws DatabaseException
-    {
+    public void refreshChildren() throws DatabaseException {
         // force init collection
         getNode().getChildren().getNodes();
         
@@ -184,53 +180,51 @@ public class TableNodeInfo extends DatabaseNodeInfo {
             Node[] subTreeNodes = new Node[charr.size()+1/*special node Foreign keys*/+/*special node Indexes*/1];
 
             // current sub-tree
-            DatabaseNodeChildren children = (DatabaseNodeChildren)getNode().getChildren();
-            final Node[] childrenNodes = children.getNodes();
-            for(int i=0; i < childrenNodes.length; i++)
+            DatabaseNodeChildren children = (DatabaseNodeChildren) getNode().getChildren();            
+            final Node[] childrenNodes = children.getNodes();            
+            for (int i=0; i < childrenNodes.length; i++)
                 // is it node Indexes
-                if(((DatabaseNode)childrenNodes[i]).getInfo() instanceof IndexListNodeInfo) {
+                if ((childrenNodes[i]).getCookie(IndexListNodeInfo.class) != null) {
                     final int j = i;
                     javax.swing.SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             try {                            
                                 // refresh indexes
-                                ((DatabaseNode)childrenNodes[j]).getInfo().refreshChildren();
-                                } catch(Exception ex) {
-                                    org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
-                                }
+                                ((DatabaseNode) childrenNodes[j]).getInfo().refreshChildren();
+                            } catch(Exception ex) {
+                                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
                             }
-                        });
+                        }
+                    });
                     // add into refreshed sub-tree
                     subTreeNodes[charr.size()+1] = childrenNodes[i];
                 } else
                 // is it node Foreign keys or column? 
-                if(((DatabaseNode)childrenNodes[i]).getInfo() instanceof ForeignKeyListNodeInfo) {
+                if ((childrenNodes[i]).getCookie(ForeignKeyListNodeInfo.class) != null) {
                     final int j = i;
                     javax.swing.SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             try {                            
                                 // refresh foreign keys
-                                ((DatabaseNode)childrenNodes[j]).getInfo().refreshChildren();
-                                } catch(Exception ex) {
-                                    org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
-                                }
+                                ((DatabaseNode) childrenNodes[j]).getInfo().refreshChildren();
+                            } catch(Exception ex) {
+                                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
                             }
-                        });
+                        }
+                    });
                     // add into refreshed sub-tree
                     subTreeNodes[charr.size()] = childrenNodes[i];
                 }
 
             // remove current sub-tree
-            children.remove(childrenNodes);
+//            children.remove(childrenNodes);
 
             // build refreshed sub-tree
-            for(int i=0; i<charr.size(); i++){
-                subTreeNodes[i] = children.createNode((DatabaseNodeInfo)charr.elementAt(i));
-            }
+            for (int i=0; i<charr.size(); i++)
+                subTreeNodes[i] = children.createNode((DatabaseNodeInfo) charr.elementAt(i));
 
             // add built sub-tree
             children.add(subTreeNodes);
-
         } catch (Exception ex) {
             org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
         }
@@ -250,8 +244,7 @@ public class TableNodeInfo extends DatabaseNodeInfo {
     /** Returns ColumnNodeInfo specified by info
     * Compares code and name only.
     */
-    public ColumnNodeInfo getChildrenColumnInfo(ColumnNodeInfo info)
-    {
+    public ColumnNodeInfo getChildrenColumnInfo(ColumnNodeInfo info) {
         String scode = info.getCode();
         String sname = info.getName();
 
@@ -259,19 +252,17 @@ public class TableNodeInfo extends DatabaseNodeInfo {
             Enumeration enu = getChildren().elements();
             while (enu.hasMoreElements()) {
                 ColumnNodeInfo elem = (ColumnNodeInfo)enu.nextElement();
-                if (elem.getCode().equals(scode) && elem.getName().equals(sname)) {
+                if (elem.getCode().equals(scode) && elem.getName().equals(sname))
                     return elem;
-                }
             }
         } catch (Exception e) {
             //PENDING
         }
+        
         return null;
     }
 
-    public void addColumn(String tname)
-    throws DatabaseException
-    {
+    public void addColumn(String tname) throws DatabaseException {
         try {
             Vector chvec = new Vector(1);
             initChildren(chvec, tname);
