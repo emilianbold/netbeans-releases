@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -195,10 +195,14 @@ public class NewTemplateAction extends NodeAction {
     * templates.
     */
     public JMenuItem getPopupPresenter() {
-        return getPopupPresenter (new Node[0], this);
+        return getPopupPresenter (null, this);
     }
     
-    private JMenuItem getPopupPresenter (Node[] nodes, Action action) {
+    private JMenuItem getPopupPresenter (final Lookup actionContext, Action action) {
+        Node[] nodes = new Node[0];
+        if (actionContext != null) {
+            nodes = getNodesFromLookup (actionContext);
+        }
         final Node n = (nodes.length == 1) ? nodes[0] : null;
         TemplateWizard tw = getWizard (n);
         
@@ -206,7 +210,7 @@ public class NewTemplateAction extends NodeAction {
             return new MenuWithRecent (n);
         } else {
             // The null is correct but depends on the impl of MenuView.Menu
-            JMenuItem menu = new MenuView.Menu (null, new TemplateActionListener (), false) {
+            JMenuItem menu = new MenuView.Menu (null, new TemplateActionListener (actionContext), false) {
                 // this is the only place MenuView.Menu needs the node ready
                 // so lets prepare it on-time
                 public JPopupMenu getPopupMenu () {
@@ -503,20 +507,33 @@ public class NewTemplateAction extends NodeAction {
     /** Actions listener which instantiates the template */
     private static class TemplateActionListener implements NodeAcceptor, DataFilter {
         static final long serialVersionUID =1214995994333505784L;
-        TemplateActionListener() {}
+        Lookup actionContext;
+        TemplateActionListener(Lookup context) {
+            actionContext = context;
+        }
         public boolean acceptNodes (Node[] nodes) {
+            Node[] nodesInContext = null;
+            if (actionContext != null) {
+                nodesInContext = getNodesFromLookup (actionContext);
+            }
+            if ((nodesInContext == null) || (nodesInContext.length != 1)) {
+                ErrorManager.getDefault ().log (ErrorManager.WARNING, "Wrong count of nodes in context lookup."); //NOI18N
+                return false;
+            }
             if ((nodes == null) || (nodes.length != 1)) {
+                ErrorManager.getDefault ().log (ErrorManager.WARNING, "Wrong count of selected nodes in popup menu."); //NOI18N
                 return false;
             }
             Node n = nodes[0];
             DataObject obj = (DataObject)n.getCookie (DataObject.class);
             if (obj == null || !obj.isTemplate ()) {
+                ErrorManager.getDefault ().log (ErrorManager.WARNING, "Selected node in popup menu is not acceptable."); //NOI18N
                 // do not accept
                 return false;
             }
             
-            // in this case the modified wizard will be used as default
-            TemplateWizard wizard = getWizard (null);
+            // bugfix #38421, read node in contextLookup to select the right wizard
+            TemplateWizard wizard = getWizard (nodesInContext != null ? nodesInContext[0] : null);
             
             try {
                 wizard.setTargetName (null);
@@ -857,9 +874,7 @@ public class NewTemplateAction extends NodeAction {
         }
         
         public JMenuItem getPopupPresenter() {
-            Node[] nodes = getNodesFromLookup (actionContext);
-            Node n = (nodes.length == 1) ? nodes[0] : null;
-            return delegate.getPopupPresenter (nodes, this);
+            return delegate.getPopupPresenter (actionContext, this);
         }
 
         public void resultChanged (org.openide.util.LookupEvent ev) {
