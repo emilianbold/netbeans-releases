@@ -707,8 +707,11 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
         JMenuItem menuItem = new JMenuItem(NbBundle.getMessage(ToolbarConfiguration.class, "CTL_DisplayToolbars"));
         menuItem.addActionListener(new ActionListener() {
             public void actionPerformed (ActionEvent event) {
-                NodeOperation no = (NodeOperation)Lookup.getDefault().lookup (NodeOperation.class);
-                no.explore(new ToolbarFolderNode());
+                //#38613 fix -start
+                ConfigureToolbarPanel.showConfigureDialog(new ToolbarFolderNode());
+//                NodeOperation no = (NodeOperation)Lookup.getDefault().lookup (NodeOperation.class);
+//                no.explore(new ToolbarFolderNode());
+                //#38613 fix - end
             }
         });
         menu.add(menuItem);
