@@ -136,7 +136,21 @@ final class Central implements ControllerHandler {
     public void setActiveMode(ModeImpl activeMode) {
         ModeImpl old = getActiveMode();
         if(activeMode == old) {
-            return;
+            // kind of workaround to the scenario when a window slides out automatically
+            // and user clicks in the currently active mode, not allow to exit in such case and fire changes to
+            // force the slided-out window to disappear.
+            ModeImpl impl = model.getSlidingMode(Constants.BOTTOM);
+            if (impl == null || impl.getSelectedTopComponent() == null) {
+                return;
+            }
+            impl = model.getSlidingMode(Constants.LEFT);
+            if (impl == null || impl.getSelectedTopComponent() == null) {
+                return;
+            }
+            impl = model.getSlidingMode(Constants.RIGHT);
+            if (impl == null || impl.getSelectedTopComponent() == null) {
+                return;
+            }
         }
         
         model.setActiveMode(activeMode);
@@ -498,6 +512,7 @@ final class Central implements ControllerHandler {
         
         TopComponent old = getModeSelectedTopComponent(mode);
         if(selected == old) {
+            System.out.println("returning on " + selected.getClass());
             return;
         }
         
