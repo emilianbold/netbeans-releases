@@ -129,7 +129,9 @@ public class PropertiesMIMEOptionFile extends MIMEOptionFile{
 
                 } else if (String.class.isAssignableFrom(clazz)){
                     if (value!=null){
-                        if (propagate) base.doSetSettingValue(name, value, null);
+                        if (propagate && !BaseOptions.INDENT_ENGINE_PROP.equals(name)) {
+                            base.doSetSettingValue(name, value, null);
+                        }
                         properties.put(name, value );
                     }
                 }
