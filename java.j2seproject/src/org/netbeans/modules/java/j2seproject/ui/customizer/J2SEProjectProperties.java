@@ -310,16 +310,10 @@ public class J2SEProjectProperties {
         projectProperties.setProperty( RUN_CLASSPATH, run_cp );
         projectProperties.setProperty( RUN_TEST_CLASSPATH, run_test_cp );
         
-        //Handle platform selection
+        //Handle platform selection and javac.source javac.target properties
         SpecificationVersion sourceLevel = (SpecificationVersion) JAVAC_SOURCE_MODEL.getSelectedItem();
         PlatformUiSupport.storePlatform (projectProperties, updateHelper, (String) PLATFORM_MODEL.getSelectedItem(), sourceLevel);
-        
-        //Save javac.source
-        if (sourceLevel!=null) {
-            //Not broken platform
-            projectProperties.setProperty(JAVAC_SOURCE, sourceLevel.toString());
-        }
-                
+                                
         // Handle other special cases
         if ( NO_DEPENDENCIES_MODEL.isSelected() ) { // NOI18N
             projectProperties.remove( NO_DEPENDENCIES ); // Remove the property completely if not set
