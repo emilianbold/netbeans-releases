@@ -18,6 +18,7 @@ import java.util.ResourceBundle;
 
 import org.openide.TopManager;
 import org.openide.DialogDescriptor;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -43,9 +44,11 @@ class NbAuthenticator extends java.net.Authenticator {
     passwordPanel.setPrompt( getRequestingPrompt() );
     java.awt.Dialog dialog = TopManager.getDefault().createDialog( dd );
     dialog.show (); 
-    //System.out.println("Authent");
- 
-    return new java.net.PasswordAuthentication ( passwordPanel.getUsername(), passwordPanel.getPassword() );
+    
+    if ( dd.getValue().equals( NotifyDescriptor.OK_OPTION ) )
+      return new java.net.PasswordAuthentication ( passwordPanel.getUsername(), passwordPanel.getPassword() );
+    else
+      return null;
   }
 
 
