@@ -54,4 +54,11 @@ Microsystems, Inc. All Rights Reserved.
     <target name="clean" depends="projectized.clean">
         <ant dir=".." target="clean" inheritAll="false"/>
     </target>
+
+    <!-- Create jemmy javadoc to be published at http://www.netbeans.org/download/dev/javadoc/jemmy-api/index.html. -->
+    <target name="javadoc" depends="init">
+        <ant dir=".." target="javadoc" inheritAll="false">
+            <property name="dist.javadoc.dir" location="javadoc"/>
+        </ant>
+    </target>
 </project>
