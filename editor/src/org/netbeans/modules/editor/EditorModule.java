@@ -37,13 +37,13 @@ import org.netbeans.modules.editor.options.PlainPrintOptions;
 import org.openide.modules.ModuleInstall;
 import org.openide.TopManager;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.LocalFileSystem;
-import org.openide.loaders.DataFolder;
 import org.openide.util.SharedClassObject;
 import org.openide.options.SystemOption;
 import org.openide.text.PrintSettings;
 import org.openide.loaders.DataObject;
 import org.openide.util.WeakListener;
+import org.openide.filesystems.RepositoryListener;
+import org.openide.filesystems.Repository;
 
 
 /**
@@ -66,6 +66,8 @@ public class EditorModule extends ModuleInstall implements Runnable {
     static final long serialVersionUID =-929863607593944237L;
     
     private DORegistryListener rl;
+    
+    private RepositListener repoListen;
 
     public void installed () {
         restored ();
@@ -113,6 +115,14 @@ public class EditorModule extends ModuleInstall implements Runnable {
         if (rl == null) {
             rl = new DORegistryListener();
             DataObject.getRegistry().addChangeListener((ChangeListener)(WeakListener.change(rl, DataObject.getRegistry())));
+        }
+
+        if (repoListen==null){
+            repoListen=new RepositListener();
+            Repository repo = TopManager.getDefault().getRepository();
+            if (repo!=null){
+                repo.addRepositoryListener((RepositoryListener)(WeakListener.repository(repoListen, repo)));
+            }
         }
 
     }
