@@ -35,7 +35,7 @@ public class SelectNodeAction extends LookupSensitiveAction {
     
     // XXX Better icons
     private static final Icon SELECT_IN_PROJECTS_ICON = new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/projectTab.gif" ) ); //NOI18N
-    private static final Icon SELECT_IN_FILES_ICON = new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/projectTab.gif" ) ); //NOI18N
+    private static final Icon SELECT_IN_FILES_ICON = new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/filesTab.gif" ) ); //NOI18N
     
     private static final String SELECT_IN_PROJECTS_NAME = NbBundle.getMessage( CloseProject.class, "LBL_SelectInProjectsAction_Name" ); // NOI18N
     private static final String SELECT_IN_FILES_NAME = NbBundle.getMessage( CloseProject.class, "LBL_SelectInFilesAction_Name" ); // NOI18N
