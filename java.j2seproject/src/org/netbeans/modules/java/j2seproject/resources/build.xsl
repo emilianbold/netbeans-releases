@@ -19,97 +19,83 @@ Microsystems, Inc. All Rights Reserved.
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
     <xsl:template match="/">
     
-    <!-- Annoyingly, the JAXP impl in JRE 1.4.2 seems to randomly reorder attrs. -->
-    <!-- (I.e. the DOM tree gets them in an unspecified order?) -->
-    <!-- As a workaround, use xsl:attribute for all but the first attr. -->
-    <!-- This seems to produce them in the order you want. -->
-    <!-- Tedious, but appears to do the job. -->
-    <!-- Important for build.xml, which is very visible; not so much for build-impl.xml. -->
+        <!-- Annoyingly, the JAXP impl in JRE 1.4.2 seems to randomly reorder attrs. -->
+        <!-- (I.e. the DOM tree gets them in an unspecified order?) -->
+        <!-- As a workaround, use xsl:attribute for all but the first attr. -->
+        <!-- This seems to produce them in the order you want. -->
+        <!-- Tedious, but appears to do the job. -->
+        <!-- Important for build.xml, which is very visible; not so much for build-impl.xml. -->
 
-<xsl:comment> You may freely edit this file. </xsl:comment>
-<xsl:comment> (If you delete it and reopen the project it will be recreated.) </xsl:comment>
-<xsl:comment> The names of existing targets are significant to the IDE and should not be removed. </xsl:comment>
-<xsl:comment> (For example, 'javadoc' is run when you choose Build -> Generate Javadoc.) </xsl:comment>
+        <xsl:comment> You may freely edit this file. See commented blocks below for </xsl:comment>
+        <xsl:comment> some examples of how to customize the build. </xsl:comment>
+        <xsl:comment> (If you delete it and reopen the project it will be recreated.) </xsl:comment>
         
-<xsl:variable name="name" select="/project:project/project:name"/>
-<project name="{$name}">
-    <xsl:attribute name="default">default</xsl:attribute>
-    <xsl:attribute name="basedir">.</xsl:attribute>
-    <description>
-        Builds, tests, and runs the project <xsl:value-of select="/project:project/project:display-name"/>.
-    </description>
-    <target name="default">
-        <xsl:attribute name="depends">test,jar,javadoc</xsl:attribute>
-        <xsl:attribute name="description">Build and test whole project.</xsl:attribute>
-    </target>
-    <target name="jar">
-        <xsl:attribute name="description">Build JAR.</xsl:attribute>
-        <ant antfile="nbproject/build-impl.xml">
-            <xsl:attribute name="target">jar</xsl:attribute>
-        </ant>
-    </target>
-    <target name="compile-single">
-        <ant antfile="nbproject/build-impl.xml">
-            <xsl:attribute name="target">compile-single</xsl:attribute>
-            <property name="is.test">
-                <xsl:attribute name="value">false</xsl:attribute>
-            </property>
-        </ant>
-    </target>
-    <target name="compile-test-single">
-        <ant antfile="nbproject/build-impl.xml">
-            <xsl:attribute name="target">compile-single</xsl:attribute>
-            <property name="is.test">            
-                <xsl:attribute name="value">true</xsl:attribute>
-            </property>
-        </ant>
-    </target>
-    <target name="run">
-        <xsl:attribute name="description">Run a main class.</xsl:attribute>
-        <ant antfile="nbproject/build-impl.xml">
-            <xsl:attribute name="target">run</xsl:attribute>
-        </ant>
-    </target>
-    <target name="debug">
-        <xsl:attribute name="description">Debug project in IDE.</xsl:attribute>
-        <ant antfile="nbproject/build-impl.xml">
-            <xsl:attribute name="target">debug-nb</xsl:attribute>
-        </ant>
-    </target>
-    <target name="javadoc">
-        <xsl:attribute name="description">Build Javadoc.</xsl:attribute>
-        <ant antfile="nbproject/build-impl.xml">
-            <xsl:attribute name="target">javadoc-nb</xsl:attribute>
-        </ant>
-    </target>
-    <target name="test">
-        <xsl:attribute name="description">Run unit tests.</xsl:attribute>
-        <ant antfile="nbproject/build-impl.xml">
-            <xsl:attribute name="target">test-nb</xsl:attribute>
-        </ant>
-    </target>
-    <target name="test-single">
-        <ant antfile="nbproject/build-impl.xml">
-            <xsl:attribute name="target">test-single-nb</xsl:attribute>
-        </ant>
-    </target>
-    <target name="debug-test-single">
-        <ant antfile="nbproject/build-impl.xml">
-            <xsl:attribute name="target">debug-test-single-nb</xsl:attribute>
-        </ant>
-    </target>
-    <target name="debug-fix">
-        <ant antfile="nbproject/build-impl.xml">
-            <xsl:attribute name="target">debug-fix-nb</xsl:attribute>
-        </ant>
-    </target>
-    <target name="clean">
-        <xsl:attribute name="description">Clean build products.</xsl:attribute>
-        <ant antfile="nbproject/build-impl.xml">
-            <xsl:attribute name="target">clean</xsl:attribute>
-        </ant>
-    </target>
-</project>
+        <xsl:variable name="name" select="/project:project/project:name"/>
+        <project name="{$name}">
+            <xsl:attribute name="default">default</xsl:attribute>
+            <xsl:attribute name="basedir">.</xsl:attribute>
+            <description>Builds, tests, and runs the project <xsl:value-of select="/project:project/project:display-name"/>.</description>
+            <import file="nbproject/build-impl.xml"/>
+
+            <xsl:comment><![CDATA[
+
+    There exist several targets which are by default empty and which can be 
+    used for execution of your tasks. These targets are usually executed 
+    before and after some main targets. They are: 
+
+      pre-init:                 called before initialization of project properties 
+      post-init:                called after initialization of project properties 
+      pre-compile:              called before javac compilation 
+      post-compile:             called after javac compilation 
+      pre-compile-single:       called before javac compilation of single file
+      post-compile-single:      called after javac compilation of single file
+      pre-compile-test:         called before javac compilation of JUnit tests
+      post-compile-test:        called after javac compilation of JUnit tests
+      pre-compile-test-single:  called before javac compilation of single JUnit test
+      post-compile-test-single: called after javac compilation of single JUunit test
+      pre-jar:                  called before jar building 
+      post-jar:                 called after jar building 
+      post-clean:               called after cleaning build products 
+
+    Example of pluging an obfuscator after the compilation could look like 
+
+        <target name="post-compile">
+            <obfuscate>
+                <fileset dir="${build.classes.dir}"/>
+            </obfuscate>
+        </target>
+
+    For list of available properties check the imported 
+    nbproject/build-impl.xml file. 
+
+
+    Other way how to customize the build is by overriding existing main targets.
+    The target of interest are: 
+
+      init-macrodef-javac:    defines macro for javac compilation
+      init-macrodef-junit:    defines macro for junit execution
+      init-macrodef-debug:    defines macro for debugging class
+      do-jar:                 jar archive building
+      run:                    execution of project 
+      javadoc-build:          javadoc generation 
+      test-report:            JUnit report generation
+
+    Example of overriding the target for project execution could look like 
+
+        <target name="run" depends="<PROJNAME>-impl.jar">
+            <exec dir="bin" executable="launcher.exe">
+                <arg file="${dist.jar}"/>
+            </exec>
+        </target>
+
+    Notice that overridden target depends on jar target and not only on 
+    compile target as regular run target does. Again, for list of available 
+    properties which you can use check the target you are overriding in 
+    nbproject/build-impl.xml file. 
+
+    ]]></xsl:comment>
+
+        </project>
 
     </xsl:template>
     

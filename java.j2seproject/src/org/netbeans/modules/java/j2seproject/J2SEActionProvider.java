@@ -101,7 +101,7 @@ class J2SEActionProvider implements ActionProvider {
             commands.put(COMMAND_JAVADOC, new String[] {"javadoc"}); // NOI18N
             commands.put(COMMAND_TEST, new String[] {"test"}); // NOI18N
             commands.put(COMMAND_TEST_SINGLE, new String[] {"test-single"}); // NOI18N
-            commands.put(COMMAND_DEBUG_TEST_SINGLE, new String[] {"debug-test-single"}); // NOI18N
+            commands.put(COMMAND_DEBUG_TEST_SINGLE, new String[] {"debug-test"}); // NOI18N
             commands.put(COMMAND_DEBUG_FIX, new String[] {"debug-fix"}); // NOI18N
         
         this.antProjectHelper = antProjectHelper;
@@ -145,7 +145,7 @@ class J2SEActionProvider implements ActionProvider {
             // Convert foo/FooTest.java -> foo.FooTest
             p = new Properties();
             p.setProperty("test.class", path.substring(0, path.length() - 5).replace('/', '.')); // NOI18N
-            targetNames = new String[] {"debug-test-single"}; // NOI18N
+            targetNames = new String[] {"debug-test"}; // NOI18N
         } 
         else if ( command.equals( COMMAND_DEBUG_FIX ) ) {
             FileObject[] files = findSources( context );
@@ -153,18 +153,17 @@ class J2SEActionProvider implements ActionProvider {
             p = new Properties();
             if (files != null) {
                 path = FileUtil.getRelativePath(project.getSourceDirectory(), files[0]);
-            } 
-            else {
+                targetNames = new String[] {"debug-fix"}; // NOI18N
+            } else {
                 files = findTestSources(context, false);
                 path = FileUtil.getRelativePath(project.getTestSourceDirectory(), files[0]);
-                p.setProperty("is.test", "true"); // NOI18N
+                targetNames = new String[] {"debug-fix-test"}; // NOI18N
             }
             // Convert foo/FooTest.java -> foo/FooTest
             if (path.endsWith(".java")) { // NOI18N
                 path = path.substring(0, path.length() - 5);
             }
             p.setProperty("fix.includes", path); // NOI18N
-            targetNames = new String[] {"debug-fix"}; // NOI18N
         }
         else if (command.equals (COMMAND_RUN)) {
             EditableProperties ep = antProjectHelper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);

@@ -21,395 +21,703 @@ Microsystems, Inc. All Rights Reserved.
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
     <xsl:template match="/">
 
-<xsl:comment> *** GENERATED FROM project.xml - DO NOT EDIT *** </xsl:comment>
+        <xsl:comment><![CDATA[
+*** GENERATED FROM project.xml - DO NOT EDIT  ***
+***         EDIT ../build.xml INSTEAD         ***
 
-<xsl:variable name="name" select="/p:project/p:name"/>
-<project name="{$name}-impl" default="build" basedir="..">
+For the purpose of easier reading the script
+is divided into following sections:
 
-    <target name="init">
-        <property file="nbproject/private/private.properties"/>
-        <property name="user.properties.file" location="${{netbeans.user}}/build.properties"/>
-        <property file="${{user.properties.file}}"/>
-        <property file="nbproject/project.properties"/>
-        <xsl:if test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
-            <!--Setting java and javac default location -->
-            <property name="platforms.${{platform.active}}.javac" value="${{platform.home}}/bin/javac"/>
-            <property name="platforms.${{platform.active}}.java" value="${{platform.home}}/bin/java"/>
-            <!-- XXX Ugly but Ant does not yet support recursive property evaluation: -->
-            <tempfile property="file.tmp" prefix="platform" suffix=".properties"/>
-            <echo file="${{file.tmp}}">
-                platform.home=$${platforms.${platform.active}.home}
-                platform.bootcp=$${platforms.${platform.active}.bootclasspath}                
-                build.compiler=$${platforms.${platform.active}.compiler}
-                platform.java=$${platforms.${platform.active}.java}
-                platform.javac=$${platforms.${platform.active}.javac}
-            </echo>
-            <property file="${{file.tmp}}"/>
-            <delete file="${{file.tmp}}"/>
-            <fail unless="platform.home">Must set platform.home</fail>
-            <fail unless="platform.bootcp">Must set platform.bootcp</fail>                        
-            <fail unless="platform.java">Must set platform.java</fail>
-            <fail unless="platform.javac">Must set platform.javac</fail>
-        </xsl:if>
-        <!-- XXX XSLT 2.0 would make it possible to use a for-each here -->
-        <!-- Note that if the properties were defined in project.xml that would be easy -->
-        <!-- But required props should be defined by the AntBasedProjectType, not stored in each project -->
-        <fail unless="src.dir">Must set src.dir</fail>
-        <fail unless="test.src.dir">Must set test.src.dir</fail>
-        <fail unless="build.dir">Must set build.dir</fail>
-        <fail unless="dist.dir">Must set dist.dir</fail>
-        <fail unless="build.classes.dir">Must set build.classes.dir</fail>
-        <fail unless="dist.javadoc.dir">Must set dist.javadoc.dir</fail>
-        <fail unless="build.test.classes.dir">Must set build.test.classes.dir</fail>
-        <fail unless="build.test.results.dir">Must set build.test.results.dir</fail>
-        <fail unless="build.classes.excludes">Must set build.classes.excludes</fail>
-        <fail unless="dist.jar">Must set dist.jar</fail>
-        <xsl:comment>The two properties below are usually overridden</xsl:comment>
-        <xsl:comment>by the active platform. Just a fallback.</xsl:comment>
-        <property name="default.javac.source" value="1.4"/>
-        <property name="default.javac.target" value="1.4"/>
-        <xsl:if test="/p:project/p:configuration/j2se:data/j2se:use-manifest">
-            <fail unless="manifest.file">Must set manifest.file</fail>
-        </xsl:if>
-        <available property="have.tests" file="${{test.src.dir}}"/>
-        <condition property="netbeans.home+have.tests">
-            <and>
-                <isset property="netbeans.home"/>
-                <isset property="have.tests"/>
-            </and>
-        </condition>
-        <condition property="no.deps">
-            <istrue value="${{no.dependencies}}"/>
-        </condition>
-        <condition property="no.javadoc.preview">
-            <isfalse value="${{javadoc.preview}}"/>
-        </condition>
-    </target>
+  - initialization
+  - compilation
+  - jar
+  - execution
+  - debugging
+  - javadoc
+  - junit compilation
+  - junit execution
+  - junit debugging
+  - cleanup
 
-    <xsl:call-template name="deps.target">
-        <xsl:with-param name="targetname" select="'deps-jar'"/>
-        <xsl:with-param name="type" select="'jar'"/>
-    </xsl:call-template>
+]]></xsl:comment>
 
-    <target name="compile" depends="init,deps-jar">
-        <mkdir dir="${{build.classes.dir}}"/>
-        <xsl:choose>
-            <xsl:when test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
-                <javac srcdir="${{src.dir}}" destdir="${{build.classes.dir}}" debug="${{javac.debug}}" deprecation="${{javac.deprecation}}" source="${{javac.source}}" target="${{javac.target}}" includeantruntime="false" fork="yes" executable="${{platform.javac}}">
+        <xsl:variable name="name" select="/p:project/p:name"/>
+        <project name="{$name}-impl">
+            <xsl:attribute name="default">build</xsl:attribute>
+            <xsl:attribute name="basedir">..</xsl:attribute>
+
+            <target name="default">
+                <xsl:attribute name="depends">test,jar,javadoc</xsl:attribute>
+                <xsl:attribute name="description">Build and test whole project.</xsl:attribute>
+            </target>
+
+            <xsl:comment> 
+    ======================
+    INITIALIZATION SECTION 
+    ======================
+    </xsl:comment>
+
+            <target name="pre-init">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+
+            <target name="init-private">
+                <xsl:attribute name="depends">pre-init</xsl:attribute>
+                <property file="nbproject/private/private.properties"/>
+            </target>
+
+            <target name="init-userdir">
+                <xsl:attribute name="depends">pre-init,init-private</xsl:attribute>
+                <property name="user.properties.file" location="${{netbeans.user}}/build.properties"/>
+            </target>
+
+            <target name="init-user">
+                <xsl:attribute name="depends">pre-init,init-private,init-userdir</xsl:attribute>
+                <property file="${{user.properties.file}}"/>
+            </target>
+
+            <target name="init-project">
+                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user</xsl:attribute>
+                <property file="nbproject/project.properties"/>
+            </target>
+
+            <target name="do-init">
+                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project</xsl:attribute>
+                <xsl:if test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
+                    <!--Setting java and javac default location -->
+                    <property name="platforms.${{platform.active}}.javac" value="${{platform.home}}/bin/javac"/>
+                    <property name="platforms.${{platform.active}}.java" value="${{platform.home}}/bin/java"/>
+                    <!-- XXX Ugly but Ant does not yet support recursive property evaluation: -->
+                    <tempfile property="file.tmp" prefix="platform" suffix=".properties"/>
+                    <echo file="${{file.tmp}}">
+                        platform.home=$${platforms.${platform.active}.home}
+                        platform.bootcp=$${platforms.${platform.active}.bootclasspath}                
+                        build.compiler=$${platforms.${platform.active}.compiler}
+                        platform.java=$${platforms.${platform.active}.java}
+                        platform.javac=$${platforms.${platform.active}.javac}
+                    </echo>
+                    <property file="${{file.tmp}}"/>
+                    <delete file="${{file.tmp}}"/>
+                    <fail unless="platform.home">Must set platform.home</fail>
+                    <fail unless="platform.bootcp">Must set platform.bootcp</fail>                        
+                    <fail unless="platform.java">Must set platform.java</fail>
+                    <fail unless="platform.javac">Must set platform.javac</fail>
+                </xsl:if>
+                <xsl:comment> The two properties below are usually overridden </xsl:comment>
+                <xsl:comment> by the active platform. Just a fallback. </xsl:comment>
+                <property name="default.javac.source" value="1.4"/>
+                <property name="default.javac.target" value="1.4"/>
+                <xsl:if test="/p:project/p:configuration/j2se:data/j2se:use-manifest">
+                    <fail unless="manifest.file">Must set manifest.file</fail>
+                </xsl:if>
+                <available property="have.tests" file="${{test.src.dir}}"/>
+                <condition property="netbeans.home+have.tests">
+                    <and>
+                        <isset property="netbeans.home"/>
+                        <isset property="have.tests"/>
+                    </and>
+                </condition>
+                <condition property="no.javadoc.preview">
+                    <isfalse value="${{javadoc.preview}}"/>
+                </condition>
+            </target>
+
+            <target name="post-init">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+
+            <target name="init-check">
+                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project,do-init</xsl:attribute>
+                <!-- XXX XSLT 2.0 would make it possible to use a for-each here -->
+                <!-- Note that if the properties were defined in project.xml that would be easy -->
+                <!-- But required props should be defined by the AntBasedProjectType, not stored in each project -->
+                <fail unless="src.dir">Must set src.dir</fail>
+                <fail unless="test.src.dir">Must set test.src.dir</fail>
+                <fail unless="build.dir">Must set build.dir</fail>
+                <fail unless="dist.dir">Must set dist.dir</fail>
+                <fail unless="build.classes.dir">Must set build.classes.dir</fail>
+                <fail unless="dist.javadoc.dir">Must set dist.javadoc.dir</fail>
+                <fail unless="build.test.classes.dir">Must set build.test.classes.dir</fail>
+                <fail unless="build.test.results.dir">Must set build.test.results.dir</fail>
+                <fail unless="build.classes.excludes">Must set build.classes.excludes</fail>
+                <fail unless="dist.jar">Must set dist.jar</fail>
+            </target>
+
+            <target name="init-macrodef-javac">
+                <macrodef>
+                    <xsl:attribute name="name">javac</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/1</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">srcdir</xsl:attribute>
+                        <xsl:attribute name="default">${src.dir}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">destdir</xsl:attribute>
+                        <xsl:attribute name="default">${build.classes.dir}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">classpath</xsl:attribute>
+                        <xsl:attribute name="default">${javac.classpath}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">debug</xsl:attribute>
+                        <xsl:attribute name="default">${javac.debug}</xsl:attribute>
+                    </attribute>
+                    <element>
+                        <xsl:attribute name="name">customize</xsl:attribute>
+                        <xsl:attribute name="optional">true</xsl:attribute>
+                    </element>
+                    <sequential>
+                        <javac>
+                            <xsl:attribute name="srcdir">@{srcdir}</xsl:attribute>
+                            <xsl:attribute name="destdir">@{destdir}</xsl:attribute>
+                            <xsl:attribute name="debug">@{debug}</xsl:attribute>
+                            <xsl:attribute name="deprecation">${javac.deprecation}</xsl:attribute>
+                            <xsl:attribute name="source">${javac.source}</xsl:attribute>
+                            <xsl:attribute name="target">${javac.target}</xsl:attribute>
+                            <xsl:if test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
+                                <xsl:attribute name="fork">yes</xsl:attribute>
+                                <xsl:attribute name="executable">${platform.javac}</xsl:attribute>
+                            </xsl:if>
+                            <xsl:attribute name="includeantruntime">false</xsl:attribute>
+                            <classpath>
+                                <path path="@{{classpath}}"/>
+                            </classpath>
+                            <customize/>
+                        </javac>
+                    </sequential>
+                 </macrodef>
+            </target>
+
+            <target name="init-macrodef-junit">
+                <macrodef>
+                    <xsl:attribute name="name">junit</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/1</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">includes</xsl:attribute>
+                        <xsl:attribute name="default">**/*Test.java</xsl:attribute>
+                    </attribute>
+                    <sequential>
+                        <junit>
+                            <xsl:attribute name="showoutput">true</xsl:attribute>
+                            <xsl:attribute name="fork">true</xsl:attribute>
+                            <xsl:attribute name="failureproperty">tests.failed</xsl:attribute>
+                            <xsl:attribute name="errorproperty">tests.failed</xsl:attribute>
+                            <xsl:if test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
+                                <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
+                            </xsl:if>
+                            <batchtest todir="${{build.test.results.dir}}">
+                                <fileset dir="${{test.src.dir}}">
+                                    <include name="@{{includes}}"/>
+                                </fileset>
+                            </batchtest>
+                            <classpath>
+                                <path path="${{run.test.classpath}}"/>
+                            </classpath>
+                            <formatter type="brief" usefile="false"/>
+                            <!-- TBD
+                            <formatter type="xml"/>
+                            -->
+                        </junit>
+                    </sequential>
+                </macrodef>
+            </target>
+
+            <target name="init-macrodef-nbjpda">
+                <macrodef>
+                    <xsl:attribute name="name">nbjpdastart</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/1</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">name</xsl:attribute>
+                        <xsl:attribute name="default">${main.class}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">classpath</xsl:attribute>
+                        <xsl:attribute name="default">${debug.classpath}</xsl:attribute>
+                    </attribute>
+                    <sequential>
+                        <nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="@{{name}}">
+                            <classpath>
+                                <path path="@{{classpath}}"/>
+                            </classpath>
+                            <xsl:if test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
+                                <bootclasspath>
+                                    <path path="${{platform.bootcp}}"/>
+                                </bootclasspath>
+                            </xsl:if>
+                        </nbjpdastart>
+                    </sequential>
+                </macrodef>
+                <macrodef>
+                    <xsl:attribute name="name">nbjpdareload</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/1</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">dir</xsl:attribute>
+                        <xsl:attribute name="default">${build.classes.dir}</xsl:attribute>
+                    </attribute>
+                    <sequential>
+                        <nbjpdareload>
+                            <fileset includes="${{fix.includes}}*.class" dir="@{{dir}}"/>
+                        </nbjpdareload>
+                    </sequential>
+                </macrodef>
+            </target>
+
+            <target name="init-macrodef-debug">
+                <macrodef>
+                    <xsl:attribute name="name">debug</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/1</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">mainclass</xsl:attribute>
+                        <xsl:attribute name="default">${main.class}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">classpath</xsl:attribute>
+                        <xsl:attribute name="default">${debug.classpath}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">args</xsl:attribute>
+                        <xsl:attribute name="default">${application.args}</xsl:attribute>
+                    </attribute>
+                    <sequential>
+                        <java fork="true" classname="@{{mainclass}}">
+                            <xsl:if test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
+                                <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
+                                <bootclasspath>
+                                    <path path="${{platform.bootcp}}"/>
+                                </bootclasspath>
+                            </xsl:if>
+                            <jvmarg value="-Xdebug"/>
+                            <jvmarg value="-Xnoagent"/>
+                            <jvmarg value="-Djava.compiler=none"/>
+                            <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${{jpda.address}}"/>
+                            <classpath>
+                                <path path="@{{classpath}}"/>
+                            </classpath>
+                            <arg line="@{{args}}"/>
+                        </java>
+                    </sequential>
+                </macrodef>
+            </target>
+
+            <target name="init">
+                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project,do-init,post-init,init-check,init-macrodef-javac,init-macrodef-junit,init-macrodef-nbjpda,init-macrodef-debug</xsl:attribute>
+            </target>
+
+            <xsl:comment>
+    ===================
+    COMPILATION SECTION
+    ===================
+    </xsl:comment>
+
+            <xsl:call-template name="deps.target">
+                <xsl:with-param name="targetname" select="'deps-jar'"/>
+                <xsl:with-param name="type" select="'jar'"/>
+            </xsl:call-template>
+
+            <target name="pre-pre-compile">
+                <xsl:attribute name="depends">init,deps-jar</xsl:attribute>
+                <mkdir dir="${{build.classes.dir}}"/>
+            </target>
+
+            <target name="pre-compile">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+
+            <target name="do-compile">
+                <xsl:attribute name="depends">init,deps-jar,pre-pre-compile,pre-compile</xsl:attribute>
+                <j2seproject:javac xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1"/>
+                <copy todir="${{build.classes.dir}}">
+                    <fileset dir="${{src.dir}}" excludes="${{build.classes.excludes}}"/>
+                </copy>
+            </target>
+
+            <target name="post-compile">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+
+            <target name="compile">
+                <xsl:attribute name="depends">init,deps-jar,pre-pre-compile,pre-compile,do-compile,post-compile</xsl:attribute>
+                <xsl:attribute name="description">Compile project.</xsl:attribute>
+            </target>
+
+            <target name="pre-compile-single">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+
+            <target name="do-compile-single">
+                <xsl:attribute name="depends">init,deps-jar,pre-pre-compile</xsl:attribute>
+                <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
+                <j2seproject:javac xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1">
+                    <customize>
+                        <include name="${{javac.includes}}"/>
+                    </customize>
+                </j2seproject:javac>
+            </target>
+
+            <target name="post-compile-single">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+
+            <target name="compile-single">
+                <xsl:attribute name="depends">init,deps-jar,pre-pre-compile,pre-compile-single,do-compile-single,post-compile-single</xsl:attribute>
+            </target>
+
+            <xsl:comment>
+    ====================
+    JAR BUILDING SECTION
+    ====================
+    </xsl:comment>
+
+            <target name="pre-jar">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+
+            <target name="do-jar">
+                <xsl:attribute name="depends">init,compile,pre-jar</xsl:attribute>
+                <dirname property="dist.jar.dir" file="${{dist.jar}}"/>
+                <mkdir dir="${{dist.jar.dir}}"/>
+                <jar jarfile="${{dist.jar}}" compress="${{jar.compress}}">
+                    <xsl:if test="/p:project/p:configuration/j2se:data/j2se:use-manifest">
+                        <!-- Assume this is a J2SE application. -->
+                        <!-- Any Main-Class set in the manifest takes precedence. -->
+                        <xsl:attribute name="manifest">${manifest.file}</xsl:attribute>
+                        <manifest>
+                            <attribute name="Main-Class" value="${{main.class}}"/>
+                        </manifest>
+                    </xsl:if>
+                    <fileset dir="${{build.classes.dir}}"/>
+                </jar>
+            </target>
+
+            <target name="post-jar">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+
+            <target name="jar">
+                <xsl:attribute name="depends">init,compile,pre-jar,do-jar,post-jar</xsl:attribute>
+                <xsl:attribute name="description">Build JAR.</xsl:attribute>
+            </target>
+
+            <xsl:comment>
+    =================
+    EXECUTION SECTION
+    =================
+    </xsl:comment>
+
+            <target name="run">
+                <xsl:attribute name="depends">init,compile</xsl:attribute>
+                <xsl:attribute name="description">Run a main class.</xsl:attribute>
+                <java fork="true" classname="${{main.class}}">
+                    <xsl:if test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
+                        <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
+                    </xsl:if>
+                    <classpath>
+                        <path path="${{run.classpath}}"/>
+                    </classpath>
+                    <arg line="${{application.args}}"/>
+                </java>
+            </target>
+
+            <xsl:comment>
+    =================
+    DEBUGGING SECTION
+    =================
+    </xsl:comment>
+
+            <target name="debug-start-debugger">
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="depends">init,compile</xsl:attribute>
+                <j2seproject:nbjpdastart xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1"/>
+            </target>
+
+            <target name="debug-start-debuggee">
+                <xsl:attribute name="depends">init,compile</xsl:attribute>
+                <j2seproject:debug xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1"/>
+            </target>
+
+            <target name="debug">
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,debug-start-debugger,debug-start-debuggee</xsl:attribute>
+                <xsl:attribute name="description">Debug project in IDE.</xsl:attribute>
+            </target>
+
+            <target name="pre-debug-fix">
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <fail unless="fix.includes">Must set fix.includes</fail>
+                <property name="javac.includes" value="${{fix.includes}}.java"/>
+            </target>
+
+            <target name="do-debug-fix">
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="depends">init,pre-debug-fix,compile-single</xsl:attribute>
+                <j2seproject:nbjpdareload xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1"/>
+            </target>
+
+            <target name="debug-fix">
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="depends">init,pre-debug-fix,do-debug-fix</xsl:attribute>
+            </target>
+
+            <xsl:comment>
+    ===============
+    JAVADOC SECTION
+    ===============
+    </xsl:comment>
+
+            <target name="javadoc-build">
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <mkdir dir="${{dist.javadoc.dir}}"/>
+                <!-- XXX do an up-to-date check first -->
+                <javadoc destdir="${{dist.javadoc.dir}}" source="${{javac.source}}"
+                         notree="${{javadoc.notree}}"
+                         use="${{javadoc.use}}"
+                         nonavbar="${{javadoc.nonavbar}}"
+                         noindex="${{javadoc.noindex}}"
+                         splitindex="${{javadoc.splitindex}}"
+                         author="${{javadoc.author}}"
+                         version="${{javadoc.version}}"
+                         windowtitle="${{javadoc.windowtitle}}"
+                         private="${{javadoc.private}}" >
+                         <!-- encoding="${{javadoc.encoding}}" -->
                     <classpath>
                         <path path="${{javac.classpath}}"/>
                     </classpath>
-                </javac>
-            </xsl:when>
-            <xsl:otherwise>
-                <javac srcdir="${{src.dir}}" destdir="${{build.classes.dir}}" debug="${{javac.debug}}" deprecation="${{javac.deprecation}}" source="${{javac.source}}" target="${{javac.target}}" includeantruntime="false">
-                    <classpath>
-                        <path path="${{javac.classpath}}"/>
-                    </classpath>
-                </javac>
-            </xsl:otherwise>
-        </xsl:choose>
-        <copy todir="${{build.classes.dir}}">
-            <fileset dir="${{src.dir}}" excludes="${{build.classes.excludes}}"/>
-        </copy>
-    </target>
+                    <sourcepath>
+                        <pathelement location="${{src.dir}}"/>
+                    </sourcepath>
+                    <xsl:if test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
+                        <bootclasspath>
+                            <path path="${{platform.bootcp}}"/>
+                        </bootclasspath>
+                    </xsl:if>
+                    <fileset dir="${{src.dir}}"/>
+                </javadoc>
+            </target>
 
-    <target name="compile-single" depends="init,deps-jar">
-        <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
+            <target name="javadoc-browse">
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="unless">no.javadoc.preview</xsl:attribute>
+                <xsl:attribute name="depends">init,javadoc-build</xsl:attribute>
+                <nbbrowse file="${{dist.javadoc.dir}}/index.html"/>
+            </target>
 
-        <!-- XXX this block of <condition>s is pretty ugly; better to use a templated target, or <macrodef> -->
-        <condition property="task-tmp.src.dir" value="${{test.src.dir}}">
-            <istrue value="${{is.test}}"/>
-        </condition>
-        <property name="task-tmp.src.dir" value="${{src.dir}}"/>
-                                
-        <condition property="task-tmp.out.dir" value="${{build.test.classes.dir}}">
-            <istrue value="${{is.test}}"/>
-        </condition>
-        <property name="task-tmp.out.dir" value="${{build.classes.dir}}"/> 
-        
-        <condition property="task-tmp.classpath" value="${{javac.test.classpath}}">
-            <istrue value="${{is.test}}"/>
-        </condition>
-        <property name="task-tmp.classpath" value="${{javac.classpath}}"/>
-        
-        <condition property="task-tmp.debug" value="true">
-            <istrue value="${{is.test}}"/>
-        </condition>
-        <property name="task-tmp.debug" value="${{javac.debug}}"/>
-        
-        <property location="${{task-tmp.src.dir}}" name="tmp-task.src.dir.absolute"/>        
-        
-        <mkdir dir="${{task-tmp.out.dir}}"/>
+            <target name="javadoc">
+                <xsl:attribute name="depends">init,javadoc-build,javadoc-browse</xsl:attribute>
+                <xsl:attribute name="description">Build Javadoc.</xsl:attribute>
+            </target>
 
-        <xsl:choose>
-            <xsl:when test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
-                <javac srcdir="${{task-tmp.src.dir}}" destdir="${{task-tmp.out.dir}}"
-                    debug="${{task-tmp.debug}}" deprecation="${{javac.deprecation}}"
-                    source="${{javac.source}}" target="${{javac.target}}" includes="${{javac.includes}}" includeantruntime="false"
-                    fork="yes" executable="${{platform.javac}}">
-                    <classpath>
-                        <path path="${{task-tmp.classpath}}"/>
-                    </classpath>
-                </javac>
-            </xsl:when>
-            <xsl:otherwise>
-                <javac srcdir="${{task-tmp.src.dir}}" destdir="${{task-tmp.out.dir}}"
-                    debug="${{task-tmp.debug}}" deprecation="${{javac.deprecation}}"
-                    source="${{javac.source}}" target="${{javac.target}}" includes="${{javac.includes}}" includeantruntime="false">
-                    <classpath>
-                        <path path="${{task-tmp.classpath}}"/>
-                    </classpath>
-                </javac>
-            </xsl:otherwise>
-        </xsl:choose>        
-    </target>
-    
-    <target name="jar" depends="init,compile">
-        <dirname property="dist.jar.dir" file="${{dist.jar}}"/>
-        <mkdir dir="${{dist.jar.dir}}"/>
-        <jar jarfile="${{dist.jar}}" compress="${{jar.compress}}">
-            <xsl:if test="/p:project/p:configuration/j2se:data/j2se:use-manifest">
-                <!-- Assume this is a J2SE application. -->
-                <!-- Any Main-Class set in the manifest takes precedence. -->
-                <xsl:attribute name="manifest">${manifest.file}</xsl:attribute>
-                <manifest>
-                    <attribute name="Main-Class" value="${{main.class}}"/>
-                </manifest>
-            </xsl:if>
-            <fileset dir="${{build.classes.dir}}"/>
-        </jar>
-    </target>
+            <xsl:comment>
+    =========================
+    JUNIT COMPILATION SECTION
+    =========================
+    </xsl:comment>
 
-    <target name="run" depends="init,compile">
-        <xsl:choose>
-            <xsl:when test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
-                <java fork="true" classname="${{main.class}}" jvm="${{platform.java}}">
-                    <xsl:call-template name="run-java-body"/>
-                </java>
-            </xsl:when>
-            <xsl:otherwise>
-                <java fork="true" classname="${{main.class}}">
-                    <xsl:call-template name="run-java-body"/>
-                </java>
-            </xsl:otherwise>
-        </xsl:choose>
-    </target>
+            <target name="pre-pre-compile-test">
+                <xsl:attribute name="if">have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init,compile</xsl:attribute>
+                <mkdir dir="${{build.test.classes.dir}}"/>
+            </target>
 
-    <target name="do-debug" depends="init">
-        <xsl:choose>
-            <xsl:when test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
-                <java fork="true" classname="${{main.class}}" jvm="${{platform.java}}">
-                    <xsl:call-template name="debug-java-body"/>
-                </java>
-            </xsl:when>
-            <xsl:otherwise>
-                <java fork="true" classname="${{main.class}}">
-                    <xsl:call-template name="debug-java-body"/>
-                </java>
-            </xsl:otherwise>
-        </xsl:choose>
-    </target>
-    
-    <target name="debug" depends="init,compile,do-debug">
-    </target>
+            <target name="pre-compile-test">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
 
-    <target name="debug-nb" depends="init,compile" if="netbeans.home">
-        <nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="${{main.class}}">
-            <classpath>
-                <path path="${{debug.classpath}}"/>
-            </classpath>
-            <xsl:if test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
-            <bootclasspath>
-                <path path="${{platform.bootcp}}"/>
-            </bootclasspath>
-            </xsl:if>
-        </nbjpdastart>
-        <antcall target="do-debug"/>
-    </target>
+            <target name="do-compile-test">
+                <xsl:attribute name="if">have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,pre-pre-compile-test,pre-compile-test</xsl:attribute>
+                <j2seproject:javac xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1" srcdir="${{test.src.dir}}" destdir="${{build.test.classes.dir}}" debug="true" classpath="${{javac.test.classpath}}"/>
+                <copy todir="${{build.test.classes.dir}}">
+                    <fileset dir="${{test.src.dir}}">
+                        <exclude name="**/*.java"/>
+                    </fileset>
+                </copy>
+            </target>
 
-    <target name="debug-fix-nb" depends="init" if="netbeans.home">
-        <fail unless="fix.includes">Must set fix.includes</fail>
-        <property name="javac.includes" value="${{fix.includes}}.java"/>
-        <antcall target="compile-single"/>
-        <condition property="task-tmp.out.dir" value="${{build.test.classes.dir}}">
-            <istrue value="${{is.test}}"/>
-        </condition>
-        <property name="task-tmp.out.dir" value="${{build.classes.dir}}"/>
-        <nbjpdareload>
-            <fileset includes="${{fix.includes}}*.class" dir="${{task-tmp.out.dir}}"/>
-        </nbjpdareload>
-    </target>
-    
-    <target name="javadoc" depends="init">
-        <mkdir dir="${{dist.javadoc.dir}}"/>
-        <!-- XXX do an up-to-date check first -->
-        <javadoc destdir="${{dist.javadoc.dir}}" source="${{javac.source}}"
-                 notree="${{javadoc.notree}}"
-                 use="${{javadoc.use}}"
-                 nonavbar="${{javadoc.nonavbar}}"
-                 noindex="${{javadoc.noindex}}"
-                 splitindex="${{javadoc.splitindex}}"
-                 author="${{javadoc.author}}"
-                 version="${{javadoc.version}}"
-                 windowtitle="${{javadoc.windowtitle}}"
-                 private="${{javadoc.private}}" >
-                 <!-- encoding="${{javadoc.encoding}}" -->
-            <classpath>
-                <path path="${{javac.classpath}}"/>
-            </classpath>
-            <sourcepath>
-                <pathelement location="${{src.dir}}"/>
-            </sourcepath>
-            <xsl:if test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
-            <bootclasspath>
-                <path path="${{platform.bootcp}}"/>
-            </bootclasspath>
-            </xsl:if>
-            <fileset dir="${{src.dir}}"/>
-        </javadoc>
-    </target>
-    
-    <target name="javadoc-nb" depends="init,javadoc" if="netbeans.home" unless="no.javadoc.preview">
-        <nbbrowse file="${{dist.javadoc.dir}}/index.html"/>
-    </target>
+            <target name="post-compile-test">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
 
-    
-    <target name="test-build" depends="init,compile" if="have.tests">
-        <mkdir dir="${{build.test.classes.dir}}"/>
-        <javac srcdir="${{test.src.dir}}" destdir="${{build.test.classes.dir}}"
-               debug="true" deprecation="${{javac.deprecation}}"
-               source="${{javac.source}}" target="${{javac.target}}" includeantruntime="false">
-            <classpath>
-                <path path="${{javac.test.classpath}}"/>
-            </classpath>
-            <xsl:if test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
-            <bootclasspath>
-                <path path="${{platform.bootcp}}"/>
-            </bootclasspath>
-            </xsl:if>
-        </javac>
-        <copy todir="${{build.test.classes.dir}}">
-            <fileset dir="${{test.src.dir}}">
-                <exclude name="**/*.java"/>
-            </fileset>
-        </copy>
-    </target>
+            <target name="compile-test">
+                <xsl:attribute name="depends">init,compile,pre-pre-compile-test,pre-compile-test,do-compile-test,post-compile-test</xsl:attribute>
+            </target>
 
-    <target name="test" depends="init,test-build" if="have.tests">
-        <mkdir dir="${{build.test.results.dir}}"/>
-        <xsl:choose>
-            <xsl:when test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
-                <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed" jvm="${{platform.java}}">
-                    <xsl:call-template name="test-junit-body"/>
-                </junit>
-            </xsl:when>
-            <xsl:otherwise>
-                <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed">
-                    <xsl:call-template name="test-junit-body"/>
-                </junit>
-            </xsl:otherwise>
-        </xsl:choose>
-        <!-- TBD
-        <junitreport todir="${{build.test.results.dir}}">
-            <fileset dir="${{build.test.results.dir}}">
-                <include name="TEST-*.xml"/>
-            </fileset>
-            <report format="noframes" todir="${{build.test.results.dir}}"/>
-        </junitreport>
+            <target name="pre-compile-test-single">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+
+            <target name="do-compile-test-single">
+                <xsl:attribute name="if">have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,pre-pre-compile-test,pre-compile-test-single</xsl:attribute>
+                <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
+                <j2seproject:javac xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1" srcdir="${{test.src.dir}}" destdir="${{build.test.classes.dir}}" debug="true" classpath="${{javac.test.classpath}}">
+                    <customize>
+                        <include name="${{javac.includes}}"/>
+                    </customize>
+                </j2seproject:javac>
+            </target>
+
+            <target name="post-compile-test-single">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+
+            <target name="compile-test-single">
+                <xsl:attribute name="depends">init,compile,pre-pre-compile-test,pre-compile-test-single,do-compile-test-single,post-compile-test-single</xsl:attribute>
+            </target>
+
+            <xsl:comment>
+    =======================
+    JUNIT EXECUTION SECTION
+    =======================
+    </xsl:comment>
+
+            <target name="pre-test-run">
+                <xsl:attribute name="if">have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <mkdir dir="${{build.test.results.dir}}"/>
+            </target>
+
+            <target name="do-test-run">
+                <xsl:attribute name="if">have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test,pre-test-run</xsl:attribute>
+                <j2seproject:junit xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1"/>
+            </target>
+
+            <target name="post-test-run">
+                <xsl:attribute name="if">have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test,pre-test-run,do-test-run</xsl:attribute>
+                <fail if="tests.failed">Some tests failed; see details above.</fail>
+            </target>
+
+            <target name="test-report">
+                <xsl:attribute name="if">have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <!-- TBD
+                <junitreport todir="${{build.test.results.dir}}">
+                    <fileset dir="${{build.test.results.dir}}">
+                        <include name="TEST-*.xml"/>
+                    </fileset>
+                    <report format="noframes" todir="${{build.test.results.dir}}"/>
+                </junitreport>
+                -->
+            </target>
+
+            <target name="test-browse">
+                <xsl:attribute name="if">netbeans.home+have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <!-- TBD
+                <nbbrowse file="${{build.test.results.dir}}/junit-noframes.html"/>
+                -->
+            </target>
+
+            <target name="test">
+                <xsl:attribute name="depends">init,compile-test,pre-test-run,do-test-run,test-report,post-test-run,test-browse</xsl:attribute>
+                <xsl:attribute name="description">Run unit tests.</xsl:attribute>
+            </target>
+
+            <target name="do-test-run-single">
+                <xsl:attribute name="if">have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test,pre-test-run</xsl:attribute>
+                <fail unless="test.includes">Must select some files in the IDE or set test.includes</fail>
+                <j2seproject:junit xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1" includes="${{test.includes}}"/>
+            </target>
+
+            <target name="test-single">
+                <xsl:attribute name="depends">init,compile-test,pre-test-run,do-test-run-single,post-test-run</xsl:attribute>
+                <xsl:attribute name="description">Run single unit test.</xsl:attribute>
+            </target>
+
+            <xsl:comment>
+    =======================
+    JUNIT DEBUGGING SECTION
+    =======================
+    </xsl:comment>
+
+            <target name="debug-start-debuggee-test">
+                <xsl:attribute name="if">have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test</xsl:attribute>
+                <fail unless="test.class">Must select one file in the IDE or set test.class</fail>
+                <j2seproject:debug xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1" mainclass="junit.textui.TestRunner" classpath="${{debug.test.classpath}}" args="${{test.class}}"/>
+            </target>
+
+            <target name="debug-start-debugger-test">
+                <xsl:attribute name="if">netbeans.home+have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test</xsl:attribute>
+                <j2seproject:nbjpdastart xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1" name="${{test.class}}" classpath="${{debug.test.classpath}}"/>
+            </target>
+
+            <target name="debug-test">
+                <xsl:attribute name="depends">init,compile-test,debug-start-debugger-test,debug-start-debuggee-test</xsl:attribute>
+            </target>
+
+            <target name="do-debug-fix-test">
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="depends">init,pre-debug-fix,compile-test-single</xsl:attribute>
+                <j2seproject:nbjpdareload xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1" dir="${{build.test.classes.dir}}"/>
+            </target>
+
+            <target name="debug-fix-test">
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="depends">init,pre-debug-fix,do-debug-fix-test</xsl:attribute>
+            </target>
+
+            <xsl:comment>
+    ===============
+    CLEANUP SECTION
+    ===============
+    </xsl:comment>
+
+            <xsl:call-template name="deps.target">
+                <xsl:with-param name="targetname" select="'deps-clean'"/>
+            </xsl:call-template>
+
+            <target name="do-clean">
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <delete dir="${{build.dir}}"/>
+                <delete dir="${{dist.dir}}"/>
+                <!-- XXX explicitly delete all build.* and dist.* dirs in case they are not subdirs -->
+            </target>
+
+            <target name="post-clean">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+
+            <target name="clean">
+                <xsl:attribute name="depends">init,deps-clean,do-clean,post-clean</xsl:attribute>
+                <xsl:attribute name="description">Clean build products.</xsl:attribute>
+            </target>
+
+        </project>
+
+        <!-- TBD items:
+
+        Could pass <propertyset> to run, debug, etc. under Ant 1.6,
+        optionally, by doing e.g.
+
+          <propertyset>
+            <propertyref prefix="sysprop."/>
+            <mapper type="glob" from="sysprop.*" to="*"/>
+          </propertyset>
+
+        Now user can add to e.g. project.properties e.g.:
+          sysprop.org.netbeans.modules.javahelp=0
+        to simulate
+          -Dorg.netbeans.modules.javahelp=0
+
         -->
-        <fail if="tests.failed">Some tests failed; see details above.</fail>
-    </target>
-
-    <target name="test-nb" depends="init,test" if="netbeans.home+have.tests">
-        <!-- TBD
-        <nbbrowse file="${{build.test.results.dir}}/junit-noframes.html"/>
-        -->
-    </target>
-
-    <target name="test-single" depends="init,test-build" if="have.tests">
-        <fail unless="test.includes">Must select some files in the IDE or set test.includes</fail>
-        <mkdir dir="${{build.test.results.dir}}"/>
-        <xsl:choose>
-            <xsl:when test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
-                <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed" jvm="${{platform.java}}">
-                    <xsl:call-template name="test-single-junit-body"/>
-                </junit>
-            </xsl:when>
-            <xsl:otherwise>
-                <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed">
-                    <xsl:call-template name="test-single-junit-body"/>
-                </junit>
-            </xsl:otherwise>
-        </xsl:choose>
-        <fail if="tests.failed">Some tests failed; see details above.</fail>
-    </target>
-
-    <target name="test-single-nb" depends="init,test-single" if="netbeans.home+have.tests">
-        <!-- nothing -->
-    </target>
-    
-    <target name="do-debug-test-single" depends="init" if="have.tests">
-        <fail unless="test.class">Must select one file in the IDE or set test.class</fail>
-        <xsl:choose>
-            <xsl:when test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
-                <java fork="true" classname="junit.textui.TestRunner" jvm="${{platform.java}}">
-                    <xsl:call-template name="debug-test-single-java-body"/>
-                </java>
-            </xsl:when>
-            <xsl:otherwise>
-                <java fork="true" classname="junit.textui.TestRunner">
-                    <xsl:call-template name="debug-test-single-java-body"/>
-                </java>
-            </xsl:otherwise>
-        </xsl:choose>
-    </target>
-
-    <target name="debug-test-single" depends="init,test-build,do-debug-test-single" if="have.tests">
-    </target>
-
-    <target name="debug-test-single-nb" depends="init,test-build" if="netbeans.home+have.tests">
-        <nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="${{test.class}}">
-            <classpath>
-                <path path="${{debug.test.classpath}}"/>
-            </classpath>
-            <xsl:if test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
-                <bootclasspath>
-                    <path path="${{platform.bootcp}}"/>
-                </bootclasspath>
-            </xsl:if>
-        </nbjpdastart>
-        <antcall target="do-debug-test-single"/>
-    </target>
-
-    <xsl:call-template name="deps.target">
-        <xsl:with-param name="targetname" select="'deps-clean'"/>
-    </xsl:call-template>
-
-    <target name="clean" depends="init,deps-clean">
-        <delete dir="${{build.dir}}"/>
-        <delete dir="${{dist.dir}}"/>
-        <!-- XXX explicitly delete all build.* and dist.* dirs in case they are not subdirs -->
-    </target>
-
-</project>
-
-<!-- TBD items:
-
-Could pass <propertyset> to run, debug, etc. under Ant 1.6,
-optionally, by doing e.g.
-
-  <propertyset>
-    <propertyref prefix="sysprop."/>
-    <mapper type="glob" from="sysprop.*" to="*"/>
-  </propertyset>
-
-Now user can add to e.g. project.properties e.g.:
-  sysprop.org.netbeans.modules.javahelp=0
-to simulate
-  -Dorg.netbeans.modules.javahelp=0
-
--->
 
     </xsl:template>
 
@@ -424,7 +732,9 @@ to simulate
     <xsl:template name="deps.target">
         <xsl:param name="targetname"/>
         <xsl:param name="type"/>
-        <target name="{$targetname}" depends="init" unless="no.deps">
+        <target name="{$targetname}">
+            <xsl:attribute name="depends">init</xsl:attribute>
+            <xsl:attribute name="unless">${no.dependencies}</xsl:attribute>
             <xsl:variable name="references" select="/p:project/p:configuration/projdeps:references"/>
             <xsl:for-each select="$references/projdeps:reference[not($type) or projdeps:artifact-type = $type]">
                 <xsl:variable name="subproj" select="projdeps:foreign-project"/>
@@ -469,65 +779,6 @@ to simulate
                 </ant>
             </xsl:for-each>
         </target>
-    </xsl:template>
-
-    <xsl:template name="run-java-body">
-        <classpath>
-            <path path="${{run.classpath}}"/>
-        </classpath>
-        <arg line="${{application.args}}"/>
-    </xsl:template>
-
-    <xsl:template name="debug-java-body">
-        <jvmarg value="-Xdebug"/>
-        <jvmarg value="-Xnoagent"/>
-        <jvmarg value="-Djava.compiler=none"/>
-        <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${{jpda.address}}"/>
-        <classpath>
-            <path path="${{debug.classpath}}"/>
-        </classpath>
-        <arg line="${{application.args}}"/>
-    </xsl:template>
-
-    <xsl:template name="test-junit-body">
-        <batchtest todir="${{build.test.results.dir}}">
-            <fileset dir="${{test.src.dir}}">
-                <!-- XXX could include only out-of-date tests... -->
-                <include name="**/*Test.java"/>
-            </fileset>
-        </batchtest>
-        <classpath>
-            <path path="${{run.test.classpath}}"/>
-        </classpath>
-        <formatter type="brief" usefile="false"/>
-        <!-- TBD
-        <formatter type="xml"/>
-        -->
-    </xsl:template>
-
-    <xsl:template name="test-single-junit-body">
-        <batchtest todir="${{build.test.results.dir}}">
-            <fileset dir="${{test.src.dir}}" includes="${{test.includes}}"/>
-        </batchtest>
-        <classpath>
-            <path path="${{run.test.classpath}}"/>
-        </classpath>
-        <formatter type="brief" usefile="false"/>
-        <!-- TBD
-        <formatter type="xml"/>
-        -->
-    </xsl:template>
-
-    <xsl:template name="debug-test-single-java-body">
-        <jvmarg value="-Xdebug"/>
-        <jvmarg value="-Xnoagent"/>
-        <jvmarg value="-Djava.compiler=none"/>
-        <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${{jpda.address}}"/>
-        <classpath>
-            <path path="${{debug.test.classpath}}"/>
-        </classpath>
-        <arg line="${{test.class}}"/>
-        <arg line="${{application.args}}"/>
     </xsl:template>
 
 </xsl:stylesheet>
