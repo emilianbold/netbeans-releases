@@ -34,6 +34,7 @@ import org.openide.util.actions.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataShadow;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -225,6 +226,10 @@ public final class Actions extends Object {
                     if (!fo.isFolder()) {
                         return false;
                     }
+                    //Allow to link only once
+                    if (isInFavorites(fo)) {
+                        return false;
+                    }
                     //Check if it is root.
                     File file = FileUtil.toFile(fo);
                     if (file != null) {
@@ -246,7 +251,24 @@ public final class Actions extends Object {
             }
             return true;
         }
-
+        
+        /** Check if given fileobject is already linked in favorites
+         * @return true if given fileobject is already linked
+         */
+        private boolean isInFavorites (FileObject fo) {
+            DataFolder f = Favorites.getFolder();
+            
+            DataObject [] arr = f.getChildren();
+            for (int i = 0; i < arr.length; i++) {
+                if (arr[i] instanceof DataShadow) {
+                    if (fo.equals(((DataShadow) arr[i]).getOriginal().getPrimaryFile())) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        
         /** Human presentable name of the action. This should be
         * presented as an item in a menu.
         * @return the name of the action
