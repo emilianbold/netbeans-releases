@@ -68,6 +68,9 @@ Microsystems, Inc. All Rights Reserved.
         <property name="build.compiler.debug" value="true"/>
         <property name="build.compiler.deprecation" value="true"/>
         <property name="build.sysclasspath" value="ignore"/>
+        <property name="build.compiler.optimize" value="off"/>
+        <property name="build.package.compress" value="false"/>
+        <property name="build.package.index" value="false"/>
         <property name="manifest.mf" location="manifest.mf"/>
         <property name="src.dir" location="src"/>
         <property name="build.classes.dir" location="build/classes"/>
@@ -111,7 +114,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="compile" depends="init">
         <mkdir dir="${build.classes.dir}"/>
-        <javac srcdir="${src.dir}" destdir="${build.classes.dir}" debug="${build.compiler.debug}" deprecation="${build.compiler.deprecation}" source="1.4" includeantruntime="false">
+        <javac srcdir="${src.dir}" destdir="${build.classes.dir}" debug="${build.compiler.debug}" deprecation="${build.compiler.deprecation}" optimize="${build.compiler.optimize}" source="1.4" includeantruntime="false">
             <classpath refid="cp"/>
         </javac>
         <copy todir="${build.classes.dir}">
@@ -126,7 +129,7 @@ Microsystems, Inc. All Rights Reserved.
         <!-- XXX consider deleting the .class file first to force a rebuild -->
         <javac srcdir="${src.dir}" destdir="${build.classes.dir}"
                debug="${build.compiler.debug}" deprecation="${build.compiler.deprecation}"
-               source="1.4" includes="${javac.includes}" includeantruntime="false">
+               source="1.4" includes="${javac.includes}" optimize="${build.compiler.optimize}" includeantruntime="false">
             <classpath refid="cp"/>
         </javac>
     </target>
@@ -139,7 +142,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="jar-no-module-deps" unless="module.dependencies">
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="false" manifest="${manifest.mf}">
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="${build.package.compress}" index="${build.package.index}" manifest="${manifest.mf}">
             <!-- XXX it seems that using <manifest> forces the JAR to be recreated each time -->
             <!-- (presumably due to the variable OIDE-M-I-V) -->
             <!-- so might have to use e.g. <manifest> task (created in build/ somewhere)? -->
@@ -155,7 +158,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="jar-with-module-deps" if="module.dependencies">
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="false" manifest="${manifest.mf}">
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="${build.package.compress}" index="${build.package.index}" manifest="${manifest.mf}">
             <manifest>
                 <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
                 <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
@@ -260,7 +263,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${build.test.unit.classes.dir}"/>
         <javac srcdir="${test.unit.src.dir}" destdir="${build.test.unit.classes.dir}"
                debug="true" deprecation="${build.compiler.deprecation}"
-               source="1.4" includeantruntime="false">
+               source="1.4" optimize="${build.compiler.optimize}" includeantruntime="false">
             <classpath refid="test.unit.cp"/>
         </javac>
         <copy todir="${build.test.unit.classes.dir}">
@@ -277,7 +280,7 @@ Microsystems, Inc. All Rights Reserved.
         <!-- XXX consider deleting the .class file first to force a rebuild -->
         <javac srcdir="${test.unit.src.dir}" destdir="${build.test.unit.classes.dir}"
                debug="true" deprecation="${build.compiler.deprecation}"
-               source="1.4" includeantruntime="false" includes="${javac.includes}">
+               source="1.4" includeantruntime="false" optimize="${build.compiler.optimize}" includes="${javac.includes}">
             <classpath refid="test.unit.cp"/>
         </javac>
     </target>
