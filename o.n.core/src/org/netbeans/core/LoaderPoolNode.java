@@ -7,34 +7,62 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core;
 
-import java.io.*;
-import java.util.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.IntrospectionException;
-import javax.swing.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
-
-import org.openide.filesystems.*;
+import org.netbeans.core.modules.ManifestSection;
+import org.openide.ErrorManager;
+import org.openide.actions.MoveDownAction;
+import org.openide.actions.MoveUpAction;
+import org.openide.actions.PropertiesAction;
+import org.openide.actions.ReorderAction;
+import org.openide.actions.ToolsAction;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.Repository;
 import org.openide.loaders.DataLoader;
 import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.InstanceSupport;
-import org.openide.ErrorManager;
-import org.openide.actions.*;
-import org.openide.nodes.*;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.*;
-import org.openide.util.io.*;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.SpecificationVersion;
-
-import org.netbeans.core.modules.ManifestSection;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.BeanNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.TopologicalSortException;
+import org.openide.util.Utilities;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.io.NbMarshalledObject;
+import org.openide.util.io.NbObjectInputStream;
+import org.openide.util.io.NbObjectOutputStream;
+import org.openide.util.io.SafeException;
 
 /** Node which represents loader pool and its content - all loaders
 * in the system. LoaderPoolNode also supports subnode reordering.<P>
@@ -722,7 +750,7 @@ public final class LoaderPoolNode extends AbstractNode {
 
         /** @return true
         */
-        public SystemAction getDefaultAction () {
+        public Action getPreferredAction() {
             return SystemAction.get (PropertiesAction.class);
         }
 

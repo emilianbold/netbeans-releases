@@ -7,25 +7,37 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core.ui;
 
-
-import org.openide.nodes.*;
-import org.openide.actions.*;
-import org.openide.filesystems.*;
+import javax.swing.Action;
+import org.openide.ErrorManager;
+import org.openide.actions.FileSystemAction;
+import org.openide.actions.MoveDownAction;
+import org.openide.actions.MoveUpAction;
+import org.openide.actions.NewTemplateAction;
+import org.openide.actions.PasteAction;
+import org.openide.actions.PropertiesAction;
+import org.openide.actions.ReorderAction;
+import org.openide.actions.ToolsAction;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataShadow;
 import org.openide.loaders.TemplateWizard;
 import org.openide.loaders.XMLDataObject;
+import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
+import org.openide.nodes.Sheet;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
-import org.openide.ErrorManager;
-
 
 /** Node that displays the content of Services directory and let's user 
 * customize it.
@@ -84,11 +96,11 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
     }
 
 
-    public final SystemAction[] createActions () {
+    public final Action[] getActions(boolean context) {
         if (isUISettingCategoryNode()) {
-            return new SystemAction[0];
+            return new Action[0];
         } else {
-            return new SystemAction[] {
+            return new Action[] {
                 SystemAction.get(FileSystemAction.class),
                 null,
                 SystemAction.get(PasteAction.class),
@@ -288,7 +300,7 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
             return ctx;
         }
         
-        public SystemAction getDefaultAction () {
+        public Action getPreferredAction() {
             return null;
         }
 

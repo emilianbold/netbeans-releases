@@ -7,43 +7,87 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.loaders;
 
-import java.net.URL;
-import java.io.*;
-import java.util.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
-import java.lang.reflect.*;
-import java.beans.*;
-
-import javax.xml.parsers.*;
-
-
-import org.xml.sax.*;
-import org.xml.sax.ext.*;
-import org.xml.sax.helpers.*;
-import org.w3c.dom.*;
-
-import org.openide.*;
-import org.openide.actions.*;
-import org.openide.cookies.*;
-import org.openide.filesystems.*;
-import org.openide.loaders.*;
-import org.openide.text.*;
-import org.openide.util.*;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.actions.SystemAction;
-import org.openide.xml.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import javax.swing.Action;
+import javax.xml.parsers.DocumentBuilder;
+import org.openide.ErrorManager;
+import org.openide.actions.CopyAction;
+import org.openide.actions.CutAction;
+import org.openide.actions.DeleteAction;
+import org.openide.actions.FileSystemAction;
+import org.openide.actions.OpenAction;
+import org.openide.actions.PasteAction;
+import org.openide.actions.PropertiesAction;
+import org.openide.actions.RenameAction;
+import org.openide.actions.SaveAsTemplateAction;
+import org.openide.actions.ToolsAction;
+import org.openide.cookies.CloseCookie;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.InstanceCookie;
+import org.openide.cookies.OpenCookie;
+import org.openide.cookies.PrintCookie;
+import org.openide.cookies.SaveCookie;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
-import org.openide.windows.CloneableOpenSupport;
 import org.openide.nodes.FilterNode;
+import org.openide.text.DataEditorSupport;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.windows.CloneableOpenSupport;
+import org.openide.xml.EntityCatalog;
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentType;
+import org.xml.sax.Attributes;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.Parser;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.ext.LexicalHandler;
+import org.xml.sax.helpers.DefaultHandler;
 
 /** 
  * Object that provides main functionality for xml documents.
@@ -432,57 +476,6 @@ public class XMLDataObject extends MultiDataObject {
     public final synchronized void setInfo (Info ii) throws IOException {
     }
 
-    /* JST: Commented out, we are disabling support for Infos
-     *
-    private final void setInfoImpl (Info ii) {
-        if (info == ii) return;
-        if ((info != null) && info.equals (ii)) return;
-
-        // update properties and caches
-        
-        Info prevInfo = info;
-        info = ii;
-
-        if (info != null) {
-            cachedCookies = null;
-            updateIconBase (info.getIconBase ());  //??? the fire bellow shoud do it, why explicitly
-        }
-        firePropertyChange (PROP_INFO, prevInfo, info);
-    }
-
-    private void writeInfo () throws IOException {
-        if (info == null)
-            return;
-
-        final FileObject primary = getPrimaryFile();
-        final FileObject parent = primary.getParent(); // a folder
-        final org.openide.filesystems.FileSystem FS = parent.getFileSystem();
-
-        FS.runAtomicAction (new org.openide.filesystems.FileSystem.AtomicAction () {
-                                public void run () throws IOException {
-                                    FileLock lock = null;
-                                    OutputStream os = null;
-
-                                    FileObject infoFO = FS.find (parent.getName(), primary.getName(), Loader.XMLINFO_EXT);
-                                    if (infoFO == null)
-                                        infoFO = parent.createData (primary.getName(), Loader.XMLINFO_EXT);
-                                    try {
-                                        lock = infoFO.lock ();
-                                        os = infoFO.getOutputStream (lock);
-                                        PrintWriter writer = new PrintWriter (new BufferedOutputStream(os));
-                                        info.write (writer);
-                                        writer.close();
-                                    } finally {
-                                        if (os != null)
-                                            os.close ();
-                                        if (lock != null)
-                                            lock.releaseLock ();
-                                    }
-                                }
-                            });
-    }
-     */
-
     /** Parses the primary file of this data object.
     * and provide different implementation.
     *
@@ -522,8 +515,6 @@ public class XMLDataObject extends MultiDataObject {
     }
     
     // ~~~~~~~~~~~~~~~~~~~~ Start of Utilities ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // ~~~~~~~~~~~~~~~~~~ To be replaced by XMLUtil ~~~~~~~~~~~~~~~~~~~~~~
-    
     
     /** Provides access to internal XML parser.
     * This method takes URL. After successful finish the
@@ -721,7 +712,7 @@ public class XMLDataObject extends MultiDataObject {
      * @deprecated Deprecated as it was a workaround method. Replace
      * with <code>new InputSource(url.toExternalForm())</code>.
      */
-    public static org.xml.sax.InputSource createInputSource (URL url) throws IOException {                
+    public static InputSource createInputSource(URL url) throws IOException {                
         return new InputSource(url.toExternalForm());
     }
 
@@ -904,9 +895,9 @@ public class XMLDataObject extends MultiDataObject {
     /**
      * Default ErrorHandler reporting to log.
      */
-    static class ErrorPrinter implements org.xml.sax.ErrorHandler {
+    static class ErrorPrinter implements ErrorHandler {
         
-        private void message (final String level, final org.xml.sax.SAXParseException e) {
+        private void message(final String level, final SAXParseException e) {
             
             ErrorManager em = ErrorManager.getDefault().getInstance("org.openide.loaders.XMLDataObject"); // NOI18N
             if (!em.isLoggable(ErrorManager.INFORMATIONAL)) {
@@ -928,15 +919,15 @@ public class XMLDataObject extends MultiDataObject {
             em.log(msg);
         }
 
-        public void error (org.xml.sax.SAXParseException e) {
+        public void error(SAXParseException e) {
             message (NbBundle.getMessage(XMLDataObject.class, "PROP_XmlError"), e);  //NOI18N
         }
 
-        public void warning (org.xml.sax.SAXParseException e) {
+        public void warning(SAXParseException e) {
             message (NbBundle.getMessage(XMLDataObject.class, "PROP_XmlWarning"), e); //NOI18N
         }
 
-        public void fatalError (org.xml.sax.SAXParseException e) {
+        public void fatalError(SAXParseException e) {
             message (NbBundle.getMessage(XMLDataObject.class, "PROP_XmlFatalError"), e); //NOI18N
         }
     } // end of inner class ErrorPrinter
@@ -1332,19 +1323,19 @@ public class XMLDataObject extends MultiDataObject {
         // redefine DefaultHandler
 
         //!!! should we stop on error?
-        public void error(final org.xml.sax.SAXParseException p1) throws org.xml.sax.SAXException {
+        public void error(final SAXParseException p1) throws org.xml.sax.SAXException {
             stop();
         }
 
-        public void fatalError(final org.xml.sax.SAXParseException p1) throws org.xml.sax.SAXException {
+        public void fatalError(final SAXParseException p1) throws org.xml.sax.SAXException {
             stop();
         }
 
-        public void endDocument() throws org.xml.sax.SAXException {
+        public void endDocument() throws SAXException {
             stop();
         }
 
-        public void startElement(String uri, String lName, String qName, Attributes atts) throws org.xml.sax.SAXException {
+        public void startElement(String uri, String lName, String qName, Attributes atts) throws SAXException {
             // no DTD present
             stop(); 
         }
@@ -1406,7 +1397,7 @@ public class XMLDataObject extends MultiDataObject {
         
         /** A change in lookup.
          */
-        public void resultChanged(org.openide.util.LookupEvent lookupEvent) {
+        public void resultChanged(LookupEvent lookupEvent) {
             XMLDataObject.this.firePropertyChange (DataObject.PROP_COOKIE, null, null);
             
             Node n = XMLDataObject.this.getNodeDelegateOrNull ();
@@ -1641,25 +1632,6 @@ public class XMLDataObject extends MultiDataObject {
         /** Write specified info to writer */
         public void write (Writer writer) throws IOException {
             throw new IOException ("Not supported anymore"); // NOI18N
-            /*
-            writer.write ("<?xml version=\"1.0\"?>\n\n"); // NOI18N
-            writer.write (MessageFormat.format ("<!DOCTYPE {0} PUBLIC \"{1}\" \"\">\n\n", // NOI18N
-                                                new Object [] { InfoParser.TAG_INFO, XMLINFO_DTD_PUBLIC_ID }));
-            writer.write (MessageFormat.format ("<{0}>\n", // NOI18N
-                                                new Object [] { InfoParser.TAG_INFO }));
-            for (Iterator it = processors.iterator(); it.hasNext();)
-                writer.write (MessageFormat.format ("  <{0} {1}=\"{2}\" />\n", // NOI18N
-                                                    new Object [] { InfoParser.TAG_PROCESSOR,
-                                                                    InfoParser.ATT_PROCESSOR_CLASS,
-                                                                    ((Class)it.next()).getName() }));
-            if (iconBase != null)
-                writer.write (MessageFormat.format ("  <{0} {1}=\"{2}\" />\n", // NOI18N
-                                                    new Object [] { InfoParser.TAG_ICON,
-                                                                    InfoParser.ATT_ICON_BASE,
-                                                                    iconBase }));
-            writer.write (MessageFormat.format ("</{0}>\n", // NOI18N
-                                                new Object [] { InfoParser.TAG_INFO }));
-             */
         }
         
         public boolean equals (Object obj) {
@@ -1833,12 +1805,19 @@ public class XMLDataObject extends MultiDataObject {
         Node n = (Node)getIP ().lookupCookie (Node.class);
 
         if (n == null) {
-            DataNode d = new DataNode (XMLDataObject.this, Children.LEAF);
-            d.setIconBase ("org/openide/loaders/xmlObject"); // NOI18N
-            d.setDefaultAction (SystemAction.get (OpenAction.class));
-            return d;
+            return new PlainDataNode();
         } else {
             return n;
+        }
+    }
+    
+    private final class PlainDataNode extends DataNode {
+        public PlainDataNode() {
+            super(XMLDataObject.this, Children.LEAF);
+            setIconBase("org/openide/loaders/xmlObject"); // NOI18N
+        }
+        public Action getPreferredAction() {
+            return SystemAction.get(OpenAction.class);
         }
     }
         

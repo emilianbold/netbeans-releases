@@ -13,9 +13,15 @@
 
 package org.netbeans.modules.settings.convertors;
 
+import java.awt.Graphics;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
+import java.awt.Transparency;
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
 import java.beans.BeanDescriptor;
 import java.beans.BeanInfo;
+import java.beans.EventSetDescriptor;
 import java.beans.IntrospectionException;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -24,13 +30,18 @@ import java.beans.beancontext.BeanContext;
 import java.beans.beancontext.BeanContextProxy;
 import java.beans.beancontext.BeanContextMembershipEvent;
 import java.beans.beancontext.BeanContextMembershipListener;
+import java.beans.beancontext.BeanContextSupport;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.io.IOException;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -46,6 +57,7 @@ import org.openide.nodes.BeanChildren;
 import org.openide.nodes.BeanNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.nodes.Node.Property;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
@@ -203,7 +215,7 @@ public final class SerialDataNode extends DataNode {
     /** try to register PropertyChangeListener to instance to fire its changes.
      * @param bean     */
     private void initPList (Object bean, BeanInfo bInfo, BeanNode.Descriptor descr) {
-        java.beans.EventSetDescriptor[] descs  = bInfo.getEventSetDescriptors();
+        EventSetDescriptor[] descs  = bInfo.getEventSetDescriptors();
         try {
             Method setter = null;
             for (int i = 0; descs != null && i < descs.length; i++) {
@@ -223,7 +235,7 @@ public final class SerialDataNode extends DataNode {
         ArrayList supportedPropertyNames = new ArrayList();
         if (descr.property != null) {
             for (int i = 0; i < descr.property.length; i++) {
-                Property property = descr.property[i];
+                Node.Property property = descr.property[i];
                 supportedPropertyNames.add(property.getName());
             }
         }
@@ -334,7 +346,7 @@ public final class SerialDataNode extends DataNode {
             } catch (NoSuchMethodException e) {
                 nameSetter = clazz.getMethod ("setDisplayName", param); // NOI18N
             }
-            if (!java.lang.reflect.Modifier.isPublic(nameSetter.getModifiers())) {
+            if (!Modifier.isPublic(nameSetter.getModifiers())) {
                 nameSetter = null;
             }
         } catch (Exception ex) {
@@ -517,14 +529,14 @@ public final class SerialDataNode extends DataNode {
     /** The method creates a BufferedImage which represents the same Image as the
      * parameter but consumes less memory.
      */
-    private static final java.awt.Image toBufferedImage(Image img, boolean load) {
+    private static final Image toBufferedImage(Image img, boolean load) {
         // load the image
         if (load) {
-            new javax.swing.ImageIcon(img);
+            new ImageIcon(img);
         }
         
-        java.awt.image.BufferedImage rep = createBufferedImage();
-        java.awt.Graphics g = rep.createGraphics();
+        BufferedImage rep = createBufferedImage();
+        Graphics g = rep.createGraphics();
         g.drawImage(img, 0, 0, null);
         g.dispose();
         img.flush();
@@ -532,10 +544,10 @@ public final class SerialDataNode extends DataNode {
     }
 
     /** Creates BufferedImage 16x16 and Transparency.BITMASK */
-    private static final java.awt.image.BufferedImage createBufferedImage() {
-        java.awt.image.ColorModel model = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().
-                                          getDefaultScreenDevice().getDefaultConfiguration().getColorModel(java.awt.Transparency.BITMASK);
-        java.awt.image.BufferedImage buffImage = new java.awt.image.BufferedImage(model,
+    private static final BufferedImage createBufferedImage() {
+        ColorModel model = GraphicsEnvironment.getLocalGraphicsEnvironment().
+                                          getDefaultScreenDevice().getDefaultConfiguration().getColorModel(Transparency.BITMASK);
+        BufferedImage buffImage = new BufferedImage(model,
                 model.createCompatibleWritableRaster(16, 16), model.isAlphaPremultiplied(), null);
         return buffImage;
     }
@@ -595,7 +607,7 @@ public final class SerialDataNode extends DataNode {
             }
             
             Class clazz = ic.instanceClass();
-            java.beans.BeanDescriptor bd = Utilities.getBeanInfo(clazz).getBeanDescriptor();
+            BeanDescriptor bd = Utilities.getBeanInfo(clazz).getBeanDescriptor();
             String desc = bd.getShortDescription();
             return (desc.equals(bd.getDisplayName()))? getDisplayName(): desc;
         } catch (Exception ex) {
@@ -603,12 +615,8 @@ public final class SerialDataNode extends DataNode {
         }
     }
     
-    public Action getPreferredAction() {
-        return null;
-    }
-    
     /* do not want CustomizeBean to be invoked on double-click */
-    public SystemAction getDefaultAction() {
+    public Action getPreferredAction() {
         return null;
     }
     
@@ -639,7 +647,7 @@ public final class SerialDataNode extends DataNode {
             del.restoreDefaultValue();
         }
 
-        public void setValue(java.lang.String str, java.lang.Object obj) {
+        public void setValue(String str, Object obj) {
             del.setValue(str, obj);
         }
 
@@ -674,7 +682,7 @@ public final class SerialDataNode extends DataNode {
             t.resolvePropertyChange();
         }
 
-        public void setShortDescription(java.lang.String str) {
+        public void setShortDescription(String str) {
             del.setShortDescription(str);
         }
 
@@ -690,19 +698,19 @@ public final class SerialDataNode extends DataNode {
             return del.getValueType();
         }
 
-        public java.lang.String getDisplayName() {
+        public String getDisplayName() {
             return del.getDisplayName();
         }
 
-        public java.util.Enumeration attributeNames() {
+        public Enumeration attributeNames() {
             return del.attributeNames();
         }
 
-        public java.lang.String getShortDescription() {
+        public String getShortDescription() {
             return del.getShortDescription();
         }
 
-        public java.lang.String getName() {
+        public String getName() {
             return del.getName();
         }
 
@@ -710,7 +718,7 @@ public final class SerialDataNode extends DataNode {
             del.setHidden(param);
         }
 
-        public void setDisplayName(java.lang.String str) {
+        public void setDisplayName(String str) {
             del.setDisplayName(str);
         }
 
@@ -718,7 +726,7 @@ public final class SerialDataNode extends DataNode {
             return del.isPreferred();
         }
 
-        public java.lang.Object getValue(java.lang.String str) {
+        public Object getValue(String str) {
             return del.getValue(str);
         }
 
@@ -751,7 +759,7 @@ public final class SerialDataNode extends DataNode {
             del.restoreDefaultValue();
         }
 
-        public void setValue(java.lang.String str, java.lang.Object obj) {
+        public void setValue(String str, Object obj) {
             del.setValue(str, obj);
         }
 
@@ -786,7 +794,7 @@ public final class SerialDataNode extends DataNode {
             t.resolvePropertyChange();
         }
 
-        public void setShortDescription(java.lang.String str) {
+        public void setShortDescription(String str) {
             del.setShortDescription(str);
         }
 
@@ -802,19 +810,19 @@ public final class SerialDataNode extends DataNode {
             return del.getValueType();
         }
 
-        public java.lang.String getDisplayName() {
+        public String getDisplayName() {
             return del.getDisplayName();
         }
 
-        public java.util.Enumeration attributeNames() {
+        public Enumeration attributeNames() {
             return del.attributeNames();
         }
 
-        public java.lang.String getShortDescription() {
+        public String getShortDescription() {
             return del.getShortDescription();
         }
 
-        public java.lang.String getName() {
+        public String getName() {
             return del.getName();
         }
 
@@ -822,7 +830,7 @@ public final class SerialDataNode extends DataNode {
             del.setHidden(param);
         }
 
-        public void setDisplayName(java.lang.String str) {
+        public void setDisplayName(String str) {
             del.setDisplayName(str);
         }
 
@@ -830,7 +838,7 @@ public final class SerialDataNode extends DataNode {
             return del.isPreferred();
         }
 
-        public java.lang.Object getValue(java.lang.String str) {
+        public Object getValue(String str) {
             return del.getValue(str);
         }
 
@@ -891,7 +899,7 @@ public final class SerialDataNode extends DataNode {
                 ((BeanContext) bean).removeBeanContextMembershipListener (contextL);
             contextL = null;
             
-            setKeys (java.util.Collections.EMPTY_SET);
+            setKeys(Collections.EMPTY_SET);
         }
         
         private void init() {
@@ -922,7 +930,7 @@ public final class SerialDataNode extends DataNode {
         
         private void updateKeys() {
             if (bean == null) {
-                setKeys(java.util.Collections.EMPTY_SET);
+                setKeys(Collections.EMPTY_SET);
             } else {
                 setKeys(((BeanContext) bean).toArray());
             }
@@ -938,8 +946,8 @@ public final class SerialDataNode extends DataNode {
             if (bean == null) return new Node[0];
             
             try {
-                if (key instanceof java.beans.beancontext.BeanContextSupport) {
-                    java.beans.beancontext.BeanContextSupport bcs = (java.beans.beancontext.BeanContextSupport)key;
+                if (key instanceof BeanContextSupport) {
+                    BeanContextSupport bcs = (BeanContextSupport)key;
 
                     if (((BeanContext) ctx).contains (bcs.getBeanContextPeer())) {
                         // sometimes a BeanContextSupport occures in the list of
@@ -961,11 +969,11 @@ public final class SerialDataNode extends DataNode {
         */
         private static final class ContextL implements BeanContextMembershipListener {
             /** weak reference to the BeanChildren object */
-            private java.lang.ref.WeakReference ref;
+            private final Reference ref;
 
             /** Constructor */
             ContextL (InstanceChildren bc) {
-                ref = new java.lang.ref.WeakReference (bc);
+                ref = new WeakReference (bc);
             }
 
             /** Listener method that is called when a bean is added to
