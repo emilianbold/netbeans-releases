@@ -28,6 +28,7 @@ import org.netbeans.modules.javadoc.settings.ExternalJavadocSettingsService;
 import org.netbeans.modules.javadoc.search.Jdk12SearchType;
 import org.netbeans.modules.javadoc.search.JavadocSearchType;
 import org.netbeans.modules.javadoc.*;
+import org.openide.util.Lookup;
 
 /** Options for applets - which applet viewer use ...
 *
@@ -49,17 +50,12 @@ public class DocumentationSettings extends SystemOption {
     private static final String PROP_FS_SETTING          = "filesystemSetting";   //NOI18N
     private static final String PROP_ASK_BEFORE_GEN      = "askBeforeGenerating";   //NOI18N
     private static final String PROP_ASK_AFTER_GEN       = "askAfterGenerating";   //NOI18N
-    
-    /** generation */
-    //private static boolean externalJavadoc = false;
-   
+       
     static final long serialVersionUID =-574331845406968391L;
     
     /** Constructor for DocumentationSettings */
     protected void initialize () {
         super.initialize ();
-        if( getProperty( PROP_SEARCH_PATH ) == null )
-            setSearchPath(new String[] {"c:/Jdk1.2/doc" });   //NOI18N
         if( getProperty( PROP_SEARCH_SORT ) == null )
             setIdxSearchSort("A");   //NOI18N
         if( getProperty( PROP_SEARCH_NO_HTML ) == null )
@@ -78,7 +74,7 @@ public class DocumentationSettings extends SystemOption {
             setExecutor( new ExternalJavadocSettingsService() );
         if( getProperty( PROP_SEARCH ) == null )
             setSearchEngine( new Jdk12SearchType() );
-        if( getProperty( PROP_FS_SETTING ) == null )
+        if( getFileSystemSettings() == null )
             setFileSystemSettings( new java.util.HashMap() );
         if( getProperty( PROP_ASK_BEFORE_GEN ) == null )
             setAskBeforeGenerating( false );
@@ -87,7 +83,7 @@ public class DocumentationSettings extends SystemOption {
     }
 
     public static DocumentationSettings getDefault(){
-        return ((DocumentationSettings)SharedClassObject.findObject(DocumentationSettings.class, true));
+        return (DocumentationSettings)Lookup.getDefault().lookup(DocumentationSettings.class);
     }
 
     /** @return human presentable name */
@@ -99,24 +95,6 @@ public class DocumentationSettings extends SystemOption {
         return new HelpCtx (DocumentationSettings.class);
     }
     
-    public boolean isGlobal() {
-        return false;
-    }
-
-    /** Getter for documentation search path
-    */  
-    public String[] getSearchPath() {
-        return (String[])getProperty( PROP_SEARCH_PATH );
-        //return searchPath;
-    }
-
-    /** Setter for documentation search path
-    */  
-    public void setSearchPath(String[] s) {
-        putProperty( PROP_SEARCH_PATH, s, true );
-        //searchPath = s;
-    }
-
     /** Getter for autocommentModifierMask
     */  
     public int getAutocommentModifierMask() {
@@ -280,13 +258,32 @@ public class DocumentationSettings extends SystemOption {
     public void setSearchEngine(ServiceType search) {
         putProperty( PROP_SEARCH , new JavadocSearchType.Handle( search ), true );
     }    
+
     
     public java.util.HashMap getFileSystemSettings(){
-        return (java.util.HashMap)getProperty( PROP_FS_SETTING );
+        //Thread.currentThread().dumpStack();
+        java.util.HashMap map  = (java.util.HashMap)getProperty( PROP_FS_SETTING );
+        /*
+        if( map != null ){
+            System.err.println("Getting map size " + map.size());
+        }
+        else{
+        */
+        if( map == null ){
+            //System.err.println("Getting map size null");
+            //map = new java.util.HashMap();
+            //map.put("test", "test");
+            setFileSystemSettings( new java.util.HashMap() );
+        }
+        return map;
     }
 
     public void setFileSystemSettings(java.util.HashMap map){
-        putProperty( PROP_FS_SETTING, map, true );
+        //Thread.currentThread().dumpStack();
+        //System.err.println("Setting map size " + map.size());
+        //java.util.HashMap oldMap = map;
+        putProperty( PROP_FS_SETTING, map, true );        
+        //firePropertyChange(PROP_FS_SETTING, oldMap, map);
     }
     
     public boolean getAskBeforeGenerating(){
