@@ -190,6 +190,11 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         textView.setFont (new Font ("Monospaced", Font.PLAIN, size)); //NOI18N
         setBorder (BorderFactory.createEmptyBorder());
         setViewportBorder (BorderFactory.createEmptyBorder());
+        
+        Color c = UIManager.getColor("nb.output.selectionBackground");
+        if (c != null) {
+            textView.setSelectionColor(c);
+        }
     }
 
     public final Document getDocument() {
