@@ -24,7 +24,10 @@ Microsystems, Inc. All Rights Reserved.
         <property name="build.compiler.source" value="1.4"/>
         <property name="compile.classpath" value=""/>
         <property name="compile.excludes" value=""/>
-        <javac srcdir="${compile.srcdir.parsed}" 
+        <!-- default value of compile.destdir defined in module_harness.xml -->
+        <mkdir dir="${compile.destdir}"/>
+        <javac srcdir="${compile.srcdir.parsed}"
+               destdir="${compile.destdir}"
                deprecation="${build.compiler.deprecation}"
                debug="${build.compiler.debug}"
                source="${build.compiler.source}"

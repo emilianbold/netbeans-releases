@@ -46,6 +46,14 @@ Microsystems, Inc. All Rights Reserved.
     <property name="xtest.includes" value=""/>
     <property name="xtest.excludes" value=""/>   
     
+    <!-- Root directory where tests will be built in. It means there will be
+         separate folder for each test type: ${compile.destdir.root}/${xtest.testtype}/classes
+     -->
+    <property name="compile.destdir.root" location="../build/test"/>
+    <!-- Destination directory for compiled tests. Used in basic_compiler_targets.xml. -->
+    <property name="compile.destdir" location="${compile.destdir.root}/${xtest.testtype}/classes"/>
+
+    
 
     <target name="forbidden">
        <antcall target="version"/>
@@ -200,7 +208,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="xtest.debug.port" value="0"/>
         <property name="xtest.debug.suspend" value="true"/>
         <property name="xtest.enable.assertions" value="true"/>
-        
+
         <test-executor paramClasspathProp="tbag.classpath"
                        paramTestConfigProp="tbag.testtype"
                        paramNameProp="tbag.name"
@@ -355,6 +363,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="**/src/**/*.class"/>
             </fileset>
         </delete>
+        <delete dir="${compile.destdir.root}"/>
         <delete dir="${xtest.file.location}"/>
     </target>
     
