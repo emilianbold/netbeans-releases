@@ -34,7 +34,7 @@ import org.openide.text.IndentEngine;
 public class IndentEngineEditor extends ServiceTypeEditor {
 
     public IndentEngineEditor () {
-        super (IndentEngineEditor.class, "LAB_ChooseIndentEngine", IndentEngine.getDefault()); // NOI18N
+        super (IndentEngine.class, "LAB_ChooseIndentEngine", IndentEngine.getDefault()); // NOI18N
     }
 
 }
