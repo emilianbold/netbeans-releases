@@ -207,7 +207,7 @@ final class PackageViewChildren extends Children.Keys/*<DataFolder>*/ implements
                 return PACKAGE_EMPTY;
             } else {
                 DataFolder df = (DataFolder)getCookie(DataFolder.class);
-                Boolean b = AccessibilityQuery.isPubliclyAccessible(df.getPrimaryFile());
+                Boolean b = df.isValid() ? AccessibilityQuery.isPubliclyAccessible(df.getPrimaryFile()) : null;
                 if (b != null) {
                     if (b.booleanValue()) {
                         return PACKAGE_PUBLIC;
