@@ -15,19 +15,25 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE MIME-resolver PUBLIC "-//NetBeans//DTD MIME Resolver 1.0//EN" "http://www.netbeans.org/dtds/mime-resolver-1_0.dtd">
 <MIME-resolver>
     <file>
-        <magic hex="47494638"/>
+        <ext name="gif"/>
+        <ext name="GIF"/>
         <resolver mime="image/gif"/>
     </file>
     <file>
-        <magic hex="ffd8ffe0"/>
+        <ext name="jpg"/>
+        <ext name="JPG"/>
+        <ext name="jpeg"/>
+        <ext name="JPEG"/>
         <resolver mime="image/jpeg"/>
     </file>
     <file>
-        <magic hex="89504e47"/>
+        <ext name="png"/>
+        <ext name="PNG"/>
         <resolver mime="image/png"/>
     </file>
     <file>
-        <magic hex="424d"/>
+        <ext name="bmp"/>
+        <ext name="BMP"/>
         <resolver mime="image/bmp"/>
     </file>
 </MIME-resolver>
