@@ -313,7 +313,8 @@ public class JavadocModule extends ModuleInstall {
     }
 
     private static void notify (Exception e) {
-        TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, e);
+        if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
+            TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, e);
     }
 
     private static void notify (String s) {
