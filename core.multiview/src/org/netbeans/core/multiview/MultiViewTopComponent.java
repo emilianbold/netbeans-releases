@@ -43,6 +43,7 @@ import org.openide.awt.UndoRedo;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
@@ -66,10 +67,11 @@ public final class MultiViewTopComponent
     public MultiViewTopComponent() {
         super();
         peer = new MultiViewPeer(this, this);
+        associateLookup(peer.getLookup(Lookups.fixed(new Object[] {getActionMap()})));
         // initializes the multiview component.
         peer.initComponents();
         setName("");
-
+        setFocusCycleRoot(false);
     }
     
     
@@ -221,9 +223,9 @@ public final class MultiViewTopComponent
         return peer.canClose();
     }
     
-    public Lookup getLookup() {
-        return peer.getLookup(super.getLookup());
-    }
+//    public Lookup getLookup() {
+//        return peer.getLookup(super.getLookup());
+//    }
     
     /**
      * implementation of the MultiViewElement.ActionRequestObserver, manages activatation of the elements

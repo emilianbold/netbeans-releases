@@ -15,6 +15,8 @@ package org.netbeans.core.spi.multiview;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,6 +35,7 @@ import org.netbeans.core.multiview.MultiViewCloneableTopComponent;
 import org.netbeans.core.multiview.MultiViewTopComponent;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.nodes.Node;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.NbDocument;
@@ -85,6 +88,24 @@ public final class MultiViewFactory {
         MultiViewTopComponent tc = new MultiViewTopComponent();
         tc.setMultiViewDescriptions(descriptions, defaultDesc);
         tc.setCloseOperationHandler(closeHandler);
+        // debug
+        
+        TopComponent.getRegistry().addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                System.out.println("event=" + evt.getPropertyName());
+                if (TopComponent.getRegistry().PROP_ACTIVATED_NODES.equals(evt.getPropertyName())) {
+                    Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
+                    System.out.println("activated nodes33333333333333333333333333333333333333333=");
+                    if (nodes != null) {
+                        for (int i = 0; i < nodes.length; i++) {
+                            System.out.println("node=" + nodes[i].getDisplayName());
+                        }
+                    }
+                }
+            }
+        });
+        
+        
         return tc;
     }
     
@@ -105,6 +126,22 @@ public final class MultiViewFactory {
         MultiViewCloneableTopComponent tc = new MultiViewCloneableTopComponent();
         tc.setMultiViewDescriptions(descriptions, defaultDesc);
         tc.setCloseOperationHandler(closeHandler);
+        // debug        
+        TopComponent.getRegistry().addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                System.out.println("event=" + evt.getPropertyName());
+                if (TopComponent.getRegistry().PROP_ACTIVATED_NODES.equals(evt.getPropertyName())) {
+                    Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
+                    System.out.println("activated nodes33333333333333333333333333333333333333333=");
+                    if (nodes != null) {
+                        for (int i = 0; i < nodes.length; i++) {
+                            System.out.println("node=" + nodes[i].getDisplayName());
+                        }
+                    }
+                }
+            }
+        });
+        
         return tc;
     }    
     

@@ -15,6 +15,8 @@ package org.netbeans.core.multiview;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -30,6 +32,7 @@ import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.openide.ErrorManager;
 import org.openide.awt.UndoRedo;
+import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport.Pane;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -55,14 +58,16 @@ public final class MultiViewPeer  {
     TabsComponent tabs;
     SelectionListener selListener;
     CloseOperationHandler closeHandler;
-    transient MVProxyLookup lookup;
+    transient MultiViewTopComponentLookup lookup;
     TopComponent peer;
     private ActionRequestObserverFactory factory;
+    private PropertyChangeListener activatedListener;
     
     public MultiViewPeer(TopComponent pr, ActionRequestObserverFactory fact) {
         selListener = new SelectionListener();
         peer = pr;
         factory = fact;
+        activatedListener = new MultiViewPeer.ActivatedNodesListener();
     }
     
     
@@ -148,7 +153,17 @@ public final class MultiViewPeer  {
      */
     void hideElement(MultiViewDescription desc) {
         if (desc != null) {
-            model.getElementForDescription(desc).componentHidden();
+            MultiViewElement el = model.getElementForDescription(desc);
+            el.componentHidden();
+            TopComponent origin = null;
+            if (el instanceof TopComponent) {
+                origin = (TopComponent)el;
+            } else if (el.getVisualRepresentation() instanceof TopComponent) {
+                origin = (TopComponent)el.getVisualRepresentation();
+            }
+            if (origin != null) {
+                origin.removePropertyChangeListener("activatedNodes", activatedListener);
+            }
         }
     }
 
@@ -165,7 +180,8 @@ public final class MultiViewPeer  {
         MultiViewElement el = model.getActiveElement();
         MultiViewDescription desc = model.getActiveDescription();
         
-        ((MVProxyLookup)peer.getLookup()).setElementLookup(el.getLookup());
+        ((MultiViewTopComponentLookup)peer.getLookup()).setElementLookup(el.getLookup());
+        setActivatedNodesAccordingToElement(true);
         // TODO display name is not a good unique id..
         // also consider a usecase where multiple elements point to a single visual component.
         //. eg. property sheet uses same component and only changes model.
@@ -186,6 +202,28 @@ public final class MultiViewPeer  {
         tabs.setInnerToolBar(el.getToolbarRepresentation());
     }
     
+    
+    private void setActivatedNodesAccordingToElement(boolean addListener) {
+        MultiViewElement el = model.getActiveElement();
+        TopComponent origin = null;
+        if (el instanceof TopComponent) {
+            origin = (TopComponent)el;
+        } else if (el.getVisualRepresentation() instanceof TopComponent) {
+            origin = (TopComponent)el.getVisualRepresentation();
+        }
+        if (origin != null) {
+            peer.setActivatedNodes(origin.getActivatedNodes());
+            if (addListener) {
+                origin.addPropertyChangeListener("activatedNodes", activatedListener);
+            }
+        } else {
+            // maybe add some API later to allow element add activated nodes..
+            //mkleint however for now, just let the elements handle it themselves by calling 
+            // getComponent().setActivatedNodes() on the MultiViewElementCallback
+//            peer.setActivatedNodes(new Node[0]);
+        }
+        
+    }
     
     /**
      * merge action for the topcomponent and the enclosed MultiViewElement..
@@ -407,7 +445,7 @@ public final class MultiViewPeer  {
     
     public Lookup getLookup(Lookup superLookup) {
         if (lookup == null) {
-            lookup = new MVProxyLookup(superLookup);
+            lookup = new MultiViewTopComponentLookup(superLookup);
         }
         return lookup;
     }
@@ -479,16 +517,31 @@ public final class MultiViewPeer  {
     }
     
     
-    private static class MVProxyLookup extends ProxyLookup {
-        private Lookup initialLookup;
-        public MVProxyLookup(Lookup initial) {
-            super(new Lookup[] {initial});
-            initialLookup = initial;
+//    private static class MVProxyLookup extends ProxyLookup {
+//        private Lookup initialLookup;
+//        public MVProxyLookup(Lookup initial) {
+//            super(new Lookup[] {initial});
+//            initialLookup = initial;
+//        }
+//
+//        
+////        public MVProxyLookup() {
+////            super();
+////        }
+////        
+//        public void setElementLookup(Lookup look) {
+//            setLookups(new Lookup[] {initialLookup, look});
+//        }
+//    }
+    
+    private class ActivatedNodesListener implements PropertyChangeListener {
+        
+        public void propertyChange(PropertyChangeEvent evt) {
+            if ("activatedNodes".equals(evt.getPropertyName())) {
+                setActivatedNodesAccordingToElement(false);
+            }
         }
         
-        public void setElementLookup(Lookup look) {
-            setLookups(new Lookup[] {initialLookup, look});
-        }
     }
     
 }

@@ -43,6 +43,7 @@ import org.openide.awt.UndoRedo;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
@@ -65,6 +66,7 @@ public final class MultiViewCloneableTopComponent extends CloneableTopComponent
     public MultiViewCloneableTopComponent() {
         super();
         peer = new MultiViewPeer(this, this);
+        associateLookup(peer.getLookup(Lookups.fixed(new Object[] {getActionMap()})));
         // initializes the multiview component.
         peer.initComponents();
         setFocusCycleRoot(false);
