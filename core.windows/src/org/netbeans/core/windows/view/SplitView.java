@@ -275,13 +275,11 @@ public class SplitView extends ViewElement {
             int absoluteLocation = sp.getDividerLocation();
             double relativeLocation;
             if(sp.getOrientation() == JSplitPane.VERTICAL_SPLIT) {
-                relativeLocation = (double)absoluteLocation/(sp.getHeight() - sp.getDividerSize() );
+                relativeLocation = (double)absoluteLocation/sp.getHeight();
             } else {
-                relativeLocation = (double)absoluteLocation/(sp.getWidth() - sp.getDividerSize() );
+                relativeLocation = (double)absoluteLocation/sp.getWidth();
             }
             getController().userMovedSplit(relativeLocation, sv, sv.getFirst(), sv.getSecond());
-//            splitChangedForView(sv.getFirst());
-//            splitChangedForView(sv.getSecond());
         }
     }    
 }

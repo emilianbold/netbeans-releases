@@ -23,6 +23,7 @@ import org.netbeans.core.windows.WindowSystemSnapshot;
 import java.util.*;
 
 
+
 /**
  * This class converts snapshot to accessor structure, which is a 'model'
  * of view (GUI) structure window system has to display to user.
@@ -36,7 +37,7 @@ import java.util.*;
 final class ViewHelper {
     
     /** Debugging flag. */
-    private static final boolean DEBUG = Debug.isLoggable(ViewHelper.class);
+    private static final boolean DEBUG = true;//Debug.isLoggable(ViewHelper.class);
     
     
     /** Creates a new instance of ViewHelper */
@@ -281,14 +282,14 @@ final class ViewHelper {
             return false;
         }
         
+        ArrayList visibleChildren = new ArrayList( splitSnapshot.getVisibleChildSnapshots() );
+        
         ElementSnapshot first = firstAccessor.getSnapshot();
         ElementSnapshot second = secondAccessor.getSnapshot();
 
-        List visibleChildren = splitSnapshot.getVisibleChildSnapshots();
-        
         // XXX #36696 If it is 'nested-split' find the real element.
         if(first == splitSnapshot) {
-            first = ((SplitAccessor)firstAccessor).getFirst().getSnapshot();
+            first = ((SplitAccessor)firstAccessor).getSecond().getSnapshot();
         }
         
         // Find the corresponding nodes in the split.
@@ -313,97 +314,27 @@ final class ViewHelper {
             return false;
         }
         
-        // Validation finished, do the update.
+        double currentFirstWeight = splitSnapshot.getChildSnapshotSplitWeight(first);
+        double currentSecondWeight = splitSnapshot.getChildSnapshotSplitWeight(second);
+        
+        double remainingWeights = 0.0D;
+        ArrayList allChildren = new ArrayList( splitSnapshot.getChildSnapshots() );
+        for( int i=allChildren.indexOf( second ); i<allChildren.size(); i++ ) {
+            ElementSnapshot es = (ElementSnapshot)allChildren.get( i );
+            double childWeight = splitSnapshot.getChildSnapshotSplitWeight(es);
+            remainingWeights += childWeight;
+        }
+        
+        double firstWeight = location * (currentFirstWeight + remainingWeights);
+        double delta = currentFirstWeight - firstWeight;
 
-        // Prepare how to distribute the rest of weights.
-        double visibleResizeWeights = 0D;
-        for(Iterator it = visibleChildren.iterator(); it.hasNext(); ) {
-            ElementSnapshot snapshot = (ElementSnapshot)it.next();
-            visibleResizeWeights += snapshot.getResizeWeight();
-        }
-        
-        List invisibleChildren = splitSnapshot.getChildSnapshots();
-        invisibleChildren.removeAll(visibleChildren);
-        double invisibleWeights = 0D;
-        for(Iterator it = invisibleChildren.iterator(); it.hasNext(); ) {
-            ElementSnapshot snapshot = (ElementSnapshot)it.next();
-            invisibleWeights += splitSnapshot.getChildSnapshotSplitWeight(snapshot);
-        }
-        
-        // Get the refined weights to work with.
-        Map visibleChild2refinedWeight = new HashMap();
-        for(Iterator it = visibleChildren.iterator(); it.hasNext(); ) {
-            ElementSnapshot snapshot = (ElementSnapshot)it.next();
-            double refinedWeight;
-            if(visibleResizeWeights > 0D) {
-                refinedWeight = splitSnapshot.getChildSnapshotSplitWeight(snapshot) + ((snapshot.getResizeWeight() / visibleResizeWeights) * invisibleWeights);
-            } else {
-                refinedWeight = splitSnapshot.getChildSnapshotSplitWeight(snapshot);
-            }
-            visibleChild2refinedWeight.put(snapshot, new Double(refinedWeight));
-        }
-        
-        double firstWeight = ((Double)visibleChild2refinedWeight.get(first)).doubleValue();
-        double secondWeight = ((Double)visibleChild2refinedWeight.get(second)).doubleValue();
+        double secondWeight = currentSecondWeight + delta;
 
-        // Find and nextAll weights.
-        double nextVisibleWeights = 0D;
-        List anotherReversedChildren = new ArrayList(visibleChildren);
-        Collections.reverse(anotherReversedChildren);
-        for(Iterator it = anotherReversedChildren.iterator(); it.hasNext(); ) {
-            ElementSnapshot snapshot = (ElementSnapshot)it.next();
-            if(snapshot == first) {
-                break;
-            }
-            nextVisibleWeights += ((Double)visibleChild2refinedWeight.get(snapshot)).doubleValue();
-        }
-        
-        if(DEBUG) {
-            debugLog(""); // NOI18N
-            debugLog("location=" + location); // NOI18N
-            debugLog("first=" + first); // NOI18N
-            debugLog("second=" + second); // NOI18N
-            debugLog("1st original=" + firstWeight); // NOI18N
-            debugLog("2nd original=" + secondWeight); // NOI18N
-            debugLog("nextAllWeights=" + nextVisibleWeights); // NOI18N
-        }
-
-        // What value has to be added from second to first weight
-        // (if it is vice versa the value has minus sign).
-        double delta = location * (firstWeight + nextVisibleWeights) - firstWeight;
-
-        if(DEBUG) {
-            debugLog(""); // NOI18N
-            debugLog("delta=" + delta); // NOI18N
-        }
-        
-        double littleSum = firstWeight + secondWeight;
-        
-        firstWeight += delta;
-        secondWeight -= delta;
-        
-        if(DEBUG) {
-            debugLog("1st after=" + firstWeight); // NOI18N
-            debugLog("2nd after=" + secondWeight); // NOI18N
-        }
-        
-        // Substract the invisible weights.
-        if(visibleResizeWeights > 0D) {
-            firstWeight = firstWeight - ((first.getResizeWeight() / visibleResizeWeights) * invisibleWeights);
-            secondWeight = secondWeight - ((second.getResizeWeight() / visibleResizeWeights) * invisibleWeights);
-        }
-        
-        if(DEBUG) {
-            debugLog("1st after validation=" + firstWeight + ",\t originator=" + first.getOriginator()); // NOI18N
-            debugLog("2nd after validation=" + secondWeight + ",\t originator=" + second.getOriginator()); // NOI18N
-        }
-        
         controllerHandler.userChangedSplit(first.getOriginator(), firstWeight, second.getOriginator(), secondWeight);
-        
+
         return true;
     }
 
-    
     private static void debugLog(String message) {
         Debug.log(ViewHelper.class, message);
     }

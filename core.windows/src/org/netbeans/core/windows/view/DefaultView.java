@@ -644,9 +644,9 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
             int absoluteLocation = sp.getDividerLocation();
             double relativeLocation;
             if(sp.getOrientation() == JSplitPane.VERTICAL_SPLIT) {
-                relativeLocation = (double)absoluteLocation/(sp.getHeight() - sp.getDividerSize() );
+                relativeLocation = (double)absoluteLocation/sp.getHeight();
             } else {
-                relativeLocation = (double)absoluteLocation/(sp.getWidth() - sp.getDividerSize() );
+                relativeLocation = (double)absoluteLocation/sp.getWidth();
             }
             userMovedSplit(relativeLocation, sv, sv.getFirst(), sv.getSecond());
             
@@ -697,7 +697,6 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         SplitAccessor splitAccessor = (SplitAccessor)hierarchy.getAccessorForView(splitView);
         ElementAccessor firstAccessor = hierarchy.getAccessorForView(first);
         ElementAccessor secondAccessor = hierarchy.getAccessorForView(second);
-        
         ViewHelper.computeSplitWeights(splitLocation, splitAccessor, firstAccessor, secondAccessor, controllerHandler);
         
         // XXX PENDING
