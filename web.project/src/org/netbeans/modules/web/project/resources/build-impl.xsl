@@ -721,12 +721,30 @@ is divided into following sections:
 
             <target name="do-clean">
                 <xsl:attribute name="depends">init</xsl:attribute>
-                <delete dir="${{build.dir}}"/>
+                <delete dir="${{build.dir}}" failonerror="false"/>
+                <available file="${{build.dir}}" type="dir" property="status.clean-failed"/>
                 <delete dir="${{dist.dir}}"/>
                 <!-- XXX explicitly delete all build.* and dist.* dirs in case they are not subdirs -->
                 <!--
                 <delete dir="${{build.generated.dir}}"/>
                 <delete dir="${{build.web.dir}}"/> 
+                -->
+            </target>
+
+            <target name="check-clean">
+                <xsl:attribute name="depends">do-clean</xsl:attribute>
+                <xsl:attribute name="if">status.clean-failed</xsl:attribute>
+                <!-- 
+                    When undeploy is implemented it should be optional:
+                <xsl:attribute name="unless">clean.check.skip</xsl:attribute>
+                -->
+                <echo message="Build directory cannot be deleted. If the module was deployed this may be caused by some of the files locked by the server." />
+                <echo message="Try to undeploy the module from Server Registry in Runtime tab and Clean again."/>
+                <!-- 
+                    Here comes the undeploy code when supported by nbdeploy task:
+                <nbdeploy undeploy="true" clientUrlPart="${client.urlPart}"/>
+                    And then another attempt to delete:
+                <delete dir="${{build.dir}}"/>
                 -->
             </target>
 
@@ -736,7 +754,7 @@ is divided into following sections:
             </target>
 
             <target name="clean">
-                <xsl:attribute name="depends">init,deps-clean,do-clean,-post-clean</xsl:attribute>
+                <xsl:attribute name="depends">init,deps-clean,do-clean,check-clean,-post-clean</xsl:attribute>
                 <xsl:attribute name="description">Clean build products.</xsl:attribute>
             </target>
         </project>
