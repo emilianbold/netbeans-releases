@@ -51,11 +51,64 @@
     SizelessTypes = (BIT,DATE,"DOUBLE PRECISION",FLOAT,INT,REAL,SMALLINT,TIME,TIMESTAMP,VARCHAR);
     DecimalTypes = (DECIMAL,NUMERIC);
     CharacterTypes = (CHAR);
+//    ProcedureArgumentMap = {
+//      IN = IN;
+//      OUT = OUT;
+//      INOUT = INOUT;
+//    };
+//    TriggerEventMap = {
+//      INSERT = INSERT;
+//      UPDATE = UPDATE;
+//      DELETE = DELETE;
+//    };
 
+/////////////////////
+// Columns definition
+/////////////////////
     
     Column = {
       Class = com.netbeans.ddl.impl.TableColumn;
       Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}]";
+    };
+
+    UniqueColumn = {
+      Class = com.netbeans.ddl.impl.TableColumn;
+      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] unique";
+    };
+
+    PrimaryKeyColumn = {
+      Class = com.netbeans.ddl.impl.TableColumn;
+      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] primary key";
+    };
+
+    ForeignKeyColumn = {
+      Class = com.netbeans.ddl.impl.TableColumn;
+      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] references {fkobject.name}[({fkcolumn.name})]";
+    };
+
+    CheckColumn = {
+      Class = com.netbeans.ddl.impl.TableColumn;
+      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] check ({check.condition})";
+    };      
+
+    UniqueConstraint = {
+      Class = com.netbeans.ddl.impl.TableColumn;
+      Format = "unique ({column.name})";
+    };
+
+    PrimaryKeyConstraint = {
+      Class = com.netbeans.ddl.impl.TableColumn;
+      Format = "primary key ({column.name})";
+    };
+
+    ForeignKeyConstraint = {
+      Class = com.netbeans.ddl.impl.TableColumn;
+      Format = "foreign key ({column.name}) references {fkobject.name}[({fkcolumn.name})]";
+    };
+
+    CheckConstraint = {
+      Class = com.netbeans.ddl.impl.TableColumn;
+      Format = "check ({check.condition})";
     };
 
     ColumnName = {
@@ -63,34 +116,19 @@
       Format = "{column.name}[ {direction}]";
     };
 
-    UniqueColumn = {
-      Class = com.netbeans.ddl.impl.TableColumn;
-      Format = "unique {column.name}";
-    };
+//    ProcedureArgument = {
+//      Class = com.netbeans.ddl.impl.ProcedureArgument;
+//      Format = "{argument.name}[ {argument.type}] {argument.datatype}";
+//    };    
 
-    PrimaryKeyColumn = {
-      Class = com.netbeans.ddl.impl.TableColumn;
-      Format = "primary key";
-    };
+//    TriggerEvent = {
+//      Class = com.netbeans.ddl.impl.TriggerEvent;
+//      Format = "{event.name}[ OF {event.column}]";
+//    };    
 
-    ForeignKeyColumn = {
-      Class = com.netbeans.ddl.impl.TableColumn;
-      Format = "foreign key {column.name}";
-    };
-
-    ProcedureArgument = {
-      Class = com.netbeans.ddl.impl.ProcedureArgument;
-      Format = "{argument.name}[ {argument.type}] {argument.datatype}";
-    };    
-
-    TriggerEvent = {
-      Class = com.netbeans.ddl.impl.TriggerEvent;
-      Format = "{event.name}[ OF {event.column}]";
-    };    
-
-//
-// Definice prikazu
-//
+//////////////////////
+// Commands definition
+//////////////////////
 
     CreateTableCommand = {
       Class = com.netbeans.ddl.impl.CreateTable;
@@ -128,10 +166,28 @@
         CHECK_CONSTRAINT = CheckConstraint;
       };
     };    
+
+    RemoveColumnCommand = {
+      Class = com.netbeans.ddl.impl.RemoveColumn;
+      Format = "alter table [{object.owner}.]{object.name} drop {column}";
+      Binding = {
+        COLUMN = ColumnName;
+      };
+    };
     
+    CreateViewCommand = {
+      Class = com.netbeans.ddl.impl.CreateView;
+      Format = "create view [{object.owner}.]{object.name} as {query}";
+    };
+
+    DropViewCommand = {
+      Class = com.netbeans.ddl.impl.AbstractCommand;
+      Format = "drop view [{object.owner}.]{object.name}";
+    };
+
     CreateIndexCommand = {
       Class = com.netbeans.ddl.impl.CreateIndex;
-      Format = "create index {index.name} on [{object.owner}.]{object.name}[\n(\n\t{columns}\n)]";
+      Format = "create index {index.name} on [{object.owner}.]{object.name}\n(\n\t{columns}\n)";
       Binding = {
         COLUMN = ColumnName;
       };
@@ -142,15 +198,6 @@
       Format = "drop index [{object.owner}.]{object.name}";
     };
 
-    CreateViewCommand = {
-      Class = com.netbeans.ddl.impl.CreateView;
-      Format = "create view [{object.owner}.]{object.name} as {query}";
-    };
-
-    DropViewCommand = {
-      Class = com.netbeans.ddl.impl.AbstractCommand;
-      Format = "drop view [{object.owner}.]{object.name}";
-    };
   };
 
 //  ********************************************************************************
@@ -208,54 +255,14 @@
       Format = "{column.name} [{column.notnull}not null][ default {default.value}]";
     };
     
-    UniqueColumn = {
-      Class = com.netbeans.ddl.impl.TableColumn;
-      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] unique";
-    };
-
     UniqueColumnTypeless = {
       Class = com.netbeans.ddl.impl.TableColumn;
       Format = "{column.name} [{column.notnull}not null][ default {default.value}] unique";
     };
 
-    PrimaryKeyColumn = {
-      Class = com.netbeans.ddl.impl.TableColumn;
-      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] primary key";
-    };
-
-    ForeignKeyColumn = {
-      Class = com.netbeans.ddl.impl.TableColumn;
-      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] references {fkobject.name}[({fkcolumn.name})]";
-    };
-
-    CheckColumn = {
-      Class = com.netbeans.ddl.impl.TableColumn;
-      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] check ({check.condition})";
-    };      
-
     CheckColumnTypeless = {
       Class = com.netbeans.ddl.impl.TableColumn;
       Format = "{column.name} [{column.notnull}not null][ default {default.value}] check ({check.condition})";
-    };      
-
-    UniqueConstraint = {
-      Class = com.netbeans.ddl.impl.TableColumn;
-      Format = "unique {column.name}";
-    };
-
-    PrimaryKeyConstraint = {
-      Class = com.netbeans.ddl.impl.TableColumn;
-      Format = "primary key {column.name}";
-    };
-
-    ForeignKeyConstraint = {
-      Class = com.netbeans.ddl.impl.TableColumn;
-      Format = "foreign key {column.name} references {fkobject.name}[({fkcolumn.name})]";
-    };
-
-    CheckConstraint = {
-      Class = com.netbeans.ddl.impl.TableColumn;
-      Format = "check ({check.condition})";
     };      
 
 //
@@ -765,77 +772,20 @@
       java.sql.Types.TINYINT = TINYINT;
       java.sql.Types.VARCHAR = VARCHAR;
     };
-    ProcedureArgumentMap = {
-      IN = IN;
-      OUT = OUT;
-      INOUT = INOUT;
-    };
-    TriggerEventMap = {
-      INSERT = INSERT;
-      UPDATE = UPDATE;
-      DELETE = DELETE;
-    };
+//    ProcedureArgumentMap = {
+//      IN = IN;
+//      OUT = OUT;
+//      INOUT = INOUT;
+//    };
+//    TriggerEventMap = {
+//      INSERT = INSERT;
+//      UPDATE = UPDATE;
+//      DELETE = DELETE;
+//    };
     SizelessTypes = (BOOLEAN,DATE,INT,"LONG VARCHAR","LONG VARBINARY",LONGINT,SMALLINT,TIME,TIMESTAMP,TINYINT);
     DecimalTypes = (DECIMAL,FLOAT);
     CharacterTypes = (CHAR);
-
-//
-// Definice sloupcu
-//
-    ColumnTypeless = {
-      Class = com.netbeans.ddl.impl.TableColumn;
-      Format = "{column.name} [{column.notnull}not null][ default {default.value}]";
-    };
     
-    UniqueColumn = {
-      Class = com.netbeans.ddl.impl.TableColumn;
-      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] unique";
-    };
-
-    UniqueColumnTypeless = {
-      Class = com.netbeans.ddl.impl.TableColumn;
-      Format = "{column.name} [{column.notnull}not null][ default {default.value}] unique";
-    };
-
-    PrimaryKeyColumn = {
-      Class = com.netbeans.ddl.impl.TableColumn;
-      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] primary key";
-    };
-
-    ForeignKeyColumn = {
-      Class = com.netbeans.ddl.impl.TableColumn;
-      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] references {fkobject.name}[({fkcolumn.name})]";
-    };
-
-    CheckColumn = {
-      Class = com.netbeans.ddl.impl.TableColumn;
-      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] check ({check.condition})";
-    };      
-
-    CheckColumnTypeless = {
-      Class = com.netbeans.ddl.impl.TableColumn;
-      Format = "{column.name} [{column.notnull}not null][ default {default.value}] check ({check.condition})";
-    };      
-
-    UniqueConstraint = {
-      Class = com.netbeans.ddl.impl.TableColumn;
-      Format = "unique {column.name}";
-    };
-
-    PrimaryKeyConstraint = {
-      Class = com.netbeans.ddl.impl.TableColumn;
-      Format = "primary key {column.name}";
-    };
-
-    ForeignKeyConstraint = {
-      Class = com.netbeans.ddl.impl.TableColumn;
-      Format = "foreign key {column.name} references {fkobject.name}[({fkcolumn.name})]";
-    };
-
-    CheckConstraint = {
-      Class = com.netbeans.ddl.impl.TableColumn;
-      Format = "check ({check.condition})";
-    };      
   };
 
 //  ********************************************************************************
@@ -851,7 +801,7 @@
     TypeMap = {
       java.sql.Types.BINARY = BINARY;
       java.sql.Types.BIT = BIT;
-      java.sql.Types.BLOB = BLOB;
+      java.sql.Types.BLOB = IMAGE;
       java.sql.Types.CHAR = CHAR;
       java.sql.Types.DATE = DATETIME;
       java.sql.Types.DECIMAL = DECIMAL;
@@ -860,7 +810,7 @@
       java.sql.Types.INTEGER = INT;
       java.sql.Types.NUMERIC = NUMERIC;
       java.sql.Types.REAL = REAL;
-      java.sql.Types.SMALLINT = SMALINT;
+      java.sql.Types.SMALLINT = SMALLINT;
       java.sql.Types.TIMESTAMP = TIMESTAMP;
       java.sql.Types.TINYINT = TINYINT;
       java.sql.Types.VARBINARY = VARBINARY;
@@ -869,7 +819,24 @@
     SizelessTypes = (BINARY,BIT,IMAGE,DATETIME,"DOUBLE PRECISION",INT,REAL,SMALLINT,TIMESTAMP,TINYINT,VARBINARY,VARCHAR);
     DecimalTypes = (DECIMAL,FLOAT,NUMERIC);
     CharacterTypes = (CHAR);
+
+//////////////////////
+// Commands definition
+//////////////////////
+
+    RemoveColumnCommand = {
+      Class = com.netbeans.ddl.impl.RemoveColumn;
+      Format = "alter table [{object.owner}.]{object.name} drop column {column}";
+      Binding = {
+        COLUMN = ColumnName;
+      };
+    };
     
+    DropIndexCommand = {
+      Class = com.netbeans.ddl.impl.AbstractCommand;
+      Format = "drop index {object.owner}.{object.name}";
+    };
+
   };
 
 //  ********************************************************************************
