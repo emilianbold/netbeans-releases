@@ -40,6 +40,11 @@ Microsystems, Inc. All Rights Reserved.
       <description>
         Provides support for viewing images such as GIFs and JPEGs in the IDE.
       </description>
+      <!--
+      <signature keystore="...path-to-keystore-file..."
+                 storepass="...password-here..."
+	         alias="...some-alias..."/>
+      -->
     </makenbm>
   </target>
   <target name="clean">
