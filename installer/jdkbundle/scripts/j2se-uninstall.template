@@ -5,32 +5,25 @@
 J2SE_VER=
 J2SE_INSTALL_DIR=
 UNINSTALLDIR=$J2SE_INSTALL_DIR/_uninst
-LOGFILE=$J2SE_INSTALL_DIR/uninstall.log
 RM=/bin/rm
 
-if [ ! -f $LOGFILE ] ; then
-	/bin/touch $LOGFILE
-fi
-
-echo "--------------------" >> $LOGFILE
-echo "Uninstallation date: `date`" >> $LOGFILE
+echo "--------------------" 
+echo "Uninstallation date: `date`"
 
 if [ ! -x $RM ] ; then
 	echo "ERROR: Cannot remove.  Your $RM utility is not executable or doesn't exist."
 fi
 
 if [ -d $J2SE_INSTALL_DIR ] ; then
-	echo "Uninstalling J2sdk $J2SE_VER ..." >> $LOGFILE
-	/bin/rm -rf $J2SE_INSTALL_DIR >> $LOGFILE 2>&1
+	echo "Uninstalling J2sdk $J2SE_VER ..." 
+	/bin/rm -rf $J2SE_INSTALL_DIR 2>&1
 else
-	echo "$J2SE_INSTALL_DIR doesn't exist!" 
-	echo "$J2SE_INSTALL_DIR doesn't exist!" >> $LOGFILE
+	echo "$J2SE_INSTALL_DIR does not exist!" 
 fi
 
-echo "The uninstallation is completed." >> $LOGFILE
-echo `date` >> $LOGFILE
+echo "The uninstallation is completed."
+echo `date`
 
 if [ -d $UNINSTALLDIR ] ; then
 	/bin/rm -rf $UNINSTALLDIR > /dev/null 2>&1
 fi
-
