@@ -38,6 +38,11 @@ public class ImageDataLoader extends UniFileLoader {
     ext.addExtension("jpeg"); // NOI18N
     ext.addExtension("jpe"); // NOI18N
     ext.addExtension("gif"); // NOI18N
+    // PhotoShop frequently saves image files with capital extensions:
+    ext.addExtension("JPG"); // NOI18N
+    ext.addExtension("JPEG"); // NOI18N
+    ext.addExtension("JPE"); // NOI18N
+    ext.addExtension("GIF"); // NOI18N
     setExtensions(ext);
 
     // Common actions for all images.
@@ -76,6 +81,8 @@ public class ImageDataLoader extends UniFileLoader {
 
 /*
  * Log
+ *  13   Gandalf   1.12        1/6/00   Jesse Glick     Capitalized image 
+ *       extensions.
  *  12   Gandalf   1.11        1/5/00   Ian Formanek    NOI18N
  *  11   Gandalf   1.10        11/27/99 Patrik Knakal   
  *  10   Gandalf   1.9         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
