@@ -56,7 +56,11 @@ public abstract class FactoryRegistry extends Object {
         for(Iterator it = getSupports().allInstances().iterator(); it.hasNext(); ) {
             I18nSupport.Factory factory = (I18nSupport.Factory)it.next();
 
-            if(factory.getDataObjectClass().isAssignableFrom(dataObjectClass)) {
+            // XXX it has to be checked for null, for cases Jsp support and java support
+            // don't have their modules available, see JspI18nSupportFactory.getDataObjectClass.
+            Class clazz = factory.getDataObjectClass();
+            
+            if(clazz != null && clazz.isAssignableFrom(dataObjectClass)) {
                 candidates.add(factory);
             }
         }
@@ -77,7 +81,7 @@ public abstract class FactoryRegistry extends Object {
                     chosen = fct;
                     continue;
                 }
-                
+
                 if(chosen.getDataObjectClass().isAssignableFrom(fct.getDataObjectClass()) ) {
                     chosen = fct;
                 }
@@ -91,8 +95,12 @@ public abstract class FactoryRegistry extends Object {
     public static boolean hasFactory(Class dataObjectClass) {
         for(Iterator it = getSupports().allInstances().iterator(); it.hasNext(); ) {
             I18nSupport.Factory factory = (I18nSupport.Factory)it.next();
+
+            // XXX it has to be checked for null, for cases Jsp support and java support
+            // don't have their modules available, see JspI18nSupportFactory.getDataObjectClass.
+            Class clazz = factory.getDataObjectClass();
             
-            if(factory.getDataObjectClass().isAssignableFrom(dataObjectClass)) {
+            if(clazz != null && clazz.isAssignableFrom(dataObjectClass)) {
                 return true;
             }
         }
