@@ -28,6 +28,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.nodes.*;
+import org.openide.util.Mutex;
 
 /** Standard node representing a data object.
 *
@@ -504,15 +505,8 @@ public class DataNode extends AbstractNode {
     * @param ev event describing the change
     */
     void fireChange (final PropertyChangeEvent ev) {
-        if (FolderList.isFolderRecognizerThread()) {
-            // never fire into nodes from Recognizer Thread, issue #35847
-            RequestProcessor.getDefault().post (new Runnable () {
-                public void run () {
-                    fireChange (ev);
-                }
-            });
-            return;
-        }
+        Mutex.EVENT.writeAccess(new Runnable() {
+            public void run() {
         
         if (DataFolder.PROP_CHILDREN.equals (ev.getPropertyName ())) {
             // the node is not interested in children changes
@@ -527,7 +521,7 @@ public class DataNode extends AbstractNode {
         }
         
         if (DataObject.PROP_NAME.equals(ev.getPropertyName())) {
-            super.setName (obj.getName ());
+            DataNode.super.setName (obj.getName ());
             updateDisplayName();
             return;
         }
@@ -545,6 +539,9 @@ public class DataNode extends AbstractNode {
                 fireNodeDestroyed();
             }
         }
+
+            }
+        });
     }
 
     /** Handle for location of given data object.
