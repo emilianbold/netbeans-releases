@@ -32,7 +32,7 @@ Microsystems, Inc. All Rights Reserved.
     
         <!-- List of directories where jars will be searched. -->
         <property name="xtest.extra.jars.path"
-        location="${nb.repository}/jemmy/;${nb.repository}/jellytools/"/> <!--;${nb.repository}/xml/test/qa-functional/lib"/-->
+        location="${nbextra.repository}/jemmy/;${nbextra.repository}/jellytools/"/> <!--;${nb.repository}/xml/test/qa-functional/lib"/-->
     
         <!-- This jars is used for compilation, execution codetests and also for
              execution ide tests (it means this classpath will be mounted in repository).

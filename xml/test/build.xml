@@ -22,6 +22,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Points to directory with IDE to test-->
     <property location="../../nbbuild/netbeans" name="netbeans.home"/>
     <property location="../../../nb_all" name="nb.repository"/>
+    <property location="../../../nbextra" name="nbextra.repository"/>
     
     <!-- Name of tested module -->
     <property name="xtest.module" value="All_XML"/>
@@ -137,8 +138,8 @@ Microsystems, Inc. All Rights Reserved.
         -->
         <pathelement location="${netbeans.home}/modules/editor.jar"/>                      
         <pathelement location="${netbeans.home}/modules/ext/nb-editor.jar"/>
-        <pathelement location="${nb.repository}/jemmy/jemmy.jar"/>                    
-        <pathelement location="${nb.repository}/jellytools/jelly-nb.jar"/>                    
+        <pathelement location="${nbextra.repository}/jemmy/jemmy.jar"/>                    
+        <pathelement location="${nbextra.repository}/jellytools/jelly-nb.jar"/>                    
         <pathelement location="${nb.repository}/xtest/lib/junit.jar"/>                    
         <pathelement location="${nb.repository}/xtest/lib/junit-ext.jar"/>                    
         <pathelement location="${nb.repository}/xtest/lib/xtest.jar"/>                    
