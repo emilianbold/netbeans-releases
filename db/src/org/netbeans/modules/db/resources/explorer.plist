@@ -120,8 +120,13 @@
 				prefix = "jdbc:interbase://<HOST>/<DB>";
 			},
 			{
-				name = "Hypersonic SQL";
+				name = "Hypersonic SQL (v1.1, 1.2)";
 				driver = "hSql.hDriver";
+				prefix = "jdbc:HypersonicSQL:<DB>";
+			},
+			{
+				name = "Hypersonic SQL (v1.3)";
+				driver = "org.hsql.jdbcDriver";
 				prefix = "jdbc:HypersonicSQL:<DB>";
 			},
 			{
