@@ -20,7 +20,8 @@ import org.openide.util.HelpCtx;
 import org.openide.util.actions.*;
 import org.netbeans.modules.form.palette.BeanInstaller;
 
-/** InstallToPalette action - enabled on RADContainerNodes and RADLayoutNodes.
+/**
+ * InstallToPalette action - installs selected classes as beans to palette.
  *
  * @author   Ian Formanek
  */
@@ -94,6 +95,10 @@ public class InstallToPaletteAction extends CookieAction {
      */
     protected String iconResource() {
         return "org/netbeans/modules/form/resources/addToPalette.gif"; // NOI18N
+    }
+
+    protected boolean asynchronous() {
+        return false;
     }
 
     /**
