@@ -57,7 +57,7 @@ public class EditorWarmUpTask implements Runnable{
      * The default threshold for hotspot method compilation
      * is 1500 invocations.
      */
-    private static final int ARTIFICIAL_DOCUMENT_LINE_COUNT = 1700;
+    private static final int ARTIFICIAL_DOCUMENT_LINE_COUNT = 1510;
 
     /**
      * Number of times a long document is assigned to the editor pane
@@ -78,7 +78,7 @@ public class EditorWarmUpTask implements Runnable{
     /**
      * Number of paints to be simulated.
      */
-    private static final int PAINT_COUNT = 30;
+    private static final int PAINT_COUNT = 1;
     
 
     private static final boolean debug
@@ -222,15 +222,17 @@ public class EditorWarmUpTask implements Runnable{
                     }
 
                     // Test modelToView and viewToModel
-                    float rootViewYSpan = rootView.getPreferredSpan(View.Y_AXIS);
-                    float maybeLineSpan = rootViewYSpan / viewCount;
-                    Point point = new Point();
-                    point.x = 5; // likely somewhere inside the first char on the line
-                    for (int j = 0; j < viewCount; j++) {
-                        pane.modelToView(rootView.getView(j).getStartOffset());
+                    if (false) { // Disabled because of #
+                        float rootViewYSpan = rootView.getPreferredSpan(View.Y_AXIS);
+                        float maybeLineSpan = rootViewYSpan / viewCount;
+                        Point point = new Point();
+                        point.x = 5; // likely somewhere inside the first char on the line
+                        for (int j = 0; j < viewCount; j++) {
+                            pane.modelToView(rootView.getView(j).getStartOffset());
 
-                        point.y = (int)(j * maybeLineSpan);
-                        int pos = pane.viewToModel(point);
+                            point.y = (int)(j * maybeLineSpan);
+                            int pos = pane.viewToModel(point);
+                        }
                     }
 
                     int rootViewWidth = (int)rootView.getPreferredSpan(View.X_AXIS);
