@@ -199,6 +199,8 @@ public class IOManager {
     * Prints given text to the output.
     */
     public void println (final String text, final int where, final Line line) {
+        if (text == null)
+            throw new NullPointerException ();
         synchronized (buffer) {
             buffer.addLast (new Text (text, where, line));
         }

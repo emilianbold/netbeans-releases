@@ -127,7 +127,11 @@ public class JPDAConnect extends Task {
                             // to be inside RP thread.
                             if (transport.equals ("dt_socket"))
                                 try {
-                                    JPDADebugger.attach (host, Integer.parseInt (address), new Object[] {sourcePath});
+                                    JPDADebugger.attach (
+                                        host, 
+                                        Integer.parseInt (address), 
+                                        new Object[] {sourcePath}
+                                    );
                                 } catch (NumberFormatException e) {
                                     throw new BuildException ("address attribute must specify port number for dt_socket connection", getLocation ());
                                 }
