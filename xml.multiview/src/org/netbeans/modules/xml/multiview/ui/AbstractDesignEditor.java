@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.xml.multiview.ui;
 
-import java.awt.Dimension;
 import java.awt.BorderLayout;
 import java.beans.*;
 import javax.swing.JComponent;
@@ -21,13 +20,11 @@ import javax.swing.ActionMap;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
 
-import org.openide.util.Lookup;
 import org.openide.nodes.*;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.windows.TopComponent;
 import org.openide.util.HelpCtx;
-import org.openide.util.Utilities;
 import org.openide.actions.SaveAction;
 
 /**
@@ -52,23 +49,32 @@ public abstract class AbstractDesignEditor extends TopComponent implements Explo
     
     public AbstractDesignEditor() {
         manager = new ExplorerManager();
-        org.openide.util.RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                ActionMap map = AbstractDesignEditor.this.getActionMap ();
-                SaveAction act = (SaveAction)SaveAction.findObject(SaveAction.class);
-                KeyStroke stroke = (KeyStroke)act.getValue(Action.ACCELERATOR_KEY);
-                getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(stroke, "save"); //NOI18N
-                map.put("save", act); //NOI18N
-                // following line tells the top component which lookup should be associated with it
-                associateLookup (ExplorerUtils.createLookup (manager, map));
-            }
-        },1000);
+        initSaveAction();
         initComponents();
     }
-    
+
+    private void initSaveAction() {
+        ActionMap map = AbstractDesignEditor.this.getActionMap();
+        SaveAction act = (SaveAction) SaveAction.findObject(SaveAction.class);
+        if (act != null) {
+            KeyStroke stroke = (KeyStroke) act.getValue(Action.ACCELERATOR_KEY);
+            getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(stroke, "save"); //NOI18N
+            map.put("save", act); //NOI18N
+            // following line tells the top component which lookup should be associated with it
+            associateLookup(ExplorerUtils.createLookup(manager, map));
+        } else {
+            // let's try it later
+            org.openide.util.RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    initSaveAction();
+                }
+            }, 500);
+        }
+    }
+
     /**
      * Creates a new instance of ComponentPanel
-     * @param panel The PanelView which will provide the node tree for the structure view
+     * @param contentView The PanelView which will provide the node tree for the structure view
      *              and the set of panels the nodes map to.
      */
     public AbstractDesignEditor(PanelView contentView){
