@@ -332,8 +332,12 @@ public class LocaleNodeCustomizer extends JPanel {
         try {
             entry.getNodeDelegate().getNewTypes()[0].create();
             
-            // Update keys.
-            keyList.setListData(retrieveKeys(entry));
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    // Update keys.
+                    keyList.setListData(retrieveKeys(entry));
+                }
+            });
         } catch(IOException ioe) {
             if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
                 ioe.printStackTrace();
