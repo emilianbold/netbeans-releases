@@ -232,7 +232,7 @@ final class LockedPhadhail implements Phadhail, PhadhailListener {
                 ev = PhadhailNameEvent.create(this, ev.getOldName(), ev.getNewName());
                 Iterator it = listeners.iterator();
                 while (it.hasNext()) {
-                    ((PhadhailListener)it.next()).childrenChanged(ev);
+                    ((PhadhailListener)it.next()).nameChanged(ev);
                 }
             }
         } finally {
