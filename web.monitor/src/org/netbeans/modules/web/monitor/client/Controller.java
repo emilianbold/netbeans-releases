@@ -106,7 +106,9 @@ class Controller  {
     private Date startDate;
     
     private Controller() {
-        startDate = new Date();
+        // TODO: setting the startup date to 30s earlier from now to prevent deletion of the 
+        // first request (#56880), the ideal fix should be to use the IDE startup time
+        startDate = new Date(System.currentTimeMillis() - 30000);
 	currBeans = new Hashtable();
 	saveBeans = new Hashtable();
 	createNodeStructure();
