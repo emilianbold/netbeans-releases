@@ -84,6 +84,8 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
     static final String gtabfile = "org/netbeans/modules/db/resources/explorer.plist"; //NOI18N
     static final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); // NOI18N
 
+    private boolean connected = false;
+
     transient boolean passwordWasSet = false;
     
     public static Map getGlobalNodeInfo() {
@@ -440,7 +442,11 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
         if (con != null) {
             if (oldval != null && oldval.equals(con)) return;
             put(CONNECTION, con);
-        } else remove(CONNECTION);
+            setConnected(true);
+        } else {
+            remove(CONNECTION);   
+            setConnected(false);
+        }
 
         // Check if node is readonly or not.
 
@@ -454,6 +460,14 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
 
         getConnectionPCS().firePropertyChange(CONNECTION, oldval, con);
 
+    }
+
+    public void setConnected(boolean connected) {
+        this.connected = connected;
+    }
+    
+    public boolean isConnected() {
+        return connected;
     }
 
     public DBConnection getDatabaseConnection()
