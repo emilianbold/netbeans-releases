@@ -33,6 +33,7 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.SourceCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -573,7 +574,9 @@ public class TestUtil {
                 JavaProjectConstants.SOURCES_TYPE_JAVA);
         for (int i = 0; i < sourceGroups.length; i++) {
             SourceGroup srcGroup = sourceGroups[i];
-            if (srcGroup.contains(file)) {
+            FileObject root = srcGroup.getRootFolder();
+            if (((file==root)||(FileUtil.isParentOf(root,file))) && 
+                 srcGroup.contains(file)) {
                 return srcGroup;
             }
         }
