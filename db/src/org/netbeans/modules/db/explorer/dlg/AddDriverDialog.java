@@ -33,8 +33,8 @@ public class AddDriverDialog
 {
 	boolean result = false;
 	Dialog dialog = null;
-	String drv = null, name = null;
-	JTextField namefield, drvfield;
+	String drv = null, name = null, prefix = null;
+	JTextField namefield, drvfield, prefixfield;
 	
 	public AddDriverDialog()
 	{  
@@ -84,6 +84,25 @@ public class AddDriverDialog
             drvfield = new JTextField(35);
             layout.setConstraints(drvfield, con);
             pane.add(drvfield);
+
+			// Database prefix title and field
+		
+			label = new JLabel(bundle.getString("AddDriverDatabasePrefix"));
+			con.anchor = GridBagConstraints.WEST;
+			con.insets = new java.awt.Insets (2, 2, 2, 2);
+            con.gridx = 0;
+            con.gridy = 2;
+			layout.setConstraints(label, con);
+			pane.add(label);
+        
+            con.fill = GridBagConstraints.HORIZONTAL;
+            con.weightx = 1.0;
+            con.gridx = 1;
+            con.gridy = 2;
+			con.insets = new java.awt.Insets (2, 2, 2, 2);
+            prefixfield = new JTextField(35);
+            layout.setConstraints(prefixfield, con);
+            pane.add(prefixfield);
          
 			// Blah blah about driver accessibility
 		
@@ -91,13 +110,14 @@ public class AddDriverDialog
 			notes.setLineWrap(true);
 			notes.setWrapStyleWord(true);
 			notes.setFont(label.getFont());
+			notes.setEnabled(false);
 			notes.setBackground(label.getBackground());
             con.weightx = 1.0;
             con.gridwidth = 2;
             con.fill = GridBagConstraints.HORIZONTAL;
 			con.insets = new java.awt.Insets (2, 2, 2, 2);
             con.gridx = 0;
-            con.gridy = 2;
+            con.gridy = 3;
 			layout.setConstraints(notes, con);
 			pane.add(notes);
                 
@@ -108,7 +128,9 @@ public class AddDriverDialog
 						result = true;
 						name = namefield.getText();
 						drv = drvfield.getText();
-						dispcond = (drv != null && drv.length() > 0);
+						prefix = prefixfield.getText();
+						if (prefix == null) prefix = "";
+						dispcond = (drv != null && drv.length() > 0 && name != null && name.length() > 0);
 					} else result = false;
 					
 					if (dispcond) {
@@ -134,6 +156,6 @@ public class AddDriverDialog
 
 	public DatabaseDriver getDriver()
 	{
-		return new DatabaseDriver((name.length() > 0 ? name : null), drv);
+		return new DatabaseDriver(name, drv, prefix);
 	}
 }
