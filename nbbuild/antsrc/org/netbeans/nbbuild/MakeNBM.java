@@ -302,7 +302,17 @@ public class MakeNBM extends MatchingTask {
 			ps.print ("  <description>");
 			ps.print (description.getText ());
 			ps.println ("</description>");
-		    }
+                        /* Not needed since Auto Update now reads this attribute directly:
+		    } else {
+                        // Automatically inherit description from manifest.
+                        String longDesc = attr.getValue ("OpenIDE-Module-Long-Description");
+                        if (longDesc != null) {
+                            ps.print ("  <description>");
+                            ps.print (longDesc);
+                            ps.println ("</description>");
+                        }
+                        */
+                    }
 		    // Write manifest attributes.
 		    ps.print ("  <manifest ");
 		    boolean firstline = true;
@@ -313,6 +323,7 @@ public class MakeNBM extends MatchingTask {
 			else
 			    ps.print ("            ");
 			Map.Entry entry = (Map.Entry) it.next ();
+                        // [PENDING] ought to escape the value for characters in ["&<>]
 			ps.println (entry.getKey () + "=\"" + entry.getValue () + "\"");
 		    }
 		    ps.println ("  />");
