@@ -136,7 +136,9 @@ public class OptionsAction extends CallableSystemAction {
         private static OptionsPanel singleton;
         /** Formatted title of this view */
         private static MessageFormat formatTitle;
-
+        
+        private static String TEMPLATES_DISPLAY_NAME = NbBundle.getBundle (org.netbeans.core.NbTopManager.class).getString("CTL_Templates_name"); // NOI18N
+        
         /** list of String[] that should be expanded when the tree is shown */
         private Collection toExpand;
         private transient boolean expanded;
@@ -153,10 +155,30 @@ public class OptionsAction extends CallableSystemAction {
         }
         
         public HelpCtx getHelpCtx () {
-            return ExplorerPanel.getHelpCtx (
+            HelpCtx defaultHelp = new HelpCtx (HELP_ID);
+            HelpCtx help = ExplorerPanel.getHelpCtx (
                 getExplorerManager ().getSelectedNodes (),
-                new HelpCtx (HELP_ID)
+                defaultHelp
             );
+            // bugfix #23551, add help id to subnodes of Templates category
+            // this check prevents mixed help ids on more selected nodes
+            if (!defaultHelp.equals (help)) {
+                // try if selected node isn't template
+                Node n = getExplorerManager ().getSelectedNodes ()[0];
+                Node parent = n.getParentNode ();
+                if (parent != null && TEMPLATES_DISPLAY_NAME.equals (parent.getDisplayName ())) {
+                    // it's template, return specific help id
+                    DataObject dataObj = (DataObject)n.getCookie (DataObject.class);
+                    if (dataObj != null) {
+                        Object o = dataObj.getPrimaryFile ().getAttribute ("helpID"); // NOI18N
+                        if (o != null) {
+                            return new HelpCtx (o.toString ());
+                        }
+                    }
+                    return new HelpCtx ("org.netbeans.core.actions.OptionsAction$TemplatesSubnode"); // NOI18N
+                }
+            }
+            return help;
         }
 
         /** Accessor to the singleton instance */
@@ -504,6 +526,6 @@ public class OptionsAction extends CallableSystemAction {
                 }
             }
         }
-
+        
     } // end of inner class OptionsPanel
 }
