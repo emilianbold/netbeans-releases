@@ -186,32 +186,44 @@ class WebActionProvider implements ActionProvider {
                         return;
                     }
                 } else {
-                    FileObject[] javaFiles = findJavaSources(context);
-                    FileObject servlet = javaFiles[0];
-                    String executionUri = (String)servlet.getAttribute(SetExecutionUriAction.ATTR_EXECUTION_URI);
-                    if (executionUri!=null) {
-                        p.setProperty("client.urlPart", executionUri); //NOI18N
-                    } else {
-                        WebModule webModule = WebModule.getWebModule(servlet);
-                        String[] urlPatterns = SetExecutionUriAction.getServletMappings(webModule,servlet);
-                        if (urlPatterns!=null && urlPatterns.length>0) {
-                            ServletUriPanel uriPanel = new ServletUriPanel(urlPatterns,null,true);
-                            DialogDescriptor desc = new DialogDescriptor(uriPanel,
-                                NbBundle.getMessage (SetExecutionUriAction.class, "TTL_setServletExecutionUri"));
-                            Object res = DialogDisplayer.getDefault().notify(desc);
-                            if (res.equals(NotifyDescriptor.YES_OPTION)) {
-                                p.setProperty("client.urlPart", uriPanel.getServletUri()); //NOI18N
-                                try {
-                                    servlet.setAttribute(SetExecutionUriAction.ATTR_EXECUTION_URI,uriPanel.getServletUri());
-                                } catch (IOException ex){}
-                            } else return;
+                    FileObject[] htmlFiles = findHtml(context);
+                    if ((htmlFiles != null) && (htmlFiles.length>0)) {
+                        String url = "/" + FileUtil.getRelativePath(WebModule.getWebModule (htmlFiles[0]).getDocumentBase (), htmlFiles[0]); // NOI18N
+                        if (url != null) {
+                            p.setProperty("client.urlPart", url); //NOI18N
                         } else {
-                            String mes = java.text.MessageFormat.format (
-                                    NbBundle.getMessage (SetExecutionUriAction.class, "TXT_missingServletMappings"),
-                                    new Object [] {servlet.getName()});
-                            NotifyDescriptor desc = new NotifyDescriptor.Message(mes,NotifyDescriptor.Message.ERROR_MESSAGE);
-                            DialogDisplayer.getDefault().notify(desc);
                             return;
+                        }
+                    } else {
+                        FileObject[] javaFiles = findJavaSources(context);
+                        if ((javaFiles != null) && (javaFiles.length>0)) {
+                            FileObject servlet = javaFiles[0];
+                            String executionUri = (String)servlet.getAttribute(SetExecutionUriAction.ATTR_EXECUTION_URI);
+                            if (executionUri!=null) {
+                                p.setProperty("client.urlPart", executionUri); //NOI18N
+                            } else {
+                                WebModule webModule = WebModule.getWebModule(servlet);
+                                String[] urlPatterns = SetExecutionUriAction.getServletMappings(webModule,servlet);
+                                if (urlPatterns!=null && urlPatterns.length>0) {
+                                    ServletUriPanel uriPanel = new ServletUriPanel(urlPatterns,null,true);
+                                    DialogDescriptor desc = new DialogDescriptor(uriPanel,
+                                        NbBundle.getMessage (SetExecutionUriAction.class, "TTL_setServletExecutionUri"));
+                                    Object res = DialogDisplayer.getDefault().notify(desc);
+                                    if (res.equals(NotifyDescriptor.YES_OPTION)) {
+                                        p.setProperty("client.urlPart", uriPanel.getServletUri()); //NOI18N
+                                        try {
+                                            servlet.setAttribute(SetExecutionUriAction.ATTR_EXECUTION_URI,uriPanel.getServletUri());
+                                        } catch (IOException ex){}
+                                    } else return;
+                                } else {
+                                    String mes = java.text.MessageFormat.format (
+                                            NbBundle.getMessage (SetExecutionUriAction.class, "TXT_missingServletMappings"),
+                                            new Object [] {servlet.getName()});
+                                    NotifyDescriptor desc = new NotifyDescriptor.Message(mes,NotifyDescriptor.Message.ERROR_MESSAGE);
+                                    DialogDisplayer.getDefault().notify(desc);
+                                    return;
+                                }
+                            }
                         }
                     }
                 }
