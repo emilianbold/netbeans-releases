@@ -15,6 +15,9 @@
 package org.netbeans.modules.i18n;
 
 
+import java.util.ResourceBundle;
+import javax.swing.JPanel;
+
 import org.openide.util.NbBundle;
 
 
@@ -25,20 +28,23 @@ import org.openide.util.NbBundle;
  * @author  Peter Zavadsky
  */
 
-public class InfoPanel extends javax.swing.JPanel {
+public class InfoPanel extends JPanel {
 
+    /** Bundle in which are internationalized string from this source. */
+    private static final ResourceBundle bundle = NbBundle.getBundle(I18nModule.class);
 
+    
     /** Creates new form InfoPanel */
     public InfoPanel() {
         initComponents ();
     }
     
     /** Fills values. */
-    public void setLocalizeInfo(LocalizeSupport.LocalizeInfo localizeInfo) {
-        stringText.setText(localizeInfo.getHardString());
-        foundInText.setText(localizeInfo.getHardLine());
-        componentText.setText(localizeInfo.getComponentName());
-        propertyText.setText(localizeInfo.getPropertyName());
+    public void setI18nInfo(I18nSupport.I18nInfo i18nInfo) {
+        stringText.setText(i18nInfo.getHardString());
+        foundInText.setText(i18nInfo.getHardLine());
+        componentText.setText(i18nInfo.getComponentName());
+        propertyText.setText(i18nInfo.getPropertyName());
     }
     
     
@@ -59,7 +65,7 @@ public class InfoPanel extends javax.swing.JPanel {
         setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints1;
         
-        stringLabel.setText(NbBundle.getBundle(InfoPanel.class).getString("CTL_StringLabel"));
+        stringLabel.setText(bundle.getString("CTL_StringLabel"));
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.insets = new java.awt.Insets(12, 12, 0, 0);
@@ -76,7 +82,7 @@ public class InfoPanel extends javax.swing.JPanel {
         add(stringText, gridBagConstraints1);
         
         
-        foundInLabel.setText(NbBundle.getBundle(InfoPanel.class).getString("CTL_FoundInLabel"));
+        foundInLabel.setText(bundle.getString("CTL_FoundInLabel"));
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
@@ -97,7 +103,7 @@ public class InfoPanel extends javax.swing.JPanel {
         add(foundInText, gridBagConstraints1);
         
         
-        componentLabel.setText(NbBundle.getBundle(InfoPanel.class).getString("CTL_ComponentLabel"));
+        componentLabel.setText(bundle.getString("CTL_ComponentLabel"));
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
@@ -118,7 +124,7 @@ public class InfoPanel extends javax.swing.JPanel {
         add(componentText, gridBagConstraints1);
         
         
-        propertyLabel.setText(NbBundle.getBundle(InfoPanel.class).getString("CTL_PropertyLabel"));
+        propertyLabel.setText(bundle.getString("CTL_PropertyLabel"));
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
