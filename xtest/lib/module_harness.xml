@@ -18,6 +18,10 @@ Microsystems, Inc. All Rights Reserved.
     <property name="xtest.workdir" location="work"/>
     <!-- location for results from the harness -->
     <property name="xtest.results" location="results"/>
+
+    <property name="xtest.tmpdir" location="${xtest.workdir}/tmpdir"/>
+    <property name="xtest.sketchpad" location="${xtest.workdir}/user/sketch-pad"/>
+
     <property name="xtest.module" value="Unknown"/>
     
     <!-- hard timeout for single testbag (in miliseconds)-->    
@@ -151,6 +155,9 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${xtest.results}"/>
         <getResultsDirs testRunDirProperty="xtest.results.testrun.dir"/>
         <testruninfo outfile="${xtest.results.testrun.dir}/xmlresults/testrun.xml"/>
+
+        <mkdir dir="${xtest.workdir}/user/sketch-pad"/>
+        <mkdir dir="${xtest.workdir}/tmpdir"/>
         
         <test-executor paramClasspathProp="tbag.classpath"
                        paramPatternsetInProp="tbag.patternset.include"
@@ -375,6 +382,8 @@ Microsystems, Inc. All Rights Reserved.
             <sysproperty key="work.dir" value="${xtest.workdir}/sys"/>
             <sysproperty key="xtest.workdir" value="${xtest.workdir}"/>
             <sysproperty key="system.dir" value="${xtest.workdir}/sys"/>
+            <sysproperty key="xtest.tmpdir" value="${xtest.tmpdir}"/>
+            <sysproperty key="xtest.sketchpad" value="${xtest.sketchpad}"/>
             <sysproperty key="nbjunit.workdir" value="${xtest.workdir}/user"/>
             <sysproperty key="junit.properties.file" value="${junit.properties.file}"/>
             <syspropertyfile file="${test.propertyfile}"/>
@@ -433,15 +442,11 @@ Microsystems, Inc. All Rights Reserved.
     -->
     
     <target name="move-results">
-        <!-- move results from workdir to result dir --> 
-        <move toDir="${xtest.current.results}">
-            <fileset dir="${xtest.workdir}" defaultexcludes="no">                        
-                <exclude name="sys/**"/>                
-            </fileset>
-        </move>
-        
-        <copy toDir = "${xtest.current.results}">
-            <fileset dir="${xtest.workdir}">
+        <!-- copy results from workdir to result dir --> 
+        <copy toDir="${xtest.current.results}">
+            <fileset dir="${xtest.workdir}" defaultexcludes="no">
+                <include name="user/**"/>
+                <include name="xmlresults/**"/>
                 <include name="sys/userdata.properties"/>
             </fileset>
         </copy>
@@ -452,7 +457,11 @@ Microsystems, Inc. All Rights Reserved.
         
         <!--  now delete all the stuff -->
         <delete dir="${xtest.workdir}/sys/tests" />
-        <delete dir="${xtest.workdir}/user"/>
+        <delete includeEmptyDirs="true">
+            <fileset dir="${xtest.workdir}/user">
+                <exclude name="sketch-pad/**"/>
+            </fileset>
+        </delete>
         <delete dir="${xtest.workdir}/xmlresults"/>
     </target>
     
@@ -462,21 +471,26 @@ Microsystems, Inc. All Rights Reserved.
          <!-- copy the ide.log and the zip -->
         <copy file="${xtest.workdir}/sys/ide.zip" todir="${xtest.current.results}/sys/ide"/>        
         <copy file="${xtest.workdir}/sys/ide/system/ide.log" todir="${xtest.current.results}/sys/ide"/>
-        <copy todir="${xtest.current.results}/sys/ide/output">
-           <fileset dir="${xtest.workdir}/sys/ide/output"/>
-        </copy>
+        <available file="${xtest.workdir}/sys/ide/output" type="dir" property="xtest.ide.output.exists"/>
+        <antcall target="copy-output"/>
          <!-- delete zip and ide workdir -->
         <delete file="${xtest.workdir}/sys/ide.zip"/>
         <!--
         <delete dir="${xtest.workdir}/sys/ide"/>
         -->
     </target>
+
+    <target name="copy-output" if="xtest.ide.output.exists">
+        <copy todir="${xtest.current.results}/sys/ide/output">
+           <fileset dir="${xtest.workdir}/sys/ide/output"/>
+        </copy>
+    </target>
     
     <!-- ======== -->
     <!-- Building -->
     <!-- ======== -->
     
-    <target name="compiler-launcher" depends="config" unless="xtest.distexec">
+    <target name="compiler-launcher" depends="config,deleteworkdir" unless="xtest.distexec">
        <test-compiler paramClasspathProp="tbag.classpath"
                         paramPatternsetInProp="tbag.patternset.include"
                         paramPatternsetExProp="tbag.patternset.exclude"
@@ -539,7 +553,21 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Removes results from previous test execution of given testtype  -->
     <!-- xtest.testtype is defined either by default or by test executor -->    
     <target name="cleanworkdir" description="Deletes working directory">
-        <delete dir="${xtest.workdir}"/>
+        <available file="${xtest.workdir}" property="xtest.workdir.available"/>
+        <antcall target="cleanworkdir2"/>
+    </target>
+   
+    <target name="cleanworkdir2" if="xtest.workdir.available">
+        <delete includeEmptyDirs="true">
+           <fileset dir="${xtest.workdir}">
+             <exclude name="tmpdir/**"/>
+             <exclude name="user/sketch-pad/**"/>
+           </fileset>
+        </delete>
+    </target>
+        
+    <target name="deleteworkdir" description="Deletes working directory">
+        <delete includeEmptyDirs="true" dir="${xtest.workdir}"/>
     </target>
     
     <target name="cleanresults" description="Deletes results" depends="cleanworkdir">
