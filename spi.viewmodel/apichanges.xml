@@ -140,12 +140,33 @@ Microsystems, Inc. All Rights Reserved.
         <author login="jjancura"/>
         <compatibility binary="incompatible" source="incompatible" deletion="yes" addition="yes" modification="yes"/>
         <description>
-                ViewModelAPI currently supports two types of changes only:
-                    1) all tree is changed
-                    2) node and all subnodes are changed
+            NB4.0 version of ViewModelAPI had several event firing related issues:
 
-                We need more fine grained firing. This change has been already discussed on
-                DevRev - see http://jupiter.czech.sun.com/wiki/view/Devrev/DevRevMeeting050118.
+            1) It supported two types of changes only:
+                i) whole tree has been changed notification
+                ii) node and all subnodes change notification
+                There where no support for small grained changes (one table cell change).
+
+            2) The same listener type (TreeModelListener) has been used for all model types (TreeModel, NodeModel, ...)
+            3) There was no TreeModelEvent, so evolving of this api was problematic.
+
+            I have done folowing incompatible api change, to fix this problem:
+
+            1) TreeModelListener has been renamed to ModelListener (Because its used for other models too).
+            2) ModelEvent class has been added.
+            3) Two methods removed from TreeModelListener:
+                public void treeNodeChanged (Object node);
+                public void treeNodeChanged (TreeModelEvent event);
+            and replaced by folowing method:
+                public void modelChanged (ModelEvent event);
+            4) three innerclasses added to ModelEvent
+                TreeChanged
+                TableValueChanged
+                NodeChanged
+            These three innerclasses are designed to support firing of all kinds of model changes.
+            TreeChanged - Designed to notify about chages of whole tree content / structure. This event has no parameters.
+            TableValueChanged - Designed to notify about chages of one cell in table. Two parameters: Object row, String columnID
+            NodeChanged - Designed to notify about chages of one node - icon and display name. One parameter: Object node.
         </description>
         <issue number="57273"/>
     </change>
