@@ -610,6 +610,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
     <!-- XXX delete (and @COMPILER@ token below too) when deprecated by Projects: -->
     <property name="compiler-docs-location" value="http://www.netbeans.org/download/dev/javadoc/CompilerAPI"/>
     <property name="javahelp-docs-location" value="http://www.netbeans.org/download/dev/javadoc/JavaHelpAPI"/>
+    <property name="java-api-docs-location" value="http://www.netbeans.org/download/dev/javadoc/JavaSupportAPIs"/>
     <tstamp/>
     <property name="open-apis-footer" value='&lt;span class="footnote"&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2003 Sun Microsystems, Inc. All rights reserved.&lt;/span&gt;'/>
     <echo message="Build Open API documentation..."/>
@@ -692,6 +693,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
       <replacefilter token="@OPENIDE/IO@" value="${io-docs-location}"/>
       <replacefilter token="@OPENIDE/COMPILER@" value="${compiler-docs-location}"/>
       <replacefilter token="@CORE/JAVAHELP@" value="${javahelp-docs-location}"/>
+      <replacefilter token="@JAVA/API@" value="${java-api-docs-location}"/>
       <replacefilter token="@FOOTER@" value="${open-apis-footer}"/>
     </replace>
     <replace dir="javadoc/OpenAPIs" token="@TOP@" value="">
