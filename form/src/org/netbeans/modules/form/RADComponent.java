@@ -53,6 +53,7 @@ public class RADComponent {
   private String componentName;
   
   private Node.PropertySet[] beanPropertySets;
+  private Node.Property[] syntheticProperties;
   private Node.Property[] beanProperties;
   private Node.Property[] beanExpertProperties;
   private Node.Property[] beanEvents;
@@ -103,6 +104,7 @@ public class RADComponent {
     
     nameToProperty = new HashMap ();
 
+    syntheticProperties = createSyntheticProperties ();
     beanProperties = createBeanProperties ();
     beanExpertProperties = createBeanExpertProperties ();
 
@@ -228,32 +230,38 @@ public class RADComponent {
   }
   
 // -----------------------------------------------------------------------------
-// Protected interface
+// Package-private Access to component Properties
 
-  protected Node.Property[] getSyntheticProperties () {
-    return getFormManager ().getCodeGenerator ().getSyntheticProperties (this);
+  Node.Property[] getSyntheticProperties () {
+    return syntheticProperties;
   }
 
-  protected Node.Property[] getComponentProperties () {
+  Node.Property[] getComponentProperties () {
     return beanProperties;
   }
   
-  protected Node.Property[] getComponentExpertProperties () {
+  Node.Property[] getComponentExpertProperties () {
     return beanExpertProperties;
   }
 
-  protected Node.Property[] getComponentEvents () {
+  Node.Property[] getComponentEvents () {
     return beanEvents;
   }
 
+// -----------------------------------------------------------------------------
+// Protected interface
+
+  protected Node.Property[] createSyntheticProperties () {
+    return getFormManager ().getCodeGenerator ().getSyntheticProperties (this);
+  }
+  
   protected Node.Property[] createBeanProperties () {
     PropertyDescriptor[] props = beanInfo.getPropertyDescriptors ();
     ArrayList nodeProps = new ArrayList ();
     for (int i = 0; i < props.length; i++) {
       if (!props[i].isHidden ()) {
         Node.Property prop = createProperty (props[i]);
-        if (prop != null) // [PENDING - temporary]
-          nodeProps.add (prop);
+        nodeProps.add (prop);
       }
     }
 
@@ -269,8 +277,7 @@ public class RADComponent {
     for (int i = 0; i < props.length; i++) {
       if (!props[i].isHidden ()) {
         Node.Property prop = createProperty (props[i]);
-        if (prop != null) // [PENDING - temporary]
-          nodeProps.add (prop);
+        nodeProps.add (prop);
       }
     }
 
@@ -280,36 +287,7 @@ public class RADComponent {
     return np;
   }
 
-  Node.Property getPropertyByName (String name) {
-    return (Node.Property) nameToProperty.get (name);
-  }
-  
-  private Node.Property createProperty (final PropertyDescriptor desc) {
-    Node.Property prop;
-    if (desc instanceof IndexedPropertyDescriptor) {
-      return null;
-/*      IndexedPropertyDescriptor idesc = (IndexedPropertyDescriptor)desc;
-
-      prop =  new IndexedPropertySupport (
-        bean, idesc.getPropertyType (),
-        idesc.getIndexedPropertyType(), idesc.getReadMethod (), idesc.getWriteMethod (),
-        idesc.getIndexedReadMethod (), idesc.getIndexedWriteMethod ()
-      );
-      prop.setName (desc.getName ());
-      prop.setDisplayName (desc.getDisplayName ());
-      prop.setShortDescription (desc.getShortDescription ()); */
-    } else { 
-      prop = new RADProperty (desc);
-      prop.setName (desc.getName ());
-      prop.setDisplayName (desc.getDisplayName ());
-      prop.setShortDescription (desc.getShortDescription ());
-    }
-
-    nameToProperty.put (desc.getName (), prop);
-    return prop;
-  }
-
-  private Node.Property[] createEventsProperties () {
+  protected Node.Property[] createEventsProperties () {
     eventsList = new EventsList (this);
 
     Node.Property[] nodeEvents = new Node.Property[eventsList.getEventCount ()];
@@ -377,6 +355,26 @@ public class RADComponent {
 
   }
   
+  Node.Property getPropertyByName (String name) {
+    return (Node.Property) nameToProperty.get (name);
+  }
+  
+  private Node.Property createProperty (final PropertyDescriptor desc) {
+    Node.Property prop;
+    if (desc instanceof IndexedPropertyDescriptor) {
+      prop = new RADIndexedProperty ((IndexedPropertyDescriptor)desc);
+    } else { 
+      prop = new RADProperty (desc);
+    }
+
+    prop.setName (desc.getName ());
+    prop.setDisplayName (desc.getDisplayName ());
+    prop.setShortDescription (desc.getShortDescription ());
+
+    nameToProperty.put (desc.getName (), prop);
+    return prop;
+  }
+
   void restorePropertyValue (PropertyDescriptor desc, Object value) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
     setPropertyValue (desc, value);
     Object defValue = defaultPropertyValues.get (desc.getName ());
@@ -462,9 +460,15 @@ public class RADComponent {
     RADProperty prop = (RADProperty)nameToProperty.get(desc.getName ());
     return (prop == null) ? null : prop.getCurrentEditor ();
   }
+
+  
 // -----------------------------------------------------------------------------
 // Debug methods
 
+  public String toString () {
+    return super.toString () + ", name: "+getName ()+", class: "+getComponentClass ()+", beaninfo: "+getBeanInfo () + ", instance: "+getComponentInstance ();
+  }
+  
   public void debugChangedValues () {
     if (System.getProperty ("netbeans.debug.form.full") != null) {
       System.out.println("-- debug.form: Changed property values in: "+this+" -------------------------");
@@ -622,6 +626,198 @@ public class RADComponent {
       return editor;
     }
   }
+
+  
+  class RADIndexedProperty extends Node.IndexedProperty {
+    private FormPropertyEditor editor;
+    private IndexedPropertyDescriptor desc;
+    
+    RADIndexedProperty (IndexedPropertyDescriptor desc) {
+      super (desc.getPropertyType (), desc.getIndexedPropertyType ());
+      this.desc = desc;
+    }
+
+    public PropertyDescriptor getPropertyDescriptor () {
+      return desc;
+    }
+
+    public PropertyEditor getCurrentEditor () {
+      FormPropertyEditor ed = (FormPropertyEditor)getPropertyEditor ();
+      if (ed != null) {
+        return ed.getCurrentEditor ();
+      }
+      return null;
+    }
+    
+    /** Test whether the property is readable.
+    * @return <CODE>true</CODE> if it is
+    */
+    public boolean canRead () {
+      return (desc.getReadMethod () != null);
+    }
+
+    /** Get the value.
+    * @return the value of the property
+    * @exception IllegalAccessException cannot access the called method
+    * @exception IllegalArgumentException wrong argument
+    * @exception InvocationTargetException an exception during invocation
+    */
+    public Object getValue () throws
+    IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+      return getPropertyValue (desc);
+    }
+
+    /** Test whether the property is writable.
+    * @return <CODE>true</CODE> if the read of the value is supported
+    */
+    public boolean canWrite () {
+      return (desc.getWriteMethod () != null);
+    }
+
+    /** Set the value.
+    * @param val the new value of the property
+    * @exception IllegalAccessException cannot access the called method
+    * @exception IllegalArgumentException wrong argument
+    * @exception InvocationTargetException an exception during invocation
+    */
+    public void setValue (Object val) throws IllegalAccessException,
+    IllegalArgumentException, InvocationTargetException {
+      Object old = null;
+      
+      if (canRead ()) {
+        try {
+          old = getValue ();
+        } catch (IllegalArgumentException e) {  // no problem -> keep null
+        } catch (IllegalAccessException e) {    // no problem -> keep null
+        } catch (InvocationTargetException e) { // no problem -> keep null
+        }
+      }
+      
+      try {
+        setPropertyValue (desc, val);
+      } catch (IllegalArgumentException e) {  // no problem -> keep null
+      } catch (IllegalAccessException e) {    // no problem -> keep null
+      } catch (InvocationTargetException e) { // no problem -> keep null
+      }
+      
+      Object defValue = defaultPropertyValues.get (desc.getName ());
+      if ((defValue != null) && (val != null) && (defValue.equals (val))) {
+        // resetting to default value
+        changedPropertyValues.remove (RADIndexedProperty.this);
+      } else {
+        // add the property to the list of changed properties
+        changedPropertyValues.put (RADIndexedProperty.this, val);
+      }
+      debugChangedValues ();
+      getFormManager ().firePropertyChanged (RADComponent.this, desc.getName (), old, val);
+    }
+
+    /** Test whether the property had a default value.
+    * @return <code>true</code> if it does
+    */
+    public boolean supportsDefaultValue () {
+      return true;
+    }
+
+    /** Restore this property to its default value, if supported.
+    */
+    public void restoreDefaultValue () {
+      // 1. remove the property from list of changed values, so that the code for it is not generated
+      changedPropertyValues.remove (RADIndexedProperty.this);
+      
+      // 2. restore the default property value
+      Object def = defaultPropertyValues.get (desc.getName ());
+      if (def != null) {
+        try {
+          setValue (def);
+        } catch (IllegalAccessException e) {
+          // what to do, ignore...
+        } catch (IllegalArgumentException e) {
+          // what to do, ignore...
+        } catch (InvocationTargetException e) {
+          // what to do, ignore...
+        }
+      }
+      // [PENDING - test]
+    }
+
+    /* Returns property editor for this property.
+    * @return the property editor or <CODE>null</CODE> if there should not be
+    *    any editor.
+    * /
+    public PropertyEditor getPropertyEditor () {
+      if (editor == null) {
+        PropertyEditor defaultEditor = null;
+        
+          if (isChangedValue (desc)) {
+          defaultEditor = getUsedEditor (desc);
+        } else if (desc.getPropertyEditorClass () != null) {
+          try {
+            defaultEditor = (PropertyEditor) desc.getPropertyEditorClass ().newInstance ();
+          } catch (InstantiationException ex) {
+          } catch (IllegalAccessException iex) {
+          }
+        } else {
+          defaultEditor = FormPropertyEditorManager.getDefaultEditor (desc.getPropertyType ());
+        }
+        if (defaultEditor != null) {
+/*              if (ed instanceof FormAwareEditor) {
+              ((FormAwareEditor)ed).setRADComponent(RADComponent.this);
+            } * / // [PENDING - do it inside the FormPropertyEditor]
+          editor = new FormPropertyEditor (RADComponent.this, desc.getPropertyType (), defaultEditor);
+        }
+      }
+      return editor;
+    } // [PENDING indexed]
+
+    /** Test whether the property is readable by index.
+    * @return <CODE>true</CODE> if so
+    */
+    public boolean canIndexedRead () {
+      return (desc.getIndexedReadMethod () != null);
+    }
+
+    /** Get the value of the property at an index.
+    *
+    * @param indx the index
+    * @return the value at that index
+    * @exception IllegalAccessException cannot access the called method
+    * @exception IllegalArgumentException wrong argument
+    * @exception InvocationTargetException an exception during invocation
+    */
+    public Object getIndexedValue (int index) throws
+    IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+      return null;
+      // [PENDING indexed]
+    }
+
+    /** Test whether the property is writable by index.
+    * @return <CODE>true</CODE> if so
+    */
+    public boolean canIndexedWrite () {
+      return (desc.getIndexedWriteMethod () != null);
+    }
+
+    /** Set the value of the property at an index.
+    *
+    * @param indx the index
+    * @param val the value to set
+    * @exception IllegalAccessException cannot access the called method
+    * @exception IllegalArgumentException wrong argument
+    * @exception InvocationTargetException an exception during invocation
+    */
+    public void setIndexedValue (int indx, Object val) throws
+    IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+      // [PENDING indexed]
+    }
+
+    /** Get a property editor for individual elements in this property.
+    * @return the property editor for elements
+    */
+//    public PropertyEditor getIndexedPropertyEditor () { // [PENDING indexed]
+//      return java.beans.PropertyEditorManager.findEditor (elementType);
+//    }
+  }
   
   abstract class EventProperty extends PropertySupport.ReadWrite {
     EventsList.Event event;
@@ -699,6 +895,7 @@ public class RADComponent {
 
 /*
  * Log
+ *  15   Gandalf   1.14        5/26/99  Ian Formanek    cleaned
  *  14   Gandalf   1.13        5/24/99  Ian Formanek    
  *  13   Gandalf   1.12        5/23/99  Ian Formanek    Support for 
  *       FormAwareEditor and FormDesignValue
