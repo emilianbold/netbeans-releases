@@ -132,6 +132,8 @@ public class AddViewDialog {
                 }
             };
 
+            pane.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddViewDialogA11yDesc")); //NOI18N
+
             DialogDescriptor descriptor = new DialogDescriptor(pane, bundle.getString("AddViewTitle"), true, listener); //NOI18N
             // inbuilt close of the dialog is only after CANCEL button click
             // after OK button is dialog closed by hand
