@@ -17,7 +17,7 @@ import java.beans.*;
 import java.awt.Image;
 import java.util.ResourceBundle;
 
-import com.netbeans.ide.util.NbBundle;
+import org.openide.util.NbBundle;
 
 /** Image data loader bean info.
 *

@@ -14,7 +14,7 @@
 package com.netbeans.developer.modules.loaders.form;
 
 import java.util.ArrayList;
-import com.netbeans.ide.options.SystemOption;
+import org.openide.options.SystemOption;
 
 /** Settings for form data loader.
 *
@@ -413,13 +413,15 @@ public class FormLoaderSettings extends SystemOption {
   /** This method must be overriden. It returns display name of this options.
   */
   public String displayName () {
-    return com.netbeans.ide.util.NbBundle.getBundle (FormLoaderSettings.class).getString("CTL_FormSettings");
+    return org.openide.util.NbBundle.getBundle (FormLoaderSettings.class).getString("CTL_FormSettings");
   }
 
 }
 
 /*
  * Log
+ *  8    Gandalf   1.7         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  7    Gandalf   1.6         6/7/99   Ian Formanek    
  *  6    Gandalf   1.5         6/4/99   Ian Formanek    PROP_LOADED_BEANS
  *  5    Gandalf   1.4         5/30/99  Ian Formanek    PropertyEditors 

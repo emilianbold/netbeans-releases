@@ -15,8 +15,8 @@ package com.netbeans.developer.modules.javadoc.settings;
 
 import java.io.File;
 
-import com.netbeans.ide.options.ContextSystemOption;
-import com.netbeans.ide.util.NbBundle;
+import org.openide.options.ContextSystemOption;
+import org.openide.util.NbBundle;
 
 /** Options for applets - which applet viewer use ...
 *
@@ -94,6 +94,8 @@ public class DocumentationSettings extends ContextSystemOption //implements View
 
 /*
  * Log
+ *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  3    Gandalf   1.2         5/17/99  Petr Hrebejk    
  *  2    Gandalf   1.1         5/14/99  Petr Hrebejk    
  *  1    Gandalf   1.0         4/23/99  Petr Hrebejk    

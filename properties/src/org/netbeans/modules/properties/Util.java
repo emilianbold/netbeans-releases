@@ -15,9 +15,9 @@ package com.netbeans.developer.modules.loaders.properties;
 
 import java.util.*;
 
-import com.netbeans.ide.filesystems.FileObject;
-import com.netbeans.ide.loaders.MultiDataObject;
-import com.netbeans.ide.util.*;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.MultiDataObject;
+import org.openide.util.*;
 
 /** Miscellaneous utilities for Properties data loader.
 *
@@ -189,6 +189,8 @@ final class Util extends Object {
 
 /*
  * <<Log>>
+ *  2    Gandalf   1.1         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  1    Gandalf   1.0         5/12/99  Petr Jiricka    
  * $
  */

@@ -16,13 +16,13 @@ package com.netbeans.developer.modules.loaders.properties;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-import com.netbeans.ide.TopManager;
-import com.netbeans.ide.NotifyDescriptor;
-import com.netbeans.ide.util.NbBundle;
-import com.netbeans.ide.util.HelpCtx;
-import com.netbeans.ide.util.actions.*;
-import com.netbeans.ide.nodes.Node;
-import com.netbeans.ide.actions.RenameAction;
+import org.openide.TopManager;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
+import org.openide.util.HelpCtx;
+import org.openide.util.actions.*;
+import org.openide.nodes.Node;
+import org.openide.actions.RenameAction;
 
 
 /** Rename a node.
@@ -50,8 +50,8 @@ public class LangRenameAction extends RenameAction {
         lang = lang.substring(1);
         
     NotifyDescriptor.InputLine dlg = new NotifyDescriptor.InputLine(
-       NbBundle.getBundle("com.netbeans.ide.actions.Bundle").getString("CTL_RenameLabel"),
-       NbBundle.getBundle("com.netbeans.ide.actions.Bundle").getString("CTL_RenameTitle"));
+       NbBundle.getBundle("org.openide.actions.Bundle").getString("CTL_RenameLabel"),
+       NbBundle.getBundle("org.openide.actions.Bundle").getString("CTL_RenameTitle"));
     dlg.setInputText(lang);
     if (NotifyDescriptor.OK_OPTION.equals(TopManager.getDefault().notify(dlg))) {
       try {
@@ -61,7 +61,7 @@ public class LangRenameAction extends RenameAction {
         // catch & report badly formatted names
         NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
           java.text.MessageFormat.format(
-            NbBundle.getBundle("com.netbeans.ide.actions.Bundle").getString("MSG_BadFormat"),
+            NbBundle.getBundle("org.openide.actions.Bundle").getString("MSG_BadFormat"),
             new Object[] {n.getName()}),
           NotifyDescriptor.ERROR_MESSAGE);
         TopManager.getDefault().notify(msg);

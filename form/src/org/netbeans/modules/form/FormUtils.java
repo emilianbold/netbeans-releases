@@ -21,8 +21,8 @@ import java.lang.reflect.Method;
 import javax.swing.JComponent;
 
 import com.netbeans.developer.impl.IDESettings;
-import com.netbeans.ide.util.Utilities;
-import com.netbeans.ide.util.io.*;
+import org.openide.util.Utilities;
+import org.openide.util.io.*;
 //import com.netbeans.developer.modules.loaders.form.layouts.*;
 //import com.netbeans.developer.modules.loaders.form.layouts.support.*;
 import com.netbeans.developer.modules.loaders.form.util.*;
@@ -110,10 +110,10 @@ public class FormUtils extends Object {
     if (!dontPrint) {
 //    if (System.getProperty ("netbeans.full.hack") != null)
 //      e.printStackTrace ();
-      com.netbeans.ide.TopManager.getDefault ().getStdOut ().println (
+      org.openide.TopManager.getDefault ().getStdOut ().println (
         java.text.MessageFormat.format (
-          reading ? com.netbeans.ide.util.NbBundle.getBundle (FormUtils.class).getString ("FMT_ERR_ReadingProperty") :
-                    com.netbeans.ide.util.NbBundle.getBundle (FormUtils.class).getString ("FMT_ERR_WritingProperty"),
+          reading ? org.openide.util.NbBundle.getBundle (FormUtils.class).getString ("FMT_ERR_ReadingProperty") :
+                    org.openide.util.NbBundle.getBundle (FormUtils.class).getString ("FMT_ERR_WritingProperty"),
           new Object[] {
             t.getClass ().getName (),
             propertyName,
@@ -354,6 +354,8 @@ public class FormUtils extends Object {
 
 /*
  * Log
+ *  13   Gandalf   1.12        6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  12   Gandalf   1.11        5/16/99  Ian Formanek    
  *  11   Gandalf   1.10        5/15/99  Ian Formanek    
  *  10   Gandalf   1.9         5/15/99  Ian Formanek    

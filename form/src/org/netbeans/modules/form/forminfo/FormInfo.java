@@ -14,7 +14,7 @@
 package com.netbeans.developer.modules.loaders.form.forminfo;
 
 import java.awt.Container;
-import com.netbeans.ide.nodes.Node;
+import org.openide.nodes.Node;
 
 /** FormInfo is a class which provides information specific to certain form type.
 * E.g. for a JFrame form, the top-level bean is the JFrame itself, the top-level container is its getContetnPane (),
@@ -79,6 +79,8 @@ public abstract class FormInfo {
 
 /*
  * Log
+ *  5    Gandalf   1.4         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  4    Gandalf   1.3         6/6/99   Ian Formanek    FormInfo design 
  *       finalized
  *  3    Gandalf   1.2         5/10/99  Ian Formanek    

@@ -13,7 +13,7 @@
 
 package com.netbeans.developer.modules.loaders.form;
 
-import com.netbeans.ide.TopManager;
+import org.openide.TopManager;
 
 import java.beans.PropertyEditor;
 import java.util.ArrayList;
@@ -133,6 +133,8 @@ final public class FormPropertyEditorManager extends Object {
 
 /*
  * Log
+ *  3    Gandalf   1.2         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  2    Gandalf   1.1         5/30/99  Ian Formanek    minor changes, editors 
  *       cache disabled
  *  1    Gandalf   1.0         5/24/99  Ian Formanek    

@@ -13,14 +13,14 @@
 
 package com.netbeans.developer.modules.loaders.form;
 
-import com.netbeans.ide.TopManager;
-import com.netbeans.ide.NotifyDescriptor;
-import com.netbeans.ide.filesystems.FileObject;
-import com.netbeans.ide.filesystems.FileLock;
-import com.netbeans.ide.loaders.DataObject;
-import com.netbeans.ide.loaders.DataFolder;
-import com.netbeans.ide.util.NbBundle;
-import com.netbeans.ide.modules.ModuleInstall;
+import org.openide.TopManager;
+import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileLock;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataFolder;
+import org.openide.util.NbBundle;
+import org.openide.modules.ModuleInstall;
 import com.netbeans.developer.modules.loaders.form.palette.BeanInstaller;
 
 /**
@@ -312,6 +312,8 @@ public class FormEditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  20   Gandalf   1.19        6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  19   Gandalf   1.18        6/7/99   Ian Formanek    AutoLoad beans enabled 
  *       again
  *  18   Gandalf   1.17        6/4/99   Ian Formanek    

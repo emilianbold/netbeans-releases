@@ -13,7 +13,7 @@
 
 package com.netbeans.developer.modules.loaders.form;
 
-import com.netbeans.ide.nodes.Node;
+import org.openide.nodes.Node;
 
 /** 
 *
@@ -70,6 +70,8 @@ public abstract class CodeGenerator {
 
 /*
  * Log
+ *  7    Gandalf   1.6         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  6    Gandalf   1.5         5/15/99  Ian Formanek    
  *  5    Gandalf   1.4         5/12/99  Ian Formanek    
  *  4    Gandalf   1.3         5/10/99  Ian Formanek    

@@ -15,7 +15,7 @@ package com.netbeans.developer.modules.loaders.form;
 
 import java.lang.reflect.InvocationTargetException;
 
-import com.netbeans.ide.util.HelpCtx;
+import org.openide.util.HelpCtx;
 import com.netbeans.developer.modules.loaders.java.JavaNode;
 
 /** The DataNode for Forms.
@@ -52,6 +52,8 @@ public class FormDataNode extends JavaNode {
 
 /*
  * Log
+ *  9    Gandalf   1.8         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  8    Gandalf   1.7         5/4/99   Ian Formanek    package change 
  *       (formeditor -> ..)
  *  7    Gandalf   1.6         4/29/99  Ian Formanek    

@@ -24,20 +24,20 @@ import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import javax.swing.table.*;
 
-import com.netbeans.ide.filesystems.FileStateInvalidException;
-import com.netbeans.ide.filesystems.FileObject;
-import com.netbeans.ide.filesystems.FileUtil;
-import com.netbeans.ide.util.datatransfer.*;
-import com.netbeans.ide.actions.InstantiateAction;
-import com.netbeans.ide.util.HelpCtx;
-import com.netbeans.ide.util.RequestProcessor;
-import com.netbeans.ide.util.NbBundle;
-import com.netbeans.ide.util.NbBundle;
-import com.netbeans.ide.util.WeakListener;
-import com.netbeans.ide.util.actions.SystemAction;
-import com.netbeans.ide.nodes.*;
-import com.netbeans.ide.loaders.*;
-import com.netbeans.ide.*;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.datatransfer.*;
+import org.openide.actions.InstantiateAction;
+import org.openide.util.HelpCtx;
+import org.openide.util.RequestProcessor;
+import org.openide.util.NbBundle;
+import org.openide.util.NbBundle;
+import org.openide.util.WeakListener;
+import org.openide.util.actions.SystemAction;
+import org.openide.nodes.*;
+import org.openide.loaders.*;
+import org.openide.*;
 
 /** General abstract structure for properties files, in its use similar to source hierarchy.
 *   Interoperates with Document, PropertiesTableModel, Nodes and other display-specific models

@@ -22,10 +22,10 @@ import java.net.MalformedURLException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import com.netbeans.ide.options.SystemOption;
-import com.netbeans.ide.util.NbBundle;
-import com.netbeans.ide.util.HttpServer;
-import com.netbeans.ide.filesystems.FileObject;
+import org.openide.options.SystemOption;
+import org.openide.util.NbBundle;
+import org.openide.util.HttpServer;
+import org.openide.filesystems.FileObject;
 
 /** Options for http server
 *
@@ -284,6 +284,8 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
 
 /*
  * Log
+ *  8    Gandalf   1.7         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  7    Gandalf   1.6         6/8/99   Petr Jiricka    
  *  6    Gandalf   1.5         5/31/99  Petr Jiricka    
  *  5    Gandalf   1.4         5/28/99  Petr Jiricka    

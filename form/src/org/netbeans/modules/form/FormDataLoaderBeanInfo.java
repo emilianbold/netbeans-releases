@@ -17,7 +17,7 @@ import java.beans.*;
 import java.awt.Image;
 import java.util.ResourceBundle;
 
-import com.netbeans.ide.util.NbBundle;
+import org.openide.util.NbBundle;
 
 /** Form data loader bean info.
 *
@@ -77,6 +77,8 @@ public class FormDataLoaderBeanInfo extends SimpleBeanInfo {
 
 /*
 * Log
+*  2    Gandalf   1.1         6/9/99   Ian Formanek    ---- Package Change To 
+*       org.openide ----
 *  1    Gandalf   1.0         3/16/99  Ian Formanek    
 * $
 */

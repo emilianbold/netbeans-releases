@@ -13,15 +13,15 @@
 
 package com.netbeans.developer.modules.loaders.image;
 
-import com.netbeans.ide.*;
-import com.netbeans.ide.cookies.OpenCookie;
-import com.netbeans.ide.filesystems.*;
-import com.netbeans.ide.loaders.*;
-import com.netbeans.ide.windows.*;
-import com.netbeans.ide.actions.OpenAction;
-import com.netbeans.ide.util.*;
-import com.netbeans.ide.util.actions.*;
-import com.netbeans.ide.nodes.*;
+import org.openide.*;
+import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.*;
+import org.openide.loaders.*;
+import org.openide.windows.*;
+import org.openide.actions.OpenAction;
+import org.openide.util.*;
+import org.openide.util.actions.*;
+import org.openide.nodes.*;
 
 /** Object that represents one file containing an image.
 *
@@ -48,8 +48,8 @@ public class ImageDataObject extends MultiDataObject {
   /** Help context for this object.
   * @return the help context
   */
-  public com.netbeans.ide.util.HelpCtx getHelpCtx () {
-    return new com.netbeans.ide.util.HelpCtx ("com.netbeans.developer.docs.Users_Guide.usergd-using-div-12", "USERGD-USING-TABLE-2");
+  public org.openide.util.HelpCtx getHelpCtx () {
+    return new org.openide.util.HelpCtx ("com.netbeans.developer.docs.Users_Guide.usergd-using-div-12", "USERGD-USING-TABLE-2");
   }
 
   /** Get a URL for the image.

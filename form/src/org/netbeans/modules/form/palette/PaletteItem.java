@@ -13,8 +13,8 @@
 
 package com.netbeans.developer.modules.loaders.form.palette;
 
-import com.netbeans.ide.cookies.InstanceCookie;
-import com.netbeans.ide.loaders.InstanceDataObject;
+import org.openide.cookies.InstanceCookie;
+import org.openide.loaders.InstanceDataObject;
 import com.netbeans.developerx.loaders.form.formeditor.layouts.DesignLayout;
 import com.netbeans.developerx.loaders.form.formeditor.border.DesignBorder;
 import com.netbeans.developerx.loaders.form.formeditor.border.BorderInfo;
@@ -92,7 +92,7 @@ public class PaletteItem implements java.io.Serializable {
 // Class Methods
 
   public String getName () {
-    return com.netbeans.ide.util.Utilities.getShortClassName (getItemClass ());
+    return org.openide.util.Utilities.getShortClassName (getItemClass ());
   }
   
   public Object getSharedInstance () throws InstantiationException, IllegalAccessException {
@@ -155,6 +155,8 @@ public class PaletteItem implements java.io.Serializable {
 
 /*
  * Log
+ *  7    Gandalf   1.6         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  6    Gandalf   1.5         6/7/99   Ian Formanek    Better support of 
  *       instances
  *  5    Gandalf   1.4         5/20/99  Ian Formanek    Fixed multiplication of 

@@ -15,8 +15,8 @@ package com.netbeans.developer.modules.loaders.form;
 
 import java.io.IOException;
 
-import com.netbeans.ide.filesystems.FileLock;
-import com.netbeans.ide.filesystems.FileObject;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
 
 /** 
 *
@@ -54,7 +54,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
   public FormManager2 loadForm (FormDataObject formObject) throws IOException {
     FileObject formFile = formObject.getFormEntry ().getFile ();
     try {
-      org.w3c.dom.Document doc = com.netbeans.ide.loaders.XMLDataObject.parse (
+      org.w3c.dom.Document doc = org.openide.loaders.XMLDataObject.parse (
           formFile.getURL (),
           new java.util.Hashtable (),
           false,
@@ -88,6 +88,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 /*
  * Log
+ *  3    Gandalf   1.2         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  2    Gandalf   1.1         6/7/99   Ian Formanek    
  *  1    Gandalf   1.0         5/30/99  Ian Formanek    
  * $

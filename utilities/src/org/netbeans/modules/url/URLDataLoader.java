@@ -13,11 +13,11 @@
 
 package com.netbeans.developer.modules.loaders.url;
 
-import com.netbeans.ide.filesystems.FileObject;
-import com.netbeans.ide.loaders.*;
-import com.netbeans.ide.actions.*;
-import com.netbeans.ide.util.actions.SystemAction;
-import com.netbeans.ide.util.NbBundle;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.*;
+import org.openide.actions.*;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.NbBundle;
 
 /** Data loader which recognizes url files.
 * @author Ian Formanek
@@ -70,6 +70,8 @@ public class URLDataLoader extends UniFileLoader {
 
 /*
  * Log
+ *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  3    Gandalf   1.2         3/26/99  Ian Formanek    Fixed use of obsoleted 
  *       NbBundle.getBundle (this)
  *  2    Gandalf   1.1         2/25/99  Ian Formanek    

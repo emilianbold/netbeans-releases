@@ -29,7 +29,7 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
   /** Array of property descriptors. */
   private static PropertyDescriptor[] desc;
 
-  private static java.util.ResourceBundle formBundle = com.netbeans.ide.util.NbBundle.getBundle (FormLoaderSettingsBeanInfo.class);
+  private static java.util.ResourceBundle formBundle = org.openide.util.NbBundle.getBundle (FormLoaderSettingsBeanInfo.class);
 
   // initialization of the array of descriptors
   static {
@@ -226,6 +226,8 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
 
 /*
  * Log
+ *  8    Gandalf   1.7         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  7    Gandalf   1.6         6/7/99   Ian Formanek    
  *  6    Gandalf   1.5         5/30/99  Ian Formanek    PropertyEditors 
  *       management options

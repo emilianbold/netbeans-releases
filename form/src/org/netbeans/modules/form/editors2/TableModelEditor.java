@@ -16,7 +16,7 @@ package com.netbeans.developer.explorer.propertysheet.editors;
 import java.awt.*;
 import java.util.ResourceBundle;
 
-import com.netbeans.ide.util.NbBundle;
+import org.openide.util.NbBundle;
 
 import javax.swing.table.*;
 
@@ -233,6 +233,8 @@ public class TableModelEditor extends Object {
 
 /*
  * Log
+ *  2    Gandalf   1.1         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  1    Gandalf   1.0         4/12/99  Ian Formanek    
  * $
  */

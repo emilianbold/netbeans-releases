@@ -26,14 +26,14 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
 
-import com.netbeans.ide.awt.SplittedPanel;
-import com.netbeans.ide.nodes.*;
-import com.netbeans.ide.explorer.propertysheet.PropertySheetView;
-import com.netbeans.ide.explorer.view.ListView;
-import com.netbeans.ide.explorer.*;
-import com.netbeans.ide.nodes.*;
-import com.netbeans.ide.util.actions.SystemAction;
-import com.netbeans.ide.util.NbBundle;
+import org.openide.awt.SplittedPanel;
+import org.openide.nodes.*;
+import org.openide.explorer.propertysheet.PropertySheetView;
+import org.openide.explorer.view.ListView;
+import org.openide.explorer.*;
+import org.openide.nodes.*;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.NbBundle;
 
 import com.netbeans.developerx.loaders.form.formeditor.border.*;
 import com.netbeans.developer.modules.loaders.form.palette.*;
@@ -378,6 +378,8 @@ public final class BorderEditor extends PropertyEditorSupport {
 
 /*
  * Log
+ *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  3    Gandalf   1.2         5/30/99  Ian Formanek    Finalized
  *  2    Gandalf   1.1         5/24/99  Ian Formanek    
  *  1    Gandalf   1.0         5/14/99  Ian Formanek    

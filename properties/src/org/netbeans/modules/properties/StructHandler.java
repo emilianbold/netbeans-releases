@@ -20,12 +20,12 @@ import java.util.HashMap;
 
 import javax.swing.text.BadLocationException;
 
-import com.netbeans.ide.filesystems.FileObject;
-import com.netbeans.ide.loaders.MultiDataObject;
-import com.netbeans.ide.util.*;
-import com.netbeans.ide.nodes.Children;
-import com.netbeans.ide.text.PositionRef;
-import com.netbeans.ide.text.PositionBounds;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.MultiDataObject;
+import org.openide.util.*;
+import org.openide.nodes.Children;
+import org.openide.text.PositionRef;
+import org.openide.text.PositionBounds;
 
 /* Handling of properties structure files
 *

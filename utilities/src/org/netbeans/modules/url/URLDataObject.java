@@ -15,13 +15,13 @@ package com.netbeans.developer.modules.loaders.url;
 
 import java.io.*;
 
-import com.netbeans.ide.*;
-import com.netbeans.ide.awt.HtmlBrowser;
-import com.netbeans.ide.filesystems.*;
-import com.netbeans.ide.loaders.*;
-import com.netbeans.ide.util.*;
-import com.netbeans.ide.util.actions.*;
-import com.netbeans.ide.nodes.*;
+import org.openide.*;
+import org.openide.awt.HtmlBrowser;
+import org.openide.filesystems.*;
+import org.openide.loaders.*;
+import org.openide.util.*;
+import org.openide.util.actions.*;
+import org.openide.nodes.*;
 
 /** Object that represents one file containing url in the tree of
 * beans representing data systems.
@@ -44,7 +44,7 @@ public class URLDataObject extends MultiDataObject {
   public URLDataObject(final FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
     super(pf, loader);
     urlFile = pf;
-    getCookieSet ().add (new com.netbeans.ide.cookies.OpenCookie () {
+    getCookieSet ().add (new org.openide.cookies.OpenCookie () {
         /** Invokes the open action */
         public void open () {
           String urlString = getURLString ();
@@ -200,7 +200,7 @@ public class URLDataObject extends MultiDataObject {
   /** Help context for this object.
   * @return help context
   */
-  public com.netbeans.ide.util.HelpCtx getHelpCtx () {
+  public org.openide.util.HelpCtx getHelpCtx () {
     return HelpCtx.DEFAULT_HELP;
     //[PENDING]
   }
@@ -237,7 +237,7 @@ public class URLDataObject extends MultiDataObject {
     */
     public SystemAction getDefaultAction () {
       SystemAction result = super.getDefaultAction();
-      return result == null ? SystemAction.get(com.netbeans.ide.actions.OpenAction.class) : result;
+      return result == null ? SystemAction.get(org.openide.actions.OpenAction.class) : result;
     }
   } // end of URLNode inner class
 }
@@ -245,6 +245,8 @@ public class URLDataObject extends MultiDataObject {
 
 /*
  * Log
+ *  10   Gandalf   1.9         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  9    Gandalf   1.8         6/7/99   Ian Formanek    Fixed bug 1585 - URL 
  *       action "Open in New window" does not work.
  *  8    Gandalf   1.7         5/8/99   Ian Formanek    Fixed displaying icon

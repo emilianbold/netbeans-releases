@@ -25,19 +25,19 @@ import java.awt.event.ActionListener;
 import java.awt.Dialog;
 import javax.swing.JPanel;
 
-import com.netbeans.ide.*;
-import com.netbeans.ide.filesystems.*;
-import com.netbeans.ide.loaders.*;
-import com.netbeans.ide.windows.*;
-import com.netbeans.ide.actions.*;
-import com.netbeans.ide.text.*;
-import com.netbeans.ide.util.*;
-import com.netbeans.ide.util.actions.*;
-import com.netbeans.ide.nodes.Node;
-import com.netbeans.ide.nodes.Children;
-import com.netbeans.ide.nodes.AbstractNode;
-import com.netbeans.ide.nodes.NodeListener;
-import com.netbeans.ide.util.datatransfer.NewType;
+import org.openide.*;
+import org.openide.filesystems.*;
+import org.openide.loaders.*;
+import org.openide.windows.*;
+import org.openide.actions.*;
+import org.openide.text.*;
+import org.openide.util.*;
+import org.openide.util.actions.*;
+import org.openide.nodes.Node;
+import org.openide.nodes.Children;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.NodeListener;
+import org.openide.util.datatransfer.NewType;
 
 /** Object that provides main functionality for properties data loader.
 * This class is final only for performance reasons,
@@ -152,6 +152,8 @@ public class PropertiesLocaleNode extends FileEntryNode {
 
 /*
  * <<Log>>
+ *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  3    Gandalf   1.2         6/6/99   Petr Jiricka    
  *  2    Gandalf   1.1         5/13/99  Petr Jiricka    
  *  1    Gandalf   1.0         5/12/99  Petr Jiricka    

@@ -18,23 +18,23 @@ import java.io.IOException;
 import java.net.URL;
 import java.awt.BorderLayout;
 
-import com.netbeans.ide.TopManager;
-import com.netbeans.ide.actions.*;
-import com.netbeans.ide.awt.HtmlBrowser;
-import com.netbeans.ide.cookies.ViewCookie;
-import com.netbeans.ide.loaders.UniFileLoader;
-import com.netbeans.ide.loaders.MultiDataObject;
-import com.netbeans.ide.loaders.DataObject;
-import com.netbeans.ide.loaders.DataNode;
-import com.netbeans.ide.loaders.DataObjectExistsException;
-import com.netbeans.ide.text.EditorSupport;
-import com.netbeans.ide.loaders.OpenSupport;
-import com.netbeans.ide.filesystems.FileObject;
-import com.netbeans.ide.filesystems.FileStateInvalidException;
-import com.netbeans.ide.nodes.Children;
-import com.netbeans.ide.util.NbBundle;
-import com.netbeans.ide.util.actions.SystemAction;
-import com.netbeans.ide.windows.CloneableTopComponent;
+import org.openide.TopManager;
+import org.openide.actions.*;
+import org.openide.awt.HtmlBrowser;
+import org.openide.cookies.ViewCookie;
+import org.openide.loaders.UniFileLoader;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataNode;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.text.EditorSupport;
+import org.openide.loaders.OpenSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.nodes.Children;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
+import org.openide.windows.CloneableTopComponent;
 
 
 /**
@@ -80,7 +80,7 @@ public class HtmlLoader extends UniFileLoader {
         super (pf, l);
       }
       
-      protected com.netbeans.ide.nodes.Node createNodeDelegate () {
+      protected org.openide.nodes.Node createNodeDelegate () {
         DataNode n = new DataNode (Obj.this, Children.LEAF);
         n.setIconBase ("/com/netbeans/developer/modules/loaders/html/htmlObject");
         n.setDefaultAction (SystemAction.get (ViewAction.class));
@@ -106,6 +106,8 @@ public class HtmlLoader extends UniFileLoader {
 
 /*
 * Log
+*  15   Gandalf   1.14        6/9/99   Ian Formanek    ---- Package Change To 
+*       org.openide ----
 *  14   Gandalf   1.13        5/13/99  Jan Jancura     What action is default? 
 *       It's a question.
 *  13   Gandalf   1.12        5/12/99  Jan Jancura     Edit in txt editor & use 

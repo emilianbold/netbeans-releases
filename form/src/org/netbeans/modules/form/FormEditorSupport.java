@@ -15,12 +15,12 @@ package com.netbeans.developer.modules.loaders.form;
 
 import java.io.*;
 
-import com.netbeans.ide.TopManager;
-import com.netbeans.ide.NotifyDescriptor;
-import com.netbeans.ide.filesystems.FileObject;
-import com.netbeans.ide.loaders.MultiDataObject;
-import com.netbeans.ide.src.nodes.SourceChildren;
-import com.netbeans.ide.util.NbBundle;
+import org.openide.TopManager;
+import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.MultiDataObject;
+import org.openide.src.nodes.SourceChildren;
+import org.openide.util.NbBundle;
 
 import com.netbeans.developer.modules.loaders.java.JavaEditor;
 
@@ -90,7 +90,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
     return formObject;
   }
   
-  public com.netbeans.ide.nodes.Node getFormRootNode () {
+  public org.openide.nodes.Node getFormRootNode () {
     return formRootNode;
   }
   
@@ -204,6 +204,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  17   Gandalf   1.16        6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  16   Gandalf   1.15        5/17/99  Ian Formanek    Fixed bug 1820 - An 
  *       exception is thrown when form is created from a template.
  *  15   Gandalf   1.14        5/16/99  Ian Formanek    

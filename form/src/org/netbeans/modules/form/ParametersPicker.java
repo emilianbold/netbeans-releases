@@ -19,7 +19,7 @@ import java.util.Enumeration;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import com.netbeans.ide.util.Utilities;
+import org.openide.util.Utilities;
 
 /** The ParametersPicker is a panel which allows to enter a method parameter data.
 *
@@ -384,6 +384,8 @@ public class ParametersPicker extends javax.swing.JPanel {
 
 /*
  * Log
+ *  6    Gandalf   1.5         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  5    Gandalf   1.4         6/1/99   Ian Formanek    Fixed removed event 
  *       handlers
  *  4    Gandalf   1.3         5/31/99  Ian Formanek    Updated to X2 form 

@@ -13,8 +13,8 @@
 
 package com.netbeans.developer.modules.loaders.image;
 
-import com.netbeans.ide.windows.CloneableTopComponent;
-import com.netbeans.ide.util.HelpCtx;
+import org.openide.windows.CloneableTopComponent;
+import org.openide.util.HelpCtx;
 
 /** Top component providing a viewer for images.
 *

@@ -19,14 +19,14 @@ import java.beans.PropertyChangeListener;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.Position;
 
-import com.netbeans.ide.TopManager;
-import com.netbeans.ide.text.NbDocument;
-import com.netbeans.ide.text.PositionRef;
-import com.netbeans.ide.text.PositionBounds;
-import com.netbeans.ide.filesystems.FileObject;
-import com.netbeans.ide.loaders.DataObject;
-import com.netbeans.ide.loaders.DataObjectNotFoundException;
-import com.netbeans.ide.util.io.NullOutputStream;
+import org.openide.TopManager;
+import org.openide.text.NbDocument;
+import org.openide.text.PositionRef;
+import org.openide.text.PositionBounds;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.io.NullOutputStream;
 
 /** Parser of Java source code. It generates the hierarchy
 * of the implementations of elements.

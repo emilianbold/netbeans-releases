@@ -17,7 +17,7 @@ import java.beans.*;
 import java.awt.Image;
 import java.util.ResourceBundle;
 
-import com.netbeans.ide.util.NbBundle;
+import org.openide.util.NbBundle;
 
 /** Html data loader bean info.
 *
@@ -86,6 +86,8 @@ public class HtmlLoaderBeanInfo extends SimpleBeanInfo {
 
 /*
 * Log
+*  3    Gandalf   1.2         6/9/99   Ian Formanek    ---- Package Change To 
+*       org.openide ----
 *  2    Gandalf   1.1         2/11/99  Jan Jancura     
 *  1    Gandalf   1.0         1/11/99  Jan Jancura     
 * $

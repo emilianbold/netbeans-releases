@@ -31,20 +31,20 @@ import javax.swing.text.EditorKit;
 import javax.swing.text.BadLocationException;
 
 
-import com.netbeans.ide.util.WeakListener;
-import com.netbeans.ide.util.NbBundle;
-import com.netbeans.ide.text.EditorSupport;
-import com.netbeans.ide.cookies.ViewCookie;
-import com.netbeans.ide.cookies.SaveCookie;
-import com.netbeans.ide.loaders.MultiDataObject;
-import com.netbeans.ide.loaders.DataObject;
-import com.netbeans.ide.filesystems.FileObject;
-import com.netbeans.ide.windows.CloneableTopComponent;
-import com.netbeans.ide.windows.TopComponent;
-import com.netbeans.ide.nodes.NodeAdapter;
-import com.netbeans.ide.nodes.Node;
-import com.netbeans.ide.TopManager;
-import com.netbeans.ide.NotifyDescriptor;
+import org.openide.util.WeakListener;
+import org.openide.util.NbBundle;
+import org.openide.text.EditorSupport;
+import org.openide.cookies.ViewCookie;
+import org.openide.cookies.SaveCookie;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.DataObject;
+import org.openide.filesystems.FileObject;
+import org.openide.windows.CloneableTopComponent;
+import org.openide.windows.TopComponent;
+import org.openide.nodes.NodeAdapter;
+import org.openide.nodes.Node;
+import org.openide.TopManager;
+import org.openide.NotifyDescriptor;
 
  
 /** Support for viewing porperties files (ViewCookie) by opening them in a text editor */

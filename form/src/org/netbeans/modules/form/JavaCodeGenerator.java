@@ -13,8 +13,8 @@
 
 package com.netbeans.developer.modules.loaders.form;
 
-import com.netbeans.ide.nodes.*;
-import com.netbeans.ide.util.Utilities;
+import org.openide.nodes.*;
+import org.openide.util.Utilities;
 import com.netbeans.developer.modules.loaders.java.JavaEditor;
 import com.netbeans.developerx.loaders.form.formeditor.layouts.DesignLayout;
 
@@ -723,6 +723,8 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  23   Gandalf   1.22        6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  22   Gandalf   1.21        6/8/99   Ian Formanek    Fixed bugs 1856 - The 
  *       Variables Modifier property of Form Object in Explorer doesn't work  
  *       1857 - The Indent AWT hiearchy  property of Form Object in Explorer 

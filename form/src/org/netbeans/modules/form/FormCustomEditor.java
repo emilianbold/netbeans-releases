@@ -13,7 +13,7 @@
 
 package com.netbeans.developer.modules.loaders.form;
 
-import com.netbeans.ide.util.Utilities;
+import org.openide.util.Utilities;
 
 import java.awt.BorderLayout;
 import java.beans.PropertyEditor;
@@ -66,6 +66,8 @@ public class FormCustomEditor extends JPanel {
 
 /*
  * Log
+ *  3    Gandalf   1.2         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  2    Gandalf   1.1         5/30/99  Ian Formanek    
  *  1    Gandalf   1.0         5/24/99  Ian Formanek    
  * $

@@ -20,7 +20,7 @@ import java.net.URL;
 
 import javax.swing.*;
 
-import com.netbeans.ide.TopManager;
+import org.openide.TopManager;
 
 /**
 * PropertyEditor for Icons. Depends on existing DataObject for images.
@@ -98,6 +98,8 @@ public class IconEditor extends Object {
 
 /*
 * Log
+*  2    Gandalf   1.1         6/9/99   Ian Formanek    ---- Package Change To 
+*       org.openide ----
 *  1    Gandalf   1.0         5/17/99  Ian Formanek    
 * $
 */

@@ -13,9 +13,9 @@
 
 package com.netbeans.developer.modules.javadoc.search;
 
-import com.netbeans.ide.util.NbBundle;
-import com.netbeans.ide.util.HelpCtx;
-import com.netbeans.ide.util.actions.CallableSystemAction;
+import org.openide.util.NbBundle;
+import org.openide.util.HelpCtx;
+import org.openide.util.actions.CallableSystemAction;
 
 /** 
 * Search doc action.
@@ -75,6 +75,8 @@ public class SearchDocAction extends CallableSystemAction {
 
 /*
  * Log
+ *  6    Gandalf   1.5         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  5    Gandalf   1.4         5/27/99  Petr Hrebejk    Crtl+F1 documentation 
  *       search form editor added
  *  4    Gandalf   1.3         5/26/99  Ian Formanek    Fixed last change

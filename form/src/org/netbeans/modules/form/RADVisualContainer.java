@@ -13,7 +13,7 @@
 
 package com.netbeans.developer.modules.loaders.form;
 
-import com.netbeans.ide.nodes.Node;
+import org.openide.nodes.Node;
 import com.netbeans.developerx.loaders.form.formeditor.layouts.DesignLayout;
 import com.netbeans.developerx.loaders.form.formeditor.layouts.support.DesignSupportLayout;
 
@@ -172,6 +172,8 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
 /*
  * Log
+ *  16   Gandalf   1.15        6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  15   Gandalf   1.14        6/3/99   Ian Formanek    Fixed removing 
  *       components
  *  14   Gandalf   1.13        6/2/99   Ian Formanek    ToolsAction, Reorder

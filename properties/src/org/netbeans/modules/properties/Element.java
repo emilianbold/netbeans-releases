@@ -17,8 +17,8 @@ import java.beans.*;
 import java.io.*;
 import javax.swing.text.BadLocationException;
 
-import com.netbeans.ide.nodes.Node;
-import com.netbeans.ide.text.PositionBounds;
+import org.openide.nodes.Node;
+import org.openide.text.PositionBounds;
 
 /** Base class for representations of elements in the
 * properties files.
@@ -385,6 +385,8 @@ implements Serializable {
 
 /*
  * <<Log>>
+ *  5    Gandalf   1.4         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  4    Gandalf   1.3         6/6/99   Petr Jiricka    
  *  3    Gandalf   1.2         5/14/99  Petr Jiricka    
  *  2    Gandalf   1.1         5/13/99  Petr Jiricka    

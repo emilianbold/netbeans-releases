@@ -21,15 +21,15 @@ import java.util.Iterator;
 import java.text.MessageFormat;
 import javax.swing.*;
 
-import com.netbeans.ide.*;
-import com.netbeans.ide.awt.*;
-import com.netbeans.ide.windows.ActivatedNodesListener;
-import com.netbeans.ide.windows.NodesEvent;
-import com.netbeans.ide.explorer.*;
-import com.netbeans.ide.explorer.propertysheet.PropertySheetView;
-import com.netbeans.ide.explorer.propertysheet.PropertySheet;
-import com.netbeans.ide.explorer.view.BeanTreeView;
-import com.netbeans.ide.nodes.Node;
+import org.openide.*;
+import org.openide.awt.*;
+import org.openide.windows.ActivatedNodesListener;
+import org.openide.windows.NodesEvent;
+import org.openide.explorer.*;
+import org.openide.explorer.propertysheet.PropertySheetView;
+import org.openide.explorer.propertysheet.PropertySheet;
+import org.openide.explorer.view.BeanTreeView;
+import org.openide.nodes.Node;
 import com.netbeans.developer.util.NbVersion;
 import com.netbeans.developer.modules.loaders.form.actions.*;
 import com.netbeans.developer.modules.loaders.form.FormDataObject;
@@ -62,7 +62,7 @@ final public class FormEditor extends Object {
   public static final String LAYOUT_PREFIX = "__LAYOUT__";
 
   /** The resource bundle for the form editor */
-  private static java.util.ResourceBundle formBundle = com.netbeans.ide.util.NbBundle.getBundle (FormEditor.class);
+  private static java.util.ResourceBundle formBundle = org.openide.util.NbBundle.getBundle (FormEditor.class);
   /** Settings of FormEditor */
   private static FormLoaderSettings formSettings = new FormLoaderSettings ();
   /** The DesignMode action */
@@ -428,7 +428,7 @@ final public class FormEditor extends Object {
       SplittedPanel split = new SplittedPanel();
       split.add (new BeanTreeView(), SplittedPanel.ADD_FIRST);
       split.add (sheet = new PropertySheetView(), SplittedPanel.ADD_SECOND);
-      split.setSplitType(com.netbeans.ide.awt.SplittedPanel.VERTICAL);
+      split.setSplitType(org.openide.awt.SplittedPanel.VERTICAL);
       split.setSplitPosition(DEFAULT_INSPECTOR_PERCENTS);
       sheet.setDisplayWritableOnly (getFormSettings ().getDisplayWritableOnly ());
 
@@ -503,11 +503,11 @@ final public class FormEditor extends Object {
     }
     
     /** Provides a Help context for this object.
-    * @see com.netbeans.ide.Help
-    * @see com.netbeans.ide.HelpCtx
+    * @see org.openide.Help
+    * @see org.openide.HelpCtx
     */
-    public com.netbeans.ide.util.HelpCtx getHelp() {
-      return new com.netbeans.ide.util.HelpCtx("com.netbeans.developer.docs.Users_Guide.usergd-using-div-26");
+    public org.openide.util.HelpCtx getHelp() {
+      return new org.openide.util.HelpCtx("com.netbeans.developer.docs.Users_Guide.usergd-using-div-26");
     }
 
     /** replaces this in object stream */
@@ -523,9 +523,9 @@ final public class FormEditor extends Object {
     }
   };
 
-  static class EmptyInspectorNode extends com.netbeans.ide.nodes.AbstractNode {
+  static class EmptyInspectorNode extends org.openide.nodes.AbstractNode {
     public EmptyInspectorNode () {
-      super (com.netbeans.ide.nodes.Children.LEAF);
+      super (org.openide.nodes.Children.LEAF);
       setIconBase (EMPTY_INSPECTOR_ICON_BASE);
     }
 
@@ -593,7 +593,7 @@ final public class FormEditor extends Object {
       }
     }
     TopManager.getDefault ().notify (new NotifyDescriptor.Message (
-          com.netbeans.ide.util.NbBundle.getBundle (FormEditor.class).getString ("ERR_BetaErrorsNotification"),
+          org.openide.util.NbBundle.getBundle (FormEditor.class).getString ("ERR_BetaErrorsNotification"),
           NotifyDescriptor.WARNING_MESSAGE
         )
      ); 
@@ -606,6 +606,8 @@ final public class FormEditor extends Object {
 
 /*
  * Log
+ *  20   Gandalf   1.19        6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  19   Gandalf   1.18        6/4/99   Ian Formanek    Fixed component 
  *       inspector icon
  *  18   Gandalf   1.17        6/4/99   Ian Formanek    

@@ -13,7 +13,7 @@
 
 package com.netbeans.developer.modules.loaders.form;
 
-import com.netbeans.ide.nodes.Node;
+import org.openide.nodes.Node;
 
 /** Cookie for Form operations.
 *
@@ -32,6 +32,8 @@ public interface FormCookie extends Node.Cookie {
 
 /*
  * Log
+ *  3    Gandalf   1.2         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  2    Gandalf   1.1         5/11/99  Ian Formanek    Build 318 version
  *  1    Gandalf   1.0         3/17/99  Ian Formanek    
  * $

@@ -20,18 +20,18 @@ import javax.swing.event.*;
 import javax.swing.KeyStroke;
 import javax.swing.text.Keymap;
 
-import com.netbeans.ide.util.Utilities;
+import org.openide.util.Utilities;
 
 // IDE imports ------------------
 
-import com.netbeans.ide.actions.CutAction;
-import com.netbeans.ide.util.actions.SystemAction;
-import com.netbeans.ide.modules.ModuleInstall;
-import com.netbeans.ide.loaders.DataFolder;
-import com.netbeans.ide.loaders.DataLoader;
-import com.netbeans.ide.TopManager;
-import com.netbeans.ide.filesystems.LocalFileSystem;
-import com.netbeans.ide.filesystems.Repository;
+import org.openide.actions.CutAction;
+import org.openide.util.actions.SystemAction;
+import org.openide.modules.ModuleInstall;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataLoader;
+import org.openide.TopManager;
+import org.openide.filesystems.LocalFileSystem;
+import org.openide.filesystems.Repository;
 
 // MODULE imports ---------------
 
@@ -243,6 +243,8 @@ public class JavadocModule implements ModuleInstall {
 
 /* 
  * Log
+ *  11   Gandalf   1.10        6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  10   Gandalf   1.9         6/8/99   Petr Hrebejk    
  *  9    Gandalf   1.8         5/27/99  Petr Hrebejk    
  *  8    Gandalf   1.7         5/16/99  Petr Hrebejk    

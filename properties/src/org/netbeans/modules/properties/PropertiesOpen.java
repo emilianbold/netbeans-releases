@@ -24,20 +24,20 @@ import javax.swing.JButton;
 import javax.swing.JScrollPane;
 //import javax.swing.DefaultCellEditor;
  
-import com.netbeans.ide.cookies.OpenCookie;
-import com.netbeans.ide.cookies.SaveCookie;
-import com.netbeans.ide.loaders.MultiDataObject;
-import com.netbeans.ide.loaders.FileEntry;
-import com.netbeans.ide.loaders.OpenSupport;
-import com.netbeans.ide.loaders.DataObject;
-import com.netbeans.ide.filesystems.FileObject;
-import com.netbeans.ide.windows.CloneableTopComponent;
-import com.netbeans.ide.windows.TopComponent;
-import com.netbeans.ide.explorer.propertysheet.PropertyDisplayer;
-import com.netbeans.ide.util.NbBundle;
-import com.netbeans.ide.util.WeakListener;
-import com.netbeans.ide.NotifyDescriptor;
-import com.netbeans.ide.TopManager;
+import org.openide.cookies.OpenCookie;
+import org.openide.cookies.SaveCookie;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.FileEntry;
+import org.openide.loaders.OpenSupport;
+import org.openide.loaders.DataObject;
+import org.openide.filesystems.FileObject;
+import org.openide.windows.CloneableTopComponent;
+import org.openide.windows.TopComponent;
+import org.openide.explorer.propertysheet.PropertyDisplayer;
+import org.openide.util.NbBundle;
+import org.openide.util.WeakListener;
+import org.openide.NotifyDescriptor;
+import org.openide.TopManager;
 
  
 /** Support for opening properties files (OpenCookie) in visual editor */

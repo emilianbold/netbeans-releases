@@ -16,11 +16,11 @@ package com.netbeans.developer.modules.httpserver;
 import java.util.Enumeration;
 import java.io.*;
 
-import com.netbeans.ide.modules.ModuleInstall;
-import com.netbeans.ide.execution.Executor;
-import com.netbeans.ide.util.NbBundle;
-import com.netbeans.ide.TopManager;
-import com.netbeans.ide.NotifyDescriptor;
+import org.openide.modules.ModuleInstall;
+import org.openide.execution.Executor;
+import org.openide.util.NbBundle;
+import org.openide.TopManager;
+import org.openide.NotifyDescriptor;
 
 import com.mortbay.HTTP.HttpServer;
 
@@ -45,7 +45,7 @@ public class HttpServerModule implements ModuleInstall {
   * Add applet executor
   */
   public void restored() {            
-    com.netbeans.ide.util.HttpServer.registerServer(HttpServerSettings.OPTIONS);
+    org.openide.util.HttpServer.registerServer(HttpServerSettings.OPTIONS);
     com.mortbay.Base.Log.instance()._out = new NullWriter();
   }
 
@@ -56,7 +56,7 @@ public class HttpServerModule implements ModuleInstall {
   /** Module is being closed. */
   public boolean closing () {
     // stop the server, don't set the running status
-    com.netbeans.ide.util.HttpServer.deregisterServer(HttpServerSettings.OPTIONS);
+    org.openide.util.HttpServer.deregisterServer(HttpServerSettings.OPTIONS);
     stopHTTPServer();
     return true; // agree to close
   }
@@ -121,6 +121,8 @@ public class HttpServerModule implements ModuleInstall {
 
 /*
  * Log
+ *  12   Gandalf   1.11        6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  11   Gandalf   1.10        6/8/99   Petr Jiricka    
  *  10   Gandalf   1.9         6/1/99   Petr Jiricka    
  *  9    Gandalf   1.8         6/1/99   Petr Jiricka    

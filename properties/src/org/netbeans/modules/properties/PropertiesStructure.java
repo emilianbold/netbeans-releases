@@ -17,7 +17,7 @@ import java.io.*;
 import java.util.Iterator;
 import javax.swing.text.BadLocationException;
 
-import com.netbeans.ide.text.PositionBounds;
+import org.openide.text.PositionBounds;
 
 /** General abstract structure for properties files, in its use similar to source hierarchy.
 *   Interoperates with Document, PropertiesTableModel, Nodes and other display-specific models

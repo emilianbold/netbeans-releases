@@ -26,9 +26,9 @@ import com.netbeans.editor.ext.JavaKit;
 import com.netbeans.editor.Indent;
 import com.netbeans.editor.view.DialogSupport;
 import com.netbeans.editor.ext.ExtSettings;
-import com.netbeans.ide.modules.ModuleInstall;
-import com.netbeans.ide.text.IndentEngine;
-import com.netbeans.ide.TopManager;
+import org.openide.modules.ModuleInstall;
+import org.openide.text.IndentEngine;
+import org.openide.TopManager;
 
 /**
 * Module installation class for editor
@@ -144,6 +144,8 @@ public class EditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  15   Gandalf   1.14        6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  14   Gandalf   1.13        6/8/99   Miloslav Metelka 
  *  13   Gandalf   1.12        6/1/99   Miloslav Metelka 
  *  12   Gandalf   1.11        6/1/99   Miloslav Metelka 

@@ -24,18 +24,18 @@ import java.io.ObjectInputStream;
 import java.io.IOException;
 import java.io.NotActiveException;
 
-import com.netbeans.ide.*;
-import com.netbeans.ide.filesystems.*;
-import com.netbeans.ide.loaders.*;
-import com.netbeans.ide.windows.*;
-import com.netbeans.ide.actions.OpenAction;
-import com.netbeans.ide.text.*;
-import com.netbeans.ide.util.*;
-import com.netbeans.ide.util.actions.*;
-import com.netbeans.ide.nodes.Node;
-import com.netbeans.ide.nodes.Children;
-import com.netbeans.ide.nodes.AbstractNode;
-import com.netbeans.ide.nodes.NodeListener;
+import org.openide.*;
+import org.openide.filesystems.*;
+import org.openide.loaders.*;
+import org.openide.windows.*;
+import org.openide.actions.OpenAction;
+import org.openide.text.*;
+import org.openide.util.*;
+import org.openide.util.actions.*;
+import org.openide.nodes.Node;
+import org.openide.nodes.Children;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.NodeListener;
 
 /** Object that provides main functionality for properties data loader.
 * This class is final only for performance reasons,
@@ -133,8 +133,8 @@ public final class PropertiesDataObject extends MultiDataObject {
   /** Help context for this object.
   * @return help context
   */
-  public com.netbeans.ide.util.HelpCtx getHelpCtx () {
-    return new com.netbeans.ide.util.HelpCtx ("com.netbeans.developer.docs.Users_Guide.usergd-using-div-12", "USERGD-USING-TABLE-2");
+  public org.openide.util.HelpCtx getHelpCtx () {
+    return new org.openide.util.HelpCtx ("com.netbeans.developer.docs.Users_Guide.usergd-using-div-12", "USERGD-USING-TABLE-2");
   }
                                          
   /** Comparator used for ordering secondary files, works over file names */
@@ -239,6 +239,8 @@ public final class PropertiesDataObject extends MultiDataObject {
 
 /*
  * <<Log>>
+ *  12   Gandalf   1.11        6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  11   Gandalf   1.10        6/8/99   Petr Jiricka    
  *  10   Gandalf   1.9         5/16/99  Petr Jiricka    
  *  9    Gandalf   1.8         5/14/99  Petr Jiricka    

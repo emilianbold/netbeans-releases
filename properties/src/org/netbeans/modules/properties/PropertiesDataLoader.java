@@ -16,14 +16,14 @@ package com.netbeans.developer.modules.loaders.properties;
 import java.util.StringTokenizer;
 import java.io.IOException;
 
-import com.netbeans.ide.actions.*;
-import com.netbeans.ide.filesystems.FileObject;
-import com.netbeans.ide.loaders.MultiFileLoader;
-import com.netbeans.ide.loaders.DataObject;
-import com.netbeans.ide.loaders.MultiDataObject;
-import com.netbeans.ide.loaders.FileEntry;
-import com.netbeans.ide.util.actions.SystemAction;
-import com.netbeans.ide.util.NbBundle;
+import org.openide.actions.*;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.MultiFileLoader;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.FileEntry;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.NbBundle;
 
 /** Data loader which recognizes properties files.
 * This class is final only for performance reasons,
@@ -132,6 +132,8 @@ public final class PropertiesDataLoader extends MultiFileLoader {
 
 /*
 * <<Log>>
+*  8    Gandalf   1.7         6/9/99   Ian Formanek    ---- Package Change To 
+*       org.openide ----
 *  7    Gandalf   1.6         6/6/99   Petr Jiricka    
 *  6    Gandalf   1.5         5/12/99  Petr Jiricka    
 *  5    Gandalf   1.4         5/11/99  Ian Formanek    Undone last change to 

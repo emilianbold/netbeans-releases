@@ -22,10 +22,10 @@ import javax.swing.event.MenuListener;
 import javax.swing.event.MenuEvent;
 import javax.swing.plaf.*;
 
-import com.netbeans.ide.util.HelpCtx;
-import com.netbeans.ide.util.actions.*;
-//import com.netbeans.ide.nodes.Cookies;
-import com.netbeans.ide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.actions.*;
+//import org.openide.nodes.Cookies;
+import org.openide.nodes.Node;
 //import com.netbeans.developer.modules.loaders.form.FormEditor;
 //import com.netbeans.developer.modules.loaders.form.RADNode;
 //import com.netbeans.developer.modules.loaders.form.EventsList;
@@ -57,7 +57,7 @@ public class EventsAction extends CookieAction {
   * @return the name of the action
   */
   public String getName() {
-    return com.netbeans.ide.util.NbBundle.getBundle (EventsAction.class).getString ("ACT_Events");
+    return org.openide.util.NbBundle.getBundle (EventsAction.class).getString ("ACT_Events");
   }
 
   /** Help context where to find more about the action.
@@ -155,6 +155,8 @@ public class EventsAction extends CookieAction {
 }
 /*
  * Log
+ *  5    Gandalf   1.4         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  4    Gandalf   1.3         5/20/99  Ian Formanek    FormNodeCookie->RADComponentCookie
  *       
  *  3    Gandalf   1.2         5/4/99   Ian Formanek    package change 

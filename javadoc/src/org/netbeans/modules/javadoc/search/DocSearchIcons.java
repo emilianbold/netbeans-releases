@@ -35,15 +35,15 @@ class DocSearchIcons extends Object {
 
   static {
     try {
-      icons[ ICON_NOTRESOLVED ] = new ImageIcon (DocSearchIcons.class.getResource ("/com/netbeans/ide/resources/pending.gif"));
-      icons[ ICON_PACKAGE ] = new ImageIcon (DocSearchIcons.class.getResource ("/com/netbeans/ide/resources/defaultFolder.gif"));
-      icons[ ICON_CLASS ] = new ImageIcon (DocSearchIcons.class.getResource ("/com/netbeans/ide/resources/src/class.gif"));
-      icons[ ICON_INTERFACE ] = new ImageIcon (DocSearchIcons.class.getResource ("/com/netbeans/ide/resources/src/interface.gif"));
-      icons[ ICON_CONSTRUCTOR ] = new ImageIcon (DocSearchIcons.class.getResource ("/com/netbeans/ide/resources/src/constructorPublic.gif"));
-      icons[ ICON_METHOD ] = new ImageIcon (DocSearchIcons.class.getResource ("/com/netbeans/ide/resources/src/methodPublic.gif"));
-      icons[ ICON_METHOD_ST ] = new ImageIcon (DocSearchIcons.class.getResource ("/com/netbeans/ide/resources/src/methodStPublic.gif"));
-      icons[ ICON_VARIABLE ] = new ImageIcon (DocSearchIcons.class.getResource ("/com/netbeans/ide/resources/src/variablePublic.gif"));
-      icons[ ICON_VARIABLE_ST ] = new ImageIcon (DocSearchIcons.class.getResource ("/com/netbeans/ide/resources/src/variableStPublic.gif"));
+      icons[ ICON_NOTRESOLVED ] = new ImageIcon (DocSearchIcons.class.getResource ("/org.openide/resources/pending.gif"));
+      icons[ ICON_PACKAGE ] = new ImageIcon (DocSearchIcons.class.getResource ("/org.openide/resources/defaultFolder.gif"));
+      icons[ ICON_CLASS ] = new ImageIcon (DocSearchIcons.class.getResource ("/org.openide/resources/src/class.gif"));
+      icons[ ICON_INTERFACE ] = new ImageIcon (DocSearchIcons.class.getResource ("/org.openide/resources/src/interface.gif"));
+      icons[ ICON_CONSTRUCTOR ] = new ImageIcon (DocSearchIcons.class.getResource ("/org.openide/resources/src/constructorPublic.gif"));
+      icons[ ICON_METHOD ] = new ImageIcon (DocSearchIcons.class.getResource ("/org.openide/resources/src/methodPublic.gif"));
+      icons[ ICON_METHOD_ST ] = new ImageIcon (DocSearchIcons.class.getResource ("/org.openide/resources/src/methodStPublic.gif"));
+      icons[ ICON_VARIABLE ] = new ImageIcon (DocSearchIcons.class.getResource ("/org.openide/resources/src/variablePublic.gif"));
+      icons[ ICON_VARIABLE_ST ] = new ImageIcon (DocSearchIcons.class.getResource ("/org.openide/resources/src/variableStPublic.gif"));
     } 
     catch (Throwable w) {
       w.printStackTrace ();
@@ -58,6 +58,8 @@ class DocSearchIcons extends Object {
 
 /* 
  * Log
+ *  3    Gandalf   1.2         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  2    Gandalf   1.1         5/14/99  Petr Hrebejk    
  *  1    Gandalf   1.0         5/13/99  Petr Hrebejk    
  * $ 

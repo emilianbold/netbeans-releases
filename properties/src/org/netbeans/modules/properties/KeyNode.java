@@ -22,16 +22,16 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 
-import com.netbeans.ide.util.datatransfer.*;
-import com.netbeans.ide.actions.*;
-import com.netbeans.ide.util.HelpCtx;
-import com.netbeans.ide.util.RequestProcessor;
-import com.netbeans.ide.util.NbBundle;
-import com.netbeans.ide.util.NbBundle;
-import com.netbeans.ide.util.actions.SystemAction;
-import com.netbeans.ide.nodes.*;
-import com.netbeans.ide.TopManager;
-import com.netbeans.ide.NotifyDescriptor;
+import org.openide.util.datatransfer.*;
+import org.openide.actions.*;
+import org.openide.util.HelpCtx;
+import org.openide.util.RequestProcessor;
+import org.openide.util.NbBundle;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
+import org.openide.nodes.*;
+import org.openide.TopManager;
+import org.openide.NotifyDescriptor;
 
 /** Standard node representing a key-value-comment item in the properties file.
 *
@@ -275,6 +275,8 @@ public class KeyNode extends AbstractNode {
 
 /*
  * <<Log>>
+ *  6    Gandalf   1.5         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  5    Gandalf   1.4         6/8/99   Petr Jiricka    
  *  4    Gandalf   1.3         6/6/99   Petr Jiricka    
  *  3    Gandalf   1.2         5/16/99  Petr Jiricka    

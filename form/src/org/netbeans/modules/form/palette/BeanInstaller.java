@@ -26,10 +26,10 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.border.*;
 
-import com.netbeans.ide.*;
-import com.netbeans.ide.filesystems.*;
-import com.netbeans.ide.loaders.DataObject;
-import com.netbeans.ide.util.NbBundle;
+import org.openide.*;
+import org.openide.filesystems.*;
+import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
 import com.netbeans.developer.modules.loaders.form.FormLoaderSettings;
 
 /** Bean Installer
@@ -561,6 +561,8 @@ public final class BeanInstaller extends Object {
 
 /*
  * Log
+ *  8    Gandalf   1.7         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  7    Gandalf   1.6         6/7/99   Ian Formanek    
  *  6    Gandalf   1.5         6/7/99   Ian Formanek    Fixed problem with 
  *       beans.properties not containing item for JAR archive

@@ -40,17 +40,17 @@ import javax.swing.*;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 
-import com.netbeans.ide.loaders.*;
-import com.netbeans.ide.*;
-import com.netbeans.ide.util.datatransfer.*;
-import com.netbeans.ide.filesystems.FileLock;
-import com.netbeans.ide.filesystems.FileObject;
-import com.netbeans.ide.filesystems.FileSystem;
-import com.netbeans.ide.util.*;
-import com.netbeans.ide.util.enum.*;
-import com.netbeans.ide.util.actions.SystemAction;
-import com.netbeans.ide.util.actions.Presenter;
-import com.netbeans.ide.nodes.*;
+import org.openide.loaders.*;
+import org.openide.*;
+import org.openide.util.datatransfer.*;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.util.*;
+import org.openide.util.enum.*;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.actions.Presenter;
+import org.openide.nodes.*;
 
 /** Object that represents one FileEntry and has support for presentation of this entry as a node
 *

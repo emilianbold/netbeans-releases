@@ -17,7 +17,7 @@ import java.awt.Image;
 import java.beans.*;
 import java.util.ResourceBundle;
 
-import com.netbeans.ide.util.NbBundle;
+import org.openide.util.NbBundle;
 
 
 /** BeanInfo for properties loader.
@@ -77,6 +77,8 @@ public final class PropertiesDataLoaderBeanInfo extends SimpleBeanInfo {
 
 /*
 * <<Log>>
+*  3    Gandalf   1.2         6/9/99   Ian Formanek    ---- Package Change To 
+*       org.openide ----
 *  2    Gandalf   1.1         3/9/99   Ian Formanek    Moved images to this 
 *       package
 *  1    Gandalf   1.0         1/22/99  Ian Formanek    

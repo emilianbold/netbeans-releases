@@ -22,11 +22,11 @@ import javax.swing.SwingUtilities;
 import java.awt.Image;
 import java.awt.Dimension;
 
-import com.netbeans.ide.windows.TopComponent;
-import com.netbeans.ide.util.RequestProcessor;
-import com.netbeans.ide.TopManager;
-import com.netbeans.ide.NotifyDescriptor;
-import com.netbeans.ide.util.NbBundle;
+import org.openide.windows.TopComponent;
+import org.openide.util.RequestProcessor;
+import org.openide.TopManager;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 /** Main window for documentation index search
  *

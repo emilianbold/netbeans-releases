@@ -13,9 +13,9 @@
 
 package com.netbeans.developer.modules.loaders.form;
 
-import com.netbeans.ide.explorer.propertysheet.SpecialPropertyEditor;
-import com.netbeans.ide.nodes.*;
-import com.netbeans.ide.util.Utilities;
+import org.openide.explorer.propertysheet.SpecialPropertyEditor;
+import org.openide.nodes.*;
+import org.openide.util.Utilities;
 
 import java.beans.*;
 import java.lang.reflect.InvocationTargetException;
@@ -891,6 +891,8 @@ public class RADComponent {
 
 /*
  * Log
+ *  20   Gandalf   1.19        6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  19   Gandalf   1.18        6/6/99   Ian Formanek    New FormInfo design 
  *       employed to provide correct top-level bean properties
  *  18   Gandalf   1.17        5/31/99  Ian Formanek    

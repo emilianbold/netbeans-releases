@@ -13,9 +13,9 @@
 
 package com.netbeans.developer.modules.loaders.form.actions;
 
-import com.netbeans.ide.util.NbBundle;
-import com.netbeans.ide.util.HelpCtx;
-import com.netbeans.ide.util.actions.CallableSystemAction;
+import org.openide.util.NbBundle;
+import org.openide.util.HelpCtx;
+import org.openide.util.actions.CallableSystemAction;
 import com.netbeans.developer.modules.loaders.form.palette.BeanInstaller;
 
 /** This action installs new bean into the system.
@@ -59,6 +59,8 @@ public class InstallBeanAction extends CallableSystemAction {
 
 /*
  * Log
+ *  3    Gandalf   1.2         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  2    Gandalf   1.1         5/26/99  Ian Formanek    Actions cleanup
  *  1    Gandalf   1.0         5/17/99  Petr Hamernik   
  * $

@@ -17,8 +17,8 @@ import java.beans.*;
 import java.lang.reflect.Method;
 import java.util.*;
 
-import com.netbeans.ide.TopManager;
-import com.netbeans.ide.util.Utilities;
+import org.openide.TopManager;
+import org.openide.util.Utilities;
 
 /** The PropertyPicker is a form which allows user to choose from property set
 * of specified required class.
@@ -327,6 +327,8 @@ public class PropertyPicker extends javax.swing.JDialog {
 
 /*
  * Log
+ *  8    Gandalf   1.7         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  7    Gandalf   1.6         6/1/99   Ian Formanek    Fixed removed event 
  *       handlers
  *  6    Gandalf   1.5         5/31/99  Ian Formanek    Updated to X2 form 

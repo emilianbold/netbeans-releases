@@ -14,7 +14,7 @@
 package com.netbeans.developer.modules.loaders.form;
 
 import java.beans.*;
-import com.netbeans.ide.nodes.*;
+import org.openide.nodes.*;
 
 /** 
  *
@@ -276,6 +276,8 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
 
 /*
  * Log
+ *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  3    Gandalf   1.2         5/31/99  Ian Formanek    Removed dumpStack
  *  2    Gandalf   1.1         5/30/99  Ian Formanek    
  *  1    Gandalf   1.0         5/24/99  Ian Formanek    

@@ -17,7 +17,7 @@ import java.beans.*;
 import java.awt.Image;
 import java.util.ResourceBundle;
 
-import com.netbeans.ide.util.NbBundle;
+import org.openide.util.NbBundle;
 
 /** URL data loader bean info.
 *
@@ -77,6 +77,8 @@ public class URLDataLoaderBeanInfo extends SimpleBeanInfo {
 
 /*
 * Log
+*  5    Gandalf   1.4         6/9/99   Ian Formanek    ---- Package Change To 
+*       org.openide ----
 *  4    Gandalf   1.3         3/9/99   Ian Formanek    
 *  3    Gandalf   1.2         3/9/99   Ian Formanek    
 *  2    Gandalf   1.1         2/16/99  David Simonek   

@@ -13,7 +13,7 @@
 
 package com.netbeans.developer.modules.loaders.form;
 
-import com.netbeans.ide.nodes.*;
+import org.openide.nodes.*;
 import com.netbeans.developerx.loaders.form.formeditor.layouts.DesignLayout;
 
 import java.awt.Component;
@@ -117,6 +117,8 @@ public class RADVisualComponent extends RADComponent {
 
 /*
  * Log
+ *  10   Gandalf   1.9         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  9    Gandalf   1.8         5/26/99  Ian Formanek    toString
  *  8    Gandalf   1.7         5/15/99  Ian Formanek    
  *  7    Gandalf   1.6         5/15/99  Ian Formanek    

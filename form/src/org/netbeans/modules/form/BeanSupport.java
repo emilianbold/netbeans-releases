@@ -13,7 +13,7 @@
 
 package com.netbeans.developer.modules.loaders.form;
 
-import com.netbeans.ide.nodes.*;
+import org.openide.nodes.*;
 
 import java.awt.*;
 import java.beans.*;
@@ -224,6 +224,8 @@ public class BeanSupport {
 
 /*
  * Log
+ *  5    Gandalf   1.4         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  4    Gandalf   1.3         5/30/99  Ian Formanek    Removed 
  *       getPropertyEditor
  *  3    Gandalf   1.2         5/5/99   Ian Formanek    

@@ -16,13 +16,13 @@ package com.netbeans.developer.modules.loaders.form;
 import java.io.IOException;
 import java.text.MessageFormat;
 
-import com.netbeans.ide.*;
-import com.netbeans.ide.actions.OpenAction;
-import com.netbeans.ide.loaders.*;
-import com.netbeans.ide.filesystems.*;
-import com.netbeans.ide.util.actions.SystemAction;
-import com.netbeans.ide.nodes.Node;
-import com.netbeans.ide.nodes.CookieSet;
+import org.openide.*;
+import org.openide.actions.OpenAction;
+import org.openide.loaders.*;
+import org.openide.filesystems.*;
+import org.openide.util.actions.SystemAction;
+import org.openide.nodes.Node;
+import org.openide.nodes.CookieSet;
 import com.netbeans.developer.modules.loaders.java.JavaDataObject;
 import com.netbeans.developer.modules.loaders.java.JavaEditor;
 import com.netbeans.developer.modules.loaders.form.*;
@@ -38,7 +38,7 @@ public class FormDataObject extends JavaDataObject {
 //--------------------------------------------------------------------
 // Static variables
 
-  private static java.util.ResourceBundle formBundle = com.netbeans.ide.util.NbBundle.getBundle (FormDataObject.class);
+  private static java.util.ResourceBundle formBundle = org.openide.util.NbBundle.getBundle (FormDataObject.class);
 
   /** lock for closing window */
   private static final Object OPEN_FORM_LOCK = new Object ();
@@ -102,7 +102,7 @@ public class FormDataObject extends JavaDataObject {
   /** Help context for this object.
   * @return help context
   */
-  public com.netbeans.ide.util.HelpCtx getHelpCtx () {
+  public org.openide.util.HelpCtx getHelpCtx () {
     return null; // [PENDING]
   }
 
@@ -135,6 +135,8 @@ public class FormDataObject extends JavaDataObject {
 
 /*
  * Log
+ *  18   Gandalf   1.17        6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  17   Gandalf   1.16        5/17/99  Ian Formanek    Fixed bug 1803 - Newly 
  *       created forms are not automatically opened in editor.
  *  16   Gandalf   1.15        5/4/99   Ian Formanek    package change 

@@ -13,13 +13,13 @@
 
 package com.netbeans.developer.modules.loaders.form;
 
-import com.netbeans.ide.actions.*;
-import com.netbeans.ide.cookies.SaveCookie;
-import com.netbeans.ide.nodes.*;
-import com.netbeans.ide.util.NbBundle;
-import com.netbeans.ide.util.Utilities;
-import com.netbeans.ide.util.actions.SystemAction;
-import com.netbeans.ide.util.datatransfer.PasteType;
+import org.openide.actions.*;
+import org.openide.cookies.SaveCookie;
+import org.openide.nodes.*;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.datatransfer.PasteType;
 import com.netbeans.developer.modules.loaders.form.actions.*;
 
 import java.awt.Image;
@@ -401,7 +401,7 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
   
   /** Index support for reordering of file system pool.
   */
-  private final class ComponentsIndex extends com.netbeans.ide.nodes.Index.Support {
+  private final class ComponentsIndex extends org.openide.nodes.Index.Support {
     
     /** Get the nodes; should be overridden if needed.
     * @return the nodes
@@ -495,6 +495,8 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
 
 /*
  * Log
+ *  16   Gandalf   1.15        6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  15   Gandalf   1.14        6/6/99   Ian Formanek    Cusomizer support added
  *  14   Gandalf   1.13        6/3/99   Ian Formanek    
  *  13   Gandalf   1.12        6/2/99   Ian Formanek    ToolsAction, Reorder

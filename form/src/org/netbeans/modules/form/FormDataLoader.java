@@ -13,12 +13,12 @@
 
 package com.netbeans.developer.modules.loaders.form;
 
-import com.netbeans.ide.*;
-import com.netbeans.ide.actions.*;
-import com.netbeans.ide.filesystems.*;
-import com.netbeans.ide.loaders.*;
-import com.netbeans.ide.util.actions.SystemAction;
-import com.netbeans.ide.util.NbBundle;
+import org.openide.*;
+import org.openide.actions.*;
+import org.openide.filesystems.*;
+import org.openide.loaders.*;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.NbBundle;
 import com.netbeans.developer.modules.loaders.java.JavaDataLoader;
 
 /** Loader for Forms. Recognizes file with extension .form and .java and with extension class if
@@ -139,6 +139,8 @@ public class FormDataLoader extends JavaDataLoader {
 
 /*
  * Log
+ *  15   Gandalf   1.14        6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  14   Gandalf   1.13        6/2/99   Ian Formanek    ToolsAction, Reorder
  *  13   Gandalf   1.12        5/14/99  Ian Formanek    extends JavaLoader to 
  *       provide substitutions during createFromTemplate

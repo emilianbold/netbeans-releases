@@ -16,7 +16,7 @@ package com.netbeans.developer.modules.text;
 import javax.swing.text.AttributeSet;
 import com.netbeans.editor.GuardedDocument;
 import com.netbeans.editor.Syntax;
-import com.netbeans.ide.text.NbDocument;
+import org.openide.text.NbDocument;
 
 /** 
 * BaseDocument extension managing the readonly blocks of text
@@ -75,6 +75,8 @@ NbDocument.Printable {
 
 /*
  * Log
+ *  7    Gandalf   1.6         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  6    Gandalf   1.5         5/7/99   Miloslav Metelka improved setChar.Attr.()
  *  5    Gandalf   1.4         5/5/99   Miloslav Metelka 
  *  4    Gandalf   1.3         4/22/99  Miloslav Metelka 

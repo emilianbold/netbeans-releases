@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import javax.swing.*;
 
-import com.netbeans.ide.util.io.*;
+import org.openide.util.io.*;
 
 /** ImageIcon with serialization.
 *

@@ -13,11 +13,11 @@
 
 package com.netbeans.developer.modules.loaders.image;
 
-import com.netbeans.ide.filesystems.FileObject;
-import com.netbeans.ide.loaders.*;
-import com.netbeans.ide.actions.*;
-import com.netbeans.ide.util.actions.SystemAction;
-import com.netbeans.ide.util.NbBundle;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.*;
+import org.openide.actions.*;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.NbBundle;
 
 /** Data loader which recognizes image files.
 * @author Petr Hamernik, Jaroslav Tulach

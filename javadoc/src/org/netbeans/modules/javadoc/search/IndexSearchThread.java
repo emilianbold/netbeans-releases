@@ -14,10 +14,10 @@
 package com.netbeans.developer.modules.javadoc.search;
 
 
-import com.netbeans.ide.util.RequestProcessor;
-import com.netbeans.ide.util.TaskListener;
-import com.netbeans.ide.util.Task;
-import com.netbeans.ide.filesystems.FileObject;
+import org.openide.util.RequestProcessor;
+import org.openide.util.TaskListener;
+import org.openide.util.Task;
+import org.openide.filesystems.FileObject;
 
 /** Abstract class for thread which searches for documentation
  *
@@ -82,6 +82,8 @@ public abstract class IndexSearchThread extends Thread  {
 
 /* 
  * Log
+ *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  3    Gandalf   1.2         5/16/99  Petr Hrebejk    
  *  2    Gandalf   1.1         5/14/99  Petr Hrebejk    
  *  1    Gandalf   1.0         5/13/99  Petr Hrebejk    

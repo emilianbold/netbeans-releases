@@ -18,7 +18,7 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import com.netbeans.ide.util.NbBundle;
+import org.openide.util.NbBundle;
 
 /** Property editor for host property of HttpServerSettings class
 *
@@ -80,6 +80,8 @@ public class HostPropertyEditor extends PropertyEditorSupport {
 
 /*
  * Log
+ *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  3    Gandalf   1.2         6/8/99   Petr Jiricka    
  *  2    Gandalf   1.1         5/11/99  Petr Jiricka    
  *  1    Gandalf   1.0         5/7/99   Petr Jiricka    

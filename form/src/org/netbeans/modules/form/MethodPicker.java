@@ -17,8 +17,8 @@ import java.beans.*;
 import java.lang.reflect.Method;
 import java.util.*;
 
-import com.netbeans.ide.TopManager;
-import com.netbeans.ide.util.Utilities;
+import org.openide.TopManager;
+import org.openide.util.Utilities;
 
 /** The MethodPicker is a form which allows user to pick one of methods
 * with specified required return type.
@@ -346,6 +346,8 @@ public class MethodPicker extends javax.swing.JDialog {
 
 /*
  * Log
+ *  7    Gandalf   1.6         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
  *  6    Gandalf   1.5         6/1/99   Ian Formanek    Fixed removed event 
  *       handlers
  *  5    Gandalf   1.4         5/31/99  Ian Formanek    Updated to X2 form 
