@@ -629,6 +629,8 @@ public class RADComponent {
 
     public String getPreCode ();
     public String getPostCode ();
+    public void setPreCode (String value);
+    public void setPostCode (String value);
   }
 
   private Node.Property createProperty (final PropertyDescriptor desc) {
@@ -861,7 +863,7 @@ public class RADComponent {
       return preCode;
     }
 
-    void setPreCode (String value) {
+    public void setPreCode (String value) {
       preCode = value;
       getFormManager ().firePropertyChanged (RADComponent.this, desc.getName (), null, null);
     }
@@ -870,7 +872,7 @@ public class RADComponent {
       return postCode;
     }
 
-    void setPostCode (String value) {
+    public void setPostCode (String value) {
       postCode = value;
       getFormManager ().firePropertyChanged (RADComponent.this, desc.getName (), null, null);
     }
@@ -1137,7 +1139,7 @@ public class RADComponent {
       return preCode;
     }
 
-    void setPreCode (String value) {
+    public void setPreCode (String value) {
       preCode = value;
       getFormManager ().firePropertyChanged (RADComponent.this, desc.getName (), null, null);
     }
@@ -1146,7 +1148,7 @@ public class RADComponent {
       return postCode;
     }
 
-    void setPostCode (String value) {
+    public void setPostCode (String value) {
       postCode = value;
       getFormManager ().firePropertyChanged (RADComponent.this, desc.getName (), null, null);
     }
@@ -1245,6 +1247,7 @@ public class RADComponent {
 
 /*
  * Log
+ *  52   Gandalf   1.51        9/12/99  Ian Formanek    Fixed setPre/PostCode
  *  51   Gandalf   1.50        9/12/99  Ian Formanek    FormAwareEditor.setRADComponent
  *        changes
  *  50   Gandalf   1.49        9/10/99  Ian Formanek    Pre/Post code added to 
