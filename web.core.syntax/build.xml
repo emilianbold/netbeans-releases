@@ -32,7 +32,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="compile" depends="init">
-    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="true">
+    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
         <pathelement location="${nb_root}/openide/openide-13javac-workaround.jar"/>
         <pathelement location="${nb_root}/openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
