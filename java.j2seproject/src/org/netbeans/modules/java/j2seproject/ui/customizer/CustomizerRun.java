@@ -15,7 +15,9 @@ package org.netbeans.modules.java.j2seproject.ui.customizer;
 
 import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
 import org.openide.filesystems.FileObject;
+
 
 /**
  *
@@ -44,9 +46,13 @@ public class CustomizerRun extends JPanel implements J2SECustomizer.Panel {
             jButtonMoveUp,
             jButtonMoveDown );
         Project p = j2seProperties.getProject ();
-        FileObject root = p.getProjectDirectory ();
-        String sourceRoot = (String)j2seProperties.get (J2SEProjectProperties.SRC_DIR);
-        vms = new VisualMainClassSupport (jTextFieldMainClass, jButtonMainClass, root.getFileObject (sourceRoot));
+
+        // better way to obtain the source directory
+        // j2seProperties.get(SRC_DIR) returns non-evaluated
+        // property for a project with existing sources
+        // which cannot be used for construct sources root
+        FileObject sourceRoot = J2SEProjectUtil.getProjectSourceDirectory (p);
+        vms = new VisualMainClassSupport (jTextFieldMainClass, jButtonMainClass, sourceRoot);
     }
     
     
