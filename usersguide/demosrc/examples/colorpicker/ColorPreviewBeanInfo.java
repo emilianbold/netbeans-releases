@@ -48,7 +48,7 @@ public class ColorPreviewBeanInfo extends SimpleBeanInfo {
     static {
         try {
 
-            eventSets[EVENT_propertyChangeListener] = new EventSetDescriptor ( ColorPreview.class, "propertyChangeListener", java.beans.PropertyChangeListener.class, new String[0], "addPropertyChangeListener", "removePropertyChangeListener" );
+            eventSets[EVENT_propertyChangeListener] = new EventSetDescriptor ( ColorPreview.class, "propertyChangeListener", java.beans.PropertyChangeListener.class, new String[] { "propertyChange" }, "addPropertyChangeListener", "removePropertyChangeListener" );
         }
         catch( IntrospectionException e) {}//GEN-HEADEREND:Events
 
