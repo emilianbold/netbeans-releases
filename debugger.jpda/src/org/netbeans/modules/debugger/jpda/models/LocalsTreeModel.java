@@ -95,16 +95,17 @@ public class LocalsTreeModel implements TreeModel {
             } else
             if (o instanceof AbstractVariable) { // ThisVariable & FieldVariable
                 AbstractVariable mv = (AbstractVariable) o;
-//                if ( (mv.getInnerValue () instanceof ArrayReference) &&
-//                     (mv.getFieldsCount () > 50)
-//                ) {
-//                    AbstractVariable[] vs = getFields (mv, true, 0, 50);
-//                    Object[] vs1 = new Object [51];
-//                    System.arraycopy (vs, 0, vs1, from, 50);
-//                    vs1 [50] = "More"; // NOI18N
-//                    return vs1; 
-//                }
-                return getFields (mv, true, from, to);
+                Object[] avs = getFields (mv, true, from, to);
+                if (mv.getInnerValue () instanceof ArrayReference) {
+                    ArrayReference ar = (ArrayReference) mv.getInnerValue ();
+                    if (ar.length () > 50) {
+                        Object[] a2 = new Object [avs.length + 1];
+                        System.arraycopy (avs, 0, a2, 0, avs.length);
+                        a2 [avs.length] = "More";
+                        avs = a2;
+                    }
+                }
+                return avs;
             } else
             throw new UnknownTypeException (o);
         } catch (VMDisconnectedException ex) {
@@ -152,7 +153,13 @@ public class LocalsTreeModel implements TreeModel {
             } else
             if (node instanceof AbstractVariable) { // ThisVariable & FieldVariable
                 AbstractVariable mv = (AbstractVariable) node;
-                return getFields (mv, true, 0, 0).length;
+                int i = 0;
+                if (mv.getInnerValue () instanceof ArrayReference) {
+                    ArrayReference ar = (ArrayReference) mv.getInnerValue ();
+                    if (ar.length () > 50) 
+                        i++;
+                }
+                return getFields (mv, true, 0, 0).length + i;
             } else
             throw new UnknownTypeException (node);
         } catch (VMDisconnectedException ex) {
