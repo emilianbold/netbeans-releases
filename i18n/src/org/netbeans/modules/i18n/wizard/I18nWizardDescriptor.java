@@ -31,7 +31,6 @@ import javax.swing.SwingUtilities;
 
 import org.openide.NotifyDescriptor;
 import org.openide.TopManager;
-import org.openide.util.HelpCtx; 
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListener;
@@ -70,30 +69,36 @@ public class I18nWizardDescriptor extends WizardDescriptor {
 
     
     /** Creates new I18nWizardDescriptor */
-    public I18nWizardDescriptor(WizardDescriptor.Iterator panels, Object settings) {
+    private I18nWizardDescriptor(WizardDescriptor.Iterator panels, Object settings) {
         super(panels, settings);
         
         Listener listener = new Listener();
 
         // Button init.
-        nextButton.setText(NbBundle.getBundle(getClass()).getString("CTL_Next"));
-        previousButton.setText(NbBundle.getBundle(getClass()).getString("CTL_Previous"));
-        finishButton.setText(NbBundle.getBundle(getClass()).getString("CTL_Finish"));
-        cancelButton.setText(NbBundle.getBundle(getClass()).getString("CTL_Cancel"));
+        nextButton.setText(NbBundle.getBundle(I18nWizardDescriptor.class).getString("CTL_Next"));
+        previousButton.setText(NbBundle.getBundle(I18nWizardDescriptor.class).getString("CTL_Previous"));
+        finishButton.setText(NbBundle.getBundle(I18nWizardDescriptor.class).getString("CTL_Finish"));
+        cancelButton.setText(NbBundle.getBundle(I18nWizardDescriptor.class).getString("CTL_Cancel"));
         
         nextButton.addActionListener(listener);
         previousButton.addActionListener(listener);
         finishButton.addActionListener(listener);
         cancelButton.addActionListener(listener);
         
-        nextButton.setMnemonic(NbBundle.getBundle(getClass()).getString("CTL_Next_Mnem").charAt(0));
-        previousButton.setMnemonic(NbBundle.getBundle(getClass()).getString("CTL_Previous_Mnem").charAt(0));
+        nextButton.setMnemonic(NbBundle.getBundle(I18nWizardDescriptor.class).getString("CTL_Next_Mnem").charAt(0));
+        previousButton.setMnemonic(NbBundle.getBundle(I18nWizardDescriptor.class).getString("CTL_Previous_Mnem").charAt(0));
 
         setOptions(new Object[] { previousButton, nextButton, finishButton, cancelButton });
         setClosingOptions(new Object[] { cancelButton });
 
         this.panels = panels;
         this.settings = settings;
+    }
+
+    /** Creates I18N wizard descriptor.
+     * @return <code>I18nWizardDescriptor</code> instance. */
+    static WizardDescriptor createI18nWizardDescriptor(WizardDescriptor.Iterator panels, Object settings) {
+        return new I18nWizardDescriptor(panels, settings);
     }
     
     /** Overrides superclass method. */
@@ -173,8 +178,8 @@ public class I18nWizardDescriptor extends WizardDescriptor {
     /** Listener to changes in the iterator and panels. 
      * Hack, it's private in super. */
     private class Listener extends Object implements ActionListener {
-        public void actionPerformed(ActionEvent ev) {
-            if(ev.getSource () == nextButton) {
+        public void actionPerformed(ActionEvent evt) {
+            if(evt.getSource () == nextButton) {
                 
                 final WizardDescriptor.Panel current = panels.current();
                 
@@ -188,10 +193,10 @@ public class I18nWizardDescriptor extends WizardDescriptor {
                 } else { 
                     handleNextButton();
                 }
-            } else if(ev.getSource () == previousButton) {
+            } else if(evt.getSource () == previousButton) {
                 panels.previousPanel ();
                 updateState ();
-            } else if(ev.getSource () == finishButton) {
+            } else if(evt.getSource () == finishButton) {
                 final WizardDescriptor.Panel current = panels.current();
                 
                 current.storeSettings(settings);                
@@ -207,7 +212,7 @@ public class I18nWizardDescriptor extends WizardDescriptor {
                         }
                     });
                 }
-            } else if(ev.getSource () == cancelButton) {
+            } else if(evt.getSource () == cancelButton) {
                 panels.current().storeSettings(settings);
                 setValue(CANCEL_OPTION);
             }

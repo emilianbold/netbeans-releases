@@ -16,23 +16,17 @@ package org.netbeans.modules.i18n.wizard;
 
 
 import java.awt.Dialog;
-import java.awt.Dimension;
-import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.TreeMap;
-import javax.swing.SwingUtilities;
 
 import org.netbeans.modules.i18n.I18nUtil;
 
-import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.TopManager;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.WizardDescriptor;
 
 
@@ -47,7 +41,7 @@ public class I18nTestWizardAction extends NodeAction {
     static final long serialVersionUID = -3265587506739081248L;
 
     /** Weak reference to dialog. */
-    private Reference dialogWRef = new WeakReference(null);
+    private WeakReference dialogWRef = new WeakReference(null);
     
     
     /** Implements superclass abstract method. 
@@ -65,7 +59,7 @@ public class I18nTestWizardAction extends NodeAction {
             dialog.dispose();
         }
         
-        WizardDescriptor wizardDescriptor = new I18nWizardDescriptor(
+        WizardDescriptor wizardDescriptor = I18nWizardDescriptor.createI18nWizardDescriptor(
             getWizardIterator(),
             I18nUtil.createWizardSettings(activatedNodes)
         );
@@ -100,13 +94,13 @@ public class I18nTestWizardAction extends NodeAction {
         wizardDesc.putProperty("WizardPanel_contentNumbered", Boolean.TRUE); // NOI18N
 
         ArrayList contents = new ArrayList(3);
-        contents.add(NbBundle.getBundle(getClass()).getString("TXT_SelectTestSources"));
-        contents.add(NbBundle.getBundle(getClass()).getString("TXT_SelectTestResources"));
-        contents.add(NbBundle.getBundle(getClass()).getString("TXT_FoundMissingResources"));
+        contents.add(NbBundle.getBundle(I18nTestWizardAction.class).getString("TXT_SelectTestSources"));
+        contents.add(NbBundle.getBundle(I18nTestWizardAction.class).getString("TXT_SelectTestResources"));
+        contents.add(NbBundle.getBundle(I18nTestWizardAction.class).getString("TXT_FoundMissingResources"));
         
         wizardDesc.putProperty("WizardPanel_contentData", (String[])contents.toArray(new String[contents.size()])); // NOI18N
         
-        wizardDesc.setTitle(NbBundle.getBundle(getClass()).getString("LBL_TestWizardTitle"));
+        wizardDesc.setTitle(NbBundle.getBundle(I18nTestWizardAction.class).getString("LBL_TestWizardTitle"));
         wizardDesc.setTitleFormat(new MessageFormat("{0} ({1})")); // NOI18N
 
         wizardDesc.setModal(false);
@@ -114,7 +108,7 @@ public class I18nTestWizardAction extends NodeAction {
     
     /** Gets localized name of action. Overrides superclass method. */
     public String getName() {
-        return NbBundle.getBundle(getClass()).getString("LBL_TestWizardActionName");
+        return NbBundle.getBundle(I18nTestWizardAction.class).getString("LBL_TestWizardActionName");
     }
 
     /** Gets the action's icon location.

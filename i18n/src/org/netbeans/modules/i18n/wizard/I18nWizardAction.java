@@ -16,27 +16,17 @@ package org.netbeans.modules.i18n.wizard;
 
 
 import java.awt.Dialog;
-import java.awt.Dimension;
-import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
-import javax.swing.SwingUtilities;
 
-import org.netbeans.modules.i18n.FactoryRegistry;
 import org.netbeans.modules.i18n.I18nUtil;
 
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.TopManager;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.WizardDescriptor;
 
 
@@ -51,7 +41,7 @@ public class I18nWizardAction extends NodeAction {
     static final long serialVersionUID = 6965968608028644524L;
 
     /** Weak reference to dialog. */
-    private Reference dialogWRef = new WeakReference(null);
+    private WeakReference dialogWRef = new WeakReference(null);
 
     
     /** Implements superclass abstract method. 
@@ -69,7 +59,7 @@ public class I18nWizardAction extends NodeAction {
             dialog.dispose();
         }
 
-        WizardDescriptor wizardDesc = new I18nWizardDescriptor(
+        WizardDescriptor wizardDesc = I18nWizardDescriptor.createI18nWizardDescriptor(
             getWizardIterator(),
             I18nUtil.createWizardSettings(activatedNodes)
         );
@@ -126,7 +116,7 @@ public class I18nWizardAction extends NodeAction {
 
     /** Gets localized name of action. Overrides superclass method. */
     public String getName() {
-        return NbBundle.getBundle(getClass()).getString("LBL_WizardActionName");
+        return NbBundle.getBundle(I18nWizardAction.class).getString("LBL_WizardActionName");
     }
 
     /** Gets the action's icon location.
