@@ -17,9 +17,29 @@
 
 <!-- Start of web applications -->
 
-<tocitem text="J2EE Applications">
-    <tocitem text="About Developing J2EE Applications" target="j2ee_about" />
- 
+<tocitem text="Enterprise Applications">
+    <tocitem text="Developing Enterprise Applications" >
+        <tocitem text="About Enterprise Applications" >
+            <tocitem text="About Enterprise Applications" target="about_ent_apps" />
+            <tocitem text="Working With Enterprise Applications" target="ent_app_process" />
+            <tocitem text="Enterprise Application Tasks: Quick Reference" target="tbd" />
+        </tocitem>
+        <tocitem text="Creating and Configuring Enterprise Applications" >
+            <tocitem text="Creating an Enterprise Application Project" target="tbd" />
+            <tocitem text="Importing an Existing Enterprise Application" target="tbd" />
+            <tocitem text="Addind a Module to an Enterprise Application" target="tbd" />
+            <tocitem text="Adding a Library to an Enterprise Application" target="tbd" />
+            <tocitem text="Editing an Enterprise Application's Deployment Descriptor" target="tbd" />
+        </tocitem>
+        <tocitem text="Building and Running Enterprise Applications" >
+            <tocitem text="Building an Enterprise Application" target="tbd" />
+            <tocitem text="Validating an Enterprise Application" target="tbd" />
+            <tocitem text="Setting the Target Server for an Enterprise Application" target="tbd" />
+            <tocitem text="Deploying an Enterprise Application" target="tbd" />
+            <tocitem text="Debugging an Enterprise Application" target="tbd" />
+        </tocitem>
+    </tocitem>
+    
 <tocitem text="Developing Web Applications">
 	
     <tocitem text="About Web Applications">
@@ -194,7 +214,7 @@
         <tocitem text="Building and Deploying EJB Modules" >
             <tocitem text="Building an EJB Module" target="build_ejb" />
             <tocitem text="Validating an EJB Module" target="tbd" />
-            <tocitem text="Deploying an EJB Module" target="tbd" />
+            <tocitem text="Deploying an EJB Module" target="deploy_ejb" />
         </tocitem>
         <tocitem text="Debugging and Testing EJB Modules" >
             <tocitem text="Debugging an EJB Module" target="tbd" />

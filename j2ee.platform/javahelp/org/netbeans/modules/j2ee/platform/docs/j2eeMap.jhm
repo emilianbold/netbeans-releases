@@ -96,6 +96,14 @@
 
 <!-- End of web apps help -->
 
+<!-- Start of Enterprise Application help -->
+
+    <mapID target="about_ent_apps" url="enterprise/general/about_ent_apps.html" />
+    <mapID target="ent_app_process" url="enterprise/general/ent_app_process.html" />
+    
+
+<!-- End of Enterprise Application help -->
+
 <!-- Start of EJB help -->
 
     <mapID target="about_entity_beans" url="ejb/general/about_entity_beans.html" />
@@ -115,7 +123,7 @@
     <mapID target="add_ejb_to_j2ee_app" url="ejb/configuring/add_ejb_to_j2ee_app.html" />
 
     <mapID target="build_ejb" url="ejb/deploy/build_ejb.html" />
-    
+    <mapID target="deploy_ejb" url="ejb/deploy/deploy_ejb.html" />
     <!-- End of EJB help -->
 
 </map>
