@@ -15,17 +15,22 @@ package org.netbeans.modules.editor.html;
 
 import java.awt.event.ActionEvent;
 import javax.swing.Action;
+import javax.swing.JMenu;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.TextAction;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.fold.FoldHierarchy;
+import org.netbeans.api.editor.fold.FoldUtilities;
 
 import org.netbeans.editor.*;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.ext.*;
 import org.netbeans.editor.ext.html.*;
 import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
+import org.netbeans.modules.html.editor.folding.HTMLFoldTypes;
+import org.openide.util.NbBundle;
 
 /**
 * Editor kit implementation for HTML content type
@@ -41,6 +46,11 @@ public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit {
     public static final String HTML_MIME_TYPE = "text/html"; // NOI18N
 
     public static final String shiftInsertBreakAction = "shift-insert-break"; // NOI18N
+    
+    //comment folds
+    public static final String collapseAllCommentsAction = "collapse-all-comment-folds"; //NOI18N
+    
+    public static final String expandAllCommentsAction = "expand-all-comment-folds"; //NOI18N
     
     private static boolean setupReadersInitialized = false;
 
@@ -93,7 +103,10 @@ public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit {
                                    new HTMLShiftBreakAction(),
                                    // replace MatchBraceAction with HtmlEditor own
                                    new MatchBraceAction(ExtKit.matchBraceAction, false),
-                                   new MatchBraceAction(ExtKit.selectionMatchBraceAction, true)
+                                   new MatchBraceAction(ExtKit.selectionMatchBraceAction, true),
+                                   new HTMLGenerateFoldPopupAction(),
+                                    new CollapseAllCommentsFolds(),
+                                    new ExpandAllCommentsFolds()
                                };
         return TextAction.augmentList(super.createActions(), HTMLActions);
     }
@@ -176,5 +189,41 @@ public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit {
             }
         }
     }
+    
+    public static class HTMLGenerateFoldPopupAction extends GenerateFoldPopupAction {
+        
+        protected void addAdditionalItems(JTextComponent target, JMenu menu){
+            addAction(target, menu, collapseAllCommentsAction);
+            addAction(target, menu, expandAllCommentsAction);
+        }
+    }
+    
+    public static class ExpandAllCommentsFolds extends BaseAction{
+        public ExpandAllCommentsFolds(){
+            super(expandAllCommentsAction);
+            putValue(SHORT_DESCRIPTION, NbBundle.getBundle(HTMLKit.class).getString("expand-all-comment-folds"));
+            putValue(BaseAction.POPUP_MENU_TEXT, NbBundle.getBundle(HTMLKit.class).getString("popup-expand-all-comment-folds"));
+        }
+        
+        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+            FoldHierarchy hierarchy = FoldHierarchy.get(target);
+            // Hierarchy locking done in the utility method
+            FoldUtilities.expand(hierarchy, HTMLFoldTypes.COMMENT);
+        }
+    }
+    
+    public static class CollapseAllCommentsFolds extends BaseAction{
+        public CollapseAllCommentsFolds(){
+            super(collapseAllCommentsAction);
+            putValue(SHORT_DESCRIPTION, NbBundle.getBundle(HTMLKit.class).getString("collapse-all-comment-folds"));
+            putValue(BaseAction.POPUP_MENU_TEXT, NbBundle.getBundle(HTMLKit.class).getString("popup-collapse-all-comment-folds"));
+        }
+        
+        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+            FoldHierarchy hierarchy = FoldHierarchy.get(target);
+            // Hierarchy locking done in the utility method
+            FoldUtilities.collapse(hierarchy, HTMLFoldTypes.COMMENT);
+        }
+    }  
     
 }

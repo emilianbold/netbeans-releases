@@ -22,6 +22,8 @@ import org.netbeans.editor.MultiKeyBinding;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.SettingsNames;
+import org.netbeans.editor.ext.html.HTMLSettingsDefaults;
+import org.netbeans.editor.ext.html.HTMLSettingsNames;
 
 /**
 * Nb settings for HTML.
@@ -49,8 +51,14 @@ public class NbHTMLSettingsInitializer extends Settings.AbstractInitializer {
 
         if (kitClass == HTMLKit.class) {
 
+            settingsMap.put(SettingsNames.CODE_FOLDING_ENABLE, Boolean.TRUE);
+            
+            settingsMap.put(HTMLSettingsNames.CODE_FOLDING_UPDATE_TIMEOUT,
+                            HTMLSettingsDefaults.defaultCodeFoldingUpdateInterval);
+            
             SettingsUtil.updateListSetting(settingsMap, SettingsNames.KEY_BINDING_LIST, getHTMLKeyBindings());
-
+            
+            
         }
 
     }

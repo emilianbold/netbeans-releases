@@ -37,7 +37,8 @@ public class HTMLOptionsBeanInfo extends BaseOptionsBeanInfo {
         HTMLOptions.COMPLETION_LOWER_CASE_PROP,
         HTMLOptions.JAVADOC_AUTO_POPUP_PROP,
         HTMLOptions.JAVADOC_PREFERRED_SIZE_PROP,
-        HTMLOptions.JAVADOC_BGCOLOR
+        HTMLOptions.JAVADOC_BGCOLOR,
+        HTMLOptions.CODE_FOLDING_UPDATE_TIMEOUT_PROP
     };
 
     public HTMLOptionsBeanInfo() {

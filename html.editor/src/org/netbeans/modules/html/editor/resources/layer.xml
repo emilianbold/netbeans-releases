@@ -75,6 +75,15 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Editors">
         <folder name="text">
             <folder name="html">
+                <folder name="FoldManager">
+                    <file name="org-netbeans-modules-html-editor-folding-HTMLFoldManagerFactory.instance"/>
+                </folder>
+                
+                <folder name="SideBar">
+                    <file name="org-netbeans-modules-editor-java-NbJavaCodeFoldingSideBarFactory.instance"/>
+                    <attr name="org-netbeans-editor-GlyphGutter.instance/org-netbeans-modules-editor-java-NbJavaCodeFoldingSideBarFactory.instance" boolvalue="true"/>
+                </folder>
+                
                 <file name="Settings.settings" url="HTMLOptions.settings"/>
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.editor.html.HTMLKit"/>
@@ -87,6 +96,17 @@ Microsystems, Inc. All Rights Reserved.
                     </file>
                     <attr name="format/SeparatorAfterFormat.instance" boolvalue="true"/>
                     <attr name="SeparatorAfterFormat.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
+
+                    <attr name="SeparatorAfterFormat.instance/org-openide-actions-PasteAction.instance" boolvalue="true"/>
+                    
+                    <file name="SeparatorFolding.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                                        
+                    <attr name="org-openide-actions-PasteAction.instance/SeparatorFolding.instance" boolvalue="true"/>
+                    
+                    <file name="generate-fold-popup"/>
+                    <attr name="SeparatorFolding.instance/generate-fold-popup" boolvalue="true"/>
                 </folder>
             </folder>
         </folder>
