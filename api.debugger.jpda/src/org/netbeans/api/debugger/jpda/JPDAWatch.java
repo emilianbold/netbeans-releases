@@ -67,7 +67,7 @@ public interface JPDAWatch {
     /**
      * Sets value of this local represented as text.
      *
-     * @return sets value of this local represented as text
+     * @param value a new value of this variable represented as text
      */
     public abstract void setValue (String value) throws InvalidExpressionException;
 
