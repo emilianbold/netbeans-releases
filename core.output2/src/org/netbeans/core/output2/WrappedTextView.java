@@ -1,3 +1,15 @@
+/*
+ *                 Sun Public License Notice
+ *
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
 package org.netbeans.core.output2;
 
 import org.openide.ErrorManager;
@@ -7,20 +19,70 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * Created by IntelliJ IDEA.
- * User: tim
- * Date: May 19, 2004
- * Time: 4:22:44 PM
- * To change this template use File | Settings | File Templates.
+ * A custom Swing text View which supports line wrapping.  The default Swing
+ * line wrapping code is not appropriate for our purposes - particularly, it
+ * will iterate the entire buffer multiple times to determine break positions.
+ * Since it would defeat the purpose of using a memory mapped file to have to
+ * pull the entire thing into memory every time it's painted or its size should
+ * be calculated, we have this class instead.
+ * <p>
+ * All position/line calculations this view does are based on the integer array
+ * of line offsets kept by OutWriter.
+ *
+ * @author Tim Boudreau
  */
 public class WrappedTextView extends View {
+    /**
+     * The component we will paint
+     */
     private JTextComponent comp;
+    /**
+     * Precalculated number of characters per line
+     */
+    private int charsPerLine = -1;
+    /**
+     * Precalculated font descent, used to adjust the bounding rectangle of
+     * characters as returned by modelToView.
+     */
+    private int fontDescent = -1;
+    /**
+     * A scratch Segment object to avoid allocation while painting lines
+     */
+    private static final Segment SEGMENT = new Segment();
+    /**
+     * Precalculated width (in pixels) we are to paint into, the end being the wrap point
+     */
+    private int width = -1;
+    /**
+     * Flag indicating we need to recalculate metrics before painting
+     */
+    private boolean changed = true;
+    /**
+     * Precalculated width of a single character (assumes fixed width font).
+     */
+    private int charWidth = -1;
+    /**
+     * Precalculated height of a single character (assumes fixed width font).
+     */
+    private int charHeight = -1;
+    /**
+     * A scratchpad int array
+     */
+    static final int[] ln = new int[3];
+    /**
+     * Flag indicating that the antialiasing flag is set on the Graphics object.
+     * We do a somewhat prettier arrow if it is.
+     */
+    private boolean aa = false;
+
+    //Self explanatory...
     private static Color selectedFg;
     private static Color unselectedFg;
     private static Color selectedLinkFg;
     private static Color unselectedLinkFg;
     private static Color selectedErr;
     private static Color unselectedErr;
+    private static final Color arrowColor = new Color (80, 162, 80);
 
     static {
         //XXX clean these colors up a bit for different look and feels
@@ -31,14 +93,13 @@ public class WrappedTextView extends View {
         selectedLinkFg = Color.BLUE;
         unselectedLinkFg = selectedLinkFg;
 
-        //XXX it looks like current ant runs simply print *everything* to
-        //stderr, which may make trying to color it separately a bit useless.
         selectedErr = new Color (164, 0, 0);
         unselectedErr = selectedErr;
     }
+
+    
     public WrappedTextView(Element elem, JTextComponent comp) {
         super(elem);
-        System.err.println ("WrappedTextView for " + elem);
         this.comp = comp;
     }
 
@@ -59,9 +120,9 @@ public class WrappedTextView extends View {
         if (doc != null) {
             switch (axis) {
                 case X_AXIS :
-                    return doc.getLongestLineLength();
+                    return doc.getLongestLineLength() * charWidth();
                 case Y_AXIS :
-                    return doc.getLogicalLineCountIfWrappedAt(wcharCount());
+                    return doc.getLogicalLineCountIfWrappedAt(getCharsPerLine()) * charHeight();
                 default :
                     throw new IllegalArgumentException (Integer.toString(axis));
             }
@@ -70,7 +131,12 @@ public class WrappedTextView extends View {
         }
     }
 
-    private int charWidth = -1;
+    /**
+     * Get the last calculated character width, returning a reasonable
+     * default if none has been calculated.
+     *
+     * @return The character width
+     */
     private int charWidth() {
         if (charWidth == -1) {
             return 12;
@@ -78,7 +144,12 @@ public class WrappedTextView extends View {
         return charWidth;
     }
 
-    private int charHeight = -1;
+    /**
+     * Get the last calculated character height, returning a reasonable
+     * default if none has been calculated.
+     *
+     * @return The character height
+     */
     private int charHeight() {
         if (charHeight == -1) {
             return 7;
@@ -86,7 +157,13 @@ public class WrappedTextView extends View {
         return charHeight;
     }
 
-
+    /**
+     * Get the component's document as an instance of OutputDocument, if it
+     * is one, returning null if it is not (briefly it will not be after the
+     * editor kit has been installed - this is unavoidable).
+     *
+     * @return An instance of OutputDocument or null.
+     */
     private OutputDocument odoc() {
         Document doc = comp.getDocument();
         if (doc instanceof OutputDocument) {
@@ -95,19 +172,34 @@ public class WrappedTextView extends View {
         return null;
     }
 
-    private boolean changed = true;
+    /**
+     * Set a flag indicating that on the next paint, widths, character widths,
+     * etc. need to be recalculated.
+     *
+     * @param val Whether to recalculate or not.
+     */
     public void setChanged(boolean val) {
         changed = val;
     }
 
-    private int wcharCount() {
+    /**
+     * Get the number of characters per line that can be displayed before wrapping
+     * given the component's current font and size.
+     *
+     * @return Characters per line, or 80 if not yet calculated
+     */
+    private int getCharsPerLine() {
         if (charsPerLine == -1) {
             return 80;
         }
         return charsPerLine;
     }
 
-    private int width = -1;
+    /**
+     * Get the last known width of the component we're painting into
+     *
+     * @return The width we should paint into
+     */
     private int getWidth() {
         if (width == -1) {
             return 1;
@@ -115,26 +207,50 @@ public class WrappedTextView extends View {
         return width;
     }
 
-    private int charsPerLine = -1;
+    /**
+     * Get the font descent for the last known font, or a reasonable default if unknown.
+     * This is added to the y position of character rectangles in modelToView() so
+     * painting the selection includes the complete character and does not interfere
+     * with the line above.
+     *
+     * @return The font descent.
+     */
+    private int fontDescent() {
+        if (fontDescent == -1) {
+            return 4;
+        }
+        return fontDescent;
+    }
+
+    /**
+     * Update metrics we use when painting, such as the visible area of the component,
+     * the charcter width/height, etc.
+     * @param g
+     */
     private void updateInfo(Graphics g) {
 //        if (charWidth == -1 || changed) {
-            aa = true; /*((Graphics2D) g).getRenderingHint(RenderingHints.KEY_ANTIALIASING) ==
-                RenderingHints.VALUE_ANTIALIAS_ON; */
+            aa = ((Graphics2D) g).getRenderingHint(RenderingHints.KEY_ANTIALIASING) ==
+                RenderingHints.VALUE_ANTIALIAS_ON;
 
             FontMetrics fm = g.getFontMetrics(comp.getFont());
             charWidth = fm.charWidth('m'); //NOI18N
             charHeight = fm.getHeight();
+            fontDescent = fm.getMaxDescent();
             if (comp.getParent() instanceof JViewport) {
                 JViewport jv = (JViewport) comp.getParent();
-                width = jv.getViewSize().width - (aa ? 18 : 24);
+                width = jv.getExtentSize().width - (aa ? 18 : 24);
             } else {
                 width = comp.getWidth() - (aa ? 18 : 24);
             }
             charsPerLine = width / charWidth;
 //        }
     }
-    private static final Segment SEGMENT = new Segment();
 
+    /**
+     * Get the left hand margin required for printing line wrap decorations.
+     *
+     * @return
+     */
     private int margin() {
         return 9;
     }
@@ -153,25 +269,21 @@ public class WrappedTextView extends View {
         OutputDocument d = odoc();
         if (d != null) {
             Rectangle clip = g.getClipBounds();
-//            System.err.println("Clip: " + clip);
 
             int lineCount = d.getElementCount();
             if (lineCount == 0) {
                 return;
             }
 
-            int charsPerLine = wcharCount();
+            int charsPerLine = getCharsPerLine();
 
             int physicalLine = clip.y / charHeight;
 
-            int[] logline = new int[] {physicalLine, 0, 0};
+            ln[0] = physicalLine;
 
+            d.toLogicalLineIndex(ln, charsPerLine);
 
-            d.toLogicalLineIndex(logline, charsPerLine);
-
-//            System.err.println ("Starting physical line: " + physicalLine + " first line: " + logline[0] + " wrap index " + logline[1] + " of " + logline[1] + " clip y " + clip.y);
-
-            int firstline = logline[0]; //XXX
+            int firstline = ln[0]; //XXX
 
             int count = lineCount - firstline;
 
@@ -190,7 +302,6 @@ public class WrappedTextView extends View {
                     int lineStart = d.getLineStart(i + firstline);
                     int lineEnd = d.getLineEnd (i + firstline);
                     int length = lineEnd - lineStart;
-//                    System.err.println ("Painting " + (i + firstline) + " start " + lineStart + " length " + length);
 
                     g.setColor(getColorForLocation(lineStart, d, true));
 
@@ -203,8 +314,11 @@ public class WrappedTextView extends View {
                     int currLogicalLine = 0;
 
                     if (i == 0 && logicalLines > 0) {
-                        while (logline[1] > currLogicalLine) {
+                        while (ln[1] > currLogicalLine) {
+                            //Fast forward through logical lines above the first one we want
+                            //to paint, but do redraw the arrow so we don't erase it
                             currLogicalLine++;
+                            drawArrow (g, y - ((logicalLines - currLogicalLine) * charHeight()));
                         }
                     }
                     //Iterate all the logicalLines lines
@@ -214,6 +328,29 @@ public class WrappedTextView extends View {
 
                         if (currLogicalLine != logicalLines-1) {
                             drawArrow (g, y);
+                        }
+                        int realPos = lineStart + charpos;
+
+                        if (realPos >= selStart && realPos + lenToDraw < selEnd) {
+                            Color c = g.getColor();
+                            g.setColor (comp.getSelectionColor());
+                            g.fillRect (margin(), y+fontDescent()-charHeight(), lenToDraw * charWidth(), charHeight());
+                            g.setColor (c);
+                        } else if (realPos < selStart && realPos + lenToDraw > selStart) {
+                            int selx = margin() + (charWidth() * (selStart - realPos));
+                            int selLen = selEnd > realPos + lenToDraw ? ((lenToDraw + realPos) - selStart) * charWidth() :
+                                    (selEnd - selStart) * charWidth();
+                            Color c = g.getColor();
+                            g.setColor (comp.getSelectionColor());
+                            g.fillRect (selx, y + fontDescent() - charHeight(), selLen, charHeight());
+                            g.setColor (c);
+                        } else if (realPos > selStart && realPos + lenToDraw >= selEnd) {
+                            //we're drawing the tail of a selection
+                            int selLen = (selEnd - realPos) * charWidth();
+                            Color c = g.getColor();
+                            g.setColor (comp.getSelectionColor());
+                            g.fillRect (margin(), y + fontDescent() - charHeight(), selLen, charHeight());
+                            g.setColor (c);
                         }
 
                         g.drawChars(seg.array, charpos, lenToDraw, margin, y);
@@ -228,14 +365,18 @@ public class WrappedTextView extends View {
             }
         }
     }
-
-    private boolean aa = false;
+    /**
+     * Draw the decorations used with wrapped lines.
+     *
+     * @param g A graphics to paint into
+     * @param y The y coordinate of the line as a font baseline position
+     */
     private void drawArrow (Graphics g, int y) {
         Graphics2D g2d = (Graphics2D) g;
         int fontHeight = charHeight();
         Color c = g.getColor();
 
-        g.setColor (new Color (80, 162, 80));
+        g.setColor (arrowColor());
 
         int w = getWidth() + 15;
         y+=2;
@@ -281,7 +422,15 @@ public class WrappedTextView extends View {
 
     }
 
-    private int lastPos = -1;
+    /**
+     * Get the color used for the line wrap arrow
+     *
+     * @return The arrow color
+     */
+    private Color arrowColor() {
+        return arrowColor;
+    }
+
     public Shape modelToView(int pos, Shape a, Position.Bias b) throws BadLocationException {
         Rectangle result = new Rectangle(0, 0, charWidth(), charHeight());
         OutputDocument od = odoc();
@@ -291,22 +440,15 @@ public class WrappedTextView extends View {
 
             int column = pos - start;
 
-            int charsPerLine = wcharCount();
-
-            int linesAbove = od.getLogicalLineCountAbove(line, charsPerLine);
+            int charsPerLine = getCharsPerLine();
 
             int row = od.getLogicalLineCountAbove(line, charsPerLine);
             if (column > charsPerLine) {
                 row += (column / charsPerLine);
                 column = column % charsPerLine;
             }
-            result.y = (row * charHeight());
-
-//            result.x = Math.min (od.getLineLength(line), column * charWidth());
+            result.y = (row * charHeight()) + fontDescent();
             result.x = margin() + (column * charWidth());
-              if (pos != lastPos && pos == comp.getCaret().getDot())
-                System.err.println ("m2v: pos=" + pos + "=" + result + " line=" + line + " row= " + row + " start=" + start + " column=" + column + " linesAbove=" + linesAbove);
-            lastPos = pos;
         }
         return result;
     }
@@ -315,9 +457,9 @@ public class WrappedTextView extends View {
         OutputDocument od = odoc();
         if (od != null) {
             int ix = (int) x - margin();
-            int iy = (int) y;
+            int iy = (int) y - fontDescent();
 
-            int charsPerLine = wcharCount();
+            int charsPerLine = getCharsPerLine();
 
             int physicalLine = (iy / charHeight);
 
@@ -338,13 +480,15 @@ public class WrappedTextView extends View {
             if (column > lineLength) {
                 return lineStart + lineLength-1;
             }
-            //XXX don't return coordinates past the end of a multi-line thingy
 
-            int result = wraps > 0 ? lineStart + (ln[1] * charsPerLine) + column : lineStart + column;
-            System.err.println ("ViewToModel " + ix + "," + iy + " = " + result + " physical ln " + physicalLine +
+            int result = wraps > 0 ?
+                Math.min(od.getLineEnd(logicalLine) - 1, lineStart + (ln[1] * charsPerLine) + column)
+                : lineStart + column;
+/*            System.err.println ("ViewToModel " + ix + "," + iy + " = " + result + " physical ln " + physicalLine +
                     " logical ln " + logicalLine + " on wrap line " + ln[1] + " of " + wraps + " charsPerLine " +
                     charsPerLine + " column " + column + " line length " + lineLength);
 //            System.err.println ("v2m: [" + ix + "," + iy + "] = " + result);
+*/
             return result;
 
         } else {
@@ -353,10 +497,15 @@ public class WrappedTextView extends View {
     }
 
     /**
-     * A scratchpad int array
+     * Get a color for a given position in the document - this will either be plain,
+     * hyperlink or standard error colors.
+     *
+     * @param start A position in the document
+     * @param d The document, presumably an instance of OutputDocument (though briefly it is not
+     *  during an editor kit change)
+     * @param selected Whether or not it is selected
+     * @return The foreground color to paint with
      */
-    int[] ln = new int[3];
-
     private static Color getColorForLocation (int start, Document d, boolean selected) {
         OutputDocument od = (OutputDocument) d;
         int line = od.getElementIndex (start);
