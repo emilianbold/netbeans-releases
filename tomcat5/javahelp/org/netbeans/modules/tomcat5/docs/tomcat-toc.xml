@@ -15,31 +15,19 @@
 <!-- last updated 13Feb04 -->
 
 
-<tocitem text="Core IDE Help">
-   <tocitem text="Tomcat Server">
-        <tocitem text="About the Tomcat Plugin" target="tomcat_plugin"/>
-	<tocitem text="About the Bundled Tomcat Server" target="tomcat_internal" />
+<tocitem text="IDE Configuration">
+   <tocitem text="Using the Tomcat Server">
+	<tocitem text="About the Tomcat Server" target="tomcat_plugin" />
+        <tocitem text="Viewing the Tomcat Server in the IDE" target="tomcat_top_node" />
+        <tocitem text="Setting a Web Module Context for the Tomcat Server" target="tomcat_context_add" />
 	<tocitem text="Starting and Stopping a Tomcat Server" target="tomcat_start" />
-	<tocitem text="Editing the Tomcat Server Configuration File" target="tomcat_edit_config" />
-	<tocitem text="Tomcat 5 Servers Node" target="tomcat_top_node" /> 
-	<tocitem text="Tomcat Instance Node" target="tomcat_internal_node" />
+	<tocitem text="Reconfiguring a Tomcat Server" target="tomcat_edit_config" />
+	<tocitem text="Customizing a Tomcat Server" target="tomcat_internal_props"/>
 	<tocitem text="Adding a Tomcat Server" target="tomcat_addinstall" />
-	<tocitem text="Tomcat Instance Property Sheet" target="tomcat_internal_props"/>
-	<tocitem text="Tomcat Web Modules Node" target="tomcat_context_node" />
-	<tocitem text="Tomcat 5 Class Loading" target="tomcat_classload" />
-
-    </tocitem>
-    <tocitem text="Web Modules">
-      <tocitem text="Working With Tomcat" >
-          <tocitem text="About Working With Tomcat" target="webmod_about" />
-          <tocitem text="Targeting Tomcat for Running Web Modules" target="tomcat_default" />       
-	  <tocitem text="Setting a Web Module Context for the Tomcat Server" target="tomcat_context_add" />
-          <tocitem text="Running a Web Module Using Tomcat" target="webmod_singletest" />    
-	  <tocitem text="Running JSP Files Using Tomcat" target="jsp_run" />
-	  <tocitem text="Running Servlets Using Tomcat" target="servlet_run" />
-	  <tocitem text="Removing a Web Module from the Tomcat Server" target="tomcat_context_delete" />   
-          <tocitem text="Tomcat Context Descriptor Node" target="webmod_contextxml" />
-     </tocitem>
-   </tocitem>  
+        <tocitem text="Targeting a Tomcat Server for Running Web Modules" target="tomcat_default" />
+	<tocitem text="Running a Web Module Using Tomcat" target="webmod_singletest" />    
+        <tocitem text="Running a JSP File Using a Tomcat Server" target="jsp_run" />
+        <tocitem text="Running a Servlet Using a Tomcat Server" target="servlet_run" />
+        <tocitem text="Removing a Web Module from a Tomcat Server" target="tomcat_context_delete" />     
 </tocitem>
 </toc>

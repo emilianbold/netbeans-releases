@@ -9,17 +9,18 @@
 <meta name="lastupdated" content="4Feb04">
 <!-- p1 -->
 
-<title>About The Tomcat Plugin</title>
+<title>About The Tomcat Server</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
 
-<h2>About the Tomcat Plugin</h2>
+<h2>About The Tomcat Server</h2>
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p> 
-<p>The Tomcat Plugin is an IDE module that handles integration with Tomcat
+<h3>The Tomcat Plugin</h3>
+The Tomcat Plugin is an IDE module that handles integration with Tomcat
   servers.</p>
 <p>A Tomcat server is bundled with the IDE and is pre-configured to work with 
   the plugin. The Tomcat server implements the JavaServer Pages 2.0 and Servlet 
@@ -36,17 +37,42 @@
   <li>The <i>JavaServer Pages Specification</i> is available at <tt>http://java.sun.com/products/jsp</tt></li>
   <li>The <em>Java Servlet Specification</em> is available at <tt>http://java.sun.com</tt><tt>/products/servlet</tt></li>
 </ul>
+
+<h3>The Bundled Tomcat Server</h3>
+<p>When you install the IDE, the installation automatically adds the bundled Tomcat 
+  server to the IDE's server registry.</p>
+<table cellpadding="3" cellspacing="0" border="0">
+  <tr valign="top"> 
+    <td><img src="../images/tip.gif" alt="tip">&nbsp;</td>
+    <td> You can also configure the IDE to deploy web modules to other installations 
+      of Tomcat. See <a href="tomcat_addinstall.html">Adding 
+      a Tomcat Installation</a> for more information. </td>
+  </tr>
+</table>
+<p>The configuration files for the bundled Tomcat server are in the Tomcat <i>base</i> 
+  directory, located under your IDE user directory. The Tomcat <i>home</i> directory 
+  is under the IDE installation directory. Note that this setup differs from a 
+  typical Tomcat installation, where the base directory and home directory coincide. 
+  To see the exact locations of the home and base directories, right-click the 
+  server's node in the Runtime tab and choose Properties from the contextual menu. 
+</p>
+<p>Shared libraries that are used by web modules must be added to the home directory. 
+  Do not add shared libraries to the base directory.</p>
 <table>
   <tr> 
-    <th colspan=2 align=left><a name="seealso">See Also</a></th>
+    <td valign="top"><img src="../images/warn.gif" width="16" height="16"></td>
+    <td valign=top align=left> <p>Developers using a common IDE installation need 
+        to exercise caution when adding shared libraries to the home directory. 
+        Libraries stored in the home directory are shared by all web modules that 
+        are deployed on the server, so the potential for version conflicts exists.</p></td>
   </tr>
-  <tr> 
-    <td width="22"></td>
-    <td width="207"><a href="tomcat_top_node.html">Tomcat 5 Servers Node</a><br>
-      <a href="tomcat_internal_node.html">Tomcat Instance Node</a> <br>
-      <a href="tomcat_context_node.html">Tomcat Web Modules Node</a><br>	  
-	  </tr>
 </table>
+<p>On the UNIX platform, the IDE is sometimes installed in a read-only directory. 
+  If this is the case, you will not be able to add shared libraries to the bundled 
+  Tomcat installation. Ask the person responsible for the IDE installation to 
+  make writable all directories under the Tomcat home directory. Alternatively, 
+  you could add another Tomcat server and configure it to meet your needs. </p>
+
 <hr>
 <small><a href="../credits.html">Legal Notices</a> 
 <table cellpadding="20" border="0"> 
@@ -56,3 +82,4 @@
 </table> 
 
 </small></body></html>
+
