@@ -157,6 +157,7 @@ public class AnalyzeResultsTask extends Task {
         if (destFile == null) {
             throw new BuildException ("Missing destination file. distFile attribute must be set.");
         }
+        OutputStreamWriter ow = null;
         try {
             log("Processing "+refFile, Project.MSG_VERBOSE);
             ResultsHandler handler = new ResultsHandler ();
@@ -164,37 +165,45 @@ public class AnalyzeResultsTask extends Task {
             p.parse(refFile, handler);
             
             Map refCases = handler.getCases();
-
-            Iterator it = resultsReports.iterator();
-            while (it.hasNext()) {
-                FileSet fs = (FileSet)it.next();
-                DirectoryScanner ds = fs.getDirectoryScanner(project);
-                File basedir = ds.getBasedir();
-                String[] files = ds.getIncludedFiles();
-                for (int i = 0; i<files.length; i++) {
-                    log("Processing "+files[i], Project.MSG_VERBOSE);
-                    ResultsHandler handler2 = new ResultsHandler ();
-                    p.parse(new File(basedir, files[i]), handler2);
-                    
-                    Map newCases = handler2.getCases();
-                    Iterator it2 = newCases.keySet().iterator();
-                    while (it2.hasNext()) {
-                        TestCaseResults res = (TestCaseResults)it2.next();
-                        Object o = refCases.get(res);
-                        if (o != null) {
-                            TestCaseResults refResult = (TestCaseResults)o;
-                            if (refResult.getCount() <= 3 || res.getCount() <= 3) {
-                                log("ttest skipped for "+refResult.getName()+" "+refResult.getOrder(), Project.MSG_VERBOSE);
-                                continue;
-                            }
-                            log("Compare "+refResult.getName()+" "+refResult.getOrder(), Project.MSG_VERBOSE);
-                            log("\t"+refResult.getCount()+" against "+res.getCount()+" values", Project.MSG_VERBOSE);
-                            TestCaseResults.ttest(res, refResult);
-                        }
-                    }
-                }
-                // process them...
-            }
+            
+                ow = new OutputStreamWriter(new FileOutputStream(destFile));
+                ow.write("<testresults>\n<referenceresults>\n");
+                printCases (ow, refCases.keySet().iterator(), null);
+                ow.write("</referenceresults>\n");
+                
+	            Iterator it = resultsReports.iterator();
+	            while (it.hasNext()) {
+	                FileSet fs = (FileSet)it.next();
+	                DirectoryScanner ds = fs.getDirectoryScanner(project);
+	                File basedir = ds.getBasedir();
+	                String[] files = ds.getIncludedFiles();
+	                for (int i = 0; i<files.length; i++) {
+	                    log("Processing "+files[i], Project.MSG_VERBOSE);
+	                    ResultsHandler handler2 = new ResultsHandler ();
+	                    p.parse(new File(basedir, files[i]), handler2);
+	                    
+	                    Map newCases = handler2.getCases();
+	                    Iterator it2 = newCases.keySet().iterator();
+	                    while (it2.hasNext()) {
+	                        TestCaseResults res = (TestCaseResults)it2.next();
+	                        Object o = refCases.get(res);
+	                        if (o != null) {
+	                            TestCaseResults refResult = (TestCaseResults)o;
+	                            if (refResult.getCount() <= 2 || res.getCount() <= 2) {
+	                                log("ttest skipped for "+refResult.getName()+" "+refResult.getOrder(), Project.MSG_VERBOSE);
+	                                continue;
+	                            }
+	                            log("Compare "+refResult.getName()+" "+refResult.getOrder(), Project.MSG_VERBOSE);
+	                            log("\t"+refResult.getCount()+" against "+res.getCount()+" values", Project.MSG_VERBOSE);
+	                            TestCaseResults.TTestValue tt = TestCaseResults.ttest(res, refResult);
+	                            res.setTTest(tt);
+	                        }
+	                    }
+		            printCases (ow, newCases.keySet().iterator(), refCases);
+	                }
+	                // process them...
+	            }
+                ow.write("</testresults>\n");
             
         }
         catch (ParserConfigurationException ex) {
@@ -207,7 +216,10 @@ public class AnalyzeResultsTask extends Task {
             throw new BuildException ("Cannot parse results file.", e);
         }
         catch (java.io.IOException e) {
-            throw new BuildException ("Cannot parse results file.", e);
+            throw new BuildException ("IOException when computing.", e);
+        }
+        finally {
+            try { if (ow != null) ow.close(); } catch (IOException ioe) {}
         }
         
         // To signal an error:
@@ -224,6 +236,40 @@ public class AnalyzeResultsTask extends Task {
         // zip.init();
         // zip.setLocation(location);
         // zip.execute();
+    }
+    
+    /** Outputs the results of all cases in passed iterator.
+     * When refCases is supplied it also prints the difference and result of ttest.
+     */
+    private void printCases (OutputStreamWriter ow, Iterator it, Map refCases) throws IOException {
+        while (it.hasNext()) {
+            TestCaseResults oneCase = (TestCaseResults)it.next();
+            ow.write("<testcase");
+            ow.write(" name=\""+oneCase.getName()+"\"\n");
+            ow.write(" threshold=\""+oneCase.getThreshold()+"\"");
+            ow.write(" unit=\""+oneCase.getUnit()+"\"");
+            ow.write(" order=\""+oneCase.getOrder()+"\"\n");
+            ow.write(" average=\""+oneCase.getAverage()+"\"");
+            ow.write(" stddev=\""+oneCase.getStdDev()+"\"");
+            ow.write(" variance=\""+oneCase.getVariance()+"\">\n");
+            Iterator it2 = oneCase.getValues().iterator();
+            while (it2.hasNext()) {
+                ow.write("\t<result value=\""+it2.next().toString()+"\"/>\n");
+            }
+            if (refCases != null) {
+                Object o = refCases.get(oneCase);
+                if (o != null) {
+                    TestCaseResults refResult = (TestCaseResults)o;
+                    ow.write("<difference value=\""+(oneCase.getAverage()/refResult.getAverage()*100-100)+"\"/>\n");
+                    
+            	TestCaseResults.TTestValue tt = oneCase.getTTest();
+            	if (tt != null) {
+            	    ow.write ("<ttest p=\""+tt.getP()+"\" tvalue=\""+tt.getT()+"\" df=\""+tt.getDF()+"\"/>\n");
+            	}
+                }
+            }
+            ow.write("</testcase>\n");
+        }
     }
     
     private class ResultsHandler extends DefaultHandler {
@@ -267,35 +313,6 @@ public class AnalyzeResultsTask extends Task {
         }
         
         public void endDocument() throws SAXException {
-            OutputStreamWriter ow = null;
-            try {
-                ow = new OutputStreamWriter(new FileOutputStream(destFile));
-                ow.write("<testresults>\n");
-                Iterator it = cases.keySet().iterator();
-                while (it.hasNext()) {
-                    TestCaseResults oneCase = (TestCaseResults)it.next();
-                    ow.write("<testcase");
-                    ow.write(" name=\""+oneCase.getName()+"\"\n");
-                    ow.write(" threshold=\""+oneCase.getThreshold()+"\"");
-                    ow.write(" unit=\""+oneCase.getUnit()+"\"");
-                    ow.write(" order=\""+oneCase.getOrder()+"\"\n");
-                    ow.write(" average=\""+oneCase.getAverage()+"\"");
-                    ow.write(" stddev=\""+oneCase.getStdDev()+"\"");
-                    ow.write(" variance=\""+oneCase.getVariance()+"\">\n");
-                    Iterator it2 = oneCase.getValues().iterator();
-                    while (it2.hasNext()) {
-                        ow.write("\t<result value=\""+it2.next().toString()+"\"/>\n");
-                    }
-                    ow.write("</testcase>\n");
-                }
-                ow.write("</tesresults>\n");
-            }
-            catch (IOException ioe) {
-                throw new BuildException ("Cannot write output", ioe);
-            }
-            finally {
-                try { if (ow != null) ow.close(); } catch (IOException ioe) {}
-            }
         }
         
     }

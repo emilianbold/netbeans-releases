@@ -60,7 +60,7 @@ public class TestCaseResults implements Comparable {
         ttest(r, r2);
     }
     
-    public static void ttest(TestCaseResults r1, TestCaseResults r2) {
+    public static TTestValue ttest(TestCaseResults r1, TestCaseResults r2) {
         double sv1 = 0;	// 1st dataset sample variance
         double sv2 = 0;	// 2nd dataset sample variance
         
@@ -117,7 +117,7 @@ public class TestCaseResults implements Comparable {
             t = Math.abs(r1.getAverage() - r2.getAverage()) * Math.sqrt(r1.getCount() * r2.getCount() / (r1.getCount() + r2.getCount())) / sp;
         }
         
-        double pVal = stDist(df, t);
+        double pVal = (t!=0)? stDist(df, t): 0.5;
         String pValComment = "" + pVal;
         
         if (pVal <= 0.01) {
@@ -141,6 +141,9 @@ public class TestCaseResults implements Comparable {
             "comma, tab and newline.\n";
             comment = "\n";
         }
+        else if (t == 0) {
+            comment1 = "The means are the same for both samples.";
+        }
         
         
         // convert variance to std. deviation for report
@@ -162,6 +165,8 @@ public class TestCaseResults implements Comparable {
         comment1 + comment;
         
         System.out.println(cs);
+        
+        return new TTestValue (pVal ,t, df);
     }
 
     /** Name of test case. */
@@ -190,6 +195,8 @@ public class TestCaseResults implements Comparable {
     private transient double sumSquares;
     
     private transient int n;
+    
+    private TTestValue tt;
 
     /** Creates a new instance of TestCaseResults */
     public TestCaseResults(String name, int threshold, String unit, int order) {
@@ -232,6 +239,14 @@ public class TestCaseResults implements Comparable {
     public double getSumSquares () {
         compute();
         return sumSquares;
+    }
+    
+    public void setTTest(TTestValue tt) {
+    	this.tt = tt;
+    }
+    
+    public TTestValue getTTest() {
+    	return tt;
     }
     
     /** updates mean and variances. */
@@ -483,7 +498,6 @@ public class TestCaseResults implements Comparable {
         double u = 0;
         double sign = 1;
         double stepSize = t/5000;
-        System.out.println("stepSize "+stepSize);
         if ( t < 0) {
             sign = -1;
         }
@@ -504,5 +518,28 @@ public class TestCaseResults implements Comparable {
             sm = 1;		// do not allow probability more than one from roundoff error
         }
         return  sm ;
+    }
+    
+    public static class TTestValue {
+    	/** P(x&gt;t). */
+        private double p;
+        /** t Value (one tailed). */
+        private double t;
+        
+        /** Degree of freedom. */
+        private double degree;
+        
+        public TTestValue (double p, double t, double degree) {
+            this.p = p;
+            this.t = t;
+            this.degree = degree;
+        }
+        
+        public double getP() { return p; }
+        
+        public double getT() { return t; }
+        
+        public double getDF() { return degree; }
+        
     }
 }
