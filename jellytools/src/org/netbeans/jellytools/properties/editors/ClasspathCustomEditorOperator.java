@@ -59,7 +59,9 @@ public class ClasspathCustomEditorOperator extends NbDialogOperator {
      */
     public JButtonOperator btAddDirectory() {
         if (_btAddDirectory==null) {
-            _btAddDirectory = new JButtonOperator( this, "Add Directory...", 0 );
+            _btAddDirectory = new JButtonOperator(this, Bundle.getString(
+                                            "org.netbeans.beaninfo.editors.Bundle",
+                                            "CTL_AddDirectory"));
         }
         return _btAddDirectory;
     }
@@ -70,7 +72,9 @@ public class ClasspathCustomEditorOperator extends NbDialogOperator {
      */
     public JButtonOperator btMoveDown() {
         if (_btMoveDown==null) {
-            _btMoveDown = new JButtonOperator( this, "Move Down", 0 );
+            _btMoveDown = new JButtonOperator(this, Bundle.getString(
+                                            "org.netbeans.beaninfo.editors.Bundle",
+                                            "CTL_MoveDown"));
         }
         return _btMoveDown;
     }
@@ -81,7 +85,7 @@ public class ClasspathCustomEditorOperator extends NbDialogOperator {
      */
     public JListOperator lstClasspath() {
         if (_lstClasspath==null) {
-            _lstClasspath = new JListOperator( this, 0 );
+            _lstClasspath = new JListOperator(this);
         }
         return _lstClasspath;
     }
@@ -92,7 +96,9 @@ public class ClasspathCustomEditorOperator extends NbDialogOperator {
      */
     public JButtonOperator btAddJARZIP() {
         if (_btAddJARZIP==null) {
-            _btAddJARZIP = new JButtonOperator( this, "Add JAR/ZIP...", 0 );
+            _btAddJARZIP = new JButtonOperator(this, Bundle.getString(
+                                            "org.netbeans.beaninfo.editors.Bundle", 
+                                            "CTL_AddJAR"));
         }
         return _btAddJARZIP;
     }
@@ -103,7 +109,9 @@ public class ClasspathCustomEditorOperator extends NbDialogOperator {
      */
     public JButtonOperator btRemove() {
         if (_btRemove==null) {
-            _btRemove = new JButtonOperator( this, "Remove", 0 );
+            _btRemove = new JButtonOperator(this, Bundle.getString(
+                                            "org.netbeans.beaninfo.editors.Bundle", 
+                                            "CTL_Remove"));
         }
         return _btRemove;
     }
@@ -114,7 +122,9 @@ public class ClasspathCustomEditorOperator extends NbDialogOperator {
      */
     public JButtonOperator btMoveUp() {
         if (_btMoveUp==null) {
-            _btMoveUp = new JButtonOperator( this, "Move Up", 0 );
+            _btMoveUp = new JButtonOperator(this, Bundle.getString(
+                                            "org.netbeans.beaninfo.editors.Bundle", 
+                                            "CTL_MoveUp"));
         }
         return _btMoveUp;
     }
@@ -124,7 +134,9 @@ public class ClasspathCustomEditorOperator extends NbDialogOperator {
      * @return FileCustomEditorOperator of directory selector */
     public FileCustomEditorOperator addDirectory() {
         btAddDirectory().pushNoBlock();
-        return new FileCustomEditorOperator(Bundle.getString("org.netbeans.beaninfo.editors.Bundle", "CTL_FileSystemPanel.Local_Dialog_Title"));
+        return new FileCustomEditorOperator(Bundle.getString(
+                                            "org.netbeans.beaninfo.editors.Bundle", 
+                                            "CTL_FileSystemPanel.Local_Dialog_Title"));
     }
 
     /** clicks on "Move Down" JButton
@@ -139,7 +151,9 @@ public class ClasspathCustomEditorOperator extends NbDialogOperator {
      * @return FileCustomEditorOperator of JAR or ZIP file selector */
     public FileCustomEditorOperator addJARZIP() {
         btAddJARZIP().pushNoBlock();
-        return new FileCustomEditorOperator(Bundle.getString("org.netbeans.beaninfo.editors.Bundle", "CTL_FileSystemPanel.Jar_Dialog_Title"));
+        return new FileCustomEditorOperator(Bundle.getString(
+                                            "org.netbeans.beaninfo.editors.Bundle", 
+                                            "CTL_FileSystemPanel.Jar_Dialog_Title"));
     }
 
     /** adds directory into classpath list
@@ -175,7 +189,8 @@ public class ClasspathCustomEditorOperator extends NbDialogOperator {
     }
     
     /** sets complete classpath in custom editor
-     * @param classPathElements File[] array of directories or JAR or ZIP files to be included in classapth */    
+     * @param classPathElements File[] array of directories or JAR or ZIP files 
+     * to be included in classapth */    
     public void setClasspathValue(File[] classPathElements) {
         removeAll();
         for (int i=0; i<classPathElements.length; i++) {
@@ -187,7 +202,8 @@ public class ClasspathCustomEditorOperator extends NbDialogOperator {
     }
     
     /** sets complete classpath in custom editor
-     * @param classPathElements String[] array of paths of directories or JAR or ZIP files to be included in classapth */    
+     * @param classPathElements String[] array of paths of directories or JAR 
+     * or ZIP files to be included in classapth */    
     public void setClasspathValue(String[] classPathElements) {
         removeAll();
         for (int i=0; i<classPathElements.length; i++) {
