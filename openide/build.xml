@@ -636,6 +636,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
              packages="org.openide.options"/>
       <group title="&lt;a href=&quot;@TOP@org/openide/util/doc-files/api.html&quot;&gt;Utility Classes&lt;/a&gt;"
              packages="org.openide.awt:org.openide.util:org.openide.util.enum:org.openide.util.io:org.openide.xml"/>
+      <!-- XXX in Ant 1.5.1 add: <tag name="beaninfo" scope="methods" description="Bean info:"/> -->
     </javadoc>
     <copy todir="javadoc/OpenAPIs">
       <fileset dir="api/doc">
@@ -679,6 +680,10 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
       <include name="overview-summary.html"/>
       <include name="**/package-summary.html"/>
       <include name="**/doc-files/**/*.html"/>
+      <!-- Make hyperlinks point to the source files, not the copied files: -->
+      <mapper type="glob" from="${basedir}/javadoc/OpenAPIs/overview-summary.html" to="${basedir}/api/doc/overview.html"/>
+      <mapper type="glob" from="${basedir}/javadoc/OpenAPIs/*/package-summary.html" to="${basedir}/api/doc/*/package.html"/>
+      <mapper type="glob" from="${basedir}/javadoc/OpenAPIs/*.html" to="${basedir}/api/doc/*.html"/>
     </checklinks>
     <zip zipfile="javadoc/OpenAPIs.zip" basedir="javadoc/OpenAPIs"/>
   </target>
