@@ -99,7 +99,7 @@ public class Hacks {
                             pname = ProjectUtils.getInformation((Project)projects.iterator().next()).getDisplayName();
                             assert pname != null;
                         } else if (projects.isEmpty()) {
-                            pname = null; //NbBundle.getMessage (Hacks.class, "LBL_NoProject"); // NOI18N
+                            pname = null;
                         } else {
                             pname = NbBundle.getMessage (Hacks.class, "LBL_MultipleProjects"); // NOI18N
                         }
