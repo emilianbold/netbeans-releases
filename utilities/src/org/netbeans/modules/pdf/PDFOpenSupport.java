@@ -89,14 +89,8 @@ class PDFOpenSupport implements OpenCookie {
              */
             DialogDescriptor d = new DialogDescriptor(
                 new ReconfigureReaderPanel(viewer, excmessage), // content pane
-                NbBundle.getMessage(PDFOpenSupport.class, "TITLE_pick_a_viewer"), // title
-                true, // modal
-                DialogDescriptor.OK_CANCEL_OPTION, // option type
-                DialogDescriptor.OK_OPTION,        // default value
-                DialogDescriptor.DEFAULT_ALIGN,    // alignment
-                new HelpCtx(PDFOpenSupport.class.getName()
-                            + ".dialog"),          //help context       //NOI18N
-                null); // action listener
+                NbBundle.getMessage(PDFOpenSupport.class,
+                                    "TITLE_pick_a_viewer"));            //NOI18N
             if (DialogDescriptor.OK_OPTION == DialogDisplayer.getDefault().notify(d)) {
                 open ();
             }
