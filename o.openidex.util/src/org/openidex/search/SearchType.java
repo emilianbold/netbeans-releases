@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package Development.src_modules.org.openidex.search;
+package org.openidex.search;
 
 import java.util.Enumeration;
 
@@ -90,6 +90,7 @@ public abstract class SearchType extends org.openide.ServiceType implements Clon
 
 /* 
 * Log
+*  3    Gandalf   1.2         12/15/99 Martin Balin    Fixed package statement
 *  2    Gandalf   1.1         12/14/99 Petr Kuzel      Enforcing Cloneable.
 *  1    Gandalf   1.0         12/14/99 Petr Kuzel      
 * $ 
