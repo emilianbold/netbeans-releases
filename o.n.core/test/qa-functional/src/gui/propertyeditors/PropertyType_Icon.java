@@ -16,7 +16,11 @@ package gui.propertyeditors;
 import org.netbeans.jellytools.properties.Property;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
 import org.netbeans.jellytools.properties.PropertySheetTabOperator;
-import org.netbeans.jellytools.properties.editors.IconCustomEditorOperator;
+
+// wait PE in Jelly2 
+// import org.netbeans.jellytools.properties.editors.IconCustomEditorOperator;
+import gui.propertyeditors.utilities.IconCustomEditorOperator;
+
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
 

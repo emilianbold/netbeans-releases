@@ -13,7 +13,9 @@
 
 package gui.propertyeditors;
 
-import org.netbeans.jellytools.properties.editors.FilesystemCustomEditorOperator;
+// wait PE in Jelly2 
+// import org.netbeans.jellytools.properties.editors.FilesystemCustomEditorOperator;
+import gui.propertyeditors.utilities.FilesystemCustomEditorOperator;
 
 import org.netbeans.junit.NbTestSuite;
 import gui.propertyeditors.utilities.PropertyEditorsSupport;
