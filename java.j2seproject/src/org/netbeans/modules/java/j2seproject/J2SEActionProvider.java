@@ -29,6 +29,7 @@ import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassChooser;
@@ -42,11 +43,14 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.MouseUtils;
+import org.openide.cookies.SourceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
+import org.openide.src.ClassElement;
+import org.openide.src.SourceElement;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -388,13 +392,60 @@ class J2SEActionProvider implements ActionProvider {
     }    
     
     private boolean isSetMainClass (FileObject sourcesRoot, String mainClass) {
+        
+        // support for unit testing
+        if (MainClassChooser.unitTestingSupport_hasMainMethodResult != null) {
+            return MainClassChooser.unitTestingSupport_hasMainMethodResult.booleanValue ();
+        }
+        
+        
         if (mainClass == null || mainClass.length () == 0) {
             return false;
         }
         
-        return J2SEProjectUtil.isMainClass (mainClass, sourcesRoot);
+        // check also EXECUTE classpath
+        
+        // find mainclass FileObject
+        ClassPath classPath = ClassPath.getClassPath (sourcesRoot, ClassPath.EXECUTE);
+        mainClass = mainClass.replace ('.','/');// NOI18N
+        FileObject mainFO = classPath.findResource (mainClass + ".class"); // XXX // NOI18N
+
+        return canBeRun (mainFO);
     }
     
+    /** Checks if given file object contains the main method.
+     *
+     * @param classFO file object represents java 
+     * @return false if parameter is null or doesn't contain SourceCookie
+     * or SourceCookie doesn't contain the main method
+     */    
+    public static boolean canBeRun (FileObject classFO) {
+        if (classFO == null) {
+            return false;
+        }
+        try {
+            DataObject classDO = DataObject.find (classFO);
+            Object obj = classDO.getCookie (SourceCookie.class);
+            if (obj == null || !(obj instanceof SourceCookie)) {
+                return false;
+            }
+            SourceCookie cookie = (SourceCookie) obj;
+            // check the main class
+            SourceElement source = cookie.getSource ();
+            ClassElement[] classes = source.getClasses();
+            boolean hasMain = false;
+            for (int i = 0; i < classes.length; i++) {
+                if (classes[i].hasMainMethod()) {
+                    return true;
+                }
+            }
+        } catch (DataObjectNotFoundException ex) {
+            // can ignore it, classFO could be wrongly set
+        }
+        return false;
+    }
+
+
     private boolean showMainClassWarning (String mainClass, String projectName, EditableProperties ep) {
         boolean canceled;
         final JButton okButton = new JButton (NbBundle.getMessage (MainClassWarning.class, "LBL_MainClassWarning_ChooseMainClass_OK")); // NOI18N
