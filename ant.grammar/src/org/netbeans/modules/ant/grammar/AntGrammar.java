@@ -84,28 +84,49 @@ class AntGrammar implements GrammarQuery {
         if (ownerElement == null) return EmptyEnumeration.EMPTY;
         
         NamedNodeMap existingAttributes = ownerElement.getAttributes();        
-        Set possibleAttributes = null;
+        List possibleAttributes = null;
+        // XXX This is wrong. Should be based on parents up to document list,
+        // not solely on element name. That would permit it to correctly handle
+        // nested elements, etc.
         String elementName = ownerElement.getTagName();
         
         if ("project".equals(elementName)) {
-            possibleAttributes = new TreeSet();
-            possibleAttributes.add("name");
+            possibleAttributes = new LinkedList();
             possibleAttributes.add("default");
+            possibleAttributes.add("name");
             possibleAttributes.add("basedir");
         } else if ("target".equals(elementName)) {
-            possibleAttributes = new TreeSet();
+            possibleAttributes = new LinkedList();
             possibleAttributes.add("name");
             possibleAttributes.add("depends");
+            possibleAttributes.add("description");
             possibleAttributes.add("if");
             possibleAttributes.add("unless");
-            possibleAttributes.add("description");
         } else {
+            boolean type = false;
             String clazz = getTaskClassFor(elementName);
             if (clazz == null) {
                 clazz = getTypeClassFor(elementName);
+                type = true;
             }                        
             if (clazz != null) {
-                possibleAttributes = getAntGrammar().getAttributes(clazz).keySet();
+                possibleAttributes = new LinkedList();
+                if (type) {
+                    possibleAttributes.add("id");
+                }
+                possibleAttributes.addAll(new TreeSet(getAntGrammar().getAttributes(clazz).keySet()));
+                if (!type) {
+                    possibleAttributes.add("id");
+                }
+                if (!type) {
+                    // Currently IntrospectedInfo includes this in the props for a type,
+                    // though it excludes it for tasks. So for now add it explicitly
+                    // only to tasks.
+                    possibleAttributes.add("description");
+                }
+                if (!type) {
+                    possibleAttributes.add("taskname");
+                }
             }
         }
         
@@ -140,27 +161,28 @@ class AntGrammar implements GrammarQuery {
         Node parent = ((Node)ctx).getParentNode();
         if (parent == null) return EmptyEnumeration.EMPTY;
         
-        Set elements = null;
+        List elements = null;
         
         if (parent.getNodeType() == ctx.ELEMENT_NODE) {
             String parentName = ((Element) parent).getTagName();
 
             if ("project".equals(parentName)) {
-                elements = new TreeSet();
-                elements.add("description");
+                elements = new LinkedList();
                 elements.add("target");
                 elements.add("property");
                 elements.add("taskdef");
                 elements.add("typedef");
+                elements.add("description");
+                elements.addAll(new TreeSet(getAntGrammar().getDefs("type").keySet()));
             } else if ("target".equals(parentName)) {
-                elements = getAntGrammar().getDefs("task").keySet();
+                elements = new ArrayList(new TreeSet(getAntGrammar().getDefs("task").keySet()));
             } else {
                 String clazz = getTaskClassFor(parentName);
                 if (clazz == null) {
                     clazz = getTypeClassFor(parentName);
                 }                                
                 if (clazz != null) {
-                    elements = getAntGrammar().getElements(clazz).keySet();
+                    elements = new ArrayList(new TreeSet(getAntGrammar().getElements(clazz).keySet()));
                 }
             }
         }

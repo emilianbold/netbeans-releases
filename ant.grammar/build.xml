@@ -10,8 +10,6 @@ http://www.sun.com/
 The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
 Microsystems, Inc. All Rights Reserved.
-
-Contributor(s): Jayme C. Edwards, Jesse Glick.
 -->
 
 <project name="ant" default="netbeans" basedir=".">
@@ -26,10 +24,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../../nbbuild/nbantext.jar"/>
   <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../../nbbuild/nbantext.jar"/>
 
-  <target name="init">
-  </target>
-
-  <target name="compile" depends="init">
+  <target name="compile">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
        <pathelement location="../../openide/netbeans/lib/openide.jar"/>
@@ -52,10 +47,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     </locjar>
   </target>
 
-  <target name="release" depends="init">
-  </target>
-
-  <target name="netbeans" depends="jars,release" description="Build module.">
+  <target name="netbeans" depends="jars" description="Build module.">
     <genlist targetname="nbm" outputfiledir="netbeans"/>
   </target>
 
@@ -72,19 +64,11 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     </makenbm>
   </target>
 
-  <!--target name="test-build" depends="compile">
+  <target name="reload" depends="jars" description="Test module inside running IDE.">
     <mkdir dir="reload"/>
-    <filter token="BUILD_NUMBER_SUBST" value="testing"/>
-    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <jar jarfile="reload/ant.jar" manifest="manifest-subst.mf" compress="false">
-      <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-      <zipfileset src="external/ant-1.5.1.jar" excludes="META-INF/MANIFEST.MF"/>
-      <zipfileset src="external/ant-optional-1.5.1.jar" excludes="META-INF/MANIFEST.MF"/>
-    </jar>
+    <copy file="netbeans/modules/eager/ant-grammar.jar" tofile="reload/ant-grammar.jar"/>
+    <nbinstaller module="reload/ant-grammar.jar" action="reinstall"/>
   </target>
-  <target name="test" depends="test-build" description="Test module inside running IDE.">
-    <nbinstaller module="reload/ant.jar" action="reinstall"/>
-  </target-->
 
   <target name="clean" description="Clean out build products.">
     <delete>
@@ -96,7 +80,6 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     <delete file="ant-grammar.nbm"/>
     <delete dir="netbeans"/>
     <delete dir="Info"/>
-    <delete dir="javadoc"/>
   </target>
 
   <target name="real-clean" depends="clean">
