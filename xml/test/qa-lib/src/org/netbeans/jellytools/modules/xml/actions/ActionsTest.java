@@ -18,6 +18,7 @@ import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.modules.css.actions.CheckCSSAction;
 import org.netbeans.jellytools.modules.css.actions.CopyHTMLStyleAction;
 import org.netbeans.jellytools.modules.css.actions.CopyXMLStyleAction;
+import org.netbeans.jellytools.modules.xml.catalog.nodes.XMLEntityCatalogsNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventDispatcher;
 import org.netbeans.tests.xml.JXTest;
@@ -76,7 +77,7 @@ public class ActionsTest extends JXTest {
     
     /** @see actionTest(Action, String, Node) */
     private boolean catalogActionTest(Action action, String attrs, String treePath) {
-        return actionTest(action, attrs, findCatalogNode(treePath));
+        return actionTest(action, attrs, XMLEntityCatalogsNode.getInstance().getCatalog(treePath));
     }
     
     /** @see actionTest(Action, String, Node) */

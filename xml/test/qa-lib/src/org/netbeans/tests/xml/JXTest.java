@@ -25,7 +25,6 @@ import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.util.Dumper;
 import org.netbeans.jemmy.util.PNGEncoder;
-import org.netbeans.test.oo.gui.jelly.JellyProperties;
 
 
 /**
@@ -45,7 +44,6 @@ public class JXTest extends XTest {
         try {
             if (dbgTimeouts) {
                 JemmyProperties.getCurrentTimeouts().loadDebugTimeouts();
-                JellyProperties.setJemmyDebugTimeouts();
             }
         } catch (IOException ioe) {
             log("Load Debug Timeouts fail.", ioe);
@@ -90,18 +88,18 @@ public class JXTest extends XTest {
      * Finds Catalog's node.
      * @param path relative to the 'XML Entity Catalogs' root delimited by 'DELIM'
      */
-    protected Node findCatalogNode(String path) {
-        Node node = null;
-        try {
-            String treePath = Bundle.getStringTrimmed("org.netbeans.modules.xml.catalog.Bundle", "TEXT_catalog_root");
-            if (path != null && path.length() > 0) treePath += DELIM + path;
-            JTreeOperator tree = ExplorerOperator.invoke().runtimeTab().tree();
-            node = new Node(tree, treePath);
-        } catch (Exception ex) {
-            log("Cannot find catalog node: " + path, ex);
-        }
-        return node;
-    }
+//    protected Node findCatalogNode(String path) {
+//        Node node = null;
+//        try {
+//            String treePath = Bundle.getStringTrimmed("org.netbeans.modules.xml.catalog.Bundle", "TEXT_catalog_root");
+//            if (path != null && path.length() > 0) treePath += DELIM + path;
+//            JTreeOperator tree = ExplorerOperator.invoke().runtimeTab().tree();
+//            node = new Node(tree, treePath);
+//        } catch (Exception ex) {
+//            log("Cannot find catalog node: " + path, ex);
+//        }
+//        return node;
+//    }
         
 //    /**
 //     * Returns work directory subnode or null
