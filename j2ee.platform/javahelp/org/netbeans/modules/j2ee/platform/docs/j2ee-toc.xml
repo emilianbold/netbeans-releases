@@ -154,9 +154,9 @@
         <tocitem text="Running a Web Application" target="run_webapp" />
         <tocitem text="Running a JSP File" target="run_jsp" />
 	<tocitem text="Running a Servlet" target="run_servlet" />
-	<tocitem text="Running and Debugging a Filter" target="filter_run"/>
-	<tocitem text="Running and Debugging a Listener" target="listener_run"/>
-        <tocitem text="Running and Debugging an Applet" target="webmod_runapplet"/>
+	<tocitem text="Running a Filter" target="filter_run"/>
+	<tocitem text="Running a Listener" target="listener_run"/>
+        <tocitem text="Running an Applet" target="webmod_runapplet"/>
         <tocitem text="Changing Web Servers" target="webmod_server_set" />
 	<tocitem text="Changing Web Browsers" target="webmod_browser" />
 	<tocitem text="Deployment Descriptors"> 
