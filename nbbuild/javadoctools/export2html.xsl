@@ -196,7 +196,7 @@ Microsystems, Inc. All Rights Reserved.
 
         <tbody>
             <td>
-                <a name="api-{$name}"><xsl:value-of select="$name"/></a>
+                <xsl:value-of select="$name"/>
             </td>
             <!--
             <td>
