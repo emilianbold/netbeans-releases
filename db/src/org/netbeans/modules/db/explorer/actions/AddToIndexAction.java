@@ -13,28 +13,36 @@
 
 package org.netbeans.modules.db.explorer.actions;
 
-import java.util.*;
 import java.sql.*;
+import java.text.MessageFormat;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.ResourceBundle;
+import java.util.Vector;
+
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.impl.*;
 import org.openide.*;
 import org.openide.nodes.*;
+import org.openide.util.NbBundle;
 import org.netbeans.modules.db.explorer.*;
 import org.netbeans.modules.db.explorer.dlg.*;
 import org.netbeans.modules.db.explorer.nodes.*;
 import org.netbeans.modules.db.explorer.infos.*;
 
-public class AddToIndexAction extends DatabaseAction
-{
+public class AddToIndexAction extends DatabaseAction {
     static final long serialVersionUID =-1416260930649261633L;
-    public void performAction (Node[] activatedNodes)
-    {
+    
+    public void performAction (Node[] activatedNodes) {
+        ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); // NOI18N
+        
         Node node;
-        if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
-        else return;
+        if (activatedNodes != null && activatedNodes.length>0)
+            node = activatedNodes[0];
+        else
+            return;
 
         try {
-
             DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
             DatabaseNodeInfo nfo = info.getParent(nodename);
 
@@ -53,10 +61,11 @@ public class AddToIndexAction extends DatabaseAction
 
             drvSpec.getIndexInfo(catalog, dmd, tablename, true, false);
             while (drvSpec.rs.next()) {
-                String ixname = drvSpec.rs.getString("INDEX_NAME");
+                String ixname = drvSpec.rs.getString("INDEX_NAME"); // NOI18N
                 if (ixname != null) {
-                    String colname = drvSpec.rs.getString("COLUMN_NAME");
-                    if (ixname.equals(index)) ixrm.add(colname);
+                    String colname = drvSpec.rs.getString("COLUMN_NAME"); // NOI18N
+                    if (ixname.equals(index))
+                        ixrm.add(colname);
                 }
             }
             drvSpec.rs.close();
@@ -66,52 +75,34 @@ public class AddToIndexAction extends DatabaseAction
 
             drvSpec.getColumns(catalog, dmd, tablename, null);
             while (drvSpec.rs.next()) {
-                String colname = drvSpec.rs.getString("COLUMN_NAME");
-                if (!ixrm.contains(colname)) cols.add(colname);
+                String colname = drvSpec.rs.getString("COLUMN_NAME"); // NOI18N
+                if (!ixrm.contains(colname))
+                    cols.add(colname);
             }
             drvSpec.rs.close();
-            if (cols.size() == 0) throw new Exception("no usable column in place");
+            if (cols.size() == 0)
+                throw new Exception(bundle.getString("EXC_NoUsableColumnInPlace")); // NOI18N
 
             // Create and execute command
 
-            LabeledComboDialog dlg = new LabeledComboDialog("Add to index", "Column:", cols);
+            LabeledComboDialog dlg = new LabeledComboDialog(bundle.getString("AddToIndexTitle"), bundle.getString("AddToIndexLabel"), cols); // NOI18N
             if (dlg.run()) {
-
                 CreateIndex icmd = spec.createCommandCreateIndex(tablename);
                 icmd.setIndexName(index);
                 Iterator enu = ixrm.iterator();
-                while (enu.hasNext()) {
+                while (enu.hasNext())
                     icmd.specifyColumn((String)enu.next());
-                }
 
                 icmd.specifyColumn((String)dlg.getSelectedItem());
                 spec.createCommandDropIndex(index).execute();
                 icmd.execute();
                 nfo.refreshChildren();
-                //				((DatabaseNodeChildren)nfo.getNode().getChildren()).createSubnode(info,true);
+//				((DatabaseNodeChildren)nfo.getNode().getChildren()).createSubnode(info,true);
             }
 
-        } catch(Exception e) {
-            TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to perform operation "+node.getName()+", "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+        } catch(Exception exc) {
+            String message = MessageFormat.format(bundle.getString("ERR_UnableToPerformOperation"), new String[] {node.getName(), exc.getMessage()}); // NOI18N
+            TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
         }
     }
 }
-/*
- * <<Log>>
- *  12   Gandalf   1.11        3/3/00   Radko Najman    
- *  11   Gandalf   1.10        2/16/00  Radko Najman    driver adaptor
- *  10   Gandalf   1.9         11/27/99 Patrik Knakal   
- *  9    Gandalf   1.8         11/15/99 Radko Najman    MS ACCESS
- *  8    Gandalf   1.7         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  7    Gandalf   1.6         10/8/99  Radko Najman    getUser() method 
- *       replaced by dmd.getUserName()
- *  6    Gandalf   1.5         9/13/99  Slavek Psenicka 
- *  5    Gandalf   1.4         9/8/99   Slavek Psenicka adaptor changes
- *  4    Gandalf   1.3         7/21/99  Slavek Psenicka new version
- *  3    Gandalf   1.2         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  2    Gandalf   1.1         5/21/99  Slavek Psenicka new version
- *  1    Gandalf   1.0         5/14/99  Slavek Psenicka 
- * $
- */
