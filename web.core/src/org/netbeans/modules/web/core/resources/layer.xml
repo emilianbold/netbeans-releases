@@ -80,7 +80,7 @@ Microsystems, Inc. All Rights Reserved.
       <!-- Tag Library 2.0--> 
       <file name="TagLibrary.tld" url="templates/BlankTagLibrary.template">
           <attr name="template" boolvalue="true"/>
-          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/TagLibtrary.html"/>
+          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/TagLibrary.html"/>
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
           <attr name="templateWizardIterator" 
                 methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createTagLibraryIterator"/>
