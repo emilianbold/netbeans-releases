@@ -30,7 +30,7 @@ Microsystems, Inc. All Rights Reserved.
     <mkdir dir="netbeans/modules" />
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <jar jarfile="netbeans/modules/classfile.jar" 
+    <jar jarfile="netbeans/modules/clazzfile.jar" 
      manifest="manifest-subst.mf" 
      basedir="src" 
      excludesfile="../nbbuild/standard-jar-excludes.txt" 
@@ -60,7 +60,7 @@ Microsystems, Inc. All Rights Reserved.
       </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
-    <delete file="classfile.jar"/>
+    <delete file="clazzfile.jar"/>
     <delete file="classfile.nbm"/>
     <delete dir="netbeans"/>
     <delete dir="Info"/>

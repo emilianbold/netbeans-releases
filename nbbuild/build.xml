@@ -92,14 +92,14 @@ workspaceswitcher
     <!-- You can also explicitly set a particular list of modules if you prefer: -->
     <!-- -Dmodules=foo,bar,... (do not include core or openide) -->
     <configmods property="modules" selectedconfig="${moduleconfig}">
-      <config name="superslim" modules="clazz,editor,html,image,java,openidex,projects,text,utilities"/>
-      <config name="slim" modules="autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,image,java,objectbrowser,openidex,projects,text,utilities"/>
+      <config name="superslim" modules="classfile,clazz,editor,html,image,java,openidex,projects,text,utilities"/>
+      <config name="slim" modules="autoupdate,beans,classfile,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,image,java,objectbrowser,openidex,projects,text,utilities"/>
       <!-- [PENDING] A poor name; 'standard' would be more in line with the CVS pseudomodule. -->
-      <config name="stable" modules="ant,apisupport/lite,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,i18n,image,j2eeserver,jarpackager,java,javacvs,javadoc,jndi,objectbrowser,openidex,projects,properties,rmi,scripting,text,usersguide,utilities,vcscore,vcscvs,vcsgeneric,web"/>
-      <config name="stable-with-apisupport" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,i18n,image,j2eeserver,jarpackager,java,javacvs,javadoc,jndi,objectbrowser,openidex,projects,properties,rmi,scripting,text,usersguide,utilities,vcscore,vcscvs,vcsgeneric,web"/>
-      <config name="bloated" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,clazz,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,i18n,icebrowser,image,innertesters,j2eeserver,jarpackager,java,javacvs,javadoc,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,scripting,serialversion,sysprops,text,usersguide,utilities,vcscore,vcscvs,vcsgeneric,web"/>
+      <config name="stable" modules="ant,apisupport/lite,applet,autoupdate,beans,classfile,clazz,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,i18n,image,j2eeserver,jarpackager,java,javacvs,javadoc,jndi,objectbrowser,openidex,projects,properties,rmi,scripting,text,usersguide,utilities,vcscore,vcscvs,vcsgeneric,web"/>
+      <config name="stable-with-apisupport" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,clazz,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,i18n,image,j2eeserver,jarpackager,java,javacvs,javadoc,jndi,objectbrowser,openidex,projects,properties,rmi,scripting,text,usersguide,utilities,vcscore,vcscvs,vcsgeneric,web"/>
+      <config name="bloated" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,clazz,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,i18n,icebrowser,image,innertesters,j2eeserver,jarpackager,java,javacvs,javadoc,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,scripting,serialversion,sysprops,text,usersguide,utilities,vcscore,vcscvs,vcsgeneric,web"/>
       <!-- You are on your own for getting the binaries for some of these: -->
-      <config name="bloated-plus-extrabins" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,clazz,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,i18n,icebrowser,image,innertesters,j2eeserver,jarpackager,java,javacvs,javadoc,jini,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,scripting,serialversion,sysprops,text,usersguide,utilities,vcscore,vcscvs,vcsgeneric,web"/>
+      <config name="bloated-plus-extrabins" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,clazz,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,i18n,icebrowser,image,innertesters,j2eeserver,jarpackager,java,javacvs,javadoc,jini,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,scripting,serialversion,sysprops,text,usersguide,utilities,vcscore,vcscvs,vcsgeneric,web"/>
     </configmods>
   </target>
 
@@ -147,7 +147,11 @@ workspaceswitcher
     <echo message="Building module beans..."/>
     <ant dir="../beans" target="netbeans"/>
   </target>
-  <target name="all-clazz" depends="all-openide">
+  <target name="all-classfile" depends="all-openide">
+    <echo message="Building module classfile..."/>
+    <ant dir="../classfile" target="netbeans"/>
+  </target>
+  <target name="all-clazz" depends="all-openide,all-classfile">
     <echo message="Building module clazz..."/>
     <ant dir="../clazz" target="netbeans"/>
   </target>
