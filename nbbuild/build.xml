@@ -1075,25 +1075,6 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../i18n/form" target="netbeans"/>
   </target>
 
-  <target name="all-ide/features/basic" depends="build-ide">
-    <echo message="Building module features/basic..."/>
-    <ant dir="../ide/features/basic" target="netbeans"/>
-  </target>
-
-  <target name="all-ide/features/desktop" depends="build-ide">
-    <echo message="Building module features/desktop..."/>
-    <ant dir="../ide/features/desktop" target="netbeans"/>
-  </target>
-
-  <target name="all-ide/features/ideplugin" depends="build-ide">
-    <echo message="Building module features/ideplugin..."/>
-    <ant dir="../ide/features/ideplugin" target="netbeans"/>
-  </target>
-
-  <target name="all-ide/features/web" depends="build-ide">
-    <echo message="Building module features/web..."/>
-    <ant dir="../ide/features/web" target="netbeans"/>
-  </target>
   <!-- target for branding of NetBeans IDE -->
   <target name="all-ide/branding" depends="init">
     <echo message="Building module ide/branding..."/>
@@ -1109,49 +1090,12 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   
   <target name="build-platform" depends="init" unless="platform-is-built">
     <echo message="Building platform modules"/>
-    <mkdir dir="${netbeans.dest}"/>
-    <nbmerge failonerror="${stop.when.broken.modules}" 
-             dest="${netbeans.dest}" 
-             topdir="${nb_all}" 
-             fixedmodules="${nb.cluster.platform}" 
-             modules=""
-             builtmodulesproperty="${built.modules.property}" 
-             targetprefix="all-" 
-             mergedependentmodules="${merge.dependent.modules}">
-    </nbmerge>
+    <antcall target="build-one-cluster">
+      <param name="one.cluster.name" value="nb.cluster.platform"/>
+    </antcall>
     <property name="platform-is-built" value="true"/>
   </target>
   
-  <target name="build-ide" depends="build-platform" unless="ide-is-built">
-    <echo message="Building ide modules"/>
-    <mkdir dir="${netbeans.dest}"/>
-    <nbmerge failonerror="${stop.when.broken.modules}" 
-             dest="${netbeans.dest}" 
-             topdir="${nb_all}" 
-             fixedmodules="" 
-             modules="${nb.pkg.idesupport},${nb.pkg.ideextensions},${nb.pkg.javarefactoring},${nb.pkg.webapp},${nb.pkg.ide},${nb.pkg.nb}"
-             builtmodulesproperty="${built.modules.property}" 
-             targetprefix="all-" 
-             mergedependentmodules="${merge.dependent.modules}">
-    </nbmerge>
-    <property name="ide-is-built" value="true"/>
-  </target>
-  
-  <target name="build-features" depends="build-ide" unless="features-is-built">
-    <echo message="Building ide modules"/>
-    <mkdir dir="${netbeans.dest}"/>
-    <nbmerge failonerror="${stop.when.broken.modules}" 
-             dest="${netbeans.dest}" 
-             topdir="${nb_all}" 
-             fixedmodules="" 
-             modules="${nb.features.basic},${nb.features.desktop},${nb.features.ideplugin},${nb.features.web}"
-             builtmodulesproperty="${built.modules.property}" 
-             targetprefix="all-" 
-             mergedependentmodules="${merge.dependent.modules}">
-    </nbmerge>
-    <property name="features-is-built" value="true"/>
-  </target>
-
   <!-- #27098: MakeParserDB requires several modules to have been successfully built. -->
   <!-- Target all/mmm should depend on makeparserdb-modules if mmm/build.xml uses <makeparserdb>. -->
   <target name="makeparserdb-modules" depends="all-openide,all-openide/loaders,all-openide/execution,all-openide/io,all-core,all-classfile,all-java/api,all-java/srcmodel,all-java,all-editor,all-debuggercore/oldapi,all-core/execution,all-core/output2"/>
@@ -1247,10 +1191,10 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   <!-- Use of nbmerge target has the effect of automatically depending on all-X for every module. -->
   <!-- It also runs deltree(dir=wherever) and copydir(src=../X/netbeans,dest=wherever) to create the IDE install. -->
 
-  <target name="build-nozip" depends="build-features" description="Build the IDE but do not create a final ZIP file.">
+  <target name="build-nozip" depends="build-clusters" description="Build the IDE but do not create a final ZIP file.">
     <taskdef name="repeat" classname="org.netbeans.nbbuild.Repeat" classpath="nbantext.jar"/>
     <loadproperties srcFile="cluster.properties" />
-    <repeat target="create-module-xmls-for-one-cluster" name="one.cluster.name" values="${clusters.list}" /> 
+    <repeat target="create-module-xmls-for-one-cluster" name="one.cluster.name" values="${nb.clusters.list}" /> 
      
     <loadproperties srcfile="${netbeans.dest.dir}/moduleCluster.properties" />
         
@@ -1359,6 +1303,63 @@ the ${netbeans.dest}/bin/ directory.
       <property name="@{name}" value="${@{property}}"/>
     </sequential>
   </macrodef>
+
+  <macrodef name="run-depend-build">
+    <attribute name="clusters-to-build"/>
+    <sequential>
+      <repeat target="build-one-cluster" name="one.cluster.name" values="@{clusters-to-build}" /> 
+    </sequential>
+  </macrodef>
+
+  <target name="build-clusters" depends="init">
+    <taskdef name="repeat" classname="org.netbeans.nbbuild.Repeat" classpath="nbantext.jar"/>
+    <run-depend-build clusters-to-build="${nb.clusters.list}"/> 
+  </target>
+
+  <target name="build-one-cluster-dependencies-check">
+    <condition property="${one.cluster.name}-hasNoDependencies">
+      <equals arg1="${one.cluster.dependencies}" arg2="" trim="true"/>
+    </condition>
+    <echo>Dependency prop :${one.cluster.name}-hasNoDependencies:</echo>
+    <echo>Cluster dep :${one.cluster.dependencies}:</echo>
+    <resolve name="test.prop" property="${one.cluster.name}-hasNoDependencies"/>
+    <echo>Cluster dep prp:${test.prop}:</echo>
+  </target>
+
+  <target name="build-one-cluster-dependencies" 
+          depends="build-one-cluster-dependencies-check"
+          unless="${one.cluster.name}-hasNoDependencies">
+    <run-depend-build clusters-to-build="${one.cluster.dependencies}"/> 
+  </target>
+  
+  <target name="build-one-cluster-check">
+    <condition property="${one.cluster.name}-is-built">
+      <available file="build/${one.cluster.name}.built"/>
+    </condition>
+  </target>
+
+  <target name="build-one-cluster" unless="${one.cluster.name}-is-built" depends="build-one-cluster-check">
+    <echo message="Building ${one.cluster.name} modules"/>
+    <resolve name="one-cluster-modules" property="${one.cluster.name}"/>
+    <resolve name="one-cluster-dependencies" property="${one.cluster.name}.depends"/>
+    <echo>${one-cluster-modules}</echo>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${one-cluster-dependencies}"/>
+      <param name="one.cluster.name" value="${one.cluster.name}"/>
+    </antcall>
+    <mkdir dir="${netbeans.dest}"/>
+    <nbmerge failonerror="${stop.when.broken.modules}" 
+             dest="${netbeans.dest}" 
+             topdir="${nb_all}" 
+             fixedmodules="${nb.cluster.platform}" 
+             modules="${one-cluster-modules}"
+             builtmodulesproperty="${built.modules.property}" 
+             targetprefix="all-" 
+             mergedependentmodules="false">
+    </nbmerge>
+    <mkdir dir="build"/>
+    <touch file="build/${one.cluster.name}.built"/>
+  </target>
 
   <target name="zipclusters" depends="init">
     <taskdef name="repeat" classname="org.netbeans.nbbuild.Repeat" classpath="nbantext.jar"/>
@@ -1742,6 +1743,11 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
           description="Clean out (almost) all build products.">
     <echo message="Run `ant real-clean' if desired."/>
     <delete dir="${netbeans.dest}"/>
+    <delete>
+      <fileset dir=".">
+        <include name="build/*.built"/>
+      </fileset>
+    </delete>
   </target>
 
 <!-- This section contains properties and targets used to build -->
