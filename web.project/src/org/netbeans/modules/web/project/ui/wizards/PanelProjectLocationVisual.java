@@ -127,10 +127,18 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         String command = evt.getActionCommand();
         
         if ("BROWSE".equals(command)) { //NOI18N
-            JFileChooser chooser = new JFileChooser ();
+            JFileChooser chooser = new JFileChooser();
+            chooser.setDialogTitle(NbBundle.getMessage(PanelProjectLocationVisual.class,"LBL_NWP1_SelectProjectLocation")); //NOI18N
+            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            String path = projectLocationTextField.getText();
+            if (path.length() > 0) {
+                File f = new File(path);
+                if (f.exists())
+                    chooser.setSelectedFile(f);
+            }
             if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
                 File projectDir = chooser.getSelectedFile();
-                projectLocationTextField.setText( projectDir.getAbsolutePath());
+                projectLocationTextField.setText(projectDir.getAbsolutePath());
             }            
             panel.fireChangeEvent();
         }
@@ -144,6 +152,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     
     boolean valid(WizardDescriptor wizardDescriptor) {
         if (projectNameTextField.getText().length() == 0) {
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PanelProjectLocationVisual.class,"MSG_IllegalProjectName")); //NOI18N
             return false; // Display name not specified
         }
         
@@ -151,9 +160,11 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         File[] children = destFolder.listFiles();
         if (destFolder.exists() && children != null && children.length > 0) {
             // Folder exists and is not empty
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PanelProjectLocationVisual.class,"MSG_ProjectFolderExists")); //NOI18N
             return false;
         }
                 
+        wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); //NOI18N
         return true;
     }
     
