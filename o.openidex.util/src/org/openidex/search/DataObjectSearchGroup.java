@@ -78,11 +78,6 @@ public class DataObjectSearchGroup extends SearchGroup {
         for (int i = 0; i < nodes.length; i++) {
             Node node = nodes[i];
             SearchInfo info = Utils.getSearchInfo(node);
-            if (info == null) {
-                System.out.println("info == null");
-            } else {
-                System.out.println("info class: " + info.getClass().getName());
-            }
             if (info != null) {
                 for (Iterator j = info.objectsToSearch(); j.hasNext(); ) {
                     processSearchObject(/*DataObject*/ j.next());
