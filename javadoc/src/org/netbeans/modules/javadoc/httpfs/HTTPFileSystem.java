@@ -68,7 +68,7 @@ public class HTTPFileSystem extends FileSystem implements VetoableChangeListener
         httpFileSystemCapabilities.setCompile( false );
         httpFileSystemCapabilities.setDebug( false );        
         setCapability( httpFileSystemCapabilities );
-//        setHidden( true );
+        setHidden( true );
         addVetoableChangeListener( this );
         
         try{
@@ -165,7 +165,7 @@ public class HTTPFileSystem extends FileSystem implements VetoableChangeListener
                 throw new IOException( mlfEx.toString( ) );
                 
             }
-            rootFileObject = new HTTPFileObject( "/", this );   //NO I18N
+            rootFileObject = new HTTPFileObject( "/", this );   //NOI18N
 
             // Give listeners a chance to reject the URL
             fireVetoableChange( PROP_URL, oldURL != null ? oldURL.toExternalForm( ) : null, url );
@@ -209,17 +209,17 @@ public class HTTPFileSystem extends FileSystem implements VetoableChangeListener
             }
         
             // If this URL doesn't point to an HTTP server,
-            if( !newURL.getProtocol( ).equals( "http" ) && !newURL.getProtocol( ).equals( "https" ) ) { //NO I18N
+            if( !newURL.getProtocol( ).equals( "http" ) && !newURL.getProtocol( ).equals( "https" ) ) { //NOI18N
                 
                 // Reject this URL
-                throw new PropertyVetoException( ResourceUtils.getBundledString( "MSG_NotHTTPProtocol" ), URLChangeEvent );    //NO I18N
+                throw new PropertyVetoException( ResourceUtils.getBundledString( "MSG_NotHTTPProtocol" ), URLChangeEvent );    //NOI18N
                 
             }
             // If this URL doesn't point to a directory,
             if( !newURL.toExternalForm( ).endsWith( "/" ) ){    // NO I18N
 
                 // Reject this URL
-                throw new PropertyVetoException( ResourceUtils.getBundledString( "MSG_NotDirectory" ), URLChangeEvent );    //NO I18N
+                throw new PropertyVetoException( ResourceUtils.getBundledString( "MSG_NotDirectory" ), URLChangeEvent );    //NOI18N
 
             }
             
