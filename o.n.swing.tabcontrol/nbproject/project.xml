@@ -23,7 +23,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.swing.tabcontrol.plaf</package>
                 <package>org.netbeans.swing.tabcontrol.event</package>
             </public-packages>
-            <!--<unit-tests/>-->
             <javadoc/>
         </data>
     </configuration>

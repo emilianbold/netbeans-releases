@@ -18,21 +18,19 @@ Microsystems, Inc. All Rights Reserved.
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/1">
             <path>core/swing/plaf</path>
              <module-dependencies>
-
-<!-- There is no actual dependency, this is to avoid generating a corrupt manifest -->
-
+                <!-- There is no actual dependency, this is just to enable installation in NB: -->
                 <dependency>
                     <code-name-base>org.openide</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>4.27</specification-version>
                     </run-dependency>
                 </dependency>
-
              </module-dependencies>
-            <public-packages/> 
+            <public-packages>
+                <package>org.netbeans.swing.plaf</package>
+            </public-packages>
+            <javadoc/>
         </data>
     </configuration>
 </project>
