@@ -495,7 +495,7 @@ public final class BorderEditor extends PropertyEditorSupport
         if ((value instanceof DesignBorder || value instanceof Border)
                  && borderSupport != null) {
             org.w3c.dom.Node storedNode = null;
-            borderSupport = ((DesignBorder)value).getBorderSupport();
+//            borderSupport = ((DesignBorder)value).getBorderSupport();
             BorderInfo bInfo = borderSupport.getBorderInfo();
 
             if (bInfo != null) {
