@@ -36,6 +36,7 @@ import org.openide.nodes.NodeListener;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.WeakListeners;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.Workspace;
@@ -760,29 +761,19 @@ public final class NbMainExplorer extends CloneableTopComponent {
                 if (Node.PROP_DISPLAY_NAME.equals(propName) ||
                         Node.PROP_NAME.equals(propName)) {
                     // Fix #39275 start - posted to awt thread.
-                    if (SwingUtilities.isEventDispatchThread()) {
-                        setName(n.getDisplayName());
-                    }
-                    else {
-                        SwingUtilities.invokeLater(new Runnable() {
+                    Mutex.EVENT.readAccess(new Runnable() {
                             public void run() {
                                 setName(n.getDisplayName());
                             }
                         });
-                    }
                     // fix #39275 end
                 } else if (Node.PROP_ICON.equals(propName)) {
                     // Fix #39275 start - posted to awt thread.
-                    if (SwingUtilities.isEventDispatchThread()) {
-                        setIcon(n.getIcon(BeanInfo.ICON_COLOR_16x16));
-                    }
-                    else {
-                        SwingUtilities.invokeLater(new Runnable() {
+                    Mutex.EVENT.readAccess(new Runnable() {
                             public void run() {
                                 setIcon(n.getIcon(BeanInfo.ICON_COLOR_16x16));
                             }
                         });
-                    }
                     // fix #39275 end
                 } else if (Node.PROP_SHORT_DESCRIPTION.equals(propName)) {
                     setToolTipText(n.getShortDescription());

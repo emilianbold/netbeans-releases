@@ -496,16 +496,11 @@ public final class NbSheet extends TopComponent {
                 // bugfix #20039, close this component on all workspaces
                 setCloseOperation (TopComponent.CLOSE_EACH);
                 //fix #39251 start - posting the closing of TC to awtevent thread
-                if (SwingUtilities.isEventDispatchThread()) {
-                    close();
-                }
-                else {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            close();
-                        }
-                    });
-                }
+                Mutex.EVENT.readAccess(new Runnable() {
+                    public void run() {
+                        close();
+                    }
+                });
                 //fix #39251 end
             } else {
                 setNodesWithoutReattaching(
