@@ -152,7 +152,7 @@ public class WebProjectProperties {
     
     private static final String PLATFORM_ANT_NAME = "platform.ant.name"; // NOI18N
 
-    private static final String TAG_WEB_MODULE_LIBRARIES = "web-module-libraries"; // NOI18N
+    public static final String TAG_WEB_MODULE_LIBRARIES = "web-module-libraries"; // NOI18N
     private static final String TAG_WEB_MODULE__ADDITIONAL_LIBRARIES = "web-module-additional-libraries"; //NOI18N
 
     static final PropertyParser STRING_PARSER = new StringParser();
