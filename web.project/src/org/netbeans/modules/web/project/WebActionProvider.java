@@ -39,7 +39,7 @@ import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.jpda.*;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
-import org.netbeans.modules.web.api.webmodule.URLCookie;
+import org.netbeans.modules.web.api.webmodule.RequestParametersQuery;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.modules.web.project.ui.ServletUriPanel;
 import org.netbeans.modules.web.project.ui.SetExecutionUriAction;
@@ -179,22 +179,17 @@ class WebActionProvider implements ActionProvider {
                 // run a JSP
                 FileObject[] files = findJsps( context );
                 if (files!=null && files.length>0) {
-                    try {
-                        // possibly compile the JSP, if we are not compiling all of them
-                        String raw = updateHelper.getAntProjectHelper().getStandardPropertyEvaluator ().getProperty (WebProjectProperties.COMPILE_JSPS);
-                        boolean compile = decodeBoolean(raw);
-                        if (!compile) {
-                            setAllPropertiesForSingleJSPCompilation(p, files);
-                        }
-                        
-                        URLCookie uc = (URLCookie) DataObject.find (files [0]).getCookie (URLCookie.class);
-                        if (uc != null) {
-                            p.setProperty("client.urlPart", uc.getURL ()); //NOI18N
-                        } else {
-                            return;
-                        }
-                    } catch (DataObjectNotFoundException e) {
-                        ErrorManager.getDefault ().notify (e);
+                    // possibly compile the JSP, if we are not compiling all of them
+                    String raw = updateHelper.getAntProjectHelper().getStandardPropertyEvaluator ().getProperty (WebProjectProperties.COMPILE_JSPS);
+                    boolean compile = decodeBoolean(raw);
+                    if (!compile) {
+                        setAllPropertiesForSingleJSPCompilation(p, files);
+                    }
+
+                    String requestParams = RequestParametersQuery.getFileAndParameters(files [0]);
+                    if (requestParams != null) {
+                        p.setProperty("client.urlPart", requestParams); //NOI18N
+                    } else {
                         return;
                     }
                 } else {
@@ -288,22 +283,17 @@ class WebActionProvider implements ActionProvider {
                 FileObject[] files = findJsps( context );
                 if ((files != null) && (files.length>0)) {
                     // debug jsp
-                    try {
-                        // possibly compile the JSP, if we are not compiling all of them
-                        String raw = updateHelper.getAntProjectHelper().getStandardPropertyEvaluator ().getProperty (WebProjectProperties.COMPILE_JSPS);
-                        boolean compile = decodeBoolean(raw);
-                        if (!compile) {
-                            setAllPropertiesForSingleJSPCompilation(p, files);
-                        }
-                        
-                        URLCookie uc = (URLCookie) DataObject.find (files [0]).getCookie (URLCookie.class);
-                        if (uc != null) {
-                            p.setProperty("client.urlPart", uc.getURL ());
-                        } else {
-                            return;
-                        }
-                    } catch (DataObjectNotFoundException e) {
-                        ErrorManager.getDefault ().notify (e);
+                    // possibly compile the JSP, if we are not compiling all of them
+                    String raw = updateHelper.getAntProjectHelper().getStandardPropertyEvaluator ().getProperty (WebProjectProperties.COMPILE_JSPS);
+                    boolean compile = decodeBoolean(raw);
+                    if (!compile) {
+                        setAllPropertiesForSingleJSPCompilation(p, files);
+                    }
+
+                    String requestParams = RequestParametersQuery.getFileAndParameters(files [0]);
+                    if (requestParams != null) {
+                        p.setProperty("client.urlPart", requestParams); //NOI18N
+                    } else {
                         return;
                     }
                 } else {

@@ -45,14 +45,13 @@ import org.netbeans.modules.web.core.QueryStringCookie;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 
 import org.netbeans.modules.java.Util;
-import org.netbeans.modules.web.api.webmodule.URLCookie;
 import org.netbeans.modules.web.core.WebExecSupport;
 
 /** Object that provides main functionality for internet data loader.
 *
 * @author Petr Jiricka
 */
-public class JspDataObject extends MultiDataObject implements QueryStringCookie, URLCookie {
+public class JspDataObject extends MultiDataObject implements QueryStringCookie {
 
     public static final String EA_JSP_ERRORPAGE = "jsp_errorpage"; // NOI18N
     // property for the servlet dataobject corresponding to this page
@@ -385,13 +384,6 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie,
     }
 
 
-    public String getURL() {
-        String url = JspCompileUtil.findRelativeContextPath(WebModule.getWebModule (getPrimaryFile ()).getDocumentBase (), getPrimaryFile ());
-        url = url + JspNode.getRequestParams(((MultiDataObject)this).getPrimaryEntry());
-        url = org.openide.util.Utilities.replaceString(url, " ", "%20");
-        return url;
-    }
-    
     ////// -------- INNER CLASSES ---------
 
     private class Listener extends FileChangeAdapter implements PropertyChangeListener/*, ServerRegistryImpl.ServerRegistryListener */{

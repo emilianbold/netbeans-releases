@@ -7,21 +7,24 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.web.core;
 
 import java.io.IOException;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.core.jsploader.JspCompileUtil;
 
 import org.openide.filesystems.*;
+import org.netbeans.modules.web.spi.webmodule.RequestParametersProvider;
 
 /** Static methods for execution parameters.
 *
 * @author Petr Jiricka
 */
-public class WebExecSupport {
+public class WebExecSupport implements RequestParametersProvider {
 
     public static final String EA_REQPARAMS = "NetBeansAttrReqParams"; // NOI18N
 
@@ -50,5 +53,11 @@ public class WebExecSupport {
         return ""; // NOI18N
     }
 
+    public String getFileAndParameters(FileObject f) {
+        String url = JspCompileUtil.findRelativeContextPath(WebModule.getWebModule (f).getDocumentBase (), f);
+        url = url + getQueryString(f);
+        url = org.openide.util.Utilities.replaceString(url, " ", "%20");
+        return url;
+    }
 }
 
