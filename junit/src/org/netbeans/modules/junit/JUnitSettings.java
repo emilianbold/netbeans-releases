@@ -32,12 +32,42 @@ import org.openide.util.NbBundle;
 /** Options for JUnit module, control behavior of test creation and execution.
  *
  * @author  vstejskal
+ * @author  Marian Petras
  * @version 1.0
  */
 public class JUnitSettings extends SystemOption {
 
     // static final long serialVersionUID = ...;
     static final long serialVersionUID = 372745543035969452L;
+    
+    /** prefix for names of generated test classes */
+    static final String TEST_CLASSNAME_PREFIX = NbBundle.getMessage(
+            JUnitSettings.class,
+            "PROP_test_classname_prefix");                //NOI18N
+    /** suffix for names of generated test classes */
+    static final String TEST_CLASSNAME_SUFFIX = NbBundle.getMessage(
+            JUnitSettings.class,
+            "PROP_test_classname_suffix");                //NOI18N
+    /** prefix for names of generated test suites */
+    static final String SUITE_CLASSNAME_PREFIX = NbBundle.getMessage(
+            JUnitSettings.class,
+            "PROP_suite_classname_prefix");               //NOI18N
+    /** suffix for names of generated test suites */
+    static final String SUITE_CLASSNAME_SUFFIX = NbBundle.getMessage(
+            JUnitSettings.class,
+            "PROP_suite_classname_suffix");               //NOI18N
+    /** should it be possible to create tests for tests? */
+    static final boolean GENERATE_TESTS_FROM_TEST_CLASSES = NbBundle.getMessage(
+            JUnitSettings.class,
+            "PROP_generate_tests_from_test_classes").equals("true");    //NOI18N
+    /** generate method setUp() by default? */
+    static final boolean DEFAULT_GENERATE_SETUP = NbBundle.getMessage(
+            JUnitSettings.class,
+            "PROP_generate_setUp_default").equals("true");              //NOI18N
+    /** generate method tearDown() by default? */
+    static final boolean DEFAULT_GENERATE_TEARDOWN = NbBundle.getMessage(
+            JUnitSettings.class,
+            "PROP_generate_tearDown_default").equals("true");           //NOI18N
 
     // XXX this property has to go too - will not work any longer, need some src -> test query
     private static final String PROP_FILE_SYSTEM         = "fileSystem";
@@ -55,15 +85,10 @@ public class JUnitSettings extends SystemOption {
     public static final String PROP_GENERATE_SUITE_CLASSES   = "generateSuiteClasses";
     
     public static final String PROP_INCLUDE_PACKAGE_PRIVATE_CLASSES = "includePackagePrivateClasses";
-    public static final String PROP_GENERATE_TESTS_FROM_TEST_CLASSES = "generateTestsFromTestClasses";    
     public static final String PROP_GENERATE_MAIN_METHOD = "generateMainMethod";
     public static final String PROP_GENERATE_MAIN_METHOD_BODY = "generateMainMethodBody";
     public static final String PROP_GENERATE_SETUP      = "generateSetUp";
     public static final String PROP_GENERATE_TEARDOWN   = "generateTearDown";
-    public static final String PROP_TEST_CLASSNAME_PREFIX = "testClassNamePrefix";
-    public static final String PROP_TEST_CLASSNAME_SUFFIX = "testClassNameSuffix";
-    public static final String PROP_SUITE_CLASSNAME_PREFIX = "suiteClassNamePrefix";
-    public static final String PROP_SUITE_CLASSNAME_SUFFIX = "suiteClassNameSuffix";
     public static final String PROP_ROOT_SUITE_CLASSNAME = "rootSuiteClassName";
     
     
@@ -98,14 +123,11 @@ public class JUnitSettings extends SystemOption {
         putProperty(PROP_GENERATE_EXCEPTION_CLASSES, Boolean.FALSE, true);
         putProperty(PROP_GENERATE_SUITE_CLASSES, Boolean.TRUE, true);
         putProperty(PROP_INCLUDE_PACKAGE_PRIVATE_CLASSES, Boolean.FALSE, true);
-        putProperty(PROP_GENERATE_TESTS_FROM_TEST_CLASSES, Boolean.FALSE, false);        
         putProperty(PROP_GENERATE_MAIN_METHOD, Boolean.FALSE, true);
         putProperty(PROP_GENERATE_MAIN_METHOD_BODY, NbBundle.getMessage(JUnitSettings.class, "PROP_generate_main_method_body_default_value"), true);
-        putProperty(PROP_TEST_CLASSNAME_PREFIX, NbBundle.getMessage(JUnitSettings.class, "PROP_test_classname_prefix_default_value"), true);
-        putProperty(PROP_TEST_CLASSNAME_SUFFIX, NbBundle.getMessage(JUnitSettings.class, "PROP_test_classname_suffix_default_value"), true);
-        putProperty(PROP_SUITE_CLASSNAME_PREFIX, NbBundle.getMessage(JUnitSettings.class, "PROP_suite_classname_prefix_default_value"), true);
-        putProperty(PROP_SUITE_CLASSNAME_SUFFIX, NbBundle.getMessage(JUnitSettings.class, "PROP_suite_classname_suffix_default_value"), true);        
         putProperty(PROP_ROOT_SUITE_CLASSNAME, NbBundle.getMessage(JUnitSettings.class, "PROP_root_suite_classname_default_value"), true);        
+        putProperty(PROP_GENERATE_SETUP, Boolean.valueOf(DEFAULT_GENERATE_SETUP));
+        putProperty(PROP_GENERATE_TEARDOWN, Boolean.valueOf(DEFAULT_GENERATE_TEARDOWN));
     }
 
     public void writeExternal (ObjectOutput out) throws IOException {
@@ -124,13 +146,8 @@ public class JUnitSettings extends SystemOption {
         out.writeObject(getProperty(PROP_GENERATE_EXCEPTION_CLASSES));
         out.writeObject(getProperty(PROP_GENERATE_SUITE_CLASSES));
         out.writeObject(getProperty(PROP_INCLUDE_PACKAGE_PRIVATE_CLASSES));
-        out.writeObject(getProperty(PROP_GENERATE_TESTS_FROM_TEST_CLASSES));        
         out.writeObject(getProperty(PROP_GENERATE_MAIN_METHOD));
         out.writeObject(getProperty(PROP_GENERATE_MAIN_METHOD_BODY));
-        out.writeObject(getProperty(PROP_TEST_CLASSNAME_PREFIX));
-        out.writeObject(getProperty(PROP_TEST_CLASSNAME_SUFFIX));
-        out.writeObject(getProperty(PROP_SUITE_CLASSNAME_PREFIX));
-        out.writeObject(getProperty(PROP_SUITE_CLASSNAME_SUFFIX));
         out.writeObject(getProperty(PROP_ROOT_SUITE_CLASSNAME));
         out.writeObject(getProperty(PROP_GENERATE_SETUP));
         out.writeObject(getProperty(PROP_GENERATE_TEARDOWN));
@@ -171,17 +188,25 @@ public class JUnitSettings extends SystemOption {
     }
     
     private void readVersion40Options(ObjectInput in) throws IOException, ClassNotFoundException {
-        readVersion30Options(in);
-        
-        /* generate method setUp() ? */
-        putProperty(PROP_GENERATE_SETUP,
-                    Boolean.valueOf(Boolean.TRUE.equals(in.readObject())),
-                    true);
-        
-        /* generate method tearDown() ? */
-        putProperty(PROP_GENERATE_TEARDOWN,
-                    Boolean.valueOf(Boolean.TRUE.equals(in.readObject())),
-                    true);
+        putProperty(PROP_FILE_SYSTEM, in.readObject(), true);
+        putProperty(PROP_SUITE_TEMPLATE, in.readObject(), true);
+        putProperty(PROP_CLASS_TEMPLATE, in.readObject(), true);
+        putProperty(PROP_MEMBERS_PUBLIC, in.readObject(), true);
+        putProperty(PROP_MEMBERS_PROTECTED, in.readObject(), true);
+        putProperty(PROP_MEMBERS_PACKAGE, in.readObject(), true);
+        putProperty(PROP_BODY_COMMENTS, in.readObject(), true);
+        putProperty(PROP_BODY_CONTENT, in.readObject(), true);
+        putProperty(PROP_JAVADOC, in.readObject(), true);
+        putProperty(PROP_CFGCREATE_ENABLED, in.readObject(), true);
+        putProperty(PROP_GENERATE_ABSTRACT_IMPL, in.readObject(), true);
+        putProperty(PROP_GENERATE_EXCEPTION_CLASSES, in.readObject(), true);
+        putProperty(PROP_GENERATE_SUITE_CLASSES,in.readObject(), true);
+        putProperty(PROP_INCLUDE_PACKAGE_PRIVATE_CLASSES,in.readObject(), true);
+        putProperty(PROP_GENERATE_MAIN_METHOD,in.readObject(), true);
+        putProperty(PROP_GENERATE_MAIN_METHOD_BODY,in.readObject(), true);
+        putProperty(PROP_ROOT_SUITE_CLASSNAME,in.readObject(), true);
+        putProperty(PROP_GENERATE_SETUP, in.readObject(), true);
+        putProperty(PROP_GENERATE_TEARDOWN, in.readObject(), true);
     }
     
     private void readVersion30Options(ObjectInput in) throws IOException, ClassNotFoundException {
@@ -199,13 +224,13 @@ public class JUnitSettings extends SystemOption {
         putProperty(PROP_GENERATE_EXCEPTION_CLASSES, in.readObject(), true);
         putProperty(PROP_GENERATE_SUITE_CLASSES,in.readObject(), true);
         putProperty(PROP_INCLUDE_PACKAGE_PRIVATE_CLASSES,in.readObject(), true);
-        putProperty(PROP_GENERATE_TESTS_FROM_TEST_CLASSES,in.readObject(), true);
+        in.readObject();    //was PROP_GENERATE_TESTS_FROM_TEST_CLASSES
         putProperty(PROP_GENERATE_MAIN_METHOD,in.readObject(), true);
         putProperty(PROP_GENERATE_MAIN_METHOD_BODY,in.readObject(), true);
-        putProperty(PROP_TEST_CLASSNAME_PREFIX,in.readObject(), true);
-        putProperty(PROP_TEST_CLASSNAME_SUFFIX,in.readObject(), true);
-        putProperty(PROP_SUITE_CLASSNAME_PREFIX,in.readObject(), true);
-        putProperty(PROP_SUITE_CLASSNAME_SUFFIX,in.readObject(), true);
+        in.readObject();    //was PROP_TEST_CLASSNAME_PREFIX
+        in.readObject();    //was PROP_TEST_CLASSNAME_SUFFIX
+        in.readObject();    //was PROP_SUITE_CLASSNAME_PREFIX
+        in.readObject();    //was PROP_SUITE_CLASSNAME_SUFFIX
         putProperty(PROP_ROOT_SUITE_CLASSNAME,in.readObject(), true);
     }
     
@@ -228,13 +253,13 @@ public class JUnitSettings extends SystemOption {
         in.readObject(); // was PROP_PROPERTIES
         putProperty(PROP_GENERATE_SUITE_CLASSES,in.readObject(), true);
         putProperty(PROP_INCLUDE_PACKAGE_PRIVATE_CLASSES,in.readObject(), true);
-        putProperty(PROP_GENERATE_TESTS_FROM_TEST_CLASSES,in.readObject(), true);
+        in.readObject();    //was PROP_GENERATE_TESTS_FROM_TEST_CLASSES
         putProperty(PROP_GENERATE_MAIN_METHOD,in.readObject(), true);
         putProperty(PROP_GENERATE_MAIN_METHOD_BODY,in.readObject(), true);
-        putProperty(PROP_TEST_CLASSNAME_PREFIX,in.readObject(), true);
-        putProperty(PROP_TEST_CLASSNAME_SUFFIX,in.readObject(), true);
-        putProperty(PROP_SUITE_CLASSNAME_PREFIX,in.readObject(), true);
-        putProperty(PROP_SUITE_CLASSNAME_SUFFIX,in.readObject(), true);
+        in.readObject();    //was PROP_TEST_CLASSNAME_PREFIX
+        in.readObject();    //was PROP_TEST_CLASSNAME_SUFFIX
+        in.readObject();    //was PROP_SUITE_CLASSNAME_PREFIX
+        in.readObject();    //was PROP_SUITE_CLASSNAME_SUFFIX
         putProperty(PROP_ROOT_SUITE_CLASSNAME,in.readObject(), true);
     }
     
@@ -389,14 +414,6 @@ public class JUnitSettings extends SystemOption {
         putProperty(PROP_INCLUDE_PACKAGE_PRIVATE_CLASSES, newVal ? Boolean.TRUE : Boolean.FALSE, true);
     }    
     
-    public boolean isGenerateTestsFromTestClasses() {
-        return ((Boolean) getProperty(PROP_GENERATE_TESTS_FROM_TEST_CLASSES)).booleanValue();
-    }
-
-    public void setGenerateTestsFromTestClasses(boolean newVal) {
-        putProperty(PROP_GENERATE_TESTS_FROM_TEST_CLASSES, newVal ? Boolean.TRUE : Boolean.FALSE, true);
-    }    
-    
     public boolean isGenerateMainMethod() {
         return ((Boolean) getProperty(PROP_GENERATE_MAIN_METHOD)).booleanValue();
     }
@@ -429,38 +446,6 @@ public class JUnitSettings extends SystemOption {
         putProperty(PROP_GENERATE_MAIN_METHOD_BODY, newVal, true);
     }
     
-    public String getTestClassNamePrefix() {
-        return (String) getProperty(PROP_TEST_CLASSNAME_PREFIX);
-    }
-
-    public void setTestClassNamePrefix(String newVal) {
-        putProperty(PROP_TEST_CLASSNAME_PREFIX, newVal, true);
-    }    
-
-    public String getTestClassNameSuffix() {
-        return (String) getProperty(PROP_TEST_CLASSNAME_SUFFIX);
-    }
-
-    public void setTestClassNameSuffix(String newVal) {
-        putProperty(PROP_TEST_CLASSNAME_SUFFIX, newVal, true);
-    }        
-    
-    public String getSuiteClassNamePrefix() {
-        return (String) getProperty(PROP_SUITE_CLASSNAME_PREFIX);
-    }
-
-    public void setSuiteClassNamePrefix(String newVal) {
-        putProperty(PROP_SUITE_CLASSNAME_PREFIX, newVal, true);
-    }    
-
-    public String getSuiteClassNameSuffix() {
-        return (String) getProperty(PROP_SUITE_CLASSNAME_SUFFIX);
-    }
-
-    public void setSuiteClassNameSuffix(String newVal) {
-        putProperty(PROP_SUITE_CLASSNAME_SUFFIX, newVal, true);
-    }
-
     public String getRootSuiteClassName() {
         return (String) getProperty(PROP_ROOT_SUITE_CLASSNAME);
     }

@@ -39,19 +39,19 @@ public class TestUtil {
 
 
     static private String getTestClassSuffix() {
-        return JUnitSettings.getDefault().getTestClassNameSuffix();
+        return JUnitSettings.TEST_CLASSNAME_SUFFIX;
     }
     
     static private String getTestClassPrefix() {
-        return JUnitSettings.getDefault().getTestClassNamePrefix();
+        return JUnitSettings.TEST_CLASSNAME_PREFIX;
     }
     
     static private String getTestSuiteSuffix() {
-        return JUnitSettings.getDefault().getSuiteClassNameSuffix();
+        return JUnitSettings.SUITE_CLASSNAME_SUFFIX;
     }
     
     static private String getTestSuitePrefix() {
-        return JUnitSettings.getDefault().getSuiteClassNamePrefix();
+        return JUnitSettings.SUITE_CLASSNAME_PREFIX;
     }
     
     static private String getRootSuiteName() {

@@ -123,7 +123,7 @@ public class TestCreator extends java.lang.Object {
         // check whether class implements test interfaces
         if (TestUtil.isClassElementImplementingTestInterface(ctx, ce)) {
             //System.err.println("!!Class implements Test Interface");
-            if ( ! settings.isGenerateTestsFromTestClasses()) {
+            if ( ! JUnitSettings.GENERATE_TESTS_FROM_TEST_CLASSES) {
                 // we don't want to generate tests from test classes                
                 return false;
             }
