@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.regex.Pattern;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectManager;
@@ -410,14 +411,22 @@ public class PropertyUtils {
         }
     }
     
+    private static final Pattern RELATIVE_SLASH_SEPARATED_PATH = Pattern.compile("[^:/\\\\.][^:/\\\\]*(/[^:/\\\\.][^:/\\\\]*)*"); // NOI18N
+    
     /* public? */ static File resolveFile(File basedir, String filename) {
-        String machinePath = filename.replace('/', File.separatorChar).replace('\\', File.separatorChar);
-        File f = new File(machinePath);
-        if (!f.isAbsolute()) {
-            f = new File(basedir, machinePath);
+        if (RELATIVE_SLASH_SEPARATED_PATH.matcher(filename).matches()) {
+            // Shortcut - simple relative path. Potentially faster.
+            return new File(basedir, filename.replace('/', File.separatorChar));
+        } else {
+            // All other cases.
+            String machinePath = filename.replace('/', File.separatorChar).replace('\\', File.separatorChar);
+            File f = new File(machinePath);
+            if (!f.isAbsolute()) {
+                f = new File(basedir, machinePath);
+            }
+            assert f.isAbsolute();
+            return new File(f.toURI().normalize());
         }
-        assert f.isAbsolute();
-        return new File(f.toURI().normalize());
     }
     
     /**
@@ -466,7 +475,13 @@ public class PropertyUtils {
     }
     
     /*public? */ static FileObject resolveFileObject(FileObject basedir, String filename) {
-        return FileUtil.toFileObject(resolveFile(FileUtil.toFile(basedir), filename));
+        if (RELATIVE_SLASH_SEPARATED_PATH.matcher(filename).matches()) {
+            // Shortcut. Potentially much faster.
+            return basedir.getFileObject(filename);
+        } else {
+            // Might be an absolute path, or \-separated, or . or .. components, etc.; use the safer method.
+            return FileUtil.toFileObject(resolveFile(FileUtil.toFile(basedir), filename));
+        }
     }
     
     /*public? */ static String resolvePath(File basedir, String path) {
