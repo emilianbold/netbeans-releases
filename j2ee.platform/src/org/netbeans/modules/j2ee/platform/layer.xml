@@ -33,7 +33,9 @@ Microsystems, Inc. All Rights Reserved.
             </file>
         </folder>
     </folder>
+    <!-- do not show the action at startup
 	<folder name="WarmUp">
 		<file name="org.netbeans.modules.j2ee.platform.QueryPlatformRoot.instance"/>
 	</folder>
+	-->
 </filesystem>
