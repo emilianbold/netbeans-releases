@@ -47,7 +47,7 @@ public interface DomProvider {
     /**
      * True if the parse is finished and OK (does not block except for mutex).
      */
-    boolean isValid();
+    boolean isReady();
     
     /**
      * Listen for changes in status.

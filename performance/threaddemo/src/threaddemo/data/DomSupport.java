@@ -42,7 +42,7 @@ import threaddemo.util.*;
  * using the {@link TwoWaySupport} semantics.
  * @author Jesse Glick
  */
-public final class DomSupport extends DocumentParseSupport implements DomProvider, ErrorHandler, TwoWayListener {
+public final class DomSupport extends DocumentParseSupport implements DomProvider, ErrorHandler, TwoWayListener, EntityResolver {
     
     static {
         // Need Xerces DOM - Crimson's DOM has no event support.
@@ -97,7 +97,7 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
         }
     }
     
-    public boolean isValid() {
+    public boolean isReady() {
         return ((Boolean)mutex.readAccess(new Mutex.Action() {
             public Object run() {
                 return getValueNonBlocking() != null ? Boolean.TRUE : Boolean.FALSE;
@@ -136,7 +136,7 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
         final ChangeEvent ev = new ChangeEvent(this);
         mutex.readAccess(new Mutex.Action() {
             public Object run() {
-                System.err.println("firing change");
+                System.err.println("DS.fireChange");
                 for (int i = 0; i < ls.length; i++) {
                     ls[i].stateChanged(ev);
                 }
@@ -146,7 +146,7 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
     }
     
     protected final DerivationResult doDerive(StyledDocument document, List documentEvents, Object oldValue) throws IOException {
-        System.err.println("doDerive");//XXX
+        System.err.println("DS.doDerive");//XXX
         // ignoring documentEvents, oldValue
         String text;
         try {
@@ -157,7 +157,7 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
         }
         Document newValue;
         try {
-            newValue = XMLUtil.parse(new InputSource(new StringReader(text)), false, false, this, null);
+            newValue = XMLUtil.parse(new InputSource(new StringReader(text)), false, false, this, this);
         } catch (SAXException e) {
             throw (IOException)new IOException(e.toString()).initCause(e);
         }
@@ -194,7 +194,7 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
     }
     
     protected long delay() {
-        return 3000L;
+        return 5000L;
     }
     
     public String toString() {
@@ -213,35 +213,39 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
         throw exception;
     }
     
+    public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+        return new InputSource(new ByteArrayInputStream(new byte[0]));
+    }
+    
     public void broken(TwoWayEvent.Broken evt) {
-        fireChange();
         System.err.println("Received: " + evt);//XXX
+        fireChange();
     }
     
     public void clobbered(TwoWayEvent.Clobbered evt) {
-        assert false;
         System.err.println("Received: " + evt);//XXX
+        assert false;
     }
     
     public void derived(TwoWayEvent.Derived evt) {
-        fireChange();
         System.err.println("Received: " + evt);//XXX
+        fireChange();
     }
     
     public void forgotten(TwoWayEvent.Forgotten evt) {
-        assert false;
         System.err.println("Received: " + evt);//XXX
+        assert false;
     }
     
     public void invalidated(TwoWayEvent.Invalidated evt) {
+        System.err.println("Received: " + evt);//XXX
         // XXX right?
         fireChange();
-        System.err.println("Received: " + evt);//XXX
     }
     
     public void recreated(TwoWayEvent.Recreated evt) {
-        fireChange();
         System.err.println("Received: " + evt);//XXX
+        fireChange();
     }
     
 }

@@ -203,12 +203,14 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
     private final class Listener implements DocumentListener, PropertyChangeListener {
         
         public void insertUpdate(DocumentEvent e) {
+            System.err.println("DPS.iU");//XXX
             List l = new ArrayList(1); // List<DocumentEvent>
             l.add(e);
             invalidate(l);
         }
         
         public void removeUpdate(DocumentEvent e) {
+            System.err.println("DPS.rU");//XXX
             List l = new ArrayList(1); // List<DocumentEvent>
             l.add(e);
             invalidate(l);
@@ -220,6 +222,7 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
         
         public void propertyChange(final PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(EditorCookie.Observable.PROP_DOCUMENT)) {
+                System.err.println("DPS.pC<PROP_DOCUMENT>");//XXX
                 try {
                     refreshDocument();
                 } catch (IOException e) {

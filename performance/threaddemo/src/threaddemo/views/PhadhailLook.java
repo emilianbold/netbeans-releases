@@ -85,11 +85,15 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
             Reference r = (Reference)children.remove(o);
             List l = (r != null) ? (List)r.get() : null;
             if (l != null) {
+                System.err.println("PL.gCO EQ hax - with children: " + l);//XXX
                 return l;
             } else {
+                System.err.println("PL.gCO EQ hax - without children");//XXX
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
-                        children.put(o, new WeakReference(getChildObjects(o, null)));
+                        List l = getChildObjects(o, null);
+                        System.err.println("PL.gCO EQ hax - now got children: " + l);//XXX
+                        children.put(o, new WeakReference(l));
                         fireChange(o, Look.GET_CHILD_OBJECTS);
                     }
                 });
@@ -109,7 +113,8 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
                     p.addChangeListener(this);
                     p.start();
                 }
-                if (p.isValid()) {
+                if (p.isReady()) {
+                    System.err.println("DOM tree is ready, will ask for its document element");
                     // XXX do this block atomically in a lock?
                     try {
                         return Collections.singletonList(p.getDocument().getDocumentElement());
@@ -117,8 +122,8 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
                         assert false : x;
                     }
                 } else {
-                    // XXX call p.start() again?
-                    System.err.println("DOM tree is invalid");
+                    System.err.println("DOM tree is not ready");
+                    p.start();
                 }
             }
             return null;
@@ -208,8 +213,7 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
     
     public void nameChanged(PhadhailNameEvent ev) {
         assert ev.getPhadhail().mutex().canRead();
-        fireChange(ev.getPhadhail(), Look.GET_NAME);
-        fireChange(ev.getPhadhail(), Look.GET_DISPLAY_NAME);
+        fireChange(ev.getPhadhail(), Look.GET_NAME | Look.GET_DISPLAY_NAME);
     }
     
     public void stateChanged(ChangeEvent e) {

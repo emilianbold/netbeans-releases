@@ -195,6 +195,9 @@ public abstract class TwoWaySupport {
     /** currently in doDerive() */
     private boolean deriving = false;
     
+    /** logging support, may be null */
+    private final ErrorManager err;
+    
     /**
      * Create an uninitialized support.
      * No derivation or recreation is scheduled initially.
@@ -204,6 +207,8 @@ public abstract class TwoWaySupport {
         if (mutex == Mutex.EVENT) throw new IllegalArgumentException("Mutex.EVENT can deadlock TwoWaySupport!");
         this.mutex = mutex;
         listeners = new ArrayList();
+        ErrorManager _err = ErrorManager.getDefault().getInstance(getClass().getName());
+        err = _err.isLoggable(ErrorManager.INFORMATIONAL) ? _err : null;
     }
     
     /**
@@ -335,6 +340,7 @@ public abstract class TwoWaySupport {
             assert !mutating;
             while (deriving) {
                 // Another reader is getting the value at the moment, wait for it.
+                if (err != null) err.log("gVB: waiting for another reader to finish deriving");
                 try {
                     LOCK.wait();
                 } catch (InterruptedException e) {/* OK */}
@@ -342,12 +348,14 @@ public abstract class TwoWaySupport {
             if (fresh) {
                 Object o = model.get();
                 if (o != null) {
+                    if (err != null) err.log("gVB -> fresh value: " + o);
                     return o;
                 }
             } else if (problem != null) {
                 // XXX consider using a subclass of ITE that implements fillInStackTrace
                 // to do nothing - to make it more efficient to call this method checking
                 // for a bad value
+                if (err != null) err.log("gVB -> " + problem);
                 throw new InvocationTargetException(problem);
             }
             // Else we need to block for a value.
@@ -355,8 +363,9 @@ public abstract class TwoWaySupport {
             deriving = true;
             fresh = false;
         }
-        DerivationResult result = null;
-        Exception resultingProblem = null;
+        // Getting the value:
+        DerivationResult result;
+        Object newValue = null;
         try {
             result = doDerive(old, null);
             if (result == null) {
@@ -369,19 +378,24 @@ public abstract class TwoWaySupport {
             if (old != null && result.derivedDelta == null) {
                 throw new IllegalStateException("Cannot have a null derivedDelta for a non-null oldValue");
             }
-            fireChange(new TwoWayEvent.Derived(this, old, result.newValue, result.derivedDelta, underlyingDelta));
-            return result.newValue;
+            if (err != null) err.log("gVB -> derived value: " + result.newValue);
+            fresh = true;
+            newValue = result.newValue;
         } catch (RuntimeException e) {
             // We don't treat these as model-visible exceptions.
             throw e;
         } catch (Exception e) {
-            resultingProblem = e;
+            problem = e;
+            fresh = false;
             fireChange(new TwoWayEvent.Broken(this, old, underlyingDelta, e));
             throw new InvocationTargetException(e);
         } finally {
             synchronized (LOCK) {
                 deriving = false;
                 LOCK.notifyAll();
+                if (newValue != null) {
+                    setModel(newValue);
+                }
                 if (active) {
                     // No longer need to run this.
                     active = false;
@@ -389,15 +403,10 @@ public abstract class TwoWaySupport {
                     assert t != null;
                     toDerive.remove(t);
                 }
-                if (result != null) {
-                    setModel(result.newValue);
-                    fresh = true;
-                } else if (resultingProblem != null) {
-                    problem = resultingProblem;
-                    fresh = false;
-                }
             }
         }
+        fireChange(new TwoWayEvent.Derived(this, old, result.newValue, result.derivedDelta, underlyingDelta));
+        return result.newValue;
     }
     
     private void setModel(Object result) {
@@ -535,7 +544,8 @@ public abstract class TwoWaySupport {
         synchronized (LOCK) {
             assertStateConsistent();
             if (!active && !fresh) {
-                DeriveTask t = new DeriveTask(this);
+                Object oldValue = (model != null) ? model.get() : null;
+                DeriveTask t = new DeriveTask(this, oldValue != null);
                 toDerive.add(t);
                 tasks.put(this, t);
                 active = true;
@@ -723,9 +733,9 @@ public abstract class TwoWaySupport {
         
         public final long schedule;
         
-        public DeriveTask(TwoWaySupport support) {
+        public DeriveTask(TwoWaySupport support, boolean delay) {
             this.support = new WeakReference(support);
-            this.schedule = System.currentTimeMillis() + support.delay();
+            schedule = System.currentTimeMillis() + (delay ? support.delay() : 0L);
         }
         
         public int compareTo(Object o) {
@@ -753,8 +763,11 @@ public abstract class TwoWaySupport {
     private static final class DerivationThread implements Runnable {
         
         public void run() {
-            synchronized (LOCK) {
-                while (true) {
+            while (true) {
+                // Javac thinks it "might already have been assigned" by the time it is
+                // actually assigned below.
+                final TwoWaySupport[] s = new TwoWaySupport[1];
+                synchronized (LOCK) {
                     while (toDerive.isEmpty()) {
                         try {
                             LOCK.wait();
@@ -764,43 +777,44 @@ public abstract class TwoWaySupport {
                     }
                     Iterator it = toDerive.iterator();
                     DeriveTask t = (DeriveTask)it.next();
-                    final TwoWaySupport s = (TwoWaySupport)t.support.get();
-                    if (s != null) {
-                        long now = System.currentTimeMillis();
-                        if (t.schedule <= now) {
-                            s.getMutex().readAccess(new Mutex.Action() {
-                                public Object run() {
-                                    try {
-                                        s.getValueBlocking();
-                                        // Ignore value and exceptions - gVB is
-                                        // enough to cache that info and fire changes.
-                                    } catch (InvocationTargetException e) {
-                                        // OK, handled separately.
-                                    } catch (RuntimeException e) {
-                                        // Oops!
-                                        ErrorManager.getDefault().notify(e);
-                                    } catch (Error e) {
-                                        // Oops!
-                                        ErrorManager.getDefault().notify(e);
-                                    }
-                                    return null;
-                                }
-                            });
-                            // Don't explicitly remove it from the queue - if it was
-                            // active, then gVB should have done that itself.
-                        } else {
-                            try {
-                                LOCK.wait(t.schedule - now);
-                            } catch (InterruptedException e) {
-                                assert false : e;
-                            }
-                            // Try again in next round.
-                        }
-                    } else {
+                    s[0] = (TwoWaySupport)t.support.get();
+                    if (s[0] == null) {
                         // Dead - support was collected before we got to it.
                         it.remove();
+                        continue;
+                    }
+                    long now = System.currentTimeMillis();
+                    if (t.schedule > now) {
+                        try {
+                            LOCK.wait(t.schedule - now);
+                        } catch (InterruptedException e) {
+                            assert false : e;
+                        }
+                        // Try again in next round.
+                        continue;
                     }
                 }
+                // Out of synch block; we have a support to run.
+                s[0].getMutex().readAccess(new Mutex.Action() {
+                    public Object run() {
+                        try {
+                            s[0].getValueBlocking();
+                            // Ignore value and exceptions - gVB is
+                            // enough to cache that info and fire changes.
+                        } catch (InvocationTargetException e) {
+                            // OK, handled separately.
+                        } catch (RuntimeException e) {
+                            // Oops!
+                            ErrorManager.getDefault().notify(e);
+                        } catch (Error e) {
+                            // Oops!
+                            ErrorManager.getDefault().notify(e);
+                        }
+                        return null;
+                    }
+                });
+                // Don't explicitly remove it from the queue - if it was
+                // active, then gVB should have done that itself.
             }
         }
         
