@@ -1098,7 +1098,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         
         if (id == JspTagTokenContext.SYMBOL2 || id == JspDirectiveTokenContext.SYMBOL2) {
 //System.out.println("just at symbol");
-            if (isScriptStartToken(item)) {
+            if ((getTokenEnd(item) == offset) && isScriptStartToken(item)) {
                 return getScriptingChain(item.getNext(), offset);
             }
             
