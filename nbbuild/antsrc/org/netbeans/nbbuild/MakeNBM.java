@@ -457,7 +457,8 @@ public class MakeNBM extends MatchingTask {
 		    while (it.hasNext ()) {
                         Map.Entry entry = (Map.Entry) it.next ();
                         String name = ((Attributes.Name)entry.getKey()).toString();
-                        // Ignore irrelevant attributes (cf. www/www/dtds/autoupdate-catalog-1_0.dtd):
+                        // Ignore irrelevant attributes (cf. www/www/dtds/autoupdate-catalog-1_0.dtd
+                        //  and www/www/dtds/autoupdate-info-1_0.dtd):
                         if (! name.startsWith("OpenIDE-Module")) continue;
                         if (name.equals("OpenIDE-Module-Localizing-Bundle")) continue;
                         if (name.equals("OpenIDE-Module-Install")) continue;
@@ -465,7 +466,6 @@ public class MakeNBM extends MatchingTask {
                         if (name.equals("OpenIDE-Module-Description")) continue;
                         if (name.equals("OpenIDE-Module-Package-Dependency-Message")) continue;
                         if (name.equals("OpenIDE-Module-Public-Packages")) continue;
-                        if (name.equals("OpenIDE-Module-Display-Category")) continue;
 			if (firstline)
 			    firstline = false;
 			else
