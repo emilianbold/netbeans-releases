@@ -302,7 +302,7 @@ v.add("Hi!");
       <TestLogAction Name="insert-break" Command="\0C" />
       <TestStringAction Name="string49" String="\0C" />
     </TestStep>
-    <TestCallAction Name="StayInvoked" Call="stayInvokedActions" Set="javaSettings" Enable="true" Repeat="1" Delay="400">
+    <TestCallAction Name="StayInvoked" Call="stayInvokedActions" Set="javaSettings" Enable="true" Repeat="1" Delay="500">
       <Input>
         <![CDATA[""]]>
       </Input>
@@ -310,7 +310,7 @@ v.add("Hi!");
         <![CDATA["java.awt.event.FocusListener;
 javax.swing.JPanel;
 javax.swing.JButton.CENTER_ALIGNMENT;
-java.lang.String.CASE_INSENSITIVE_ORDER;
+java.lang.String.class;
 java.io.FileFilter;
 "]]>
       </Output>
@@ -500,58 +500,35 @@ java.util.jar.Manifest;
         <![CDATA["It tests issues 28055."]]>
       </Comment>
     </TestCallAction>
-    <TestStep Name="RepositoryActions">
-      <TestStringAction Name="string3" String="import org.o" />
+    <TestStep Name="PackageCCActions">
+      <TestStringAction Name="string20" String="package java.lang." />
       <TestLogAction Name="completion-show" Command=" " />
       <TestCompletionAction Name="completion-action" Command="completion-down" />
-      <TestLogAction Name="insert-break" Command="\0C" />
-      <TestStringAction Name="string4" String="\0C." />
-      <TestLogAction Name="completion-show" Command=" " />
-      <TestStringAction Name="string5" String="fi" />
-      <TestLogAction Name="insert-break" Command="\0C" />
-      <TestStringAction Name="string6" String="\0C.R" />
-      <TestLogAction Name="completion-show" Command=" " />
-      <TestLogAction Name="insert-break" Command="\0C" />
-      <TestStringAction Name="string7" String="\0C;" />
-      <TestLogAction Name="insert-break" Command="\0C" />
-      <TestStringAction Name="string8" String="\0C" />
-      <TestLogAction Name="insert-break" Command="\0C" />
-      <TestStringAction Name="string9" String="\0Cclass Foo {" />
-      <TestLogAction Name="insert-break" Command="\0C" />
-      <TestStringAction Name="string10" String="\0C}" />
-      <TestLogAction Name="caret-up" Command="" />
-      <TestLogAction Name="caret-end-line" Command="" />
-      <TestLogAction Name="insert-break" Command="\0C" />
-      <TestStringAction Name="string11" String="\0Cpublic void main(String[] args) {" />
-      <TestLogAction Name="insert-break" Command="\0C" />
-      <TestStringAction Name="string12" String="\0C}" />
-      <TestLogAction Name="caret-up" Command="" />
-      <TestLogAction Name="caret-end-line" Command="" />
-      <TestLogAction Name="insert-break" Command="\0C" />
-      <TestStringAction Name="string13" String="\0CRepository r;" />
-      <TestLogAction Name="insert-break" Command="\0C" />
-      <TestStringAction Name="string14" String="\0Cr." />
-      <TestLogAction Name="completion-show" Command=" " />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
+      <TestCompletionAction Name="completion-action" Command="completion-down" />
       <TestCompletionAction Name="completion-action" Command="completion-down" />
       <TestLogAction Name="insert-break" Command="\0C" />
-      <TestStringAction Name="string15" String="\0Cnull);" />
+      <TestStringAction Name="string21" String="\0C;" />
     </TestStep>
-    <TestCallAction Name="Repository" Call="RepositoryActions" Set="Settings1" Enable="true" Repeat="1" Delay="400">
+    <TestCallAction Name="PackageCC" Call="PackageCCActions" Set="Settings1" Enable="true" Repeat="1" Delay="100">
       <Input>
         <![CDATA[""]]>
       </Input>
       <Output>
-        <![CDATA["import org.openide.filesystems.Repository;
-
-class Foo {
-    public void main(String[] args) {
-        Repository r;
-        r.addFileSystem(null);
-    }
-}"]]>
+        <![CDATA["package java.lang.reflect;"]]>
       </Output>
       <Comment>
-        <![CDATA["Tests issues around 24646."]]>
+        <![CDATA["Tests issues around 28215."]]>
       </Comment>
     </TestCallAction>
     <Comment>
@@ -613,7 +590,7 @@ class Foo {
       <Output>
         <![CDATA["<HTML>
 <BODY>
-<A charset='aaa' href='file'>Text.</A>
+<A class='aaa' href='file'>Text.</A>
 </BODY>
 </HTML>"]]>
       </Output>

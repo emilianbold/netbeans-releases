@@ -211,19 +211,19 @@ if (log != null) log.flush();
 }
 
 /**
- * Call Action: Repository
+ * Call Action: PackageCC
  * Sub Test: Issues
  * Author:   ehucka
  * Version:  1.1
  * Comment:  It tests issues 28055.
  */
 
-public void testRepository() throws Exception {
+public void testPackageCC() throws Exception {
 PrintWriter ref = null;
 PrintWriter log = null;
 String[] arguments = new String[] {
 "/org/netbeans/test/editor/app/tests/completion.xml",
-"Issues.Repository"
+"Issues.PackageCC"
 };
 try {
 ref = new PrintWriter(getRef());

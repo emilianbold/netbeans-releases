@@ -1,5 +1,5 @@
 java.awt.event.FocusListener;
 javax.swing.JPanel;
 javax.swing.JButton.CENTER_ALIGNMENT;
-java.lang.String.CASE_INSENSITIVE_ORDER;
+java.lang.String.class;
 java.io.FileFilter;
