@@ -39,15 +39,16 @@ import org.apache.tools.ant.module.bridge.*;
 public final class IntrospectedInfo implements Serializable {
     
     private static IntrospectedInfo defaults = null;
+    private static boolean defaultsInited = false;
+    private static boolean defaultsEverInited = false;
     
     /** Get default definitions specified by Ant's defaults.properties.
      * @return the singleton defaults
      */
     public static synchronized IntrospectedInfo getDefaults() {
-        if (defaults != null) return defaults;
-        AntModule.err.log("IntrospectedInfo.getDefaults: loading...");
-        defaults = new IntrospectedInfo();
-        defaults.loadDefaults(true);
+        if (defaults == null) {
+            defaults = new IntrospectedInfo();
+        }
         return defaults;
     }
     
@@ -63,7 +64,6 @@ public final class IntrospectedInfo implements Serializable {
     private transient ChangeListener antBridgeListener = new ChangeListener() {
         public void stateChanged(ChangeEvent ev) {
             clearDefs();
-            loadDefaults(false);
             fireStateChanged();
         }
     };
@@ -73,9 +73,21 @@ public final class IntrospectedInfo implements Serializable {
     public IntrospectedInfo () {
     }
     
+    private void init() {
+        synchronized (IntrospectedInfo.class) {
+            if (!defaultsInited && this == defaults) {
+                AntModule.err.log("IntrospectedInfo.getDefaults: loading...");
+                defaultsInited = true;
+                loadDefaults(!defaultsEverInited);
+                defaultsEverInited = true;
+            }
+        }
+    }
+    
     private void clearDefs() {
         clazzes.clear();
         namedefs.clear();
+        defaultsInited = false;
     }
     
     private void loadDefaults(boolean listen) {
@@ -202,6 +214,7 @@ public final class IntrospectedInfo implements Serializable {
      * @return an immutable map from definition names to class names
      */
     public Map getDefs(String kind) {
+        init();
         synchronized (namedefs) {
             Map m = (Map)namedefs.get(kind);
             if (m != null) {
@@ -214,7 +227,9 @@ public final class IntrospectedInfo implements Serializable {
     
     private IntrospectedClass getData (String clazz) throws IllegalArgumentException {
         IntrospectedClass data = (IntrospectedClass) clazzes.get (clazz);
-        if (data == null) throw new IllegalArgumentException ();
+        if (data == null) {
+            throw new IllegalArgumentException("Unknown class: " + clazz); // NOI18N
+        }
         return data;
     }
     
@@ -223,6 +238,7 @@ public final class IntrospectedInfo implements Serializable {
      * @return true if it is known, false if never encountered
      */
     public boolean isKnown (String clazz) {
+        init();
         return clazzes.get (clazz) != null;
     }
     
@@ -232,6 +248,7 @@ public final class IntrospectedInfo implements Serializable {
      * @throws IllegalArgumentException if the class is unknown
      */
     public boolean supportsText (String clazz) throws IllegalArgumentException {
+        init();
         return getData (clazz).supportsText;
     }
     
@@ -241,6 +258,7 @@ public final class IntrospectedInfo implements Serializable {
      * @throws IllegalArgumentException if the class is unknown
      */
     public Map getAttributes (String clazz) throws IllegalArgumentException {
+        init();
         Map map = getData (clazz).attrs;
         if (map == null) {
             return Collections.EMPTY_MAP;
@@ -255,6 +273,7 @@ public final class IntrospectedInfo implements Serializable {
      * @throws IllegalArgumentException if the class is unknown
      */
     public Map getElements (String clazz) throws IllegalArgumentException {
+        init();
         Map map = getData (clazz).subs;
         if (map == null) {
             return Collections.EMPTY_MAP;
@@ -333,6 +352,7 @@ public final class IntrospectedInfo implements Serializable {
      * @since 2.4
      */
     public synchronized void register(String name, Class clazz, String kind) {
+        init();
         synchronized (namedefs) {
             Map m = (Map)namedefs.get(kind);
             if (m == null) {
@@ -354,6 +374,7 @@ public final class IntrospectedInfo implements Serializable {
      * @since 2.4
      */
     public synchronized void unregister(String name, String kind) {
+        init();
         synchronized (namedefs) {
             Map m = (Map)namedefs.get(kind);
             if (m != null) {
@@ -471,6 +492,7 @@ public final class IntrospectedInfo implements Serializable {
      * @param defs map from kinds to maps from names to classes
      */
     public void scanProject (Map defs) {
+        init();
         Iterator it = defs.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry e = (Map.Entry)it.next();
@@ -553,6 +575,7 @@ public final class IntrospectedInfo implements Serializable {
         ChangeListener l = new ChangeListener() {
             public void stateChanged(ChangeEvent ev) {
                 IntrospectedInfo ii2 = (IntrospectedInfo)ev.getSource();
+                ii2.init();
                 ii.clazzes.putAll(ii2.clazzes);
                 Iterator it = ii2.namedefs.entrySet().iterator();
                 while (it.hasNext()) {

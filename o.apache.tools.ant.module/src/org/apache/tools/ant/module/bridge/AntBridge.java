@@ -183,17 +183,23 @@ public final class AntBridge {
             m.put(KEY_BRIDGE, (BridgeInterface)impl.newInstance());
             m.put(KEY_CUSTOM_DEFS, createCustomDefs(nblibs, aux));
         } catch (Exception e) {
-            m.clear();
-            ClassLoader dummy = ClassLoader.getSystemClassLoader();
-            m.put(KEY_MAIN_CLASS_LOADER, dummy);
-            m.put(KEY_AUX_CLASS_LOADER, dummy);
-            m.put(KEY_BRIDGE, new DummyBridgeImpl(e));
-            Map defs = new HashMap();
-            defs.put("task", new HashMap()); // NOI18N
-            defs.put("type", new HashMap()); // NOI18N
-            m.put(KEY_CUSTOM_DEFS, defs);
+            fallback(m, e);
+        } catch (LinkageError e) {
+            fallback(m, e);
         }
         return m;
+    }
+    
+    private static void fallback(Map m, Throwable e) {
+        m.clear();
+        ClassLoader dummy = ClassLoader.getSystemClassLoader();
+        m.put(KEY_MAIN_CLASS_LOADER, dummy);
+        m.put(KEY_AUX_CLASS_LOADER, dummy);
+        m.put(KEY_BRIDGE, new DummyBridgeImpl(e));
+        Map defs = new HashMap();
+        defs.put("task", new HashMap()); // NOI18N
+        defs.put("type", new HashMap()); // NOI18N
+        m.put(KEY_CUSTOM_DEFS, defs);
     }
     
     private static final class JarFilter implements FilenameFilter {
@@ -330,6 +336,26 @@ public final class AntBridge {
         protected final PermissionCollection getPermissions(CodeSource cs) {
             return getAllPermissions();
         }
+
+        /* Debugging:
+        public URL getResource(String name) {
+            URL u = super.getResource(name);
+            System.err.println("ACL.gR: " + name + " -> " + u + " [" + this + "]");
+            return u;
+        }
+
+        public Class loadClass(String name) throws ClassNotFoundException {
+            try {
+                Class c = super.loadClass(name);
+                java.security.CodeSource s = c.getProtectionDomain().getCodeSource();
+                System.err.println("ACL.lC: " + name + " from " + (s != null ? s.getLocation() : null) + " [" + this + "]");
+                return c;
+            } catch (ClassNotFoundException e) {
+                System.err.println("ACL.lC: CNFE on " + name + " [" + this + "]");
+                throw e;
+            }
+        }
+         */
         
     }
     

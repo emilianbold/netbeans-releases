@@ -67,6 +67,15 @@ public class BridgeImpl implements BridgeInterface {
     }
     
     public boolean run(File buildFile, final FileObject buildFileObject, List targets, PrintStream out, PrintStream err, Properties properties, int verbosity, boolean useStatusLine) {
+        boolean ok = false;
+        
+        // Make sure "main Ant loader" is used as context loader for duration of the
+        // run. Otherwise some code, e.g. JAXP, will accidentally pick up NB classes,
+        // which can cause various undesirable effects.
+        ClassLoader oldCCL = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(Project.class.getClassLoader());
+        try {
+        
         Project project = null;
         
         // first use the ProjectHelper to create the project object
@@ -135,20 +144,12 @@ public class BridgeImpl implements BridgeInterface {
         // So it must be fired directly on the listener. Poor API design IMHO.
         logger.buildStarted(new BuildEvent(project));
         
-        // Make sure "main Ant loader" is used as context loader for duration of the
-        // run. Otherwise some code, e.g. JAXP, will accidentally pick up NB classes,
-        // which can cause various undesirable effects.
-        ClassLoader oldCCL = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(Project.class.getClassLoader());
-        
         // Save & restore system output streams.
         PrintStream sysout = System.out;
         PrintStream syserr = System.err;
         System.setOut(new PrintStream(new DemuxOutputStream(project, false)));
         System.setErr(new PrintStream(new DemuxOutputStream(project, true)));
 
-        boolean ok = false;
-        
         try {
             // Execute the configured project
             //writer.println("#4"); // NOI18N
@@ -181,7 +182,6 @@ public class BridgeImpl implements BridgeInterface {
         } finally {
             System.setOut(sysout);
             System.setErr(syserr);
-            Thread.currentThread().setContextClassLoader(oldCCL);
         }
         
         // Now check to see if the Project defined any cool new custom tasks.
@@ -204,6 +204,10 @@ public class BridgeImpl implements BridgeInterface {
                 }
             }
         }, 1000); // a bit later; the target can finish first!
+        
+        } finally {
+            Thread.currentThread().setContextClassLoader(oldCCL);
+        }
         
         return ok;
     }
