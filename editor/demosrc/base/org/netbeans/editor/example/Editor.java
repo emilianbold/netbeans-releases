@@ -52,8 +52,22 @@ public class Editor extends javax.swing.JFrame {
     private int fileCounter = -1;
     Map com2text = new HashMap();
     
+    private static class Localizer implements LocaleSupport.Localizer {
+	ResourceBundle bundle;
+	
+	public Localizer( String bundleName ) {
+	    bundle = ResourceBundle.getBundle( bundleName );
+	}
+	
+        public String getString( String key ) {
+	    return bundle.getString( key );
+	}
+    }
+    
     public Editor() {
         super( "NetBeans Editor" );
+	LocaleSupport.addLocalizer( new Localizer( "org.netbeans.editor.Bundle" ) );
+	
         // Feed our kits with their default Settings
         Settings.addInitializer(new BaseSettingsInitializer(), Settings.CORE_LEVEL);
         Settings.addInitializer(new ExtSettingsInitializer(), Settings.CORE_LEVEL);

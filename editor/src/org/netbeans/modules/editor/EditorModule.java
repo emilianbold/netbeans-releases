@@ -77,8 +77,8 @@ public class EditorModule extends ModuleInstall {
     /** Module installed again. */
     public void restored () {
 
-        LocaleSupport.addLocalizer(new NbLocalizer(NbEditorSettingsInitializer.class));
         LocaleSupport.addLocalizer(new NbLocalizer(AllOptions.class));
+        LocaleSupport.addLocalizer(new NbLocalizer(BaseKit.class));
 
         // Initializations
         DialogSupport.setDialogFactory( new NbDialogSupport() );
