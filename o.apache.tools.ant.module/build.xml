@@ -233,6 +233,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     - docs/src/org/apache/tools/ant/module/docs/Bundle.properties
     - src/org/apache/tools/ant/module/resources/SampleProject.xml_
     - src/org/apache/tools/ant/module/resources/CustomTask_java
+    - ../usersguide/javahelp/org/netbeans/modules/usersguide/ant/*.html
 8.  Update ${ParserDB} with sources from ${useful-sources}
 9.  Update ${features.xml}
 10. Refresh these files with the prebuilt binaries from an Ant download:
