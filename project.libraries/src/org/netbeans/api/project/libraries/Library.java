@@ -29,8 +29,8 @@ import java.beans.PropertyChangeEvent;
  * named rather then typed but the name express their type.
  * The volume is a list of resoruces.
  * <p>
- *
- * @author Petr Kuzel
+ * For more details see <a href="package-summary.html">libraries overview</a>.
+ * @author Petr Kuzel, Tomas Zezula
  */
 public final class Library {
     
@@ -58,12 +58,12 @@ public final class Library {
     } // end create
 
     /**
-     * Access typed but raw library data that were added by user.
+     * Access typed but raw library data.
      * <p>
-     * Content types are defined by SPI providers and identified
-     * by the volume type. For example the j2se library supports the following
-     * volume types: classpath - library classpath roots, src - library sources, javadoc - library javadoc.
-     * Your module must have contract with particular provider's module to be able to query it effectively.
+     * The contents are defined by SPI providers and identified
+     * by the <a href="package-summary.html#volumeType">volume types</a>. For example the j2se library supports the following
+     * volume types: classpath - the library classpath roots, src - the library sources, javadoc - the library javadoc.
+     * Your module must have contract with a particular provider's module to be able to query it effectively.
      * </p>
      *
      * @param volumeType which resources to return.
