@@ -14,21 +14,13 @@
 package org.netbeans.modules.web.examples;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.LineNumberReader;
 import java.io.OutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-
-import org.openide.modules.InstalledFileLocator;
-import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 
 import org.openide.filesystems.FileObject;
@@ -78,39 +70,7 @@ public class WebSampleProjectGenerator {
             } catch (Exception e) {
                 throw new IOException(e.toString());
             }
-            
-            //update private/project.properties
-            try {
-                File props = FileUtil.toFile(prjLoc.getFileObject(AntProjectHelper.PRIVATE_PROPERTIES_PATH));
-                InputStream is = new FileInputStream(props);
-                EditableProperties ep = new EditableProperties();
-                ep.load(is);
-                
-                // JSPC classpath
-                StringBuffer sb = new StringBuffer();
-                // Ant is needed in classpath if we are forking JspC into another process
-                sb.append(InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", null, false)); //NOI18N
-                sb.append(":"); // NOI18N
-                sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/servlet-api-2.4.jar", null, false)); //NOI18N
-                sb.append(":"); // NOI18N
-                sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jsp-api-2.0.jar", null, false));   //NOI18N
-                sb.append(":"); // NOI18N
-                sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-compiler-5.0.27.jar", null, false));    //NOI18N
-                sb.append(":"); // NOI18N
-                sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-runtime-5.0.27.jar", null, false));     //NOI18N
-                sb.append(":"); // NOI18N
-                sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/commons-el.jar", null, false));    //NOI18N
-                sb.append(":"); // NOI18N
-                sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/commons-logging-api.jar", null, false));   //NOI18N
-                ep.setProperty(JSPC_CLASSPATH, sb.toString());
-
-                OutputStream os = new FileOutputStream(props);
-                ep.store(os);
-                
-            } catch (Exception e) {
-                throw new IOException(e.toString());
-            }
-        
+                   
             prjLoc.refresh(false);
         }
         return prjLoc;
