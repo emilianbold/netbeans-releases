@@ -35,6 +35,12 @@ public class ProjectWebModuleProvider implements WebModuleProvider {
             if (src.equals (file) || web.equals (file) || FileUtil.isParentOf (src, file) || FileUtil.isParentOf (web, file)) {
                 return WebModuleFactory.createWebModule (wp.getWebModule ());
             }
+            FileObject build = wp.getWebModule().getBuildDirectory();
+            if (build != null) {
+                if (build.equals (file) || FileUtil.isParentOf (build, file)) {
+                    return WebModuleFactory.createWebModule (wp.getWebModule ());
+                }
+            }
         }
         return null;
     }

@@ -140,8 +140,12 @@ public final class ProjectWebModule extends J2eeModuleProvider
         return new IT (getContentDirectory ());
     }
 
-    public FileObject getContentDirectory() throws java.io.IOException {
+    public FileObject getContentDirectory() {
         return getFileObject ("build.web.dir"); //NOI18N
+    }
+
+    public FileObject getBuildDirectory() {
+        return getFileObject ("build.dir"); //NOI18N
     }
 
     public File getContentDirectoryAsFile() {
