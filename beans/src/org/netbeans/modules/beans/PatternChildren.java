@@ -99,13 +99,33 @@ public class PatternChildren extends ClassChildren {
     */
 
     // FilterCookie implementation --------------------------------------------------------
+    
+    private boolean addNotifyRefresh;
+    
+    /**
+     * HACK -- this disables synchronous node refresh done from ClassChildren.addNotify(). 
+     * It would be way better to change ClassChildren.addNotify() so it does not force a refresh,
+     * but God knows who actually subclasses that stuff and for what purposes.
+     */
+    protected void addNotify() {
+	try {
+	    addNotifyRefresh = true;
+	    super.addNotify();
+	} finally {
+	    addNotifyRefresh = false;
+	}
+    }
 
     /** Updates all the keys (elements) according to the current filter &
     * ordering.
     */
     protected void refreshAllKeys () {
         cpl = new Collection [getOrder ().length];
-        refreshKeys (PatternFilter.ALL);
+	if (addNotifyRefresh) {
+	    scheduleRefresh();
+	} else {
+    	    refreshKeys (PatternFilter.ALL);
+	}
     }
     
     private synchronized void scheduleRefresh() {
