@@ -21,6 +21,7 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
 
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /** Wraps an Ant property in an IDE node property.
  */
@@ -45,20 +46,26 @@ public class AntProperty extends Node.Property {
     }
     
     public Object getValue () {
-        return getElement ().getAttribute (name);
+        Element el = getElement ();
+        if (el == null) { // #9675
+            return NbBundle.getMessage (AntProperty.class, "LBL_property_invalid_no_element");
+        }
+        return el.getAttribute (name);
     }
     
     public void setValue (Object value) throws IllegalArgumentException, InvocationTargetException {
+        Element el = getElement ();
+        if (el == null) return;
         if (value == null) value = ""; // NOI18N
         if (! (value instanceof String)) throw new IllegalArgumentException ();
         if (value.equals ("")) { // NOI18N
             try {
-                getElement ().removeAttribute (name);
+                el.removeAttribute (name);
             } catch (DOMException dome) {
                 throw new InvocationTargetException (dome);
             }
         } else {
-            getElement ().setAttribute (name, (String) value);
+            el.setAttribute (name, (String) value);
         }
     }
     
@@ -67,11 +74,11 @@ public class AntProperty extends Node.Property {
     }
     
     public boolean canWrite () {
-        return true;
+        return (getElement () != null);
     }
     
     public boolean supportsDefaultValue () {
-        return true;
+        return (getElement () != null);
     }
     
     public void restoreDefaultValue () throws IllegalArgumentException, InvocationTargetException {

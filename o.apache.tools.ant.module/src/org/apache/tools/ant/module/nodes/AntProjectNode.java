@@ -187,12 +187,18 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
             return ((AntProjectCookie) getCookie (AntProjectCookie.class)).getProjectElement ();
         }
         public Object getValue () {
+            Element el = getElement ();
+            if (el == null) { // #9675
+                return new File ("."); // NOI18N
+            }
             return new File (getElement ().getAttribute ("basedir")); // NOI18N
         }
         public void setValue (Object o) throws IllegalArgumentException, InvocationTargetException {
+            Element el = getElement ();
+            if (el == null) return;
             if (o == null || o.toString ().equals ("")) { // NOI18N
                 try {
-                    getElement ().removeAttribute ("basedir"); // NOI18N
+                    el.removeAttribute ("basedir"); // NOI18N
                 } catch (DOMException dome) {
                     throw new InvocationTargetException (dome);
                 }
@@ -200,46 +206,38 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
             }
             if (! (o instanceof File)) throw new IllegalArgumentException ();
             try {
-                getElement ().setAttribute ("basedir", ((File) o).getPath ()); // NOI18N
+                el.setAttribute ("basedir", ((File) o).getPath ()); // NOI18N
             } catch (DOMException dome) {
                 throw new InvocationTargetException (dome);
             }
         }
+        public boolean canWrite () {
+            return (getElement () != null);
+        }
         public boolean supportsDefaultValue () {
-            return true;
+            return (getElement () != null);
         }
         public void restoreDefaultValue () throws InvocationTargetException {
             setValue (null);
-            /*
-             try {
-                 getElement ().setAttribute ("basedir", "."); // NOI18N
-             } catch (DOMException dome) {
-                 throw new InvocationTargetException (dome);
-             }
-             */
         }
     }
 
     private void add2Sheet (Sheet.Set props) {
-        // Retrieve the document element of the Ant Project XML document from the cookie set
-        Element docElem = ((AntProjectCookie) getCookie (AntProjectCookie.class)).getProjectElement ();
-        if (docElem != null) {
-            ResourceBundle bundle = NbBundle.getBundle (AntProjectNode.class);
-            // Create the required properties (XML attributes) of the Ant project
-            Node.Property prop = new ProjectProperty ("name"); // NOI18N
-            // Cannot reuse 'name' because it conflicts with the DataObject.PROP_NAME:
-            prop.setName ("projectName"); // NOI18N
-            prop.setDisplayName (bundle.getString ("PROP_projectName"));
-            prop.setShortDescription (bundle.getString ("HINT_projectName"));
-            props.put (prop);
-            prop = new ProjectTargetProperty ("default"); // NOI18N
-            prop.setDisplayName (bundle.getString ("PROP_default"));
-            prop.setShortDescription (bundle.getString ("HINT_default"));
-            props.put (prop);
-            prop = new ProjectBasedirProperty (bundle.getString ("PROP_basedir"), bundle.getString ("HINT_basedir"));
-            props.put (prop);
-            // id prop unnecessary, since project name functions as an ID
-        }
+        ResourceBundle bundle = NbBundle.getBundle (AntProjectNode.class);
+        // Create the required properties (XML attributes) of the Ant project
+        Node.Property prop = new ProjectProperty ("name"); // NOI18N
+        // Cannot reuse 'name' because it conflicts with the DataObject.PROP_NAME:
+        prop.setName ("projectName"); // NOI18N
+        prop.setDisplayName (bundle.getString ("PROP_projectName"));
+        prop.setShortDescription (bundle.getString ("HINT_projectName"));
+        props.put (prop);
+        prop = new ProjectTargetProperty ("default"); // NOI18N
+        prop.setDisplayName (bundle.getString ("PROP_default"));
+        prop.setShortDescription (bundle.getString ("HINT_default"));
+        props.put (prop);
+        prop = new ProjectBasedirProperty (bundle.getString ("PROP_basedir"), bundle.getString ("HINT_basedir"));
+        props.put (prop);
+        // id prop unnecessary, since project name functions as an ID
     }
 
     public void propertyChange (PropertyChangeEvent evt) {
