@@ -33,6 +33,11 @@ public class EditorModule implements ModuleInstall {
 
   /** Module installed for the first time. */
   public void installed () {
+    restored ();
+  }
+
+  /** Module installed again. */
+  public void restored () {
     JEditorPane tmpPane = new JEditorPane(); // getEditorKitForContentType is not static
     for (int i = 0; i < replacements.length; i++) {
       // store old kit
@@ -45,11 +50,6 @@ public class EditorModule implements ModuleInstall {
       JEditorPane.registerEditorKitForContentType(replacements[i].contentType,
           replacements[i].newKitClassName);
     }
-  }
-
-  /** Module installed again. */
-  public void restored () {
-    // XXX body of installed() here instead?
   }
 
   /** Module was uninstalled. */
@@ -91,6 +91,8 @@ public class EditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  5    Gandalf   1.4         3/10/99  Jaroslav Tulach body of install moved to
+ *       restored.
  *  4    Gandalf   1.3         3/9/99   Ian Formanek    Fixed last change
  *  3    Gandalf   1.2         3/9/99   Ian Formanek    Removed obsoleted import
  *  2    Gandalf   1.1         3/8/99   Jesse Glick     For clarity: Module -> 
