@@ -27,6 +27,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.openide.ErrorManager;
+import org.openide.util.WeakListeners;
 import org.openide.filesystems.URLMapper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -59,6 +60,7 @@ public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryIm
 
             public R (Library lib) {
                 this.lib = lib;
+                this.lib.addPropertyChangeListener (WeakListeners.propertyChange(this,this.lib));
             }
 
             public synchronized URL[] getRoots() {
