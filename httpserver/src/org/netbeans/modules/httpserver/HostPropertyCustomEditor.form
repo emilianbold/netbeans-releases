@@ -19,7 +19,9 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="hostLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Host:"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/httpserver/Bundle.properties" key="CTL_HostLabel" replaceFormat="org.openide.util.NbBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
       </Properties>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -32,7 +34,9 @@
         <Property name="mnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection type="value" value="&apos;n&apos;" valueType="int"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="Any Host"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/httpserver/Bundle.properties" key="CTL_AnyRadioButton" replaceFormat="org.openide.util.NbBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
         <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
           <ComponentRef name="buttonGroup"/>
         </Property>
@@ -49,7 +53,9 @@
           <Connection type="value" value="&apos;S&apos;" valueType="int"/>
         </Property>
         <Property name="selected" type="boolean" value="true"/>
-        <Property name="text" type="java.lang.String" value="Selected Hosts"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/httpserver/Bundle.properties" key="CTL_SelectedRadioButton" replaceFormat="org.openide.util.NbBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
         <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
           <ComponentRef name="buttonGroup"/>
         </Property>
@@ -62,7 +68,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="grantLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Grant Access to:"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/httpserver/Bundle.properties" key="CTL_GrantLabel" replaceFormat="org.openide.util.NbBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="grantTextArea" type="code"/>
         </Property>

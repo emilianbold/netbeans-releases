@@ -19,6 +19,7 @@ import javax.swing.*;
 import org.openide.*;
 import org.openide.DialogDescriptor;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
+import org.openide.util.NbBundle;
 import java.awt.Dialog;
 
 /**
@@ -34,7 +35,7 @@ public class HostPropertyCustomEditor extends javax.swing.JPanel implements Acti
         initComponents ();
         anyRadioButton.addActionListener (this);
         selectedRadioButton.addActionListener (this);
-        grantLabel.setDisplayedMnemonic ('G');
+        grantLabel.setDisplayedMnemonic (NbBundle.getBundle(HostPropertyCustomEditor.class).getString ("CTL_GrantLabel.mnemonic").charAt (0)); // NOI18N
         setPreferredSize (new java.awt.Dimension (300, 200));
         
         // set values from PropertyEditor
@@ -77,36 +78,37 @@ public class HostPropertyCustomEditor extends javax.swing.JPanel implements Acti
         grantLabel = new javax.swing.JLabel();
         grantScrollPane = new javax.swing.JScrollPane();
         grantTextArea = new javax.swing.JTextArea();
-
+        
+        
         setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints1;
-
+        
         setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 11, 11)));
-        hostLabel.setText("Host:");
+        hostLabel.setText(org.openide.util.NbBundle.getBundle("org/netbeans/modules/httpserver/Bundle").getString("CTL_HostLabel"));
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
         add(hostLabel, gridBagConstraints1);
-
+        
         anyRadioButton.setMnemonic('n');
-        anyRadioButton.setText("Any Host");
+        anyRadioButton.setText(org.openide.util.NbBundle.getBundle("org/netbeans/modules/httpserver/Bundle").getString("CTL_AnyRadioButton"));
         buttonGroup.add(anyRadioButton);
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 1;
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
         add(anyRadioButton, gridBagConstraints1);
-
+        
         selectedRadioButton.setMnemonic('S');
         selectedRadioButton.setSelected(true);
-        selectedRadioButton.setText("Selected Hosts");
+        selectedRadioButton.setText(org.openide.util.NbBundle.getBundle("org/netbeans/modules/httpserver/Bundle").getString("CTL_SelectedRadioButton"));
         buttonGroup.add(selectedRadioButton);
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 2;
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
         add(selectedRadioButton, gridBagConstraints1);
-
-        grantLabel.setText("Grant Access to:");
+        
+        grantLabel.setText(org.openide.util.NbBundle.getBundle("org/netbeans/modules/httpserver/Bundle").getString("CTL_GrantLabel"));
         grantLabel.setLabelFor(grantTextArea);
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
@@ -114,9 +116,9 @@ public class HostPropertyCustomEditor extends javax.swing.JPanel implements Acti
         gridBagConstraints1.insets = new java.awt.Insets(12, 0, 2, 0);
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
         add(grantLabel, gridBagConstraints1);
-
+        
         grantScrollPane.setViewportView(grantTextArea);
-
+        
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 4;
@@ -125,7 +127,7 @@ public class HostPropertyCustomEditor extends javax.swing.JPanel implements Acti
         gridBagConstraints1.weightx = 1.0;
         gridBagConstraints1.weighty = 1.0;
         add(grantScrollPane, gridBagConstraints1);
-
+        
     }//GEN-END:initComponents
 
     public java.lang.Object getPropertyValue () throws java.lang.IllegalStateException {
