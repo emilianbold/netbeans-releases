@@ -181,6 +181,11 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
         installBorders();
         installListeners();
         install();
+        //#41681, #44278, etc. FOCUS related. the UI needs to be the first listener to be notified
+        // that the selection has changed. Otherwise strange focus effects kick in, eg. when the winsys snapshot gets undated beforehand..
+        tabDisplayer.getSelectionModel().addChangeListener(selectionListener);
+
+
     }
 
     /** This method is final.  Subclasses which need to provide additional initialization should override
@@ -193,6 +198,8 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
         uninstall();
         uninstallListeners();
         uninstallDisplayers();
+        tabDisplayer.getSelectionModel().removeChangeListener(selectionListener);
+
         container = null;
         contentDisplayer = null;
         tabDisplayer = null;
@@ -302,7 +309,6 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
         if (!listenersAttached) {
             try {
                 container.getModel().addComplexListDataListener(modelListener);
-                tabDisplayer.getSelectionModel().addChangeListener(selectionListener);
                 container.addPropertyChangeListener(propertyChangeListener);
                 tabDisplayer.setActive (container.isActive());
                 tabDisplayer.addActionListener (actionListener);
@@ -324,8 +330,6 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
         try {
 //            if (listenersAttached) {
                 container.getModel().removeComplexListDataListener(modelListener);
-                tabDisplayer.getSelectionModel().removeChangeListener(
-                        selectionListener);
                 container.removePropertyChangeListener(propertyChangeListener);
                 tabDisplayer.removeActionListener (actionListener);
 //            }
@@ -970,14 +974,16 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
         }
 
         public void stateChanged(ChangeEvent e) {
-            int idx = tabDisplayer.getSelectionModel().getSelectedIndex();
-            if (idx != -1) {
-                Component c = toComp(container.getModel().getTab(idx));
-                c.setBounds(0, 0, contentDisplayer.getWidth(),
-                            contentDisplayer.getHeight());
-                showComponentWithFxProvider(c);
-            } else {
-                showComponent (null);
+            if (container.isShowing()) {
+                int idx = tabDisplayer.getSelectionModel().getSelectedIndex();
+                if (idx != -1) {
+                    Component c = toComp(container.getModel().getTab(idx));
+                    c.setBounds(0, 0, contentDisplayer.getWidth(),
+                                contentDisplayer.getHeight());
+                    showComponentWithFxProvider(c);
+                } else {
+                    showComponent (null);
+                }
             }
         }
     }

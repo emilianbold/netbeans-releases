@@ -13,6 +13,7 @@
 
 package org.netbeans.swing.tabcontrol;
 
+import java.awt.FocusTraversalPolicy;
 import org.netbeans.swing.tabcontrol.event.TabActionEvent;
 import org.netbeans.swing.tabcontrol.plaf.DefaultTabbedContainerUI;
 
@@ -313,6 +314,9 @@ public class TabbedContainer extends JComponent {
         //A few borders and such will check this
         //@see org.netbeans.swing.plaf.gtk.AdaptiveMatteBorder
         putClientProperty ("viewType", new Integer(type)); //NOI18N
+        setFocusCycleRoot(true);
+        setFocusable(true);
+        setFocusTraversalPolicy(new TCFTP());
     }
 
     public void updateUI() {
@@ -735,6 +739,42 @@ public class TabbedContainer extends JComponent {
                 System.err.println ("Error parsing default content " +
                     "policy: \"" + s + "\""); //NOI18N
             }
+        }
+    }
+    
+    /**
+     * simple traversal policy..
+     */
+    private final class TCFTP extends FocusTraversalPolicy {
+        private Component getSel() {
+            if (getModel().size() == 0 || getSelectionModel().getSelectedIndex() == -1) {
+                return null;
+            }
+            Component sel = getComponentConverter().getComponent(getModel().getTab(getSelectionModel().getSelectedIndex()));
+            if (sel != null) {
+                return sel;
+            }
+            return null;
+        }
+        
+        public Component getComponentAfter(Container focusCycleRoot, Component aComponent) {
+            return getSel();
+        }
+
+        public Component getComponentBefore(Container focusCycleRoot, Component aComponent) {
+            return getSel();
+        }
+
+        public Component getDefaultComponent(Container focusCycleRoot) {
+            return getSel();
+        }
+
+        public Component getFirstComponent(Container focusCycleRoot) {
+            return getSel();
+        }
+
+        public Component getLastComponent(Container focusCycleRoot) {
+            return getSel();
         }
     }
 
