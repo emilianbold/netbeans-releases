@@ -7,17 +7,20 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.editor;
 
+import java.awt.Color;
+import java.awt.Font;
+import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import org.netbeans.editor.PrintContainer;
 import org.openide.filesystems.FileObject;
-
-import java.awt.*;
-import java.text.MessageFormat;
-import java.util.*;
+import org.openide.filesystems.FileUtil;
 
 public class HtmlPrintContainer implements PrintContainer {
 
@@ -73,7 +76,7 @@ public class HtmlPrintContainer implements PrintContainer {
     public final void begin (FileObject fo, Font font, Color fgColor, Color bgColor, Color hfgColor, Color hbgColor) {
         styles = new Styles ();
         buffer = new StringBuffer();
-        fileName = fo.getPath();
+        fileName = FileUtil.getFileDisplayName(fo);
         boolHolder = new boolean [1];
         this.defaultForegroundColor = fgColor;
         this.defaultBackgroundColor = bgColor;
