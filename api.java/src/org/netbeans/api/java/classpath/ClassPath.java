@@ -187,22 +187,19 @@ public final class ClassPath {
      * instance. Clients must assume that the returned value is immutable.
      * @return list of definition entries (Entry instances)
      */
-    public List entries() {
+    public synchronized List entries() {
         if (this.entriesCache == null) {
-            synchronized (this) {
-                if (this.entriesCache == null) {
-                    List resources = impl.getResources();
-                    this.entriesCache = new ArrayList ();
-                    for (Iterator it = resources.iterator(); it.hasNext();) {
-                        PathResourceImplementation pr = (PathResourceImplementation)it.next();
-                        URL[] roots = pr.getRoots();
-                        for (int i=0; i <roots.length; i++) {
-                            Entry e = new Entry (roots[i]);
-                            entriesCache.add (e);
-                        }
-                    }
+            List resources = impl.getResources();
+            List cache = new ArrayList ();
+            for (Iterator it = resources.iterator(); it.hasNext();) {
+                PathResourceImplementation pr = (PathResourceImplementation)it.next();
+                URL[] roots = pr.getRoots();
+                for (int i=0; i <roots.length; i++) {
+                    Entry e = new Entry (roots[i]);
+                    cache.add (e);
                 }
             }
+            this.entriesCache = Collections.unmodifiableList (cache);
         }
         return this.entriesCache;
     }
