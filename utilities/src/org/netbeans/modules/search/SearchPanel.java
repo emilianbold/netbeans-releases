@@ -186,9 +186,11 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
     }//GEN-END:initComponents
 
     private void tabbedPaneStateChanged(javax.swing.event.ChangeEvent evt) {
+        /* Only exec. code disabled, because of issue #17737
         Component component = getTypeCustomizer(tabbedPane.getSelectedIndex());
         if(component != null)
             component.requestFocus();
+         */
     }
 
 
