@@ -1366,6 +1366,14 @@ public class XMLDataObject extends MultiDataObject {
                 // the main file changed => invalidate DOM document
                 //resolveInfo (getPrimaryFile ());  //reparse info again
                 clearDocument ();
+                parsedId = null;
+                if (lookup != null) {
+                    // clear the lookup if any 
+                    lookup = null;
+                    result = null;
+                    QUERY.set (null);
+                    firePropertyChange (PROP_COOKIE, null, null);
+                }
             }
         }
 
