@@ -91,6 +91,10 @@ class OutputPane extends AbstractOutputPane implements ComponentListener {
             } else {
                 Rectangle startRect = textView.modelToView(lineStart);
                 Rectangle endRect = textView.modelToView(lineEnd);
+                if (p.y >= startRect.y && p.y <= endRect.y && isWrapped()) {
+                    endRect.x = 0;
+                    endRect.width = getWidth();
+                }
                 boolean cursorIsNotOverLeadingOrTrailingWhitespace = 
                     p.x >= startRect.x && p.y >= startRect.y &&
                     p.x <= endRect.x + endRect.width &&

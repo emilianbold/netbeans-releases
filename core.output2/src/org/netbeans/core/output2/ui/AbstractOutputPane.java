@@ -469,7 +469,17 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
             try {
                 Rectangle r = textView.modelToView(lineStart + lineLength -1);
                 int maxX = r.x + r.width;
-                if (p.x <= maxX) {
+                boolean inLine = p.x <= maxX;
+                if (isWrapped()) {
+                    Rectangle ra = textView.modelToView(lineStart);
+                    if (ra.y <= r.y) {
+                        if (p.y < r.y) {
+                            inLine = true;
+                        }
+                    }
+                }
+                
+                if (inLine) {
                     setMouseLine (line, p);
                 } else {
                     setMouseLine(-1);
