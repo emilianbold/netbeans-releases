@@ -90,13 +90,13 @@ public class JavaDrawLayerFactory {
                 int endOffset = ctx.getEndOffset();
                 int bufferStartOffset = ctx.getBufferStartOffset();
                 char[] buffer = ctx.getBuffer();
+                JavaSyntaxSupport sup = (JavaSyntaxSupport) ctx.getEditorUI().getDocument().getSyntaxSupport().get(JavaSyntaxSupport.class);
                 int nwOffset = Analyzer.findFirstNonWhite(buffer,
                         idEndOffset - bufferStartOffset,
                         endOffset - idEndOffset);
                 if (nwOffset >= 0) { // found non-white
                     resolvedValue = (buffer[nwOffset] == '(');
                     if (!resolvedValue && buffer[nwOffset] == '<') {
-                        JavaSyntaxSupport sup = (JavaSyntaxSupport) ctx.getEditorUI().getDocument().getSyntaxSupport().get(JavaSyntaxSupport.class);
                         try {
                             int[] block = sup.findMatchingBlock(ctx.getBufferStartOffset() + nwOffset, true);
                             if (block != null) {
@@ -118,7 +118,6 @@ public class JavaDrawLayerFactory {
                         int off = ctx.getEditorUI().getDocument().find(nwFinder, endOffset, -1);
                         resolvedValue = off >= 0 && (nwFinder.getFoundChar() == '(');
                         if (!resolvedValue && nwFinder.getFoundChar() == '<') {
-                            JavaSyntaxSupport sup = (JavaSyntaxSupport) ctx.getEditorUI().getDocument().getSyntaxSupport().get(JavaSyntaxSupport.class);
                             int[] block = sup.findMatchingBlock(off, true);
                             if (block != null) {
                                 off = Utilities.getFirstNonWhiteFwd(ctx.getEditorUI().getDocument(), block[1]);
@@ -131,29 +130,11 @@ public class JavaDrawLayerFactory {
                     }
                 }
                 if (resolvedValue) {
-                    resolvedValue = !isAnnotation(ctx);
+                    resolvedValue = !sup.isAnnotation(ctx.getTokenOffset());
                 }
             }
 
             return resolvedValue;
-        }
-
-        private boolean isAnnotation(DrawContext ctx) {
-            try {
-                BaseDocument document = ctx.getEditorUI().getDocument();
-                int off = Utilities.getFirstNonWhiteBwd(document, ctx.getTokenOffset());
-                char ch = '*';
-                while (off > -1 && (ch = document.getChars(off, 1)[0]) == '.') {
-                    off = Utilities.getFirstNonWhiteBwd(document, off);
-                    if (off > -1)
-                    off = Utilities.getPreviousWord(document, off);
-                    if (off > -1)
-                        off = Utilities.getFirstNonWhiteBwd(document, off);
-                }
-                if (off > -1 && ch == '@')
-                    return true;
-            } catch (BadLocationException e) {}
-            return false;
         }
 
         public void updateContext(DrawContext ctx) {
