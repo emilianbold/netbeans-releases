@@ -90,36 +90,45 @@ Microsystems, Inc. All Rights Reserved.
      <!-- create results dir, get info about tested build and create testreport file -->
      <mkdir dir="${xtest.results}/xmlresults"/>
      <echo message="ide installto = ${ide.installto}"/>
-     <buildinfo srcfile="${ide.home}/build_info" buildInfoNumberProperty="xtest.ide.build.name" />
-     <echo message="Testing build ${xtest.ide.build.name}"/>
-     <property name="xtest.machine" value="unknown"/>
+     <buildinfo srcfile="${ide.home}/build_info" buildNumberProperty="xtest.ide.build.name"
+                buildProjectNameProperty="xtest.tested.project" />
+     <echo message="Testing build ${xtest.ide.build.name} in project ${xtest.tested.project}"/>
      <property name="xtest.tested.project" value="unknown"/>
      <property name="xtest.testing.group" value="unknown"/>
      <property name="xtest.tested.type" value="unknown"/>
      <reportinfo  outFile="${xtest.results}/xmlresults/testreport.xml"
             project="${xtest.tested.project}" build="${xtest.ide.build.name}"
             testingGroup="${xtest.testing.group}" testedType="${xtest.tested.type}"
-            host="${xtest.machine}" />
+            host="${xtest.machine}" comment="${xtest.testrun.comment}" />
      
      
      <for list="${xtest.instance.list}" delimiters="," property="xtest.instancecfg">
        <antcall target="test-one-repository"/>
      </for>     
-     <antcall target="pack-results"/>
+     <antcall target="pack-results"/>     
    </target>
    
-   <target name="pack-results">
-         <buildinfo srcfile="${ide.home}/build_info" buildInfoNumberProperty="ide.build" />
+   <target name="pack-results" if="ide.home">
+         <buildinfo srcfile="${ide.home}/build_info" buildNumberProperty="ide.build"
+                buildProjectNameProperty="xtest.tested.project" />
          <echo message="Shipping results for build ${ide.build}"/>
          <property name="ide.build" value="unknown"/>
          <property name="xtest.machine" value="unknown"/>
          <property name="xtest.tested.project" value="unknown"/>
          <property name="xtest.testing.group" value="unknown"/>
          <property name="xtest.tested.type" value="unknown"/>
-         <property name="archive.filename" value="${xtest.results}/xtr-${xtest.tested.project}-${ide.build}-${xtest.testing.group}-${xtest.tested.type}-${xtest.machine}.zip"/>
-         <zip zipfile="${archive.filename}">
+         <property name="archive.filename" value="xtr-${xtest.tested.project}-${ide.build}-${xtest.testing.group}-${xtest.tested.type}-${xtest.machine}.zip"/>
+         <property name="archive.file" value="${xtest.results}/${archive.filename}"/>
+         <zip zipfile="${archive.file}">
             <fileset dir="${xtest.results}" excludes="xtr*.zip"/>                          
          </zip>
+         <antcall target="ship-results"/>
+   </target>
+   
+   <target name="ship-results" if="xtest.ship.results.to">
+        <copy file="${archive.file}" todir="${xtest.ship.results.to}"/>
+        <!-- now just for pilot project -->
+        <copy file="${archive.file}" todir="${xtest.results}/../"/>        
    </target>
 
    <target name="test-one-repository" depends="splitproperty">
@@ -198,7 +207,7 @@ Microsystems, Inc. All Rights Reserved.
   <!-- IDE installlation  -->
   <!-- ================= -->
 
-  <target name="install-ide" depends="install-from,find-installed-ide,check-installed-ide"/>
+  <target name="install-ide" depends="install-from,find-installed-ide,check-installed-ide,make-bin-executable"/>
   
   <target name="install-from" depends="install-from-zip,install-from-installator,install-from-dir"/>
      
@@ -212,7 +221,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="install-from-zip" depends="check-ide-param" if="ide.install.type.zip">
     <antcall target="clean-ide"/>
     <mkdir dir="${ide.installto}"/>
-    <unzip src="${ide.install.path}" dest="${ide.installto}"/>
+    <unzip src="${ide.install.path}" dest="${ide.installto}"/>    
   </target>   
   
    <target name="install-from-dir" depends="check-ide-param" if="ide.install.type.dir">
@@ -236,6 +245,10 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="install-type-fail" unless="ide.install.type.ok">
      <fail message="Property ide.install.type has to contain one of these values: 'zip', 'installator' or 'dir'"/>
+  </target>
+  
+  <target name="make-bin-executable" if="ide.home">
+    <chmod perm="ugo+rx" dir="${ide.home}/bin" includes="*.sh"/>       
   </target>
   
   <target name="check-ide-param" depends="actionlist" if="xtest.execute_actions.install-ide">
