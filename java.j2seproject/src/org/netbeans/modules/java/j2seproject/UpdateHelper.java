@@ -14,6 +14,7 @@
 package org.netbeans.modules.java.j2seproject;
 
 import java.io.IOException;
+import javax.swing.JButton;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -272,10 +273,17 @@ public class UpdateHelper {
     public static Notifier createDefaultNotifier () {
         return new Notifier() {
             public boolean canUpdate() {
+                JButton updateOption = new JButton (NbBundle.getMessage(UpdateHelper.class, "CTL_UpdateOption"));
                 return DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Confirmation (NbBundle.getMessage(UpdateHelper.class,"TXT_ProjectUpdate"),
+                    new NotifyDescriptor (NbBundle.getMessage(UpdateHelper.class,"TXT_ProjectUpdate"),
                         NbBundle.getMessage(UpdateHelper.class,"TXT_ProjectUpdateTitle"),
-                        NotifyDescriptor.YES_NO_OPTION)) == NotifyDescriptor.YES_OPTION;
+                        NotifyDescriptor.DEFAULT_OPTION,
+                        NotifyDescriptor.WARNING_MESSAGE,
+                        new Object[] {
+                            updateOption,
+                            NotifyDescriptor.CANCEL_OPTION
+                        },
+                        updateOption)) == updateOption;
             }
         };
     }
