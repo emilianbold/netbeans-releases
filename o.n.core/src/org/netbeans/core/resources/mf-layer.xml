@@ -600,7 +600,9 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="explorer">
           <attr name="filesystems.wstcref/runtime.wstcref" boolvalue="true" />
           <file name="filesystems.wstcref" url="windowmanager/Editing/explorer/filesystems.wstcref" />
+          <attr name="runtime.wstcref/properties.wstcref" boolvalue="true" />
           <file name="runtime.wstcref" url="windowmanager/Editing/explorer/runtime.wstcref" />
+          <file name="properties.wstcref" url="windowmanager/Editing/explorer/properties.wstcref" />
         </folder>
         <file name="properties.wsmode" url="windowmanager/Editing/properties.wsmode" />
         <folder name="properties">
