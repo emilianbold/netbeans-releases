@@ -96,11 +96,18 @@ public class DatabaseConnection implements DBConnection {
     /** Default constructor */
     public DatabaseConnection() {
         propertySupport = new PropertyChangeSupport(this);
-
+        
         // For Java Studio Enterprise. Create instanceof OpenConnection
         try {
             ClassLoader cl = Thread.currentThread().getContextClassLoader();
-            openConnection =  (OpenConnectionInterface) Class.forName(bundle.getString("CLASS_open_connection"), true, cl).newInstance();
+            try {
+                openConnection =  (OpenConnectionInterface) Class.forName(bundle.getString("CLASS_open_connection"), true, cl).newInstance();
+            } catch(ClassNotFoundException cnfe) {
+                org.openide.ErrorManager.getDefault().log(cnfe.getMessage());
+            }
+            if (openConnection == null) {
+                openConnection =  (OpenConnectionInterface) Class.forName(bundle.getString("CLASS_open_connection")).newInstance();
+            }
         } catch(Exception ex) {
             org.openide.ErrorManager.getDefault().notify(ex);
         }
