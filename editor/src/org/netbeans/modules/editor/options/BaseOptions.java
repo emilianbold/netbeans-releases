@@ -20,6 +20,7 @@ import java.util.List;
 import javax.swing.text.JTextComponent;
   
 import com.netbeans.editor.Settings;
+import com.netbeans.editor.Coloring;
 import com.netbeans.editor.ColoringManager;
 import com.netbeans.editor.BaseKit;
 import com.netbeans.editor.Syntax;
@@ -220,9 +221,9 @@ public class BaseOptions extends OptionSupport {
     int cnt = kbList.size();
     for (int i = 0; i < cnt; i++) {
       Object o = kbList.get(i);
-      if (o instanceof JTextComponent.KeyBinding) {
-        o = new MultiKeyBinding((JTextComponent.KeyBinding)o);
-        kbList.set(i, o);
+      if (!(o instanceof MultiKeyBinding) && o != null) {
+        JTextComponent.KeyBinding b = (JTextComponent.KeyBinding)o;
+        kbList.set(i, new MultiKeyBinding(b.key, b.actionName));
       }
     }
 
@@ -240,7 +241,13 @@ public class BaseOptions extends OptionSupport {
       BASE
     };
   }
-  public void setSystemColoringArray(Object[] notUsed) {
+  public void setSystemColoringArray(Object[] value) {
+    ColoringManager cm = (ColoringManager) getSettingValue(Settings.COLORING_MANAGER);
+    Coloring[] c = cm.getSystemColorings(getKitClass());
+    Coloring[] valC = (Coloring[])value[0];
+    for (int i = 0; i < c.length; i++ ) {
+      c[i] = valC[i];
+    }
     Settings.touchValue(Settings.COLORING_MANAGER);
   }
   
@@ -252,7 +259,14 @@ public class BaseOptions extends OptionSupport {
       getTypeName()
     };
   }
-  public void setTokenColoringArray(Object[] notUsed) {
+
+  public void setTokenColoringArray(Object[] value) {
+    ColoringManager cm = (ColoringManager) getSettingValue(Settings.COLORING_MANAGER);
+    Coloring[] c = cm.getTokenColorings(getKitClass());
+    Coloring[] valC = (Coloring[])value[0];
+    for (int i = 0; i < c.length; i++ ) {
+      c[i] = valC[i];
+    }
     Settings.touchValue(Settings.COLORING_MANAGER);
   }
   
@@ -296,6 +310,7 @@ public class BaseOptions extends OptionSupport {
 
 /*
  * Log
+ *  5    Gandalf   1.4         7/29/99  Miloslav Metelka 
  *  4    Gandalf   1.3         7/26/99  Miloslav Metelka 
  *  3    Gandalf   1.2         7/21/99  Miloslav Metelka 
  *  2    Gandalf   1.1         7/21/99  Miloslav Metelka 

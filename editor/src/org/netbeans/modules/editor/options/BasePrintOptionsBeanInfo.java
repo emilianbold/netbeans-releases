@@ -56,7 +56,7 @@ public class BasePrintOptionsBeanInfo extends SimpleBeanInfo {
         
         for (int i = 0; i < propNames.length; i++) {
           descriptors[i] = new PropertyDescriptor(propNames[i], getBeanClass());
-          System.out.println("BasePrintOptionsBeanInfo.java:62 propNames[" + i + "]=" + propNames[i]);
+//          System.out.println("BasePrintOptionsBeanInfo.java:62 propNames[" + i + "]=" + propNames[i]);
           descriptors[i].setDisplayName(bundle.getString("PROP_" + propNames[i]));
           descriptors[i].setShortDescription(bundle.getString("HINT_" + propNames[i]));
         }
@@ -108,6 +108,7 @@ public class BasePrintOptionsBeanInfo extends SimpleBeanInfo {
 
 /*
 * Log
+*  3    Gandalf   1.2         7/29/99  Miloslav Metelka 
 *  2    Gandalf   1.1         7/21/99  Miloslav Metelka 
 *  1    Gandalf   1.0         7/20/99  Miloslav Metelka 
 * $

@@ -74,9 +74,10 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
         descriptors = new PropertyDescriptor[propNames.length];
         
         for (int i = 0; i < propNames.length; i++) {
+//          System.out.println("property=" + propNames[i]);
           descriptors[i] = new PropertyDescriptor(propNames[i], getBeanClass());
-descriptors[i].setDisplayName(propNames[i]);//!!!          descriptors[i].setDisplayName(getString("PROP_" + propNames[i]));
-//!!!          descriptors[i].setShortDescription(getString("HINT_" + propNames[i]));
+          descriptors[i].setDisplayName(getString("PROP_" + propNames[i]));
+          descriptors[i].setShortDescription(getString("HINT_" + propNames[i]));
         }
 
         getPD(BaseOptions.ABBREV_MAP_PROP).setPropertyEditorClass(AbbrevMapEditor.class);
@@ -430,6 +431,7 @@ descriptors[i].setDisplayName(propNames[i]);//!!!          descriptors[i].setDis
 
 /*
 * Log
+*  2    Gandalf   1.1         7/29/99  Miloslav Metelka 
 *  1    Gandalf   1.0         7/20/99  Miloslav Metelka 
 * $
 */

@@ -127,7 +127,7 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
     }
     backColorPreview.setBackground(c);
     backColorTransparent.setSelected(t);
-    backColorTransparent.setEnabled(!t);
+    backColorChange.setEnabled(!t);
 
     if (coloring.getName().equals(ColoringManager.DEFAULT)) {
       fontTransparent.setEnabled(false);
@@ -511,6 +511,11 @@ private javax.swing.JLabel preview;
     
     Editor(Class propClass) {
       editor = PropertyEditorManager.findEditor(propClass);
+      if (propClass == Color.class) {
+        editor.setValue(Color.black);
+      } else if (propClass == Font.class) {
+        editor.setValue(DefaultSettings.defaultFont);
+      }
  
       JPanel p = new JPanel(new BorderLayout());
       p.add(editor.getCustomEditor());
@@ -563,6 +568,7 @@ private javax.swing.JLabel preview;
 
 /*
  * Log
+ *  4    Gandalf   1.3         7/29/99  Miloslav Metelka 
  *  3    Gandalf   1.2         7/26/99  Miloslav Metelka 
  *  2    Gandalf   1.1         7/21/99  Miloslav Metelka 
  *  1    Gandalf   1.0         7/20/99  Miloslav Metelka 

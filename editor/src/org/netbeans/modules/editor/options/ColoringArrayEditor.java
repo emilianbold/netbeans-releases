@@ -15,8 +15,6 @@ package com.netbeans.developer.modules.text.options;
 
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 import java.util.ResourceBundle;
 
 import org.openide.util.HelpCtx;
@@ -32,6 +30,7 @@ import org.openide.util.Utilities;
 
 import com.netbeans.editor.ColoringManager;
 import com.netbeans.editor.Coloring;
+import com.netbeans.editor.Settings;
 
 /** BeanInfo for plain options
 *
@@ -47,7 +46,8 @@ public class ColoringArrayEditor extends PropertyEditorSupport {
     return "Colorings";
   }
 
-  public void  setAsText(String s) {
+  public void setAsText(String s) {
+    throw new IllegalArgumentException();
   }
 
   public java.awt.Component getCustomEditor() {
@@ -56,12 +56,6 @@ public class ColoringArrayEditor extends PropertyEditorSupport {
     Coloring defaultColoring = (Coloring)vals[1];
     String typeName = (String)vals[2];
     
-    PropertyChangeListener pcl = new PropertyChangeListener() {
-      public void propertyChange(PropertyChangeEvent evt) {
-        firePropertyChange();
-      }
-    };
-
     ColoringProperty[] cps = new ColoringProperty[colorings.length];
     ResourceBundle bundle = NbBundle.getBundle(ColoringArrayEditor.class);
     for (int i = 0; i < colorings.length; i++) {
@@ -76,7 +70,6 @@ public class ColoringArrayEditor extends PropertyEditorSupport {
     FakeNode fn = new FakeNode(cps);
     PropertySheet psheet = new PropertySheet();
     psheet.setNodes(new Node[] {fn});
-    psheet.addPropertyChangeListener(pcl);
     return psheet;
   }
 
@@ -144,6 +137,8 @@ public class ColoringArrayEditor extends PropertyEditorSupport {
         throw new IllegalArgumentException();
       }
       colorings[index] = ((ColoringBean)val).getColoring();
+      Settings.touchValue(Settings.COLORING_MANAGER);
+      System.out.println("setValue(): colorings=" + System.identityHashCode(colorings) + ", coloring=" + colorings[index]);
     }
 
     public PropertyEditor getPropertyEditor() {
@@ -156,6 +151,7 @@ public class ColoringArrayEditor extends PropertyEditorSupport {
 
 /*
 * Log
+*  4    Gandalf   1.3         7/29/99  Miloslav Metelka 
 *  3    Gandalf   1.2         7/26/99  Miloslav Metelka 
 *  2    Gandalf   1.1         7/21/99  Miloslav Metelka 
 *  1    Gandalf   1.0         7/20/99  Miloslav Metelka 
