@@ -120,7 +120,8 @@ public class SelectorUtils {
 	       );
       return (DataObject)selectedNodes[0].getCookie(DataObject.class);
     } catch (UserCancelException uce) {
-        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, uce);
+        //ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, uce);
+            // nobody is interested in the message
         return null;
     }
 
