@@ -88,7 +88,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private PropertyChangeSupport       pcs;
     private JPDAThreadImpl              currentThread;
     private CallStackFrame              currentCallStackFrame;
-    private int                         suspend = SUSPEND_EVENT_THREAD;
+    private int                         suspend = SUSPEND_ALL;
     public final Object                 LOCK = new Object ();
     public final Object                 LOCK2 = new Object ();
     private JavaEngineProvider          javaEngineProvider;
