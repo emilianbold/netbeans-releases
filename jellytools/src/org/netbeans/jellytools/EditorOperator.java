@@ -616,6 +616,7 @@ public class EditorOperator extends TopComponentOperator {
         }
         Object javaEditorInstance = dob.getCookie(javaEditorClass);
         if(javaEditorInstance != null) {
+            // get error annotations
             ArrayList errorAnnotations;
             try {
                 java.lang.reflect.Field annot = javaEditorClass.getDeclaredField("errorAnnotations");
@@ -625,11 +626,29 @@ public class EditorOperator extends TopComponentOperator {
                 throw new JemmyException("Get errorAnnotations field failed.", e);
             }
             result.addAll(errorAnnotations);
+            
+            // get override parser annotations
+            Class overrideAnnotationSupportClass = null;
+            try {
+                overrideAnnotationSupportClass = Class.forName("org.netbeans.modules.java.OverrideAnnotationSupport");
+            } catch (ClassNotFoundException e) {
+                // print only warning. Class OverrideAnnotationSupport don't need to be present when 
+                // java module is uninstalled.
+                getOutput().printLine("WARNING: Class org.netbeans.modules.java.OverrideAnnotationSupport not found.");
+            }
+            Object overrideAnnotationSupportInstance = null;
+            try {
+                java.lang.reflect.Field overriddensSupport = javaEditorClass.getDeclaredField("overriddensSupport");
+                overriddensSupport.setAccessible(true);
+                overrideAnnotationSupportInstance = overriddensSupport.get(javaEditorInstance);
+            } catch (Exception e) {
+                throw new JemmyException("Get overriddensSupport field failed.", e);
+            }
             ArrayList overrideAnnotations;
             try {
-                java.lang.reflect.Field annot = javaEditorClass.getDeclaredField("overrideAnnotations");
+                java.lang.reflect.Field annot = overrideAnnotationSupportClass.getDeclaredField("overrideAnnotations");
                 annot.setAccessible(true);
-                overrideAnnotations = (ArrayList)annot.get(javaEditorInstance);
+                overrideAnnotations = (ArrayList)annot.get(overrideAnnotationSupportInstance);
             } catch (Exception e) {
                 throw new JemmyException("Get overrideAnnotations field failed.", e);
             }
