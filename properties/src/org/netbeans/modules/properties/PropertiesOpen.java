@@ -47,7 +47,6 @@ import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
 import org.openide.windows.Workspace;
 import org.openide.windows.Mode;
-import org.openide.explorer.propertysheet.PropertyDisplayer;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListener;
