@@ -162,7 +162,7 @@ public final class MainWindow extends JFrame {
         });
         //#38810 end
     }
-
+    
     /** Creates and returns border for desktop which is visually aligned
      * with currently active LF */
     private static Border getDesktopBorder () {
@@ -309,10 +309,9 @@ public final class MainWindow extends JFrame {
         
         if(!bounds.isEmpty()) {
             setBounds(bounds);
-            validate();
         }
     }
-
+    
     /** Prepares main window, has to be called after {@link initializeComponents()}. */
     public void prepareWindow() {
         initializeBounds();
