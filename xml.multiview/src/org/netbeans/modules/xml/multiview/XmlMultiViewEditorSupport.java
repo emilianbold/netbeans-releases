@@ -187,7 +187,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
         }
         
         public org.openide.util.HelpCtx getHelpCtx() {
-            return null;
+            return dObj.getHelpCtx();
         }
         
         public java.awt.Image getIcon() {
