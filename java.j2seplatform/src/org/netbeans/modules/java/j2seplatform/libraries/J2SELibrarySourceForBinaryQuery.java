@@ -27,7 +27,10 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.WeakListeners;
 
@@ -37,7 +40,8 @@ import org.openide.util.WeakListeners;
  */
 public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImplementation {
 
-    private Map/*URL, SourceForBinaryQuery.Result*/ cache = new HashMap ();
+    private Map/*<URL, SourceForBinaryQuery.Result>*/ cache = new HashMap ();
+    private Map/*<URL,URL>*/ normalizedURLCache = new HashMap ();
 
     /** Creates a new instance of J2SELibrarySourceForBinaryQuery */
     public J2SELibrarySourceForBinaryQuery() {
@@ -48,10 +52,7 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
         if (res != null) {
             return res;
         }
-        FileObject binaryFo = URLMapper.findFileObject(binaryRoot);
-        if (binaryFo == null) {
-            return null;
-        }
+        boolean isNormalizedURL = isNormalizedURL(binaryRoot);
         LibraryManager lm = LibraryManager.getDefault ();
         Library[] libs = lm.getLibraries();
         for (int i=0; i< libs.length; i++) {
@@ -60,8 +61,14 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
                 List classes = libs[i].getContent("classpath");    //NOI18N
                 for (Iterator it = classes.iterator(); it.hasNext();) {
                     URL entry = (URL) it.next();
-                    FileObject entryFo = URLMapper.findFileObject(entry);
-                    if (entryFo != null && entryFo.equals(binaryFo)) {
+                    URL normalizedEntry;
+                    if (isNormalizedURL) {
+                        normalizedEntry = getNormalizedURL(entry);
+                    }
+                    else {
+                        normalizedEntry = entry;
+                    }
+                    if (normalizedEntry != null && normalizedEntry.equals(binaryRoot)) {
                         res =  new Result(entry, libs[i]);
                         cache.put (binaryRoot, res);
                         return res;
@@ -70,6 +77,43 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
             }
         }
         return null;
+    }
+    
+    
+    private URL getNormalizedURL (URL url) {
+        //URL is already nornalized, return it
+        if (isNormalizedURL(url)) {
+            return url;
+        }
+        //Todo: Should listen on the LibrariesManager and cleanup cache        
+        // in this case the search can use the cache onle and can be faster 
+        // from O(n) to O(ln(n))
+        URL normalizedURL = (URL) this.normalizedURLCache.get (url);
+        if (normalizedURL == null) {
+            FileObject fo = URLMapper.findFileObject(url);
+            if (fo != null) {
+                try {
+                    normalizedURL = fo.getURL();
+                    this.normalizedURLCache.put (url, normalizedURL);
+                } catch (FileStateInvalidException e) {
+                    ErrorManager.getDefault().notify(e);
+                }
+            }
+        }
+        return normalizedURL;
+    }
+    
+    /**
+     * Returns true if the given URL is file based, it is already
+     * resolved either into file URL or jar URL with file path.
+     * @param URL url
+     * @return true if  the URL is normal
+     */
+    private static boolean isNormalizedURL (URL url) {
+        if ("jar".equals(url.getProtocol())) { //NOI18N
+            url = FileUtil.getArchiveFile(url);
+        }
+        return "file".equals(url.getProtocol());    //NOI18N
     }
     
     
