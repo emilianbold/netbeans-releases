@@ -288,6 +288,10 @@ public class TargetExecutor implements Runnable {
             BuildEvent ev = new BuildEvent (project);
             ev.setException (e);
             logger.buildFinished (ev);
+        } catch (LinkageError e) {
+            BuildEvent ev = new BuildEvent (project);
+            ev.setException (e);
+            logger.buildFinished (ev);
         } finally {
             System.setOut(sysout);
             System.setErr(syserr);
