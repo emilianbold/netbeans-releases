@@ -178,6 +178,11 @@ public class TableNodeInfo extends DatabaseNodeInfo {
                     // refresh indexes
                     ((DatabaseNode)chilNodes[i]).getInfo().refreshChildren();
                 else
+                // is it node Foreign keys or column?
+                if(((DatabaseNode)chilNodes[i]).getInfo() instanceof ForeignKeyListNodeInfo)
+                    // refresh foreign keys
+                    ((DatabaseNode)chilNodes[i]).getInfo().refreshChildren();
+                else
                     // remove column node from list of columns
                     chil.remove(new Node[] {chilNodes[i]});
 
