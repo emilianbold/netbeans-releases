@@ -69,6 +69,8 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 
+import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
+
 
 
 /** Action provider of the Web project. This is the place where to do
@@ -78,7 +80,6 @@ class WebActionProvider implements ActionProvider {
     
     // Definition of commands
     
-    private static final String COMMAND_REDEPLOY = "redeploy" ; //NOI18N
     private static final String COMMAND_COMPILE = "compile"; //NOI18N
         
     // Commands available from Web project
@@ -90,7 +91,7 @@ class WebActionProvider implements ActionProvider {
         COMMAND_RUN, 
         COMMAND_RUN_SINGLE, 
         COMMAND_DEBUG, 
-        COMMAND_REDEPLOY,
+        WebProjectConstants.COMMAND_REDEPLOY,
         COMMAND_DEBUG_SINGLE, 
         JavaProjectConstants.COMMAND_JAVADOC, 
         JavaProjectConstants.COMMAND_DEBUG_FIX,
@@ -116,7 +117,7 @@ class WebActionProvider implements ActionProvider {
             commands.put(COMMAND_COMPILE_SINGLE, new String[] {"compile-single"}); // NOI18N
             commands.put(COMMAND_RUN, new String[] {"run"}); // NOI18N
             commands.put(COMMAND_RUN_SINGLE, new String[] {"run"}); // NOI18N
-            commands.put(COMMAND_REDEPLOY, new String[] {"run"}); // NOI18N
+            commands.put(WebProjectConstants.COMMAND_REDEPLOY, new String[] {"run"}); // NOI18N
             commands.put(COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
             commands.put(COMMAND_DEBUG_SINGLE, new String[] {"debug"}); // NOI18N
             commands.put(JavaProjectConstants.COMMAND_JAVADOC, new String[] {"javadoc"}); // NOI18N
@@ -140,7 +141,7 @@ class WebActionProvider implements ActionProvider {
         Properties p;
         String[] targetNames = (String[])commands.get(command);
         //EXECUTION PART
-        if (command.equals (COMMAND_RUN) || command.equals (COMMAND_RUN_SINGLE) || command.equals (COMMAND_REDEPLOY)) {
+        if (command.equals (COMMAND_RUN) || command.equals (COMMAND_RUN_SINGLE) || command.equals (WebProjectConstants.COMMAND_REDEPLOY)) {
             if (!isSelectedServer ()) {
                 return;
             }
@@ -165,7 +166,7 @@ class WebActionProvider implements ActionProvider {
                 }
             }
             p = new Properties();
-            if (command.equals (COMMAND_REDEPLOY)) {
+            if (command.equals (WebProjectConstants.COMMAND_REDEPLOY)) {
                 p.setProperty("forceRedeploy", "true"); //NOI18N
             } else {
                 p.setProperty("forceRedeploy", "false"); //NOI18N

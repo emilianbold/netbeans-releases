@@ -100,4 +100,12 @@ public final class WebModule {
         return impl.getJ2eePlatformVersion ();
     }
     
+    public boolean equals (Object obj) {
+        if (!WebModule.class.isAssignableFrom(obj.getClass()))
+            return false;
+        WebModule wm = (WebModule) obj;
+        return getDocumentBase().equals(wm.getDocumentBase())
+            && getJ2eePlatformVersion().equals (wm.getJ2eePlatformVersion())
+            && getContextPath().equals(wm.getContextPath());
+    }
 }
