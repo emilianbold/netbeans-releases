@@ -42,6 +42,7 @@ public final class SourcesHelperTest extends NbTestCase {
     private FileObject src1dir;
     private FileObject src2dir;
     private FileObject src3dir;
+    private FileObject src4dir;
     private FileObject builddir;
     private AntProjectHelper h;
     private Project project;
@@ -70,6 +71,8 @@ public final class SourcesHelperTest extends NbTestCase {
         src2dir.createData("src2file");
         src3dir = scratch.createFolder("src3");
         src3dir.createData("src3file");
+        src4dir = scratch.createFolder("src4");
+        src4dir.createData("src4file");
         builddir = scratch.createFolder("build");
         builddir.createData("buildfile");
         h = ProjectGenerator.createProject(projdir, "test", "proj");
@@ -185,7 +188,58 @@ public final class SourcesHelperTest extends NbTestCase {
         assertEquals("proj2src2file registered", project2, FileOwnerQuery.getOwner(f));
     }
     
-    // XXX testSourceLocationChanges
-    // XXX testExternalRootLocationChanges
+    public void testSourceLocationChanges() throws Exception {
+        Sources s = sh.createSources();
+        SourceGroup[] groups = s.getSourceGroups(Sources.TYPE_GENERIC);
+        assertEquals("should have maindir plus src2dir plus src3dir", 3, groups.length);
+        assertEquals("group #1 is src2dir", src2dir, groups[0].getRootFolder());
+        assertEquals("group #2 is src3dir", src3dir, groups[1].getRootFolder());
+        assertEquals("group #3 is maindir", maindir, groups[2].getRootFolder());
+        groups = s.getSourceGroups(Sources.TYPE_JAVA);
+        assertEquals("should have src1dir plus src3dir", 2, groups.length);
+        assertEquals("group #1 is src1dir", src1dir, groups[0].getRootFolder());
+        assertEquals("right display name for src1dir", "Packages #1", groups[0].getDisplayName());
+        assertEquals("group #2 is src3dir", src3dir, groups[1].getRootFolder());
+        // Now change one of them.
+        EditableProperties p = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        p.setProperty("src1.dir", "../../src4");
+        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
+        ProjectManager.getDefault().saveProject(project);
+        groups = s.getSourceGroups(Sources.TYPE_GENERIC);
+        assertEquals("should have maindir plus src4dir plus src2dir plus src3dir", 4, groups.length);
+        assertEquals("group #1 is src4dir", src4dir, groups[0].getRootFolder());
+        assertEquals("group #2 is src2dir", src2dir, groups[1].getRootFolder());
+        assertEquals("group #3 is src3dir", src3dir, groups[2].getRootFolder());
+        assertEquals("group #4 is maindir", maindir, groups[3].getRootFolder());
+        groups = s.getSourceGroups(Sources.TYPE_JAVA);
+        assertEquals("should have src4dir plus src3dir", 2, groups.length);
+        assertEquals("group #1 is src4dir", src4dir, groups[0].getRootFolder());
+        assertEquals("right display name for src4dir", "Packages #1", groups[0].getDisplayName());
+        assertEquals("group #2 is src3dir", src3dir, groups[1].getRootFolder());
+        // XXX test also change firing in case Sources is given the ability to fire changes
+    }
+    
+    public void testExternalRootLocationChanges() throws Exception {
+        FileObject readme = maindir.getFileObject("readme");
+        assertEquals("readme not yet registered", null, FileOwnerQuery.getOwner(readme));
+        sh.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        assertEquals("readme still registered", project, FileOwnerQuery.getOwner(readme));
+        FileObject src4file = src4dir.getFileObject("src4file");
+        assertEquals("src4file not yet owned by anyone", null, FileOwnerQuery.getOwner(src4file));
+        FileObject src2file = src2dir.getFileObject("src2file");
+        assertEquals("src2file owned by the project", project, FileOwnerQuery.getOwner(src2file));
+        // Change things around.
+        EditableProperties p = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        p.setProperty("src1.dir", "../../src4"); // start to recognize this root
+        p.setProperty("src2.dir", "src2"); // moved from ../../src2
+        p.remove("src2a.dir"); // was also ../../src2
+        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
+        ProjectManager.getDefault().saveProject(project);
+        assertEquals("src4file now owned by the project", project, FileOwnerQuery.getOwner(src4file));
+        assertEquals("src2file no longer owned by the project", null, FileOwnerQuery.getOwner(src2file));
+        assertEquals("readme still registered after unrelated changes", project, FileOwnerQuery.getOwner(readme));
+        FileObject otherfile = scratch.getFileObject("otherfile");
+        assertEquals("otherfile still not registered", null, FileOwnerQuery.getOwner(otherfile));
+    }
     
 }

@@ -13,8 +13,11 @@
 
 package org.netbeans.spi.project.support.ant;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -29,11 +32,15 @@ import org.netbeans.spi.project.SourceGroup;
 import org.netbeans.spi.project.Sources;
 import org.netbeans.spi.project.support.GenericSources;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.WeakListeners;
 
 // XXX should perhaps be legal to call add* methods at any time (should update things)
 // and perhaps also have remove* methods
 // and have code names for each source dir?
+
+// XXX should probably all be wrapped in ProjectManager.mutex
 
 /**
  * Helper class to work with source roots and typed folders of a project.
@@ -83,6 +90,15 @@ public final class SourcesHelper {
     private final List/*<SourceRoot>*/ principalSourceRoots = new ArrayList();
     private final List/*<Root>*/ nonSourceRoots = new ArrayList();
     private final List/*<TypedSourceRoot>*/ typedSourceRoots = new ArrayList();
+    private int registeredRootAlgorithm;
+    /**
+     * If not null, external roots that we registered the last time.
+     * Used when a property change is encountered, to see if the set of external
+     * roots might have changed. Hold the actual files (not e.g. URLs); see
+     * {@link #registerExternalRoots} for the reason why.
+     */
+    private Set/*<FileObject>*/ lastRegisteredRoots;
+    private PropertyChangeListener propChangeL;
     
     /**
      * Create the helper object, initially configured to recognize only sources
@@ -93,7 +109,6 @@ public final class SourcesHelper {
     public SourcesHelper(AntProjectHelper project, PropertyEvaluator evaluator) {
         this.project = project;
         this.evaluator = evaluator;
-        // XXX need to listen to changes in evaluator and reregister external roots
     }
     
     /**
@@ -115,6 +130,9 @@ public final class SourcesHelper {
      * @see Sources#TYPE_GENERIC
      */
     public void addPrincipalSourceRoot(String location, String displayName) throws IllegalStateException {
+        if (lastRegisteredRoots != null) {
+            throw new IllegalStateException("registerExternalRoots was already called"); // NOI18N
+        }
         principalSourceRoots.add(new SourceRoot(location, displayName));
     }
     
@@ -133,6 +151,9 @@ public final class SourcesHelper {
      *                               {@link #registerExternalRoots} was called
      */
     public void addNonSourceRoot(String location) throws IllegalStateException {
+        if (lastRegisteredRoots != null) {
+            throw new IllegalStateException("registerExternalRoots was already called"); // NOI18N
+        }
         nonSourceRoots.add(new Root(location));
     }
     
@@ -147,6 +168,9 @@ public final class SourcesHelper {
      *                               was called
      */
     public void addTypedSourceRoot(String location, String type, String displayName) throws IllegalStateException {
+        if (lastRegisteredRoots != null) {
+            throw new IllegalStateException("registerExternalRoots was already called"); // NOI18N
+        }
         typedSourceRoots.add(new TypedSourceRoot(type, location, displayName));
     }
     
@@ -174,10 +198,15 @@ public final class SourcesHelper {
      * </p>
      * <p>
      * If the actual value of the location changes (due to changes being
-     * fired from the property evaluator), source roots which were previously internal
-     * and are now external will be registered, and source roots which were previously
+     * fired from the property evaluator), roots which were previously internal
+     * and are now external will be registered, and roots which were previously
      * external and are now internal will be unregistered. The (un-)registration
      * will be done using the same algorithm as was used initially.
+     * </p>
+     * <p>
+     * Calling this method causes the helper object to hold strong references to the
+     * current external roots, which helps a project satisfy the requirements of
+     * {@link FileOwnerQuery#EXTERNAL_ALGORITHM_TRANSIENT}.
      * </p>
      * <p>
      * You may <em>not</em> call this method inside the project's constructor, as
@@ -193,10 +222,33 @@ public final class SourcesHelper {
      *                               given <code>SourcesHelper</code> object
      */
     public void registerExternalRoots(int algorithm) throws IllegalArgumentException, IllegalStateException {
+        if (lastRegisteredRoots != null) {
+            throw new IllegalStateException("registerExternalRoots was already called before"); // NOI18N
+        }
+        registeredRootAlgorithm = algorithm;
+        remarkExternalRoots();
+    }
+    
+    private void remarkExternalRoots() throws IllegalArgumentException {
         List/*<Root>*/ allRoots = new ArrayList(principalSourceRoots);
         allRoots.addAll(nonSourceRoots);
         Project p = getProject();
         FileObject pdir = project.getProjectDirectory();
+        // First time: register roots and add to lastRegisteredRoots.
+        // Subsequent times: add to newRootsToRegister and maybe add them later.
+        Set/*<FileObject>*/ newRootsToRegister;
+        if (lastRegisteredRoots == null) {
+            // First time.
+            newRootsToRegister = null;
+            lastRegisteredRoots = new HashSet();
+            propChangeL = new PropChangeL(); // hold a strong ref
+            evaluator.addPropertyChangeListener(WeakListeners.propertyChange(propChangeL, evaluator));
+        } else {
+            newRootsToRegister = new HashSet();
+        }
+        // XXX might be a bit more efficient to cache for each root the actualLocation value
+        // that was last computed, and just check if that has changed... otherwise we wind
+        // up calling APH.resolveFileObject repeatedly (for each property change)
         Iterator it = allRoots.iterator();
         while (it.hasNext()) {
             Root r = (Root)it.next();
@@ -224,7 +276,28 @@ public final class SourcesHelper {
                 continue;
             }
             // It's OK to go.
-            FileOwnerQuery.markExternalOwner(loc, p, algorithm);
+            if (newRootsToRegister != null) {
+                newRootsToRegister.add(loc);
+            } else {
+                lastRegisteredRoots.add(loc);
+                FileOwnerQuery.markExternalOwner(loc, p, registeredRootAlgorithm);
+            }
+        }
+        if (newRootsToRegister != null) {
+            // Just check for changes since the last time.
+            Set/*<FileObject>*/ toUnregister = new HashSet(lastRegisteredRoots);
+            toUnregister.removeAll(newRootsToRegister);
+            Iterator rootIt = toUnregister.iterator();
+            while (rootIt.hasNext()) {
+                FileObject loc = (FileObject)rootIt.next();
+                FileOwnerQuery.markExternalOwner(loc, null, registeredRootAlgorithm);
+            }
+            newRootsToRegister.removeAll(lastRegisteredRoots);
+            rootIt = newRootsToRegister.iterator();
+            while (rootIt.hasNext()) {
+                FileObject loc = (FileObject)rootIt.next();
+                FileOwnerQuery.markExternalOwner(loc, p, registeredRootAlgorithm);
+            }
         }
     }
 
@@ -337,6 +410,17 @@ public final class SourcesHelper {
                 }
             }
             return (SourceGroup[])groups.toArray(new SourceGroup[groups.size()]);
+        }
+        
+    }
+    
+    private final class PropChangeL implements PropertyChangeListener {
+        
+        public PropChangeL() {}
+        
+        public void propertyChange(PropertyChangeEvent evt) {
+            // Some properties changed; external roots might have changed, so check them.
+            remarkExternalRoots();
         }
         
     }
