@@ -353,11 +353,13 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-openide-actions-CompileAction.instance"/>
             <attr name="org-openide-actions-CompileAction.instance/org-openide-actions-BuildAction.instance" boolvalue="true" />
             <file name="org-openide-actions-BuildAction.instance"/>
-            <attr name="org-openide-actions-BuildAction.instance/org-openide-actions-CompileAllAction.instance" boolvalue="true" />
+            <attr name="org-openide-actions-BuildAction.instance/org-netbeans-core-actions-NextOutJumpAction.instance" boolvalue="true" />
+<!--
             <file name="org-openide-actions-CompileAllAction.instance"/>
             <attr name="org-openide-actions-CompileAllAction.instance/org-openide-actions-BuildAllAction.instance" boolvalue="true" />
             <file name="org-openide-actions-BuildAllAction.instance"/>
             <attr name="org-openide-actions-BuildAllAction.instance/org-netbeans-core-actions-NextOutJumpAction.instance" boolvalue="true" />
+-->
             <file name="org-netbeans-core-actions-NextOutJumpAction.instance"/>
             <attr name="org-netbeans-core-actions-NextOutJumpAction.instance/org-openide-actions-ExecuteAction.instance" boolvalue="true" />
             <file name="org-openide-actions-ExecuteAction.instance"/>
@@ -365,11 +367,13 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Data">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <file name="org-openide-actions-FindAction.instance"/>
-            <attr name="org-openide-actions-FindAction.instance/org-openide-actions-NextTabAction.instance" boolvalue="true" />
+            <attr name="org-openide-actions-FindAction.instance/org-netbeans-core-actions-GlobalPropertiesAction.instance" boolvalue="true" />
+<!--
             <file name="org-openide-actions-NextTabAction.instance"/>
             <attr name="org-openide-actions-NextTabAction.instance/org-openide-actions-OpenLocalExplorerAction.instance" boolvalue="true" />
             <file name="org-openide-actions-OpenLocalExplorerAction.instance"/>
             <attr name="org-openide-actions-OpenLocalExplorerAction.instance/org-netbeans-core-actions-GlobalPropertiesAction.instance" boolvalue="true" />
+-->
             <file name="org-netbeans-core-actions-GlobalPropertiesAction.instance"/>
         </folder>
         <folder name="Debug">
@@ -377,9 +381,9 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-openide-actions-StartDebuggerAction.instance"/>
             <attr name="org-openide-actions-StartDebuggerAction.instance/org-openide-actions-TraceIntoAction.instance" boolvalue="true" />
             <file name="org-openide-actions-TraceIntoAction.instance"/>
-            <attr name="org-openide-actions-TraceIntoAction.instance/org-openide-actions-GoToCursorAction.instance" boolvalue="true" />
-            <file name="org-openide-actions-GoToCursorAction.instance"/>
-            <attr name="org-openide-actions-GoToCursorAction.instance/org-openide-actions-ToggleBreakpointAction.instance" boolvalue="true" />
+            <attr name="org-openide-actions-TraceIntoAction.instance/org-openide-actions-TraceOverAction.instance" boolvalue="true" />
+            <file name="org-openide-actions-TraceOverAction.instance"/>
+            <attr name="org-openide-actions-TraceOverAction.instance/org-openide-actions-ToggleBreakpointAction.instance" boolvalue="true" />
             <file name="org-openide-actions-ToggleBreakpointAction.instance"/>
             <attr name="org-openide-actions-ToggleBreakpointAction.instance/org-openide-actions-AddWatchAction.instance" boolvalue="true" />
             <file name="org-openide-actions-AddWatchAction.instance"/>
@@ -421,9 +425,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="System">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <file name="org-netbeans-core-actions-NewTemplateCallableAction.instance"/>
-            <attr name="org-netbeans-core-actions-NewTemplateCallableAction.instance/org-netbeans-core-actions-OpenExplorerAction.instance" boolvalue="true" />
-            <file name="org-netbeans-core-actions-OpenExplorerAction.instance"/>
-            <attr name="org-netbeans-core-actions-OpenExplorerAction.instance/org-openide-actions-SaveAction.instance" boolvalue="true" />
+            <attr name="org-netbeans-core-actions-NewTemplateCallableAction.instance/org-openide-actions-SaveAction.instance" boolvalue="true" />
             <file name="org-openide-actions-SaveAction.instance"/>
             <attr name="org-openide-actions-SaveAction.instance/org-openide-actions-SaveAllAction.instance" boolvalue="true" />
             <file name="org-openide-actions-SaveAllAction.instance"/>
@@ -446,7 +448,7 @@ Microsystems, Inc. All Rights Reserved.
     <file name="CA-C[org-netbeans-core-actions-StopCompileAction].instance" />
     <file name="C-Z[org-openide-actions-UndoAction].instance" />
     <file name="CS-O[org-openide-actions-OpenProjectAction].instance" />
-    <file name="C-F10[org-openide-actions-BuildAllAction].instance" />
+    <file name="CA-F9[org-openide-actions-BuildAllAction].instance" />
     <file name="DELETE[org-openide-actions-DeleteAction].instance" />
     <file name="C-Y[org-openide-actions-RedoAction].instance" />
     <file name="C-F9[org-openide-actions-CompileAllAction].instance" />
@@ -454,7 +456,7 @@ Microsystems, Inc. All Rights Reserved.
     <file name="F12[org-netbeans-core-actions-NextOutJumpAction].instance" />
     <file name="F11[org-openide-actions-CleanAction].instance" />
     <file name="C-F8[org-openide-actions-ToggleBreakpointAction].instance" />
-    <file name="F10[org-openide-actions-BuildAction].instance" />
+    <file name="A-F9[org-openide-actions-BuildAction].instance" />
     <file name="F9[org-openide-actions-CompileAction].instance" />
     <file name="C-G[org-openide-actions-GotoAction].instance" />
     <file name="C-7[org-netbeans-core-actions-HTMLViewAction].instance" />
