@@ -45,8 +45,9 @@ public class HttpServerModule implements ModuleInstall {
   * Add applet executor
   */
   public void restored() {            
+    System.out.println("Registering HttpServerModule as server");
     com.netbeans.ide.util.HttpServer.registerServer(HttpServerSettings.OPTIONS);
-    com.mortbay.Base.Log.instance()._out = new NullWriter();
+//    com.mortbay.Base.Log.instance()._out = new NullWriter();
   }
 
   /** Module was uninstalled. */
@@ -91,6 +92,7 @@ public class HttpServerModule implements ModuleInstall {
         serverThread.join();
       }
       catch (InterruptedException e) {
+        serverThread.stop();
         // PENDING
       }
       serverThread = null;
@@ -102,6 +104,7 @@ public class HttpServerModule implements ModuleInstall {
 
 /*
  * Log
+ *  6    Gandalf   1.5         5/25/99  Petr Jiricka    
  *  5    Gandalf   1.4         5/17/99  Petr Jiricka    
  *  4    Gandalf   1.3         5/17/99  Petr Jiricka    
  *  3    Gandalf   1.2         5/11/99  Petr Jiricka    
