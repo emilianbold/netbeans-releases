@@ -42,11 +42,14 @@ import org.openide.util.WeakListener;
 
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.api.AntProjectCookie;
+import org.openide.filesystems.Repository;
 
 public class AntProjectSupport implements AntProjectCookie.ParseStatus, DocumentListener, FileChangeListener, org.w3c.dom.events.EventListener, Runnable, ChangeListener {
   
     private File file;
     private FileObject fo;
+    private String fsName = null;
+    private String fileName = null;
 
     private transient Document projDoc = null; // [PENDING] SoftReference
     private transient Throwable exception = null;
@@ -99,10 +102,17 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
     }
 
     private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
+        fsName = null;
+        fileName = null;
         in.defaultReadObject ();
         init ();
     }
     
+    private void writeObject (ObjectOutputStream out) throws IOException {
+        updateFileObject();
+        out.defaultWriteObject();
+    }
+
     private synchronized EditorCookie getEditor () {
         FileObject fo = getFileObject ();
         if (fo == null) return null;
@@ -134,10 +144,56 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
     
     public FileObject getFileObject () {
         if (fo != null && ! fo.isValid ()) { // #11065
-            AntModule.err.log ("AntProjectSupport fo=" + fo + " was not valid, clearing");
-            fo = null;
+            
+            // if older version of object was deserialized which does not have 
+            // fsName and fileName attributes, then just reset the fileobject and continue
+            if (fsName == null && fileName == null) {
+                AntModule.err.log ("AntProjectSupport fo=" + fo + " was not valid, clearing");
+                fo = null;
+                return fo;
+            }
+            
+            // try to resolve fileobject according to fsName and fileName
+            // see also #25701
+            resolveFileObject();
+            if (fo != null && !fo.isValid())
+                return null;
+                
         }
         return fo;
+    }
+    
+    private void resolveFileObject () {  // #25701
+        Repository rep = Repository.getDefault();
+        FileSystem fs = rep.findFileSystem (fsName);
+
+        FileObject fobj = null;
+        if (fs != null) {
+            // scan desired system
+            fobj = fs.findResource (fileName);
+        }
+        if (fobj == null) {
+            // scan all systems
+            fobj = rep.findResource (fileName);
+        }
+        if (fobj != null) {
+            fo = fobj;
+        }
+    }
+    
+    private void updateFileObject() { // #25701
+        fsName = null;
+        fileName = null;
+        if (fo == null)
+            return;
+        fileName = fo.getPackageNameExt('/','.');
+        try {
+            fsName = fo.getFileSystem().getSystemName();
+        } catch (FileStateInvalidException ex) {
+            AntModule.err.notify (ErrorManager.INFORMATIONAL, ex);
+            fsName = null;
+            fileName = null;
+        }
     }
     
     public void setFile (File f) { // #11979
@@ -150,6 +206,7 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
         this.fo = fo;
         file = null; // compute on demand - note that parent folders may change etc.
         invalidate ();
+        updateFileObject();
     }
     
     public boolean isParsed() {
