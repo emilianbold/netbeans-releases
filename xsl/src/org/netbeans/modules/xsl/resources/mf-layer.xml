@@ -68,11 +68,11 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Shortcuts">
         <file name="A-F6.instance">
-			<attr name="instanceClass" stringvalue="org.netbeans.modules.xsl.actions.TransformAction"/>
-		</file>
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.xsl.actions.TransformAction"/>
+        </file>
         <file name="A-S.instance">
-			<attr name="instanceClass" stringvalue="org.netbeans.modules.xsl.actions.ScenarioAction"/>
-		</file>
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.xsl.actions.ScenarioAction"/>
+        </file>
     </folder> <!-- Shortcuts -->
 
     
@@ -102,34 +102,11 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="org-netbeans-modules-xsl-grammar-XSLGrammarQueryProvider.instance"/>
                 <attr name="org-netbeans-modules-xsl-grammar-XSLGrammarQueryProvider.instance/semantics-grammar-to-generic-grammar-separator" boolvalue="true"/>
             </folder> <!-- GrammarQueryManagers -->
-			<folder name="ScenarioFactories">
+
+            <folder name="ScenarioFactories">
                 <file name="org-netbeans-modules-xsl-scenario-FileXSLScenarioFactory.instance"/>
-			</folder>
+            </folder>
         </folder> <!-- XML -->
     </folder> <!-- Plugins -->
 
-    <folder name="xml">
-    	<folder name="entities">
-        	<folder name="W3C">
-            	<file name="DTD_XHTML_1_0_Strict" url="nbresloc:/org/netbeans/modules/xsl/resources/dtds/xhtml1-strict.dtd" >
-                	<attr name="hint.originalPublicID" stringvalue="-//W3C//DTD XHTML 1.0 Strict//EN"/>
-            	</file>
-            	<file name="DTD_XHTML_1_0_Transitional" url="nbresloc:/org/netbeans/modules/xsl/resources/dtds/xhtml1-transitional.dtd" >
-                	<attr name="hint.originalPublicID" stringvalue="-//W3C//DTD XHTML 1.0 Transitional//EN"/>
-            	</file>
-            	<file name="DTD_XHTML_1_0_Frameset" url="nbresloc:/org/netbeans/modules/xsl/resources/dtds/xhtml1-frameset.dtd" >
-                	<attr name="hint.originalPublicID" stringvalue="-//W3C//DTD XHTML 1.0 Frameset//EN"/>
-            	</file>
-            	<file name="ENTITIES_Latin_1_for_XHTML" url="nbresloc:/org/netbeans/modules/xsl/resources/dtds/xhtml-lat1.ent">
-                	<attr name="hint.originalPublicID" stringvalue="-//W3C//ENTITIES Latin 1 for XHTML//EN"/>
-            	</file>
-            	<file name="ENTITIES_Special_for_XHTML" url="nbresloc:/org/netbeans/modules/xsl/resources/dtds/xhtml-special.ent">
-                	<attr name="hint.originalPublicID" stringvalue="-//W3C//ENTITIES Special for XHTML//EN"/>
-            	</file>
-            	<file name="ENTITIES_Symbols_for_XHTML" url="nbresloc:/org/netbeans/modules/xsl/resources/dtds/xhtml-symbol.ent">
-                	<attr name="hint.originalPublicID" stringvalue="-//W3C//ENTITIES Symbols for XHTML//EN"/>
-            	</file>
-        	</folder>
-        </folder>
-    </folder>
 </filesystem>

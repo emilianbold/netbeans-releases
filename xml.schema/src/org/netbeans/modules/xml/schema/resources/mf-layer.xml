@@ -12,14 +12,7 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd" [
-    <!ENTITY localize-it "<attr name='SystemFileSystem.localizingBundle' stringvalue='org.netbeans.modules.xml.schema.resources.Bundle'/>">
-    
-    <!-- Schema 'module' hosted entities -->
-    <!ENTITY schema-resolvers SYSTEM "nbres:/org/netbeans/modules/xml/schema/resources/mf-resolvers.ent">
-    <!ENTITY schema-templates SYSTEM "nbres:/org/netbeans/modules/xml/schema/resources/mf-templates.ent">
-    
-]>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 
 <filesystem>
 
@@ -31,7 +24,13 @@ Microsystems, Inc. All Rights Reserved.
     <!-- register templates -->  
     <folder name="Templates">
         <folder name="XML">
-            &schema-templates;
+            <file name="XMLSchema.xsd" url="nbresloc:/org/netbeans/modules/xml/schema/resources/templates/XMLSchema.xml">
+                <attr name="template" boolvalue="true" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.schema.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/resources/xmlSchemaObject.gif" />
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/resources/templates/XMLSchema.html" />
+            </file>
+            <attr name="XMLSchema.xsd/xml_entity.ent" boolvalue="true"/>
         </folder> <!-- XML -->
     </folder> <!-- Templates -->
                
@@ -46,7 +45,10 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Services">
 
         <folder name="MIMEResolver">
-            &schema-resolvers;
+            <file name="org-netbeans-modules-xml-schema-services-SchemaMIMEResolver.xml" url="nbres:/org/netbeans/modules/xml/schema/resources/schema-mime-resolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.schema.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/resources/xmlSchemaObject.gif" />
+            </file>
         </folder>
         
     </folder> <!-- Services -->          

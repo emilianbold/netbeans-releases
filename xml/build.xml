@@ -119,7 +119,6 @@ Microsystems, Inc. All Rights Reserved.
             <include name="**/TODO.xml"/>
             <include name="**/src/**/mf-layer.xml"/>
             <exclude name="core/src/org/netbeans/modules/xml/core/resources/mf-layer.xml"/>
-            <exclude name="schema/src/org/netbeans/modules/xml/schema/resources/mf-layer.xml"/>
         </validatexml>
 
         <ant dir="www" target="check"/>
