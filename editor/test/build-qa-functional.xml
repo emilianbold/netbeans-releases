@@ -139,9 +139,13 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="Using jars classpath for compilation."/>
     	<!-- this classpath will be used for compiling tests against jars -->
 	<path id="compiletest.classpath">        
-	    <pathelement location="../../netbeans/lib/openide.jar"/>
+	    <pathelement location="../../openide/netbeans/lib/openide.jar"/>
 	    <pathelement location="../netbeans/modules/editor.jar"/>
 	    <pathelement location="../netbeans/modules/ext/nb-editor.jar"/>
+	    <!--Temporary hack-around for openide split. It only makes it possible to compile the
+	        tests it is not a solution and the tests still needs to be fixed.-->
+	    <pathelement location="../../openide/netbeans/modules/autoload/openide-deprecated.jar"/>
+	    <pathelement location="../../java/srcmodel/netbeans/modules/autoload/java-src-model.jar"/>
 	</path>
     </target>
         
@@ -156,6 +160,9 @@ Microsystems, Inc. All Rights Reserved.
  	      -->
              <pathelement location="../netbeans/lib/openide.jar"/>
 	     <pathelement location="../src"/>
+	     <!--Temporary hack-around for openide split. It only makes it possible to compile the
+	         tests it is not a solution and the tests still needs to be fixed.-->
+	     <pathelement location="../../netbeans/modules/autoload/openide-deprecated.jar"/>
 	</path>
     </target>
     
@@ -172,6 +179,10 @@ Microsystems, Inc. All Rights Reserved.
 	    <pathelement location="${netbeans.home}/modules/ext/nb-editor.jar"/>
             <pathelement location="${netbeans.home}/lib/openide.jar"/>
             <pathelement location="${netbeans.home}/lib/core.jar"/>
+	    <!--Temporary hack-around for openide split. It only makes it possible to compile the
+	        tests it is not a solution and the tests still needs to be fixed.-->
+	    <pathelement location="${netbeans.home}/modules/autoload/openide-deprecated.jar"/>
+	    <pathelement location="${netbeans.home}/modules/autoload/java-src-model.jar"/>
    	</path>
     </target>
     
