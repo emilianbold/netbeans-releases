@@ -2333,6 +2333,13 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
         <param name="date" expression="${modules-javadoc-date}"/>
       </style>
       
+      <style 
+        in="modules_javadoc/index.xml" 
+        out="modules_javadoc/usecases.html" 
+        style="javadoctools/export2usecases.xsl"
+      >
+        <param name="date" expression="${modules-javadoc-date}"/>
+      </style>
     <taskdef 
         name="javadoc-index" 
         classpath="nbantext.jar" 

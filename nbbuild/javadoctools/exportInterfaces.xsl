@@ -38,6 +38,13 @@ Microsystems, Inc. All Rights Reserved.
                     <xsl:apply-templates select="$deploy-dependencies/node()"/>
                 </deploy-dependencies>
             </xsl:if>
+            
+            <xsl:variable name="arch-usecases" select="api-answers/answer[@id='arch-usecases']"/>
+            <xsl:if test="$arch-usecases">
+                <arch-usecases>
+                    <xsl:apply-templates select="$arch-usecases/node()"/>
+                </arch-usecases>
+            </xsl:if>            
 
             <xsl:for-each select="$interfaces">
                 <xsl:call-template name="api" >
