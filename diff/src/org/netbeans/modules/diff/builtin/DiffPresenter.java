@@ -272,7 +272,24 @@ public class DiffPresenter extends javax.swing.JPanel {
 
     private void setVisualizer(Component visualizer) {
         visualizerPanel.removeAll();
-        if (visualizer != null) visualizerPanel.add(visualizer, java.awt.BorderLayout.CENTER);
+        if (visualizer != null) {
+            visualizerPanel.add(visualizer, java.awt.BorderLayout.CENTER);
+            java.lang.reflect.Method showing = null;
+            try {
+                showing = visualizer.getClass().getMethod("componentShowing", null);
+            } catch (NoSuchMethodException nsmex) {
+            } catch (SecurityException sex) {
+            }
+            if (showing != null) {
+                try {
+                    showing.invoke(visualizer, null);
+                } catch (IllegalAccessException iaex) {
+                } catch (IllegalArgumentException iarex) {
+                } catch (java.lang.reflect.InvocationTargetException itex) {
+                }
+            }
+        }
+        revalidate();
         repaint();
     }
     
