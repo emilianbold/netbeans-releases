@@ -51,7 +51,7 @@ workspaceswitcher
       <config name="stable" modules="applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,jarpackager,java,javadoc,objectbrowser,projects,properties,text,usersguide,utilities,vcscvs,web"/>
       <config name="stable-with-apisupport" modules="apisupport,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,jarpackager,java,javadoc,objectbrowser,projects,properties,text,usersguide,utilities,vcscvs,web"/>
       <config name="ide-hacker" modules="apisupport,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,i18n,icebrowser,image,jarpackager,java,javadoc,objectbrowser,projects,properties,serialversion,sysprops,text,utilities,vcscvs"/>
-      <config name="jesses-pick" modules="ant,apisupport,beans,clazz,editor,html,icebrowser,image,java,javadoc,projects,properties,serialversion,sysprops,text,utilities"/>
+      <config name="jesses-pick" modules="ant,apisupport,beans,clazz,editor,html,icebrowser,image,jarpackager,java,javadoc,projects,properties,serialversion,sysprops,text,utilities"/>
       <config name="bloated" modules="ant,apisupport,applet,autoupdate,beans,clazz,crosscompile,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,java,javadoc,javaembeddedserver,makefile,multicompile,objectbrowser,projects,properties,remotefs,serialversion,sysprops,text,usersguide,utilities,vcscvs,web"/>
       <!-- You are on your own for getting the binaries for some of these: -->
       <config name="bloated-plus-extrabins" modules="ant,apisupport,applet,autoupdate,beans,clazz,crosscompile,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,java,javadoc,javaembeddedserver,makefile,multicompile,objectbrowser,projects,properties,remotefs,scripting,serialversion,sysprops,text,usersguide,utilities,vcscvs,web"/>
@@ -96,7 +96,7 @@ workspaceswitcher
     <echo message="Building module ant..."/>
     <ant dir="../ant" target="netbeans"/>
   </target>
-  <target name="all-apisupport" depends="all-openide,all-openidex,all-core">
+  <target name="all-apisupport" depends="all-openide,all-openidex,all-core,all-jarpackager">
     <echo message="Building module apisupport..."/>
     <ant dir="../apisupport" target="netbeans"/>
   </target>
@@ -319,8 +319,6 @@ workspaceswitcher
     <ant dir="../ant" target="nbm"/>
     <echo message="Making NBM for module openidex..."/>
     <ant dir="../openidex" target="nbm"/>
-    <echo message="Making NBM for module apisupport..."/>
-    <ant dir="../apisupport" target="nbm"/>
     <echo message="Making NBM for module debuggercore..."/>
     <ant dir="../debuggercore" target="nbm"/>
     <echo message="Making NBM for module applet..."/>
@@ -359,6 +357,8 @@ workspaceswitcher
     <ant dir="../innertesters" target="nbm"/>
     <echo message="Making NBM for module jarpackager..."/>
     <ant dir="../jarpackager" target="nbm"/>
+    <echo message="Making NBM for module apisupport..."/>
+    <ant dir="../apisupport" target="nbm"/>
     <echo message="Making NBM for module javadoc..."/>
     <ant dir="../javadoc" target="nbm"/>
     <echo message="Making NBM for module javaembeddedserver..."/>
