@@ -47,7 +47,7 @@ public final class PropertiesDataLoader extends UniFileLoader {
     
     /** Creates new PropertiesDataLoader. */
     public PropertiesDataLoader() {
-        super(PropertiesDataObject.class);
+        super("org.netbeans.modules.properties.PropertiesDataObject"); // NOI18N
         
         // Set extentions. Due performance reasons do it here instead in initialize method.
         // During startup it's in findPrimaryFile method called getExtensions method. If the 
