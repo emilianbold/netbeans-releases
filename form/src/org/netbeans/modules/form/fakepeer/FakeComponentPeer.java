@@ -68,12 +68,19 @@ abstract class FakeComponentPeer implements FakePeer
         repaint();
     }
 
-    public void dispose() {
-        _target = null;
-        _delegate = null;
+    abstract Component createDelegate();
+
+    // ---------------
+
+    // JDK 1.4
+    public boolean isObscured() {
+        return false;
     }
 
-    abstract Component createDelegate();
+    // JDK 1.4
+    public boolean canDetermineObscurity() {
+        return false;
+    }
 
     public void setVisible(boolean visible) {
         _delegate.setVisible(visible);
@@ -110,9 +117,13 @@ abstract class FakeComponentPeer implements FakePeer
     public void handleEvent(AWTEvent e) {
     }
 
+    // JDK 1.3
+    public void coalescePaintEvent(PaintEvent e) {
+    }
+
     public Point getLocationOnScreen() {
-        // this is called from target (leads to infinite loop)
-        return null; //_target.getLocationOnScreen();
+        // this is called from target
+        return null;
     }
 
     public Dimension getPreferredSize() {
@@ -125,6 +136,10 @@ abstract class FakeComponentPeer implements FakePeer
 
     public ColorModel getColorModel() {
         return _delegate.getColorModel();
+    }
+
+    public Toolkit getToolkit() {
+        return _delegate.getToolkit();
     }
 
     public Graphics getGraphics() {
@@ -141,13 +156,14 @@ abstract class FakeComponentPeer implements FakePeer
         return null;
     }
 
-    public Toolkit getToolkit() {
-        return _delegate.getToolkit();
+    public FontMetrics getFontMetrics(Font font) {
+        // this is called from target
+        return null;
     }
 
-    public FontMetrics getFontMetrics(Font font) {
-        // this is called from target (leads to infinite loop)
-        return null; //_target.getFontMetrics(font);
+    public void dispose() {
+        _target = null;
+        _delegate = null;
     }
 
     public void setForeground(Color color) {
@@ -162,16 +178,33 @@ abstract class FakeComponentPeer implements FakePeer
         _delegate.setFont(font);
     }
 
+    // not in JDK 1.4
     public void setCursor(Cursor cursor) {
         _delegate.setCursor(cursor);
     }
 
-    public void requestFocus() {
-        // this is called from target (leads to infinite loop)
-        //_target.requestFocus();
+    // JDK 1.4
+    public void updateCursorImmediately() {
     }
 
+    // not in JDK 1.4
+    public void requestFocus() {
+        // this is called from target
+    }
+
+    // JDK 1.4
+    public boolean requestFocus(boolean temporary,
+                         boolean focusedWindowChangeAllowed) {
+        return false;
+    }
+
+    // not in JDK 1.4
     public boolean isFocusTraversable() {
+        return false;
+    }
+
+    // JDK 1.4
+    public boolean isFocusable() {
         return false;
     }
 
@@ -179,10 +212,14 @@ abstract class FakeComponentPeer implements FakePeer
         return _delegate.createImage(producer);
     }
 
-    public Image createImage(int width, int height)
-    {
+    public Image createImage(int width, int height) {
         return _delegate.createImage(width, height);
     }
+
+    // JDK 1.4 (VolatileImage not before 1.4)
+//  public VolatileImage createVolatileImage(int width, int height) {
+//        return null;
+//    }
 
     public boolean prepareImage(Image img, int w, int h,
                                 ImageObserver imageObserver) {
@@ -195,57 +232,77 @@ abstract class FakeComponentPeer implements FakePeer
         return _delegate.checkImage(img, w, h, imageObserver);
     }
 
-    //
-    //
-    //
-
-    public Dimension preferredSize() {
-        return getPreferredSize();
-    }
-
-    public Dimension minimumSize() {
-        return getMinimumSize();
-    }
-
-    public void show() {
-        setVisible(true);
-    }
-
-    public void hide() {
-        setVisible(false);
-    }
-
-    public void enable() {
-        setEnabled(true);
-    }
-
-    public void disable() {
-        setEnabled(false);
-    }
-
-    public void reshape(int x, int y, int width, int height) {
-        setBounds(x, y, width, height);
-    }
-
-    void clearRectBeforePaint(Graphics g, Rectangle r) {
-        g.clearRect(r.x, r.y, r.width, r.height);
-    }
-
-    //
-    // 1.3
-    //
-
-    public void coalescePaintEvent(PaintEvent e) {
-    }
-
+    // JDK 1.3
     public GraphicsConfiguration getGraphicsConfiguration() {
         //return _target.getGraphicsConfiguration();
         return null;                // XXX
     }
 
+    // JDK 1.4
+    public boolean handlesWheelScrolling() {
+        return false;
+    }
+
+    // JDK 1.4 (BufferCapabilities not before 1.4)
+//    public void createBuffers(int numBuffers, BufferCapabilities caps)
+//        throws AWTException {
+//    }
+
+    // JDK 1.4
+    public Image getBackBuffer() {
+        return null;
+    }
+
+    // JDK 1.4 (BufferCapabilities not before 1.4)
+//    public void flip(BufferCapabilities.FlipContents flipAction) {
+//    }
+
+    // JDK 1.4
+    public void destroyBuffers() {
+    }
+
+    // deprecated
+    public Dimension preferredSize() {
+        return getPreferredSize();
+    }
+
+    // deprecated
+    public Dimension minimumSize() {
+        return getMinimumSize();
+    }
+
+    // deprecated
+    public void show() {
+        setVisible(true);
+    }
+
+    // deprecated
+    public void hide() {
+        setVisible(false);
+    }
+
+    // deprecated
+    public void enable() {
+        setEnabled(true);
+    }
+
+    // deprecated
+    public void disable() {
+        setEnabled(false);
+    }
+
+    // deprecated
+    public void reshape(int x, int y, int width, int height) {
+        setBounds(x, y, width, height);
+    }
+
     //
     // helpers
     //
+
+    void clearRectBeforePaint(Graphics g, Rectangle r) {
+        g.clearRect(r.x, r.y, r.width, r.height);
+    }
 
     void repaint() {
         Dimension sz = _target.getSize();

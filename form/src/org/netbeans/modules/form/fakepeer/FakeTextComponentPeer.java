@@ -83,14 +83,17 @@ class FakeTextComponentPeer extends FakeComponentPeer
         return _caretPosition;
     }
 
+    // JDK 1.3
     public int getIndexAtPoint(int x, int y) {
         return 0;
     }
 
+    // JDK 1.3
     public Rectangle getCharacterBounds(int i) {
         return null;
     }
 
+    // JDK 1.3
     public long filterEvents(long mask) {
         return 0;
     }

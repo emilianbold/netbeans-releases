@@ -40,6 +40,20 @@ abstract class FakeContainerPeer extends FakeComponentPeer implements ContainerP
     public void endValidate() {
     }
 
+    // JDK 1.4
+    public void beginLayout() {
+    }
+
+    // JDK 1.4
+    public void endLayout() {
+    }
+
+    // JDK 1.4
+    public boolean isPaintPending() {
+        return false;
+    }
+
+    // deprecated
     public Insets insets() {
         if (_insets == null)
             _insets = new Insets(0, 0, 0, 0);

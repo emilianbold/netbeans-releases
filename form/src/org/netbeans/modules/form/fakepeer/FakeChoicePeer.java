@@ -38,6 +38,7 @@ class FakeChoicePeer extends FakeComponentPeer implements ChoicePeer
     public void remove(int index) {
     }
 
+    // JDK 1.3
     public void removeAll() {
     }
 
