@@ -417,7 +417,9 @@ public class TargetServer {
             Target[] targetz = (Target[]) distributeTargets.toArray(new Target[distributeTargets.size()]);
 
             if (incremental != null && canFileDeploy(targetz, deployable)) {
-                File dir = initialDistribute(targetz[0], progressUI);
+                InitialServerFileDistributor sfd = new InitialServerFileDistributor(dtarget, targetz[0]);
+                progressUI.setProgressObject(sfd);
+                File dir = sfd.distribute();
                 if (dir == null)
                     return new TargetModule[0];
                 progressObject = incremental.initialDeploy(targetz[0], deployable, dtarget.getDeploymentConfigurationProvider ().getDeploymentConfiguration (), dir);
@@ -428,6 +430,8 @@ public class TargetServer {
                         //System.out.println("Waiting on incrementalDeploy of ="+Arrays.asList(redeployTargetModules));
                         if (!sleep(120000) )
                             ErrorManager.getDefault().log(ErrorManager.WARNING, "incrementalDeploy: timeout or interrupted!");
+                    } else if (state == StateType.FAILED) {
+                        sfd.cleanup ();
                     }
             } else {
                 if (getApplication() != null) {

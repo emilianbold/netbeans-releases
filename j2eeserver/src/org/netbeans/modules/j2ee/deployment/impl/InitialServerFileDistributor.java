@@ -60,8 +60,8 @@ public class InitialServerFileDistributor extends ServerProgress {
         DeploymentConfigurationProvider deployment = dtarget.getDeploymentConfigurationProvider();
         J2eeModule source = dtarget.getModule();
         DeployableObject deployable = deployment.getDeployableObject(null);
+        File dir = fileLayout.getDirectoryForNewApplication (target, deployable, deployment.getDeploymentConfiguration ());
         try {
-            File dir = fileLayout.getDirectoryForNewApplication (target, deployable, deployment.getDeploymentConfiguration ());
             if (dir == null) {
                 //PENDING in-place distribute
                 setStatusDistributeFailed("In-Place deployment not supported yet!");//NOI18N
@@ -88,8 +88,36 @@ public class InitialServerFileDistributor extends ServerProgress {
         } catch (Exception e) {
             setStatusDistributeFailed(e.getMessage());
             ErrorManager.getDefault().log(ErrorManager.EXCEPTION, e.getMessage());
+            if (!cleanup (dir)) {
+                setStatusDistributeFailed ("Failed to cleanup the data after unsucesful distribution");
+            }
         }
         return null;
+    }
+    
+    public void cleanup () {
+        DeploymentConfigurationProvider deployment = dtarget.getDeploymentConfigurationProvider();
+        J2eeModule source = dtarget.getModule();
+        DeployableObject deployable = deployment.getDeployableObject(null);
+        File dir = fileLayout.getDirectoryForNewApplication (target, deployable, deployment.getDeploymentConfiguration ());
+        if (!cleanup (dir)) {
+            setStatusDistributeFailed ("Failed to cleanup the data after unsucesful distribution");
+        }
+    }
+    
+    private boolean cleanup (File f) {
+        String chNames[] = f.list ();
+        boolean deleted = true;
+        for (int i=0; i < chNames.length; i++) {
+            File ch = new File (f.getAbsolutePath (), chNames [i]);
+            if (ch.isDirectory ()) {
+                deleted = deleted && cleanup (ch);
+            } else {
+                deleted = deleted && ch.delete ();
+            }
+        }
+        deleted = deleted && f.delete ();
+        return deleted;
     }
     
     private void _distribute(Iterator rootedEntries, File dir, String childModuleUri) {
