@@ -123,7 +123,7 @@ public final class SetExecutionUriAction extends NodeAction {
             Servlet[] servlets = webApp.getServlet();
             java.util.List mappingList = new java.util.ArrayList();
             for (int i=0;i<servlets.length;i++) {
-                if (servlets[i].getServletClass().equals(className)) {
+                if (className.equals(servlets[i].getServletClass())) {
                     String servletName=servlets[i].getServletName();
                     ServletMapping[] maps  = webApp.getServletMapping();
                     for (int j=0;j<maps.length;j++) {
