@@ -479,6 +479,10 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         tm = new FreeformProjectGenerator.TargetMapping();
         tm.name = "second-targetName";
         mappings.add(tm);
+        tm = new FreeformProjectGenerator.TargetMapping();
+        tm.name = "context-sensitive";
+        tm.context = new FreeformProjectGenerator.TargetMapping.Context();
+        mappings.add(tm);
         FreeformProjectGenerator.putContextMenuAction(helper, mappings);
 //        ProjectManager.getDefault().saveAllProjects();
         Element el = helper.getPrimaryConfigurationData(true);
@@ -506,7 +510,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         tm = new FreeformProjectGenerator.TargetMapping();
         tm.name = "bar";
         mappings.add(tm);
-        FreeformProjectGenerator.putTargetMappings(helper, mappings);
+        FreeformProjectGenerator.putContextMenuAction(helper, mappings);
 //        ProjectManager.getDefault().saveAllProjects();
         el = helper.getPrimaryConfigurationData(true);
         el = Util.findElement(el, "view", FreeformProjectType.NS_GENERAL);
@@ -514,7 +518,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         el = Util.findElement(el, "context-menu", FreeformProjectType.NS_GENERAL);
         assertNotNull("Target mapping were not saved correctly",  el);
         subElements = Util.findSubElements(el);
-        assertEquals(2, subElements.size());
+        assertEquals(4, subElements.size());
         assertElementArray(subElements, 
             new String[]{"ide-action", "ide-action", "ide-action", "ide-action"},
             new String[]{null, null, null, null},
@@ -687,6 +691,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
      * and expected attributes.
      */
     public static void assertElementArray(List/*<Element>*/ elements, String[] expectedNames, String[] expectedValues, String[] expectedAttrName, String[] expectedAttrValue) {
+        assertEquals(expectedNames.length, elements.size());
         for (int i=0; i<elements.size(); i++) {
             assertElement((Element)elements.get(i), expectedNames[i], expectedValues[i], expectedAttrName[i], expectedAttrValue[i]);
         }

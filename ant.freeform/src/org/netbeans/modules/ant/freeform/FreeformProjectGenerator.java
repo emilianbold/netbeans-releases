@@ -351,6 +351,10 @@ public class FreeformProjectGenerator {
         it = mappings.iterator();
         while (it.hasNext()) {
             TargetMapping tm = (TargetMapping)it.next();
+            if (tm.context != null) {
+                // ignore context sensitive actions
+                continue;
+            }
             Element ideAction = doc.createElementNS(FreeformProjectType.NS_GENERAL, "ide-action"); //NOI18N
             ideAction.setAttribute("name", tm.name); // NOI18N
             appendChildElement(contextMenuEl, ideAction, contextMenuElementsOrder);
