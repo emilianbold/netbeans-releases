@@ -27,7 +27,11 @@ public class ServerString implements java.io.Serializable {
     private static final long serialVersionUID = 923457209372L;
     
     public ServerString(String plugin, String instance, String[] targets) {
-        this.plugin = plugin; this.instance = instance; this.targets = targets; this.serverInstance = null;
+        if (targets == null) 
+            this.targets = new String[0];
+        else 
+            this.targets = targets;
+        this.plugin = plugin; this.instance = instance; this.serverInstance = null;
     }
     
     public ServerString(Server server) {
@@ -78,8 +82,10 @@ public class ServerString implements java.io.Serializable {
     }
 
     public String[] getTargets(boolean concrete) {
-        if (! concrete)
+        if (! concrete) {
+            if (targets == null) return new String[0];
             return targets;
+         }
         if (targets.length > 0)
             return targets;
         if (theTargets != null)
