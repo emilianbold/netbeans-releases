@@ -547,6 +547,7 @@ class AntGrammar implements GrammarQuery {
         "property",
         "failureproperty",
         "errorproperty",
+        "addproperty",
     };
     
     private static void visitForLikelyPropertyNames(Node n, Set/*<String>*/ choices) {
