@@ -474,7 +474,7 @@ public class RADComponent {
   }
   
   protected Node.Property[] createBeanProperties () {
-    PropertyDescriptor[] props = beanInfo.getPropertyDescriptors ();
+    PropertyDescriptor[] props = beanInfo.getPropertyDescriptors ();  
     ArrayList nodeProps = new ArrayList ();
     for (int i = 0; i < props.length; i++) {
       if ((!props[i].isHidden ()) && (!props[i].isExpert ())) {
@@ -604,17 +604,6 @@ public class RADComponent {
       return getChangedValue (desc);
     }
     Method readMethod = desc.getReadMethod ();
-    // [PANDING] an ugly patch 
-    // java.beans.Inspector does not recognize reader for Cursor property
-    if (readMethod == null && desc.getPropertyType().equals(java.awt.Cursor.class) 
-      && java.awt.Component.class.isAssignableFrom (beanClass)) {
-      try {
-        readMethod = java.awt.Component.class.getMethod("getCursor", new Class[0]); // NOI18N
-      } catch (NoSuchMethodException e) {
-        // silently catch
-        e.printStackTrace();
-      }
-      }
     if (readMethod == null) {
       throw new IllegalAccessException ();
     }
@@ -1457,6 +1446,8 @@ public class RADComponent {
 
 /*
  * Log
+ *  69   Gandalf   1.68        1/7/00   Pavel Buzek     patch created in rev. 63
+ *       was removed (fixed in bean info)
  *  68   Gandalf   1.67        1/5/00   Ian Formanek    NOI18N
  *  67   Gandalf   1.66        1/3/00   Ian Formanek    
  *  66   Gandalf   1.65        1/2/00   Ian Formanek    Fixed to compile
