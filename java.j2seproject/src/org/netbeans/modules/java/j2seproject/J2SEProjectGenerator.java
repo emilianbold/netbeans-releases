@@ -167,6 +167,7 @@ public class J2SEProjectGenerator {
         ep.setComment("run.jvmargs", new String[] {
             "# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_run.jvmargs"), // NOI18N
             "# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_run.jvmargs_2"), // NOI18N
+            "# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_run.jvmargs_3"), // NOI18N
         }, false);
 
         ep.setProperty(J2SEProjectProperties.JAVADOC_PRIVATE, "false"); // NOI18N

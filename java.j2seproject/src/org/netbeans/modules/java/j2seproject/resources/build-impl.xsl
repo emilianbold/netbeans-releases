@@ -236,6 +236,7 @@ is divided into following sections:
                         <junit>
                             <xsl:attribute name="showoutput">true</xsl:attribute>
                             <xsl:attribute name="fork">true</xsl:attribute>
+                            <xsl:attribute name="dir">${basedir}</xsl:attribute> <!-- #47474: match <java> -->
                             <xsl:attribute name="failureproperty">tests.failed</xsl:attribute>
                             <xsl:attribute name="errorproperty">tests.failed</xsl:attribute>
                             <xsl:if test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
@@ -247,6 +248,10 @@ is divided into following sections:
                             <classpath>
                                 <path path="${{run.test.classpath}}"/>
                             </classpath>
+                            <syspropertyset>
+                                <propertyref prefix="test-sys-prop."/>
+                                <mapper type="glob" from="test-sys-prop.*" to="*"/>
+                            </syspropertyset>
                             <formatter type="brief" usefile="false"/>
                             <!-- TBD
                             <formatter type="xml"/>
