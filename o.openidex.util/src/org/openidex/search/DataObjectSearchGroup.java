@@ -77,13 +77,30 @@ public class DataObjectSearchGroup extends SearchGroup {
                 (Node[]) searchRoots.toArray(new Node[searchRoots.size()]));
         for (int i = 0; i < nodes.length; i++) {
             Node node = nodes[i];
-            SearchInfo info = Utils.getSearchInfo(node);
+            SearchInfo info = getSearchInfo(node);
             if (info != null) {
                 for (Iterator j = info.objectsToSearch(); j.hasNext(); ) {
                     processSearchObject(/*DataObject*/ j.next());
                 }
             }
         }
+    }
+
+    /**
+     */
+    private static SearchInfo getSearchInfo(Node node) {
+        /* 1st try - is the SearchInfo object in the node's lookup? */
+        SearchInfo info = (SearchInfo)
+                          node.getLookup().lookup(SearchInfo.class);
+        if (info != null) {
+            return info;
+        }
+
+        /* 2nd try - does the node represent a DataObject.Container? */
+        Object container = node.getLookup().lookup(DataObject.Container.class);
+        return (container != null)
+               ? new SimpleSearchInfo((DataObject.Container) container, true)
+               : SimpleSearchInfo.EMPTY_SEARCH_INFO;
     }
 
     /**
