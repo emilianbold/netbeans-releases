@@ -70,8 +70,11 @@ public class BrokenReferencesSupport {
             ReferenceHelper referenceHelper, String[] properties, String platform) {
         BrokenReferencesModel model = new BrokenReferencesModel(projectHelper, referenceHelper, properties, platform);
         BrokenReferencesCustomizer customizer = new BrokenReferencesCustomizer(model);
+        Object close = NbBundle.getMessage(BrokenReferencesCustomizer.class,"LBL_BrokenLinksCustomizer_Close");
         DialogDescriptor dd = new DialogDescriptor(customizer, 
-            NbBundle.getMessage(BrokenReferencesCustomizer.class, "LBL_BrokenLinksCustomizer_Title"));
+            NbBundle.getMessage(BrokenReferencesCustomizer.class, 
+            "LBL_BrokenLinksCustomizer_Title", projectHelper.getDisplayName()),
+            true, new Object[] {close}, close, DialogDescriptor.DEFAULT_ALIGN, null, null);
         Dialog dlg = null;
         try {
             dlg = DialogDisplayer.getDefault().createDialog(dd);

@@ -19,6 +19,7 @@ import javax.swing.JFileChooser;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.project.libraries.LibrariesCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
 /**
@@ -35,6 +36,8 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
         this.model = model;
         errorList.setModel(model);
         errorList.setSelectedIndex(0);
+        Mnemonics.setLocalizedText(fix, fix.getText());
+        Mnemonics.setLocalizedText(errorListLabel, errorListLabel.getText());
     }
     
     /** This method is called from within the constructor to
@@ -55,12 +58,12 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        setPreferredSize(new java.awt.Dimension(400, 300));
+        setPreferredSize(new java.awt.Dimension(450, 300));
         errorListLabel.setLabelFor(errorList);
         errorListLabel.setText(org.openide.util.NbBundle.getMessage(BrokenReferencesCustomizer.class, "LBL_BrokenLinksCustomizer_List"));
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 3, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
         add(errorListLabel, gridBagConstraints);
 
         errorList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -79,6 +82,7 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(jScrollPane1, gridBagConstraints);
 
         fix.setText(org.openide.util.NbBundle.getMessage(BrokenReferencesCustomizer.class, "LBL_BrokenLinksCustomizer_Fix"));
@@ -93,7 +97,7 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 12);
         add(fix, gridBagConstraints);
 
         descriptionLabel.setLabelFor(description);
@@ -102,7 +106,7 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 3, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 3, 0);
         add(descriptionLabel, gridBagConstraints);
 
         description.setEditable(false);
@@ -115,6 +119,7 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.ipady = 60;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
         add(jScrollPane2, gridBagConstraints);
 
     }//GEN-END:initComponents
@@ -132,9 +137,13 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
             JFileChooser chooser;
             if (model.isProjectReference(errorList.getSelectedIndex())) {
                 chooser = ProjectChooser.projectChooser();
+                chooser.setDialogTitle(NbBundle.getMessage(BrokenReferencesCustomizer.class, 
+                    "LBL_BrokenLinksCustomizer_Resolve_Project", model.getProjectID(errorList.getSelectedIndex())));
             } else {
                 chooser = new JFileChooser();
                 chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+                chooser.setDialogTitle(NbBundle.getMessage(BrokenReferencesCustomizer.class, 
+                    "LBL_BrokenLinksCustomizer_Resolve_File", model.getFileID(errorList.getSelectedIndex())));
             }
             int option = chooser.showOpenDialog(null);
             if (option == JFileChooser.APPROVE_OPTION) {

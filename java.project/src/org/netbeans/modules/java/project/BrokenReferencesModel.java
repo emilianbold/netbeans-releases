@@ -112,12 +112,12 @@ public class BrokenReferencesModel extends AbstractListModel {
         return brokenReferences[index].startsWith("project.");
     }
 
-    private String getProjectID(int index) {
+    String getProjectID(int index) {
         // project.<name>
         return brokenReferences[index].substring(8);
     }
 
-    private String getFileID(int index) {
+    String getFileID(int index) {
         // file.reference.<name>
         return brokenReferences[index].substring(15);
     }
