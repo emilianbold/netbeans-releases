@@ -209,17 +209,32 @@ Microsystems, Inc. All Rights Reserved.
 
    <folder name="windows">
      <folder name="components">
-        <file name="DebuggerWindow.settings" url="DebuggerWindow.settings">
-        </file>
+        <file name="DebuggerWindow.settings" url="DebuggerWindow.settings"/>
      </folder>
+
      <folder name="windowmanager">
         <attr name="Running/Debugging" boolvalue="true" />
         <file name="Debugging.wswksp" url="Debugging.wswksp"/>
         <folder name="Debugging">
+
             <file name="debugger.wsmode" url="debugger.wsmode"/>
             <folder name="debugger">
                 <file name="DebuggerWindow.wstcref" url="DebuggerWindow.wstcref"/>
             </folder>
+
+            <!--
+            <file name="ouput.wsmode" url="ouput.wsmode"/>
+            <folder name="output">
+                <file name="output.wstcref" url="ouput.wstcref"/>
+            </folder>
+            -->
+
+            <!--
+            <file name="editor.wsmode" url="editor.wsmode"/>
+            <folder name="editor">
+            </folder>
+            -->
+
         </folder>
      </folder>
    </folder>
