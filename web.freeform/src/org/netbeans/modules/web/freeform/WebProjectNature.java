@@ -25,6 +25,7 @@ import org.netbeans.modules.ant.freeform.spi.ProjectNature;
 import org.netbeans.modules.ant.freeform.spi.ProjectPropertiesPanel;
 import org.netbeans.modules.ant.freeform.spi.TargetDescriptor;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
+import org.netbeans.modules.web.freeform.ui.WebClasspathPanel;
 import org.netbeans.modules.web.freeform.ui.WebLocationsPanel;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -71,6 +72,7 @@ public class WebProjectNature implements ProjectNature {
         }
         ProjectPropertiesPanel web = new WebLocationsPanel.Panel(project, projectHelper, projectEvaluator, aux);
         l.add(web);
+        l.add(new WebClasspathPanel.Panel(project, projectHelper, projectEvaluator, aux));
         return l;
     }
     

@@ -46,6 +46,7 @@ public class WebLocationsPanel extends javax.swing.JPanel implements HelpCtx.Pro
     private AntProjectHelper projectHelper;
     
     private String srcFolder;
+    private String classpath;
     
     /** Creates new form WebLocations */
     public WebLocationsPanel() {
@@ -65,9 +66,9 @@ public class WebLocationsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         if (l != null) {
             WebProjectGenerator.WebModule wm = (WebProjectGenerator.WebModule)l.get(0);
             String docroot = getLocationDisplayName(projectEvaluator, baseFolder, wm.docRoot);
-            String classpath = getLocationDisplayName(projectEvaluator, baseFolder, wm.classpath);
+            classpath = wm.classpath;
             jTextFieldWeb.setText(docroot);
-            srcFolder = classpath;
+            
             jTextFieldContextPath.setText(wm.contextPath);
 
             if (wm.j2eeSpecLevel.equals("1.4"))
@@ -240,9 +241,8 @@ public class WebLocationsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         else
             wm.j2eeSpecLevel = "1.3";
         
-        wm.classpath = getRelativeLocation(getSrcPackagesLocation());
+        wm.classpath = classpath;
         l.add (wm);
-        
         return l;
     }
 
@@ -324,7 +324,7 @@ public class WebLocationsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         private AntProjectHelper projectHelper;
         private PropertyEvaluator projectEvaluator;
         private AuxiliaryConfiguration aux;
-        private WebLocationsPanel panel;
+        private WebLocationsPanel panel =  null;
         
         public Panel(Project project, AntProjectHelper projectHelper, PropertyEvaluator projectEvaluator, AuxiliaryConfiguration aux) {
             this.project = project;
@@ -353,7 +353,7 @@ public class WebLocationsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         }
 
         public int getPreferredPosition() {
-            return 50; // before Java sources panel
+            return 150; // after Java sources panel, befvore Java Sources Classpath panel
         }
     }
     

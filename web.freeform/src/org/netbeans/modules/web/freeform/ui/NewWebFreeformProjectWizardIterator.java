@@ -20,6 +20,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -30,6 +31,8 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.ant.freeform.spi.support.NewFreeformProjectSupport;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.modules.java.freeform.spi.support.NewJavaFreeformProjectSupport;
+import org.netbeans.modules.java.freeform.ui.NewJ2SEFreeformProjectWizardIterator;
+import org.netbeans.modules.java.freeform.ui.ProjectModel;
 import org.netbeans.modules.web.freeform.WebProjectGenerator;
 import org.netbeans.modules.web.freeform.WebProjectNature;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -48,6 +51,8 @@ public class NewWebFreeformProjectWizardIterator implements WizardDescriptor.Ins
     public static final String PROP_WEB_WEBMODULES = "webModules"; // <List> NOI18N
     public static final String PROP_WEB_SOURCE_FOLDERS = "webSourceFolders"; // <List> NOI18N
     
+    protected static final String PROP_WEB_CLASSPATH = "webClasspath"; // <String> NOI18N
+    
     private static final long serialVersionUID = 1L;
     
     private transient int index;
@@ -65,6 +70,7 @@ public class NewWebFreeformProjectWizardIterator implements WizardDescriptor.Ins
         l.add(NewFreeformProjectSupport.createTargetMappingWizardPanel(extraTargets));
         l.add(new WebLocationsWizardPanel());
         l.addAll(Arrays.asList(NewJavaFreeformProjectSupport.createJavaPanels()));
+        l.add(new WebClasspathWizardPanel());
         return (WizardDescriptor.Panel[])l.toArray(new WizardDescriptor.Panel[l.size()]);
     }
     
@@ -77,13 +83,21 @@ public class NewWebFreeformProjectWizardIterator implements WizardDescriptor.Ins
                     AntProjectHelper helper = NewFreeformProjectSupport.instantiateBasicProjectInfoWizardPanel(wiz);
                     NewFreeformProjectSupport.instantiateTargetMappingWizardPanel(helper, wiz);
                     NewJavaFreeformProjectSupport.instantiateJavaPanels(helper, wiz);
-
+                    
                     List webSources = (List)wiz.getProperty(PROP_WEB_SOURCE_FOLDERS);
                     AuxiliaryConfiguration aux = Util.getAuxiliaryConfiguration(helper);
                     WebProjectGenerator.putWebSourceFolder(helper, webSources);
         
                     List webModules = (List) wiz.getProperty(PROP_WEB_WEBMODULES);
                     if (webModules != null) {
+                        // Save the web classpath for the web module
+                        String webClasspath = (String)wiz.getProperty(NewWebFreeformProjectWizardIterator.PROP_WEB_CLASSPATH);
+                        Iterator iter = webModules.iterator();
+                        WebProjectGenerator.WebModule wm;
+                        while(iter.hasNext()){
+                            wm = (WebProjectGenerator.WebModule)iter.next();
+                            wm.classpath = webClasspath;
+                        }
                         WebProjectGenerator.putWebModules (helper, aux, webModules);
                     }
                     

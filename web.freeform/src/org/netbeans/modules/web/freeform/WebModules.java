@@ -124,7 +124,7 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
             String contextPath = contextPathText == null ? null : evaluator.evaluate (contextPathText);
             Element classpathEl = Util.findElement (webModulesEl, "classpath", WebProjectNature.NS_WEB);
             ClassPath cp = classpathEl == null ? null : createClasspath (classpathEl);
-            FileObject [] sources = getSources (classpathEl);
+            FileObject [] sources = getSources ();
             modules.add (new FFWebModule (docRootFO, j2eeSpec, contextPath, sources, cp));
         }
     }
@@ -140,45 +140,12 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
         return null;
     }
 
-    private FileObject [] getSources (Element classpathEl) {
-        String cp = Util.findText(classpathEl);
-        if (cp == null) {
-            cp = "";
-        }
-        String cpEval = evaluator.evaluate(cp);
-        if (cpEval == null) {
-            return null;
-        }
-        String[] path = PropertyUtils.tokenizePath(cpEval);
-        Set srcRootSet = new HashSet ();
-        for (int i = 0; i < path.length; i++) {
-            File entryFile = helper.resolveFile(path[i]);
-            URL entry;
-            try {
-                entry = entryFile.toURI().toURL();
-                if (!entryFile.exists () && !entry.toExternalForm ().endsWith ("/")) {
-                        entry = new URL (entry.toExternalForm () + "/");
-                }
-            } catch (MalformedURLException x) {
-                throw new AssertionError(x);
-            }
-            if (FileUtil.isArchiveFile(entry)) {
-                entry = FileUtil.getArchiveRoot(entry);
-            }
-            SourceForBinaryQuery.Result res = SourceForBinaryQuery.findSourceRoots (entry);
-            FileObject srcForBin [] = res.getRoots ();
-            for (int j = 0; j < srcForBin.length; j++) {
-                srcRootSet.add (srcForBin [j]);
-            }
-        }
+    private FileObject [] getSources () {
         SourceGroup sg [] = ProjectUtils.getSources (project).getSourceGroups (JavaProjectConstants.SOURCES_TYPE_JAVA);
-        Set filteredSources = new HashSet ();
-        for (int i = 0; i < sg.length; i++) {
-            if (srcRootSet.contains (sg [i].getRootFolder ())) {
-                filteredSources.add (sg [i].getRootFolder ());
-            }
-        }
-        return (FileObject []) filteredSources.toArray (new FileObject [filteredSources.size ()]);
+        FileObject[] sources = new FileObject[sg.length];
+        for (int i = 0; i < sg.length; i++)
+            sources[i] = sg [i].getRootFolder ();
+        return sources;
     }
     
     /**
@@ -239,7 +206,7 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
         FFWebModule (FileObject docRootFO, String j2eeSpec, String contextPath, FileObject sourcesFOs[], ClassPath classPath) {
             this.docRootFO = docRootFO;
             this.j2eeSpec = j2eeSpec;
-            this.contextPath = contextPath;
+            this.contextPath = (contextPath == null ? "" : contextPath);
             this.sourcesFOs = sourcesFOs;
             this.classPath = classPath;
         }
