@@ -879,6 +879,9 @@ public final class AntProjectHelper {
      * @return a file object it represents, or null if there is no such file object in known filesystems
      */
     public FileObject resolveFileObject(String filename) {
+        if (filename == null) {
+            throw new NullPointerException("Must pass a non-null filename"); // NOI18N
+        }
         return PropertyUtils.resolveFileObject(dir, filename);
     }
     
