@@ -54,6 +54,9 @@ public class DocumentationSettings extends ContextSystemOption //implements View
     /** Holds value of property idxSearchSplit. */
     private static int idxSearchSplit = 50;
 
+    /** Holds value of property autocommentSplit. */
+    private static int autocommentSplit = 35;
+    
     // Private attributes for option's children
 
     private static JavadocSettings javadocSettings;
@@ -68,6 +71,7 @@ public class DocumentationSettings extends ContextSystemOption //implements View
 
 
     static final long serialVersionUID =-574331845406968391L;
+    
     /** Constructor for DocumentationSettings adds optipn's children */
     public DocumentationSettings () {
         addOption( javadocSettings );
@@ -192,6 +196,18 @@ public class DocumentationSettings extends ContextSystemOption //implements View
         this.idxSearchSplit = idxSearchSplit;
     }
 
+    /** Getter for property autocommentSplit.
+     * @return Position of the splitter in the autocomment window.
+     */
+    public int getAutocommentSplit() {
+        return autocommentSplit;
+    }
+    /** Setter for property autocommentSplit.
+     * @param autocommentSplit Position of the splitter in the autocomment window.
+     */
+    public void setAutocommentSplit(int autocommentSplit) {
+        this.autocommentSplit = autocommentSplit;
+    }
 }
 
 
