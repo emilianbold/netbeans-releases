@@ -172,7 +172,7 @@
 <mapID target="refactor.moveClass" url="refactor/moveClass.html" />
 <mapID target="refactor.encapsulateField" url="refactor/encapsulateField.html" />
 
-<mapID target="org.netbeans.modules.refactoring.ui.WhereUsedQueryUI" url="refactor/findClass.html" /> <!--Find Usages-->
+<mapID target="org.netbeans.modules.refactoring.ui.WhereUsedQueryUI" url="refactor/findUsages-CSH.html" /> <!--Find Usages-->
 <mapID target="org.netbeans.modules.refactoring.ui.RenameRefactoringUI" url="refactor/renameClass.html" />  <!--Rename-->
 <mapID target="org.netbeans.modules.refactoring.ui.MoveClassesUI" url="refactor/moveClass.html" />  <!--Move Multiple Classes-->
 <mapID target="org.netbeans.modules.refactoring.ui.MoveClassUI" url="refactor/moveClass.html" /> <!--Move Single Class-->
