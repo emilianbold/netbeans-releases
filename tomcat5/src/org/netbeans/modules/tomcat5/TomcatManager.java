@@ -71,7 +71,7 @@ public class TomcatManager implements DeploymentManager {
      */
     public TomcatManager (boolean conn, String uri, String uname, String passwd) {
         if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
-            TomcatFactory.getEM ().log ("Creating connected TomcatManager uri="+uri+", uname="+uname);
+            TomcatFactory.getEM ().log ("Creating connected TomcatManager uri="+uri+", uname="+uname); //NOI18N
         }
         this.connected = conn;
         
@@ -353,4 +353,9 @@ public class TomcatManager implements DeploymentManager {
     public boolean isConnected () {
         return connected;
     }
+    
+    public String toString () {
+        return "Tomcat manager ["+uri+", home "+catalinaHome+", base "+catalinaBase+(connected?"conneceted":"disconnected")+"]";    // NOI18N
+    }
+    
 }
