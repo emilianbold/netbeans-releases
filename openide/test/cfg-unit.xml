@@ -55,7 +55,11 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/openide/actions/*Test.class"/>
                 <include name="org/openide/awt/*Test.class"/>
                 <include name="org/openide/execution/*Test.class"/>
-                <include  name="org/openide/explorer/ExplorerPanelTest.class"/>
+                <include name="org/openide/explorer/*Test.class"/>
+                <!-- testGlobalStateInExplorerActionsIsImportant sometimes fails, have to be investigated -->
+                <exclude name="org/openide/explorer/ExplorerActionsTest.class/testGlobalStateInExplorerActionsIsImportant"/>
+                <!-- following test was excluded because of issue #22629 --> 
+                <exclude name="org/openide/explorer/FindHelpTest.class"/>
                 <!-- filesystems tests should be stable. If not file a bug: -->                
                 <include name="org/openide/filesystems/*.class"/>
                 <exclude  name="org/openide/filesystems/SystemFileSystemTest.class"/>                                         
@@ -200,5 +204,4 @@ Microsystems, Inc. All Rights Reserved.
     <compiler name="unit-compiler" antfile="build.xml" target="unit-compiler" default="true"/>
 
     <resultsprocessor name="unit" antfile="build.xml" target="test_report" default="true"/>
-    
 </mconfig>
