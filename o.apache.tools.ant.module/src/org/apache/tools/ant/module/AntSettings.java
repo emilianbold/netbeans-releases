@@ -27,6 +27,7 @@ public class AntSettings extends SystemOption {
 
     public static final String PROP_VERBOSITY = "verbosity";
     public static final String PROP_PROPERTIES = "properties";
+    public static final String PROP_SAVE_ALL = "saveAll";
 
     private static final long serialVersionUID = -4457782585534082966L;
     
@@ -36,6 +37,7 @@ public class AntSettings extends SystemOption {
         // Enable hyperlinking for Jikes:
         p.setProperty ("build.compiler.emacs", "true"); // NOI18N
         setProperties (p);
+        setSaveAll (true);
     }
 
     public String displayName () {
@@ -43,7 +45,7 @@ public class AntSettings extends SystemOption {
     }
 
     public HelpCtx getHelpCtx () {
-        return HelpCtx.DEFAULT_HELP;
+        return new HelpCtx ("org.apache.tools.ant.module.settings");
     }
 
     public static AntSettings getDefault () {
@@ -64,6 +66,14 @@ public class AntSettings extends SystemOption {
 
     public void setProperties (Properties p) {
         putProperty (PROP_PROPERTIES, p, true);
+    }
+    
+    public boolean getSaveAll () {
+        return ((Boolean) getProperty (PROP_SAVE_ALL)).booleanValue ();
+    }
+    
+    public void setSaveAll (boolean sa) {
+        putProperty (PROP_SAVE_ALL, new Boolean (sa), true);
     }
 
 }
