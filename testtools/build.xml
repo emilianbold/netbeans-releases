@@ -27,6 +27,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="init" depends="default.init">
       <patternset id="testtools.files">
         <!-- All files created for NBM -->
+        <include name="${nb.system.dir}/Modules/org-netbeans-modules-testtools.xml"/>
         <include name="${nb.modules.dir}/org-netbeans-modules-testtools.jar"/>
         <include name="${nb.modules/docs.dir}/testtools.jar"/>
       </patternset>
@@ -83,16 +84,16 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="netbeans" depends="jars,javahelp">
-    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/org-netbeans-modules-testtools.jar">
-      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-        <patternset refID="testtools.files"/>
-      </fileset>
-    </genlist>
     <createmodulexml xmldir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/Modules">
       <enabled dir="${netbeans.dest.dir}/${cluster.dir}">
         <include name="${nb.modules.dir}/org-netbeans-modules-testtools.jar"/>
       </enabled>
     </createmodulexml>
+    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/org-netbeans-modules-testtools.jar">
+      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+        <patternset refID="testtools.files"/>
+      </fileset>
+    </genlist>
   </target>
 
   <target name="nbm" depends="netbeans">

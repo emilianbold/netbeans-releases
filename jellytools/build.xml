@@ -23,6 +23,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="init" depends="default.init">
       <patternset id="jellytools.files">
         <!-- All files created for NBM -->
+        <include name="${nb.system.dir}/Modules/org-netbeans-modules-jellytools.xml"/>
         <include name="${nb.modules.dir}/org-netbeans-modules-jellytools.jar"/>
         <include name="${nb.system.dir}/ParserDB/Jelly*"/>
         <include name="${nb.docs.dir}/jelly2-nb-javadoc.zip"/>
@@ -146,16 +147,16 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
   <target name="netbeans" depends="release">
-    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/org-netbeans-modules-jellytools.jar">
-      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-        <patternset refID="jellytools.files"/>
-      </fileset>
-    </genlist>
     <createmodulexml xmldir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/Modules">
       <enabled dir="${netbeans.dest.dir}/${cluster.dir}">
         <include name="${nb.modules.dir}/org-netbeans-modules-jellytools.jar"/>
       </enabled>
     </createmodulexml>
+    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/org-netbeans-modules-jellytools.jar">
+      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+        <patternset refID="jellytools.files"/>
+      </fileset>
+    </genlist>
   </target>
 
   <target name="parser-db">
