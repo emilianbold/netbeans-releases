@@ -69,7 +69,7 @@ public class ScrollPopupMenu extends JPopupMenu {
             getSelectionModel().clearSelection();
             if (popWin != null) {
                 firePopupMenuWillBecomeInvisible();
-                popWin.hide();
+                popWin.dispose();
                 popWin = null;
                 scrollPane = null;
             }
