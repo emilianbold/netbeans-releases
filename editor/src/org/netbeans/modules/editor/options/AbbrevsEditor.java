@@ -78,7 +78,7 @@ public class AbbrevsEditor extends PropertyEditorSupport {
      */
     protected void customEditorChange() {
         // forward it to parent, which will fire propertyChange
-        super.setValue( editorPanel.getValue() );
+        super.setValue( new HashMap( editorPanel.getValue() ) );
     }
 
     /**
