@@ -344,7 +344,7 @@ public final class LoaderPoolNode extends AbstractNode {
   
   /** Notification that the state of pool has changed
   */
-  private static void update () {
+  private static synchronized void update () {
     // clear the cache of loaders
     loadersArray = null;
     
@@ -477,9 +477,15 @@ public final class LoaderPoolNode extends AbstractNode {
   private static final class LoaderChildren extends Children.Keys {
     /** Update the the nodes */
     public void update () {
-      setKeys (loaders);
+      List _loaders;
+      // Note: this method is called asynch from the update thread,
+      // thus it needs to explicitly resynch here:
+      synchronized (LoaderPoolNode.class) {
+        _loaders = new ArrayList (loaders);
+      }
+      setKeys (_loaders);
       
-      Iterator it = loaders.iterator ();
+      Iterator it = _loaders.iterator ();
       while (it.hasNext ()) {
         DataLoader l = (DataLoader)it.next ();
         
@@ -512,6 +518,8 @@ public final class LoaderPoolNode extends AbstractNode {
   */
   public static final class NbLoaderPool extends DataLoaderPool 
   implements PropertyChangeListener {
+    private static final long serialVersionUID = -3052191556633981161L;
+    
     /** Enumerates all loaders. Loaders are taken from children
     * structure of LoaderPoolNode. */
     protected Enumeration loaders () {
@@ -548,7 +556,7 @@ public final class LoaderPoolNode extends AbstractNode {
    */
     void superFireChangeEvent (ChangeEvent che) {
       super.fireChangeEvent(che);
-//      System.out.println ("Loaders Change event fired....");
+      //System.out.println ("Loaders Change event fired....");
     }
     
     
@@ -594,23 +602,24 @@ public final class LoaderPoolNode extends AbstractNode {
     * @param perm the permutation
     */
     public void reorder (int[] perm) {
-      Object[] arr = loaders.toArray ();
+      synchronized (LoaderPoolNode.class) {
+        Object[] arr = loaders.toArray ();
 
-      if (arr.length == perm.length) {
-        Object[] target = new Object[arr.length];
-        for (int i = 0; i < arr.length; i++) {
-          if (target[perm[i]] != null) {
-            throw new IllegalArgumentException ();
+        if (arr.length == perm.length) {
+          Object[] target = new Object[arr.length];
+          for (int i = 0; i < arr.length; i++) {
+            if (target[perm[i]] != null) {
+              throw new IllegalArgumentException ();
+            }
+            target[perm[i]] = arr[i];
           }
-          target[perm[i]] = arr[i];
-        }
-        
-        loaders = new ArrayList (Arrays.asList (target));
-        update ();
-      } else {
-        throw new IllegalArgumentException ();
-      }
 
+          loaders = new ArrayList (Arrays.asList (target));
+          update ();
+        } else {
+          throw new IllegalArgumentException ();
+        }
+      }
     }
     
   } // End of Index
@@ -619,6 +628,8 @@ public final class LoaderPoolNode extends AbstractNode {
 
 /*
 * Log
+*  30   Gandalf   1.29        11/26/99 Jesse Glick     Fixed a 
+*       ConcurrentModificationException, and also added a proper svuid.
 *  29   Gandalf   1.28        11/25/99 Jesse Glick     Rewrite of 
 *       LoaderPoolNode, specifically the management of loader ordering. Now 
 *       permits multiple -before and -after dependencies, and should be more 
