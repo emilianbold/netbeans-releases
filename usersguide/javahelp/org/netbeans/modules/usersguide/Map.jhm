@@ -378,7 +378,6 @@
 <mapID target="debug.running.debugger" url="debug/sessions/start_first.html" />
 <mapID target="debug.attach" url="debug/sessions/attach.html" />
 <mapID target="debug.sessions.start" url="debug/sessions/start_additional.html" />
-<mapID target="debug.sessions.persistent" url="debug/sessions/session_properties.html" />
 <mapID target="debug.sessions.finishsession" url="debug/sessions/finishsession.html" />
 <mapID target="debug.sessions.64bit" url="debug/sessions/64bit_jvm_debug.html" />
 
@@ -401,7 +400,6 @@
 <mapID target="debug.add.breakpoint" url="debug/breakpoint/breakpoint_window.html" />
 
 <mapID target="debug.running.jump" url="debug/running/running_jump.html" />
-<mapID target="debug.running.first" url="debug/running/running_first.html" />
 <mapID target="debug.running.cursor" url="debug/running/running_cursor.html" />
 <mapID target="debug.running.resume" url="debug/running/running_resume.html" />
 <mapID target="debug.running.pause" url="debug/running/pause.html" />
@@ -421,6 +419,8 @@
 <mapID target="debug.callstack.method" url="debug/callstack/callstack_methods.html" />
 <mapID target="debug.callstack.callingmethod" url="debug/callstack/calling_method.html" />
 <mapID target="debug.callstack.source" url="debug/callstack/callstack_source.html" />
+
+<mapID target="debug.fix" url="debug/fix/fix.html" />
 
 <mapID target="debug.threads.jump" url="debug/threads/threads_jump.html" />
 <mapID target="debug.threads.suspend" url="debug/threads/suspend.html" />
