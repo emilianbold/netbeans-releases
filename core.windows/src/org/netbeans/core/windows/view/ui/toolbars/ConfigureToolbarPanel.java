@@ -29,6 +29,10 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.text.DefaultEditorKit;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import org.openide.actions.ToolsAction;
+import org.openide.util.actions.SystemAction;
 
 
 /**
@@ -147,12 +151,44 @@ public class ConfigureToolbarPanel extends JPanel implements ExplorerManager.Pro
                 Node nd = (Node)key;
                 DataFolder folder = (DataFolder)nd.getCookie(DataFolder.class);
                 // if it's not a folder, ignore..
-                retValue = folder == null ? new Node[0] : super.createNodes(key);
+                retValue = folder == null ? new Node[0] : new Node[] { new CategoryNode(nd) };
             } else {
                 retValue = super.createNodes(key);
             }
             return retValue;
         }
+        
+    }
+    
+    private static class CategoryNode extends FilterNode {
+        public CategoryNode(Node original) {
+            super(original);
+        }
+// filter out the Tools popup item.. no meaning here.
+        public SystemAction[] getActions() {
+            SystemAction[] retValue;
+            retValue = super.getActions();
+            boolean hasTools = false;
+            ArrayList lst = new ArrayList(retValue.length + 5);
+            for (int i = 0; i < retValue.length; i++) {
+                if (retValue[i] != null && retValue[i] instanceof ToolsAction) {
+                    hasTools = true;
+                } else {
+                    lst.add(retValue[i]);
+                }
+            }
+            if (hasTools) {
+                retValue = new SystemAction[retValue.length - 1];
+                Iterator it = lst.iterator();
+                int index = 0;
+                while (it.hasNext()) {
+                    retValue[index] = (SystemAction)it.next();
+                    index = index + 1;
+                }
+            }
+            return retValue;
+        }
+        
         
     }
     
