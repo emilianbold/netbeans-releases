@@ -926,7 +926,7 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
                 return getEventProperties();
             }
         };
-        ps.setValue("tabName", bundle.getString("CTL_EventsTab")); // NOI18N
+//        ps.setValue("tabName", bundle.getString("CTL_EventsTab")); // NOI18N
         propSets.add(ps);
 
         ps = new Node.PropertySet(
@@ -938,7 +938,7 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
                 return getSyntheticProperties();
             }
         };
-        ps.setValue("tabName", bundle.getString("CTL_SyntheticTab_Short")); // NOI18N
+//        ps.setValue("tabName", bundle.getString("CTL_SyntheticTab_Short")); // NOI18N
         propSets.add(ps);
     }
 
