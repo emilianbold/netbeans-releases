@@ -428,7 +428,7 @@ public class MakeNBM extends MatchingTask {
                     PrintWriter ps = new PrintWriter(new OutputStreamWriter(infoStream, "UTF-8"));
 		    // Begin writing XML.
                     ps.println ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-                    ps.println("<!DOCTYPE module PUBLIC \"-//NetBeans//DTD Autoupdate Module Info 1.0//EN\" \"http://www.netbeans.org/dtds/autoupdate-info-1_0.dtd\">");
+                    ps.println("<!DOCTYPE module PUBLIC \"-//NetBeans//DTD Autoupdate Module Info 2.0//EN\" \"http://www.netbeans.org/dtds/autoupdate-info-2_0.dtd\">");
 		    String codenamebase = attr.getValue ("OpenIDE-Module");
 		    if (codenamebase == null)
 			throw new BuildException ("invalid manifest, does not contain OpenIDE-Module", location);
@@ -468,8 +468,8 @@ public class MakeNBM extends MatchingTask {
                     it = attrNames.iterator();
                     while (it.hasNext()) {
                         String name = (String)it.next();
-                        // Ignore irrelevant attributes (cf. www/www/dtds/autoupdate-catalog-1_0.dtd
-                        //  and www/www/dtds/autoupdate-info-1_0.dtd):
+                        // Ignore irrelevant attributes (cf. www/www/dtds/autoupdate-catalog-2_0.dtd
+                        //  and www/www/dtds/autoupdate-info-2_0.dtd):
                         if (! name.startsWith("OpenIDE-Module")) continue;
                         if (name.equals("OpenIDE-Module-Localizing-Bundle")) continue;
                         if (name.equals("OpenIDE-Module-Install")) continue;
