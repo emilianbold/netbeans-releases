@@ -1037,6 +1037,7 @@
    <mapID target="org.openide.src.nodes.ClassNode" url="java/nodes/class.html" /> 
    <mapID target="org.netbeans.modules.java.JavaDataObject" url="java/nodes/source.html" /> 
    <mapID target="org.netbeans.modules.form.FormDataObject" url="java/nodes/form.html" /> 
+   <mapID target="org.netbeans.modules.form.FormObjectProperties" url="java/nodes/form_props.html" /> 
    <mapID target="org.netbeans.modules.clazz.SerDataObject" url="java/nodes/prototype.html" /> 
    <mapID target="org.netbeans.modules.clazz.ClassDataObject" url="java/nodes/class.html" />
    <mapID target="org.openide.src.nodes.InterfaceNode" url="java/nodes/interface.html" /> 
