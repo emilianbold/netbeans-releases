@@ -20,9 +20,15 @@ import org.netbeans.jellytools.Bundle;
  */
 public class SaveAllAction extends Action {
 
+    /** "File|Save All" */
+    private static final String saveAllMenu = Bundle.getStringTrimmed(
+                                                "org.netbeans.core.Bundle", "Menu/File")
+                                            + "|"
+                                            + Bundle.getStringTrimmed(
+                                                "org.openide.actions.Bundle", "SaveAll");
+
     /** Creates new SaveAllAction instance. */    
     public SaveAllAction() {
-        super(Bundle.getString("org.openide.actions.Bundle", "SaveAll"), null,
-              "org.openide.actions.SaveAllAction");
+        super(saveAllMenu, null, "org.openide.actions.SaveAllAction");
     }
 }
