@@ -38,6 +38,7 @@ import org.netbeans.modules.javadoc.comments.AutoCommentAction;
 import org.netbeans.modules.javadoc.search.SearchDocAction;
 import org.netbeans.modules.javadoc.search.DocFileSystem;
 
+
 /** Class for initializing Javadoc module on IDE startup.
 
  @author Petr Hrebejk
@@ -178,8 +179,10 @@ public class JavadocModule extends ModuleInstall {
         */
 
         // Create default directory for JavaDoc
-        StdDocletSettings sdsTemp = (StdDocletSettings) SharedClassObject.findObject (StdDocletSettings.class, true);
-
+        //StdDocletSettings sdsTemp = (StdDocletSettings) SharedClassObject.findObject (StdDocletSettings.class, true);
+        StdDocletSettings sdsTemp = (StdDocletSettings)TopManager.getDefault ().getServices ().find (StdDocletSettings.class);
+        if( sdsTemp == null ) 
+            sdsTemp = new StdDocletSettings(); 
         // Reseting javadoc output directory is necessary for
         // multiuser installation
         String fileSep = System.getProperty ("file.separator");

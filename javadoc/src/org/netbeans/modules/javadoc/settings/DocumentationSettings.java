@@ -16,7 +16,9 @@ package org.netbeans.modules.javadoc.settings;
 import java.io.File;
 import java.lang.reflect.Modifier;
 
-import org.openide.options.ContextSystemOption;
+//import org.openide.options.ContextSystemOption;
+//import org.openide.options.SystemOption;
+import org.openide.util.SharedClassObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -27,15 +29,22 @@ import org.netbeans.modules.javadoc.comments.AutoCommenter;
 * @author Petr Hrebejk
 * @version 0.1, Apr 15, 1999
 */
-public class DocumentationSettings extends ContextSystemOption //implements ViewerConstants
+public class DocumentationSettings extends SharedClassObject //ContextSystemOption //implements ViewerConstants
 {
-
+    private static final String PROP_SEARCH_PATH         = "searchPatch";
+    private static final String PROP_SEARCH_SORT         = "idxSearchSort";
+    private static final String PROP_SEARCH_NO_HTML      = "idxSearchNoHtml";
+    private static final String PROP_SEARCH_SPLIT        = "idxSearchSplit";    
+    private static final String PROP_AUTOCOMENT_SPLIT    = "autocommentSplit";
+    private static final String PROP_AUTOCOMENT_MOD_MASK = "autocommentModifierMask";
+    private static final String PROP_AUTOCOMENT_PACKAGE  = "autocommentPackage";
+    private static final String PROP_AUTOCOMENT_ERR_MASK = "autocommentErrorMask";
+    
+    
     /** autocoment window settings */
-    private static int autocommentModifierMask =
-        Modifier.PROTECTED | Modifier.PUBLIC;
-    private static boolean autocommentPackage = false;
-    private static int autocommentErrorMask =
-        AutoCommenter.JDC_OK | AutoCommenter.JDC_ERROR | AutoCommenter.JDC_MISSING;
+    //private static int autocommentModifierMask = Modifier.PROTECTED | Modifier.PUBLIC;
+    //private static boolean autocommentPackage = false;
+    //private static int autocommentErrorMask =  AutoCommenter.JDC_OK | AutoCommenter.JDC_ERROR | AutoCommenter.JDC_MISSING;
 
     /** idexsearch windows settings */
 
@@ -43,39 +52,33 @@ public class DocumentationSettings extends ContextSystemOption //implements View
     private static boolean externalJavadoc = false;
 
     /** searchpath */
-    private static String[] searchPath = new String[] {"c:/Jdk1.2/doc" }; // NOI18N
+    //private static String[] searchPath = new String[] {"c:/Jdk1.2/doc" }; // NOI18N
 
     /** Holds value of property idxSearchSort. */
-    private static String idxSearchSort = "A"; // NOI18N
+    //private static String idxSearchSort = "A"; // NOI18N
 
     /** Holds value of property idxSearchNoHtml. */
-    private static boolean idxSearchNoHtml = false;
+    //private static boolean idxSearchNoHtml = false;
 
     /** Holds value of property idxSearchSplit. */
-    private static int idxSearchSplit = 50;
+    //private static int idxSearchSplit = 50;
 
     /** Holds value of property autocommentSplit. */
-    private static int autocommentSplit = 35;
+    //private static int autocommentSplit = 35;
     
-    // Private attributes for option's children
-
-    private static JavadocSettings javadocSettings;
-    private static StdDocletSettings stdDocletSettings;
-
-
-    static {
-        // Create option's children
-        javadocSettings  = new JavadocSettings ();
-        stdDocletSettings =  new StdDocletSettings ();
-    }
-
-
     static final long serialVersionUID =-574331845406968391L;
     
-    /** Constructor for DocumentationSettings adds optipn's children */
+    /** Constructor for DocumentationSettings */
     public DocumentationSettings () {
-        addOption( javadocSettings );
-        addOption( stdDocletSettings );
+        setSearchPath(new String[] {"c:/Jdk1.2/doc" });
+        setIdxSearchSort("A");
+        setIdxSearchNoHtml(false);
+        setIdxSearchSplit(50);
+        setAutocommentSplit(35);
+        setAutocommentModifierMask(Modifier.PROTECTED | Modifier.PUBLIC);
+        setAutocommentPackage(false);
+        setAutocommentErrorMask(AutoCommenter.JDC_OK | AutoCommenter.JDC_ERROR | AutoCommenter.JDC_MISSING);
+        
     }
 
 
@@ -90,123 +93,135 @@ public class DocumentationSettings extends ContextSystemOption //implements View
 
     /** getter for type of generation
     */
-
+/*
     public boolean isExternalJavadoc () {
         return externalJavadoc;
     }
-
+*/
     /** setter for viewer */
-
+/*
     public void setExternalJavadoc(boolean b) {
         externalJavadoc = b;
-        /*
-        if (v.equals(INTERNAL_BROWSER) || v.equals(APPLETVIEWER) || v.equals(EXTERNAL))
-          viewer = v;
-        */
     }
-
+*/
     /** Getter for documentation search path
     */  
     public String[] getSearchPath() {
-        return searchPath;
+        return (String[])getProperty( PROP_SEARCH_PATH );
+        //return searchPath;
     }
 
     /** Setter for documentation search path
     */  
     public void setSearchPath(String[] s) {
-        searchPath = s;
+        putProperty( PROP_SEARCH_PATH, s, true );
+        //searchPath = s;
     }
 
     /** Getter for autocommentModifierMask
     */  
     public int getAutocommentModifierMask() {
-        return autocommentModifierMask;
+        return ((Integer)getProperty( PROP_AUTOCOMENT_MOD_MASK )).intValue();
+        //return autocommentModifierMask;
     }
 
     /** Setter for autocommentModifierMask
     */  
     public void setAutocommentModifierMask(int mask) {
-        autocommentModifierMask = mask;
+        putProperty( PROP_AUTOCOMENT_MOD_MASK, new Integer(mask), true );
+        //autocommentModifierMask = mask;
     }
 
     /** Getter for autocommentPackage
     */  
     public boolean  getAutocommentPackage() {
-        return autocommentPackage;
+        return ((Boolean)getProperty( PROP_AUTOCOMENT_PACKAGE )).booleanValue();
+        //return autocommentPackage;
     }
 
     /** Setter for autocommentPackage
     */  
     public void setAutocommentPackage(boolean pckg) {
-        autocommentPackage = pckg;
+        putProperty( PROP_AUTOCOMENT_PACKAGE, new Boolean(pckg), true );
+        //autocommentPackage = pckg;
     }
 
 
     /** Getter for autocommentErrorMask
     */  
     public int getAutocommentErrorMask() {
-        return autocommentErrorMask;
+        return ((Integer)getProperty( PROP_AUTOCOMENT_ERR_MASK )).intValue();
+        //return autocommentErrorMask;
     }
 
     /** Setter for documentation autocommentErrorMask
     */  
     public void setAutocommentErrorMask(int mask) {
-        autocommentErrorMask = mask;
+        putProperty( PROP_AUTOCOMENT_ERR_MASK, new Integer(mask), true );
+        //autocommentErrorMask = mask;
     }
 
     /** Getter for property idxSearchSort.
      *@return Value of property idxSearchSort.
      */
     public String getIdxSearchSort() {
-        return idxSearchSort;
+        return (String)getProperty( PROP_SEARCH_SORT );        
+        //return idxSearchSort;
     }
 
     /** Setter for property idxSearchSort.
      *@param idxSearchSort New value of property idxSearchSort.
      */
     public void setIdxSearchSort(String idxSearchSort) {
-        this.idxSearchSort = idxSearchSort;
+        putProperty( PROP_SEARCH_SORT , idxSearchSort, true );
+        //this.idxSearchSort = idxSearchSort;
     }
 
     /** Getter for property idxSearchNoHtml.
      *@return Value of property idxSearchNoHtml.
      */
     public boolean isIdxSearchNoHtml() {
-        return idxSearchNoHtml;
+        return ((Boolean)getProperty( PROP_SEARCH_NO_HTML )).booleanValue();
+        //return idxSearchNoHtml;
     }
 
     /** Setter for property idxSearchNoHtml.
      *@param idxSearchNoHtml New value of property idxSearchNoHtml.
      */
     public void setIdxSearchNoHtml(boolean idxSearchNoHtml) {
-        this.idxSearchNoHtml = idxSearchNoHtml;
+        putProperty( PROP_SEARCH_NO_HTML, new Boolean(idxSearchNoHtml), true );
+        //this.idxSearchNoHtml = idxSearchNoHtml;
     }
 
     /** Getter for property idxSearchSplit.
      *@return Value of property idxSearchSplit.
      */
     public int getIdxSearchSplit() {
-        return idxSearchSplit;
+        return ((Integer)getProperty( PROP_SEARCH_SPLIT )).intValue();        
+        //return idxSearchSplit;
     }
 
     /** Setter for property idxSearchSplit.
      *@param idxSearchSplit New value of property idxSearchSplit.
      */
     public void setIdxSearchSplit(int idxSearchSplit) {
-        this.idxSearchSplit = idxSearchSplit;
+        putProperty( PROP_SEARCH_SPLIT , new Integer(idxSearchSplit), true );
+        //this.idxSearchSplit = idxSearchSplit;
     }
 
     /** Getter for property autocommentSplit.
      * @return Position of the splitter in the autocomment window.
      */
     public int getAutocommentSplit() {
-        return autocommentSplit;
+        return ((Integer)getProperty( PROP_AUTOCOMENT_SPLIT )).intValue();
+        //return autocommentSplit;
     }
     /** Setter for property autocommentSplit.
      * @param autocommentSplit Position of the splitter in the autocomment window.
      */
     public void setAutocommentSplit(int autocommentSplit) {
-        this.autocommentSplit = autocommentSplit;
+        putProperty( PROP_AUTOCOMENT_SPLIT , new Integer(autocommentSplit), true );
+        //this.autocommentSplit = autocommentSplit;
     }
 }
 

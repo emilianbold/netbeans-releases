@@ -2,12 +2,9 @@ OpenIDE-Module: org.netbeans.modules.javadoc/1
 OpenIDE-Module-Name: Javadoc
 OpenIDE-Module-Install: org/netbeans/modules/javadoc/JavadocModule.class
 OpenIDE-Module-Layer: org/netbeans/modules/javadoc/resources/mf-layer.xml
-OpenIDE-Module-Module-Dependencies: org.netbeans.modules.java/1
+OpenIDE-Module-Module-Dependencies: org.netbeans.modules.java/1, org.openidex.util/1 > 1.0
 OpenIDE-Module-Specification-Version: 1.5
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
-
-Name: org/netbeans/modules/javadoc/settings/DocumentationSettings.class
-OpenIDE-Module-Class: Option
 
 Name: org/netbeans/modules/javadoc/GenerateDocAction.class
 OpenIDE-Module-Class: Action
@@ -24,3 +21,12 @@ Type: Roots
 
 Name: org/netbeans/modules/javadoc/search/ShowDocAction.class
 OpenIDE-Module-Class: Action
+
+Name: org/netbeans/modules/javadoc/settings/ExternalJavadocSettings.class
+OpenIDE-Module-Class: Service
+
+Name: org/netbeans/modules/javadoc/settings/JavadocSettings.class
+OpenIDE-Module-Class: Service
+
+Name: org/netbeans/modules/javadoc/settings/StdDocletSettings.class
+OpenIDE-Module-Class: Service
