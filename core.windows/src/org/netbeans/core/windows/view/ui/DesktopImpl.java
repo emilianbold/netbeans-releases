@@ -60,6 +60,8 @@ public final class DesktopImpl {
     
     /** slide bars. Lazy initialization, because slide bars are optional. */
     private Set slidingViews;
+    /** slide in operation in progress or null if no component is currently slided in */
+    private SlideOperation curSlideIn;
 
     /** Minimal thick of slided component when system is trying to align
      * slided component with editor area */
@@ -206,13 +208,15 @@ public final class DesktopImpl {
         operation.setStartBounds(computeButtonBounds(operation, editorBounds));
         operation.setFinishBounds(computeSlideInBounds(operation, editorBounds));
         performSlide(operation);
+        curSlideIn = operation;
     }
     
     public void performSlideOut(SlideOperation operation, Rectangle editorBounds) {
         SlidingView view = findView(operation.getSide());
         operation.setStartBounds(computeSlideInBounds(operation, editorBounds));
         operation.setFinishBounds(computeButtonBounds(operation, editorBounds));
-        
+
+        curSlideIn = null;
         performSlide(operation);
 //        layeredPane.moveToFront(desktop);
         desktop.revalidate();
@@ -333,14 +337,34 @@ public final class DesktopImpl {
     
     
     /** Special layout manager for layered pane, just keeps desktop panel
-     * coreving whole layered pane. Overlapping components are set in
-     * SlideOperation.run() call.
+     * coreving whole layered pane and if sliding is in progress, it keeps
+     * slided component along right edge.
      */
     private final class LayeredLayout implements LayoutManager {
         
         public void layoutContainer(Container parent) {
             Dimension size = parent.getSize();
             desktop.setBounds(0, 0, size.width, size.height);
+            // keep right bounds of slide in progress 
+            if (curSlideIn != null) {
+                String side = curSlideIn.getSide();
+                Component slidedComp = curSlideIn.getComponent();
+                Rectangle result = slidedComp.getBounds();
+                Rectangle viewRect = findView(side).getComponent().getBounds();
+                Rectangle splitRootRect = viewComponent.getBounds();
+                
+                if (Constants.LEFT.equals(side)) {
+                    result.height = size.height;
+                } else if (Constants.RIGHT.equals(side)) {
+                    result.x = size.width - viewRect.width - result.width;
+                    result.height = size.height;
+                } else if (Constants.BOTTOM.equals(side)) {
+                    result.y = size.height - viewRect.height - result.height;
+                    result.width = size.width;
+                }
+                
+                slidedComp.setBounds(result);
+            }
         }
         
         public Dimension minimumLayoutSize(Container parent) {
@@ -352,11 +376,11 @@ public final class DesktopImpl {
         }
         
         public void addLayoutComponent(String name, Component comp) {
-            // no op
+            // no op, slided components are added/removed via SlideOperation.run() calls.
         }
         
         public void removeLayoutComponent(Component comp) {
-            // no op
+            // no op, slided components are added/removed via SlideOperation.run() calls.
         }
         
     } // end of LayeredLayout
