@@ -23,10 +23,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileInputStream;
+import java.io.ObjectOutputStream;
+import java.io.ObjectInputStream;
 
 import junit.framework.Test;
 import junit.framework.TestResult;
 
+import org.netbeans.performance.bde.LoadDefinition;
+import org.netbeans.performance.bde.StoreDefinition;
 import org.netbeans.performance.bde.TestSpecBuilder;
 import org.netbeans.performance.bde.TestDefinition;
 import org.netbeans.performance.bde.ArgumentSeries;
@@ -41,11 +48,34 @@ public final class BenchmarkSuite implements Test {
     
     private ArrayList benchmarks;
     private TestsSpecifications testSpecs;
+    private LoadDefinition ldef;
+    private StoreDefinition sdef;
+    private List dataManagers;
+    private Map class2DD;
     
     /** New Benchmark suite */
     public BenchmarkSuite(String testSpecs) {
-        this.benchmarks = new ArrayList(20);
-        this.testSpecs = new TestsSpecifications(testSpecs);
+        this.benchmarks = new ArrayList(10);
+        this.testSpecs = new TestsSpecifications();
+        this.dataManagers = new ArrayList(10);
+        this.class2DD = new HashMap();
+        
+        try {
+            List list = TestSpecBuilder.parse(testSpecs);
+            for (Iterator iter = list.iterator(); iter.hasNext(); ) {
+                Object obj = iter.next();
+                if (obj instanceof LoadDefinition) {
+                    ldef = (LoadDefinition) obj;
+                } else if (obj instanceof StoreDefinition) {
+                    sdef = (StoreDefinition) obj;
+                } else {
+                    TestDefinition testDef = (TestDefinition) obj;
+                    this.testSpecs.add(testDef);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /** New Benchmark suite */
@@ -71,12 +101,63 @@ public final class BenchmarkSuite implements Test {
     
     /** Run this suite */
     public void run(TestResult result) {
+        loadData(result);
+        
         for (Iterator iter = benchmarks.iterator(); iter.hasNext(); ) {
             ((Test) iter.next()).run(result);
         }
+        
+        storeData(result);
+        tearDownData(result);
     }
     
     //----------------- impl methods -------------------
+    
+    /** Loads serialized data */
+    private void loadData(TestResult result) {
+        if (ldef == null) {
+            return;
+        }
+        
+        try {
+            File store = ldef.getFile();
+            ObjectInputStream obtis = new ObjectInputStream(new FileInputStream(store));
+            class2DD = (Map) obtis.readObject();
+            obtis.close();
+        } catch (Exception e) {
+            result.addError(this, e);
+        }
+    }
+    
+    /** Stores data */
+    private void storeData(TestResult result) {
+        if (sdef == null) {
+            return;
+        }
+        
+        try {
+            File store = sdef.getFile();
+            ObjectOutputStream obtos = new ObjectOutputStream(new FileOutputStream(store));
+            obtos.writeObject(class2DD);
+            obtos.close();
+        } catch (Exception e) {
+            result.addError(this, e);
+        }
+    }
+    
+    /** Calls tearDownData on all registered DataManagers */
+    private void tearDownData(TestResult result) {    
+        // tear down data managers
+        for (Iterator it = dataManagers.iterator(); it.hasNext(); ) {
+            DataManager dm = (DataManager) it.next();
+            try {
+                dm.tearDownData();
+            } catch (Exception e) {
+                result.addError((Test) dm, e);
+            }
+        }
+    }
+    
     /** Creates tests for given Class */
     private Collection createTestsForClass(Class klass) throws Exception {
         ArrayList list = new ArrayList(50);
@@ -87,6 +168,7 @@ public final class BenchmarkSuite implements Test {
             String method = methods[i].getName();
             if (isTestMethod(methods[i]) && testSpecs.implies(klass, method)) {
                 Benchmark test = (Benchmark) constructor.newInstance(new Object[] { method });
+                test.setSuite(this);
                 testSpecs.setArguments(test);
                 list.add(test);
             }
@@ -101,25 +183,53 @@ public final class BenchmarkSuite implements Test {
         return  Modifier.isPublic(mod) && (m.getReturnType() == Void.TYPE) &&
                 (m.getParameterTypes().length == 0) && m.getName().startsWith("test");
     }
-
+    
+    final void setUpDataFor(Benchmark bmark) throws Exception {
+        // register
+        dataManagers.add(bmark);
+        DataDescriptor dd = getDataFor(bmark);
+        DataManager dm = (DataManager) bmark;
+        dm.setUpData(dd);
+    }
+    
+    /** @return a DataDescriptor for a given Benchmark */
+    private DataDescriptor getDataFor(Benchmark bmark) {
+        DataManager dm = (DataManager) bmark;
+        final DataDescriptor dd = dm.createDataDescriptor();
+        String key = bmark.getClass().getName();
+        dd.set(key, bmark.getName(), bmark.getArgument());
+        List ddList = (List) class2DD.get(key);
+        if (ddList != null) {
+            for (Iterator it = ddList.iterator(); it.hasNext(); ) {
+                Object next = it.next();
+                if (dd.equals(next)) {
+                    return (DataDescriptor) next;
+                }
+            }
+            ddList.add(dd);
+            return dd;
+        }
+        
+        ddList = new ArrayList();
+        ddList.add(dd);
+        class2DD.put(key, ddList);
+        return dd;
+    }
+    
     /** Filters tests to run */
     static final class TestsSpecifications {
         
         private Map testsSpecifications;
         
         /** New TestsSpecifications */
-        public TestsSpecifications(String spec) {
+        public TestsSpecifications() {
             testsSpecifications = new HashMap();
-            try {
-                List list = TestSpecBuilder.parse(spec);
-                for (Iterator iter = list.iterator(); iter.hasNext(); ) {
-                    TestDefinition testDef = (TestDefinition) iter.next();
-                    Class klass = Class.forName(testDef.getClassName());
-                    testsSpecifications.put(klass, new TestSpecification(testDef));
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        }
+        
+        /** Adds new TestDefinition to this list */
+        public void add(TestDefinition testDef) throws Exception {
+            Class klass = Class.forName(testDef.getClassName());
+            testsSpecifications.put(klass, new TestSpecification(testDef));
         }
         
         /** Whether given class should be included */

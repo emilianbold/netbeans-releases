@@ -41,8 +41,21 @@ public class MapArgBenchmark extends Benchmark {
         return new HashMap();
     }
     
-    /** Sets argument of this MapArgBenchmark to mab */
-    protected final void passArgumentTo(MapArgBenchmark mab) {
-        mab.setArgument(getArgument());
+    /** Sets argument of mab to this MapArgBenchmark */
+    public final void setParent(MapArgBenchmark mab) {
+        setArgument(mab.getArgument());
+    }
+    
+    /** @return an int value bound to key */
+    protected final int getIntValue(String key) {
+        Map param = (Map) getArgument();
+        if (param == null) {
+            return 0;
+        }
+        Integer i = (Integer) param.get(key);
+        if (i == null) {
+            return 0;
+        }
+        return i.intValue();
     }
 }

@@ -37,6 +37,9 @@ public class Benchmark extends Assert implements Test {
     
     private Object[] arguments;
     
+    /** ptr to BenchmarkSuite for DataManagers */
+    private BenchmarkSuite bsuite;
+    
     /** Creates new Benchmark without arguments for given test method
      * @param name the name fo the testing method
      */    
@@ -167,6 +170,9 @@ public class Benchmark extends Assert implements Test {
     
     private void doOneArgument( Method testMethod, Object argument ) throws Exception {
             setArgument( argument );
+            
+            checkSetUpData();
+            
             // class loading and so on...
             realRun = false;
             doOneMeasurement( testMethod, 1 );
@@ -223,6 +229,16 @@ public class Benchmark extends Assert implements Test {
                 ", min=" + format(1000000f*realMin) + 
                 ", avg=" + format(1000000f*avgTime) +
                 ", max=" + format(1000000f*realMax) );
+    }
+    
+    private void checkSetUpData() throws Exception {
+        if (this instanceof DataManager) {
+            bsuite.setUpDataFor(this);
+        }
+    }
+    
+    final void setSuite(BenchmarkSuite bs) {
+        this.bsuite = bs;
     }
     
     /** Formats a */
@@ -285,5 +301,9 @@ public class Benchmark extends Assert implements Test {
             Thread.sleep( 300 );
         } catch( InterruptedException exc ) {}
     }
-
+ 
+    /** Setter for BenchmarkSuite */
+    final void setBenchmarkSuite(BenchmarkSuite bs) {
+        this.bsuite = bs;
+    }
 }
