@@ -1293,6 +1293,8 @@
    
    <!--Mount CVS Wizard; Versioning | Mount CVS; on all wizard panes-->
    <mapID target="org.netbeans.modules.vcscore.wizard.mountcvs.WDPanel" url="vcs-nb/cvs-nb/cvs_wizard.html" />
+   <mapID target="org.netbeans.modules.vcscore.wizard.mountcvs.LoginPanel" url="vcs-nb/cvs-nb/cvs_wizard.html" />
+   <mapID target="org.netbeans.modules.vcscore.wizard.mountcvs.CheckoutPanel" url="vcs-nb/cvs-nb/cvs_wizard.html" />
    <!--csh for VCS Generic mount wizard-->
    <mapID target="org.netbeans.modules.vcs.advanced.wizard.mount.ProfilePanel" url="vcs-nb/vcsgeneric/vcsgeneric_wizard.html" />
    <mapID target="org.netbeans.modules.vcs.advanced.wizard.mount.AdvancedPanel" url="vcs-nb/vcsgeneric/vcsgeneric_wizard.html" />
