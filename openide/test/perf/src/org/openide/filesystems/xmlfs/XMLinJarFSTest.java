@@ -36,7 +36,7 @@ public class XMLinJarFSTest extends XMLFSTest {
     protected FileObject[] setUpFileObjects(int foCount) throws Exception {
         tmp = createTempFolder();
         destFolder = LocalFSTest.createFiles(foCount, 0, tmp);
-        File xmlbase = generateXMLFile(destFolder, foCount, 0, LocalFSTest.RES_EXT);
+        File xmlbase = generateXMLFile(destFolder, new ResourceComposer(LocalFSTest.RES_NAME, LocalFSTest.RES_EXT, foCount, 0));
         File jar = Utilities.createJar(tmp, "jarxmlfs.jar");
         URLClassLoader cloader = new URLClassLoader(new URL[] { jar.toURL() });
         URL res = cloader.findResource(PACKAGE + xmlbase.getName());

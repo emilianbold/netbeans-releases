@@ -20,6 +20,7 @@ import org.openide.*;
 import org.openide.filesystems.*;
 import org.openide.filesystems.localfs.LocalFSTest;
 import org.openide.filesystems.xmlfs.XMLFSTest;
+import org.openide.filesystems.xmlfs.XMLFSTest.ResourceComposer;
 
 /**
  * Base class for simulation of module layers.
@@ -29,6 +30,7 @@ public class MultiXMLFSTest extends FSTest {
     private FSWrapper[] filesystems;
     private static final int MAGIC = 50;
     private static final String RES_EXT = ".instance";
+    private static final String RES_NAME = LocalFSTest.PACKAGE.replace('/', '-').concat(LocalFSTest.RES_NAME);
     
     /** Creates new XMLFSGenerator */
     public MultiXMLFSTest(String name) {
@@ -42,7 +44,7 @@ public class MultiXMLFSTest extends FSTest {
         filesystems = new FSWrapper[MAGIC];
         int last = filesystems.length;
         for (int i = 1; i < last; i++) {
-            filesystems[i] = createXMLFSinJar(foChunk, i * foChunk, RES_EXT);
+            filesystems[i] = createXMLFSinJar(foChunk, i * foChunk);
         }
         filesystems[0] = createLocalFS(foChunk + delta, 0);
         FileSystem[] fss = new FileSystem[last];
@@ -56,6 +58,11 @@ public class MultiXMLFSTest extends FSTest {
         //return null;
     }
     
+    /** Empty */
+    protected void postSetUp() {
+    }
+    
+    /** Free resources */
     protected void tearDownFileObjects(FileObject[] fos) throws Exception {
         for (int i = 0; i < filesystems.length; i++) {
             delete(filesystems[i].getFile());
@@ -72,10 +79,10 @@ public class MultiXMLFSTest extends FSTest {
         return new FSWrapper(localFS, mnt);
     }
     
-    private static FSWrapper createXMLFSinJar(int foCount, int foBase, String resExt) throws Exception {
+    private static FSWrapper createXMLFSinJar(int foCount, int foBase) throws Exception {
         File tmp = createTempFolder();
         File destFolder = LocalFSTest.createFiles(foCount, foBase, tmp);
-        File xmlbase = XMLFSTest.generateXMLFile(destFolder, foCount, 0, resExt);
+        File xmlbase = XMLFSTest.generateXMLFile(destFolder, new ResourceComposer(RES_NAME, RES_EXT, foCount, foBase));
         File jar = Utilities.createJar(tmp, "jarxmlfs.jar");
         URLClassLoader cloader = new URLClassLoader(new URL[] { jar.toURL() });
         URL res = cloader.findResource(LocalFSTest.PACKAGE + xmlbase.getName());

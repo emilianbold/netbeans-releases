@@ -49,7 +49,7 @@ public class XMLFSTest extends ReadOnlyFSTest {
     protected FileObject[] setUpFileObjects(int foCount) throws Exception {
         tmp = createTempFolder();
         destFolder = LocalFSTest.createFiles(foCount, 0, tmp);
-        File xmlbase = generateXMLFile(destFolder, foCount, 0, LocalFSTest.RES_EXT);
+        File xmlbase = generateXMLFile(destFolder, new ResourceComposer(LocalFSTest.RES_NAME, LocalFSTest.RES_EXT, foCount, 0));
         xmlfs = new XMLFileSystem();
         xmlfs.setXmlUrl(xmlbase.toURL(), false);
         
@@ -66,16 +66,15 @@ public class XMLFSTest extends ReadOnlyFSTest {
     
     /** Generates an XML file that describes a filesystem structure.
      * @param folder - where to place the file
-     * @param fileno - how many files should be in that filesystem
-     * @param base
+     * @param composer a factory that assemblies resource strings
      */
-    public static final File generateXMLFile(File folder, int fileNo, int base, String resExt) throws Exception {
-        String name = MF_NAME + '-' + String.valueOf(base);
+    public static final File generateXMLFile(File folder, ResourceComposer composer) throws Exception {
+        String name = MF_NAME + '-' + String.valueOf(composer.getFileBase());
         File dest = new File(folder, name.concat(".xml"));
         
         OutputStream os = new FileOutputStream(dest);
         Writer writer = new OutputStreamWriter(os);
-        writer.write(generate(fileNo, base, resExt));
+        writer.write(generate(composer));
         writer.close();
         os.close();
         
@@ -83,54 +82,46 @@ public class XMLFSTest extends ReadOnlyFSTest {
     }
     
     /** Generates an XML file that describes a filesystem structure.
-     * @param fileno - how many files should be in that filesystem
-     * @param base
      * @return a String that is an xml document describing a filesystem
      */
-    public static String generate(int fileNo, int base, String resExt) throws Exception {
+    public static String generate(ResourceComposer composer) throws Exception {
         StringBuffer buffer = new StringBuffer(50000);
         buffer.append(HEADER).append('\n');
         buffer.append("<filesystem>").append('\n');
-        generateFolder(buffer, fileNo, base, resExt);
+        generateFolder(buffer, composer);
         buffer.append("</filesystem>").append('\n');
         
         return buffer.toString();
     }
     
     /** Generates an XML description of a folder inside a filesystem structure.
-     * @param fileno - how many files should be in that filesystem
      * @param buffer - where to place the description
-     * @param base
      */
-    private static final void generateFolder(StringBuffer buffer, int fileNo, int base, String resExt) throws Exception {
+    private static final void generateFolder(StringBuffer buffer, ResourceComposer composer) throws Exception {
         buffer.append(FOLDER_START);
-        generateFiles(buffer, fileNo, base, resExt);
+        generateFiles(buffer, composer);
         buffer.append(FOLDER_END);
     }
 
     /** Generates an XML description of files inside a folder structure.
-     * @param fileno - how many files should be in that filesystem
      * @param buffer - where to place the description
-     * @param base
      */
-    private static final void generateFiles(StringBuffer buffer, final int fileNo, final int base, String resExt) throws Exception {
-        int paddingSize = Utilities.expPaddingSize(fileNo);
+    private static final void generateFiles(StringBuffer buffer, ResourceComposer composer) throws Exception {
+        int base = composer.getFileBase();
+        int fileNo = composer.getFileCount();
         for (int i = 0; i < fileNo; i++) {
-            generateOneFile(buffer, paddingSize, base + i, resExt);
+            composer.setFileBase(base + i);
+            generateOneFile(buffer, composer);
         }
     }
     
     /** Generates an XML description of a file inside a folder structure.
      * @param buffer - where to place the description
-     * @param paddingSize - number of digits used for this file, i.e.
-     * base is 793 and paddingSize is 5 so the generated file name ends with 00793.
-     * @param base
      */
-    private static void generateOneFile(StringBuffer buffer, int paddingSize, int fileBase, String resExt) throws Exception {
+    private static void generateOneFile(StringBuffer buffer, ResourceComposer composer) throws Exception {
         buffer.append('\n');
-        String fname = generateOneFileString(paddingSize, fileBase, resExt);
-        addFileHeader(buffer, fname);
-        generateAttributes(buffer, paddingSize);
+        addFileHeader(buffer, composer);
+        generateAttributes(buffer, composer.getPaddingSize());
         addFileEnd(buffer);
     }
     
@@ -178,10 +169,13 @@ public class XMLFSTest extends ReadOnlyFSTest {
     /** Generates file start inside a folder description.
      * @param buffer - where to place the description
      */
-    private static void addFileHeader(StringBuffer buffer, String fname) {
+    private static void addFileHeader(StringBuffer buffer, ResourceComposer composer) {
         addIndent(buffer, FOLDER_INDENT + 1);
-        buffer.append("<file name=\"").append(fname).append("\" url=\"").append(fname).append("\">");
-        buffer.append('\n');
+        buffer.append("<file name=\"");
+        composer.assemblyResourceString(buffer);
+        buffer.append("\" url=\"");
+        composer.assemblyResourceString(buffer);
+        buffer.append("\">").append('\n');
     }
     
     /** Adds indent
@@ -193,13 +187,52 @@ public class XMLFSTest extends ReadOnlyFSTest {
         }
     }
     
-    /** Generates string that describes one file via XML */
-    private static String generateOneFileString(int paddingSize, int base, String resExt) {
-        StringBuffer sbuffer = new StringBuffer(20);
-        sbuffer.append(LocalFSTest.RES_NAME);
-        Utilities.appendNDigits(base, paddingSize, sbuffer);
-        sbuffer.append(resExt);
-        return sbuffer.toString();
+    /** Assemblies resource string */
+    public static final class ResourceComposer {
+        private final int paddingSize;
+        private int fileBase;
+        private final int foCount;
+        private String resName;
+        private String resExt;
+        
+        /** new ResourceComposer */
+        public ResourceComposer(String resName, String resExt, int foCount, int fileBase) {
+            this.foCount = foCount;
+            this.paddingSize = Utilities.expPaddingSize(foCount + fileBase);
+            this.fileBase = fileBase;
+            this.resName = resName;
+            this.resExt = resExt;
+        }
+        
+        /** getter for paddingSize */
+        protected final int getPaddingSize() {
+            return paddingSize;
+        }
+        
+        /** getter for fileBase */
+        protected final int getFileBase() {
+            return fileBase;
+        }
+        
+        /** setter for fileBase */
+        protected final void setFileBase(int newBase) {
+            fileBase = newBase;
+        }
+        
+        /** getter for file count */
+        protected final int getFileCount() {
+            return foCount;
+        }
+        
+        /** Assembly fileBase (e.g. 13) with name (e.g. JavaSrc) and ext (e.g. .java) into sbuffer.
+         * Do not forget to take into account paddingSize.
+         * Result could be e.g. JavaSrc0675.java, with paddingSize 4 and fileBase 675.
+         */
+        public void assemblyResourceString(StringBuffer sbuffer) {
+            sbuffer.append(resName);
+            Utilities.appendNDigits(getFileBase(), getPaddingSize(), sbuffer);
+            sbuffer.append(resExt);
+        }
     }
 
     /*

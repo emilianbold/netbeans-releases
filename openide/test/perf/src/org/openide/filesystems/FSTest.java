@@ -34,6 +34,21 @@ public abstract class FSTest extends ReadOnlyFSTest {
         super(name);
     }
     
+        
+    /** inherited; sets up env */
+    protected void setUp() throws Exception {
+        super.setUp();
+        postSetup();
+    }
+    
+    /** Hook for operations right after the setup */
+    protected void postSetup() throws Exception {
+        // setup some attributes
+        if (getName().startsWith("testGetAttributes")) {
+            testSetOneAttributeSeq();
+        }
+    }    
+    
     //--------------------------------------------------------------------------
     //------------------------- attributes section -----------------------------
     
