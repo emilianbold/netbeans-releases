@@ -38,6 +38,7 @@ class AddToPaletteWizard extends WizardDescriptor {
     private File[] selectedFiles;
     private BeanInstaller.ItemInfo[] selectedBeans;
     private String selectedCategory;
+    private String sourceType;
 
     Map libraryNameMap; // map from root file (JAR) names to libraries they belong to
                         // created by ChooseLibraryWizardPanel.storeSettings
@@ -64,6 +65,7 @@ class AddToPaletteWizard extends WizardDescriptor {
 
     public boolean show(String sourceType) {
         String firstStep_key;
+        this.sourceType = sourceType;
         if (ClassSource.JAR_SOURCE.equals(sourceType))
             firstStep_key = "CTL_SelectJAR_Step"; // NOI18N
         else if (ClassSource.LIBRARY_SOURCE.equals(sourceType))
@@ -123,6 +125,10 @@ class AddToPaletteWizard extends WizardDescriptor {
 
     String getSelectedCategory() {
         return selectedCategory;
+    }
+    
+    String getSourceType() {
+        return sourceType;
     }
 
     // -------

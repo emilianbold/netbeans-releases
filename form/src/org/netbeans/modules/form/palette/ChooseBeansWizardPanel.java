@@ -24,6 +24,8 @@ import java.awt.event.*;
 
 import org.openide.WizardDescriptor;
 
+import org.netbeans.modules.form.project.ClassSource;
+
 /**
  * The second panel in the wizard for adding new components to the palette.
  * Lets the user choose components from a list of all available components
@@ -39,8 +41,10 @@ class ChooseBeansWizardPanel implements WizardDescriptor.Panel {
 
     private java.util.List markedBeans; // beans marked in JAR manifest
     private java.util.List allBeans; // all bean classes under given roots
+    private String sourceType;
 
     private BeanSelector beanSelector;
+    private JLabel noBeansLabel;
 
     private EventListenerList listenerList;
 
@@ -48,20 +52,40 @@ class ChooseBeansWizardPanel implements WizardDescriptor.Panel {
     // WizardDescriptor.Panel implementation
 
     public Component getComponent() {
-        if (beanSelector == null) { // create the UI component for the wizard step
-            beanSelector = new BeanSelector();
-
-            // wizard API: set the caption and index of this panel
-            beanSelector.setName(PaletteUtils.getBundleString("CTL_SelectBeans_Caption")); // NOI18N
-            beanSelector.putClientProperty("WizardPanel_contentSelectedIndex", // NOI18N
-                                           new Integer(1));
-            if (markedBeans != null || allBeans != null)
-                beanSelector.setBeans(markedBeans, allBeans);
-
-            Listener listener = new Listener();
-            beanSelector.list.addListSelectionListener(listener);
-            beanSelector.radio1.addActionListener(listener);
-            beanSelector.radio2.addActionListener(listener);
+        if ((markedBeans == null) && ((allBeans == null) || (allBeans.size() == 0))) {
+            // No beans found
+            String messageKey;
+            if (ClassSource.JAR_SOURCE.equals(sourceType))
+                messageKey = "MSG_NoBeanInJAR"; // NOI18N
+            else if (ClassSource.LIBRARY_SOURCE.equals(sourceType))
+                messageKey = "MSG_NoBeanInLibrary"; // NOI18N
+            else if (ClassSource.PROJECT_SOURCE.equals(sourceType))
+                messageKey = "MSG_NoBeanInProject"; // NOI18N
+            else
+                throw new IllegalArgumentException();
+            noBeansLabel = new JLabel(PaletteUtils.getBundleString(messageKey));
+            noBeansLabel.setPreferredSize(new Dimension(400, 300));
+            noBeansLabel.setVerticalAlignment(SwingConstants.TOP);
+            noBeansLabel.setName(PaletteUtils.getBundleString("CTL_NoBeans_Caption")); // NOI18N
+            noBeansLabel.putClientProperty("WizardPanel_contentSelectedIndex", // NOI18N
+                new Integer(1));
+            return noBeansLabel;
+        } else {
+            if (beanSelector == null) { // create the UI component for the wizard step
+                beanSelector = new BeanSelector();
+                
+                // wizard API: set the caption and index of this panel
+                beanSelector.setName(PaletteUtils.getBundleString("CTL_SelectBeans_Caption")); // NOI18N
+                beanSelector.putClientProperty("WizardPanel_contentSelectedIndex", // NOI18N
+                new Integer(1));
+                if (markedBeans != null || allBeans != null)
+                    beanSelector.setBeans(markedBeans, allBeans);
+                
+                Listener listener = new Listener();
+                beanSelector.list.addListSelectionListener(listener);
+                beanSelector.radio1.addActionListener(listener);
+                beanSelector.radio2.addActionListener(listener);
+            }
         }
 
         return beanSelector;
@@ -78,6 +102,7 @@ class ChooseBeansWizardPanel implements WizardDescriptor.Panel {
 
     public void readSettings(Object settings) {
         AddToPaletteWizard wizard = (AddToPaletteWizard) settings;
+        sourceType = wizard.getSourceType();
         File[] jarFiles = wizard.getJARFiles();
 
         if (currentFiles != null && currentFiles.length == jarFiles.length)

@@ -17,6 +17,7 @@ import java.lang.ref.WeakReference;
 import java.util.jar.*;
 import java.util.*;
 import java.io.*;
+import java.text.MessageFormat;
 
 import org.openide.*;
 import org.openide.nodes.Node;
@@ -55,7 +56,8 @@ public final class BeanInstaller {
     /** Installs beans represented by given nodes (selected by the user). Lets
      * the user choose the palette category. */
     public static void installBeans(Node[] nodes) {
-        final Map beanMap = new HashMap();
+        final List beans = new LinkedList();
+        List unableToInstall = new LinkedList();
         for (int i=0; i < nodes.length; i++) {
             SourceCookie source = (SourceCookie)
                                       nodes[i].getCookie(SourceCookie.class);
@@ -68,13 +70,35 @@ public final class BeanInstaller {
                 if (cls[j].getName().getName().equals(dobj.getName())
                     && cls[j].isDeclaredAsJavaBean())
                 {
-                    beanMap.put(cls[j].getName().getFullName(),
-                                dobj.getPrimaryFile());
+                    String classname = cls[j].getName().getFullName();
+                    FileObject fo = dobj.getPrimaryFile();
+                    ClassSource classSource =
+                        ClassPathUtils.getProjectClassSource(fo, classname);
+                    if (classSource == null) {
+                        // Issue 47947
+                        unableToInstall.add(classname);
+                    } else {
+                        beans.add(classSource);
+                    }
                     break;
                 }
         }
+        
+        if (unableToInstall.size() > 0) {
+            Iterator iter = unableToInstall.iterator();
+            StringBuffer sb = new StringBuffer();
+            while (iter.hasNext()) {
+                sb.append(iter.next()+", "); // NOI18N
+            }
+            sb.delete(sb.length()-2, sb.length());
+            String messageFormat = PaletteUtils.getBundleString("MSG_cannotInstallBeans"); // NOI18N
+            String message = MessageFormat.format(messageFormat, new Object[] {sb.toString()});
+            NotifyDescriptor nd = new NotifyDescriptor.Message(message);
+            DialogDisplayer.getDefault().notify(nd);
+            if (beans.size() == 0) return;
+        }
 
-        if (beanMap.size() == 0) {
+        if (beans.size() == 0) {
             NotifyDescriptor nd = new NotifyDescriptor.Message(PaletteUtils.getBundleString("MSG_noBeansUnderNodes")); // NOI18N
             DialogDisplayer.getDefault().notify(nd);
             return;
@@ -90,21 +114,15 @@ public final class BeanInstaller {
             Repository.getDefault().getDefaultFileSystem().runAtomicAction(
             new FileSystem.AtomicAction () {
                 public void run() {
-                    Iterator it = beanMap.keySet().iterator();
+                    Iterator it = beans.iterator();
                     while (it.hasNext()) {
-                        String classname = (String) it.next();
-                        FileObject fo = (FileObject) beanMap.get(classname);
-                        ClassSource classSource =
-                            ClassPathUtils.getProjectClassSource(fo, classname);
-                        if (classSource != null) {
-                            try {
-                                PaletteItemDataObject.createFile(categoryFolder,
-                                                                 classSource);
-                                // TODO check the class if it can be loaded?
-                            }
-                            catch (java.io.IOException ex) {
-                                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                            }
+                        ClassSource classSource = (ClassSource)it.next();
+                        try {
+                            PaletteItemDataObject.createFile(categoryFolder, classSource);
+                            // TODO check the class if it can be loaded?
+                        }
+                        catch (java.io.IOException ex) {
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                         }
                     }
                 }
