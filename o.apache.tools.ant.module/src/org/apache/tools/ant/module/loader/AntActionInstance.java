@@ -113,12 +113,28 @@ public class AntActionInstance implements
         if (Action.NAME.equals (key)) {
             Element el = proj.getProjectElement ();
             if (el != null) {
-                return el.getAttribute ("name"); // NOI18N
+                String pname = el.getAttribute ("name"); // NOI18N
+                // Trim ampersands (and use them as mnemonics).
+                int idx = pname.indexOf ('&'); // NOI18N
+                if (idx == -1) {
+                    return pname;
+                } else {
+                    return pname.substring (0, idx) + pname.substring (idx + 1);
+                }
             }
         } else if (Action.SMALL_ICON.equals (key)) {
             return new ImageIcon (NbBundle.getLocalizedFile
                 ("org.apache.tools.ant.module.resources.AntIcon", "gif", // NOI18N
                  Locale.getDefault (), AntActionInstance.class.getClassLoader ()));
+        } else if (Action.MNEMONIC_KEY.equals (key)) {
+            Element el = proj.getProjectElement ();
+            if (el != null) {
+                String pname = el.getAttribute ("name"); // NOI18N
+                int idx = pname.indexOf ('&'); // NOI18N
+                if (idx != -1 && idx + 1 < pname.length ()) {
+                    return new Integer (pname.charAt (idx + 1));
+                }
+            }
         }
         return null;
     }
@@ -162,10 +178,12 @@ public class AntActionInstance implements
         }
         PropertyChangeEvent ev1 = new PropertyChangeEvent (this, Action.NAME, null, getValue (Action.NAME));
         PropertyChangeEvent ev2 = new PropertyChangeEvent (this, "enabled", null, new Boolean (isEnabled ())); // NOI18N
+        PropertyChangeEvent ev3 = new PropertyChangeEvent (this, Action.MNEMONIC_KEY, null, getValue (Action.MNEMONIC_KEY));
         while (it.hasNext ()) {
             PropertyChangeListener listener = (PropertyChangeListener) it.next ();
             listener.propertyChange (ev1);
             listener.propertyChange (ev2);
+            listener.propertyChange (ev3);
         }
     }
     
