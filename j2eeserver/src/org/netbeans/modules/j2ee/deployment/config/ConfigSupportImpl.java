@@ -43,6 +43,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataFolder;
 import org.openide.util.NbBundle;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 
 /**
  * Each J2eeModuleProvider hold a reference to an instance of this config support.
@@ -480,5 +482,21 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         } catch (Exception e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
+    }
+    
+    public String getDeploymentName() {
+        try {
+            FileObject fo = getProvider().getJ2eeModule().getContentDirectory();
+            if (fo == null) {
+                fo = findPrimaryConfigurationFO();
+            }
+            Project owner = FileOwnerQuery.getOwner(fo);
+            if (owner != null)
+                return owner.getProjectDirectory().getName();
+            
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,  ioe);
+        }
+        return null;
     }
 }

@@ -160,6 +160,13 @@ public abstract class J2eeModuleProvider {
         return ServerRegistry.getInstance ().getDefaultInstance ().getServer ().getShortName ();
     }
     
+    /**
+     * Return name to be used in deployment of the module.
+     */
+    public String getDeploymentName() {
+        return getConfigSupportImpl().getDeploymentName();
+    }
+    
     protected final void fireServerChange (String oldServerID, String newServerID) {
         Server oldServer = ServerRegistry.getInstance ().getServer (oldServerID);
 	Server newServer = ServerRegistry.getInstance ().getServer (newServerID);

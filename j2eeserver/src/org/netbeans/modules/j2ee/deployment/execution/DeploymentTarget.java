@@ -45,4 +45,6 @@ public interface DeploymentTarget {
     public DeploymentConfigurationProvider getDeploymentConfigurationProvider();
     
     public J2eeModuleProvider.ConfigSupport getConfigSupport();
+    
+    public String getDeploymentName();
 }

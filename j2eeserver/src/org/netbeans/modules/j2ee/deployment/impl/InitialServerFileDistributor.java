@@ -61,7 +61,8 @@ public class InitialServerFileDistributor extends ServerProgress {
         DeploymentConfigurationProvider deployment = dtarget.getDeploymentConfigurationProvider();
         J2eeModule source = dtarget.getModule();
         DeployableObject deployable = deployment.getDeployableObject(null);
-        File dir = incDeployment.getDirectoryForNewApplication (target, deployable, deployment.getDeploymentConfiguration ());
+        String name = dtarget.getDeploymentName();
+        File dir = incDeployment.getDirectoryForNewApplication (name, target, deployment.getDeploymentConfiguration ());
         try {
             if (dir == null) {
                 inPlace = true;

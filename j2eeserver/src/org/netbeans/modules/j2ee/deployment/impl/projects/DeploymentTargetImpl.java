@@ -30,6 +30,7 @@ import java.util.*;
 import java.io.*;
 import java.net.URL;
 import org.netbeans.modules.j2ee.deployment.config.*;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /** 
@@ -189,6 +190,10 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
     }
 
     private String getTargetModuleFileName() {
+        String fileName = getDeploymentName();
+        if (fileName != null)
+            return fileName;
+        
         File f = null;
         try {
             if (getModule().getContentDirectory() != null) {
@@ -197,11 +202,16 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
         }
-        if (f == null)
-            f = FileUtil.toFile(moduleProvider.getModuleFolder());
-        String pathName = f.getAbsolutePath();
-        String fileName = TargetModule.shortNameFromPath(pathName);
+        if (f == null) {
+            fileName = getConfigSupportImpl().getDeploymentName();
+        } else {
+            String pathName = f.getAbsolutePath();
+            fileName = TargetModule.shortNameFromPath(pathName);
+        }
         return fileName;
     }
     
+    public String getDeploymentName() {
+        return moduleProvider.getDeploymentName();
+    }
 }
