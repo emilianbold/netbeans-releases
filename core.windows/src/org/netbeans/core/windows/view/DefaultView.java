@@ -602,7 +602,6 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
     public void userResizedMainWindow(Rectangle bounds) {
         if(DEBUG) {
             debugLog("User resized main window"); // NOI18N
-            Debug.dumpStack(DefaultView.class);
         }
 
         // Ignore when main window is maximized.
