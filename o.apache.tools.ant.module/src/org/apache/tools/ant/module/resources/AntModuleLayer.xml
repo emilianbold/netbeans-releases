@@ -51,19 +51,16 @@ Microsystems, Inc. All Rights Reserved.
   </folder>
   <!-- To make the module nicer to debug, list the cookies it provides. -->
   <folder name="Services">
+    <file name="AntSettings.settings" url="AntSettings.settings"/>
+    <folder name="CompilerType">
+      <file name="AntCompiler.settings" url="AntCompiler.settings"/>
+      <file name="IndirectAntCompiler.settings" url="IndirectAntCompiler.settings"/>
+    </folder>
+    <folder name="Executor">
+      <file name="AntExecutor.settings" url="AntExecutor.settings"/>
+    </folder>
     <folder name="Hidden">
-      <file name="org-apache-tools-ant-module-cookies.xml">
-        <![CDATA[<?xml version="1.0"?>
-<!DOCTYPE cookies PUBLIC
-          "-//NetBeans//DTD apisupport cookie class list 1.0//EN"
-          "http://www.netbeans.org/dtds/apisupport-cookie-class-list-1_0.dtd">
-<cookies>
-  <class name="org.apache.tools.ant.module.api.AntProjectCookie"/>
-  <class name="org.apache.tools.ant.module.api.ElementCookie"/>
-  <class name="org.apache.tools.ant.module.api.IntrospectionCookie"/>
-</cookies>
-]]>
-      </file>
+      <file name="org-apache-tools-ant-module-cookies.xml" url="cookies.xml"/>
     </folder>
     <folder name="JavaHelp">
       <attr name="org-netbeans-modules-usersguide-below-regular.txt/org-apache-tools-ant-module-helpset.xml" boolvalue="true"/>
