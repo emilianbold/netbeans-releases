@@ -381,10 +381,10 @@ public final class IntrospectedInfo implements Serializable {
      * will not redefine structure if classes are modified.
      * Also any class definitions contained in the default map (if not this one)
      * are just ignored; you should refer to the default map for info on them.
+     * Throws various errors if the class could not be resolved, e.g. NoClassDefFoundError.
      * @param name name of the task or type as it appears in scripts
      * @param clazz the implementing class
      * @param kind the kind of definition to register (<code>task</code> or <code>type</code> currently)
-     * @throws various errors if the class could not be resolved, e.g. NoClassDefFoundError
      * @since 2.4
      */
     public synchronized void register(String name, Class clazz, String kind) {
