@@ -37,6 +37,7 @@ public final class ClassName implements Comparable, Comparator, Serializable {
     private transient String internalName;
     private transient String externalName;
     private transient String packageName;
+    private transient String simpleName;
     private transient int hash = -1;
 
     private final static WeakHashMap cache = new WeakHashMap();
@@ -192,12 +193,16 @@ public final class ClassName implements Comparable, Comparator, Serializable {
      * @return the classname without any package specification.
      */
     public String getSimpleName() {
-        String pkg = getPackage();
-        int i = pkg.length();
-        if (i == 0)
-            return internalName;  // no package
-        else
-            return internalName.substring(i + 1);
+	if (simpleName == null) {
+	    String pkg = getPackage();
+	    int i = pkg.length();
+	    String extName = getExternalName();
+	    if (i == 0)
+		simpleName = extName;  // no package
+	    else
+		simpleName = extName.substring(i + 1);
+	}
+	return simpleName;
     }
 
     public boolean equals(Object obj) {
