@@ -33,7 +33,6 @@ import org.openide.actions.*;
 import org.openide.actions.PropertiesAction;
 import org.openide.filesystems.*;
 import org.openide.filesystems.FileSystem;
-import org.openide.options.ControlPanel;
 import org.openide.windows.*;
 import org.openide.explorer.*;
 import org.openide.explorer.view.BeanTreeView;
