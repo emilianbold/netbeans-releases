@@ -216,6 +216,17 @@ public class NbSummaryPanel extends TextDisplayPanel
         String summaryMessage = "$L(org.netbeans.installer.Bundle,PreviewPanel.previewPostUninstallMessage," 
         + "$L(org.netbeans.installer.Bundle,Product.displayName))";
         
+        summaryMessage += "<br><br>"
+        + resolveString("$L(org.netbeans.installer.Bundle, SummaryPanel.descriptionPostUninstall,"
+        + "$L(org.netbeans.installer.Bundle, Product.userDir))");
+        if (Util.isWindowsOS()) {
+            summaryMessage += " "
+            + resolveString("$L(org.netbeans.installer.Bundle, SummaryPanel.descriptionPostUninstallWindows)");
+        } else {
+            summaryMessage += " "
+            + resolveString("$L(org.netbeans.installer.Bundle, SummaryPanel.descriptionPostUninstallUnix)");
+        }
+        
         return summaryMessage;
     }
     
