@@ -49,7 +49,7 @@ import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.TopManager;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor; // TEMP
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListener;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.CloneableTopComponent;
@@ -331,7 +331,7 @@ implements EditCookie, PrintCookie, Serializable {
         String name = myEntry.getDataObject().getPrimaryFile().getName()+"("+Util.getLocaleLabel(myEntry)+")"; // NOI18N        
         
         return NbBundle.getMessage (
-            CloneableEditorSupport.class,
+            PropertiesEditorSupport.class,
             "MSG_SaveFile", // NOI18N
             name
         );
