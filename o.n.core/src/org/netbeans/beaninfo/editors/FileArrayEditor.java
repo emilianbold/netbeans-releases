@@ -169,7 +169,7 @@ public class FileArrayEditor extends PropertyEditorSupport implements ExProperty
             return new StringCustomEditor(getAsText(), false);
         }
         if (chooser == null) {
-            chooser = new JFileChooser();
+            chooser = FileEditor.createHackedFileChooser();
             chooser.setMultiSelectionEnabled(true);
         
             Object vv = getValue ();

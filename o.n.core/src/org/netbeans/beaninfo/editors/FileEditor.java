@@ -13,13 +13,21 @@
 
 package org.netbeans.beaninfo.editors;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
 import java.io.File;
 import java.io.FilenameFilter;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.KeyStroke;
 
 import org.openide.ErrorManager;
 import org.openide.TopManager;
@@ -189,7 +197,7 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
             return new StringCustomEditor(info, false);
         }
         if (chooser == null) {
-            chooser = new JFileChooser();
+            chooser = createHackedFileChooser();
         
             File originalFile = (File)getValue ();
             if (originalFile != null && ! originalFile.isAbsolute() && baseDirectory != null) {
@@ -338,7 +346,69 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
         
         lastCurrentDir = chooser.getCurrentDirectory();
     }
-    
+
+    // XXX #18270. Enter doesn't work when expecting folder change,
+    // Accessibility problem. We hack default behaviour here.
+    /** Creates hacked fileChooser, responding on Enter the way it
+     * performs folder change. */
+    static JFileChooser createHackedFileChooser() {
+        final JFileChooser chooser = new JFileChooser();
+
+        // Only jdk1.3 there is not the action in action map, i.e. also no 
+        // key binding. When running on jdk1.4 only remove this part
+        // dealing with setting the key binding.
+        InputMap im = chooser.getInputMap(
+            JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+
+        if(im != null) {
+            KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+
+            Object value = im.get(enter);
+            if(value == null) {
+                im.put(enter, "approveSelection"); // NOI18N
+            }
+        }
+
+        // Add(jdk1.3) or replace(jdk1.4) to parent (UI) map the new action
+        // doing the folder change.
+        ActionMap map = chooser.getActionMap();
+        if(map != null) {
+            // Get parent map, which is map set by FileChooserUI,
+            // containing the default approveSelection action.
+            ActionMap parent = map.getParent();
+
+            if(parent != null) {
+
+                // Get original action from parent map, set by UI.
+                final Action original = parent.get("approveSelection"); // NOI18N
+
+                // Replace it by our action which adds the folder change,
+                // if selected is a directory.
+                parent.put("approveSelection", new AbstractAction() { // NOI18N
+                    public void actionPerformed(ActionEvent evt) {
+                        File file = chooser.getSelectedFile();
+
+                        if(file != null && file.isDirectory()) {
+                            try {
+                                // Strip trailing ".."
+                                file = file.getCanonicalFile();
+                            } catch (java.io.IOException ioe) {
+                                // Ok, use f as is
+                            }
+
+                            chooser.setCurrentDirectory(file);
+                        } else {
+                            if(original != null) {
+                                original.actionPerformed(evt);
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        return chooser;
+    }
     
     /** Wraps java.io.FileFilter to javax.swing.filechooser.FileFilter. */
     static class DelegatingFileFilter extends javax.swing.filechooser.FileFilter {
