@@ -28,7 +28,6 @@
 <mapID target="gs.evt" url="getstart/colorswitch/addingevt.html" />
 <mapID target="gs.run" url="getstart/colorswitch/compandrun.html" />
 <mapID target="gs.step" url="getstart/colorswitch/steppingcode.html" />
-<mapID target="gs.view" url="getstart/colorswitch/viewingclass.html" />
 
 <mapID target="modules.manage" url="modules/managingmods.html" />
 <mapID target="ide.newmodule" url="modules/newmodule.html" />
