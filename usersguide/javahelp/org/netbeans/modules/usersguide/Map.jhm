@@ -1039,10 +1039,10 @@
 
 <!-- map ids to other help sets -->
 <mapID target="org.netbeans.modules.editor.html.HTMIndentEngine" 
-  url="/org/netbeans/modules/usersguide/editing/configuring/indentation.html" />
+  url="editing/configuring/indentation.html" />
 
 <mapID target="org.netbeans.modules.web.core.syntax.JspIndentEngine" 
-  url="/org/netbeans/modules/usersguide/editing/configuring/indentation.html" />
+  url="editing/configuring/indentation.html" />
 
 <!-- context sensitive help map IDs -->
 
