@@ -237,12 +237,14 @@ public final class SlideBar extends Box implements ComplexListDataListener,
         
         // notify winsys about selection change
         tabbed.postSelectionEvent();
-        
-        // slide in or out
-        if (selIndex != -1) {
-            commandMgr.slideIn(selIndex);
-        } else {
-            commandMgr.slideOut();
+        // a check to prevent NPE as described in #43605, dafe - is this correct or rather a hack? mkleint
+        if (isDisplayable() && isVisible()) {
+            // slide in or out
+            if (selIndex != -1) {
+                commandMgr.slideIn(selIndex);
+            } else {
+                commandMgr.slideOut();
+            }
         }
     }
     
