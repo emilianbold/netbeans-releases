@@ -284,6 +284,8 @@ Microsystems, Inc. All Rights Reserved.
           <file name="org-netbeans-core-actions-OptionsAction.instance"/>
           <attr name="org-netbeans-core-actions-OptionsAction.instance/org-netbeans-core-actions-SettingsAction.instance" boolvalue="true" />
           <file name="org-netbeans-core-actions-SettingsAction.instance"/>
+          <attr name="org-netbeans-core-actions-SettingsAction.instance/org-netbeans-core-actions-SaveSettingsAction.instance" boolvalue="true"/>
+          <file name="org-netbeans-core-actions-SaveSettingsAction.instance"/>
        </folder>
        <attr name="Tools/Window" boolvalue="true" />
        <folder name="Window">
