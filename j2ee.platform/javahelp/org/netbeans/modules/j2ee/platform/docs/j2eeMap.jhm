@@ -153,6 +153,20 @@
 	<mapID target="org.netbeans.modules.web.project.ui.wizards.PanelConfigureProject" url="web/csh/projwiz_standard/PanelConfigureProject.html" />
 	<mapID target="org.netbeans.modules.web.project.ui.wizards.ImportWebProjectWizardIterator$ThePanel" url="web/csh/projwiz_standard/ThePanel.html" />
 	<mapID target="org.netbeans.modules.web.project.ui.wizards.PanelSourceFolders" url="web/csh/projwiz_standard/SecondPanel.html" />
+
+	<!-- GRAPHIC EDITOR FOR WEB.XML FILES :-->
+	<mapID target="dd_multiview_overview_overviewNode" url="web/csh/graphic_editor/dd_multiview_overview_overviewNode.html" />
+	<mapID target="dd_multiview_overview_contextParamsNode" url="web/csh/graphic_editor/dd_multiview_overview_contextParamsNode.html" />
+	<mapID target="dd_multiview_overview_listenersNode" url="web/csh/graphic_editor/dd_multiview_overview_listenersNode.html" />
+	<mapID target="dd_multiview_servlets_servletsNode" url="web/csh/graphic_editor/dd_multiview_servlets_servletsNode.html" />
+	<mapID target="dd_multiview_servlets_servletNode" url="web/csh/graphic_editor/dd_multiview_servlets_servletNode.html" />
+	<mapID target="dd_multiview_filters_filtersNode" url="web/csh/graphic_editor/dd_multiview_filters_filtersNode.html" />
+	<mapID target="dd_multiview_filters_filterNode" url="web/csh/graphic_editor/dd_multiview_filters_filterNode.html" />
+	<mapID target="dd_multiview_filters_filterMappingsNode" url="web/csh/graphic_editor/dd_multiview_filters_filterMappingsNode.html" />
+	<mapID target="dd_multiview_pages_welcomeFilesNode" url="web/csh/graphic_editor/dd_multiview_pages_welcomeFilesNode.html" />
+	<mapID target="dd_multiview_pages_errorPagesNode" url="web/csh/graphic_editor/dd_multiview_pages_errorPagesNode.html" />
+	<mapID target="dd_multiview_pages_jspPropertyGroupsNode" url="web/csh/graphic_editor/dd_multiview_pages_jspPropertyGroupsNode.html" />
+	<mapID target="dd_multiview_pages_jspPropertyGroupNode" url="web/csh/graphic_editor/dd_multiview_pages_jspPropertyGroupNode.html" />
 	
 	<!-- The Library Manager dialog box: -->
 	<mapID target="org.netbeans.modules.project.libraries.ui.LibrariesCustomizer" url="web/create/tag/taglib/taglib_manage.html" />
