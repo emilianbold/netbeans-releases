@@ -99,11 +99,11 @@ public class AddViewDialog {
                     if (event.getSource() == DialogDescriptor.OK_OPTION) {
                         
                         try {
-                            result = false;
                             CreateView cmd = spec.createCommandCreateView(getViewName());
                             cmd.setQuery(getViewCode());
                             cmd.setObjectOwner((String)info.get(DatabaseNodeInfo.SCHEMA));
                             cmd.execute();
+                            result = !cmd.wasException();
                             
                             if (!cmd.wasException()) {
                                 dialog.setVisible(false);
