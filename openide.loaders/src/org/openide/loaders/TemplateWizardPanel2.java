@@ -82,11 +82,15 @@ final class TemplateWizardPanel2 implements WizardDescriptor.FinishPanel {
     * @return <code>true</code> if the user has entered satisfactory information
     */
     public boolean isValid() {
-        if (templateWizard2UI == null)
+        if (templateWizard2UI == null) {
             return false;
+        }
         
         String err = getPanelUI().implIsValid();
-        settings.putProperty("WizardPanel_errorMessage", err); //NOI18N
+        // bugfix #34799, don't set errorMessage if the panel is not showed
+        if (getPanelUI ().isShowing ()) {
+            settings.putProperty("WizardPanel_errorMessage", err); //NOI18N
+        }
         return err == null;
     }
     
