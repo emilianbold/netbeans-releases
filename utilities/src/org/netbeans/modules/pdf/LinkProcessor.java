@@ -19,9 +19,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.Toolkit;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.StringTokenizer;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
@@ -29,6 +31,7 @@ import javax.swing.JMenuItem;
 import org.openide.cookies.InstanceCookie;
 import org.openide.loaders.XMLDataObject;
 import org.openide.TopManager;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 
 import org.w3c.dom.Document;
@@ -144,18 +147,9 @@ public class LinkProcessor implements InstanceCookie, XMLDataObject.Processor, A
                 file = new File((String)innerElement.getAttribute("path")); // NOI18N
             } else if("idefile".equals(type)) { // NOI18N
                 String base = (String)innerElement.getAttribute("base"); // NOI18N
-                
-                Map map = new HashMap(); // Map<String,File>
-                String home = System.getProperty("netbeans.home"); // NOI18N
-                
-                if(home != null)
-                    addAll(home, base, map);
-                String user = System.getProperty("netbeans.user"); // NOI18N
-                
-                if(user != null && ! user.equals(home))
-                    addAll(user, base, map);
-                
-                file = (File)NbBundle.getLocalizedValue(map, ""); // NOI18N
+                String path = base.replace('.', '/') + ".pdf"; // NOI18N
+                file = InstalledFileLocator.getDefault().locate(path, null, true);
+                if (file == null) throw new FileNotFoundException(path);
             } else if("url".equals(type)) { // NOI18N
                 throw new Exception("PDF: unimplemented."); // NOI18N
             } else {
@@ -166,41 +160,6 @@ public class LinkProcessor implements InstanceCookie, XMLDataObject.Processor, A
             new PDFOpenSupport(file).open();
         } catch(Exception e) {
             TopManager.getDefault().notifyException(e);
-        }
-    }
-    
-    /** Adds all .pdf files from package specified by idehome starting with
-     * base name to map.
-     * @param idehome name of dir to search
-     * @param base base name of .pdf file it has to start with 
-     * @param map map where found name <code>String</code>, <code>File</code> are put */
-    private static void addAll(String idehome, String base, Map map) {
-        int index;
-        
-        String dir = idehome;
-        
-        while((index = base.indexOf('.')) != -1) {
-            dir += File.separatorChar + base.substring (0, index);
-            base = base.substring (index + 1);
-        }
-        
-        File homeDir = new File(dir);
-        
-        File[] kids = homeDir.listFiles();
-
-        // Fix #15535.
-        if(kids == null) {
-            return;
-        }
-        
-        for (int i = 0; i < kids.length; i++) {
-            String name = kids[i].getName ();
-            String ext = ".pdf"; // NOI18N
-            
-            if(name.startsWith(base) && name.endsWith(ext)) {
-                String key = name.substring(base.length(), name.length() - ext.length());
-                map.put(key, kids[i]);
-            }
         }
     }
     

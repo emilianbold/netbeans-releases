@@ -22,6 +22,7 @@ import java.net.*;
 import java.util.*;
 
 import org.openide.ErrorManager;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -55,83 +56,6 @@ final class NbDocsStreamHandler extends URLStreamHandler {
         }
     }
     
-    /** weak ref to the special documentation classloader
-     * used to handle nbdocs: requests
-     */    
-    private static Reference docsLoader = null; // Reference<ClassLoader>
-    
-    private static Lookup.Result classLoaderQuery = Lookup.getDefault().lookup(new Lookup.Template(ClassLoader.class));
-
-    /** @return the classloader used to resolve
-     * nbdocs: requests
-     */
-    private static ClassLoader getDocsLoader() {
-        Reference r = docsLoader;
-        ClassLoader l;
-        if (r != null) {
-            l = (ClassLoader) r.get();
-        } else {
-            l = null;
-        }
-        if (l == null) {
-            l = new URLClassLoader(getDocsURLs(), (ClassLoader)classLoaderQuery.allInstances().iterator().next());
-            if (! addedTmSysLoaderListener) {
-                classLoaderQuery.addLookupListener(new LookupListener() {
-                    public void resultChanged(LookupEvent e) {
-                        docsLoader = null;
-                    }
-                });
-                addedTmSysLoaderListener = true;
-            }
-            docsLoader = new WeakReference(l);
-        }
-        return l;
-    }
-    private static boolean addedTmSysLoaderListener = false;
-
-    /** extra URLs permitting documentation to be unpacked
-     * into the docs/ folder of the IDE home or user dir
-     */    
-    private static URL[] docsURLs = null;
-    /** Get the URLs needed for unpacked docs.
-     * @return any applicable URLs (resource roots)
-     */    
-    private static URL[] getDocsURLs() {
-        if (docsURLs == null) {
-            List urls = new ArrayList(2);
-            String nbhome = System.getProperty("netbeans.home");
-            if (nbhome != null) {
-                try {
-                    // Java bug: if you do not canonicalize, it will make an absolute path,
-                    // however file:/d:/nbdir/./docs/ is not treated as a valid URL for the
-                    // URLClassLoader, for some reason.
-                    URL url = new File(nbhome, "docs").getCanonicalFile().toURL(); // NOI18N
-                    if (!url.toString().endsWith("/")) { // NOI18N
-                        url = new URL(url.toString() + "/"); // NOI18N
-                    }
-                    urls.add(url);
-                } catch (Exception e) {
-                    Installer.err.notify(ErrorManager.WARNING, e);
-                }
-            }
-            String nbuser = System.getProperty("netbeans.user");
-            if (nbuser != null && !nbuser.equals(nbhome)) {
-                try {
-                    URL url = new File(nbuser, "docs").getCanonicalFile().toURL(); // NOI18N
-                    if (!url.toString().endsWith("/")) { // NOI18N
-                        url = new URL(url.toString() + "/"); // NOI18N
-                    }
-                    urls.add(url);
-                } catch (Exception e) {
-                    Installer.err.notify(ErrorManager.WARNING, e);
-                }
-            }
-            Collections.reverse(urls); // nbuser docs should take precedence
-            docsURLs = (URL[])urls.toArray(new URL[urls.size()]);
-        }
-        return docsURLs;
-    }
-
     /** A URL connection that reads from the docs classloader.
      */
     private static final class NbDocsURLConnection extends URLConnection {
@@ -164,9 +88,6 @@ final class NbDocsStreamHandler extends URLStreamHandler {
             if (! connected) {
                 String resource = url.getFile();
                 if (resource.startsWith("/")) resource = resource.substring(1); //NOI18N
-                // [PENDING] could probably be simplified (no need for a special ClassLoader at all)
-                // if only NbBundle had a static method to enumerate locale suffixes...then could check
-                // docsURLs directly, followed by nbresloc: URL or something.
                 URL target;
                 String ext, basename;
                 int index = resource.lastIndexOf('.');
@@ -178,12 +99,19 @@ final class NbDocsStreamHandler extends URLStreamHandler {
                     basename = resource.replace('/', '.');
                 }
                 try {
-                    target = NbBundle.getLocalizedFile(basename, ext, Locale.getDefault(), getDocsLoader());
+                    target = NbBundle.getLocalizedFile(basename, ext);
                 } catch (MissingResourceException mre) {
-                    IOException ioe = new IOException("cannot connect to " + url);
-                    Installer.err.annotate(ioe, mre);
-                    Installer.err.annotate(ioe, NbBundle.getMessage(NbDocsStreamHandler.class, "EXC_nbdocs_cannot_connect", url));
-                    throw ioe;
+                    // OK, try file.
+                    File f = InstalledFileLocator.getDefault().locate("docs/" + resource, null, true); // NOI18N
+                    if (f != null) {
+                        // XXX JDK 1.4: target = f.toURI().toURL();
+                        target = f.toURL();
+                    } else {
+                        IOException ioe = new IOException("cannot connect to " + url + ": " + mre);
+                        Installer.err.annotate(ioe, NbBundle.getMessage(NbDocsStreamHandler.class, "EXC_nbdocs_cannot_connect", url));
+                        Installer.err.annotate(ioe, mre);
+                        throw ioe;
+                    }
                 }
                 real = target.openConnection();
                 real.connect();

@@ -23,6 +23,7 @@ import org.netbeans.modules.form.palette.BeanInstaller;
 import java.beans.*;
 import java.io.File;
 import java.util.*;
+import org.openide.modules.InstalledFileLocator;
 
 /**
  * Module installation class for Form Editor
@@ -64,10 +65,9 @@ public class FormEditorModule extends ModuleInstall
                         if (! jarpath.endsWith(File.separator + "beans"
                                                + File.separator + "TimerBean.jar"))
                             return;
-                        File timerbean = new File(
-                            System.getProperty("netbeans.home")
-                            + File.separator + "beans"
-                            + File.separator + "TimerBean.jar");
+
+                        File timerbean = InstalledFileLocator.getDefault().locate(
+                            "beans/TimerBean.jar", "org.netbeans.modules.form", false); // NOI18N
                         if (jarpath.equals(timerbean.getCanonicalPath()))
                             return;
                         
