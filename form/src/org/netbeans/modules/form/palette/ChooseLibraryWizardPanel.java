@@ -21,8 +21,10 @@ import java.awt.event.*;
 import java.beans.*;
 import java.util.*;
 import java.io.File;
+import java.net.URL;
 
 import org.openide.WizardDescriptor;
+import org.openide.ErrorManager;
 import org.openide.filesystems.*;
 import org.netbeans.api.project.libraries.*;
 
@@ -100,7 +102,19 @@ class ChooseLibraryWizardPanel implements WizardDescriptor.Panel {
                 List content = libraries[i].getContent("classpath"); // NOI18N
                 // go through classpath roots of the library
                 for (Iterator it=content.iterator(); it.hasNext(); ) {
-                    java.net.URL rootURL = (java.net.URL) it.next();
+                    URL rootURL = (URL) it.next();
+                    if ("jar".equals(rootURL.getProtocol())) { // NOI18N
+                        String path = rootURL.getPath();
+                        int index = path.lastIndexOf('!');
+                        if (index != -1) {
+                            try {
+                                rootURL = new URL(path.substring(0, index));
+                            } catch (java.net.MalformedURLException mex) {
+                                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, mex);
+                                continue;
+                            }
+                        }
+                    }
                     File rootFile = FileUtil.toFile(URLMapper.findFileObject(rootURL));
                     String rootPath = rootFile.getAbsolutePath();
                     fileMap.put(rootPath, rootFile);
