@@ -218,13 +218,13 @@ public class HtmlPrintContainer implements PrintContainer {
 
         sb.append (ST_BEGIN);
         boolean first = true;
-        if (!useDefaults || !fg.equals(getDefaultColor())) {
+        if ((!useDefaults || !fg.equals(getDefaultColor())) && fg != null) {
             sb.append (ST_COLOR);
             sb.append (getHtmlColor(fg));
             first = false;
         }
 
-        if (!useDefaults || !bg.equals (getDefaultBackgroundColor())) {
+        if ((!useDefaults || !bg.equals (getDefaultBackgroundColor())) && bg != null) {
             if (!first) {
                 sb.append (ST_SEPARATOR);
             }
@@ -233,7 +233,7 @@ public class HtmlPrintContainer implements PrintContainer {
             first = false;
         }
 
-        if (!useDefaults || !font.equals (getDefaultFont())) {
+        if ((!useDefaults || !font.equals (getDefaultFont())) && font != null) {
             if (!first) {
                 sb.append (ST_SEPARATOR);
             }
