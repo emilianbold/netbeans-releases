@@ -152,7 +152,12 @@ public class PropertiesTableModel extends AbstractTableModel {
         case 0:
             return stringPairForKey(row);//bs.getNthKey(row);
         default:
-            Element.ItemElem item = bs.getItem(column - 1, row);
+            Element.ItemElem item;
+            try { // TEMP>>
+                item = bs.getItem(column - 1, row);
+            } catch (ArrayIndexOutOfBoundsException aie) {
+                item = null;
+            } // TEMP<<
             return stringPairForValue(item);
             /*
             if (item == null)
