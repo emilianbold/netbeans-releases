@@ -89,6 +89,7 @@ public class WebProjectProperties {
     public static final String JAVAC_COMPILER_ARG = "javac.compilerargs";    //NOI18N
     public static final String JAVAC_TARGET = "javac.target"; //NOI18N
     public static final String SRC_DIR = "src.dir"; //NOI18N
+    public static final String CONF_DIR = "conf.dir"; //NOI18N
     public static final String WEB_DOCBASE_DIR = "web.docbase.dir"; //NOI18N
     public static final String BUILD_DIR = "build.dir"; //NOI18N
     public static final String BUILD_WEB_DIR = "build.web.dir"; //NOI18N

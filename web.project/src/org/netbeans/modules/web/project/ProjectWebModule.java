@@ -62,12 +62,16 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
     
     public FileObject getDeploymentDescriptor() {
-        FileObject webInfFo = getWebInf();
+        return getDeploymentDescriptor(false);
+    }
+
+    public FileObject getDeploymentDescriptor(boolean silent) {
+        FileObject webInfFo = getWebInf(silent);
         if (webInfFo==null) {
             return null;
         }
         FileObject dd = webInfFo.getFileObject (FILE_DD);
-        if (dd == null) {
+        if (dd == null && !silent) {
             showErrorMessage(NbBundle.getMessage(ProjectWebModule.class,"MSG_WebXmlNotFound", //NOI18N
                     webInfFo.getPath()));
         }
@@ -108,10 +112,14 @@ public final class ProjectWebModule extends J2eeModuleProvider
             notificationTimeout = new Date().getTime() + 20000;
         }
     }
-
+    
     public FileObject getDocumentBase () {
+        return getDocumentBase(false);
+    }
+
+    public FileObject getDocumentBase (boolean silent) {
         FileObject docBase = getFileObject(WebProjectProperties.WEB_DOCBASE_DIR);
-        if (docBase == null) {
+        if (docBase == null && !silent) {
             String path = helper.resolvePath(helper.getStandardPropertyEvaluator().getProperty(WebProjectProperties.WEB_DOCBASE_DIR));
             showErrorMessage(NbBundle.getMessage(ProjectWebModule.class, "MSG_DocBase_Corrupted", //NOI18N
                     project.getName(), path));
@@ -128,16 +136,24 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
     
     public FileObject getWebInf () {
-        FileObject documentBase = getDocumentBase();
+        return getWebInf(false);
+    }
+    
+    public FileObject getWebInf (boolean silent) {
+        FileObject documentBase = getDocumentBase(silent);
         if (documentBase == null) {
             return null;
         }
         FileObject webInf = documentBase.getFileObject (FOLDER_WEB_INF);
-        if (webInf == null) {
+        if (webInf == null && !silent) {
                 showErrorMessage(NbBundle.getMessage(ProjectWebModule.class,"MSG_WebInfCorrupted", //NOI18N
                         documentBase.getPath()));
         }
         return webInf;
+    }
+    
+    public FileObject getConfDir() {
+        return getFileObject(WebProjectProperties.CONF_DIR);
     }
     
     public ClassPathProvider getClassPathProvider () {
