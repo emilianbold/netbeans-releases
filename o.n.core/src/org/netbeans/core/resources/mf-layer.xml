@@ -516,35 +516,41 @@ Microsystems, Inc. All Rights Reserved.
       <file name="SwingBrowser.ser" url="SwingBrowser.ser">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.Bundle"/>
       </file>
+      <attr name="helpID" stringvalue="org.netbeans.core.services.Browsers"/>
     </folder>
 
     <folder name="ScriptType">
       <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/scriptTypes.gif" />
       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
       <attr name="SystemFileSystem.layer" stringvalue="project"/>
+      <attr name="helpID" stringvalue="org.netbeans.core.services.ScriptTypes"/>
     </folder>
 
     <folder name="IndentEngine">
       <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/indentEngines.gif" />
       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+      <attr name="helpID" stringvalue="org.netbeans.core.services.IndentEngines"/>
     </folder>
 
     <folder name="CompilerType">
       <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/compilerTypes.gif" />
       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
       <attr name="SystemFileSystem.layer" stringvalue="project"/>
+      <attr name="helpID" stringvalue="org.netbeans.core.services.CompilerTypes"/>
     </folder>
 
     <folder name="DebuggerType">
       <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/debuggerTypes.gif" />
       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
       <attr name="SystemFileSystem.layer" stringvalue="project"/>
+      <attr name="helpID" stringvalue="org.netbeans.core.services.DebuggerTypes"/>
     </folder>
 
     <folder name="Executor">
       <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/executionTypes.gif" />
       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
       <attr name="SystemFileSystem.layer" stringvalue="project"/>
+      <attr name="helpID" stringvalue="org.netbeans.core.services.ExecutorTypes"/>
     </folder>
 
     <folder name="MIMEResolver">
