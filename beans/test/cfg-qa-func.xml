@@ -2,20 +2,37 @@
 
 <mconfig name="QA Beans config">
     
-    <testbag testattribs="stable" executor="ide" name="testbag_beans" resultsprocessor="qa-beans">
+    <testbag testattribs="stable" executor="ide" name="testbag_beans_templates" resultsprocessor="qa-beans">
         <testset dir="qa-func/src">
             <patternset>
-                <!-- Tonga tests converted to XTest -->
-                <!-- <include name="**/XTest*"/> -->
-                <!-- Simple gui test -->
-                <include name="gui/BeanInfoGeneration.class"/>  
                 <include name="gui/BeansTemplates.class"/> 
-                <include name="gui/ChangingOfBeanPropertyProperties.class"/> 
+                <exclude name="**/*Tonga*"/>
+            </patternset>
+        </testset>
+    </testbag>
+    <testbag testattribs="stable" executor="ide" name="testbag_beans_property" resultsprocessor="qa-beans">
+        <testset dir="qa-func/src">
+            <patternset>
                 <include name="gui/CreateNewIndexedProperty.class"/> 
                 <include name="gui/CreateNewNonIndexedProperty.class"/> 
+                <include name="gui/ChangingOfBeanPropertyProperties.class"/> 
+                <exclude name="**/*Tonga*"/>
+            </patternset>
+        </testset>
+    </testbag>
+    <testbag testattribs="stable" executor="ide" name="testbag_beans_event_source" resultsprocessor="qa-beans">
+        <testset dir="qa-func/src">
+            <patternset>
                 <include name="gui/NewMulticastEventSource.class"/> 
                 <include name="gui/NewUnicastEventSource.class"/> 
-                <!-- Exclude all Tonga examples -->
+                <exclude name="**/*Tonga*"/>
+            </patternset>
+        </testset>
+    </testbag>
+    <testbag testattribs="stable" executor="ide" name="testbag_beans_beaninfo" resultsprocessor="qa-beans">
+        <testset dir="qa-func/src">
+            <patternset>
+                <include name="gui/BeanInfoGeneration.class"/>  
                 <exclude name="**/*Tonga*"/>
             </patternset>
         </testset>
