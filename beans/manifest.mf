@@ -12,7 +12,3 @@ OpenIDE-Module-Long-Description: The Bean Patterns module provides support for d
 
 Name: org/netbeans/modules/beans/AddPropertyAction.class
 OpenIDE-Module-Class: Action
-
-Name: org/netbeans/modules/beans/PropertyActionSettings.class
-OpenIDE-Module-Class: Option
-

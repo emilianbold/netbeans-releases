@@ -1,3 +1,4 @@
+Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.javadoc/1
 OpenIDE-Module-Name: Javadoc
 OpenIDE-Module-Display-Category: Java
@@ -9,9 +10,6 @@ OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Short-Description: Supports Javadoc creation and searches.
 OpenIDE-Module-Long-Description: The Javadoc module enables you to search and browse Javadoc
   documentation from within the IDE and helps you create Javadoc comments in your source code.
-
-Name: org/netbeans/modules/javadoc/settings/DocumentationSettings.class
-OpenIDE-Module-Class: Option
 
 Name: org/netbeans/modules/javadoc/GenerateDocAction.class
 OpenIDE-Module-Class: Action
@@ -28,18 +26,3 @@ Type: Roots
 
 Name: org/netbeans/modules/javadoc/search/ShowDocAction.class
 OpenIDE-Module-Class: Action
-
-Name: org/netbeans/modules/javadoc/settings/ExternalJavadocSettingsService.class
-OpenIDE-Module-Class: Service
-
-Name: org/netbeans/modules/javadoc/settings/JavadocSettingsService.class
-OpenIDE-Module-Class: Service
-
-Name: org/netbeans/modules/javadoc/settings/StdDocletSettingsService.class
-OpenIDE-Module-Class: Service
-
-Name: org/netbeans/modules/javadoc/search/Jdk12SearchType.class
-OpenIDE-Module-Class: Service
-
-Name: org/netbeans/modules/javadoc/search/Jdk12SearchType_japan.class
-OpenIDE-Module-Class: Service
