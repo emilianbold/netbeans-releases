@@ -11,6 +11,5 @@ OpenIDE-Module-Module-Dependencies:
  org.netbeans.modules.xml.tax/1 = @BUILD_NUMBER_SUBST@,
  org.netbeans.modules.xml.core/1 = @BUILD_NUMBER_SUBST@, 
  org.netbeans.libs.jaxp/1,
- org.openide.deprecated > 1.0, org.openide.src > 1.0
-OpenIDE-Module-Requires: org.openide.TopManager
+ org.openide.src > 1.0
 

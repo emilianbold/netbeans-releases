@@ -19,8 +19,8 @@ import java.io.ByteArrayOutputStream;
 import javax.swing.SwingUtilities;
 
 import org.openide.xml.XMLUtil;
-import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
+import org.openide.DialogDisplayer;
 
 import org.netbeans.tax.*;
 import org.netbeans.tax.io.TreeStreamResult;
@@ -69,7 +69,7 @@ public final class TAXUtil {
                 public void run () {
                     NotifyDescriptor nd = new NotifyDescriptor.Message
                         (message, NotifyDescriptor.WARNING_MESSAGE);
-                    TopManager.getDefault ().notify (nd);
+                    DialogDisplayer.getDefault ().notify (nd);
                 }
             });
     }

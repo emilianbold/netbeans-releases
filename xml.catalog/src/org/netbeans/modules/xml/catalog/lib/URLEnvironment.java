@@ -18,7 +18,7 @@ import java.util.*;
 
 import org.openide.text.*;
 import org.openide.ErrorManager;
-import org.openide.TopManager;
+
 
 /**
  * Defines numb read-only URL environment but finding CloneableOpenSupport (outerclass).
@@ -88,7 +88,7 @@ public abstract class URLEnvironment implements CloneableEditorSupport.Env {
         } catch (IOException ex) {
             // #21556
             // annotate exception as USER error, he provided wrong URL
-            ErrorManager err = TopManager.getDefault().getErrorManager();
+            ErrorManager err = ErrorManager.getDefault();
             err.annotate(ex, ErrorManager.USER, null, null, null, null);
             throw ex;
         }

@@ -92,7 +92,7 @@ public final class CatalogRootNode extends AbstractNode implements Node.Cookie {
             DialogDescriptor dd = new DialogDescriptor(rpanel,
                                   Util.THIS.getString ("PROP_Mount_Catalog"), true, this);
             dd.setHelpCtx(new HelpCtx(CatalogMounterPanel.class));
-            myDialog = TopManager.getDefault().createDialog(dd);
+            myDialog = DialogDisplayer.getDefault().createDialog(dd);
 
             // resize dialog on model change
             

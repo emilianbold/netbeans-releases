@@ -15,9 +15,9 @@ package org.netbeans.modules.xml.tax.beans;
 import java.beans.*;
 import java.awt.Component;
 
-import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 
 import org.netbeans.tax.*;
 import javax.swing.JComponent;
@@ -179,7 +179,7 @@ public class Lib {
     public static boolean confirmAction (String message) {
 	NotifyDescriptor nd = new NotifyDescriptor.Confirmation (message, NotifyDescriptor.YES_NO_OPTION);
 
-	Object option = TopManager.getDefault().notify (nd);
+	Object option = DialogDisplayer.getDefault().notify (nd);
 
 	return ( option == NotifyDescriptor.YES_OPTION );
     }
@@ -229,7 +229,7 @@ public class Lib {
             }
         }
         
-	TopManager.getDefault ().createDialog (dd).show();
+	DialogDisplayer.getDefault ().createDialog (dd).show();
 
 	if (dd.getValue() != DialogDescriptor.OK_OPTION) {
 	    return null;

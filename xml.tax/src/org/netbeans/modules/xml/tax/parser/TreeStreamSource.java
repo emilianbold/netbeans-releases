@@ -21,6 +21,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.EntityResolver;
 
 import org.openide.*;
+import org.openide.awt.StatusDisplayer;
 
 import org.netbeans.tax.io.TreeBuilder;
 import org.netbeans.tax.io.TreeInputSource;
@@ -240,7 +241,7 @@ public class TreeStreamSource implements TreeInputSource {
             // we use such IDs that there is not reason for I/O i.e. block (#19779)
             res.resolveEntity(null, null);  
 
-            final ErrorManager emgr = TopManager.getDefault().getErrorManager();
+            final ErrorManager emgr = ErrorManager.getDefault();
             final InputSource MARK = new InputSource("mark"); // NOI18N
 
             try {
@@ -289,7 +290,7 @@ public class TreeStreamSource implements TreeInputSource {
 
                 if (result[0] == MARK) {
                     
-                    TopManager.getDefault().setStatusText (Util.THIS.getString("MSG_resolving"));
+                    StatusDisplayer.getDefault().setStatusText (Util.THIS.getString("MSG_resolving"));
                     
                     synchronized (this) { //TRY IT 2
                         int timeout = Integer.getInteger("netbeans.xml.resolver.timeout", 5000).intValue();  //??? expose to settings? // NOI18N
@@ -338,7 +339,7 @@ public class TreeStreamSource implements TreeInputSource {
                 throw INTERRUPTED;
                 
             } finally {
-                TopManager.getDefault().setStatusText(""); // NOI18N
+                StatusDisplayer.getDefault().setStatusText(""); // NOI18N
             }
 
         }

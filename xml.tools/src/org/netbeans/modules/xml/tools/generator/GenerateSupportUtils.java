@@ -16,7 +16,6 @@ import java.awt.event.ActionEvent;
 import java.util.*;
 import java.text.DateFormat;
 
-import org.openide.TopManager;
 import org.openide.filesystems.FileObject;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.EditCookie;

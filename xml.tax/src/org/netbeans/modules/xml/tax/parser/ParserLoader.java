@@ -12,6 +12,8 @@
  */
 package org.netbeans.modules.xml.tax.parser;
 
+import org.openide.util.Lookup;
+
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -51,7 +53,7 @@ public final class ParserLoader extends URLClassLoader {
     /** Creates new ParserLoader */
     private ParserLoader(URL library) {
         super(new URL[] { library });
-        parentLoader = org.openide.TopManager.getDefault().systemClassLoader();//getClass().getClassLoader();
+        parentLoader = (ClassLoader) Lookup.getDefault().lookup(ClassLoader.class);
     }
 
     /**

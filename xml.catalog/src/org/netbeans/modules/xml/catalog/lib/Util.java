@@ -19,8 +19,9 @@ import java.util.StringTokenizer;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 
-import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.windows.WindowManager;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.xml.core.lib.AbstractUtil;
@@ -108,7 +109,7 @@ public class Util extends AbstractUtil {
         }
 
         chooser.setDialogTitle(Util.THIS.getString("TITLE_select_catalog"));
-        while (chooser.showDialog(TopManager.getDefault().getWindowManager().getMainWindow(),
+        while (chooser.showDialog(WindowManager.getDefault().getMainWindow(),
                                Util.THIS.getString("PROP_select_button"))
                == JFileChooser.APPROVE_OPTION)
         {
@@ -121,7 +122,7 @@ public class Util extends AbstractUtil {
                 }
             }
 
-            TopManager.getDefault().notify(new NotifyDescriptor.Message(
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                 Util.THIS.getString("MSG_inValidFile"), NotifyDescriptor.WARNING_MESSAGE));
         }
         return null;

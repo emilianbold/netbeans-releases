@@ -223,7 +223,7 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
 
             // launch the wizard
 
-            Dialog dlg = TopManager.getDefault().createDialog(descriptor);
+            Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
             dlg.show();
 
             if ( ( descriptor.CANCEL_OPTION.equals (descriptor.getValue()) ) ||

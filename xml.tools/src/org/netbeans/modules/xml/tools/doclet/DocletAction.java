@@ -19,11 +19,13 @@ import java.io.*;
 import javax.swing.text.*;
 
 import org.openide.*;
+import org.openide.awt.StatusDisplayer;
 import org.openide.nodes.*;
 import org.openide.cookies.*;
 import org.openide.loaders.*;
 import org.openide.filesystems.*;
 import org.openide.util.*;
+import org.openide.util.datatransfer.ExClipboard;
 import org.openide.util.actions.*;
 
 import org.netbeans.tax.*;
@@ -70,7 +72,7 @@ public final class DocletAction extends CookieAction implements CollectDTDAction
         final DTDDataObject dtdo = (DTDDataObject) dtd.getCookie(DTDDataObject.class);
 
         Thread thread = null;
-        ErrorManager emgr = TopManager.getDefault().getErrorManager();
+        ErrorManager emgr = ErrorManager.getDefault();
         
         try {
 
@@ -171,7 +173,7 @@ public final class DocletAction extends CookieAction implements CollectDTDAction
             
         } catch (TreeException tex) {
             
-            TopManager.getDefault().setStatusText(Util.THIS.getString("MSG_doclet_fatal_error"));
+            StatusDisplayer.getDefault().setStatusText(Util.THIS.getString("MSG_doclet_fatal_error"));
         
         } finally {
             if (thread != null) thread.interrupt();
@@ -182,8 +184,9 @@ public final class DocletAction extends CookieAction implements CollectDTDAction
 
     private void leaveInClipboard(String text) {
         StringSelection ss = new StringSelection(text);
-        TopManager.getDefault().getClipboard().setContents(ss, null);
-        TopManager.getDefault().setStatusText(Util.THIS.getString("MSG_documentation_in_clipboard"));        
+        ExClipboard clipboard = (ExClipboard) Lookup.getDefault().lookup(ExClipboard.class);
+        clipboard.setContents(ss, null);
+        StatusDisplayer.getDefault().setStatusText(Util.THIS.getString("MSG_documentation_in_clipboard"));
     }
     
     public HelpCtx getHelpCtx() {

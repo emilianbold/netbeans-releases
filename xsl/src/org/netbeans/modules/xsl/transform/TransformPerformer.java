@@ -31,6 +31,7 @@ import javax.xml.transform.sax.*;
 import javax.xml.transform.stream.*;
 
 import org.openide.*;
+import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.*;
 import org.openide.nodes.Node;
 import org.openide.loaders.DataObject;
@@ -177,7 +178,7 @@ public class TransformPerformer {
                 if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug(exc);
                 
                 NotifyDescriptor nd = new NotifyDescriptor.Message(exc.getLocalizedMessage(), NotifyDescriptor.WARNING_MESSAGE);
-                TopManager.getDefault().notify(nd);
+                DialogDisplayer.getDefault().notify(nd);
             }
         }
         
@@ -201,7 +202,7 @@ public class TransformPerformer {
             transformDD.setClosingOptions(new Object[] { DialogDescriptor.CANCEL_OPTION });
             transformDD.setButtonListener(this);
             
-            dialog = TopManager.getDefault().createDialog(transformDD);
+            dialog = DialogDisplayer.getDefault().createDialog(transformDD);
             dialog.show();
         }
         
@@ -318,7 +319,7 @@ public class TransformPerformer {
         }
         
         private void showURL(URL url) {
-            TopManager.getDefault().showUrl(url);
+            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
             GuiUtil.setStatusText(Util.THIS.getString("MSG_opening_browser"));
         }
         

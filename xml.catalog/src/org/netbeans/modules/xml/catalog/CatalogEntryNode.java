@@ -75,11 +75,11 @@ final class CatalogEntryNode extends BeanNode {
                 return view;                
                 
             } catch (MalformedURLException ex) {
-                ErrorManager emgr = TopManager.getDefault().getErrorManager();
+                ErrorManager emgr = ErrorManager.getDefault();
                 emgr.notify(ErrorManager.INFORMATIONAL, ex);
                 return null;
             } catch (IOException ex) {
-                ErrorManager emgr = TopManager.getDefault().getErrorManager();
+                ErrorManager emgr = ErrorManager.getDefault();
                 emgr.notify(ErrorManager.INFORMATIONAL, ex);                
                 return null;
             }

@@ -50,9 +50,7 @@ Microsystems, Inc. All Rights Reserved.
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
             <classpath>        
                 <pathelement location="${nbroot}/openide/openide-13javac-workaround.jar"/>
-                <fileset dir="${nbroot}/openide/netbeans/lib">
-                    <include name="openide*.jar"/>
-                </fileset>
+                <pathelement location="${nbroot}/openide/netbeans/lib/openide.jar"/>
                 <pathelement location="${nbroot}/editor/netbeans/modules/ext/nb-editor.jar"/>
                 <pathelement location="${nbroot}/editor/netbeans/modules/editor.jar"/>
                 <fileset dir="${nbroot}/core/external">

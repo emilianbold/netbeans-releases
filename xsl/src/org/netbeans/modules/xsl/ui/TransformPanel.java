@@ -26,14 +26,15 @@ import java.util.Vector;
 
 import javax.xml.transform.*;
 
-import org.openide.NotifyDescriptor;
-import org.openide.TopManager;
+import org.openide.Places;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAcceptor;
+import org.openide.nodes.NodeOperation;
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.*;
 import org.openide.util.UserCancelException;
 import org.openide.util.Utilities;
+import org.openide.util.Lookup;
 
 import org.netbeans.api.xml.cookies.TransformableCookie;
 
@@ -636,10 +637,11 @@ public final class TransformPanel extends javax.swing.JPanel {
     private void browseXSLTButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseXSLTButtonActionPerformed
         // Add your handling code here:
         try {
-            Node[] nodes = TopManager.getDefault().getNodeOperation().select
+            Places places = (Places) Lookup.getDefault().lookup(Places.class);
+            Node[] nodes = NodeOperation.getDefault().select
             (Util.THIS.getString("LBL_select_xslt_script"),
             Util.THIS.getString("LBL_select_node"),
-            TopManager.getDefault().getPlaces().nodes().repository(),
+            places.nodes().repository(),
             new NodeAcceptor() {
                 public boolean acceptNodes(Node[] nodes) {
                     if ( nodes.length != 1 ) {
@@ -679,10 +681,11 @@ public final class TransformPanel extends javax.swing.JPanel {
     private void browseInputButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseInputButtonActionPerformed
         // Add your handling code here:
         try {
-            Node[] nodes = TopManager.getDefault().getNodeOperation().select
+            Places places = (Places) Lookup.getDefault().lookup(Places.class);
+            Node[] nodes = NodeOperation.getDefault().select
             (Util.THIS.getString("LBL_select_xml_document"),
             Util.THIS.getString("LBL_select_node"),
-            TopManager.getDefault().getPlaces().nodes().repository(),
+            places.nodes().repository(),
             new NodeAcceptor() {
                 public boolean acceptNodes(Node[] nodes) {
                     if ( nodes.length != 1 ) {

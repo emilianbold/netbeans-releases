@@ -12,10 +12,10 @@
  */
 package org.netbeans.modules.xml.catalog;
 
-import org.openide.TopManager;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CookieAction;
+import org.openide.awt.StatusDisplayer;
 
 /** 
  * Action sensitive to the node selection that refreshs children.
@@ -29,17 +29,16 @@ final class RefreshAction extends CookieAction {
     
     protected void performAction (Node[] nodes) {        
         if (nodes == null) return;
-        TopManager top = TopManager.getDefault();
         try {
             for (int i = 0; i<nodes.length; i++) {
                 String msg = Util.THIS.getString("MSG_refreshing", nodes[i].getDisplayName());
-                top.setStatusText(msg);
+                StatusDisplayer.getDefault().setStatusText(msg);
                 Refreshable cake = (Refreshable) nodes[i].getCookie(Refreshable.class);
                 cake.refresh();
             }
         } finally {
             String msg = Util.THIS.getString("MSG_refreshed");
-            top.setStatusText(msg);
+            StatusDisplayer.getDefault().setStatusText(msg);
         }
     }
 

@@ -13,7 +13,7 @@ OpenIDE-Module-Module-Dependencies:
  org.netbeans.modules.servletapi/1,
  org.openide.deprecated > 1.0,
  org.openide.execution > 1.0
-OpenIDE-Module-Requires: org.openide.util.HttpServer$Impl, org.openide.TopManager
+OpenIDE-Module-Requires: org.openide.util.HttpServer$Impl
 
 Name: org/netbeans/modules/xsl/XSLDataLoader.class
 OpenIDE-Module-Class: Loader

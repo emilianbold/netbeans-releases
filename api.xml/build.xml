@@ -41,10 +41,9 @@ Microsystems, Inc. All Rights Reserved.
     <target name="compile"> 
         <echo message="Compiling XML tools API classes..."/>
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-            <classpath>        
-                <fileset dir="${nbroot}/openide/netbeans/lib">
-                    <include name="openide*.jar"/>
-                </fileset>
+            <classpath>
+                <pathelement location="${nbroot}/openide/openide-13javac-workaround.jar"/>
+                <pathelement location="${nbroot}/openide/netbeans/lib/openide.jar"/>
                 <fileset dir="${nbroot}/core/external">
                     <include name="xml-apis*.jar"/>
                 </fileset>

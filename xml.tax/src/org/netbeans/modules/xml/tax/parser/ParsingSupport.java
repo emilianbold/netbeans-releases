@@ -23,7 +23,6 @@ import org.xml.sax.InputSource;
 
 import org.openide.nodes.*;  //CookieFactory
 import org.openide.ErrorManager;
-import org.openide.TopManager;
 import org.openide.filesystems.FileObject;
 
 import org.netbeans.tax.TreeException;
@@ -98,7 +97,7 @@ public abstract class ParsingSupport {
             return parse(in);
             
         } catch (IOException ex) {
-            ErrorManager emgr = TopManager.getDefault().getErrorManager();
+            ErrorManager emgr = ErrorManager.getDefault();
             emgr.annotate(ex, Util.THIS.getString("MSG_can_not_create_URL"));
             emgr.notify(ex);
         }           

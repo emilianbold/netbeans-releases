@@ -21,6 +21,7 @@ import javax.swing.text.*;
 import org.openide.*;
 import org.openide.nodes.*;
 import org.openide.util.*;
+import org.openide.util.datatransfer.ExClipboard;
 import org.openide.util.actions.*;
 import org.openide.cookies.*;
 import org.openide.loaders.*;
@@ -71,7 +72,7 @@ public final class CSSStyleAction extends CookieAction implements CollectDTDActi
 
         DTDDataObject dtdo = (DTDDataObject) dtd.getCookie(DTDDataObject.class);
         
-        ErrorManager emgr = TopManager.getDefault().getErrorManager();
+        ErrorManager emgr = ErrorManager.getDefault();
             
         try {
 
@@ -109,9 +110,9 @@ public final class CSSStyleAction extends CookieAction implements CollectDTDActi
 
             
             try {
-                targeto = TopManager.getDefault().getLoaderPool().findDataObject(generFile);
-            } catch (DataObjectExistsException eex) {
-                targeto = eex.getDataObject();
+                targeto = DataObject.find(generFile);
+            } catch (DataObjectNotFoundException eex) {
+                return;
             }
 
             EditorCookie ec = (EditorCookie) targeto.getCookie(EditorCookie.class);
@@ -127,7 +128,8 @@ public final class CSSStyleAction extends CookieAction implements CollectDTDActi
                     emgr.notify(locex);                    
                     
                     StringSelection ss = new StringSelection(css);
-                    TopManager.getDefault().getClipboard().setContents(ss, null);
+                    ExClipboard clipboard = (ExClipboard) Lookup.getDefault().lookup(ExClipboard.class);
+                    clipboard.setContents(ss, null);
                     GuiUtil.setStatusText(Util.THIS.getString("MSG_CSS_placed_in_clipboard"));
                     
                 }

@@ -166,7 +166,7 @@ public class SelectFileDialog extends JPanel {
         FileObject newFO = null;
 
         while ( newFO == null ) {
-            TopManager.getDefault().createDialog (selectDD).show();
+            DialogDisplayer.getDefault().createDialog (selectDD).show();
             if (selectDD.getValue() != DialogDescriptor.OK_OPTION) {
                 throw new UserCancelException();
             }
@@ -193,7 +193,7 @@ public class SelectFileDialog extends JPanel {
                             } catch (IOException exc) {
                                 NotifyDescriptor desc = new NotifyDescriptor.Message
                                     (Util.THIS.getString ("MSG_cannot_create_data", newName + "." + ext), NotifyDescriptor.WARNING_MESSAGE);
-                                TopManager.getDefault().notify (desc);
+                                DialogDisplayer.getDefault().notify (desc);
 
                                 if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug (exc);
                             }

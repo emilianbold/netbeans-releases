@@ -26,7 +26,6 @@ import org.netbeans.modules.xml.spi.dom.*;
 import org.netbeans.modules.xml.api.cookies.ScenarioCookie;
 import org.netbeans.modules.xsl.api.XSLCustomizer;
 import org.netbeans.modules.xsl.api.XSLScenario;
-import org.openide.TopManager;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
