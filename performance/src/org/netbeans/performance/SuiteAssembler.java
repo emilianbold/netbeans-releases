@@ -126,14 +126,15 @@ public final class SuiteAssembler {
     
     /** Generates a textual representation */
     private static void generateSuite(ArrayList classList, StringBuffer buffer) {
-        buffer.append("package libgen;\n");
+        buffer.append("package libgen;\n\n");
         buffer.append("import junit.framework.TestCase;\n");
         buffer.append("import junit.framework.TestSuite;\n");
+        buffer.append("import junit.framework.Test;\n\n");
         buffer.append("public class GenSuite extends TestCase {\n");
         buffer.append("    public GenSuite(String name) {\n");
         buffer.append("        super(name);\n");
         buffer.append("    }\n");
-        buffer.append("    public static final TestSuite suite() {\n");
+        buffer.append("    public static Test suite() {\n");
         buffer.append("        TestSuite suite = new TestSuite();\n");
         for (int i = 0; i < classList.size(); i++) {
             buffer.append("        suite.addTest(new TestSuite(");
@@ -187,7 +188,6 @@ public final class SuiteAssembler {
     }
     
     //public void generateMain
-    
     public static void main(String[] args) throws Exception {
         SuiteAssembler sassembler = new SuiteAssembler(args);
         sassembler.assemblySuite();
