@@ -168,6 +168,7 @@ public final class LayoutSupportManager implements LayoutSupportContext {
                 layoutDelegate.initialize(this, lmInstance, fromCode);
                 if (!fromCode)
                     fillLayout(oldConstraints);
+                getPropertySets(); // force properties and listeners creation
             }
             catch (Exception ex) {
                 removeLayoutDelegate(false);
@@ -370,7 +371,6 @@ public final class LayoutSupportManager implements LayoutSupportContext {
             return ((AbstractLayoutSupport)layoutDelegate).getAllProperties();
 
         ArrayList allPropsList = new ArrayList();
-        Node.PropertySet[] propertySets = layoutDelegate.getPropertySets();
         for (int i=0; i < propertySets.length; i++) {
             Node.Property[] props = propertySets[i].getProperties();
             for (int j=0; j < props.length; j++)
