@@ -160,6 +160,8 @@ public class ProjectUtilitiesTest extends NbTestCase {
         AuxiliaryConfiguration aux = (AuxiliaryConfiguration) project1.getLookup ().lookup (AuxiliaryConfiguration.class);
         Element openFilesEl = aux.getConfigurationFragment (ProjectUtilities.OPEN_FILES_ELEMENT, ProjectUtilities.OPEN_FILES_NS, false);
         assertNull ("OPEN_FILES_ELEMENT not found in the private configuration.", openFilesEl);
+        
+        assertFalse ("Project1 must be closed.", OpenProjectList.getDefault ().isOpen (project1));
     }
 
     private static class SimpleTopComponent extends TopComponent {

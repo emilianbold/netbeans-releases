@@ -119,7 +119,7 @@ public class ProjectUtilities {
                   }
                 }
             }
-
+            
             if (!openFiles.isEmpty () && ExitDialog.showDialog (openFiles)) {
                 // close documents
                 Iterator it = tc2close.iterator ();
@@ -128,7 +128,9 @@ public class ProjectUtilities {
                 }
             } else {
                 // signal that close was vetoed
-                urls4project = null;
+                if (!openFiles.isEmpty ()) {
+                    urls4project = null;
+                }
             }
             
             return urls4project;

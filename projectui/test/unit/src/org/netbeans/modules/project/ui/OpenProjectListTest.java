@@ -139,6 +139,24 @@ public class OpenProjectListTest extends NbTestCase {
         assertTrue ("Document f1_2_open is loaded.", handler.openFiles.contains (f1_2_open.getURL ().toExternalForm ()));
         assertTrue ("Document f2_1_open is loaded.", handler.openFiles.contains (f2_1_open.getURL ().toExternalForm ()));
     }
+    
+    public void testCloseProjectWithoutOpenDocuments () throws Exception {
+        assertTrue ("No project is open.", OpenProjectList.getDefault ().getOpenProjects ().length == 0);        
+        OpenProjectList.getDefault ().open (project2, false);        
+        assertFalse ("Project1 isn't opened.", OpenProjectList.getDefault ().isOpen (project1));
+        assertTrue ("Project2 is opened.", OpenProjectList.getDefault ().isOpen (project2));
+        
+        handler.openFiles.remove (f2_1_open.getURL ().toExternalForm ());
+        
+        assertFalse ("Document f2_1_open isn't loaded.", handler.openFiles.contains (f2_1_open.getURL ().toExternalForm ()));
+        
+        ProjectUtilities.closeAllDocuments (new Project [] { project2 });
+        OpenProjectList.getDefault ().close (new Project [] { project2 });
+
+        assertFalse ("Project2 is closed.", OpenProjectList.getDefault ().isOpen (project2));
+    }
+    
+    // helper code
 
     private static class MySubprojectProvider implements SubprojectProvider {
         Project p;
