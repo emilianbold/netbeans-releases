@@ -828,7 +828,7 @@ public class ColumnModels {
          * @return type of column items
          */
         public Class getType () {
-            return String.class;
+            return Session.class;
         }
 
         /**
@@ -1277,6 +1277,7 @@ public class ColumnModels {
     public static class LanguagePropertyEditor extends PropertyEditorSupport {
         
         public String[] getTags () {
+            if (getValue () == null) return new String [0];
             String[] s = ((Session) getValue ()).getSupportedLanguages ();
             return s;
         }
