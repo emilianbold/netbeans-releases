@@ -181,23 +181,13 @@ public class OptionsAction extends CallableSystemAction {
             if (!defaultHelp.equals (help)) {
                 // try if selected node isn't template
                 Node node = getExplorerManager ().getSelectedNodes ()[0];
-                DataObject dataObj = (DataObject)node.getCookie (DataObject.class);
-                if (dataObj != null) {
-                    Object o = dataObj.getPrimaryFile ().getAttribute ("helpID"); // NOI18N
-                    if (o != null) {
-                        return new HelpCtx (o.toString ());
-                    }
-                }
+                HelpCtx readHelpId = getHelpId (node);
+                if (readHelpId != null) return readHelpId;
+                
                 // next bugfix #23551, children have same helpId as parent if no specific is declared
                 while (node != null && !TEMPLATES_DISPLAY_NAME.equals (node.getDisplayName ())) {
-                    // it's template, return specific help id
-                    dataObj = (DataObject)node.getCookie (DataObject.class);
-                    if (dataObj != null) {
-                        Object o = dataObj.getPrimaryFile ().getAttribute ("helpID"); // NOI18N
-                        if (o != null) {
-                            return new HelpCtx (o.toString ());
-                        }
-                    }
+                    readHelpId = getHelpId (node);
+                    if (readHelpId != null) return readHelpId;
                     node = node.getParentNode ();
                 }
                 if (node != null && TEMPLATES_DISPLAY_NAME.equals (node.getDisplayName ())) {
@@ -205,6 +195,18 @@ public class OptionsAction extends CallableSystemAction {
                 }
             }
             return help;
+        }
+        
+        private HelpCtx getHelpId (Node node) {
+            // it's template, return specific help id
+            DataObject dataObj = (DataObject)node.getCookie (DataObject.class);
+            if (dataObj != null) {
+                Object o = dataObj.getPrimaryFile ().getAttribute ("helpID"); // NOI18N
+                if (o != null) {
+                    return new HelpCtx (o.toString ());
+                }
+            }
+            return null;
         }
 
         /** Accessor to the singleton instance */
