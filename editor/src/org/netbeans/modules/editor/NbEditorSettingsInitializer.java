@@ -60,6 +60,8 @@ public class NbEditorSettingsInitializer implements Settings.Initializer {
       Settings.addInitializer(new PlainSettingsInitializer());
       Settings.addInitializer(new NbJavaSettingsInitializer());
       Settings.addInitializer(new NbHTMLSettingsInitializer());
+
+      Settings.reset();
     }
   }
 
@@ -99,6 +101,7 @@ public class NbEditorSettingsInitializer implements Settings.Initializer {
 
 /*
  * Log
+ *  4    Jaga      1.3         4/14/00  Miloslav Metelka resetting settings
  *  3    Jaga      1.2         4/13/00  Miloslav Metelka 
  *  2    Jaga      1.1         3/24/00  Miloslav Metelka 
  *  1    Jaga      1.0         3/15/00  Miloslav Metelka 
