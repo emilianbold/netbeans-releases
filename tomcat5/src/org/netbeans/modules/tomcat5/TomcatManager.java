@@ -29,6 +29,7 @@ import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.openide.ErrorManager;
+import org.openide.modules.InstalledFileLocator;
 
 /** DeploymentManager that can deploy to 
  * Tomcat 5 using manager application.
@@ -138,6 +139,39 @@ public class TomcatManager implements DeploymentManager {
         return catalinaBase;
     }
     
+    /** Returns catalinaHome directory.
+     * @return catalinaHome or <CODE>null</CODE> when not specified.
+     */
+    public File getCatalinaHomeDir () {
+        if (catalinaHome == null) {
+            return null;
+        }
+        File homeDir = new File (catalinaHome);
+        if (!homeDir.isAbsolute ()) {
+            InstalledFileLocator ifl = InstalledFileLocator.getDefault ();
+            homeDir = ifl.locate (catalinaHome, null, false);
+        }
+        return homeDir;
+    }
+    
+    /** Returns catalinaBase directory.
+     * @return catalinaBase or <CODE>null</CODE> when not specified.
+     */
+    public File getCatalinaBaseDir () {
+        if (catalinaBase == null) {
+            return null;
+        }
+        File baseDir = new File (catalinaBase);
+        if (!baseDir.isAbsolute ()) {
+            InstalledFileLocator ifl = InstalledFileLocator.getDefault ();
+            baseDir = ifl.locate (catalinaBase, null, false);
+            if (baseDir == null) {
+                baseDir = new File(System.getProperty("netbeans.user")+System.getProperty("file.separator")+catalinaBase);   // NOI18N
+            }
+        }
+        return baseDir;
+    }
+    
     /** Returns username.
      * @return username or <CODE>null</CODE> when not connected.
      */
@@ -154,6 +188,9 @@ public class TomcatManager implements DeploymentManager {
     
     public DeploymentConfiguration createConfiguration (DeployableObject deplObj) 
     throws InvalidModuleException {
+        if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
+            TomcatFactory.getEM ().log ("TomcatManager.createConfiguration "+deplObj);
+        }
         if (!ModuleType.WAR.equals (deplObj.getType ())) {
             throw new InvalidModuleException ("Only WAR modules are supported for TomcatManager"); // NOI18N
         }
