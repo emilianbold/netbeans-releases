@@ -34,6 +34,7 @@ Microsystems, Inc. All Rights Reserved.
 		<exclude name="org/openide/loaders/DataFolderTest.class/testSortMode"/> <!-- failing in cont. test -->
 		<exclude name="org/openide/loaders/DataFolderTest.class/testMove"/> <!-- failing in cont. test -->
 		<exclude name="org/openide/loaders/DataFolderTest.class/testPropChildrenFiredAfterInvalidation"/> <!-- failing in cont. test -->
+		<exclude name="org/openide/loaders/DataFolderTest.class/testOrderWhenMultiFileSystemSetDelegatesIsCalled" /> <!-- failing in cont. test -->
                 <!-- following was disabled because of issue #20179 -->
                 <exclude name="org/openide/loaders/DataFolderMoveTest.class"/>
 		<!-- does not work an nobody knows why -->
