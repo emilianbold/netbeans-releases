@@ -78,7 +78,7 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
   public Node environment () {
     return EnvironmentNode.getDefault ();
   }
-  
+
   /** Control panel
   */
   public Node controlPanel () {
@@ -117,7 +117,7 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
   /** Default folder for menus.
   */
   public DataFolder menus () {
-    return findSessionFolder ("Menus");
+    return findSessionFolder ("Menu");
   }
 
   /** Startup folder.
@@ -125,7 +125,7 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
   public DataFolder startup () {
     return findSessionFolder ("Startup");
   }
-    
+
   /**
    * Returns a DataFolder subfolder of the session folder.  In the DataFolder
    * folders go first (sorted by name) followed by the rest of objects sorted
@@ -139,8 +139,8 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
         // resource not found, try to create new folder
         fo = Repository.getDefault ().getDefaultFileSystem ().getRoot ().createFolder (name);
       }
-      
-      DataFolder df = df = DataFolder.findFolder(fo);
+
+      DataFolder df = DataFolder.findFolder(fo);
       df.setSortMode(DataFolder.SortMode.FOLDER_NAMES);
       return df;
     } catch (java.io.IOException ex) {
@@ -152,6 +152,7 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
 
 /*
 * Log
+*  11   Gandalf   1.10        2/26/99  David Simonek   
 *  10   Gandalf   1.9         2/19/99  Jaroslav Tulach added startup directory
 *  9    Gandalf   1.8         2/12/99  Ian Formanek    Reflected renaming 
 *       Desktop -> Workspace
