@@ -1,10 +1,22 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?><!-- -*- sgml-indent-step: 1 -*- -->
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
 <!DOCTYPE api-answers PUBLIC "-//NetBeans//DTD Arch Answers//EN" "../../nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd" [
   <!ENTITY api-questions SYSTEM "../../nbbuild/antsrc/org/netbeans/nbbuild/Arch-api-questions.xml">
 ]>
 
 <api-answers
-  question-version="1.23"
+  question-version="1.24"
   module="projects/libraries"
   author="jglick@netbeans.org"
 >
@@ -212,10 +224,23 @@
         </question>
 -->
  <answer id="dep-nb">
-  <p>
-   Filesystems, Datasystems (FolderInstance is used in the implementation for reading the
-   LibraryTypeProviders).
-  </p>
+  <ul>
+   <li>
+    <api group="java" name="Filesystems" type="import" category="official">
+     <p>
+      Used for various purposes.
+     </p>
+    </api>
+   </li>
+   <li>
+    <api group="java" name="Datasystems" type="import" category="official">
+     <p>
+      <code>FolderInstance</code> is used to read
+      <code>LibraryTypeProvider</code>s.
+     </p>
+    </api>
+   </li>
+  </ul>
  </answer>
 
 
@@ -270,10 +295,9 @@
         </question>
 -->
  <answer id="deploy-dependencies">
-  <!-- XXX details -->
-  <p>
-   Regular module dependency.
-  </p>
+  <pre>
+   OpenIDE-Module-Module-Dependencies: org.netbeans.modules.project.libraries/0 &gt; @SPECIFICATION-VERSION@
+  </pre>
  </answer>
 
 
@@ -571,10 +595,12 @@
         </question>
 -->
  <answer id="format-types">
-  <p>
-   An XML DTD is used to define the library definition format.
-   <a href="http://www.netbeans.org/source/browse/projects/libraries/src/org/netbeans/modules/project/libraries/resources/Attic/library-declaration-1_0.dtd">The Library Declaration DTD</a>
+  <!-- XXX link to public location when available: #43596 -->
+  <api group="dtd" name="Library-Declaration-DTD" type="export" category="devel" url="http://www.netbeans.org/source/browse/projects/libraries/src/org/netbeans/modules/project/libraries/resources/library-declaration-1_0.dtd">
+   <p>
+    An XML DTD is used to define the library definition format.
   </p>
+  </api>
  </answer>
 
 
@@ -594,9 +620,10 @@
 -->
  <answer id="lookup-lookup">
  <p>
- Yes.
- It lookups the instances of org.netbeans.spi.project.libraries.LibraryProvider interface in the default lookup.
- This interface represents a read only storage of libraries. There can be multiple instances of this interface.  
+   Yes. It looks for instances of
+   <code>org.netbeans.spi.project.libraries.LibraryProvider</code> in the default
+   lookup. This interface represents a read-only storage of libraries. There can
+   be multiple instances of this interface.
  </p>
  </answer>
 
@@ -613,7 +640,7 @@
 -->
  <answer id="lookup-register">
   <p>
-   No.
+   A default <code>LibraryProvider</code> implementation is registered.
   </p>
  </answer>
 
@@ -836,11 +863,11 @@
   Yes.
   </p>
   <p>
-  Folder org-netbeans-api-project-libraries/Libraries on the system filesystem is used
+   Folder <code>org-netbeans-api-project-libraries/Libraries</code> on the system filesystem is used
   to store the libraries declarations.
   </p>
   <p>
-  Folder org-netbeans-api-project-libraries/LibraryTypeProviders on the system filesystem
+   Folder <code>org-netbeans-api-project-libraries/LibraryTypeProviders</code> on the system filesystem
   is used to store <code>LibraryTypeProvider</code> instance files.
   </p>
  </answer>
@@ -883,6 +910,39 @@
  <answer id="resources-read">
   <p>
    Libraries are read from a fixed location in the system file system.
+  </p>
+ </answer>
+
+<!--
+        <question id="security-grant" when="final">
+            Does your code grant addition rights to some code?
+            <hint>Avoid using a classloder that adds some extra
+            permissions to loaded code unless realy necessary.
+            Also note that your API implementation
+            can also expose unneeded permissions to enemy code by
+            AccessController.doPrilileged() calls.</hint>
+        </question>
+-->
+ <answer id="security-grant">
+  <p>
+   No.
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="security-policy" when="final">
+            Does your functionality require standard policy file modification?
+            <hint>Your code may pass control to third party code not
+            coming from trusted domain. It covers code downloaded over
+            network or code coming from libraries that are not bundled
+            with NetBeans. Which permissions it needs to grant to which domain?</hint>
+        </question>
+-->
+ <answer id="security-policy">
+  <p>
+   No.
   </p>
  </answer>
 
