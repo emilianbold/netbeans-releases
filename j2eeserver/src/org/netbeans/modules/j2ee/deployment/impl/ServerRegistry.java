@@ -360,27 +360,28 @@ public final class ServerRegistry implements java.io.Serializable {
         
         if (instance == null) {
             removeDefaultInstanceFile();
-        }
-        
-        if (ServerStringConverter.writeServerInstance(instance, DIR_INSTALLED_SERVERS, FILE_DEFAULT_INSTANCE)) {
-            ServerString oldValue = defaultInstance;
-            defaultInstance = instance;
-            fireDefaultInstance(oldValue, instance);
+        } else {
+            if (ServerStringConverter.writeServerInstance(instance, DIR_INSTALLED_SERVERS, FILE_DEFAULT_INSTANCE)) {
+                ServerString oldValue = defaultInstance;
+                defaultInstance = instance;
+                fireDefaultInstance(oldValue, instance);
+            }
         }
     }
-    
+
     static private void removeDefaultInstanceFile() {
         FileLock lock = null;
         Writer writer = null;
         try {
             String pathName = DIR_INSTALLED_SERVERS + "/" + FILE_DEFAULT_INSTANCE;
             FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(pathName);
-            fo.delete();
+            if (fo != null)
+                fo.delete();
         } catch(Exception ioe) {
             org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.WARNING, ioe);
         }
     }
-    
+
     private ServerString getInstallerDefaultPlugin() {
         String netbeansHome = System.getProperty("netbeans.home"); //NOI18N
         Properties installProp = readProperties(netbeansHome, "system/install.properties"); //NOI18N
