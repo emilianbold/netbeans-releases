@@ -22,7 +22,7 @@ import java.util.Properties;
 /**
 * Connection information.
 * This interface defines information needed for connection to database
-* (database and driver url, login name and password). It can create JDBC 
+* (database and driver url, login name, password and schema name). It can create JDBC 
 * connection and feels to be a bean (has propertychange support and customizer).
 * Instances of this class uses explorer option to store information about
 * open connection.
@@ -58,6 +58,24 @@ public interface DBConnection extends java.io.Serializable
     * @param user New login name
     */
     public void setUser(String user);
+
+    /** Returns schema name */
+    public String getSchema();
+
+    /** Sets schema name
+    * Fires propertychange event.
+    * @param schema Schema name
+    */
+    public void setSchema(String schema);
+
+    /** Returns connection name */
+    public String getName();
+
+    /** Sets connection name
+    * Fires propertychange event.
+    * @param schema Schema name
+    */
+    public void setName(String name);
 
     /** Returns if password should be remembered */
     public boolean rememberPassword();

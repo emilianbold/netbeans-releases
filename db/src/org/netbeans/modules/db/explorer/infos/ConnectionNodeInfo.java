@@ -72,31 +72,10 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
                 setReadOnly(false);
                 spec = (Specification)factory.createSpecification(con, connection);
             }
+            put(DBPRODUCT, spec.getProperties().get(DBPRODUCT));
 
-            if (connection != null) {
-                ResultSet rs;
-                Vector items = new Vector();
-                try {
-                    rs = connection.getMetaData().getSchemas();
-                    while (rs.next())
-                        items.add(rs.getString(1).trim());
-                    rs.close();
-                } catch (SQLException exc) {
-                    //hack for databases which don't support schemas
-                }
-                
-                if (items.isEmpty())
-                    setSchema(null);
-                else if (items.size() == 1)
-                    setSchema(items.get(0).toString());
-                else {
-                    SchemaDialog dlg = new SchemaDialog(items, getUser());
-                    if (dlg.run())
-                        setSchema(dlg.getSchema());
-                    else
-                        return;
-                }
-            }
+            if(getSchema()==null)
+                throw new DatabaseException("Database schema is not set");
             
             setSpecification(spec);
 
@@ -107,6 +86,7 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
             setDriverSpecification(drvSpec);
 
             setConnection(connection); // fires change
+            
         } catch (DatabaseProductNotFoundException e) {
 
             UnsupportedDatabaseDialog dlg = new UnsupportedDatabaseDialog();
@@ -160,24 +140,33 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
     }
 
     public Object put(Object key, Object obj) {
-        if (key.equals(USER) || key.equals(DRIVER) || key.equals(DATABASE)) {
-            DatabaseOption option = RootNode.getOption();
-            Vector cons = option.getConnections();
-            Enumeration enu = cons.elements();
-            while (enu.hasMoreElements()) {
-                DatabaseConnection dburl = (DatabaseConnection) enu.nextElement();
-                if (dburl.getDatabase().equals(getDatabase()) && (dburl.getUser().equals(get(USER)))) {
-                    if (key.equals(USER)) {
-                        dburl.setUser(obj.toString());
-                    } else if (key.equals(DRIVER)) {
-                        dburl.setDriver(obj.toString());
-                    } else if (key.equals(DATABASE)) {
-                        dburl.setDatabase(obj.toString());
-                    }
-                }
-            }
+        if (key.equals(USER) || key.equals(DRIVER) || key.equals(DATABASE) || key.equals(SCHEMA)) {
+            String oldVal = (String)get(key);
+            String newVal = (String)obj;
+            updateConnection((String)key, oldVal, newVal);
         }
         return super.put(key, obj);
+    }
+    
+    private void updateConnection(String key, String oldVal, String newVal) {
+        DatabaseOption option = RootNode.getOption();
+        Vector cons = option.getConnections();
+        Enumeration enu = cons.elements();
+        DBConnection infoConn = getDatabaseConnection();
+        int idx = cons.indexOf(infoConn);
+        if(idx>=0) {
+            DatabaseConnection connFromList = (DatabaseConnection)cons.elementAt(idx);
+            if (key.equals(SCHEMA))
+                connFromList.setSchema(newVal);
+            else if (key.equals(USER))
+                connFromList.setUser(newVal);
+            else if (key.equals(DRIVER)) {
+                connFromList.setDriver(newVal);
+            } else if (key.equals(DATABASE)) {
+                connFromList.setDatabase(newVal);
+            }
+        }
+        setName(infoConn.getName());
     }
     
 }

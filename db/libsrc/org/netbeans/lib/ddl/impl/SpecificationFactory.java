@@ -203,6 +203,7 @@ public class SpecificationFactory implements DatabaseSpecificationFactory, Drive
         HashMap specmap = deepUnion(product, (HashMap) dbSpecs.get("GenericDatabaseSystem"), true);
         specmap.put("connection", connection);
         DatabaseSpecification spec = new Specification(specmap, c);
+        specmap.put("dbproduct", databaseProductName);
         spec.setSpecificationFactory(this);
 
         return spec;
@@ -220,6 +221,7 @@ public class SpecificationFactory implements DatabaseSpecificationFactory, Drive
         HashMap product = (HashMap) dbSpecs.get(databaseProductName);
         if (product == null) throw new DatabaseProductNotFoundException(databaseProductName);
         HashMap specmap = deepUnion(product, (HashMap) dbSpecs.get("GenericDatabaseSystem"), true);
+        specmap.put("dbproduct", databaseProductName);
         return new Specification(specmap, c);
     }
 

@@ -45,6 +45,8 @@ public class RootNodeInfo extends DatabaseNodeInfo implements ConnectionOwnerOpe
                     ConnectionNodeInfo ninfo = (ConnectionNodeInfo)createNodeInfo(this, DatabaseNode.CONNECTION);
                     ninfo.setUser(cinfo.getUser());
                     ninfo.setDatabase(cinfo.getDatabase());
+                    ninfo.setSchema(cinfo.getSchema());
+                    ninfo.setName(cinfo.getName());
                     ninfo.setDatabaseConnection(cinfo);
                     children.add(ninfo);
                 }
@@ -61,7 +63,6 @@ public class RootNodeInfo extends DatabaseNodeInfo implements ConnectionOwnerOpe
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
             throw new DatabaseException(e.getMessage());
         }
     }
@@ -81,9 +82,10 @@ public class RootNodeInfo extends DatabaseNodeInfo implements ConnectionOwnerOpe
             DatabaseNode node = getNode();
             DatabaseNodeChildren children = (DatabaseNodeChildren)node.getChildren();
             ConnectionNodeInfo ninfo = (ConnectionNodeInfo)createNodeInfo(this, DatabaseNode.CONNECTION);
-            ninfo.setName(cinfo.getDatabase());
+            ninfo.setName(cinfo.getName());
             ninfo.setUser(cinfo.getUser());
             ninfo.setDatabase(cinfo.getDatabase());
+            ninfo.setSchema(cinfo.getSchema());
             ninfo.setDatabaseConnection(cinfo);
             cons.add(cinfo);
             DatabaseNode cnode = children.createSubnode(ninfo, true);

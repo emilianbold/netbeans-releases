@@ -28,7 +28,7 @@ import org.netbeans.lib.ddl.*;
 /**
 * Connection information
 * This class encapsulates all information needed for connection to database
-* (database and driver url, login name and password). It can create JDBC 
+* (database and driver url, login name, password and schema name). It can create JDBC 
 * connection and feels to be a bean (has propertychange support and customizer).
 * Instances of this class uses explorer option to store information about
 * open connection.
@@ -48,6 +48,9 @@ public class DatabaseConnection implements DBConnection {
     /** User login name */
     private String usr;
 
+    /** Schema name */
+    private String schema;
+
     /** User password */
     private String pwd = ""; //NOI18N
 
@@ -64,6 +67,7 @@ public class DatabaseConnection implements DBConnection {
     public static final String PROP_DATABASE = "database"; //NOI18N
     public static final String PROP_USER = "user"; //NOI18N
     public static final String PROP_PASSWORD = "password"; //NOI18N
+    public static final String PROP_SCHEMA = "schema"; //NOI18N
     public static final String PROP_DRIVERNAME = "drivername"; //NOI18N
     public static final String PROP_NAME = "name"; //NOI18N
 
@@ -86,6 +90,8 @@ public class DatabaseConnection implements DBConnection {
         db = database;
         usr = user;
         pwd = password;
+        name = null;
+        name = getName();
     }
 
     /** Returns driver URL */
@@ -123,6 +129,8 @@ public class DatabaseConnection implements DBConnection {
     /** Returns database URL */
     public String getDatabase()
     {
+        if(db==null)
+            db = new String();
         return db;
     }
 
@@ -135,6 +143,8 @@ public class DatabaseConnection implements DBConnection {
         if (database == null || database.equals(db)) return;
         String olddb = db;
         db = database;
+        name = null;
+        name = getName();
         if(propertySupport!=null)
             propertySupport.firePropertyChange(PROP_DATABASE, olddb, db);
     }
@@ -142,6 +152,8 @@ public class DatabaseConnection implements DBConnection {
     /** Returns user login name */
     public String getUser()
     {
+        if(usr==null)
+            usr = new String();
         return usr;
     }
 
@@ -154,6 +166,8 @@ public class DatabaseConnection implements DBConnection {
         if (user == null || user.equals(usr)) return;
         String oldusr = usr;
         usr = user;
+        name = null;
+        name = getName();
         if(propertySupport!=null)
             propertySupport.firePropertyChange(PROP_USER, oldusr, usr);
     }
@@ -161,12 +175,15 @@ public class DatabaseConnection implements DBConnection {
     /** Returns name of the connection */
     public String getName()
     {
+        if(name==null)
+            name = MessageFormat.format(bundle.getString("ConnectionNodeUniqueName"), // NOI18N
+                        new String[] {getDatabase(), getUser(), getSchema()});
         return name;
     }
 
-    /** Sets user login name
+    /** Sets user name of the connection
     * Fires propertychange event.
-    * @param user New login name
+    * @param value New connection name
     */
     public void setName(String value)
     {
@@ -175,6 +192,29 @@ public class DatabaseConnection implements DBConnection {
         name = value;
         if(propertySupport!=null)
             propertySupport.firePropertyChange(PROP_NAME, old, name);
+    }
+
+    /** Returns user schema name */
+    public String getSchema()
+    {
+        if(schema==null)
+            schema = new String();
+        return schema;
+    }
+
+    /** Sets user schema name
+    * Fires propertychange event.
+    * @param user New login name
+    */
+    public void setSchema(String schema_name)
+    {
+        if (schema_name == null || schema_name.equals(schema)) return;
+        String oldschema = schema;
+        schema = schema_name;
+        name = null;
+        name = getName();
+        if(propertySupport!=null)
+            propertySupport.firePropertyChange(PROP_SCHEMA, oldschema, schema);
     }
 
     /** Returns if password should be remembered */
@@ -218,7 +258,7 @@ public class DatabaseConnection implements DBConnection {
     public Connection createJDBCConnection()
     throws DDLException
     {
-        if (drv == null || db == null || usr == null || pwd == null)
+        if (drv == null || db == null || usr == null || pwd == null )
             throw new DDLException(bundle.getString("EXC_InsufficientConnInfo"));
 
         Properties dbprops = new Properties();
@@ -276,7 +316,7 @@ public class DatabaseConnection implements DBConnection {
     {
         if (obj instanceof DBConnection) {
             DBConnection con = (DBConnection)obj;
-            return db.equals(con.getDatabase());
+            return toString().equals(con.toString());
         }
 
         return false;
@@ -289,10 +329,13 @@ public class DatabaseConnection implements DBConnection {
         drv = (String)in.readObject();
         db = (String)in.readObject();
         usr = (String)in.readObject();
-        pwd = (String)in.readObject();
+//        pwd = (String)in.readObject();
+        schema = (String)in.readObject();
         //		rpwd = (Boolean)in.readObject();
         rpwd = new Boolean(false);
         name = (String)in.readObject();
+        name = null;
+        name = getName();
     }
 
     /** Writes object to stream */
@@ -302,13 +345,15 @@ public class DatabaseConnection implements DBConnection {
         out.writeObject(drv);
         out.writeObject(db);
         out.writeObject(usr);
-        out.writeObject(pwd);
+//        out.writeObject(pwd);
+        out.writeObject(schema);
         //		out.writeObject(rpwd);
         out.writeObject(name);
+        try{Thread.sleep(1000);}catch(Exception e){}
     }
 
     public String toString() {
-        return "Driver:" + drv + "Database:" + db + "User:" + usr;
+        return "Driver:" + drv + "Database:" + db + "User:" + usr + "Schema:" + schema;
     }
 
 }

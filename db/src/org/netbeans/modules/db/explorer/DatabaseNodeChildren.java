@@ -51,9 +51,6 @@ public class DatabaseNodeChildren extends Children.Array
 
                 if (sinfo instanceof DatabaseNodeInfo) {
                     DatabaseNodeInfo dni = (DatabaseNodeInfo) sinfo;
-                    if (dni.getName().equals("Connection")) //NOI18N
-                        //dni.setName(dni.getName() + " " + dni.getDatabase());
-                        dni.setName(dni.getDatabase());
 
                     // aware! in this method is clone of instance dni created    
                     snode = createNode(dni);

@@ -33,34 +33,25 @@ public class AddConnectionAction extends DatabaseAction {
 
     static final long serialVersionUID =5370365696803042542L;
     public void performAction (Node[] activatedNodes) {
-        Node node;
-        if (activatedNodes != null && activatedNodes.length>0)
-            node = activatedNodes[0];
-        else
-            return;
         
         try {
-            DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
-            ConnectionOwnerOperations nfo = (ConnectionOwnerOperations)info.getParent(nodename);
 
-            Vector drvs = RootNode.getOption().getAvailableDrivers();
-            DatabaseConnection cinfo = new DatabaseConnection();
-            if (drvs.size() > 0) {
-                DatabaseDriver drv = (DatabaseDriver)drvs.elementAt(0);
-                cinfo.setDriverName(drv.getName());
-                cinfo.setDriver(drv.getURL());
-            }
+            Node n[] = TopManager.getDefault().getPlaces().nodes().environment().getChildren().findChild("Databases").getChildren().findChild("Drivers").getChildren().getNodes(); //NOI18N
+            Node node;
+            if (n != null && n.length>0)
+                node = n[0];
+            else
+                return;
 
-            NewConnectionDialog cdlg = new NewConnectionDialog(drvs, cinfo);
-            if (cdlg.run())
-                nfo.addConnection((DBConnection)cinfo);
+            SystemAction[] actArr = node.getActions();
+            for(int i=0; i<actArr.length; i++)
+                if(actArr[i] instanceof ConnectUsingDriverAction)
+                    ((DatabaseAction)actArr[i]).performAction(new Node[] {node});
 
-        } catch (ClassNotFoundException exc) {
-            String message = MessageFormat.format(bundle.getString("EXC_ClassNotFound"), new String[] {exc.getMessage()}); // NOI18N
-            TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
-        } catch (Exception exc) {
-            String message = MessageFormat.format(bundle.getString("ERR_UnableToPerformAction"), new String[] {exc.getMessage()}); // NOI18N
+        } catch (Exception e) {
+            String message = MessageFormat.format(bundle.getString("ERR_UnableToPerformOperation"), new String[] {e.getMessage(), ""}); //NOI18N
             TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
         }
+
     }
 }

@@ -45,43 +45,32 @@ public class ConnectionNode extends DatabaseNode implements InstanceCookie {
     public void setInfo(DatabaseNodeInfo nodeinfo) {
         super.setInfo(nodeinfo);
         DatabaseNodeInfo info = getInfo();
-        displayFormat = new java.text.MessageFormat((String)info.get("displayname")); //NOI18N
 
-        String url = info.getDatabase();
+        //String url = info.getDatabase();
         DatabaseOption option = RootNode.getOption();
         Vector cons = option.getConnections();
         Enumeration enu = cons.elements();
-        while (enu.hasMoreElements()) {
-            DatabaseConnection dburl = (DatabaseConnection)enu.nextElement();
-            if (dburl.getDatabase().equals(url)) {
-                String name = dburl.getName();
-                if (name != null && name.length() > 0) setDisplayName(dburl.getName());
-                else setDisplayName((String)info.get(DatabaseNodeInfo.DATABASE));
-            }
-        }
+        setName(info.getName());
 
         info.addConnectionListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getPropertyName().equals(DatabaseNodeInfo.DATABASE))
+                    setConnectionName();
+                if (evt.getPropertyName().equals(DatabaseNodeInfo.SCHEMA))
+                    setConnectionName();
+                if (evt.getPropertyName().equals(DatabaseNodeInfo.USER))
+                    setConnectionName();
                 if (evt.getPropertyName().equals(DatabaseNodeInfo.CONNECTION))
                     update((Connection)evt.getNewValue());
-                if (evt.getPropertyName().equals(DatabaseNodeInfo.DATABASE))
-                    setDisplayName((String)evt.getNewValue());
             }
         });
 
         getCookieSet().add(this);
     }
 
-    public void setName(String name) {
-        String url = getInfo().getDatabase();
-        DatabaseOption option = RootNode.getOption();
-        Vector cons = option.getConnections();
-        Enumeration enu = cons.elements();
-        while (enu.hasMoreElements()) {
-            DatabaseConnection dburl = (DatabaseConnection)enu.nextElement();
-            if (dburl.getDatabase().equals(url))
-                dburl.setName(name);
-        }
+    private void setConnectionName() {
+        String displayName = getInfo().getDatabaseConnection().getName();
+        setDisplayName(displayName);
     }
 
     public String instanceName() {
@@ -101,6 +90,7 @@ public class ConnectionNode extends DatabaseNode implements InstanceCookie {
             String db = info.getDatabase();
             String usr = info.getUser();
             String pwd = info.getPassword();
+            String schema = info.getSchema();
             Object obj =  objclass.newInstance();
 
             met = objclass.getMethod("setDriver", new Class[] {String.class}); //NOI18N
@@ -111,6 +101,8 @@ public class ConnectionNode extends DatabaseNode implements InstanceCookie {
             if (met != null) met.invoke(obj, new String[] {usr});
             met = objclass.getMethod("setPassword", new Class[] {String.class}); //NOI18N
             if (met != null) met.invoke(obj, new String[] {pwd});
+            met = objclass.getMethod("setSchema", new Class[] {String.class}); //NOI18N
+            if (met != null) met.invoke(obj, new String[] {schema});
 
             return obj;
 
@@ -120,24 +112,13 @@ public class ConnectionNode extends DatabaseNode implements InstanceCookie {
         }
     }
 
+    
     private void update(Connection connection) {
         boolean connecting = (connection != null);
         DatabaseNodeChildren children = (DatabaseNodeChildren)getChildren();
         DatabaseNodeInfo info = getInfo();
         setIconBase((String)info.get(connecting ? "activeiconbase" : "iconbase")); //NOI18N
-        String dkey = (connecting ? "activedisplayname" : "displayname"); //NOI18N
-        String fmt = (String)info.get(dkey);
-        if (fmt != null) {
-            //      String dname = MapFormat.format(fmt, info);
-            //      if (dname != null) {
-            //        info.setName(dname);
-            //        setName(dname);
-            //        setDisplayName(dname);
-            displayFormat = new java.text.MessageFormat(fmt);
-            setName((String)info.get(DatabaseNodeInfo.DATABASE));
-            //      }
-        }
-
+        setConnectionName();
         Sheet.Set set = getSheet().get(Sheet.PROPERTIES);
 
         try {
@@ -151,6 +132,16 @@ public class ConnectionNode extends DatabaseNode implements InstanceCookie {
             PropertySupport newdrvprop = createPropertySupport(drvprop.getName(), drvprop.getValueType(), drvprop.getDisplayName(), drvprop.getShortDescription(), info, !connecting);
             set.put(newdrvprop);
             firePropertyChange("driver",drvprop,newdrvprop); //NOI18N
+
+            Node.Property schemaprop = set.get(DatabaseNodeInfo.SCHEMA);
+            PropertySupport newschemaprop = createPropertySupport(schemaprop.getName(), schemaprop.getValueType(), schemaprop.getDisplayName(), schemaprop.getShortDescription(), info, !connecting);
+            set.put(newschemaprop);
+            firePropertyChange("schema",schemaprop,newschemaprop); //NOI18N
+
+            Node.Property dbproductprop = set.get(DatabaseNodeInfo.DBPRODUCT);
+            PropertySupport newdbproductprop = createPropertySupport(dbproductprop.getName(), dbproductprop.getValueType(), dbproductprop.getDisplayName(), dbproductprop.getShortDescription(), info, false);
+            set.put(newdbproductprop);
+            firePropertyChange("dbproduct",dbproductprop,newdbproductprop); //NOI18N
 
             Node.Property usrprop = set.get(DatabaseNodeInfo.USER);
             PropertySupport newusrprop = createPropertySupport(usrprop.getName(), usrprop.getValueType(), usrprop.getDisplayName(), usrprop.getShortDescription(), info, !connecting);

@@ -396,6 +396,18 @@
 				writable = YES;
 			},
 			{
+				code = schema;
+				name = "Schema";
+				class = java.lang.String;
+				writable = YES;
+			},
+			{
+				code = dbproduct;
+				name = "Product";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
 				code = user;
 				name = "User";
 				class = java.lang.String;

@@ -81,6 +81,8 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
     static final String gtabfile = "org/netbeans/modules/db/resources/explorer.plist"; //NOI18N
     static final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); // NOI18N
 
+    transient boolean passwordWasSet = false;
+    
     public static Map getGlobalNodeInfo()
     {
         if (gtab == null) try {
@@ -156,6 +158,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
     /* Owning node */
     WeakReference nodewr = null;
     private PropertyChangeSupport pcs = null;
+    private Set connectionpcsKeys = null;
 
     private PropertyChangeSupport driverpcs = null;
     private Set driverpcsKeys = null;
@@ -237,7 +240,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
         nodewr = new WeakReference(node);
     }
 
-    private PropertyChangeSupport getConnectionPCS()
+    private  PropertyChangeSupport getConnectionPCS()
     {
         if (pcs == null)
             pcs = new PropertyChangeSupport(this);
@@ -268,10 +271,24 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
         return driverpcsKeys;
     }
 
+    /** Returns PropertyChangeSupport used for connection change monitoring */
+    private  Set getConnectionPCSKeys()
+    {
+        if (connectionpcsKeys == null) {
+            connectionpcsKeys = new HashSet();
+            connectionpcsKeys.add(SCHEMA);
+            connectionpcsKeys.add(USER);
+            connectionpcsKeys.add(DATABASE);
+
+        }
+
+        return connectionpcsKeys;
+    }
+
     public Object put(Object key, Object obj)
     {
         Object old = get(key);
-
+        
         if (key == null)
             throw new NullPointerException();
 
@@ -280,11 +297,15 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
         else
             remove(key);
 
-        if (getDriverPCSKeys().contains(key))
+        // TEMP HACK FOR JDBC
+        if(key.equals(DatabaseNodeInfo.PASSWORD))
+            passwordWasSet = true;
+
+        if (getDriverPCSKeys().contains(key)){
             getDriverPCS().firePropertyChange((String)key, old, obj);
-        else
-            if (key.equals(DATABASE))
-                getConnectionPCS().firePropertyChange(DATABASE, old, obj);
+        }
+        if (getConnectionPCSKeys().contains(key))
+            getConnectionPCS().firePropertyChange((String)key, null, obj);
 
         return old;
     }
@@ -409,12 +430,17 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
         }
 
         getConnectionPCS().firePropertyChange(CONNECTION, oldval, con);
+
     }
 
     public DBConnection getDatabaseConnection()
     {
         DatabaseConnection con = new DatabaseConnection(getDriver(), getDatabase(), getUser(), getPassword());
-        con.setRememberPassword(((Boolean)get(REMEMBER_PWD)).booleanValue());
+        if(get(REMEMBER_PWD)!=null)
+            con.setRememberPassword(((Boolean)get(REMEMBER_PWD)).booleanValue());
+        else
+            con.setRememberPassword(new Boolean(false).booleanValue());
+        con.setSchema(getSchema());
         return con;
     }
 
@@ -429,6 +455,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
         put(DRIVER, cinfo.getDriver());
         put(DATABASE, cinfo.getDatabase());
         put(USER, cinfo.getUser());
+        put(SCHEMA, cinfo.getSchema());
         if (pwd != null) put(PASSWORD, pwd);
         put(REMEMBER_PWD, (cinfo.rememberPassword() ? new Boolean(true) : new Boolean(false)));
     }
@@ -571,6 +598,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
         try {
             props.put("user", getUser()); //NOI18N
             props.put("password", getPassword()); //NOI18N
+            props.put("schema", getSchema()); //NOI18N
         } catch (Exception e) { props = null; }
 
         return props;
@@ -724,5 +752,9 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
      */
     public void setDriverSpecification(DriverSpecification driverSpecification) {
         put(DRIVER_SPECIFICATION, driverSpecification);
+    }
+    
+    public boolean isPasswordSet() {
+        return passwordWasSet;
     }
 }
