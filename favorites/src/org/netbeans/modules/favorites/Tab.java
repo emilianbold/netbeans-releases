@@ -113,6 +113,7 @@ implements Runnable, ExplorerManager.Provider {
     protected TreeView initGui () {
         TreeView view = new BeanTreeView();
         view.setRootVisible (true);
+        view.setDragSource (true);
         setLayout(new BorderLayout());
         add (view);
         return view;

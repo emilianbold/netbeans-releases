@@ -105,6 +105,8 @@ public class ProjectTab extends TopComponent
         
         btv = new ProjectTreeView();    // Add the BeanTreeView
         
+        btv.setDragSource (true);
+        
         btv.setRootVisible(false);
         
         add( btv, BorderLayout.CENTER ); 

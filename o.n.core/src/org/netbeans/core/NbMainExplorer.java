@@ -518,6 +518,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
         */
         protected TreeView initGui () {
             TreeView view = new BeanTreeView();
+            view.setDragSource (true);
             setLayout(new BorderLayout());
             add (view);
             return view;
