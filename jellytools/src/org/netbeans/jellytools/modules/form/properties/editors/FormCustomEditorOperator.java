@@ -81,7 +81,7 @@ public class FormCustomEditorOperator extends NbDialogOperator {
      * @return JComboBoxOperator */
     public JComboBoxOperator cboMode() {
         if (_cboMode==null) {
-            _cboMode = new JComboBoxOperator( this, null, 0 );
+            _cboMode = new JComboBoxOperator( this, 0 );
         }
         return _cboMode;
     }

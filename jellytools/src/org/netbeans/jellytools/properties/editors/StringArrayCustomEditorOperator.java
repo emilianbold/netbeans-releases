@@ -107,7 +107,7 @@ public class StringArrayCustomEditorOperator extends NbDialogOperator {
      */
     public JListOperator lstItemList() {
         if (_lstItemList==null) {
-            _lstItemList = new JListOperator( this, null, 0 );
+            _lstItemList = new JListOperator( this, 0 );
         }
         return _lstItemList;
     }
@@ -129,7 +129,7 @@ public class StringArrayCustomEditorOperator extends NbDialogOperator {
      */
     public JTextFieldOperator txtItemText() {
         if (_txtItemText==null) {
-            _txtItemText = new JTextFieldOperator( this, null );
+            _txtItemText = new JTextFieldOperator( this );
         }
         return _txtItemText;
     }

@@ -54,7 +54,7 @@ public class ProcessDescriptorCustomEditorOperator extends NbDialogOperator {
      */
     public JTextAreaOperator txtArgumentKey() {
         if (_txtArgumentKey==null) {
-            _txtArgumentKey = new JTextAreaOperator( this, null, 1 );
+            _txtArgumentKey = new JTextAreaOperator( this, 1 );
         }
         return _txtArgumentKey;
     }
@@ -76,7 +76,7 @@ public class ProcessDescriptorCustomEditorOperator extends NbDialogOperator {
      */
     public JTextFieldOperator txtProcess() {
         if (_txtProcess==null) {
-            _txtProcess = new JTextFieldOperator( this, null, 0 );
+            _txtProcess = new JTextFieldOperator( this, 0 );
         }
         return _txtProcess;
     }
@@ -87,7 +87,7 @@ public class ProcessDescriptorCustomEditorOperator extends NbDialogOperator {
      */
     public JTextAreaOperator txtArguments() {
         if (_txtArguments==null) {
-            _txtArguments = new JTextAreaOperator( this, null, 0 );
+            _txtArguments = new JTextAreaOperator( this, 0 );
         }
         return _txtArguments;
     }
