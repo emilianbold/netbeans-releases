@@ -163,13 +163,13 @@ public abstract class FormProperty extends Node.Property {
     // ----------------------------------------
     // getter, setter & related methods
 
-    public String getDisplayName() {
-        String displayName = super.getDisplayName();
-        if (isChanged())
-            displayName = "<html><b>" + displayName + "</b>"; // NOI18N
-        return displayName;
-    }
-
+//    public String getDisplayName() {
+//        String displayName = super.getDisplayName();
+//        if (isChanged())
+//            displayName = "<html><b>" + displayName + "</b>"; // NOI18N
+//        return displayName;
+//    }
+//
     /** Gets the real value of this property directly from the target object.
      */
     public abstract Object getTargetValue() throws IllegalAccessException,
