@@ -53,12 +53,12 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Service templates -->
     <folder name="Services">
         <folder name="CompilerType">
-            <file name="AntCompiler.settings" url="AntCompiler.settings">
+            <file name="org-apache-tools-ant-module-AntCompiler.settings" url="AntCompiler.settings">
                 <attr boolvalue="true" name="template"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.run.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
             </file>
-            <file name="IndirectAntCompiler.settings" url="IndirectAntCompiler.settings">
+            <file name="org-apache-tools-ant-module-IndirectAntCompiler.settings" url="IndirectAntCompiler.settings">
                 <attr boolvalue="true" name="template"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.run.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
@@ -66,7 +66,7 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
 
         <folder name="Executor">
-            <file name="AntExecutor.settings" url="AntExecutor.settings">
+            <file name="org-apache-tools-ant-module-AntExecutor.settings" url="AntExecutor.settings">
                 <attr boolvalue="true" name="template"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.run.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
@@ -79,12 +79,12 @@ Microsystems, Inc. All Rights Reserved.
   <folder name="Services">
 
     <folder name="CompilerType">
-        <file name="AntCompiler.settings" url="AntCompiler.settings">
+        <file name="org-apache-tools-ant-module-AntCompiler.settings" url="AntCompiler.settings">
             <attr name="SystemFileSystem.layer" stringvalue="project"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.run.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
         </file>
-        <file name="IndirectAntCompiler.settings" url="IndirectAntCompiler.settings">
+        <file name="org-apache-tools-ant-module-IndirectAntCompiler.settings" url="IndirectAntCompiler.settings">
             <attr name="SystemFileSystem.layer" stringvalue="project"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.run.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
@@ -92,7 +92,7 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <folder name="Executor">
-        <file name="AntExecutor.settings" url="AntExecutor.settings">
+        <file name="org-apache-tools-ant-module-AntExecutor.settings" url="AntExecutor.settings">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.run.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
             <attr name="SystemFileSystem.layer" stringvalue="project"/>
@@ -108,7 +108,7 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <folder name="Building">
-        <file name="AntSettings.settings" url="AntSettings.settings">
+        <file name="org-apache-tools-ant-module-AntSettings.settings" url="AntSettings.settings">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
         </file>
