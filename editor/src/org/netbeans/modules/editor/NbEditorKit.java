@@ -136,8 +136,11 @@ public class NbEditorKit extends ExtKit {
     }
     
     public String getContentType() {
+        if( Boolean.getBoolean( "netbeans.debug.exceptions" ) ){ //NOI18N
+            System.out.println("Warning: KitClass "+this.getClass().getName()+" doesn't override the method getContentType.");
+        }
         return (contentTypeTable.containsKey(this.getClass().getName())) ? 
-            (String)contentTypeTable.get(this.getClass().getName()) : null;
+            (String)contentTypeTable.get(this.getClass().getName()) : "text/"+this.getClass().getName().replace('.','_'); //NOI18N
     }
 
     public class NbBuildPopupMenuAction extends BuildPopupMenuAction {
