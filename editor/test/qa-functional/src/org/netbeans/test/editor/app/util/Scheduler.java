@@ -24,6 +24,7 @@ public class Scheduler extends Thread {
     private static Object synchronizeTo = new Object();
     private static boolean allowedToCreate = true;
     private ArrayList runnables; /*Of Runable's*/
+    private ArrayList run; /*Of Runable's*/    
     private static Scheduler scheduler = null;
     private boolean shouldFinish = false;
     
@@ -50,80 +51,80 @@ public class Scheduler extends Thread {
     }
     
     public static void finishScheduler() {
-	if (scheduler == null) {
+        if (scheduler == null) {
 /*	    synchronized (synchronizeTo) {
-		if (scheduler == null) {
-		    allowedToCreate = false;
-		}
-	    }*/
-	} else {
-	    getDefault().finish();
-	}
+                if (scheduler == null) {
+                    allowedToCreate = false;
+                }
+            }*/
+        } else {
+            getDefault().finish();
+        }
     }
     
     /** Creates new Scheduler */
     protected Scheduler() {
         runnables = new ArrayList();
+        run = new ArrayList();
         scheduler = this;
     }
     
     public void addTask(Runnable what) {
-	synchronized (runnables) {
-	    runnables.add(what);
-	}
+        synchronized (runnables) {
+            runnables.add(what);
+        }
     }
     
     public void finish() {
         shouldFinish = true;
-//	allowedToCreate = false;
+        //	allowedToCreate = false;
     }
     
     public void run() {
-	boolean finish = false;
-	
-	while (!finish) {
-        while (!shouldFinish || (runnables.size() > 0)) {
-            if (runnables.size() > 0) {
-		Runnable toRun = null;
-		synchronized (runnables) {
-		    toRun = (Runnable)runnables.get(0);
-		    runnables.remove(0);
-		}
-                if (superSafe) {
-                    SwingUtilities.invokeLater(toRun);
-                } else {
+        boolean finish = false;
+        
+        while (!finish) {
+            while (!shouldFinish || (runnables.size() > 0)) {
+                if (runnables.size() > 0) {
+                    Runnable toRun = null;
+                    synchronized (runnables) {
+                        toRun = (Runnable)runnables.get(0);
+                        runnables.remove(0);
+                    }
+                    if (superSafe) {
+                        SwingUtilities.invokeLater(toRun);
+                    } else {
+                        try {
+                            SwingUtilities.invokeAndWait(toRun);
+                        } catch (java.lang.InterruptedException e) {
+                            System.err.println("Unexpected interrupt of invokeAndWait(): " + e);
+                            e.printStackTrace(System.err);
+                        } catch (java.lang.reflect.InvocationTargetException e) {
+                            System.err.println("Unexpected exception in invokeAndWait: " + e);
+                            e.printStackTrace(System.err);
+                        }
+                    }
                     try {
-                        //                  System.err.println("Trying to invoke and wait.");
-                        SwingUtilities.invokeAndWait(toRun);
-                        //                  System.err.println("done.");
-                    } catch (java.lang.InterruptedException e) { 
-                        System.err.println("Unexpected interrupt of invokeAndWait(): " + e);
-                        e.printStackTrace(System.err);
-                    } catch (java.lang.reflect.InvocationTargetException e) {
-                        System.err.println("Unexpected exception in invokeAndWait: " + e);
-                        e.printStackTrace(System.err);
-                    };
-                };
-                try {
-                sleep(10);
-                } catch (InterruptedException e) {
-                    System.err.println("Interrupted.");
-                };
-            } else {
-                yield();
-            };
-/*          if (lock)
-                System.err.println("Scheduler locked!");*/
-        };
-	synchronized (synchronizeTo) {
-	    if (runnables.size() > 0) {
-		finish = false;
-	    } else {
-		finish = true;
-		scheduler = null;
-	    }
-	}
-	}
-    }
-    
+                        sleep(10);
+                    } catch (InterruptedException e) {
+                        System.err.println("Interrupted.");
+                    }
+                } else {
+                    //yield();
+                    try {
+                    sleep(200);
+                    } catch (Exception ex) {
+                    }
+                }
+            }
+            synchronized (synchronizeTo) {
+                if (runnables.size() > 0) {
+                    finish = false;
+                } else {
+                    finish = true;
+                    scheduler = null;
+                }
+            }
+        }
+    }    
 }

@@ -12,21 +12,22 @@
  */
 package org.netbeans.test.editor.app.tests;
 
-//import experimental.Utils;
-import java.io.*;
-//import javasoft.sqe.javatest.*;
-import org.netbeans.test.editor.app.util.WriterOutputStream;
-import org.openide.loaders.DataObject;
-
+import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.security.PermissionCollection;
 import java.security.Permissions;
 import java.security.AllPermission;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Constructor;
+import org.netbeans.test.editor.app.Main;
+
+import org.netbeans.test.editor.app.util.WriterOutputStream;
+//import org.openide.execution.NbClassLoader;
 import org.openide.filesystems.Repository;
 
-public class CallTestGeneric {//implements Test {
+
+public class CallTestGeneric {
     
     private static final boolean debug = true;
     
@@ -43,11 +44,7 @@ public class CallTestGeneric {//implements Test {
     }
     
     public void runTest(String[] args, final PrintWriter log, final PrintWriter ref) throws Exception {
-        //	log("log!");
-        //	ref.println("ref!");
-        //	log.flush();
-        //	ref.flush();
-   /*     PrintStream oout = System.out;
+        PrintStream oout = System.out;
         PrintStream oerr = System.err;
         
         try {
@@ -61,46 +58,26 @@ public class CallTestGeneric {//implements Test {
                 System.err.println("Redirecting System.err and System.out.");
             System.setErr(new PrintStream(new WriterOutputStream(log)));
             System.setOut(new PrintStream(new WriterOutputStream(ref)));
-            */
-/*	if (debug)
-            log("Mounting editortest.jar:");
-        if (debug)
-            log("Unmounting old editortest.jar.");
-        Utils.unmountJar("editortest");
- 
-        if (debug)
-            log("Mounting new editortest.jar.");
-        log.flush();
-        if (!Utils.mountJar("experimental", "editortest_new", "jar")) {
-            log("Unable to mount editortest.jar!");
-            return Status.failed("Unable to mount editortest.jar!");
-        };
- 
-        if (debug)
-            log.print("Mounting editortest.jar done.");*/
-    /*        System.err.println("Before trying to execute:");
-            NbClassLoader cl = new NbClassLoader();
             
+            System.err.println("Before trying to execute:");
+            Main.main(args);
+/*            NbClassLoader cl = new NbClassLoader();
+            System.err.println("Class loader parent: "+cl.getParent());
             PermissionCollection pcoll = new Permissions();
             pcoll.add(new AllPermission());
             cl.setDefaultPermissions(pcoll);
-            
-            Class callTest = cl.loadClass("org.netbeans.test.editor.app.gui.Main");
+ 
+            Class callTest = cl.loadClass("org.netbeans.test.editor.app.Main");
             Method method = callTest.getMethod("main", new Class[] {args.getClass()});
-            
+ 
             System.err.println(method.getReturnType());
-            
-            Object obj = method.invoke(null, new Object[] {args});
+ 
+            Object obj = method.invoke(null, new Object[] {args});*/
         } catch (Exception e) {
             e.printStackTrace(log);
             throw e;
-        } finally {*/
-/*	    if (debug)
-                log ("Unmounting editortest.jar.");
-            Utils.unmountJar ("editortest_new");
-            if (debug)
-                log ("done.");*/
-    /*        System.err.flush();
+        } finally {
+            System.err.flush();
             System.out.flush();
             System.setOut(oout);
             System.setErr(oerr);
@@ -120,6 +97,6 @@ public class CallTestGeneric {//implements Test {
         new CallTestGeneric().runTest(arguments, log, ref);
         
         log.close();
-        ref.close();*/
+        ref.close();
     }
 }
