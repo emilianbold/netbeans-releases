@@ -1115,7 +1115,6 @@ the ${netbeans.dest}/bin/ directory.
              builtmodulesproperty="${built.modules.property}" 
              targetprefix="all-" 
              mergedependentmodules="${merge.dependent.modules}" >
-      <suppress locale="ja" unless="netbeans.japanese"/>
     </nbmerge>
     <chmod perm="ugo+x">
       <fileset dir="${netbeans.dest}">
