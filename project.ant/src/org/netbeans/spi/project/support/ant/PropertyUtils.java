@@ -440,19 +440,20 @@ public class PropertyUtils {
         if (!basedir.isAbsolute()) {
             throw new IllegalArgumentException("nonabsolute basedir passed to resolveFile: " + basedir); // NOI18N
         }
+        File f;
         if (RELATIVE_SLASH_SEPARATED_PATH.matcher(filename).matches()) {
             // Shortcut - simple relative path. Potentially faster.
-            return new File(basedir, filename.replace('/', File.separatorChar));
+            f = new File(basedir, filename.replace('/', File.separatorChar));
         } else {
             // All other cases.
             String machinePath = filename.replace('/', File.separatorChar).replace('\\', File.separatorChar);
-            File f = new File(machinePath);
+            f = new File(machinePath);
             if (!f.isAbsolute()) {
                 f = new File(basedir, machinePath);
             }
             assert f.isAbsolute();
-            return new File(f.toURI().normalize());
         }
+        return FileUtil.normalizeFile(f);
     }
     
     /**
