@@ -25,8 +25,9 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="MyModule unit test config">
     
-    <!-- testbag with all MyModule tests -->
-    <testbag testattribs="all and code" executor="code" name="all tests (no ide)" resultsprocessor="unit">
+    <!-- testbag with all MyModule tests running in code mode (i.e. in standard JVM)
+         use ant runtests -Dxtest.attribs=stable,code to run this testbag  -->
+    <testbag testattribs="all and code" executor="code" name="all tests (no ide)" >
         <testset dir="unit/src">
             <patternset>
 		<include name="HelloWorldTest.class"/>
@@ -35,8 +36,8 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <!-- testbag with tests which does not fail, use -Dxtest.attribute=stable when running ant -->
-    <testbag testattribs="stable and code" executor="code" name="stable tests (no ide)" resultsprocessor="unit">
+    <!-- testbag with tests which does not fail, use ant runtests -Dxtest.attribs=stable,code -->
+    <testbag testattribs="stable and code" executor="code" name="stable tests (no ide)">
         <testset dir="unit/src">
             <patternset>
 		<include name="myorg/*.class"/>
@@ -46,7 +47,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <!-- testbag with failing test (just one method),  use -Dxtest.attribute=failing when running ant  -->
+    <!-- testbag with failing test (just one method)  -->
     <testbag testattribs="failing" executor="code" name="failing tests (no ide)" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
@@ -56,7 +57,8 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
 
 
-    <!-- testbag, which runs all this tests in IDE - it doesn't make sense, but it is for demo purposes -->
+    <!-- testbag with all MyModule tests running in ide mode (i.e. inside NetBeans IDE)
+         use ant runtests -Dxtest.attribs=stable,ide to run this testbag  -->
     <testbag testattribs="all and ide" executor="ide" name="all tests (in ide)" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
@@ -67,7 +69,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
 
 
-    <!-- testbag, which runs all this tests in IDE - it doesn't make sense, but it is for demo purposes -->
+    <!-- testbag with tests which does not fail and run in IDE, use ant runtests -Dxtest.attribs=stable,ide -->
     <testbag testattribs="stable and ide" executor="ide" name="stable tests (in ide)" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
@@ -78,12 +80,23 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-
+    <!-- code excecutor - use this one if you plan to run your tests in standard 
+                          JVM. You can also write your own executor, which will 
+                          then call this one. It is handy when some servers (e.g. rmi registry)
+                          have to be started before tests are run and stopped after
+                          the run. -->
     <executor name="code" antfile="build.xml" target="runcodetest"/>
+    
+    <!-- ide executor - use this one if you plan to run your tests inside IDE (internally).
+                        Similarly as with code executor, you can create your own to 
+                        prepare some neccessary stuff before running tests. -->
     <executor name="ide" antfile="build.xml" target="runidetest"/>
     
-    <compiler name="unit-compiler" default="true" antfile="build.xml" target="unit-compiler"/>
-    
-    <resultsprocessor name="unit" antfile="build.xml" target="test_report"/>
+
+    <compiler name="unit-compiler" antfile="build.xml" target="unit-compiler" default="true"/>
+
+    <!-- standard results processor - currently there is only one results processor
+                                      in XTest -->    
+    <resultsprocessor name="unit" antfile="build.xml" target="test_report" default="true"/>
     
 </mconfig>
