@@ -105,6 +105,13 @@ public class BrokenReferencesSupport {
         }
     }
 
+    /**
+     * Show alert message box informing user that a project has broken
+     * references. This method can be safely called from any thread, e.g. during
+     * the project opening, and it will take care about showing message box only
+     * once for several subsequent calls during a timeout.
+     * The alert box has also "show this warning again" check box.
+     */
     public static synchronized void showAlert() {
         // Do not show alert if it is already shown or if it was shown
         // in last BROKEN_ALERT_TIMEOUT milliseconds or if user do not wish it.
