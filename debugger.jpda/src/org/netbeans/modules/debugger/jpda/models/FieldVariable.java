@@ -13,9 +13,12 @@
 
 package org.netbeans.modules.debugger.jpda.models;
 
+import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.Field;
+import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.Value;
+import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 
 
 /**
@@ -26,13 +29,16 @@ org.netbeans.api.debugger.jpda.Field {
         
     protected Field field;
     private String className;
+    private ObjectReference objectReference;
+    
 
     FieldVariable (
         LocalsTreeModel model,
         Value value,
         String className,
         Field field,
-        String parentID
+        String parentID,
+        ObjectReference objectReference
     ) {
         super (
             model, 
@@ -42,6 +48,7 @@ org.netbeans.api.debugger.jpda.Field {
         );
         this.field = field;
         this.className = className;
+        this.objectReference = objectReference;
     }
 
     FieldVariable (
@@ -95,6 +102,16 @@ org.netbeans.api.debugger.jpda.Field {
      */
     public boolean isStatic () {
         return field.isStatic ();
+    }
+    
+    protected void setValue (Value value) throws InvalidExpressionException {
+        try {
+            objectReference.setValue (field, value);
+        } catch (InvalidTypeException ex) {
+            throw new InvalidExpressionException (ex);
+        } catch (ClassNotLoadedException ex) {
+            throw new InvalidExpressionException (ex);
+        }
     }
 
     

@@ -21,8 +21,35 @@ package org.netbeans.api.debugger.jpda;
  */
 public class InvalidExpressionException extends Exception {
     
+    private Throwable throwable;
+
+    
+    /**
+     * Constructs a InvalidExpressionException with given message.
+     *
+     * @param message a exception message
+     */
     public InvalidExpressionException (String message) {
         super (message);
+    }
+    
+    /**
+     * Constructs a InvalidExpressionException for a given target exception.
+     *
+     * @param t a target exception
+     */
+    public InvalidExpressionException (Throwable t) {
+        super (t.getMessage ());
+        throwable = t;
+    }
+    
+    /**
+     * Get the thrown target exception.
+     *
+     * @return the thrown target exception
+     */
+    public Throwable getTargetException () {
+        return throwable;
     }
 }
 

@@ -86,12 +86,7 @@ public class LocalsTreeModel implements TreeModel {
     throws NoInformationException, UnknownTypeException {
         try {
             if (o.equals (ROOT)) {
-                CallStackFrameImpl sf = (CallStackFrameImpl) debugger.
-                    getCurrentCallStackFrame ();
-                if (sf == null) return new AbstractVariable [0];
-                StackFrame jdiSF = sf.getStackFrame();
-                if (jdiSF == null) return new AbstractVariable [0];
-                return getLocalVariables (jdiSF, true);
+                return getLocalVariables (true);
             } else
             if (o instanceof SuperVariable) {
                 SuperVariable mv = (SuperVariable) o;
@@ -131,18 +126,40 @@ public class LocalsTreeModel implements TreeModel {
         }
     }
     
-    public void fireTreeChanged () {
+    void fireTreeChanged () {
         Vector v = (Vector) listeners.clone ();
         int i, k = v.size ();
         for (i = 0; i < k; i++)
             ((TreeModelListener) v.get (i)).treeChanged ();
     }
+    
+    void fireNodeChanged (Object n) {
+        Vector v = (Vector) listeners.clone ();
+        int i, k = v.size ();
+        for (i = 0; i < k; i++)
+            ((TreeModelListener) v.get (i)).treeNodeChanged (n);
+    }
 
     
     // private methods .........................................................
     
-    AbstractVariable[] getLocalVariables (StackFrame sf, boolean includeThis) 
+    AbstractVariable[] getLocalVariables (boolean includeThis)
     throws NoInformationException {
+        CallStackFrameImpl frame = (CallStackFrameImpl) debugger.
+            getCurrentCallStackFrame ();
+        if (frame == null) return new AbstractVariable [0];
+        return getLocalVariables (
+            frame,
+            includeThis
+        );
+    }
+    
+    AbstractVariable[] getLocalVariables (
+        CallStackFrameImpl frame, 
+        boolean includeThis
+    ) throws NoInformationException {
+        if (frame == null) throw new NoInformationException ("No current thread");
+        StackFrame sf = frame.getStackFrame ();
         if (sf == null) throw new NoInformationException ("No current thread");
         try {
             ObjectReference thisR = sf.thisObject ();
@@ -156,7 +173,7 @@ public class LocalsTreeModel implements TreeModel {
                 locals [i++] = getThis (thisR, "");
             for (; i < k; i++) {
                 LocalVariable lv = (LocalVariable) l.get (j++);
-                locals [i] = getLocal (lv, sf, className);
+                locals [i] = getLocal (lv, frame, className);
             }
             return locals;
         } catch (AbsentInformationException ex) {
@@ -299,13 +316,19 @@ public class LocalsTreeModel implements TreeModel {
         return new ThisVariable (this, thisR, parentID);
     }
     
-    private Local getLocal (LocalVariable lv, StackFrame sf, String className) {
-        Value v = sf.getValue (lv);
+    private Local getLocal (LocalVariable lv, CallStackFrameImpl frame, String className) {
+        Value v = frame.getStackFrame ().getValue (lv);
         if (v instanceof ObjectReference)
-            return new ObjectLocalVariable 
-                (this, (ObjectReference) v, className, lv, debugger.getGenericSignature(lv));
+            return new ObjectLocalVariable (
+                this, 
+                (ObjectReference) v, 
+                className, 
+                lv, 
+                debugger.getGenericSignature (lv), 
+                frame
+            );
         else
-            return new Local (this, v, className, lv);
+            return new Local (this, v, className, lv, frame);
     }
     
     public Variable getVariable (Value v) {
@@ -345,10 +368,11 @@ public class LocalsTreeModel implements TreeModel {
                 className,
                 f,
                 parentID,
-                debugger.getGenericSignature(f)
+                debugger.getGenericSignature(f),
+                or
             );
         else
-            return new FieldVariable (this, v, className, f, parentID);
+            return new FieldVariable (this, v, className, f, parentID, or);
     }
     
     private boolean isLeafChanged (Value v1, Value v2) {

@@ -174,10 +174,19 @@ public class AbstractVariable implements Variable {
     *
     * @param value string representation of value of this variable.
     */
-    public void setValue (String value) throws InvalidExpressionException {
-        setInnerValue (
-            model.getDebugger ().evaluateIn (value)
-        );
+    public void setValue (String expression) throws InvalidExpressionException {
+        // evaluate expression to Value
+        Value value = model.getDebugger ().evaluateIn (expression);
+        // set new value to remote veriable
+        setValue (value);
+        // set new value to this model
+        setInnerValue (value);
+        // refresh tree
+        model.fireNodeChanged (this);
+    }
+    
+    protected void setValue (Value value) throws InvalidExpressionException {
+        throw new InternalError ();
     }
     
     /**

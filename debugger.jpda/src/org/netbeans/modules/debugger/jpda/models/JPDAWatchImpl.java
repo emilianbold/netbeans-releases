@@ -13,9 +13,14 @@
 
 package org.netbeans.modules.debugger.jpda.models;
 
+import com.sun.jdi.AbsentInformationException;
+import com.sun.jdi.ClassNotLoadedException;
+import com.sun.jdi.InvalidTypeException;
+import com.sun.jdi.LocalVariable;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.Value;
 import org.netbeans.api.debugger.Watch;
+import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAWatch;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 
@@ -89,10 +94,49 @@ public class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
     public String getExceptionDescription () {
         return exceptionDescription;
     }
+
+    /**
+    * Sets string representation of value of this variable.
+    *
+    * @param value string representation of value of this variable.
+    */
+    public void setValue (String expression) throws InvalidExpressionException {
+        // evaluate expression to Value
+        Value value = model.getDebugger ().evaluateIn (expression);
+        // set new value to remote veriable
+        setValue (value);
+        // set new value to this model
+        setInnerValue (value);
+        // refresh tree
+        model.fireNodeChanged (this);
+    }
     
     void setInnerValue (Value v) {
         super.setInnerValue (v);
         exceptionDescription = null;
+    }
+    
+    protected void setValue (Value value) throws InvalidExpressionException {
+        CallStackFrameImpl frame = (CallStackFrameImpl) model.getDebugger ().
+            getCurrentCallStackFrame ();
+        if (frame == null)
+            throw new InvalidExpressionException ("No curent frame.");
+        LocalVariable local = null;
+        try {
+            local = frame.getStackFrame ().visibleVariableByName 
+                (getExpression ());
+        } catch (AbsentInformationException ex) {
+            throw new InvalidExpressionException ("Can not set value to expression.");
+        }
+        if (local == null)
+            throw new InvalidExpressionException ("Can not set value to expression.");
+        try {
+            frame.getStackFrame ().setValue (local, value);
+        } catch (InvalidTypeException ex) {
+            throw new InvalidExpressionException (ex);
+        } catch (ClassNotLoadedException ex) {
+            throw new InvalidExpressionException (ex);
+        }
     }
     
     void setException (String exceptionDescription) {

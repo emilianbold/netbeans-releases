@@ -135,11 +135,11 @@ public class WatchesModel implements TreeModel {
             ((TreeModelListener) v.get (i)).treeChanged ();
     }
     
-    void fireNodeChanged (Watch b) {
+    void fireNodeChanged (JPDAWatch w) {
         Vector v = (Vector) listeners.clone ();
         int i, k = v.size ();
         for (i = 0; i < k; i++)
-            ((TreeModelListener) v.get (i)).treeNodeChanged (b);
+            ((TreeModelListener) v.get (i)).treeNodeChanged (w);
     }
     
     

@@ -13,9 +13,12 @@
 
 package org.netbeans.modules.debugger.jpda.models;
 
+import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.Field;
+import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.Value;
+import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 
 
@@ -25,13 +28,17 @@ import org.netbeans.api.debugger.jpda.ObjectVariable;
 public class ObjectFieldVariable extends FieldVariable 
 implements ObjectVariable {
         
+
+    private ObjectReference objectReference;
+    
     ObjectFieldVariable (
         LocalsTreeModel model, 
         ObjectReference value, 
         String className,
         Field field,
         String parentID,
-        String genericSignature
+        String genericSignature,
+        ObjectReference objectReference
     ) {
         super (
             model,
@@ -41,6 +48,17 @@ implements ObjectVariable {
             parentID,
             genericSignature
         );
+        this.objectReference = objectReference;
+    }
+
+    protected void setValue (Value value) throws InvalidExpressionException {
+        try {
+            objectReference.setValue (field, value);
+        } catch (InvalidTypeException ex) {
+            throw new InvalidExpressionException (ex);
+        } catch (ClassNotLoadedException ex) {
+            throw new InvalidExpressionException (ex);
+        }
     }
 
     

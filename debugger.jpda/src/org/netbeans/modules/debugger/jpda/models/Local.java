@@ -13,9 +13,13 @@
 
 package org.netbeans.modules.debugger.jpda.models;
 
+import com.sun.jdi.ClassNotLoadedException;
+import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.LocalVariable;
 import com.sun.jdi.ObjectReference;
+import com.sun.jdi.StackFrame;
 import com.sun.jdi.Value;
+import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 
 
 /**
@@ -24,14 +28,17 @@ import com.sun.jdi.Value;
 public class Local extends AbstractVariable implements 
 org.netbeans.api.debugger.jpda.LocalVariable {
         
-    protected LocalVariable local;
-    private String className;
+    protected LocalVariable     local;
+    private CallStackFrameImpl  frame;
+    private String              className;
 
+    
     Local (
         LocalsTreeModel model,
         Value value, 
         String className,
-        LocalVariable local
+        LocalVariable local,
+        CallStackFrameImpl frame
     ) {
         super (
             model, 
@@ -40,11 +47,23 @@ org.netbeans.api.debugger.jpda.LocalVariable {
                 (value instanceof ObjectReference ? "^" : "")
         );
         this.local = local;
+        this.frame = frame;
         this.className = className;
     }
 
-    Local(LocalsTreeModel model, Value value, String className, LocalVariable local, String genericSignature) {
-        super(model, value, genericSignature, local.name () + (value instanceof ObjectReference ? "^" : ""));
+    Local (
+        LocalsTreeModel model, 
+        Value value, 
+        String className, 
+        LocalVariable local, 
+        String genericSignature
+    ) {
+        super (
+            model, 
+            value, 
+            genericSignature, 
+            local.name () + (value instanceof ObjectReference ? "^" : "")
+        );
         this.local = local;
         this.className = className;
     }
@@ -77,6 +96,16 @@ org.netbeans.api.debugger.jpda.LocalVariable {
     */
     public String getDeclaredType () {
         return local.typeName ();
+    }
+    
+    protected void setValue (Value value) throws InvalidExpressionException {
+        try {
+            frame.getStackFrame ().setValue (local, value);
+        } catch (InvalidTypeException ex) {
+            throw new InvalidExpressionException (ex);
+        } catch (ClassNotLoadedException ex) {
+            throw new InvalidExpressionException (ex);
+        }
     }
     
     // other methods ...........................................................
