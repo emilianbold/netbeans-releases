@@ -20,6 +20,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.Reader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 import javax.swing.JFileChooser;
 
@@ -64,7 +66,7 @@ public class PatchAction extends NodeAction {
                     return false;
                 }
                 FileObject fo = do1.getPrimaryFile();
-                if (fo.isFolder()) return false;
+                //if (fo.isFolder()) return false;
                 try {
                     FileSystem fs = fo.getFileSystem();
                     if (fs.isDefault()) {
@@ -87,15 +89,19 @@ public class PatchAction extends NodeAction {
             FileObject fo = do1.getPrimaryFile();
             File patch = getPatchFor(fo);
             if (patch == null) return ;
-            Difference[] diffs;
+            Patch.FileDifferences[] fileDiffs;
             try {
-                diffs = Patch.parse(new FileReader(patch));
+                fileDiffs = Patch.parse(new FileReader(patch));
             } catch (IOException ioex) {
                 ErrorManager.getDefault().notify(ErrorManager.getDefault().annotate(ioex,
                     NbBundle.getMessage(PatchAction.class, "EXC_PatchParsingFailed", ioex.getLocalizedMessage())));
                 return ;
             }
-            if (diffs.length == 0) {
+            int numDiffs = 0;
+            for (int i = 0; i < fileDiffs.length; i++) {
+                numDiffs += fileDiffs[i].getDifferences().length;
+            }
+            if (numDiffs == 0) {
                 TopManager.getDefault().notify(new NotifyDescriptor.Message(
                     NbBundle.getMessage(PatchAction.class, "MSG_NoDifferences", patch.getName())));
                 return ;
@@ -106,32 +112,91 @@ public class PatchAction extends NodeAction {
                 System.out.println(" Difference "+i+" : "+diffs[i]);
             }
              */
-            applyDiffsTo(diffs, fo);
+            applyFileDiffs(fileDiffs, fo);
+            //createFileBackup(fo);
+            //applyDiffsTo(diffs, fo);
         }
     }
     
     private File getPatchFor(FileObject fo) {
         JFileChooser chooser = new JFileChooser(System.getProperty("user.home"));
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        chooser.setDialogTitle(NbBundle.getMessage(PatchAction.class, "TITLE_SelectPatch", fo.getNameExt()));
+        String title = NbBundle.getMessage(PatchAction.class,
+            (fo.isData()) ? "TITLE_SelectPatchForFile"
+                          : "TITLE_SelectPatchForFolder", fo.getNameExt());
+        chooser.setDialogTitle(title);
         chooser.setApproveButtonText(NbBundle.getMessage(PatchAction.class, "BTN_Patch"));
         chooser.setApproveButtonMnemonic(NbBundle.getMessage(PatchAction.class, "BTN_Patch_mnc").charAt(0));
         chooser.setApproveButtonToolTipText(NbBundle.getMessage(PatchAction.class, "BTN_Patch_tooltip"));
-        int ret = chooser.showDialog(new javax.swing.JFrame(NbBundle.getMessage(PatchAction.class, "TITLE_SelectPatch")),
-                                     null);
+        int ret = chooser.showDialog(new javax.swing.JFrame(title), null);
         if (ret == JFileChooser.APPROVE_OPTION) {
             return chooser.getSelectedFile();
         }
         return null;
     }
     
-    private void applyDiffsTo(Difference[] diffs, FileObject fo) {
+    private void applyFileDiffs(Patch.FileDifferences[] fileDiffs, FileObject fo) {
+        ArrayList notFoundFileNames = new ArrayList();
+        ArrayList appliedFiles = new ArrayList();
+        HashMap backups = new HashMap();
+        for (int i = 0; i < fileDiffs.length; i++) {
+            FileObject file;
+            if (fo.isData()) file = fo;
+            else file = fo.getFileObject(fileDiffs[i].getFileName());
+            if (file == null) {
+                notFoundFileNames.add(fo.getPackageNameExt(File.separatorChar, '.') +
+                                      File.separator + fileDiffs[i].getFileName());
+            } else {
+                FileObject backup = createFileBackup(file);
+                if (applyDiffsTo(fileDiffs[i].getDifferences(), file)) {
+                    appliedFiles.add(file);
+                    backups.put(file, backup);
+                }
+            }
+        }
+        if (notFoundFileNames.size() > 0) {
+            String files = "";
+            for (int i = 0; i < notFoundFileNames.size(); i++) {
+                files += notFoundFileNames.get(i).toString();
+                if (i < notFoundFileNames.size() - 1) {
+                    files += ", ";
+                }
+            }
+            TopManager.getDefault().notify(new NotifyDescriptor.Message(
+                NbBundle.getMessage(PatchAction.class, "MSG_NotFoundFiles", files)));
+        }
+        if (appliedFiles.size() > 0) {
+            Object notifyResult = TopManager.getDefault().notify(
+                new NotifyDescriptor.Confirmation(
+                    NbBundle.getMessage(PatchAction.class, "MSG_PatchAppliedSuccessfully"),
+                    NotifyDescriptor.YES_NO_OPTION));
+            if (NotifyDescriptor.YES_OPTION.equals(notifyResult)) {
+                showDiffs(appliedFiles, backups);
+            }
+        }
+    }
+    
+    private FileObject createFileBackup(FileObject fo) {
+        FileObject parent = fo.getParent();
+        try {
+            FileObject orig = parent.getFileObject(fo.getNameExt(), "orig");
+            if (orig == null) {
+                orig = parent.createData(fo.getNameExt(), "orig");
+            }
+            FileUtil.copy(fo.getInputStream(), orig.getOutputStream(orig.lock()));
+            return orig;
+        } catch (IOException ioex) {
+            return null;
+        }
+    }
+    
+    private boolean applyDiffsTo(Difference[] diffs, FileObject fo) {
         File tmp;
         try {
             tmp = File.createTempFile("patch", "tmp");
         } catch (IOException ioex) {
             ErrorManager.getDefault().notify(ioex);
-            return ;
+            return false;
         }
         tmp.deleteOnExit();
         try {
@@ -141,19 +206,28 @@ public class PatchAction extends NodeAction {
             ErrorManager.getDefault().notify(ErrorManager.getDefault().annotate(ioex,
                 NbBundle.getMessage(PatchAction.class, "EXC_PatchApplicationFailed", ioex.getLocalizedMessage())));
             tmp.delete();
-            return ;
+            return false;
         }
         try {
             FileUtil.copy(new FileInputStream(tmp), fo.getOutputStream(fo.lock()));
         } catch (IOException ioex) {
             ErrorManager.getDefault().notify(ErrorManager.getDefault().annotate(ioex,
                 NbBundle.getMessage(PatchAction.class, "EXC_CopyOfAppliedPatchFailed",
-                                    ioex.getLocalizedMessage(), tmp.getAbsolutePath())));
-            return ;
+                                    fo.getNameExt())));
+            return false;
         }
         tmp.delete();
-        TopManager.getDefault().notify(new NotifyDescriptor.Message(
-            NbBundle.getMessage(PatchAction.class, "MSG_PatchAppliedSuccessfully")));
+        return true;
+        //TopManager.getDefault().notify(new NotifyDescriptor.Message(
+        //    NbBundle.getMessage(PatchAction.class, "MSG_PatchAppliedSuccessfully")));
+    }
+    
+    private void showDiffs(ArrayList files, HashMap backups) {
+        for (int i = 0; i < files.size(); i++) {
+            FileObject file = (FileObject) files.get(i);
+            FileObject backup = (FileObject) backups.get(file);
+            DiffAction.performAction(backup, file);
+        }
     }
 
     public HelpCtx getHelpCtx() {

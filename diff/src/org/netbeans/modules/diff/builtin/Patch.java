@@ -14,13 +14,19 @@
 package org.netbeans.modules.diff.builtin;
 
 import java.io.BufferedReader;
+import java.io.PushbackReader;
 import java.io.Reader;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.regexp.RE;
+import org.apache.regexp.RESyntaxException;
+
 import org.netbeans.api.diff.Difference;
+
+import org.netbeans.modules.diff.cmdline.CmdlineDiffProvider;
 
 /**
  * Utility class for patch application.
@@ -28,6 +34,9 @@ import org.netbeans.api.diff.Difference;
  * @author  Martin Entlicher
  */
 public class Patch extends Reader {
+    
+    private static final int CONTEXT_DIFF = 0;
+    private static final int NORMAL_DIFF = 1;
     
     private Difference[] diffs;
     private BufferedReader source;
@@ -55,9 +64,37 @@ public class Patch extends Reader {
     
     /**
      * Parse the differences.
-     */
+     *
     public static Difference[] parse(Reader source) throws IOException {
         return parseContextDiff(source);
+    }
+     */
+    
+    /**
+     * Parse the differences and corresponding file names.
+     */
+    public static FileDifferences[] parse(Reader source) throws IOException {
+        List fileDifferences = new ArrayList();
+        //int pushBackLimit = DIFFERENCE_DELIMETER.length();
+        //PushbackReader recognizedSource = new PushbackReader(source, pushBackLimit);
+        Patch.SinglePatchReader patchReader = new Patch.SinglePatchReader(source);
+        int[] diffType = new int[1];
+        String[] fileName = new String[1];
+        while (patchReader.hasNextPatch(diffType, fileName)) {
+            Difference[] diffs = null;
+            switch (diffType[0]) {
+                case CONTEXT_DIFF:
+                    diffs = parseContextDiff(patchReader);
+                    break;
+                case NORMAL_DIFF:
+                    diffs = parseNormalDiff(patchReader);
+                    break;
+            }
+            if (diffs != null) {
+                fileDifferences.add(new FileDifferences(fileName[0], diffs));
+            }
+        }
+        return (FileDifferences[]) fileDifferences.toArray(new FileDifferences[fileDifferences.size()]);
     }
     
     public int read(char[] cbuf, int off, int length) throws java.io.IOException {
@@ -287,6 +324,192 @@ public class Patch extends Reader {
                 p1 += 2;
                 p2 += 2;
             }
+        }
+    }
+    
+    private static Difference[] parseNormalDiff(Reader in) throws IOException {
+        RE normRegexp;
+        try {
+            normRegexp = new RE(CmdlineDiffProvider.DIFF_REGEXP);
+        } catch (RESyntaxException rsex) {
+            normRegexp = null;
+        }
+        StringBuffer firstText = new StringBuffer();
+        StringBuffer secondText = new StringBuffer();
+        BufferedReader br = new BufferedReader(in);
+        ArrayList diffs = new ArrayList();
+        String line;
+        while ((line = br.readLine()) != null) {
+            CmdlineDiffProvider.outputLine(line, normRegexp, diffs, firstText, secondText);
+        }
+        CmdlineDiffProvider.setTextOnLastDifference(diffs, firstText, secondText);
+        return (Difference[]) diffs.toArray(new Difference[diffs.size()]);
+    }
+    
+    /**
+     * A reader, that will not read more, than a single patch content
+     * from the supplied reader with possibly more patches.
+     */
+    private static class SinglePatchReader extends Reader {
+        
+        private static final int BUFF_SIZE = 512;
+        private PushbackReader in;
+        private char[] buffer = new char[BUFF_SIZE];
+        private int buffLength = 0;
+        private int buffPos = 0;
+        private boolean isAtEndOfPatch = false;
+        
+        public SinglePatchReader(Reader in) {
+            this.in = new PushbackReader(in, BUFF_SIZE);
+        }
+        
+        public int read(char[] values, int offset, int length) throws java.io.IOException {
+            int totRead = 0;
+            while (length > 0) {
+                int buffCopyLength;
+                if (length < buffLength) {
+                    buffCopyLength = length;
+                    length = 0;
+                } else {
+                    if (buffLength > 0) {
+                        buffCopyLength = buffLength;
+                        length -= buffLength;
+                    } else {
+                        if (isAtEndOfPatch) {
+                            length = 0;
+                            buffCopyLength = -1;
+                        } else {
+                            buffLength = readTillEndOfPatch(buffer);
+                            buffPos = 0;
+                            if (buffLength <= 0) {
+                                buffCopyLength = -1;
+                            } else {
+                                buffCopyLength = Math.min(length, buffLength);
+                                length -= buffCopyLength;
+                            }
+                        }
+                    }
+                }
+                if (buffCopyLength > 0) {
+                    System.arraycopy(buffer, buffPos, values, offset, buffCopyLength);
+                    offset += buffCopyLength;
+                    buffLength -= buffCopyLength;
+                    buffPos += buffCopyLength;
+                    totRead += buffCopyLength;
+                } else {
+                    length = 0;
+                }
+            }
+            if (totRead == 0) totRead = -1;
+            return totRead;
+        }
+        
+        private int readTillEndOfPatch(char[] buffer) throws IOException {
+            int length = in.read(buffer);
+            String input = new String(buffer);
+            int end = 0;
+            if (input.startsWith(FILE_INDEX) || ((end = input.indexOf("\n"+FILE_INDEX))) >= 0) {
+                isAtEndOfPatch = true;
+            } else {
+                end = input.lastIndexOf('\n');
+                if (end >= 0) end++;
+            }
+            if (end >= 0 && end < length) {
+                in.unread(buffer, end, length - end);
+                length = end;
+            }
+            if (end == 0) length = -1;
+            return length;
+        }
+        
+        public void close() throws java.io.IOException {
+            // Do nothing!
+        }
+        
+        private static final String FILE_INDEX = "Index: "; // NOI18N
+        
+        private boolean hasNextPatch(int[] diffType, String[] fileName) throws IOException {
+            isAtEndOfPatch = false; // We're prepared for the next patch
+            PushbackReader patchSource = in;
+            char[] buff = new char[DIFFERENCE_DELIMETER.length()];
+            int length;
+            RE normRegexp;
+            try {
+                normRegexp = new RE(CmdlineDiffProvider.DIFF_REGEXP);
+            } catch (RESyntaxException rsex) {
+                normRegexp = null;
+            }
+            while ((length = patchSource.read(buff)) > 0) {
+                String input = new String(buff, 0, length);
+                int nl = input.indexOf('\n');
+                if (nl >= 0) {
+                    input = input.substring(0, nl);
+                    if (nl + 1 < length) patchSource.unread(buff, nl + 1, length);
+                }
+                if (input.equals(DIFFERENCE_DELIMETER)) {
+                    diffType[0] = CONTEXT_DIFF;
+                    patchSource.unread(buff, 0, length);
+                    return true;
+                } else if (input.startsWith(FILE_INDEX)) {
+                    StringBuffer name = new StringBuffer(input.substring(FILE_INDEX.length()));
+                    if (nl < 0) {
+                        int r;
+                        char c;
+                        while ((c = (char) (r = patchSource.read())) != '\n' && r != -1) {
+                            name.append(c);
+                        }
+                    }
+                    fileName[0] = name.toString();
+                } else if (input.startsWith(CONTEXT_MARK1B)) {
+                    StringBuffer name = new StringBuffer(input.substring(CONTEXT_MARK1B.length()));
+                    String sname = name.toString();
+                    int spaceIndex = sname.indexOf(' ');
+                    if (spaceIndex > 0) {
+                        name = name.delete(spaceIndex, name.length());
+                    }
+                    if (nl < 0) {
+                        int r = 0;
+                        char c = 0;
+                        if (spaceIndex < 0) {
+                            while ((c = (char) (r = patchSource.read())) != '\n' && c != ' ' && r != -1) {
+                                name.append(c);
+                            }
+                        }
+                        if (c != '\n' && r != -1) {
+                            while (((char) (r = patchSource.read())) != '\n' && r != -1) ; // Read the rest of the line
+                        }
+                    }
+                    fileName[0] = name.toString();
+                } else if (normRegexp != null && normRegexp.match(input)) {
+                    diffType[0] = NORMAL_DIFF;
+                    patchSource.unread(buff, 0, length);
+                    return true;
+                } else { // Read the rest of the garbaged line
+                    int r;
+                    while (((char) (r = patchSource.read())) != '\n' && r != -1) ;
+                }
+            }
+            return false;
+        }
+        
+    }
+    
+    public static class FileDifferences extends Object {
+        
+        private String fileName;
+        private Difference[] diffs;
+        
+        public FileDifferences(String fileName, Difference[] diffs) {
+            this.fileName = fileName;
+            this.diffs = diffs;
+        }
+        
+        public final String getFileName() {
+            return fileName;
+        }
+        
+        public final Difference[] getDifferences() {
+            return diffs;
         }
     }
     
