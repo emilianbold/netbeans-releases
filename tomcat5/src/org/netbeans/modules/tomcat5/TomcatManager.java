@@ -40,7 +40,6 @@ import org.xml.sax.*;
 
 import java.io.*;
 
-import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.openide.xml.XMLUtil;
 
 import org.netbeans.modules.tomcat5.config.*;
