@@ -24,7 +24,7 @@ import org.openide.loaders.DataObjectExistsException;
 
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.j2ee.ddloaders.common.*;
+import org.netbeans.modules.j2ee.ddloaders.multiview.*;
 
 /** Recognizes deployment descriptors of ejb modules.
  *
@@ -48,6 +48,7 @@ public class EjbJarDataLoader extends UniFileLoader {
     
     protected SystemAction[] defaultActions () {
         return new SystemAction[] {
+            SystemAction.get (OpenAction.class),
             SystemAction.get (EditAction.class),
             SystemAction.get (FileSystemAction.class),
             null,
@@ -90,8 +91,7 @@ public class EjbJarDataLoader extends UniFileLoader {
 
     protected MultiDataObject createMultiObject (FileObject primaryFile)
     throws DataObjectExistsException, IOException {
-	return new EjbJarDataObject (primaryFile, this);
+        return new EjbJarMultiViewDataObject(primaryFile, this);
     }
-
 
 }
