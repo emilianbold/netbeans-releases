@@ -639,6 +639,8 @@ public class JavaBeansUtil {
      * enough is called a java bean.
      */
     public static boolean isJavaBeanType(Class type) {
+        if (Collection.class.isAssignableFrom(type))
+            return false;
         if (type.isArray()) {
             return isJavaBeanType(type.getComponentType());
         }
@@ -833,6 +835,166 @@ public class JavaBeansUtil {
             out.write("result += minutes;\n");
             out.write("return result;\n");
             out.write("}\n");
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////
+
+    /**
+     * Create a bean with dummy values.
+     * If a bean property write method fails or the constructor to the bean
+     * fails, then a null value is used.
+     */
+    public static Object dummyBean(Class cls, int arraySize) throws java.beans.IntrospectionException {
+
+        // construct a new instance
+        if (!isJavaBeanType(cls)) {
+            return dummyValue(cls, arraySize);
+        }
+        
+        Object obj = null;
+        try {
+            Constructor construct = cls.getConstructor(new Class[0]);
+            obj = construct.newInstance(new Object[0]);
+        } catch (java.lang.NoSuchMethodException e) {
+            e.printStackTrace();
+            return null;
+        } catch (java.lang.InstantiationException e) {
+            e.printStackTrace();
+            return null;
+        } catch (java.lang.IllegalAccessException e) {
+            e.printStackTrace();
+            return null;
+        } catch (java.lang.reflect.InvocationTargetException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        // stuff the bean with the dummy values
+        BeanInfo bi = Introspector.getBeanInfo(cls);
+        PropertyDescriptor[] pds = bi.getPropertyDescriptors();
+
+        for (int i = 0 ; i < pds.length; ++i) {
+            PropertyDescriptor pd = pds[i];
+            Method writer = pd.getWriteMethod();
+            if (writer == null) continue;
+            Class propertyType = pd.getPropertyType();
+            String propertyName = pd.getName();
+            Class declaringClass = writer.getDeclaringClass();
+            if (declaringClass == null || declaringClass.equals(Object.class)) continue;
+            if (propertyType == null) continue;
+
+            Object newValue=null;
+            Object baseValue=null;
+            if (isJavaBeanType(propertyType)) {
+                Class baseType = propertyType;
+                if (propertyType.isArray())
+                    baseType = propertyType.getComponentType();
+                baseValue = dummyBean(baseType, arraySize);
+                if (propertyType.isArray()) {
+                    // if array of beans, set each element
+                    newValue = Array.newInstance(baseType, arraySize);
+                    for (int ii=0; ii<arraySize; ++ii) {
+                        Array.set(newValue, ii, baseValue);
+                    }
+                } else {
+                    newValue = baseValue;
+                }
+            } else {
+                Class baseType = propertyType;
+                if (propertyType.isArray())
+                    baseType = propertyType.getComponentType();
+                baseValue = dummyValue(baseType, arraySize);
+                if (propertyType.isArray()) {
+                    // if array, set each elements
+                    newValue = Array.newInstance(baseType, arraySize);
+                    for (int ii=0; ii<arraySize; ++ii) {
+                        Array.set(newValue, ii, baseValue);
+                    }
+                } else {
+                    newValue = baseValue;
+                }
+            }
+
+            // set the value to property
+            try {
+                writer.invoke(obj, new Object[] {newValue});
+            } catch (java.lang.reflect.InvocationTargetException e) {
+                // Let the null value be used
+                e.printStackTrace();
+            } catch (java.lang.IllegalAccessException e) {
+                // Let the null value be used
+                e.printStackTrace();
+            }
+        }
+
+        // return the dummy bean
+        return obj;
+    }
+
+
+    /**
+     * @return dummy value for a particular type.  If it's not a standard
+     * type, then look for a constructor that takes a single String as
+     * a parameter; if that fails, then return null.
+     */
+    public static Object dummyValue(Class type, int arraySize) { 
+        String typeName = type.getName().intern(); 
+        if (Collection.class.isAssignableFrom(type)) {
+            // if collection - make an arraylist of string
+            ArrayList lst = new ArrayList();
+            for (int ii=0; ii < arraySize; ++ii) {
+                lst.add("collection-element");
+            }
+            return lst;
+        } else if (typeName == "java.lang.String")
+            return "string";
+        else if (typeName == "java.lang.Boolean" || typeName == "boolean")
+            return Boolean.FALSE;
+        else if (typeName == "java.lang.Integer" || typeName == "int")
+            return Integer.valueOf("1");
+        else if (typeName == "java.lang.Long" || typeName == "long")
+            return Long.valueOf("1");
+        else if (typeName == "java.lang.Float" || typeName == "float")
+            return Float.valueOf("1.0");
+        else if (typeName == "java.lang.Double" || typeName == "double")
+            return Double.valueOf("1.0");
+        else if (typeName == "java.lang.Byte" || typeName == "byte")
+            return Byte.valueOf("1");
+        else if (typeName == "java.lang.Short" || typeName == "short")
+            return Short.valueOf("1");
+        else if (typeName == "java.lang.Character" || typeName == "char")
+            return new Character('C');
+        else if (typeName == "java.math.BigDecimal")
+            return new java.math.BigDecimal("1.0");
+        else if (typeName == "java.math.BigInteger")
+            return new java.math.BigInteger("1");
+        else if (typeName == "java.util.Calendar") {
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(new Date());
+            return cal;
+        } else {
+            // all other types, try to construct using string constructor.
+            Constructor c = null;
+	
+            try {
+                Class[] cc = new Class[] {java.lang.String.class};
+                c = type.getDeclaredConstructor(cc);
+                Object[] p = new Object[] {"string"};
+                return c.newInstance(p);
+            } catch (NoSuchMethodException e) {
+                e.printStackTrace();
+                return null;
+            } catch (java.lang.InstantiationException e) {
+                e.printStackTrace();
+                return null;
+            } catch (java.lang.IllegalAccessException e) {
+                e.printStackTrace();
+                return null;
+            } catch (java.lang.reflect.InvocationTargetException e) {
+                e.printStackTrace();
+                return null;
+            }
         }
     }
 }
