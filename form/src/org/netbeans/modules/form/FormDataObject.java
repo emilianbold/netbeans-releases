@@ -93,7 +93,7 @@ static final long serialVersionUID =-975322003627854168L;
     return formEditor;
   }
 
-  FormEditorSupport getFormEditor () {
+  public FormEditorSupport getFormEditor () {
     return (FormEditorSupport)createJavaEditor ();
   }
   
@@ -137,6 +137,8 @@ static final long serialVersionUID =-975322003627854168L;
 
 /*
  * Log
+ *  22   Gandalf   1.21        9/7/99   Ian Formanek    Method getFormEditor 
+ *       made public
  *  21   Gandalf   1.20        8/10/99  Ian Formanek    Generated Serial Version
  *       UID
  *  20   Gandalf   1.19        7/23/99  Ian Formanek    Fixed Bug 2145 - 
