@@ -285,8 +285,9 @@ class ActionFilterNode extends FilterNode {
                         }
                         if (removed) {
                             String[] itemRefs = cs.encodeToStrings(resources.iterator(), webModuleElementName);
+                            System.out.println("XXX: " + itemRefs);
                             props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
-                            props.put (classPathId, itemRefs);
+                            props.setProperty (classPathId, itemRefs);
                             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                             ProjectManager.getDefault().saveProject(project);
                         }

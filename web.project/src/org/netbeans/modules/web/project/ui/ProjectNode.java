@@ -287,7 +287,7 @@ class ProjectNode extends AbstractNode {
                                 if (removed) {
                                     String[] itemRefs = cs.encodeToStrings(resources.iterator(), webModuleElementName);
                                     props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
-                                    props.put (classPathId, itemRefs);
+                                    props.setProperty (classPathId, itemRefs);
                                     helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
 
                                     String ref = "${" + entryId + "}"; //NOI18N
