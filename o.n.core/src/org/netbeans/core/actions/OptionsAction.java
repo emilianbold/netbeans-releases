@@ -134,6 +134,7 @@ public class OptionsAction extends CallableSystemAction {
 
         /** list of String[] that should be expanded when the tree is shown */
         private Collection toExpand;
+        private transient boolean expanded;
 
         private OptionsPanel () {
             setRootContext (initRC ());
@@ -264,14 +265,14 @@ public class OptionsAction extends CallableSystemAction {
                 return;
             }
             
-            if (toExpand == null) {
+            if (expanded) {
                 return;
             }
             
             TTW ttw = (TTW)view;
             ttw.expandTheseNodes (toExpand, getExplorerManager ().getRootContext ());
             
-            toExpand = null;
+            expanded = true;
         }
         
 
@@ -378,7 +379,6 @@ public class OptionsAction extends CallableSystemAction {
             public TTW () {
                 super (new NTM ());
                 
-                
                 refreshColumns (true);
                 addMouseListener (this);
                 weakL = WeakListener.propertyChange (this, SessionManager.getDefault ());
@@ -479,22 +479,22 @@ public class OptionsAction extends CallableSystemAction {
                         Node n = NodeOp.findPath (root, path);
                         if (first == null) {
                             first = n;
-                        } else {
-                            this.expandNode(n);
-                        }
+                        } 
+                        
+                        this.expandNode(n);
                     } catch (NodeNotFoundException ex) {
                         ex.printStackTrace();
                     }
                 }
-                
+
                 if (first != null) {
                     collapseNode (first);
                     expandNode (first);
                 }
             }
-            
         }
-        
+            
+       
         private static class OptionsFilterNode extends FilterNode {
             public OptionsFilterNode () {
                 super (
