@@ -176,6 +176,24 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
         // window
         this.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.AD"));
         
+        // text-field and combo-box
+        
+        if (this.tfClassName != null) {
+            this.tfClassName.setToolTipText(
+                  bundle.getString("JUnitCfgOfCreate.clsName.toolTip"));//NOI18N
+            this.tfClassName.getAccessibleContext().setAccessibleName(
+                  bundle.getString("JUnitCfgOfCreate.clsName.AN"));     //NOI18N
+            this.tfClassName.getAccessibleContext().setAccessibleDescription(
+                  bundle.getString("JUnitCfgOfCreate.clsName.AD"));     //NOI18N
+        }
+        
+        this.cboxLocation.setToolTipText(
+                bundle.getString("JUnitCfgOfCreate.location.toolTip")); //NOI18N
+        this.cboxLocation.getAccessibleContext().setAccessibleName(
+                bundle.getString("JUnitCfgOfCreate.location.AN"));      //NOI18N
+        this.cboxLocation.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("JUnitCfgOfCreate.location.AD"));      //NOI18N
+        
         // check boxes
         this.chkPublic.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkPublic.toolTip"));
         this.chkPublic.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkPublic.AD"));        
