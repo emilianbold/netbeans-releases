@@ -1,6 +1,8 @@
-utilities/group/**/Bundle.properties
-utilities/group/**/*.html
-utilities/loaderswitcher/**/Bundle.properties
-utilities/loaderswitcher/**/*.html
+utilities/group/src/**/Bundle.properties
+utilities/group/src/**/*.html
+utilities/loaderswitcher/src/**/Bundle.properties
+utilities/loaderswitcher/src/**/*.html
 utilities/src/**/Bundle.properties
 utilities/src/**/*.html
+utilities/project/src/**/Bundle.properties
+utilities/project/src/**/*.html
