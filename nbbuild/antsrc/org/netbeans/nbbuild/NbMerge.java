@@ -14,6 +14,7 @@
 package org.netbeans.nbbuild;
 
 import java.io.File;
+import java.util.Hashtable;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -66,11 +67,27 @@ public class NbMerge extends Task {
     }
     
     public void execute () throws BuildException {
+        // Somewhat convoluted code because Project.executeTargets does not
+        // eliminate duplicates when analyzing dependencies! Ecch.
+        Target dummy = new Target ();
+        String dummyName = "nbmerge-" + target.getName ();
+        Hashtable targets = project.getTargets ();
+        while (targets.contains (dummyName))
+            dummyName += "-x";
+        dummy.setName (dummyName);
+        for (int i = 0; i < modules.size (); i++) {
+            String module = (String) modules.elementAt (i);
+            dummy.addDependency (targetprefix + module);
+        }
+        project.addTarget (dummy);
+        project.executeTarget (dummyName);
+
         Deltree deltree = (Deltree) project.createTask ("deltree");
         deltree.setDir (dest);
 	deltree.init ();
         deltree.setLocation (location);
 	deltree.execute ();
+
         for (int i = 0; i < modules.size (); i++) {
             String module = (String) modules.elementAt (i);
 	    String netbeans = topdir + '/' + module + "/netbeans";
@@ -86,14 +103,5 @@ public class NbMerge extends Task {
             copydir.execute ();
         }
     }
-    
-    // Admittedly this is ugly, but the target is not set when init() is called...
-    public void setOwningTarget (Target t) {
-        super.setOwningTarget (t);
-        for (int i = 0; i < modules.size (); i++) {
-            String module = (String) modules.elementAt (i);
-            t.addDependency (targetprefix + module);
-        }
-    }
-    
+
 }
