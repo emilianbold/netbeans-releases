@@ -54,7 +54,7 @@
     <javac srcdir="src" destdir="src">
       <classpath>
         <pathelement location="../openide/netbeans/lib/openide.jar"/>
-	<pathelement location="release/modules/ext/ant.jar"/>
+	<pathelement location="release/lib/ext/ant.jar"/>
 	<pathelement location="release/modules/ext/xalan.jar"/>
 	<pathelement location="release/modules/ext/xerces.jar"/>
 	<!-- Using IDE's version of jaxp + parser, these cannot be overridden: -->
