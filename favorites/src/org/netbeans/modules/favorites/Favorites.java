@@ -15,6 +15,7 @@ package org.netbeans.modules.favorites;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
@@ -25,6 +26,8 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -164,7 +167,16 @@ final class Favorites extends FilterNode {
                         org.openide.ErrorManager.getDefault ().notify (ex);
                     }
                 }
-                return (Node[])list.toArray(new Node[0]);
+                if (Utilities.isWindows()) {
+                    Node n = (Node) key;
+                    Node [] nodes = n.getChildren().getNodes();
+                    Children.Array ch = new Children.Array();
+                    ch.add((Node[]) list.toArray(new Node[0]));
+                    n.setName(NbBundle.getBundle(Favorites.class).getString ("CTL_MyComputer"));
+                    return new Node[] { new FilterNode(n, ch) };
+                } else {
+                    return (Node[])list.toArray(new Node[0]);
+                }
             }
             
             Node node = (Node)key;
