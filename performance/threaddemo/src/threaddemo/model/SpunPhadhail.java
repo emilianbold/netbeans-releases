@@ -51,29 +51,40 @@ final class SpunPhadhail extends Spin {
         return ph;
     }
     
+    private final Phadhail ph;
+    
     private SpunPhadhail(Phadhail ph) {
         super(ph, Spin.SPIN_OFF, starter);
+        this.ph = ph;
     }
     
     /** overridden to recursively wrap phadhails */
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        if (method.getName().equals("toString")) {
-            return "SpunPhadhail<" + super.invoke(proxy, method, args) + ">";
-        } else if (method.getName().equals("lock")) {
+        String mname = method.getName();
+        if (mname.equals("toString")) {
+            return "SpunPhadhail<" + ph + ">";
+        } else if (mname.equals("lock")) {
             return Locks.event();
-        } else {
-            // XXX what about hashCode/equals? Should these be thread-safe?
-            assert method.getName().endsWith("PhadhailListener") || EventQueue.isDispatchThread() : method.getName();
-            if (args != null) {
-                for (int i = 0; i < args.length; i++) {
-                    if (args[i] instanceof PhadhailListener) {
-                        // Need to wrap these too!
-                        Spin spin = new Spin(args[i], Spin.SPIN_OVER, starter);
-                        // XXX should really be refiring different events...
-                        args[i] = spin.getProxy();
-                    }
-                }
+        } else if (mname.equals("equals")) {
+            return args[0] == ph ? Boolean.TRUE : Boolean.FALSE;
+        } else if (mname.equals("hashCode")) {
+            return new Integer(ph.hashCode());
+        } else if (mname.endsWith("PhadhailListener")) {
+            // Can do this synch - it's thread-safe and fast.
+            assert args != null;
+            assert args.length == 1;
+            // Need to wrap this too!
+            Spin spin = new SpunPhadhailListener((PhadhailListener)args[0], (Phadhail)proxy);
+            PhadhailListener l = (PhadhailListener)spin.getProxy();
+            if (mname.equals("addPhadhailListener")) {
+                ph.addPhadhailListener(l);
+            } else {
+                assert mname.equals("removePhadhailListener") : mname;
+                ph.removePhadhailListener(l);
             }
+            return null;
+        } else {
+            assert EventQueue.isDispatchThread() : mname;
             Object result = super.invoke(proxy, method, args);
             if (result instanceof Phadhail) {
                 return forPhadhail((Phadhail)result);
@@ -106,6 +117,46 @@ final class SpunPhadhail extends Spin {
             assert EventQueue.isDispatchThread();
             return kids.length;
         }
+    }
+    
+    private static final class SpunPhadhailListener extends Spin {
+        
+        private final PhadhailListener l;
+        private final Phadhail ph;
+        
+        public SpunPhadhailListener(PhadhailListener l, Phadhail ph) {
+            super(l, Spin.SPIN_OVER, starter);
+            this.l = l;
+            this.ph = ph;
+        }
+        
+        /** overridden to translate PhadhailEvent's */
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            String mname = method.getName();
+            if (mname.equals("toString")) {
+                return "SpunPhadhailListener<" + l + ">";
+            } else if (mname.equals("equals")) {
+                return args[0] == l ? Boolean.TRUE : Boolean.FALSE;
+            } else if (mname.equals("hashCode")) {
+                return new Integer(l.hashCode());
+            } else {
+                assert mname.endsWith("Changed"): mname;
+                assert EventQueue.isDispatchThread() : mname;
+                assert args != null;
+                assert args.length == 1;
+                // Need to translate the original Phadhail event source to the proxy.
+                if (mname.equals("childrenChanged")) {
+                    PhadhailEvent orig = (PhadhailEvent)args[0];
+                    args[0] = PhadhailEvent.create(ph);
+                } else {
+                    assert mname.equals("nameChanged");
+                    PhadhailNameEvent orig = (PhadhailNameEvent)args[0];
+                    args[0] = PhadhailNameEvent.create(ph, orig.getOldName(), orig.getNewName());
+                }
+                return super.invoke(proxy, method, args);
+            }
+        }
+    
     }
     
 }

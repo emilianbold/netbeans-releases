@@ -25,6 +25,7 @@ import threaddemo.locking.Lock;
  * from within a listener callback, or generally without read access.
  * You *can* add/remove listeners from within a listener callback however,
  * or in fact at any other time (without even a lock).
+ * Methods from java.lang.Object (toString, hashCode, equals) can be called at any time.
  * @author Jesse Glick
  */
 public interface Phadhail {

@@ -20,6 +20,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import org.openide.cookies.SaveCookie;
 import org.w3c.dom.*;
@@ -34,6 +36,8 @@ import threaddemo.model.Phadhail;
  * @author Jesse Glick
  */
 public class Refactor {
+    
+    private static final Logger logger = Logger.getLogger(Refactor.class.getName());
     
     /** No instances. */
     private Refactor() {}
@@ -77,13 +81,14 @@ public class Refactor {
                 final Iterator/*<Map.Entry<Phadhail,DomProvider>>*/ it = data.entrySet().iterator();
                 while (it.hasNext() && !cancelled[0]) {
                     Map.Entry e = (Map.Entry)it.next();
+                    // Avoid keeping a reference to the old data, since we have
+                    // cached DomProvider's and such heavyweight stuff open on them:
+                    it.remove();
                     final Phadhail ph = (Phadhail)e.getKey();
+                    logger.log(Level.FINER, "Refactoring {0}", ph);
                     final DomProvider p = (DomProvider)e.getValue();
                     ph.lock().read(new Runnable() {
                         public void run() {
-                            // Avoid keeping a reference to the old data, since we have
-                            // cached DomProvider's and such heavyweight stuff open on them:
-                            it.remove(); // do from inside lock - calls Phadhail.hashCode
                             final String path = ph.getPath();
                             SwingUtilities.invokeLater(new Runnable() {
                                 public void run() {
