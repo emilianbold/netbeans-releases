@@ -447,7 +447,7 @@ public abstract class FormProperty extends Node.Property {
      * setCurrentEditor(...) and getExpliciteEditor().
      */
     public PropertyEditor getPropertyEditor() {
-        PropertyEditor defaultEd = findDefaultEditor();
+        PropertyEditor defaultEd = getCurrentEditor();//findDefaultEditor();
 
         if (!propertyContext.useMultipleEditors()) {
             propertyContext.initPropertyEditor(defaultEd);
@@ -477,7 +477,8 @@ public abstract class FormProperty extends Node.Property {
         propertyContext.initPropertyEditor(editor);
         currentEditor = editor;
 
-        currentEditorChanged(old, editor);
+        if (old != editor)
+            currentEditorChanged(old, editor);
     }
 
     /** Gets the property editor explicitly designated for this property.
