@@ -54,6 +54,10 @@ import org.openidex.search.SearchType;
  * @see SearchTypePanel
  */
 public class SearchPanel extends JPanel implements PropertyChangeListener {
+    
+    /** */
+    public static final String PROP_DIALOG_TITLE
+                               = "Find Files dialog title";             //NOI18N
 
     /** Return status code - returned if Cancel button has been pressed. */
     public static final int RET_CANCEL = 0;
@@ -188,6 +192,10 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
                     }
                 }
         });
+    }
+    
+    void setTitle(String title) {
+        dialogDescriptor.setTitle(title);
     }
 
     private void initAccessibility() {
