@@ -30,6 +30,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -47,7 +48,7 @@ import org.netbeans.modules.websvc.core.Utilities;
  */
 public final class ClientInfo extends JPanel {
 
-    private static final String PROP_ERROR_MESSAGE = "WizardPanel_errorMessage";
+    private static final String PROP_ERROR_MESSAGE = "WizardPanel_errorMessage"; // NOI18N
     
     private static final int WSDL_FROM_FILE = 1;
     private static final int WSDL_FROM_SERVICE = 2;
@@ -84,7 +85,7 @@ public final class ClientInfo extends JPanel {
 	 */
     private void initComponents() {//GEN-BEGIN:initComponents
         java.awt.GridBagConstraints gridBagConstraints;
-        
+
         btnGrpWsdlSource = new javax.swing.ButtonGroup();
         jLblChooseSource = new javax.swing.JLabel();
         jRbnServiceURL = new javax.swing.JRadioButton();
@@ -102,154 +103,153 @@ public final class ClientInfo extends JPanel {
         jTxtPackageName = new javax.swing.JTextField();
         jLblClientType = new javax.swing.JLabel();
         jCbxClientType = new javax.swing.JComboBox();
-        
-        
+
         setLayout(new java.awt.GridBagLayout());
-        
-        jLblChooseSource.setText("Select source of WSDL file for the web service to be added to this module:");
+
+        jLblChooseSource.setText(NbBundle.getMessage(ClientInfo.class, "LBL_WsdlSource"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
         add(jLblChooseSource, gridBagConstraints);
-        
+
         btnGrpWsdlSource.add(jRbnServiceURL);
+        jRbnServiceURL.setText(NbBundle.getMessage(ClientInfo.class, "LBL_WsdlSourceUrl"));
         jRbnServiceURL.setFocusable(false);
-        jRbnServiceURL.setLabel("From URL of running service");
         jRbnServiceURL.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jRbnServiceURLActionPerformed(evt);
             }
         });
-        
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         add(jRbnServiceURL, gridBagConstraints);
-        
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 4, 4);
         add(jTxtWsdlURL, gridBagConstraints);
-        
-        jBtnGetWsdl.setText("Retrieve WSDL");
+
+        jBtnGetWsdl.setText(NbBundle.getMessage(ClientInfo.class, "LBL_RetrieveWsdl"));
         jBtnGetWsdl.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBtnGetWsdlActionPerformed(evt);
             }
         });
-        
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 4, 4);
         add(jBtnGetWsdl, gridBagConstraints);
-        
-        jLblLocalFilename.setText("Local Filename:");
+
+        jLblLocalFilename.setText(NbBundle.getMessage(ClientInfo.class, "LBL_LocalFilename"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.insets = new java.awt.Insets(0, 21, 4, 4);
         add(jLblLocalFilename, gridBagConstraints);
-        
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 4, 4);
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 4, 4);
         add(jTxtLocalFilename, gridBagConstraints);
-        
-        jBtnProxy.setText("Proxy Settings...");
+
+        jBtnProxy.setText(NbBundle.getMessage(ClientInfo.class, "LBL_ProxySettings"));
         jBtnProxy.setFocusable(false);
         jBtnProxy.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBtnProxyActionPerformed(evt);
             }
         });
-        
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
         add(jBtnProxy, gridBagConstraints);
-        
+
         btnGrpWsdlSource.add(jRbnFilesystem);
-        jRbnFilesystem.setLabel("From local filesystem");
+        jRbnFilesystem.setText(NbBundle.getMessage(ClientInfo.class, "LBL_WsdlSourceFilesystem"));
         jRbnFilesystem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jRbnFilesystemActionPerformed(evt);
             }
         });
-        
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         add(jRbnFilesystem, gridBagConstraints);
-        
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
         add(jTxtWsdlFile, gridBagConstraints);
-        
-        jBtnBrowse.setText("Browse...");
+
+        jBtnBrowse.setText(NbBundle.getMessage(ClientInfo.class, "LBL_Browse"));
         jBtnBrowse.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBtnBrowseActionPerformed(evt);
             }
         });
-        
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
         add(jBtnBrowse, gridBagConstraints);
-        
-        jLblProject.setText("Project:");
+
+        jLblProject.setText(NbBundle.getMessage(ClientInfo.class, "LBL_Project"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(8, 4, 0, 4);
         add(jLblProject, gridBagConstraints);
-        
+
         jTxtProject.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
         add(jTxtProject, gridBagConstraints);
-        
-        jLblPackageName.setText("Package name for generated interfaces:");
+
+        jLblPackageName.setText(NbBundle.getMessage(ClientInfo.class, "LBL_PackageName"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         add(jLblPackageName, gridBagConstraints);
-        
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 4, 4);
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 4, 4);
         add(jTxtPackageName, gridBagConstraints);
-        
-        jLblClientType.setText("Web service client type:");
+
+        jLblClientType.setText(NbBundle.getMessage(ClientInfo.class, "LBL_ClientType"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.ipady = 4;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(jLblClientType, gridBagConstraints);
-        
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(jCbxClientType, gridBagConstraints);
-        
+
     }//GEN-END:initComponents
 
     private void jBtnProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnProxyActionPerformed
@@ -328,7 +328,7 @@ public final class ClientInfo extends JPanel {
 
 	private void initUserComponents() {
 //        System.out.println("wizard panel created");
-		setName("Specify Web Service Client Information");
+		setName(NbBundle.getMessage(ClientInfo.class, "TITLE_WebServiceClientWizard")); // NOI18N
 
 		// Register listener on the textFields to make the automatic updates
         jTxtWsdlURL.getDocument().addDocumentListener(new DocumentListener() {
@@ -483,7 +483,7 @@ public final class ClientInfo extends JPanel {
 		// !PW FIXME this lookup call will need to be updated for freeform projects in EA2.
 		WebModuleImplementation wm = (WebModuleImplementation) p.getLookup().lookup(WebModuleImplementation.class);
 		if(WebModule.J2EE_13_LEVEL.equals(wm.getJ2eePlatformVersion())) {
-			wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, "JSR-109 web service clients are not supported in Servlet 2.3 (J2EE 1.3) web applications.");
+			wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "ERR_ClientNotSupported")); // NOI18N
 			return false; // servlet 2.3/j2ee 1.3 webapp project
 		}
 
@@ -492,32 +492,33 @@ public final class ClientInfo extends JPanel {
             WebServicesClientSupport.getWebServicesClientSupport(p.getProjectDirectory());
         List clientStubs = (clientSupport != null) ? clientSupport.getStubDescriptors() : null;
         if(clientStubs == null || clientStubs.size() == 0) {
-			wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, "The current project does not define any web service client stub types.");
+			wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "ERR_NoStubsDefined")); // NOI18N
 			return false; // project with web service client support, but no stub types defined.
         }
 
         if(wsdlSource == WSDL_FROM_SERVICE) {
             String wsdlUrl = jTxtWsdlURL.getText().trim();
             if(wsdlUrl == null || wsdlUrl.length() == 0) {
-                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, "Enter the URL of the service you wish to use.");
+                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "MSG_EnterURL")); // NOI18N
                 return false;
             }
             
             if(retriever == null) {
-                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, "Click <Retrieve WSDL> to download the WSDL file for this service.");
+                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "MSG_RetrieveWSDL")); // NOI18N
                 return false;
             }
             
             if(retriever.getState() < WsdlRetriever.STATUS_COMPLETE) {
-                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, "Download in progress.  Status: " + ((downloadMsg != null) ? downloadMsg : "unknown"));
+                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "MSG_RetrieveWSDL",  // NOI18N
+                    ((downloadMsg != null) ? downloadMsg : NbBundle.getMessage(ClientInfo.class, "LBL_Unknown")))); // NOI18N
                 return false;
             }
             
             if(retriever.getState() > WsdlRetriever.STATUS_COMPLETE) {
                 if(downloadMsg != null) {
-                    wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, "Download failed.  " + downloadMsg);
+                    wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "ERR_DownloadFailed", downloadMsg)); // NOI18N
                 } else {
-                    wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, "Download failed for unknown reason.");
+                    wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "ERR_DownloadFailedUnknown")); // NOI18N
                 }
                 return false;
             }
@@ -530,19 +531,19 @@ public final class ClientInfo extends JPanel {
             String wsdlFilePath = jTxtWsdlFile.getText().trim();
 
             if(wsdlFilePath == null || wsdlFilePath.length() == 0) {
-                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, "Enter the name of the WSDL file representing the service you wish to use.");
+                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "MSG_EnterFilename")); // NOI18N
                 return false; // unspecified WSDL file
             }
 
             File f = new File(wsdlFilePath);
             String wsdlFileText = f.getAbsolutePath();
             if(f == null) {
-                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, "WSDL file is invalid.");
+                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "ERR_WsdlInvalid")); // NOI18N
                 return false; // invalid WSDL file
             }
 
             if(!f.exists()) {
-                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, "WSDL file is does not exist.");
+                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "ERR_WsdlDoesNotExist")); // NOI18N
                 return false; // invalid WSDL file
             }
 
@@ -556,12 +557,12 @@ public final class ClientInfo extends JPanel {
 		String packageName = jTxtPackageName.getText().trim();
 
 		if(packageName == null || packageName.length() == 0) {
-			wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, "Enter the java package where the service interfaces should be generated.");
+			wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "MSG_EnterJavaPackageName")); // NOI18N
 			return false; // unspecified WSDL file
 		}
 
 		if(!Utilities.isJavaPackage(packageName)) {
-			wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, "Package name is invalid.");
+			wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "ERR_PackageInvalid")); // NOI18N
 			return false; // invalid package name
 		}
 
@@ -614,7 +615,7 @@ public final class ClientInfo extends JPanel {
 	private static class WsdlFileFilter extends FileFilter {
 		public boolean accept(File f) {
 			boolean result;
-			if(f.isDirectory() || "wsdl".equalsIgnoreCase(FileUtil.getExtension(f.getName()))) {
+			if(f.isDirectory() || "wsdl".equalsIgnoreCase(FileUtil.getExtension(f.getName()))) { // NOI18N
 				result = true;
 			} else {
 				result = false;
@@ -623,7 +624,7 @@ public final class ClientInfo extends JPanel {
 		}
 
 		public String getDescription() {
-			return "Web Service Descriptor Files (*.wsdl)";
+			return NbBundle.getMessage(ClientInfo.class, "LBL_WsdlFilterDescription"); // NOI18N
 		}
 	}
 }

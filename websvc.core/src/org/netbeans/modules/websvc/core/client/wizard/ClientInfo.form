@@ -13,7 +13,9 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="jLblChooseSource">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Select source of WSDL file for the web service to be added to this module:"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/websvc/core/client/wizard/Bundle.properties" key="LBL_WsdlSource" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
       </Properties>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -26,8 +28,10 @@
         <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
           <ComponentRef name="btnGrpWsdlSource"/>
         </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/websvc/core/client/wizard/Bundle.properties" key="LBL_WsdlSourceUrl" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
         <Property name="focusable" type="boolean" value="false"/>
-        <Property name="label" type="java.lang.String" value="From URL of running service"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jRbnServiceURLActionPerformed"/>
@@ -47,7 +51,9 @@
     </Component>
     <Component class="javax.swing.JButton" name="jBtnGetWsdl">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Retrieve WSDL"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/websvc/core/client/wizard/Bundle.properties" key="LBL_RetrieveWsdl" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jBtnGetWsdlActionPerformed"/>
@@ -60,7 +66,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jLblLocalFilename">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Local Filename:"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/websvc/core/client/wizard/Bundle.properties" key="LBL_LocalFilename" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
       </Properties>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -77,7 +85,9 @@
     </Component>
     <Component class="javax.swing.JButton" name="jBtnProxy">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Proxy Settings..."/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/websvc/core/client/wizard/Bundle.properties" key="LBL_ProxySettings" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
         <Property name="focusable" type="boolean" value="false"/>
       </Properties>
       <Events>
@@ -94,7 +104,9 @@
         <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
           <ComponentRef name="btnGrpWsdlSource"/>
         </Property>
-        <Property name="label" type="java.lang.String" value="From local filesystem"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/websvc/core/client/wizard/Bundle.properties" key="LBL_WsdlSourceFilesystem" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jRbnFilesystemActionPerformed"/>
@@ -114,7 +126,9 @@
     </Component>
     <Component class="javax.swing.JButton" name="jBtnBrowse">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Browse..."/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/websvc/core/client/wizard/Bundle.properties" key="LBL_Browse" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jBtnBrowseActionPerformed"/>
@@ -127,7 +141,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jLblProject">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Project:"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/websvc/core/client/wizard/Bundle.properties" key="LBL_Project" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
       </Properties>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -147,7 +163,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jLblPackageName">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Package name for generated interfaces:"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/websvc/core/client/wizard/Bundle.properties" key="LBL_PackageName" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
       </Properties>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -164,7 +182,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jLblClientType">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Web service client type:"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/websvc/core/client/wizard/Bundle.properties" key="LBL_ClientType" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
       </Properties>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
