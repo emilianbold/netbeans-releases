@@ -631,12 +631,15 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
                 // cookie accepted
                 FileObject fo = obj.getPrimaryFile ();
                 
+                boolean attachListener = true;
                 HoldInstance prevCookie = null;
                 if (toRemove.remove (fo)) {
                     // if the fo is in the map than try to find its cookie
                     prevCookie = (HoldInstance)map.get (fo);
                     if (prevCookie != null && (prevCookie.cookie == null || !prevCookie.cookie.equals (cookie))) {
                         prevCookie = null;
+                        // #49199 - do not add second listener
+                        attachListener = false;
                     }
                 }
                 
@@ -656,9 +659,11 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
                     }
                 
                     // register for changes of PROP_COOKIE property
-                    obj.addPropertyChangeListener (
-                        org.openide.util.WeakListeners.propertyChange (listener, obj)
-                    );
+                    if (attachListener) {
+                        obj.addPropertyChangeListener (
+                            org.openide.util.WeakListeners.propertyChange (listener, obj)
+                        );
+                    }
                     
                     cookies.add (hold);
                 } else {
