@@ -1030,9 +1030,18 @@ public class FreeformProjectGenerator {
         public List/*<String>*/ output;
         public String sourceLevel;
         
+        public String toString() {
+            return "FPG.JCU[packageRoots="+packageRoots+", classpath="+classpath+", output="+output+", sourceLevel="+sourceLevel+"]"; // NOI18N
+        }
+        
         public static final class CP {
             public String classpath;
             public String mode;
+            
+            public String toString() {
+                return "FPG.JCU.CP:[classpath="+classpath+", mode="+mode+", this="+super.toString()+"]"; // NOI18N
+            }
+            
         }
         
     }
