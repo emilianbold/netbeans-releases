@@ -186,6 +186,7 @@ public class CheckoutNeeded extends Task {
         
         try {
             DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            db.setEntityResolver(new org.netbeans.xtest.XTestEntityResolver());
             doc = db.parse(file);
         } catch (SAXException saxe) {
             throw new BuildException( saxe.getMessage() );

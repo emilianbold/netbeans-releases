@@ -38,8 +38,11 @@ public class XTestEntityResolver implements EntityResolver {
         // System.out.println("PublicID = " + pubID + "\nSystemID = " + sysID);
         if ( sysID.equals("http://www.netbeans.org/dtds/xtest-cfg-1_0.dtd") ) {
             return new org.xml.sax.InputSource( new java.io.StringReader( "" ) );
+        } else if ( sysID.equals("http://www.netbeans.org/dtds/xtest-master-config-1_0.dtd") ) {
+            return new org.xml.sax.InputSource( new java.io.StringReader( "" ) );
+        } else {
+            return null;
         }
-        return null;       
     }
     
 }
