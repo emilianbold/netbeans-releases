@@ -491,7 +491,8 @@ Microsystems, Inc. All Rights Reserved.
 
   <folder name="Wizards">
     <folder name="Setup">
-      <file name="org-netbeans-core-ModuleSelectionPanel.instance" />
+      <file name="Module Installation[org-netbeans-core-ModuleSelectionPanel].instance" />
+      <file name="General NetBeans Settings[org-netbeans-core-ui-IDESettingsPanel].instance" />
     </folder>
   </folder>
 
