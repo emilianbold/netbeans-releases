@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Form version="1.0" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+  <SyntheticProperties>
+    <SyntheticProperty name="encoding" type="java.lang.String" value="UTF-8"/>
+  </SyntheticProperties>
+
+  <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout"/>
+  <SubComponents>
+    <Component class="javax.swing.JComboBox" name="combo">
+      <Properties>
+        <Property name="editable" type="boolean" editor="sun.beans.editors.BoolEditor" value="true"/>
+      </Properties>
+      <Constraints>
+        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+          <GridBagConstraints anchor="10" fill="2" gridHeight="1" gridWidth="1" gridX="-1" gridY="-1" insetsBottom="0" insetsLeft="12" insetsRight="11" insetsTop="12" ipadX="0" ipadY="0" weightX="1.0" weightY="0.0"/>
+        </Constraint>
+      </Constraints>
+    </Component>
+    <Container class="javax.swing.JScrollPane" name="scrollPane">
+      <Constraints>
+        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+          <GridBagConstraints anchor="10" fill="1" gridHeight="1" gridWidth="1" gridX="0" gridY="1" insetsBottom="11" insetsLeft="12" insetsRight="11" insetsTop="12" ipadX="0" ipadY="0" weightX="1.0" weightY="1.0"/>
+        </Constraint>
+      </Constraints>
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+      <SubComponents>
+        <Component class="javax.swing.JList" name="list">
+          <Properties>
+            <Property name="selectionMode" type="int" editor="org.openide.util.SwingEditors$SelectionModePropertyEditor" value="0"/>
+          </Properties>
+
+          <Events>
+            <EventHandler event="keyPressed" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="listKeyPressed"/>
+            <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="listMouseClicked"/>
+          </Events>
+          <Constraints>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout$JScrollPaneConstraintsDescription"/>
+          </Constraints>
+        </Component>
+      </SubComponents>
+    </Container>
+  </SubComponents>
+</Form>

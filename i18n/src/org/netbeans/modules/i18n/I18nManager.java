@@ -158,7 +158,8 @@ public class I18nManager {
             if(isFormDataObject(targetDataObject))
                 i18nJavaSupport = new I18nFormSupport(document, (FormDataObject)targetDataObject);
             else
-                i18nJavaSupport = new I18nJavaSupport(document);
+                // At the moment we suppose, targetDataObject is of JavaDataObject type.
+                i18nJavaSupport = new I18nJavaSupport(document, targetDataObject);
             document.putProperty(I18N_SUPPORT_PROP, i18nJavaSupport);
         }
         

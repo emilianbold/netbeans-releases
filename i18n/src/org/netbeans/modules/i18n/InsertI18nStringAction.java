@@ -78,8 +78,8 @@ public class InsertI18nStringAction extends CookieAction {
         StyledDocument document = sec.getDocument();
         if(document == null) {
             // Shouldn't happen.
-            if(Boolean.getBoolean("netbeans.debug.exception")) // NOI18N
-                TopManager.getDefault().notifyException(new InternalError("InsertI18nAction: Document not initialized.")); // NOI18N
+            if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                TopManager.getDefault().notifyException(new InternalError("I18N: InsertI18nAction: Document not initialized.")); // NOI18N
             dataObject = null;            
             return;
         }
@@ -248,7 +248,7 @@ public class InsertI18nStringAction extends CookieAction {
                             // Create field in necessary.
                             I18nUtil.createField(newRbString, dataObject);
                             // Replace string.
-                            document.insertString(position, I18nUtil.getReplaceJavaCode(newRbString), null);
+                            document.insertString(position, I18nUtil.getReplaceJavaCode(newRbString, dataObject), null);
                             
                             InsertI18nComponent.this.close();
                         } catch (IllegalStateException e) {
@@ -313,5 +313,5 @@ public class InsertI18nStringAction extends CookieAction {
             rbPanel.setResourceBundleString(rbString);
         }
   
-    } // End of inner class I18nTopComponent.
+    } // End of inner class InsertI18nTopComponent.
 }
