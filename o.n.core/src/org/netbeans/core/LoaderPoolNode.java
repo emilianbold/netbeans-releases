@@ -202,12 +202,12 @@ public final class LoaderPoolNode extends AbstractNode {
     // clear the cache of loaders
     loadersArray = null;
     
-    myChildren.update ();
-    
     if (loaderPool != null && notifications == 0) {
       loaderPool.superFireChangeEvent(
         new ChangeEvent(loaderPool)
       );
+      
+      myChildren.update ();
     } else {
       // remember that there should be notifications
       notifications++;
@@ -368,7 +368,10 @@ public final class LoaderPoolNode extends AbstractNode {
     }
     
     // ok all we reference to has been processed
-    c.add (d.loader);
+    if (d.loader != null) {
+      c.add (d.loader);
+    }
+    
     m.remove (d.repr);
   }
                               
@@ -557,6 +560,7 @@ public final class LoaderPoolNode extends AbstractNode {
 
 /*
 * Log
+*  20   Gandalf   1.19        5/12/99  Jaroslav Tulach NullPointer fix.
 *  19   Gandalf   1.18        5/11/99  Jaroslav Tulach ToolbarPool changed to 
 *       look better in Open API
 *  18   Gandalf   1.17        5/9/99   Ian Formanek    Fixed bug 1655 - Renaming
