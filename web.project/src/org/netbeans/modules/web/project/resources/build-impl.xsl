@@ -563,7 +563,7 @@ is divided into following sections:
     <target name="-debug-start-debugger">
         <xsl:attribute name="if">netbeans.home</xsl:attribute>
         <xsl:attribute name="depends">init</xsl:attribute>
-        <webproject:nbjpdastart/>
+        <webproject:nbjpdastart name="${{debug.class}}"/>
     </target>
 
     <target name="-debug-start-debuggee-single">
@@ -587,7 +587,7 @@ is divided into following sections:
     <target name="-do-debug-fix">
         <xsl:attribute name="if">netbeans.home</xsl:attribute>
         <xsl:attribute name="depends">init,-pre-debug-fix,compile-single</xsl:attribute>
-        <webproject:nbjpdareload xmlns:webproject="http://www.netbeans.org/ns/j2se-project/1"/>
+        <webproject:nbjpdareload xmlns:webproject="http://www.netbeans.org/ns/web-project/1"/>
     </target>
 
     <target name="debug-fix">
