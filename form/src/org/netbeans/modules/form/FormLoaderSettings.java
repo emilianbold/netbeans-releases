@@ -15,7 +15,7 @@
 package org.netbeans.modules.form;
 
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
+import java.util.*;
 
 import org.openide.options.SystemOption;
 import org.openide.util.HelpCtx;
@@ -146,6 +146,8 @@ public class FormLoaderSettings extends SystemOption {
 
     private static final int MIN_GRID_X = 2;
     private static final int MIN_GRID_Y = 2;
+
+    private static Map containerBeans;
 
 //    static {
 //        String[] defaultPath = java.beans.PropertyEditorManager.getEditorSearchPath();
@@ -439,6 +441,14 @@ public class FormLoaderSettings extends SystemOption {
         paletteTabsVisible = value;
         // fire the PropertyChange
         firePropertyChange(PROP_PALETTE_TABS_VISIBLE, new Boolean(!value), new Boolean(value));
+    }
+
+    public Map getContainerBeans() {
+        return containerBeans;
+    }
+
+    public void setContainerBeans(Map map) {
+        containerBeans = map;
     }
 
     // XXX(-tdt) Hmm, backward compatibility with com.netbeans package name

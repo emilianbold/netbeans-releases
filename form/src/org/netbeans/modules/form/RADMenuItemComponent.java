@@ -19,6 +19,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.*;
 import java.text.MessageFormat;
+import java.util.*;
 
 /** The RADMenuItemComponent represents one menu item component placed on the Form.
  *
@@ -66,7 +67,7 @@ public class RADMenuItemComponent extends RADComponent {
     // Private properties
 
     transient private RADMenuComponent parent;
-    private static java.util.HashMap menusByFM = new java.util.HashMap();
+    private static Map menusByFM = new HashMap();
 
 
     // -----------------------------------------------------------------------------
@@ -89,28 +90,20 @@ public class RADMenuItemComponent extends RADComponent {
     // -----------------------------------------------------------------------------
     // Public interface
 
-    public void setComponent(Class beanClass) {
+    public Object initInstance(Class beanClass) throws Exception {
         type = recognizeType(beanClass);
-        // to initialize the type before calling super.setComponent is crucial,
-        // as the type is used in various methods called from the setComponent
-        //(e.g. the createSyntheticProperties() relies on this order to correctly
-        //  provide no properties for AWT menu separators)
 
-        super.setComponent(beanClass);
+        Object instance = super.initInstance(beanClass);
 
-
-        Object o = getBeanInstance();
-
-        // XXX(-tdt) PopupMenu is a subclass of MenuItem !!
-        /* if (o instanceof MenuItem) { */
-        if (o instanceof MenuItem && !(o instanceof Menu)) {
-            JMenuItem designItem =
-                ((JMenuItem) getDesignTimeMenus(getFormModel()).getDesignTime(o));
+        if (instance instanceof MenuItem && !(instance instanceof Menu)) {
+            JMenuItem designItem = (JMenuItem)
+                getDesignTimeMenus(getFormModel()).getDesignTime(instance);
             designItem.addActionListener(getDefaultActionListener());
         }
-        else if (o instanceof JMenuItem) {
-            ((JMenuItem)o).addActionListener(getDefaultActionListener());
+        else if (instance instanceof JMenuItem) {
+            ((JMenuItem)instance).addActionListener(getDefaultActionListener());
         }
+        return instance;
     }
 
     int getMenuItemType() {
@@ -164,13 +157,13 @@ public class RADMenuItemComponent extends RADComponent {
 
     // to find existing menu if caller does not know about formModel
     public static Object findDesignTimeMenu(Object awtMenu) {
-        Object[] keys = menusByFM.keySet().toArray();
-        
-        for (int i=0; i<keys.length; i++) {
-            DesignTimeMenus dtm =(DesignTimeMenus) menusByFM.get(keys[i]);
-            if (dtm.designTimeMenus.containsKey(awtMenu)) return dtm.designTimeMenus.get(awtMenu);
+        Object result;
+        Iterator it = menusByFM.keySet().iterator();
+        while (it.hasNext()) {
+            DesignTimeMenus dtm = (DesignTimeMenus) menusByFM.get(it.next());
+            if ((result = dtm.designTimeMenus.get(awtMenu)) != null)
+                return result;
         }
-        
         return null;
     }
 
@@ -191,7 +184,7 @@ public class RADMenuItemComponent extends RADComponent {
     // -----------------------------------------------------------------------------
     // Inner classes
     static class DesignTimeMenus {
-        final java.util.HashMap designTimeMenus = new java.util.HashMap();
+        final Map designTimeMenus = new HashMap();
         FormModelListener listener;
 
         DesignTimeMenus(FormModel fm) {

@@ -89,26 +89,23 @@ public class RADComponent implements FormDesignValue {
         readOnly = formModel.isReadOnly();
     }
 
-    /** Initializes the bean represented by this RADComponent.
-     * InstanceCookie is used for creating instance (unless it is InstanceDataObject).
-     * If the instance is already available, call setInstance(...) instead.
+    /** Initializes the bean instance represented by this RADComponent.
+     * A default instance is created for the given bean class.
      */
-    public Object initInstance(InstanceCookie ic)
-    throws InstantiationException, IllegalAccessException {
-        try {
-            if (ic instanceof InstanceDataObject)
-                setComponent(ic.instanceClass());
-            else {
-                Object instance = ic.instanceCreate();
-                setInstance(instance);
-            }
-        }
-        catch (ClassNotFoundException e1) {
-            throw new InstantiationException(e1.getMessage());
-        }
-        catch (java.io.IOException e2) {
-            throw new InstantiationException(e2.getMessage());
-        }
+    public Object initInstance(Class beanClass) throws Exception {
+//    throws InstantiationException, IllegalAccessException
+        // properties and events will be created on first request
+        nameToProperty = new HashMap();
+        syntheticProperties = null;
+        beanProperties = null;
+        beanProperties2 = null;
+        eventsList = null;
+        beanEvents = null;
+
+        beanInfo = null;
+        this.beanClass = beanClass;
+        setBeanInstance(createBeanInstance());
+
         return beanInstance;
     }
 
@@ -119,24 +116,28 @@ public class RADComponent implements FormDesignValue {
      * @param beanClass the class of the bean to be represented by this class
      * @see #setInstance
      */
+    // This method is to be canceled, because it doesn't throw exceptions...
     public void setComponent(Class beanClass) {
         if (this.beanClass != null) {
             throw new IllegalStateException("Component already initialized; current: "+this.beanClass +", new: "+beanClass);// NOI18N
         }
 
+        // properties and events will be created on first request
         nameToProperty = new HashMap();
-
-        this.beanClass = beanClass;
-        setBeanInstance(createBeanInstance());
-        beanInfo = null;
-
-        // properties will be created on first request
         syntheticProperties = null;
         beanProperties = null;
         beanProperties2 = null;
-
         eventsList = null;
         beanEvents = null;
+
+        beanInfo = null;
+        this.beanClass = beanClass;
+        try {
+            setBeanInstance(createBeanInstance());
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     /**
@@ -218,8 +219,9 @@ public class RADComponent implements FormDesignValue {
      * instance is created.
      * @return the instance of the bean that will be used during design time 
      */
-    protected Object createBeanInstance() {
-        return BeanSupport.createBeanInstance(beanClass);
+    protected Object createBeanInstance() throws Exception {
+//    throws InstantiationException, IllegalAccessException
+        return CreationFactory.createDefaultInstance(beanClass);
     }
 
     /** Sets directly the bean instance. Can be overriden - e.g. when some
@@ -283,7 +285,16 @@ public class RADComponent implements FormDesignValue {
     }
 
     public Object cloneBeanInstance(Collection relativeProperties) {
-        Object clone = createBeanInstance();
+        Object clone;
+        try {
+            clone = createBeanInstance();
+        }
+        catch (Exception ex) { // ignore, this should not fail
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                ex.printStackTrace();
+            return null;
+        }
+
         FormUtils.copyPropertiesToBean(getAllBeanProperties(),
                                        clone,
                                        relativeProperties);
@@ -775,19 +786,40 @@ public class RADComponent implements FormDesignValue {
     // -------------
     // innerclasses
 
+    /** Listener class for listening to changes in component's properties.
+     */
     protected class PropertyListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
-            RADComponentNode node = getNodeReference();
-            if (node == null) return;
+            Object source = evt.getSource();
+            if (!(source instanceof FormProperty))
+                return;
 
-            // changes in component's properties should be propagated
-            // to it's node
-            if (FormProperty.PROP_VALUE.equals(evt.getPropertyName()))
-                node.firePropertyChangeHelper(evt.getPropertyName(),
-                                evt.getOldValue(), evt.getNewValue());
+            String propName = ((FormProperty)source).getName();
 
-            else if (FormProperty.CURRENT_EDITOR.equals(evt.getPropertyName()))
-                node.fireComponentPropertySetsChange();
+            if (FormProperty.PROP_VALUE.equals(evt.getPropertyName())) {
+                // property value has changed
+                getFormModel().fireComponentPropertyChanged(
+                                   RADComponent.this,
+                                   propName,
+                                   evt.getOldValue(),
+                                   evt.getNewValue());
+
+                if (getNodeReference() != null) // propagate the change to node
+                    getNodeReference().firePropertyChangeHelper(
+                                           propName,
+                                           evt.getOldValue(),
+                                           evt.getNewValue());
+            }
+            else if (FormProperty.CURRENT_EDITOR.equals(evt.getPropertyName())) {
+                // property editor has changed
+                getFormModel().fireComponentPropertyChanged(
+                                   RADComponent.this,
+                                   propName,
+                                   null, null);
+
+                if (getNodeReference() != null) // propagate the change to node
+                    getNodeReference().fireComponentPropertySetsChange();
+            }
         }
     }
 

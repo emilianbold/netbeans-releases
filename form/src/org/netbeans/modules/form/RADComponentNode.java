@@ -508,48 +508,26 @@ public class RADComponentNode extends AbstractNode
     }
 
     // Checks whether the source menu component can be pasted to this component.
-    // (There are some non-trivial restrictions when copying menu components.)
     private boolean canPasteMenuComponent(RADMenuItemComponent sourceMenuComp,
                                           boolean cut) {
         boolean canPaste = false;
-        boolean canPasteAWT = false;
-        boolean canPasteSwing = false;        
 
         if (!(component instanceof RADMenuComponent)) {
             // target component is not a menu component
-            if (component instanceof FormContainer) {
+            if (component instanceof RADVisualFormContainer) {
                 // target component is the form
                 int sourceMenuType = sourceMenuComp.getMenuItemType();
-                canPasteAWT = sourceMenuType == RADMenuItemComponent.T_MENUBAR
-                           || sourceMenuType == RADMenuItemComponent.T_POPUPMENU;
-                canPasteSwing = sourceMenuType == RADMenuItemComponent.T_JMENUBAR
-                             || sourceMenuType == RADMenuItemComponent.T_JPOPUPMENU;
+                canPaste = sourceMenuType == RADMenuItemComponent.T_MENUBAR
+                        || sourceMenuType == RADMenuItemComponent.T_POPUPMENU
+                        || sourceMenuType == RADMenuItemComponent.T_JMENUBAR
+                        || sourceMenuType == RADMenuItemComponent.T_JPOPUPMENU;
             }
         }
         else { // target component is some menu container
-            int menuType = ((RADMenuComponent)component).getMenuItemType();
-            int sourceMenuType = sourceMenuComp.getMenuItemType();
-            
-            if (menuType == RADMenuItemComponent.T_MENUBAR)
-                canPasteAWT = sourceMenuType == RADMenuItemComponent.T_MENU;
-
-            if (menuType == RADMenuItemComponent.T_JMENUBAR)
-                canPasteSwing = sourceMenuType == RADMenuItemComponent.T_JMENU;
-            
-            if (menuType == RADMenuItemComponent.T_MENU || menuType == RADMenuItemComponent.T_POPUPMENU) {
-                canPasteAWT = ((sourceMenuType & RADMenuItemComponent.MASK_AWT) == RADMenuItemComponent.MASK_AWT)
-                              && sourceMenuType != RADMenuItemComponent.T_MENUBAR
-                              && sourceMenuType != RADMenuItemComponent.T_POPUPMENU;
-            }
-            
-            if (menuType == RADMenuItemComponent.T_JMENU || menuType == RADMenuItemComponent.T_JPOPUPMENU) {
-                canPasteSwing = ((sourceMenuType & RADMenuItemComponent.MASK_SWING) == RADMenuItemComponent.MASK_SWING)
-                              && sourceMenuType != RADMenuItemComponent.T_JMENUBAR
-                              && sourceMenuType != RADMenuItemComponent.T_JPOPUPMENU;
-            }
+            canPaste = ((RADMenuComponent)component).canAddItem(
+                                                sourceMenuComp.getBeanClass());
         }
 
-        canPaste = canPasteAWT || canPasteSwing;        
         return canPaste && cut ?
                  canPasteCut(sourceMenuComp) : canPaste;
     }
@@ -739,21 +717,8 @@ public class RADComponentNode extends AbstractNode
             FormModel targetForm = component.getFormModel();
 
             if (!fromCut) { // pasting copy of RADComponent
-                RADComponent newCopy = makeCopy(sourceComponent); //, false);
-                if (newCopy instanceof RADVisualComponent 
-                        && component instanceof RADVisualContainer) {
-                    addVisualComponentCopy((RADVisualComponent)newCopy,
-                                           (RADVisualContainer)component,
-                                           targetForm);
-                }
-                else {
-                    if (sourceComponent instanceof RADMenuItemComponent
-                            && component instanceof RADMenuComponent) {
-                        targetForm.addNonVisualComponent(newCopy, 
-                                     (ComponentContainer)component);
-                    }
-                    else targetForm.addNonVisualComponent(newCopy, null);
-                }
+                targetForm.getComponentCreator()
+                    .copyComponent(sourceComponent, component);
                 return null;
             }
             else { // pasting cut RADComponent (same instance)
@@ -793,105 +758,6 @@ public class RADComponentNode extends AbstractNode
         }
     }
 
-    private RADComponent makeCopy(RADComponent original) {//, boolean assignName) {
-        RADComponent copy;
-        if (original instanceof RADVisualContainer)
-            copy = new RADVisualContainer();
-        else if (original instanceof RADVisualComponent)
-            copy = new RADVisualComponent();
-        else if (original instanceof RADMenuComponent)
-            copy = new RADMenuComponent();
-        else if (original instanceof RADMenuItemComponent)
-            copy = new RADMenuItemComponent();
-        else
-            copy = new RADComponent();
-
-        copy.initialize(component.getFormModel());
-        copy.setComponent(original.getBeanClass());
-        //if (assignName) copyComponent.setName(component.getFormModel().getVariablePool().getNewName(original.getBeanClass()));
-
-        // 1. copy subcomponents
-        if (original instanceof ComponentContainer) {
-            RADComponent[] originalSubs = ((ComponentContainer)original).getSubBeans();
-            RADComponent[] newSubs = new RADComponent[originalSubs.length];
-            for (int i = 0; i < originalSubs.length; i++) {
-                newSubs[i] = makeCopy(originalSubs [i]); //, true);
-            }
-            ((ComponentContainer)copy).initSubComponents(newSubs);
-        }
-
-        // 2. clone LayoutSupport on container
-        if (original instanceof RADVisualContainer) {
-            RADVisualContainer newCont = (RADVisualContainer)copy;
-            LayoutSupport origLS = ((RADVisualContainer)original).getLayoutSupport();
-            if (origLS != null) {
-                try {
-                    LayoutSupport newLS = LayoutSupportRegistry
-                                          .copyLayoutSupport(origLS, newCont);
-                    newCont.setLayoutSupport(newLS);
-                }
-                catch (Exception ex) { // ignore
-                    if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                        ex.printStackTrace();
-                }
-            }
-            else newCont.initLayoutSupport();
-        }
-
-        // 3. copy changed properties
-        RADProperty[] originalProps = original.getAllBeanProperties();
-        RADProperty[] newProps = copy.getAllBeanProperties();
-        if (copy instanceof RADMenuItemComponent) {
-	    // HACK for AWT menuItem components when making COPY
-	    // Label must be updated before copying properties from AWT to Swing designTimeMenus
-            FormUtils.copyProperties(originalProps, newProps, true, true);
-        } else {
-            // maybe it would be OK, if the last parameter (fireChange) will be always true
-            FormUtils.copyProperties(originalProps, newProps, true, false);
-        }
-
-        // 4. copy aux values
-        java.util.Map auxVals = original.getAuxValues();
-        for (Iterator it = auxVals.keySet().iterator(); it.hasNext(); ) {
-            String auxName = (String)it.next();
-            Object auxValue = auxVals.get(auxName);
-            try {
-                copy.setAuxValue(auxName, FormUtils.cloneObject(auxValue));
-            }
-            catch (Exception e) {
-                // ignore aux value with problem
-                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                    e.printStackTrace();
-            }
-        }
-
-        // 5. copy constraints
-        if (original instanceof RADVisualComponent) {
-            Map constraints = ((RADVisualComponent)original).getConstraintsMap();
-            Map newConstraints = new HashMap();
-
-            for (Iterator it = constraints.keySet().iterator(); it.hasNext(); ) {
-                try { // clone constraints description (should be serializable)
-                    Object layoutClassName = it.next();
-                    Object clonedConstraints = FormUtils.cloneBeanInstance(
-                                       constraints.get(layoutClassName), null);
-                    newConstraints.put(layoutClassName, clonedConstraints);
-                }
-                catch (Exception e) { // ignore
-                    if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                        e.printStackTrace();
-                }
-            }
-            ((RADVisualComponent)copy).setConstraintsMap(newConstraints);
-        }
-
-        // 6. copy events
-        // only if copied between forms
-        // [PENDING - Events]
-
-        return copy;
-    }
-
     private void addVisualComponentCopy(RADVisualComponent comp,
                                         RADVisualContainer cont,
                                         FormModel form) {
@@ -917,74 +783,14 @@ public class RADComponentNode extends AbstractNode
         /** Paste.
          */
         public final Transferable paste() throws java.io.IOException {
-            // This paste operation is very similar to adding a new bean.
-            // Should be rewritten to share most code with HandleLayer
-            // (to behave same way, without code duplicating here).
+            InstanceCookie ic = (InstanceCookie)
+                                NodeTransfer.cookie(transferable,
+                                                    NodeTransfer.COPY,
+                                                    InstanceCookie.class);
 
-            InstanceCookie ic = (InstanceCookie)NodeTransfer.cookie(transferable,
-                                      NodeTransfer.COPY, InstanceCookie.class);
-            FormModel formModel = component.getFormModel();
+            component.getFormModel().getComponentCreator()
+                .createComponent(ic, component, null);
 
-            try {
-                Class instanceClass = ic.instanceClass();
-
-                if (Component.class.isAssignableFrom(instanceClass)) {
-                    // visual component
-                    Object isContainer =
-                        Container.class.isAssignableFrom(instanceClass) ?
-                            BeanSupport.createBeanInfo(instanceClass)
-                                .getBeanDescriptor().getValue("isContainer") : // NOI18N
-                            Boolean.FALSE;
-
-                    RADVisualComponent newComp = null;
-                    RADVisualContainer newCont = null;
-                    if (isContainer == null || Boolean.TRUE.equals(isContainer))
-                        newCont = new RADVisualContainer();
-
-                    while (newComp == null) {
-                        // initialize meta-component and its bean instance
-                        newComp = newCont == null ?
-                            new RADVisualComponent() : newCont;
-
-                        newComp.initialize(formModel);
-                        newComp.initInstance(ic);
-
-                        if (newCont != null) {
-                            // initialize LayoutSupport
-                            newCont.initLayoutSupport();
-                            if (newCont.getLayoutSupport() == null) {
-                                // no LayoutSupport found for the container,
-                                // create RADVisualComponent only
-                                newCont = null;
-                                newComp = null;
-                            }
-                        }
-                    }
-
-                    RADVisualContainer parentCont = (RADVisualContainer)component;
-                    formModel.addVisualComponent(newComp, parentCont, null);
-
-                    // for some components, we initialize their properties with some non-default values
-                    // e.g. a label on buttons, checkboxes
-                    FormEditor.defaultComponentInit(newComp);
-                }
-                else { // non-visual component
-                    RADComponent newComp = new RADComponent();
-                    newComp.initialize(formModel);
-                    newComp.initInstance(ic);
-                    formModel.addNonVisualComponent(newComp, null);
-                }
-            }
-            catch (Throwable th) {
-                if (th instanceof ThreadDeath)
-                    throw (ThreadDeath)th;
-                else {
-                    if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                        th.printStackTrace();
-                    TopManager.getDefault().notifyException(th);
-                    // [PENDING - better notification]
-                }
-            }
             return transferable;
         }
     }

@@ -240,7 +240,7 @@ public class PaletteItem implements java.io.Serializable {
                || DesignLayout.class.isAssignableFrom(beanClass);
     }
 
-    public boolean isContainer() {
+/*    public boolean isContainer() {
 //        if (expliciteIsContainer != null)
 //            return expliciteIsContainer.booleanValue(); // explicitly set isContainer flag
 
@@ -255,7 +255,7 @@ public class PaletteItem implements java.io.Serializable {
         }
 
         return PaletteItemNode.canBeContainer(instanceCookie);
-    }
+    } */
 
     public boolean isMenu() {
         return MenuBar.class.isAssignableFrom(beanClass) ||

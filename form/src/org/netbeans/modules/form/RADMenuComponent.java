@@ -27,18 +27,40 @@ import java.util.*;
  */
 public class RADMenuComponent extends RADMenuItemComponent implements ComponentContainer {
 
-    /** Hashtable, where keys are Integer(T_XXX), and values are Class[] - supported NewTypes
-     * for the different menu types */
-    static HashMap supportedNewMenu;
-    /** Init supportedNewMenu table. */
+    /** Map of possible combinations of menus in menus. Menu types (as Integer)
+     * are mapped to supported (sub)menu types (as Class[]).
+     */
+    static Map supportedMenus;
+    
+    /** Initialization of supportedMenus map. */
     static {
-        supportedNewMenu = new HashMap();
-        supportedNewMenu.put(new Integer(T_MENUBAR), new Class[] { Menu.class });
-        supportedNewMenu.put(new Integer(T_MENU), new Class[] { MenuItem.class, CheckboxMenuItem.class, Menu.class });
-        supportedNewMenu.put(new Integer(T_POPUPMENU), new Class[] { MenuItem.class, CheckboxMenuItem.class, Menu.class });
-        supportedNewMenu.put(new Integer(T_JMENUBAR), new Class[] { JMenu.class });
-        supportedNewMenu.put(new Integer(T_JMENU), new Class[] { JMenuItem.class, JCheckBoxMenuItem.class, JRadioButtonMenuItem.class, JMenu.class });
-        supportedNewMenu.put(new Integer(T_JPOPUPMENU), new Class[] { JMenuItem.class, JCheckBoxMenuItem.class, JRadioButtonMenuItem.class, JMenu.class });
+        supportedMenus = new HashMap();
+        supportedMenus.put(new Integer(T_MENUBAR),
+                           new Class[] { Menu.class });
+        supportedMenus.put(new Integer(T_MENU),
+                           new Class[] { MenuItem.class,
+                                         CheckboxMenuItem.class,
+                                         Menu.class,
+                                         Separator.class });
+        supportedMenus.put(new Integer(T_POPUPMENU),
+                           new Class[] { MenuItem.class,
+                                         CheckboxMenuItem.class,
+                                         Menu.class,
+                                         Separator.class });
+        supportedMenus.put(new Integer(T_JMENUBAR),
+                           new Class[] { JMenu.class });
+        supportedMenus.put(new Integer(T_JMENU),
+                           new Class[] { JMenuItem.class,
+                                         JCheckBoxMenuItem.class,
+                                         JRadioButtonMenuItem.class,
+                                         JMenu.class,
+                                         JSeparator.class });
+        supportedMenus.put(new Integer(T_JPOPUPMENU),
+                           new Class[] { JMenuItem.class,
+                                         JCheckBoxMenuItem.class,
+                                         JRadioButtonMenuItem.class,
+                                         JMenu.class,
+                                         JSeparator.class });
     }
 
     // -----------------------------------------------------------------------------
@@ -56,21 +78,29 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
         if (isReadOnly())
             return RADComponent.NO_NEW_TYPES;
 
-        Class[] classes =(Class []) supportedNewMenu.get(new Integer(getMenuItemType()));
+        Class[] classes = (Class[])
+                          supportedMenus.get(new Integer(getMenuItemType()));
 
         if (classes == null)
             return RADComponent.NO_NEW_TYPES;
 
-        NewType separator = createSeparatorNewType();
-        NewType[] types = new NewType[classes.length +((separator != null) ? 1 : 0)];
-
-        for (int i = 0; i < classes.length; i++) {
+        NewType[] types = new NewType[classes.length];
+        for (int i = 0; i < types.length; i++)
             types[i] = new NewMenuType(classes[i]);
-        }
-        if (separator != null)
-            types[types.length - 1] = separator;
 
         return types;
+    }
+
+    public boolean canAddItem(Class itemType) {
+        Class[] classes = (Class[])
+                          supportedMenus.get(new Integer(getMenuItemType()));
+
+        if (classes != null)
+            for (int i=0; i < classes.length; i++)
+                if (classes[i] == itemType) // or more general isAssignableFrom ??
+                    return true;
+
+        return false;
     }
 
     // -------
@@ -301,64 +331,8 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
         super.freeMenu();
     }
 
-    // -----------------------------------------------------------------------------
-    // Debug methods
-
-    // -----------------------------------------------------------------------------
+    // -------------
     // Innerclasses
-
-    /** @return NewType for creating separator or null if this node doesn't support it.
-     */
-    private NewType createSeparatorNewType() {
-        int type = getMenuItemType();
-        if (type == T_MENU  ||  type == T_POPUPMENU) return new NewSeparatorType(MASK_AWT);
-        if (type == T_JMENU  ||  type == T_JPOPUPMENU) return new NewSeparatorType(MASK_SWING);
-        return null;
-    }
-
-    /** NewType class for creating the separator */
-    private class NewSeparatorType extends NewType {
-        private int mask;
-        
-        public NewSeparatorType(int m) {
-            mask = m;
-        }
-
-        /** Help context for the creation action.
-         * @return the help context
-         */
-        public org.openide.util.HelpCtx getHelpCtx() {
-            return new org.openide.util.HelpCtx(this.getClass());
-        }
-
-        /** Display name for the creation action. This should be
-         * presented as an item in a menu.
-         *
-         * @return the name of the action
-         */
-        public String getName() {
-            if (mask == MASK_SWING) return "JSeparator";  // NOI18N
-            else return "Separator";  // NOI18N
-        }
-
-        /** Create the object.
-         * @exception IOException if something fails
-         */
-        public void create() throws IOException {
-            RADMenuItemComponent newSeparatorComp = new RADMenuItemComponent();
-            newSeparatorComp.initialize(getFormModel());
-            if (mask == MASK_SWING) {
-                newSeparatorComp.setComponent(JSeparator.class);
-            } else {
-                newSeparatorComp.setComponent(org.netbeans.modules.form.Separator.class);
-            }
-            getFormModel().addNonVisualComponent(newSeparatorComp, RADMenuComponent.this);
-            //XXX(-tdt) addVisualMenu(newSeparatorComp);
-//XXX            getFormModel().selectComponent(newSeparatorComp, false);
-            return;
-        }
-    }
-
 
     /** NewType for creating sub-MenuItem. */
     class NewMenuType extends NewType {
@@ -389,28 +363,8 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
          * @exception IOException if something fails
          */
         public void create() throws IOException {
-            RADMenuItemComponent newMenuComp;
-
-            if ((RADMenuItemComponent.recognizeType(item) & MASK_CONTAINER) == 0) {
-                newMenuComp = new RADMenuItemComponent();
-            }
-            else {
-                newMenuComp = new RADMenuComponent();
-            }
-
-            newMenuComp.initialize(RADMenuComponent.this.getFormModel());
-            newMenuComp.setComponent(item);
-            if (newMenuComp instanceof RADMenuComponent) {
-                ((RADMenuComponent)newMenuComp).initSubComponents(new RADComponent[0]);
-            }
-            RADMenuComponent.this.getFormModel().addNonVisualComponent(newMenuComp, RADMenuComponent.this);
-
-            // for some components, we initialize their properties with some non-default values
-            // e.g. a label on buttons, checkboxes
-            FormEditor.defaultMenuInit(newMenuComp);
-            addVisualMenu(newMenuComp);
-
-//XXX            RADMenuComponent.this.getFormModel().selectComponent(newMenuComp, false);
+            getFormModel().getComponentCreator()
+                .createComponent(item, RADMenuComponent.this, null);
         }
     }
 }

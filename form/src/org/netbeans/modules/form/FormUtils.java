@@ -24,11 +24,13 @@ import javax.swing.JComponent;
 import java.text.MessageFormat;
 
 import org.openide.util.Utilities;
+import org.openide.util.SharedClassObject;
+import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
-import org.netbeans.modules.form.util.*;
-import org.openide.util.NbBundle;
 import org.openide.TopManager;
+
+import org.netbeans.modules.form.util.*;
 
 /**
  * A class that contains utility methods for the formeditor.
@@ -41,6 +43,10 @@ public class FormUtils
 
     private static String PROP_NAME = "PropertyName"; // NOI18N
     private static final boolean debug = System.getProperty("netbeans.debug.form") != null;
+
+    /** The FormLoaderSettings instance */
+    private static FormLoaderSettings formSettings = (FormLoaderSettings)
+                   SharedClassObject.findObject(FormLoaderSettings.class, true);
 
     /** The list of all well-known heavyweight components */
     private static Class[] heavyweightComponents;
@@ -468,6 +474,80 @@ public class FormUtils
             return true;
         return false;
     }
+
+    // ---------
+
+    public static boolean isContainer(Class beanClass) {
+        if (beanClass == null || !Container.class.isAssignableFrom(beanClass))
+            return false;
+
+        Map containerBeans = formSettings.getContainerBeans();
+        Boolean isContReg = containerBeans == null ? null :
+                            getRegisteredIsContainer(beanClass, containerBeans);
+        boolean isCont;
+
+        if (isContReg != null)
+            isCont = isContReg.booleanValue();
+        else { // not registered, find "isContainer" attribute in BeanDescriptor
+            Object isContainerValue = null;
+            try {
+                BeanDescriptor desc = Utilities.getBeanInfo(beanClass)
+                                                    .getBeanDescriptor();
+                if (desc != null)
+                   isContainerValue = desc.getValue("isContainer"); // NOI18N
+            }
+            catch (IntrospectionException ex) { // ignore
+                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                    ex.printStackTrace();
+            }
+
+            // can be false only if the attribute is explicitly set to false
+            isCont = isContainerValue instanceof Boolean ?
+                         ((Boolean)isContainerValue).booleanValue() : true;
+
+            setIsContainer(beanClass, isCont);
+        }
+
+        return isCont;
+    }
+
+    public static void setIsContainer(Class beanClass, boolean isContainer) {
+        Map containerBeans = formSettings.getContainerBeans();
+        if (beanClass == null)
+            return;
+
+        if (containerBeans == null) {
+            containerBeans = new HashMap();
+            formSettings.setContainerBeans(containerBeans);
+        }
+
+        containerBeans.put(beanClass.getName(), new Boolean(isContainer));
+    }
+
+    public static void removeIsContainerRegistration(Class beanClass) {
+        Map containerBeans = formSettings.getContainerBeans();
+        if (containerBeans == null || beanClass == null)
+            return;
+
+        containerBeans.remove(beanClass.getName());
+
+        if (containerBeans.isEmpty())
+            formSettings.setContainerBeans(null);
+    }
+
+    private static Boolean getRegisteredIsContainer(Class beanClass, Map map) {
+        Object val = map.get(beanClass.getName());
+        if (val instanceof Boolean)
+            return (Boolean) val;
+
+        if (beanClass.isAssignableFrom(Container.class))
+            return null;
+
+        beanClass = beanClass.getSuperclass();
+        return getRegisteredIsContainer(beanClass, map);
+    }
+
+    // ---------
 
     /** Returns explicit changes in properties classification (preferred, normal,
      * expert). Used for SWING components to correct default (insufficient)

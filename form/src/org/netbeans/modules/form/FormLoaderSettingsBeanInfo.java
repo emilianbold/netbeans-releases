@@ -83,7 +83,9 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                 new PropertyDescriptor(FormLoaderSettings.PROP_WORKSPACE, FormLoaderSettings.class,
                                        "getWorkspace", "setWorkspace"), // NOI18N
                 new PropertyDescriptor(FormLoaderSettings.PROP_PALETTE_TABS_VISIBLE, FormLoaderSettings.class,
-                                       "getPaletteTabsVisible", "setPaletteTabsVisible") // NOI18N
+                                       "getPaletteTabsVisible", "setPaletteTabsVisible"), // NOI18N
+                new PropertyDescriptor("containerBeans", FormLoaderSettings.class, // NOI18N
+                                       "getContainerBeans", "setContainerBeans") // NOI18N
             };
 
 //            desc[0].setDisplayName(formBundle.getString("PROP_INDENT_AWT_HIERARCHY"));
@@ -160,6 +162,8 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
 
             desc[14].setDisplayName(formBundle.getString("PROP_PALETTE_TABS_VISIBLE"));
             desc[14].setShortDescription(formBundle.getString("HINT_PALETTE_TABS_VISIBLE"));
+
+            desc[15].setHidden(true);
         } catch (IntrospectionException ex) {
             throw new InternalError();
         }

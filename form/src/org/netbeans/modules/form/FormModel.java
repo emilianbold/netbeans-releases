@@ -52,6 +52,8 @@ public class FormModel
 
     private final EventListenerList listenerList = new EventListenerList();
 
+    private MetaComponentCreator metaCreator;
+
     private FormDesigner formDesigner;
 
     FormModel() {
@@ -243,6 +245,12 @@ public class FormModel
     // {{{ adding/deleting components, setting layout
     //
 
+    MetaComponentCreator getComponentCreator() {
+        if (metaCreator == null)
+            metaCreator = new MetaComponentCreator(this);
+        return metaCreator;
+    }
+
     /**
      * Check if the names of all subcomponents are valid variables.  This check
      * must be done for cut/paste between two different forms since names of
@@ -309,6 +317,8 @@ public class FormModel
             nonVisualComponents.remove(comp);
             getNonVisualChildren().updateKeys(this);
         }
+
+        fireComponentRemoved(comp);
     }
 
     void deleteComponent(RADComponent comp) {
@@ -330,8 +340,6 @@ public class FormModel
         }
 
         deleteVariables(comp);
-
-        fireComponentRemoved(comp);
     }
 
     // }}}
@@ -495,7 +503,7 @@ public class FormModel
                                              Object propOldVal,
                                              Object propNewVal) {
         t("componentPropertyChanged, component: " // NOI18N
-          + (metacomp != null ? metacomp.getName() : "null") // NOI18N
+          + (metacomp != null ? metacomp.getName() : "<null component>") // NOI18N
           + ", property: " + propName); // NOI18N
         FormModelEvent e = new FormModelEvent(this, metacomp,
                                               propName, propOldVal, propNewVal);

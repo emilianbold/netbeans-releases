@@ -358,7 +358,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
                         ), e);
                     return false; // failed to load the component!!!
                 }
-                comp.setComponent(compClass);
+//                comp.setComponent(compClass);
+                comp.initInstance(compClass);
                 comp.setName(compName);
             }
 

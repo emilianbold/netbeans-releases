@@ -184,14 +184,14 @@ public class RADProperty extends FormProperty {
             Object old = postCode;
             postCode = value;
             if (isChangeFiring() && component.getFormModel() != null)
-                component.getFormModel().fireComponentPropertyChanged(
+                component.getFormModel().fireSyntheticPropertyChanged(
                     component, SYNTH_POST_CODE, old, value);
         }
     }
 
     // ----------------------------------
 
-    protected void firePropertyValueChange(Object old, Object current) {
+/*    protected void firePropertyValueChange(Object old, Object current) {
         super.firePropertyValueChange(old, current);
 
         if (isChangeFiring() && component.getFormModel() != null)
@@ -205,7 +205,7 @@ public class RADProperty extends FormProperty {
         if (isChangeFiring() && component.getFormModel() != null)
             component.getFormModel().fireComponentPropertyChanged(component,
                                                   desc.getName(), null, null);
-    }
+    } */
 
     // -------------------
     // innerclasses

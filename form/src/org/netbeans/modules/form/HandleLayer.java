@@ -26,7 +26,6 @@ import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeOp;
-import org.openide.util.datatransfer.NewType;
 import org.openide.awt.MouseUtils;
 import org.openide.util.actions.SystemAction;
 
@@ -326,219 +325,6 @@ class HandleLayer extends JPanel
         }
     }
 
-    private void setComponentBorder(RADComponent metacomp, PaletteItem item) {
-        if (!(metacomp instanceof RADVisualComponent) || !item.isBorder())
-            return;
-
-        if (!(JComponent.class.isAssignableFrom(metacomp.getBeanClass()))) {
-            TopManager.getDefault().notify(new NotifyDescriptor.Message(
-                FormEditor.getFormBundle().getString("MSG_BorderNotApplicable"),
-                                                     NotifyDescriptor.INFORMATION_MESSAGE));
-            return;
-        }
-
-        RADProperty prop = metacomp.getPropertyByName("border");
-        if (prop == null) return;
-
-        try {
-            Object border = item.createInstance();
-            prop.setValue(border);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        formDesigner.setSelectedComponent(metacomp);
-    }
-
-    private void setContainerLayout(RADComponent metacomp, PaletteItem item) {
-        if (!(metacomp instanceof RADVisualComponent)
-                || !item.isLayout())
-            return;
-
-        // get container on which the layout will be set
-        RADVisualContainer metacont = metacomp instanceof RADVisualContainer ?
-            (RADVisualContainer) metacomp :
-            ((RADVisualComponent)metacomp).getParentContainer();
-
-        LayoutSupport layoutSupport = metacont.getLayoutSupport();
-        if (layoutSupport != null
-                && layoutSupport.getLayoutClass() == null
-                && layoutSupport.getClass() != NullLayoutSupport.class)
-            return; // layout cannot be changed
-
-        layoutSupport = null;
-        try {
-            layoutSupport = item.createLayoutSupportInstance();
-        }
-        catch (Exception e) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                e.printStackTrace();
-
-            TopManager.getDefault().notify(
-                new NotifyDescriptor.Message(
-                    MessageFormat.format(
-                        FormEditor.getFormBundle().getString("FMT_ERR_LayoutInit"),
-                        new Object[] { item.getItemClass().getName(),
-                                        e.getClass().getName() }),
-                    NotifyDescriptor.ERROR_MESSAGE));
-            return;
-        }
-
-        if (layoutSupport == null) {
-            TopManager.getDefault().notify(
-                new NotifyDescriptor.Message(
-                    MessageFormat.format(
-                        FormEditor.getFormBundle().getString("FMT_ERR_LayoutNotFound"),
-                        new Object[] { item.getItemClass().getName() }),
-                    NotifyDescriptor.ERROR_MESSAGE));
-            return;
-        }
-
-        metacont.getFormModel().setContainerLayout(metacont, layoutSupport);
-    }
-
-    private void addVisualBean(RADComponent metacomp, PaletteItem item,
-                               MouseEvent e) {
-        if (!(metacomp instanceof RADVisualComponent)
-                || !item.isVisual())
-            return;
-
-        // get parent container into which new component will be added
-        RADVisualContainer parentCont = metacomp instanceof RADVisualContainer ?
-            (RADVisualContainer) metacomp :
-            ((RADVisualComponent)metacomp).getParentContainer();
-
-        RADVisualComponent newMetacomp = null;
-        RADVisualContainer newMetacont = item.isContainer() ?
-            new RADVisualContainer() : null;
-
-        while (newMetacomp == null) {
-            // initialize meta-component and its bean instance
-            newMetacomp = newMetacont == null ?
-                new RADVisualComponent() : newMetacont;
-
-            newMetacomp.initialize(formDesigner.getModel());
-
-            try {
-                newMetacomp.initInstance(item.getInstanceCookie());
-            }
-            catch (Throwable th) {
-                if (th instanceof ThreadDeath)
-                    throw (ThreadDeath)th;
-                else {
-                    showInstErrorMessage(th);
-                    return;
-                }
-            }
-
-            if (newMetacont != null) { // the new component is a container
-                // initialize LayoutSupport
-                newMetacont.initLayoutSupport();
-                if (newMetacont.getLayoutSupport() == null) {
-                    // no LayoutSupport found for the container,
-                    // create RADVisualComponent only
-                    newMetacont = null;
-                    newMetacomp = null;
-                }
-            }
-        }
-
-        Container cont = parentCont.getContainerDelegate(
-                                        formDesigner.getComponent(parentCont));
-        Point p = SwingUtilities.convertPoint(HandleLayer.this,
-                                              e.getPoint(), cont);
-        LayoutSupport.ConstraintsDesc constraints =
-            parentCont.getLayoutSupport().getNewConstraints(cont, p, null, null);
-
-        formDesigner.getModel().addVisualComponent(newMetacomp, parentCont,
-                                                   constraints);
-
-        // for some components, we initialize their properties with some
-        // non-default values e.g. a label on buttons, checkboxes
-        FormEditor.defaultComponentInit(newMetacomp);
-
-        formDesigner.setSelectedComponent(newMetacomp);
-        //formWindow.validate();
-        //fireCodeChange();
-    }
-
-    private void addNonVisualBean(PaletteItem item) {
-        RADComponent newMetacomp = new RADComponent();
-        newMetacomp.initialize(formDesigner.getModel());
-
-        try {
-            newMetacomp.initInstance(item.getInstanceCookie());
-//                newComp = item.createInstance();
-//                newMetacomp.setInstance(newComp);
-        }
-        catch (Throwable th) {
-            if (th instanceof ThreadDeath)
-                throw (ThreadDeath)th;
-            else {
-                showInstErrorMessage(th);
-                return;
-            }
-        }
-
-        formDesigner.getModel().addNonVisualComponent(newMetacomp, null);
-        formDesigner.setSelectedComponent(newMetacomp);
-        //formWindow.validate();
-        //fireCodeChange();
-    }
-
-    private void addMenu(PaletteItem item) {
-        FormModel formModel = formDesigner.getModel();
-
-        RADMenuComponent newMenuComp = new RADMenuComponent();
-        newMenuComp.initialize(formModel);
-        newMenuComp.setComponent(item.getItemClass());
-        newMenuComp.initSubComponents(new RADComponent[0]);
-        formModel.addNonVisualComponent(newMenuComp, null);
-
-        // for some components, we initialize their properties with some
-        // non-default values e.g. a label on buttons, checkboxes
-        FormEditor.defaultMenuInit(newMenuComp);
-
-        NewType[] newTypes = newMenuComp.getNewTypes();
-        if (newTypes.length != 0) {
-            try {
-                newTypes[0].create();
-            } catch (java.io.IOException e) {
-            }
-        }
-
-        FormInfo formInfo = formModel.getFormInfo();
-
-        if ((formInfo instanceof JMenuBarContainer
-             && JMenuBar.class.isAssignableFrom(item.getItemClass()))
-            || (formInfo instanceof MenuBarContainer
-                && MenuBar.class.isAssignableFrom(item.getItemClass()))) {
-
-            RADVisualFormContainer form = (RADVisualFormContainer)
-                                          formModel.getTopRADComponent();
-            if (form.getFormMenu() == null) {
-                form.setFormMenu(newMenuComp.getName());
-                formModel.fireComponentAdded(newMenuComp, null);
-            }
-        }
-
-        formDesigner.setSelectedComponent(newMenuComp);
-        
-        if (formInfo instanceof JMenuBarContainer && MenuBar.class.isAssignableFrom(item.getItemClass())) {
-            TopManager.getDefault().notify(new NotifyDescriptor.Message(
-                FormEditor.getFormBundle().getString("MSG_AWTMenu2SwingNotApplicable"),
-                                                     NotifyDescriptor.INFORMATION_MESSAGE));
-            
-        }
-        
-        if (formInfo instanceof MenuBarContainer && JMenuBar.class.isAssignableFrom(item.getItemClass())) {
-            TopManager.getDefault().notify(new NotifyDescriptor.Message(
-                FormEditor.getFormBundle().getString("MSG_SwingMenu2AWTNotApplicable"),
-                                                     NotifyDescriptor.INFORMATION_MESSAGE));
-            
-        }        
-    }
-
     private void showContextMenu(Point popupPos) {
         ComponentInspector ci = ComponentInspector.getInstance();
         if (ci.getFocusedForm() != formDesigner.getModel())
@@ -549,17 +335,6 @@ class HandleLayer extends JPanel
         if (popup != null) {
             popup.show(HandleLayer.this, popupPos.x, popupPos.y);
         }
-    }
-
-    static private void showInstErrorMessage(Throwable ex) {
-//        if (System.getProperty("netbeans.debug.exceptions") != null)
-            ex.printStackTrace();
-
-        String message = MessageFormat.format(
-            FormEditor.getFormBundle().getString("FMT_ERR_CannotInstantiate"),
-            new Object [] { ex.getClass().getName(), ex.getMessage() });
-        TopManager.getDefault().notify(new NotifyDescriptor.Message(
-            message, NotifyDescriptor.ERROR_MESSAGE));
     }
 
     // --------
@@ -756,6 +531,24 @@ class HandleLayer extends JPanel
         setCursor(cursor);
     }
 
+    private LayoutSupport.ConstraintsDesc getConstraintsAtPoint(
+                                              RADComponent metacomp,
+                                              Point point) {
+        if (!(metacomp instanceof RADVisualComponent))
+            return null;
+
+        RADVisualContainer parentCont = metacomp instanceof RADVisualContainer ?
+            (RADVisualContainer) metacomp :
+            ((RADVisualComponent)metacomp).getParentContainer();
+        if (parentCont == null)
+            return null;
+
+        Container cont = parentCont.getContainerDelegate(
+                                        formDesigner.getComponent(parentCont));
+        Point p = SwingUtilities.convertPoint(this, point, cont);
+        return parentCont.getLayoutSupport().getNewConstraints(cont, p, null, null);
+    }
+
     private void displayHint(RADComponent metacomp, Point p, PaletteItem item) {
         if (metacomp == null) {
             TopManager.getDefault().setStatusText(""); // NOI18N
@@ -917,27 +710,21 @@ class HandleLayer extends JPanel
                     }
                     else if (palette.getMode() == PaletteAction.MODE_ADD) {
                         PaletteItem item = palette.getSelectedItem();
+                        RADComponent targetComp;
+                        if (item.isMenu())
+                            targetComp = formDesigner.getModel().getTopRADComponent();
+                        else if (hitMetaComp == null)
+                            targetComp = formDesigner.getTopDesignContainer();
+                        else
+                            targetComp = hitMetaComp;
 
-                        if (item.isBorder()) {
-                            if (hitMetaComp != null)
-                                setComponentBorder(hitMetaComp, item);
-                        }
-                        else if (item.isLayout()) {
-                            if (hitMetaComp == null)
-                                hitMetaComp = formDesigner.getTopDesignContainer();
-                            setContainerLayout(hitMetaComp, item);
-                        }
-                        else if (item.isMenu()) {
-                            addMenu(item);
-                        }
-                        else if (item.isVisual()) {
-                            if (hitMetaComp == null)
-                                hitMetaComp = formDesigner.getTopDesignContainer();
-                            addVisualBean(hitMetaComp, item, e);
-                        }
-                        else {
-                            addNonVisualBean(item);
-                        }
+                        Object constraints = !item.isVisual() ? null :
+                            getConstraintsAtPoint(targetComp, e.getPoint());
+
+                        formDesigner.getModel().getComponentCreator()
+                            .createComponent(item.getInstanceCookie(),
+                                             targetComp,
+                                             constraints);
 
                         if ((e.getModifiers() & InputEvent.SHIFT_MASK) == 0)
                             palette.setMode(PaletteAction.MODE_SELECTION);

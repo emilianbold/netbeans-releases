@@ -18,9 +18,11 @@ import java.util.*;
 import java.lang.reflect.*;
 import javax.swing.*;
 import org.openide.util.Mutex;
+import org.openide.cookies.InstanceCookie;
 
-/** Factory for creating objects, registering CreationDescriptor classes
- * and related utility methods.
+/** 
+ * Factory class for creating objects, providing java creation code,
+ * registering CreationDescriptor classes, and related utility methods.
  *
  * @author Tomas Pavek
  */
@@ -32,6 +34,33 @@ public class CreationFactory {
     private static boolean defaultDescriptorsCreated = false;
 
     private CreationFactory() {}
+
+    // -----------
+    // InstanceSource innerclass
+
+    public static final class InstanceSource {
+        private Class instClass;
+        private InstanceCookie instCookie;
+
+        public InstanceSource(Class cls) {
+            instClass = cls;
+        }
+
+        public InstanceSource(InstanceCookie ic) throws java.io.IOException,
+                                                        ClassNotFoundException {
+            instClass = ic.instanceClass();
+            if (!(ic instanceof org.openide.loaders.InstanceDataObject))
+                instCookie = ic; // don't treat InstanceDataObject as instances
+        }
+
+        public Class getInstanceClass() {
+            return instClass;
+        }
+
+        public InstanceCookie getInstanceCookie() {
+            return instCookie;
+        }
+    }
 
     // -----------
     // registry methods
@@ -69,44 +98,79 @@ public class CreationFactory {
             UIManager.getLookAndFeel().getClass().getName(),
             new Mutex.ExceptionAction () {
                 public Object run() throws Exception {
-                    Object instance = (cd != null)
-                        ? cd.createDefaultInstance() : cls.newInstance();
-                    
+                    Object instance = cd != null ?
+                                          cd.createDefaultInstance() :
+                                          cls.newInstance();
+
                     if (instance instanceof Component
-                        && FormUtils.isHeavyweight((Component)instance)) {
-                        ((Component) instance).setName(null);
-                    }
+                            && FormUtils.isHeavyweight((Component)instance))
+                        ((Component)instance).setName(null);
+
                     return instance;
                 }
             });
     }
 
-    public Object createInstance(Class cls, final FormProperty[] props, int style)
+    public static Object createInstance(final InstanceSource source)
+        throws Exception
+    {
+        return FormLAF.executeWithLookAndFeel(
+            UIManager.getLookAndFeel().getClass().getName(),
+            new Mutex.ExceptionAction () {
+                public Object run() throws Exception {
+                    Object instance;
+
+                    if (source.getInstanceCookie() != null)
+                        instance = source.getInstanceCookie().instanceCreate();
+                    else { // create default instance
+                        Class theClass = source.getInstanceClass();
+                        CreationDescriptor cd =
+                            CreationFactory.getDescriptor(theClass);
+                        instance = cd != null ?
+                                       cd.createDefaultInstance() :
+                                       theClass.newInstance();
+                    }
+
+                    if (instance instanceof Component
+                            && FormUtils.isHeavyweight((Component)instance))
+                        ((Component)instance).setName(null);
+
+                    return instance;
+                }
+        });
+    }
+
+    public static Object createInstance(Class cls,
+                                        final FormProperty[] props,
+                                        int style)
         throws Exception
     {
         CreationDescriptor cd = getDescriptor(cls);
-        if (cd != null) {
-            final CreationDescriptor.Creator creator = cd.findBestCreator(props, style);
-            if (creator != null) {
-                return FormLAF.executeWithLookAndFeel(
-                    UIManager.getLookAndFeel().getClass().getName(),
-                    new Mutex.ExceptionAction () {
-                        public Object run() throws Exception {
-                            Object instance = creator.createInstance(props);
-                            
-                            if (instance instanceof Component
-                                && FormUtils.isHeavyweight((Component)instance)) {
-                                ((Component) instance).setName(null);
-                            }
-                            return instance;
-                        }
-                    });
-            }
-        }
-        return null;
+        if (cd == null)
+            return null;
+
+        final CreationDescriptor.Creator creator = cd.findBestCreator(props, style);
+        if (creator == null)
+            return null;
+
+        return FormLAF.executeWithLookAndFeel(
+            UIManager.getLookAndFeel().getClass().getName(),
+            new Mutex.ExceptionAction () {
+                public Object run() throws Exception {
+                    Object instance = creator.createInstance(props);
+
+                    if (instance instanceof Component
+                            && FormUtils.isHeavyweight((Component)instance))
+                        ((Component)instance).setName(null);
+
+                    return instance;
+                }
+            });
     }
 
-    public String getJavaCreationCode(Class cls, FormProperty[] props, int style) {
+    public static String getJavaCreationCode(Class cls,
+                                             FormProperty[] props,
+                                             int style) {
         CreationDescriptor cd = getDescriptor(cls);
         if (cd != null) {
             CreationDescriptor.Creator creator = cd.findBestCreator(props, style);
