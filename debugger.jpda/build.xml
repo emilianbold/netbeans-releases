@@ -19,6 +19,10 @@ ToDo:
 -->
 <project name="debuggerjpda" default="netbeans" basedir=".">
 
+  <property name="homepage.base" value="netbeans.org"/>
+  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
+  <property name="license.file" value="../nbbuild/standard-nbm-license.txt"/>
+
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
   <target name="check">
     <available property="jpda" classname="com.sun.jdi.ObjectReference"/>
@@ -57,9 +61,9 @@ ToDo:
     <makenbm file="debuggerjpda.nbm"
              topdir="."
 	     manifest="manifest-subst.mf"
-	     homepage="http://debuggerjpda.netbeans.org/"
-	     distribution="http://www.netbeans.org/download/nbms/40/debuggerjpda.nbm">
-      <license file="../nbbuild/standard-nbm-license.txt"/>
+	     homepage="http://debuggerjpda.${homepage.base}/"
+	     distribution="http://${dist.base}/debuggerjpda.nbm">
+      <license file="${license.file}"/>
       <description>
         JPDA (Java Platform Debugger Architecture) debugger support.
         Requires that you have jpda.jar installed (or are using JDK

@@ -13,6 +13,11 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="beans" default="netbeans" basedir=".">
+  
+  <property name="homepage.base" value="netbeans.org"/>
+  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
+  <property name="license.file" value="../nbbuild/standard-nbm-license.txt"/>
+
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
   <target name="compile">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
@@ -46,9 +51,9 @@ Microsystems, Inc. All Rights Reserved.
     <makenbm file="beans.nbm"
              topdir="."
 	     manifest="manifest-subst.mf"
-	     homepage="http://beans.netbeans.org/"
-	     distribution="http://www.netbeans.org/download/nbms/40/beans.nbm">
-      <license file="../nbbuild/standard-nbm-license.txt"/>
+	     homepage="http://beans.${homepage.base}/"
+	     distribution="http://${dist.base}/beans.nbm">
+      <license file="${license.file}"/>
       <description>
         Development of JavaBeans components, including bean
 	properties, info, and event sets.

@@ -14,6 +14,10 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="properties" default="netbeans" basedir=".">
 
+  <property name="homepage.base" value="netbeans.org"/>
+  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
+  <property name="license.file" value="../nbbuild/standard-nbm-license.txt"/>
+
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
 
@@ -70,9 +74,9 @@ Microsystems, Inc. All Rights Reserved.
     <makenbm file="properties.nbm"
              topdir="."
 	     manifest="manifest-subst.mf"
-	     homepage="http://properties.netbeans.org/"
-	     distribution="http://www.netbeans.org/download/nbms/40/properties.nbm">
-      <license file="../nbbuild/standard-nbm-license.txt"/>
+	     homepage="http://properties.${homepage.base}/"
+	     distribution="http://${dist.base}/properties.nbm">
+      <license file="${license.file}"/>
       <description>
         Editing of properties files (resource bundles), including a
         table-oriented view with keys and locales.

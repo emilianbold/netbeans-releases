@@ -18,6 +18,10 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="form" default="netbeans" basedir=".">
 
+  <property name="homepage.base" value="netbeans.org"/>
+  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
+  <property name="license.file" value="../nbbuild/standard-nbm-license.txt"/>
+
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="tojar" classname="org.netbeans.nbbuild.ToJar" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
@@ -66,9 +70,9 @@ Microsystems, Inc. All Rights Reserved.
     <makenbm file="form.nbm"
              topdir="."
 	     manifest="manifest-subst.mf"
-	     homepage="http://form.netbeans.org/"
-	     distribution="http://www.netbeans.org/download/nbms/40/form.nbm">
-      <license file="../nbbuild/standard-nbm-license.txt"/>
+	     homepage="http://form.${homepage.base}/"
+	     distribution="http://${dist.base}/form.nbm">
+      <license file="${license.file}"/>
       <description>
         The visual Form Editor.
       </description>

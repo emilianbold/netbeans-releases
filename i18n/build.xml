@@ -14,6 +14,10 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="i18n" default="netbeans" basedir=".">
 
+  <property name="homepage.base" value="netbeans.org"/>
+  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
+  <property name="license.file" value="../nbbuild/standard-nbm-license.txt"/>
+
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
 
@@ -109,9 +113,9 @@ Microsystems, Inc. All Rights Reserved.
     <makenbm file="i18n.nbm"
              topdir="."
 	     manifest="manifest-subst.mf"
-	     homepage="http://i18n.netbeans.org/"
-	     distribution="http://www.netbeans.org/download/nbms/40/i18n.nbm">
-      <license file="../nbbuild/standard-nbm-license.txt"/>
+	     homepage="http://i18n.${homepage.base}/"
+	     distribution="http://${dist.base}/i18n.nbm">
+      <license file="${license.file}"/>
       <description>
         Internationalization wizard.
       </description>

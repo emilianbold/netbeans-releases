@@ -14,6 +14,10 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="editor" default="netbeans" basedir=".">
 
+  <property name="homepage.base" value="netbeans.org"/>
+  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
+  <property name="license.file" value="../nbbuild/standard-nbm-license.txt"/>
+
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
 
   <target name="compile">
@@ -69,9 +73,9 @@ Microsystems, Inc. All Rights Reserved.
     <makenbm file="editor.nbm"
              topdir="."
 	     manifest="manifest-subst.mf"
-	     homepage="http://editor.netbeans.org/"
-	     distribution="http://www.netbeans.org/download/nbms/40/editor.nbm">
-      <license file="../nbbuild/standard-nbm-license.txt"/>
+	     homepage="http://editor.${homepage.base}/"
+	     distribution="http://{dist.base}/editor.nbm">
+      <license file="${license.file}"/>
       <description>
         IDE's standard source editor.
       </description>
