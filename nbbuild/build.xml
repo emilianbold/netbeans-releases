@@ -22,7 +22,7 @@ ToDo:
 -->
 
 <project name="nbbuild" default="all" basedir=".">
-  <import file="default-properties.xml"/>
+  <import file="default.xml"/>
 
   <!-- First things first: read the user's and/or -->
   <!-- the site's build properties files.         -->
@@ -74,30 +74,7 @@ ToDo:
     </jar>
   </target>
 
-  <target name="setup-jdkhome-1">
-    <!-- Note: user-configured -Djavahome=... will always override this: -->
-    <property name="javahome" location="${java.home}"/>
-    <available property="javahome-valid" file="${javahome}/lib/tools.jar"/>
-    <available classname="com.apple.eawt.Application" property="is-mac"/>
-  </target>
-  <target name="setup-jdkhome-2" depends="setup-jdkhome-1" if="javahome-valid">
-    <property name="jdkhome" value="${javahome}"/>
-    <property name="jdkhome-valid" value="true"/>
-  </target>
-  <target name="setup-jdkhome-3" depends="setup-jdkhome-1" unless="javahome-valid">
-    <property name="jdkhome" location="${javahome}/.."/>
-    <available property="jdkhome-valid" file="${jdkhome}/lib/tools.jar"/>
-  </target>
-
-  <target name="setup-jdkhome-apple" depends="setup-jdkhome-1" if="is-mac">
-      <property name="jdkhome-valid" value="${java.home}/../Classes/classes.jar"/> 
-  </target>
-
-  <target name="setup-jdkhome-4" depends="setup-jdkhome-2,setup-jdkhome-3,setup-jdkhome-apple" unless="jdkhome-valid">
-    <fail message="No tools.jar found in ${javahome}! Set -Djavahome=... as needed."/>
-  </target>
-
-  <target name="init-module-list" depends="bootstrap,setup-jdkhome-4">
+  <target name="init-module-list" depends="bootstrap,setup-jdkhome">
     <!-- Already read the user, site and standard properties files. -->
 
     <!-- Define modules. -->
