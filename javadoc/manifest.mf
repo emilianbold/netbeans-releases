@@ -22,6 +22,5 @@ Name: org/netbeans/modules/javadoc/search/JavaDocNode.class
 OpenIDE-Module-Class: Node
 Type: Roots
 
-
-
-
+Name: org/netbeans/modules/javadoc/search/ShowDocAction.class
+OpenIDE-Module-Class: Action
