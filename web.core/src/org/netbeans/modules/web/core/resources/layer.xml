@@ -114,6 +114,9 @@ Microsystems, Inc. All Rights Reserved.
       <file name="Execute (restart server).instance">
         <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.execution.Execute2Action"/>
       </file>
+      <file name="Validate.instance">
+        <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.jsploader.ValidateAction"/>
+      </file>
     </folder>
     <folder name="System">
       <file name="View Servlet.instance">
