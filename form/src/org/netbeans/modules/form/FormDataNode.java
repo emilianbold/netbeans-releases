@@ -45,4 +45,14 @@ public class FormDataNode extends JavaNode {
         return SystemAction.get(OpenAction.class);
     }
 
+    public Action[] getActions(boolean context) {
+        Action[] javaActions = super.getActions(context);
+        Action[] formActions = new Action[javaActions.length+2];
+        formActions[0] = javaActions[0]; // OpenAction
+        formActions[1] = SystemAction.get(org.openide.actions.EditAction.class);
+        formActions[2] = null;
+        System.arraycopy(javaActions, 1, formActions, 3, javaActions.length-1);
+        return formActions;
+    }
+    
 }

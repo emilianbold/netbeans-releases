@@ -43,16 +43,8 @@ public class FormDataLoader extends JavaDataLoader {
                  .getString("PROP_FormLoader_Name"); // NOI18N
     }
 
-    /** Gets default actions. Overrides superclass method. */
-    protected SystemAction[] defaultActions() {
-        DataLoader javaLoader = getLoader(JavaDataLoader.class);          
-        SystemAction[] javaActions = javaLoader.getActions();
-        SystemAction[] formActions = new SystemAction[javaActions.length+2];
-        formActions[0] = javaActions[0]; // OpenAction            
-        formActions[1] = SystemAction.get(EditAction.class);
-        formActions[2] = null;
-        System.arraycopy(javaActions, 1, formActions, 3, javaActions.length-1);
-        return formActions;
+    protected String actionsContext () {
+        return "Loaders/text/x-java/Actions/"; // NOI18N
     }
 
     /** For a given file finds a primary file.
