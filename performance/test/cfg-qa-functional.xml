@@ -360,6 +360,18 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     
+    <!-- Scan Classpath test bag -->    
+    <testbag testattribs="measure_ui or measure_scan" prio="100"
+             executor="ide_performance_scan" name="Measure Classpath Scan and time to create new projects" >
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="gui/scanclasspath/ScanClasspath.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+    
+    
+    <!-- Temp -->    
     <testbag testattribs="temp" prio="16"
              executor="ide_performance" name="Temp" >
 	<testset dir="qa-functional/src">
@@ -373,9 +385,11 @@ Microsystems, Inc. All Rights Reserved.
 <!-- END Property Editors testbag -->
     
     <executor name="ide_perf_setup" antfile="build-qa-functional.xml" target="runidesetup"/>
-    <executor name="ide_performance" antfile="build-qa-functional.xml" target="runidetest"/>
+    <executor name="ide_performance" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
     <executor name="ide_performance_memory_usage" antfile="build-qa-functional.xml" target="runidetest_memory_usage"/>
     <executor name="ide_performance_java" antfile="build-qa-functional.xml" target="runidetest_java"/>
+    <executor name="ide_performance_scan" antfile="build-qa-functional.xml" target="runidetest_scan" />
+    
     
     <compiler name="qa-performance-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true"/>
     

@@ -15,32 +15,14 @@ Microsystems, Inc. All Rights Reserved.
 <project name="QA performance tests" basedir="." default="all">
 
     <!-- Imports defaults for Performance testing. -->
-    <import file="build-performance-tests.xml"/>
-
-    <!-- compilation classpath -->
-    <path id="compiletest.classpath">        
-        <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-        
-        <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor.jar"/>
-        <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-java-editor.jar"/>
-        <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-lib.jar"/>
-        <pathelement location="${editor/plain.dir}/${nb.modules.dir}/org-netbeans-modules-editor-plain.jar"/>
-        
-        <pathelement location="${web/jspsyntax.dir}/${nb.modules.dir}/org-netbeans-modules-web-core-syntax.jar"/>
-        
-        <pathelement location="${xml/text-edit.dir}/${nb.modules.dir}/xml-text-edit.jar"/>
-        
-        <pathelement location="${java.dir}/${nb.modules.dir}/org-netbeans-modules-java.jar"/>
-    </path>
-
-                
-    <!-- =================== -->
-    <!-- Setting classpaths  -->
-    <!-- =================== -->
+    <import file="../performancetestutilities/build-performance-tests.xml"/>
+    
+    <!-- ==================== -->
+    <!-- Setting command line -->
+    <!-- ==================== -->
     
     <target name="ide_command_line_suffix">
-        <!--  We are using modified rt.jar instead of hack on the bootclasspath, so if you try to run performance tests on your own jdk uncomment this line
-        <property name="xtest.ide.commandline.suffix" value="-J-Xbootclasspath/p:${xtest.tmpdir}/hack_jdk.zip -J-Dorg.netbeans.performance.repeat=3"/> -->
+        <!--  Repeat performance test more than once -->
         <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.performance.repeat=3 -J-Dorg.netbeans.performance.memory.usage.log=true"/>
     </target>
     
@@ -50,12 +32,12 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ========= -->
     <!-- Overrides default qa-functional-compiler because we need something 
          more on classpath -->
-    <target name="qa-functional-compiler" depends="compile_guitracker">
+    <target name="qa-functional-compiler" depends="compile_performance_testutilities">
         <buildTests srcDir="qa-functional/src" compileExcludes="**/data/**">
             <classpath>
                 <path refid="compiletest.classpath"/>
                 <path refid="jemmy.and.jelly.path"/>
-                <path refid="guitracker.path"/>
+                <path refid="performance.testutilities.path"/>
             </classpath>
         </buildTests>
     </target>
@@ -100,11 +82,30 @@ Microsystems, Inc. All Rights Reserved.
         <executeTests pluginName="ide">
             <classpath>
                 <path refid="jemmy.and.jelly.path"/>
-                <path refid="guitracker.path"/>
+                <path refid="performance.testutilities.path"/>
             </classpath>
             
             <property name="xtest.enable.assertions" value="false" /> 
             <property name="xtest.ide.reuse.userdir" value="true" />
+            <property name="xtest.timeout" value="3600000" />
+        </executeTests>
+        
+        <antcall target="copy_original_ide_cfg_file"/>
+    </target>
+    
+    
+    <target name="runidetest_scan" depends="copy_unzip_jedit_project,copy_unzip_test_folder_project">
+        <antcall target="copy_released_ide_cfg_file"/>
+       
+        <executeTests pluginName="ide">
+            <classpath>
+                <path refid="jemmy.and.jelly.path"/>
+                <path refid="performance.testutilities.path"/>
+            </classpath>
+            
+            <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.performance.repeat=3 -J-Dorg.netbeans.performance.memory.usage.log=true -J-Dperf.refactoring.test=true"/>
+            
+            <property name="xtest.enable.assertions" value="false" /> 
             <property name="xtest.timeout" value="3600000" />
         </executeTests>
         
@@ -122,7 +123,7 @@ Microsystems, Inc. All Rights Reserved.
         <executeTests pluginName="ide">
             <classpath>
                 <path refid="jemmy.and.jelly.path"/>
-                <path refid="guitracker.path"/>
+                <path refid="performance.testutilities.path"/>
             </classpath>
             
             <property name="xtest.ide.reuse.userdir" value="true"/>
@@ -145,7 +146,7 @@ Microsystems, Inc. All Rights Reserved.
         <executeTests pluginName="ide">
             <classpath>
                 <path refid="jemmy.and.jelly.path"/>
-                <path refid="guitracker.path"/>
+                <path refid="performance.testutilities.path"/>
             </classpath>
             
             <property name="xtest.enable.assertions" value="false" /> 
@@ -161,4 +162,36 @@ Microsystems, Inc. All Rights Reserved.
         <antcall target="copy_original_ide_cfg_file"/>
     </target>
 
+    
+    <!-- ================ -->
+    <!-- Run in IDE's JVM -->
+    <!-- ================ -->
+
+    <target name="internal-execution">
+        <taskdef name="internalExecution" classname="org.netbeans.xtest.plugin.ide.IdeInternalExecutionTask" 
+                 classpath="${xtest.home}/plugins/ide/lib/xtest-ide-plugin.jar"/>
+
+        <!-- Root directory where tests are built in. It means there will be
+             separate folder for each test type: ${compile.destdir.root}/${xtest.testtype}/classes.
+             Originally defined in module_harness.xml.             
+        -->
+        <property name="compile.destdir.root" location="../build/test"/>
+        <!-- Destination directory for compiled tests. Used in basic_compiler_targets.xml. -->
+        <property name="compile.destdir" location="${compile.destdir.root}/${xtest.testtype}/classes"/>
+        <!-- JUnit, NbJUnit and NBJUnit-ide should be in classpath by default -->
+        <property name="junit.classpath" value="${xtest.home}/lib/junit.jar:${xtest.home}/lib/nbjunit.jar:${xtest.home}/lib/nbjunit-ide.jar"/>        
+
+        <!-- This target runs main method of given class in IDE's JVM. 
+            You have -->
+        <internalExecution classname="${classname}">
+            <classpath>
+                <path refid="jemmy.and.jelly.path"/>
+                <path refid="performance.testutilities.path"/>
+                <pathelement path="${compile.destdir}"/>
+                <pathelement path="${junit.classpath}"/>
+            </classpath>
+        </internalExecution>
+    </target>
+    
+    
 </project>
