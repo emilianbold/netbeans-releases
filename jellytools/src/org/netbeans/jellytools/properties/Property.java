@@ -24,6 +24,7 @@ import javax.swing.table.TableCellRenderer;
 import org.netbeans.jellytools.JellyVersion;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.ContainerOperator;
@@ -271,25 +272,30 @@ public class Property {
      * @param textValue text to be set in property (e.g. "a new value",
      * "a new item from list", "false", "TRUE")
      */
-    public void setValue(String textValue) {
+    public void setValue(final String textValue) {
         propertySheetOper.getOutput().printTrace("Setting value \""+textValue+
                                                  "\" of property \""+getName()+"\".");
         if(!isEnabled()) {
             throw new JemmyException("Property \""+getName()+"\" is read only.");
         }
-        PropertyEditor pe = getPropertyEditor();
-        try {
-            pe.setAsText(textValue);
-            property.setValue(pe.getValue());
-        } catch (IllegalAccessException iae) {
-            ErrorManager.getDefault().notify(iae);
-        } catch (IllegalArgumentException iare) {
-            ErrorManager.getDefault().notify(iare);
-        } catch (InvocationTargetException ite) {
-            ErrorManager.getDefault().notify(ite);
-        } catch (Exception e) {
-            throw new JemmyException("Exception while setting value of property.", e);
-        }
+        final PropertyEditor pe = getPropertyEditor();
+        // run in dispatch thread
+        new QueueTool().invokeSmoothly(new Runnable() {
+            public void run() {
+                try {
+                    pe.setAsText(textValue);
+                    property.setValue(pe.getValue());
+                } catch (IllegalAccessException iae) {
+                    ErrorManager.getDefault().notify(iae);
+                } catch (IllegalArgumentException iare) {
+                    ErrorManager.getDefault().notify(iare);
+                } catch (InvocationTargetException ite) {
+                    ErrorManager.getDefault().notify(ite);
+                } catch (Exception e) {
+                    throw new JemmyException("Exception while setting value of property.", e);
+                }
+            }
+        });
     }
     
     /** Sets value of this property by given index.
