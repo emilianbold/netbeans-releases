@@ -32,6 +32,8 @@ import org.openide.util.NbBundle;
 
 import org.openidex.search.*;
 
+import com.netbeans.developer.modules.search.res.*;
+
 /** 
  *
  * @author  pkuzel
@@ -40,7 +42,7 @@ import org.openidex.search.*;
 public class SearchDisplayer extends Object implements NodeAcceptor {
 
   //0 found text, 1 file name, 2 line number
-  String FMT_FOUND = "{0} [{1}:{2}]";
+  String FMT_FOUND = "{0} [{1}:{2}]"; //NOI18N
   
   /** output tab */
   private InputOutput searchIO;  
@@ -103,7 +105,7 @@ public class SearchDisplayer extends Object implements NodeAcceptor {
     
     if (nodes == null) return false;
     
-    if (nodes.length > 0) setOw("Search results");
+    if (nodes.length > 0) setOw(Res.text("TITLE_SEARCH_RESULTS"));
     
     for (int i = 0; i<nodes.length; i++) 
       displayNode(nodes[i]);
