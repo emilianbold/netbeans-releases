@@ -34,6 +34,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
   private ArrayList subComponents;
   private DesignLayout designLayout;
   private DesignLayout previousLayout;
+  private RADLayoutNode layoutNode;
 
   transient private Container containerDelegate;
   
@@ -55,6 +56,14 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
       return containerDelegate;
     }
     return (Container)getComponentInstance ();
+  }
+
+  public void setLayoutNodeReference (RADLayoutNode node) {
+    this.layoutNode = node;
+  }
+
+  public RADLayoutNode getLayoutNodeReference () {
+    return layoutNode;
   }
 
 // -----------------------------------------------------------------------------
@@ -172,6 +181,8 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
 /*
  * Log
+ *  17   Gandalf   1.16        7/5/99   Ian Formanek    Added access to layout 
+ *       node
  *  16   Gandalf   1.15        6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  15   Gandalf   1.14        6/3/99   Ian Formanek    Fixed removing 
