@@ -69,3 +69,18 @@ implements DriverOperations
 		chld.createSubnode(ninfo, true);
 	}
 }
+/*
+ * <<Log>>
+ *  8    Gandalf   1.7         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
+ *  7    Gandalf   1.6         9/8/99   Slavek Psenicka adaptor changes
+ *  6    Gandalf   1.5         8/19/99  Slavek Psenicka English
+ *  5    Gandalf   1.4         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
+ *  4    Gandalf   1.3         5/21/99  Slavek Psenicka new version
+ *  3    Gandalf   1.2         5/14/99  Slavek Psenicka new version
+ *  2    Gandalf   1.1         4/26/99  Slavek Psenicka Default driver list 
+ *       added.
+ *  1    Gandalf   1.0         4/23/99  Slavek Psenicka 
+ * $
+ */

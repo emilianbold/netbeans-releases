@@ -28,3 +28,13 @@ import com.netbeans.enterprise.modules.db.explorer.actions.DatabaseAction;
 public class ViewColumnNodeInfo extends DatabaseNodeInfo
 {
 }
+
+/*
+ * <<Log>>
+ *  3    Gandalf   1.2         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
+ *  2    Gandalf   1.1         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
+ *  1    Gandalf   1.0         5/21/99  Slavek Psenicka 
+ * $
+ */

@@ -11,7 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package com.netbeans.enterprise.modules.db.explorer.actions;
 
 import java.util.ResourceBundle;
@@ -37,3 +36,15 @@ public class DropViewAction extends DatabaseAction
 		}
 	}
 }
+/*
+ * <<Log>>
+ *  5    Gandalf   1.4         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
+ *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
+ *  3    Gandalf   1.2         5/21/99  Slavek Psenicka new version
+ *  2    Gandalf   1.1         4/23/99  Slavek Psenicka oprava activatedNode[0] 
+ *       check
+ *  1    Gandalf   1.0         4/23/99  Slavek Psenicka 
+ * $
+ */

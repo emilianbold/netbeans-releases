@@ -115,6 +115,8 @@ public class DatabaseTypePropertyEditor implements PropertyEditor
 
 /*
  * <<Log>>
+ *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  6    Gandalf   1.5         8/19/99  Slavek Psenicka English
  *  5    Gandalf   1.4         8/18/99  Slavek Psenicka debug log removed
  *  4    Gandalf   1.3         7/21/99  Slavek Psenicka 

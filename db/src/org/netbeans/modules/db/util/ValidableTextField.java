@@ -11,7 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package com.netbeans.enterprise.modules.db.util;
 
 import javax.swing.JTextField;
@@ -52,3 +51,11 @@ public class ValidableTextField extends JTextField
 		}
 	}
 }
+/*
+ * <<Log>>
+ *  3    Gandalf   1.2         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
+ *  2    Gandalf   1.1         5/21/99  Slavek Psenicka new version
+ *  1    Gandalf   1.0         5/14/99  Slavek Psenicka 
+ * $
+ */

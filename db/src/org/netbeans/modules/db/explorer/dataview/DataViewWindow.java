@@ -11,7 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package com.netbeans.enterprise.modules.db.explorer.dataview;
 
 import java.awt.*;
@@ -612,3 +611,18 @@ public class DataViewWindow extends TopComponent
 		}
 	}
 }
+
+/*
+ * <<Log>>
+ *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
+ *  6    Gandalf   1.5         10/10/99 Radko Najman    setName("Data View")
+ *  5    Gandalf   1.4         9/8/99   Slavek Psenicka 
+ *  4    Gandalf   1.3         7/21/99  Slavek Psenicka 
+ *  3    Gandalf   1.2         6/30/99  Ian Formanek    NodeTransfer related 
+ *       changes to make it compilable
+ *  2    Gandalf   1.1         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
+ *  1    Gandalf   1.0         5/21/99  Slavek Psenicka 
+ * $
+ */

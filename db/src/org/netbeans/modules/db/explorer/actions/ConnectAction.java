@@ -11,7 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package com.netbeans.enterprise.modules.db.explorer.actions;
 
 import java.io.*;
@@ -98,3 +97,19 @@ public class ConnectAction extends DatabaseAction
 		}		
 	}
 }
+/*
+ * <<Log>>
+ *  9    Gandalf   1.8         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
+ *  8    Gandalf   1.7         7/21/99  Slavek Psenicka update option off
+ *  7    Gandalf   1.6         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
+ *  6    Gandalf   1.5         5/21/99  Slavek Psenicka new version
+ *  5    Gandalf   1.4         5/14/99  Slavek Psenicka new version
+ *  4    Gandalf   1.3         4/23/99  Slavek Psenicka oprava activatedNode[0] 
+ *       check
+ *  3    Gandalf   1.2         4/23/99  Slavek Psenicka Debug mode
+ *  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
+ *  1    Gandalf   1.0         3/22/99  Slavek Psenicka 
+ * $
+ */

@@ -124,3 +124,21 @@ public class DatabaseNodeChildren extends Children.Array
 		return subnode;
 	}
 }
+
+/*
+ * <<Log>>
+ *  10   Gandalf   1.9         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
+ *  9    Gandalf   1.8         10/12/99 Radko Najman    bug 4318 fixed
+ *  8    Gandalf   1.7         9/27/99  Slavek Psenicka Support for 
+ *       non-DatabaseNodeInfo nodes in initCollection
+ *  7    Gandalf   1.6         9/8/99   Slavek Psenicka adaptor changes
+ *  6    Gandalf   1.5         9/2/99   Slavek Psenicka CreateNodes removed
+ *  5    Gandalf   1.4         8/27/99  Jaroslav Tulach 
+ *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
+ *  3    Gandalf   1.2         5/21/99  Slavek Psenicka new version
+ *  2    Gandalf   1.1         5/14/99  Slavek Psenicka new version
+ *  1    Gandalf   1.0         4/23/99  Slavek Psenicka 
+ * $
+ */

@@ -95,3 +95,21 @@ implements ConnectionOwnerOperations
 		}
 	}
 }
+/*
+ * <<Log>>
+ *  10   Gandalf   1.9         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
+ *  9    Gandalf   1.8         9/27/99  Slavek Psenicka Adding Database/Adaptors
+ *       node under Databases
+ *  8    Gandalf   1.7         9/13/99  Slavek Psenicka 
+ *  7    Gandalf   1.6         7/21/99  Slavek Psenicka don't remember password
+ *  6    Gandalf   1.5         6/15/99  Slavek Psenicka force restore 
+ *       connections before first add, avoid duplicating connection being added
+ *  5    Gandalf   1.4         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
+ *  4    Gandalf   1.3         5/21/99  Slavek Psenicka new version
+ *  3    Gandalf   1.2         5/14/99  Slavek Psenicka new version
+ *  2    Gandalf   1.1         4/23/99  Slavek Psenicka Debug mode
+ *  1    Gandalf   1.0         4/23/99  Slavek Psenicka 
+ * $
+ */

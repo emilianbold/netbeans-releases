@@ -176,3 +176,15 @@ public class AddIndexDialog
 		}
 	}
 }
+/*
+ * <<Log>>
+ *  6    Gandalf   1.5         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
+ *  5    Gandalf   1.4         9/8/99   Slavek Psenicka adaptor changes
+ *  4    Gandalf   1.3         6/15/99  Slavek Psenicka debug prints
+ *  3    Gandalf   1.2         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
+ *  2    Gandalf   1.1         5/21/99  Slavek Psenicka new version
+ *  1    Gandalf   1.0         5/14/99  Slavek Psenicka 
+ * $
+ */

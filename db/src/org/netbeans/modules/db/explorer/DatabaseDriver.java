@@ -132,3 +132,15 @@ public class DatabaseDriver extends Object implements Externalizable
 		adaptor = (String)in.readObject();
 	}	
 }
+/*
+ * <<Log>>
+ *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
+ *  6    Gandalf   1.5         10/12/99 Radko Najman    debug messages removed
+ *  5    Gandalf   1.4         9/27/99  Slavek Psenicka setAdaptor changed
+ *  4    Gandalf   1.3         9/8/99   Slavek Psenicka adaptor changes
+ *  3    Gandalf   1.2         7/21/99  Slavek Psenicka database prefix
+ *  2    Gandalf   1.1         5/21/99  Slavek Psenicka new version
+ *  1    Gandalf   1.0         4/23/99  Slavek Psenicka 
+ * $
+ */
