@@ -78,7 +78,7 @@ public class PropertyUtils {
                     try {
                         InputStream is = new FileInputStream(USER_BUILD_PROPERTIES);
                         try {
-                            EditableProperties properties = new EditableProperties();
+                            EditableProperties properties = new EditableProperties(true);
                             properties.load(is);
                             return properties;
                         } finally {
@@ -89,7 +89,7 @@ public class PropertyUtils {
                     }
                 }
                 // Missing or erroneous.
-                return new EditableProperties();
+                return new EditableProperties(true);
             }
         });
     }

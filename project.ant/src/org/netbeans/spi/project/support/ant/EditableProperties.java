@@ -16,11 +16,29 @@ package org.netbeans.spi.project.support.ant;
 import java.io.*;
 import java.util.*;
 
-public class EditableProperties extends AbstractMap implements Cloneable {
+// XXX: consider adding getInitialComment() and setInitialComment() methods
+
+/**
+ * Similar to {@link Properties} but designed to retain additional
+ * information needed for safe hand-editing.
+ * Useful for various <samp>*.properties</samp> in a project:
+ * <ol>
+ * <li>Can associate comments with particular entries.
+ * <li>Order of entries preserved during modifications whenever possible.
+ * <li>VCS-friendly: lines which are not semantically modified are not textually modified.
+ * <li>Can automatically insert line breaks in new or modified values at positions
+ *     that are likely to be semantically meaningful, e.g. between path components
+ * </ol>
+ * The file format (including encoding etc.) is compatible with the regular JRE implementation.
+ * Only (non-null) String is supported for keys and values.
+ * This class is not thread-safe; use only from a single thread, or use {@link Collections#synchronizedMap}.
+ * @author Jesse Glick, David Konecny
+ */
+public final class EditableProperties extends AbstractMap implements Cloneable {
     
     /** List of Item instances as read from the properties file. Order is important.
      * Saving properties will save then in this order. */
-    private List items;
+    private List/*<Item>*/ items;
 
     /** Map of [property key, Item instance] for faster access. */
     private Map itemIndex;
@@ -34,6 +52,8 @@ public class EditableProperties extends AbstractMap implements Cloneable {
     private static final String whiteSpaceChars = " \t\r\n\f";
 
     private static final String commentChars = "#!";
+    
+    private static final String INDENT = "    ";
 
     // parse states:
     private static final int WAITING_FOR_KEY_VALUE = 1;
@@ -172,9 +192,17 @@ public class EditableProperties extends AbstractMap implements Cloneable {
         String result = null;
         if (item != null) {
             result = item.getValue();
-            item.setValue((String)value);
+            if (value instanceof List) {
+                item.setValue((List)value);
+            } else {
+                item.setValue((String)value);
+            }
         } else {
-            item = new Item((String)key, (String)value);
+            if (value instanceof List) {
+                item = new Item((String)key, (List)value);
+            } else {
+                item = new Item((String)key, (String)value);
+            }
             addItem(item, alphabetize);
         }
         return result;
@@ -195,8 +223,31 @@ public class EditableProperties extends AbstractMap implements Cloneable {
      * Same behavior as {@link #put} but has the correct argument types.
      * @param key a property name; cannot be null nor empty
      * @param value the desired value; cannot be null
+     * @return previous value of the property or null if there was not any
      */
     public String setProperty(String key, String value) {
+        String result = getProperty(key);
+        put(key, value);
+        return result;
+    }
+
+    /**
+     * Convenience method to set a property which is array of items.
+     * Same behavior as {@link #put} with only difference that array items
+     * will be stored each on separate line. {@link #getProperty} will merge
+     * all array items into one String, so do not forget that item separators
+     * (like ';' or ':' in case of path like properties) must be included in
+     * the items.
+     * @param key a property name; cannot be null nor empty
+     * @param value the desired value; list of Strings; cannot be null; 
+     *    cannot be empty
+     * @return previous value of the property or null if there was not any
+     */
+    public String setProperty(String key, List/*<String>*/ value) {
+        // XXX: validate value parameter
+        if (value == null || value.size() == 0) {
+            throw new IllegalArgumentException("Parameter cannot be null nor empty array: "+value);
+        }
         String result = getProperty(key);
         put(key, value);
         return result;
@@ -251,7 +302,7 @@ public class EditableProperties extends AbstractMap implements Cloneable {
     }
 
     // non-key item is block of empty lines/comment not associated with any property
-    private void createNonKeyItem(List lines) {
+    private void createNonKeyItem(List/*<String>*/ lines) {
         // First check that previous item is not non-key item.
         if (items.size() > 0) {
             Item item = (Item)items.get(items.size()-1);
@@ -270,7 +321,7 @@ public class EditableProperties extends AbstractMap implements Cloneable {
 
     // opposite to non-key item: item with valid property declaration and 
     // perhaps some comment lines
-    private void createKeyItem(List lines, int commentLinesCount) {
+    private void createKeyItem(List/*<String>*/ lines, int commentLinesCount) {
         Item item = new Item(lines.subList(0, commentLinesCount), lines.subList(commentLinesCount, lines.size()));
         addItem(item, false);
         lines.clear();
@@ -351,11 +402,11 @@ public class EditableProperties extends AbstractMap implements Cloneable {
 
         /** Lines of comment as read from properties file and as they will be
          * written back to properties file. */
-        private List commentLines;
+        private List/*<String>*/ commentLines;
 
         /** Lines with property name and value declaration as read from 
          * properties file and as they will be written back to properties file. */
-        private List keyValueLines;
+        private List/*<String>*/ keyValueLines;
 
         /** Property key */
         private String key;
@@ -375,7 +426,7 @@ public class EditableProperties extends AbstractMap implements Cloneable {
          * Create instance which does not have any key and value - just 
          * some empty or comment lines. This item is READ-ONLY.
          */
-        public Item(List commentLines) {
+        public Item(List/*<String>*/ commentLines) {
             this.commentLines = new ArrayList(commentLines);
         }
 
@@ -383,7 +434,7 @@ public class EditableProperties extends AbstractMap implements Cloneable {
          * Create instance from the lines of comment and property declaration.
          * Property name and value will be split.
          */
-        public Item(List commentLines, List keyValueLines) {
+        public Item(List/*<String>*/ commentLines, List/*<String>*/ keyValueLines) {
             this.commentLines = new ArrayList(commentLines);
             this.keyValueLines = new ArrayList(keyValueLines);
             parse(keyValueLines);
@@ -397,8 +448,16 @@ public class EditableProperties extends AbstractMap implements Cloneable {
             this.value = value;
         }
 
+        /**
+         * Create new instance with key and value.
+         */
+        public Item(String key, List value) {
+            this.key = key;
+            setValue(value);
+        }
+
         // backdoor for merging non-key items
-        void addCommentLines(List lines) {
+        void addCommentLines(List/*<String>*/ lines) {
             assert key == null;
             commentLines.addAll(lines);
         }
@@ -425,6 +484,20 @@ public class EditableProperties extends AbstractMap implements Cloneable {
             keyValueLines = null;
         }
 
+        public void setValue(List value) {
+            StringBuffer val = new StringBuffer();
+            ArrayList l = new ArrayList();
+            l.add(encodeUnicode(key, true)+"=\\");
+            Iterator it = value.iterator();
+            while (it.hasNext()) {
+                String s = (String)it.next();
+                val.append(s);
+                l.add(it.hasNext() ? INDENT+s+"\\" : INDENT+s);
+            }
+            this.value = val.toString();
+            keyValueLines = l;
+        }
+
         public boolean isSeparate() {
             return separate;
         }
@@ -432,7 +505,7 @@ public class EditableProperties extends AbstractMap implements Cloneable {
         /**
          * Returns persistent image of this property.
          */
-        public List getRawData() {
+        public List/*<String>*/ getRawData() {
             ArrayList l = new ArrayList();
             if (commentLines != null) {
                 l.addAll(commentLines);
@@ -442,7 +515,6 @@ public class EditableProperties extends AbstractMap implements Cloneable {
             } else {
                 keyValueLines = new ArrayList();
                 if (key != null && value != null) {
-                    // XXX: heuristic: convert value to path-value if possible
                     keyValueLines.add(encodeUnicode(key, true)+"="+encodeUnicode(value, false));
                 }
                 l.addAll(keyValueLines);
@@ -450,14 +522,14 @@ public class EditableProperties extends AbstractMap implements Cloneable {
             return l;
         }
         
-        private void parse(List keyValueLines) {
+        private void parse(List/*<String>*/ keyValueLines) {
             // merge lines into one:
             String line = mergeLines(keyValueLines);
             // split key and value
             splitKeyValue(line);
         }
         
-        private String mergeLines(List lines) {
+        private String mergeLines(List/*<String>*/ lines) {
             String line = "";
             Iterator it = lines.iterator();
             while (it.hasNext()) {

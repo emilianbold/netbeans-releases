@@ -54,6 +54,7 @@ import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -511,7 +512,7 @@ public final class AntProjectHelper {
         if (p != null) {
             return p;
         } else {
-            return new EditableProperties();
+            return new EditableProperties(true);
         }
     }
     
@@ -538,7 +539,7 @@ public final class AntProjectHelper {
             try {
                 InputStream is = fo.getInputStream();
                 try {
-                    EditableProperties p = new EditableProperties();
+                    EditableProperties p = new EditableProperties(true);
                     p.load(is);
                     properties.put(path, p);
                     return p.cloneProperties();
@@ -658,9 +659,24 @@ public final class AntProjectHelper {
         if (existing != null) {
             root.removeChild(existing);
         }
-        root.appendChild(root.getOwnerDocument().importNode(fragment, true));
-        // XXX should always alphabetize children (after primary configuration data)
-        // in order to minimize deltas on disk
+        // the children are alphabetize: find correct place to insert new node
+        Node ref = null;
+        NodeList list = root.getChildNodes();
+        for (int i=0; i<list.getLength(); i++) {
+            Node node  = list.item(i);
+            if (node.getNodeType() != Node.ELEMENT_NODE) {
+                continue;
+            }
+            int comparison = node.getNodeName().compareTo(fragment.getNodeName());
+            if (comparison == 0) {
+                comparison = node.getNamespaceURI().compareTo(fragment.getNamespaceURI());
+            }
+            if (comparison > 0) {
+                ref = node;
+                break;
+            }
+        }
+        root.insertBefore(root.getOwnerDocument().importNode(fragment, true), ref);
         modifying(shared ? PROJECT_XML_PATH : PRIVATE_XML_PATH);
     }
     

@@ -36,6 +36,7 @@ import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /* XXX tests needed:
@@ -509,6 +510,36 @@ public class AntProjectHelperTest extends NbTestCase {
         assertNull("now <hello> is gone", data);
         assertFalse("cannot remove a frag that is not there", aux.removeConfigurationFragment("hello", "urn:test:whatever", true));
         assertFalse("trying to remove a nonexistent frag does not modify project", pm.isModified(p));
+        
+        // check that created elements are ordered
+        data = temp.createElementNS("namespace", "ccc");
+        aux.putConfigurationFragment(data, true);
+        data = temp.createElementNS("namespace", "bbb");
+        aux.putConfigurationFragment(data, true);
+        data = temp.createElementNS("namespace", "aaa");
+        aux.putConfigurationFragment(data, true);
+        data = temp.createElementNS("namespace-1", "bbb");
+        aux.putConfigurationFragment(data, true);
+        data = temp.createElementNS("name-sp", "bbb");
+        aux.putConfigurationFragment(data, true);
+        data = temp.createElementNS("namespace", "aaaa");
+        aux.putConfigurationFragment(data, true);
+        pm.saveProject(p);
+        doc = AntBasedTestUtil.slurpXml(h, AntProjectHelper.PROJECT_XML_PATH);
+        config = Util.findElement(doc.getDocumentElement(), "configuration", AntProjectHelper.PROJECT_NS);
+        String[] names = new String[]{"aaa-namespace", "aaaa-namespace", "bbb-name-sp", "bbb-namespace", "bbb-namespace-1", "ccc-namespace", "data-urn:test:shared", "data-urn:test:shared-aux"};
+        int count = 0;
+        NodeList list = config.getChildNodes();
+        for (int i=0; i<list.getLength(); i++) {
+            Node n = list.item(i);
+            if (n.getNodeType() != Node.ELEMENT_NODE) {
+                continue;
+            }
+            assertEquals(names[count], n.getNodeName()+"-"+n.getNamespaceURI());
+            count++;
+        }
+        assertEquals("Elements count does not match", names.length, count);
+        
         // XXX check that it cannot be used to load or store primary configuration data
         // or other general fixed metadata
         // XXX try overwriting data

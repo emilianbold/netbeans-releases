@@ -15,6 +15,7 @@ package org.netbeans.spi.project.support.ant;
 
 import java.io.*;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -48,7 +49,7 @@ public class EditablePropertiesTest extends NbTestCase {
         content.put("keyF", "");
         content.put("keyG", "");
         content.put("keyH", "value#this is not comment");
-        content.put("keyI", "inccorect end: \\u123");
+        content.put("keyI", "incorrect end: \\u123");
         
         EditableProperties ep = loadTestProperties();
         
@@ -133,17 +134,74 @@ public class EditablePropertiesTest extends NbTestCase {
         assertEquals("No lines modified", 0, res[0]);
         assertEquals("No lines added", 0, res[1]);
         assertEquals("Two lines removed", 2, res[2]);
+        
+        ep2 = new EditableProperties(ep);
+        ArrayList l = new ArrayList();
+        l.add("first line;"); l.add("second line;"); l.add("third line");
+        ep2.setProperty("key21", l);
+        dest = getWorkDirPath()+File.separatorChar+"mod5.properties";
+        saveProperties(ep2, dest);
+        res = compare(filenameOfTestProperties(), dest);
+        assertEquals("Four lines modified", 4, res[0]);
+        assertEquals("No lines added", 0, res[1]);
+        assertEquals("No lines removed", 0, res[2]);
+        ep2.setProperty("key21", "first line;second line;third line");
+        String dest2 = getWorkDirPath()+File.separatorChar+"mod6.properties";
+        saveProperties(ep2, dest2);
+        res = compare(dest, dest2);
+        assertEquals("Four lines modified", 4, res[0]);
+        assertEquals("No lines added", 0, res[1]);
+        assertEquals("No lines removed", 0, res[2]);
     }
 
+    // test that array values are stored correctly
+    public void testArrayValues() throws Exception {
+        EditableProperties ep = new EditableProperties(false);
+        ArrayList l = new ArrayList();
+        l.add("1. line;"); l.add("2. line;"); l.add("3. line");
+        ep.setProperty("key1", l);
+        ep.setProperty("key2", "1. line;2. line;3. line");
+        String output = getAsString(ep);
+        String expected = 
+            "key1=\\"+System.getProperty("line.separator")+
+            "    1. line;\\"+System.getProperty("line.separator")+
+            "    2. line;\\"+System.getProperty("line.separator")+
+            "    3. line"+System.getProperty("line.separator")+
+            "key2=1. line;2. line;3. line"+System.getProperty("line.separator");
+        assertEquals(expected, output);
+        assertEquals(ep.getProperty("key1"), "1. line;2. line;3. line");
+        assertEquals(ep.getProperty("key2"), "1. line;2. line;3. line");
+        ep.setProperty("key1", "one; two; three");
+        output = getAsString(ep);
+        expected = 
+            "key1=one; two; three"+System.getProperty("line.separator")+
+            "key2=1. line;2. line;3. line"+System.getProperty("line.separator");
+        assertEquals(expected, output);
+        assertEquals(ep.getProperty("key1"), "one; two; three");
+        assertEquals(ep.getProperty("key2"), "1. line;2. line;3. line");
+        l.add("one;"); l.add("more;"); l.add("line;");
+        ep.setProperty("key2", l);
+        output = getAsString(ep);
+        expected = 
+            "key1=one; two; three"+System.getProperty("line.separator")+
+            "key2=\\"+System.getProperty("line.separator")+
+            "    1. line;\\"+System.getProperty("line.separator")+
+            "    2. line;\\"+System.getProperty("line.separator")+
+            "    3. line\\"+System.getProperty("line.separator")+
+            "    one;\\"+System.getProperty("line.separator")+
+            "    more;\\"+System.getProperty("line.separator")+
+            "    line;"+System.getProperty("line.separator");
+        assertEquals(expected, output);
+        assertEquals(ep.getProperty("key1"), "one; two; three");
+        assertEquals(ep.getProperty("key2"), "1. line;2. line;3. lineone;more;line;");
+    }
+        
     public void testSorting() throws Exception {
         EditableProperties ep = new EditableProperties(false);
         ep.setProperty("a", "val-a");
         ep.setProperty("c", "val-c");
         ep.put("b", "val-b");
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        ep.store(os);
-        os.close();
-        String output = os.toString();
+        String output = getAsString(ep);
         String expected = "a=val-a"+System.getProperty("line.separator")+"c=val-c"+
                 System.getProperty("line.separator")+"b=val-b"+
                 System.getProperty("line.separator");
@@ -153,10 +211,7 @@ public class EditablePropertiesTest extends NbTestCase {
         ep.setProperty("a", "val-a");
         ep.setProperty("c", "val-c");
         ep.put("b", "val-b");
-        os = new ByteArrayOutputStream();
-        ep.store(os);
-        os.close();
-        output = os.toString();
+        output = getAsString(ep);
         expected = "a=val-a"+System.getProperty("line.separator")+"b=val-b"+
                 System.getProperty("line.separator")+"c=val-c"+
                 System.getProperty("line.separator");
@@ -222,10 +277,7 @@ public class EditablePropertiesTest extends NbTestCase {
         ep.setProperty("a a", "a space a");
         ep.setProperty("b"+(char)0x4567, "val"+(char)0x1234);
         ep.setProperty("@!#$%^", "!@#$%^&*(){}");
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        ep.store(os);
-        os.close();
-        String output = os.toString();
+        String output = getAsString(ep);
         String expected = "a\\ a=a space a"+System.getProperty("line.separator")+"b\\u4567=val\\u1234"+
                 System.getProperty("line.separator")+"@!#$%^=!@#$%^&*(){}"+
                 System.getProperty("line.separator");
@@ -306,8 +358,8 @@ public class EditablePropertiesTest extends NbTestCase {
         Reader r1 = null;
         Reader r2 = null;
         try {
-            r1 = new FileReader(f1);
-            r2 = new FileReader(f2);
+            r1 = new InputStreamReader(new FileInputStream(f1), "ISO-8859-1");
+            r2 = new InputStreamReader(new FileInputStream(f2), "ISO-8859-1");
             return AntBasedTestUtil.countTextDiffs(r1, r2);
         } finally {
             if (r1 != null) {
@@ -317,6 +369,13 @@ public class EditablePropertiesTest extends NbTestCase {
                 r2.close();
             }
         }
+    }
+    
+    private String getAsString(EditableProperties ep) throws Exception {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        ep.store(os);
+        os.close();
+        return os.toString();
     }
     
 }

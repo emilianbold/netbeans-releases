@@ -15,6 +15,7 @@ package org.netbeans.modules.java.j2seproject;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
@@ -73,18 +74,18 @@ public class J2SEProjectGenerator {
         // XXX the following just for testing, TBD:
         ep.setProperty("dist.dir", "dist");
         ep.setProperty("dist.jar", "${dist.dir}/" + codename + ".jar");
-        ep.setProperty("javac.classpath", "");
-        ep.setProperty("run.classpath", "${javac.classpath}:${build.classes.dir}");
-        ep.setProperty("debug.classpath", "${run.classpath}");
+        ep.setProperty("javac.classpath", Arrays.asList(new String[]{""}));
+        ep.setProperty("run.classpath", Arrays.asList(new String[]{"${javac.classpath}","${build.classes.dir}"}));
+        ep.setProperty("debug.classpath", Arrays.asList(new String[]{"${run.classpath}"}));
         ep.setProperty("application.args", "");
         ep.setProperty("jar.compress", "false");
         ep.setProperty("main.class", mainClass == null ? "" : mainClass );
         ep.setProperty("javac.source", "1.4");
         ep.setProperty("javac.debug", "true");
         ep.setProperty("javac.deprecation", "false");
-        ep.setProperty("javac.test.classpath", "${javac.classpath}:${build.classes.dir}:${libs.junit.classpath}");
-        ep.setProperty("run.test.classpath", "${javac.test.classpath}:${build.test.classes.dir}");
-        ep.setProperty("debug.test.classpath", "${run.test.classpath}");
+        ep.setProperty("javac.test.classpath", Arrays.asList(new String[]{"${javac.classpath}","${build.classes.dir}","${libs.junit.classpath}"}));
+        ep.setProperty("run.test.classpath", Arrays.asList(new String[]{"${javac.test.classpath}","${build.test.classes.dir}"}));
+        ep.setProperty("debug.test.classpath", Arrays.asList(new String[]{"${run.test.classpath}"}));
         ep.setProperty("src.dir", "src");
         ep.setProperty("test.src.dir", "test");
         ep.setProperty("build.dir", "build");
