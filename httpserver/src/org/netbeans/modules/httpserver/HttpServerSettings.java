@@ -46,7 +46,7 @@ import org.openide.TopManager;
 */
 public class HttpServerSettings extends SystemOption implements HttpServer.Impl {
 
-    private static final int MAX_START_RETRIES = 5;
+    private static final int MAX_START_RETRIES = 20;
     private static int currentRetries = 0;
 
     protected static EventListenerList listenerList = new EventListenerList();
