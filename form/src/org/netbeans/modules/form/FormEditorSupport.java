@@ -682,7 +682,7 @@ public class FormEditorSupport extends JavaEditor
             return;
         designer.initialize();
         designer.open();
-//        designer.requestActive();
+        designer.requestActive();
 
         ComponentInspector.getInstance().focusForm(this);
     }

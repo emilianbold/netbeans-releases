@@ -2628,6 +2628,7 @@ class JavaCodeGenerator extends CodeGenerator {
             java.awt.GridBagConstraints gridBagConstraints;
 
             javax.swing.JTextArea jTextArea1 = new javax.swing.JTextArea();
+            javax.swing.JTextArea jTextArea2 = new javax.swing.JTextArea();
             javax.swing.JCheckBox jCheckBox1 = new javax.swing.JCheckBox();
             javax.swing.JCheckBox jCheckBox2 = new javax.swing.JCheckBox();
             javax.swing.JPanel panel = new javax.swing.JPanel();
@@ -2635,15 +2636,15 @@ class JavaCodeGenerator extends CodeGenerator {
             panel.setLayout(new java.awt.GridBagLayout());
 
             jTextArea1.setBackground(javax.swing.UIManager.getDefaults().getColor("Label.background")); // NOI18N
-            jTextArea1.setColumns(30);
-            jTextArea1.setRows(8);
+            jTextArea1.setColumns(40);
+            jTextArea1.setRows(6);
             jTextArea1.setLineWrap(true);
             jTextArea1.setWrapStyleWord(true);
             jTextArea1.setEditable(false);
             jTextArea1.setText(FormUtils.getBundleString("MSG_MNEMONICS_INFO")); // NOI18N
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-            gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
+            gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
             gridBagConstraints.weightx = 1.0;
             gridBagConstraints.weighty = 1.0;
             panel.add(jTextArea1, gridBagConstraints);
@@ -2668,6 +2669,24 @@ class JavaCodeGenerator extends CodeGenerator {
             gridBagConstraints.gridy = 2;
             gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
             panel.add(jCheckBox2, gridBagConstraints);
+
+            jTextArea2.setBackground(javax.swing.UIManager.getDefaults().getColor("Label.background")); // NOI18N
+            jTextArea2.setColumns(40);
+            jTextArea2.setRows(3);
+            jTextArea2.setLineWrap(true);
+            jTextArea2.setWrapStyleWord(true);
+            jTextArea2.setEditable(false);
+            jTextArea2.setText(FormUtils.getBundleString("MSG_MNEMONICS_INFO2")); // NOI18N
+            gridBagConstraints = new java.awt.GridBagConstraints();
+            gridBagConstraints.gridx = 0;
+            gridBagConstraints.gridy = 3;
+            gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+            gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+            gridBagConstraints.weightx = 1.0;
+            gridBagConstraints.weighty = 1.0;
+            panel.add(jTextArea2, gridBagConstraints);
+
+            panel.getPreferredSize();
 
             notifyDescriptor = new NotifyDescriptor(
                 panel,
