@@ -84,7 +84,7 @@ public class ColumnNodeInfo extends DatabaseNodeInfo
 			ResultSet rs = dmd.getColumns((String)get(DatabaseNode.CATALOG), getUser(), (String)get(DatabaseNode.TABLE), (String)get(code));
 			rs.next();
 			
-			col.setColumnType(((Integer)get("datatype")).intValue());
+			col.setColumnType(rs.getInt(5));
 			col.setColumnSize(rs.getInt(7));
 			col.setNullAllowed(rs.getString(18).toUpperCase().equals("YES"));
 			col.setDefaultValue(rs.getString("COLUMN_DEF"));
