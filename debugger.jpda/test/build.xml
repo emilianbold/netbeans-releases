@@ -24,6 +24,8 @@ Microsystems, Inc. All Rights Reserved.
     <property name="xtest.code.classpath" value="src"/>
     
     <property name="xtest.home" location="../../xtest"/>
+    <property name="xtest.extra.home" location="../../../nbextra/xtest"/>
+
     <property name="xtest.results" location="results"/>
     <property name="xtest.build" location="."/>
     <property name="xtest.file.name" value="test.jar"/>
@@ -86,7 +88,7 @@ Microsystems, Inc. All Rights Reserved.
             <taskdef name="pathdef" classname="org.netbeans.xtest.PathDef"/>                        
         </nbtaskdef>
         
-        <nbpath nbhome="${netbeans.test.home}" xthome="${xtest.home}"/>
+        <nbpath nbhome="${netbeans.test.home}" xthome="${xtest.home}" xtexhome="${xtest.extra.home}"/>
 
         <!-- XML, XSLT reporters -->
         <nbtaskdef classpath="${xtest.path};${xalan.path}">
@@ -264,13 +266,13 @@ Microsystems, Inc. All Rights Reserved.
             </classpath>
         </property>
 
-        <property name="args" value="-jdkhome ${jdkhome} -userdir ${xtest.userdir} -cp:p ${xtest.ide.path} -J-Dtest.class=${test.class} -J-Dtest.classpath=${test.classpath} -J-Dtest.ant.file=${ant.file} -J-Dtest.target=${test.target} -J-Dxtest.home=${xtest.home} -J-Dxtest.includes=${xtest.includes} -J-Dxtest.excludes=${xtest.excludes} -J-Dtbag.classpath=${tbag.classpath} -J-Dtbag.patternset.include=${tbag.patternset.include} -J-Dtbag.patternset.exclude=${tbag.patternset.exclude} -J-Dtbag.testtype=${tbag.testtype} -J-Dtbag.formater=${tbag.formater} -J-Dxtest.distexec=true -J-Dtest.exit=true -J-Dnetbeans.full.hack=true -J-Dtest.timeout=90 -J-Ddebugger.jdk11.path=c:\jdk1.1.8"/>
+        <property name="args" value="-jdkhome ${jdkhome} -userdir ${xtest.userdir} -cp:p ${xtest.ide.path} -J-Dtest.class=${test.class} -J-Dtest.classpath=${test.classpath} -J-Dtest.ant.file=${ant.file} -J-Dtest.target=${test.target} -J-Dxtest.home=${xtest.home} -J-Dxtest.includes=${xtest.includes} -J-Dxtest.excludes=${xtest.excludes} -J-Dtbag.classpath=${tbag.classpath} -J-Dtbag.patternset.include=${tbag.patternset.include} -J-Dtbag.patternset.exclude=${tbag.patternset.exclude} -J-Dtbag.testtype=${tbag.testtype} -J-Dtbag.formater=${tbag.formater} -J-Dxtest.distexec=true -J-Dtest.exit=true -J-Dnetbeans.full.hack=true -J-Dnetbeans.windows=mdi -J-Dtest.timeout=90 -J-Ddebugger.jdk11.path=c:\jdk1.1.8"/>
         <echo message="ARGUMENTS = ${args}"/>
 
         <copy file="${xtest.home}/lib/patches/testmain.jar" todir="${netbeans.test.home}/lib/patches"/>
         <copy file="${xtest.home}/lib/xtest.jar" todir="${netbeans.test.home}/lib/ext"/>
-        <copy file="${xtest.home}/lib/xtest-ext.jar" todir="${netbeans.test.home}/lib/ext"/>
-        <copy file="${xtest.home}/lib/junit.jar" todir="${netbeans.test.home}/lib/ext"/>
+        <copy file="${xtest.extra.home}/lib/xtest-ext.jar" todir="${netbeans.test.home}/lib/ext"/>
+        <copy file="${xtest.extra.home}/lib/junit.jar" todir="${netbeans.test.home}/lib/ext"/>
         <copy file="${xtest.home}/lib/junit-ext.jar" todir="${netbeans.test.home}/lib/ext"/>
 
 
