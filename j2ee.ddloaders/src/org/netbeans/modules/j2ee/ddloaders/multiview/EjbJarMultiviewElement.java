@@ -15,7 +15,7 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ToolBarMultiViewElement;
-import org.netbeans.modules.xml.multiview.ui.PanelView;
+import org.netbeans.modules.xml.multiview.ui.SectionView;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.netbeans.modules.xml.multiview.ui.ToolBarDesignEditor;
 
@@ -27,7 +27,7 @@ import java.beans.PropertyChangeListener;
  */
 public abstract class EjbJarMultiviewElement extends ToolBarMultiViewElement {
 
-    private PanelView view;
+    private SectionView view;
     protected ToolBarDesignEditor comp;
     protected EjbJarMultiViewDataObject dataObject;
     EnterpriseBeans enterpriseBeans;
@@ -69,5 +69,9 @@ public abstract class EjbJarMultiviewElement extends ToolBarMultiViewElement {
         dataObject.checkParseable();
     }
 
-    protected abstract PanelView createView();
+    protected abstract SectionView createView();
+    
+    public SectionView getSectionView() {
+        return view;
+    }
 }

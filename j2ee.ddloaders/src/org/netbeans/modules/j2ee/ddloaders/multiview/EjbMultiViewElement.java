@@ -13,7 +13,7 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import org.netbeans.modules.xml.multiview.ui.PanelView;
+import org.netbeans.modules.xml.multiview.ui.SectionView;
 
 /**
  * @author pfiala
@@ -27,7 +27,7 @@ public class EjbMultiViewElement extends EjbJarMultiviewElement {
         super(dataObject);
     }
 
-    protected PanelView createView() {
+    protected SectionView createView() {
         return new EjbJarView(dataObject);
     }
 
