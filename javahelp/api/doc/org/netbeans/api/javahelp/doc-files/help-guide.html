@@ -47,6 +47,8 @@ Microsystems, Inc. All Rights Reserved.
       </li>
     </ul>
   </li>
+  <li><a href="#toc-index">Merge Hints for TOC and Index</a><br>
+  </li>
   <li><a href="#makeknown">Making the Help Set Known to the IDE</a><br>
     <ul>
       <li> <a href="#manifest">Manifest File</a> <br>
@@ -308,6 +310,67 @@ referenceTab.setName(<span class="string">"referenceTab"</span>); <span class="c
 </pre>
 
 Note that the <code>CompilerType</code> class extends the <code>ServiceType</code> class. 
+
+
+<h2><a name="toc-index">Merge Hints for TOC and Index</a></h2>
+<p>In NetBeans IDE 3.6, the help system has been upgraded to use v. 2.0 of JavaHelp 
+software. The most visible benefit of the upgrade is better merging of TOC and index. 
+NetBeans IDE uses the Unite-Append merge type for the table of contents and the Sort 
+merge type for the index. For more information on merge types, see the 
+<a href="http://java.sun.com/products/javahelp/README.html">JavaHelp release 
+notes.</a></p>
+
+<p>The biggest resulting impact for module authors is the need to more carefully 
+ design TOCs and indexes so that entries from different help sets merge 
+ comprehensibly for users. Here are some general tips and rules of thumb:</p>
+<ul>
+ <li>Use the most recent revision of 
+<a href="http://www.netbeans.org/source/browse/usersguide/javahelp/org/netbeans/modules/usersguide/ide-idx.xml">
+ the usersguide module index</a> as a guide for your indexing conventions to make your entries fit in 
+ seamlessly.</li>
+<li><i>DO NOT</i> use manual separators in your indexes, 
+(e.g. &lt;indexitem text="-A-"&gt;&lt;/indexitem&gt;). These are superfluous 
+with merged indexes are suspected of triggering a bug in JH that crashes the 
+help system - see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=39966"> 
+Issuezilla bug 39966</a>.</li>
+<li>Any TOC or index entry that contains sub-entries should have no 
+<samp>target</samp> attribute. This rule has been adopted because it is not 
+possible to provide useful topics for every "bucket" and users should have a 
+consistent experience as to when to expect a topic to display. If you feel that 
+ there is a useful introductory topic for a TOC bucket, make that topic the 
+ first entry in the bucket and call it "About". You can </li>
+
+  <li>If you would like to insert entries into an existing TOC bucket, check 
+  the most recent revision of the 
+<a href="http://www.netbeans.org/source/browse/usersguide/javahelp/org/netbeans/modules/usersguide/ide-toc.xml">
+ the usersguide module TOC</a>.</li>
+ <li>If you organize your table of contents so that "Core IDE Help" is your 
+first-level TOC item, your help set will be slotted in under second level buckets 
+created by the usersguide module. Also, this ensures your real top level topics are 
+not expanded in the JH viewer (by default, the JH viewer shows two levels of topics 
+when first opened), thus leaving more room in the first screenful of the 
+help viewer for other modules' high-level topics. The TOC for such a module might 
+look like the following:
+
+<pre>
+&lt;?xml version='1.0' encoding='ISO-8859-1'  ?&gt;
+&lt;!DOCTYPE toc PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 1.0//EN"
+         "http://java.sun.com/products/javahelp/toc_1_0.dtd"&gt;
+&lt;toc version="1.0"&gt;
+&lt;tocitem text="Core IDE Help"&gt;
+    &lt;tocitem text="HTTP Monitor"&gt;
+        &lt;tocitem text="Monitoring Data Flow on the Web Server" target="ctx_monitorintro" /&gt; 
+	    &lt;tocitem text="Viewing HTTP Monitor Data Records" target="monitor_view" /&gt; 
+	    &lt;tocitem text="Using the HTTP Monitor Toolbar" target="monitor_sort" /&gt;
+	    &lt;tocitem text="Editing and Replaying Monitor Data Records" target="monitor_resend" /&gt; 
+	    &lt;tocitem text="Saving HTTP Monitor Data Records" target="monitor_store" /&gt;  
+	    &lt;tocitem text="Deleting HTTP Monitor Data Records" target="monitor_delete" /&gt;
+            &lt;tocitem text="Deploying the HTTP Monitor for a Web Module" target="monitor_servconfig" /&gt;
+        &lt;/tocitem&gt;
+    &lt;/tocitem&gt;
+&lt;/toc&gt;&lt;</pre>
+ </li>
+</ul>
 
 <h2><a name="makeknown">Making the Help Set Known to the IDE</a></h2>
 In order to use the result help set within the IDE at runtime, a couple of things 
