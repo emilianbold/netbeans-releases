@@ -53,7 +53,11 @@ public class DialogDisplayerImpl extends DialogDisplayer {
                 // if a modal dialog active use it as parent
                 // otherwise use the main window
                 if (NbPresenter.currentModalDialog != null) {
-                    return new NbDialog(d, NbPresenter.currentModalDialog);
+                    if (NbPresenter.currentModalDialog.isLeaf ()) {
+                        return new NbDialog(d, WindowManager.getDefault ().getMainWindow ());
+                    } else {
+                        return new NbDialog(d, NbPresenter.currentModalDialog);
+                    }
                 }
                 else {
                     if (KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow() instanceof Dialog) {
@@ -115,7 +119,11 @@ public class DialogDisplayerImpl extends DialogDisplayer {
                 NbPresenter presenter = null;
                 if (descriptor instanceof DialogDescriptor) {
                     if (NbPresenter.currentModalDialog != null) {
-                        presenter = new NbDialog((DialogDescriptor) descriptor, NbPresenter.currentModalDialog);
+                        if (NbPresenter.currentModalDialog.isLeaf ()) {
+                            presenter = new NbDialog((DialogDescriptor) descriptor, WindowManager.getDefault ().getMainWindow ());
+                        } else {
+                            presenter = new NbDialog((DialogDescriptor) descriptor, NbPresenter.currentModalDialog);
+                        }
                     } else {
                         Frame f = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow() 
                             instanceof Frame ? 

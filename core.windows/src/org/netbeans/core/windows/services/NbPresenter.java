@@ -82,6 +82,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
     
     private Component currentMessage;
     private JScrollPane currentScrollPane;
+    private boolean leaf = false;
     
     private JPanel currentButtonsPanel;
     private Component[] currentPrimaryButtons;
@@ -114,6 +115,10 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
     public NbPresenter(NotifyDescriptor d, Dialog owner, boolean modal) {
         super(owner, d.getTitle(), modal); // modal
         initialize(d);
+    }
+    
+    boolean isLeaf () {
+        return leaf;
     }
     
     private void initAccessibility(){
@@ -152,6 +157,8 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
         
         descriptor = d;
         buttonListener = new ButtonListener();
+        // set leaf by DialogDescriptor, NotifyDescriptor is leaf as default
+        leaf = d instanceof DialogDescriptor ? ((DialogDescriptor)d).isLeaf () : true;
         
         getRootPane().registerKeyboardAction(
             buttonListener,
