@@ -23,21 +23,24 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
 import org.openide.util.Mutex;
-import org.openide.util.RequestProcessor;
 
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
+import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
 public class WebSources implements Sources, PropertyChangeListener  {
 
+    private static final String BUILD_DIR_PROP = "${" + WebProjectProperties.BUILD_DIR + "}";    //NOI18N
+    private static final String DIST_DIR_PROP = "${" + WebProjectProperties.DIST_DIR + "}";    //NOI18N
+    
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
     private final SourceRoots sourceRoots;
@@ -52,6 +55,7 @@ public class WebSources implements Sources, PropertyChangeListener  {
         this.testRoots = testRoots;
         this.sourceRoots.addPropertyChangeListener(this);
         this.testRoots.addPropertyChangeListener(this);
+        this.evaluator.addPropertyChangeListener(this);
         initSources(); // have to register external build roots eagerly
     }
 
@@ -135,14 +139,16 @@ public class WebSources implements Sources, PropertyChangeListener  {
         }
         
         //Web Pages
-        String webModuleLabel = org.openide.util.NbBundle.getMessage(org.netbeans.modules.web.project.ui.customizer.WebProjectProperties.class, "LBL_Node_WebModule"); //NOI18N
-        String webPagesLabel = org.openide.util.NbBundle.getMessage(org.netbeans.modules.web.project.ui.customizer.WebProjectProperties.class, "LBL_Node_DocBase"); //NOI18N
-        h.addPrincipalSourceRoot("${"+org.netbeans.modules.web.project.ui.customizer.WebProjectProperties.SOURCE_ROOT+"}", webModuleLabel, /*XXX*/null, null); //NOI18N
-        h.addPrincipalSourceRoot("${"+org.netbeans.modules.web.project.ui.customizer.WebProjectProperties.WEB_DOCBASE_DIR+"}", webPagesLabel, /*XXX*/null, null); //NOI18N
-        h.addTypedSourceRoot("${"+org.netbeans.modules.web.project.ui.customizer.WebProjectProperties.WEB_DOCBASE_DIR+"}", org.netbeans.modules.web.api.webmodule.WebProjectConstants.TYPE_DOC_ROOT, webPagesLabel, /*XXX*/null, null); //NOI18N
-        h.addTypedSourceRoot("${"+org.netbeans.modules.web.project.ui.customizer.WebProjectProperties.WEB_DOCBASE_DIR+"}/WEB-INF", org.netbeans.modules.web.api.webmodule.WebProjectConstants.TYPE_WEB_INF, /*XXX I18N*/ "WEB-INF", /*XXX*/null, null); //NOI18N
+        String webModuleLabel = org.openide.util.NbBundle.getMessage(WebProjectProperties.class, "LBL_Node_WebModule"); //NOI18N
+        String webPagesLabel = org.openide.util.NbBundle.getMessage(WebProjectProperties.class, "LBL_Node_DocBase"); //NOI18N
+        h.addPrincipalSourceRoot("${"+ WebProjectProperties.SOURCE_ROOT+"}", webModuleLabel, /*XXX*/null, null); //NOI18N
+        h.addPrincipalSourceRoot("${"+ WebProjectProperties.WEB_DOCBASE_DIR+"}", webPagesLabel, /*XXX*/null, null); //NOI18N
+        h.addTypedSourceRoot("${"+ WebProjectProperties.WEB_DOCBASE_DIR+"}", WebProjectConstants.TYPE_DOC_ROOT, webPagesLabel, /*XXX*/null, null); //NOI18N
+        h.addTypedSourceRoot("${"+ WebProjectProperties.WEB_DOCBASE_DIR+"}/WEB-INF", WebProjectConstants.TYPE_WEB_INF, /*XXX I18N*/ "WEB-INF", /*XXX*/null, null); //NOI18N
         
-        // XXX add build dir too?
+        h.addNonSourceRoot(BUILD_DIR_PROP);
+        h.addNonSourceRoot(DIST_DIR_PROP);
+
         ProjectManager.mutex().postWriteRequest(new Runnable() {
             public void run() {
                 h.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
@@ -179,9 +185,9 @@ public class WebSources implements Sources, PropertyChangeListener  {
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if (SourceRoots.PROP_ROOT_PROPERTIES.equals(evt.getPropertyName())) {
+        String propName = evt.getPropertyName();
+        if (SourceRoots.PROP_ROOT_PROPERTIES.equals(propName) || WebProjectProperties.BUILD_DIR.equals(propName) || WebProjectProperties.DIST_DIR.equals(propName))
             this.fireChange();
-        }
     }
 
 }

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -23,9 +23,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.EjbJarLogicalViewProvider;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
 import org.openide.util.Mutex;
-import org.openide.util.RequestProcessor;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ProjectManager;
@@ -36,6 +34,9 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
 public class EjbJarSources implements Sources, PropertyChangeListener, ChangeListener  {
+
+    private static final String BUILD_DIR_PROP = "${" + EjbJarProjectProperties.BUILD_DIR + "}";    //NOI18N
+    private static final String DIST_DIR_PROP = "${" + EjbJarProjectProperties.DIST_DIR + "}";    //NOI18N
 
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
@@ -52,6 +53,7 @@ public class EjbJarSources implements Sources, PropertyChangeListener, ChangeLis
         this.testRoots = testRoots;
         this.sourceRoots.addPropertyChangeListener(this);
         this.testRoots.addPropertyChangeListener(this);
+        this.evaluator.addPropertyChangeListener(this);
         initSources(); // have to register external build roots eagerly
     }
 
@@ -137,7 +139,10 @@ public class EjbJarSources implements Sources, PropertyChangeListener, ChangeLis
             h.addPrincipalSourceRoot("${"+EjbJarProjectProperties.META_INF+"}", configFilesLabel, /*XXX*/null, null);
             h.addTypedSourceRoot(prop, JavaProjectConstants.SOURCES_TYPE_JAVA, displayName, /*XXX*/null, null);
         }
-        // XXX add build dir too?
+        
+        h.addNonSourceRoot(BUILD_DIR_PROP);
+        h.addNonSourceRoot(DIST_DIR_PROP);
+
         ProjectManager.mutex().postWriteRequest(new Runnable() {
             public void run() {
                 h.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
@@ -179,9 +184,9 @@ public class EjbJarSources implements Sources, PropertyChangeListener, ChangeLis
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
-        if (SourceRoots.PROP_ROOT_PROPERTIES.equals(evt.getPropertyName())) {
+        String propName = evt.getPropertyName();
+        if (SourceRoots.PROP_ROOT_PROPERTIES.equals(propName) || EjbJarProjectProperties.BUILD_DIR.equals(propName) || EjbJarProjectProperties.DIST_DIR.equals(propName))
             this.fireChange();
-        }
     }
 
     public void stateChanged (ChangeEvent event) {
