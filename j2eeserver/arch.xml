@@ -580,7 +580,7 @@ to which server from the IDE.
 -->
 <answer id="resources-file">
 java.io.File is used in plugin API. The motivation is to make this API independent on 
-netbeans since this is an extension of the contracts definde in J2EE Deployment API.
+netbeans since this is an extension of the contracts defined in J2EE Deployment API.
 Filesystems are used for actual access to file contents and should also be used in plugin 
 code.
 </answer>
