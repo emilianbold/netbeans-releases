@@ -84,6 +84,7 @@
 	<mapID target="about_web_service_message" url="web/webservice/about_jwsd_message.html" />
 	<mapID target="ws_process" url="web/webservice/ws_process.html" />
 	<mapID target="create_ws" url="web/webservice/create_ws.html" />
+	<mapID target="create_ws_project" url="web/webservice/create_ws_project.html" />
 	<mapID target="create_ws_message" url="web/webservice/create_ws_message.html" />
 	<mapID target="create_ws_customize" url="web/webservice/create_ws_customize.html" />
 	<mapID target="add_ws_operation" url="web/webservice/add_ws_operation.html" />

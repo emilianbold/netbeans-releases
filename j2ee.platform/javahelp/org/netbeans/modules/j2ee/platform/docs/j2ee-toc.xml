@@ -231,7 +231,8 @@
 		<tocitem text="Working with Web Services" target="ws_process" />
 		<tocitem text="Web Service Tasks: Quick Reference" target="tbd" />
   	 </tocitem>
-	 <tocitem text="Creating and Editing Web Services" > 
+	 <tocitem text="Creating and Editing Web Services" >
+	        <tocitem text="Creating a Project for a Web Service" target="create_ws_project" />
 		<tocitem text="Creating an RPC-Style Web Service" target="create_ws" />
 	        <tocitem text="Creating a Message-Centric Web Service" target="create_ws_message" />
     	        <tocitem text="Adding a Web Service Operation" target="add_ws_operation" />
