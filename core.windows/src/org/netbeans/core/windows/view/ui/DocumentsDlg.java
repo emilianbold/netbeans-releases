@@ -85,7 +85,6 @@ implements PropertyChangeListener {
         descriptionLabel.setText(NbBundle.getMessage(DocumentsDlg.class, "LBL_Description"));
         
         closeButton.setText(NbBundle.getMessage(DocumentsDlg.class, "LBL_Close"));
-        helpButton.setText(NbBundle.getMessage(DocumentsDlg.class, "LBL_Help"));
             
         // Mnemonics
         jButtonActivate.setMnemonic(NbBundle.getMessage(DocumentsDlg.class, "LBL_Activate_Mnemonic").charAt(0));
@@ -95,7 +94,6 @@ implements PropertyChangeListener {
         descriptionLabel.setDisplayedMnemonic(NbBundle.getMessage(DocumentsDlg.class, "LBL_Description_Mnemonic").charAt(0));
         
         closeButton.setMnemonic(NbBundle.getMessage(DocumentsDlg.class, "LBL_Close_Mnemonic").charAt(0));
-        helpButton.setMnemonic(NbBundle.getMessage(DocumentsDlg.class, "LBL_Help_Mnemonic").charAt(0));
         
         // Set labels for.
         explorerLabel.setLabelFor(listView);
@@ -106,7 +104,6 @@ implements PropertyChangeListener {
         jButtonClose.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DocumentsDlg.class, "ACSD_CloseDocuments"));
         jButtonSave.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DocumentsDlg.class, "ACSD_SaveDocuments"));
         closeButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DocumentsDlg.class, "ACSD_Close"));
-        helpButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DocumentsDlg.class, "ACSD_Help"));
         descriptionArea.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DocumentsDlg.class, "ACSD_DescriptionArea"));
     }
     
@@ -141,21 +138,20 @@ implements PropertyChangeListener {
         jButtonClose = new javax.swing.JButton();
         jButtonSave = new javax.swing.JButton();
         closeButton = new javax.swing.JButton();
-        helpButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
         setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 0, 11)));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
         add(explorerLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
         add(descriptionLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -163,9 +159,9 @@ implements PropertyChangeListener {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridheight = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(explorerPanel, gridBagConstraints);
 
         jScrollPane1.setPreferredSize(new java.awt.Dimension(3, 60));
@@ -177,8 +173,8 @@ implements PropertyChangeListener {
         gridBagConstraints.gridy = 6;
         gridBagConstraints.gridheight = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(jScrollPane1, gridBagConstraints);
 
         jButtonActivate.addActionListener(new java.awt.event.ActionListener() {
@@ -191,8 +187,8 @@ implements PropertyChangeListener {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(jButtonActivate, gridBagConstraints);
 
         jButtonClose.addActionListener(new java.awt.event.ActionListener() {
@@ -205,8 +201,8 @@ implements PropertyChangeListener {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(jButtonClose, gridBagConstraints);
 
         jButtonSave.addActionListener(new java.awt.event.ActionListener() {
@@ -219,9 +215,9 @@ implements PropertyChangeListener {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(jButtonSave, gridBagConstraints);
 
         closeButton.addActionListener(new java.awt.event.ActionListener() {
@@ -234,31 +230,12 @@ implements PropertyChangeListener {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
         gridBagConstraints.weighty = 0.1;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(closeButton, gridBagConstraints);
 
-        helpButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                helpButtonActionPerformed(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 8;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
-        add(helpButton, gridBagConstraints);
-
     }//GEN-END:initComponents
-
-    private void helpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpButtonActionPerformed
-        // XXX
-        NbTopManager.get().showHelp(getHelpCtx());
-    }//GEN-LAST:event_helpButtonActionPerformed
 
     private void closeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeButtonActionPerformed
         closeDialog();
@@ -494,7 +471,6 @@ implements PropertyChangeListener {
     private javax.swing.JLabel descriptionLabel;
     private javax.swing.JLabel explorerLabel;
     private javax.swing.JPanel explorerPanel;
-    private javax.swing.JButton helpButton;
     private javax.swing.JButton jButtonActivate;
     private javax.swing.JButton jButtonClose;
     private javax.swing.JButton jButtonSave;
