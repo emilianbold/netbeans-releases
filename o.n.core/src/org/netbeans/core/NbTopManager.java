@@ -542,7 +542,17 @@ public abstract class NbTopManager /*extends TopManager*/ {
                         // system is down; the IDE cannot be used further.
                         ErrorManager.getDefault().notify(t);
                     }
-                    TopSecurityManager.exit(0);
+                    // #37231 Someone (e.g. Jemmy) can install its own EventQueue and then
+                    // exit is dispatched through that proprietary queue and it
+                    // can be refused by security check. So, we need to replan
+                    // to RequestProcessor to avoid security problems.
+                    Task exitTask = new Task(new Runnable() {
+                        public void run() {
+                            TopSecurityManager.exit(0);
+                        }
+                    });
+                    RequestProcessor.getDefault().post(exitTask);
+                    exitTask.waitFinished();
                 }
             }
         } finally {
