@@ -66,7 +66,7 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             <attr name="RecentViewListAction.shadow/SwitchToRecentDocumentAction.shadow" boolvalue="true" />
             <file name="SwitchToRecentDocumentAction.shadow">
-                <attr name="originalFile" stringvalue="org-netbeans-core-windows-actions-SwitchToRecentDocumentAction.instance" />
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-SwitchToRecentDocumentAction.instance" />
             </file>
             <attr name="SwitchToRecentDocumentAction.shadow/Separator4.instance" boolvalue="true" />
             <file name="Separator4.instance">
