@@ -306,7 +306,6 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="${xtest.home}/lib/junit.jar" todir="${netbeans.home}/lib/ext"/>
         <copy file="${xtest.home}/lib/junit-ext.jar" todir="${netbeans.home}/lib/ext"/>
         -->
-        <copy file="${xtest.home}/lib/xtest-ide.jar" todir="${netbeans.home}/lib"/>
         <copy file="${xtest.home}/lib/xtest.jar" todir="${netbeans.home}/lib"/>
         <copy file="${xtest.home}/lib/xtest-ext.jar" todir="${netbeans.home}/lib"/>
         <copy file="${xtest.home}/lib/junit.jar" todir="${netbeans.home}/lib"/>
@@ -329,8 +328,8 @@ Microsystems, Inc. All Rights Reserved.
 
         <!--
         <delete file="${netbeans.home}/lib/patches/testmain.jar"/>
-        -->
         <delete file="${netbeans.home}/lib/xtest-ide.jar"/>
+        -->
         <delete file="${netbeans.home}/lib/xtest.jar"/>
         <delete file="${netbeans.home}/lib/xtest-ext.jar"/>
         <delete file="${netbeans.home}/lib/junit.jar"/>

@@ -68,8 +68,14 @@ Microsystems, Inc. All Rights Reserved.
             manifest="manifest-subst.mf"
             basedir="src"
             excludesfile="../nbbuild/standard-jar-excludes.txt"
-            compress="false"
-            includes="org/netbeans/xtest/**" excludes="org/netbeans/xtest/pe/server*/**,org/netbeans/xtest/ide/**" />
+            compress="false">
+	<include name="org/netbeans/xtest/**"/>
+        <exclude name="org/netbeans/xtest/pe/server*/**"/>
+	<!--
+	<exclude name="org/netbeans/xtest/ide/**"/>
+	-->
+	<include name="META-INF/services/org.openide.ErrorManager"/>
+    </jar>	    
 
             <!--
     <jar jarfile="lib/patches/testmain.jar"
@@ -84,7 +90,11 @@ Microsystems, Inc. All Rights Reserved.
             manifest="manifest-subst.mf"
             basedir="src"
             compress="false">
-        <include name="org/netbeans/xtest/ide/*.class"/>        
+	
+        <include name="org/netbeans/xtest/ide/*.clas"/>
+	<!--
+	<include name="META-INF/services/org.openide.ErrorManager"/>
+	-->
     </jar>      
     <copy file="${xtest.extra.home}/lib/junit.jar" todir="lib"/>
     <copy file="${xtest.extra.home}/lib/xml-apis.jar" todir="lib"/>
