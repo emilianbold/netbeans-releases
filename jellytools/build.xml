@@ -48,7 +48,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="compile" depends="init,buildDependentModules">
         <mkdir dir="build/classes"/>
-        <javac srcdir="src" destdir="build/classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+        <javac srcdir="src" destdir="build/classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
           <classpath>
             <path refid="jellytools.classpath"/>
           </classpath>

@@ -65,7 +65,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="compile" depends="java,timestamp">
     <filter token="BUILD_NUMBER" value="${buildnumber}"/>
     <mkdir dir="${build}"/>
-    <javac srcdir="${src}" destdir="${build}" excludesfile="${excludes}" debug="on"/>
+    <javac srcdir="${src}" destdir="${build}" excludesfile="${excludes}" debug="on" source="1.4"/>
     <copy file="${src}/org/netbeans/jemmy/debug.timeouts" todir="${build}/org/netbeans/jemmy"/>
     <copy file="${src}/org/netbeans/jemmy/version_info" tofile="${build}/org/netbeans/jemmy/version_info" filtering="on"/>
   </target>
@@ -172,7 +172,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="compiletest" depends="compile">
     <mkdir dir="${testbuild}"/>
-    <javac srcdir="${testsources}" destdir="${testbuild}" excludesfile="${excludes}" debug="on">
+    <javac srcdir="${testsources}" destdir="${testbuild}" excludesfile="${excludes}" debug="on" source="1.4">
       <classpath>
         <pathelement location="${build}"/>
         <pathelement path="${java.class.path}"/>
