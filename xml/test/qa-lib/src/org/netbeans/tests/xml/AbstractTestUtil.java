@@ -47,7 +47,7 @@ import org.openide.util.NbBundle;
  * @author mschovanek
  */
 public abstract class AbstractTestUtil {
-    protected boolean DEBUG = false;
+    protected static boolean DEBUG = false;
     
     public static final String CATALOG_PACKAGE    = "org.netbeans.modules.xml.catalog";
     public static final String CORE_PACKAGE       = "org.netbeans.modules.xml.core";
@@ -63,20 +63,19 @@ public abstract class AbstractTestUtil {
     /**
      *  Converts the TreeNode to a string.
      */
-    public String nodeToString(TreeNode node) throws TreeException {
-        return XMLStringResult.toString(node);
-        
+    public static String nodeToString(TreeNode node) {
+        try {
+            return XMLStringResult.toString(node);
+        } catch (TreeException te) {
+            return null;
+        }
     }
     
     /**
      *  Converts the node to a string.
      */
-    public String nodeToString(Object node) throws TreeException {
-        if (node instanceof TreeNode) {
-            return nodeToString((TreeNode) node);
-        } else {
-            return node.toString();
-        }
+    public static String nodeToString(Object node) {
+        return node.toString();
     }
     
     //--------------------------------------------------------------------------
@@ -90,7 +89,7 @@ public abstract class AbstractTestUtil {
      * @param replaceTo the substring to replace it with
      * @return a new string with 1st occurrence replaced
      */
-    public String replaceString(String original, String begin, String end, String replaceTo) {
+    public static String replaceString(String original, String begin, String end, String replaceTo) {
         int bi = original.indexOf(begin);
         int ei = original.indexOf(end, bi) + end.length();
         
@@ -100,7 +99,7 @@ public abstract class AbstractTestUtil {
     /**
      * Removes first character occurence from string.
      */
-    public String removeChar(String str, char ch) {
+    public static String removeChar(String str, char ch) {
         int index = str.indexOf(ch);
         
         if (index > -1) {
@@ -114,7 +113,7 @@ public abstract class AbstractTestUtil {
     /**
      * Joins elemets delimited by delim.
      */
-    public String joinElements(String[] elements, String delim) {
+    public static String joinElements(String[] elements, String delim) {
         if (elements == null) {
             return null;
         }
@@ -129,7 +128,7 @@ public abstract class AbstractTestUtil {
     /**
      * Returns last element.
      */
-    public final String lastElement(String string, String delim) {
+    public static final String lastElement(String string, String delim) {
         int index = string.lastIndexOf(delim);
         if (index == -1) {
             return string;
@@ -183,7 +182,7 @@ public abstract class AbstractTestUtil {
     
     /** Converts DataObject to String.
      */
-    public String dataObjectToString(DataObject dataObject) throws IOException, BadLocationException {
+    public static String dataObjectToString(DataObject dataObject) throws IOException, BadLocationException {
         EditorCookie editorCookie = (EditorCookie) dataObject.getCookie(EditorCookie.class);
         
         if (editorCookie != null) {
@@ -197,7 +196,7 @@ public abstract class AbstractTestUtil {
     
     /** Saves DataObject
      */
-    public void saveDataObject(DataObject dataObject) throws IOException {
+    public static void saveDataObject(DataObject dataObject) throws IOException {
         SaveCookie cookie = (SaveCookie) dataObject.getCookie(SaveCookie.class);
         cookie.save();
     }
@@ -209,7 +208,7 @@ public abstract class AbstractTestUtil {
     /**
      * Mounts local directory
      */
-    public LocalFileSystem.Impl mountDirectory(File dir) throws PropertyVetoException, IOException {
+    public static LocalFileSystem.Impl mountDirectory(File dir) throws PropertyVetoException, IOException {
         LocalFileSystem fs = new LocalFileSystem();
         fs.setRootDirectory(dir);
         Repository rep = Repository.getDefault();
@@ -224,7 +223,7 @@ public abstract class AbstractTestUtil {
     /**
      * Opens the XML Document with the given package, name and extension
      */
-    public TreeDocument openXMLDocument(String aPackage, String name, String ext) throws IOException {
+    public static TreeDocument openXMLDocument(String aPackage, String name, String ext) throws IOException {
         DataObject dao = findDataObject(aPackage, name, ext);
         
         if (dao == null) {
@@ -254,7 +253,7 @@ public abstract class AbstractTestUtil {
     /**
      * Deletes FileObject.
      */
-    public void deleteFileObject(FileObject fo) throws IOException {
+    public static void deleteFileObject(FileObject fo) throws IOException {
         DataObject dataObject = DataObject.find(fo);
         dataObject.getNodeDelegate().destroy();
     }
@@ -262,21 +261,21 @@ public abstract class AbstractTestUtil {
     /**
      * Finds DataFolder.
      */
-    public DataFolder findFolder(String aPackage) throws Exception {
+    public static DataFolder findFolder(String aPackage) throws Exception {
         return (DataFolder) findDataObject(aPackage, null, null);
     }
     
     /**
      * Finds absolut path for FileObject.
      */
-    public String toAbsolutePath(FileObject fo) {
+    public static String toAbsolutePath(FileObject fo) {
         return FileUtil.toFile(fo).getAbsolutePath();
     }
     
     /**
      * Finds the DataObject with the given package, name and extension
      */
-    public DataObject findDataObject(String aPackage, String name, String ext) throws DataObjectNotFoundException {
+    public static DataObject findDataObject(String aPackage, String name, String ext) throws DataObjectNotFoundException {
         FileObject fo = null;
         fo = Repository.getDefault().find(aPackage, name, ext);
         if (fo == null) {
@@ -289,7 +288,7 @@ public abstract class AbstractTestUtil {
     /**
      * Finds the DataObject with the given package, name and extension
      */
-    public FileObject findFileObject(String aPackage, String name, String ext) {
+    public static FileObject findFileObject(String aPackage, String name, String ext) {
         return Repository.getDefault().find(aPackage, name, ext);
     }
     
@@ -316,7 +315,7 @@ public abstract class AbstractTestUtil {
      * Finds the DataObject with the given name. The name of a resource is
      * a "/"-separated path name that identifies the resource or Nbfs URL.
      */
-    public DataObject findDataObject(String name) throws DataObjectNotFoundException {
+    public static DataObject findDataObject(String name) throws DataObjectNotFoundException {
         FileObject fo = findFileObject(name);
         if (fo == null) {
             if (DEBUG) {
@@ -332,7 +331,7 @@ public abstract class AbstractTestUtil {
      * Finds the FileObject with the given name. The name of a resource is
      * a "/"-separated path name that identifies the resource or Nbfs URL.
      */
-    public FileObject findFileObject(String name) {
+    public static FileObject findFileObject(String name) {
         FileObject fo = null;
         if (name.startsWith("nbfs:")) {
             try {
@@ -347,7 +346,7 @@ public abstract class AbstractTestUtil {
     /**
      * Finds the template with the given name.
      */
-    public DataObject getTemplate(String tname) throws DataObjectNotFoundException {
+    public static DataObject getTemplate(String tname) throws DataObjectNotFoundException {
         FileObject fileObject = Repository.getDefault().findResource("Templates/" + tname);
         if (fileObject == null) {
             throw new IllegalArgumentException("Cannot find template: " + tname);
@@ -359,7 +358,7 @@ public abstract class AbstractTestUtil {
      * Creates new DataObject at the folder with given name from the template
      * with the given tname.
      */
-    public DataObject newFromTemplate(String tname, String folder, String name) throws IOException {
+    public static DataObject newFromTemplate(String tname, String folder, String name) throws IOException {
         DataObject dataObject = getTemplate(tname);
         DataFolder dataFolder = (DataFolder) findDataObject(folder);
         return dataObject.createFromTemplate(dataFolder, name);
@@ -369,7 +368,7 @@ public abstract class AbstractTestUtil {
      * Removes the DataObject with the given name. The name of a resource is
      * a "/"-separated path name that identifies the resource or Nbfs URL.
      */
-    public boolean removeDocument(String name) throws IOException {
+    public static boolean removeDocument(String name) throws IOException {
         DataObject  dataObject = findDataObject(name);
         if (dataObject != null) {
             dataObject.delete();
@@ -386,7 +385,7 @@ public abstract class AbstractTestUtil {
     /**
      * Enbles <code>enable = true</code>  or disables <code>enable = false</code> the module.
      */
-    public void switchModule(String codeName, boolean enable) throws Exception {
+    public static void switchModule(String codeName, boolean enable) throws Exception {
         String statusFile = "Modules/" + codeName.replace('.', '-') + ".xml";
         ModuleInfo mi = getModuleInfo(codeName);
 /*
@@ -461,7 +460,7 @@ public abstract class AbstractTestUtil {
     /**
      * Switch on all XML modules and returns <code>true</code> if change state of any module else <code>false</code>.
      */
-    public boolean switchAllXMLModules(boolean enable) throws Exception {
+    public static boolean switchAllXMLModules(boolean enable) throws Exception {
         boolean result = false;
         Iterator it = Lookup.getDefault().lookup(new Template(ModuleInfo.class)).allInstances().iterator();
         
@@ -478,7 +477,7 @@ public abstract class AbstractTestUtil {
     /**
      * Returns module's info or <code>null</null>.
      */
-    public ModuleInfo getModuleInfo(String codeName) {
+    public static ModuleInfo getModuleInfo(String codeName) {
         Iterator it = Lookup.getDefault().lookup(new Template(ModuleInfo.class)).allInstances().iterator();
         
         while (it.hasNext()) {
@@ -494,7 +493,7 @@ public abstract class AbstractTestUtil {
     /**
      * Returns <code>true</code> if module is enabled else <code>false</code>.
      */
-    public boolean isModuleEnabled(String codeName) {
+    public static boolean isModuleEnabled(String codeName) {
         ModuleInfo mi = getModuleInfo(codeName);
         if (mi == null) {
             throw new IllegalArgumentException("Invalid codeName: " + codeName);
@@ -508,7 +507,7 @@ public abstract class AbstractTestUtil {
     /**
      * Generates random integer.
      */
-    public int randomInt(int n) {
+    public static int randomInt(int n) {
         return randomGenerator.nextInt(n);
     }
     
