@@ -276,14 +276,19 @@ public class UtilConvert {
      */
     public static String loadConvert (String theString) {
         char aChar;
-        int len = theString.length();
+        final int len = theString.length();
         StringBuffer outBuffer = new StringBuffer(len);
 
+        main:
         for(int x=0; x<len; ) {
             aChar = theString.charAt(x++);
-            if (aChar == '\\') {
+            if (aChar == '\\' && x != len) {
                 aChar = theString.charAt(x++);
                 if(aChar == 'u') {
+                    if (x > len - 4) {
+                        outBuffer.append('\\').append('u');
+                        continue main;
+                    }
                     // Read the xxxx
                     int value=0;
                     for (int i=0; i<4; i++) {
@@ -302,8 +307,20 @@ public class UtilConvert {
                             value = (value << 4) + 10 + aChar - 'A';
                             break;
                         default:
-                            throw new IllegalArgumentException(
-                                "Malformed \\uxxxx encoding.");
+                            /*
+                             * Handle a malformed \\uxxxx encoding:
+                             *
+                             * We want to print "\\u" plus all the hexadecimal
+                             * digits that passed the above switch.
+                             * To achieve it, print ("\\u")...,
+                             */
+                            outBuffer.append('\\').append('u');
+
+                            /* ... move 'x' back to character after "u"... */
+                            x -= i + 1;
+
+                            /* ... and continue with the main loop. */
+                            continue main;
                         }
                     }
                     outBuffer.append((char)value);
