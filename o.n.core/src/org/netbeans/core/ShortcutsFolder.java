@@ -21,6 +21,7 @@ import javax.swing.text.Keymap;
 import javax.swing.*;
 
 import org.openide.*;
+import org.openide.awt.Actions;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.cookies.InstanceCookie;
@@ -140,23 +141,27 @@ final class ShortcutsFolder extends FolderInstance {
     static String getKeyStrokeName (KeyStroke stroke) {
         Keymap map = (Keymap)Lookup.getDefault().lookup(Keymap.class);
         Action action = map.getAction (stroke);
-        if (action instanceof SystemAction) {
-            String name = ((SystemAction)action).getName ();
-            name = Utilities.replaceString (name, "&", ""); // remove mnemonics marker  // NOI18N
-            name = Utilities.replaceString (name, "...", ""); // remove trailing "..."  // NOI18N
-            return getKeyText (stroke) + " [" + name + "]"; // NOI18N
+        if (action != null) {
+            return getKeyText (stroke) + " [" + getActionBasicName(action) + "]"; // NOI18N
         } else {
-            if (action == null) return getKeyText (stroke);
-            else return getKeyText (stroke) + " [" + action.getValue (Action.NAME) + "]"; // NOI18N
+            return getKeyText(stroke);
         }
+    }
+    
+    private static String getActionBasicName(Action action) {
+        String name = (String)action.getValue(Action.NAME);
+        if (name == null) {
+            return "???"; // NOI18N
+        }
+        name = Actions.cutAmpersand(name);
+        return Utilities.replaceString (name, "...", ""); // remove trailing "..."  // NOI18N
     }
 
     /**
      * Used in ActionsPanel.
      */
-    static String getActionName (SystemAction action) {
-        String name = Utilities.replaceString (action.getName (), "&", ""); // remove mnemonics marker // NOI18N
-        name = Utilities.replaceString (name, "...", ""); // remove trailing "..." // NOI18N
+    static String getActionName (Action action) {
+        String name = getActionBasicName(action);
 
         Keymap map = (Keymap)Lookup.getDefault().lookup(Keymap.class);
         KeyStroke[] strokes = map.getKeyStrokesForAction(action);
