@@ -24,6 +24,7 @@ import org.netbeans.modules.project.ui.OpenProjectListSettings;
 import org.netbeans.modules.project.ui.ProjectChooserAccessory;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -49,7 +50,7 @@ public class OpenProject extends BasicAction {
               
             if ( option == JFileChooser.APPROVE_OPTION ) {
 
-                File projectDir = chooser.getSelectedFile();
+                File projectDir = FileUtil.normalizeFile(chooser.getSelectedFile());
 
                 Project project = OpenProjectList.fileToProject( projectDir ); 
                 

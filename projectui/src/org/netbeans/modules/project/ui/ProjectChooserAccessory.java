@@ -165,7 +165,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         if ( JFileChooser.SELECTED_FILE_CHANGED_PROPERTY.equals( e.getPropertyName() ) ) {             
             // We have to update the Accessory
             JFileChooser chooser = (JFileChooser)e.getSource();
-            File dir = chooser.getSelectedFile();
+            File dir = FileUtil.normalizeFile(chooser.getSelectedFile());
             DefaultListModel spListModel = (DefaultListModel)jListSubprojects.getModel();
             
             Project project = null;            
@@ -207,15 +207,6 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
     
     // Private methods ---------------------------------------------------------
     
-    private static FileObject getFileObject( File file ) {
-        
-        if ( !file.isDirectory() ) {
-            return null;
-        }
-
-        return FileUtil.toFileObject(file);
-    }
-    
     private static boolean isProjectDir( File dir ) {
         
         if ( dir == null ) {
@@ -238,7 +229,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
             return false;
         }
         
-        FileObject fo = getFileObject( dir );        
+        FileObject fo = FileUtil.toFileObject(dir);
         return fo == null ? false : ProjectManager.getDefault().isProject( fo );
     }
     
@@ -401,7 +392,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
     private static class ProjectFileChooser extends JFileChooser {
         
         public void approveSelection() {
-            File dir = getSelectedFile();
+            File dir = FileUtil.normalizeFile(getSelectedFile());
             
             if ( isProjectDir( dir ) && getProject( dir ) != null ) {
                 super.approveSelection();
@@ -436,9 +427,10 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
     
     private static class ProjectFileView extends FileView {
         
-        private static Icon badge = new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/projectBadge.gif" ) ); // NOI18N
-        private FileSystemView fsv;
+        private static final Icon BADGE = new ImageIcon(Utilities.loadImage("org/netbeans/modules/project/ui/resources/projectBadge.gif")); // NOI18N
+        private static final Icon EMPTY = new ImageIcon(Utilities.loadImage("org/netbeans/modules/project/ui/resources/empty.gif")); // NOI18N
         
+        private FileSystemView fsv;
         private Icon lastOriginal;
         private Icon lastMerged;
         
@@ -446,18 +438,23 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
             this.fsv = fsv;            
         }
                 
-        public javax.swing.Icon getIcon(File f) {
+        public Icon getIcon(File _f) {
+            File f = FileUtil.normalizeFile(_f);
+            Icon original = fsv.getSystemIcon(f);
+            if (original == null) {
+                // L&F (e.g. GTK) did not specify any icon.
+                original = EMPTY;
+            }
             if ( isProjectDir( f ) ) {
-                Icon original = fsv.getSystemIcon( f );
                 if ( original.equals( lastOriginal ) ) {
                     return lastMerged;
                 }
                 lastOriginal = original;
-                lastMerged = new MergedIcon( original, badge, -1, -1 );                
+                lastMerged = new MergedIcon(original, BADGE, -1, -1);                
                 return lastMerged;
             }
             else {
-                return super.getIcon(f);
+                return original;
             }
         }
         
