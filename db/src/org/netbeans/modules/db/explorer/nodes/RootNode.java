@@ -27,6 +27,9 @@ import org.netbeans.modules.db.*;
 import org.netbeans.modules.db.explorer.*;
 import org.netbeans.modules.db.explorer.infos.*;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
+
 /** Abstract class that can be used as super class of all data objects that
 * should contain some nodes. It provides methods for adding/removing
 * sub nodes.
@@ -48,6 +51,8 @@ public class RootNode extends DatabaseNode {
     public RootNode() {
         try {
             sfactory = new SpecificationFactory();
+            //initialization listener for debug mode
+            initDebugListening();
             DatabaseNodeInfo nfo = DatabaseNodeInfo.createNodeInfo(null, "root"); //NOI18N
             if (sfactory != null) nfo.setSpecificationFactory(sfactory);
             else throw new Exception(bundle.getString("EXC_NoSpecificationFactory"));
@@ -62,4 +67,26 @@ public class RootNode extends DatabaseNode {
     public boolean canRename() {
         return true;
     }
+    /**
+     * Connects the debug property in sfactory and debugMode property in DBExplorer module's option.
+     */
+    private void initDebugListening() {
+        if ( (getOption() == null) || (sfactory == null) ) {
+            return;
+        }
+        option.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent e) {
+                if (e.getPropertyName() == null) {
+                    sfactory.setDebugMode(option.getDebugMode());
+                    return;
+                }
+                if (e.getPropertyName().equals(DatabaseOption.PROP_DEBUG_MODE)){
+                    sfactory.setDebugMode(
+                        ((Boolean) e.getNewValue()).booleanValue()
+                    );
+                }
+            }
+        });
+    }
+
 }
