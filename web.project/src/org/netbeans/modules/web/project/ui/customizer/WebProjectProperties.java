@@ -156,6 +156,9 @@ public class WebProjectProperties {
     public static final String APPLICATION_ARGS = "application.args"; // NOI18N
     public static final String JAVADOC_PREVIEW="javadoc.preview"; // NOI18N
 
+    public static final String WS_DEBUG_CLASSPATHS = "ws.debug.classpaths";     //NOI18N
+    public static final String WS_WEB_DOCBASE_DIRS = "ws.web.docbase.dirs"; //NOI18N
+    
     // Well known paths
     public static final String[] WELL_KNOWN_PATHS = new String[] {            
             "${" + JAVAC_CLASSPATH + "}", 
