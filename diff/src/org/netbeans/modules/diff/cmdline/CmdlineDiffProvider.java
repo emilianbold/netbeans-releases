@@ -37,7 +37,7 @@ import org.netbeans.api.diff.Difference;
  *
  * @author  Martin Entlicher
  */
-public class CmdlineDiffProvider extends DiffProvider {
+public class CmdlineDiffProvider extends DiffProvider implements java.io.Serializable {
 
     private static final String REVISION_STR = "retrieving revision".intern();
     private static final String DIFF_REGEXP = "(^[0-9]+(,[0-9]+|)[d][0-9]+$)|"+
@@ -115,7 +115,7 @@ public class CmdlineDiffProvider extends DiffProvider {
      * @return the list of differences found, instances of {@link Difference};
      *        or <code>null</code> when some error occured.
      */
-    public List createDiff(Reader r1, Reader r2) {
+    public List createDiff(Reader r1, Reader r2) throws IOException {
         File f1 = null;
         File f2 = null;
         try {
@@ -132,8 +132,6 @@ public class CmdlineDiffProvider extends DiffProvider {
             fw1.close();
             fw2.close();
             return createDiff(f1, f2);
-        } catch (IOException ioex) {
-            return null;
         } finally {
             if (f1 != null) f1.delete();
             if (f2 != null) f2.delete();
