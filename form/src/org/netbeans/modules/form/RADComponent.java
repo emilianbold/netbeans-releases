@@ -319,7 +319,7 @@ public class RADComponent {
     PropertyDescriptor[] props = beanInfo.getPropertyDescriptors ();
     ArrayList nodeProps = new ArrayList ();
     for (int i = 0; i < props.length; i++) {
-      if (!props[i].isHidden ()) {
+      if ((!props[i].isHidden ()) && (!props[i].isExpert ())) {
         Node.Property prop = createProperty (props[i]);
         nodeProps.add (prop);
       }
@@ -335,7 +335,7 @@ public class RADComponent {
     PropertyDescriptor[] props = beanInfo.getPropertyDescriptors ();
     ArrayList nodeProps = new ArrayList ();
     for (int i = 0; i < props.length; i++) {
-      if (!props[i].isHidden ()) {
+      if ((!props[i].isHidden ()) && props[i].isExpert ()) {
         Node.Property prop = createProperty (props[i]);
         nodeProps.add (prop);
       }
@@ -451,11 +451,9 @@ public class RADComponent {
 // Protected interface to working with properties on bean instance
 
   protected Object getPropertyValue (PropertyDescriptor desc) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-//System.out.println ("1: "+desc.getName ());
     if (isChangedValue (desc)) {
       return getChangedValue (desc);
     }
-//System.out.println ("2: "+desc.getName ());
     Method readMethod = desc.getReadMethod ();
     if (readMethod == null) {
       throw new IllegalAccessException ();
@@ -567,21 +565,7 @@ public class RADComponent {
     
     RADPropertyImpl (PropertyDescriptor desc) {
       super (desc.getPropertyType ());
-/*      try {
-        ps = new java.io.PrintStream (new java.io.FileOutputStream (new java.io.File ("D:\\out\\"+desc.getName ()+"_"+desc.hashCode ()+".txt")));
-      } catch (java.io.IOException e) {
-        e.printStackTrace ();
-      }
-//      System.out.println ("1.. :"+this);
-      new java.lang.NullPointerException ().printStackTrace (ps); */
       this.desc = desc;
-//      ps.println ("2.. :"+desc);
-////      currentPropertyEditor = findDefaultEditor (desc);
-//      ps.println ("3.. :"+this);
-//      ps.println ("Setting default Current Editor: "+desc.getName ()+", : "+this+", : "+currentPropertyEditor+", thread: "+Thread.currentThread ().getName ());
-//      ps.println ("4.. :"+this);
-//      ps.flush ();
-//      Thread.dumpStack ();
     }
 
     public PropertyDescriptor getPropertyDescriptor () {
@@ -596,19 +580,11 @@ public class RADComponent {
       if (currentPropertyEditor == null) {
         currentPropertyEditor = findDefaultEditor (desc);
       }
-//      ps.println ("Get Current Editor: "+count+" , in: "+desc.getName ()+", : "+this+", : "+currentPropertyEditor+", thread: "+Thread.currentThread ().getName ());
-//      ps.flush ();
-//      count++;
-//      Thread.dumpStack ();
       return currentPropertyEditor;
     }
     
     public void setCurrentEditor (PropertyEditor value) {
-//      ps.println ("Set Current Editor: "+count+" , in: "+desc.getName ()+", : "+this+", : "+value+" , previous value: "+currentPropertyEditor);
-//      Thread.dumpStack ();
       currentPropertyEditor = value;
-//      ps.println ("After Set Current Editor: in: "+desc.getName ()+", : "+this+", : "+currentPropertyEditor+", thread: "+Thread.currentThread ().getName ());
-//      ps.flush ();
     }
 
     /** Test whether the property is readable.
@@ -1076,6 +1052,8 @@ public class RADComponent {
 
 /*
  * Log
+ *  38   Gandalf   1.37        8/1/99   Ian Formanek    Fixed bug which caused 
+ *       properties and property editors to begave potentially very strangely
  *  37   Gandalf   1.36        7/30/99  Ian Formanek    fixed firing event added
  *  36   Gandalf   1.35        7/29/99  Ian Formanek    Fixed bug where form 
  *       aware property editors were not correctly initialized if advanced 
