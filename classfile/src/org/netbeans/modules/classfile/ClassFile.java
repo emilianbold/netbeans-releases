@@ -215,7 +215,6 @@ public class ClassFile {
                 attributes.put(name, innerClasses);
             }
             else {
-                System.out.println("skipped unknown class attribute: " + name);
 		skip(in, len);
                 attributes.put(name, null);
             }

@@ -121,13 +121,36 @@ public final class ConstantPool {
      * @return a Set of ClassNames specifying the referenced classnames.
      */
     public final Set getAllClassNames() {
+        Set set = new HashSet();
+
+        // include all class name constants
         Collection c = getAllConstantsImpl(CPClassInfo.class);
-        Set set = new HashSet(c.size());
         for (Iterator i = c.iterator(); i.hasNext();) {
             CPClassInfo ci = (CPClassInfo)i.next();
             set.add(ci.getClassName());
         }
+        
+        // scan all NameAndType constants for class types
+        c = getAllConstantsImpl(CPNameAndTypeInfo.class);
+        for (Iterator i = c.iterator(); i.hasNext();) {
+            CPNameAndTypeInfo cnati = (CPNameAndTypeInfo)i.next();
+            addClassNames(set, cnati.getDescriptor());
+        }
+ 
         return Collections.unmodifiableSet(set);
+    }
+
+    private void addClassNames(Set set, String type) {
+        int i = 0;
+        while ((i = type.indexOf('L', i)) != -1) {
+            int j = type.indexOf(';', i);
+            if (j > i) {
+		// get name, minus leading 'L' and trailing ';'
+                String classType = type.substring(i + 1, j);
+		set.add(ClassName.getClassName(classType));
+                i = j + 1;
+            }
+        }
     }
 
     final String getString(int index) {

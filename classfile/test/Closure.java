@@ -88,7 +88,7 @@ public class Closure {
     void dumpClosure(PrintStream out) {
         Iterator iter = new TreeSet(closure).iterator();
         while (iter.hasNext())
-            System.out.println((String)iter.next());
+            out.println((String)iter.next());
     }
 
     Iterator dependencies() {
