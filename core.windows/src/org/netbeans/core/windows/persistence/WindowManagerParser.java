@@ -16,8 +16,6 @@ package org.netbeans.core.windows.persistence;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.Debug;
 import org.netbeans.core.windows.SplitConstraint;
-import org.netbeans.core.windows.persistence.convert.ImportManager;
-import org.netbeans.core.windows.persistence.convert.ImportedItem;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -737,9 +735,6 @@ public class WindowManagerParser {
         /** List to store parsed tc-ids */
         private List tcIdList = new ArrayList(10);
         
-        /** Map of imported tcref items */
-        private Map tcRefMap;
-        
         /** xml parser */
         private XMLReader parser;
         
@@ -812,9 +807,6 @@ public class WindowManagerParser {
             itemList.clear();
             tcIdList.clear();
             
-            tcRefMap = ImportManager.getDefault().getImportedTCRefs();
-            tcRefMap.clear();
-            
             FileObject cfgFOInput = getConfigFOInput();
             if (cfgFOInput == null) {
                 throw new FileNotFoundException("[WinSys] Missing Window Manager configuration file");
@@ -848,9 +840,7 @@ public class WindowManagerParser {
                 (String []) tcIdList.toArray(new String[tcIdList.size()]);
             winMgrCfg = winMgrConfig;
             internalCfg = internalConfig;
-            ImportManager.getDefault().setImportedTCRefs(tcRefMap);
             
-            tcRefMap = null;
             winMgrConfig = null;
             internalConfig = null;
         }
@@ -1719,12 +1709,6 @@ public class WindowManagerParser {
                 + " Warning: Missing required attribute \"id\" of element \"tcref-item\"."); // NOI18N
                 return;
             }
-            //Attributes are checked, add new item to map
-            //log("handleTCRefItem ADD ITEM [" + workspaceName + ","
-            //+ modeName + "," + tc_id + "]");
-            
-            ImportedItem item = new ImportedItem(workspaceName,modeName,tc_id);
-            tcRefMap.put(tc_id,item);
         }
         
         public void endDocument() throws org.xml.sax.SAXException {
@@ -1798,7 +1782,6 @@ public class WindowManagerParser {
             appendMaximizedMode(wmc, buff);
             appendToolbar(wmc, buff);
             appendRecentViewList(wmc, buff);
-            appendImportedData(buff);
             
             buff.append("</windowmanager>\n"); // NOI18N
             return buff;
@@ -1912,20 +1895,6 @@ public class WindowManagerParser {
             buff.append("    </tc-list>\n"); // NOI18N
         }
         
-        private void appendImportedData (StringBuffer buff) {
-            Map tcRefMap = ImportManager.getDefault().getImportedTCRefs();
-            if (tcRefMap.size() == 0) {
-                return;
-            }
-            buff.append("    <imported-tcrefs>\n"); // NOI18N
-            for (Iterator it =  tcRefMap.keySet().iterator(); it.hasNext(); ) {
-                ImportedItem item = (ImportedItem) tcRefMap.get(it.next());
-                buff.append("  <tcref-item workspace=\"").append(item.workspaceName).append("\" mode=\""). // NOI18N
-                    append(item.modeName).append("\" id=\"").append(item.tc_id).append("\"/>\n"); // NOI18N
-            }
-            buff.append("    </imported-tcrefs>\n"); // NOI18N
-        }
-
         /** @return Newly created parser with set content handler, errror handler
          * and entity resolver
          */

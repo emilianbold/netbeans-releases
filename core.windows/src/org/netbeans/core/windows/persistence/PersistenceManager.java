@@ -17,7 +17,6 @@ import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.Debug;
 import org.netbeans.core.windows.RegistryImpl;
 import org.netbeans.core.windows.WindowManagerImpl;
-import org.netbeans.core.windows.persistence.convert.ImportManager;
 import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
 import org.openide.cookies.SaveCookie;
@@ -428,10 +427,6 @@ public final class PersistenceManager implements PropertyChangeListener {
                         dataobjectToTopComponentMap.put(dob, stringId);
                     }
                     dob.addPropertyChangeListener(this);
-                    //Set client property if TopComponent was imported
-                    if (ImportManager.getDefault().isImportedTcId(stringId)) {
-                        tc.putClientProperty(Constants.TOPCOMPONENT_ALLOW_DOCK_ANYWHERE,Boolean.TRUE);
-                    }
                     return tc;
                 } else {
                     // no instance cookie, which means that module which owned top
@@ -815,13 +810,6 @@ public final class PersistenceManager implements PropertyChangeListener {
         return srcName;
     }
     
-    /** Called during projects switch AFTER old project is saved and BEFORE
-     * project layer is switched. */
-    public void resetBeforeLayerSwitch() {
-        ImportManager.getDefault().reset();
-        ImportManager.getDefault().stopHandling();
-    }
-    
     /** Called during projects switch BEFORE new project is loaded and AFTER
      * project layer is switched. */
     public void resetAfterLayerSwitch() {
@@ -829,7 +817,6 @@ public final class PersistenceManager implements PropertyChangeListener {
         resetWindowManagerParser();
         copySettingsFiles();
         restoreAllTCPairs();
-        ImportManager.getDefault().startHandling();
     }
     
     /** Must be called during Project switch */
@@ -1059,8 +1046,6 @@ public final class PersistenceManager implements PropertyChangeListener {
         //Check used TcIds
         checkUsedTCId();
         
-        ImportManager.getDefault().importConfigurationData(wmc,wmParser);
-        
         if (changeHandler == null) {
             changeHandler = new ModuleChangeHandler();
             changeHandler.startHandling();
@@ -1194,7 +1179,7 @@ public final class PersistenceManager implements PropertyChangeListener {
         try {
             fo.copy(destFolder,fo.getName(),fo.getExt());
         } catch (IOException exc) {
-            String annotation = NbBundle.getMessage(ImportManager.class,
+            String annotation = NbBundle.getMessage(PersistenceManager.class,
                 "EXC_CopyFails", destFolder);
             ErrorManager.getDefault().annotate(exc, annotation);
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
