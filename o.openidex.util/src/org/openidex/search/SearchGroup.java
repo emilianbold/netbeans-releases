@@ -69,7 +69,7 @@ public abstract class SearchGroup extends Object {
     /** Set of nodes on which sub-system to search. */
     protected final Set searchRoots = new HashSet(5);
     
-    /** Set of objects which passed the serach. It's usbset of searchObjects. */
+    /** Set of objects which passed the search criteria (searchtypes).*/
     protected final Set resultObjects = new LinkedHashSet(50);
 
     /** Flag indicating the search should be stopped. */
@@ -142,8 +142,8 @@ public abstract class SearchGroup extends Object {
 
     /** Does search. */
     public void search() {
+        resultObjects.clear();
         prepareSearch();
-        
         doSearch();
     }
 
