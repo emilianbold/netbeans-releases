@@ -21,7 +21,6 @@ import java.util.Map;
 
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
-import org.openide.filesystems.FileLock;
 import org.openide.xml.XMLUtil;
 
 import org.w3c.dom.Document;
@@ -29,7 +28,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
-import java.io.OutputStream;
 
 /** MIME Option XML file for Abbreviations settings.
  *  Abbreviations settings are loaded and saved in XML format
@@ -175,26 +173,7 @@ public class AbbrevsMIMEOptionFile extends MIMEOptionFile{
         
         doc.getDocumentElement().normalize();
 
-        try{
-            FileLock lock = processor.getXMLDataObject().getPrimaryFile().lock();
-            try{
-                OutputStream os = processor.getXMLDataObject().getPrimaryFile().getOutputStream(lock);
-                try {
-                    XMLUtil.write(doc, os, null);
-                    os.flush();
-                } catch (Exception e){
-                    e.printStackTrace();
-                } finally {
-                    os.close();
-                }
-            }catch (IOException ioe){
-                ioe.printStackTrace();
-            }finally{
-                lock.releaseLock();
-            }
-        }catch (IOException ioexc){
-            ioexc.printStackTrace();
-        }
+        saveSettings(doc);
     }
     
 }

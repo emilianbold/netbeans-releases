@@ -21,7 +21,6 @@ import java.util.Map;
 
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
-import org.openide.filesystems.FileLock;
 import org.openide.xml.XMLUtil;
 
 import org.w3c.dom.Document;
@@ -31,7 +30,6 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import java.util.List;
 import org.netbeans.editor.MultiKeyBinding;
-import java.io.OutputStream;
 
 /** MIME Option XML file for KeyBindings settings.
  *  KeyBindings settings are loaded and saved in XML format
@@ -178,27 +176,8 @@ public class KeyBindingsMIMEOptionFile extends MIMEOptionFile{
         }
         
         doc.getDocumentElement().normalize();
-        
-        try{
-            FileLock lock = processor.getXMLDataObject().getPrimaryFile().lock();
-            try{
-                OutputStream os = processor.getXMLDataObject().getPrimaryFile().getOutputStream(lock);
-                try {
-                    XMLUtil.write(doc, os, null);
-                    os.flush();
-                } catch (Exception e){
-                    e.printStackTrace();
-                } finally {
-                    os.close();
-                }
-            }catch (IOException ioe){
-                ioe.printStackTrace();
-            }finally{
-                lock.releaseLock();
-            }
-        }catch (IOException ioexc){
-            ioexc.printStackTrace();
-        }
+
+        saveSettings(doc);
     }
     
 }

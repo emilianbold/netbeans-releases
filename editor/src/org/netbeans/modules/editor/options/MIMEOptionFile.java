@@ -14,18 +14,19 @@
 package org.netbeans.modules.editor.options;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileLock;
 import org.openide.loaders.XMLDataObject;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.w3c.dom.Document;
-
 
 /** MIME Option XML file.
  *
@@ -39,6 +40,7 @@ public abstract class MIMEOptionFile{
     protected Document dom;
     protected Map properties;
     private boolean loaded = false;
+    private boolean wasSaved = false;
     
     /** File change listener.
      * If file was externally modified, we have to reload settings.*/
@@ -80,7 +82,14 @@ public abstract class MIMEOptionFile{
     }
     
     /** Updates all properties from (external modified) XML file */
-    public void reloadSettings(){
+    public synchronized void reloadSettings(){
+
+        if (wasSaved){
+            // the settings has been saved programatically. We don't need to reload them
+            wasSaved = false;
+            return;
+        }
+        
         Document oldDoc = dom;
         setLoaded(false);
         try {
@@ -94,6 +103,32 @@ public abstract class MIMEOptionFile{
         }catch(IOException ioe){
             dom = oldDoc;
             ioe.printStackTrace();
+        }
+    }
+    
+    protected synchronized void saveSettings(Document doc){
+        
+        try{
+            FileLock lock = processor.getXMLDataObject().getPrimaryFile().lock();
+            try{
+                OutputStream os = processor.getXMLDataObject().getPrimaryFile().getOutputStream(lock);
+                try {
+                    wasSaved = true;
+                    XMLUtil.write(doc, os, null);
+                    os.flush();
+                } catch (Exception e){
+                    wasSaved = false;
+                    e.printStackTrace();
+                } finally {
+                    os.close();
+                }
+            }catch (IOException ioe){
+                ioe.printStackTrace();
+            }finally{
+                lock.releaseLock();
+            }
+        }catch (IOException ioexc){
+            ioexc.printStackTrace();
         }
     }
     

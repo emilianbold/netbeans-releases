@@ -24,14 +24,12 @@ import org.netbeans.editor.Coloring;
 import org.netbeans.editor.SettingsDefaults;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.SettingsUtil;
-import org.openide.filesystems.FileLock;
 import org.openide.xml.XMLUtil;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import java.io.OutputStream;
 
 /** MIME Option XML file for Fonts and Colors settings.
  *  Fonts and colors settings are loaded and saved in XML format
@@ -290,26 +288,7 @@ public class FontsColorsMIMEOptionFile extends MIMEOptionFile{
         
         doc.getDocumentElement().normalize();
         
-        try{
-            FileLock lock = processor.getXMLDataObject().getPrimaryFile().lock();
-            try{
-                OutputStream os = processor.getXMLDataObject().getPrimaryFile().getOutputStream(lock);
-                try {
-                    XMLUtil.write(doc, os, null);
-                    os.flush();
-                } catch (Exception e){
-                    e.printStackTrace();
-                } finally {
-                    os.close();
-                }
-            }catch (IOException ioe){
-                ioe.printStackTrace();
-            }finally{
-                lock.releaseLock();
-            }
-        }catch (IOException ioexc){
-            ioexc.printStackTrace();
-        }
+        saveSettings(doc);
     }
     
 }
