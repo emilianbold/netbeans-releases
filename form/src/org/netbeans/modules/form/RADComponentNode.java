@@ -67,7 +67,7 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
   }
 
   void updateName () {
-    Class compClass = component.getComponentClass ();
+    Class compClass = component.getBeanClass ();
     if (component instanceof FormContainer) {
       // [PENDING - handle this better]
       setDisplayName (getName () + " [form]");
@@ -77,7 +77,7 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
   }
   
   public Image getIcon (int iconType) {
-    Image ic = BeanSupport.getBeanIcon (component.getComponentClass (), iconType);
+    Image ic = BeanSupport.getBeanIcon (component.getBeanClass (), iconType);
     if (ic != null) return ic;
     else return super.getIcon (iconType);
   }
@@ -233,7 +233,7 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
     }
     if (!(customizer instanceof java.awt.Component) ||
         !(customizer instanceof java.beans.Customizer)) return null;
-    ((java.beans.Customizer)customizer).setObject (component.getComponentInstance ());
+    ((java.beans.Customizer)customizer).setObject (component.getBeanInstance ());
     // [PENDING - in X2 there is some strange addPropertyChangeListener code here...]
     return (java.awt.Component)customizer;
   }
@@ -323,7 +323,7 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
                 copyComponent = new RADComponent ();
               }
               copyComponent.initialize (pasteManager);
-              copyComponent.setComponent (originalComp.getComponentClass ());
+              copyComponent.setComponent (originalComp.getBeanClass ());
 //              copyComponent.setName (nodes[i].componentName);
               
 //              formManager2.getVariablesPool ().createVariable (nodes[i].componentName, nodes[i].beanClass);
@@ -508,6 +508,8 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
 
 /*
  * Log
+ *  21   Gandalf   1.20        7/5/99   Ian Formanek    getComponentInstance->getBeanInstance,
+ *        getComponentClass->getBeanClass
  *  20   Gandalf   1.19        7/5/99   Ian Formanek    CustomizeLayout action
  *  19   Gandalf   1.18        7/2/99   Ian Formanek    GotoInspectorAction 
  *       employed in popup menu

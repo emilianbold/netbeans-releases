@@ -397,7 +397,7 @@ public class JavaCodeGenerator extends CodeGenerator {
       initCodeWriter.write ("try {\n");
       initCodeWriter.write (comp.getName ());
       initCodeWriter.write (" = (");
-      initCodeWriter.write (comp.getComponentClass ().getName ());
+      initCodeWriter.write (comp.getBeanClass ().getName ());
       initCodeWriter.write (")java.beans.Beans.instantiate (getClass ().getClassLoader (), \"");
       initCodeWriter.write (serializeTo);
       initCodeWriter.write ("\");\n");
@@ -409,7 +409,7 @@ public class JavaCodeGenerator extends CodeGenerator {
     } else {
       initCodeWriter.write (comp.getName ());
       initCodeWriter.write (" = new ");
-      initCodeWriter.write (comp.getComponentClass ().getName ());
+      initCodeWriter.write (comp.getBeanClass ().getName ());
       initCodeWriter.write (" ();\n");
     }
   }
@@ -662,7 +662,7 @@ public class JavaCodeGenerator extends CodeGenerator {
       }
       variablesWriter.write (java.lang.reflect.Modifier.toString (modifiers.getModifiers ()));
       variablesWriter.write (" ");
-      variablesWriter.write (children[i].getComponentClass ().getName ());
+      variablesWriter.write (children[i].getBeanClass ().getName ());
       variablesWriter.write (" ");
       variablesWriter.write (children[i].getName ());
       variablesWriter.write (";\n");
@@ -1101,6 +1101,8 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  33   Gandalf   1.32        7/5/99   Ian Formanek    getComponentInstance->getBeanInstance,
+ *        getComponentClass->getBeanClass
  *  32   Gandalf   1.31        6/30/99  Ian Formanek    Properties for code 
  *       generation type, generation of serialize code
  *  31   Gandalf   1.30        6/30/99  Ian Formanek    modifiers property 

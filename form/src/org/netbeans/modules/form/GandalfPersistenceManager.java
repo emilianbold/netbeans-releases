@@ -153,7 +153,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             buf, 
             XML_CONTAINER, 
             new String[] { ATTR_COMPONENT_CLASS, ATTR_COMPONENT_NAME }, 
-            new String[] { children[i].getComponentClass ().getName (), children[i].getName () }
+            new String[] { children[i].getBeanClass ().getName (), children[i].getName () }
         );
         saveContainer ((ComponentContainer)children[i], buf, indent + ONE_INDENT + ONE_INDENT);
         buf.append (indent + ONE_INDENT); addElementClose (buf, XML_CONTAINER);
@@ -163,7 +163,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             buf, 
             XML_COMPONENT, 
             new String[] { ATTR_COMPONENT_CLASS, ATTR_COMPONENT_NAME }, 
-            new String[] { children[i].getComponentClass ().getName (), children[i].getName () }
+            new String[] { children[i].getBeanClass ().getName (), children[i].getName () }
         );
         if (children[i] instanceof RADVisualComponent) {
           saveVisualComponent ((RADVisualComponent)children[i], buf, indent + ONE_INDENT + ONE_INDENT);
@@ -389,6 +389,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 /*
  * Log
+ *  7    Gandalf   1.6         7/5/99   Ian Formanek    getComponentInstance->getBeanInstance,
+ *        getComponentClass->getBeanClass
  *  6    Gandalf   1.5         6/30/99  Ian Formanek    Second draft of XML 
  *       Serialization
  *  5    Gandalf   1.4         6/28/99  Ian Formanek    First cut of XML 

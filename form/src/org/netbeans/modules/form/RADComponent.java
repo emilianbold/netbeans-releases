@@ -135,11 +135,11 @@ public class RADComponent {
 // -----------------------------------------------------------------------------
 // Public interface
 
-  public Class getComponentClass () {
+  public Class getBeanClass () {
     return beanClass;
   }
 
-  public Object getComponentInstance () {
+  public Object getBeanInstance () {
     return beanInstance;
   }
   
@@ -425,7 +425,7 @@ public class RADComponent {
     if (readMethod == null) {
       throw new IllegalAccessException ();
     }
-    return readMethod.invoke (getComponentInstance (), new Object[0]);
+    return readMethod.invoke (getBeanInstance (), new Object[0]);
   }
 
   protected void setPropertyValue (PropertyDescriptor desc, Object value) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
@@ -448,7 +448,7 @@ public class RADComponent {
       valueToSet = ((FormDesignValue)value).getDesignValue (RADComponent.this);
       if (valueToSet == FormDesignValue.IGNORED_VALUE) return; // ignore this value, as it is not value to be reflected during design-time
     }
-    writeMethod.invoke (getComponentInstance (), new Object[] { valueToSet });
+    writeMethod.invoke (getBeanInstance (), new Object[] { valueToSet });
   }
 
   protected Object getIndexedPropertyValue (IndexedPropertyDescriptor desc, int index) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
@@ -456,7 +456,7 @@ public class RADComponent {
     if (readMethod == null) {
       throw new IllegalAccessException ();
     }
-    return readMethod.invoke (getComponentInstance (), new Object[] { new Integer (index) });
+    return readMethod.invoke (getBeanInstance (), new Object[] { new Integer (index) });
   }
   
   protected void setIndexedPropertyValue (IndexedPropertyDescriptor desc, int index, Object value) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
@@ -464,7 +464,7 @@ public class RADComponent {
     if (writeMethod == null) {
       throw new IllegalAccessException ();
     }
-    writeMethod.invoke (getComponentInstance (), new Object[] { new Integer (index), value });
+    writeMethod.invoke (getBeanInstance (), new Object[] { new Integer (index), value });
   }
 
   protected void cacheValue (PropertyDescriptor desc, Object value) {
@@ -493,7 +493,7 @@ public class RADComponent {
 // Debug methods
 
   public String toString () {
-    return super.toString () + ", name: "+getName ()+", class: "+getComponentClass ()+", beaninfo: "+getBeanInfo () + ", instance: "+getComponentInstance ();
+    return super.toString () + ", name: "+getName ()+", class: "+getBeanClass ()+", beaninfo: "+getBeanInfo () + ", instance: "+getBeanInstance ();
   }
   
   public void debugChangedValues () {
@@ -956,6 +956,8 @@ public class RADComponent {
 
 /*
  * Log
+ *  28   Gandalf   1.27        7/5/99   Ian Formanek    getComponentInstance->getBeanInstance,
+ *        getComponentClass->getBeanClass
  *  27   Gandalf   1.26        7/2/99   Ian Formanek    Fixed bug #2310 - 
  *       Selecting multiple components in Form Window (Hold CTRL) throws an 
  *       exception

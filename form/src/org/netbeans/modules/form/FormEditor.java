@@ -178,7 +178,7 @@ final public class FormEditor extends Object {
   }
 
   public static void defaultComponentInit (RADComponent radComp) {
-    Object comp = radComp.getComponentInstance ();
+    Object comp = radComp.getBeanInstance ();
     String varName = radComp.getName ();
     String propName = null;
     Object propValue = null;
@@ -611,6 +611,8 @@ final public class FormEditor extends Object {
 
 /*
  * Log
+ *  24   Gandalf   1.23        7/5/99   Ian Formanek    getComponentInstance->getBeanInstance,
+ *        getComponentClass->getBeanClass
  *  23   Gandalf   1.22        6/25/99  Ian Formanek    Constants for default 
  *       form size
  *  22   Gandalf   1.21        6/24/99  Jesse Glick     Gosh-honest HelpID's.
