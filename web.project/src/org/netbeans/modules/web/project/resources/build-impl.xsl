@@ -775,7 +775,7 @@ is divided into following sections:
                             <xsl:with-param name="libfile" select="webproject3:file"/>
                         </xsl:call-template>
                       </xsl:if>
-                      <xsl:if test="@files = 1 and (@dirs = 0 or not(//webproject3:web-module-libraries/webproject3:library[@dirs]))">
+                      <xsl:if test="@files = 1 and (@dirs = 0 or not(@dirs))">
                             <xsl:variable name="libfile" select="webproject3:file"/>
                             <basename property="{$base.prop.name}" file="{$libfile}"/>
                       </xsl:if>
@@ -788,7 +788,7 @@ is divided into following sections:
                             <xsl:with-param name="libfile" select="webproject3:file"/>
                         </xsl:call-template>
                       </xsl:if>
-                      <xsl:if test="@files = 1 and (@dirs = 0 or not(//webproject3:web-module-libraries/webproject3:library[@dirs]))">
+                      <xsl:if test="@files = 1 and (@dirs = 0 or not(@dirs))">
                             <xsl:variable name="libfile" select="webproject3:file"/>
                             <copy file="{$libfile}" todir="${{dist.ear.dir}}"/>
                       </xsl:if>
@@ -801,7 +801,7 @@ is divided into following sections:
                             <xsl:with-param name="libfile" select="webproject3:file"/>
                         </xsl:call-template>
                       </xsl:if>
-                      <xsl:if test="@dirs = 1 and (@files = 0 or not(//webproject3:web-module-libraries/webproject3:library[@files]))">
+                      <xsl:if test="@dirs = 1 and (@files = 0 or not(@files))">
                             <xsl:variable name="target" select="concat('${build.web.dir.real}/','WEB-INF/classes')"/>
                             <xsl:variable name="libfile" select="webproject3:file"/>
                             <copy todir="{$target}">
@@ -821,7 +821,7 @@ is divided into following sections:
                             <xsl:with-param name="libfile" select="webproject3:file"/>
                         </xsl:call-template>
                       </xsl:if>
-                      <xsl:if test="@files = 1 and (@dirs = 0 or not(//webproject3:web-module-libraries/webproject3:library[@dirs]))">
+                      <xsl:if test="@files = 1 and (@dirs = 0 or not(@dirs))">
                             <xsl:variable name="libfile" select="webproject3:file"/>
                             <xsl:variable name="target" select="concat('${build.web.dir.real}/',$copyto)"/>
                             <copy file="{$libfile}" todir="{$target}"/>
@@ -835,7 +835,7 @@ is divided into following sections:
                             <xsl:with-param name="libfile" select="webproject3:file"/>
                         </xsl:call-template>
                       </xsl:if>
-                      <xsl:if test="@dirs = 1 and (@files = 0 or not(//webproject3:web-module-libraries/webproject3:library[@files]))">
+                      <xsl:if test="@dirs = 1 and (@files = 0 or not(@files))">
                             <xsl:variable name="target" select="concat('${build.web.dir.real}/',$copyto)"/>
                             <xsl:variable name="libfile" select="webproject3:file"/>
                             <copy todir="{$target}">
@@ -863,7 +863,7 @@ is divided into following sections:
                                                 <xsl:with-param name="libfile" select="webproject3:file"/>
                                             </xsl:call-template>
                                         </xsl:if>
-                                        <xsl:if test="@files = 1 and (@dirs = 0 or not(//webproject3:web-module-libraries/webproject3:library[@dirs]))">
+                                        <xsl:if test="@files = 1 and (@dirs = 0 or not(@dirs))">
                                             <xsl:text>${</xsl:text><xsl:value-of select="$base.prop.name"/><xsl:text>} </xsl:text>
                                         </xsl:if>
                                     </xsl:if>
@@ -886,7 +886,7 @@ is divided into following sections:
                             <xsl:with-param name="libfile" select="webproject3:file"/>
                         </xsl:call-template>
                       </xsl:if>
-                      <xsl:if test="@files = 1 and (@dirs = 0 or not(//webproject3:web-module-libraries/webproject3:library[@dirs]))">
+                      <xsl:if test="@files = 1 and (@dirs = 0 or not(@dirs))">
                             <xsl:variable name="target" select="concat('${build.web.dir.real}/',$copyto)"/>
                             <xsl:variable name="libfile" select="webproject3:file"/>
                             <copy file="{$libfile}" todir="{$target}"/>
@@ -900,7 +900,7 @@ is divided into following sections:
                             <xsl:with-param name="libfile" select="webproject3:file"/>
                         </xsl:call-template>
                       </xsl:if>
-                      <xsl:if test="@dirs = 1 and (@files = 0 or not(//webproject3:web-module-libraries/webproject3:library[@files]))">
+                      <xsl:if test="@dirs = 1 and (@files = 0 or not(@files))">
                             <xsl:variable name="target" select="concat('${build.web.dir.real}/','WEB-INF/classes')"/>
                             <xsl:variable name="libfile" select="webproject3:file"/>
                             <copy todir="{$target}">
@@ -920,7 +920,7 @@ is divided into following sections:
                             <xsl:with-param name="libfile" select="webproject3:file"/>
                         </xsl:call-template>
                       </xsl:if>
-                      <xsl:if test="@files = 1 and (@dirs = 0 or not(//webproject3:web-module-libraries/webproject3:library[@dirs]))">
+                      <xsl:if test="@files = 1 and (@dirs = 0 or not(@dirs))">
                             <xsl:variable name="target" select="concat('${build.web.dir.real}/',$copyto)"/>
                             <xsl:variable name="libfile" select="webproject3:file"/>
                             <copy file="{$libfile}" todir="{$target}"/>
@@ -934,7 +934,7 @@ is divided into following sections:
                             <xsl:with-param name="libfile" select="webproject3:file"/>
                         </xsl:call-template>
                       </xsl:if>
-                      <xsl:if test="@dirs = 1 and (@files = 0 or not(//webproject3:web-module-libraries/webproject3:library[@files]))">
+                      <xsl:if test="@dirs = 1 and (@files = 0 or not(@files))">
                             <xsl:variable name="target" select="concat('${build.web.dir.real}/',$copyto)"/>
                             <xsl:variable name="libfile" select="webproject3:file"/>
                             <copy todir="{$target}">
