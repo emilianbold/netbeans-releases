@@ -128,9 +128,21 @@ implements OperationListener, Runnable, ExplorerManager.Provider {
         ExplorerUtils.activateActions(manager, false);
     }
     
-    private void focusView() {
+    /** Transfer focus to view. */
+    public void requestFocus () {
+        super.requestFocus();
         if (view != null) {
             view.requestFocus();
+        }
+    }
+
+    /** Transfer focus to view. */
+    public boolean requestFocusInWindow () {
+        super.requestFocusInWindow();
+        if (view != null) {
+            return view.requestFocusInWindow();
+        } else {
+            return false;
         }
     }
 
