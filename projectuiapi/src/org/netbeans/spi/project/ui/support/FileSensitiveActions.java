@@ -30,8 +30,8 @@ public class FileSensitiveActions {
      * When performed the action will call the given command on the {@link ActionProvider} of
      * the selected project(s) and pass the proper context to it. Enablement of the
      * action depends on the behavior of the project's action provider.<BR>
-     * Shorcuts for actions are shared on per command (I.e. Actions with equals commands
-     * will have eqal shorcuts.)
+     * Shortcuts for actions are shared according to command, i.e. actions based on the same command
+     * will have the same shortcut.
      * @param command the command which should be invoked when the action is
      *        performed
      * @param namePattern pattern which should be used for determining the action's

@@ -30,8 +30,8 @@ public class ProjectSensitiveActions {
      * When performed the action will call the given command on the {@link ActionProvider} of
      * the selected project(s). The action will only be enabled when the exactly one
      * project is selected and the command is enabled in the project's action provider.<BR>
-     * Shorcuts for actions are shared on per command. (I.e. Actions with equals commands
-     * will have eqal shorcuts.)
+     * Shortcuts for actions are shared according to command, i.e. actions based on the same command
+     * will have the same shortcut.
      * @param command the command which should be invoked when the action is
      *        performed
      * @param namePattern a pattern which should be used for determining the action's
