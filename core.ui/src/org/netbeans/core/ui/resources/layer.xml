@@ -673,6 +673,8 @@ SystemFileSystem
         <file name="WindowManager.wswmgr" url="windowmanager/windowmanager.wswmgr" />
 	-->
         <folder name="WindowManager">
+            <attr name="Editing/Visual" boolvalue="true" />
+            <attr name="Editing/Debugging" boolvalue="true" />
             <file name="Editing.wswksp" url="windowmanager/Editing.wswksp" />
             <folder name="Editing">
                 <file name="explorer.wsmode" url="windowmanager/Editing/explorer.wsmode" />
