@@ -226,7 +226,8 @@ public class EventProperty extends PropertySupport.ReadWrite {
         ActionListener comboSelectListener = null;
         FocusListener comboEditFocusListener = null;
 
-        javax.swing.JComboBox eventCombo;
+        EventComboBox eventCombo;
+//        javax.swing.JComboBox eventCombo;
 
         EventEditor() {
         }
@@ -252,7 +253,7 @@ public class EventProperty extends PropertySupport.ReadWrite {
          */
         public java.awt.Component getInPlaceCustomEditor() {
             Vector handlers = event.getHandlers();
-            eventCombo = new javax.swing.JComboBox();
+            eventCombo = new EventComboBox();
             eventCombo.setEditable(!EventProperty.this.isReadOnly());
 
             if (handlers.size() == 0) {
@@ -326,12 +327,14 @@ public class EventProperty extends PropertySupport.ReadWrite {
                             .removeFocusListener(comboEditFocusListener);
 
                         String selected = (String) eventCombo.getEditor().getItem();
-                        EventProperty.this.setValue(selected);
+//                        EventProperty.this.setValue(selected);
+                        EventEditor.this.setValue(selected);
                         if ((selected == null || "".equals(selected)) // NOI18N
                                 && lastSelectedHandler != null)
                         {
-                            selected = lastSelectedHandler.getName();
-                            EventEditor.this.setValue(selected);
+//                            selected = lastSelectedHandler.getName();
+//                            EventEditor.this.setValue(selected);
+                            EventEditor.this.setValue(lastSelectedHandler.getName());
                         }
 
                         if (selected != null && !"".equals(selected)) // NOI18N
@@ -381,6 +384,27 @@ public class EventProperty extends PropertySupport.ReadWrite {
                     });
 
             return TopManager.getDefault().createDialog(dd);
+        }
+    }
+
+    private static class EventComboBox extends javax.swing.JComboBox {
+        public void addKeyListener(KeyListener l) {
+            super.addKeyListener(l);
+            getEditor().getEditorComponent().addKeyListener(l);
+        }
+        public void removeKeyListener(KeyListener l) {
+            super.removeKeyListener(l);
+            getEditor().getEditorComponent().removeKeyListener(l);
+        }
+        public void addFocusListener(FocusListener l) {
+            super.addFocusListener(l);
+            if (getEditor() != null)
+                getEditor().getEditorComponent().addFocusListener(l);
+        }
+        public void removeFocusListener(FocusListener l) {
+            super.removeFocusListener(l);
+            if (getEditor() != null)
+                getEditor().getEditorComponent().removeFocusListener(l);
         }
     }
 }
