@@ -115,9 +115,6 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
 
   <target name="init" depends="init-module-list,maybe-pre-unscramble,set-buildnumber">
-    <tstamp>
-    	<format property="buildnumber" pattern="yyyyMMddHHmm"/>
-    </tstamp>
     <taskdef name="cleanall" classname="org.netbeans.nbbuild.CleanAll" classpath="nbantext.jar"/>
     <taskdef name="nbmerge" classname="org.netbeans.nbbuild.NbMerge" classpath="nbantext.jar"/>
     <taskdef name="makeupdatedesc" classname="org.netbeans.nbbuild.MakeUpdateDesc" classpath="nbantext.jar"/>
