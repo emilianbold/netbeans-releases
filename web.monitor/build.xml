@@ -130,8 +130,7 @@ Microsystems, Inc. All Rights Reserved.
     <javac srcdir="src" destdir="src"
        deprecation="${build.compiler.deprecation}" 
        debug="${build.compiler.debug}"
-       includes="**/MonitorModule.java,**/monitor/data/*,**/monitor/client/**"
-       excludes="**/SCCS/**, **/CVS/**, **/TransactionView.java">
+       includes="**/MonitorModule.java,**/monitor/data/*,**/monitor/client/**">
 
        <classpath>
          <pathelement location="${nb_root}/openide/openide-13javac-workaround.jar"/>
