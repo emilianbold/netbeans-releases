@@ -138,10 +138,6 @@ Microsystems, Inc. All Rights Reserved.
 
     </folder> <!-- Services -->          
 
-    <folder name="Shortcuts">
-        
-    </folder> <!-- Shortcuts -->
-
     <!-- Registrations accesible with dedicated FolderLookups -->        
     <folder name="Plugins">
         <folder name="XML">
