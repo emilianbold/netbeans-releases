@@ -28,7 +28,9 @@ import org.openide.util.datatransfer.*;
  * @author Jesse Glick
  * @see "#30923"
  */
-public class NbClipboardNativeTest extends NbTestCase {
+public class NbClipboardNativeTest extends NbTestCase implements org.openide.util.datatransfer.ClipboardListener {
+    private NbClipboard ec;
+    private int listenerCalls;
     
     public NbClipboardNativeTest(String name) {
         super(name);
@@ -44,11 +46,78 @@ public class NbClipboardNativeTest extends NbTestCase {
         p.remove("system.dir");
         System.setProperties(p);
         super.setUp();
+        //System.setProperty("org.netbeans.core.NbClipboard", "-5");
         System.setProperty("netbeans.slow.system.clipboard.hack", String.valueOf(slowClipboardHack()));
+        Object ec = Lookup.getDefault().lookup(ExClipboard.class);
+        assertEquals("found right ExClipboard", NbClipboard.class, ec.getClass());
+        this.ec = (NbClipboard)ec;
+        this.ec.addClipboardListener(this);
+    }
+    
+    protected void tearDown () throws Exception {
+        super.tearDown ();
+        if (ec != null) {
+            this.ec.removeClipboardListener(this);
+        }
     }
     
     protected boolean slowClipboardHack() {
         return false;
+    }
+    
+    public void testWhenCallingGetContentsItChecksSystemClipboardFirstTimeAfterActivation () throws Exception {
+        assertEquals ("No changes yet", 0, listenerCalls);
+        
+        
+        Clipboard sc = java.awt.Toolkit.getDefaultToolkit().getSystemClipboard();
+        StringSelection ss = new StringSelection ("oldvalue");
+        sc.setContents(ss, ss);
+        
+        assertEquals ("No changes still", 0, listenerCalls);
+        
+        // just simulate initial switch to NetBeans main window
+        ec.eventDispatched(new java.awt.event.WindowEvent (
+            new javax.swing.JFrame (),
+            java.awt.event.WindowEvent.WINDOW_ACTIVATED
+        ));
+        ec.waitFinished ();
+        
+        assertEquals ("This generated a change", 1, listenerCalls);
+        
+        StringSelection s2 = new StringSelection ("data2");
+        sc.setContents (s2, s2);
+        
+        assertEquals ("No change notified", 1, listenerCalls);
+
+        // we need to wait longer time than the value in NbClipboard
+        Thread.sleep (200);
+        
+        Transferable t = this.ec.getContents(this);
+        assertTrue ("String flavor is there", t.isDataFlavorSupported(DataFlavor.stringFlavor));
+        
+        String s = (String)t.getTransferData(DataFlavor.stringFlavor);
+        assertEquals ("The getContents rechecked the system clipboard first time after window activated", "data2", s);
+        
+        sc.setContents (ss, ss);
+        
+        t = this.ec.getContents(this);
+        s = (String)t.getTransferData(DataFlavor.stringFlavor);
+        if (slowClipboardHack ()) {
+            assertEquals ("The getContents rechecked the clipboard just for the first time, not now, so the content is the same", "data2", s);
+            
+            ec.eventDispatched(new java.awt.event.WindowEvent (
+                new javax.swing.JFrame (),
+                java.awt.event.WindowEvent.WINDOW_ACTIVATED
+            ));
+
+            t = this.ec.getContents(this);
+            s = (String)t.getTransferData(DataFlavor.stringFlavor);
+            assertEquals ("The WINDOW_ACTIVATED rechecks the clipboard", "oldvalue", s);
+        } else {
+            assertEquals ("without slow hack it gets the value immediatelly", "oldvalue", s);
+        }
+        
+        
     }
     
     public void testClipboard() throws Exception {
@@ -135,5 +204,9 @@ public class NbClipboardNativeTest extends NbTestCase {
         c.setContents(new StringSelection("B"), null);
 
         assertTrue("Exactly one ownershipLost event have happened.", holder[0] == 1);
+    }
+
+    public void clipboardChanged(ClipboardEvent ev) {
+        listenerCalls++;
     }
 }

@@ -36,6 +36,9 @@ public final class NbClipboard extends ExClipboard
     private Lookup.Result result;
     private boolean slowSystemClipboard;
     private Transferable last;
+    private long lastWindowActivated;
+    private long lastWindowDeactivated;
+    private Object lastWindowDeactivatedSource;
 
     public NbClipboard() {
         super("NBClipboard");   // NOI18N
@@ -126,6 +129,56 @@ public final class NbClipboard extends ExClipboard
 
         try {
             if (slowSystemClipboard) {
+                // The purpose of lastWindowActivated+100 is to ignore calls
+                // which immediatelly follow WINDOW_ACTIVATED event.
+                // This is workaround of JDK bug described in issue 41098.
+                if (lastWindowActivated != 0 && lastWindowActivated+100 < System.currentTimeMillis()) {
+                    lastWindowActivated = 0;
+                    
+                    //
+                    // following code could be greatly simplified by implementing 
+                    // API enhancement in issue 16849 - we would just use:
+                    //
+                    // syncTask.schedule(0);
+                    // syncTask.waitFinished (100);
+                    //
+                    // instead we have to mangle with notify, wait synchronized 
+                    // and TaskListener:
+                    
+                    class Wait implements org.openide.util.TaskListener {
+                        private boolean waiting;
+                        
+                        public synchronized void taskFinished (org.openide.util.Task t) {
+                            t.removeTaskListener (this);
+                            log.log (log.INFORMATIONAL, "Additional refresh - taskFinished"); // NOI18N
+                            if (waiting) {
+                                waiting = false;
+                                notify ();
+                            }
+                        }
+
+                        public synchronized void block () {
+                            try {
+                                log.log (log.INFORMATIONAL, "Waiting for system clipboard to refresh"); // NOI18N
+                                waiting = true;
+                                wait (100);
+                                if (waiting) {
+                                    log.log (log.INFORMATIONAL, "Has not refreshed meanwhile"); // NOI18N
+                                }
+                            } catch (InterruptedException ex) {
+                                // ok do nothing.
+                            }
+                        }
+                    }
+                    Wait w = new Wait ();
+                    synchronized (w) {
+                        syncTask.schedule(0);
+                        syncTask.addTaskListener(w);
+                        w.block ();
+                    }
+                }
+                
+                
                 prev = super.getContents (requestor);
             } else {
                 syncTask.waitFinished ();
@@ -190,12 +243,28 @@ public final class NbClipboard extends ExClipboard
         }
     }
 
+    /** For testing purposes.
+     */
+    final void waitFinished () {
+        syncTask.waitFinished ();
+    }
 
     public void eventDispatched(AWTEvent ev) {
         if (!(ev instanceof WindowEvent))
             return;
 
+        if (ev.getID() == WindowEvent.WINDOW_DEACTIVATED) {
+            lastWindowDeactivated = System.currentTimeMillis();
+            lastWindowDeactivatedSource = ev.getSource();
+        }
         if (ev.getID() == WindowEvent.WINDOW_ACTIVATED) {
+            if (System.currentTimeMillis() - lastWindowDeactivated < 100 &&
+                ev.getSource() == lastWindowDeactivatedSource) {
+                // if WINDOW_DEACTIVATED is followed immediatelly with
+                // WINDOW_ACTIVATED then it is JDK bug described in 
+                // issue 41098.
+                lastWindowActivated = System.currentTimeMillis();
+            }
             if (log.isLoggable (log.INFORMATIONAL)) {
                 log.log (log.INFORMATIONAL, "window activated scheduling update"); // NOI18N
             }
