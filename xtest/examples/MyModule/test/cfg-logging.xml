@@ -42,7 +42,11 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
 
     <resultsprocessor name="logging" antfile="build.xml" target="test_report"/>
+    
     <executor name="ide" antfile="build.xml" target="runidetest"/>
     <executor name="code" antfile="build.xml" target="runcodetest"/>
+    
+    <compiler name="logging-compiler" default="true" antfile="build.xml" target="logging-compiler"/>
+    
 </mconfig>
 
