@@ -249,7 +249,7 @@ public class NonGui extends NbTopManager implements Runnable {
                         //System.setProperty("import.canceled", canceled ? "true" : "false"); // NOI18N
                         
                         // Let's use reflection
-                        File coreide = new InstalledFileLocatorImpl().locate("modules/core-ide.jar", null, false); // NOI18N
+                        File coreide = new InstalledFileLocatorImpl().locate("modules/org-netbeans-core-ide.jar", null, false); // NOI18N
                         if (coreide != null) {
                             // This module is included in our distro somewhere... may or may not be turned on.
                             // Whatever - try running some classes from it anyway.
@@ -262,7 +262,7 @@ public class NonGui extends NbTopManager implements Runnable {
                                     Iterator it = NbBundle.getLocalizingSuffixes();
                                     while (it.hasNext()) {
                                         String suffix = (String)it.next();
-                                        File v = new File(localeDir, "core-ide" + suffix + ".jar"); // NOI18N
+                                        File v = new File(localeDir, "org-netbeans-core-ide" + suffix + ".jar"); // NOI18N
                                         if (v.isFile()) {
                                             urls.add(v.toURI().toURL());
                                         }
