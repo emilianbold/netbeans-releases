@@ -52,86 +52,83 @@ public class EventCustomEditor extends javax.swing.JPanel {
         }
         handlersList = new javax.swing.JList();
         handlersList.setModel(handlersModel);
+        if (h.size() > 0) {
+            handlersList.setSelectedIndex(0);
+        }
         addButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
         editButton = new javax.swing.JButton();
+
+        java.awt.GridBagConstraints gridBagConstraints;
+
         setLayout(new java.awt.GridBagLayout());
-        java.awt.GridBagConstraints gridBagConstraints1;
+
         setPreferredSize(new java.awt.Dimension(300, 300));
-        
-        
         handlersList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
-              public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
-                  handlersListValueChanged(evt);
-              }
-          }
-          );
-          jScrollPane1.setViewportView(handlersList);
-          
-          
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridheight = 4;
-        gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints1.insets = new java.awt.Insets(8, 8, 8, 8);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints1.weightx = 0.9;
-        gridBagConstraints1.weighty = 1.0;
-        add(jScrollPane1, gridBagConstraints1);
-        
-        
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                handlersListValueChanged(evt);
+            }
+        });
+
+        jScrollPane1.setViewportView(handlersList);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridheight = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 0.9;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(8, 8, 8, 8);
+        add(jScrollPane1, gridBagConstraints);
+
         addButton.setText(FormEditor.getFormBundle ().getString ("CTL_EE_ADD"));
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonActionPerformed(evt);
             }
-        }
-        );
-        
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 1;
-        gridBagConstraints1.gridy = 0;
-        gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints1.insets = new java.awt.Insets(8, 8, 0, 8);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints1.weightx = 0.1;
-        add(addButton, gridBagConstraints1);
-        
-        
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 0.1;
+        gridBagConstraints.insets = new java.awt.Insets(8, 8, 0, 8);
+        add(addButton, gridBagConstraints);
+
         removeButton.setText(FormEditor.getFormBundle ().getString ("CTL_EE_REMOVE"));
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeButtonActionPerformed(evt);
             }
-        }
-        );
-        
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 1;
-        gridBagConstraints1.gridy = 1;
-        gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints1.insets = new java.awt.Insets(8, 8, 0, 8);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints1.weightx = 0.1;
-        add(removeButton, gridBagConstraints1);
-        
-        
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 0.1;
+        gridBagConstraints.insets = new java.awt.Insets(8, 8, 0, 8);
+        add(removeButton, gridBagConstraints);
+
         editButton.setText(FormEditor.getFormBundle ().getString ("CTL_EE_RENAME"));
         editButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editButtonActionPerformed(evt);
             }
-        }
-        );
-        
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 1;
-        gridBagConstraints1.gridy = 2;
-        gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints1.insets = new java.awt.Insets(8, 8, 0, 8);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints1.weightx = 0.1;
-        add(editButton, gridBagConstraints1);
-        
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 0.1;
+        gridBagConstraints.insets = new java.awt.Insets(8, 8, 0, 8);
+        add(editButton, gridBagConstraints);
+
     }//GEN-END:initComponents
 
     private void handlersListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_handlersListValueChanged
@@ -255,11 +252,11 @@ public class EventCustomEditor extends javax.swing.JPanel {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JList handlersList;
     private javax.swing.JButton addButton;
-    private javax.swing.JButton removeButton;
+    private javax.swing.JList handlersList;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JButton editButton;
+    private javax.swing.JButton removeButton;
     // End of variables declaration//GEN-END:variables
 
     EventProperty eventProperty;
