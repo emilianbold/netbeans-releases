@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -93,11 +93,13 @@ public class HelpOperator extends WindowOperator {
 
     /** invokes help with defined help set
      * @param helpSet String help set name
-     * @return HelpOperator for invoked help */    
+     * @return HelpOperator for invoked help */
+    /* Help set submenu not used for NetBeans 3.6.
     public static HelpOperator invoke(String helpSet) {
         new HelpAction(helpSet).perform();
         return new HelpOperator(helpSet);
     }
+     */
 
     /** Tries to find "" JButton in this dialog.
      * It throws TimeoutExpiredException when component not found
