@@ -18,7 +18,9 @@ import java.awt.Component;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.Window;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.ModeView;
@@ -69,8 +71,19 @@ public final class SlideBarContainer extends AbstractModeContainer {
     }    
     
     protected void updateActive(boolean active) {
-        // XXX - what we should do?
+        // #48588 - when in SDI, slidein needs to front the editor frame.
+        if(active) {
+            Window window = SwingUtilities.getWindowAncestor(panel);
+            if(window != null && !window.isActive()) {
+                window.toFront();
+            }
+        }
     }
+    
+    public boolean isActive() {
+        Window window = SwingUtilities.getWindowAncestor(panel);
+        return window.isActive();
+    }    
     
     protected void updateTitle(String title) {
         // XXX - we have no title?

@@ -16,13 +16,11 @@ package org.netbeans.core.windows.view;
 
 
 import org.netbeans.core.windows.Constants;
-import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.dnd.WindowDnDManager;
 import org.netbeans.core.windows.view.ui.DesktopImpl;
 import org.netbeans.core.windows.view.ui.EditorAreaFrame;
 import org.netbeans.core.windows.view.ui.MainWindow;
 import org.netbeans.core.windows.view.ui.slides.SlideOperation;
-import org.openide.ErrorManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -351,7 +349,7 @@ final class ViewHierarchy {
     /** Set active mode view. */
     private void setActiveModeView(ModeView modeView) {
         //#39729 fix - when main window has focus, do not discard (in SDI the actual component can be hidden
-        if(modeView == activeModeView && !mainWindow.isActive()) {
+        if(modeView == activeModeView && activeModeView.isActive()) {
             return;
         }
         
@@ -686,10 +684,6 @@ final class ViewHierarchy {
     }
     
     public void performSlideIn(SlideOperation operation) {
-        // #48588 - when in SDI, slidein needs to front the editor frame.
-        if (operation.requestsActivation() && WindowManagerImpl.getInstance().getEditorAreaState() == Constants.EDITOR_AREA_SEPARATED) {
-            frontEditorFrame();
-        }
         desktop.performSlideIn(operation, getPureEditorAreaBounds());
     }
     

@@ -121,6 +121,10 @@ public class ModeView extends ViewElement {
         container.setActive(active);
     }
     
+    public boolean isActive() {
+        return container.isActive();
+    }
+    
     public List getTopComponents() {
         return new ArrayList(Arrays.asList(container.getTopComponents()));
     }

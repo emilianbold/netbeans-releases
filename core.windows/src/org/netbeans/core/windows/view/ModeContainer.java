@@ -43,6 +43,8 @@ public interface ModeContainer {
     
     public void setActive(boolean active);
     
+    public boolean isActive();
+    
     public void focusSelectedTopComponent();
     
     public TopComponent[] getTopComponents();

@@ -153,6 +153,10 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
         } 
     }
     
+    public boolean isActive() {
+        return frame.isActive();
+    }
+    
     protected boolean isAttachingPossible() {
         return false;
     }

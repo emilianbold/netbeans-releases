@@ -372,6 +372,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                 }
 
                 hierarchy.updateDesktop(wsa);
+                hierarchy.activateMode(wsa.getActiveModeAccessor());
             } else if(changeType == CHANGE_TOPCOMPONENT_ARRAY_REMOVED) {
                 if(DEBUG) {
                     debugLog("TopComponent array removed:" // NOI18N

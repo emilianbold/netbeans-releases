@@ -68,6 +68,11 @@ public final class DefaultSplitContainer extends AbstractModeContainer {
             }
         }
     }
+    
+    public boolean isActive() {
+        Window window = SwingUtilities.getWindowAncestor(panel);
+        return window.isActive();
+    }
 
     protected boolean isAttachingPossible() {
         return true;
