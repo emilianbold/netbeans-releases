@@ -26,11 +26,11 @@ import org.openide.util.datatransfer.*;
 import org.openide.util.datatransfer.ExClipboard;
 
 /** Test that verifies that Clipboard is used by swing components.
- * @author Jesse Glick
- * @see "#30923"
+ * @author Jaroslav Tulach
+ * @see "#40693"
  */
 public class NbClipboardIsUsedBySwingComponentsTest extends NbTestCase {
-    private ExClipboard clip;
+    private Clip clip;
     
     public NbClipboardIsUsedBySwingComponentsTest (String name) {
         super(name);
@@ -42,14 +42,20 @@ public class NbClipboardIsUsedBySwingComponentsTest extends NbTestCase {
     
     protected void setUp() throws Exception {
         System.setProperty ("org.openide.util.Lookup", "org.netbeans.core.NbClipboardIsUsedBySwingComponentsTest$Lkp");
-        clip = (ExClipboard)Lookup.getDefault ().lookup (ExClipboard.class);
+        System.setProperty ("netbeans.security.nocheck", "true");
+        Object clip = Lookup.getDefault ().lookup (ExClipboard.class);
         assertNotNull ("Some clipboard found", clip);
         assertEquals ("Correct clipboard found", Clip.class, clip.getClass());
+        this.clip = (Clip)clip;
         
-        Object clazz = org.netbeans.TopSecurityManager.class;
-        SecurityManager m = new org.netbeans.TopSecurityManager ();
-        System.setSecurityManager (m);
-        org.netbeans.TopSecurityManager.makeSwingUseSpecialClipboard (clip);
+        if (System.getSecurityManager () == null) {
+            java.text.NumberFormat.getInstance ();
+
+            Object clazz = org.netbeans.TopSecurityManager.class;
+            SecurityManager m = new org.netbeans.TopSecurityManager ();
+            System.setSecurityManager (m);
+            org.netbeans.TopSecurityManager.makeSwingUseSpecialClipboard (this.clip);
+        }
     }
     protected boolean runInEQ () {
         return true;
@@ -63,7 +69,47 @@ public class NbClipboardIsUsedBySwingComponentsTest extends NbTestCase {
         assertEquals ("Ahoj", f.getSelectedText ());
         f.copy ();
         
-        Clip.assertCalls ("Copy should be called", 1, 0);
+        Clip.assertCalls ("Copy should call setContent", 1, 0);
+        assertClipboard ("Ahoj");
+    }
+    
+    public void testClipboardOurClipboardUsedDuringCut () {
+        javax.swing.JTextField f = new javax.swing.JTextField ();
+        f.setText ("DoCut");
+        f.selectAll ();
+        assertEquals ("DoCut", f.getSelectedText ());
+        f.cut ();
+        
+        Clip.assertCalls ("Cut should call setContent", 1, 0);
+        assertClipboard ("DoCut");
+        
+        assertEquals ("Empty", "", f.getText ());
+    }
+    
+    public void testClipboardOurClipboardUsedDuringPaste () {
+        javax.swing.JTextField f = new javax.swing.JTextField ();
+        
+        StringSelection sel = new StringSelection ("DoPaste");
+        clip.setContents (sel, sel);
+        Clip.assertCalls ("Of course there is one set", 1, 0);
+        
+        assertClipboard ("DoPaste");
+        f.paste ();
+        
+        Clip.assertCalls ("Paste should call getContent", 0, 1);
+        assertEquals ("Text is there", "DoPaste", f.getText ());
+    }
+    
+    public void assertClipboard (String text) {
+        try {
+            Transferable t = clip.getContentsSuper (this);
+            Object obj = t.getTransferData (java.awt.datatransfer.DataFlavor.stringFlavor);
+            assertEquals ("Clipboard is the same", text, obj);
+        } catch (java.io.IOException ex) {
+            fail (ex.getMessage ());
+        } catch (java.awt.datatransfer.UnsupportedFlavorException ex) {
+            fail (ex.getMessage ());
+        }
     }
     
     public static final class Lkp extends org.openide.util.lookup.AbstractLookup {
@@ -100,6 +146,9 @@ public class NbClipboardIsUsedBySwingComponentsTest extends NbTestCase {
             retValue = super.getContents (requestor);
             return retValue;
         }
+        public Transferable getContentsSuper (Object requestor) {
+            return  super.getContents (requestor);
+        }
         
         public static void assertCalls (String msg, int setContents, int getContents) {
             if (setContents != -1) assertEquals (msg + " setContents", setContents, Clip.setContents);
@@ -108,6 +157,5 @@ public class NbClipboardIsUsedBySwingComponentsTest extends NbTestCase {
             Clip.setContents = 0;
             Clip.getContents = 0;
         }
-        
     } // Clip
 }
