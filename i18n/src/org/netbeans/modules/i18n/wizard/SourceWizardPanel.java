@@ -243,59 +243,12 @@ final class SourceWizardPanel extends JPanel {
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
 
-//       Following code is a bit too CPU intensive (memory probably as well) 
-//       for working with  MasterFS
-//
-//        DataFilter dataFilter = new DataFilter() {
-//            public boolean acceptDataObject (DataObject dataObject) {
-//                return (dataObject instanceof DataFolder
-//                 || FactoryRegistry.hasFactory(dataObject.getClass()));
-//            }
-//        };
-//
-//        Node repositoryNode = RepositoryNodeFactory.getDefault().repository(dataFilter);
-
-        // Thus changing to work with GlobalPathRegistry
-        Set paths = GlobalPathRegistry.getDefault().getPaths( ClassPath.SOURCE );
-        List roots = new ArrayList();
-        for ( Iterator it = paths.iterator(); it.hasNext(); ) {
-            ClassPath cp = (ClassPath)it.next();
-            roots.addAll( Arrays.asList( cp.getRoots() ) );            
-        }
-        
-        // XXX This is a bit dirty and should be rewritten to Children.Keys
-        // XXX The subnodes deserve better names than src and test
-        List nodes = new ArrayList();
-        Set names = new HashSet();        
-        for( Iterator it = roots.iterator(); it.hasNext(); ) {
-            FileObject fo = (FileObject)it.next();
-            if ( names.contains( fo.getPath()) ) {
-                continue;
-            }
-            names.add( fo.getPath () );
-            try {
-                nodes.add( DataObject.find( fo ).getNodeDelegate() );
-            }
-            catch( DataObjectNotFoundException e ) {
-                // Ignore
-            }
-        }
-        
-        Children ch = new Children.Array();
-        Node[] nodesArray = new Node[ nodes.size() ];
-        nodes.toArray( nodesArray );
-        ch.add( nodesArray );
-        
-        Node repositoryNode = new AbstractNode( ch );
-        repositoryNode.setName( NbBundle.getMessage( SourceWizardPanel.class, "LBL_Sources" ) ); 
-        // XXX Needs some icon.
-        
         // Selects source data objects which could be i18n-ized.
         try {
             Node[] selectedNodes= NodeOperation.getDefault().select(
                 Util.getString("LBL_SelectSources"),
                 Util.getString("LBL_Filesystems"),
-                repositoryNode,
+                Util.sourcesView(null),
                 new NodeAcceptor() {
                     public boolean acceptNodes(Node[] nodes) {
                         if(nodes == null || nodes.length == 0) {

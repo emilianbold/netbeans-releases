@@ -13,18 +13,24 @@
 
 package org.netbeans.modules.i18n.wizard;
 
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
+
 import org.netbeans.modules.i18n.FactoryRegistry;
 import org.netbeans.modules.i18n.I18nUtil;
 import org.netbeans.modules.properties.PropertiesDataObject;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.loaders.DataFilter;
 import org.openide.nodes.Node;
+import org.openide.nodes.Children;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.FilterNode;
 import org.openide.util.*;
 import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
 
 /**
  * Bundle access, ...
@@ -127,6 +133,57 @@ final class Util {
         return true;
     }
 
+    /** Prepare node structure showing sources */
+    static Node sourcesView(DataFilter filter) {
+//       Following code is a bit too CPU intensive (memory probably as well)
+//       for working with  MasterFS
+//
+//        DataFilter dataFilter = new DataFilter() {
+//            public boolean acceptDataObject (DataObject dataObject) {
+//                return (dataObject instanceof DataFolder
+//                 || FactoryRegistry.hasFactory(dataObject.getClass()));
+//            }
+//        };
+//
+//        Node repositoryNode = RepositoryNodeFactory.getDefault().repository(dataFilter);
+
+        // Thus changing to work with GlobalPathRegistry
+        Set paths = GlobalPathRegistry.getDefault().getPaths( ClassPath.SOURCE );
+        List roots = new ArrayList();
+        for ( Iterator it = paths.iterator(); it.hasNext(); ) {
+            ClassPath cp = (ClassPath)it.next();
+            roots.addAll( Arrays.asList( cp.getRoots() ) );
+        }
+
+        // XXX This is a bit dirty and should be rewritten to Children.Keys
+        // XXX The subnodes deserve better names than src and test
+        List nodes = new ArrayList();
+        Set names = new HashSet();
+        for( Iterator it = roots.iterator(); it.hasNext(); ) {
+            FileObject fo = (FileObject)it.next();
+            if ( names.contains( fo.getPath()) ) {
+                continue;
+            }
+            names.add( fo.getPath () );
+            try {
+                nodes.add( new FilterNode(DataObject.find( fo ).getNodeDelegate()) );
+            }
+            catch( DataObjectNotFoundException e ) {
+                // Ignore
+            }
+        }
+
+        Children ch = new Children.Array();
+        Node[] nodesArray = new Node[ nodes.size() ];
+        nodes.toArray( nodesArray );
+        ch.add( nodesArray );
+
+        Node repositoryNode = new AbstractNode( ch );
+        repositoryNode.setName( NbBundle.getMessage( SourceWizardPanel.class, "LBL_Sources" ) );
+        // XXX Needs some icon.
+
+        return repositoryNode;
+    }
 
     /**
      * Compare data objects according their package and name. 

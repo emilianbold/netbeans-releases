@@ -288,7 +288,7 @@ final class ResourceWizardPanel extends JPanel {
             }
         };
 
-        Node repositoryNode = RepositoryNodeFactory.getDefault().repository(dataFilter);
+        Node repositoryNode = Util.sourcesView(dataFilter);
 
         // Selects sources data object.
         try {
