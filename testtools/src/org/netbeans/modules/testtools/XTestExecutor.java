@@ -126,7 +126,9 @@ public class XTestExecutor extends Executor {
                         fo=fo.getFileObject("results"); // NOI18N
                         fo=fo.getFileObject("index", "html"); // NOI18N
                         org.openide.awt.HtmlBrowser.URLDisplayer.getDefault().showURL(fo.getURL());
-                    } catch (Exception e) {}
+                    } catch (Exception e) {
+                        ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+                    }
                 }
             }
         });

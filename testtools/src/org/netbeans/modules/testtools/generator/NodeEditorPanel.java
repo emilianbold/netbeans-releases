@@ -43,6 +43,7 @@ import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.event.ChangeListener;
 import javax.swing.tree.TreeNode;
+import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -76,7 +77,7 @@ public class NodeEditorPanel extends javax.swing.JPanel implements ChangeListene
             in.close();
             inlineIcon = new ImageIcon(b);
         } catch (Exception e) {
-            e.printStackTrace();
+            ErrorManager.getDefault().notify(e);
         }
     }
     
@@ -99,7 +100,9 @@ public class NodeEditorPanel extends javax.swing.JPanel implements ChangeListene
                         setIcon(newIcon);
                     }
                 }
-            } catch (Exception e) {};
+            } catch (Exception e) {
+                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+            };
             return this;
         }
 
@@ -116,6 +119,8 @@ public class NodeEditorPanel extends javax.swing.JPanel implements ChangeListene
         }
         gen.addChangeListener(this);
         initComponents();
+        tree.getSelectionModel().setSelectionMode(javax.swing.tree.TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION); 
+        tree.setModel(new DefaultTreeModel(rootNode));
         if ((rootIcon!=null)&&(existIcon!=null)&&(newIcon!=null)&&(inlineIcon!=null)) {
             MyCellRenderer rend = new MyCellRenderer();
             rend.setClosedIcon(rootIcon);
@@ -123,8 +128,6 @@ public class NodeEditorPanel extends javax.swing.JPanel implements ChangeListene
             rend.setLeafIcon(existIcon);
             tree.setCellRenderer(rend);
         }
-        tree.getSelectionModel().setSelectionMode(javax.swing.tree.TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION); 
-        tree.setModel(new DefaultTreeModel(rootNode));
         tree.getSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
             public void valueChanged(TreeSelectionEvent e) {
                 nodeChanged(tree.getSelectionPaths());

@@ -35,6 +35,7 @@ import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.operators.*;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
 /** class observing CTRL-F11 key and launching NodeGenerator
@@ -75,7 +76,7 @@ public class NodeGeneratorRunnable implements Runnable, AWTEventListener {
      * @param aWTEvent aWTEvent
      */
     public void eventDispatched(java.awt.AWTEvent aWTEvent) {
-        if ((aWTEvent instanceof KeyEvent)&&(aWTEvent.getID()==KeyEvent.KEY_RELEASED)&&(((KeyEvent)aWTEvent).getKeyCode()==KeyEvent.VK_F11)&&(((KeyEvent)aWTEvent).getModifiers()==KeyEvent.CTRL_MASK)) {
+        if ((aWTEvent instanceof KeyEvent)&&(aWTEvent.getID()==KeyEvent.KEY_RELEASED)&&(((KeyEvent)aWTEvent).getKeyCode()==KeyEvent.VK_F11)&&((((KeyEvent)aWTEvent).getModifiers()&KeyEvent.CTRL_MASK)!=0)) {
             start=true;
         }
     }
@@ -115,7 +116,7 @@ public class NodeGeneratorRunnable implements Runnable, AWTEventListener {
                     help.setText(NbBundle.getMessage(NodeGeneratorRunnable.class, "ERR_NoPopup")); // NOI18N
                 } catch (Exception e) {
                     help.setText(NbBundle.getMessage(NodeGeneratorRunnable.class, "MSG_Exception")+e.getMessage());  // NOI18N
-                    e.printStackTrace();
+                    ErrorManager.getDefault().notify(e);
                 }
             }
         } catch (InterruptedException ie) {

@@ -185,7 +185,9 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
             if (cel.getTemplate().getBody().indexOf("compareReferenceFiles")>=0) // NOI18N
                 try {
                     createGoldenFile(source, cel.getName());
-                } catch (IOException ioe) {}
+                } catch (IOException ioe) {
+                    ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe);
+                }
         }
 
         // creating list of test cases
@@ -306,7 +308,9 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
             Repository.getDefault().addFileSystem(lfs);
             set.suiteTarget=DataFolder.findFolder(lfs.getRoot());
             res.add(set.suiteTarget);
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+        }
         
         if (set.createSuite) {
             set.suiteTarget=DataFolder.create(set.suiteTarget, set.suitePackage);
@@ -350,7 +354,9 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
             o=DataObject.find((FileObject)enum.nextElement());
             if (o instanceof JavaDataObject)
                 list.add(o);
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            ErrorManager.getDefault().notify(e);
+        }
         return (DataObject[])list.toArray(new DataObject[list.size()]);
     }
     
@@ -362,7 +368,9 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
             o=DataObject.find((FileObject)enum.nextElement());
             if (GroupShadowTool.instanceOf(o))
                 list.add(o);
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            ErrorManager.getDefault().notify(e);
+        }
         return (DataObject[])list.toArray(new DataObject[list.size()]);
     }
     

@@ -23,6 +23,7 @@ import java.awt.Component;
 import java.awt.CardLayout;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
+import org.openide.ErrorManager;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
@@ -79,7 +80,9 @@ public class TestTypeSettingsPanel extends JPanel {
                     if (name==null)
                         name=set.typeTemplate.getPrimaryFile().getName();
                 }
-            } catch (Exception e) {}
+            } catch (Exception e) {
+                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+            }
             if (stop)
                 ((CardLayout)getLayout()).show(TestTypeSettingsPanel.this, "stop"); // NOI18N
             else {

@@ -14,6 +14,7 @@ package org.netbeans.modules.testtools.wizards;
 
 import java.io.*;
 import java.util.*;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
@@ -34,8 +35,6 @@ class GroupShadowTool {
                 while ((line = br.readLine()) != null) {
                     linearray.add(line);
                 }
-            } catch (IOException ex) {
-                throw ex;
             } finally {
                 if (br != null) br.close();
             }
@@ -49,7 +48,9 @@ class GroupShadowTool {
                     else set.add(new String(line));
                 } catch (DataObjectNotFoundException ex) {}
             }
-        } catch (IOException ex) {}
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
+        }
         return set.toArray();
     }
     static boolean instanceOf(Object o) {

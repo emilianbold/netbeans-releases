@@ -25,6 +25,7 @@ import java.awt.CardLayout;
 import javax.swing.JPanel;
 import java.util.StringTokenizer;
 import javax.swing.event.ChangeListener;
+import org.openide.ErrorManager;
 
 import org.openide.util.HelpCtx;
 import org.openide.WizardDescriptor;
@@ -89,7 +90,9 @@ public class TestTypeAdvancedSettingsPanel extends JPanel {
                     XMLDocument doc=new XMLDocument(DataObject.find(wizard.getTargetFolder().getPrimaryFile().getFileObject("build","xml"))); // NOI18N
                     netbeansHome=doc.getProperty("netbeans.home","location"); // NOI18N
                 }
-            } catch (Exception e) {}
+            } catch (Exception e) {
+                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+            }
         }
 
         /** removes Change Listener of current Panel
@@ -435,7 +438,9 @@ public class TestTypeAdvancedSettingsPanel extends JPanel {
             String f=file.getCanonicalPath();
             if (f.startsWith(d))
                 return subst+'/'+f.substring(d.length()).replace('\\','/');
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+        }
         return null;
     }
     
