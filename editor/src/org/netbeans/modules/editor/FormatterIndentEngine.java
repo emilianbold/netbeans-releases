@@ -20,7 +20,6 @@ import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.editor.SettingsDefaults;
 import org.netbeans.editor.Settings;
 import org.openide.text.IndentEngine;
-import org.openide.util.HelpCtx;
 
 /**
 * Indent engine that delegates to formatter

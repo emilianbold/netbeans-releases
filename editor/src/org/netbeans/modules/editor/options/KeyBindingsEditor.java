@@ -33,8 +33,10 @@ public class KeyBindingsEditor extends PropertyEditorSupport {
 
     private KeyBindingsEditorPanel editorPanel;
 
+    private static final String HELP_ID = "editing.keybindings"; // !!! NOI18N
+
     protected HelpCtx getHelpCtx () {
-        return new HelpCtx (KeyBindingsEditor.class);
+        return new HelpCtx (HELP_ID);
     }
 
     /**

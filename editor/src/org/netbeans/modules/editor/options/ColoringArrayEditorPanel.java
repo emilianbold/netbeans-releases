@@ -24,7 +24,6 @@ import java.lang.reflect.InvocationTargetException;
 import org.openide.TopManager;
 import org.openide.explorer.propertysheet.PropertyPanel;
 import org.openide.explorer.propertysheet.PropertyModel;
-import org.openide.util.HelpCtx;
 
 import org.netbeans.editor.Coloring;
 import org.netbeans.editor.LocaleSupport;
@@ -101,8 +100,6 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
         //    setEditorValue( actValueIndex );
         PropertyPanel editorPanel = new PropertyPanel( coloringModel,  PropertyPanel.PREF_CUSTOM_EDITOR );
         detailPanel.add( editorPanel, BorderLayout.CENTER );
-
-        HelpCtx.setHelpIDString (this, ColoringArrayEditorPanel.class.getName ());
     }
 
     public HashMap getValue() {

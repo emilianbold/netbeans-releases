@@ -39,6 +39,8 @@ public class BasePrintOptions extends OptionSupport {
 
     public static final String PRINT_COLORING_MAP_PROP = "printColoringMap"; // NOI18N
 
+    private static final String HELP_ID = "editing.printing"; // !!! NOI18N
+    
     static final String[] BASE_PROP_NAMES = {
         PRINT_LINE_NUMBER_VISIBLE_PROP,
         PRINT_COLORING_MAP_PROP,
@@ -66,7 +68,7 @@ public class BasePrintOptions extends OptionSupport {
     }
 
     public HelpCtx getHelpCtx () {
-        return new HelpCtx (BasePrintOptions.class);
+        return new HelpCtx (HELP_ID);
     }
 
     /** Get the name of the <code>Settings.Initializer</code> related

@@ -30,9 +30,11 @@ import org.openide.util.NbBundle;
 public class AbbrevsEditor extends PropertyEditorSupport {
 
     private AbbrevsEditorPanel editorPanel;
+    
+    private static final String HELP_ID = "editing.abbreviations"; // !!! NOI18N
 
     protected HelpCtx getHelpCtx () {
-        return new HelpCtx (AbbrevsEditor.class);
+        return new HelpCtx (HELP_ID);
     }
 
     /**

@@ -21,6 +21,7 @@ import javax.swing.event.*;
 import org.netbeans.editor.Coloring;
 //import org.netbeans.modules.editor.options.ColoringBean;
 import org.openide.explorer.propertysheet.PropertyPanel;
+import org.openide.util.HelpCtx;
 
 /**
  * ColoringArrayEditor is editor for Editors colorings settings, operates over
@@ -39,6 +40,8 @@ public class ColoringArrayEditor extends PropertyEditorSupport {
 
     private ColoringArrayEditorPanel editor;
 
+    private static final String HELP_ID = "editing.fonts"; // !!! NOI18N
+
     public boolean supportsCustomEditor() {
         return true;
     }
@@ -50,6 +53,7 @@ public class ColoringArrayEditor extends PropertyEditorSupport {
     public java.awt.Component getCustomEditor() {
         if( editor == null ) {
             editor = new ColoringArrayEditorPanel();
+            HelpCtx.setHelpIDString( editor, getHelpCtx().getHelpID() );
             refreshEditor();
             editor.addPropertyChangeListener( new PropertyChangeListener() {
                                                   public void propertyChange( PropertyChangeEvent evt ) {
@@ -60,6 +64,10 @@ public class ColoringArrayEditor extends PropertyEditorSupport {
         return editor;
     }
 
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(HELP_ID);
+    }
+    
     public void setAsText( String s ) {
         return;
     }

@@ -17,7 +17,6 @@ import java.io.Writer;
 import javax.swing.text.Document;
 import org.netbeans.editor.Formatter;
 import org.openide.text.IndentEngine;
-import org.openide.util.HelpCtx;
 
 /**
 * Formatter wrapped around a generic indent engine.

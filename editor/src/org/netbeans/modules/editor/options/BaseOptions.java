@@ -143,6 +143,8 @@ public class BaseOptions extends OptionSupport {
 
     static final long serialVersionUID =-5469192431366914841L;
 
+    private static final String HELP_ID = "editing.global"; // !!! NOI18N
+
     /** Whether formatting debug messages should be displayed */
     private static final boolean debugFormat
         = Boolean.getBoolean("netbeans.debug.editor.format"); // NOI18N
@@ -198,7 +200,7 @@ public class BaseOptions extends OptionSupport {
     }
 
     public HelpCtx getHelpCtx () {
-        return new HelpCtx (BaseOptions.class);
+        return new HelpCtx (HELP_ID);
     }
 
     public int getTabSize() {

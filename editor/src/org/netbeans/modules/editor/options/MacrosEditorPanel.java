@@ -21,6 +21,7 @@ import javax.swing.table.*;
 
 import org.openide.*;
 import org.openide.util.NbBundle;
+import org.openide.util.HelpCtx;
 
 
 /**
@@ -188,6 +189,8 @@ public class MacrosEditorPanel extends javax.swing.JPanel {
      */
     private String[] getMacro( String[] macro ) {
         MacroInputPanel input = new MacroInputPanel();
+        // set HELP_ID of parent 
+        HelpCtx.setHelpIDString( input, (HelpCtx.findHelp(this) != null ? HelpCtx.findHelp(this).getHelpID() : null) );
         if( macro != null ) input.setMacro( macro ); // preset value
 
         DialogDescriptor dd = new DialogDescriptor ( input, bundle.getString( "MEP_EnterMacro" ) ); // NOI18N

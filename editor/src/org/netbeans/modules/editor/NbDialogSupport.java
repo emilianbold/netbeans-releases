@@ -25,6 +25,7 @@ import org.netbeans.editor.DialogSupport;
 import org.openide.TopManager;
 import org.openide.DialogDescriptor;
 import org.openide.util.HelpCtx;
+import java.util.HashMap;
 
 /** The NetBeans way of handling Dialogs is through TopManager,
  * prividing it with DialogDescriptor.
@@ -34,6 +35,35 @@ import org.openide.util.HelpCtx;
  */
 public class NbDialogSupport implements DialogSupport.DialogFactory {
 
+    /**
+     * Hash map containing string (ClassNames) <-> string (HelpID).
+     */
+    private static HashMap helpIDs;
+    
+    private static final String HELP_ID_MacroSavePanel = "editing.macros.recording"; // !!! NOI18N
+    private static final String HELP_ID_KeySequenceInputPanel = "editing.csh.shortcutseq"; // !!! NOI18N
+    private static final String HELP_ID_FindPanel = "editing.find"; // !!! NOI18N
+    private static final String HELP_ID_GotoDialogPanel = "editing.goto"; // !!! NOI18N
+    private static final String HELP_ID_JavaFastImportPanel = "editing.fastimport"; // !!! NOI18N
+    private static final String HELP_ID_JavaFastOpenPanel = "editing.fastopen"; // !!! NOI18N
+    private static final String HELP_ID_ScrollCompletionPane = "editing.codecompletion"; // !!! NOI18N
+    
+    public NbDialogSupport()
+    {
+        if (helpIDs == null)
+        {
+            helpIDs = new HashMap(7);
+            helpIDs.put(org.netbeans.editor.MacroSavePanel.class.getName(), HELP_ID_MacroSavePanel);
+            helpIDs.put(org.netbeans.editor.KeySequenceInputPanel.class.getName(), HELP_ID_KeySequenceInputPanel);
+            helpIDs.put(org.netbeans.editor.ext.FindDialogSupport.FindPanel.class.getName(), HELP_ID_FindPanel);
+            helpIDs.put(org.netbeans.editor.ext.GotoDialogPanel.class.getName(), HELP_ID_GotoDialogPanel);
+            helpIDs.put(org.netbeans.editor.ext.ScrollCompletionPane.class.getName(), HELP_ID_ScrollCompletionPane);
+            // the folowing class are not public, so I had to simply name them
+            helpIDs.put("org.netbeans.editor.ext.java.JavaFastImportPanel", HELP_ID_JavaFastImportPanel);
+            helpIDs.put("org.netbeans.editor.ext.java.JavaFastOpenPanel", HELP_ID_JavaFastOpenPanel);
+        }
+    }
+    
     /**
      * The method for creating a dialog with specified properties.
      * @param title The title of created dialog.
@@ -54,7 +84,7 @@ public class NbDialogSupport implements DialogSupport.DialogFactory {
                 new DialogDescriptor( panel, title, modal, buttons,
                 defaultIndex == -1 ? buttons[0] : buttons[defaultIndex],
                     sideButtons ? DialogDescriptor.RIGHT_ALIGN : DialogDescriptor.BOTTOM_ALIGN,
-                    new HelpCtx( panel.getClass().getName() ), listener
+                    new HelpCtx( (String)helpIDs.get(panel.getClass().getName()) ), listener
                 )
         );
 

@@ -22,7 +22,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
 
 import org.netbeans.editor.Coloring;
-import org.openide.util.HelpCtx;
 
 /**
  * Coloring Editor for editor settings. Operates over one ColoringBean

@@ -31,8 +31,10 @@ public class MacrosEditor extends PropertyEditorSupport {
 
     private MacrosEditorPanel editorPanel;
 
+    private static final String HELP_ID = "editing.macros.editing"; // !!! NOI18N
+    
     protected HelpCtx getHelpCtx () {
-        return new HelpCtx (MacrosEditor.class);
+        return new HelpCtx (HELP_ID);
     }
 
     /**

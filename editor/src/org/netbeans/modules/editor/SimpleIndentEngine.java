@@ -28,6 +28,8 @@ public class SimpleIndentEngine extends FormatterIndentEngine {
 
     static final long serialVersionUID = -6445463074939516878L;
 
+    private static final String HELP_ID = "editing.indentation.simple"; // !!! NOI18N
+
     public SimpleIndentEngine() {
     }
 
@@ -36,7 +38,7 @@ public class SimpleIndentEngine extends FormatterIndentEngine {
     }
 
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(SimpleIndentEngine.class);
+        return new HelpCtx(HELP_ID);
     }
 
     protected boolean acceptMimeType(String mimeType) {

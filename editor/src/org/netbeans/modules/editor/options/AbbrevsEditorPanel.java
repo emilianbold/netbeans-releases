@@ -21,6 +21,7 @@ import javax.swing.table.*;
 
 import org.openide.*;
 import org.openide.util.NbBundle;
+import org.openide.util.HelpCtx;
 
 
 /**
@@ -196,6 +197,8 @@ public class AbbrevsEditorPanel extends javax.swing.JPanel {
      */
     private String[] getAbbrev( String[] abbrev ) {
         AbbrevInputPanel input = new AbbrevInputPanel();
+        // set HELP_ID of parent 
+        HelpCtx.setHelpIDString( input, (HelpCtx.findHelp(this) != null ? HelpCtx.findHelp(this).getHelpID() : null) );
         if( abbrev != null ) input.setAbbrev( abbrev ); // preset value
 
         DialogDescriptor dd = new DialogDescriptor ( input, bundle.getString( "AEP_EnterAbbrev" ) ); // NOI18N

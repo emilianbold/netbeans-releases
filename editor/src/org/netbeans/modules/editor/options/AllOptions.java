@@ -34,6 +34,8 @@ public class AllOptions extends ContextSystemOption {
 
     static final long serialVersionUID =-5703125420292694573L;
 
+    private static final String HELP_ID = "editing.global"; // !!! NOI18N
+
     // Initialize global options
     private transient BaseOptions baseOptions
         = (BaseOptions)BaseOptions.findObject(BaseOptions.class, true);
@@ -65,7 +67,7 @@ public class AllOptions extends ContextSystemOption {
     }
 
     public HelpCtx getHelpCtx () {
-        return new HelpCtx (AllOptions.class);
+        return new HelpCtx (HELP_ID);
     }
 
     public List getKeyBindingList() {

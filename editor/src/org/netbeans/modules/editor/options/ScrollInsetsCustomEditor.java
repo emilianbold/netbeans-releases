@@ -36,6 +36,8 @@ public class ScrollInsetsCustomEditor extends javax.swing.JPanel implements Enha
 
     static final long serialVersionUID =-1472891501739636852L;
 
+    private static final String HELP_ID = "editing.scrollinsets"; // !!! NOI18N
+    
     private ScrollInsetsEditor editor;
 
     /** Initializes the Form */
@@ -57,7 +59,7 @@ public class ScrollInsetsCustomEditor extends javax.swing.JPanel implements Enha
                                    bundle.getString ("SICE_Insets")),
                                new javax.swing.border.EmptyBorder (new java.awt.Insets(5, 5, 5, 5))));
 
-        HelpCtx.setHelpIDString (this, ScrollInsetsCustomEditor.class.getName ());
+        HelpCtx.setHelpIDString (this, HELP_ID);
 
         setPreferredSize( new java.awt.Dimension( 280, getPreferredSize().height ) );
     }
