@@ -22,15 +22,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.openide.ErrorManager;
-import org.openide.awt.StatusDisplayer;
-import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.Annotation;
-import org.openide.text.Line;
-import org.openide.util.NbBundle;
 import org.openide.windows.*;
+import java.util.*;
 
 /**
  * Thread which displays Tomcat log files in the output window. The output 
@@ -50,9 +43,17 @@ public class LogViewer extends Thread {
     private String prefix;
     private String suffix;
     private boolean isTimestamped;
-    private boolean takeFocus;    
+    private boolean takeFocus;
     
     private ContextLogSupport logSupport;
+    private String catalinaWorkDir;
+    private String webAppContext;
+    private boolean isStarted;
+    
+    /**
+     * List of listeners which are notified when the log viewer is stoped.
+     */
+    private List/*<LogViewerStopListener>*/ stopListeners = Collections.synchronizedList(new LinkedList());
     
     /**
      * Create a new LogViewer thread.
@@ -80,10 +81,10 @@ public class LogViewer extends Thread {
             boolean isTimestamped, boolean takeFocus) throws UnsupportedLoggerException {
         super("LogViewer - Thread"); // NOI18N
         if (catalinaDir == null) throw new NullPointerException();
+        if (catalinaWorkDir == null) throw new NullPointerException();
         if (!"org.apache.catalina.logger.FileLogger".equals(className)) { // NOI18N
             throw new UnsupportedLoggerException(className);
-        }
-        setDaemon(true);
+        }        
         if (directory != null) {
             this.directory = new File(directory);
             if (!this.directory.isAbsolute()) {
@@ -102,27 +103,12 @@ public class LogViewer extends Thread {
         } else {
             this.suffix = ".log";  // NOI18N
         }
-
         this.isTimestamped = isTimestamped;
         this.takeFocus = takeFocus;
-        
-        // cut off trailing dot
-        String displayName = this.prefix;
-        int trailingDot = displayName.lastIndexOf('.');
-        if (trailingDot > -1) displayName = displayName.substring(0, trailingDot);
-        
-        inOut = IOProvider.getDefault().getIO(displayName, false);
-        try {
-            inOut.getOut().reset();
-        } 
-        catch (IOException e) {
-            // not a critical error, continue
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-        }        
-        inOut.select();
-        writer = inOut.getOut();
-        errorWriter = inOut.getErr();
+        this.catalinaWorkDir = catalinaWorkDir;
+        this.webAppContext = webAppContext;
         logSupport = new ContextLogSupport(catalinaWorkDir, webAppContext);
+        setDaemon(true);
     }
     
     /**
@@ -135,14 +121,34 @@ public class LogViewer extends Thread {
         }        
     }
     
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof LogViewer) {
+            LogViewer anotherLogViewer = (LogViewer)obj;            
+            if (catalinaWorkDir.equals(anotherLogViewer.catalinaWorkDir) 
+                && (((webAppContext != null) && webAppContext.equals(anotherLogViewer.webAppContext)) 
+                    || (webAppContext == anotherLogViewer.webAppContext))
+                && directory.equals(anotherLogViewer.directory)
+                && prefix.equals(anotherLogViewer.prefix)
+                && suffix.equals(anotherLogViewer.suffix)
+                && isTimestamped) {
+                    return true;
+            }
+        }
+        return false;
+    }
+    
     /**
      * Tests whether LogViewer thread is still running.
      * @return <code>false</code> if thread was stopped or its output window
      * was closed, <code>true</code> otherwise.
      */
     public boolean isOpen() {
+        // TODO add check when not yet started
         InputOutput io = inOut;
-        return !(io == null || stop || io.isClosed());
+        return !(io == null || stop || (isStarted && io.isClosed()));
     }
     
     /**
@@ -182,6 +188,24 @@ public class LogViewer extends Thread {
     }
     
     public void run() {
+        // cut off trailing dot
+        String displayName = this.prefix;
+        int trailingDot = displayName.lastIndexOf('.');
+        if (trailingDot > -1) displayName = displayName.substring(0, trailingDot);
+        
+        inOut = IOProvider.getDefault().getIO(displayName, false);
+        try {
+            inOut.getOut().reset();
+        } 
+        catch (IOException e) {
+            // not a critical error, continue
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        }        
+        inOut.select();
+        writer = inOut.getOut();
+        errorWriter = inOut.getErr();
+        isStarted = true;
+        
         BufferedReader reader = null;
         String timestamp = getTimestamp();
         String oldTimestamp = timestamp;
@@ -233,7 +257,42 @@ public class LogViewer extends Thread {
                 // ok to ignore
             }
         }
+        fireLogViewerStopListener();
         logSupport.detachAnnotation();
+    }
+    
+    /** 
+     * Add a <code>LogViewerStopListener</code>.
+     * 
+     * @param listener <code>LogViewerStopListener</code> which will be notified
+     *        when the <code>LogViewer</code> stops running.
+     */
+    public void addLogViewerStopListener(LogViewerStopListener listener) {
+        stopListeners.add(listener);
+    }
+
+    /** 
+     * Remove all registered <code>LogViewerStopListener</code> listeners.
+     * 
+     * @param listener <code>LogViewerStopListener</code> which will be notified
+     *        when the <code>LogViewer</code> stops running.
+     */    
+    public void removeAllLogViewerStopListener() {
+        stopListeners.removeAll(stopListeners);
+    }
+    
+    private void fireLogViewerStopListener() {
+        for (Iterator i = stopListeners.iterator(); i.hasNext();) {
+            ((LogViewerStopListener)i.next()).callOnStop();
+        }
+    }
+    
+    /**
+     * <code>LogViewerStopListener</code> is notified when the <code>LogViewer</code>
+     * stops running.
+     */
+    public static interface LogViewerStopListener extends EventListener {
+        public void callOnStop();
     }
     
     /**

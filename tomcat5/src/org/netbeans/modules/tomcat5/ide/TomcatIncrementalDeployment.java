@@ -111,6 +111,12 @@ public class TomcatIncrementalDeployment extends IncrementalDeployment {
         return tmi;
     }
     
+    public void notifyDeployment(TargetModuleID module) {
+        if (tm.getOpenContextLogOnRun()) {
+            tm.openLog(module);
+        }
+    }
+    
     private static class P implements ProgressObject {
         
         ProgressEventSupport supp = new ProgressEventSupport (this);

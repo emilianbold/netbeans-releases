@@ -17,7 +17,6 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
-import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.modules.tomcat5.TomcatManager;
 import org.netbeans.modules.tomcat5.nodes.TomcatInstanceNode;
 
@@ -33,7 +32,7 @@ public class SharedContextLogAction extends NodeAction {
             TomcatInstanceNode cookie = (TomcatInstanceNode)nodes[i].getCookie(TomcatInstanceNode.class);
             if (cookie == null) continue;
             TomcatManager tm = cookie.getTomcatManager();
-            if (tm != null) tm.openLog();
+            if (tm != null) tm.logManager().openSharedContextLog();
         }
     }
 
@@ -42,7 +41,7 @@ public class SharedContextLogAction extends NodeAction {
             TomcatInstanceNode cookie = (TomcatInstanceNode)nodes[i].getCookie(TomcatInstanceNode.class);
             if (cookie == null) return false;
             TomcatManager tm = cookie.getTomcatManager();
-            if (tm == null || !tm.hasLogger()) return false;
+            if (tm == null || !tm.logManager().hasSharedLogger()) return false;
         }
         return true;
     }

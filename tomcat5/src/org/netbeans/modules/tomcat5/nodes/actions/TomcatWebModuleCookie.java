@@ -14,6 +14,7 @@
 package org.netbeans.modules.tomcat5.nodes.actions;
 
 import org.openide.nodes.Node;
+import org.netbeans.modules.tomcat5.TomcatModule;
 
 /** 
  * Tomcat web module cookie

@@ -50,11 +50,12 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
     protected static final String SERVER_PORT= "server_port";//NOI18N
     protected static final String ADMIN_PORT= "admin_port";//NOI18N
     protected static final String MONITOR_ENABLED= "monitor_enabled";//NOI18N
+    protected static final String OPEN_CONTEXT_LOG_ON_RUN_ENABLED= "open_context_log_on_run_enabled";//NOI18N
     protected static final String CLASSIC = "classic"; //NOI18N
     protected static final String USER_NAME = "user_name"; //NOI18N
     protected static final String PASSWORD = "password"; //NOI18N
     protected static final String NAME_FOR_SHARED_MEMORY_ACCESS = "name_for_shared_memory_access"; //NOI18N
-    private static final String DEFAULT_NAME_FOR_SHARED_MEMORY_ACCESS = "tomcat_shared_memory_id"; //NOI18N
+    private static final String DEFAULT_NAME_FOR_SHARED_MEMORY_ACCESS = "tomcat_shared_memory_id"; //NOI18N        
     
     private Lookup lkp;
     
@@ -421,6 +422,30 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                 if (tm != null) {
                     boolean b = ((Boolean)val).booleanValue();
                     MonitorSupport.setMonitorFlag(tm, b);
+                }
+            }
+        };
+        ssProp.put(p);       
+        
+        // OPEN CONTEXT LOG ON RUN ENABLED
+        p = new PropertySupport.ReadWrite (
+            OPEN_CONTEXT_LOG_ON_RUN_ENABLED,
+            Boolean.TYPE,
+            NbBundle.getMessage (TomcatInstanceNode.class, "PROP_openLogOnRunEnabled"),   // NOI18N
+            NbBundle.getMessage (TomcatInstanceNode.class, "HINT_openLogOnRunEnabled")   // NOI18N
+        ) {
+            public Object getValue () {
+                TomcatManager tm = getTomcatManager();
+                if (tm != null) {
+                    return Boolean.valueOf(tm.getOpenContextLogOnRun());
+                }
+                return Boolean.TRUE;
+            }
+            
+            public void setValue (Object val) {
+                TomcatManager tm = getTomcatManager();
+                if (tm != null) {
+                    tm.setOpenContextLogOnRun(((Boolean)val).booleanValue());
                 }
             }
         };

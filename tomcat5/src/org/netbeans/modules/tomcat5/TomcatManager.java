@@ -46,6 +46,7 @@ import org.netbeans.modules.tomcat5.config.*;
 import org.netbeans.modules.tomcat5.ide.StartTomcat;
 import org.netbeans.modules.tomcat5.util.TomcatInstallUtil;
 import org.netbeans.modules.tomcat5.nodes.DebuggingTypeEditor;
+import org.netbeans.modules.tomcat5.nodes.TomcatWebModule;
 
 import org.openide.util.NbBundle;
 
@@ -54,8 +55,7 @@ import org.netbeans.api.debugger.jpda.*;
 
 import org.openide.util.Lookup;
 
-import org.netbeans.modules.tomcat5.util.LogViewer;
-import org.netbeans.modules.tomcat5.util.UnsupportedLoggerException;
+import org.netbeans.modules.tomcat5.util.*;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 
@@ -129,6 +129,10 @@ public class TomcatManager implements DeploymentManager {
     
     /** some bundled tomcat settings are stored here */
     private static final String BUNDLED_TOMCAT_SETTING = "J2EE/BundledTomcat/Setting"; // NOI18N
+    
+    /** Tomcat specific Instance property - if this property exists and is set 
+       to <code>true</code> web module's context log will be opened on run. */
+    private static final String OPEN_CONTEXT_LOG_ON_RUN = "openContextLogOnRun";    
 
     /** Manager state. */
     private boolean connected;
@@ -152,8 +156,11 @@ public class TomcatManager implements DeploymentManager {
     
     private Server root = null;
     
-    /** thread which handles log file displaying */
-    private LogViewer logViewer;
+    /** Easier access to some server.xml settings. */
+    private TomcatManagerConfig tomcatManagerConfig;
+    
+    /** LogManager manages all context and shared context logs for this TomcatManager. */
+    private LogManager logManager = new LogManager(this);
 
     /** Creates an instance of connected TomcatManager
      * @param conn <CODE>true</CODE> to create connected manager
@@ -219,6 +226,7 @@ public class TomcatManager implements DeploymentManager {
         this.uri = uri;
         username = uname;
         password = passwd;
+        tomcatManagerConfig = new TomcatManagerConfig(getCatalinaDir() + SERVERXML_PATH);
     }
 
     public InstanceProperties getInstanceProperties() {
@@ -329,8 +337,8 @@ public class TomcatManager implements DeploymentManager {
      * @return path to catalina work directory.
      */
     public String getCatalinaWork() {
-        String engineName = getEngineElement().getAttributeValue("name"); //NOI18N
-        String hostName = getHostElement().getAttributeValue("name"); //NOI18N
+        String engineName = tomcatManagerConfig.getEngineElement().getAttributeValue("name"); //NOI18N
+        String hostName = tomcatManagerConfig.getHostElement().getAttributeValue("name"); //NOI18N
         StringBuffer catWork = new StringBuffer(getCatalinaDir().getAbsolutePath());
         catWork.append("/work/").append(engineName).append("/").append(hostName); //NOI18N
         return catWork.toString(); 
@@ -518,6 +526,24 @@ public class TomcatManager implements DeploymentManager {
         return null;
     }
     
+    public void setOpenContextLogOnRun(boolean val) {
+        InstanceProperties ip = getInstanceProperties();
+        if (ip != null) {
+            ip.setProperty(OPEN_CONTEXT_LOG_ON_RUN, Boolean.valueOf(val).toString());
+        }
+    }
+    
+    public boolean getOpenContextLogOnRun() {
+        InstanceProperties ip = getInstanceProperties();
+        if (ip != null) {
+            Object val = ip.getProperty(OPEN_CONTEXT_LOG_ON_RUN);
+            if (val != null) return Boolean.valueOf(val.toString()).booleanValue();
+        }
+        return true;
+    }    
+    
+// --- DeploymentManager interface implementation ----------------------
+    
     public DeploymentConfiguration createConfiguration (DeployableObject deplObj) 
     throws InvalidModuleException {
         if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
@@ -569,31 +595,7 @@ public class TomcatManager implements DeploymentManager {
     public TargetModuleID[] getRunningModules (ModuleType moduleType, Target[] targetList) 
     throws TargetException, IllegalStateException {
         return modules (ENUM_RUNNING, moduleType, targetList);
-    }
-    
-    /** Utility method that retrieve the list of J2EE application modules 
-     * distributed to the identified targets.
-     * @param state     One of available, running, non-running constants.
-     * @param moduleType    Predefined designator for a J2EE module type.
-     * @param targetList    A list of deployment Target designators.
-     */
-    private TargetModuleID[] modules (int state, ModuleType moduleType, Target[] targetList)
-    throws TargetException, IllegalStateException {
-        if (!isConnected ()) {
-            throw new IllegalStateException ("TomcatManager.modules called on disconnected instance");   // NOI18N
-        }
-        if (targetList.length != 1) {
-            throw new TargetException ("TomcatManager.modules supports only one target");   // NOI18N
-        }
-        
-        if (!ModuleType.WAR.equals (moduleType)) {
-            return new TargetModuleID[0];
-        }
-        
-        TomcatManagerImpl impl = new TomcatManagerImpl (this);
-        return impl.list (targetList[0], state);
-    }
-    
+    }    
     
     public Target[] getTargets () throws IllegalStateException {
         if (!isConnected ()) {
@@ -724,6 +726,31 @@ public class TomcatManager implements DeploymentManager {
         TomcatManagerImpl impl = new TomcatManagerImpl (this);
         impl.install (targets[0], moduleArchive, deplPlan);
         return impl;
+    }
+    
+// --- End of DeploymentManager interface implementation ----------------------
+        
+    /** Utility method that retrieve the list of J2EE application modules 
+     * distributed to the identified targets.
+     * @param state     One of available, running, non-running constants.
+     * @param moduleType    Predefined designator for a J2EE module type.
+     * @param targetList    A list of deployment Target designators.
+     */
+    private TargetModuleID[] modules (int state, ModuleType moduleType, Target[] targetList)
+    throws TargetException, IllegalStateException {
+        if (!isConnected ()) {
+            throw new IllegalStateException ("TomcatManager.modules called on disconnected instance");   // NOI18N
+        }
+        if (targetList.length != 1) {
+            throw new TargetException ("TomcatManager.modules supports only one target");   // NOI18N
+        }
+        
+        if (!ModuleType.WAR.equals (moduleType)) {
+            return new TargetModuleID[0];
+        }
+        
+        TomcatManagerImpl impl = new TomcatManagerImpl (this);
+        return impl.list (targetList[0], state);
     }
     
     /** Connected / disconnected status.
@@ -1253,126 +1280,54 @@ public class TomcatManager implements DeploymentManager {
     }
     
     /**
-     * Returns engine element from server.xml if defined.
-     * Looks only for the first appearance of the service element.
-     * (ide currently does not support multiple service and host elements).
+     * Open a context log for the specified module, if specified module does not
+     * have its own logger defined, open shared context log instead.
+     *
+     * @param module module its context log should be opened
      */
-    private Engine getEngineElement() {
-        Server server = getRoot();
-        if (server == null) return null;
-        Service[] service = server.getService();
-        if (service.length > 0) {
-            return service[0].getEngine();            
-        }
-        return null;
-    }
-    
-    /**
-     * Returns host element from server.xml if defined.
-     * Looks only for the first appearance of the service and host element.
-     * (ide currently does not support multiple service and host elements).
-     */
-    private Host getHostElement() {
-        Server server = getRoot();
-        if (server == null) return null;
-        Service[] service = server.getService();
-        if (service.length > 0) {
-            Engine engine = service[0].getEngine();
-            if (engine != null) {
-                Host[] host = engine.getHost();
-                if (host.length > 0) {
-                    return host[0];                    
-                }
-            }
-        }
-        return null;
-    }    
-    
-    private Object lock = new Object();
-    
-    /**
-     * Opens shared log file in the output window. Shared log file can be defined
-     * in the host or engine element. Definition in host element overrides definition 
-     * in engine element.
-     */
-    public void openLog() {        
-        File catalinaDir = getCatalinaDir();
-        String className = null;
-        String dir = null;
-        String prefix = null;
-        String suffix = null;
-        String timestamp = null;
-        
-        Host host = getHostElement();
-        if (host != null && host.isLogger()) {
-            className = host.getAttributeValue(SContext.LOGGER, "className"); // NOI18N
-            dir = host.getAttributeValue(SContext.LOGGER, "directory"); // NOI18N
-            prefix = host.getAttributeValue(SContext.LOGGER, "prefix"); // NOI18N
-            suffix = host.getAttributeValue(SContext.LOGGER, "suffix"); // NOI18N
-            timestamp = host.getAttributeValue(SContext.LOGGER, "timestamp"); // NOI18N              
+    public void openLog(TargetModuleID module) {
+        TomcatModule tomcatModule = null;
+        if (module instanceof TomcatModule) {
+            tomcatModule = (TomcatModule)module;
         } else {
-            Engine engine = getEngineElement();
-            if (engine == null || !engine.isLogger()) return;
-            className = engine.getAttributeValue(SContext.LOGGER, "className"); // NOI18N
-            dir = engine.getAttributeValue(SContext.LOGGER, "directory"); // NOI18N
-            prefix = engine.getAttributeValue(SContext.LOGGER, "prefix"); // NOI18N
-            suffix = engine.getAttributeValue(SContext.LOGGER, "suffix"); // NOI18N
-            timestamp = engine.getAttributeValue(SContext.LOGGER, "timestamp"); // NOI18N         
-        }
-        boolean isTimestamped = Boolean.valueOf(timestamp).booleanValue();
-        
-        String msg = null; // error message
-        String catalinaWork = getCatalinaWork();
-        // ensure only one thread will be opened
-        synchronized(lock) {
-            if (logViewer != null && logViewer.isOpen()) {
-                logViewer.takeFocus();
-                return;
-            }
             try {
-                logViewer = new LogViewer(catalinaDir, catalinaWork, null, className, 
-                        dir, prefix, suffix, isTimestamped, false);
-                logViewer.start();
-                return;
-            } catch (UnsupportedLoggerException e) {
-                msg = NbBundle.getMessage(TomcatManager.class, 
-                        "MSG_UnsupportedLogger", e.getLoggerClassName());
-            } catch (NullPointerException npe) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, npe);
+                TargetModuleID[] tomMod = getRunningModules(ModuleType.WAR, new Target[]{module.getTarget()});
+                for (int i = 0; i < tomMod.length; i++) {
+                    if (module.getModuleID().equals(tomMod[i].getModuleID())) {
+                        tomcatModule = (TomcatModule)tomMod[i];
+                        break;
+                    }
+                }
+            } catch (TargetException te) {
+                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, te);
             }
         }
-        if (msg != null) DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
-    }
-    
-    /**
-     * Stops log viewer thread if active
-     */
-    private void closeLog() {
-        synchronized(lock) {
-            if (logViewer != null) {
-                logViewer.close();
-                logViewer = null;
-            }
-        }
-    }
-    
-    /**
-     * Returns <code>true</code> if there is a logger defined in the first host 
-     * or engine element in server.xml, <code>false</code> otherwise.
-     * @return <code>true</code> if there is a logger defined in the first host 
-     * or engine element in server.xml, <code>false</code> otherwise.
-     */
-    public boolean hasLogger() {
-        Host host = getHostElement();
-        if (host != null && host.isLogger()) {
-            return true;
+        if (tomcatModule != null && logManager.hasContextLogger(tomcatModule)) {
+            logManager.openContextLog(tomcatModule);
         } else {
-            Engine engine = getEngineElement();
-            if  (engine != null && engine.isLogger()) {
-                return true;
-            }
+            logManager.openSharedContextLog();
         }
-        return false;
     }
     
+    /**
+     * Return <code>TomcatManagerConfig</code> for easier access to some server.xml
+     * settings.
+     *
+     * @return <code>TomcatManagerConfig</code> for easier access to some server.xml
+     *         settings.
+     */
+    public TomcatManagerConfig tomcatManagerConfig() {
+        return tomcatManagerConfig;
+    }
+    
+    /**
+     * Return <code>LogManager</code> which manages all context and shared context
+     * logs for this <code>TomcatManager</code>.
+     *
+     * @return <code>LogManager</code> which manages all context and shared context
+     *         logs for this <code>TomcatManager</code>.
+     */
+    public LogManager logManager() {
+        return logManager;
+    }
 }
