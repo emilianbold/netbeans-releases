@@ -130,6 +130,7 @@ Microsystems, Inc. All Rights Reserved.
    
    <target name="ship-results" if="xtest.ship.results.to">
         <copy file="${archive.file}" todir="${xtest.ship.results.to}"/>
+        <chmod perm="ugo+rw" file="${xtest.ship.results.to}/${archive.filename}"/>
         <!-- now just for pilot project -->
         <copy file="${archive.file}" todir="${xtest.results}/../"/>        
    </target>
