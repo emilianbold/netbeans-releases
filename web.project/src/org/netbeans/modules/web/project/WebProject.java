@@ -115,6 +115,7 @@ final class WebProject implements Project, AntProjectListener {
             new ProjectXmlSavedHookImpl(),
             new ProjectOpenedHookImpl(),
             fileBuilt,
+            new WebSources(this.getProjectDirectory(),helper)
         });
     }
 
