@@ -18,7 +18,7 @@
     module project and double-click <tt>ejb-jar.xml</tt>.</li>
   <li>In the top of the graphical editor, click CMP Relationships. 
     <p> The visual editor displays a table of the existing container-managed relationships 
-      for the EJB module.
+      for the EJB module. 
   </li>
   <li>Do one of the following: 
     <ul>
@@ -32,10 +32,23 @@
       <li>A distinct name for the relationship role and the entity bean in which 
         the relationship begins or ends.</li>
       <li>The multiplicity of the relationship. </li>
-      <li>Whether cascade delete is </li>
+      <li>Whether cascade delete is enabled for the either side of the relationship. 
+        When you enable cascade delete for a bean in a relationship, deleting 
+        the bean also deletes the bean it is related to.</li>
+      <li>Whether to create a Container-Managed Relationship (CMR) field for the 
+        bean. If you create a CMR field, the application server can search for 
+        and return instances of the bean the field references. The name of the 
+        class must begin with a lower-case letter.</li>
+      <li>The return type of the CMR field. If the multiplicity of the bean it 
+        is returning is one, you do not have to specify a return type. The application 
+        server automatically returns the enterprise bean's interface. 
+        <p> If the multiplicity is set to many, you can choose whether to return 
+          <tt>java.util.Set</tt> or <tt>java.util.Collection</tt>. Choose <tt>java.util.Set</tt> 
+          if the returned beans cannot be duplicates. Choose <tt>java.util.Collection</tt> 
+          if the returned beans can include duplicates.
+      </li>
     </ul>
   </li>
-  <li>Enter </li>
   <li>Specify whether to add getter and setter methods for the field to the entity 
     bean's local interface. </li>
 </ol>
@@ -50,7 +63,14 @@
   </tr>
   <tr valign="top"> 
     <td width="23px" nowrap>&nbsp;</td>
-    <td nowrap> 
+    <td nowrap><a href="about_ejb_relationship.html">About Container-Managed Relationships</a><br>
+      <a href="../general/about_deployment_descriptors.html">About Deployment 
+      Descriptors</a><br>
+      <a href="config_ejb_dd.html">Configuring EJB Deployment Descriptors</a> 
+      <br>
+      <a href="config_ejb_about.html">About Configuring EJB Modules</a><br>
+      <a href="../editing/generate_cmp_beans.html">Generating CMP Entity Beans 
+      from a Database</a>
   </tr>
 </table>
 <hr>

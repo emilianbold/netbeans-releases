@@ -27,11 +27,11 @@
   <li>Compiles the EJB module if necessary.</li>
   <li>Stops the application server and starts it in debug mode.</li>
   <li>Deploys the EJB module to the application server.</li>
-  <li>Starts a debugging session and opens the debugger windows at the bottom 
-    of the IDE screen. Since an EJB module does not have an executable class, 
-    there are no local variables or calls on the call stack. To debug the functionality 
-    in the EJB module, use an application client or web application to access 
-    the EJB module's methods.</li>
+  <li>Starts a debugging session, attaches the debugger to the server, and opens 
+    the debugger windows at the bottom of the IDE screen. Since an EJB module 
+    does not have an executable class, there are no local variables or calls on 
+    the call stack. To debug the functionality in the EJB module, use an application 
+    client or web application to access the EJB module's methods.</li>
 </ul>
 <p><b>To debug an enterprise application:</b></p>
 <ul>
@@ -43,12 +43,13 @@
   <li>Compiles the EAR file if necessary.</li>
   <li>Stops the application server and starts it in debug mode.</li>
   <li>Deploys the enterprise application to the application server.</li>
-  <li>Starts a debugging session and opens the debugger windows at the bottom 
-    of the IDE screen. If the application has a designated web application and 
-    URL to run, the IDE opens the URL in the external browser.</li>
+  <li>Starts a debugging session, attaches the debugger to the server, and opens 
+    the debugger windows at the bottom of the IDE screen. If the application has 
+    a designated web application and URL to run, the IDE opens the URL in the 
+    external browser.</li>
 </ul>
 <p><b>Notes:</b></p>
-<ul class="note">
+<ul>
   <li>The information in this page only applies to <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
       <param name="content" value="nbdocs:/org/netbeans/modules/usersguide/project/csh/glossary_standard.html">
       <param name="viewerActivator" value="javax.help.LinkLabel">
@@ -73,9 +74,7 @@
       <param name="textColor" value="blue">
     </object>, you have to create a debug target to debug your EJB.</li>
   <li>The debugger windows filter out any information from method calls running 
-    on the server and only show method calls in your....</li>
-  <li>When you stop a debugging session, the application server keeps running 
-    in debug mode. (Does this matter?)</li>
+    on the server.</li>
 </ul>
 <table border="0">
   <tr> 
@@ -83,23 +82,15 @@
   </tr>
   <tr valign="top"> 
     <td width="23px" nowrap>&nbsp;</td>
-    <!--
-      
-    <td nowrap><a href="add_ejbql.html">Enterprise JavaBeans Query Language</a><br>
-      <a href="">EJBQL Property Editor</a><br>
-      <a href="define_finder_method.html">Defining a Finder Method</a><br>
-      <a href="define_select_method.html">Defining a Select Method</a><br>
-      <a href="add_ejbql.html">Creating an Enterprise Bean</a><br>
-      <a href="add_ejbql.html">Working With Enterprise Beans</a></td>
-    -->
+    <td nowrap><a href="../deploy/deploy_ejb.html">Deploying and Undeploying an 
+      EJB Module</a><br>
+      <a href="../deploy/build_ejb.html">Building an EJB Module</a> <br>
+      <a href="../debug/test_ejb.html">Testing an EJB Module</a><br>
+      <a href="../../enterprise/general/add_modules_to_ent_app.html">Adding a 
+      Module to an Enterprise Application</a><br>
+      <a href="../../server/server_register.html">Registering a Server</a> 
   </tr>
 </table>
-<!--Index entries:
- 		EJB modules - deploying
-		running - EJB module projects
-		deploying - stand-alone EJB modules
-					EJB modules individually
-  -->
 <hr>
 <small> <a href="../../credits.html">Legal Notices</a></small> 
 <table cellpadding="150" border="0">

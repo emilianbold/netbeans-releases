@@ -33,7 +33,7 @@
       Select Method. This command is only enabled when you click within the body 
       of the class (after the class declaration). 
   </li>
-  <li>In the Add New Select Method dialog box, define the method signature: 
+  <li>In the Add Select Method dialog box, define the method signature: 
     <ol>
       <li type="a"> Add text to the base <tt>ejbSelectBy</tt> name of the method.</li>
       <li>Choose the method's return type from the combo box: 
@@ -41,12 +41,12 @@
           <li>If the method returns the value of a CMP field, choose the appropriate 
             Java or primitive data type, such as <tt>java.lang.String</tt> or 
             <tt>int</tt>.</li>
-          <li>If the method returns an enterprise bean, choose the bean's type 
-            from the combo box.</li>
-          <li>If the method returns more than one bean, choose one of the <tt> 
-            Set</tt> types if returned beans cannot be duplicates, or choose one 
-            of the <tt>Collection</tt> types if returned beans can be duplicates. 
-          </li>
+          <li>If the method returns an enterprise bean, type the bean's type in 
+            the combo box.</li>
+          <li>If the method returns more than one bean, type <tt>java.util.Set</tt> 
+            or <tt>java.util.Collection</tt> in the combo box. Use <tt>java.util.Set</tt> 
+            if the returned beans cannot be duplicates. Use <tt></tt><tt>java.util.Collection</tt> 
+            if the returned beans can be duplicates. </li>
         </ul>
       </li>
       <li>Enter the EJB QL statement that the method will use to find the data 
@@ -56,7 +56,7 @@
   </li>
   <li>Click OK to create the method. 
     <p> The IDE adds the method signature to the bean class and registers the 
-      select method to the EJB module's deployment descriptor.
+      select method to the EJB module's deployment descriptor. 
   </li>
 </ol>
 <p><b>To view or edit an existing select method:</b></p>
@@ -65,8 +65,8 @@
     module project.</li>
   <li>Double-click <tt>ejb-jar.xml</tt>. The graphical editor opens in the Details 
     view.</li>
-  <li>Expand the header for the entity bean node and the CMP Selects header. The 
-    table lists all of the existing CMP select methods.</li>
+  <li>Expand the header for the entity bean node and the CMP Select Methods header. 
+    The table lists all of the existing CMP select methods.</li>
   <li>Click Add or Edit to make changes to the list of methods.</li>
 </ol>
 <table border="0">

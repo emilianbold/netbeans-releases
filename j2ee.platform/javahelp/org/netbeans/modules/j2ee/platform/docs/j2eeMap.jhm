@@ -224,13 +224,11 @@
     <mapID target="add_resources_to_ent_app" url="enterprise/general/add_resources_to_ent_app.html" />
     <mapID target="ent_app_configure" url="enterprise/general/ent_app_configure.html" />
     <mapID target="ent_app_build" url="enterprise/general/ent_app_build.html" />
-    <mapID target="ent_app_server" url="enterprise/general/ent_app_server.html" />
     <mapID target="ent_app_verify" url="enterprise/general/ent_app_verify.html" />
     <mapID target="ent_app_deploy" url="enterprise/general/ent_app_deploy.html" />
 
     <!-- New Enterprise Application Project Wizard csh -->
     <mapID target="org.netbeans.modules.j2ee.earproject.ui.wizards.NewEarProjectWizardIterator" url="enterprise/csh/NewEarProjectWizardIterator.html" />
-    <mapID target="org.netbeans.modules.j2ee.earproject.ui.wizards.CompleteEarProjectWizardIterator" url="enterprise/csh/CompleteEarProjectWizardIterator.html" />
     <mapID target="org.netbeans.modules.j2ee.earproject.ui.wizards.ImportBlueprintEarWizardIterator" url="enterprise/csh/ImportBlueprintEarWizardIterator.html" />
 
     <!-- Enterprise Application Project Properties dialog box csh -->
@@ -270,7 +268,6 @@
     <mapID target="test_ejb" url="ejb/debug/test_ejb.html" />
     <mapID target="debug_ejb" url="ejb/debug/debug_ejb.html" />
 
-    <mapID target="add_ejb_to_j2ee_app" url="ejb/configuring/add_ejb_to_j2ee_app.html" />
     <mapID target="config_ejb_about" url="ejb/configuring/config_ejb_about.html" />
     <mapID target="ejb_relationship" url="ejb/configuring/ejb_relationship.html" />
     <mapID target="about_ejb_relationship" url="ejb/configuring/about_ejb_relationship.html" />
@@ -280,7 +277,7 @@
       
     <!-- EJB Module from Existing Sources Project Wizard dialog box csh: -->
     <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.ImportLocation" url="ejb/csh/ejb_with_source_wizard1.html" />
-    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.PanelSourceFolders" url="enterprise/csh/ejb_with_source_wizard2.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.PanelSourceFolders" url="ejb/csh/ejb_with_source_wizard2.html" />
     
 
     <!-- EJB Module from Existing Sources Project Wizard dialog box csh: -->
@@ -295,7 +292,9 @@
     <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerRun" url="ejb/csh/stand-ejb-properties-run.html" />
     <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerSources" url="ejb/csh/stand-ejb-properties-sources.html" />
     <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerWSServiceHost" url="ejb/csh/stand-ejb-properties-webservices.html" />
-    
+    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerWSServiceHostDisabled" url="ejb/csh/stand-ejb-properties-webservices.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerWSClientHost" url="ejb/csh/stand-ejb-properties-webservices.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerWSClientHostDisabled" url="ejb/csh/stand-ejb-properties-webservices.html" />
     
     <!-- EJB Module with Existing Ant Script Project Wizard dialog box csh: -->
     <mapID target="org.netbeans.modules.j2ee.ejbfreeform.ui.EJBLocationsWizardPanel" url="ejb/csh/freeform_ejb_wizard.html" />

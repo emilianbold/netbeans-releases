@@ -47,8 +47,8 @@
     </ol>
   </li>
   <li>Click OK to create the method.
-    <p> The IDE adds the method signature to the home interface or local home 
-      interface or both. 
+    <p> The IDE adds the method signature to the bean's interfaces and registers 
+      the method in the deployment descriptor. 
     <ul>
       <li>If the entity bean uses CMP, you are done. The IDE adds The container 
         implements the finder method from the signature in the home interface 
@@ -67,8 +67,8 @@
     module project.</li>
   <li>Double-click <tt>ejb-jar.xml</tt>. The graphical editor opens in the Details 
     view.</li>
-  <li>Expand the entity bean's header and the CMP Finders header. The table lists 
-    all of the existing CMP finder methods.</li>
+  <li>Expand the entity bean's header and the CMP Finder Methods header. The table 
+    lists all of the existing CMP finder methods.</li>
   <li>Click Add or Edit to make changes to the list finder methods. </li>
 </ol>
 <p><b>Notes</b></p>
@@ -81,8 +81,8 @@
     <ul>
       <li>Delete the method from the bean's Home Methods list in the Projects 
         window. </li>
-      <li>Delete the method from the CMP Finders header in the ejb-jar.xml graphical 
-        editor. </li>
+      <li>Delete the method from the CMP Finder Methods header in the <tt>ejb-jar.xml</tt> 
+        graphical editor. </li>
     </ul>
     If you delete the finder method in the Source Editor, the IDE does not remove 
     it from the bean interfaces.</li>
