@@ -148,4 +148,6 @@ Microsystems, Inc. All Rights Reserved.
     <delete dir="modules-lib"/>
   </target>
 
+  <target name="nbm" depends="netbeans" description="Dummy target."/>
+
 </project>

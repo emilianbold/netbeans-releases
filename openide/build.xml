@@ -834,5 +834,6 @@ Comments or questions? Post to the dev@openide.netbeans.org mailing list.
         <!-- Be safe and give the absolute path here. -->
         <style in="api/doc/changes/apichanges.xml" out="www/apichanges.html" destdir="www" style="${basedir}/api/doc/changes/apichanges.xsl"/>
     </target>
+    <target name="nbm" depends="netbeans" description="Dummy target."/>
 
 </project>
