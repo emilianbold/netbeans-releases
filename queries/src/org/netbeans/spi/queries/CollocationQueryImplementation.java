@@ -18,16 +18,24 @@ import java.io.File;
 /**
  * A query which should typically be provided by a VCS to give information
  * about whether some files can be considered part of one logical directory tree.
+ * <p>
  * This should be treated as a heuristic, useful when deciding whether to use
  * absolute or relative links between path locations.
+ * </p>
  * <p>
  * The file names might refer to nonexistent files. A provider may or may not
  * be able to say anything useful about them in this case.
- * @see org.netbeans.api.queries.CollocationQuery
+ * </p>
  * <p>
- * File names passed to this query will already have been normalized (e.g. no
- * ".." path components, and absolute) but not necessarily canonicalized (e.g.
- * may still contain symlink components).
+ * File names passed to this query will already have been normalized according to
+ * the semantics of {@link org.openide.filesystems.FileUtil#normalizeFile}.
+ * </p>
+ * <p>
+ * Threading note: implementors should avoid acquiring locks that might be held
+ * by other threads. Generally treat this interface similarly to SPIs in
+ * {@link org.openide.filesystems} with respect to threading semantics.
+ * </p>
+ * @see org.netbeans.api.queries.CollocationQuery
  * @author Jesse Glick
  */
 public interface CollocationQueryImplementation {

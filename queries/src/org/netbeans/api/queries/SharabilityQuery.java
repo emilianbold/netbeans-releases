@@ -26,7 +26,7 @@ import org.openide.util.Lookup;
  * to be unshared.
  * Likely to be of use only to a VCS filesystem.
  * <p>
- * This query can be considered to obsolete {@link FileObject#setImportant}.
+ * This query can be considered to obsolete {@link org.openide.filesystems.FileObject#setImportant}.
  * Unlike that method, the information is pulled by the VCS filesystem on
  * demand, which may be more reliable than ensuring that the information
  * is pushed by a project type (or other implementor) eagerly.

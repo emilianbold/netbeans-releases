@@ -24,10 +24,11 @@ import javax.swing.event.ChangeEvent;
 import java.util.*;
 
 /**
- * Determine whether files should be hidden in views 
- * presented to the user. This query should be considered 
- * only as a recommendation, there isn't necessary to obey it.   
- * and it is permitted to display all files if the context warrants it.     
+ * Determine whether files should be hidden in views presented to the user.
+ * <p>
+ * This query should be considered only as a recommendation. Particular views
+ * may decide to display all files and ignore this query.
+ * </p>
  * @see org.netbeans.spi.queries.VisibilityQueryImplementation
  * @author Radek Matous 
  */

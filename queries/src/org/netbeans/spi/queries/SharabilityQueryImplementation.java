@@ -18,14 +18,23 @@ import java.io.File;
 /**
  * Determine whether files should be shared (for example in a VCS) or are intended
  * to be unshared.
+ * <div class="nonnormative">
+ * <p>
  * Could be implemented e.g. by project types which know that certain files or folders in
  * a project (e.g. <samp>src/</samp>) are intended for VCS sharing while others
  * (e.g. <samp>build/</samp>) are not.
- * <p class="nonnormative">
+ * </p>
+ * <p>
  * Note that the Project API module registers a default implementation of this query
  * which delegates to the project which owns the queried file, if there is one.
  * This is more efficient than searching instances in global lookup, so use that
  * facility wherever possible.
+ * </p>
+ * </div>
+ * <p>
+ * Threading note: implementors should avoid acquiring locks that might be held
+ * by other threads. Generally treat this interface similarly to SPIs in
+ * {@link org.openide.filesystems} with respect to threading semantics.
  * </p>
  * @see org.netbeans.api.queries.SharabilityQuery
  * @see <a href="@ANT/PROJECT@/org/netbeans/spi/project/support/ant/AntProjectHelper.html#createSharabilityQuery(java.lang.String[],%20java.lang.String[])"><code>AntProjectHelper.createSharabilityQuery(...)</code></a>

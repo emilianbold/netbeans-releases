@@ -18,22 +18,25 @@ import org.openide.filesystems.FileObject;
 import javax.swing.event.ChangeListener;
 
 /**
- * Determine whether files should be hidden in viewes 
- * presented to the user. This query should be considered 
- * only as a recommendation and there isn't necessary to obey it.   
- * 
+ * Determine whether files should be hidden in views presented to the user.
+ * <p>
  * Global lookup is used to find all instances of VisibilityQueryImplementation.  
- *   
+ * </p>
+ * <p>
+ * Threading note: implementors should avoid acquiring locks that might be held
+ * by other threads. Generally treat this interface similarly to SPIs in
+ * {@link org.openide.filesystems} with respect to threading semantics.
+ * </p>
  * @see org.netbeans.api.queries.VisibilityQuery
  * @author Radek Matous 
  */ 
 public interface VisibilityQueryImplementation {
     /**
-     * Check whether an file is recommended to be visible. 
-     * @param file a file which should be checked 
-     * @return true if there is recommended to show this file 
+     * Check whether a file is recommended to be visible.
+     * @param file a file to considered
+     * @return true if it is recommended to display this file
      */ 
-    boolean isVisible (FileObject file);
+    boolean isVisible(FileObject file);
 
     /**
      * Add a listener to changes.
