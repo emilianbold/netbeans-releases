@@ -42,7 +42,7 @@
         </question>
         
         <question id="dep-platform">
-            On which platforms does your module run? <!--Any?--> Does it run in the same
+            On which platforms does your module run? Does it run in the same
             way on each?
             <hint>
             If your module is using JNI or deals with special differences of

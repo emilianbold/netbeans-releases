@@ -198,37 +198,62 @@ public class Arch extends Task implements org.xml.sax.EntityResolver {
 
     private void writeQuestions (Writer w, Set missing) throws IOException {
         java.util.Iterator it = missing.iterator();
+        
+        boolean useXerces = true;
         while (it.hasNext()) {
             String s = (String)it.next ();
             Element n = (Element)questions.get (s);
             
             //w.write("\n\n<!-- Question: " + s + "\n");
             w.write("\n\n<!--\n        ");
-            //w.write("\n     " + n); #30529 - does not work with all DOM parsers
-            XMLSerializer ser = new XMLSerializer();
-            StringWriter wr = new StringWriter();
-            ser.setOutputCharStream(wr);
-            OutputFormat fmt = new OutputFormat();
-            fmt.setIndenting(false);
-            fmt.setOmitXMLDeclaration(true);
-            fmt.setOmitDocumentType(true);
-            fmt.setPreserveSpace(true);
-            fmt.setOmitComments(true);
-            ser.setOutputFormat(fmt);
-            ser.serialize(n);
-            /*
-            DocumentFragment frag = n.getOwnerDocument().createDocumentFragment();
-            NodeList l = n.getChildNodes();
-            for (int i = 0; i < l.getLength(); i++) {
-                frag.appendChild(l.item(i));
+            
+            try {
+                if (useXerces) {
+                    w.write (convertUsingXerces (n));
+                }
+            } catch (NoClassDefFoundError ex) {
+                String str = n.toString ();
+                if (str == null || str.length() == 0) {
+                    // will not work anyway
+                    throw ex;
+                }
+                log ("Cannot find class: " + ex.getLocalizedMessage() + " trying org.w3c.dom.Node.toString() might work");
+                useXerces = false;
             }
-            ser.serialize(frag);
-             */
-            w.write(wr.toString());
+            
+            if (!useXerces) {
+                w.write("\n     " + n); // #30529 - does not work with all DOM parsers
+            }
+
             w.write("\n-->\n");
             w.write("<answer id=\"" + s + "\">\nNo answer\n</answer>\n\n");
         }
     }
+    
+    private static String convertUsingXerces (Element n) throws IOException {
+        XMLSerializer ser = new XMLSerializer();
+        StringWriter wr = new StringWriter();
+        ser.setOutputCharStream(wr);
+        OutputFormat fmt = new OutputFormat();
+        fmt.setIndenting(false);
+        fmt.setOmitXMLDeclaration(true);
+        fmt.setOmitDocumentType(true);
+        fmt.setPreserveSpace(true);
+        fmt.setOmitComments(true);
+        ser.setOutputFormat(fmt);
+        ser.serialize(n);
+        /*
+        DocumentFragment frag = n.getOwnerDocument().createDocumentFragment();
+        NodeList l = n.getChildNodes();
+        for (int i = 0; i < l.getLength(); i++) {
+            frag.appendChild(l.item(i));
+        }
+        ser.serialize(frag);
+         */
+        
+        return wr.toString ();
+    }
+        
     
     private static String findNbRoot (File f) {
         StringBuffer result = new StringBuffer ();
@@ -313,7 +338,7 @@ public class Arch extends Task implements org.xml.sax.EntityResolver {
             return new org.xml.sax.InputSource (getClass ().getResourceAsStream("Arch-api-questions.xml"));
         }
         if (systemId != null && systemId.endsWith ("Arch.dtd")) {
-            return new org.xml.sax.InputSource (getClass ().getResourceAsStream("Arch.dtd"));
+            return new org.xml.sax.InputSource (new ByteArrayInputStream (new byte[0]));
         }
         System.out.println("resolve: " + publicId);
         System.out.println("      s: " + systemId);
