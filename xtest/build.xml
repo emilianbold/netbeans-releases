@@ -80,10 +80,10 @@ Microsystems, Inc. All Rights Reserved.
         
         <xalan srcfile="${xtest.uploaddir}/summary.xml" 
                trgfile="${xtest.uploaddir}/summary.html" 
-               xslt="xslt/summary-html.xsl"/>
+               xslt="${xtest.home}/xslt/summary-html.xsl"/>
         <xalan srcfile="${xtest.uploaddir}/summary.xml" 
                trgfile="${xtest.uploaddir}/summary.txt" 
-               xslt="xslt/summary-txt.xsl"/>
+               xslt="${xtest.home}/xslt/summary-txt.xsl"/>
         
         <copy file="xslt/stylesheet.css" todir="${xtest.uploaddir}"/>
         
@@ -95,7 +95,7 @@ Microsystems, Inc. All Rights Reserved.
         <ant antfile="build.xml" target="runtests">
             <property name="xtest.basedir" value="dist"/>
             <property name="xtest.code.classpath" value="ide"/>
-            <property name="netbeans.home" location="ide/netbeans"/>
+            <property name="netbeans.home" location="${netbeans.home}"/>
         </ant>
     </target>
     
