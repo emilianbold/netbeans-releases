@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Vector;
 import java.util.Arrays;
+import java.util.TreeSet;
 import java.sql.*;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
@@ -29,8 +30,9 @@ public class DatabaseNodeChildren extends Children.Array
 {		
 	protected Collection initCollection()
 	{
-		Vector children = new Vector();
 		DatabaseNodeInfo nodeinfo = ((DatabaseNode)getNode()).getInfo();
+		java.util.Map nodeord = (java.util.Map)nodeinfo.get(DatabaseNodeInfo.CHILDREN_ORDERING);
+		TreeSet children = new TreeSet(new NodeComparator(nodeord));
 		
 		try {		
 			Vector chlist = nodeinfo.getChildren();
@@ -42,13 +44,12 @@ public class DatabaseNodeChildren extends Children.Array
 			}
 		} catch (Exception e) {
 			System.out.println("unable to create nodes for "+nodeinfo.getCode()+": "+e);
-			children.removeAllElements();
+			children.clear();
 		}
 		
 		return children;
 	}
-
-/* JST: I do not understand => please correct it yourself, Slavek         
+/*
 	protected Node[] createNodes()
 	{
 		Node[] nodeorg = super.createNodes();
@@ -57,8 +58,7 @@ public class DatabaseNodeChildren extends Children.Array
 		if (nodeord != null) Arrays.sort(nodeorg, new NodeComparator(nodeord));
 		return nodeorg;
 	}
- */        
-
+*/
 	class NodeComparator implements Comparator 
 	{
 		private java.util.Map map = null;
@@ -70,14 +70,17 @@ public class DatabaseNodeChildren extends Children.Array
 		
 		public int compare(Object o1, Object o2) 
 		{
-			int o1val, o2val;
+			int o1val, o2val, diff;
 			Integer o1i = (Integer)map.get(o1.getClass().getName());
 			if (o1i != null) o1val = o1i.intValue();
 			else o1val = Integer.MAX_VALUE;
 			Integer o2i = (Integer)map.get(o2.getClass().getName());
 			if (o2i != null) o2val = o2i.intValue();
 			else o2val = Integer.MAX_VALUE;
-			return (o1val-o2val);
+			
+			diff = o1val-o2val;
+			if (diff == 0) return ((DatabaseNode)o1).getInfo().getName().compareTo(((DatabaseNode)o2).getInfo().getName());
+			return diff;			
 		}
 	}
 
