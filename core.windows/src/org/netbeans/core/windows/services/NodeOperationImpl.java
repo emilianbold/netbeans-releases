@@ -19,6 +19,8 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Window;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
@@ -30,6 +32,10 @@ import org.openide.DialogDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAcceptor;
+import org.openide.nodes.NodeAdapter;
+import org.openide.nodes.NodeEvent;
+import org.openide.nodes.NodeListener;
+import org.openide.nodes.NodeOp;
 import org.openide.nodes.NodeOperation;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -178,8 +184,9 @@ public final class NodeOperationImpl extends NodeOperation {
     */
     public void showProperties (Node n) {
         NbSheet s = new NbSheet ();
-        s.setNodes (new Node[] { n });
-        openProperties(s);
+        Node[] nds = new Node[] { n };
+        s.setNodes (nds);
+        openProperties(s, nds);
     }
 
     /** Opens a modal propertySheet on given set of Nodes
@@ -188,7 +195,7 @@ public final class NodeOperationImpl extends NodeOperation {
     public void showProperties (Node[] nodes) {
         NbSheet s = new NbSheet ();
         s.setNodes (nodes);
-        openProperties(s);
+        openProperties(s, nodes);
     }
 
     /** Opens explorer for specified root in modal mode. The set
@@ -222,7 +229,7 @@ public final class NodeOperationImpl extends NodeOperation {
 
     /** Helper method, opens properties top component in single mode
     * and requests a focus for it */
-    private static void openProperties (final TopComponent tc) {
+    private static void openProperties (final TopComponent tc, final Node[] nds) {
         // XXX #36492 in NbSheet the name is set asynch from setNodes.
 //        Mutex.EVENT.readAccess (new Runnable () { // PENDING
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
@@ -234,7 +241,7 @@ public final class NodeOperationImpl extends NodeOperation {
                         modal = true;
                     }
                     
-                    org.openide.DialogDisplayer.getDefault().createDialog(new DialogDescriptor (
+                    Dialog dlg = org.openide.DialogDisplayer.getDefault().createDialog(new DialogDescriptor (
                         tc,
                         tc.getName(),
                         modal,
@@ -243,7 +250,11 @@ public final class NodeOperationImpl extends NodeOperation {
                         DialogDescriptor.BOTTOM_ALIGN,
                         null,
                         null
-                    )).show();
+                    ));
+                    //fix for issue #40323
+                    SheetNodesListener listener = new SheetNodesListener(dlg);
+                    listener.attach(nds);
+                    dlg.show();
                 }
             });
     }
@@ -251,6 +262,48 @@ public final class NodeOperationImpl extends NodeOperation {
     private static class NonPersistentExplorerTab extends NbMainExplorer.ExplorerTab {
         public int getPersistenceType() {
             return PERSISTENCE_NEVER;
+        }
+    }
+
+    /**
+     * fix for issue #40323 the prop dialog needs to be closed when the nodes it displayes are destroyed.
+     */
+    private static class SheetNodesListener extends NodeAdapter{
+
+
+        private Dialog dialog;
+        private Set listenerSet;
+        
+        SheetNodesListener(Dialog dlg) {
+            dialog = dlg;
+        }
+        
+        public void attach(Node[] nodes) {
+            listenerSet = new HashSet(nodes.length * 2);
+            for (int i = 0; i < nodes.length; i++) {
+                listenerSet.add(nodes[i]);
+                nodes[i].addNodeListener(this);
+            };
+        }
+
+        /** Fired when the node is deleted.
+         * @param ev event describing the node
+         */
+        public void nodeDestroyed(NodeEvent ev) {
+            Node destroyedNode = ev.getNode();
+            // stop to listen to destroyed node
+            destroyedNode.removeNodeListener(this);
+            listenerSet.remove(destroyedNode);
+            // close top component (our outer class) if last node was destroyed
+            if (listenerSet.isEmpty()) {
+                Mutex.EVENT.readAccess(new Runnable() {
+                    public void run() {
+                        dialog.hide();
+                        dialog.dispose();
+                        dialog = null;
+                    }
+                });
+            }
         }
     }
     
