@@ -29,9 +29,11 @@ public class ProjectWebModuleProvider implements WebModuleProvider {
         Project project = FileOwnerQuery.getOwner (file);
         if (project != null && project instanceof WebProject) {
             WebProject wp = (WebProject) project;
-            FileObject src = wp.getSourceDirectory ();
-            if (src != null && (src.equals (file) || FileUtil.isParentOf (src, file))) {
-                return wp.getAPIWebModule();
+            FileObject src [] = wp.getSourceRoots().getRoots();
+            for (int i = 0; i < src.length; i++) {
+                if (src[i].equals (file) || FileUtil.isParentOf (src[i], file)) {
+                    return wp.getAPIWebModule();
+                }
             }
 
             FileObject web = wp.getWebModule ().getDocumentBase ();

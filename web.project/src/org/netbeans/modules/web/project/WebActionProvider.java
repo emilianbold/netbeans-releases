@@ -224,7 +224,7 @@ class WebActionProvider implements ActionProvider {
                             
                             if (hasMainMethod(javaFile)) {
                                 // run Java with Main method
-                                String clazz = FileUtil.getRelativePath(project.getSourceDirectory(), javaFile);
+                                String clazz = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(),javaFile), javaFile);
                                 p = new Properties();
                                 p.setProperty("javac.includes", clazz); // NOI18N
                                 // Convert foo/FooTest.java -> foo.FooTest
@@ -349,7 +349,7 @@ class WebActionProvider implements ActionProvider {
 
                             if (hasMainMethod(javaFile)) {
                                 // debug Java with Main method
-                                String clazz = FileUtil.getRelativePath(project.getSourceDirectory(), javaFile);
+                                String clazz = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(),javaFile), javaFile);
                                 p = new Properties();
                                 p.setProperty("javac.includes", clazz); // NOI18N
                                 // Convert foo/FooTest.java -> foo.FooTest
@@ -400,7 +400,7 @@ class WebActionProvider implements ActionProvider {
             String path = null;
             p = new Properties();
             if (files != null) {
-                path = FileUtil.getRelativePath(project.getSourceDirectory(), files[0]);
+                path = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(),files[0]), files[0]);
                 targetNames = new String[] {"debug-fix"}; // NOI18N
             } else {
                 return;
@@ -413,10 +413,11 @@ class WebActionProvider implements ActionProvider {
             
         //COMPILATION PART
         } else if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
-            FileObject[] files = findJavaSourcesAndPackages( context );
+            FileObject[] sourceRoots = project.getSourceRoots().getRoots();
+            FileObject[] files = findJavaSourcesAndPackages( context, sourceRoots);
             p = new Properties();
             if (files != null) {
-                p.setProperty("javac.includes", ActionUtils.antIncludesList(files, project.getSourceDirectory())); // NOI18N
+                p.setProperty("javac.includes", ActionUtils.antIncludesList(files, getRoot(sourceRoots, files[0]))); // NOI18N
             } else {
                 files = findJsps (context);
                 if (files != null) {
@@ -682,7 +683,7 @@ class WebActionProvider implements ActionProvider {
             return findJavaSources(context) != null || findJsps(context) != null || findHtml(context) != null;
         }
         else if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
-            return findJavaSourcesAndPackages( context ) != null || findJsps (context) != null;
+            return findJavaSourcesAndPackages( context, project.getSourceRoots().getRoots() ) != null || findJsps (context) != null;
         }
         else if ( command.equals( COMMAND_VERIFY ) ) {
             return project.getWebModule().hasVerifierSupport();
@@ -771,16 +772,17 @@ class WebActionProvider implements ActionProvider {
     /** Find selected java sources 
      */
     private FileObject[] findJavaSources(Lookup context) {
-        FileObject srcDir = project.getSourceDirectory ();
-        FileObject[] files = null;
-        if (srcDir != null) {
-            files = ActionUtils.findSelectedFiles(context, srcDir, ".java", true);
+        FileObject[] srcPath = project.getSourceRoots().getRoots();
+        for (int i=0; i< srcPath.length; i++) {
+            FileObject[] files = ActionUtils.findSelectedFiles(context, srcPath[i], ".java", true); // NOI18N
+            if (files != null) {
+                return files;
+            }
         }
-        return files;
+        return null;
     }
     
-    private FileObject[] findJavaSourcesAndPackages (Lookup context) {
-        FileObject srcDir = project.getSourceDirectory();
+    private FileObject[] findJavaSourcesAndPackages (Lookup context, FileObject srcDir) {
         if (srcDir != null) {
             FileObject[] files = ActionUtils.findSelectedFiles(context, srcDir, null, true); // NOI18N
             //Check if files are either packages of java files
@@ -795,6 +797,16 @@ class WebActionProvider implements ActionProvider {
         } else {
             return null;
         }
+    }
+    
+    private FileObject[] findJavaSourcesAndPackages (Lookup context, FileObject[] srcRoots) {
+        for (int i=0; i<srcRoots.length; i++) {
+            FileObject[] result = findJavaSourcesAndPackages(context, srcRoots[i]);
+            if (result != null) {
+                return result;
+            }
+        }
+        return null;
     }
     
     private FileObject[] findHtml(Lookup context) {
@@ -941,8 +953,7 @@ class WebActionProvider implements ActionProvider {
         FileObject webDir = project.getWebModule ().getDocumentBase ();
         if (webDir==null) return false;
         FileObject fo = webDir.getFileObject("WEB-INF/web.xml"); //NOI18N
-        ClassPath classPath = ClassPath.getClassPath(project.getSourceDirectory (),ClassPath.SOURCE);
-        String className = classPath.getResourceName(javaClass,'.',false);
+        String className = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(), javaClass), javaClass);
         if (fo==null) return false;
         try {
             WebApp webApp = DDProvider.getDefault().getDDRoot(fo);

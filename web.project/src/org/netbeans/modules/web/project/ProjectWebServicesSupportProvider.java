@@ -46,9 +46,11 @@ public class ProjectWebServicesSupportProvider implements WebServicesSupportProv
                 return wp.getAPIWebServicesSupport();
 			}
 
-            FileObject src = wp.getSourceDirectory ();
-            if (src != null && (src.equals (file) || FileUtil.isParentOf (src, file))) {
-                return wp.getAPIWebServicesSupport();
+            FileObject src [] = wp.getSourceRoots().getRoots();
+            for (int i = 0; i < src.length; i++) {
+                if (src[i].equals (file) || FileUtil.isParentOf (src[i], file)) {
+                    return wp.getAPIWebServicesSupport();
+                }
             }
 
             FileObject web = wp.getWebModule ().getDocumentBase ();
@@ -75,9 +77,11 @@ public class ProjectWebServicesSupportProvider implements WebServicesSupportProv
                 return wp.getAPIWebServicesClientSupport();
 			}
 			
-            FileObject src = wp.getSourceDirectory();
-            if (src != null && (src.equals (file) || FileUtil.isParentOf (src, file))) {
-                return wp.getAPIWebServicesClientSupport();
+            FileObject src [] = wp.getSourceRoots().getRoots();
+            for (int i = 0; i < src.length; i++) {
+                if (src[i].equals (file) || FileUtil.isParentOf (src[i], file)) {
+                    return wp.getAPIWebServicesClientSupport();
+                }
             }
 
             FileObject web = wp.getWebModule ().getDocumentBase();

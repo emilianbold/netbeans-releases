@@ -383,11 +383,6 @@ public final class WebProject implements Project, AntProjectListener, FileChange
 		return apiWebServicesClientSupport;
 	}	
 
-    FileObject getSourceDirectory() {
-        String srcDir = helper.getStandardPropertyEvaluator ().getProperty ("src.dir"); // NOI18N
-        return helper.resolveFileObject(srcDir);
-    }
-    
     public void fileAttributeChanged (org.openide.filesystems.FileAttributeEvent fe) {
     }    
     
