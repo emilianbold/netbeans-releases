@@ -20,7 +20,6 @@ xtest_server_start() {
 }
     
 xtest_server_run() {    
-    # create the flag file with PID
     timer=0
     check_interval=10
     while true
@@ -81,9 +80,10 @@ xtest_server_wait() {
 
 xtest_server_kill() {
     if [ -r "${XTEST_SERVER_HOME}/$xtest_status_file" ] ; then
-	pid_to_kill=` cat ${XTEST_SERVER_HOME}/$xtest_status_file`
+	pid_to_kill=`cat ${XTEST_SERVER_HOME}/$xtest_status_file`
 	echo "Killing Xtest Testing Server with PID $pid_to_kill"
-	rm -f ${LOG_DIR}/test.running
+	rm -f ${XTEST_SERVER_HOME}/logs/test.running
+	rm -f ${XTEST_SERVER_HOME}/logs/testBuild.running
 	rm -f "${XTEST_SERVER_HOME}/$xtest_status_file" 
 	if [ -r "${XTEST_SERVER_HOME}/$xtest_stop_file" ] ; then
 	    rm -f "${XTEST_SERVER_HOME}/$xtest_stop_file"

@@ -9,7 +9,7 @@ export SHIP_RESULTS
 NBDEV_BUILDS=/space/builds/netbeans/dev/builds
 export NBDEV_BUILDS
 
-TEST_CONFIGS="testconfig_nb-dev-dev-jdk14 testconfig_nb-dev-dev-jdk13"
+TEST_CONFIG_LIST=daily.testconfigs
 
 XTEST_MAIL_FROM=user@domain.com
 XTEST_MAIL_TO=user@domain.com

@@ -1,5 +1,5 @@
 #!/bin/sh
-
+ 
 . `dirname $0`/set_xtesthome.sh
 
 PROP_FILE=${XTEST_SERVER_HOME}/conf/site-properties
@@ -16,6 +16,19 @@ export LOG_DIR BUILDINFO_DIR CONF_DIR
 mkdir -p ${LOG_DIR}
 mkdir -p ${BUILDINFO_DIR}
 
+testBuild_status_file=testBuild.running
+
+if [ -r "${LOG_DIR}/${testBuild_status_file}" ]; then
+	echo Another tests are already running
+  	sh ${XTEST_SERVER_HOME}/bin/mail.sh "TR ERROR: Concurrent running detected " \
+                   "Host: ${HOST_NAME}
+Problem: Concurrent running detected
+Comandline: $0 $@
+
+Attempt to run tests while another tests are already running."
+	exit 1
+fi
+touch ${LOG_DIR}/${testBuild_status_file}
 
 # check whether new last build exists
 check_new_build () {
@@ -35,7 +48,11 @@ check_new_build () {
      touch ${LAST_BUILDINFO}
   fi
 
-  unzip -j -p ${BUILDFILE} ${BUILDINFO_PATH} > ${LAST_BUILDINFO}.new
+  if [ "`echo ${BUILDFILE} | grep .zip$`" = "" ] ; then
+      ls -l ${BUILDFILE} > ${LAST_BUILDINFO}.new
+  else
+      unzip -j -p ${BUILDFILE} ${BUILDINFO_PATH} > ${LAST_BUILDINFO}.new
+  fi
   diff_value=`diff ${LAST_BUILDINFO}.new ${LAST_BUILDINFO}`
   cp ${LAST_BUILDINFO}.new ${LAST_BUILDINFO}
   rm -f ${LAST_BUILDINFO}.new
@@ -48,19 +65,23 @@ run_buildtest() {
       	LOGFILE=${LOG_DIR}/out_${test_config_name}.log
       	export LOGFILE
         export BUILDFILE
+        export NBMSFILE
       	
       	oldpwd=`pwd`
       	cd ${XTEST_SERVER_HOME}/bin
         if [ ! -z "$BUILD_NUM" ] ; then
            echo "Testing build n. ${BUILD_NUM}"
            BUILDFILE=${OLD_BUILDFILE}
+           NBMSFILE=${OLD_NBMSFILE}
            sh runTests.sh
         elif [ "$last" = "true" ] ; then
            echo "Testing last build"
            BUILDFILE=${LAST_BUILDFILE}
+           NBMSFILE=${LAST_NBMSFILE}
            sh runTests.sh
         else 
            BUILDFILE=${LAST_BUILDFILE}
+           NBMSFILE=${LAST_NBMSFILE}
            echo "Checking whether new last build is available..."
            LAST_BUILDINFO=${BUILDINFO_DIR}/last_${test_config_name}.info
            check_new_build
@@ -73,6 +94,12 @@ run_buildtest() {
 	fi
 	cd $oldpwd
 }
+
+exit_running() {
+	rm -f ${LOG_DIR}/${testBuild_status_file}
+	exit $1
+}
+
 
 parse_args() {
 testconfigs=
@@ -97,12 +124,12 @@ Options can be
                 content of variable TEST_CONFIGS is used.
    
 EOF
-exit 1
+exit_running 1
 ;;
         -n) shift; if [ $# -gt 0 ] ; then BUILD_NUM=$1; fi ;;
         -last) last=true ;;
         -new_only) newonly=true ;;
-        -*) echo "Unknown argument $1. Try $0 -h"; exit 1 ;; 
+        -*) echo "Unknown argument $1. Try $0 -h"; exit_running 1 ;; 
         *) testconfigs="$testconfigs $1" ;;
     esac
 shift
@@ -110,22 +137,33 @@ done
 
 if [ "$last" = "true" -a "$newonly" = "true" ] ; then
   echo "Arguments -last and -new_only can't exist together."
-  exit 1
+  exit_running 1
 fi
 if [ "$last" = "true" -a ! -z "$BUILD_NUM" ] ; then
   echo "Arguments -last and -n can't exist together."
-  exit 1
+  exit_running 1
 fi
 if [ "$newonly" = "true" -a ! -z "$BUILD_NUM" ] ; then
   echo "Arguments -new_only and -n can't exist together."
-  exit 1
+  exit_running 1
 fi
+
 if [ -z "$testconfigs" ] ; then
-  testconfigs=$TEST_CONFIGS
+  if [ -z "$TEST_CONFIG_LIST" ] ; then
+       	echo "No testconfig selected and variable TEST_CONFIG_LIST is empty."
+       	exit_running 1
+  elif [ -f "$TEST_CONFIG_LIST" ] ; then
+	testconfigs=`cat $TEST_CONFIG_LIST`
+  elif [ -f "${CONF_DIR}/${TEST_CONFIG_LIST}" ] ; then
+	testconfigs=`cat ${CONF_DIR}/${TEST_CONFIG_LIST}`
+  else
+      	echo "File $TEST_CONFIG_LIST not found"
+      	exit_running 1
+  fi
 fi
 if [ -z "$testconfigs" ] ; then
   echo "No testconfig selected."
-  exit 1
+  exit_running 1
 fi
 }
 
@@ -140,9 +178,12 @@ do
        current_test_config=${CONF_DIR}/$tc
     else
        echo "Test config $tc not found!"
-       exit 1
+       exit_running 1
     fi
  fi
  test_config_name=`basename $current_test_config`
  ( . $current_test_config ; run_buildtest )
 done
+
+exit_running
+

@@ -6,12 +6,16 @@
 #  BUILDFILE
 #  HOST_NAME
 #  DRIVER_CONFIG
-#  PROJECT_NAME
 
 # Optional environment variables:
+#  PROJECT_NAME
+#  TESTED_TYPE
 #  DRIVER_ARGS
 #  LOGFILE
 #  SHIP_RESULTS
+#  NBMSFILE
+#  RE_CONF_NAME
+#  USER_CONF_NAME
 
 #==========
 
@@ -52,16 +56,22 @@ if [ ! -r "${DRIVER_CONFIG}" ]; then
 fi
 
 # Check project name
-if [ -z "${PROJECT_NAME}" ]; then
-  echo "Variable PROJECT_NAME not set."
-  return 1
+if [ ! -z "${PROJECT_NAME}" ]; then
+  PROJECT_NAME_ARG="-Dxtest.tested.project='${PROJECT_NAME}'"
 fi
-export PROJECT_NAME
+
+# Check tested type
+if [ ! -z "${TESTED_TYPE}" ]; then
+  TESTED_TYPE_ARG="-Dxtest.tested.type='${TESTED_TYPE}'"
+fi
 
 # Check log file
 if [ ! -z "${LOGFILE}" ]; then
   LOG_ARG="-logfile \"${LOGFILE}\""
   export LOGFILE
+  if [ -f "${LOGFILE}" ] ; then
+     mv ${LOGFILE} ${LOGFILE}.old
+  fi
 else  
   echo "Variable LOGFILE not set. Using standart output."
   LOG_ARG=
@@ -75,10 +85,36 @@ else
   SHIP_ARG=
 fi
 
+# Check NBMSFILE
+if [ ! -z "${NBMSFILE}" ] ; then
+  if [ "`echo ${NBMSFILE} | grep .zip$`" = "" ] ; then
+     NBMS_ARG="-Dide.nbm.dir=${NBMSFILE}"
+  else
+     NBMS_ARG="-Dide.nbm.zipfile=${NBMSFILE}"
+  fi
+fi
+
+# Check XTEST_HOME
+if [ ! -z "${XTEST_HOME}" ] ; then
+  XTEST_HOME_ARG="-Dxtest.home=${XTEST_HOME}"
+fi
+
+RE_CONF_ARG=
+
+# Check RE_CONF_NAME
+if [ ! -z "$RE_CONF_NAME" ] ; then
+  RE_CONF_ARG=-Dxtest.driver.re.conf=`dirname ${BUILDFILE}`/${RE_CONF_NAME}
+fi
+
+# Check USER_CONF_NAME
+if [ ! -z "$USER_CONF_NAME" ] ; then
+  RE_CONF_ARG="${RE_CONF_ARG} -Dxtest.driver.re.user.conf=`dirname ${BUILDFILE}`/${USER_CONF_NAME}"
+fi
+
 #=============
 
-CMD_TO_RUN="ant ${LOG_ARG} -Dide.install.path=${BUILDFILE} \
-   -Dxtest.tested.project='${PROJECT_NAME}' -Dxtest.driver.config=${DRIVER_CONFIG} \
+CMD_TO_RUN="ant ${LOG_ARG} ${XTEST_HOME_ARG} -Dide.install.path=${BUILDFILE} ${RE_CONF_ARG} ${NBMS_ARG} \
+   ${PROJECT_NAME_ARG} ${TESTED_TYPE_ARG} -Dxtest.driver.config=${DRIVER_CONFIG} \
    -Dxtest.machine=${HOST_NAME} ${SHIP_ARG} ${DRIVER_ARGS}"
 
 JDK_HOME=$JAVA_HOME
@@ -86,7 +122,11 @@ JAVA_PATH=$JAVA_HOME
 
 OLD_PATH=$PATH
 
-PATH=${JAVA_HOME}/bin:${ANT_HOME}/bin:$PATH
+case "`uname`" in
+     CYGWIN*) PATH=`cygpath -u "${JAVA_HOME}"`/bin:`cygpath -u "${ANT_HOME}"`/bin:$PATH ;;
+     *)       PATH=${JAVA_HOME}/bin:${ANT_HOME}/bin:$PATH ;;
+esac
+
 export JDK_HOME JAVA_HOME JAVA_PATH PATH
 
 # flag that tests are running
@@ -100,8 +140,13 @@ echo Time: `date`  Log: ${LOGFILE}
 eval $CMD_TO_RUN
 
 if [ ! $? -eq 0 ]; then
-  sh mail.sh "TR ERROR: Test buildscript failed" \
-             "Host: ${HOST_NAME}  Project: ${PROJECT_NAME}  Log: ${LOGFILE}  Problem: buildscript failed. Look at log for more details."
+  sh mail.sh "TR ERROR: Test execution failed" \
+             "Host: ${HOST_NAME}
+Project: ${PROJECT_NAME}
+Log: ${LOGFILE}
+Problem: Test execution failed
+
+Main buildscript failed and test execution is not complete. Look at log on right machine for reason of this failure."
 fi
 
 echo Test finished at `date`
