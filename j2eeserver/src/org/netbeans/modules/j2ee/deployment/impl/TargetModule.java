@@ -33,7 +33,7 @@ public class TargetModule implements TargetModuleID, java.io.Serializable {
     private final String contentDirectory;
     private final String contextRoot;
     private transient TargetModuleID delegate;
-    private static final TargetModuleID[] EMPTY_TMID_ARRAY = new TargetModuleID[0];
+    public static final TargetModuleID[] EMPTY_TMID_ARRAY = new TargetModuleID[0];
     
     /** Creates a new instance of TargetModule */
     public TargetModule(String id, String url, long timestamp, String contentDir, String contextRoot, TargetModuleID delegate) {

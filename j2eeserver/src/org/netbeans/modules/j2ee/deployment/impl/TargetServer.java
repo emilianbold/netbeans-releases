@@ -208,7 +208,7 @@ public class TargetServer {
     }
     private TargetModule[] checkUndeployForSharedReferences(Set toRedeploy, Target[] targs, Map queryInfo) {
         // PENDING: what are changed references for ejbmod, j2eeapp???
-        if (contextRoot == null || toRedeploy.size() < 1) {
+        if (contextRoot == null) {
             return (TargetModule[]) toRedeploy.toArray(new TargetModule[toRedeploy.size()]);
         }
         
@@ -223,7 +223,9 @@ public class TargetServer {
             
             List maybeRedistributeWhenSharedDetected = new ArrayList();
             List maybeRemoveFromRedeployWhenSharedDetected = new ArrayList();
-            TargetModuleID[] haveSameReferences = tmidResolver.lookupTargetModuleID(queryInfo, targs);
+            TargetModuleID[] haveSameReferences = TargetModule.EMPTY_TMID_ARRAY;
+            if (targs.length > 1) 
+                haveSameReferences = tmidResolver.lookupTargetModuleID(queryInfo, targs);
             for (int i=0; i<haveSameReferences.length; i++) {
                 TargetModule hasSameReferences = new TargetModule(keyOf(haveSameReferences[i]), haveSameReferences[i]); 
                 if (! toRedeploy.contains(hasSameReferences)) {
