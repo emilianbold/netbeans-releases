@@ -1,7 +1,7 @@
 OpenIDE-Module: org.netbeans.modules.editor/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/editor/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/editor/EditorModule.class
-OpenIDE-Module-Specification-Version: 1.10
+OpenIDE-Module-Specification-Version: 1.11
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Layer: org/netbeans/modules/editor/resources/layer.xml
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 2.2
