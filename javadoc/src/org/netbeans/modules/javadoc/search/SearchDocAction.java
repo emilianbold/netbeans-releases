@@ -13,12 +13,8 @@
 
 package com.netbeans.developer.modules.javadoc.search;
 
-import java.net.URL;
-import java.util.ResourceBundle;
-
 import com.netbeans.ide.util.NbBundle;
 import com.netbeans.ide.util.HelpCtx;
-import com.netbeans.ide.util.actions.ActionPerformer;
 import com.netbeans.ide.util.actions.CallableSystemAction;
 
 /** 
@@ -39,23 +35,21 @@ public class SearchDocAction extends CallableSystemAction {
   * @return the name of the action
   */
   public String getName () {
-    return NbBundle.getBundle (getClass ()).getString ("CTL_SEARCH_MenuItem");
+    return NbBundle.getBundle (SearchDocAction.class).getString ("CTL_SEARCH_MenuItem");
   }
 
   /** The action's icon location.
   * @return the action's icon location
   */
   protected String iconResource () {
-    return NbBundle.getBundle (getClass ()).getString ("ICO_SEARCH");
-    //return "/com/netbeans/developer/modules/javadoc/resources/SearchDoc.gif";
+    return "/com/netbeans/developer/modules/javadoc/resources/searchDoc.gif"
   }
   
   /** Help context where to find more about the action.
   * @return the help context for this action
   */
   public HelpCtx getHelpCtx () {
-    //return new HelpCtx ();
-      return null;
+    return HelpCtx.DEFAULT_HELP;
   }
 
   /** This method is called by one of the "invokers" as a result of
@@ -64,31 +58,18 @@ public class SearchDocAction extends CallableSystemAction {
   * is not null otherwise the action is ignored.
   */
   public void performAction () {
-
     if (indexSearch != null) 
       indexSearch.open ();
     else 
       (indexSearch = new IndexSearch ()).open ();
-  
   }
   
-  /** Returns instance of object browser.
-  * @return instance of object browser.
-  */
-  /*
-  public ObjectBrowser getObjectBrowser () {
-    if (objectBrowser == null) 
-      objectBrowser = new ObjectBrowser ();
-    return objectBrowser;
-  }
-  */
 }
 
 /*
  * Log
+ *  3    Gandalf   1.2         5/26/99  Ian Formanek    touch-ups
  *  2    Gandalf   1.1         5/14/99  Petr Hrebejk    
  *  1    Gandalf   1.0         5/13/99  Petr Hrebejk    
  * $
- * Beta Change History:
- *  0    Tuborg    0.11        --/--/98 Jan Formanek    changes (position, serialization)
  */
