@@ -966,6 +966,7 @@ final class DefaultModel implements Model {
         wsms.setMainWindowBoundsSeparated(getMainWindowBoundsSeparated());
         wsms.setEditorAreaBounds(getEditorAreaBounds());
         wsms.setEditorAreaState(getEditorAreaState());
+        wsms.setEditorAreaFrameState(getEditorAreaFrameState());
         wsms.setMainWindowFrameStateJoined(getMainWindowFrameStateJoined());
         wsms.setMainWindowFrameStateSeparated(getMainWindowFrameStateSeparated());
         wsms.setToolbarConfigurationName(getToolbarConfigName());

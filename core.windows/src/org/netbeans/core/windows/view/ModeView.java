@@ -131,7 +131,10 @@ public class ModeView extends ViewElement {
 
     // XXX
     public void updateFrameState() {
-        ((Frame)container.getComponent()).setExtendedState(frameState);
+        Component comp = container.getComponent();
+        if(comp instanceof Frame) {
+            ((Frame)comp).setExtendedState(frameState);
+        }
     }
     
     

@@ -74,6 +74,7 @@ final class ViewHelper {
         wsa.setMainWindowBoundsSeparated(wss.getMainWindowBoundsSeparated());
         wsa.setEditorAreaBounds(wss.getEditorAreaBounds());
         wsa.setEditorAreaState(wss.getEditorAreaState());
+        wsa.setEditorAreaFrameState(wss.getEditorAreaFrameState());
         wsa.setMainWindowFrameStateJoined(wss.getMainWindowFrameStateJoined());
         wsa.setMainWindowFrameStateSeparated(wss.getMainWindowFrameStateSeparated());
         wsa.setToolbarConfigurationName(wss.getToolbarConfigurationName());

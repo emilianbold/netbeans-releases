@@ -252,7 +252,7 @@ final class Central implements ControllerHandler {
         if(old == frameState) {
             return;
         }
-        
+
         model.setEditorAreaFrameState(frameState);
         
         if(isVisible()) {

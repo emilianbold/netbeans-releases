@@ -14,6 +14,7 @@
 package org.netbeans.core.windows.actions;
 
 
+import java.awt.Frame;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
@@ -58,18 +59,32 @@ public class MaximizeWindowAction extends AbstractAction {
     public void actionPerformed(java.awt.event.ActionEvent ev) {
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
         
-        if(wm.getEditorAreaState() != Constants.EDITOR_AREA_JOINED) {
-            updateState();
-            return;
-        }
-        
-        ModeImpl mode = wm.getMaximizedMode();
-        if(mode != null) {
-            wm.setMaximizedMode(null);
+        if(wm.getEditorAreaState() == Constants.EDITOR_AREA_JOINED) {
+            ModeImpl mode = wm.getMaximizedMode();
+            if(mode != null) {
+                wm.setMaximizedMode(null);
+            } else {
+                ModeImpl activeMode = wm.getActiveMode();
+                if(activeMode != null) {
+                    wm.setMaximizedMode(activeMode);
+                }
+            }
         } else {
             ModeImpl activeMode = wm.getActiveMode();
             if(activeMode != null) {
-                wm.setMaximizedMode(activeMode);
+                if(activeMode.getKind() == Constants.MODE_KIND_EDITOR) {
+                    if(wm.getEditorAreaFrameState() == Frame.NORMAL) {
+                        wm.setEditorAreaFrameState(Frame.MAXIMIZED_BOTH);
+                    } else {
+                        wm.setEditorAreaFrameState(Frame.NORMAL);
+                    }
+                } else {
+                    if(activeMode.getFrameState() == Frame.NORMAL) {
+                        activeMode.setFrameState(Frame.MAXIMIZED_BOTH);
+                    } else {
+                        activeMode.setFrameState(Frame.NORMAL);
+                    }
+                }
             }
         }
         
@@ -77,23 +92,31 @@ public class MaximizeWindowAction extends AbstractAction {
     }
     
     private void updateState() {
-        // XXX In separated state, the action should be present,
-        // when achieved that, remove this kind of code.
-        if(WindowManagerImpl.getInstance().getEditorAreaState() == Constants.EDITOR_AREA_SEPARATED) {
-            putValue(Action.NAME, NbBundle.getMessage(MaximizeWindowAction.class, "CTL_MaximizeWindowAction", "")); // NOI18N
-            setEnabled(false);
-            return;
-        }
-        
         TopComponent active = TopComponent.getRegistry().getActivated();
         Object param = active == null ? "" : active.getName(); // NOI18N
-        
-        if(WindowManagerImpl.getInstance().getMaximizedMode() == null) {
+
+        boolean maximize;
+        if(WindowManagerImpl.getInstance().getEditorAreaState() == Constants.EDITOR_AREA_JOINED) {
+            maximize = WindowManagerImpl.getInstance().getMaximizedMode() == null;
+        } else {
+            ModeImpl activeMode = (ModeImpl)WindowManagerImpl.getInstance().findMode(active);
+            if(activeMode != null) {
+                if(activeMode.getKind() == Constants.MODE_KIND_EDITOR) {
+                    maximize = WindowManagerImpl.getInstance().getEditorAreaFrameState() == Frame.NORMAL;
+                } else {
+                    maximize = activeMode.getFrameState() == Frame.NORMAL;
+                }
+            } else {
+                return;
+            }
+        }
+
+        if(maximize) {
             putValue(Action.NAME, NbBundle.getMessage(MaximizeWindowAction.class, "CTL_MaximizeWindowAction", param));
         } else {
             putValue(Action.NAME, NbBundle.getMessage(MaximizeWindowAction.class, "CTL_UnmaximizeWindowAction", param));
         }
-        
+
         setEnabled(active != null);
     }
     
