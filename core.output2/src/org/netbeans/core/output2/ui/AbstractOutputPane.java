@@ -300,19 +300,17 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
                 getCaret().moveDot (position);
                 getCaret().setSelectionVisible(true);
                 textView.repaint();
-            } else {            
-                if (idx + 3 < getLineCount()) {
-                    getCaret().setDot(position);
-                    //Ensure a little more than the requested line is in view
-                    try {
-                        Rectangle r = textView.modelToView(textView.getDocument().getDefaultRootElement().getElement (idx + 3).getStartOffset());
-                        if (Controller.log) Controller.log ("Trying to ensure some lines below the new caret line are visible - scrolling into view " + r);
-                        if (r != null) { //Will be null if maximized - no parent, no coordinate space
-                            textView.scrollRectToVisible(r);
-                        }
-                    } catch (BadLocationException ble) {
-                        ErrorManager.getDefault().notify(ble);
+            } else {
+                getCaret().setDot(position);
+            }
+            if (idx + 3 < getLineCount()) {
+                try {
+                    Rectangle r = textView.modelToView(textView.getDocument().getDefaultRootElement().getElement(idx + 3).getStartOffset());
+                    if (r != null) { //Will be null if maximized - no parent, no coordinate space
+                        textView.scrollRectToVisible(r);
                     }
+                } catch (BadLocationException ble) {
+                    ErrorManager.getDefault().notify(ble);
                 }
             }
             inSendCaretToLine = false;
