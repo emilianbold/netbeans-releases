@@ -121,6 +121,7 @@ public class SearchTest extends EditorTestCase {
             Find find = new Find();
             find.cboFindWhat().getTextField().setText("public");
             find.find();
+            new EventTool().waitNoEvent(1000);
             find.close();
             
             // second search
@@ -129,6 +130,7 @@ public class SearchTest extends EditorTestCase {
             Find find2 = new Find();
             find2.cboFindWhat().getTextField().setText("class");
             find2.find();
+            new EventTool().waitNoEvent(1000);
             find2.close();
             
             // search for an item from history - word "public"
