@@ -40,7 +40,7 @@ Shortcuts are available for the following operations:
 <td>Moves the insertion point one character to the left or right.</td> 
 </tr>
 <tr>
-<td valign="top">Alt-E</td>
+<td valign="top">Alt-U, E</td>
 <td>Moves the insertion point to the end of the word.</td> 
 </tr>
 <td valign="top">Ctrl-right arrow</td>
@@ -66,15 +66,19 @@ Shortcuts are available for the following operations:
 <td>Moves the insertion point one one line down.</td> 
 </tr>
 <tr>
-<td valign="top">Shift-Alt-T</td>
+<td valign="top">Ctrl-G</td>
+<td>Opens Go to Line dialog box.</td> 
+</tr>
+<tr>
+<td valign="top">Alt-Shift-T</td>
 <td>Moves the insertion point to the top of the window.</td>
 </tr>
 <tr>
-<td valign="top">Shift-Alt-M</td>
+<td valign="top">Alt-Shift-M</td>
 <td>Moves the insertion point to the middle of the window.</td>
 </tr>
 <tr>
-<td valign="top">Shift-Alt-B</td>
+<td valign="top">Alt-Shift-B</td>
 <td>Moves the insertion point to the bottom of the window.</td>
 </tr>
 <tr>
@@ -104,23 +108,23 @@ Shortcuts are available for the following operations:
 <th align="left">Action</th>
 </tr>
 <tr>
-<td valign="top">Alt-T</td>
+<td valign="top">Alt-U, T</td>
 <td>Scrolls text to top of window.</td>
 </tr>
 <tr>
-<td valign="top">Alt-M</td>
+<td valign="top">Alt-U, M</td>
 <td>Scrolls text to middle of window.</td>
 </tr>
 <tr>
-<td valign="top">Alt-B</td>
+<td valign="top">Alt-U, B</td>
 <td>Scrolls text to bottom of window.</td>
 </tr>
 <tr>
-<td valign="top">Ctrl-up arrow</td>
+<td valign="top">Ctrl-down arrow</td>
 <td>Scrolls the window up without moving the insertion point.</td> 
 </tr>
 <tr>
-<td valign="top">Ctrl-down arrow</td>
+<td valign="top">Ctrl-up arrow</td>
 <td>Scrolls the window down without moving the insertion point.</td> 
 </tr>
 </table></p>
@@ -140,11 +144,11 @@ Shortcuts are available for the following operations:
 </tr>
 <tr>
 <td valign="top">Shift-right arrow</td>
-<td>Selects the word to the right of the insertion point.</td>
+<td>Selects the character to the right of the insertion point.</td>
 </tr>
 <tr>
 <td valign="top">Shift-left arrow</td>
-<td>Selects the word to the left of the insertion point.</td>
+<td>Selects the character to the left of the insertion point.</td>
 </tr>
 <tr>
 <td valign="top">Alt-J</td>
@@ -209,6 +213,11 @@ document.</td>
 <td>Switches between insert text and overwrite text mode.</td> 
 </tr>
 <tr>
+<td valign="top">Alt-I</td>
+<td>Opens the Internationalize dialog box that you can use to insert
+an internationalized string at the insertion point.</td> 
+</tr>
+<tr>
 <td valign="top">Alt-U, U</td>
 <td>Makes the selected characters or the character to the right of the
 insertion point uppercase.</td>
@@ -227,10 +236,6 @@ the right of the insertion point.</td>
 <td valign="top">Alt-U, F</td>
 <td>Reverses the case of the first character of the identifier the
 insertion point is on.</td>
-</tr>
-<tr>
-<td valign="top">Alt-F</td>
-<td>Reformat the selected text, else reformat the entire file.</td>
 </tr>
 </table></p>
 
@@ -266,13 +271,8 @@ insertion point is on.</td>
 except Save.</td>
 </tr>
 <tr>
-<td valign="top">Ctrl-Y</td>
+<td valign="top">Ctrl-f3Y</td>
 <td valign="top">(Redo) Reverses (one at a time) a series of Undo commands.</td>
-</tr>
-<tr>
-<td valign="top">Alt-J</td>
-<td valign="top">Selects the word the insertion point is on or
-deselects text.</td>
 </tr>
 <tr>
 <td valign="top">Ctrl-X</td>
@@ -318,12 +318,14 @@ insertion point.</td>
 <tr>
 <td valign="top">Ctrl-K</td>
 <td valign="top">Copies the word preceding the insertion
-point and pastes it at the insertion point.
+point and pastes it at the insertion point. (The insertion point must
+be on a whitespace before or after a word.)
 </tr>
 <tr>
 <td valign="top">Ctrl-L</td>
 <td valign="top">Copies the word following the insertion
-point and pastes it at the insertion point.</td>
+point and pastes it at the insertion point. (The insertion point must
+be on a whitespace before or after a word.)</td>
 </tr>
 </table></p>
 
@@ -353,6 +355,16 @@ occurrence of the word.</td>
 <tr>
 <td valign="top">Alt-Shift-H</td>
 <td valign="top">Switches highlighting of words on or off.</td>
+</tr>
+</table>
+<tr>
+<td valign="top">Ctrl-F</td>
+<td valign="top">Opens Find dialog box.</td>
+</tr>
+</table>
+<tr>
+<td valign="top">Ctrl-R</td>
+<td valign="top">Opens Find and Replace dialog box.</td>
 </tr>
 </table></p>
 
@@ -389,7 +401,7 @@ the left.</td>
 <th align="left">Action</th>
 </tr>
 <tr>
-<td valign="top">Spacebar</td>
+<td valign="top">Ctrl-Spacebar</td>
 <td>Opens the Java code completion dialog box.</td>
 </tr>
 <tr>
@@ -411,7 +423,12 @@ cursor is over the class name to be imported.</td>
 </tr>
 <tr>
 <td valign="top">Alt-G</td>
-<td>Goes to next method or variable declaration.</td>
+<td>Goes to the method or variable declaration for method or variable
+the insertion point is on.</td>
+</tr>
+<tr>
+<td valign="top">Ctrl-M</td>
+<td>Selects the next parameter.</td>
 </tr>
 <tr>
 <td valign="top">Ctrl-Shift-T</td>
@@ -427,23 +444,32 @@ cursor is over the class name to be imported.</td>
 </tr>
 <tr>
 <td valign="top">Ctrl-Shift-B</td>
-<td>Selects block between brackets.</td>
+<td>Selects block between brackets when insertion point is immediately
+in front of the open bracket.</td>
 </tr>
 <tr>
 <td valign="top">Alt-K</td>
-<td>Goes to previous entry in jump list.</td>
+<td>Goes to the previous entry in jump list.</td>
 </tr>
 <tr>
 <td valign="top">Alt-L</td>
-<td>Goes to next entry in jump list.</td>
+<td>Goes to the next entry in jump list.</td>
 </tr>
 <tr>
-<td valign="top">Shift-Alt-K</td>
-<td>Goes to previous entry in jump list not in the same file.</td>
+<td valign="top">Alt-Shift-K</td>
+<td>Goes to the previous entry in jump list not in the same file.</td>
 </tr>
 <tr>
-<td valign="top">Shift-Alt-L</td>
-<td>Goes to next entry in jump list not in the same file.</td>
+<td valign="top">Alt-Shift-L</td>
+<td>Goes to the next entry in jump list not in the same file.</td>
+</tr>
+<tr>
+<td valign="top">Ctrl-Shift-F</td>
+<td>Reformats code.</td>
+</tr>
+<tr>
+<td valign="top">Shift-F10</td>
+<td>Opens editor's contextual menu.</td>
 </tr>
 </table></p>
 

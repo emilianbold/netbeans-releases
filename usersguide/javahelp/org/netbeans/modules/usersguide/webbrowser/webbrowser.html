@@ -6,61 +6,78 @@
 -->
 <HTML>
 <HEAD>
-<TITLE>Using the Internal Web Browser</TITLE>
+<TITLE>Using a Web Browser With the IDE</TITLE>
 <link rel="StyleSheet" href="../ide.css" type="text/css">
 </HEAD>
 <BODY>
 
-<h2>Using the Internal Web Browser</h2>
-
-<p>The IDE has an internal web browser, which you can use to access web sites that are bookmarked in the Help menu or other sites on the World Wide Web. </p>
-
-<p><b>To open the internal web browser:</b></p>
+<h2>Using a Web Browser With the IDE</h2>
+<p>
+You can open a web browser from the IDE in two ways:
+</p>
 <ul>
-<li>Choose View <img src="../images/arrow.gif"> Web Browser from the main window</li>
+<li>Choose View <img src="../images/arrow.gif"> Web Browser (Ctrl-7) to
+open the browser to your home page.
+</li>
+<li>Choose Help <img src="../images/arrow.gif"> Bookmarks <img src="../images/arrow.gif"> <i>web site name</i> to open the browser to
+a predefined site.
+</li>
 </ul>
-<p>The toolbar contains buttons to cycle back and forth through previously-seen pages, to stop the current page from being loaded, 
-to reload the current page, to switch to the home page, and to view the history of previously loaded pages. You can load a new page by 
-typing its URL in the Location field and pressing Enter on your keyboard.</p>
-<p>You can search for text strings in the web browser by choosing Edit <img src="../images/arrow.gif"> Find from the main window 
-or by using the Ctrl-F keyboard shortcut.</p>
-
-
-<p><b>To set a different home page:</b></p>
-<ol>
-<li>Choose Tools <img src="../images/arrow.gif"> Options from the main menu. </li>
-<li>In the Options window, select the System Settings node and type the new home page in the Home Page property.</li>
-</ol>
-
-<p><b>To adjust the fonts, the background color, or encoding in the web browser:</b></p>
-<ol>
-<li>Choose Tools <img src="../images/arrow.gif"> Options from the main menu.</li>
-<li>In the Options window, select the HTML Browser node.</li>
-<li>Make the desired changes for the Default Background, Encoding, Fixed Font, and Proportional Font properties.</li>
-</ol>
-<p><b>To add a bookmark to the list of bookmarks in the Help menu:</b></p>
-<ol>
-<li>Choose Tools <img src="../images/arrow.gif"> Options from the main menu.</li>
-<li>In the Options window, right-click the Bookmarks node and choose New <img src="../images/arrow.gif"> Bookmark.</li>
-<li>Make the desired changes for the Default Background, Encoding, Fixed Font, and Proportional Font properties.</li>
-</ol>
-
-
-<table>
-<tr>
-<th colspan=2 align=left>See also</th>
-</tr>
-<tr>
-<td width="23"></td>
-<td>
-<a href="proxy.html">Setting a Proxy</a>
-<br></br>
-<a href="httpserver-options.html">Configuring HTTP Server Options</a><br></br>
-<a href="../workspace/clone.html">Cloning the Source Editor or Web Browser</a>
-</td></tr>
-</table>
+<p>
+You can configure the IDE to use either an internal or external web browser.
+Both types of browsers enable you to view external and 
+local web pages (including online help and Javadoc documentation).
+An internal browser provides the highest level of integration with the IDE--you can embed an internal browser into another IDE window or an MDI frame.  The
+Swing HTML browser is an implementation of an internal browser in the IDE.
+</p>
+<p>
+The preferred browser for use with the IDE is an external browser,
+which provides more functionality than an internal
+browser and does not close when you shut down the IDE.
+A disadvantage of using an external browser is that you
+cannot embed it in an IDE window.  Three implementations of the external
+browser are available for use with the IDE:
+</p>
+<ul>
+<li><b>External browser (Command Line)</b>.
+A simple browser that executes a specified command when asked
+to display a URL.  Users will typically customize this browser
+to run Netscape Navigator<sup><font size ="-1">TM</font></sup>.  
+</li>
+<li><b>External browser (Windows)</b>. The Internet Explorer browser.  
+</li>
+<li><b>External browser (Unix)</b>.
+The Netscape Navigator browser.  
+</li>
+</ul>
+<p>
+By providing
+a set of browsers, the IDE enables
+you to use different browsers for different tasks.
+You may set different browsers for JSPs, applets, and Javadoc
+documentation.
+</p>
+<p>
+You set your preferred browser under the System Settings node in the
+Options window.  (JSP also uses this browser unless you explicitly change
+the browser under the
+JSP & Servlets node in the Options window.)
+You can customize a browser or create a new browser type under the Web
+Browsers node in the Options window.
+</p>
+<p>
+For more information see:
+</p>
+<blockquote>
+<a href="home_page.html">Setting a Home Page for the Web Browser</a><br>
+<a href="bookmark.html">Creating a Bookmark for a Web Page</a><br>
+<a href="proxy.html">Setting a Proxy</a><br>
+<a href="httpserver-options.html">Configuring HTTP Server Options</a><br>
+<a href="swingbrowser.html">Using the Swing HTML Browser</a><br>
+<a href="configure.html">Configuring an External Browser</a><br>
+<a href="default.html">Specifying the Default Browser</a>
+</blockquote>
 <hr>
 <font size=-2><a href="../credits.html">Legal Notices</a></font>
-
 </body>
 </html>
