@@ -22,21 +22,19 @@ import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 
 /**
- * Provide DTD grammar. It must be registered at layer.
+ * Provide Ant grammar. It must be consistently registered at layer.
  *
- * @author  Petr Kuzel <petr.kuzel@sun.com>
+ * @author  Petr Kuzel
  */
-public class AntGrammarQueryProvider extends GrammarQueryManager {
+public final class AntGrammarQueryProvider extends GrammarQueryManager {
     
     public Enumeration enabled(GrammarEnvironment ctx) {
         Enumeration en = ctx.getDocumentChildren();
         while (en.hasMoreElements()) {
             Node next = (Node) en.nextElement();
-            System.err.println("Ant queried for " + next);
             if (next.getNodeType() == next.ELEMENT_NODE) {
                 Element root = (Element) next;                
-                if ("project".equals(root.getNodeName()) && root.getAttributeNode("name") != null) { // NOI18N
-                    System.err.println("Hit!");
+                if ("project".equals(root.getNodeName()) && root.getAttributeNode("default") != null) { // NOI18N
                     return new SingletonEnumeration(next);
                 }
             }

@@ -19,7 +19,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
   <property name="homepage.base" value="netbeans.org"/>
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="license.file" location="../../nbbuild/standard-nbm-license.txt"/>
-
+  <property name="build.compiler.debug" value="on"/>
   <property name="nbm_alias" value="nb_ide"/>
 
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../../nbbuild/nbantext.jar"/>

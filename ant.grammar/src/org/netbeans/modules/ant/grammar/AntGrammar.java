@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -30,12 +30,8 @@ import org.netbeans.modules.xml.spi.dom.*;
  *
  * @author  Petr Kuzel
  */
-public class AntGrammar implements GrammarQuery {
+class AntGrammar implements GrammarQuery {
         
-    /** Creates new AntGrammar */
-    AntGrammar() {
-    }
-
     /**
      * Allow to get names of <b>parsed general entities</b>.
      * @return list of <code>CompletionResult</code>s (ENTITY_REFERENCE_NODEs)
@@ -54,9 +50,14 @@ public class AntGrammar implements GrammarQuery {
         return list;
     }
     
-    private static String getAntClassFor(String elementName) {
+    private static String getTaskClassFor(String elementName) {
         Map defs = getAntGrammar().getDefs("task");
         return (String) defs.get(elementName);
+    }
+
+    private static String getTypeClassFor(String elementName) {
+        Map defs = getAntGrammar().getDefs("type");
+        return (String) defs.get(elementName);        
     }
     
     private static IntrospectedInfo getAntGrammar() {
@@ -73,23 +74,42 @@ public class AntGrammar implements GrammarQuery {
      */
     public Enumeration queryAttributes(HintContext ctx) {
         
-        Element el = null;
-        // Support two versions of GrammarQuery contract
+        Element ownerElement = null;
+        // Support both versions of GrammarQuery contract
         if (ctx.getNodeType() == Node.ATTRIBUTE_NODE) {
-            el = ((Attr)ctx).getOwnerElement();
+            ownerElement = ((Attr)ctx).getOwnerElement();
         } else if (ctx.getNodeType() == Node.ELEMENT_NODE) {
-            el = (Element) ctx;
+            ownerElement = (Element) ctx;
         }
-        if (el == null) return EmptyEnumeration.EMPTY;
+        if (ownerElement == null) return EmptyEnumeration.EMPTY;
         
-        NamedNodeMap existingAttributes = el.getAttributes();        
+        NamedNodeMap existingAttributes = ownerElement.getAttributes();        
+        Set possibleAttributes = null;
+        String elementName = ownerElement.getTagName();
         
-        String clazz = getAntClassFor(el.getTagName());
-        if (clazz == null) return EmptyEnumeration.EMPTY;
+        if ("project".equals(elementName)) {
+            possibleAttributes = new TreeSet();
+            possibleAttributes.add("name");
+            possibleAttributes.add("default");
+            possibleAttributes.add("basedir");
+        } else if ("target".equals(elementName)) {
+            possibleAttributes = new TreeSet();
+            possibleAttributes.add("name");
+            possibleAttributes.add("depends");
+            possibleAttributes.add("if");
+            possibleAttributes.add("unless");
+            possibleAttributes.add("description");
+        } else {
+            String clazz = getTaskClassFor(elementName);
+            if (clazz == null) {
+                clazz = getTypeClassFor(elementName);
+            }                        
+            if (clazz != null) {
+                possibleAttributes = getAntGrammar().getAttributes(clazz).keySet();
+            }
+        }
         
-        Set possibleAttributes = getAntGrammar().getAttributes(clazz).keySet();
-        if (possibleAttributes == null) return EmptyEnumeration.EMPTY;
-        
+        if (possibleAttributes == null) return EmptyEnumeration.EMPTY;        
         String prefix = ctx.getCurrentPrefix();
         
         QueueEnumeration list = new QueueEnumeration();
@@ -117,17 +137,32 @@ public class AntGrammar implements GrammarQuery {
      */
     public Enumeration queryElements(HintContext ctx) {
         
-        Node node = ((Node)ctx).getParentNode();        
+        Node parent = ((Node)ctx).getParentNode();
+        if (parent == null) return EmptyEnumeration.EMPTY;
+        
         Set elements = null;
         
-        if (node.getNodeType() == ctx.ELEMENT_NODE) {
-            Element el = (Element) node;
-            if (el == null) return EmptyEnumeration.EMPTY;;
-            
-            String clazz = getAntClassFor(el.getTagName());
-            if (clazz == null) return EmptyEnumeration.EMPTY;
+        if (parent.getNodeType() == ctx.ELEMENT_NODE) {
+            String parentName = ((Element) parent).getTagName();
 
-            elements = (Set) getAntGrammar().getElements(clazz).keySet();
+            if ("project".equals(parentName)) {
+                elements = new TreeSet();
+                elements.add("description");
+                elements.add("target");
+                elements.add("property");
+                elements.add("taskdef");
+                elements.add("typedef");
+            } else if ("target".equals(parentName)) {
+                elements = getAntGrammar().getDefs("task").keySet();
+            } else {
+                String clazz = getTaskClassFor(parentName);
+                if (clazz == null) {
+                    clazz = getTypeClassFor(parentName);
+                }                                
+                if (clazz != null) {
+                    elements = getAntGrammar().getElements(clazz).keySet();
+                }
+            }
         }
                 
         if (elements == null) return EmptyEnumeration.EMPTY;;
