@@ -16,7 +16,7 @@ package com.netbeans.enterprise.modules.db.explorer.nodes;
 import java.util.*;
 import com.netbeans.ddl.*;
 import com.netbeans.ddl.impl.*;
-import com.netbeans.ide.nodes.Children;
+import org.openide.nodes.Children;
 import com.netbeans.enterprise.modules.db.*;
 import com.netbeans.enterprise.modules.db.explorer.*;
 import com.netbeans.enterprise.modules.db.explorer.infos.*;

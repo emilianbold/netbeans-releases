@@ -15,7 +15,7 @@ package com.netbeans.enterprise.modules.db.explorer;
 
 import java.util.*;
 import com.netbeans.enterprise.modules.db.explorer.infos.DatabaseNodeInfo;
-import com.netbeans.ide.nodes.PropertySupport;
+import org.openide.nodes.PropertySupport;
 
 public class DatabasePropertySupport extends PropertySupport
 {

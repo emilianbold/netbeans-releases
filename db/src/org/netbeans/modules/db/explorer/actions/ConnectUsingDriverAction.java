@@ -15,9 +15,9 @@
 package com.netbeans.enterprise.modules.db.explorer.actions;
 
 import java.util.Vector;
-import com.netbeans.ide.TopManager;
-import com.netbeans.ide.NotifyDescriptor;
-import com.netbeans.ide.nodes.*;
+import org.openide.TopManager;
+import org.openide.NotifyDescriptor;
+import org.openide.nodes.*;
 import com.netbeans.ddl.*;
 import com.netbeans.enterprise.modules.db.explorer.*;
 import com.netbeans.enterprise.modules.db.explorer.infos.*;

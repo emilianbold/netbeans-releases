@@ -26,9 +26,9 @@ import com.netbeans.enterprise.modules.db.DatabaseException;
 import com.netbeans.enterprise.modules.db.explorer.*;
 import com.netbeans.enterprise.modules.db.explorer.nodes.*;
 import com.netbeans.enterprise.modules.db.explorer.actions.DatabaseAction;
-import com.netbeans.ide.nodes.Node;
-import com.netbeans.ide.util.actions.SystemAction;
-import com.netbeans.ide.util.NbBundle;
+import org.openide.nodes.Node;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.NbBundle;
 
 public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 {

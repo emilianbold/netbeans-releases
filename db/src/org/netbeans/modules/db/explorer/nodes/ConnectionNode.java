@@ -16,7 +16,7 @@ package com.netbeans.enterprise.modules.db.explorer.nodes;
 import java.util.*;
 import java.beans.*;
 import java.sql.*;
-import com.netbeans.ide.util.MapFormat;
+import org.openide.util.MapFormat;
 import com.netbeans.ddl.*;
 import com.netbeans.ddl.impl.SpecificationFactory;
 import com.netbeans.ddl.impl.Specification;

@@ -16,7 +16,7 @@ package com.netbeans.enterprise.modules.db.explorer.infos;
 import java.sql.*;
 import java.util.*;
 import com.netbeans.ddl.*;
-import com.netbeans.ide.nodes.Node;
+import org.openide.nodes.Node;
 import com.netbeans.enterprise.modules.db.DatabaseException;
 import com.netbeans.enterprise.modules.db.explorer.DatabaseNodeChildren;
 import com.netbeans.enterprise.modules.db.explorer.infos.*;

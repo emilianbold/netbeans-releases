@@ -19,7 +19,7 @@ import java.sql.*;
 import com.netbeans.ddl.*;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeListener;
-import com.netbeans.ide.nodes.Node;
+import org.openide.nodes.Node;
 import com.netbeans.ddl.util.PListReader;
 import com.netbeans.enterprise.modules.db.*;
 import com.netbeans.enterprise.modules.db.explorer.*;

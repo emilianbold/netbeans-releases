@@ -15,10 +15,10 @@
 package com.netbeans.enterprise.modules.db.explorer.actions;
 
 import java.util.ResourceBundle;
-import com.netbeans.ide.util.NbBundle;
+import org.openide.util.NbBundle;
 import com.netbeans.ddl.impl.*;
-import com.netbeans.ide.*;
-import com.netbeans.ide.nodes.Node;
+import org.openide.*;
+import org.openide.nodes.Node;
 import com.netbeans.enterprise.modules.db.explorer.*;
 import com.netbeans.enterprise.modules.db.explorer.nodes.*;
 import com.netbeans.enterprise.modules.db.explorer.infos.*;

@@ -14,10 +14,10 @@
 
 package com.netbeans.enterprise.modules.db.explorer.actions;
 
-import com.netbeans.ide.*;
-import com.netbeans.ide.util.*;
-import com.netbeans.ide.util.actions.*;
-import com.netbeans.ide.nodes.*;
+import org.openide.*;
+import org.openide.util.*;
+import org.openide.util.actions.*;
+import org.openide.nodes.*;
 import com.netbeans.enterprise.modules.db.explorer.nodes.*;
 import com.netbeans.enterprise.modules.db.explorer.infos.*;
 import com.netbeans.enterprise.modules.db.explorer.DatabaseDriver;

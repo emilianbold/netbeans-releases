@@ -18,9 +18,9 @@ import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import com.netbeans.ide.DialogDescriptor;
-import com.netbeans.ide.TopManager;
-import com.netbeans.ide.util.NbBundle;
+import org.openide.DialogDescriptor;
+import org.openide.TopManager;
+import org.openide.util.NbBundle;
 
 import com.netbeans.enterprise.modules.db.explorer.*;
 

@@ -15,11 +15,11 @@ package com.netbeans.enterprise.modules.db.explorer.nodes;
 
 import java.io.IOException;
 import java.util.*;
-import com.netbeans.ide.*;
-import com.netbeans.ide.nodes.*;
-import com.netbeans.ide.util.MapFormat;
-import com.netbeans.ide.util.NbBundle;
-import com.netbeans.ide.util.actions.SystemAction;
+import org.openide.*;
+import org.openide.nodes.*;
+import org.openide.util.MapFormat;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 import java.awt.datatransfer.Transferable;
 import com.netbeans.enterprise.modules.db.explorer.*;
 import com.netbeans.enterprise.modules.db.explorer.actions.*;

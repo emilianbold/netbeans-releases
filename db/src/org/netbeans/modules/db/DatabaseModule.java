@@ -14,8 +14,8 @@
 package com.netbeans.enterprise.modules.db;
 
 import java.io.*;
-import com.netbeans.ide.modules.*;
-import com.netbeans.ide.TopManager;
+import org.openide.modules.*;
+import org.openide.TopManager;
 
 /**
 * DB module.
@@ -39,6 +39,8 @@ public class DatabaseModule extends Object implements ModuleInstall
 
 /*
 * <<Log>>
+*  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
+*       org.openide ----
 *  3    Gandalf   1.2         5/21/99  Slavek Psenicka new version
 *  2    Gandalf   1.1         5/14/99  Slavek Psenicka new version
 *  1    Gandalf   1.0         4/23/99  Slavek Psenicka 

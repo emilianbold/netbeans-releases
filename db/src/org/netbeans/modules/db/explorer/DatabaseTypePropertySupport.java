@@ -17,7 +17,7 @@ import java.util.*;
 import java.beans.PropertyEditor;
 import com.netbeans.ddl.impl.*;
 import com.netbeans.enterprise.modules.db.explorer.infos.DatabaseNodeInfo;
-import com.netbeans.ide.nodes.PropertySupport;
+import org.openide.nodes.PropertySupport;
 
 public class DatabaseTypePropertySupport extends DatabasePropertySupport
 {

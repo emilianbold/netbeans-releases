@@ -16,8 +16,8 @@ package com.netbeans.enterprise.modules.db.explorer.actions;
 
 import java.sql.*;
 import com.netbeans.ddl.impl.*;
-import com.netbeans.ide.*;
-import com.netbeans.ide.nodes.*;
+import org.openide.*;
+import org.openide.nodes.*;
 import com.netbeans.enterprise.modules.db.explorer.nodes.*;
 import com.netbeans.enterprise.modules.db.explorer.dlg.*;
 import com.netbeans.enterprise.modules.db.explorer.infos.*;

@@ -15,13 +15,13 @@
 package com.netbeans.enterprise.modules.db.explorer.actions;
 
 import java.util.ResourceBundle;
-import com.netbeans.ide.*;
-import com.netbeans.ide.util.NbBundle;
+import org.openide.*;
+import org.openide.util.NbBundle;
 import java.util.*;
 import java.awt.FileDialog;
 import java.io.*;
 import java.sql.Connection;
-import com.netbeans.ide.nodes.*;
+import org.openide.nodes.*;
 import com.netbeans.enterprise.modules.db.explorer.nodes.*;
 import com.netbeans.enterprise.modules.db.explorer.infos.*;
 import javax.swing.JFileChooser;
