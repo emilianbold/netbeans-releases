@@ -2827,6 +2827,14 @@ public class GandalfPersistenceManager extends PersistenceManager {
                                    XML_A11Y_PROPERTIES, buf, indent))
                     raiseFormatVersion(NB34_VERSION);
             }
+            else if (component instanceof RADMenuItemComponent) {
+                // try to save accessibility properties
+                FormProperty[] accProps = ((RADMenuItemComponent)component)
+                                            .getAccessibilityProperties();
+                if (saveProperties(accProps,
+                                   XML_A11Y_PROPERTIES, buf, indent))
+                    raiseFormatVersion(NB34_VERSION);
+            }
         }
 
         // 1. Synthetic properties - only for top frame or dialog (ugly, but

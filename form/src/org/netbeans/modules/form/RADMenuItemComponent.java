@@ -15,6 +15,10 @@ package org.netbeans.modules.form;
 
 import java.awt.*;
 import javax.swing.*;
+import javax.accessibility.*;
+import java.beans.PropertyEditor;
+
+import org.openide.nodes.Node;
 
 /**
  * RADMenuItemComponent represents one menu item component in the Form.
@@ -23,6 +27,9 @@ import javax.swing.*;
  */
 
 public class RADMenuItemComponent extends RADComponent {
+
+    private MetaAccessibleContext accessibilityData;
+    private FormProperty[] accessibilityProperties;
 
     /** Type of menu */
     private int type;
@@ -57,10 +64,12 @@ public class RADMenuItemComponent extends RADComponent {
         return super.initInstance(beanClass);
     }
 
-    /** No synthetic properties for AWT Separator */
     protected org.openide.nodes.Node.Property[] createSyntheticProperties() {
-        if (type == T_SEPARATOR) return RADComponent.NO_PROPERTIES;
-        else return super.createSyntheticProperties();
+        // no synthetic properties for AWT Separator
+        if (type == T_SEPARATOR)
+            return RADComponent.NO_PROPERTIES;
+        else
+            return super.createSyntheticProperties();
     }
 
     int getMenuItemType() {
@@ -99,5 +108,206 @@ public class RADMenuItemComponent extends RADComponent {
             return T_JPOPUPMENU;
 
         throw new IllegalArgumentException("Cannot create RADMenuItemComponent for class: "+cl.getName()); // NOI18N
+    }
+
+    // ----------
+    // accessibility properties
+
+    // [The following code duplicates lots of code from RADVisualComponent.
+    // It appears not only here that the metacomponents need to be reworked...]
+
+    protected void createPropertySets(java.util.List propSets) {
+        super.createPropertySets(propSets);
+
+        if (accessibilityProperties == null)
+            createAccessibilityProperties();
+
+        if (accessibilityProperties.length > 0)
+            propSets.add(new Node.PropertySet(
+                "accessibility", // NOI18N
+                FormUtils.getBundleString("CTL_AccessibilityTab"), // NOI18N
+                FormUtils.getBundleString("CTL_AccessibilityTabHint")) // NOI18N
+            {
+                public Node.Property[] getProperties() {
+                    return getAccessibilityProperties();
+                }
+            });
+    }
+
+    public FormProperty getPropertyByName(String name) {
+        if (accessibilityProperties == null)
+            createAccessibilityProperties();
+        return super.getPropertyByName(name);
+    }
+
+    protected void clearProperties() {
+        super.clearProperties();
+        accessibilityData = null;
+        accessibilityProperties = null;
+    }
+
+    public FormProperty[] getAccessibilityProperties() {
+        if (accessibilityProperties == null)
+            createAccessibilityProperties();
+        return accessibilityProperties;
+    }
+
+    private void createAccessibilityProperties() {
+        Object comp = getBeanInstance();
+        if (comp instanceof Accessible
+            && ((Accessible)comp).getAccessibleContext() != null)
+        {
+            if (accessibilityData == null)
+                accessibilityData = new MetaAccessibleContext();
+            accessibilityProperties = accessibilityData.getProperties();
+
+            for (int i=0; i < accessibilityProperties.length; i++) {
+                FormProperty prop = accessibilityProperties[i];
+                setPropertyListener(prop);
+                prop.setPropertyContext(
+                    new RADProperty.RADPropertyContext(this));
+                nameToProperty.put(prop.getName(), prop);
+            }
+        }
+        else {
+            accessibilityData = null;
+            accessibilityProperties = NO_PROPERTIES;
+        }
+    }
+
+    private class MetaAccessibleContext {
+        private Object accName = BeanSupport.NO_VALUE;
+        private Object accDescription = BeanSupport.NO_VALUE;
+        private Object accParent = BeanSupport.NO_VALUE;
+
+        private FormProperty[] properties;
+
+        FormProperty[] getProperties() {
+            if (properties == null) {
+                properties = new FormProperty[] {
+                    new FormProperty(
+                        "AccessibleContext.accessibleName", // NOI18N
+                        String.class,
+                        FormUtils.getBundleString("PROP_AccessibleName"), // NOI18N
+                        FormUtils.getBundleString("PROP_AccessibleName")) // NOI18N
+                    {
+                        public Object getTargetValue() {
+                            return accName != BeanSupport.NO_VALUE ?
+                                       accName : getDefaultValue();
+                        }
+                        public void setTargetValue(Object value) {
+                            accName = (String) value;
+                        }
+                        public boolean supportsDefaultValue () {
+                            return true;
+                        }
+                        public Object getDefaultValue() {
+                            return getAccessibleContext().getAccessibleName();
+                        }
+                        public void restoreDefaultValue()
+                            throws IllegalAccessException,
+                                   java.lang.reflect.InvocationTargetException
+                        {
+                            super.restoreDefaultValue();
+                            accName = BeanSupport.NO_VALUE;
+                        }
+                        String getPartialSetterCode() {
+                            return "getAccessibleContext().setAccessibleName(" // NOI18N
+                                   + getJavaInitializationString() + ")"; // NOI18N
+                        }
+                    },
+
+                    new FormProperty(
+                        "AccessibleContext.accessibleDescription", // NOI18N
+                        String.class,
+                        FormUtils.getBundleString("PROP_AccessibleDescription"), // NOI18N
+                        FormUtils.getBundleString("PROP_AccessibleDescription")) // NOI18N
+                    {
+                        public Object getTargetValue() {
+                            return accDescription != BeanSupport.NO_VALUE ?
+                                       accDescription : getDefaultValue();
+                        }
+                        public void setTargetValue(Object value) {
+                            accDescription = (String) value;
+                        }
+                        public boolean supportsDefaultValue () {
+                            return true;
+                        }
+                        public Object getDefaultValue() {
+                            return getAccessibleContext().getAccessibleDescription();
+                        }
+                        public void restoreDefaultValue()
+                            throws IllegalAccessException,
+                                   java.lang.reflect.InvocationTargetException
+                        {
+                            super.restoreDefaultValue();
+                            accDescription = BeanSupport.NO_VALUE;
+                        }
+                        String getPartialSetterCode() {
+                            return
+                              "getAccessibleContext().setAccessibleDescription(" // NOI18N
+                              + getJavaInitializationString() + ")"; // NOI18N
+                        }
+                    },
+
+                    new FormProperty(
+                        "AccessibleContext.accessibleParent", // NOI18N
+                        Accessible.class,
+                        FormUtils.getBundleString("PROP_AccessibleParent"), // NOI18N
+                        FormUtils.getBundleString("PROP_AccessibleParent")) // NOI18N
+                    {
+                        public Object getTargetValue() {
+                            return accParent != BeanSupport.NO_VALUE ?
+                                       accParent : getDefaultValue();
+                        }
+                        public void setTargetValue(Object value) {
+                            accParent = (Accessible) value;
+                        }
+                        public boolean supportsDefaultValue () {
+                            return true;
+                        }
+                        public Object getDefaultValue() {
+                            Object acP = getAccessibleContext()
+                                             .getAccessibleParent();
+                            if (acP != null) {
+                                RADComponent metacont = getParentComponent();
+                                if (metacont != null
+                                        && metacont.getBeanInstance() == acP)
+                                    return metacont;
+                            }
+                            return acP;
+                        }
+                        public void restoreDefaultValue()
+                            throws IllegalAccessException,
+                                   java.lang.reflect.InvocationTargetException
+                        {
+                            super.restoreDefaultValue();
+                            accParent = BeanSupport.NO_VALUE;
+                        }
+                        public PropertyEditor getExpliciteEditor() {
+                            return new AccessibleParentEditor();
+                        }
+                        String getPartialSetterCode() {
+                            String str = getJavaInitializationString();
+                            return str == null ? null :
+                                "getAccessibleContext().setAccessibleParent(" // NOI18N
+                                + str + ")"; // NOI18N
+                        }
+                    }
+                };
+            }
+            return properties;
+        }
+
+        private AccessibleContext getAccessibleContext() {
+            return ((Accessible)getBeanInstance()).getAccessibleContext();
+        }
+    }
+
+    public static class AccessibleParentEditor extends ComponentChooserEditor {
+        public AccessibleParentEditor() {
+            super();
+            setBeanTypes(new Class[] { Accessible.class });
+        }
     }
 }

@@ -765,9 +765,8 @@ class JavaCodeGenerator extends CodeGenerator {
 
         generateComponentInit(comp, initCodeWriter);
         generateComponentEvents(comp, initCodeWriter);
-        if (comp.getParentComponent() == null
-                && comp instanceof RADVisualComponent)
-            generateAccessibilityCode((RADVisualComponent)comp, initCodeWriter);
+        if (comp.getParentComponent() == null)
+            generateAccessibilityCode(comp, initCodeWriter);
 
         if (comp instanceof ComponentContainer) {
             RADComponent[] children =((ComponentContainer)comp).getSubBeans();
@@ -788,9 +787,7 @@ class JavaCodeGenerator extends CodeGenerator {
                                         initCodeWriter);
                 } // [PENDING - adding to non-visual containers]
 
-                if (subcomp instanceof RADVisualComponent)
-                    generateAccessibilityCode((RADVisualComponent)subcomp,
-                                              initCodeWriter);
+                generateAccessibilityCode(subcomp, initCodeWriter);
 
                 initCodeWriter.write("\n"); // NOI18N
             }
@@ -1028,7 +1025,7 @@ class JavaCodeGenerator extends CodeGenerator {
         }
     }
 
-    private void generateAccessibilityCode(RADVisualComponent comp,
+    private void generateAccessibilityCode(RADComponent comp,
                                            Writer initCodeWriter)
         throws IOException
     {
@@ -1036,7 +1033,13 @@ class JavaCodeGenerator extends CodeGenerator {
         if (!comp.hasHiddenState() 
                 && (genType == null || VALUE_GENERATE_CODE.equals(genType)))
         {   // not serialized
-            FormProperty[] props = comp.getAccessibilityProperties();
+            FormProperty[] props;
+            if (comp instanceof RADVisualComponent)
+                props = ((RADVisualComponent)comp).getAccessibilityProperties();
+            else if (comp instanceof RADMenuItemComponent)
+                props = ((RADMenuItemComponent)comp).getAccessibilityProperties();
+            else return;
+
             for (int i=0; i < props.length; i++) {
                 FormProperty prop = props[i];
                 if (prop.isChanged() || prop.getPreCode() != null
@@ -1140,7 +1143,7 @@ class JavaCodeGenerator extends CodeGenerator {
             initCodeWriter.write(container.getName());
             initCodeWriter.write(".add("); // NOI18N
             initCodeWriter.write(comp.getName());
-            initCodeWriter.write(");"); // NOI18N
+            initCodeWriter.write(");\n"); // NOI18N
         }
     }
 
