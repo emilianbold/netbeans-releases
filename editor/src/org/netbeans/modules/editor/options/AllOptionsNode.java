@@ -54,6 +54,10 @@ public class AllOptionsNode extends FilterNode {
         return NbBundle.getMessage(AllOptionsNode.class, "OPTIONS_all"); //NOI18N
     }
 
+    public String getShortDescription(){
+        return null;
+    }
+    
     // #7925
     public boolean canDestroy() {
         return false;
