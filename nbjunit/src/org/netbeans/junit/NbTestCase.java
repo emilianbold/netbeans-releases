@@ -827,7 +827,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      * @param limit maximal allowed heap size of the structure
      */
     public static void assertSize(String message, Collection roots, int limit) {
-	assertSize(message, roots, limit, null);
+	assertSize(message, roots, limit, new Object[0]);
     }
 
     /** Assert size of some structure. Traverses the whole reference
@@ -870,4 +870,43 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     }
 
 
+    /** Assert size of some structure. Traverses the whole reference
+     * graph of objects accessible from given roots and check its size
+     * against the limit.
+     * @param message the text to show when test fails.
+     * @param roots the collection of root objects from which to traverse
+     * @param limit maximal allowed heap size of the structure
+     * @param skip custom filter for counted objects
+     * @return actual size or <code>-1</code> on internal error.
+     */
+    public static int assertSize(String message, Collection roots, int limit, MemoryFilter skip) {
+         try {
+            Collection c = MemoryCounter.countInstances(roots, skip);
+            int sum = 0;
+            for(Iterator it = c.iterator(); it.hasNext(); ) {
+                MemoryCounter.ClassInfo ci = (MemoryCounter.ClassInfo)it.next();
+                sum += ci.getTotalSize();
+            }
+            if (sum > limit) {
+                StringBuffer sb = new StringBuffer (4096);
+                sb.append (message); 
+                sb.append (": leak " + (sum-limit) + " bytes ");
+                sb.append (" over limit of ");
+                sb.append (limit + " bytes");
+                sb.append ('\n');
+                for(Iterator it = c.iterator(); it.hasNext(); ) {
+                    sb.append ("  ");
+                    MemoryCounter.ClassInfo ci = (MemoryCounter.ClassInfo)it.next();
+                    sb.append (ci.toString ());
+                    sb.append ('\n');
+                }
+		fail(sb.toString());
+            }
+            return sum; 
+        } catch (Exception e) {
+            fail("Could not traverse reference graph");
+        }
+        return -1; // fail throws for sure
+    }
+    
 }
