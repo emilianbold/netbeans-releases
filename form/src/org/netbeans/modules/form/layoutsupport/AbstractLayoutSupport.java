@@ -18,6 +18,7 @@ import java.beans.*;
 import java.util.*;
 import org.openide.nodes.*;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 
@@ -27,17 +28,6 @@ import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 
 public abstract class AbstractLayoutSupport implements LayoutSupport
 {
-    private static Image defaultLayoutIcon =
-        Toolkit.getDefaultToolkit().getImage(
-            AbstractLayoutSupport.class.getResource(
-                "resources/AbstractLayout.gif")); // NOI18N
-    private static Image defaultLayoutIcon32 =
-        Toolkit.getDefaultToolkit().getImage(
-            AbstractLayoutSupport.class.getResource(
-                "resources/AbstractLayout32.gif")); // NOI18N
-
-    private static ResourceBundle bundle = null;
-
     private RADComponent metaLayout;
 
     private RADVisualContainer container;
@@ -56,9 +46,9 @@ public abstract class AbstractLayoutSupport implements LayoutSupport
         switch (type) {
             case BeanInfo.ICON_COLOR_16x16:
             case BeanInfo.ICON_MONO_16x16:
-                return defaultLayoutIcon;
+                return Utilities.loadImage("org/netbeans/modules/form/layoutsupport/resources/AbstractLayout.gif"); // NOI18N
             default:
-                return defaultLayoutIcon32;
+                return Utilities.loadImage("org/netbeans/modules/form/layoutsupport/resources/AbstractLayout32.gif"); // NOI18N
         }
     }
     
@@ -291,8 +281,6 @@ public abstract class AbstractLayoutSupport implements LayoutSupport
     }
 
     static protected ResourceBundle getBundle() {
-        if (bundle == null)
-            bundle = NbBundle.getBundle(AbstractLayoutSupport.class);
-        return bundle;
+        return NbBundle.getBundle(AbstractLayoutSupport.class);
     }
 }
