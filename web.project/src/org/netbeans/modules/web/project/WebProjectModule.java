@@ -166,7 +166,6 @@ public class WebProjectModule extends ModuleInstall {
         
         public ActionWrapper( Action action ) {
             this.action = action;
-            this.action.addPropertyChangeListener( this );
         }
             
         public String getName() {
@@ -191,6 +190,16 @@ public class WebProjectModule extends ModuleInstall {
         
         public boolean isEnabled() {
             return action.isEnabled();            
+        }
+        
+        protected void addNotify() {
+            this.action.addPropertyChangeListener( this );
+            super.addNotify();
+        }
+        
+        protected void removeNotify() {
+            this.action.removePropertyChangeListener( this );
+            super.removeNotify();
         }
         
         public void performAction() {
