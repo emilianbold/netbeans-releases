@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -29,7 +29,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 /** Class provides support for storing and reading session settings.
- * !!! KEEP CODE SYNCHRONOUS WITH org.netbeans.core.projects.XMLSettingsSupport !!!
  *
  * @see SerialDataConvertor
  * @author  Jan Pokorsky
@@ -38,7 +37,6 @@ final class XMLSettingsSupport {
     
     public static final String INSTANCE_DTD_ID = "-//NetBeans//DTD Session settings 1.0//EN"; // NOI18N
     public static final String INSTANCE_DTD_WWW = "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd"; // NOI18N
-    public static final String INSTANCE_DTD_LOCAL = "/org/openide/resources/sessionsettings-1_0.dtd"; // NOI18N
     /** File extension for xml settings. */
     public static final String XML_EXT = "settings"; //NOI18N
     

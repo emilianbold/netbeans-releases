@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -22,8 +22,6 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.*;
 
 /** Provides support for async storing of a setting objects.
- * !!! KEEP CODE SYNCHRONOUS WITH org.netbeans.core.projects.ScheduledRequest !!!
- *
  * @author  Jan Pokorsky
  */
 public final class ScheduledRequest implements Runnable {

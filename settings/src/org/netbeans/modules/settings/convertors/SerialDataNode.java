@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -44,8 +44,6 @@ import org.openide.util.actions.*;
 import org.openide.nodes.*;
 
 /** Node to represent a .settings file.
- * !!! KEEP CODE SYNCHRONOUS WITH org.netbeans.core.projects.SerialDataNode !!!
- *
  * @author Jan Pokorsky
  */
 public final class SerialDataNode extends DataNode {

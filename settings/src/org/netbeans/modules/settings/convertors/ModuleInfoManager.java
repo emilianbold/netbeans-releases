@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,8 +21,6 @@ import org.openide.util.LookupListener;
 import org.openide.util.LookupEvent;
 
 /** Manager providing ModuleInfo of all modules presented in the system.
- * !!! KEEP CODE SYNCHRONOUS WITH org.netbeans.core.projects.ModuleInfoManager !!!
- *
  * @author  Jan Pokorsky
  */
 final class ModuleInfoManager {

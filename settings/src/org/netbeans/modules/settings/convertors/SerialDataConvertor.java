@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -39,11 +39,8 @@ import org.netbeans.modules.settings.Env;
 import org.netbeans.modules.settings.ScheduledRequest;
 
 /** Convertor handles serialdata format described in
- * http://www.netbeans.org/dtds/sessionsettings-1_0.dtd. The convertor overrides
- * implementation from org.netbeans.core.projects.SerialDataConvertor and adds
- * the upgrade possibility.
- * !!! KEEP CODE SYNCHRONOUS WITH org.netbeans.core.projects.SerialDataConvertor !!!
- *
+ * http://www.netbeans.org/dtds/sessionsettings-1_0.dtd. The convertor replaces
+ * the old org.netbeans.core.projects.SerialDataConvertor.
  * @author  Jan Pokorsky
  */
 public final class SerialDataConvertor extends org.openide.filesystems.FileChangeAdapter
