@@ -32,7 +32,6 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/openide/loaders/*Folder*.class"/>                
                 <!-- Don't worry about these, cannot be fixed currently: -->
                 <exclude name="org/openide/loaders/DataFolderTest.class/testSortMode"/> <!-- failing in cont. test -->
-                <exclude name="org/openide/loaders/DataFolderTest.class/testMove"/> <!-- failing in cont. test -->
                 <exclude name="org/openide/loaders/DataFolderTest.class/testPropChildrenFiredAfterInvalidation"/> <!-- failing in cont. test -->
                 <exclude name="org/openide/loaders/DataFolderTest.class/testOrderWhenMultiFileSystemSetDelegatesIsCalled" /> <!-- failing in cont. test -->
                 <!-- following was disabled because of issue #20179 -->
@@ -101,7 +100,6 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="org/openide/loaders/CreateFromTemplateTest.class"/>
                 <!-- Don't worry about these, cannot be fixed currently: -->
                 <exclude name="org/openide/loaders/DataFolderTest.class/testSortMode"/> <!-- failing in cont. test -->
-                <exclude name="org/openide/loaders/DataFolderTest.class/testMove"/> <!-- failing in cont. test -->
                 <exclude name="org/openide/loaders/DataFolderTest.class/testPropChildrenFiredAfterInvalidation"/> <!-- failing in cont. test -->
                 <!-- following was disabled because of issue #20179 -->
                 <exclude name="org/openide/loaders/DataFolderMoveTest.class"/>
@@ -178,7 +176,6 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart8"/>
                 <!-- failing in cont. test -->
                 <include name="org/openide/loaders/DataFolderTest.class/testSortMode"/>
-                <include name="org/openide/loaders/DataFolderTest.class/testMove"/>
                 <include name="org/openide/loaders/DataFolderTest.class/testPropChildrenFiredAfterInvalidation"/>
                 <!-- #28118 -->
                 <include name="org/openide/loaders/InstanceDataObjectTest.class/testFiringEventWhenDeleted"/>
