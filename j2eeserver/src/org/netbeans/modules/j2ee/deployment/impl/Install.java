@@ -40,7 +40,11 @@ public class Install extends org.openide.modules.ModuleInstall {
             for (Iterator i=instances.iterator(); i.hasNext();) {
                 ServerInstance inst = (ServerInstance) i.next();
                 if (inst.startedByIde()) {
-                    inst.stop(ui);
+                    if (inst.canStopDontWait()) {
+                        inst.stopDontWait();
+                    } else {
+                        inst.stop(ui);
+                    }
                 }
             }
         }

@@ -413,6 +413,21 @@ public class ServerInstance implements Node.Cookie {
         }
     }
 
+    /** Stop the server and do not wait for response.
+     * This will be used at IDE exit.
+     */
+    public void stopDontWait() {
+        if (isReallyRunning()) {
+            assert startServer.canStopDeploymentManagerSilently() : "server does not support silent stop of deployment manager";
+            startServer.stopDeploymentManagerSilently();
+        }
+    }
+    
+    /** see stopDontWait */
+    public boolean canStopDontWait() {
+        return startServer.canStopDeploymentManagerSilently();
+    }
+    
     //------------------------------------------------------------
     // multiplexor state-machine core
     private boolean startTarget(Target target, DeployProgressUI ui, boolean debugMode) {
