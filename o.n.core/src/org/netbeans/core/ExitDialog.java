@@ -401,13 +401,6 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
         
         panel.add(view, cons);
         
-        cons.gridy = 2;
-        cons.weighty = 0.0D;
-        cons.fill = GridBagConstraints.HORIZONTAL;
-        cons.insets = new Insets(11, 11, 0, 12);
-        
-        panel.add(new InfiniteProgress(), cons);
-        
         view.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ExitDialog.class)
             .getString("ACSD_PendingTasks"));
         panel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ExitDialog.class)
@@ -672,101 +665,6 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
         }
         
     } // End of class PendingActionNode.
-
-
-    /** Infinite progress bar. */
-    private static class InfiniteProgress extends JPanel
-    implements ActionListener {
-
-        /** Swing timer used to repaint the component. */
-        private Timer timer;
-
-        // XXX There could be a nicer repainting policy created for sure.
-        /** Index indicating current position of gap whitin a drawing block. */
-        private int index;
-        /** Index of gap whitin a block.  */
-        private final int gapIndex;
-        /** Width of one cell in the block. */
-        private int cellWidth;
-
-
-        /** Constructs infinite progress. */
-        public InfiniteProgress() {
-            this.gapIndex = 4;
-            this.cellWidth = getFontMetrics(getFont()).charWidth('n');
-            
-            setBorder(BorderFactory.createEtchedBorder());
-            setForeground(UIManager.getColor("Label.foreground")); // NOI18N
-            
-            getAccessibleContext().setAccessibleName(
-                NbBundle.getBundle(ExitDialog.class)
-                .getString("ACC_InfiniteProgressName"));
-            getAccessibleContext().setAccessibleDescription(
-                NbBundle.getBundle(ExitDialog.class)
-                .getString("ACC_InfiniteProgressDesc"));
-        }
-        
-        /** Indicates whether the component can receive focus. Overrides 
-         * superclass method.
-         * @return <code>true</code> */
-        public boolean isFocusTraversable() {
-            return true;
-        }
-        
-        /** Overrides superclass method. Adds starting of timer. */
-        public void addNotify() {
-            super.addNotify();
-            
-            getTimer().start();
-        }
-        
-        /** Overrides superclass method. Adds stopping of timer. */
-        public void removeNotify() {
-            getTimer().stop();
-            
-            super.removeNotify();
-        }
-        
-        /** Gets timer. */
-        private synchronized Timer getTimer() {
-            if(timer == null) {
-                timer = new Timer(40, this);
-            }
-            
-            return timer;
-        }
-
-        /** Implements <code>ActionPerformed</code> interface. */
-        public void actionPerformed(ActionEvent evt) {
-            index++;
-            if(index >= gapIndex) {
-                index = 0;
-            }
-            
-            repaint();
-        }
-
-        /** Overrides supeclass method. Adds painting of progress. */
-        protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            
-            Rectangle rect = g.getClipBounds();
-            
-            for(int i = 0, pos = 0 ; pos < rect.width; pos += cellWidth, i++) {
-                if(i % gapIndex != index) {
-                    g.fillRect(pos, 0, cellWidth, rect.height);
-                }
-            }
-            
-            if(hasFocus()) {
-                Color oldColor = g.getColor();
-                g.setColor(UIManager.getColor("Button.focus")); // NOI18N
-                
-                g.drawRect(rect.x + 2, rect.y + 2, rect.width - 5, rect.height - 5);
-                g.setColor(oldColor);
-            }
-        }
-    } // End of class InfiniteProgress.
     
     
     /** Renderer used in list box of exit dialog
