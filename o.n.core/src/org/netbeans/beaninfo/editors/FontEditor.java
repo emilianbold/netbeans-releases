@@ -349,7 +349,10 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             }
             FontEditor.this.setValue (new Font (tfFont.getText (), ii, size));
             invalidate();
-            getParent ().validate();
+            java.awt.Component p = getParent();
+            if (p != null) {
+                p.validate();
+            } 
             repaint();
         }
     }
