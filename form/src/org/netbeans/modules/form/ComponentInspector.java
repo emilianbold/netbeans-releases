@@ -279,7 +279,7 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
         setName(INSPECTOR_TITLE);
     }
 
-    FormEditorSupport getFocusedForm() {
+    public FormEditorSupport getFocusedForm() {
         return focusedForm;
     }
 
