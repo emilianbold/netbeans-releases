@@ -12,14 +12,14 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="xml" default="netbeans" basedir=".">
+<project name="xml/text-edit" default="netbeans" basedir=".">
 
     <property name="xml_root" location=".."/>
     <property name="tax_root" location="../tax"/>
     <property name="core_root" location="../core"/>
 
-    <property name="nb_root" location="${xml_root}/.."/>
-    <property name="bin_root" location="${nb_root}/../nbextra"/>
+    <property name="nb_root" location="${xml_root}/../../nb_all"/>
+    <property name="bin_root" location="${xml_root}/../../nbextra"/>
     <property name="nbext_root" location="${nb_root}/nbbuild"/>
 
     <property name="license.file" location="${nb_root}/nbbuild/standard-nbm-license.txt"/>
@@ -36,7 +36,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="init">
         <tstamp/>
-        <property name="buildnumber" value="${DSTAMP}-${TSTAMP}"/>
+        <property name="buildnumber" value="${DSTAMP}${TSTAMP}"/>
         <echo message="buildnumber = ${buildnumber}"/>
     </target>
 
