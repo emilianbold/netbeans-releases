@@ -51,6 +51,10 @@
 			</TR>
 		</TABLE>
 	</P>
+        <xsl:if test="@unexpectedFailure">
+                <h3>Unexpected Failure:</h3>
+                <p><blockquote><xsl:value-of select="@unexpectedFailure"/></blockquote></p>
+        </xsl:if>
 	<HR/>
 	<P>
 		<H3>Individual Tests:</H3>
