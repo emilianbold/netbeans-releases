@@ -31,7 +31,10 @@ final class NbErrorManager extends ErrorManager {
     /** maps Throwables to java.util.List (Ann) */
     private Map map = new WeakHashMap (11);
 
-    /** assciates each thread with the lastly notified throwable
+    /** The writer to the log file*/
+    private PrintWriter logWriter = null;
+    
+   /** assciates each thread with the lastly notified throwable
     * (Thread, Reference (Throwable))
     */
     private Map lastException = new WeakHashMap (27);
@@ -145,6 +148,20 @@ final class NbErrorManager extends ErrorManager {
         }
     }
 
+    /** */
+    public void log(int severity, String s) {
+        getLogWriter().println(s);
+        getLogWriter().flush(); 
+    }
+    
+    /** Returns an instance with given name. The name
+     * can be dot separated list of names creating
+     * a hierarchy.
+     */
+    public final ErrorManager getInstance(String name) {
+        // TODO: change this to create a hierarchy
+        return this;
+    }
 
     /** Finds annotations associated with given exception.
     * @param t the exception
@@ -163,6 +180,14 @@ final class NbErrorManager extends ErrorManager {
         return arr;
     }
 
+    /** Lazy getter for the writer */
+    private PrintWriter getLogWriter() {
+        if (logWriter == null) {
+            logWriter = new PrintWriter (TopLogging.getLogOutputStream ());
+        }
+        return logWriter;
+    }
+    
     /** Implementation of annotation interface.
     */
     private static final class Ann extends Object
