@@ -300,12 +300,14 @@ Microsystems, Inc. All Rights Reserved.
         <property name="xtest.workdir.idejars" value="${xtest.workdir}/sys/idejars"/>
         <mkdir dir="${xtest.workdir.idejars}"/>
         
+        <!-- let's put our jars under ${xtest.userdir}/xtest ... -->
+        <mkdir dir="${xtest.userdir}/xtest/lib/ext"/>
         
-        <copy file="${xtest.home}/lib/xtest.jar" todir="${netbeans.home}/lib"/>
-        <copy file="${xtest.home}/lib/xtest-junit-testrunner.jar" todir="${xtest.workdir.idejars}"/>
+        <copy file="${xtest.home}/lib/xtest.jar" todir="${xtest.userdir}/xtest/lib"/>        
+        <copy file="${xtest.home}/lib/junit.jar" todir="${xtest.userdir}/xtest/lib/ext"/>
+        <copy file="${xtest.home}/lib/nbjunit.jar" todir="${xtest.userdir}/xtest/lib/ext"/>
         
-        <copy file="${xtest.home}/lib/junit.jar" todir="${netbeans.home}/lib/ext"/>
-        <copy file="${xtest.home}/lib/nbjunit.jar" todir="${netbeans.home}/lib/ext"/>
+        <copy file="${xtest.home}/lib/xtest-junit-testrunner.jar" todir="${xtest.workdir.idejars}"/> 
         
 
         <antcall target="copy-user-jars"/>
@@ -326,11 +328,20 @@ Microsystems, Inc. All Rights Reserved.
                 <fileset dir="${netbeans.home}/modules/ext">
                     <include name="ant*.jar"/>
                 </fileset>
-                <fileset dir="${netbeans.home}/lib/ext">
-                    <include name="junit*.jar"/>
+                <fileset dir="${xtest.userdir}/xtest/lib/ext">
+                    <include name="*.jar"/>
                 </fileset>
             </classpath>
         </property>        
+        
+        <!-- now the most important - netbeans.classpath -->
+        <property name="xtest.netbeans.classpath" refid="xtest.netbeans.classpath">
+            <classpath id="xtest.netbeans.classpath">
+                <fileset dir="${xtest.userdir}/xtest/lib">
+                    <include name="xtest.jar"/>
+                </fileset>
+            </classpath>        
+        </property>
         
         <!-- temporary only !!!! remove ASAP -->
         <!--
@@ -338,7 +349,7 @@ Microsystems, Inc. All Rights Reserved.
         -->
         <property name="xtest.ide.security" value=""/>
         
-        <property name="args" value="-jdkhome ${jdkhome} -userdir &quot;${xtest.userdir}&quot; -nosplash -cp:p &quot;${xtest.ide.path}&quot; -J-Dnetbeans.mainclass=org.netbeans.xtest.ide.Main -J-Dtest.class=${test.class} -J-Dtest.classpath=&quot;${test.classpath}&quot; -J-Dtest.basedir=&quot;${basedir}&quot; -J-Dtest.ant.file=&quot;${ant.file}&quot; -J-Dtest.target=${test.target} -J-Dtest.reuse.ide=${xtest.reuse.ide} -J-Dxtest.home=&quot;${xtest.home}&quot; -J-Dxtest.includes=&quot;${xtest.includes}&quot; -J-Dxtest.excludes=&quot;${xtest.excludes}&quot; -J-Dtbag.classpath=&quot;${tbag.classpath}&quot; -J-Dtbag.patternset.include=${tbag.patternset.include} -J-Dtbag.patternset.exclude=${tbag.patternset.exclude} -J-Dtbag.testtype=${tbag.testtype} -J-Dtbag.formater=${tbag.formater} -J-Dtbag.name=&quot;${tbag.name}&quot; -J-Dtbag.executor=${tbag.executor} -J-Dxtest.module=&quot;${xtest.module}&quot; -J-Dxtest.attribs=&quot;${xtest.attribs}&quot; -J-Dxtest.distexec=true -J-Dtest.exit=${xtest.ide.exit} -J-Dtest.propertyfile=&quot;${test.propertyfile}&quot; -J-Dxtest.workdir=&quot;${xtest.workdir}&quot; -J-Dxtest.results=&quot;${xtest.results}&quot; -J-Dxtest.results.testrun.dir=&quot;${xtest.results.testrun.dir}&quot; -J-Dtest.output.redirect=true -J-Dnetbeans.full.hack=true -J-Djunit.properties.file=${junit.properties.file} -J-Dnetbeans.windows=${xtest.ide.winsys} -J-Dxtest.error.manager=${xtest.error.manager} -J-Dxtest.timeout=${xtest.timeout} -J-Dnetbeans.systemclassloader.patches=${xtest.netbeans.systemclassloader.patches} ${xtest.ide.security} ${xtest.ide.commandline.jvmargs} ${xtest.ide.commandline.suffix}"/>
+        <property name="args" value="-jdkhome ${jdkhome} -userdir &quot;${xtest.userdir}&quot; -nosplash -cp:p &quot;${xtest.ide.path}&quot; -J-Dnetbeans.classpath=&quot;${xtest.netbeans.classpath}&quot; -J-Dnetbeans.mainclass=org.netbeans.xtest.ide.Main -J-Dtest.class=${test.class} -J-Dtest.classpath=&quot;${test.classpath}&quot; -J-Dtest.basedir=&quot;${basedir}&quot; -J-Dtest.ant.file=&quot;${ant.file}&quot; -J-Dtest.target=${test.target} -J-Dtest.reuse.ide=${xtest.reuse.ide} -J-Dxtest.home=&quot;${xtest.home}&quot; -J-Dxtest.includes=&quot;${xtest.includes}&quot; -J-Dxtest.excludes=&quot;${xtest.excludes}&quot; -J-Dtbag.classpath=&quot;${tbag.classpath}&quot; -J-Dtbag.patternset.include=${tbag.patternset.include} -J-Dtbag.patternset.exclude=${tbag.patternset.exclude} -J-Dtbag.testtype=${tbag.testtype} -J-Dtbag.formater=${tbag.formater} -J-Dtbag.name=&quot;${tbag.name}&quot; -J-Dtbag.executor=${tbag.executor} -J-Dxtest.module=&quot;${xtest.module}&quot; -J-Dxtest.attribs=&quot;${xtest.attribs}&quot; -J-Dxtest.distexec=true -J-Dtest.exit=${xtest.ide.exit} -J-Dtest.propertyfile=&quot;${test.propertyfile}&quot; -J-Dxtest.workdir=&quot;${xtest.workdir}&quot; -J-Dxtest.results=&quot;${xtest.results}&quot; -J-Dxtest.results.testrun.dir=&quot;${xtest.results.testrun.dir}&quot; -J-Dtest.output.redirect=true -J-Dnetbeans.full.hack=true -J-Djunit.properties.file=${junit.properties.file} -J-Dnetbeans.windows=${xtest.ide.winsys} -J-Dxtest.error.manager=${xtest.error.manager} -J-Dxtest.timeout=${xtest.timeout} -J-Dnetbeans.systemclassloader.patches=${xtest.netbeans.systemclassloader.patches} ${xtest.ide.security} ${xtest.ide.commandline.jvmargs} ${xtest.ide.commandline.suffix}"/>
         <echo message="ARGUMENTS = ${args}"/>        
         
         <ideexec dir="${netbeans.home}/bin" executable="${netbeans.home}/bin/runide.exe" 
@@ -353,11 +364,10 @@ Microsystems, Inc. All Rights Reserved.
             <arg line="runide.sh ${args}"/>
         </ideexec>
 
-        <delete file="${netbeans.home}/lib/xtest.jar"/>
-        <delete file="${xtest.workdir.idejars}/xtest-junit-testrunner.jar"/>
-        <delete file="${netbeans.home}/lib/ext/junit.jar"/>
-        <delete file="${netbeans.home}/lib/ext/nbjunit.jar"/>
         
+        <delete dir="${xtest.userdir}/xtest"/>
+        
+        <delete file="${xtest.workdir.idejars}/xtest-junit-testrunner.jar"/>
                 
         <antcall target="delete-user-jars"/>
         
