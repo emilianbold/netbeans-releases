@@ -129,6 +129,7 @@ class FormToolBar extends JToolBar {
                                       SystemAction.get(InstallBeanAction.class);
         // Issue 46562
         JButton pmButton = add(paletteManagerAction);
+        pmButton.addMouseListener(listener);
         initButton(pmButton);
         Icon icon = (Icon)paletteManagerAction.getValue("hidden_icon"); // NOI18N
         if (icon == null) {
@@ -238,6 +239,9 @@ class FormToolBar extends JToolBar {
                            implements ActionListener, NodeAcceptor,
                                       PopupMenuListener
     {
+        // Determines whether palette popup menu should be shown (see issue 46673)
+        private boolean showMenu;
+        
         /** Action to switch to selection, connection or add mode. */
         public void actionPerformed(ActionEvent ev) {
             if (ev.getSource() == selectionButton)
@@ -245,8 +249,12 @@ class FormToolBar extends JToolBar {
             else if (ev.getSource() == connectionButton)
                 formDesigner.toggleConnectionMode();
             else if (ev.getSource() == paletteButton) {
-                formDesigner.toggleAddMode();
-                showPaletteViewMenu();
+                if (showMenu) {
+                    formDesigner.toggleAddMode();
+                    showPaletteViewMenu();
+                } else {
+                    formDesigner.toggleSelectionMode();
+                }
             }
         }
 
@@ -268,6 +276,12 @@ class FormToolBar extends JToolBar {
         public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
         }
         public void popupMenuCanceled(PopupMenuEvent e) {
+        }
+        
+        public void mousePressed(MouseEvent e) {
+            if (e.getSource() == paletteButton) {
+                showMenu = !paletteButton.isSelected();
+            }
         }
 
         /** Reacts on right mouse button up - showing toolbar's popup menu. */
