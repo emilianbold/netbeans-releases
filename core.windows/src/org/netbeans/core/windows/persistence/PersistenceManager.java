@@ -376,7 +376,7 @@ public final class PersistenceManager implements PropertyChangeListener {
      * make sure you call this only on TCs that are NOT TC.PERSISTENT_ALWAYS
      */
     public void removeGlobalTopComponentID(String id) {
-        System.out.println("removing id=" + id);
+//        System.out.println("removing id=" + id);
         globalIDSet.remove(id);
         WeakReference result = (WeakReference)id2TopComponentMap.remove(id);
         if (result != null) {
