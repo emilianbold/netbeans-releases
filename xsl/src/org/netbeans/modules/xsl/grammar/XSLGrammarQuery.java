@@ -498,7 +498,7 @@ public class XSLGrammarQuery implements GrammarQuery{
         
         String curXslPrefix = null;
         for (int ind = 0; ind < prefixList.size(); ind++) {
-            if (elTagName.startsWith((String)prefixList.get(ind))){
+            if (elTagName.startsWith((String)prefixList.get(ind) + ":")){
                 curXslPrefix = (String)prefixList.get(ind) + ":";
                 break;
             }
