@@ -136,7 +136,8 @@
     <tocitem text="Identifying Errors in Source Code" target="editing_error-marks"/>
     <tocitem text="Formatting Code" target="editing.formatting"/>
     <tocitem text="Finding and Replacing Text" target="editing.find"/>
-    <tocitem text="Folding Blocks of Code" target="editor.hiding"/>
+    <tocitem text="Folding Blocks of Code in Java Files" target="editor.hiding"/>
+    <tocitem text="Folding Blocks of Code in JSP or HTML Files" target="editor.hiding-jsp"/>
     <tocitem text="Pair Completion, Smart Enter, and Smart Semicolons" target="editor.smart-brackets"/>
     <tocitem text="Scanning for TODOs in Source Code" target="editing.tasks"/>
     <tocitem text="Using Code Completion" >

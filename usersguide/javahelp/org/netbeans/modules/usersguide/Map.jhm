@@ -158,6 +158,7 @@
 <mapID target="editing_error-marks" url="editing/editing_error-marks.html" />
 <mapID target="editing.tasks" url="editing/tasks_viewing.html" />
 <mapID target="editor.hiding" url="editing/editor_hiding.html" />
+<mapID target="editor.hiding-jsp" url="editing/editor_hiding-jsp.html" />
 <mapID target="editor.keystroke-savers" url="editing/editor_keystroke-savers.html" />
 <mapID target="editor.quickref" url="editing/editor_quickref.html" />
 <mapID target="editor.navigation" url="editing/editor_navigation.html" />

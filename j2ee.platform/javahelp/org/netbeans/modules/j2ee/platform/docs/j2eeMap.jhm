@@ -49,13 +49,12 @@
 		<mapID target="jsp_compile" url="web/create/jsp/jsp_compile.html" />
         	<mapID target="jsp_create" url="web/create/jsp/jsp_create.html" />
 		<mapID target="jsp_edit" url="web/create/jsp/jsp_edit.html" />
-		<mapID target="jsp_foldcode" url="web/create/jsp/jsp_foldcode.html" />
 		<mapID target="jsp_queryparams" url="web/create/jsp/jsp_queryparams.html" />
 		<mapID target="jsp_run" url="web/create/jsp/jsp_run.html" />
 		<mapID target="jsp_servletview" url="web/create/jsp/jsp_servletview.html" />
 		<mapID target="jsp_usetaglib" url="web/create/jsp/jsp_usetaglib.html" />
 		<mapID target="jsp_encoding" url="web/create/jsp/jsp_encoding.html" />
-		<mapID target="jsp_connectionpool_tomcat" url="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_use_tdcp.html" />
+<mapID target="jsp_connectionpool_tomcat" url="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_use_tdcp.html" />
 		<!-- End of "Create/JSP" subsection -->
 		<!-- Start of "Create/Listener" subsection -->
        		<mapID target="about_listener" url="web/create/listener/about_listener.html" />
@@ -109,12 +108,12 @@
 	<mapID target="deploy_webapp" url="web/deploy/deploy_webapp.html" />
 	<mapID target="deploy_changebrowser" url="web/deploy/deploy_changebrowser.html" />
 	<mapID target="deploy_changeserver" url="web/deploy/deploy_changeserver.html" />
-	<mapID target="deploy_tomcat_manager" url="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_edit_tomcatuser.html" />
+<mapID target="deploy_tomcat_manager" url="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_edit_tomcatuser.html" />
 	<!-- End of "Deploy" section -->
 
 	<!-- Start of "Debug" section -->
 	<mapID target="about_debug" url="web/debug/about_debug.html" />
-	<mapID target="debug_freeform" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/project/proj_webfree_debug.html" />
+<mapID target="debug_freeform" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/project/proj_webfree_debug.html" />
 	<!-- End of "Debug" section -->
 
 <!-- End of "Developing Web Applications" help -->
