@@ -329,7 +329,7 @@
   </tocitem>
 </tocitem>
 
-<tocitem text="Web Application">
+<tocitem text="Web Module Basics">
 
 <tocitem text="About Web Modules" >
    <tocitem text="About Web Modules" target="intro" />
@@ -431,7 +431,7 @@
 
     <tocitem text="Debugging Web Modules" > 
         <tocitem text="About Debugging Web Modules" target="jsp_debug"/>
-        <tocitem text="Validating JSP Syntax" target="jsp_validate" />
+<!--    <tocitem text="Validating JSP Syntax" target="jsp_validate" />  -->
         <tocitem text="Viewing a JSP's Servlet" target="jsp_servletview" />		
     </tocitem> <!-- Debugging Web Modules-->
     
