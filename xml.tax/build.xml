@@ -87,6 +87,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="javahelp">
+        <!-- It is a part of core module now. -->
     </target>
 
     <target name="netbeans" depends="jars,release,javahelp">
