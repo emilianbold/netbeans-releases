@@ -44,9 +44,12 @@ Microsystems, Inc. All Rights Reserved.
         <makeparserdb db="netbeans/system/ParserDB/DebuggerAPI" sources="../../debuggercore/oldapi/src" nbroot="../.."/>
         <makeparserdb db="netbeans/system/ParserDB/InputOutputAPI" sources="../../openide/io/src" nbroot="../.."/>
         <makeparserdb db="netbeans/system/ParserDB/JavaHelpAPI" sources="../../core/javahelp/src" nbroot="../.."/>
-        <makeparserdb db="netbeans/system/ParserDB/SettingsAPI" sources="../../core/settings/src" nbroot="../.."/>
         <makeparserdb db="netbeans/system/ParserDB/JavaSupportAPIs" sources="../../java/api/src" nbroot="../.."/>
         <makeparserdb db="netbeans/system/ParserDB/JavaHierarchyAPI" sources="../../java/srcmodel/src" nbroot="../.."/>
+        <makeparserdb db="netbeans/system/ParserDB/RegistryAPI" sources="../../openide/registry/src" nbroot="../.."/>
+        <makeparserdb db="netbeans/system/ParserDB/ConvertorAPI" sources="../../openide/convertor/src" nbroot="../.."/>
+        <makeparserdb db="netbeans/system/ParserDB/RegistryOverFSAPI" sources="../../core/registry/src" nbroot="../.."/>
+        <makeparserdb db="netbeans/system/ParserDB/LooksAPI" sources="../../openide/looks/src" nbroot="../.."/>
     </target>
 
     <target name="collect-javadoc">
@@ -65,8 +68,6 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="../../openide/loaders/javadoc/LoadersAPI.zip" tofile="netbeans/docs/LoadersAPI.zip"/>
         <ant dir="../../core/javahelp" target="javadoc"/>
         <copy file="../../core/javahelp/javadoc/JavaHelpAPI.zip" tofile="netbeans/docs/JavaHelpAPI.zip"/>
-        <ant dir="../../core/settings" target="javadoc"/>
-        <copy file="../../core/settings/javadoc/SettingsAPI.zip" tofile="netbeans/docs/SettingsAPI.zip"/>
         <ant dir="../../java/api" target="javadoc"/>
         <!-- XXX inconsistent naming in prj40_prototype branch: -->
         <copy tofile="netbeans/docs/JavaSupportAPIs.zip">
@@ -76,6 +77,16 @@ Microsystems, Inc. All Rights Reserved.
         </copy>
         <ant dir="../../java/srcmodel" target="javadoc"/>
         <copy file="../../java/srcmodel/javadoc/JavaHierarchyAPI.zip" tofile="netbeans/docs/JavaHierarchyAPI.zip"/>
+        <ant dir="../../openide/registry" target="javadoc"/>
+        <copy file="../../openide/registry/javadoc/RegistryAPI.zip" tofile="netbeans/docs/RegistryAPI.zip"/>
+        <ant dir="../../openide/convertor" target="javadoc"/>
+        <copy file="../../openide/convertor/javadoc/ConvertorAPI.zip" tofile="netbeans/docs/ConvertorAPI.zip"/>
+        <!-- The next two will need to run Javadoc against org-netbeans-modules-registry.jar: -->
+        <ant dir="../../openide/registry" target="netbeans"/>
+        <ant dir="../../core/registry" target="javadoc"/>
+        <copy file="../../core/registry/javadoc/RegistryOverFSAPI.zip" tofile="netbeans/docs/RegistryOverFSAPI.zip"/>
+        <ant dir="../../openide/looks" target="javadoc"/>
+        <copy file="../../openide/looks/javadoc/LooksAPI.zip" tofile="netbeans/docs/LooksAPI.zip"/>
     </target>
 
     <target name="netbeans" depends="jars,parser-db,collect-javadoc" description="Build complete module.">
