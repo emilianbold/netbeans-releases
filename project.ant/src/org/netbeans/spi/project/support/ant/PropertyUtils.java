@@ -733,14 +733,34 @@ public class PropertyUtils {
             Map/*<String,String>*/ predefs;
             if (preprovider != null) {
                 predefs = preprovider.getProperties();
+                assert isStringStringMap(predefs) : "Bad map " + predefs + " from " + preprovider;
             } else {
                 predefs = Collections.EMPTY_MAP;
             }
             Map/*<String,String>*/[] defs = new Map[providers.length];
             for (int i = 0; i < providers.length; i++) {
                 defs[i] = providers[i].getProperties();
+                assert isStringStringMap(defs[i]) : "Bad map " + defs[i] + " from " + providers[i];
             }
-            return evaluateAll(predefs, Arrays.asList(defs));
+            Map/*<String,String>*/ result = evaluateAll(predefs, Arrays.asList(defs));
+            assert result == null || isStringStringMap(result) : "Bad map " + result + " from evaluateAll(" + predefs + ", " + defs + ")";
+            return result;
+        }
+
+        private static boolean isStringStringMap(Map m) {
+            Iterator i = m.entrySet().iterator();
+            while (i.hasNext()) {
+                Map.Entry e = (Map.Entry) i.next();
+                Object k = e.getKey();
+                if (k == null || !(k instanceof String)) {
+                    return false;
+                }
+                Object v = e.getValue();
+                if (v == null || !(v instanceof String)) {
+                    return false;
+                }
+            }
+            return true;
         }
         
     }
