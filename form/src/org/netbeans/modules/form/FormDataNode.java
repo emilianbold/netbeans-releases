@@ -17,7 +17,6 @@ package org.netbeans.modules.form;
 import java.lang.reflect.InvocationTargetException;
 
 import org.openide.util.HelpCtx;
-//import org.openide.nodes.Sheet;
 import org.netbeans.modules.java.JavaNode;
 
 /** The DataNode for Forms.
@@ -29,13 +28,8 @@ public class FormDataNode extends JavaNode {
     /** generated Serialized Version UID */
     //  static final long serialVersionUID = 1795549004166402392L;
 
-    /** Icons for form data objects. */
-    private static final String[] FORM_ICONS = { "form", "formMain", "formError", "form", "formMain" }; // NOI18N
-
     /** Icon base for form data objects. */
-    private static final String FORM_ICON_BASE = "org/netbeans/modules/form/resources/"; // NOI18N
-
-    transient private String currentIcon;
+    private static final String FORM_ICON_BASE = "org/netbeans/modules/form/resources/form"; // NOI18N
 
     /** Constructs a new FormDataObject for specified primary file */
     public FormDataNode(FormDataObject fdo) {
@@ -49,19 +43,8 @@ public class FormDataNode extends JavaNode {
         return super.getValue(attributeName);
     }
 
-//    protected Sheet createSheet () {
-//        Sheet sheet = super.createSheet();
-//        Sheet.Set ps = sheet.get(Sheet.PROPERTIES);
-//        ps.setValue("helpID", "org.netbeans.modules.form.FormObjectProperties"); // NOI18N
-//        return sheet;
-//    }
-//
-    protected String getIconBase() {
+    protected String getBareIconBase() {
         return FORM_ICON_BASE;
-    }
-
-    protected String[] getIcons() {
-        return FORM_ICONS;
     }
 
 }
