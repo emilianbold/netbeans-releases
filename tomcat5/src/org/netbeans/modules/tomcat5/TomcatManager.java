@@ -337,7 +337,7 @@ public class TomcatManager implements DeploymentManager {
         for (int i=0; i < sessions.length; i++) {
             Session s = sessions[i];
             if (s != null) {
-                Object o = s.lookupFirst(AttachingDICookie.class);
+                Object o = s.lookupFirst(null, AttachingDICookie.class);
                 if (o != null) {
                     AttachingDICookie attCookie = (AttachingDICookie)o;
                     if (sdi.getTransport().equals(ServerDebugInfo.TRANSPORT_SHMEM)) {
@@ -380,12 +380,12 @@ public class TomcatManager implements DeploymentManager {
         for (int i=0; i < sessions.length; i++) {
             Session s = sessions[i];
             if (s != null) {
-                Object o = s.lookupFirst(AttachingDICookie.class);
+                Object o = s.lookupFirst(null, AttachingDICookie.class);
                 if (o != null) {
                     AttachingDICookie attCookie = (AttachingDICookie)o;
                     if (sdi.getTransport().equals(ServerDebugInfo.TRANSPORT_SHMEM)) {
                         if (attCookie.getSharedMemoryName().equalsIgnoreCase(sdi.getShmemName())) {
-                            Object d = s.lookupFirst(JPDADebugger.class);
+                            Object d = s.lookupFirst(null, JPDADebugger.class);
                             if (d != null) {
                                 JPDADebugger jpda = (JPDADebugger)d;
                                 if (jpda.getState() == JPDADebugger.STATE_STOPPED) {
@@ -396,7 +396,7 @@ public class TomcatManager implements DeploymentManager {
                     } else {
                         if (attCookie.getHostName().equalsIgnoreCase(sdi.getHost())) {
                             if (attCookie.getPortNumber() == sdi.getPort()) {
-                                Object d = s.lookupFirst(JPDADebugger.class);
+                                Object d = s.lookupFirst(null, JPDADebugger.class);
                                 if (d != null) {
                                     JPDADebugger jpda = (JPDADebugger)d;
                                     if (jpda.getState() == JPDADebugger.STATE_STOPPED) {

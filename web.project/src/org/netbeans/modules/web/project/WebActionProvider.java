@@ -422,7 +422,7 @@ class WebActionProvider implements ActionProvider {
         for (int i=0; i < sessions.length; i++) {
             Session s = sessions[i];
             if (s != null) {
-                Object o = s.lookupFirst(AttachingDICookie.class);
+                Object o = s.lookupFirst(null, AttachingDICookie.class);
                 if (o != null) {
                     AttachingDICookie attCookie = (AttachingDICookie)o;
                     if (sdi.getTransport().equals(ServerDebugInfo.TRANSPORT_SHMEM)) {
