@@ -764,7 +764,7 @@ public class VisualReplicator {
     // method for setting "relative" component properties additionaly
     private void copyRelativeProperties(java.util.List relativeProperties) {
         for (int i=0; i < relativeProperties.size(); i++) {
-            RADProperty property = (RADProperty) relativeProperties.get(i++);
+            RADProperty property = (RADProperty) relativeProperties.get(i);
             try {
                 Object value = property.getValue();
                 if (value instanceof RADComponent.ComponentReference)
