@@ -23,25 +23,27 @@ import java.util.ResourceBundle;
 
 import javax.swing.*;
 import javax.swing.border.*;
-import javax.swing.colorchooser.*;
 import javax.swing.event.*;
+import javax.swing.colorchooser.AbstractColorChooserPanel;
+import javax.swing.colorchooser.ColorSelectionModel;
 
 import com.netbeans.ide.util.QuickSorter;
-import com.netbeans.ide.util.NbBundle;
+import com.netbeans.ide.util.NetbeansBundle;
 
 /** A property editor for Color class.
+* (Final only for performance, can be unfinaled if desired)
+*
 * @author   Jan Jancura, Ian Formanek
-* @version  0.10, 09 Mar 1998
 */
-public class ColorEditor implements PropertyEditor {
+public final class ColorEditor implements PropertyEditor {
   // static .....................................................................................
 
   // the bundle to use
-  static ResourceBundle bundle = NbBundle.getBundle (
+  static ResourceBundle bundle = NetbeansBundle.getBundle (
     "com.netbeans.developer.impl.locales.ExplorerBundle");
 
   private static JColorChooser staticChooser;
-  
+
   public static final int AWT_PALETTE = 1;
   public static final int SYSTEM_PALETTE = 2;
   public static final int SWING_PALETTE = 3;
@@ -109,7 +111,7 @@ public class ColorEditor implements PropertyEditor {
     swingColorNames = null;
     swingColors = null;
   }
-  
+
   // variables ..................................................................................
 
 
@@ -126,23 +128,23 @@ public class ColorEditor implements PropertyEditor {
           super.setColor (c);
         }
       };
-/*      staticChooser.addChooserPanel (
-        bundle.getString ("CTL_AWTPalette"), 
-        new NbColorChooserPanel (AWT_PALETTE, awtColorNames, awtColors)
+      staticChooser.addChooserPanel (
+        new NbColorChooserPanel (AWT_PALETTE, awtColorNames, awtColors,
+                                 bundle.getString ("CTL_AWTPalette"))
       );
       initSwingConstants();
       staticChooser.addChooserPanel (
-        bundle.getString ("CTL_SwingPalette"), 
-        new NbColorChooserPanel (SWING_PALETTE, swingColorNames, swingColors)
+        new NbColorChooserPanel (SWING_PALETTE, swingColorNames, swingColors,
+                                 bundle.getString ("CTL_SwingPalette"))
       );
       staticChooser.addChooserPanel (
-        bundle.getString ("CTL_SystemPalette"), 
-        new NbColorChooserPanel (SYSTEM_PALETTE, systemColorNames, systemColors)
-      ); */
+        new NbColorChooserPanel (SYSTEM_PALETTE, systemColorNames, systemColors,
+                                 bundle.getString ("CTL_SystemPalette"))
+      );
     }
     return staticChooser;
   }
-  
+
   // init .......................................................................................
 
   public ColorEditor() {
@@ -301,7 +303,7 @@ public class ColorEditor implements PropertyEditor {
         continue;
       names.addElement ((String)k);
     }
-    
+
     swingColorNames = new String [names.size ()];
     names.copyInto (swingColorNames);
     QuickSorter.STRING.sort (swingColorNames);
@@ -314,31 +316,37 @@ public class ColorEditor implements PropertyEditor {
 
   // innerclasses ............................................................................................
 
-  static class NbColorChooser extends JPanel {
-    private PropertyChangeListener listener;
-    JColorChooser chooser;
-    
-    public NbColorChooser (final ColorEditor editor, JColorChooser chooser) {
+  static class NbColorChooser extends JPanel implements ChangeListener {
+    /** Color property editor */
+    final ColorEditor editor;
+    /** Color chooser instance */
+    final JColorChooser chooser;
+    /** Reference to model which holds the color selected in the color chooser */
+    final ColorSelectionModel selectionModel;
+
+    public NbColorChooser (final ColorEditor editor,
+                           final JColorChooser chooser) {
+      this.editor = editor;
       this.chooser = chooser;
+      selectionModel = chooser.getSelectionModel();
       setLayout (new BorderLayout ());
       add (chooser, BorderLayout.CENTER);
       chooser.setColor ((Color)editor.getValue ());
-      chooser.addPropertyChangeListener (listener = new PropertyChangeListener () {
-          public void propertyChange (PropertyChangeEvent evt) {
-//            if (evt.getPropertyName ().equals (JColorChooser.COLOR_PROPERTY))
-//              editor.setValue (NbColorChooser.this.chooser.getColor ());
-          }
-        }
-      );
+      selectionModel.addChangeListener (this);
     }
-    
+
     public void removeNotify () {
-      chooser.removePropertyChangeListener (listener);
+      selectionModel.removeChangeListener (this);
     }
-    
+
     public Dimension getPreferredSize () {
       Dimension s = super.getPreferredSize ();
       return new Dimension (s.width + 50, s.height + 10);
+    }
+
+    /*** implementation of the ChangeListener interface */
+    public void stateChanged (ChangeEvent evt) {
+      editor.setValue(selectionModel.getSelectedColor());
     }
 
   };
@@ -346,7 +354,7 @@ public class ColorEditor implements PropertyEditor {
   static class SuperColor extends Color {
     /** generated Serialized Version UID */
     static final long serialVersionUID = 6147637669184334151L;
-    
+
     private String id = null;
     private int palette = 0;
 
@@ -377,64 +385,42 @@ public class ColorEditor implements PropertyEditor {
     }
   }
 
-/*  static class NbColorChooserPanel extends ColorChooserPanel {
-    /** generated Serialized Version UID * /
+  /** Color chooser panel which can be added into JColorChooser */
+  static final class NbColorChooserPanel extends AbstractColorChooserPanel
+                                         implements ListSelectionListener {
+    /** generated Serialized Version UID */
     static final long serialVersionUID = -2792992315444428631L;
-
+    /** List holding palette colors */
     JList list;
 
     String [] names;
     Color [] colors;
     Color color;
     int palette;
+    /** Name for display of this chooser panel */
+    String displayName;
 
-    NbColorChooserPanel (final int palette, final String [] names, final Color [] colors) {
+    /** Constructs our chooser panel with specified
+    * palette, names and colors to be shown in the list */
+    NbColorChooserPanel (final int palette, final String[] names,
+                         final Color[] colors, final String displayName) {
       this.names = names;
       this.colors = colors;
       this.palette = palette;
+      this.displayName = displayName;
+    }
 
+    /** Builds - creates a chooser */
+    protected void buildChooser () {
       setLayout (new BorderLayout ());
-      add ("Center", new JScrollPane (list = new JList (names)));
+      add (BorderLayout.CENTER,
+           new JScrollPane (list = new JList (names)));
       list.setCellRenderer (new MyListCellRenderer ());
-      list.addListSelectionListener (new ListSelectionListener () {
-          public void valueChanged(ListSelectionEvent e) {
-            if (!list.isSelectionEmpty ()) {
-              int i = list.getSelectedIndex ();
-              Color oldColor = color;
-              color = new SuperColor (names [i], palette, colors [i]);
-              change (oldColor, color);
-            }
-          }
-        }
-      );
+      list.addListSelectionListener (this);
     }
 
-    private void change (Color oldColor, Color color) {
-      fireColorPropertyChange (oldColor, color);
-    }
-
-    public void setColor (Color newColor) {
-      color = newColor;
-      updateSelections ();
-    }
-
-    public Color getColor () {
-      return color;
-    }
-
-    /**
-    * This get called when the panel is added to the chooser.
-    * /
-    public void installChooserPanel() {
-    }
-
-    /**
-    * This get called when the panel is removed from the chooser.
-    * /
-    public void uninstallChooserPanel() {
-    }
-
-    void updateSelections () {
+    /** Get called when state of selected color changes */
+    public void updateChooser () {
       Color c = color;
       if ((c instanceof SuperColor) && (palette == ((SuperColor)c).getPalette ())) {
         int i = getIndex (names, ((SuperColor)c).getID ());
@@ -442,7 +428,40 @@ public class ColorEditor implements PropertyEditor {
       } else list.clearSelection ();
     }
 
-    class MyListCellRenderer extends JPanel implements ListCellRenderer {
+    /** @return display name of the chooser */
+    public String getDisplayName() {
+      return displayName;
+    }
+
+    /** No icon */
+    public Icon getSmallDisplayIcon() {
+      return null;
+    }
+
+    /** No icon */
+    public Icon getLargeDisplayIcon() {
+      return null;
+    }
+
+    /** ListSelectionListener interface implementation */
+    public void valueChanged(ListSelectionEvent e) {
+      if (!list.isSelectionEmpty ()) {
+        int i = list.getSelectedIndex ();
+        getColorSelectionModel().setSelectedColor(
+          new SuperColor (names [i], palette, colors [i]));
+      }
+    }
+
+    public void setColor (final Color newColor) {
+      getColorSelectionModel().setSelectedColor(newColor);
+    }
+
+    public Color getColor () {
+      return getColorFromModel();
+    }
+
+    /** Cell of the list showing palette colors */
+    final class MyListCellRenderer extends JPanel implements ListCellRenderer {
 
       protected Border hasFocusBorder = new LineBorder (UIManager.getColor ("List.focusCellHighlight"));
       protected Border noFocusBorder = new EmptyBorder(1, 1, 1, 1);
@@ -450,21 +469,21 @@ public class ColorEditor implements PropertyEditor {
       boolean selected, hasFocus;
       int index;
 
-      /** Creates a new NetbeansListCellRenderer * /
+      /** Creates a new MyListCellRenderer */
       public MyListCellRenderer () {
         setOpaque (true);
         setBorder (new EmptyBorder (1, 1, 1, 1));
       }
 
-      /**
-      * @return Standart method returned preferredSize (depends on font size only).
-      * /
+      /** Overrides default preferredSize impl.
+      * @return Standard method returned preferredSize
+      * (depends on font size only).
+      */
       public Dimension getPreferredSize () {
         try {
-          Font font = getFont ();
-          FontMetrics fontMetrics = Toolkit.getDefaultToolkit ().getFontMetrics (font);
+          FontMetrics fontMetrics = getFontMetrics(getFont());
           return new Dimension (
-            fontMetrics.stringWidth (names [index]) + 10,
+            fontMetrics.stringWidth (names [index]) + 30,
             fontMetrics.getHeight () + 4
           );
         } catch (NullPointerException e) {
@@ -498,7 +517,7 @@ public class ColorEditor implements PropertyEditor {
 
       /** This is the only method defined by ListCellRenderer.  We just
       * reconfigure the Jlabel each time we're called.
-      * /
+      */
       public java.awt.Component getListCellRendererComponent (
         JList list,
         Object value,            // value to display
@@ -512,11 +531,12 @@ public class ColorEditor implements PropertyEditor {
         return this;
       }
     }
-  } */
+  }
 }
 
 /*
  * Log
+ *  4    Gandalf   1.3         2/4/99   David Simonek   bugfix #1038
  *  3    Gandalf   1.2         2/4/99   Petr Hamernik   
  *  2    Gandalf   1.1         1/6/99   Ian Formanek    some cotemporarily 
  *       commented out to compile under JDK 1.2
