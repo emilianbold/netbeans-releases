@@ -252,7 +252,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module classclosure..."/>
     <ant dir="../classclosure" target="netbeans"/>
   </target>
-  <target name="all-clazz" depends="all-openide,all-classfile,all-openide/deprecated,all-java/srcmodel,all-openide/execution,all-debuggercore/oldapi">
+  <target name="all-clazz" depends="all-openide,all-classfile,all-java/srcmodel,all-openide/execution,all-debuggercore/oldapi">
     <echo message="Building module clazz..."/>
     <ant dir="../clazz" target="netbeans"/>
   </target>
