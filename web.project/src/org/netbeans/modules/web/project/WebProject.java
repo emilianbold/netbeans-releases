@@ -61,6 +61,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.web.project.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.web.project.classpath.WebProjectClassPathExtender;
 import org.netbeans.modules.web.project.queries.*;
 import org.netbeans.modules.web.project.ui.WebCustomizerProvider;
 import org.netbeans.modules.web.project.ui.WebPhysicalViewProvider;
@@ -317,6 +318,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                 "${dist.dir}", // NOI18N
                 "${build.dir}", // NOI18N
             }),
+            new WebProjectClassPathExtender(this, updateHelper, evaluator(), refHelper),
         });
     }
 
