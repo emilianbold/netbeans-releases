@@ -80,18 +80,35 @@ class ComponentDragger
             Point posInComp = SwingUtilities.convertPoint(handleLayer,
                                                           hotspot,
                                                           component);
-            indices[i] = layoutSupport.getNewIndex(cont, posInCont, comp, posInComp);
+            indices[i] = layoutSupport.getNewIndex(
+                cont, posInCont, component, posInComp);
             constraints[i] = layoutSupport.getNewConstraints(
-                cont, posInCont, comp, posInComp);
+                cont, posInCont, component, posInComp);
+        }
+
+        for (int i = 0; i < selectedComponents.length; i++) {
+            RADVisualComponent metacomp = selectedComponents[i];
+            Component component = (Component) formDesigner.getComponent(metacomp);
+            if (component.getParent() != cont)
+                continue;
+            if (indices[i] < 0 && constraints[i] == null) {
+                selectedComponents[i] = null;
+            }
         }
         
         for (int i = 0; i < selectedComponents.length; i++) {
             RADVisualComponent metacomp = selectedComponents[i];
+            if (metacomp == null)
+                return;
+            
             model.removeComponent(metacomp);
         }
 
         for (int i = 0; i < selectedComponents.length; i++) {
             RADVisualComponent metacomp = selectedComponents[i];
+            if (metacomp == null)
+                return;
+            
             LayoutSupport.ConstraintsDesc constr =
                 layoutSupport.fixConstraints(constraints[i]);
             model.addVisualComponent(metacomp, metacont, constr);
