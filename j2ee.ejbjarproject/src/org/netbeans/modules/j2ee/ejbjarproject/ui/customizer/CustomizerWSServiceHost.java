@@ -82,7 +82,7 @@ public class CustomizerWSServiceHost extends javax.swing.JPanel implements Prope
     public void addNotify() {
         super.addNotify();
 
-        JPanel component = getComponent();
+        JPanel component = wsCompileEditor.getComponent();
 
         removeAll(); // !PW is this necessary?
         add(component);
@@ -119,14 +119,6 @@ public class CustomizerWSServiceHost extends javax.swing.JPanel implements Prope
     }
     
     public HelpCtx getHelpCtx() {
-        if (getComponent() instanceof HelpCtx.Provider) {
-            return ((HelpCtx.Provider)getComponent()).getHelpCtx();
-        } else {
-            return HelpCtx.DEFAULT_HELP;
-        }
-    }
-    
-    private JPanel getComponent() {
-        return wsCompileEditor.getComponent();
+        return new HelpCtx(CustomizerWSServiceHost.class);
     }
 }

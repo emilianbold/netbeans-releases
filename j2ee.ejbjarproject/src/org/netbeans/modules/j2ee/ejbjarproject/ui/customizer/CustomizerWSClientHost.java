@@ -83,7 +83,7 @@ public class CustomizerWSClientHost extends javax.swing.JPanel
     public void addNotify() {
         super.addNotify();
 
-        JPanel component = getComponent();
+        JPanel component = wsCompileEditor.getComponent();
 
         removeAll(); // !PW is this necessary?
         add(component);
@@ -120,14 +120,6 @@ public class CustomizerWSClientHost extends javax.swing.JPanel
     }
     
     public HelpCtx getHelpCtx() {
-        if (getComponent() instanceof HelpCtx.Provider) {
-            return ((HelpCtx.Provider)getComponent()).getHelpCtx();
-        } else {
-            return HelpCtx.DEFAULT_HELP;
-        }
-    }
-    
-    private JPanel getComponent() {
-        return wsCompileEditor.getComponent();
+        return new HelpCtx(CustomizerWSClientHost.class);
     }
 }
