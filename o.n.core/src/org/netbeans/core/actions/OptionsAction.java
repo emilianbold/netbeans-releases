@@ -43,6 +43,9 @@ import org.openide.awt.SplittedPanel;
 import org.netbeans.core.projects.SettingChildren;
 import org.netbeans.core.projects.SessionManager;
 import org.netbeans.core.NbMainExplorer;
+import org.openide.windows.Workspace;
+import org.openide.windows.Mode;
+import org.netbeans.core.windows.ModeImpl;
 
 /** Action that opens explorer view which displays global
 * options of the IDE.
@@ -60,6 +63,15 @@ public class OptionsAction extends CallableSystemAction {
     /** Shows options panel. */
     public void performAction () {
         OptionsPanel singleton = OptionsPanel.singleton();
+        
+        // dock Options into its mode if needed
+        Workspace w = TopManager.getDefault().getWindowManager().getCurrentWorkspace();
+        Mode m = w.findMode(OptionsPanel.MODE_NAME);
+        if (m == null) {
+            m = w.createMode(OptionsPanel.MODE_NAME, singleton.getName(), null);
+        }
+        m.dockInto(singleton);
+        
         singleton.open();
         singleton.requestFocus();
     }
@@ -81,7 +93,8 @@ public class OptionsAction extends CallableSystemAction {
 
     /** Options panel. Uses singleton pattern. */
     public static final class OptionsPanel extends NbMainExplorer.SettingsTab {
-
+        /** Name of mode in which options panel is docked by default */
+        public static final String MODE_NAME = "options";
         /** Singleton instance of options panel */
         private static OptionsPanel singleton;
         /** Formatted title of this view */
@@ -90,6 +103,8 @@ public class OptionsAction extends CallableSystemAction {
         public OptionsPanel () {
             super();
             setRootContext (initRC ());
+            // show only name of top component is typical case
+            putClientProperty(ModeImpl.NAMING_TYPE, ModeImpl.BOTH_ONLY_COMP_NAME);
         }
         
         public HelpCtx getHelpCtx () {
