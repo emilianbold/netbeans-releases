@@ -27,6 +27,7 @@ import org.openide.util.Utilities;
 
 import org.netbeans.core.windows.nodes.TabbedContainerUIPropertyEditor;
 import org.netbeans.core.windows.nodes.UIModePropertyEditor;
+import org.openide.ErrorManager;
 
 /** A BeanInfo for global IDE settings.
 *
@@ -110,7 +111,7 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
 
 	    return desc;
         } catch (IntrospectionException ex) {
-	    TopManager.getDefault().getErrorManager().notify(ex);
+	    ErrorManager.getDefault().notify(ex);
 	    return null;
         }
 

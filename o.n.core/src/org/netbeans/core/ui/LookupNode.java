@@ -28,6 +28,7 @@ import org.openide.util.datatransfer.NewType;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.ErrorManager;
 
 
 /** Node that displays the content of Services directory and let's user 
@@ -215,7 +216,7 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
             return DataFolder.findFolder (fo);
         } catch (java.io.IOException ex) {
             IllegalStateException e = new IllegalStateException (ex.getMessage ());
-            TopManager.getDefault ().getErrorManager ().copyAnnotation (e, ex);
+            ErrorManager.getDefault ().copyAnnotation (e, ex);
             throw e;
         }
     }

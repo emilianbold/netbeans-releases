@@ -39,6 +39,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileAttributeEvent;
 import java.net.URL;
+import org.openide.ErrorManager;
 
 
 /** 
@@ -115,10 +116,10 @@ public class FileEntityResolver extends EntityCatalog implements Environment.Pro
                 DocumentType domDTD = xml.getDocument ().getDoctype ();
                 if (domDTD != null) id = domDTD.getPublicId ();
             } catch (IOException ex) {
-                TopManager.getDefault ().getErrorManager().notify (ex);
+                ErrorManager.getDefault().notify (ex);
                 return null;
             } catch (org.xml.sax.SAXException ex) {
-                TopManager.getDefault ().getErrorManager().notify (ex);
+                ErrorManager.getDefault().notify (ex);
                 return null;
             }
 
@@ -166,9 +167,9 @@ public class FileEntityResolver extends EntityCatalog implements Environment.Pro
 
             }
         } catch (IOException ex) {
-            TopManager.getDefault ().getErrorManager ().notify (ex);
+            ErrorManager.getDefault ().notify (ex);
         } catch (ClassNotFoundException ex) {
-            TopManager.getDefault ().getErrorManager ().notify (ex);
+            ErrorManager.getDefault ().notify (ex);
         }
         
         return null;
@@ -188,14 +189,14 @@ public class FileEntityResolver extends EntityCatalog implements Environment.Pro
                 });
                 method.setAccessible (true);
             } catch (Exception ex) {
-                TopManager.getDefault ().getErrorManager ().notify (ex);
+                ErrorManager.getDefault ().notify (ex);
                 return null;
             }
         }
         try {
             return (Lookup)method.invoke (null, new Object[] { obj, info });
         } catch (Exception ex) {
-            TopManager.getDefault ().getErrorManager ().notify (ex);
+            ErrorManager.getDefault ().notify (ex);
             return null;
         }
     }
@@ -374,7 +375,7 @@ public class FileEntityResolver extends EntityCatalog implements Environment.Pro
                 try {
                     o = DataObject.find (fo);
                 } catch (org.openide.loaders.DataObjectNotFoundException ex) {
-                    TopManager.getDefault ().getErrorManager ().notify (ex);
+                    ErrorManager.getDefault ().notify (ex);
                 }
             }
         

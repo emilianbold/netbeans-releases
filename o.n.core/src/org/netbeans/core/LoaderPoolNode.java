@@ -57,7 +57,7 @@ public final class LoaderPoolNode extends AbstractNode {
     * This value is returned from the getLoaderPoolNode() static method */
     private static LoaderPoolNode loaderPoolNode;
     private static final ErrorManager err =
-        TopManager.getDefault ().getErrorManager ().getInstance ("org.netbeans.core.LoaderPoolNode"); // NOI18N
+        ErrorManager.getDefault ().getInstance ("org.netbeans.core.LoaderPoolNode"); // NOI18N
 
     /** The only instance of the NbLoaderPool class in the system.
     * This value is returned from the getNbLoaderPool() static method */
@@ -439,14 +439,14 @@ public final class LoaderPoolNode extends AbstractNode {
                 t = ex;
             }
             if (t != null) {
-                TopManager.getDefault ().getErrorManager ().annotate (
+                ErrorManager.getDefault ().annotate (
                     t, org.openide.ErrorManager.WARNING, 
                     null, null, null, null
                 );
                 if (deserExc == null) {
                     deserExc = t;
                 } else {
-                    TopManager.getDefault ().getErrorManager ().annotate (deserExc, t);
+                    ErrorManager.getDefault ().annotate (deserExc, t);
                 }
             }
         }
@@ -469,14 +469,14 @@ public final class LoaderPoolNode extends AbstractNode {
                 t = ex;
             }
             if (t != null) {
-                TopManager.getDefault ().getErrorManager ().annotate (
+                ErrorManager.getDefault ().annotate (
                     t, org.openide.ErrorManager.WARNING, 
                     null, null, null, null
                 );
                 if (deserExc == null) {
                     deserExc = t;
                 } else {
-                    TopManager.getDefault ().getErrorManager ().annotate (deserExc, t);
+                    ErrorManager.getDefault ().annotate (deserExc, t);
                 }
             }
         }

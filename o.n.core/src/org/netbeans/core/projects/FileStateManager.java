@@ -25,6 +25,7 @@ import java.lang.ref.WeakReference;
 import java.io.IOException;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import org.openide.ErrorManager;
 
 /** Scans positions of FileObject-delegates for FileObjects from SystemFileSystem. Each
  *
@@ -404,7 +405,7 @@ final class FileStateManager {
                 }
             } catch (FileStateInvalidException e) {
                 IllegalStateException ex = new IllegalStateException ("Invalid file - " + fo); // NOI81N
-                TopManager.getDefault ().getErrorManager ().annotate (ex, e);
+                ErrorManager.getDefault ().annotate (ex, e);
                 throw ex;
             }
             return -1;

@@ -212,7 +212,7 @@ public final class NbPlaces extends Object implements Places, Places.Nodes, Plac
             return df;
         } catch (IOException ex) {
             Error e = new InternalError ("Folder not found and cannot be created: " + name); // NOI18N
-            TopManager.getDefault ().getErrorManager ().annotate (e, ex);
+            ErrorManager.getDefault ().annotate (e, ex);
             throw e;
         }
     }

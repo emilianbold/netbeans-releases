@@ -224,7 +224,7 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
     /** Notification about the save exception
     */
     private void saveExc(Exception exception) {
-        ErrorManager em = TopManager.getDefault().getErrorManager();
+        ErrorManager em = ErrorManager.getDefault();
         
         Throwable t = em.annotate(
             exception,

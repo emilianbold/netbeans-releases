@@ -166,7 +166,7 @@ public final class Services extends ServiceType.Registry implements LookupListen
                 try {
                     dobj = InstanceDataObject.create(dobj.getFolder(), dobj.getPrimaryFile().getName(), st, null);
                 } catch (IOException ex) {
-                    TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, ex);
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
                 services.remove(st);
             } else {
@@ -203,7 +203,7 @@ public final class Services extends ServiceType.Registry implements LookupListen
                 parent.getPrimaryFile().
                     setAttribute("OpenIDE-Folder-Order", orderAttr.toString()); // NOI18N
             } catch (IOException ex) {
-                TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, ex);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
         }
         
@@ -214,7 +214,7 @@ public final class Services extends ServiceType.Registry implements LookupListen
             try {
                 dobj.delete();
             } catch (IOException ex) {
-                TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, ex);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
         }
         
@@ -236,7 +236,7 @@ public final class Services extends ServiceType.Registry implements LookupListen
             
             return InstanceDataObject.create(dfTarget, null, st, null);
         } catch (Exception ex) {
-            TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, ex);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             return null;
         }
     }
@@ -279,7 +279,7 @@ public final class Services extends ServiceType.Registry implements LookupListen
                     }
                 } catch (org.openide.loaders.DataObjectNotFoundException ex) {
                 } catch (Exception ex) {
-                    TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, ex);
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
             }
         }
@@ -293,7 +293,7 @@ public final class Services extends ServiceType.Registry implements LookupListen
             try {
                 return clazz.isAssignableFrom(inst.instanceClass());
             } catch (Exception ex) {
-                TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, ex);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 return false;
             }
         }
@@ -326,7 +326,7 @@ public final class Services extends ServiceType.Registry implements LookupListen
             try {
                 obj = new NbMarshalledObject (s);
             } catch (IOException ex) {
-                TopManager.getDefault ().getErrorManager ().notify (
+                ErrorManager.getDefault ().notify (
                   ErrorManager.INFORMATIONAL,
                   ex
                 );
@@ -357,12 +357,12 @@ public final class Services extends ServiceType.Registry implements LookupListen
                 ServiceType s = (ServiceType)obj.get ();
                 ll.add (s);
             } catch (IOException ex) {
-                TopManager.getDefault ().getErrorManager ().notify (
+                ErrorManager.getDefault ().notify (
                   ErrorManager.INFORMATIONAL,
                   ex
                 );
             } catch (ClassNotFoundException ex) {
-                TopManager.getDefault ().getErrorManager ().notify (
+                ErrorManager.getDefault ().notify (
                   ErrorManager.INFORMATIONAL,
                   ex
                 );

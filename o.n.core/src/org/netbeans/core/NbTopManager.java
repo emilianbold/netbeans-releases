@@ -828,7 +828,7 @@ public abstract class NbTopManager extends TopManager {
                 }
             }
             catch (IOException ignore) {
-                TopManager.getDefault ().getErrorManager ().notify (
+                ErrorManager.getDefault ().notify (
                     ErrorManager.INFORMATIONAL, ignore
                 );
             }

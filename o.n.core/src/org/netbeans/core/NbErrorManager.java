@@ -660,7 +660,7 @@ final class NbErrorManager extends ErrorManager {
             if (t instanceof org.netbeans.core.execution.ExitSecurityException) {
                 return;
             }
-            TopManager.getDefault().getErrorManager().notify((ERROR << 1), t);
+            ErrorManager.getDefault().notify((ERROR << 1), t);
         }
     }
 

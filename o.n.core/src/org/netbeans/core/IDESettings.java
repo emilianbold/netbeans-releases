@@ -361,11 +361,11 @@ public class IDESettings extends SystemOption {
         }
         catch (java.io.IOException ex) {
             // handle is invalid or instanceCreate failed - uninstalled module
-            TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, ex);
+            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
         }
         catch (ClassNotFoundException ex) {
             // instanceCreate failed - uninstalled module
-            TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, ex);
+            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
         }
         catch (Exception ex) {
             TopManager.getDefault ().notifyException (ex);
@@ -453,7 +453,7 @@ public class IDESettings extends SystemOption {
             nonProxy = nonProxy + "|" + InetAddress.getLocalHost().getHostName(); // NOI18N
         }
         catch (UnknownHostException e) {
-            TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, e);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
         return nonProxy;
     }

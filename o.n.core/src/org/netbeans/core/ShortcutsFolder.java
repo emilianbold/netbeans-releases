@@ -89,7 +89,7 @@ final class ShortcutsFolder extends FolderInstance {
             String keyname = cookies[i].instanceName();
             KeyStroke stroke = Utilities.stringToKey (keyname);
             if (stroke == null) {
-                TopManager.getDefault ().getErrorManager ().
+                ErrorManager.getDefault ().
                     getInstance ("org.netbeans.core.ShortcutsFolder"). // NOI18N
                     log ("Warning: unparsable keystroke: " + keyname); // NOI18N
                 continue;
@@ -130,9 +130,9 @@ final class ShortcutsFolder extends FolderInstance {
                     return pair;
                 }
             } catch (IOException x) {
-                TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, x);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, x);
             } catch (ClassNotFoundException x) {
-                TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, x);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, x);
             }
         }
         return null;
@@ -274,7 +274,7 @@ final class ShortcutsFolder extends FolderInstance {
                     try {
                         props.load (propsFO.getInputStream ());
                     } catch (IOException e) {
-                        TopManager.getDefault().getErrorManager().notify(e);
+                        ErrorManager.getDefault().notify(e);
                     }
 
                     // remove all files with name specified in the properties file from the list of files to process (moduleKeyFiles)
@@ -289,7 +289,7 @@ final class ShortcutsFolder extends FolderInstance {
             installBindings (allBindings);
 
         } catch (Exception e2) {
-            TopManager.getDefault().getErrorManager().notify(e2);
+            ErrorManager.getDefault().notify(e2);
         }
     }
 
@@ -330,7 +330,7 @@ final class ShortcutsFolder extends FolderInstance {
                 addBindings (parseKeysFile (mainKeysFile.getURL ()), bindings);
                 mainKeysFile.delete(lock);
             } catch (Exception x) {
-                TopManager.getDefault().getErrorManager().notify(x);
+                ErrorManager.getDefault().notify(x);
             } finally {
                 lock.releaseLock();
             }
@@ -342,7 +342,7 @@ final class ShortcutsFolder extends FolderInstance {
                 addBindings (parseKeysFile (fo.getURL ()), bindings);
                 fo.delete(lock);
             } catch (Exception x) {
-                TopManager.getDefault().getErrorManager().notify(x);
+                ErrorManager.getDefault().notify(x);
             } finally {
                 lock.releaseLock();
             }
@@ -410,9 +410,9 @@ final class ShortcutsFolder extends FolderInstance {
                     InstanceDataObject.remove(f, r.instanceName(), r.instanceClass());
                 }
             } catch (ClassNotFoundException ex) {
-                TopManager.getDefault().getErrorManager().notify(ex);
+                ErrorManager.getDefault().notify(ex);
             } catch (IOException ex) {
-                TopManager.getDefault().getErrorManager().notify(ex);
+                ErrorManager.getDefault().notify(ex);
             }
         }
     }

@@ -482,7 +482,7 @@ public class NonGui extends NbTopManager implements Runnable {
                     System.exit(0);
             }
         } catch (Exception e) {
-            TopManager.getDefault().getErrorManager().notify(e);
+            ErrorManager.getDefault().notify(e);
         }
         finally {
             showSplashAgain();
@@ -561,7 +561,7 @@ public class NonGui extends NbTopManager implements Runnable {
                 });
             }
         } catch (Exception e) {
-            TopManager.getDefault().getErrorManager().notify(e);
+            ErrorManager.getDefault().notify(e);
         }
         finally {
             showSplashAgain();

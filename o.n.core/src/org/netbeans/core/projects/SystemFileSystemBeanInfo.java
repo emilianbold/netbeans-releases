@@ -18,6 +18,7 @@ import java.beans.*;
 
 import org.openide.TopManager;
 import org.openide.util.Utilities;
+import org.openide.ErrorManager;
 
 /** Object that provides beaninfo for a SystemFileSystem.
 *
@@ -56,7 +57,7 @@ public class SystemFileSystemBeanInfo extends SimpleBeanInfo {
             desc[0].setHidden (true);
     	    return desc;
         } catch (IntrospectionException ie) {
-	    TopManager.getDefault().getErrorManager().notify(ie);
+	    ErrorManager.getDefault().notify(ie);
 	    return null;
         }
     }
