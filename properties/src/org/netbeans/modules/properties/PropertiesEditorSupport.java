@@ -37,6 +37,7 @@ import org.openide.text.EditorSupport;
 import org.openide.text.PositionRef;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.SaveCookie;
+import org.openide.cookies.OpenCookie;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileObject;
@@ -172,6 +173,13 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
     });
   }              
   
+  /** Returns whether there is an open editor component. */
+  public synchronized boolean hasOpenComponent() {
+    if (((PropertiesDataObject)myEntry.getDataObject()).getOpenSupport().hasOpenComponent())
+      return true;
+    java.util.Enumeration en = allEditors.getComponents ();
+    return en.hasMoreElements ();
+  }  
 
   public void saveThisEntry() throws IOException {
     super.saveDocument();
@@ -214,16 +222,23 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
   */
   protected boolean canClose () {
     SaveCookie savec = (SaveCookie) myEntry.getCookie(SaveCookie.class);
-    if (savec != null) {
+    if (savec != null) {                                                           
+      // if the table is open, can close without worries, don't remove the save cookie
+      // PENDING - is not thread safe
+      if (((PropertiesDataObject)myEntry.getDataObject()).getOpenSupport().hasOpenComponent())
+          return true;
+    
       MessageFormat format = new MessageFormat(NbBundle.getBundle(PropertiesEditorSupport.class).
         getString("MSG_SaveFile"));
       String msg = format.format(new Object[] { entry.getFile().getName()});
       NotifyDescriptor nd = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_CANCEL_OPTION);
       Object ret = TopManager.getDefault().notify(nd);
-  
+       
+      // cancel 
       if (NotifyDescriptor.CANCEL_OPTION.equals(ret))
         return false;
-      
+               
+      // yes         
       if (NotifyDescriptor.YES_OPTION.equals(ret)) {
         try {
           savec.save();
@@ -233,6 +248,12 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
           return false;
         }
       }
+            
+      // no      
+      if (NotifyDescriptor.NO_OPTION.equals(ret)) {
+        return true;  
+      }    
+      
     }
     return true;
   }
@@ -291,7 +312,10 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
   private void closeDocumentEntry () {
     // listen to modifs
     if (listenToEntryModifs) {
-      getEntryModifL().clearSaveCookie(); // ???
+      // if the save cookie is present and the opener is NOT open -> the user answered NO to save question -> clear save cookie without saving
+      if (((PropertiesDataObject)myEntry.getDataObject()).getOpenSupport().hasOpenComponent())
+        getEntryModifL().clearSaveCookie();
+
       if (getDocument() != null) {
         getDocument().removeDocumentListener(getEntryModifL());
       }
@@ -365,6 +389,10 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
     private PropertyChangeListener saveCookieLNode;
     /** Listener for entry's name changes */
     private NodeAdapter nodeL;
+
+    public PropertiesEditor() {
+      super();
+    }
 
     /** Creates new editor */
     public PropertiesEditor(DataObject obj, PropertiesFileEntry entry) {
@@ -491,14 +519,23 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
     private void modified () {
       myEntry.setModified(true);
     }
-    /** Adds save cookie to the DO.
+    /** Adds save cookie to the DO. Only if a component is open, otherwise saves it right away
     */
     private void addSaveCookie() {
-      // add Save cookie to the entry       
-      if (myEntry.getCookie(SaveCookie.class) == null) {
-        myEntry.getCookieSet().add(this);
+      if (hasOpenComponent()) {
+        // add Save cookie to the entry       
+        if (myEntry.getCookie(SaveCookie.class) == null) {
+          myEntry.getCookieSet().add(this);
+        }
+        ((PropertiesDataObject)myEntry.getDataObject()).updateModificationStatus();
       }
-      ((PropertiesDataObject)myEntry.getDataObject()).updateModificationStatus();
+      else
+        try {
+          save();
+        }
+        catch (IOException e) {
+          // PENDING
+        }  
     }
     /** Removes save cookie from the DO.
     */

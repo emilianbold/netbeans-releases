@@ -85,6 +85,11 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
   public PropertiesOpenAt getOpenerForKey(PropertiesFileEntry entry, String key) {
     return new PropertiesOpenAt(entry, key);
   }
+  
+  public synchronized boolean hasOpenComponent() {
+    java.util.Enumeration en = allEditors.getComponents ();
+    return en.hasMoreElements ();
+  }  
                                                                        
   /** Class for opening at a given key. */                                                                     
   public class PropertiesOpenAt implements OpenCookie {
@@ -112,6 +117,7 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
       int entryIndex = bs.getEntryIndexByFileName(entry.getFile().getName());
       int rowIndex   = bs.getKeyIndexByName(key);                                 
       if ((entryIndex != -1) && (rowIndex != -1)) {
+        // PENDING
       }  
     }
   }
