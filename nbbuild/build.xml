@@ -894,6 +894,26 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../workspaceswitcher/navigator/beanigator" target="netbeans"/>
   </target>
 
+  <target name="all-contrib/statuspopup" depends="all-openide">
+    <echo message="Building module contrib/statuspopup..."/>
+    <ant dir="../contrib/statuspopup" target="netbeans"/>
+  </target>
+  
+  <target name="all-contrib/coloreditor" depends="all-openide">
+    <echo message="Building module contrib/coloreditor"/>
+    <ant dir="../contrib/coloreditor" target="netbeans"/>
+  </target>
+  
+  <target name="all-contrib/dropshadow" depends="all-openide">
+    <echo message="Building module contrib/dropshadow"/>
+    <ant dir="../contrib/dropshadow" target="netbeans"/>
+  </target>
+  
+  <target name="all-contrib/editorthemes" depends="all-openide,all-editor">
+    <echo message="Building module contrib/editorthemes"/>
+    <ant dir="../contrib/editorthemes" target="netbeans"/>
+  </target>
+  
   <target name="all-contrib/archiver" depends="all-openide,all-openide/loaders,all-openide/io,all-java/api">
     <echo message="Building module contrib/archiver..."/>
     <ant dir="../contrib/archiver" target="netbeans"/>
