@@ -86,6 +86,10 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         this.root = root;
     }
 
+    FileObject getRoot() {
+        return root; // Used from PackageRootNode
+    }
+    
     protected Node[] createNodes( Object obj ) {
         FileObject fo = root.getFileObject( (String)obj );
         if ( fo != null ) {
@@ -422,7 +426,12 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
             this.dataFolder = dataFolder;
             this.isDefaultPackage = root.equals( dataFolder.getPrimaryFile() );
         }
-                       
+    
+        FileObject getRoot() {
+            return root; // Used from PackageRootNode
+        }
+    
+        
         public String getName() {
             return FileUtil.getRelativePath(root, dataFolder.getPrimaryFile()).replace('/', '.'); // NOI18N
         }
@@ -475,6 +484,9 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                         try {
                             int op = Integer.valueOf (flavors[i].getParameter (MASK)).intValue ();
                             PackageNode pkgNode = (PackageNode) t.getTransferData(flavors[i]);
+                            if ( root.equals( pkgNode.root ) ) {
+                                return new PasteType[0];
+                            }
                             return new PasteType[] {new PackagePasteType (root, pkgNode, op)};
                         } catch (IOException ioe) {
                             ErrorManager.getDefault().notify(ioe);
