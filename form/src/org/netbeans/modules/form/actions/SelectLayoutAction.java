@@ -149,7 +149,7 @@ public class SelectLayoutAction extends CookieAction {
           PaletteItem[] layouts = getAllLayouts ();
           
           for (int i = 0; i < layouts.length; i++) {
-            JMenuItem mi = new JMenuItem (layouts[i].getName ());
+            JMenuItem mi = new JMenuItem (layouts[i].getDisplayName ());
             HelpCtx.setHelpIDString (mi, SelectLayoutAction.class.getName ());
             menu.add (mi);
             mi.addActionListener (new LayoutActionListener (nodes, layouts[i]));
@@ -203,6 +203,8 @@ public class SelectLayoutAction extends CookieAction {
 }
 /*
  * Log
+ *  9    Gandalf   1.8         11/1/99  Pavel Buzek     display correct name for
+ *       layout (DisplayName not Name)
  *  8    Gandalf   1.7         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  7    Gandalf   1.6         7/20/99  Jesse Glick     Context help.
