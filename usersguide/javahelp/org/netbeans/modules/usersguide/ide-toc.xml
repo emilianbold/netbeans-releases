@@ -92,77 +92,6 @@
 </tocitem>
 
 
-<tocitem text="Designing Java GUIs" target="gui.intro">
-  <tocitem text="Form Editor" target="gui.formeditor" />
-  <tocitem text="Component Inspector" target="gui.component-inspector" />
-  <tocitem text="Creating a New Form" target="gui.creatingforms" />
-  <tocitem text="Testing a Form" target="gui.modes" />
-  <tocitem text="Working With Components" target="gui.components.intro">
-    <tocitem text="Component Palette" target="gui.components.palette" />
-    <tocitem text="Adding a New Component" target="gui.components.adding" />
-    <tocitem text="Selecting Components in a Form" target="gui.components.selecting" />
-    <tocitem text="Designing Containers" target="gui.components.designing" />
-    <tocitem text="Moving or Copying a Component" target="gui.components.moving" />
-    <tocitem text="Reordering Components Within a Container" target="gui.components.reordering" />
-    <tocitem text="Editing Component Labels" target="gui.components.inplace-editing" />
-    <tocitem text="Editing Component Properties" target="gui.components.editing" />
-  </tocitem>
-  <tocitem text="Working With Layouts" target="gui.layouts.intro">
-    <tocitem text="Setting the Layout Manager" target="gui.layouts.setting" />
-    <tocitem text="Setting Layout Properties" target="gui.layouts.props" />
-    <tocitem text="Standard Layout Managers" target="gui.layouts.managers.intro">
-      <tocitem text="FlowLayout" target="gui.layouts.managers.flow" />
-      <tocitem text="BorderLayout" target="gui.layouts.managers.border" />
-      <tocitem text="GridLayout" target="gui.layouts.managers.grid" />
-      <tocitem text="GridBagLayout" target="gui.layouts.managers.gridbag" />
-      <tocitem text="CardLayout" target="gui.layouts.managers.card" />
-      <tocitem text="BoxLayout" target="gui.layouts.managers.box" />
-      <tocitem text="AbsoluteLayout" target="gui.layouts.managers.absolute" />
-      <tocitem text="Null Layout" target="gui.layouts.managers.null" />
-    </tocitem>
-    <tocitem text="Using the GridBag Customizer" target="gui.layouts.gbcustomizer" />
-<!-- disabled in this release; should be back in next
-    <tocitem text="Using a Custom Layout Manager" target="gui.layouts.custom_mgr" />
--->
-  </tocitem>
-  <tocitem text="Working With Source Code" target="gui.source.intro">
-    <tocitem text="Guarded Text" target="gui.source.guarded" />
-    <tocitem text="Modifying Generated Code" target="gui.source.modifying.intro">
-      <tocitem text="Modifying Code Generation for a Component" target="gui.source.modifying.component" />
-      <tocitem text="Modifying Code Generation for a Form" target="gui.source.modifying.form" />
-      <tocitem text="Modifying Code Generation for a Property" target="gui.source.modifying.property" />
-    </tocitem>
-    <tocitem text="Modifying Forms Externally" target="gui.source.external" />
-  </tocitem>
-  <tocitem text="Managing Component Events" target="gui.events.intro">
-    <tocitem text="Defining an Event Handler" target="gui.events.defining" />
-    <tocitem text="Removing an Event Handler" target="gui.events.removing" />
-    <tocitem text="Renaming an Event Handler" target="gui.events.renaming" />
-    <tocitem text="Adding Multiple Handlers for One Event" target="gui.events.multiple" />
-  </tocitem>
-  <tocitem text="Using the Connection Wizard" target="gui.connecting.intro">
-    <tocitem text="Selecting the Source Event" target="gui.connecting.source" />
-    <tocitem text="Specifying the Target Operation" target="gui.connecting.target" />
-    <tocitem text="Entering Parameters and Property Values" target="gui.connecting.code" />
-  </tocitem>
-  <tocitem text="Creating a Menu" target="gui.menus.intro">
-    <tocitem text="Creating a Menu Bar" target="gui.menus.menubar" />
-    <tocitem text="Changing the Current Menu Bar" target="gui.menus.current" />
-    <tocitem text="Adding a Menu to a Menu Bar" target="gui.menus.menu" />
-    <tocitem text="Creating a Contextual Menu" target="gui.menus.popup" />
-    <tocitem text="Adding a Menu Item" target="gui.menus.item" />
-    <tocitem text="Adding an Event Handler to a Menu Item" target="gui.menus.events" />
-  </tocitem>
-  <tocitem text="Creating a Multiple Document Interface (MDI) Application" target="gui.mdi" />
-  <tocitem text="Configuring the Form Editor" target="gui.configuring" />
-  <tocitem text="Customizing the Component Palette" target="gui.custompalette.intro"> 
-    <tocitem text="Creating a Component Palette Tab" target="gui.custompalette.creating" />
-    <tocitem text="Moving a Tab or Component" target="gui.custompalette.moving" />
-    <tocitem text="Removing Items From the Component Palette" target="gui.custompalette.removing" />
-  </tocitem>
-</tocitem>
-
-
 <tocitem text="Editing Source Files" target="editing.intro">
   <tocitem text="Source Editor" target="editing.editorwindow"/>
   <tocitem text="Opening a File in the Source Editor" target="editing.opening"/>
@@ -201,7 +130,7 @@
     <tocitem text="Source Editor Properties" target="editing.javaeditor-props"/>
     <tocitem text="Indentation Properties" target="editing.indentation"/>
     <tocitem text="Annotation Properties" target="editing.configuring.annotations"/>
-    <tocitem text="Setting Keyboard Shortcuts" target="editing.settingkeybdshorts"/>
+    <tocitem text="Setting Source Editor Shortcuts" target="editing.settingkeybdshorts"/>
     <tocitem text="Key Bindings Property Editor" target="editing.keybindings"/>
   </tocitem>
 </tocitem>
@@ -325,6 +254,75 @@
   </tocitem>
 </tocitem>
 
+<tocitem text="Designing Java GUIs" target="gui.intro">
+  <tocitem text="Form Editor" target="gui.formeditor" />
+  <tocitem text="Component Inspector" target="gui.component-inspector" />
+  <tocitem text="Creating a New Form" target="gui.creatingforms" />
+  <tocitem text="Testing a Form" target="gui.modes" />
+  <tocitem text="Working With Components" target="gui.components.intro">
+    <tocitem text="Component Palette" target="gui.components.palette" />
+    <tocitem text="Adding a New Component" target="gui.components.adding" />
+    <tocitem text="Selecting Components in a Form" target="gui.components.selecting" />
+    <tocitem text="Designing Containers" target="gui.components.designing" />
+    <tocitem text="Moving or Copying a Component" target="gui.components.moving" />
+    <tocitem text="Reordering Components Within a Container" target="gui.components.reordering" />
+    <tocitem text="Editing Component Labels" target="gui.components.inplace-editing" />
+    <tocitem text="Editing Component Properties" target="gui.components.editing" />
+  </tocitem>
+  <tocitem text="Working With Layouts" target="gui.layouts.intro">
+    <tocitem text="Setting the Layout Manager" target="gui.layouts.setting" />
+    <tocitem text="Setting Layout Properties" target="gui.layouts.props" />
+    <tocitem text="Standard Layout Managers" target="gui.layouts.managers.intro">
+      <tocitem text="FlowLayout" target="gui.layouts.managers.flow" />
+      <tocitem text="BorderLayout" target="gui.layouts.managers.border" />
+      <tocitem text="GridLayout" target="gui.layouts.managers.grid" />
+      <tocitem text="GridBagLayout" target="gui.layouts.managers.gridbag" />
+      <tocitem text="CardLayout" target="gui.layouts.managers.card" />
+      <tocitem text="BoxLayout" target="gui.layouts.managers.box" />
+      <tocitem text="AbsoluteLayout" target="gui.layouts.managers.absolute" />
+      <tocitem text="Null Layout" target="gui.layouts.managers.null" />
+    </tocitem>
+    <tocitem text="Using the GridBag Customizer" target="gui.layouts.gbcustomizer" />
+<!-- disabled in this release; should be back in next
+    <tocitem text="Using a Custom Layout Manager" target="gui.layouts.custom_mgr" />
+-->
+  </tocitem>
+  <tocitem text="Working With Source Code" target="gui.source.intro">
+    <tocitem text="Guarded Text" target="gui.source.guarded" />
+    <tocitem text="Modifying Generated Code" target="gui.source.modifying.intro">
+      <tocitem text="Modifying Code Generation for a Component" target="gui.source.modifying.component" />
+      <tocitem text="Modifying Code Generation for a Form" target="gui.source.modifying.form" />
+      <tocitem text="Modifying Code Generation for a Property" target="gui.source.modifying.property" />
+    </tocitem>
+    <tocitem text="Modifying Forms Externally" target="gui.source.external" />
+  </tocitem>
+  <tocitem text="Managing Component Events" target="gui.events.intro">
+    <tocitem text="Defining an Event Handler" target="gui.events.defining" />
+    <tocitem text="Removing an Event Handler" target="gui.events.removing" />
+    <tocitem text="Renaming an Event Handler" target="gui.events.renaming" />
+    <tocitem text="Adding Multiple Handlers for One Event" target="gui.events.multiple" />
+  </tocitem>
+  <tocitem text="Using the Connection Wizard" target="gui.connecting.intro">
+    <tocitem text="Selecting the Source Event" target="gui.connecting.source" />
+    <tocitem text="Specifying the Target Operation" target="gui.connecting.target" />
+    <tocitem text="Entering Parameters and Property Values" target="gui.connecting.code" />
+  </tocitem>
+  <tocitem text="Creating a Menu" target="gui.menus.intro">
+    <tocitem text="Creating a Menu Bar" target="gui.menus.menubar" />
+    <tocitem text="Changing the Current Menu Bar" target="gui.menus.current" />
+    <tocitem text="Adding a Menu to a Menu Bar" target="gui.menus.menu" />
+    <tocitem text="Creating a Contextual Menu" target="gui.menus.popup" />
+    <tocitem text="Adding a Menu Item" target="gui.menus.item" />
+    <tocitem text="Adding an Event Handler to a Menu Item" target="gui.menus.events" />
+  </tocitem>
+  <tocitem text="Creating a Multiple Document Interface (MDI) Application" target="gui.mdi" />
+  <tocitem text="Configuring the Form Editor" target="gui.configuring" />
+  <tocitem text="Customizing the Component Palette" target="gui.custompalette.intro"> 
+    <tocitem text="Creating a Component Palette Tab" target="gui.custompalette.creating" />
+    <tocitem text="Moving a Tab or Component" target="gui.custompalette.moving" />
+    <tocitem text="Removing Items From the Component Palette" target="gui.custompalette.removing" />
+  </tocitem>
+</tocitem>
 
 <tocitem text="Working With Java Source" target="java.intro">
   <tocitem text="Working With Beans" target="beans.intro">
