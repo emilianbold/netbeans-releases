@@ -570,7 +570,10 @@ public class IDESettings extends SystemOption {
             nonProxy = nonProxy + "|" + InetAddress.getLocalHost().getHostName(); // NOI18N
         }
         catch (UnknownHostException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            // OK. Sometimes a hostname is assigned by DNS, but a computer
+            // is later pulled off the network. It may then produce a bogus
+            // name for itself which can't actually be resolved. Normally
+            // "localhost" is aliased to 127.0.0.1 anyway.
         }
         return nonProxy;
     }
