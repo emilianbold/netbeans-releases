@@ -75,6 +75,10 @@ public final class NbClipboard extends ExClipboard implements LookupListener, AW
     // don't see these changes.
 
     public synchronized void setContents(Transferable contents, ClipboardOwner owner) {
+        // XXX(-dstrupl) the following line might lead to a double converted
+        // transferable. Can be fixed as Jesse describes in #32485
+        contents = convert(contents);
+
         if (slowSystemClipboard) {
             super.setContents(contents, owner);
         }

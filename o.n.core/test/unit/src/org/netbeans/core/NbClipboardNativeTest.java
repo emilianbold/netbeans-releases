@@ -60,21 +60,21 @@ public class NbClipboardNativeTest extends NbTestCase {
         NbTopManager.Lkp.modulesClassPathInitialized();
         DataFolder d = DataFolder.findFolder(f);
         InstanceDataObject.create(d, null, Cnv.class);
-        /*
+        
         List cnvs = new ArrayList(Lookup.getDefault().lookup(new Lookup.Template(Cnv.class)).allInstances());
         assertEquals("one Cnv registered in " + Lookup.getDefault(), 1, cnvs.size());
         cnvs = new ArrayList(Lookup.getDefault().lookup(new Lookup.Template(ExClipboard.Convertor.class)).allInstances());
         assertEquals("one convertor registered", 1, cnvs.size());
         assertEquals("right convertor type", Cnv.class, cnvs.get(0).getClass());
-         */
+        
         Clipboard c = (Clipboard)Lookup.getDefault().lookup(Clipboard.class);
-        /*
+        
         assertEquals("found right Clipboard", NbClipboard.class, c.getClass());
-         */
+        
         ExClipboard ec = (ExClipboard)Lookup.getDefault().lookup(ExClipboard.class);
-        /*
+        
         assertEquals("found right ExClipboard", NbClipboard.class, c.getClass());
-         */
+        
         assertEquals("Clipboard == ExClipboard", c, ec);
         c.setContents(new ExTransferable.Single(DataFlavor.stringFlavor) {
             protected Object getData() throws IOException, UnsupportedFlavorException {
