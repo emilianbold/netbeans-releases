@@ -15,7 +15,7 @@
 <tocitem text="Legal Notices" target="ide.credits" />
 
 <tocitem text="Getting Started" target="gs.ide">
-  <tocitem text="An Overview of the IDE" target="gs.tour" />
+  <tocitem text="IDE Overview" target="gs.tour" />
   <tocitem text="Key Concepts" target="gs.key" />
   <tocitem text="Starting With the Basic IDE Tasks" target="gs.howto" />
   <tocitem text="Getting Started Tutorial" target="gs.gstutor" >
