@@ -303,7 +303,11 @@ implements Serializable, DataObject.Container {
     /** Create node representative for this folder.
     */
     protected synchronized Node createNodeDelegate () {
-        return new FolderNode();
+        FolderNode fn = new FolderNode();
+
+        // netbeans.core.nodes.description   
+        fn.setShortDescription(NbBundle.getMessage (DataFolder.class, "HINT_Folder")); // NOI18N
+        return fn;
     }
 
     private final class ClonedFilter extends FilterNode {
