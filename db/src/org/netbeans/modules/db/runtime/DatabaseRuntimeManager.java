@@ -93,7 +93,9 @@ public class DatabaseRuntimeManager {
         removeConnection(url);
         createConnection(driver, url, user, password, schema);
     }
-    
+    /**
+     * Create a database connection object without tryign to connect.
+     */    
     public void removeConnection(String url) {
         RootNodeInfo ninf = getRootNodeInfo();
         if (ninf == null || url == null)
@@ -130,5 +132,62 @@ public class DatabaseRuntimeManager {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             return null;
         }
+    }
+    /**
+     * returns null or a DatabaseConnection oject that matches the 'name' argument
+     * for example, the name can be like: jdbc:pointbase://localhost:9092/sample [pbpublic on PBPUBLIC]
+     * which is the name used for the display of the connection node in the explorer
+     * This api is now used in 4.1 for the app server for cmp ejb creation wizard.
+     * Keep it when we change the way db module is implemented.
+     * 
+     */ 
+    public static DatabaseConnection getDatabaseConnection(String name){
+        if(name != null){
+            try{
+                //let's find the set of connections via node. I know, ugly, but this is what 
+                // we have in the db module space: model and nodes are intermixed.
+                Node dbNode;
+                FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("UI/Runtime"); //NOI18N
+                DataFolder df;
+                try {
+                    df = (DataFolder) DataObject.find(fo);
+                } catch (org.openide.loaders.DataObjectNotFoundException exc) {
+                    return null;
+                }
+                dbNode = df.getNodeDelegate().getChildren().findChild("Databases"); //NOI18N
+                String waitNode = org.openide.util.NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("WaitNode"); //NOI18N
+                Node[] n = dbNode.getChildren().getNodes();
+                while (n.length == 1 && waitNode.equals(n[0].getName())) {
+                    try {
+                        Thread.sleep(60);
+                    } catch (InterruptedException e) {
+                        //PENDING
+                    }
+                    n = dbNode.getChildren().getNodes();
+                }
+                
+                
+                Node.Cookie cookie;
+                ConnectionNodeInfo info;
+                //lookup all the connections by name:
+                for (int i = 0; i < n.length; i++) {
+                    cookie = n[i].getCookie(ConnectionNodeInfo.class);
+                    if (cookie != null) {
+                        info = (ConnectionNodeInfo) cookie;
+                        if (n[i].getDisplayName().equals(name)){
+                            // we found the right one
+                            return (DatabaseConnection) (info. getDatabaseConnection());
+                        }
+                    }
+                }
+                
+                
+
+            }catch(Exception ex){
+                // Connection could not be found
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            }
+        }
+        return null;
     }
 }
