@@ -178,8 +178,16 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             NbBundle.getMessage(PanelProjectLocationVisual.class,"MSG_IllegalProjectName"));
             return false; // Display name not specified
         }
-        
-        File destFolder = new File( createdFolderTextField.getText() );
+        final File destFolder = new File( createdFolderTextField.getText() );
+        File projLoc = destFolder;
+        while (projLoc != null && !projLoc.exists()) {
+            projLoc = projLoc.getParentFile();
+        }
+        if (projLoc == null || !projLoc.canWrite()) {
+            wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
+            NbBundle.getMessage(PanelProjectLocationVisual.class,"MSG_ProjectFolderReadOnly"));
+            return false;
+        }
         File[] kids = destFolder.listFiles();
         if ( destFolder.exists() && kids != null && kids.length > 0) {
             // Folder exists and is not empty

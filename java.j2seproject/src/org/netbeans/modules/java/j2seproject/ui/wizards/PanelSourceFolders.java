@@ -178,7 +178,17 @@ public class PanelSourceFolders extends SettingsPanel {
             wizardDescriptor.putProperty( "WizardPanel_errorMessage", NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalProjectName"));
             return false; // Display name not specified
         }
-        
+
+        File projLoc = new File (this.projectLocation.getText());
+        while (projLoc != null && !projLoc.exists()) {
+            projLoc = projLoc.getParentFile();
+        }
+        if (projLoc == null || !projLoc.canWrite()) {
+            wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
+            NbBundle.getMessage(PanelSourceFolders.class,"MSG_ProjectFolderReadOnly"));
+            return false;
+        }
+
         File destFolder = new File( projectLocation.getText() );
         File[] kids = destFolder.listFiles();
         if ( destFolder.exists() && kids != null && kids.length > 0) {

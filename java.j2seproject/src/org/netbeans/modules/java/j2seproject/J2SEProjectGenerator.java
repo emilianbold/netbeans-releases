@@ -197,7 +197,9 @@ public class J2SEProjectGenerator {
         if(!dir.exists()) {
             //Refresh before mkdir not to depend on window focus
             refreshFileSystem (dir);
-            dir.mkdirs();
+            if (!dir.mkdirs()) {
+                throw new IOException ("Can not create project folder.");   //NOI18N
+            }
             refreshFileSystem (dir);
         }        
         dirFO = FileUtil.toFileObject(dir);
