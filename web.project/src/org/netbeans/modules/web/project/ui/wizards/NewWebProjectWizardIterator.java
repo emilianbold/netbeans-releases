@@ -55,7 +55,7 @@ public class NewWebProjectWizardIterator implements TemplateWizard.Iterator {
     
     private String[] createSteps() {
         return new String[] {
-            NbBundle.getBundle("org/netbeans/modules/web/project/ui/wizards/Bundle").getString("LBL_Configure_Project") //NOI18N
+            NbBundle.getBundle("org/netbeans/modules/web/project/ui/wizards/Bundle").getString("LBL_NWP1_ProjectTitleName") //NOI18N
         };
     }
     

@@ -58,8 +58,8 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(setAsMainCheckBox, gridBagConstraints);
 
         jLabelContextPath.setLabelFor(jTextFieldContextPath);
@@ -67,8 +67,8 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabelContextPath, gridBagConstraints);
 
         jTextFieldContextPath.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -90,8 +90,8 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(j2eeSpecLabel, gridBagConstraints);
 
         j2eeSpecComboBox.addActionListener(new java.awt.event.ActionListener() {
@@ -104,8 +104,8 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(j2eeSpecComboBox, gridBagConstraints);
 
         j2eeSpecDescLabel.setLabelFor(j2eeSpecDescTextPane);
@@ -114,8 +114,8 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(j2eeSpecDescLabel, gridBagConstraints);
 
         j2eeSpecDescTextPane.setEditable(false);
@@ -127,9 +127,9 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(jScrollPane1, gridBagConstraints);
 
     }//GEN-END:initComponents
