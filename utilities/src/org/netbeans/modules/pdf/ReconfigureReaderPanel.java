@@ -75,7 +75,7 @@ public class ReconfigureReaderPanel extends javax.swing.JPanel {
         add(currentViewerLabel, gridBagConstraints);
 
         viewerField.setEditable(false);
-        viewerField.setText(settings.getPDFViewer ().getPath ());
+        viewerField.setText(settings.getPDFViewer() != null ? settings.getPDFViewer().getPath() : PDFOpenSupport.FALLBACK_VIEWER_NAME);
         viewerField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 viewerFieldFocusGained(evt);
@@ -125,10 +125,10 @@ public class ReconfigureReaderPanel extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel currentViewerLabel;
-    private javax.swing.JTextField viewerField;
-    private javax.swing.JLabel topLabel;
     private javax.swing.JButton chooseButton;
+    private javax.swing.JLabel currentViewerLabel;
+    private javax.swing.JLabel topLabel;
+    private javax.swing.JTextField viewerField;
     // End of variables declaration//GEN-END:variables
 
 }
