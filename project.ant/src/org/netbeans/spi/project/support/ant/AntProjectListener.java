@@ -7,15 +7,13 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.spi.project.support.ant;
 
 import java.util.EventListener;
-
-// XXX should there be separate methods for name & displayName changes?
 
 /**
  * Listener for changes in Ant project metadata.
@@ -35,6 +33,12 @@ public interface AntProjectListener extends EventListener {
     
     /**
      * Called when a change was made to a properties file that might be shared with Ant.
+     * <p class="nonnormative">
+     * Note: normally you would not use this event to detect property changes.
+     * Use the property change listener from {@link PropertyEvaluator} instead to find
+     * changes in the interpreted values of Ant properties, possibly coming from multiple
+     * properties files.
+     * </p>
      * @param ev an event with details of the change
      */
     void propertiesChanged(AntProjectEvent ev);
