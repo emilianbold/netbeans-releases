@@ -254,6 +254,9 @@ public class MakeNBM extends MatchingTask {
     private Vector externalPackages = null;
     private boolean manOrModReq = true ;
     private boolean manOrModReqSet = false ;
+    private String langCode = null ;
+    private String brandingCode = null ;
+    private String modInfo = null ;
 
     /** Include netbeans directory - default is true */
     public void setIsStandardInclude(boolean isStandardInclude) {
@@ -436,12 +439,18 @@ public class MakeNBM extends MatchingTask {
 		      if (codenamebase == null)
 			throw new BuildException ("invalid manifest, does not contain OpenIDE-Module", location);
 		      // Strip major release number if any.
-		      int idx = codenamebase.lastIndexOf ('/');
-		      if (idx != -1) codenamebase = codenamebase.substring (0, idx);
+		      codenamebase = getCodenameBase( codenamebase) ;
 		      ps.println ("<module codenamebase=\"" + codenamebase + "\"");
 		    }
 		    else {
-		      ps.println ("<module ");
+		      ps.print( "<module ");
+		      if( modInfo != null && !modInfo.trim().equals( "")) {
+			String codenamebase = getCodenameBase( modInfo) ;
+			ps.println( "codenamebase=\"" + codenamebase + "\"");
+		      }
+		      else {
+			ps.println( "") ;
+		      }
 		    }
 		    if (homepage != null)
                         ps.println ("        homepage=\"" + xmlEscape(homepage) + "\"");
@@ -494,6 +503,32 @@ public class MakeNBM extends MatchingTask {
 			}
 			ps.println ("  />");
 		    }
+		    else if( modInfo != null && !modInfo.trim().equals( "")) {
+		      String specver, majorver ;
+
+		      // Write the l10n tag and lang/branding codes. //
+		      ps.println("  <l10n ");
+		      if( langCode != null && !langCode.trim().equals( "")) {
+			ps.println( "        langcode=\"" + langCode + "\"") ;
+		      }
+		      if( brandingCode != null && !brandingCode.trim().equals( "")) {
+			ps.println( "        brandingcode=\"" + brandingCode + "\"") ;
+		      }
+
+		      // Write the spec version if possible. //
+		      specver = getSpecVer( modInfo) ;
+		      if( specver != null && !specver.trim().equals( "")) {
+			ps.println( "        module_spec_version=\"" + specver + "\"") ;
+		      }
+
+		      // Write the major version if possible. //
+		      majorver = getMajorVer( modInfo) ;
+		      if( majorver != null && !majorver.trim().equals( "")) {
+			ps.println( "        module_major_version=\"" + majorver + "\"") ;
+		      }
+		      ps.println( "  />") ;
+		    }
+
 		    // Maybe write out license text.
 		    if (license != null) {
                         ps.print ("  <license name=\"" + xmlEscape(license.getName ()) + "\">");
@@ -627,10 +662,85 @@ public class MakeNBM extends MatchingTask {
         }
     }
 
+  protected String getCodenameBase( String openide_module) {
+    String ret = openide_module ;
+    int idx = ret.indexOf ('/');
+    if (idx != -1) {
+      ret = ret.substring (0, idx);
+    }
+    return( ret) ;
+  }
+
+  protected String getSpecVer( String mod_info) {
+    String ret = null ;
+    int first_idx, second_idx ;
+
+    // If there are 2 slashes. //
+    first_idx = mod_info.indexOf( '/') ;
+    if( first_idx != -1) {
+      second_idx = mod_info.indexOf( '/', first_idx+1) ;
+      if( second_idx != -1) {
+
+	// Return the string after the second slash. //
+	ret = mod_info.substring( second_idx+1, mod_info.length()) ;
+      }
+    }
+
+    // Return null rather than an empty string. //
+    if( ret != null && ret.trim().equals( "")) {
+      ret = null ;
+    }
+    return( ret) ;
+  }
+
+  protected String getMajorVer( String mod_info) {
+    String ret = null ;
+    int first_idx, second_idx ;
+
+    // If there are 2 slashes. //
+    first_idx = mod_info.indexOf( '/') ;
+    if( first_idx != -1) {
+      second_idx = mod_info.indexOf( '/', first_idx+1) ;
+      if( second_idx != -1) {
+
+	// Return the string between the slashes. //
+	ret = mod_info.substring( first_idx+1, second_idx) ;
+      }
+
+      // Else return the string after the first slash. //
+      else {
+	ret = mod_info.substring( first_idx+1, mod_info.length()) ;
+      }
+    }
+
+    // Return null rather than an empty string. //
+    if( ret != null && ret.trim().equals( "")) {
+      ret = null ;
+    }
+    return( ret) ;
+  }
+
   /** See reqManOrMod() */
   public void setManOrModReq( boolean b) {
     manOrModReq = b ;
     manOrModReqSet = true ;
+  }
+
+  /** If the manifest and module aren't required, use this to set
+   * the module codename, major version and spec version.
+   */
+  public void setModInfo( String s) {
+    modInfo = s ;
+  }
+
+  /** Set the language code for localized NBM's. */
+  public void setLangCode( String s) {
+    langCode = s ;
+  }
+
+  /** Set the branding code for branded NBM's. */
+  public void setBrandingCode( String s) {
+    brandingCode = s ;
   }
 
   /** Returns true if either a manifest or a module must be specified.

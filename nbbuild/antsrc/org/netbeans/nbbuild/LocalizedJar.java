@@ -36,7 +36,7 @@ import org.apache.tools.ant.types.*;
  * always be considered part of the localizable base kit.
  * You can use the "branding" and "locale" subelements to control the branded
  * and localized .jar files that will be produced.  Also, you can set the global
- * properties "locjar_global_brands" and "locjar_global_locales" to comma-separated
+ * properties "locjar.brands" and "locjar.locales" to comma-separated
  * lists of branding or locale identifiers so that NetBeans-based projects can
  * brand or localize NetBeans without having to maintain modified versions of all
  * the individual Ant scripts
@@ -59,6 +59,8 @@ public class LocalizedJar extends MatchingTask {
     private List filesets = new LinkedList (); // List<FileSet>
     private File manifest;
     private boolean checkPathLocale = true ;
+    private boolean warnMissingDir = false ;
+    private boolean warnMissingDirSet = false ;
 
     /** Locale or branding specifier.
      * Represents a complete locale or branding suffix,
@@ -162,6 +164,17 @@ public class LocalizedJar extends MatchingTask {
       checkPathLocale = doit ;
     }
 
+    /** This is false by default, in which case missing dirs in the
+     * filesets cause a BuildException to be thrown.  If true, then
+     * a warning is printed but the build will continue.
+     * This task will also look for a global property 
+     * "locjar.warnMissingDir" if this attribute isn't set.
+     */
+    public void setWarnMissingDir( boolean b) {
+      warnMissingDir = b ;
+      warnMissingDirSet = true ;
+    }
+
     public void execute () throws BuildException {
 
         // Sanity checks:
@@ -174,6 +187,13 @@ public class LocalizedJar extends MatchingTask {
         if (manifest != null && ! manifest.isFile ()) {
             throw new BuildException ("The specified manifest does not actually exist.");
         }
+
+	// If needed, warn that directories are missing. //
+	if( shouldWarnMissingDir() && warnIfMissingDir()) {
+
+	  // Stop if dirs were missing. //
+	  return ;
+	}
 
 	// Look for global locales or brandings to use. //
 	addGlobalLocaleAndBranding() ;
@@ -544,14 +564,26 @@ if( localeKitFiles.contains( file)) {
   // that should be used.					    //
   protected void addGlobalLocaleAndBranding() {
     addGlobals( getGlobalLocaleVarName(), locales) ;
+    addGlobals( getOldGlobalLocaleVarName(), locales) ;
     addGlobals( getGlobalBrandingVarName(), brandings) ;
+    addGlobals( getOldGlobalBrandingVarName(), brandings) ;
   }
 
   protected String getGlobalLocaleVarName() {
-    return( new String( "locjar_global_locales")) ;
+    return( new String( "locjar.locales")) ;
   }
 
   protected String getGlobalBrandingVarName() {
+    return( new String( "locjar.brands")) ;
+  }
+
+  // For backwards compatibility. //
+  protected String getOldGlobalLocaleVarName() {
+    return( new String( "locjar_global_locales")) ;
+  }
+
+  // For backwards compatibility. //
+  protected String getOldGlobalBrandingVarName() {
     return( new String( "locjar_global_brands")) ;
   }
 
@@ -578,5 +610,58 @@ if( localeKitFiles.contains( file)) {
   }
   //////////////////////////////////////////////////////////////////////
 
+  protected boolean shouldWarnMissingDir() {
+    String s ;
+    boolean ret = false ;	// Default false. //
 
+    // If the attribute is set, use its value. //
+    if( warnMissingDirSet) {
+      ret = warnMissingDir ;
+    }
+
+    // Otherwise use the global property value, if set. //
+    else {
+      s = project.getProperty( "locjar.warnMissingDir") ;
+      if( s != null && !s.trim().equals( "")) {
+	ret = project.toBoolean( s) ;
+      }
+    }
+
+    return( ret) ;
+  }
+
+  // If any dir's don't exist, warn the user and return true. //
+  protected boolean warnIfMissingDir() {
+    ListIterator iter ;
+    FileSet fileset ;
+    File dir ;
+    boolean ret = false ;
+
+    // Print warning if the basedir doesn't exist. //
+    if( baseDir != null && !baseDir.exists()) {
+      ret = true ;
+      printMissingDirWarning( baseDir) ;
+    }
+
+    // For each fileset. //
+    iter = filesets.listIterator() ;
+    if( iter != null) {
+      while( iter.hasNext()) {
+
+	// Print warning if the dir doesn't exist. //
+	fileset = (FileSet) iter.next() ;
+	dir = fileset.getDir( project) ;
+	if( dir != null && !dir.exists()) {
+	  ret = true ;
+	  printMissingDirWarning( dir) ;
+	}
+      }
+    }
+    return( ret) ;
+  }
+
+  // Warn the user that the given dir doesn't exist. //
+  protected void printMissingDirWarning( File dir) {
+    log( "WARNING: Skipping this task: Directory " + dir.getPath() + " doesn't exist.") ;
+  }
 }
