@@ -33,6 +33,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.loaders.*;
+import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 
 /** JUnit tests
@@ -56,7 +57,7 @@ public final class XMLPropertiesConvertorTest extends NbTestCase {
     
     protected void setUp() throws java.lang.Exception {
         super.setUp();
-        org.openide.TopManager.getDefault();
+        Lookup.getDefault().lookup(ModuleInfo.class);
         java.net.URL layer = this.getClass().getResource("data/layer.xml");
         fs = new XMLFileSystem(layer);
         sfs = Repository.getDefault().getDefaultFileSystem();

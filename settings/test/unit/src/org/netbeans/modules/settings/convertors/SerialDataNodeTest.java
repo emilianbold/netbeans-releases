@@ -18,7 +18,9 @@ import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
+import org.openide.modules.ModuleInfo;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -40,7 +42,7 @@ public class SerialDataNodeTest extends NbTestCase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        org.openide.TopManager.getDefault();
+        Lookup.getDefault().lookup(ModuleInfo.class);
         sfs = org.openide.filesystems.Repository.getDefault().getDefaultFileSystem();
     }
     

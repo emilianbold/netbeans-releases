@@ -16,8 +16,8 @@ package org.netbeans.modules.settings.convertors;
 import org.openide.filesystems.*;
 import org.openide.filesystems.FileSystem; // override java.io.FileSystem
 import org.openide.loaders.*;
-import org.openide.TopManager;
 import org.openide.cookies.*;
+import org.openide.modules.ModuleInfo;
 import org.openide.util.*;
 
 import java.beans.*;
@@ -47,7 +47,7 @@ public class SerialDataConvertorTest extends NbTestCase {
     /** Setups variables.
      */
     protected void setUp () throws Exception {
-        org.openide.TopManager.getDefault();
+        Lookup.getDefault().lookup(ModuleInfo.class);
         lfs = Repository.getDefault().getDefaultFileSystem();
         org.openide.filesystems.FileUtil.createFolder(lfs.getRoot(), "BB/AAA");
         org.openide.filesystems.FileUtil.createFolder(lfs.getRoot(), "system/Services/lookupTest");

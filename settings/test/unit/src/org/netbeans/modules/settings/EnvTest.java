@@ -17,6 +17,8 @@ import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 
 import org.openide.filesystems.FileSystem;
+import org.openide.modules.ModuleInfo;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -38,7 +40,7 @@ public class EnvTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         
-        org.openide.TopManager.getDefault();
+        Lookup.getDefault().lookup(ModuleInfo.class);
         fs = org.openide.filesystems.Repository.getDefault().getDefaultFileSystem();
     }
     

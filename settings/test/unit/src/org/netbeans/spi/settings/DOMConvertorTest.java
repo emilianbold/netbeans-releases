@@ -22,6 +22,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.InstanceDataObject;
+import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.xml.EntityCatalog;
@@ -55,7 +56,7 @@ public class DOMConvertorTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         
-        org.openide.TopManager.getDefault();
+        Lookup.getDefault().lookup(ModuleInfo.class);
         fs = org.openide.filesystems.Repository.getDefault().getDefaultFileSystem();
     }
     
