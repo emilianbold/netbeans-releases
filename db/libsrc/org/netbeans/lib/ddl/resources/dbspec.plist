@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -835,6 +835,11 @@
     DropIndexCommand = {
       Class = org.netbeans.lib.ddl.impl.DropIndex;
       Format = "drop index [{object.owner}].{table.name}.{object.name}";
+    };
+
+    DropProcedureCommand = {
+      Class = org.netbeans.lib.ddl.impl.AbstractCommand;
+      Format = "drop procedure [{object.owner}.]{object.name}";
     };
 
   };
