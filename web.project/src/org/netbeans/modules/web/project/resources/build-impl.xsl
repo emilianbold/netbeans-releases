@@ -410,10 +410,21 @@ is divided into following sections:
     ======================
     </xsl:comment>
             <xsl:call-template name="deps.target">
-                <xsl:with-param name="targetname" select="'deps-jar'"/>
+                <xsl:with-param name="targetname" select="'deps-module-jar'"/>
                 <xsl:with-param name="type" select="'jar'"/>
             </xsl:call-template>
 
+            <xsl:call-template name="deps.target">
+                <xsl:with-param name="targetname" select="'deps-ear-jar'"/>
+                <xsl:with-param name="type" select="'jar'"/>
+                <xsl:with-param name="ear" select="'true'"/>
+            </xsl:call-template>
+
+            <target name="deps-jar">
+                <xsl:attribute name="depends">init, deps-module-jar, deps-ear-jar</xsl:attribute>
+                <xsl:attribute name="unless">no.deps</xsl:attribute>
+            </target>
+            
             <xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:web-services/webproject2:web-service|/p:project/p:configuration/webproject2:data/webproject2:web-service-clients/webproject2:web-service-client">
                 <target name="wscompile-init">
                     <taskdef name="wscompile" classname="com.sun.xml.rpc.tools.ant.Wscompile">
@@ -1355,9 +1366,18 @@ to simulate
     <xsl:template name="deps.target">
         <xsl:param name="targetname"/>
         <xsl:param name="type"/>
+        <xsl:param name="ear"/>
         <target name="{$targetname}">
             <xsl:attribute name="depends">init</xsl:attribute>
-            <xsl:attribute name="unless">no.deps</xsl:attribute>
+            
+            <xsl:choose>
+                <xsl:when test="$ear">
+                    <xsl:attribute name="if">dist.ear.dir</xsl:attribute>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:attribute name="unless">dist.ear.dir</xsl:attribute>
+                </xsl:otherwise>
+            </xsl:choose>
             <xsl:variable name="references" select="/p:project/p:configuration/projdeps:references"/>
             <xsl:for-each select="$references/projdeps:reference[not($type) or projdeps:artifact-type = $type]">
                 <xsl:variable name="subproj" select="projdeps:foreign-project"/>
@@ -1372,7 +1392,18 @@ to simulate
                     </xsl:choose>
                 </xsl:variable>
                 <xsl:variable name="script" select="projdeps:script"/>
-                     <ant target="{$subtarget}" inheritall="false" antfile="${{project.{$subproj}}}/{$script}"/>
+                <!-- Distinguish build of a dependent project as standalone module or as a part of an ear -->
+                <xsl:choose>
+                    <xsl:when test="$ear">
+                        <ant target="dist-ear" inheritall="false" antfile="${{project.{$subproj}}}/{$script}">
+                            <property name="dist.ear.dir" location="${{build.dir}}"/>
+                        </ant>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <ant target="{$subtarget}" inheritall="false" antfile="${{project.{$subproj}}}/{$script}"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+                
             </xsl:for-each>
         </target>
     </xsl:template>
