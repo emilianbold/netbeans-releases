@@ -214,11 +214,13 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
     
     
     final static class Ch extends Children.Keys 
-    implements javax.swing.event.ChangeListener {
+    implements javax.swing.event.ChangeListener, NodeListener {
         /** result */
         private Lookup.Result result;
         /** remebmber the section name */
         private String sectionName;
+        /** default section node */
+        private Node defaultNode;
 
         /** Constructor
          * @param nodeSectionName the name of the section that should be recognized
@@ -236,7 +238,7 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
         
         protected void addNotify () {
             // updates its state
-            setKeys (result.allInstances ());
+            updateKeys ();
         }
         
         protected void removeNotify () {
@@ -256,14 +258,26 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
          * this children. Hopefully never called difectly.
          */
         public final void stateChanged (javax.swing.event.ChangeEvent ev) {
-            setKeys (result.allInstances ());
+            updateKeys ();
             // notify that the set of nodes has changed (probably)
             NbTopManager.get ().firePropertyChange (TopManager.PROP_PLACES, null, null);
+        }
+
+        /** Update keys takes the all results, plus name of the section.
+        */
+        private void updateKeys () {
+            ArrayList list = new ArrayList (result.allInstances ());
+            list.add (sectionName);
+            setKeys (list);
         }
 
         /** Nodes for given objects.
          */
         protected Node[] createNodes (Object key) {
+            if (key instanceof String) {
+                return defaultNodesForType ((String)key);
+            }
+
             NodeSection ns = (NodeSection)key;
 
             try {
@@ -281,6 +295,56 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
                 ex.printStackTrace();
                 return new Node[0];
             }
+        }
+
+        /** Default node for a type.
+         */
+        private Node[] defaultNodesForType (String section) {
+            if (defaultNode == null) {
+                if (NodeSection.TYPE_SESSION.equals (section)) {
+                    defaultNode = new org.netbeans.core.ui.LookupNode ();
+                } else {
+                    defaultNode = Node.EMPTY;
+                }
+
+                defaultNode.addNodeListener (this);
+            }
+
+            Node[] arr = defaultNode.getChildren ().getNodes ();
+            for (int i = 0; i < arr.length; i++) {
+                arr[i] = arr[i].cloneNode ();
+            }
+
+            return arr;
+        }
+    
+        /** Fired when a set of new children is added.
+        * @param ev event describing the action
+        */
+        public void childrenAdded (NodeMemberEvent ev) {
+            refreshKey (sectionName);
+        }
+    
+        /** Fired when a set of children is removed.
+        * @param ev event describing the action
+        */
+        public void childrenRemoved (NodeMemberEvent ev) {
+            refreshKey (sectionName);
+        }
+ 
+        /** Fired when the order of children is changed.
+        * @param ev event describing the change
+        */
+        public void childrenReordered(NodeReorderEvent ev) {
+            refreshKey (sectionName);
+        }
+ 
+        /** Fired when the node is deleted.
+        * @param ev event describing the node
+        */
+        public void nodeDestroyed (NodeEvent ev) {}
+
+        public void propertyChange (java.beans.PropertyChangeEvent ev) {
         }
     }
     
