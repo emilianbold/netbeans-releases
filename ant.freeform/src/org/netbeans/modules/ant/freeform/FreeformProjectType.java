@@ -23,6 +23,8 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
  * @author Jesse Glick
  */
 public final class FreeformProjectType implements AntBasedProjectType {
+
+    public static final String TYPE = "org.netbeans.modules.ant.freeform";
     
     /** Default constructor for lookup. */
     public FreeformProjectType() {}
@@ -41,7 +43,7 @@ public final class FreeformProjectType implements AntBasedProjectType {
     }
     
     public String getType() {
-        return "org.netbeans.modules.ant.freeform"; // NOI18N
+        return TYPE; // NOI18N
     }
     
 }

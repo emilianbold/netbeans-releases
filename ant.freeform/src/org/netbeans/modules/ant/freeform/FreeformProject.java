@@ -36,6 +36,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.ant.freeform.ui.ProjectCustomizerProvider;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -124,6 +125,7 @@ final class FreeformProject implements Project {
             initSources(),
             new Actions(),
             new View(),
+            new ProjectCustomizerProvider(this, helper, eval),
         });
     }
     
