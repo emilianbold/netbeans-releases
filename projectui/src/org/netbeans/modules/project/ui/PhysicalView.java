@@ -199,32 +199,30 @@ public class PhysicalView {
             }
             else { 
                 Action[] folderActions = super.getActions( false );
-                Action[] projectActions = getAdditionalProjectActions();
-
-                Action[] actions = new Action[ folderActions.length + projectActions.length ]; 
-                System.arraycopy( projectActions, 0, actions, 0, projectActions.length );
-                System.arraycopy( folderActions, 0, actions, projectActions.length, folderActions.length );
-                return actions;
+                Action[] projectActions;
+                
+                if ( isProjectDir ) {
+                    // If this is project dir then the properties action 
+                    // has to be replaced to invoke project customizer
+                    projectActions = new Action[ folderActions.length ]; 
+                    for ( int i = 0; i < folderActions.length; i++ ) {
+                        if ( folderActions[i] instanceof org.openide.actions.PropertiesAction ) {
+                            projectActions[i] = LogicalViews.customizeProjectAction();
+                        }
+                        else {
+                            projectActions[i] = folderActions[i];
+                        }
+                    }
+                }
+                else {
+                    projectActions = folderActions;
+                }
+                
+                return projectActions;
             }                                            
         }
 
         // Private methods -------------------------------------------------    
-
-        private Action[] getAdditionalProjectActions() {
-
-            return new Action[] {
-                /*
-                LogicalViews.setAsMainProjectAction(),
-                null,                    
-                LogicalViews.closeProjectAction(),
-                LogicalViews.customizeProjectAction(),
-                LogicalViews.openSubprojectsAction(),
-                //saveProjectAction(),
-                null
-                */
-            };
-
-        }
 
         public void propertyChange(PropertyChangeEvent evt) {
             String prop = evt.getPropertyName();
