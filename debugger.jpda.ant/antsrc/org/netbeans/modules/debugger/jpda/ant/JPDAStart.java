@@ -196,7 +196,7 @@ public class JPDAStart extends Task implements Runnable {
                     bootclasspath
                 );
                 
-                if (stopClassName != null) {
+                if (stopClassName != null && stopClassName.length() > 0) {
                     MethodBreakpoint breakpoint = MethodBreakpoint.create (
                         stopClassName,
                         ""

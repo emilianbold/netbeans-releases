@@ -80,6 +80,12 @@ public interface ActionProvider {
      */
     String COMMAND_DEBUG_TEST_SINGLE = "debug.test.single"; // NOI18N
     
+    /** 
+     * Standard command for starting app in debugger and stopping at the 
+     * beginning of app whatever that means.
+     */
+    String COMMAND_DEBUG_STEP_INTO = "debug.stepinto"; // NOI18N
+    
         
     /**
      * Get a list of all commands which this project supports.

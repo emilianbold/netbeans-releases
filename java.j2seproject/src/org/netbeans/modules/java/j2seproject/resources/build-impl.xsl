@@ -237,8 +237,12 @@ is divided into following sections:
                         <xsl:attribute name="name">classpath</xsl:attribute>
                         <xsl:attribute name="default">${debug.classpath}</xsl:attribute>
                     </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">stopclassname</xsl:attribute>
+                        <xsl:attribute name="default"></xsl:attribute>
+                    </attribute>
                     <sequential>
-                        <nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="@{{name}}">
+                        <nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="@{{name}}" stopclassname="@{{stopclassname}}">
                             <classpath>
                                 <path path="@{{classpath}}"/>
                             </classpath>
@@ -476,6 +480,17 @@ is divided into following sections:
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init,compile,debug-start-debugger,debug-start-debuggee</xsl:attribute>
                 <xsl:attribute name="description">Debug project in IDE.</xsl:attribute>
+            </target>
+
+            <target name="debug-start-debugger-stepinto">
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="depends">init,compile</xsl:attribute>
+                <j2seproject:nbjpdastart xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1" stopclassname="${{main.class}}"/>
+            </target>
+
+            <target name="debug-stepinto">
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,debug-start-debugger-stepinto,debug-start-debuggee</xsl:attribute>
             </target>
 
             <target name="debug-start-debuggee-single">

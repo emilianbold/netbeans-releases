@@ -70,7 +70,8 @@ class J2SEActionProvider implements ActionProvider {
         COMMAND_TEST, 
         COMMAND_TEST_SINGLE, 
         COMMAND_DEBUG_TEST_SINGLE, 
-        JavaProjectConstants.COMMAND_DEBUG_FIX       
+        JavaProjectConstants.COMMAND_DEBUG_FIX,
+        COMMAND_DEBUG_STEP_INTO,
     };
     
     // Project
@@ -100,6 +101,7 @@ class J2SEActionProvider implements ActionProvider {
             commands.put(COMMAND_TEST_SINGLE, new String[] {"test-single"}); // NOI18N
             commands.put(COMMAND_DEBUG_TEST_SINGLE, new String[] {"debug-test"}); // NOI18N
             commands.put(JavaProjectConstants.COMMAND_DEBUG_FIX, new String[] {"debug-fix"}); // NOI18N
+            commands.put(COMMAND_DEBUG_STEP_INTO, new String[] {"debug-stepinto"}); // NOI18N
         
         this.antProjectHelper = antProjectHelper;
         this.project = project;
