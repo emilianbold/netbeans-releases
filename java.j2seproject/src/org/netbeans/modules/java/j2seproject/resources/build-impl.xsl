@@ -103,9 +103,7 @@ is divided into following sections:
                 <xsl:comment> by the active platform. Just a fallback. </xsl:comment>
                 <property name="default.javac.source" value="1.4"/>
                 <property name="default.javac.target" value="1.4"/>
-                <xsl:if test="/p:project/p:configuration/j2se:data/j2se:use-manifest">
-                    <fail unless="manifest.file">Must set manifest.file</fail>
-                </xsl:if>
+                <available file="${{manifest.file}}" property="manifest.available"/>
                 <available property="have.tests" file="${{test.src.dir}}"/>
                 <condition property="netbeans.home+have.tests">
                     <and>
@@ -424,15 +422,26 @@ is divided into following sections:
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
 
-            <target name="do-jar">
+            <target name="do-jar-without-manifest">
                 <xsl:attribute name="depends">init,compile,pre-jar</xsl:attribute>
+                <xsl:attribute name="unless">manifest.available</xsl:attribute>
                 <dirname property="dist.jar.dir" file="${{dist.jar}}"/>
                 <mkdir dir="${{dist.jar.dir}}"/>
                 <jar jarfile="${{dist.jar}}" compress="${{jar.compress}}">
+                    <fileset dir="${{build.classes.dir}}"/>
+                </jar>
+            </target>
+
+            <target name="do-jar-with-manifest">
+                <xsl:attribute name="depends">init,compile,pre-jar</xsl:attribute>
+                <xsl:attribute name="if">manifest.available</xsl:attribute>
+                <dirname property="dist.jar.dir" file="${{dist.jar}}"/>
+                <mkdir dir="${{dist.jar.dir}}"/>
+                <jar jarfile="${{dist.jar}}" compress="${{jar.compress}}">
+                    <xsl:attribute name="manifest">${manifest.file}</xsl:attribute>
                     <xsl:if test="/p:project/p:configuration/j2se:data/j2se:use-manifest">
                         <!-- Assume this is a J2SE application. -->
                         <!-- Any Main-Class set in the manifest takes precedence. -->
-                        <xsl:attribute name="manifest">${manifest.file}</xsl:attribute>
                         <manifest>
                             <attribute name="Main-Class" value="${{main.class}}"/>
                         </manifest>
@@ -447,7 +456,7 @@ is divided into following sections:
             </target>
 
             <target name="jar">
-                <xsl:attribute name="depends">init,compile,pre-jar,do-jar,post-jar</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,pre-jar,do-jar-with-manifest,do-jar-without-manifest,post-jar</xsl:attribute>
                 <xsl:attribute name="description">Build JAR.</xsl:attribute>
             </target>
 
