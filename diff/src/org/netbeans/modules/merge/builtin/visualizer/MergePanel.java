@@ -190,10 +190,10 @@ public class MergePanel extends javax.swing.JPanel {
         commandPanel.add(firstConflictButton, new java.awt.GridBagConstraints());
 
         prevConflictButton.setToolTipText(org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.prevButton.toolTipText"));
-        prevConflictButton.setPreferredSize(new java.awt.Dimension(24, 24));
-        prevConflictButton.setMaximumSize(new java.awt.Dimension(24, 24));
         prevConflictButton.setMargin(new java.awt.Insets(1, 1, 0, 1));
+        prevConflictButton.setMaximumSize(new java.awt.Dimension(24, 24));
         prevConflictButton.setMinimumSize(new java.awt.Dimension(24, 24));
+        prevConflictButton.setPreferredSize(new java.awt.Dimension(24, 24));
         prevConflictButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 prevConflictButtonActionPerformed(evt);
@@ -206,10 +206,10 @@ public class MergePanel extends javax.swing.JPanel {
         commandPanel.add(prevConflictButton, gridBagConstraints);
 
         nextConflictButton.setToolTipText(org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.nextButton.toolTipText"));
-        nextConflictButton.setPreferredSize(new java.awt.Dimension(24, 24));
-        nextConflictButton.setMaximumSize(new java.awt.Dimension(24, 24));
         nextConflictButton.setMargin(new java.awt.Insets(1, 1, 0, 1));
+        nextConflictButton.setMaximumSize(new java.awt.Dimension(24, 24));
         nextConflictButton.setMinimumSize(new java.awt.Dimension(24, 24));
+        nextConflictButton.setPreferredSize(new java.awt.Dimension(24, 24));
         nextConflictButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 nextConflictButtonActionPerformed(evt);
@@ -258,8 +258,8 @@ public class MergePanel extends javax.swing.JPanel {
 
         leftCommandPanel.setLayout(new java.awt.GridBagLayout());
 
-        acceptLeftButton.setToolTipText(org.openide.util.NbBundle.getBundle(MergePanel.class).getString("ACS_MergePanel.acceptLeftButton.textA11yDesc"));
         acceptLeftButton.setText(org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.acceptLeftButton.text"));
+        acceptLeftButton.setToolTipText(org.openide.util.NbBundle.getBundle(MergePanel.class).getString("ACS_MergePanel.acceptLeftButton.textA11yDesc"));
         acceptLeftButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 acceptLeftButtonActionPerformed(evt);
@@ -272,8 +272,8 @@ public class MergePanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 1);
         leftCommandPanel.add(acceptLeftButton, gridBagConstraints);
 
-        acceptAndNextLeftButton.setToolTipText(org.openide.util.NbBundle.getBundle(MergePanel.class).getString("ACS_MergePanel.acceptAndNextLeftButtonA11yDesc"));
         acceptAndNextLeftButton.setText(org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.acceptAndNextLeftButton"));
+        acceptAndNextLeftButton.setToolTipText(org.openide.util.NbBundle.getBundle(MergePanel.class).getString("ACS_MergePanel.acceptAndNextLeftButtonA11yDesc"));
         acceptAndNextLeftButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 acceptAndNextLeftButtonActionPerformed(evt);
@@ -321,8 +321,8 @@ public class MergePanel extends javax.swing.JPanel {
 
         rightCommandPanel.setLayout(new java.awt.GridBagLayout());
 
-        acceptRightButton.setToolTipText(org.openide.util.NbBundle.getBundle(MergePanel.class).getString("ACS_MergePanel.acceptRightButton.textA11yDesc"));
         acceptRightButton.setText(org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.acceptRightButton.text"));
+        acceptRightButton.setToolTipText(org.openide.util.NbBundle.getBundle(MergePanel.class).getString("ACS_MergePanel.acceptRightButton.textA11yDesc"));
         acceptRightButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 acceptRightButtonActionPerformed(evt);
@@ -334,8 +334,8 @@ public class MergePanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 1);
         rightCommandPanel.add(acceptRightButton, gridBagConstraints);
 
-        acceptAndNextRightButton.setToolTipText(org.openide.util.NbBundle.getBundle(MergePanel.class).getString("ACS_MergePanel.acceptAndNextRightButtonA11yDesc"));
         acceptAndNextRightButton.setText(org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.acceptAndNextRightButton"));
+        acceptAndNextRightButton.setToolTipText(org.openide.util.NbBundle.getBundle(MergePanel.class).getString("ACS_MergePanel.acceptAndNextRightButtonA11yDesc"));
         acceptAndNextRightButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 acceptAndNextRightButtonActionPerformed(evt);
@@ -487,6 +487,10 @@ public class MergePanel extends javax.swing.JPanel {
       this.numUnresolvedConflicts = numConflicts;
   }
     
+  public int getNumUnresolvedConflicts(){
+      return numUnresolvedConflicts;
+  }
+  
   public void setCurrentLine(int line, int diffLength, int conflictPos,
                              int resultLine) {
       if (line > 0) {
@@ -1599,33 +1603,33 @@ public class MergePanel extends javax.swing.JPanel {
     private javax.swing.JViewport jViewport2;
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton acceptRightButton;
-    private javax.swing.JLabel fileLabel2;
-    private javax.swing.JLabel fileLabel1;
-    private javax.swing.JButton firstConflictButton;
-    private javax.swing.JPanel rightCommandPanel;
-    private javax.swing.JButton prevConflictButton;
-    private javax.swing.JPanel filePanel2;
-    private javax.swing.JPanel filePanel1;
-    private javax.swing.JSplitPane diffSplitPane;
-    private javax.swing.JPanel leftCommandPanel;
-    private javax.swing.JButton lastConflictButton;
-    private javax.swing.JEditorPane jEditorPane3;
-    private javax.swing.JScrollPane resultScrollPane;
-    private javax.swing.JLabel statusLabel;
-    private javax.swing.JEditorPane jEditorPane2;
-    private javax.swing.JButton nextConflictButton;
     private javax.swing.JEditorPane jEditorPane1;
-    private javax.swing.JButton acceptLeftButton;
-    private javax.swing.JSplitPane mergeSplitPane;
-    private javax.swing.JPanel resultPanel;
-    private javax.swing.JButton acceptAndNextRightButton;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JButton acceptAndNextLeftButton;
-    private javax.swing.JPanel editorPanel;
+    private javax.swing.JEditorPane jEditorPane2;
+    private javax.swing.JSplitPane diffSplitPane;
+    private javax.swing.JLabel fileLabel1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JButton acceptLeftButton;
+    private javax.swing.JPanel editorPanel;
+    private javax.swing.JLabel statusLabel;
+    private javax.swing.JButton acceptAndNextRightButton;
+    private javax.swing.JButton nextConflictButton;
+    private javax.swing.JButton acceptAndNextLeftButton;
+    private javax.swing.JSplitPane mergeSplitPane;
+    private javax.swing.JScrollPane resultScrollPane;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JPanel rightCommandPanel;
+    private javax.swing.JButton acceptRightButton;
     private javax.swing.JPanel commandPanel;
+    private javax.swing.JLabel fileLabel2;
+    private javax.swing.JPanel resultPanel;
+    private javax.swing.JPanel leftCommandPanel;
     private javax.swing.JLabel resultLabel;
+    private javax.swing.JPanel filePanel1;
+    private javax.swing.JButton firstConflictButton;
+    private javax.swing.JEditorPane jEditorPane3;
+    private javax.swing.JButton lastConflictButton;
+    private javax.swing.JPanel filePanel2;
+    private javax.swing.JButton prevConflictButton;
     // End of variables declaration//GEN-END:variables
 
 }

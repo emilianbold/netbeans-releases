@@ -117,8 +117,8 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
 
         buttonsPanel.setLayout(new java.awt.GridBagLayout());
 
-        okButton.setToolTipText(org.openide.util.NbBundle.getBundle(MergeDialogComponent.class).getString("ACS_BTN_OKA11yDesc"));
         okButton.setText(org.openide.util.NbBundle.getMessage(MergeDialogComponent.class, "BTN_OK"));
+        okButton.setToolTipText(org.openide.util.NbBundle.getBundle(MergeDialogComponent.class).getString("ACS_BTN_OKA11yDesc"));
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
@@ -131,8 +131,8 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         buttonsPanel.add(okButton, gridBagConstraints);
 
-        cancelButton.setToolTipText(org.openide.util.NbBundle.getBundle(MergeDialogComponent.class).getString("ACS_BTN_CancelA11yDesc"));
         cancelButton.setText(org.openide.util.NbBundle.getMessage(MergeDialogComponent.class, "BTN_Cancel"));
+        cancelButton.setToolTipText(org.openide.util.NbBundle.getBundle(MergeDialogComponent.class).getString("ACS_BTN_CancelA11yDesc"));
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
@@ -144,8 +144,8 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         buttonsPanel.add(cancelButton, gridBagConstraints);
 
-        helpButton.setToolTipText(org.openide.util.NbBundle.getBundle(MergeDialogComponent.class).getString("ACS_BTN_HelpA11yDesc"));
         helpButton.setText(org.openide.util.NbBundle.getMessage(MergeDialogComponent.class, "BTN_Help"));
+        helpButton.setToolTipText(org.openide.util.NbBundle.getBundle(MergeDialogComponent.class).getString("ACS_BTN_HelpA11yDesc"));
         helpButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 helpButtonActionPerformed(evt);
@@ -173,10 +173,13 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
         synchronized (this) {
             panels = mergeTabbedPane.getComponents();
         }
+        boolean warning = false;
         ArrayList unsavedPanelNames = new ArrayList();
         ArrayList saveCookies = new ArrayList();
         for (int i = 0; i < panels.length; i++) {
             MergePanel panel = (MergePanel) panels[i];
+            if((panel.getNumUnresolvedConflicts() > 0) && (!warning))
+                warning = true;
             MergeNode node = (MergeNode) nodesForPanels.get(panel);
             SaveCookie sc;
             if ((sc = (SaveCookie) node.getCookie(SaveCookie.class)) != null) {
@@ -185,20 +188,25 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
             }
         }
         Object ret;
-        if (unsavedPanelNames.size() == 1) {
+        if (unsavedPanelNames.size() == 1) {           
             ret = DialogDisplayer.getDefault().notify(
-            new NotifyDescriptor.Confirmation(NbBundle.getMessage(MergeDialogComponent.class,
-                                                             "SaveFileQuestion",
-                                                             unsavedPanelNames.get(0)),
+            new NotifyDescriptor.Confirmation((warning)?NbBundle.getMessage(MergeDialogComponent.class,"SaveFileWarningQuestion",unsavedPanelNames.get(0)):
+                                              NbBundle.getMessage(MergeDialogComponent.class,"SaveFileQuestion",unsavedPanelNames.get(0)),
                                               NotifyDescriptor.YES_NO_CANCEL_OPTION));
         } else if (unsavedPanelNames.size() > 1) {
             ret = DialogDisplayer.getDefault().notify(
-                new NotifyDescriptor.Confirmation(NbBundle.getMessage(MergeDialogComponent.class,
-                                                                 "SaveFilesQuestion",
-                                                                 new Integer(unsavedPanelNames.size())),
+                new NotifyDescriptor.Confirmation((warning)?NbBundle.getMessage(MergeDialogComponent.class,"SaveFilesWarningQuestion",new Integer(unsavedPanelNames.size())):
+                                                  NbBundle.getMessage(MergeDialogComponent.class,"SaveFilesQuestion",new Integer(unsavedPanelNames.size())),
                                                   NotifyDescriptor.YES_NO_CANCEL_OPTION));
         } else {
-            ret = NotifyDescriptor.YES_OPTION;
+            if(warning){
+                ret = DialogDisplayer.getDefault().notify(
+                new NotifyDescriptor.Confirmation(NbBundle.getMessage(MergeDialogComponent.class,"WarningQuestion",new Integer(unsavedPanelNames.size())),
+                                                  NotifyDescriptor.YES_NO_CANCEL_OPTION));
+                if(ret.equals(NotifyDescriptor.NO_OPTION))
+                    return;
+            }else
+                ret = NotifyDescriptor.YES_OPTION;
         }
         if (!NotifyDescriptor.YES_OPTION.equals(ret) && !NotifyDescriptor.NO_OPTION.equals(ret)) return ;
         if (NotifyDescriptor.YES_OPTION.equals(ret)) {
@@ -271,9 +279,9 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTabbedPane mergeTabbedPane;
+    private javax.swing.JPanel buttonsPanel;
     private javax.swing.JButton okButton;
     private javax.swing.JButton cancelButton;
-    private javax.swing.JPanel buttonsPanel;
     private javax.swing.JButton helpButton;
     // End of variables declaration//GEN-END:variables
     
