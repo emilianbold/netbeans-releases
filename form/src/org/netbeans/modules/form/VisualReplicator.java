@@ -378,10 +378,12 @@ public class VisualReplicator {
         }
 
         // keep double buffering turned off for JComponent in fake peer container
-        if ("doubleBuffered".equals(property.getName()) // NOI18N
-                && targetComp instanceof JComponent
-                && hasAwtParent(metacomp)
-                && (getDesignRestrictions() & ATTACH_FAKE_PEERS) != 0)
+        // and also keep debugGraphicsOptions turned off
+        if (targetComp instanceof JComponent
+            && (getDesignRestrictions() & ATTACH_FAKE_PEERS) != 0
+            && (("doubleBuffered".equals(property.getName()) // NOI18N
+                 && hasAwtParent(metacomp))
+              || "debugGraphicsOptions".equals(property.getName()))) // NOI18N
             return;
 
         java.lang.reflect.Method writeMethod =
@@ -524,9 +526,14 @@ public class VisualReplicator {
                 if (clone instanceof Container)
                     FakePeerSupport.attachFakePeerRecursively((Container)clone);
 
-                // turn off double buffering for JComponent in fake peer container
-                if (clone instanceof JComponent && hasAwtParent(metacomp))
-                    setDoubleBufferedRecursively((JComponent)clone, false);
+                if (clone instanceof JComponent) {
+                    // turn off double buffering for JComponent in fake peer container
+                    if (hasAwtParent(metacomp))
+                        setDoubleBufferedRecursively((JComponent)clone, false);
+                    // make sure debug graphics options is turned off
+                    ((JComponent)clone).setDebugGraphicsOptions(
+                                            DebugGraphics.NONE_OPTION);
+                }
             }
 
             if ((restrictions & DISABLE_FOCUSING) != 0
