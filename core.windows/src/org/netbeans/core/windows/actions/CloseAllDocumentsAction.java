@@ -54,6 +54,12 @@ public class CloseAllDocumentsAction extends AbstractAction {
             TopComponent tc = (TopComponent)it.next();
             tc.close();
         }
+        
+        // #37290 Unmaximize editor mode if necessary.
+        ModeImpl maximizedMode = wm.getMaximizedMode();
+        if(maximizedMode != null && maximizedMode.getKind() == Constants.MODE_KIND_EDITOR) {
+            wm.setMaximizedMode(null);
+        }
     }
     
 }
