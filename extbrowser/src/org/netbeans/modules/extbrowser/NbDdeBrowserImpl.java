@@ -63,7 +63,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
     
     static {
         try {
-            if (org.openide.util.Utilities.isWindows ()) {
+            if (org.openide.util.Utilities.isWindows()) {
                 System.loadLibrary("extbrowser");   // NOI18N
             }
         } catch(Exception e) {
@@ -89,8 +89,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
         }
     }
     
-    native private byte [] reqDdeMessage (String srv, String topic, String item, int timeout)
-    throws NbBrowserException;
+    native private byte [] reqDdeMessage (String srv, String topic, String item, int timeout) throws NbBrowserException;
     
     /** finds registry entry for browser opening */
     public native static String getBrowserPath (String browser) throws NbBrowserException;
@@ -141,6 +140,10 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                 if (cmd.toUpperCase ().indexOf (ExtWebBrowser.MOZILLA) >= 0) {
                     return ExtWebBrowser.MOZILLA;
                 }
+
+                if (cmd.toUpperCase ().indexOf (ExtWebBrowser.FIREFOX) >= 0) {
+                    return ExtWebBrowser.FIREFOX;
+                }
             }
         } catch (Exception ex) {
             // some problem in native code likely
@@ -171,7 +174,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
      */
     static class URLDisplayer implements Runnable { // NOI18N
 
-        private static final int ADDITIONAL_WAIT_TIMEOUT = 5000;
+        private static final int ADDITIONAL_WAIT_TIMEOUT = 6000;
     
         /** FIFO of urls that should be displayed */
         Vector tasks;

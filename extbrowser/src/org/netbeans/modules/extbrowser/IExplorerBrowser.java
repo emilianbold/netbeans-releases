@@ -16,6 +16,7 @@ package org.netbeans.modules.extbrowser;
 import org.openide.awt.HtmlBrowser;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * @author Martin Grebac
@@ -30,7 +31,7 @@ public class IExplorerBrowser extends ExtWebBrowser {
      *          false in all other cases.
      */
     public static Boolean isHidden () {
-        return !org.openide.util.Utilities.isWindows () ? Boolean.TRUE : Boolean.FALSE;
+        return (Utilities.isWindows()) ? Boolean.FALSE : Boolean.TRUE;
     }
             
     private static final long serialVersionUID = 6433332055280422486L;

@@ -18,12 +18,12 @@ import java.beans.*;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
-public class MozillaBrowserBeanInfo extends SimpleBeanInfo {
+public class FirefoxBrowserBeanInfo extends SimpleBeanInfo {
 
     public BeanDescriptor getBeanDescriptor() {
-        BeanDescriptor descr = new BeanDescriptor (MozillaBrowser.class);
-        descr.setDisplayName (NbBundle.getMessage (MozillaBrowserBeanInfo.class, "CTL_MozillaBrowserName"));
-        descr.setShortDescription (NbBundle.getMessage (MozillaBrowserBeanInfo.class, "HINT_MozillaBrowserName"));
+        BeanDescriptor descr = new BeanDescriptor (FirefoxBrowser.class);
+        descr.setDisplayName (NbBundle.getMessage (FirefoxBrowserBeanInfo.class, "CTL_FirefoxBrowserName"));
+        descr.setShortDescription (NbBundle.getMessage (FirefoxBrowserBeanInfo.class, "HINT_FirefoxBrowserName"));
 
         descr.setValue ("helpID", "org.netbeans.modules.extbrowser.ExtWebBrowser");  // NOI18N //TODO
 	return descr;

@@ -37,7 +37,7 @@ public class NetscapeBrowserBeanInfo extends SimpleBeanInfo {
     * Returns the icon. 
     */
     public Image getIcon (int type) {
-        return loadImage("/org/netbeans/modules/extbrowser/resources/netscape.png"); // NOI18N
+        return loadImage("/org/netbeans/modules/extbrowser/resources/extbrowser.gif"); // NOI18N
     }
     
     /**

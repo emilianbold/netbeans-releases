@@ -49,20 +49,29 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.extbrowser.Bundle"/>
         <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/extbrowser/resources/extbrowser.gif"/>
       </file>
-      
+
+      <file name="FirefoxBrowser.settings" url="FirefoxBrowser.xml">
+        <attr name="hidden" methodvalue="org.netbeans.modules.extbrowser.FirefoxBrowser.isHidden"/>
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.extbrowser.Bundle"/>
+        <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/extbrowser/resources/extbrowser.gif"/>
+      </file>
+
       <!-- Default system browser should be first on Windows -->
       <attr name="SystemDefaultBrowser.settings/SimpleExtBrowser.settings" boolvalue="true"/>
       <attr name="SystemDefaultBrowser.settings/MozillaBrowser.settings" boolvalue="true"/>
       <attr name="SystemDefaultBrowser.settings/NetscapeBrowser.settings" boolvalue="true"/>
       <attr name="SystemDefaultBrowser.settings/IExplorerBrowser.settings" boolvalue="true"/>
+      <attr name="SystemDefaultBrowser.settings/FirefoxBrowser.settings" boolvalue="true"/>
 
       <!-- Browsers order -->
       <attr name="MozillaBrowser.settings/SimpleExtBrowser.settings" boolvalue="true"/>
       <attr name="NetscapeBrowser.settings/SimpleExtBrowser.settings" boolvalue="true"/>
       <attr name="IExplorerBrowser.settings/SimpleExtBrowser.settings" boolvalue="true"/>
+      <attr name="FirefoxBrowser.settings/SimpleExtBrowser.settings" boolvalue="true"/>
 
       <attr name="IExplorerBrowser.settings/MozillaBrowser.settings" boolvalue="true"/>
-      <attr name="MozillaBrowser.settings/NetscapeBrowser.settings" boolvalue="true"/>
+      <attr name="MozillaBrowser.settings/FirefoxBrowser.settings" boolvalue="true"/>
+      <attr name="FirefoxBrowser.settings/NetscapeBrowser.settings" boolvalue="true"/>
 
       <!-- Other browsers order -->
       <attr name="SimpleExtBrowser.settings/SwingBrowser.ser" boolvalue="true"/>
