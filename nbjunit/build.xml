@@ -25,8 +25,15 @@
             includes="org/netbeans/junit/**"/>
   </target>
 
+  <target name="check-javadoc-uptodate">
+    <uptodate property="javadoc-uptodate" targetfile="netbeans/docs/nbjunit-api.zip">
+      <srcfiles dir="src">
+        <include name="**/*.java"/>
+      </srcfiles>
+    </uptodate>
+  </target>
 
-  <target name="javadoc-nbjunit">
+  <target name="javadoc-nbjunit" depends="check-javadoc-uptodate" unless="javadoc-uptodate">
       <mkdir dir="javadoc/nbjunit-api"/>
       <javadoc packagenames="org.netbeans.junit" 
                sourcepath="src" 

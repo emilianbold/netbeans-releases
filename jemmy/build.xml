@@ -60,7 +60,15 @@ Microsystems, Inc. All Rights Reserved.
     <copy file="${src}/org/netbeans/jemmy/version_info" tofile="${build}/org/netbeans/jemmy/version_info" filtering="on"/>
   </target>
 
-  <target name="api">
+  <target name="check-api-uptodate">
+    <uptodate property="api-uptodate" targetfile="${javadoc}/index.html">
+      <srcfiles dir="${src}">
+        <include name="**/*.java"/>
+      </srcfiles>
+    </uptodate>
+  </target>
+
+  <target name="api" depends="check-api-uptodate" unless="api-uptodate">
     <mkdir dir="${javadoc}"/>
     <javadoc packagenames="${package},${package}.util,${package}.explorer,${package}.operators,${package}.demo,${package}.drivers,${package}.drivers.buttons,${package}.drivers.input,${package}.drivers.lists,${package}.drivers.scrolling,${package}.drivers.tables,${package}.drivers.text,${package}.drivers.trees,${package}.image" 
      sourcepath="${src}" destdir="${javadoc}" Protected="yes" Windowtitle="Jemmy API"/>
