@@ -244,7 +244,12 @@ public class JUnitTestRunner {
                 // Houston we have the problem - test class is not found !!!!
                 out.println("! Cannot find test class "+testName
                 + " ignoring this test");
-            }            
+            } catch (Throwable t) {
+                // Houston we have the problem - something even weirder happened
+                out.println("! Cannot define test class "+testName
+                + " ignoring this test. Reason = "+t.getMessage()+", Stacktrace:");
+                t.printStackTrace(out);
+            } 
         }
         // reurn the array
         return (TestSuite[])(testSuites.toArray(new TestSuite[0]));
