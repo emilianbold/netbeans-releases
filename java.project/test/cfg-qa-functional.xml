@@ -18,8 +18,16 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="projects/TestCreateProject.class"/>
-                <include name="projects/TestFreeformProject.class"/>
+                <exclude name="projects/TestFreeformProject.class"/>
                 <exclude name="projects/TestCreateProject.class/testCreateProject_6"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="test" name="Test" executor="ide">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="projects/TestCreateProject.class/testCreateProject_6"/>
             </patternset>
         </testset>
     </testbag>
