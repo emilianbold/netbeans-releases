@@ -13,6 +13,7 @@
 package org.netbeans.modules.utilities;
 
 import org.openide.modules.ModuleInstall;
+import org.openide.util.SharedClassObject;
 
 /** Module install class for Utilities module.
  *
@@ -25,7 +26,10 @@ public class Installer extends ModuleInstall {
 
     /** Constructs modules installer. */
     public Installer() {
-        searchInstaller = new org.netbeans.modules.search.Installer();
+        searchInstaller = (org.netbeans.modules.search.Installer)
+                          SharedClassObject.findObject(
+                                  org.netbeans.modules.search.Installer.class,
+                                  true);
     }
     
     /**
