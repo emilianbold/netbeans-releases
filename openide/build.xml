@@ -474,7 +474,7 @@ Microsystems, Inc. All Rights Reserved.
         </jar>
   </target>        
   
-  <target name="lib-lookup" depends="compile,13javac-workaround,vers-prep">
+  <target name="lib-lookup" depends="compile,13javac-workaround,vers-prep,lookup-src">
 	<mkdir dir="standalone"/>
         <copy file="openide-lookup.mf" tofile="openide-lookup-subst.mf" filtering="on"/>
         
