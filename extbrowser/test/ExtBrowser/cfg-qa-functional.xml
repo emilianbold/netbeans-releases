@@ -67,6 +67,25 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
+    <testbag testattribs="all" executor="ide" name="Using different browsers">
+        <testset dir="qa-functional/src">
+            <patternset>
+                 <include name="**/using/Using.class"/>
+            </patternset>
+       </testset>
+    </testbag>
+
+    <testbag testattribs="using" executor="ide" name="Using different browsers">
+       <testset dir="qa-functional/src">
+            <patternset>
+                 <include name="**/using/Using.class"/>
+            </patternset>
+       </testset>
+    </testbag>
+
+
+
+
     <testbag testattribs="jas" executor="ide" name="JSP and Servlet settings tests">
         <testset dir="qa-functional/src">
             <patternset>
