@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.lang.ref.*;
 import java.util.StringTokenizer;
 import java.beans.*;
+import java.io.File;
 import java.util.Enumeration;
 import java.text.MessageFormat;
 
@@ -716,18 +717,40 @@ class DataFolderPanel extends TopComponent implements
     private void updateDirectory () {
         StringBuffer sb = new StringBuffer ();
         FileSystem fs = (FileSystem)system.get ();
-        if (fs != null) {
-            sb.append (fs.getDisplayName ());
+        if (fs == null) {
+            // No known directory?? Leave it blank.
+            directoryName.setText(""); // NOI18N
+            return;
         }
         String name = packageName.getText ();
         if (name.equals (defaultFolderName (fs))) {
             name = ""; // NOI18N
         }
-        if (name.length () > 0) {
-            sb.append (java.io.File.separatorChar);
-            sb.append (name.replace ('/', java.io.File.separatorChar));
+        FileObject folder = fs.findResource(name);
+        if (folder != null) {
+            File f = FileUtil.toFile(folder);
+            if (f != null) {
+                // A folder is selected which exists on disk.
+                directoryName.setText(f.getAbsolutePath());
+            } else {
+                // A folder is selected which is nowhere on disk (e.g. in a JAR).
+                directoryName.setText(""); // NOI18N
+            }
+        } else {
+            File f = FileUtil.toFile(fs.getRoot());
+            if (f != null) {
+                // The folder does not really exist, but the FS root does
+                // exist on disk. Guess that the resulting file name will
+                // be derived simply from the folder of the root (not always
+                // true, note).
+                File f2 = new File(f, name.replace('/', File.separatorChar)); // NOI18N
+                directoryName.setText(f2.getAbsolutePath());
+            } else {
+                // The folder has not been made, and even if it were, the FS
+                // root is not on disk anyway. Leave it blank.
+                directoryName.setText(""); // NOI18N
+            }
         }
-        directoryName.setText (sb.toString ());
     }
 
     /** Updates associated editor by calling setDataFolder(...) . */
