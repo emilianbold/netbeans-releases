@@ -178,11 +178,6 @@ Microsystems, Inc. All Rights Reserved.
             <attr boolvalue="true" name="hidden"/>
         </file>
         
-        <file name="org-netbeans-modules-debugger-support-BreakpointAnnotations.settings" url="BreakpointAnnotations.settings">
-            <attr name="hidden" boolvalue="true"/>
-            <attr name="SystemFileSystem.layer" stringvalue="project"/>
-        </file>
-
         <file name="org-netbeans-modules-debugger-support-DebuggerSettings.settings" url="DebuggerSettings.settings">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.resources.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/debugger/resources/debuggerSettings.gif"/>
