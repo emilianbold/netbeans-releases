@@ -62,11 +62,11 @@ public class PanelConfigureProjectVisual extends JPanel {
             getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(PanelConfigureProjectVisual.class,"ACSD_NewJavaLib")); // NOI18N
         }
         else {
-            projectLocationPanel = new PanelSourceFolders ( panel );
+            projectLocationPanel = new PanelProjectLocationExtSrc ( panel );
             jSeparator1.setVisible(true);
-            putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_JavaExtSources")); // NOI18N
-            getAccessibleContext ().setAccessibleName (NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_JavaExtSources")); // NOI18N
-            getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(PanelConfigureProjectVisual.class,"ACSD_JavaExtSources")); // NOI18N
+            putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_JavaExtSourcesProjectLocation")); // NOI18N
+            getAccessibleContext ().setAccessibleName (NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_JavaExtSourcesProjectLocation")); // NOI18N
+            getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(PanelConfigureProjectVisual.class,"ACSD_JavaExtSourcesProjectLocation")); // NOI18N
         }
         locationContainer.add( projectLocationPanel, java.awt.BorderLayout.CENTER );
         optionsPanel = new PanelOptionsVisual( panel, type );

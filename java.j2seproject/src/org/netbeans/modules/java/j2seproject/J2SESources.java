@@ -15,10 +15,12 @@ package org.netbeans.modules.java.j2seproject;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
@@ -65,25 +67,58 @@ public class J2SESources implements Sources, PropertyChangeListener  {
 
     private Sources initSources() {
         final SourcesHelper h = new SourcesHelper(helper, evaluator);
+        File projectDir = FileUtil.toFile(this.helper.getProjectDirectory());
         String[] propNames = sourceRoots.getRootProperties();
         String[] rootNames = sourceRoots.getRootNames();
         for (int i = 0; i < propNames.length; i++) {
             String displayName = rootNames[i];
+            String prop = "${" + propNames[i] + "}";
             if (displayName.length() ==0) {
-                displayName = NbBundle.getMessage(J2SEProject.class, "NAME_src.dir");
+                //If the name is not given, it should be either a relative path in the project dir
+                //or absolute path when the root is not under the project dir
+                File sourceRoot = helper.resolveFile(evaluator.evaluate(prop));
+                if (sourceRoot != null) {
+                    String srPath = sourceRoot.getAbsolutePath();
+                    String pdPath = projectDir.getAbsolutePath() + File.separatorChar;
+                    if (srPath.startsWith(pdPath)) {
+                        displayName = srPath.substring(pdPath.length());
+                    }
+                    else {
+                        displayName = sourceRoot.getAbsolutePath();
+                    }
+                }
+                else {
+                    displayName = NbBundle.getMessage(J2SEProject.class, "NAME_src.dir");
+                }
             }
-            h.addPrincipalSourceRoot("${" + propNames[i] + "}", displayName, /*XXX*/null, null);
-            h.addTypedSourceRoot("${" + propNames[i] + "}", JavaProjectConstants.SOURCES_TYPE_JAVA, displayName, /*XXX*/null, null);
+            h.addPrincipalSourceRoot(prop, displayName, /*XXX*/null, null);
+            h.addTypedSourceRoot(prop, JavaProjectConstants.SOURCES_TYPE_JAVA, displayName, /*XXX*/null, null);
         }
         propNames = testRoots.getRootProperties();
         rootNames = testRoots.getRootNames();
         for (int i = 0; i < propNames.length; i++) {
             String displayName = rootNames[i];
+            String prop = "${" + propNames[i] + "}";
             if (displayName.length() ==0) {
-                displayName = NbBundle.getMessage(J2SEProject.class, "NAME_test.src.dir");
+                //If the name is not given, it should be either a relative path in the project dir
+                //or absolute path when the root is not under the project dir
+                File sourceRoot = helper.resolveFile(evaluator.evaluate(prop));
+                if (sourceRoot != null) {
+                    String srPath = sourceRoot.getAbsolutePath();
+                    String pdPath = projectDir.getAbsolutePath() + + File.separatorChar;
+                    if (srPath.startsWith(pdPath)) {
+                        displayName = srPath.substring(pdPath.length());
+                    }
+                    else {
+                        displayName = sourceRoot.getAbsolutePath();
+                    }
+                }
+                else {
+                    displayName = NbBundle.getMessage(J2SEProject.class, "NAME_test.src.dir");
+                }
             }
-            h.addPrincipalSourceRoot("${" + propNames[i] + "}", displayName, /*XXX*/null, null);
-            h.addTypedSourceRoot("${" + propNames[i] + "}", JavaProjectConstants.SOURCES_TYPE_JAVA, displayName, /*XXX*/null, null);
+            h.addPrincipalSourceRoot(prop, displayName, /*XXX*/null, null);
+            h.addTypedSourceRoot(prop, JavaProjectConstants.SOURCES_TYPE_JAVA, displayName, /*XXX*/null, null);
         }
         // XXX add build dir too?
         ProjectManager.mutex().postWriteRequest(new Runnable() {

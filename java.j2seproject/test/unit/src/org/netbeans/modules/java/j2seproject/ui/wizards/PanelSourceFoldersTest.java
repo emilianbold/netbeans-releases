@@ -42,12 +42,12 @@ public class PanelSourceFoldersTest extends NbTestCase {
         badProjectDir.mkdir();
         badProjectDir.setReadOnly();
         
-        assertNotNull("Empty name", PanelSourceFolders.checkValidity ("", projectDir.getAbsolutePath(), src.getAbsolutePath(), test.getAbsolutePath()));
-        assertNotNull("Read Only WorkDir", PanelSourceFolders.checkValidity ("", badProjectDir.getAbsolutePath(), src.getAbsolutePath(), test.getAbsolutePath()));
-        assertNotNull("Non Existent Sources", PanelSourceFolders.checkValidity ("test", projectDir.getAbsolutePath(), badSrcDir.getAbsolutePath(), test.getAbsolutePath()));
-        assertNotNull("Sources == Tests", PanelSourceFolders.checkValidity ("test", projectDir.getAbsolutePath(), src.getAbsolutePath(), src.getAbsolutePath()));
-        assertNotNull("Tests under Sources", PanelSourceFolders.checkValidity ("test", projectDir.getAbsolutePath(), src.getAbsolutePath(), new File (src, "Tests").getAbsolutePath()));
-        assertNotNull("Sources under Tests",PanelSourceFolders.checkValidity ("test", projectDir.getAbsolutePath(), badSrcDir2.getAbsolutePath(), test.getAbsolutePath()));
-        assertNull ("Valid data", PanelSourceFolders.checkValidity ("test", projectDir.getAbsolutePath(), src.getAbsolutePath(), test.getAbsolutePath()));
+        assertNotNull("Empty name", PanelProjectLocationExtSrc.checkValidity ("",projectDir.getAbsolutePath()));
+        assertNotNull("Read Only WorkDir", PanelProjectLocationExtSrc.checkValidity ("",badProjectDir.getAbsolutePath()));
+        assertNotNull("Non Existent Sources", PanelSourceFolders.checkValidity (projectDir, new File[] {badSrcDir} , new File[] {test}));
+        assertNotNull("Sources == Tests", PanelSourceFolders.checkValidity (projectDir, new File[] {src}, new File[] {src}));
+        assertNotNull("Tests under Sources", PanelSourceFolders.checkValidity (projectDir, new File[] {src}, new File [] {new File (src, "Tests")}));
+        assertNotNull("Sources under Tests",PanelSourceFolders.checkValidity (projectDir, new File[] {badSrcDir2}, new File[] {test}));
+        assertNull ("Valid data", PanelSourceFolders.checkValidity (projectDir, new File[]{src}, new File[]{test}));
     }
 }

@@ -15,7 +15,6 @@ package org.netbeans.modules.java.j2seproject;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -37,6 +36,7 @@ import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 /**
  * Creates a J2SEProject from scratch according to some initial configuration.
@@ -67,8 +67,8 @@ public class J2SEProjectGenerator {
     }
 
     public static AntProjectHelper createProject(final File dir, final String name,
-                                                  final File sourceFolder, final File testFolder, final String manifestFile) throws IOException {
-        assert sourceFolder != null : "Source folder must be given";   //NOI18N
+                                                  final File[] sourceFolders, final File[] testFolders, final String manifestFile) throws IOException {
+        assert sourceFolders != null && testFolders != null: "Package roots can't be null";   //NOI18N
         final FileObject dirFO = createProjectDir (dir);
         // this constructor creates only java application type
         final AntProjectHelper h = createProject(dirFO, name, null, null, null, manifestFile, false);
@@ -77,25 +77,54 @@ public class J2SEProjectGenerator {
         try {
         ProjectManager.mutex().writeAccess( new Mutex.ExceptionAction () {
             public Object run() throws Exception {
-                String srcReference = refHelper.createForeignFileReference(sourceFolder, JavaProjectConstants.SOURCES_TYPE_JAVA);
-                EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                props.put("src.dir",srcReference);          //NOI18N
-                String testLoc;
-                if (testFolder == null) {
-                    testLoc = NbBundle.getMessage (J2SEProjectGenerator.class,"TXT_DefaultTestFolderName");
-                    File f = new File (dir,testLoc);    //NOI18N
+                Element data = h.getPrimaryConfigurationData(true);
+                Document doc = data.getOwnerDocument();
+                NodeList nl = data.getElementsByTagNameNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");
+                assert nl.getLength() == 1;
+                Element sourceRoots = (Element) nl.item(0);
+                nl = data.getElementsByTagNameNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
+                assert nl.getLength() == 1;
+                Element testRoots = (Element) nl.item(0);
+                for (int i=0; i<sourceFolders.length; i++) {
+                    String propName = "src.dir" + (i == 0 ? "" : Integer.toString (i+1)); //NOI18N
+                    String srcReference = refHelper.createForeignFileReference(sourceFolders[i], JavaProjectConstants.SOURCES_TYPE_JAVA);
+                    Element root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
+                    root.setAttribute ("id",propName);   //NOI18N
+                    sourceRoots.appendChild(root);
+                    EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    props.put(propName,srcReference);
+                    h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props); // #47609
+                }
+
+                if (testFolders.length == 0) {
+                    String testLoc = NbBundle.getMessage (J2SEProjectGenerator.class,"TXT_DefaultTestFolderName");
+                    File f = new File (dir,testLoc);
                     f.mkdirs();
+                    String propName = "test.src.dir";
+                    Element root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
+                    root.setAttribute ("id",propName);   //NOI18N
+                    root.setAttribute ("name",NbBundle.getMessage(J2SEProjectGenerator.class, "NAME_test.src.dir"));
+                    testRoots.appendChild(root);
+                    EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    props.put(propName,testLoc);
+                    h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props); // #47609
                 }
                 else {
-                    if (!testFolder.exists()) {
-                        testFolder.mkdirs();
+                    for (int i=0; i<testFolders.length; i++) {
+                        if (!testFolders[i].exists()) {
+                            testFolders[i].mkdirs();
+                        }
+                        String propName = "test.src.dir" + (i == 0 ? "" : Integer.toString (i+1)); //NOI18N
+                        String testReference = refHelper.createForeignFileReference(testFolders[i], JavaProjectConstants.SOURCES_TYPE_JAVA);
+                        Element root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
+                        root.setAttribute ("id",propName);   //NOI18N
+                        testRoots.appendChild(root);
+                        EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH); // #47609
+                        props.put(propName,testReference);
+                        h.putProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                     }
-                    h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props); // #47609
-                    testLoc = refHelper.createForeignFileReference(testFolder, JavaProjectConstants.SOURCES_TYPE_JAVA);
-                    props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH); // #47609
-                }                
-                props.put("test.src.dir",testLoc);    //NOI18N
-                h.putProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                }
+                h.putPrimaryConfigurationData(data,true);
                 ProjectManager.getDefault().saveProject (p);
                 return null;
             }
@@ -117,20 +146,26 @@ public class J2SEProjectGenerator {
         Element minant = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "minimum-ant-version"); // NOI18N
         minant.appendChild(doc.createTextNode("1.6")); // NOI18N
         data.appendChild(minant);
+        EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         Element sourceRoots = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");  //NOI18N
-        Element root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
-        root.setAttribute ("id","src.dir");   //NOI18N
-        root.setAttribute ("name",NbBundle.getMessage(J2SEProjectGenerator.class, "NAME_src.dir"));
-        sourceRoots.appendChild(root);
+        if (srcRoot != null) {
+            Element root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
+            root.setAttribute ("id","src.dir");   //NOI18N
+            root.setAttribute ("name",NbBundle.getMessage(J2SEProjectGenerator.class, "NAME_src.dir"));
+            sourceRoots.appendChild(root);
+            ep.setProperty("src.dir", srcRoot); // NOI18N
+        }
         data.appendChild (sourceRoots);
         Element testRoots = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
-        root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
-        root.setAttribute ("id","test.src.dir");   //NOI18N
-        root.setAttribute ("name",NbBundle.getMessage(J2SEProjectGenerator.class, "NAME_test.src.dir"));
-        testRoots.appendChild (root);
+        if (testRoot != null) {
+            Element root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
+            root.setAttribute ("id","test.src.dir");   //NOI18N
+            root.setAttribute ("name",NbBundle.getMessage(J2SEProjectGenerator.class, "NAME_test.src.dir"));
+            testRoots.appendChild (root);
+            ep.setProperty("test.src.dir", testRoot); // NOI18N
+        }
         data.appendChild (testRoots);
         h.putPrimaryConfigurationData(data, true);
-        EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         ep.setProperty("dist.dir", "dist"); // NOI18N
         ep.setComment("dist.dir", new String[] {"# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_dist.dir")}, false); // NOI18N
         ep.setProperty("dist.jar", "${dist.dir}/" + PropertyUtils.getUsablePropertyName(name) + ".jar"); // NOI18N
@@ -170,10 +205,7 @@ public class J2SEProjectGenerator {
         ep.setProperty("debug.test.classpath", new String[] { // NOI18N
             "${run.test.classpath}", // NOI18N
         });
-        ep.setProperty("src.dir", srcRoot == null ? "" : srcRoot); // NOI18N
-        if (testRoot != null) {
-            ep.setProperty("test.src.dir", testRoot); // NOI18N
-        }
+
         ep.setProperty("build.dir", "build"); // NOI18N
         ep.setComment("build.dir", new String[] {"# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_build.dir")}, false); // NOI18N
         ep.setProperty("build.classes.dir", "${build.dir}/classes"); // NOI18N

@@ -73,13 +73,23 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
     }
 
     private WizardDescriptor.Panel[] createPanels () {
-        return new WizardDescriptor.Panel[] {
+        return this.type == TYPE_EXT ?
+            new WizardDescriptor.Panel[] {
+                new PanelConfigureProject( this.type ),
+                new PanelSourceFolders.Panel()
+            } 
+            :new WizardDescriptor.Panel[] {
                 new PanelConfigureProject( this.type )
             };
     }
     
     private String[] createSteps() {
-            return new String[] {
+        return this.type == TYPE_EXT ?
+            new String[] {                
+                NbBundle.getMessage(NewJ2SEProjectWizardIterator.class,"LAB_ConfigureProject"), 
+                NbBundle.getMessage(NewJ2SEProjectWizardIterator.class,"LAB_ConfigureSourceRoots"),
+            }
+            :new String[] {
                 NbBundle.getMessage(NewJ2SEProjectWizardIterator.class,"LAB_ConfigureProject"), 
             };
     }
@@ -94,21 +104,15 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
         String name = (String)wiz.getProperty("name");        //NOI18N
         String mainClass = (String)wiz.getProperty("mainClass");        //NOI18N
         if (this.type == TYPE_EXT) {
-            File sourceFolder = (File)wiz.getProperty("sourceRoot");        //NOI18N
-            if (sourceFolder != null) {
-                sourceFolder = FileUtil.normalizeFile(sourceFolder);
+            File[] sourceFolders = (File[])wiz.getProperty("sourceRoot");        //NOI18N
+            File[] testFolders = (File[])wiz.getProperty("testRoot");            //NOI18N
+            J2SEProjectGenerator.createProject(dirF, name, sourceFolders, testFolders, MANIFEST_FILE );
+            for (int i=0; i<sourceFolders.length; i++) {
+                FileObject srcFo = FileUtil.toFileObject(sourceFolders[i]);
+                if (srcFo != null) {
+                    resultSet.add (srcFo);
+                }
             }
-            File testFolder = (File)wiz.getProperty("testRoot");            //NOI18N            
-            if (testFolder != null) {
-                testFolder = FileUtil.normalizeFile(testFolder);
-            }
-            J2SEProjectGenerator.createProject(dirF, name, sourceFolder, testFolder, MANIFEST_FILE );
-            FileObject srcFo = FileUtil.toFileObject(sourceFolder);
-            if (srcFo != null) {
-                resultSet.add (srcFo);
-            }
-            FileObject dirFO = FileUtil.toFileObject(dirF);
-            createManifest(dirFO, MANIFEST_FILE);
         }
         else {
             AntProjectHelper h = J2SEProjectGenerator.createProject(dirF, name, mainClass, type == TYPE_APP ? MANIFEST_FILE : null);
@@ -129,11 +133,11 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
             }
         }
         FileObject dir = FileUtil.toFileObject(dirF);
-        if (type == TYPE_APP) {
+        if (type == TYPE_APP || type == TYPE_EXT) {
             createManifest(dir, MANIFEST_FILE);
         }
         Project p = ProjectManager.getDefault().findProject(dir);
-        
+
         // Returning FileObject of project diretory. 
         // Project will be open and set as main
         Integer index = (Integer) wiz.getProperty(PROP_NAME_INDEX);
@@ -186,6 +190,7 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
             }
         }
     }
+
     public void uninitialize(WizardDescriptor wiz) {
         this.wiz.putProperty("projdir",null);           //NOI18N
         this.wiz.putProperty("name",null);          //NOI18N

@@ -120,7 +120,7 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
         srcRoot.mkdir ();
         File testRoot = new File (root, "tests");
         testRoot.mkdir ();
-        AntProjectHelper helper = J2SEProjectGenerator.createProject(proj, "test-project-ext-src", srcRoot, testRoot, "manifest.mf");
+        AntProjectHelper helper = J2SEProjectGenerator.createProject(proj, "test-project-ext-src", new File[] {srcRoot}, new File[] {testRoot}, "manifest.mf");
         assertNotNull (helper);
         FileObject fo = FileUtil.toFileObject(proj);
         for (int i=0; i<createdFilesExtSources.length; i++) {
