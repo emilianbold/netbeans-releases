@@ -106,6 +106,18 @@ public class DiffAction extends NodeAction {
                 return ;
             }
         }
+        if (diffs == null) {
+            TopManager.getDefault().notify(
+                new NotifyDescriptor.Message(NbBundle.getMessage(DiffAction.class,
+                    "MSG_DiffFailed", fo1.getName(), fo2.getName())));
+            return ;
+        }
+        if (diffs.size() == 0) {
+            TopManager.getDefault().notify(
+                new NotifyDescriptor.Message(NbBundle.getMessage(DiffAction.class,
+                    "MSG_NoDifferenceInFile", fo1.getName(), fo2.getName())));
+            return ;
+        }
         Component tp;
         try {
             tp = dv.createDiff(diffs, fo1.getName(), fo1.getPackageNameExt('/', '.'),
