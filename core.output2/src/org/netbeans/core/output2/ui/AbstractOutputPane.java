@@ -518,7 +518,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
             int pos = textView.viewToModel(e.getPoint());
             if (pos != -1) {
                 int line = textView.getDocument().getDefaultRootElement().getElementIndex(pos);
-                if (line > 0) {
+                if (line >= 0) {
                     lineClicked(line);
                 }
             }
