@@ -978,6 +978,8 @@
    <mapID target="org.netbeans.modules.autoupdate.ProxyDialog" url="modules/autoupdate.html" />   
    <mapID target="org.netbeans.modules.autoupdate.Settings" url="modules/autoupdate.html" />
    <mapID target="org.netbeans.modules.autoupdate.AutoCheckInfo" url="pending.html" />
+   <mapID target="org.netbeans.modules.autoupdate.XMLAutoupdateType" url="modules/autoupdate.html" />
+
 
    <mapID target="org.netbeans.modules.beans.BiFeatureNode" url="pending.html" />
    <mapID target="org.netbeans.modules.beans.BiIncludeAllAction" url="pending.html" />
