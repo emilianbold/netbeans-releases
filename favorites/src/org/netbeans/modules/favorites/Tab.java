@@ -91,6 +91,11 @@ implements OperationListener, Runnable, ExplorerManager.Provider {
         return manager;
     }
     
+    /** Return preferred ID */
+    protected String preferredID () {
+        return "favorites"; //NOI18N
+    }
+    
     /** Initialize visual content of component */
     protected void componentShowing () {
         super.componentShowing ();
