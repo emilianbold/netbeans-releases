@@ -2242,10 +2242,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
             CodeExpression exp = comp.getCodeExpression();
             int varType = exp.getVariable().getType();
 
-            if ((newType & CodeVariable.ALL_MODIF_MASK) != 0) {
-                varType &= ~CodeVariable.ALL_MODIF_MASK;
-                varType |= newType & CodeVariable.ALL_MODIF_MASK;
-            }
+            varType &= ~CodeVariable.ALL_MODIF_MASK;
+            varType |= newType & CodeVariable.ALL_MODIF_MASK;
 
             if ((newType & CodeVariable.SCOPE_MASK) != 0) {
                 varType &= ~CodeVariable.SCOPE_MASK;
