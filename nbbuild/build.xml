@@ -96,11 +96,11 @@ workspaceswitcher
       <config name="superslim" modules="classfile,clazz,editor,html,image,java,openidex,projects,text,utilities"/>
       <config name="slim" modules="autoupdate,beans,classfile,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,image,java,openidex,projects,text,utilities"/>
       <!-- [PENDING] A poor name; 'standard' would be more in line with the CVS pseudomodule. -->
-      <config name="stable" modules="ant,apisupport/lite,applet,autoupdate,beans,classfile,clazz,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,httpserver/servletapi,i18n,image,j2eeserver,jarpackager,java,javacvs,javadoc,jndi,openidex,projects,properties,rmi,scripting,text,tomcatint/tomcat32,usersguide,utilities,vcscore,vcscvs/compat,vcsgeneric,web"/>
-      <config name="stable-with-apisupport" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,clazz,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,httpserver/servletapi,i18n,image,j2eeserver,jarpackager,java,javacvs,javadoc,jndi,openidex,projects,properties,rmi,scripting,text,tomcatint/tomcat32,usersguide,utilities,vcscore,vcscvs/compat,vcsgeneric,web"/>
-      <config name="bloated" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,clazz,cpp,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,externaleditor,form,freestylebrowser,html,httpserver,httpserver/servletapi,i18n,icebrowser,image,innertesters,j2eeserver,jarpackager,java,javacvs,javadoc,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,scripting,serialversion,sysprops,text,tomcatint/tomcat32,usersguide,utilities,vcscore,vcscvs,vcscvs/compat,vcsgeneric,web"/>
+      <config name="stable" modules="ant,apisupport/lite,applet,autoupdate,beans,classfile,clazz,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,httpserver/servletapi,i18n,image,j2eeserver,jarpackager,java,javacvs,javadoc,jndi,openidex,projects,properties,rmi,scripting,text,tomcatint/tomcat32,usersguide,utilities,vcscore,vcscvs/compat,vcsgeneric,web/core,web/jspsyntax"/>
+      <config name="stable-with-apisupport" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,clazz,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,httpserver/servletapi,i18n,image,j2eeserver,jarpackager,java,javacvs,javadoc,jndi,openidex,projects,properties,rmi,scripting,text,tomcatint/tomcat32,usersguide,utilities,vcscore,vcscvs/compat,vcsgeneric,web/core,web/jspsyntax"/>
+      <config name="bloated" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,clazz,cpp,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,externaleditor,form,freestylebrowser,html,httpserver,httpserver/servletapi,i18n,icebrowser,image,innertesters,j2eeserver,jarpackager,java,javacvs,javadoc,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,scripting,serialversion,sysprops,text,tomcatint/tomcat32,usersguide,utilities,vcscore,vcscvs,vcscvs/compat,vcsgeneric,web/core,web/jspsyntax"/>
       <!-- You are on your own for getting the binaries for some of these: -->
-      <config name="bloated-plus-extrabins" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,clazz,cpp,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,externaleditor,form,freestylebrowser,html,httpserver,httpserver/servletapi,i18n,icebrowser,image,innertesters,j2eeserver,jarpackager,java,javacvs,javadoc,jini,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,scripting,serialversion,sysprops,text,tomcatint/tomcat32,usersguide,utilities,vcscore,vcscvs,vcscvs/compat,vcsgeneric,web"/>
+      <config name="bloated-plus-extrabins" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,clazz,cpp,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,externaleditor,form,freestylebrowser,html,httpserver,httpserver/servletapi,i18n,icebrowser,image,innertesters,j2eeserver,jarpackager,java,javacvs,javadoc,jini,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,scripting,serialversion,sysprops,text,tomcatint/tomcat32,usersguide,utilities,vcscore,vcscvs,vcscvs/compat,vcsgeneric,web/core,web/jspsyntax"/>
     </configmods>
   </target>
 
@@ -337,10 +337,17 @@ workspaceswitcher
     <echo message="Building module javacvs..."/>
     <ant dir="../javacvs" target="netbeans"/>
   </target>
-  <!-- XXX illegal dependence on core! -->
-  <target name="all-web" depends="all-openide,all-java,all-core,all-editor,all-j2eeserver,all-html, all-jarpackager, all-debuggercore">
+  <target name="all-web" depends="all-web/core,all-web/jspsyntax">
     <echo message="Building module web..."/>
-    <ant dir="../web" target="netbeans"/>
+  </target>
+  <!-- XXX illegal dependence on core! -->
+  <target name="all-web/core" depends="all-openide,all-java,all-core,all-editor,all-j2eeserver,all-html, all-jarpackager, all-debuggercore">
+    <echo message="Building module web/core..."/>
+    <ant dir="../web/core" target="netbeans"/>
+  </target>
+  <target name="all-web/jspsyntax" depends="all-web/core">
+    <echo message="Building module web/jspsyntax..."/>
+    <ant dir="../web/jspsyntax" target="netbeans"/>
   </target>
   <target name="all-cpplite" depends="all-openide,all-editor">
     <echo message="Building module cpplite..."/>
@@ -572,8 +579,10 @@ the ${netbeans.dest}/bin/ directory.
     <ant dir="../httpserver" target="nbm"/>
     <echo message="Making NBM for module properties..."/>
     <ant dir="../properties" target="nbm"/>
-    <echo message="Making NBM for module web..."/>
-    <ant dir="../web" target="nbm"/>
+    <echo message="Making NBM for module web/core..."/>
+    <ant dir="../web/core" target="nbm"/>
+    <echo message="Making NBM for module web/jspsyntax..."/>
+    <ant dir="../web/jspsyntax" target="nbm"/>
     <echo message="Making NBM for module i18n..."/>
     <ant dir="../i18n" target="nbm"/>
     <echo message="Making NBM for module icebrowser..."/>
