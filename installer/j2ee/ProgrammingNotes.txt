@@ -13,7 +13,3 @@ To build from command line run ant as usual with
  -Dinstaller.basename=NetBeansJ2EE-dev-20040701
 
 The installers will be generated and placed in the dist/ subdir
-
-In case the ${cluster.dir} is platform specific, one can supply the Windows
-version and Unix version separately and run the targets build-win32 and
-build-unix in turn.
