@@ -47,6 +47,7 @@ public class jemmy_001 extends JemmyTest {
 		throw(e);
 	    }
 
+                System.setProperty("jemmy.dump.a11y", "on");
 	    JDialog win = JDialogOperator.waitJDialog("Application_001", true, true);
 
             Operator.setDefaultComponentVisualizer(((DefaultVisualizer)Operator.getDefaultComponentVisualizer()).cloneThis());
