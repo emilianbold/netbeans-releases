@@ -49,6 +49,7 @@ import org.openide.util.Utilities;
 import org.netbeans.core.actions.*;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.projects.ModuleLayeredFileSystem;
+import org.netbeans.core.perftool.StartLog;
 
 /** This class is a TopManager for Corona environment.
 *
@@ -384,6 +385,10 @@ public class NonGui extends NbTopManager implements Runnable {
     /** Initialization of the manager.
     */
     public void run () {
+        StartLog.logStart ("TopManager initialization (org.netbeans.core.NonGui.run())"); //NOI18N
+        
+        // because of KL Group components, we define a property netbeans.design.time
+        // which serves instead of Beans.isDesignTime () (which returns false in the IDE)
         System.getProperties ().put ("netbeans.design.time", "true"); // NOI18N
 
         // Initialize beans - [PENDING - better place for this ?]
@@ -402,6 +407,7 @@ public class NonGui extends NbTopManager implements Runnable {
         java.beans.PropertyEditorManager.registerEditor (org.openide.src.MethodParameter[].class, org.openide.explorer.propertysheet.editors.MethodParameterArrayEditor.class);
         java.beans.PropertyEditorManager.registerEditor (org.openide.src.Identifier[].class, org.openide.explorer.propertysheet.editors.IdentifierArrayEditor.class);
         java.beans.PropertyEditorManager.registerEditor (java.lang.Character.TYPE, org.netbeans.beaninfo.editors.CharEditor.class);
+        StartLog.logProgress ("PropertyEditors registered"); // NOI18N
 
         // -----------------------------------------------------------------------------------------------------
         // 5. Start logging
@@ -415,16 +421,17 @@ public class NonGui extends NbTopManager implements Runnable {
                 e.printStackTrace ();
             }
         }
+        StartLog.logProgress ("TopLogging initialized"); // NOI18N
 
         // -----------------------------------------------------------------------------------------------------
         // 6. Initialize SecurityManager and ClassLoader
-
         setStatusText (getString("MSG_IDEInit"));
 
 
         // -----------------------------------------------------------------------------------------------------
         // 7. Initialize FileSystems
         getRepository ();
+        StartLog.logProgress ("Repository initialized"); // NOI18N
 
         // -----------------------------------------------------------------------------------------------------
         // 8. Advance Policy
@@ -457,6 +464,7 @@ public class NonGui extends NbTopManager implements Runnable {
 
         // install java.net.Authenticator
         java.net.Authenticator.setDefault (new NbAuthenticator ());
+        StartLog.logProgress ("Security managers installed"); // NOI18N
 
         // -----------------------------------------------------------------------------------------------------
         // Upgrade
@@ -476,6 +484,7 @@ public class NonGui extends NbTopManager implements Runnable {
         } catch (Exception e) {
             TopManager.getDefault().getErrorManager().notify(e);
         }
+        StartLog.logProgress ("Upgrade wizzard consulted"); // NOI18N
 
         // -----------------------------------------------------------------------------------------------------
         // 9. Modules
@@ -494,28 +503,32 @@ public class NonGui extends NbTopManager implements Runnable {
                 userModuleDirectory
             );
         }
+        StartLog.logProgress ("Modules initialized"); // NOI18N
+
         
         // autoload directories
         org.openide.util.Task automount = AutomountSupport.initialize ();
+        StartLog.logProgress ("Automounter fired"); // NOI18N
 
         // -----------------------------------------------------------------------------------------------------
         // 10. Initialization of project (because it can change loader pool and it influences main window menu)
-
         try {
             NbProjectOperation.openOrCreateProject ();
         } catch (IOException e) {
             getErrorManager ().notify (ErrorManager.INFORMATIONAL, e);
         }
+        StartLog.logProgress ("Project opened"); // NOI18N
 
         LoaderPoolNode.installationFinished ();
-
+        StartLog.logProgress ("LoaderPool notified"); // NOI18N
 
         startFolder (getDefault ().getPlaces ().folders ().startup ());
+        StartLog.logProgress ("StartFolder content started"); // NOI18N
 
         // -----------------------------------------------------------------------------------------------------
         // 15. Install new modules
-
         ModuleInstaller.autoLoadModules ();
+        StartLog.logProgress ("New modules installed"); // NOI18N
 
         //-------------------------------------------------------------------------------------------------------
         // setup wizard
@@ -530,13 +543,18 @@ public class NonGui extends NbTopManager implements Runnable {
         } catch (Exception e) {
             TopManager.getDefault().getErrorManager().notify(e);
         }
+        StartLog.logProgress ("SetupWizard done"); // NOI18N
 
         // wait until mounting really occurs
         automount.waitFinished ();
+        StartLog.logProgress ("Automounter done"); // NOI18N
         
         //---------------------------------------------------------------------------------------------------------
         // initialize main window AFTER the setup wizard is finished
+
         initializeMainWindow ();
+        StartLog.logProgress ("Main window initialized"); // NOI18N
+        StartLog.logEnd ("TopManager initialization (org.netbeans.core.NonGui.run())"); //NOI18N
     }
 
 
