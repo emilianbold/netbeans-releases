@@ -302,17 +302,13 @@ After that you should be done!
         <zip zipfile="AntAPIs.zip" basedir="AntAPIs"/>
     </target>
 
-    <target name="javadoc" depends="release-helper,ant-module-javadoc">
+    <target name="javadoc" depends="ant-module-javadoc">
       <copy todir="javadoc">
-        <fileset dir="AntAPIs"/>
+        <fileset dir=".">
+          <include name="AntAPIs/**"/>
+          <include name="AntAPIs.zip"/>
+        </fileset>
       </copy>
-      <copy file="AntAPIs.zip" tofile="javadoc/AntAPIs.zip"/>
-<!-- Ant's javadoc not necessary
-      <copy todir="javadoc/JakartaAntAPIs">
-        <fileset dir="${javadoc-out}" />
-      </copy>
-      <copy file="docs/release/docs/ant-api.zip" tofile="javadoc/JakartaAntAPIs.zip"/>
--->
     </target>
 
 </project>
