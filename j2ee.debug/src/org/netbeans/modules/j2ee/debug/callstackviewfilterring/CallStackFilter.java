@@ -212,7 +212,11 @@ public class CallStackFilter implements TreeModelFilter, NodeModel {
                     newCh.add (f);
                 }
             }
-            return newCh.subList (from, to).toArray ();
+            //Fix issue #53878: 'to' returned from original in getChildrenCount()
+            //is higher than number of children got from getChildren() in this method.
+            //It is random JPDA debugger's bug.
+            int lto = Math.min(newCh.size(), to);
+            return newCh.subList (from, lto).toArray ();
         }
         if (parent instanceof HiddenFrames)
             return ((HiddenFrames) parent).getStack ().toArray ();
