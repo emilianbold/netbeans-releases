@@ -24,6 +24,8 @@ import java.io.File;
 import java.text.MessageFormat;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 
+import org.openide.filesystems.FileUtil;
+
 /**
  *
  * @author  tom
@@ -135,12 +137,12 @@ public class PanelSourceFolders extends SettingsPanel {
         File testRoot = null;
         String srcPath = this.sources.getText();
         if (srcPath.length() > 0) {
-            srcRoot = new File (srcPath);
+            srcRoot = FileUtil.normalizeFile(new File(srcPath));
             FoldersListSettings.getDefault().setLastExternalSourceRoot (srcPath);
         }
         String testPath = this.tests.getText();
         if (testPath.length()>0) {
-            testRoot = new File (testPath);
+            testRoot = FileUtil.normalizeFile(new File(testPath));
             FoldersListSettings.getDefault().setLastExternalTestRoot (testPath);
         }
         settings.putProperty ("sourceRoot",srcRoot);    //NOI18N
