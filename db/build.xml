@@ -101,7 +101,7 @@ Microsystems, Inc. All Rights Reserved.
     <mkdir dir="netbeans/modules/docs"/>
     <locjar jarfile="netbeans/modules/docs/db.jar"
             compress="true">
-      <fileset dir="javahelp" excludesfile="../../nb_all/nbbuild/standard-jar-excludes.txt"/>
+      <fileset dir="javahelp" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
       <locale name="ja"/>
     </locjar>
   </target>
