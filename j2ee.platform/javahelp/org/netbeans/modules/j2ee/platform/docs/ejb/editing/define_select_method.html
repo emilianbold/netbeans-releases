@@ -1,0 +1,84 @@
+ 
+<html>
+
+<!--
+  *     Copyright © 2004 Sun Microsystems, Inc. All rights reserved.
+  *     Use is subject to license terms.
+-->
+<head>
+
+
+<title>Defining a Select Method</title> 
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+
+</head>
+<body>
+
+<h2>Defining a Select Method</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>Select methods are a type of query method similar to finder methods, and, like 
+  finder methods, they use EJB QL. A select method is more flexible than a finder 
+  method and is visible only to the bean class; therefore, a select method can be used only 
+  by methods of the bean class. A select method inherits the transaction context 
+  of the method that calls it. In addition to returning a bean or a collection 
+  of beans, a select method can also return the value of a field.</p>
+<p><b>To define a select method for an entity bean:</b></p>
+<ol>
+  <li>Open the EJB module's editor by...</li>
+  <li>Expand the entity bean's node and the CMP Finders and Selects node. The 
+    table lists all of the existing CMP finder methods and select methods.</li>
+  <li>Click Add or Edit to make changes to the list finder methods and select 
+    methods.</li>
+  <li>In the Add New Select Method dialog box, define the method signature: 
+    <ol>
+      <li type="a"> Add text to the base <tt>ejbSelect</tt> name of the method.</li>
+      <li>Choose the method's return type from the combo box: 
+        <ul>
+          <li>If the method returns the value of a CMP field, choose the appropriate 
+            Java or primitive data type, such as <tt>java.lang.String</tt> or 
+            <tt>int</tt>.</li>
+          <li>If the method returns an enterprise bean, choose the bean's type 
+            from the combo box.</li>
+          <li>If the method returns more than one bean, choose one of the <tt> 
+            Set</tt> types if returned beans cannot be duplicates, or choose one 
+            of the <tt>Collection</tt> types if returned beans can be duplicates. 
+          </li>
+        </ul>
+      </li>
+      <li>Specify any parameters that the method needs.</li>
+      <li>Add any additional exceptions to throw.</li>
+      <li>Enter the EJB QL statement that the method will use to find the data 
+        that it is to return.</li>
+    </ol>
+  </li>
+  <li>Click OK to create the method.</li>
+  <li>The IDE adds the method signature to the bean class.</li>
+</ol>
+<table border="0">
+  <tr><th colspan="2" align="left" ><a name="seealso">See Also</a></th>
+    </tr>
+    
+  <tr valign="top"> 
+    <td width="23px" nowrap>&nbsp;</td>
+      <!--
+    <td nowrap><a href="../ejbql/about_ejbql.html">Enterprise 
+      JavaBeans Query Language</a><br>
+      <a href="add_ejbql.html">Adding EJB QL to a Select or Finder Method</a><br>
+      <a href="define_finder_method.html">Defining a Finder Method</a><br>
+      <a href="creating_an_ejb.html">Creating an Enterprise Bean</a><br>
+        <a href="working_with_ejbs.html">Working With Enterprise Beans</a><br>
+        <a href="../general/about_session_beans.html">Session Beans</a><br>
+       <a href="../general/about_entity_beans.html">Entity Beans</a></td>    --> </tr>
+  </table>
+ 
+<hr>
+<small> <a href="../../credits.html">Legal Notices</a></small> 
+<table cellpadding="150" border="0"> 
+   <tr><td>&nbsp;</td></tr> 
+   <tr><td>&nbsp;</td></tr> 
+   <tr><td>&nbsp;</td></tr> 
+   </table> 
+</body>
+
+</html>

@@ -180,7 +180,7 @@
             <tocitem text="Viewing a JSP's Servlet" target="jsp_servletview" />
             <tocitem text="Writing A Debug Target for a Free-Form Web Project" target="proj_webfree_debug" />
         </tocitem> <!-- Debugging Web Applications-->
- </tocitem>
+    </tocitem>
 <!-- End of web applications -->
 </tocitem>
 
@@ -192,20 +192,20 @@
             <tocitem text="About EJBs" target="tbd" />
             <tocitem text="Working With EJBs" target="tbd" />
             <tocitem text="Developing EJBs Tasks: Quick Reference" target="tbd" />
-            <tocitem text="About Entity Beans" target="tbd" />
-            <tocitem text="About Session Beans" target="tbd" />
-            <tocitem text="About Message-Driven Beans" target="tbd" />
+            <tocitem text="About Entity Beans" target="about_entity_beans" />
+            <tocitem text="About Session Beans" target="about_session_beans" />
+            <tocitem text="About Message-Driven Beans" target="about_msg_driven_beans" />
             <tocitem text="About EJB Deployment Descriptors" target="tbd" />
         </tocitem>
         <tocitem text="Creating and Editing EJBs" >
             <tocitem text="Creating an EJB Module Project" target="tbd" />
             <tocitem text="Creating an EJB" target="tbd" />
-            <tocitem text="Defining a Business Method" target="tbd" />
-            <tocitem text="Defining a Finder Method" target="tbd" />
-            <tocitem text="Adding EJB QL to a Finder or Select Method" target="tbd" />
-            <tocitem text="Defining a Select Method" target="tbd" />
-            <tocitem text="Defining a CMP Field" target="tbd" />
-            <tocitem text="Defining a Primary Key Field" target="tbd" />
+            <tocitem text="Defining a Business Method" target="define_business_method" />
+            <tocitem text="Defining a Finder Method" target="define_finder_method" />
+            <tocitem text="Adding EJB QL to a Finder or Select Method" target="add_ejbql" />
+            <tocitem text="Defining a Select Method" target="define_select_method" />
+            <tocitem text="Defining a CMP Field" target="define_cmp_field" />
+            <tocitem text="Defining a Primary Key Field" target="define_primary_key_field" />
             <tocitem text="Calling an EJB" target="tbd" />
             <tocitem text="Refactoring an EJB" target="tbd" />
         </tocitem>

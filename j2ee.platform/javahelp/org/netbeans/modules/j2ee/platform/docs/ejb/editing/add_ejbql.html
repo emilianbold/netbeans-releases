@@ -1,0 +1,76 @@
+ 
+<html>
+
+<!--
+  *     Copyright © 2004 Sun Microsystems, Inc. All rights reserved.
+  *     Use is subject to license terms.
+-->
+<head>
+
+
+<title>Adding EJB QL to a Finder or Select Method</title> 
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+
+</head>
+<body>
+
+<h2>Adding EJB QL to a Finder or Select Method</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>EJB QL is the generic query language used by EJB 2.0 finder methods and select methods, 
+  the two types of EJB query methods. You must use EJB QL to define queries that 
+  these methods use to return data. When you deploy the bean containing a finder 
+  or select method, the application container translates your generic EJB QL to 
+  the persistence mapping made by the container (for example, the version of SQL 
+  required to access the SQL databases associated with the container).</p>
+<p>Finder methods are unique to entity beans because entity beans represent 
+    data in a database that can be identified and found. A finder method can find 
+    and return an entity bean or a collection or set of entity beans.</p>
+<p> Select methods are unique to entity beans that use container-managed persistence 
+    (CMP beans). A select method is more flexible than a finder method and is 
+    visible only to the bean class, and therefore can be used only by methods 
+    of the bean class. In addition to returning a bean or a collection of beans, 
+    a select method can also return the value of a field.</p>
+<p>You have two opportunities to add EJB QL to, or edit the EJB QL in, a finder 
+  method or select method:</p>
+<ul>
+  <li>When you define a <a href="define_finder_method.html">new finder method</a> 
+    or a <a href="define_select_method.html">new select method</a>, the Add Finder 
+    Method dialog box has EJB QL fields that you can fill in.</li>
+  <li>If the finder or select method already exists, you can edit its EJB QL as 
+    follows: 
+    <ol>
+      <li>Open the EJB module's editor by...</li>
+      <li>Expand the entity bean's node and the CMP Finders and Selects node. 
+        The table lists all of the existing CMP finder methods and select methods.</li>
+      <li>Edit the EJB QL statement in the QL column for the finder or select method.</li>
+    </ol>
+  </li>
+</ul>
+
+<table border="0">
+  <tr><th colspan="2" align="left" ><a name="seealso">See Also</a></th>
+    </tr>
+    
+  <tr valign="top"> 
+    <td width="23px" nowrap>&nbsp;</td><!--
+      
+    <td nowrap><a href="add_ejbql.html">Enterprise JavaBeans Query Language</a><br>
+      <a href="">EJBQL Property Editor</a><br>
+      <a href="define_finder_method.html">Defining a Finder Method</a><br>
+      <a href="define_select_method.html">Defining a Select Method</a><br>
+      <a href="add_ejbql.html">Creating an Enterprise Bean</a><br>
+      <a href="add_ejbql.html">Working With Enterprise Beans</a></td>
+    --></tr>
+  </table>
+ 
+<hr>
+<small> <a href="../../credits.html">Legal Notices</a></small> 
+<table cellpadding="150" border="0"> 
+   <tr><td>&nbsp;</td></tr> 
+   <tr><td>&nbsp;</td></tr> 
+   <tr><td>&nbsp;</td></tr> 
+   </table> 
+</body>
+
+</html>

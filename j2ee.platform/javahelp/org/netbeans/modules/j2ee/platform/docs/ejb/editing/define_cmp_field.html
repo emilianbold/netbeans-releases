@@ -1,0 +1,73 @@
+ 
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2004 Sun Microsystems, Inc. 
+ * All rights reserved.
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Defining a CMP Field</title> 
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+
+</head>
+<body>
+ 
+<h2>Defining a CMP Field</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>An entity bean represents data in a database. If it uses container-managed 
+  persistence (CMP), the bean must have a set of fields that the container uses 
+  to map to fields in the database. One of these fields, or a combination of them, 
+  can be a <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+  <param name="content" value="../glossary/primarykeyfield.html">
+  <param name="viewerActivator" value="javax.help.LinkLabel">
+  <param name="viewerStyle" value="javax.help.Popup"><param name="viewerSize" value="400,160">
+  <param name="text" value="primary key"><param name="textFontFamily" value="SansSerif">
+  <param name="textFontSize" value="medium"><param name="textFontWeight" value="bold">
+  <param name="textFontStyle" value="italic"><param name="textColor" value="blue">
+  </object>&nbsp;that uniquely identifies records in the database. </p>
+<p>If you use the <a href="">Entity Bean wizard</a> to create the bean, you can 
+  have the wizard create the CMP fields for you from an existing database or database 
+  schema. You can also create new CMP fields and edit the existing CMP fields 
+  for any existing entity bean.</p>
+<p>When you add a new CMP field to an entity bean, the IDE does all of the following:</p>
+<ul>
+  <li>Adds the ... method to the bean class and the ... to the ...</li>
+  <li>Registers the CMP field in the deployment descriptor.</li>
+</ul>
+<p><b>To define a CMP field for an existing entity bean:</b></p>
+<ol>
+  <li>Open the EJB module's editor by...</li>
+  <li>Expand the entity bean's node and the CMP fields node. The table lists all 
+    of the existing CMP fields.</li>
+  <li>Click Add or Edit to make changes to the list of CMP fields.</li>
+</ol>
+<table border="0">
+  <tr>
+    <th colspan="2" align="left" ><a name="seealso">See Also</a></th>
+  </tr>
+  <tr valign="top"> 
+    <td width="23px" nowrap>&nbsp;</td><!--
+    <td nowrap><a href="define_primary_key_field.html">Defining a Primary Key 
+      Field</a><br>
+      <a href="../wizards/cmp_entity_ejb_wiz_components.html">Entity Bean Wizard: Bean and Primary Key Classes</a><br>
+      <a href="../nodes/entity_ejb_primary_key_class_node.html">Primary Key Class 
+      Node</a><br>
+      <a href="add_ejbql.html">Creating an Enterprise Bean</a><br>
+      <a href="add_ejbql.html">Working With Enterprise Beans</a><br>
+      <a href="../general/about_entity_beans.html">Entity Beans</a></td>
+  --></tr>
+</table>
+ 
+<hr>
+<small> <a href="../../credits.html">Legal Notices</a></small> 
+<table cellpadding="150" border="0"> 
+   <tr><td>&nbsp;</td></tr> 
+   <tr><td>&nbsp;</td></tr> 
+   <tr><td>&nbsp;</td></tr> 
+   </table> 
+</body>
+
+</html>

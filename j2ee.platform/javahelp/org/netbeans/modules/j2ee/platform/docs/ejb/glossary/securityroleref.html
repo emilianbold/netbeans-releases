@@ -1,0 +1,44 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2004 Sun Microsystems, Inc. 
+ * All rights reserved.
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+
+
+
+<title>security role reference</title> 
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" href="../../../../../../../../org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+</head>
+<body>
+
+<h6>security role reference</h6>
+<p>If an enterprise bean uses security roles in its own methods to determine who 
+  has authority to perform  tasks (also called <i>programmatic security</i>), 
+  the bean has to have a security role reference defined for each role it uses. 
+  A security role reference maps the bean's internal names for security roles 
+  to roles that exist in the deployment environment. </p>
+<p>A security role reference is required, for example, if the enterprise bean 
+  makes calls to <tt>context.isCallerInRole(</tt><i>rolename</i><tt>)</tt> to get a 
+  security role. </p>
+<table border="0" cellpadding="1" >
+  <tr valign="top"> 
+    <td><img src="../images/tip.gif" alt="tip"></td>
+    
+<td> You can define security roles in an EJB module and in a J2EE application. 
+      You can link these module-level and application-level security roles to 
+      security role references in the included enterprise beans. You can also 
+      map these security roles to users and groups that exist in a deployment 
+      environment, creating a complete chain from the security role reference 
+      in the enterprise bean to the deployment environment's users.</td>
+  </tr>
+</table>
+
+
+</body>
+
+</html>

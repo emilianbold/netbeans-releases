@@ -1,0 +1,107 @@
+ 
+<html>
+
+<!--
+  *     Copyright © 2004 Sun Microsystems, Inc. All rights reserved.
+  *     Use is subject to license terms.
+-->
+<head>
+
+
+<title>Defining a Finder Method</title> 
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+
+</head>
+<body>
+
+<h2>Defining a Finder Method</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>A finder method is a type of query method. (Select methods are the other type 
+  of query method.) Finder methods are unique to entity beans because entity beans 
+  represent data in a database that can be identified and found. Session beans 
+  do not represent database data and therefore do not have data that can be found. 
+</p>
+<p>A typical finder method for an entity bean is the required <tt>findByPrimaryKey</tt> 
+  method that the entity bean wizard creates for you when you define a primary key for 
+  your entity bean. </p>
+<p><b>To define a finder method for an entity bean:</b></p>
+<ol>
+  <li>Open the EJB module's editor by...</li>
+  <li>Expand the entity bean's node and the CMP Finders and Selects node. The 
+    table lists all of the existing CMP finder methods and select methods.</li>
+  <li>Click Add or Edit to make changes to the list finder methods and select 
+    methods.</li>
+  <li>In the New Finder Method dialog box, define the method signature: 
+    <ol>
+      <li type="a"> Add text to the base <tt>find</tt> name of the method.</li>
+      <li>Choose the method's return type from the combo box.</li>
+      <li>Specify any parameters that the method needs.</li>
+      <li>Add any additional exceptions to throw.</li>
+      <li>Enter the EJB QL statement that the method will use to find the enterprise 
+        bean or beans that the method is to return.</li>
+    </ol>
+  </li>
+  <li>Click OK to create the method.</li>
+  <li>The IDE adds the method signature to the home interface or local home interface 
+    or both, depending on the bean's component interface set. 
+    <ul>
+      <li>If the entity bean is using container-managed persistence (CMP), you 
+        are done. The container implements the finder method from the signature 
+        in the home interface or local home interface, so the home interface and 
+        the local home interface are the only places the method appears. </li>
+      <li>If the entity bean is using bean-managed persistence (BMP), the IDE 
+        adds an <tt>ejbFind<i>yourname</i></tt> method to the bean class so you 
+        can implement the method. </li>
+    </ul>
+  </li>
+</ol>
+<p>If the bean is using bean-managed persistence, you must implement the <tt>ejbFind<i>yourname</i></tt> 
+  method. </p>
+<p><b>Open the bean class in the Source Editor and edit the method as follows: 
+  </b></p>
+<ol>
+  <li> In the Projects window, expand the Methods node for your entity bean and 
+    double-click the new finder method node. 
+    <p>The bean class opens in the Source Editor at the location of the <tt>ejbFind<i>yourname</i></tt> 
+      method. </p>
+  </li>
+  <li>Edit your new finder method. 
+    <table border="0" >
+      <tr valign="top"> 
+        <td><img src="../../images/tip.gif" alt="tip" ></td>
+        <td>When the IDE adds a method to the bean class, the IDE does not save 
+          the class. Only when you compile or save the class is the new method 
+          saved to disk.</td>
+      </tr>
+    </table>
+  </li>
+</ol>
+<table border="0">
+  <tr><th colspan="2" align="left" ><a name="seealso">See Also</a></th>
+    </tr>
+    
+  <tr valign="top"> 
+    <td width="23px" nowrap>&nbsp;</td>
+      
+    <!--
+    <td nowrap><a href="add_ejbql.html">Enterprise JavaBeans Query Language</a><br>
+      <a href="add_ejbql.html">Adding EJB QL to a Select or Finder Method</a><br>
+      <a href="define_select_method.html">Defining a Select Method</a><br>
+      <a href="add_ejbql.html">Creating an Enterprise Bean</a><br>
+      <a href="add_ejbql.html">Working With Enterprise Beans</a><br>
+        <a href="../general/about_session_beans.html">Session Beans</a><br>
+        <a href="../general/about_entity_beans.html">Entity Beans</a></td>
+    --></tr>
+  </table>
+ 
+<hr>
+<small> <a href="../../credits.html">Legal Notices</a></small> 
+<table cellpadding="150" border="0"> 
+   <tr><td>&nbsp;</td></tr> 
+   <tr><td>&nbsp;</td></tr> 
+   <tr><td>&nbsp;</td></tr> 
+   </table> 
+</body>
+
+</html>

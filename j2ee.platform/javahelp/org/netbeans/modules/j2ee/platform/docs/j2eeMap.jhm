@@ -88,7 +88,7 @@
     <mapID target="about_msg_driven_beans" url="ejb/general/about_msg_driven_beans.html" />
     <mapID target="about_session_beans" url="ejb/general/about_session_beans.html" />
 
-    <mapID target="add_ejbql" url="ejb/general/add_ejbql.html" />
+    <mapID target="add_ejbql" url="ejb/editing/add_ejbql.html" />
     <mapID target="define_business_method" url="ejb/editing/define_business_method.html" />
     <mapID target="define_cmp_field" url="ejb/editing/define_cmp_field.html" />
     <mapID target="define_finder_method" url="ejb/editing/define_finder_method.html" />

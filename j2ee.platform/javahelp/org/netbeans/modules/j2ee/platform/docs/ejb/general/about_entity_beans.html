@@ -1,0 +1,72 @@
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2004 Sun Microsystems, Inc. 
+ * All rights reserved.
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Entity Beans</title>
+<link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+
+</head>
+<body>
+ 
+<h2>Entity Beans</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>An entity bean is an enterprise bean that represents data that is typically 
+  stored in a database.</p>
+<p>Each entity bean represents a set of data, such as the fields in a database 
+  record. Each instance of the entity bean contains one element of that data, 
+  such as a row from a database table.</p>
+<p>Methods of the entity bean's home interface enable a client (any user of the 
+  bean) to find entities already in the database and insert new entities into 
+  the database. These methods are defined in the J2EE<sup><small>TM</small></sup> 
+  specification.</p>
+<p>In addition, an entity bean can have business methods for operating on data.</p>
+<p>Entity beans can be shared by multiple clients. Because the clients might want 
+  to change the same data, entity beans should use transactions. Typically, the 
+  EJB container provides transaction management. 
+  <!--In this case, you specify the transaction attributes in the bean's property sheet. You do not have to code the transaction boundaries in the bean because the container marks the boundaries for you.-->
+</p>
+<p>The state of an entity bean is saved in a storage mechanism, such as a database, making the state  persistent. Persistence means that the entity bean's state exists beyond the lifetime of the application or the J2EE server process. The data in a database is persistent because it still exists even after you shut down the database server or the applications it services. </p>
+<p>There are two types of persistence for entity beans, bean-managed and container-managed:</p>
+<ul>
+  
+<li><b>Bean-managed persistence.</b> The entity bean code that you write contains the calls that access the database, making its code potentially dependent on a particular database vendor and more complex, but providing you with more control over how the bean accesses a database. </li>
+<li><b>Container-managed persistence.</b> The bean uses the persistence provided 
+    by the EJB container, which automatically generates the necessary database access calls. The code  you write for the entity bean does not include these calls,  enabling
+  
+  you  to concentrate on business logic. The bean is simpler and more flexible than one with bean-managed persistence, 
+    but it is also dependent on a container for database access. </li>
+</ul>
+<p>You should probably use an entity bean (rather than a session bean) under the following conditions: </p>
+<ul>
+<li>The bean represents a business entity, not a procedure. For example, <tt>CreditCardEJB</tt> would be an entity bean, but <tt>CreditCardVerifierEJB</tt> would probably be a session bean. </li>
+<li>The bean's state must be persistent. If the bean instance terminates or if the J2EE server is shut down, the bean's state still exists in persistent storage (a database). </li>
+</ul>
+<table border="0">
+  
+<tr>
+<th colspan="2" align="left" ><a name="seealso">See Also</a></th>
+</tr>
+  
+<tr valign="top"> 
+    
+<td width="23px">&nbsp;</td>
+<td nowrap> <a href="about_session_beans.html">Session Beans</a><br>
+    </td>
+</tr>
+</table>
+ 
+<hr>
+<small> <a href="../../credits.html">Legal Notices</a></small> 
+<table cellpadding="150" border="0"> 
+   <tr><td>&nbsp;</td></tr> 
+   <tr><td>&nbsp;</td></tr> 
+   <tr><td>&nbsp;</td></tr> 
+   </table> 
+</body>
+
+</html>

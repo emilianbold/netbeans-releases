@@ -1,0 +1,83 @@
+ 
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2004 Sun Microsystems, Inc. 
+ * All rights reserved.
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Defining a Business Method</title> 
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+
+</head>
+<body>
+ 
+<h2>Defining a Business Method</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>An entity bean represents a persistent business object whose data is stored 
+  in a database. The bean adds behavior specific to that data. Therefore, an entity 
+  bean's business methods are typically accessor and mutator methods that enable 
+  you to read and update information in a database that represents a business 
+  concept.</p>
+<p>A session bean's business methods typically define tasks that the bean performs 
+  for clients. They are not necessarily associated with data in a database.</p>
+<p><b>To define a business method for an enterprise bean:</b></p>
+<ol>
+  <li>In the Projects window, expand the Enterprise JavaBeans node and the node 
+    for the EJB. </li>
+  <li>Right-click enterprise bean's node and choose Add Business Method. 
+    <p> You can also open the bean class and right-click anywhere inside the body 
+      of the class and choose Enterprise JavaBeans (EJB) <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Add 
+      Business Method. This command is only enabled when you click within the 
+      body of the class (after the class declaration). 
+  </li>
+  <li>In the Add Business Method dialog box, define the method signature: 
+    <ol>
+      <li type="a">Name the method.</li>
+      <li type="a">Specify the return type.</li>
+      <li type="a">Specify the method parameters in the Parameters tab.</li>
+      <li type="a">Specify the exceptions that the method throws in the Exceptions 
+        tab.</li>
+    </ol>
+  </li>
+  <li>Click OK to create the method. 
+    <p>The IDE adds the method signature to the remote interface and the method 
+      body to the bean class. </p>
+    <!--Anything else the wizard does?-->
+  </li>
+  <li>Edit your new business method. 
+    <table border="0" >
+      <tr valign="top"> 
+        <td><img src="../../images/tip.gif" alt="tip" ></td>
+        <td>When the IDE adds a method to the bean class, it does not save the 
+          class. Only when you compile or save the class is the new method saved 
+          to disk.</td>
+      </tr>
+    </table>
+  </li>
+</ol>
+<table border="0">
+  <tr><th colspan="2" align="left" ><a name="seealso">See Also</a></th>
+  </tr>
+  <tr valign="top" > 
+    <td width="23px" nowrap>&nbsp;</td><!--
+    <td nowrap> <a href="add_ejbql.html">Creating an Enterprise Bean</a><br>
+      <a href="add_ejbql.html">Working With Enterprise Beans</a><br>
+      <a href="../general/about_session_beans.html">Session Beans</a><br>
+      <a href="../general/about_entity_beans.html">Entity Beans</a></td>
+  --></tr>
+</table>
+ 
+<hr>
+<small> <a href="../../credits.html">Legal Notices</a></small> 
+<table cellpadding="150" border="0"> 
+   <tr><td>&nbsp;</td></tr> 
+   <tr><td>&nbsp;</td></tr> 
+   <tr><td>&nbsp;</td></tr> 
+   </table> 
+</body>
+
+</html>
