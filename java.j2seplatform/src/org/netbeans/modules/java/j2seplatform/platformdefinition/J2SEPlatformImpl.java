@@ -16,16 +16,15 @@ package org.netbeans.modules.java.j2seplatform.platformdefinition;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.*;
-import java.io.File;
 import java.net.URL;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.Specification;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
-import org.openide.util.Utilities;
 
 /**
  * Implementation of the JavaPlatform API class, which serves proper
@@ -40,9 +39,6 @@ public class J2SEPlatformImpl extends JavaPlatform {
     public static final String PLATFORM_J2SE = "j2se";                      //NOI18N
 
     protected static final String PLAT_PROP_ANT_NAME="platform.ant.name";             //NOI18N
-    protected static final String PLAT_PROP_PLATFORM_HOME    = "platform.home";       //NOI18N   java.home can not be used on MacOS X
-    protected static final String PLAT_PROP_PLATFORM_SOURCES = "platform.src";        //NOI18N
-    protected static final String PLAT_PROP_PLATFORM_JAVADOC = "platform.javadoc";    //NOI18N
     protected static final String SYSPROP_BOOT_CLASSPATH = "sun.boot.class.path";     // NOI18N
     protected static final String SYSPROP_JAVA_CLASS_PATH = "java.class.path";        // NOI18N
 
@@ -54,6 +50,22 @@ public class J2SEPlatformImpl extends JavaPlatform {
      * Holds the properties of the platform
      */
     private Map properties;
+
+    /**
+     * List&lt;URL&gt;
+     */
+    private ClassPath sources;
+
+    /**
+     * List&lt;URL&gt;
+     */
+    private List javadoc;
+
+    /**
+     * List&lt;FileObject&gt;
+     */
+    private List installFolders;
+
     /**
      * Holds bootstrap libraries for the platform
      */
@@ -68,15 +80,23 @@ public class J2SEPlatformImpl extends JavaPlatform {
      */
     private Specification spec;
 
-    J2SEPlatformImpl (String dispName, Map initialProperties, Map sysProperties) {
+    J2SEPlatformImpl (String dispName, List installFolders, Map initialProperties, Map sysProperties, List sources, List javadoc) {
         super();
         this.displayName = dispName;
+        this.installFolders = installFolders;       //No copy needed, called from this module => safe
         this.properties = initialProperties;
+        this.sources = createClassPath(sources);
+        if (javadoc != null) {
+            this.javadoc = Collections.unmodifiableList(javadoc);   //No copy needed, called from this module => safe
+        }
+        else {
+            this.javadoc = Collections.EMPTY_LIST;
+        }
         setSystemProperties(sysProperties);
     }
 
-    protected J2SEPlatformImpl (String dispName, String antName, Map initialProperties, Map sysProperties) {
-        this (dispName,  initialProperties, sysProperties);
+    protected J2SEPlatformImpl (String dispName, String antName, List installFolders, Map initialProperties, Map sysProperties, List sources, List javadoc) {
+        this (dispName,  installFolders, initialProperties, sysProperties,sources, javadoc);
         this.properties.put (PLAT_PROP_ANT_NAME,antName);
     }
 
@@ -145,17 +165,12 @@ public class J2SEPlatformImpl extends JavaPlatform {
      * in some cases there can be more of them.
      */
     public final Collection getInstallFolders() {
-        String home = (String) this.properties.get (PLAT_PROP_PLATFORM_HOME);
-        Collection result = new HashSet ();
-        if (home != null) {
-            StringTokenizer tk = new StringTokenizer (home, File.pathSeparator);
-            while (tk.hasMoreTokens()) {
-                String path = tk.nextToken();
-                File f = new File (path);
-                FileObject fo = FileUtil.toFileObject(f);
-                if (fo != null) {
-                    result.add(fo);
-                }
+        Collection result = new ArrayList ();
+        for (Iterator it = this.installFolders.iterator(); it.hasNext();) {
+            URL url = (URL) it.next ();
+            FileObject root = URLMapper.findFileObject(url);
+            if (root != null) {
+                result.add (root); 
             }
         }
         return result;
@@ -169,113 +184,36 @@ public class J2SEPlatformImpl extends JavaPlatform {
 
     /**
      * Returns the location of the source of platform
-     * or null when the location is not set or is invalid
-     * @return List<FileObject>
+     * @return List&lt;URL&gt;
      */
-    public final List getSourceFolders () {
-        String src = (String) this.properties.get (PLAT_PROP_PLATFORM_SOURCES);
-        List result = new ArrayList ();
-        if (src != null) {
-            StringTokenizer tk = new StringTokenizer (src, File.pathSeparator);
-            while (tk.hasMoreTokens()) {
-                String path = tk.nextToken ();
-                File f = new File (path);
-                URL url = Util.getRootURL(f);
-                if (url != null) {
-                    FileObject fo = URLMapper.findFileObject (url);
-                    if (fo!=null)
-                        result.add (fo);
-                }
-            }
-        }
-        return result;
+    public final ClassPath getSourceFolders () {
+        return this.sources;
     }
 
-    public final void setSourceFolders (List c) {
+    public final void setSourceFolders (ClassPath c) {
         assert c != null;
-        StringBuffer propValue = new StringBuffer ();
-        boolean first = true;
-        for (Iterator it = c.iterator(); it.hasNext();) {
-            FileObject fo = (FileObject) it.next ();
-            if (!fo.isFolder())
-                throw new IllegalArgumentException ("SourceFolder must be a folder.");
-            FileObject tmpFo = FileUtil.getArchiveFile(fo);
-            if (tmpFo != null) {
-                fo = tmpFo;
-            }
-            File file = FileUtil.toFile(fo);
-            assert file != null : "Invalid FileObject, the FileObject: "+fo.getPath()+" can't be converted into the java.io.File";
-            String path = file.getAbsolutePath();
-            if (!first) {
-                propValue.append (File.pathSeparator);
-            }
-            else {
-                first = false;
-            }
-            propValue.append (path);
-        }
-        if (first) {
-            this.properties.remove (PLAT_PROP_PLATFORM_SOURCES);
-        }
-        else {
-            this.properties.put (PLAT_PROP_PLATFORM_SOURCES, propValue.toString());
-        }
-        this.firePropertyChange(PROP_SOURCE_FOLDER, null, null);       
+        this.sources = c;
+        this.firePropertyChange(PROP_SOURCE_FOLDER, null, null);
     }
 
         /**
      * Returns the location of the Javadoc for this platform
-     * or null if the location is not set or invalid
      * @return FileObject
      */
     public final List getJavadocFolders () {
-        String jdoc = (String) this.properties.get (PLAT_PROP_PLATFORM_JAVADOC);
-        List result = new ArrayList ();
-        if (jdoc != null) {
-            StringTokenizer tk = new StringTokenizer (jdoc, File.pathSeparator);
-            while (tk.hasMoreTokens()) {
-                String path = tk.nextToken ();
-                File f = new File (path);
-                URL url = Util.getRootURL(f);
-                if (url != null) {
-                    FileObject fo = URLMapper.findFileObject (url);
-                    if (fo != null)
-                        result.add (fo);
-                }
-            }                                   
-        }
-        return result;
+        return this.javadoc;
     }
 
     public final void setJavadocFolders (List c) {
         assert c != null;
-        StringBuffer propValue = new StringBuffer ();
-        boolean first  = true;
-        for (Iterator it = c.iterator(); it.hasNext();) {
-            FileObject fo = (FileObject) it.next ();
-            if (!fo.isFolder())
+        List safeCopy = Collections.unmodifiableList (new ArrayList (c));
+        for (Iterator it = safeCopy.iterator(); it.hasNext();) {
+            URL url = (URL) it.next ();
+            if (!"jar".equals (url.getProtocol()) && FileUtil.isArchiveFile(url)) {
                 throw new IllegalArgumentException ("JavadocFolder must be a folder.");
-            FileObject tmpFo = FileUtil.getArchiveFile(fo);
-            if (tmpFo!=null) {
-                fo = tmpFo;
             }
-            File file = FileUtil.toFile(fo);
-            assert file != null : "Invalid FileObject, the FileObject: "+fo.getPath()+" can't be converted into the java.io.File";
-            String path = file.getAbsolutePath();
-            if (!first) {
-                propValue.append (File.pathSeparator);
-            }
-            else {
-                first = false;
-            }
-            propValue.append (path);
         }
-        if (first) {
-            this.properties.remove (PLAT_PROP_PLATFORM_JAVADOC);
-        }
-        else {
-            this.properties.put (PLAT_PROP_PLATFORM_JAVADOC, propValue.toString());
-        }
+        this.javadoc = safeCopy;
         this.firePropertyChange(PROP_JAVADOC_FOLDER, null, null);
     }
 
@@ -293,5 +231,17 @@ public class J2SEPlatformImpl extends JavaPlatform {
 
     public Map getProperties() {
         return Collections.unmodifiableMap (this.properties);
+    }
+
+
+    private static ClassPath createClassPath (List urls) {
+        List resources = new ArrayList ();
+        if (urls != null) {
+            for (Iterator it = urls.iterator(); it.hasNext();) {
+                URL url = (URL) it.next();
+                resources.add (ClassPathSupport.createResource (url));
+            }
+        }
+        return ClassPathSupport.createClassPath (resources);
     }
 }

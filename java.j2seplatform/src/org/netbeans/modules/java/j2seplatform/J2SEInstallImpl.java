@@ -17,7 +17,10 @@ import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
+import org.openide.ErrorManager;
 import org.netbeans.modules.java.j2seplatform.wizard.J2SEWizardIterator;
+
+import java.io.IOException;
 
 /**
  * Installer factory for standard J2SE Platforms
@@ -58,7 +61,12 @@ class J2SEInstallImpl extends org.netbeans.spi.java.platform.PlatformInstall {
     }
     
     public TemplateWizard.Iterator createIterator(FileObject baseFolder) {
-        return new J2SEWizardIterator(baseFolder);
+        try {
+            return new J2SEWizardIterator(baseFolder);
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify (ioe);
+            return null;
+        }
     }
 
     public String getDisplayName() {

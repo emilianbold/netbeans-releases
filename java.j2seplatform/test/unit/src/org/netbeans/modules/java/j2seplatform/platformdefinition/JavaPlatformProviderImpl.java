@@ -60,7 +60,8 @@ public class JavaPlatformProviderImpl implements JavaPlatformProvider {
     
     private synchronized JavaPlatform createDefaultPlatform () {
         if (this.defaultPlatform == null) {
-            this.defaultPlatform = DefaultPlatformImpl.create (null,null);
+            System.getProperties().put("jdk.home",System.getProperty("java.home"));     //NOI18N
+            this.defaultPlatform = DefaultPlatformImpl.create (null,null,null);
         }
         return defaultPlatform;
     }

@@ -39,7 +39,7 @@ public class DefaultPlatformImplBeanInfo extends SimpleBeanInfo {
         try {
             PropertyDescriptor[] pds = new PropertyDescriptor[] {
                 new PropertyDescriptor (DefaultPlatformImpl.PROP_DISPLAY_NAME, DefaultPlatformImpl.class),
-                new PropertyDescriptor (DefaultPlatformImpl.PROP_SOURCE_FOLDER, DefaultPlatformImpl.class),
+                new PropertyDescriptor (DefaultPlatformImpl.PROP_SOURCE_FOLDER, DefaultPlatformImpl.class),                
                 new PropertyDescriptor (DefaultPlatformImpl.PROP_JAVADOC_FOLDER, DefaultPlatformImpl.class),
             };
             pds[0].setDisplayName(NbBundle.getMessage(DefaultPlatformImplBeanInfo.class,"TXT_Name"));

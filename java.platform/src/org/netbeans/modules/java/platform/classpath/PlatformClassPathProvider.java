@@ -14,6 +14,10 @@
 package org.netbeans.modules.java.platform.classpath;
 
 import java.util.List;
+import java.util.Iterator;
+import java.util.ArrayList;
+import java.net.URL;
+
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -38,13 +42,7 @@ public class PlatformClassPathProvider implements ClassPathProvider {
         for (int i=0; i<platforms.length; i++) {
             ClassPath bootClassPath = platforms[i].getBootstrapLibraries();
             ClassPath libraryPath = platforms[i].getStandardLibraries();
-            ClassPath sourcePath = null;
-            List sourceFolder = platforms[i].getSourceFolders();
-            if (sourceFolder.size()>0) {
-                sourcePath = ClassPathSupport.createClassPath((FileObject[])
-                sourceFolder.toArray (new FileObject[sourceFolder.size()]));
-            }
-
+            ClassPath sourcePath = platforms[i].getSourceFolders();
             if (ClassPath.SOURCE.equals(type) && sourcePath != null && sourcePath.contains(fo)) {
                 return sourcePath;
             }

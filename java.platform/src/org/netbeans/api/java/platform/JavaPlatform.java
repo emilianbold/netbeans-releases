@@ -119,14 +119,14 @@ public abstract class JavaPlatform {
     /**
      * Returns the locations of the source of platform
      * or empty collection when the location is not set or is invalid
-     * @return List<FileObject> never returns null
+     * @return ClassPath never returns null
      */
-    public abstract List getSourceFolders ();
+    public abstract ClassPath getSourceFolders ();
 
     /**
      * Returns the locations of the Javadoc for this platform
      * or empty collection if the location is not set or invalid
-     * @return List<FileObject> never returns null
+     * @return List&lt;URL&gt never returns null
      */
     public abstract List getJavadocFolders ();
 

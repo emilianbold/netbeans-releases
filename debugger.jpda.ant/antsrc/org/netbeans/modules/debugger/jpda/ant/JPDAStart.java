@@ -232,10 +232,7 @@ public class JPDAStart extends Task implements Runnable {
             new ClassPath[] {
                 sourcePath,
                 (bootclasspath == null) ? 
-                    ClassPathSupport.createClassPath (
-                        (FileObject[]) JavaPlatform.getDefault ().
-                            getSourceFolders ().toArray (new FileObject [0])
-                    ): 
+                    JavaPlatform.getDefault ().getSourceFolders ():
                     convertToSourcePath (project, bootclasspath)
             }
         );

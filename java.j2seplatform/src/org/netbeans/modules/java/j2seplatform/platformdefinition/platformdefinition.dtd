@@ -8,7 +8,7 @@ attributes:
      the platform is default.
     default = yes|<missing>
 -->    
-<!ELEMENT platform (properties|sysproperties)*>
+<!ELEMENT platform (jdkhome?,properties?,sysproperties?,sourcepath?,javadoc?)>
 <!ATTLIST platform 
     name CDATA #IMPLIED
     default CDATA #IMPLIED
@@ -24,6 +24,18 @@ by extension modules.
 Sysproperties hold a list of system properties as reported by the JDK
 -->
 <!ELEMENT sysproperties (property)*>
+
+<!--Holds the roots where the jdk is installed -->
+<!ELEMENT jdkhome (resource)*>
+
+<!--Holds the source roots of the jdk-->
+<!ELEMENT sources (resource)*>
+
+<!--Holds the roots of the jdk's javadoc-->
+<!ELEMENT javadoc (resource)*>
+
+<!--Represents a root of a path, holds a stringified URL-->
+<!ELEMENT resource (#PCDATA)>
 
 <!--
 Definition of one property: it has a name and some optional string data

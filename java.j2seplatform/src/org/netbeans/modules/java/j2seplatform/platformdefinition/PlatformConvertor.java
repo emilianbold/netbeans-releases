@@ -17,14 +17,15 @@ import java.beans.*;
 import java.io.*;
 import java.lang.ref.*;
 import java.util.*;
-import java.awt.*;
+import java.util.List;
+import java.net.URL;
+import java.net.MalformedURLException;
 
 import org.openide.ErrorManager;
 import org.openide.cookies.*;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.nodes.Node;
-import org.openide.nodes.BeanNode;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.*;
@@ -33,6 +34,7 @@ import org.openide.xml.*;
 import org.xml.sax.*;
 
 import org.netbeans.api.java.platform.*;
+import org.netbeans.api.java.classpath.ClassPath;
 
 /**
  * Reads and writes the standard platform format implemented by PlatformImpl2.
@@ -118,12 +120,10 @@ implements Environment.Provider, InstanceCookie.Of,
         JavaPlatform p;
         
         if (handler.isDefault) {
-            String sourceFolder = handler.properties == null ? null : (String) handler.properties.get ("platform.src");
-            String javadocFolder = handler.properties == null ? null : (String) handler.properties.get ("platform.javadoc");
-            p = DefaultPlatformImpl.create(sourceFolder,javadocFolder);
+            p = DefaultPlatformImpl.create (handler.properties, handler.sources, handler.javadoc);
             defaultPlatform = true;
         } else {
-            p = new J2SEPlatformImpl(handler.name,handler.properties, handler.sysProperties);
+            p = new J2SEPlatformImpl(handler.name,handler.installFolders, handler.properties, handler.sysProperties,handler.sources, handler.javadoc);
             defaultPlatform = false;
         }
         p.addPropertyChangeListener(this);
@@ -266,6 +266,30 @@ implements Environment.Provider, InstanceCookie.Of,
                 pw.println("  <sysproperties>");
                 writeProperties(sysProps, pw);
                 pw.println("  </sysproperties>");
+                pw.println("  <jdkhome>");
+                for (Iterator it = instance.getInstallFolders().iterator(); it.hasNext();) {
+                    URL url = ((FileObject)it.next ()).getURL();
+                    pw.println("    <resource>"+url.toExternalForm()+"</resource>");
+                }
+                pw.println("  </jdkhome>");
+            }
+            List pl = this.instance.getSourceFolders().entries();
+            if (pl.size()>0) {
+                pw.println ("  <sources>");
+                for (Iterator it = pl.iterator(); it.hasNext();) {
+                    URL url = ((ClassPath.Entry)it.next ()).getURL();
+                    pw.println("    <resource>"+url.toExternalForm()+"</resource>");
+                }
+                pw.println ("  </sources>");
+            }
+            pl = this.instance.getJavadocFolders();
+            if (pl.size()>0) {
+                pw.println("  <javadoc>");
+                for (Iterator it = pl.iterator(); it.hasNext();) {
+                    URL url = (URL) it.next ();
+                    pw.println("<resource>"+url.toExternalForm()+"</resource>");
+                }
+                pw.println("  </javadoc>");
             }
             pw.println("</platform>");
         }
@@ -286,6 +310,10 @@ implements Environment.Provider, InstanceCookie.Of,
     static final String ELEMENT_SYSPROPERTIES = "sysproperties"; // NOI18N
     static final String ELEMENT_PROPERTY = "property"; // NOI18N
     static final String ELEMENT_PLATFORM = "platform"; // NOI18N
+    static final String ELEMENT_JDKHOME = "jdkhome";    //NOI18N
+    static final String ELEMENT_SOURCEPATH = "sources";  //NOI18N
+    static final String ELEMENT_JAVADOC = "javadoc";    //NOI18N
+    static final String ELEMENT_RESOURCE = "resource";  //NOI18N
     static final String ATTR_PLATFORM_NAME = "name"; // NOI18N
     static final String ATTR_PLATFORM_DEFAULT = "default"; // NOI18N
     static final String ATTR_PROPERTY_NAME = "name"; // NOI18N
@@ -294,10 +322,17 @@ implements Environment.Provider, InstanceCookie.Of,
     static class H extends org.xml.sax.helpers.DefaultHandler {
         Map     properties;
         Map     sysProperties;
+        List    sources;
+        List    javadoc;
+        List installFolders;
         String  name;
-        Map     propertyMap;
         boolean isDefault;
-        
+
+        private Map     propertyMap;
+        private StringBuffer buffer;
+        private List/*<URL>*/ path;
+
+
         public void startDocument () throws org.xml.sax.SAXException {
         }
         
@@ -326,12 +361,45 @@ implements Environment.Provider, InstanceCookie.Of,
                 String val = attrs.getValue(ATTR_PROPERTY_VALUE);
                 propertyMap.put(name, val);
             }
+            else if (ELEMENT_SOURCEPATH.equals(qName)) {
+                this.sources = new ArrayList ();
+                this.path = this.sources;
+            }
+            else if (ELEMENT_JAVADOC.equals(qName)) {
+                this.javadoc = new ArrayList ();
+                this.path = this.sources;
+            }
+            else if (ELEMENT_JDKHOME.equals(qName)) {
+                this.installFolders = new ArrayList ();
+                this.path =  this.installFolders;
+            }
+            else if (ELEMENT_RESOURCE.equals(qName)) {
+                this.buffer = new StringBuffer ();
+            }
         }
         
         public void endElement (String uri, String localName, String qName) throws org.xml.sax.SAXException {
             if (ELEMENT_PROPERTIES.equals(qName) ||
-                ELEMENT_SYSPROPERTIES.equals(qName))
+                ELEMENT_SYSPROPERTIES.equals(qName)) {
                 propertyMap = null;
+            }
+            else if (ELEMENT_SOURCEPATH.equals(qName) || ELEMENT_JAVADOC.equals(qName)) {
+                path = null;
+            }
+            else if (ELEMENT_RESOURCE.equals(qName)) {
+                try {
+                    this.path.add (new URL(this.buffer.toString()));                    
+                } catch (MalformedURLException mue) {
+                    ErrorManager.getDefault().notify(mue); 
+                }
+                this.buffer = null;
+            }
+        }
+
+        public void characters(char chars[], int start, int length) throws SAXException {
+            if (this.buffer != null) {
+                this.buffer.append(chars, start, length);
+            }
         }
     }
 

@@ -122,8 +122,7 @@ public class JavadocForBinaryQueryPlatformImplTest extends NbTestCase implements
 
         ArrayList l = new ArrayList();
         File javadocFile = getBaseDir();
-        FileObject javadocFO = FileUtil.fromFile(javadocFile)[0];
-        l.add(javadocFO);
+        l.add(javadocFile.toURI().toURL());
         J2SEPlatformImpl platformImpl = (J2SEPlatformImpl)platform;
         platformImpl.setJavadocFolders(l);
         urls = JavadocForBinaryQuery.findJavadoc(u).getRoots();

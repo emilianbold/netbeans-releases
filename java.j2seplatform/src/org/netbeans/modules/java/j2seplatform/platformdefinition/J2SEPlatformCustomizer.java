@@ -20,15 +20,21 @@ import java.io.File;
 import java.util.Collection;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.net.URL;
+import java.net.URI;
+import java.net.MalformedURLException;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 
 
@@ -62,6 +68,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
 
         private JList resources;
         private JButton addButton;
+        private JButton addURLButton;
         private JButton removeButton;
         private JButton moveUpButton;
         private JButton moveDownButton;
@@ -110,7 +117,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             c.gridx = GridBagConstraints.RELATIVE;
             c.gridy = GridBagConstraints.RELATIVE;
             c.gridwidth = 1;
-            c.gridheight = 4;
+            c.gridheight = 5;
             c.insets = new Insets (0,12,12,6);
             c.fill = GridBagConstraints.BOTH;
             c.weightx = 1.0;
@@ -134,6 +141,23 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                 c.insets = new Insets (4,6,5,12);
                 ((GridBagLayout)this.getLayout()).setConstraints(addButton,c);
                 this.add (addButton);
+                if (this.type == JAVADOC) {
+                    addURLButton  = new JButton (NbBundle.getMessage(J2SEPlatformCustomizer.class, "CTL_AddURL"));
+                    addURLButton.addActionListener(new ActionListener () {
+                        public void actionPerformed(ActionEvent e) {
+                            addURLElement ();
+                        }
+                    });
+                    c = new GridBagConstraints();
+                    c.gridx = 1;
+                    c.gridy = 2;
+                    c.gridwidth = GridBagConstraints.REMAINDER;
+                    c.fill = GridBagConstraints.HORIZONTAL;
+                    c.anchor = GridBagConstraints.NORTHWEST;
+                    c.insets = new Insets (0,6,6,12);
+                    ((GridBagLayout)this.getLayout()).setConstraints(addURLButton,c);
+                    this.add (addURLButton);
+                }
                 removeButton = new JButton (NbBundle.getMessage(J2SEPlatformCustomizer.class, "CTL_Remove"));
                 removeButton.addActionListener( new ActionListener () {
                     public void actionPerformed(ActionEvent e) {
@@ -143,7 +167,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                 removeButton.setEnabled(false);
                 c = new GridBagConstraints();
                 c.gridx = 1;
-                c.gridy = 2;
+                c.gridy = 3;
                 c.gridwidth = GridBagConstraints.REMAINDER;
                 c.fill = GridBagConstraints.HORIZONTAL;
                 c.anchor = GridBagConstraints.NORTHWEST;
@@ -159,7 +183,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                 moveUpButton.setEnabled(false);
                 c = new GridBagConstraints();
                 c.gridx = 1;
-                c.gridy = 3;
+                c.gridy = 4;
                 c.gridwidth = GridBagConstraints.REMAINDER;
                 c.fill = GridBagConstraints.HORIZONTAL;
                 c.anchor = GridBagConstraints.NORTHWEST;
@@ -175,7 +199,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                 moveDownButton.setEnabled(false);
                 c = new GridBagConstraints();
                 c.gridx = 1;
-                c.gridy = 4;
+                c.gridy = 5;
                 c.gridwidth = GridBagConstraints.REMAINDER;
                 c.fill = GridBagConstraints.HORIZONTAL;
                 c.anchor = GridBagConstraints.NORTHWEST;
@@ -183,6 +207,26 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                 ((GridBagLayout)this.getLayout()).setConstraints(moveDownButton,c);
                 this.add (moveDownButton);
             }
+        }
+
+        private void addURLElement() {
+            DialogDescriptor.InputLine input = new DialogDescriptor.InputLine (
+                NbBundle.getMessage(J2SEPlatformCustomizer.class,"CTL_AddJavadocURLMessage"),
+                NbBundle.getMessage(J2SEPlatformCustomizer.class,"CTL_AddJavadocURLTitle"));
+        if (DialogDisplayer.getDefault().notify(input) == DialogDescriptor.OK_OPTION) {
+            try {
+                String value = input.getInputText();
+                URL url = new URL (value);
+                ((PathModel)this.resources.getModel()).addPath(url);
+                this.resources.setSelectedIndex (this.resources.getModel().getSize()-1);
+            } catch (MalformedURLException mue) {
+                DialogDescriptor.Message message = new DialogDescriptor.Message (
+                        NbBundle.getMessage(J2SEPlatformCustomizer.class,"CTL_InvalidURLFormat"),
+                        DialogDescriptor.ERROR_MESSAGE
+                );
+                DialogDisplayer.getDefault().notify(message);
+            }
+        }
         }
 
         private void addPathElement () {
@@ -279,17 +323,16 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
 
         public Object getElementAt(int index) {
             java.util.List list = this.getData();
-            FileObject fo = (FileObject)list.get(index);
-            FileObject arch = FileUtil.getArchiveFile(fo);
-            if (arch!=null) {
-                fo = arch;
+            URL url = (URL)list.get(index);
+            if ("jar".equals(url.getProtocol())) {      //NOI18N
+                url = FileUtil.getArchiveFile (url);
             }
-            File f = FileUtil.toFile (fo);
-            if (f !=null) {
+            if ("file".equals(url.getProtocol())) {
+                File f = new File (URI.create(url.toExternalForm()));
                 return f.getAbsolutePath();
             }
             else {
-                return null;
+                return url.toExternalForm();
             }
         }
 
@@ -319,16 +362,21 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
         }
 
         private boolean addPath (File f) {
-            java.util.List data = getData();
-            int oldSize = data.size ();
-            FileObject fo = FileUtil.toFileObject (f);
-            if (fo==null) {
+            try {
+                URL url = f.toURI().toURL();
+                return this.addPath (url);
+            } catch (MalformedURLException mue) {
                 return false;
             }
-            if (FileUtil.isArchiveFile(fo)) {
-                fo = FileUtil.getArchiveRoot (fo);
+        }
+
+        private boolean addPath (URL url) {
+            if (FileUtil.isArchiveFile(url)) {
+                url = FileUtil.getArchiveRoot (url);
             }
-            data.add (fo);
+            java.util.List data = getData();
+            int oldSize = data.size ();
+            data.add (url);
             updatePlatform();
             fireIntervalAdded(this,oldSize,oldSize);
             return true;
@@ -338,10 +386,10 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             if (this.data == null) {
                 switch (this.type) {
                     case CLASSPATH:
-                        this.data = this.getPathList (this.platform.getBootstrapLibraries());
+                        this.data = getPathList (this.platform.getBootstrapLibraries());
                         break;
                     case SOURCES:
-                        this.data = this.platform.getSourceFolders();
+                        this.data = getPathList (this.platform.getSourceFolders());
                         break;
                     case JAVADOC:
                         this.data = this.platform.getJavadocFolders();
@@ -351,18 +399,28 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             return this.data;
         }
 
-        private java.util.List getPathList (ClassPath cp) {
+        private static java.util.List getPathList (ClassPath cp) {
             java.util.List result = new ArrayList ();
-            result.addAll(Arrays.asList(cp.getRoots()));
+            for (Iterator it = cp.entries().iterator(); it.hasNext();) {
+                ClassPath.Entry entry = (ClassPath.Entry) it.next ();
+                result.add (entry.getURL());
+            }
             return result;
         }
 
-
+        private static ClassPath createClassPath (java.util.List/*<URL>*/ roots) {
+            java.util.List resources = new ArrayList ();
+            for (Iterator it = roots.iterator(); it.hasNext();) {
+                URL url = (URL) it.next ();
+                resources.add (ClassPathSupport.createResource(url));
+            }
+            return ClassPathSupport.createClassPath(resources);
+        }
 
         private void updatePlatform () {
             switch (this.type) {
                 case SOURCES:
-                    this.platform.setSourceFolders(data);
+                    this.platform.setSourceFolders(createClassPath(data));
                     break;
                 case JAVADOC:
                     this.platform.setJavadocFolders (data);

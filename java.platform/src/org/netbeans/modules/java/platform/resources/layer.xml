@@ -42,16 +42,6 @@ Microsystems, Inc. All Rights Reserved.
                 </folder>
             </folder>
         </folder>
-    </folder>
-    
-    <folder name="UI">
-        <folder name="Services">
-            <file name="platforms.shadow">
-                <attr name="originalFile" stringvalue="Services/Platforms"/>
-            </file>
-            <attr name="platforms.shadow/Building" boolvalue="true"/>
-        </folder>
-    </folder>
-
+    </folder>    
 
 </filesystem>

@@ -52,16 +52,10 @@ public class JavadocForBinaryQueryPlatformImpl implements JavadocForBinaryQueryI
                     while (it.hasNext()) {
                         ClassPath.Entry entry = (ClassPath.Entry)it.next();
                         if (b.equals(entry.getURL())) {
-                            // XXX: perhaps the JavaPlatform.getJavadocFolders() should
-                            // return List of URLs too??
                             ArrayList l = new ArrayList();
-                            Iterator i2 = jp.getJavadocFolders().iterator();
-                            while (i2.hasNext()) {
-                                FileObject fo = (FileObject)i2.next();
-                                URL u = URLMapper.findURL(fo, URLMapper.EXTERNAL);
-                                if (u != null) {
-                                    l.add(u);
-                                }
+                            for (Iterator i2 = jp.getJavadocFolders().iterator(); i2.hasNext();) {
+                                URL u = (URL)i2.next();
+                                l.add(u);
                             }
                             return (URL[])l.toArray(new URL[l.size()]);
                         }

@@ -15,9 +15,12 @@ package org.netbeans.modules.java.j2seplatform.platformdefinition;
 
 import java.io.*;
 import java.util.*;
-import org.openide.filesystems.*;
-import org.openide.loaders.*;
+import java.net.MalformedURLException;
+
 import org.openide.util.NbBundle;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileObject;
 import org.netbeans.api.java.platform.*;
 import org.netbeans.api.java.classpath.*;
 
@@ -34,18 +37,26 @@ public class DefaultPlatformImpl extends J2SEPlatformImpl {
 
     private ClassPath standardLibs;
     
-    static JavaPlatform create(String srcFolder, String javadocFolder) {
-        Map platformProperties = new HashMap ();
-        String javaHome = System.getProperty("jdk.home");       //NOI18N
-        platformProperties.put (PLAT_PROP_PLATFORM_HOME,javaHome);
-        platformProperties.put (PLAT_PROP_PLATFORM_SOURCES, getSources (javaHome, srcFolder));
-        platformProperties.put (PLAT_PROP_PLATFORM_JAVADOC,javadocFolder);
-        return new DefaultPlatformImpl(platformProperties, new HashMap(System.getProperties()));
+    static JavaPlatform create(Map properties, List sources, List javadoc) {
+        if (properties == null) {
+            properties = new HashMap ();
+        }
+        File javaHome = new File(System.getProperty("jdk.home"));       //NOI18N
+        List installFolders = new ArrayList ();
+        try {
+            installFolders.add (javaHome.toURI().toURL());
+        } catch (MalformedURLException mue) {
+            ErrorManager.getDefault().notify (mue);
+        }
+        if (sources == null) {
+            sources = getSources (javaHome);
+        }
+        return new DefaultPlatformImpl(installFolders, properties, new HashMap(System.getProperties()), sources,javadoc);
     }
     
-    private DefaultPlatformImpl(Map platformProperties, Map systemProperties) {
-        super(NbBundle.getMessage(DefaultPlatformImpl.class,"TXT_DefaultPlatform"),
-              DEFAULT_PLATFORM_ANT_NAME, platformProperties, systemProperties);
+    private DefaultPlatformImpl(List installFolders, Map platformProperties, Map systemProperties, List sources, List javadoc) {
+        super(NbBundle.getMessage(DefaultPlatformImpl.class,"TXT_DefaultPlatform"),DEFAULT_PLATFORM_ANT_NAME,
+              installFolders, platformProperties, systemProperties, sources, javadoc);
     }
 
     public void setAntName(String antName) {
@@ -63,15 +74,18 @@ public class DefaultPlatformImpl extends J2SEPlatformImpl {
         return standardLibs = Util.createClassPath (s);
     }
 
-    private static String getSources (String javaHome, String src) {
+    private static List getSources (File javaHome) {
         if (javaHome != null) {
-            File f = new File (javaHome);
-            f = new File (f, "src.zip");    //NOI18N
-            if (f.exists() && f.canRead()) {
-                return f.getAbsolutePath();
+            try {
+                File f = new File (javaHome, "src.zip");    //NOI18N
+                if (f.exists() && f.canRead()) {
+                    return Collections.singletonList (FileUtil.getArchiveRoot(f.toURI().toURL()));
+                }
+            } catch (MalformedURLException e) {
+                ErrorManager.getDefault().notify (e);
             }
         }
-        return src;
+        return null;
     }
 
 }

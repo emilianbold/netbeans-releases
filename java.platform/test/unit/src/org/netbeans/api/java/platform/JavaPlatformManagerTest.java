@@ -223,8 +223,8 @@ public class JavaPlatformManagerTest extends NbTestCase {
             return Collections.EMPTY_MAP;
         }
         
-        public List getSourceFolders() {
-            return Collections.EMPTY_LIST;
+        public ClassPath getSourceFolders() {
+            return ClassPathSupport.createClassPath(Collections.EMPTY_LIST);
         }
         
         public Specification getSpecification() {

@@ -66,7 +66,7 @@ public class J2SEWizardIterator
     boolean                     valid;
     int                         currentIndex;
 
-    public J2SEWizardIterator(FileObject installFolder) {
+    public J2SEWizardIterator(FileObject installFolder) throws IOException {
         this.installFolder = DataFolder.findFolder(installFolder);
         this.platform  = JDKImpl.create (installFolder);
     }
@@ -134,7 +134,7 @@ public class J2SEWizardIterator
                                         new IllegalStateException(msg), ErrorManager.USER, null, msg,null, null);
                             }
                             JavaPlatform platform = getPlatform();
-                            File jdkHome = new File ((String)platform.getProperties().get("platform.home")); //NOI18N
+                            File jdkHome = FileUtil.toFile ((FileObject)platform.getInstallFolders().iterator().next());
                             props.setProperty(homePropName, jdkHome.getAbsolutePath());
                             ClassPath bootCP = getPlatform().getBootstrapLibraries();
                             StringBuffer sbootcp = new StringBuffer();
@@ -349,16 +349,14 @@ public class J2SEWizardIterator
      */
     static class JDKImpl extends J2SEPlatformImpl {
 
-        static JDKImpl create (FileObject installFolder) {
+        static JDKImpl create (FileObject installFolder) throws IOException {
             assert installFolder != null;
             Map platformProperties = new HashMap ();
-            File file = FileUtil.toFile (installFolder);
-            platformProperties.put (PLAT_PROP_PLATFORM_HOME,file.getAbsolutePath());
-            return new JDKImpl(null,platformProperties,Collections.EMPTY_MAP);
+            return new JDKImpl(null,Collections.singletonList(installFolder.getURL()),platformProperties,Collections.EMPTY_MAP);
         }
 
-        private JDKImpl(String name, Map platformProperties, Map systemProperties) {
-            super(name, name, platformProperties, systemProperties);
+        private JDKImpl(String name, List installFolders, Map platformProperties, Map systemProperties) {
+            super(name, name, installFolders, platformProperties, systemProperties,null,null);
         }
 
         void loadProperties(Map m) {
