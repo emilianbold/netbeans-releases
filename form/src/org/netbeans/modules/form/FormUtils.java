@@ -440,7 +440,8 @@ public class FormUtils
 
     public static void copyPropertiesToBean(RADProperty[] props,
                                             Object targetBean,
-                                            Collection relativeProperties) {
+                                            Collection relativeProperties)
+    {
         for (int i = 0; i < props.length; i++) {
             RADProperty prop = props[i];
             if (!prop.isChanged())
@@ -452,16 +453,22 @@ public class FormUtils
                 continue;
 
             try {
-                Object value = prop.getRealValue();
-                if (value == FormDesignValue.IGNORED_VALUE)
+                if (relativeProperties != null) {
+                    Object value = prop.getValue();
+                    if (value instanceof RADComponent
+                        || value instanceof RADComponent.ComponentReference)
+                    {
+                        relativeProperties.add(prop);
+                        continue;
+                    }
+                }
+
+                Object realValue = prop.getRealValue();
+                if (realValue == FormDesignValue.IGNORED_VALUE)
                     continue; // ignore this value, as it is not a real value
 
-                if (value instanceof RADComponent
-                        && relativeProperties != null)
-                    relativeProperties.add(prop);
-
-                value = FormUtils.cloneObject(value);
-                writeMethod.invoke(targetBean, new Object[] { value });
+                realValue = FormUtils.cloneObject(realValue);
+                writeMethod.invoke(targetBean, new Object[] { realValue });
             }
             catch (Exception ex) {
                 if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N

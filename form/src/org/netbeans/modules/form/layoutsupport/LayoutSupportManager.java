@@ -874,8 +874,8 @@ public final class LayoutSupportManager implements LayoutSupportContext {
     }
 
     private static void ensureFakePeerAttached(Component comp) {
-        boolean attached = FakePeerSupport.attachFakePeer(comp);
-        if (attached && comp instanceof Container)
+        FakePeerSupport.attachFakePeer(comp);
+        if (comp instanceof Container)
             FakePeerSupport.attachFakePeerRecursively((Container)comp);
     }
 }

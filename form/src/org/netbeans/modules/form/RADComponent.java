@@ -919,6 +919,14 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
         } */
     }
 
+    // ----------
+    // a reference to a metacomponent - used instead of a metacomponent, may
+    // become invalid when the component is removed
+
+    interface ComponentReference {
+        RADComponent getComponent();
+    }
+
     // ------------------------------------
     // some hacks for ButtonGroup "component" ...
 

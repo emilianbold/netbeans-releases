@@ -192,8 +192,8 @@ public class VisualReplicator {
             }
 
             // re-attach fake peer
-            boolean attached = FakePeerSupport.attachFakePeer(comp);
-            if (attached && comp instanceof Container)
+            FakePeerSupport.attachFakePeer(comp);
+            if (comp instanceof Container)
                 FakePeerSupport.attachFakePeerRecursively((Container)comp);
 
             comps[i] = comp;
@@ -302,8 +302,8 @@ public class VisualReplicator {
                             comp = (Component) getClonedComponent(metacomps[i]);
                             // becaues the components were removed, we must
                             // re-attach their fake peers (if needed)
-                            boolean attached = FakePeerSupport.attachFakePeer(comp);
-                            if (attached && comp instanceof Container)
+                            FakePeerSupport.attachFakePeer(comp);
+                            if (comp instanceof Container)
                                 FakePeerSupport.attachFakePeerRecursively(
                                                            (Container)comp);
                             comps[i] = comp;
@@ -407,14 +407,19 @@ public class VisualReplicator {
         throws Exception
     {
         Object clone;
+        boolean containerConverted;
         if (needsConversion(metacomp)) {
             clone = cloneComponentWithConversion(
                     metacomp,
                     metacomp == getTopMetaComponent() ? requiredTopClass : null,
                     relativeProperties);
+            containerConverted = clone instanceof RootPaneContainer
+                && !(metacomp.getBeanInstance() instanceof RootPaneContainer);
         }
-        else // simply clone the bean otherwise
+        else { // simply clone the bean otherwise
             clone = metacomp.cloneBeanInstance(relativeProperties);
+            containerConverted = false;
+        }
 
         metaToClone.put(metacomp, clone);
         cloneToMeta.put(clone, metacomp);
@@ -424,7 +429,8 @@ public class VisualReplicator {
 
         if (metacomp instanceof RADVisualContainer) {
             RADVisualContainer metacont = (RADVisualContainer) metacomp;
-            final Container cont = (Container) clone;
+            final Container cont = containerConverted ?
+                    metacont.getContainerDelegate(clone) : (Container) clone;
             final Container contDelegate = metacont.getContainerDelegate(cont);
 
             // copy menu
@@ -672,6 +678,10 @@ public class VisualReplicator {
             RADProperty property = (RADProperty) relativeProperties.get(i++);
             try {
                 Object value = property.getValue();
+                if (value instanceof RADComponent.ComponentReference)
+                    value =
+                        ((RADComponent.ComponentReference)value).getComponent();
+
                 if (value instanceof RADComponent) {
                     // the value is another component (relative property )
                     Object propertyComp =

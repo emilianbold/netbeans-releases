@@ -93,9 +93,8 @@ public class BeanSupport
         if (defInstance == null) {
             defInstance = createBeanInstance(beanClass);
             if (defInstance instanceof Component) {
-                boolean attached =
-                    FakePeerSupport.attachFakePeer((Component)defInstance);
-                if (attached && defInstance instanceof Container)
+                FakePeerSupport.attachFakePeer((Component)defInstance);
+                if (defInstance instanceof Container)
                     FakePeerSupport.attachFakePeerRecursively(
                                                     (Container)defInstance);
             }

@@ -278,7 +278,9 @@ public class ComponentChooserEditor implements PropertyEditor,
 
     // ------------
 
-    private class ComponentRef implements FormDesignValue {
+    private class ComponentRef implements RADComponent.ComponentReference,
+                                          FormDesignValue
+    {
         private String componentName;
         private RADComponent component;
 
@@ -310,7 +312,7 @@ public class ComponentChooserEditor implements PropertyEditor,
             return componentName;
         }
 
-        RADComponent getComponent() {
+        public RADComponent getComponent() {
             checkComponent();
             return component;
         }

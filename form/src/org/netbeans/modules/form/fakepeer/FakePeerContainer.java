@@ -28,11 +28,6 @@ public class FakePeerContainer extends Container
         setFont(FakePeerSupport.getDefaultAWTFont());
     }
 
-    public void addNotify() {
-        FakePeerSupport.attachFakePeerRecursively(this);
-        super.addNotify();
-    }
-
     protected void addImpl(Component comp, Object constraints, int index) {
         FakePeerSupport.attachFakePeer(comp);
         super.addImpl(comp, constraints, index);
