@@ -74,32 +74,15 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
         FileObject fo = dobj.getPrimaryFile();
         fo.addFileChangeListener(WeakListener.fileChange(this, fo));
         
-        if (isModuleEnabled()) {
-            instance =  createInstance(null);
+        SerialDataConvertor.SettingsInstance si = createInstance(null);
+        if (isModuleEnabled(si)) {
+            instance = si;
             lkpContent.add(instance);
         }
         lkpContent.add(this);
         node = new SerialDataConvertor.NodeConvertor();
         lkpContent.add(this, node);
         lookup = new AbstractLookup(lkpContent);
-    }
-    
-    /** use just for write method purposes */
-    private SerialDataConvertor() {
-        lkpContent = null;
-        lookup = null;
-        dobj = null;
-        provider = null;
-        node = null;
-    }
-    
-    /** create a writer able to store objects in the serialdata format. Used in
-     * module layer for creating .settings file by
-     * {@link org.openide.loaders.InstanceDataObject} InstanceDataObject
-     * @see #write
-     */
-    public static Object createWriter() {
-        return new SerialDataConvertor();
     }
     
     /** can store an object inst in the serialdata format
@@ -177,8 +160,9 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
             instance = null;
         }
         
-        if (isModuleEnabled()) {
-            instance = createInstance(inst);
+        SerialDataConvertor.SettingsInstance si = createInstance(inst);
+        if (isModuleEnabled(si)) {
+            instance = si;
             lkpContent.add(instance);
         }
     }
@@ -214,9 +198,9 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
     private ModuleInfo mi;
     private boolean miUnInitialized = true;
     
-    private boolean isModuleEnabled() {
+    private boolean isModuleEnabled(SerialDataConvertor.SettingsInstance si) {
         if (miUnInitialized) {
-            mi = getModuleInfo();
+            mi = getModuleInfo(si);
             miUnInitialized = false;
             if (mi != null) {
                 moduleInfoListener = WeakListener.propertyChange(this, mi);
@@ -227,10 +211,9 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
         return mi == null || mi.isEnabled();
     }
     
-    private ModuleInfo getModuleInfo() {
+    private ModuleInfo getModuleInfo(SerialDataConvertor.SettingsInstance si) {
         try {
-            String module = new SettingsInstance(null).
-                getSettings(true).getCodeNameBase();
+            String module = si.getSettings(true).getCodeNameBase();
             return module == null? null: ModuleInfoManager.getDefault().getModule(module);
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);

@@ -61,6 +61,9 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="DTD_XML_FooSetting_1_0" url="nbresboot:/org/netbeans/modules/settings/resources/properties-1_0.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans org.netbeans.modules.settings.xtest//DTD XML FooSetting 1.0//EN"/>
                 </file>
+                <file name="DTD_ComposedSetting_1_0"> <!--faked dtd-->
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans org.netbeans.modules.settings.xtest//DTD ComposedSetting 1.0//EN"/>
+                </file>
             </folder>
             <folder name="NetBeans_org_netbeans_modules_settings_testModuleDisabling">
                 <file name="DTD_XML_FooSetting_1_0" url="nbresboot:/org/netbeans/modules/settings/resources/properties-1_0.dtd">
@@ -75,6 +78,12 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="settings.convertor" methodvalue="org.netbeans.api.settings.Factory.properties"/>
                     <attr name="settings.instanceClass" stringvalue="org.netbeans.modules.settings.convertors.FooSetting"/>
                     <attr name="settings.instanceOf" stringvalue="org.netbeans.modules.settings.convertors.FooSetting"/>
+                </file>
+                <file name="DTD_ComposedSetting_1_0.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.api.settings.Factory.create"/>
+                    <attr name="settings.convertor" newvalue="org.netbeans.spi.settings.DOMConvertorTest$ComposedSettingConvertor"/>
+                    <attr name="settings.instanceClass" stringvalue="org.netbeans.spi.settings.DOMConvertorTest$ComposedSetting"/>
+                    <attr name="settings.instanceOf" stringvalue="org.netbeans.spi.settings.DOMConvertorTest$ComposedSetting"/>
                 </file>
             </folder>
             <folder name="NetBeans_org_netbeans_modules_settings_testModuleDisabling">
@@ -100,6 +109,16 @@ Microsystems, Inc. All Rights Reserved.
                             </folder>
                         </folder>
                     </folder>
+                    
+                    <folder name="spi">
+                        <folder name="settings">
+                            <file name="DOMConvertorTest$ComposedSetting">
+                                <attr name="settings.providerPath"
+                                stringvalue="xml/lookups/NetBeans_org_netbeans_modules_settings_xtest/DTD_ComposedSetting_1_0.instance"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    
                 </folder>
             </folder>
         </folder>

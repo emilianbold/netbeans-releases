@@ -98,7 +98,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- Settings API documentation -->
     <target name="settingsapis" description="Create Settings API documentation.">
-        <property name="jdk-docs-location" value="http://java.sun.com/j2se/1.3/docs/api"/>
+        <property name="jdk-docs-location" value="http://java.sun.com/j2se/1.4/docs/api"/>
         <property name="openide-docs-location" value="http://www.netbeans.org/download/apis"/>
         <property name="apis-footer" value="&lt;font size=-2 color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 2002 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;"/>
         <echo message="Build Settings API documentation..."/>
@@ -141,4 +141,13 @@ Microsystems, Inc. All Rights Reserved.
           tofile="SettingsAPIs/org/netbeans/spi/settings/doc-files/properties-1_0.dtd"/>
         <zip zipfile="SettingsAPIs.zip" basedir="SettingsAPIs"/>
   </target>
+
+  <target name="apichanges-generate" description="Regenerate HTML from XML API changes list.">
+      <!-- Ant 1.3 and 1.4 disagree on style attribute. -->
+      <!-- 1.3: treated as a name relative to XML file. -->
+      <!-- 1.4: treated as a filename consistent with normal Ant usage. -->
+      <!-- Be safe and give the absolute path here. -->
+      <style in="${basedir}/api/doc/changes/apichanges.xml" out="${basedir}/www/apichanges.html" destdir="www" style="${nb_all}/openide/api/doc/changes/apichanges.xsl"/>
+  </target>
+
 </project>

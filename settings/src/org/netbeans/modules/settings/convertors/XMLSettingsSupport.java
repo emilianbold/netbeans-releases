@@ -648,6 +648,28 @@ final class XMLSettingsSupport {
             }
         }
         
+        /** Parse setting from source. */
+        public void parse(Reader source) throws IOException {
+            stack = new Stack();
+            
+            try {
+                XMLReader reader = org.openide.xml.XMLUtil.createXMLReader();
+                reader.setContentHandler(this);
+                reader.setErrorHandler(this);
+                reader.setEntityResolver(this);
+                reader.parse(new org.xml.sax.InputSource(source));
+            } catch (XMLSettingsSupport.StopSAXException ex) {
+                // Ok, header is read
+            } catch (SAXException ex) {
+                IOException ioe = new IOException(source.toString()); // NOI18N
+                ErrorManager emgr = ErrorManager.getDefault();
+                emgr.annotate(ioe, ex);
+                if (ex.getException () != null) {
+                    emgr.annotate (ioe, ex.getException());
+                }
+                throw ioe;
+            }
+        }
     }
     
     final static class StopSAXException extends SAXException {
@@ -656,4 +678,25 @@ final class XMLSettingsSupport {
         }
     }
     
+    public static final class Convertor extends org.netbeans.spi.settings.Convertor {
+        
+        public Object read(java.io.Reader r) throws java.io.IOException, ClassNotFoundException {
+            // XXX should be passed also FileObject to ensure full functionality
+            // depends on #26076
+            XMLSettingsSupport.SettingsRecognizer rec = new XMLSettingsSupport.SettingsRecognizer(false, null);
+            rec.parse(r);
+            return rec.instanceCreate();
+        }
+        
+        public void registerSaver(Object inst, org.netbeans.spi.settings.Saver s) {
+        }
+        
+        public void unregisterSaver(Object inst, org.netbeans.spi.settings.Saver s) {
+        }
+        
+        public void write(java.io.Writer w, Object inst) throws java.io.IOException {
+            XMLSettingsSupport.storeToXML10(inst, w, ModuleInfoManager.getDefault().getModuleInfo(inst.getClass()));
+        }
+        
+    }
 }

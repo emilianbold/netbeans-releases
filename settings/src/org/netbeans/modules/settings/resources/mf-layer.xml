@@ -19,7 +19,7 @@ Microsystems, Inc. All Rights Reserved.
             	<!-- Convertor handling session settings; overrides the core definition -->
                 <file name="DTD_Session_settings_1_0.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.settings.convertors.SerialDataConvertor$Provider.create"/>
-                    <attr name="settings.convertor" methodvalue="org.netbeans.modules.settings.convertors.SerialDataConvertor.createWriter"/>
+                    <attr name="settings.convertor" newvalue="org.netbeans.modules.settings.convertors.XMLSettingsSupport$Convertor"/>
               </file>
             </folder>
         </folder>

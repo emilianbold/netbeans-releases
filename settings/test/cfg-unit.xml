@@ -32,6 +32,7 @@ Microsystems, Inc. All Rights Reserved.
             <patternset>
 		<include name="org/netbeans/modules/settings/*Test.class"/>
 		<include name="org/netbeans/modules/settings/convertors/*Test.class"/>
+		<include name="org/netbeans/spi/settings/*Test.class"/>
            </patternset>
         </testset>
     </testbag>
