@@ -28,10 +28,14 @@ import com.netbeans.enterprise.modules.db.explorer.infos.DatabaseNodeInfo;
 
 public class DatabaseNode extends AbstractNode implements Node.Cookie
 {
+	/** Cookie */
 	private DatabaseNodeInfo info;
+	
+	/** Context menu flags */
 	private boolean writable = false;
 	private boolean cutflag = false, copyflag = false, delflag = false;
 	
+	/** Properties */
 	public static final String ROOT = "root";
 	public static final String DRIVER_LIST = "driverlist";
 	public static final String DRIVER = "driver";
@@ -53,21 +57,25 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie
 	public static final String PROCEDURELIST = "procedurelist";
 	public static final String PROCEDURE_COLUMN = "procedurecolumn";
 	
+	/** Constructor */
 	public DatabaseNode()
 	{
 		super(new DatabaseNodeChildren());
 	}
 
+	/** Constructor */
 	public DatabaseNode(Children child)
 	{
 		super(child);
 	}
 
+	/** Returns cookie */
 	public DatabaseNodeInfo getInfo()
 	{
 		return info;
 	}
 
+	/** Sets cookie */
 	public void setInfo(DatabaseNodeInfo nodeinfo)
 	{
 		info = (DatabaseNodeInfo)nodeinfo.clone();
@@ -105,6 +113,7 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie
 		} catch (Exception e) {}
 	}
 
+	/** Sets name */
 	public void setName(String newname)
 	{
 		super.setName(newname);
@@ -137,8 +146,7 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie
     */
 	public boolean canDestroy()
 	{
-//		System.out.println("Node "+getInfo().getName()+" writable "+writable+" deletable "+delflag);
-		return /*writable &&*/ delflag;
+		return delflag;
 	}
 
 	public void destroy() throws IOException
