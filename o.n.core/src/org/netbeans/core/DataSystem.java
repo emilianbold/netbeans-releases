@@ -88,11 +88,11 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
   }
 
   void initialize () {
-    fileSystemPool.addRepositoryListener (new WeakListener.Repository (this));
+    fileSystemPool.addRepositoryListener (WeakListener.repository (this, fileSystemPool));
     Enumeration en = fileSystemPool.getFileSystems ();
     while (en.hasMoreElements ()) {
       FileSystem fs = (FileSystem)en.nextElement ();
-      fs.addPropertyChangeListener (new WeakListener.PropertyChange ((DSMap)getChildren ()));
+      fs.addPropertyChangeListener (WeakListener.propertyChange ((DSMap)getChildren (), fs));
     }
     refresh ();
   }
@@ -140,7 +140,9 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
   * @param ev event describing the action
   */
   public void fileSystemAdded (RepositoryEvent ev) {
-    ev.getFileSystem ().addPropertyChangeListener (new WeakListener.PropertyChange ((DSMap)getChildren ()));
+    ev.getFileSystem ().addPropertyChangeListener (
+      WeakListener.propertyChange ((DSMap)getChildren (), ev.getFileSystem ())
+    );
     refresh ();
   }
 
@@ -232,6 +234,8 @@ static final long serialVersionUID =-2266375092419944364L;
 
 /*
  * Log
+ *  23   Gandalf   1.22        11/5/99  Jaroslav Tulach WeakListener has now 
+ *       registration methods.
  *  22   Gandalf   1.21        10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  21   Gandalf   1.20        9/6/99   Jaroslav Tulach #3576

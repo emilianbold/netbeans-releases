@@ -115,7 +115,7 @@ implements ItemListener, Runnable {
     rootsListener = new RootsListener ();
 
     // listening on changes of
-    PropertyChangeListener l = new WeakListener.PropertyChange (rootsListener);
+    PropertyChangeListener l = WeakListener.propertyChange (rootsListener, TopManager.getDefault ());
     TopManager.getDefault ().addPropertyChangeListener (l);
 
     IDESettings ideS = (IDESettings)IDESettings.findObject (IDESettings.class);
@@ -308,10 +308,10 @@ implements ItemListener, Runnable {
     rootsToPanels.put (manager.getRootContext (), panel);
     
     manager.addPropertyChangeListener (
-      new WeakListener.PropertyChange (managersListener)
+      WeakListener.propertyChange (managersListener, manager)
     );
     manager.getRootContext ().addPropertyChangeListener (
-      new WeakListener.PropertyChange (rootsListener)
+      WeakListener.propertyChange (rootsListener, manager)
     );
     return panel;
   }
@@ -718,6 +718,8 @@ implements ItemListener, Runnable {
 
 /*
 * Log
+*  42   Gandalf   1.41        11/5/99  Jaroslav Tulach WeakListener has now 
+*       registration methods.
 *  41   Gandalf   1.40        10/25/99 Ian Formanek    Fixed title of Main 
 *       Explorer - now displays selected node instead of explored context
 *  40   Gandalf   1.39        10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
