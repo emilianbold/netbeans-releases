@@ -88,6 +88,8 @@ class AntGrammar implements GrammarQuery {
     static final String SPECIAL_TARGET = "target"; // NOI18N
     /** tag for a project description element */
     static final String SPECIAL_DESCRIPTION = "description"; // NOI18N
+    /** tag for an import statement */
+    static final String SPECIAL_IMPORT = "import"; // NOI18N
     
     /**
      * Determine what a particular element in a build script represents,
@@ -125,6 +127,8 @@ class AntGrammar implements GrammarQuery {
                         return new String[] {KIND_SPECIAL, SPECIAL_DESCRIPTION};
                     } else if (name.equals("target")) { // NOI18N
                         return new String[] {KIND_SPECIAL, SPECIAL_TARGET};
+                    } else if (name.equals("import")) { // NOI18N
+                        return new String[] {KIND_SPECIAL, SPECIAL_IMPORT};
                     } else {
                         String taskClazz = (String)getAntGrammar().getDefs("task").get(name); // NOI18N
                         if (taskClazz != null) {
@@ -153,6 +157,9 @@ class AntGrammar implements GrammarQuery {
                     }
                 } else if (ptype[1] == SPECIAL_DESCRIPTION) {
                     // <description> should have no children!
+                    return null;
+                } else if (ptype[1] == SPECIAL_IMPORT) {
+                    // <import> should have no children!
                     return null;
                 } else {
                     throw new IllegalStateException(ptype[1]);
@@ -215,6 +222,10 @@ class AntGrammar implements GrammarQuery {
             possibleAttributes.add("unless");
         } else if (kind == KIND_SPECIAL && clazz == SPECIAL_DESCRIPTION) {
             return empty ();
+        } else if (kind == KIND_SPECIAL && clazz == SPECIAL_IMPORT) {
+            possibleAttributes = new LinkedList();
+            possibleAttributes.add("file");
+            possibleAttributes.add("optional");
         } else {
             // task, type, or data; anyway, we have the defining class
             possibleAttributes = new LinkedList();
@@ -280,17 +291,21 @@ class AntGrammar implements GrammarQuery {
         if (kind == KIND_SPECIAL && clazz == SPECIAL_PROJECT) {
             elements = new LinkedList();
             elements.add("target");
+            elements.add("import");
             elements.add("property");
-            elements.add("taskdef");
-            elements.add("typedef");
-            // Ant 1.6 permits any task here...
             elements.add("description");
+            SortedSet/*<String>*/ tasks = getSortedDefs("task");
+            tasks.remove("property");
+            tasks.remove("import");
+            elements.addAll(tasks); // Ant 1.6 permits any tasks at top level
             elements.addAll(getSortedDefs("type"));
         } else if (kind == KIND_SPECIAL && clazz == SPECIAL_TARGET) {
             elements = new ArrayList(getSortedDefs("task"));
             // targets can have embedded types too, though less common:
             elements.addAll(getSortedDefs("type")); // NOI18N
         } else if (kind == KIND_SPECIAL && clazz == SPECIAL_DESCRIPTION) {
+            return empty ();
+        } else if (kind == KIND_SPECIAL && clazz == SPECIAL_IMPORT) {
             return empty ();
         } else {
             // some introspectable class
@@ -365,6 +380,13 @@ class AntGrammar implements GrammarQuery {
                 // freeform: description
             } else if (typePair[1].equals(SPECIAL_DESCRIPTION)) {
                 // nothing applicable
+            } else if (typePair[1].equals(SPECIAL_IMPORT)) {
+                if (attrName.equals("file")) {
+                    // freeform
+                } else if (attrName.equals("optional")) {
+                    choices.add("true");
+                    choices.add("false");
+                }
             } else {
                 assert false : typePair[1];
             }

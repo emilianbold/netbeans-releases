@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -22,6 +22,10 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.xml.api.model.HintContext;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+
+// XXX testSpecials (what does this mean actually?)
+// XXX testAddTarget
+// XXX testDescriptionCanBeAddedOnlyOnce
 
 /**
  * Test functionality of AntGrammar.
@@ -237,8 +241,21 @@ public class AntGrammarTest extends NbTestCase {
         // XXX could also test other standard names
     }
     
-    // XXX tests needed:
-    // - testSpecials
-    // adding <target> and <description> (esp. that <description> appears only once!)
+    public void testImport() throws Exception {
+        String p = "<project default='x'><impHERE/></project>";
+        List l = TestUtil.grammarResultValues(g.queryElements(TestUtil.createCompletion(p)));
+        assertTrue("matched <import>", l.contains("import"));
+        p = "<project default='x'><import fHERE=''/></project>";
+        l = TestUtil.grammarResultValues(g.queryAttributes(TestUtil.createCompletion(p)));
+        assertTrue("matched file on <import>: " + l, l.contains("file"));
+        p = "<project default='x'><import file='y' optHERE=''/></project>";
+        l = TestUtil.grammarResultValues(g.queryAttributes(TestUtil.createCompletion(p)));
+        assertTrue("matched optional on <import>: " + l, l.contains("optional"));
+        p = "<project default='x'><import file='y' optional='HERE'/></project>";
+        l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
+        Collections.sort(l);
+        assertEquals("true or false for optional on <import>", l,
+            Arrays.asList(new String[] {"false", "true"}));
+    }
 
 }
