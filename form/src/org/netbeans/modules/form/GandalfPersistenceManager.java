@@ -1847,6 +1847,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     // in NB 3.2)
                     expectedPropertyType = String.class;
                 }
+                else if ("encoding".equals(propName)) // NOI18N
+                    continue; // there used to be "encoding" property in NB 3.1
                 else { // unknown synthetic property
                     PersistenceException ex = new PersistenceException(
                                            "Unknown synthetic property"); // NOI18N
