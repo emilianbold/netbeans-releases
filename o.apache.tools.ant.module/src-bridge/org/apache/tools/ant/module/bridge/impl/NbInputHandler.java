@@ -50,7 +50,7 @@ final class NbInputHandler implements InputHandler {
         DialogDescriptor dlg = new DialogDescriptor(panel,
         NbBundle.getMessage(NbInputHandler.class, "TITLE_input_handler")); //NOI18N
         do {
-            DialogDisplayer.getDefault().createDialog(dlg).show();
+            DialogDisplayer.getDefault().createDialog(dlg).setVisible(true);
             if (dlg.getValue() != NotifyDescriptor.OK_OPTION) {
                 throw new BuildException(NbBundle.getMessage(NbInputHandler.class, "MSG_input_aborted")); //NOI18N
             }
