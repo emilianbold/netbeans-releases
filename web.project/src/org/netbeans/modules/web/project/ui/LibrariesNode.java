@@ -111,7 +111,7 @@ final class LibrariesNode extends AbstractNode {
     LibrariesNode (String displayName, PropertyEvaluator eval, UpdateHelper helper, ReferenceHelper refHelper,
                    String classPathProperty, String[] classPathIgnoreRef, String platformProperty, String j2eePlatformProperty,
                    Action[] librariesNodeActions, String webModuleElementName) {
-        super (new LibrariesChildren (eval, helper, refHelper, classPathProperty, classPathIgnoreRef, j2eePlatformProperty, platformProperty, webModuleElementName));
+        super (new LibrariesChildren (eval, helper, refHelper, classPathProperty, classPathIgnoreRef, platformProperty, j2eePlatformProperty, webModuleElementName));
         this.displayName = displayName;
         this.librariesNodeActions = librariesNodeActions;
     }
@@ -273,7 +273,7 @@ final class LibrariesNode extends AbstractNode {
                         break;
                     case Key.TYPE_J2EE_PLATFORM:
                         Project p = FileOwnerQuery.getOwner(helper.getAntProjectHelper().getProjectDirectory());
-                        result = new Node[] {J2eePlatformNode.create(p, eval, platformProperty)};
+                        result = new Node[] {J2eePlatformNode.create(p, eval, j2eePlatformProperty)};
                         break;
                     case Key.TYPE_PROJECT:
                         result = new Node[] {new ProjectNode(key.getProject(), key.getArtifactLocation(), helper, eval, refHelper, key.getClassPathId(),
