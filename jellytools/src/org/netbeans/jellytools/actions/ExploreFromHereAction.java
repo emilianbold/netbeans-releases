@@ -7,14 +7,14 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.actions;
 
 import org.netbeans.jellytools.Bundle;
 
-/** Used to call "Explore From Here" popup menu item, "View|Explore From Here" main menu item,
+/** Used to call "Explore From Here" popup menu item, 
  * "org.openide.actions.OpenLocalExplorer".
  * @see Action
  * @see org.netbeans.jellytools.nodes.FolderNode
@@ -22,15 +22,11 @@ import org.netbeans.jellytools.Bundle;
  * @see org.netbeans.jellytools.nodes.FilesystemNode
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class ExploreFromHereAction extends Action {
+    
     private static final String explorerPopup = Bundle.getStringTrimmed("org.openide.actions.Bundle", "OpenLocalExplorer");
-    private static final String explorerMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/View")
-                                           + "|"
-                                           + explorerPopup;
-    //shortcut collision
-    //private static final Shortcut explorerShortcut = new Shortcut(KeyEvent.VK_O, KeyEvent.CTRL_MASK);
 
     /** creates new ExploreFromHereAction instance */    
     public ExploreFromHereAction() {
-        super(explorerMenu, explorerPopup, "org.openide.actions.OpenLocalExplorerAction");//explorerShortcut);
+        super(null, explorerPopup, "org.openide.actions.OpenLocalExplorerAction");  // NOI18N
     }
 }
