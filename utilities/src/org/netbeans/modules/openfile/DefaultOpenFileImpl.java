@@ -169,6 +169,8 @@ public class DefaultOpenFileImpl implements OpenFileImpl {
             }
             Container c = SwingUtilities.getAncestorOfClass(TopComponent.class,
                                                             openPanes[0]);
+            assert c != null;
+            
             final TopComponent tc = (TopComponent) c;
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
