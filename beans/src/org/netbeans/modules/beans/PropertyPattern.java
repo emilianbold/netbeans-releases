@@ -386,8 +386,8 @@ public class PropertyPattern extends Pattern {
       type = findPropertyType();
     }
     catch ( IntrospectionException ex ) {
-      System.out.println (x.getName() + ":" +  y.getName());
-      System.out.println (x.getType() + ":" + y.getType() );
+      //System.out.println (x.getName() + ":" +  y.getName());
+      //System.out.println (x.getType() + ":" + y.getType() );
       throw new InternalError( "Mixing invalid PropertyPattrens" + ex );
     }
 
@@ -472,12 +472,12 @@ public class PropertyPattern extends Pattern {
     }
 
     if ( declaringClass == null ) {
-      System.out.println ("nodecl - gen getter");
+      //System.out.println ("nodecl - gen getter");
       throw new SourceException();
     }
     else {
       declaringClass.addMethod( newGetter );
-      getterMethod = newGetter;
+      getterMethod = declaringClass.getMethod( newGetter.getName(), getParameterTypes( newGetter ) );
       }
 
   }
@@ -514,12 +514,12 @@ public class PropertyPattern extends Pattern {
 
 
     if ( declaringClass == null ) {
-      System.out.println ("nodecl - gen setter");
+      //System.out.println ("nodecl - gen setter");
       throw new SourceException();
       }
     else {
       declaringClass.addMethod( newSetter );
-      setterMethod = newSetter;
+      setterMethod = declaringClass.getMethod( newSetter.getName(), getParameterTypes( newSetter ) );
       }
   }
 
@@ -541,12 +541,12 @@ public class PropertyPattern extends Pattern {
     }
    
     if ( declaringClass == null ) {
-      System.out.println ("nodecl - gen setter");
+      //System.out.println ("nodecl - gen setter");
       throw new SourceException();
       }
     else {
       declaringClass.addField( newField );
-      estimatedField = newField;
+      estimatedField = declaringClass.getField( newField.getName() );
       }
   }
 
@@ -560,15 +560,13 @@ public class PropertyPattern extends Pattern {
     ClassElement declaringClass = getDeclaringClass();
 
     if ( declaringClass == null ) {
-      System.out.println ("nodecl");
+      //System.out.println ("nodecl");
       throw new SourceException();
       }
     else {   
       declaringClass.removeField( estimatedField );
-      //System.out.println ("removing estimated field");
+      estimatedField = null;
       }
-
-    estimatedField = null;
   }
 
 
@@ -605,11 +603,23 @@ public class PropertyPattern extends Pattern {
       throw new SourceException();
       }
     else {
-      //System.out.println ( "removing setter " + setterMethod );
       declaringClass.removeMethod( setterMethod );
       setterMethod = null;
       }
 
+  }
+
+  /** Utility method resturns array of types of parameters of a method */
+
+  static Type[] getParameterTypes( MethodElement methodElement ) {
+    MethodParameter[] params = methodElement.getParameters();
+    Type[] types = new Type[ params == null ? 0 : params.length ];
+
+    for( int i = 0; i < params.length; i++ ) {
+      types[i] = params[i].getType();
+    }
+
+    return types;
   }
   
   // Property change support -------------------------------------------------------------------------
@@ -633,7 +643,6 @@ public class PropertyPattern extends Pattern {
         type = findPropertyType();
       }
       catch ( java.beans.IntrospectionException e ) {
-        System.out.println("Bad property copy " + e );
       }
       name = findPropertyName();
 
@@ -644,6 +653,9 @@ public class PropertyPattern extends Pattern {
 
 /* 
  * Log
+ *  6    Gandalf   1.5         7/29/99  Petr Hrebejk    Fix - change 
+ *       ReadOnly/WriteOnly to ReadWrite mode diddn't registered the added 
+ *       methods properly
  *  5    Gandalf   1.4         7/28/99  Petr Hrebejk    Property Mode change fix
  *  4    Gandalf   1.3         7/26/99  Petr Hrebejk    Better implementation of
  *       patterns resolving

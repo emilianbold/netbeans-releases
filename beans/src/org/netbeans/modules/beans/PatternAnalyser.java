@@ -211,6 +211,7 @@ public class PatternAnalyser extends Object implements Node.Cookie {
 
       if ( ( field.getModifiers() & Modifier.STATIC ) != 0 )
         continue;
+
       PropertyPattern pp = (PropertyPattern)propertyPatterns.get( field.getName().getName() );      
       if ( pp == null )
         pp = (PropertyPattern)idxPropertyPatterns.get( field.getName().getName() );
@@ -511,6 +512,9 @@ public class PatternAnalyser extends Object implements Node.Cookie {
 
 /* 
  * Log
+ *  6    Gandalf   1.5         7/29/99  Petr Hrebejk    Fix - change 
+ *       ReadOnly/WriteOnly to ReadWrite mode diddn't registered the added 
+ *       methods properly
  *  5    Gandalf   1.4         7/26/99  Petr Hrebejk    Better implementation of
  *       patterns resolving
  *  4    Gandalf   1.3         7/21/99  Petr Hrebejk    Field and Method 

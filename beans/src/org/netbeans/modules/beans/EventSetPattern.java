@@ -513,7 +513,7 @@ public class EventSetPattern extends Pattern {
         findEventSetType();
       }
       catch ( java.beans.IntrospectionException e ) {
-        System.out.println("Bad property copy " + e );
+        //System.out.println("Bad property copy " + e );
       }
       isUnicast = testUnicast();
       name = findEventSetName();
@@ -527,6 +527,9 @@ public class EventSetPattern extends Pattern {
 
 /* 
  * Log
+ *  7    Gandalf   1.6         7/29/99  Petr Hrebejk    Fix - change 
+ *       ReadOnly/WriteOnly to ReadWrite mode diddn't registered the added 
+ *       methods properly
  *  6    Gandalf   1.5         7/26/99  Petr Hrebejk    BeanInfo fix & Code 
  *       generation fix
  *  5    Gandalf   1.4         7/26/99  Petr Hrebejk    Better implementation of

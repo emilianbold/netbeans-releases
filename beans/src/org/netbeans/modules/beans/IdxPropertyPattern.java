@@ -419,7 +419,7 @@ public class IdxPropertyPattern extends PropertyPattern {
     Type propType = getType();
     if ( propType != null &&  (!propType.isArray() || !propType.getElementType().compareTo(indexedType, false))) {
       throw new IntrospectionException( 
-          "type mismatch between indexed read and write methods" );
+          "type mismatch between property type and indexed type" );
     }
   }
 
@@ -493,7 +493,7 @@ public class IdxPropertyPattern extends PropertyPattern {
     else {
       //System.out.println ( "Adding getter method" );
       declaringClass.addMethod( newGetter );
-      indexedGetterMethod = newGetter;
+      indexedGetterMethod = declaringClass.getMethod( newGetter.getName(), getParameterTypes( newGetter ) );
       }
   }
 
@@ -533,7 +533,7 @@ public class IdxPropertyPattern extends PropertyPattern {
       throw new SourceException();
     else {
       declaringClass.addMethod( newSetter );
-      indexedSetterMethod = newSetter;
+      indexedSetterMethod = declaringClass.getMethod( newSetter.getName(), getParameterTypes( newSetter ) );
       }
   }
 
@@ -585,8 +585,7 @@ public class IdxPropertyPattern extends PropertyPattern {
                       !src.getName().equals( getName() ) ||
                       !(src.getMode() == getMode()) ||
                       !(src.getEstimatedField() == null ? estimatedField == null : src.getEstimatedField().equals( estimatedField ) );
-    
-    
+      
     if ( src.getIndexedGetterMethod() != indexedGetterMethod ) 
       indexedGetterMethod = src.getIndexedGetterMethod();
     if ( src.getIndexedSetterMethod() != indexedSetterMethod ) 
@@ -609,11 +608,11 @@ public class IdxPropertyPattern extends PropertyPattern {
         findIndexedPropertyType();
       }
       catch ( java.beans.IntrospectionException e ) {
-        System.out.println("Bad property copy " + e );
+        // User's error        
       }
-      name = findIndexedPropertyName();
+    name = findIndexedPropertyName();
 
-      firePropertyChange( new java.beans.PropertyChangeEvent( this, null, null, null ) );
+    firePropertyChange( new java.beans.PropertyChangeEvent( this, null, null, null ) );
     }
   }
 
@@ -621,6 +620,9 @@ public class IdxPropertyPattern extends PropertyPattern {
 
 /* 
  * Log
+ *  6    Gandalf   1.5         7/29/99  Petr Hrebejk    Fix - change 
+ *       ReadOnly/WriteOnly to ReadWrite mode diddn't registered the added 
+ *       methods properly
  *  5    Gandalf   1.4         7/28/99  Petr Hrebejk    Property Mode change fix
  *  4    Gandalf   1.3         7/26/99  Petr Hrebejk    Better implementation of
  *       patterns resolving
