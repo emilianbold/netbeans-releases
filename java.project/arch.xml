@@ -40,10 +40,16 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="arch-overall">
+  <ul>
+   <li>
   <api group="java" name="JavaProjectAPI" type="export" category="devel">
+   <p>
    The Java Project API is actually entirely SPI and supplies useful
    implementations of Java-related functionality specific to the project system.
+    </p>
   </api>
+   </li>
+   <li>
   <api group="java" name="ProjectClassPathExtender" type="export" category="friend">
    <p>
     Implemented by <code>java/j2seproject</code> and asked for by
@@ -51,6 +57,8 @@ Microsystems, Inc. All Rights Reserved.
     classpath of a J2SE project automatically.
    </p>
   </api>
+   </li>
+  </ul>
  </answer>
 
 
