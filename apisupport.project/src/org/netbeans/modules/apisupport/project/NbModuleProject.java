@@ -56,8 +56,6 @@ final class NbModuleProject implements Project {
     
     private static final Icon NB_PROJECT_ICON = new ImageIcon(Utilities.loadImage( "org/netbeans/modules/apisupport/project/resources/module.gif")); // NOI18N
     
-    private static final String BUILD_XSL = "nbbuild/templates/build.xsl";
-
     private final AntProjectHelper helper;
     private final Lookup lookup;
     private final ModuleList moduleList;
@@ -125,9 +123,12 @@ final class NbModuleProject implements Project {
         return helper.getProjectDirectory();
     }
     
+    FileObject getManifestFile() {
+        return helper.resolveFileObject(evaluate("manifest.mf")); // NOI18N
+    }
+    
     private Manifest getManifest() {
-        String manifestMf = evaluate("manifest.mf"); // NOI18N
-        FileObject manifestFO = helper.resolveFileObject(manifestMf);
+        FileObject manifestFO = getManifestFile();
         if (manifestFO != null) {
             try {
                 InputStream is = manifestFO.getInputStream();
