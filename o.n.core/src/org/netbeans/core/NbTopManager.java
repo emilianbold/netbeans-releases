@@ -24,11 +24,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.text.MessageFormat;
 import javax.swing.*;
+import javax.swing.text.Keymap;
 import javax.swing.border.*;
 
 import com.netbeans.ide.util.datatransfer.ExClipboard;
 import com.netbeans.ide.*;
-import com.netbeans.ide.awt.MutableKeymap;
 import com.netbeans.ide.loaders.*;
 import com.netbeans.ide.actions.*;
 import com.netbeans.ide.cookies.SaveCookie;
@@ -65,7 +65,7 @@ import com.netbeans.ide.util.Utilities;
 */
 public class NbTopManager extends TopManager {
   /** stores main shortcut context*/
-  static private MutableKeymap shortcutContext;
+  static private Keymap shortcutContext;
 
   /** currently used debugger or null if none is in use */
   private static Debugger debugger;
@@ -91,9 +91,14 @@ public class NbTopManager extends TopManager {
   /** window manager */
   static NbWindowManager windowManager;
 
+  /** support for listeners */
+  static PropertyChangeSupport change;
+
+
   /** Constructs a new manager.
   */
   NbTopManager() {
+    change = new PropertyChangeSupport (this);
   }
 
   /** Shows a specified HelpCtx in IDE's help window.
@@ -139,7 +144,7 @@ public class NbTopManager extends TopManager {
   }
 
   /** @return default root of keyboard shortcuts */
-  public MutableKeymap getGlobalKeymap () {
+  public Keymap getGlobalKeymap () {
     if (shortcutContext == null) {
       shortcutContext = new NbKeymap ();
     }
@@ -207,7 +212,9 @@ public class NbTopManager extends TopManager {
   */
   static synchronized void setDebugger (Debugger d) {
     if (debugger == null || d == null) {
+      Debugger old = debugger;
       debugger = d;
+      change.firePropertyChange (PROP_DEBUGGER, old, d);
     } else {
       throw new SecurityException ();
     }
@@ -337,6 +344,16 @@ public class NbTopManager extends TopManager {
     return ClassLoaderSupport.currentClassLoader ();
   }
 
+  /** Add listener */
+  public void addPropertyChangeListener (PropertyChangeListener l) {
+    change.addPropertyChangeListener (l);
+  }
+
+  /** Removes the listener */
+  public void removePropertyChangeListener (PropertyChangeListener l) {
+    change.removePropertyChangeListener (l);
+  }
+  
 }
 
 
