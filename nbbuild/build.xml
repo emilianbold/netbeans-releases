@@ -3385,4 +3385,55 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </zip>
   </target>
   
+  <target name="check-files-layout" >
+    <property name="check.files.layout.template" location="../ide/golden/files-layout.txt" />
+  
+    <property name="check-file-layout-root" location="${netbeans.dest.dir}" />
+    <echo message="${check-file-layout-root}" />
+    <fileset id="check-file-layout" dir="${check-file-layout-root}" casesensitive="yes" >
+        <include name="platform*/**" />
+        <include name="ide*/**" />
+        <include name="enterprise*/**" />
+        <include name="nb*/**" />
+    </fileset>
+    
+    <pathconvert property="check-file-layout" refid="check-file-layout" dirsep="/" pathsep=",">
+        <map from="${check-file-layout-root}" to="" />
+    </pathconvert>
+    <mkdir dir="build" />
+    <echo message="${check-file-layout}" file="build/files-layout.txt" />
+    <replace file="build/files-layout.txt" token=",">
+        <replacevalue><![CDATA[
+]]></replacevalue>
+    </replace>
+    <replace file="build/files-layout.txt" token="\" value="/" />
+    <condition property="are-they-the-same" >
+        <filesmatch file1="${check.files.layout.template}" file2="build/files-layout.txt" />
+    </condition>
+    
+    <fail unless="are-they-the-same" >!
+    *** Layout of files has changed! ***
+    
+    There has been differences found while comparing file build/files-layout.txt with 
+    ${check.files.layout.template}
+    This means that the layout of files changed since the previously known one.
+    Some files may have been added, some of them may have been removed or renamed. 
+    
+    Changing the layout may or may not be ok. If you are sure that you want to
+    change the layout of files, then update the golden file at 
+    ${check.files.layout.template}
+    and run the test once again. If you got this warning without an intention
+    to change the layout of files, think twice wheter your commit is really
+    correct and consider asking for a review first.
+    
+    Read more about the Verification Framework:
+    http://openide.netbeans.org/proposals/arch/clusters.html#verify
+    
+    Look at for information about reviews:
+    http://openide.netbeans.org/tutorial/review-steps.html
+    
+    Check the page about APIs and files layout being an API:
+    http://openide.netbeans.org/tutorial/api-design.html#api
+    </fail>
+  </target>
 </project>
