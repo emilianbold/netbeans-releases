@@ -92,11 +92,15 @@ public final class JavaPlatformManager {
     }
 
     /**
-     * Returns platform of given display name or null if such a platform
-     * does not exist
-     * @param platformDisplayName display name of platform or null for any name
-     * @param platformSpec of platform or null for any type, in the specifiaction null means *
-     * @return JavaPlatform[], never returns null
+     * Returns platform given by display name and/or specification. 
+     * @param platformDisplayName display name of platform or null for any name.
+     * @param platformSpec Specification of platform or null for platform of any type, in the specification null means all.
+     * Specification with null profiles means none or any profile. 
+     * Specification with Profile(null,null) means any profile but at least 1.
+     * For example Specification ("CLDC", new Profile[] { new Profile("MIMDP",null), new Profile(null,null)})
+     * matches all CLDC platforms with MIDP profile of any versions and any additional profile.
+     * @return JavaPlatform[], never returns null, may return empty array when no platform matches given
+     * query.
      */
     public JavaPlatform[] getPlatforms (String platformDisplayName, Specification platformSpec) {
         JavaPlatform[] platforms = getInstalledPlatforms();
@@ -117,7 +121,41 @@ public final class JavaPlatformManager {
         String name = query.getName();
         SpecificationVersion version = query.getVersion();
         return ((name == null || name.equalsIgnoreCase (platformSpec.getName())) &&
-            (version == null || version.equals (platformSpec.getVersion())));
+            (version == null || version.equals (platformSpec.getVersion())) &&
+            compatibleProfiles (platformSpec.getProfiles(), query.getProfiles()));
+    }
+    
+    private static boolean compatibleProfiles (Profile[] platformProfiles, Profile[] query) {
+        if (query == null) {
+            return true;
+        }
+        else if (platformProfiles == null) {
+            return false;
+        }
+        else {
+            Collection covered = new HashSet ();
+            for (int i=0; i<query.length; i++) {
+                Profile pattern = query[i];
+                boolean found = false;
+                for (int j = 0; j< platformProfiles.length; j++) {
+                    if (compatibleProfile(platformProfiles[j],pattern)) {
+                        found = true;
+                        covered.add (platformProfiles[j]);
+                    }
+                }
+                if (!found) {
+                    return false;
+                }
+            }
+            return covered.size() == platformProfiles.length;
+        }        
+    }
+    
+    private static boolean compatibleProfile (Profile platformProfile, Profile query) {
+        String name = query.getName();
+        SpecificationVersion version = query.getVersion();
+        return ((name == null || name.equals (platformProfile.getName())) &&
+               (version == null || version.equals (platformProfile.getVersion())));
     }
     
     private synchronized Collection getProviders () {
