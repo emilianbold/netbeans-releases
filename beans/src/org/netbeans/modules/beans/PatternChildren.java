@@ -37,10 +37,8 @@ public class PatternChildren extends ClassChildren {
     private Listener elementListener = new Listener();
     
     private PropertyChangeListener weakMethodListener = WeakListener.propertyChange( elementListener, null);
-    // = new WeakListener.PropertyChange( methodListener );
     private PropertyChangeListener weakFieldListener = WeakListener.propertyChange( elementListener, null);
-    private PropertyChangeListener weakClassListener = WeakListener.propertyChange( elementListener, null);
-    // = new WeakListener.PropertyChange( fieldListener );
+
     private PropertyChangeListener weakStyleListener = WeakListener.propertyChange( elementListener, PropertyActionSettings.getDefault());
     
     static {
@@ -67,9 +65,6 @@ public class PatternChildren extends ClassChildren {
         super (classElement);
         patternAnalyser = new PatternAnalyser( classElement );
         PropertyActionSettings.getDefault().addPropertyChangeListener(weakStyleListener);
-        //reassignMethodListener();
-        //reassignFieldListener();
-        classElement.addPropertyChangeListener(weakClassListener);
     }
 
     public PatternChildren (ClassElement classElement, boolean isWritable ) {
@@ -219,12 +214,20 @@ public class PatternChildren extends ClassChildren {
 
     final class Listener implements PropertyChangeListener, Runnable {
         public void propertyChange ( PropertyChangeEvent e ) {
-            if( e.getSource() instanceof org.netbeans.modules.java.JavaDataObject ) //ignore
+            Object src = e.getSource();
+            String name = e.getPropertyName();
+            
+            if( src instanceof org.netbeans.modules.java.JavaDataObject ) //ignore
                 return;
-            if(PropertyActionSettings.getDefault() == e.getSource() &&
-                !PropertyActionSettings.PROP_STYLE.equals(e.getPropertyName()) ) {
+            if(PropertyActionSettings.getDefault() == src &&
+                !PropertyActionSettings.PROP_STYLE.equals(name) ) {
                 return;
             }
+            if (name.equals(ElementProperties.PROP_JAVADOC) || 
+                name.equals(ElementProperties.PROP_INIT_VALUE) ||
+                name.equals(ElementProperties.PROP_EXCEPTIONS) ||
+                name.equals(ElementProperties.PROP_BODY))
+                return;
             RequestProcessor.getDefault().post(this);
         }
         
