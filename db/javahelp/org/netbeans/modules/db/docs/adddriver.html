@@ -34,9 +34,6 @@ Microsystems, Inc. All Rights Reserved.
     example:
     <p> <code>COM.pointbase.jdbc.jdbcUniversalDriver</code>. </p>
   </li>
-  <li>Provide the URL for example: 
-    <p> <code>jdbc:pointbase://localhost:9092/sample</code><eul> </p>
-  </li>
   <li> In the Database URL prefix field, type a template for the URLs of connections 
     you want to make using this driver. 
     <p> The template can represent a URL that is not the real URL; you can complete 
@@ -57,7 +54,8 @@ Microsystems, Inc. All Rights Reserved.
       to make sure it is the correct one until a connection is made using the 
       driver. 
       <p><br>
-        The driver (usually in a JAR or zip archive) must be in the IDE's CLASSPATH. 
+        The driver (usually in a JAR or zip archive) must be in the IDE's CLASSPATH, if you want
+        to connect, but not if you are only creating the driver template.
       </p>
     </td>
   </tr>
