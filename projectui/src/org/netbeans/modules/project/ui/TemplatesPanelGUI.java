@@ -7,10 +7,9 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.project.ui;
 
 import java.awt.GridBagConstraints;
@@ -24,17 +23,18 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.StringTokenizer;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-import javax.swing.text.EditorKit;
+import javax.swing.text.ChangedCharSetException;
+import javax.swing.text.Document;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
 import org.openide.ErrorManager;
-import org.openide.WizardDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.ListView;
@@ -179,13 +179,31 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                         URL descURL = getDescription (template);
                         if (descURL != null) {
                             try {
-                                // this.description.setPage (descURL);
+                                //this.description.setPage (descURL);
                                 // Set page does not work well if there are mutiple calls to that
                                 // see issue #49067. This is a hotfix for the bug which causes                                
                                 // synchronous loading of the content. It should be improved later 
                                 // by doing it in request processor.
+                                
+                                //this.description.read( descURL.openStream(), descURL );
+                                // #52801: handlig changed charset
+                                String charset = findEncodingFromURL (descURL.openStream ());
+                                ErrorManager.getDefault ().log (ErrorManager.INFORMATIONAL, "Url " + descURL + " has charset " + charset); // NOI18N
+                                if (charset != null) {
+                                    description.putClientProperty ("charset", charset); // NOI18N
+                                }
                                 this.description.read( descURL.openStream(), descURL );
+                            } catch (ChangedCharSetException x) {
+                                Document doc = description.getEditorKit ().createDefaultDocument ();
+                                doc.putProperty ("IgnoreCharsetDirective", Boolean.valueOf (true)); // NOI18N
+                                try {
+                                    description.read (descURL.openStream (), doc);
+                                } catch (IOException ioe) {
+                                    ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ioe);
+                                    this.description.setText (NbBundle.getBundle (TemplatesPanelGUI.class).getString ("TXT_NoDescription")); // NOI18N
+                                }
                             } catch (IOException e) {
+                                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, e);
                                 this.description.setText (NbBundle.getBundle (TemplatesPanelGUI.class).getString ("TXT_NoDescription")); // NOI18N
                             }
                         }
@@ -559,4 +577,53 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             htmlkit.setStyleSheet(css2);
         }
     }
+
+    // encoding support; copied from html/HtmlEditorSupport
+    private static String findEncodingFromURL (InputStream stream) {
+        try {
+            byte[] arr = new byte[4096];
+            int len = stream.read (arr, 0, arr.length);
+            String txt = new String (arr, 0, (len>=0)?len:0).toUpperCase();
+            // encoding
+            return findEncoding (txt);
+        } catch (Exception x) {
+            x.printStackTrace();
+        }
+        return null;
+    }
+
+    /** Tries to guess the mime type from given input stream. Tries to find
+     *   <em>&lt;meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"&gt;</em>
+     * @param txt the string to search in (should be in upper case)
+     * @return the encoding or null if no has been found
+     */
+    private static String findEncoding (String txt) {
+        int headLen = txt.indexOf ("</HEAD>"); // NOI18N
+        if (headLen == -1) headLen = txt.length ();
+        
+        int content = txt.indexOf ("CONTENT-TYPE"); // NOI18N
+        if (content == -1 || content > headLen) {
+            return null;
+        }
+        
+        int charset = txt.indexOf ("CHARSET=", content); // NOI18N
+        if (charset == -1) {
+            return null;
+        }
+        
+        int charend = txt.indexOf ('"', charset);
+        int charend2 = txt.indexOf ('\'', charset);
+        if (charend == -1 && charend2 == -1) {
+            return null;
+        }
+
+        if (charend2 != -1) {
+            if (charend == -1 || charend > charend2) {
+                charend = charend2;
+            }
+        }
+        
+        return txt.substring (charset + "CHARSET=".length (), charend); // NOI18N
+    }
+    
 }
