@@ -178,13 +178,19 @@ public class SmapResolver {
     /** stores file name and file index into the fsection map
      */
     private void storeFile(String token, String token2) {
-//        System.err.println("storeFile: " + token + ", " + token2);
+        String id = "";
+        String filename = "";
+        int spaceIndex = 0;
         if ((token != null) && (token.startsWith("+"))) {
             token = token.substring(2);
+            spaceIndex = token.indexOf(" ");
+            id = token.substring(0, spaceIndex);
+            filename = token2;
+        } else {
+            spaceIndex = token.indexOf(" ");
+            id = token.substring(0, spaceIndex);
+            filename = token.substring(spaceIndex+1);
         }
-        int spaceIndex = token.indexOf(" ");
-        String id = token.substring(0, spaceIndex);
-        String filename = token.substring(spaceIndex+1);
         fsection.put(id, filename);
     }
 
@@ -365,7 +371,13 @@ public class SmapResolver {
     
 //    public static void main(String[] args) {
 //        SmapResolver sr = new SmapResolver(new SmapFileReader(
-//            new java.io.File("/Users/mg116726/WebApplication1/build/generated/src/org/apache/jsp/index_jsp.class.smap")));
+//            new java.io.File("/Users/mg116726/WebApplication3/build/generated/src/org/apache/jsp/index_jsp.class.smap")));
 //        System.err.println("resolved: " + sr.isResolved());
+//        try {
+//            System.err.println(sr.getJspFileName(43,0));
+//            System.err.println(sr.unmangle(43,0));
+//        } catch (Exception e) {
+//            System.err.println("exception");
+//        }
 //    }
 }
