@@ -74,6 +74,7 @@ class TemplateWizardIterator extends JavaWizardIterator {
     public void uninitialize(TemplateWizard wiz) {
         super.uninitialize(wiz);
         panels = null;
+        panelIndex = 0;
     }
 
     public Set instantiate(TemplateWizard wiz)
