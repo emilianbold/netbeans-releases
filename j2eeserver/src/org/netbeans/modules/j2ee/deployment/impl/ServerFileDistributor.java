@@ -13,7 +13,9 @@
 
 package org.netbeans.modules.j2ee.deployment.impl;
 
-import org.openide.filesystems.*;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileUtil;
 import java.io.*;
 import java.util.*;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
@@ -174,19 +176,13 @@ public class ServerFileDistributor extends ServerProgress {
         }
         setStatusDistributeRunning(NbBundle.getMessage(
         ServerFileDistributor.class, "MSG_RunningIncrementalDeploy", target));
-        LocalFileSystem lfs = null;
         FileLock lock = null;
         try {
             //get relative-path-key map from FDL
             File dir = incremental.getDirectoryForModule(target);
-            //System.out.println("Distributing files for "+target+" to "+dir);
             destDir.mkdirs();
             File parent = destDir.getParentFile();
-            lfs = new LocalFileSystem();
-            lfs.setRootDirectory(parent);
-            Repository.getDefault().addFileSystem(lfs);
-            FileObject destRoot = lfs.findResource(destDir.getName());
-            //System.out.println("destRoot="+destRoot.getPath());
+            FileObject destRoot = FileUtil.toFileObject(destDir);
             
             // create target FOs map keyed by relative paths
             java.util.Enumeration destFiles = destRoot.getChildren(true);
@@ -194,7 +190,6 @@ public class ServerFileDistributor extends ServerProgress {
             int rootPathLen = destRoot.getPath().length();
             for (; destFiles.hasMoreElements(); ) {
                 FileObject destFO = (FileObject) destFiles.nextElement();
-                //System.out.println("Dest : relpath="+relPaths[0]+" file="+files[0]);
                 destMap.put(destFO.getPath().substring(rootPathLen + 1), destFO);
             }
             
@@ -277,8 +272,6 @@ public class ServerFileDistributor extends ServerProgress {
             setStatusDistributeFailed(msg);
             throw new RuntimeException(e);
         } finally {
-            if (lfs != null)
-                Repository.getDefault().removeFileSystem(lfs);
             if (lock != null) {
                 try { lock.releaseLock(); } catch(Exception ex) {}
             }

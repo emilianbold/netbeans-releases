@@ -25,8 +25,6 @@ import javax.enterprise.deploy.model.DeployableObject;
 import org.openide.util.NbBundle;
 import javax.enterprise.deploy.shared.CommandType;
 import org.openide.ErrorManager;
-import org.openide.filesystems.Repository;
-import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileUtil;
@@ -135,7 +133,6 @@ public class InitialServerFileDistributor extends ServerProgress {
     }
     
     private void _distribute(Iterator rootedEntries, File dir, String childModuleUri) {
-        LocalFileSystem lfs = null;
         FileLock lock = null;
         InputStream in = null;
         OutputStream out = null;
@@ -145,10 +142,7 @@ public class InitialServerFileDistributor extends ServerProgress {
                 dir.mkdirs();
             
             File parent = dir.getParentFile();
-            lfs = new LocalFileSystem();
-            lfs.setRootDirectory(parent);
-            Repository.getDefault().addFileSystem(lfs);
-            FileObject destRoot = lfs.findResource(dir.getName());
+            FileObject destRoot = FileUtil.toFileObject(parent);
             
             FileObject[] garbages = destRoot.getChildren();
             for (int i=0; i<garbages.length; i++) {
@@ -187,8 +181,6 @@ public class InitialServerFileDistributor extends ServerProgress {
             setStatusDistributeFailed(msg);
             throw new RuntimeException(e);
         } finally {
-            if (lfs != null)
-                Repository.getDefault().removeFileSystem(lfs);
             if (lock != null) {
                 try { lock.releaseLock(); } catch(Exception ex) {}
             }
