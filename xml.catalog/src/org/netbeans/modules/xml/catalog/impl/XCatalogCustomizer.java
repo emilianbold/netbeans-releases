@@ -72,24 +72,27 @@ public class XCatalogCustomizer extends javax.swing.JPanel implements Customizer
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(locationTextField, gridBagConstraints);
 
         descTextArea.setWrapStyleWord(true);
         descTextArea.setLineWrap(true);
         descTextArea.setEditable(false);
         descTextArea.setForeground(new java.awt.Color(102, 102, 153));
+        descTextArea.setFont(javax.swing.UIManager.getFont ("Label.font"));
         descTextArea.setText(Util.getString("DESC_xcatalog_fmts"));
+        descTextArea.setDisabledTextColor(javax.swing.UIManager.getColor ("Label.foreground"));
+        descTextArea.setEnabled(false);
         descTextArea.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(descTextArea, gridBagConstraints);
 
     }//GEN-END:initComponents

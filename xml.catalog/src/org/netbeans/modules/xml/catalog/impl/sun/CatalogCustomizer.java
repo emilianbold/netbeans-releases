@@ -84,8 +84,8 @@ public class CatalogCustomizer extends javax.swing.JPanel implements Customizer 
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(locationTextField, gridBagConstraints);
 
         selectButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/catalog/impl/sun/Bundle").getString("PROP_choose_file"));
@@ -112,23 +112,26 @@ public class CatalogCustomizer extends javax.swing.JPanel implements Customizer 
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(preferCheckBox, gridBagConstraints);
 
         descTextArea.setWrapStyleWord(true);
         descTextArea.setLineWrap(true);
         descTextArea.setEditable(false);
         descTextArea.setForeground(new java.awt.Color(102, 102, 153));
+        descTextArea.setFont(javax.swing.UIManager.getFont ("Label.font"));
         descTextArea.setText(Util.getString("DESC_catalog_fmts"));
+        descTextArea.setDisabledTextColor(javax.swing.UIManager.getColor ("Label.foreground"));
+        descTextArea.setEnabled(false);
         descTextArea.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(descTextArea, gridBagConstraints);
 
     }//GEN-END:initComponents

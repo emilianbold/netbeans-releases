@@ -93,7 +93,10 @@ public final class SAXGeneratorMethodPanel extends SAXGeneratorAbstractPanel {
         descTextArea.setLineWrap(true);
         descTextArea.setEditable(false);
         descTextArea.setForeground(new java.awt.Color(102, 102, 153));
+        descTextArea.setFont(javax.swing.UIManager.getFont ("Label.font"));
         descTextArea.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/tools/generator/Bundle").getString("DESC_saxw_methods"));
+        descTextArea.setDisabledTextColor(javax.swing.UIManager.getColor ("Label.foreground"));
+        descTextArea.setEnabled(false);
         descTextArea.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -106,9 +109,9 @@ public final class SAXGeneratorMethodPanel extends SAXGeneratorAbstractPanel {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(tableScrollPane, gridBagConstraints);
 
     }//GEN-END:initComponents
