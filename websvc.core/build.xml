@@ -71,9 +71,9 @@ Microsystems, Inc. All Rights Reserved.
 	<target name="jar-with-module-deps" if="module.dependencies">
 		<property file="../../xml/spec-vers.properties"/>
 
-		<property name="wscore.openide.deps" value="org.openide.io, org.openide.loaders, org.openide.src, org.netbeans.modules.schema2beans/1, org.netbeans.libs.xerces/1"/>
+		<property name="wscore.openide.deps" value="org.openide.io, org.openide.loaders, org.openide.src, org.netbeans.modules.schema2beans/1, org.netbeans.libs.xerces/1, org.openide.execution > 1.5"/>
 		<property name="wscore.jmi.deps" value="org.netbeans.modules.javacore/1, javax.jmi.reflect/1, org.netbeans.jmi.javamodel/1, org.netbeans.api.mdr/1"/>
-		<property name="wscore.project.deps" value="org.netbeans.api.java/1, org.netbeans.modules.projectapi/1, org.netbeans.modules.projectuiapi/1, org.netbeans.modules.project.ant/1"/>
+		<property name="wscore.project.deps" value="org.netbeans.api.java/1, org.netbeans.modules.projectapi/1, org.netbeans.modules.projectuiapi/1, org.netbeans.modules.project.ant/1, org.apache.tools.ant.module/3 > 3.9"/>
 		<property name="wscore.java.deps" value="org.netbeans.modules.java.project/1"/>
 		<property name="wscore.xml.deps" value="org.netbeans.api.xml/1, org.netbeans.modules.xml.core/2 = ${xml.common.impl.version}, org.netbeans.modules.xml.catalog/2 = ${xml.common.impl.version}, org.netbeans.modules.xml.tools/2 = ${xml.common.impl.version}"/>
 		<property name="wscore.web.deps" value="org.netbeans.modules.j2eeserver/3, org.netbeans.modules.j2ee.dd/1 > 1.2, org.netbeans.api.web.webmodule > 1.0"/>
