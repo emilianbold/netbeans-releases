@@ -46,7 +46,7 @@ Cf. http://projects.netbeans.org/buildsys/design.html#freeform
                         </xsd:sequence>
                     </xsd:complexType>
                 </xsd:element>
-                <!-- XXX subprojects -->
+                <xsd:element name="subprojects" minOccurs="0" type="subprojects"/>
             </xsd:sequence>
         </xsd:complexType>
     </xsd:element>
@@ -183,6 +183,12 @@ Cf. http://projects.netbeans.org/buildsys/design.html#freeform
                     </xsd:complexType>
                 </xsd:element>
             </xsd:choice>
+        </xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:complexType name="subprojects">
+        <xsd:sequence>
+            <xsd:element name="project" type="substitutable-text" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
     </xsd:complexType>
     
