@@ -13,17 +13,12 @@
 
 package org.netbeans.modules.html;
 
-import java.util.*;
 import java.io.IOException;
-
-import org.openide.actions.*;
 import org.openide.loaders.UniFileLoader;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
-
 
 /**
 * Loader for Html DataObjects.
@@ -31,7 +26,6 @@ import org.openide.util.actions.SystemAction;
 * @author Jan Jancura
 */
 public class HtmlLoader extends UniFileLoader {
-
 
     static final long serialVersionUID =-5809935261731217882L;
     
@@ -44,10 +38,8 @@ public class HtmlLoader extends UniFileLoader {
         getExtensions ().addExtension ("html"); // NOI18N
         getExtensions ().addExtension ("htm"); // NOI18N
         getExtensions ().addExtension ("shtml"); // NOI18N
-
     }
 
-    
     protected MultiDataObject createMultiObject (final FileObject primaryFile)
     throws DataObjectExistsException, IOException {
         return new HtmlDataObject (primaryFile, this);
@@ -61,27 +53,7 @@ public class HtmlLoader extends UniFileLoader {
                        getString("PROP_HtmlLoader_Name");
     }
     
-    /** Get default actions for HTML documents.
-     */
-    protected SystemAction[] defaultActions () {
-        return new SystemAction[] {
-                        SystemAction.get (OpenAction.class),
-                        SystemAction.get (ViewAction.class),
-                        SystemAction.get (FileSystemAction.class),
-                        null,
-                        SystemAction.get (CutAction.class),
-                        SystemAction.get (CopyAction.class),
-                        SystemAction.get (PasteAction.class),
-                        null,
-                        SystemAction.get (DeleteAction.class),
-                        SystemAction.get (RenameAction.class),
-                        null,
-                        SystemAction.get (SaveAsTemplateAction.class),
-                        null,
-                        SystemAction.get (ToolsAction.class),
-                        SystemAction.get (PropertiesAction.class),
-                    };
-
+    protected String actionsContext() {
+        return "Loaders/text/html/Actions/"; // NOI18N
     }
-    
 }

@@ -14,17 +14,12 @@
 package org.netbeans.modules.web.core.jsploader;
 
 import java.io.IOException;
-
-import org.openide.actions.*;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.ExtensionList;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.UniFileLoader;
-import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
 
 /**
 * Loader for JSPs.
@@ -90,27 +85,8 @@ public class JspLoader extends UniFileLoader {
         return NbBundle.getBundle(JspLoader.class).getString("PROP_JspLoader_Name");
     }
     
-    /** Get default actions.
-     * @return array of default system actions.
-     */
-    protected SystemAction[] defaultActions () {
-        return new SystemAction[] {
-                        SystemAction.get (OpenAction.class),
-                        SystemAction.get (EditServletAction.class),
-                        SystemAction.get (FileSystemAction.class),
-                        null,
-                        SystemAction.get (CutAction.class),
-                        SystemAction.get (CopyAction.class),
-                        SystemAction.get (PasteAction.class),
-                        null,
-                        SystemAction.get (DeleteAction.class),
-                        SystemAction.get (RenameAction.class),
-                        null,
-                        SystemAction.get (SaveAsTemplateAction.class),
-                        null,
-                        SystemAction.get (ToolsAction.class),
-                        SystemAction.get (PropertiesAction.class),
-                    };
+    protected String actionsContext() {
+        return "Loaders/text/x-jsp/Actions/"; // NOI18N
     }
     
     public JspLoader() {

@@ -55,19 +55,22 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="text">
             <folder name="x-jsp">
                 <folder name="Actions">
-                  <attr boolvalue="true" name="OpenAction.instance/web-project-separator-1.instance" />
-                  <file name="web-project-separator-1.instance">
+                  <file name="OpenAction.instance">
+                    <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction" />
+                  </file>
+                  <attr boolvalue="true" name="OpenAction.instance/jsp-project-separator-1.instance" />
+                  <file name="jsp-project-separator-1.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
                   </file>
-                  <attr boolvalue="true" name="web-project-separator-1.instance/CompileFile.instance" />
+                  <attr boolvalue="true" name="jsp-project-separator-1.instance/CompileFile.instance" />
                   <file name="CompileFile.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.web.project.WebProjectModule$CompileWrapper" />
                   </file>
-                  <attr boolvalue="true" name="CompileFile.instance/web-project-separator-2.instance" />
-                  <file name="web-project-separator-2.instance">
+                  <attr boolvalue="true" name="CompileFile.instance/jsp-project-separator-2.instance" />
+                  <file name="jsp-project-separator-2.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
                   </file>
-                  <attr boolvalue="true" name="web-project-separator-2.instance/RunFile.instance" />
+                  <attr boolvalue="true" name="jsp-project-separator-2.instance/RunFile.instance" />
                   <file name="RunFile.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.web.project.WebProjectModule$RunWrapper" />
                   </file>
@@ -75,20 +78,76 @@ Microsystems, Inc. All Rights Reserved.
                   <file name="DebugFile.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.web.project.WebProjectModule$DebugWrapper" />
                   </file>
-                  <attr boolvalue="true" name="DebugFile.instance/web-project-separator-3.instance" />
-                  <file name="web-project-separator-3.instance">
+                  <attr boolvalue="true" name="DebugFile.instance/jsp-project-separator-3.instance" />
+                  <file name="jsp-project-separator-3.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
                   </file>
-                  <attr boolvalue="true" name="web-project-separator-3.instance/FileSystemAction.instance" />
+                  <attr boolvalue="true" name="jsp-project-separator-3.instance/FileSystemAction.instance" />
+                  <file name="FileSystemAction.instance">
+                    <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction" />
+                  </file>
+                  <attr boolvalue="true" name="FileSystemAction.instance/jsp-project-separator-4.instance" />
+                  <file name="jsp-project-separator-4.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                  </file>
+                  <attr boolvalue="true" name="jsp-project-separator-4.instance/CutAction.instance" />
+                  <file name="CutAction.instance">
+                    <attr name="instanceClass" stringvalue="org.openide.actions.CutAction" />
+                  </file>
+                  <attr boolvalue="true" name="CutAction.instance/CopyAction.instance" />
+                  <file name="CopyAction.instance">
+                    <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction" />
+                  </file>
+                  <attr boolvalue="true" name="CopyAction.instance/PasteAction.instance" />
+                  <file name="PasteAction.instance">
+                    <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction" />
+                  </file>
+                  <attr boolvalue="true" name="PasteAction.instance/jsp-project-separator-5.instance" />
+                  <file name="jsp-project-separator-5.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                  </file>
+                  <attr boolvalue="true" name="jsp-project-separator-5.instance/NewAction.instance" />
+                  <file name="NewAction.instance">
+                    <attr name="instanceClass" stringvalue="org.openide.actions.NewAction" />
+                  </file>
+                  <attr boolvalue="true" name="NewAction.instance/DeleteAction.instance" />
+                  <file name="DeleteAction.instance">
+                    <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction" />
+                  </file>
+                  <attr boolvalue="true" name="DeleteAction.instance/RenameAction.instance" />
+                  <file name="RenameAction.instance">
+                    <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction" />
+                  </file>
+                  <attr boolvalue="true" name="RenameAction.instance/jsp-project-separator-6.instance" />
+                  <file name="jsp-project-separator-6.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                  </file>
+                  <attr boolvalue="true" name="jsp-project-separator-6.instance/SaveAsTemplateAction.instance" />
+                  <file name="SaveAsTemplateAction.instance">
+                    <attr name="instanceClass" stringvalue="org.openide.actions.SaveAsTemplateAction" />
+                  </file>
+                  <attr boolvalue="true" name="SaveAsTemplateAction.instance/jsp-project-separator-7.instance" />
+                  <file name="jsp-project-separator-7.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                  </file>
+                  <attr boolvalue="true" name="jsp-project-separator-7.instance/ToolsAction.instance" />
+                  <file name="ToolsAction.instance">
+                    <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction" />
+                  </file>
+                  <attr boolvalue="true" name="ToolsAction.instance/PropertiesAction.instance" />
+                  <file name="PropertiesAction.instance">
+                    <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction" />
+                  </file>
               </folder>
             </folder>
+
             <folder name="html">
                 <folder name="Actions">
-                  <attr boolvalue="true" name="OpenAction.instance/web-project-separator-2.instance" />
-                  <file name="web-project-separator-2.instance">
+                  <attr boolvalue="true" name="OpenAction.instance/webHtml-project-separator-1.instance" />
+                  <file name="webHtml-project-separator-1.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
                   </file>
-                  <attr boolvalue="true" name="web-project-separator-2.instance/RunFile.instance" />
+                  <attr boolvalue="true" name="webHtml-project-separator-1.instance/RunFile.instance" />
                   <file name="RunFile.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.web.project.WebProjectModule$HtmlRunWrapper" />
                   </file>
@@ -96,11 +155,11 @@ Microsystems, Inc. All Rights Reserved.
                   <file name="DebugFile.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.web.project.WebProjectModule$HtmlDebugWrapper" />
                   </file>
-                  <attr boolvalue="true" name="DebugFile.instance/web-project-separator-3.instance" />
-                  <file name="web-project-separator-3.instance">
+                  <attr boolvalue="true" name="DebugFile.instance/webHtml-project-separator-2.instance" />
+                  <file name="webHtml-project-separator-2.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
                   </file>
-                  <attr boolvalue="true" name="web-project-separator-3.instance/FileSystemAction.instance" />
+                  <attr boolvalue="true" name="webHtml-project-separator-2.instance/FileSystemAction.instance" />
                 </folder>
             </folder>
         </folder>
