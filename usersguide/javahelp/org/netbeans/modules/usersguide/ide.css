@@ -156,15 +156,24 @@ dd {font-size: small;
     margin-top: 2;
     margin-left: 25}
         
-[border] {border: thin solid;
-       border-color: silver}
-
-table {border: none;
-       border-color: white;
+table {border-style: solid;
+       border-color: silver;
        margin-top: 5;
-       margin-bottom: 5}	 
+       margin-bottom: 5}
 
-th {text-align: left}
+td {border-style: solid;
+    border-color: silver;
+    padding-left: 1;
+    padding-right: 1;
+    padding-top: 1;
+    padding-bottom: 1}
+
+th {border-style: solid;
+    border-color: silver;
+    padding-left: 1;
+    padding-right: 1;
+    padding-top: 1;
+    padding-bottom: 1}
 
 small {font-size: x-small}
 
