@@ -463,11 +463,14 @@ public class NonGui extends NbTopManager implements Runnable {
         
         // 8 1/2 XML stuff
         XML.init();
+        StartLog.logProgress ("XML stuff initialized"); // NOI18N
 
         // -----------------------------------------------------------------------------------------------------
         // 9. Modules
 
         {
+    	    StartLog.logStart ("Modules initialization"); // NOI18N
+
             FileSystem sfs = getRepository().getDefaultFileSystem();
             File moduleDirHome = new File(homeDir, DIR_MODULES);
             File moduleDirUser;
@@ -484,12 +487,14 @@ public class NonGui extends NbTopManager implements Runnable {
                 getErrorManager().annotate(ise, ioe);
                 throw ise;
             }
+    	    StartLog.logProgress ("ModuleSystem created"); // NOI18N
+
             fireSystemClassLoaderChange();
             moduleSystem.loadBootModules();
             moduleSystem.readList();
             moduleSystem.scanForNewAndRestore();
+    	    StartLog.logEnd ("Modules initialization"); // NOI18N
         }
-        StartLog.logProgress ("Modules initialized"); // NOI18N
 
         
         // autoload directories
