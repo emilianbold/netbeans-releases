@@ -26,7 +26,7 @@ import org.netbeans.junit.NbTestSuite;
  */
 public class About extends testUtilities.PerformanceTestCase {
     
-    private String MENU, ABOUT, DETAIL;
+    protected String MENU, ABOUT, DETAIL;
     
     /** Creates a new instance of About */
     public About(String testName) {
