@@ -15,6 +15,8 @@ package org.openide.loaders;
 
 import java.beans.*;
 import java.util.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -29,7 +31,7 @@ import org.openide.nodes.Node;
 * @author Jaroslav Tulach
 */
 final class FolderChildren extends Children.Keys 
-implements PropertyChangeListener {
+implements PropertyChangeListener, ChangeListener {
     /** the folder */
     private DataFolder folder;
     /** filter of objects */
@@ -40,6 +42,8 @@ implements PropertyChangeListener {
     private ErrorManager err;
     /** this is true between addNotify and removeNotify */
     private boolean active;
+    /** true if the refrersh is done after DataFilter change */
+    private boolean refresh;        
     /**  we wait for this task finished in getNodes(true) */
     private RequestProcessor.Task refreshTask;
     /** Runnable scheduled to refRP */
@@ -94,6 +98,14 @@ implements PropertyChangeListener {
             postClearTask();
             return;
         }
+    }
+    
+    public void stateChanged( ChangeEvent e ) {
+        // Filtering changed need to recompute children
+        refresh = true;
+        refreshChildren().schedule(0);
+        postClearTask();
+        return;
     }
 
     /**
@@ -198,6 +210,10 @@ implements PropertyChangeListener {
     protected void addNotify () {
         // add as a listener for changes on nodes
         folder.addPropertyChangeListener (listener);
+        // add listener to the filter
+        if ( filter instanceof ChangeableDataFilter ) {
+            ((ChangeableDataFilter)filter).addChangeListener( this );
+        }
         // 
         active = true;
         // start the refresh task to compute the children
@@ -209,6 +225,10 @@ implements PropertyChangeListener {
     protected void removeNotify () {
         // removes the listener
         folder.removePropertyChangeListener (listener);
+        // remove listener from filter
+        if ( filter instanceof ChangeableDataFilter ) {
+            ((ChangeableDataFilter)filter).removeChangeListener( this );
+        }
         //
         active = false;
         // we don't call the setKeys directly here because
@@ -232,11 +252,12 @@ implements PropertyChangeListener {
          * prevent GC.
          */
         private DataObject[] ch;
-        
+                
         /** calls setKeys with the folder children 
          * or with empty collection if active is false
          */
         public void run() {
+            
             if (! active) {
                 setKeys (java.util.Collections.EMPTY_SET);
                 return;
@@ -247,6 +268,13 @@ implements PropertyChangeListener {
                 keys[i] = new Pair(ch[i].getPrimaryFile());
             }
             setKeys(Arrays.asList(keys));
+            
+            if ( refresh ) {
+                refresh = false;
+                for (int i = 0; i < keys.length; i++) {
+                    refreshKey( keys[i] );
+                }
+            }
         }
         
         /** stop holding the references to the data objects. After
