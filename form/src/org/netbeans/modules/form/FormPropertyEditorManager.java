@@ -14,8 +14,6 @@
 
 package org.netbeans.modules.form;
 
-import org.openide.util.SharedClassObject; 
-
 import java.beans.*;
 import java.util.ArrayList;
 import java.util.HashMap;

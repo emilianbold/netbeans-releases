@@ -18,9 +18,7 @@ import javax.swing.event.*;
 import java.beans.*;
 
 import org.openide.WizardDescriptor;
-import org.openide.nodes.Node;
 import org.openide.explorer.*;
-import org.openide.explorer.view.ListView;
 
 /**
  * The third panel in the wizard for adding new components to the palette.

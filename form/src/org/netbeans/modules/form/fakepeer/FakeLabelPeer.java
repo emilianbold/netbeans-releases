@@ -16,8 +16,6 @@ package org.netbeans.modules.form.fakepeer;
 
 import java.awt.*;
 import java.awt.peer.LabelPeer;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
 
 /**
  *

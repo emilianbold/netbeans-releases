@@ -1450,7 +1450,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
             int vgap = findName(layoutPropNames[1], propertyNames);
             if (hgap >= 0 && vgap >= 0) {
                 layoutParams = new CodeExpression[2];
-                Object value;
 
                 layoutParams[0] = createExpressionForProperty(
                     codeStructure,

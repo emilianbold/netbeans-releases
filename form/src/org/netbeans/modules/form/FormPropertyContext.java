@@ -14,9 +14,6 @@
 package org.netbeans.modules.form;
 
 import java.beans.*;
-import org.openide.nodes.Node;
-import org.openide.explorer.propertysheet.PropertyEnv;
-import org.openide.explorer.propertysheet.ExPropertyEditor;
 
 /** 
  * An interface for working with "context" of properties

@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.form;
 
-import java.text.MessageFormat;
 import org.openide.nodes.*;
 import org.openide.actions.PropertiesAction;
 import org.openide.util.actions.SystemAction;

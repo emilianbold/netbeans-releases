@@ -14,9 +14,6 @@
 
 package org.netbeans.modules.form;
 
-import java.lang.reflect.InvocationTargetException;
-
-import org.openide.util.HelpCtx;
 import org.netbeans.modules.java.JavaNode;
 
 /** The DataNode for Forms.

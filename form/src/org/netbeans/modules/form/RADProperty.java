@@ -16,8 +16,6 @@ package org.netbeans.modules.form;
 
 import java.beans.*;
 import java.lang.reflect.*;
-import org.openide.nodes.Node;
-import org.openide.util.Utilities;
 import org.openide.ErrorManager;
 
 import org.netbeans.modules.form.editors.*;

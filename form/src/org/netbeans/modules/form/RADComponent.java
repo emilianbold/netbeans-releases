@@ -15,14 +15,10 @@ package org.netbeans.modules.form;
 
 import java.beans.*;
 import java.util.*;
-import java.awt.Component;
-import java.awt.Container;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import org.openide.*;
 import org.openide.nodes.*;
-import org.openide.util.Utilities;
 import org.openide.util.datatransfer.NewType;
 
 import org.netbeans.modules.form.codestructure.*;

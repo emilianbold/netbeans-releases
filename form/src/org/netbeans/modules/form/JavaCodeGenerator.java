@@ -19,7 +19,6 @@ import org.openide.filesystems.*;
 import org.openide.nodes.*;
 import org.openide.src.*;
 import org.openide.text.IndentEngine;
-import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
 import org.openide.loaders.MultiDataObject.Entry;
 
@@ -287,7 +286,6 @@ class JavaCodeGenerator extends CodeGenerator {
                         throw new IllegalArgumentException();
 
                     Object oldValue = getValue();
-                    boolean useLocalVariable = ((Boolean)value).booleanValue();
 
                     CodeStructure codeStructure = formModel.getCodeStructure();
                     CodeExpression exp = component.getCodeExpression();

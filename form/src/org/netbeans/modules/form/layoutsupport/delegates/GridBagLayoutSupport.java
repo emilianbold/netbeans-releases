@@ -37,11 +37,6 @@ import org.netbeans.modules.form.FormProperty;
 
 public class GridBagLayoutSupport extends AbstractLayoutSupport
 {
-    private static final int X_AXIS = 1;
-    private static final int Y_AXIS = 2;
-
-    private static Constructor constrConstructor;
-
     private static Reference customizerRef;
 
     /** Gets the supported layout manager class - GridBagLayout.
@@ -908,7 +903,6 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
             protected void propertyValueChanged(Object old, Object current) {
                 // #36932 - GridBagLayout allows max. 512 grid size
                 if (current instanceof Integer) {
-                    int n = ((Integer)current).intValue();
                     String name = getName();
                     if (((name.endsWith("gridx") || name.endsWith("gridwidth")) // NOI18N
                          && constraints.gridx + constraints.gridwidth > 512)

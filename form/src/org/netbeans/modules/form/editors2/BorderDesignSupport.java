@@ -17,7 +17,6 @@ import javax.swing.border.*;
 import java.util.*;
 import java.beans.*;
 import java.lang.reflect.*;
-import java.awt.Image;
 
 import org.openide.nodes.*;
 import org.netbeans.modules.form.*;

@@ -20,7 +20,6 @@ import javax.swing.*;
 import java.util.*;
 import java.lang.Math;
 
-import org.openide.NotifyDescriptor;
 import org.openide.nodes.*;
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.util.*;
@@ -28,7 +27,6 @@ import org.netbeans.api.javahelp.Help;
 
 import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.layoutsupport.LayoutSupportManager;
-import org.openide.ErrorManager;
 
 /** A customizer providing better editing facility for GridBagLayout
  *
@@ -525,8 +523,6 @@ final public class GridBagCustomizer extends JPanel implements Customizer
                     if (GBComponentProxy.this.isSelected()) {
 
                         Dimension size = getSize();
-                        int midHor =(size.width - borderSize) / 2;
-                        int midVer =(size.height - borderSize) / 2;
                         g.setColor(borderColor);
                         g.fillRect(0, 0, borderSize, borderSize); // UpLeft
                         g.fillRect(size.width-borderSize, 0, borderSize, borderSize); // UpRight
@@ -841,8 +837,6 @@ final public class GridBagCustomizer extends JPanel implements Customizer
 
 
                     GridBagConstraints  con = getProxyConstraints();
-                    int oldx = con.gridx;
-                    int oldy = con.gridy;
 
                     con.gridx = newLoc.x;
                     con.gridy = newLoc.y;

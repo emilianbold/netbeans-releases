@@ -15,12 +15,8 @@
 package org.netbeans.modules.form;
 
 import java.beans.*;
-import java.lang.reflect.Method;
 import java.util.*;
 import java.awt.*;
-
-import org.openide.util.HelpCtx;
-import org.openide.util.Utilities;
 
 /** The PropertyPicker is a form which allows user to choose from property set
  * of specified required class.

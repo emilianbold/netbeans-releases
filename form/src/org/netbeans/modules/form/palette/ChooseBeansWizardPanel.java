@@ -23,7 +23,6 @@ import javax.swing.event.*;
 import java.awt.event.*;
 
 import org.openide.WizardDescriptor;
-import org.openide.ErrorManager;
 
 /**
  * The second panel in the wizard for adding new components to the palette.

@@ -26,10 +26,8 @@ import java.security.*;
 import org.openide.ErrorManager;
 import org.openide.util.*;
 import org.openide.nodes.Node;
-import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.java.classpath.*;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 import org.netbeans.modules.form.editors2.IconEditor;
 import org.netbeans.modules.form.editors2.BorderDesignSupport;
@@ -47,7 +45,6 @@ public class FormUtils
     public static final int DISABLE_CHANGE_FIRING = 2;
     public static final int PASS_DESIGN_VALUES = 4;
 
-    private static String PROP_NAME = "PropertyName"; // NOI18N
     private static final boolean debug = System.getProperty("netbeans.debug.form") != null;
 
     /** The FormLoaderSettings instance */
@@ -57,7 +54,6 @@ public class FormUtils
     /** The list of all well-known heavyweight components */
     private static Class[] heavyweightComponents;
     private static HashMap jComponentIgnored;
-    private static HashMap valuesCache = new HashMap();
 
     private static final Object CLASS_EXACTLY = new Object();
     private static final Object CLASS_AND_SUBCLASSES = new Object();

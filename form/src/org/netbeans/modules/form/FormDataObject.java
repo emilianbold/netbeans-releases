@@ -14,16 +14,12 @@
 
 package org.netbeans.modules.form;
 
-import java.io.IOException;
-import java.text.MessageFormat;
-
 import org.openide.*;
 import org.openide.actions.OpenAction;
 import org.openide.loaders.*;
 import org.openide.filesystems.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.nodes.Node;
-import org.openide.nodes.CookieSet;
 import org.openide.cookies.*;
 import org.netbeans.modules.java.JavaDataObject;
 import org.netbeans.modules.java.JavaEditor;

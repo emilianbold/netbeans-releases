@@ -13,8 +13,6 @@
 
 package org.netbeans.modules.form;
 
-import org.openide.nodes.Node;
-
 import java.awt.*;
 import java.beans.*;
 import java.lang.reflect.Method;
@@ -22,7 +20,6 @@ import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.ArrayList;
 
 import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 

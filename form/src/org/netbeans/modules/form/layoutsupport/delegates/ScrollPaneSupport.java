@@ -27,8 +27,6 @@ import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 
 public class ScrollPaneSupport extends AbstractLayoutSupport {
 
-    private static java.lang.reflect.Method addMethod;
-
     /** Gets the supported layout manager class - ScrollPane.
      * @return the class supported by this delegate
      */

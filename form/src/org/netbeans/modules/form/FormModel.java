@@ -14,7 +14,6 @@
 package org.netbeans.modules.form;
 
 import java.util.*;
-import javax.swing.event.EventListenerList;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.undo.*;
 

@@ -28,7 +28,6 @@ import org.openide.explorer.view.ListView;
 import org.openide.explorer.propertysheet.PropertySheetView;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.explorer.*;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 
 import org.netbeans.modules.form.*;
@@ -560,7 +559,6 @@ public final class BorderEditor extends PropertyEditorSupport
     private static void writeProperty(String propName, FormProperty prop,
                                       org.w3c.dom.Element el,
                                       org.w3c.dom.Document doc) {
-        boolean written = false;
         org.w3c.dom.Node valueNode = null;
 
         PropertyEditor propEd = prop.getCurrentEditor();

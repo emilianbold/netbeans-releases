@@ -14,7 +14,6 @@
 package org.netbeans.modules.form;
 
 import java.util.*;
-import javax.swing.JList;
 import javax.swing.DefaultListModel;
 
 import org.openide.DialogDisplayer;

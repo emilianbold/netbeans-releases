@@ -18,8 +18,6 @@ import javax.swing.*;
 import java.util.ArrayList;
 import java.lang.reflect.Method;
 
-import org.openide.nodes.Node;
-
 import org.netbeans.modules.form.layoutsupport.*;
 
 

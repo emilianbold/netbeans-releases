@@ -14,10 +14,8 @@
 package org.netbeans.modules.form;
 
 import java.beans.*;
-import java.io.IOException;
 import java.util.*;
 import java.awt.Cursor;
-import java.awt.event.ActionEvent;
 import java.io.*;
 import javax.swing.*;
 import javax.swing.text.Document;
@@ -38,8 +36,6 @@ import org.netbeans.core.api.multiview.*;
 
 import org.netbeans.modules.java.JavaEditor;
 import org.netbeans.modules.form.palette.CPManager;
-import org.openide.text.*;
-import org.openide.text.PositionRef;
 
 /**
  *

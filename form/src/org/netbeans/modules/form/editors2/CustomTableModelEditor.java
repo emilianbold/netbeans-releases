@@ -27,8 +27,6 @@ import javax.swing.table.*;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import java.util.EventObject;
-import java.awt.event.KeyEvent;
 
 
 /** A custom property editor for TableModel.

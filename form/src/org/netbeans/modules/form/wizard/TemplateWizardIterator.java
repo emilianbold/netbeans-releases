@@ -41,7 +41,6 @@ class TemplateWizardIterator implements WizardDescriptor.InstantiatingIterator {
 
     private transient WizardDescriptor.Panel superclassPanel;
     private transient boolean superclassPanelCurrent;
-    private transient int panelIndex;
     private transient WizardDescriptor.InstantiatingIterator delegateIterator;
 
     private static TemplateWizardIterator instance;

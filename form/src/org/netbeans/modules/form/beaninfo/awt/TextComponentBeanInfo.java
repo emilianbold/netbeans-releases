@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.form.beaninfo.awt;
 
-import java.awt.Image;
 import java.beans.*;
 
 /** A BeanInfo for java.awt.TextComponent.

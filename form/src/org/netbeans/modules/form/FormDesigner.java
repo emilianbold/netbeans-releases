@@ -22,14 +22,11 @@ import java.beans.*;
 import org.netbeans.core.spi.multiview.*;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataNode;
 import org.openide.windows.TopComponent;
 import org.openide.nodes.Node;
 import org.openide.util.*;
 import org.openide.util.lookup.*;
 import org.openide.awt.UndoRedo;
-import org.openide.ErrorManager;
 
 import org.netbeans.modules.form.palette.CPManager;
 import org.netbeans.modules.form.wizard.ConnectionWizard;

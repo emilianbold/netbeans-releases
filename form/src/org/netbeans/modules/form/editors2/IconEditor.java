@@ -34,7 +34,6 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.propertysheet.*;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.NbBundle;

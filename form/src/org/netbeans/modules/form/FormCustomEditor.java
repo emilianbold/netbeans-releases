@@ -24,9 +24,6 @@ import org.openide.util.Utilities;
 import java.awt.*;
 import java.beans.PropertyEditor;
 import javax.swing.*;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeEvent;
-import javax.swing.border.EmptyBorder;
 
 /** 
  *

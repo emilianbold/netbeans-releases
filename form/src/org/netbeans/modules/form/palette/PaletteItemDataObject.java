@@ -481,7 +481,7 @@ class PaletteItemDataObject extends MultiDataObject {
         // ------
 
         private String getExplicitDisplayName() {
-            String displaName = null;
+            String displayName = null;
             if (displayName_key != null) {
                 if (bundleName != null) {
                     try {

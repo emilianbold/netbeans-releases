@@ -15,7 +15,6 @@ package org.netbeans.modules.form.beaninfo.awt;
 
 import java.awt.Label;
 import java.beans.*;
-import java.util.ResourceBundle;
 
 import org.openide.util.NbBundle;
 

@@ -20,7 +20,6 @@ import javax.accessibility.*;
 import org.openide.nodes.*;
 
 import org.netbeans.modules.form.layoutsupport.*;
-import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 
 /**
  *

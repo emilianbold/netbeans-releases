@@ -18,7 +18,6 @@ import java.util.*;
 import java.lang.reflect.*;
 import javax.swing.*;
 import javax.swing.border.Border;
-import org.openide.util.Mutex;
 
 import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 

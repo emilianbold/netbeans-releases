@@ -13,8 +13,6 @@
 
 package org.netbeans.modules.form.codestructure;
 
-import java.util.List;
-
 /**
  * @author Tomas Pavek
  */

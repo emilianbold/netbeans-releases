@@ -16,9 +16,7 @@ package org.netbeans.modules.form;
 
 import java.awt.*;
 import java.beans.*;
-import java.text.MessageFormat;
 
-import org.openide.options.SystemOption;
 import org.openide.explorer.propertysheet.*;
 import org.openide.explorer.propertysheet.editors.*;
 
@@ -500,7 +498,6 @@ public class RADConnectionPropertyEditor
         org.w3c.dom.NamedNodeMap attributes = element.getAttributes();
         try {
             String typeString = attributes.getNamedItem(ATTR_TYPE).getNodeValue();
-            int type = RADConnectionDesignValue.TYPE_CODE;
             if (VALUE_VALUE.equals(typeString)) {
                 String value = attributes.getNamedItem(ATTR_VALUE).getNodeValue();
                 String valueType = attributes.getNamedItem(ATTR_REQUIRED_TYPE).getNodeValue();

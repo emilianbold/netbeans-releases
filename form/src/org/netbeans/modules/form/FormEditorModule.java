@@ -14,15 +14,10 @@
 package org.netbeans.modules.form;
 
 import org.openide.filesystems.*;
-import org.openide.nodes.Node;
 import org.openide.modules.ModuleInstall;
 
-import org.netbeans.modules.form.palette.BeanInstaller;
-
 import java.beans.*;
-import java.io.File;
 import java.util.*;
-import org.openide.modules.InstalledFileLocator;
 
 /**
  * Module installation class for Form Editor
