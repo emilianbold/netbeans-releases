@@ -188,7 +188,9 @@ public class RADVisualComponent extends RADComponent {
 
                 if (!(prop instanceof RADProperty)) { // usually true
                     prop.addPropertyChangeListener(getConstraintsListener());
-                    prop.setPropertyContext(new RADProperty.RADPropertyContext(this));
+                    // temporarily no property context - until we solve
+                    // persistence for advanced constraints properties
+//                    prop.setPropertyContext(new RADProperty.RADPropertyContext(this));
                     if (isReadOnly()) {
                         int type = prop.getAccessType() | FormProperty.NO_WRITE;
                         prop.setAccessType(type);
