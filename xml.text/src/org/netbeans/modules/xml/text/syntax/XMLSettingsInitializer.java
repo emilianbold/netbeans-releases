@@ -177,145 +177,30 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
     
     /** XML colorings */
     static class XMLTokenColoringInitializer
-    extends SettingsUtil.TokenColoringInitializer 
-    implements XMLTokenIDs {
-
-        Font boldFont = SettingsDefaults.defaultFont.deriveFont(Font.BOLD);
-        Font italicFont = SettingsDefaults.defaultFont.deriveFont(Font.ITALIC);
-        Settings.Evaluator boldSubst = new SettingsUtil.FontStylePrintColoringEvaluator(Font.BOLD);
-        Settings.Evaluator italicSubst = new SettingsUtil.FontStylePrintColoringEvaluator(Font.ITALIC);
-        Settings.Evaluator lightGraySubst = new SettingsUtil.ForeColorPrintColoringEvaluator(Color.lightGray);
-
-        // #48502 - changed comment coloring to have non-italic font
-        Coloring commentColoring = new Coloring(null, Util.THIS.getColor("commentColor"), Util.THIS.getColor("commentBgColor"));
+    extends SettingsUtil.TokenColoringInitializer {
 
         public XMLTokenColoringInitializer() {
             super(XMLDefaultTokenContext.context);
         }
 
         public Object getTokenColoring(TokenContextPath tokenContextPath, TokenCategory tokenIDOrCategory, boolean printingSet) {
-            if (!printingSet) {
-
-                switch (tokenIDOrCategory.getNumericID()) {
-                    case XMLDefaultTokenContext.TEXT_ID:
-                    case XMLDefaultTokenContext.WS_ID:
-                        return SettingsDefaults.emptyColoring;
-                        
-                    case XMLDefaultTokenContext.ERROR_ID:
-                        return new Coloring(null, Util.THIS.getColor("ERROR_IDColor"), Util.THIS.getColor("ERROR_IDBgColor"));
-                        
-                    case XMLDefaultTokenContext.TAG_ID:
-                        return new Coloring(null, Util.THIS.getColor("TAG_IDColor"), Util.THIS.getColor("TAG_IDBgColor"));
-                        
-                    case XMLDefaultTokenContext.ARGUMENT_ID:
-                        return new Coloring(null, Util.THIS.getColor("AttrColor"), Util.THIS.getColor("AttrBgColor"));
-                        
-                    case XMLDefaultTokenContext.OPERATOR_ID:
-                        return new Coloring(null, Util.THIS.getColor("OPERATOR_IDColor"), Util.THIS.getColor("OPERATOR_IDBgColor"));
-                        
-                    case XMLDefaultTokenContext.VALUE_ID:
-                        return new Coloring(null, Util.THIS.getColor("VALUE_IDColor"), Util.THIS.getColor("VALUE_IDBgColor"));
-                        
-                    case XMLDefaultTokenContext.BLOCK_COMMENT_ID:
-                        return commentColoring;
-                                                
-                    case XMLDefaultTokenContext.DECLARATION_ID:
-                        return new Coloring(boldFont, Util.THIS.getColor("DECLARATION_IDColor"), Util.THIS.getColor("DECLARATION_IDBgColor"));
-                        
-                    case XMLDefaultTokenContext.CHARACTER_ID:
-                        return new Coloring(null, Util.THIS.getColor("GREFColor"), Util.THIS.getColor("GREFBgColor"));
-                        
-                    case XMLDefaultTokenContext.PI_START_ID:
-                    case XMLDefaultTokenContext.PI_TARGET_ID:
-                    case XMLDefaultTokenContext.PI_END_ID:
-                        return new Coloring(boldFont, Util.THIS.getColor("PIMarkupColor"), Util.THIS.getColor("PIMarkupBgColor"));
-                        
-                    case XMLDefaultTokenContext.PI_CONTENT_ID:
-                        return new Coloring(null, Util.THIS.getColor("PIValueColor"), Util.THIS.getColor("PIValueBgColor"));
-                        
-                    case CDATA_SECTION_ID:
-                        return new Coloring(null, Util.THIS.getColor("CDATAColor"), Util.THIS.getColor("CDATABgColor"));
-                }
-            } else { // printing set
-                switch (tokenIDOrCategory.getNumericID()) {
-
-                    case XMLDefaultTokenContext.BLOCK_COMMENT_ID:
-                        return italicSubst;
-                    default:
-                         return SettingsUtil.defaultPrintColoringEvaluator;
-                }
-
-            }
-
-            return null;
-
+            // see XML_fontsColors.xml for actual values
+            return new Coloring (null, Color.BLACK, null);
         }
-
     }
 
     /** DTD colorings */
     static class DTDTokenColoringInitializer
         extends SettingsUtil.TokenColoringInitializer {
 
-        Font boldFont = SettingsDefaults.defaultFont.deriveFont(Font.BOLD);
-        Font italicFont = SettingsDefaults.defaultFont.deriveFont(Font.ITALIC);
-        Settings.Evaluator boldSubst = new SettingsUtil.FontStylePrintColoringEvaluator(Font.BOLD);
-        Settings.Evaluator italicSubst = new SettingsUtil.FontStylePrintColoringEvaluator(Font.ITALIC);
-        Settings.Evaluator lightGraySubst = new SettingsUtil.ForeColorPrintColoringEvaluator(Color.lightGray);
-
-        // #48502 -  changed comment coloring to use non-italic font style
-        Coloring commentColoring = new Coloring(null, Util.THIS.getColor("commentColor"), Util.THIS.getColor("commentBgColor"));
-
         public DTDTokenColoringInitializer() {
             super(DTDTokenContext.context);
         }
 
-        public Object getTokenColoring(TokenContextPath tokenContextPath,
-        TokenCategory tokenIDOrCategory, boolean printingSet) {
-            if (!printingSet) {
-                switch (tokenIDOrCategory.getNumericID()) {
-                    case DTDTokenContext.REF_ID:
-                        return new Coloring(null, Util.THIS.getColor("PREFColor"), Util.THIS.getColor("PREFBgColor"));
-
-                    case DTDTokenContext.SYMBOL_ID:
-                        return new Coloring(boldFont, Coloring.FONT_MODE_APPLY_STYLE,
-                                                  Util.THIS.getColor("SYMBOLColor"), Util.THIS.getColor("SYMBOLBgColor"));
-
-                    case DTDTokenContext.TARGET_ID:
-                        return new Coloring(boldFont, Coloring.FONT_MODE_APPLY_STYLE,
-                                                  Util.THIS.getColor("TARGETColor"), Util.THIS.getColor("TARGETBgColor"));
-
-                    case DTDTokenContext.PLAIN_ID:
-                        return new Coloring(null, Util.THIS.getColor("PLAINColor"), Util.THIS.getColor("PLAINBgColor"));
-
-                    case DTDTokenContext.COMMENT_ID:
-                        return commentColoring;
-
-                    case DTDTokenContext.KW_ID:
-                        return new Coloring(boldFont, Util.THIS.getColor("KWColor"), Util.THIS.getColor("KWBgColor"));
-
-                    case DTDTokenContext.ERROR_ID:
-                        return new Coloring(null, Util.THIS.getColor("ERROR_IDColor"), Util.THIS.getColor("ERROR_IDBgColor"));
-
-                    case DTDTokenContext.STRING_ID:
-                        return new Coloring (null, Util.THIS.getColor("STRINGColor"), Util.THIS.getColor("STRINGBgColor"));
-
-                }
-
-            } else { // printing set
-                switch (tokenIDOrCategory.getNumericID()) {
-
-                    default:
-                         return SettingsUtil.defaultPrintColoringEvaluator;
-                }
-
-            }
-
-            return null;
-
+        public Object getTokenColoring(TokenContextPath tokenContextPath, TokenCategory tokenIDOrCategory, boolean printingSet) {
+            // see DTD_fontsColors.xml for actual values
+            return new Coloring (null, Color.BLACK, null);
         }
-
-    } // static class DTDTokenColoringInitializer
-
+    }
 
 }

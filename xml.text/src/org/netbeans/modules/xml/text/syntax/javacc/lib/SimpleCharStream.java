@@ -12,9 +12,6 @@
  */
 package org.netbeans.modules.xml.text.syntax.javacc.lib;
 
-import org.netbeans.modules.xml.text.syntax.javacc.lib.CharStream;
-
-
 /**
  * JavaCC 3.2 generates TokenManagers that use SimpleCharStream
  * instead of CharStream interface.
