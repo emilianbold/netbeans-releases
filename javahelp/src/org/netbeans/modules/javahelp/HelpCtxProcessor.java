@@ -257,7 +257,7 @@ public final class HelpCtxProcessor implements XMLDataObject.Processor, Instance
             
             private void updateEnabled() {
                 Help h = findHelp();
-                Boolean valid = h == null ? Boolean.FALSE : h.isValidID(helpID);
+                Boolean valid = h == null ? Boolean.FALSE : h.isValidID(helpID, false);
                 if (valid != null) {
                     b.setEnabled(valid.booleanValue());
                 }

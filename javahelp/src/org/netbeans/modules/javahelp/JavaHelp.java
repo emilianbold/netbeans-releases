@@ -619,12 +619,8 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
         return getMaster();
     }
     
-    /** Overridden to really check.
-     * @param id the ID to check
-     * @return true if it is valid, or we do not know for sure yet
-     */
-    public Boolean isValidID(String id) {
-        if (helpSetsReady()) {
+    public Boolean isValidID(String id, boolean force) {
+        if (force || helpSetsReady()) {
             Iterator it = getHelpSets().iterator();
             if (MASTER_ID.equals(id)) {
                 if (it.hasNext()) {

@@ -91,10 +91,6 @@ public abstract class AbstractHelp extends Help implements HelpConstants {
         fireChangeEvent();
     }
     
-    public Boolean isValidID(String id) {
-        return null;
-    }
-    
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);

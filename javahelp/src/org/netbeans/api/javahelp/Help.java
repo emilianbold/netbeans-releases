@@ -30,11 +30,13 @@ public abstract class Help {
     protected Help() {}
     
     /** Test whether a given ID is valid in some known helpset.
-     * Subclasses may override.
-     * Should be a fast operation; if in doubt say you do not know.
-     * @return whether it is valid, if this is known; else null
+     * In lazy mode, should be a fast operation; if in doubt say you do not know.
+     * @param id the ID to check for validity
+     * @param force if false, do not do too much work (be lazy) and if necessary return null;
+     *              if true, must return non-null (meaning the call may block loading helpsets)
+     * @return whether it is valid, if this is known; else may be null (only permitted when force is false)
      */
-    public abstract Boolean isValidID(String id);
+    public abstract Boolean isValidID(String id, boolean force);
     
     /** Shows help.
      * @param ctx help context
