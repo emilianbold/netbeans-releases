@@ -15,6 +15,9 @@ package org.netbeans.modules.java.j2seproject;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import org.netbeans.modules.javacore.JMManager;
+import org.netbeans.modules.javacore.api.JavaModel;
+import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 
 import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
@@ -36,15 +39,6 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.jmi.javamodel.Type;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.jmi.javamodel.UnresolvedClass;
-
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
-import org.netbeans.modules.javacore.JMManager;
-
-
-
-
-
-
 
 class MainClassUpdater implements PropertyChangeListener, MDRChangeListener {
 
@@ -114,9 +108,9 @@ class MainClassUpdater implements PropertyChangeListener, MDRChangeListener {
                 //XXX: Implementation dependency, no way how to do it
                 JMManager manager = (JMManager) JavaMetamodel.getManager();
                 manager.waitScanFinished();
-                JavaMetamodel.getDefaultRepository().beginTrans(false);
+                JavaModel.getJavaRepository().beginTrans(false);
                 try {
-                    JavaMetamodel.getManager().setClassPath (sourcePath);
+                    JavaModel.setClassPath (sourcePath);
                     String mainClassName = MainClassUpdater.this.eval.getProperty (mainClassPropName);
                     Type type = manager.getDefaultExtent().getType().resolve(mainClassName);
                     if ((type instanceof JavaClass) && ! (type instanceof UnresolvedClass)) {
@@ -129,7 +123,7 @@ class MainClassUpdater implements PropertyChangeListener, MDRChangeListener {
                         }
                     }
                 } finally {
-                    JavaMetamodel.getDefaultRepository().endTrans();
+                    JavaModel.getJavaRepository().endTrans();
                 }
             }
         });

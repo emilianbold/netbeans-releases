@@ -26,7 +26,7 @@ import org.netbeans.jmi.javamodel.Parameter;
 import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassChooser;
 import org.netbeans.modules.javacore.ClassIndex;
-import org.netbeans.modules.javacore.JMManager;
+import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.openide.filesystems.FileObject;
 
@@ -73,14 +73,14 @@ public class J2SEProjectUtil {
         }
         
         boolean has = false;
-        JavaMetamodel.getDefaultRepository ().beginTrans (false);
+        JavaModel.getJavaRepository ().beginTrans (false);
         
         try {
-            Resource res = JavaMetamodel.getManager ().getResource (fo);
+            Resource res = JavaModel.getResource (fo);
             assert res != null : "Resource found for FileObject " + fo;
             has = hasMainMethod (res);
         } finally {
-            JavaMetamodel.getDefaultRepository ().endTrans ();
+            JavaModel.getJavaRepository ().endTrans ();
         }
         return has;
     }
@@ -104,7 +104,7 @@ public class J2SEProjectUtil {
      * @param addInto list of names of classes, e.g, [sample.project1.Hello, sample.project.app.MainApp]
      */
     private static void getMainClasses (FileObject root, List/*<String>*/ addInto) {
-        JavaMetamodel.getDefaultRepository ().beginTrans (false);
+        JavaModel.getJavaRepository ().beginTrans (false);
         try {
             JavaModelPackage mofPackage = JavaMetamodel.getManager().getJavaExtent(root);
             ClassIndex index = ClassIndex.getIndex (mofPackage);
@@ -121,7 +121,7 @@ public class J2SEProjectUtil {
                 Resource res = (Resource)arr[i];
                 if (hasMainMethod (res)) {
                     // has main class -> add to list its name.
-                    FileObject fo = ((JMManager)JMManager.getManager ()).getFileObject (res);
+                    FileObject fo = JavaModel.getFileObject (res);
                     assert fo != null : "FileObject found for the resource " + res;
                     if (res.getPackageName ().length () > 0) {
                         addInto.add (res.getPackageName () + '.' + fo.getName ());
@@ -131,7 +131,7 @@ public class J2SEProjectUtil {
                 }
             }
         } finally {
-            JavaMetamodel.getDefaultRepository ().endTrans (false);
+            JavaModel.getJavaRepository ().endTrans (false);
         }        
     }
     
@@ -149,7 +149,7 @@ public class J2SEProjectUtil {
         }
         //XXX, should use the classpath created from roots
         
-        JavaMetamodel.getDefaultRepository ().beginTrans (false);
+        JavaModel.getJavaRepository ().beginTrans (false);
         boolean isMain = false;
         
         try {
@@ -158,7 +158,7 @@ public class J2SEProjectUtil {
                 isMain = hasMainMethod (clazz.getResource ());
             }
         } finally {
-            JavaMetamodel.getDefaultRepository ().endTrans ();
+            JavaModel.getJavaRepository ().endTrans ();
         }
         return isMain;
     }
@@ -171,11 +171,8 @@ public class J2SEProjectUtil {
                 // now it is only important top-level class with the same 
                 // name as file. Continue if the file name differs
                 // from top level class name.
-                assert JMManager.getManager () != null : "JavaMetamodelManager manager is provided."; // NOI18N
-                assert JMManager.getManager () instanceof JMManager : "JavaMetamodelManager <" +JMManager.getManager ().getClass ()+ "> is instanceof JMManager"; // NOI18N
-                JMManager mmmanager = (JMManager)JMManager.getManager ();
-                assert mmmanager.getFileObject (res) != null : "FileObject found for the resource " + res;
-                if (!clazz.getSimpleName ().equals (mmmanager.getFileObject (res).getName ()))
+                assert JavaModel.getFileObject (res) != null : "FileObject found for the resource " + res;
+                if (!clazz.getSimpleName ().equals (JavaModel.getFileObject (res).getName ()))
                     continue;
 
                 for (Iterator j = clazz.getFeatures ().iterator(); j.hasNext ();) {
