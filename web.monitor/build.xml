@@ -59,6 +59,7 @@ Microsystems, Inc. All Rights Reserved.
     <delete dir="netbeans"/>
     <delete dir="Info"/>
    <delete dir="javahelp/org/netbeans/modules/web/monitor/docs/JavaHelpSearch2"/>
+   <delete dir="javahelp/org/netbeans/modules/web/monitor/docs/ja/JavaHelpSearch2"/>
    <delete file="monitor.nbm"/>	
   </target>
 
