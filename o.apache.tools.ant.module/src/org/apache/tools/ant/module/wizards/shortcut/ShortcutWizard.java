@@ -35,6 +35,8 @@ import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+// XXX should use InstantiatingIterator; currently throws NPE if you Finish from e.g. Menu panel
+
 /**
  * The shortcut wizard itself.
  * @author Jesse Glick
@@ -172,6 +174,7 @@ public final class ShortcutWizard extends WizardDescriptor {
     }
     
     private void create(DataFolder f, String name) throws IOException {
+        assert f != null;
         final String fname;
         if (name != null) {
             fname = name + ".xml"; // NOI18N
