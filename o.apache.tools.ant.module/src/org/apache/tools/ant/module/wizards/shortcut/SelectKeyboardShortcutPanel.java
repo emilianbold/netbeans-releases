@@ -27,6 +27,8 @@ import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
 import org.openide.loaders.TemplateWizard;
 import javax.swing.KeyStroke;
 import org.openide.util.Utilities;
@@ -115,7 +117,8 @@ public class SelectKeyboardShortcutPanel extends javax.swing.JPanel implements K
     
     public static class SelectKeyboardShortcutWizardPanel implements WizardDescriptor.Panel {
 
-        private SelectKeyboardShortcutPanel panel;
+        private SelectKeyboardShortcutPanel panel = null;
+        private FileObject shortcutsFolder = null;
         
         public Component getComponent () {
             return getPanel(); 
@@ -133,7 +136,11 @@ public class SelectKeyboardShortcutPanel extends javax.swing.JPanel implements K
         }
 
         public boolean isValid () {
-            return getPanel().stroke != null;
+            if (shortcutsFolder == null)
+                shortcutsFolder = Repository.getDefault ().getDefaultFileSystem ().findResource ("Shortcuts"); // NOI18N
+            return (getPanel().stroke != null) &&
+                   (shortcutsFolder.getFileObject(Utilities.keyToString(getPanel().stroke), "instance") == null) && // NOI18N
+                   (shortcutsFolder.getFileObject(Utilities.keyToString(getPanel().stroke), "xml") == null); // NOI18N
         }
 
         private final Set listeners = new HashSet (1); // Set<ChangeListener>
