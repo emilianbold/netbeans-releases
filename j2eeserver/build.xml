@@ -30,6 +30,7 @@ Microsystems, Inc. All Rights Reserved.
     <pathelement location="${nbroot}/openide/loaders/netbeans/lib/openide-loaders.jar"/>
     <pathelement location="${nbroot}/libs/external/j2eeeditor-1.0.jar"/>
     <pathelement location="${nbroot}/openide/execution/netbeans/modules/autoload/openide-execution.jar"/> <!-- XXX -->
+    <pathelement location="${nbroot}/openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/> <!-- XXX -->
     <pathelement location="${nbroot}/debuggercore/oldapi/netbeans/modules/autoload/openide-debugger.jar"/> <!-- XXX -->
     <pathelement location="${nbroot}/debuggercore/netbeans/modules/autoload/debuggerCore.jar"/> <!-- XXX -->
     <pathelement location="${nbroot}/schema2beans/netbeans/modules/autoload/schema2beans.jar"/>
