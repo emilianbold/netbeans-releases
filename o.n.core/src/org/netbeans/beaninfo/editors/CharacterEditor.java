@@ -42,7 +42,10 @@ public class CharacterEditor extends WrappersEditor {
      *   	current value.
      */
     public String getJavaInitializationString() {
-	return "new java.lang.Character('" + getAsText() + "')"; // NOI18N
+        if ( ((Character)getValue()).charValue() == '\'' )
+            return "new java.lang.Character('\\'')";                 // NOI18N
+        else
+            return "new java.lang.Character('" + getAsText() + "')"; // NOI18N
     }
 
 }
