@@ -226,9 +226,8 @@ Microsystems, Inc. All Rights Reserved.
 -->                
     </path>
     
-    
     <target name="qa-functional-compiler-40">
-        <buildTests srcDir="qa-functional/src" compileExcludes="**/data/**">
+        <buildTests srcDir="qa-functional/src" compileExcludes="gui/**ction/** gui/**memory_usage/** gui/MeasureActions.java gui/MeasureJava.java" packageExcludes="gui/**ction/**">
             <classpath>
                 <path refid="compiletest.classpath.40"/>
                 <path refid="jemmy.and.jelly.path"/>
