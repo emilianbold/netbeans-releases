@@ -22,6 +22,8 @@ Microsystems, Inc. All Rights Reserved.
     <taskdef  name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="${nbext_root}/nbantext.jar"/>
     <property name="submodules" value="tax, core, catalog, tools, text-edit, tree-edit, css"/>
 
+    <property name="release" value="dev"/>
+
     <property name="build.compiler.debug" value="on"/>
 
 
@@ -58,6 +60,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="clean">
         <delete dir="netbeans"/>
+        <delete file="xml-${release}-nbms.zip"/>
 
         <for-each locations="${submodules}"/>
     </target>
@@ -96,6 +99,16 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Update www documents. -->
     <target name="www">
         <ant dir="www" target="all"/>
+    </target>
+
+
+    <!-- Create zip archive from all nbm files. -->
+    <target name="zip" depends="nbm">
+        <zip zipfile="xml-${release}-nbms.zip"
+             basedir="."
+             includes="*-${release}.nbm"
+             excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"
+             compress="true"/>
     </target>
 
 </project>
