@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
-import com.sun.jdi.ThreadReference;
 import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.VMDisconnectedException;
 
@@ -141,7 +140,7 @@ NodeActionsProvider {
         if (o instanceof ContendedMonitor) {
             ObjectVariable v = ((ContendedMonitor) o).variable;
             return java.text.MessageFormat.format(NbBundle.getBundle(MonitorModel.class).getString(
-                    "CTL_MonitorModel_Column_ContendedMonitor"), new Object [] { v.getType() });
+                    "CTL_MonitorModel_Column_ContendedMonitor"), new Object [] { v.getType(), v.getValue() });
         } else
         if (o instanceof OwnedMonitors) {
             return NbBundle.getBundle(MonitorModel.class).getString("CTL_MonitorModel_Column_OwnedMonitors");
@@ -149,7 +148,7 @@ NodeActionsProvider {
         if (o instanceof ObjectVariable) {
             ObjectVariable v = (ObjectVariable) o;
             return java.text.MessageFormat.format(NbBundle.getBundle(MonitorModel.class).getString(
-                    "CTL_MonitorModel_Column_Monitor"), new Object [] { v.getType() });
+                    "CTL_MonitorModel_Column_Monitor"), new Object [] { v.getType(), v.getValue() });
         } else
         throw new UnknownTypeException (o);
     }
