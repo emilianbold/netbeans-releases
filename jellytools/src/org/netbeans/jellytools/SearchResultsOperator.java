@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -85,8 +85,8 @@ public class SearchResultsOperator extends NbFrameOperator {
             _btStop = 
                 new JButtonOperator(this, 
                                     Bundle.
-                                    getString("org.netbeans.modules.search.Bundle",
-                                              "TEXT_BUTTON_STOP"));
+                                    getStringTrimmed("org.netbeans.modules.search.Bundle",
+                                                     "TEXT_BUTTON_STOP"));
         }
         return _btStop;
     }
@@ -99,8 +99,8 @@ public class SearchResultsOperator extends NbFrameOperator {
             _btShowDetails = 
                 new JButtonOperator(this, 
                                     Bundle.
-                                    getString("org.netbeans.modules.search.Bundle",
-                                              "TEXT_BUTTON_FILL"));
+                                    getStringTrimmed("org.netbeans.modules.search.Bundle",
+                                                     "TEXT_BUTTON_FILL"));
         }
         return _btShowDetails;
     }
@@ -113,8 +113,8 @@ public class SearchResultsOperator extends NbFrameOperator {
             _btModifySearch = 
                 new JButtonOperator(this, 
                                     Bundle.
-                                    getString("org.netbeans.modules.search.Bundle",
-                                              "TEXT_BUTTON_CUSTOMIZE"));
+                                    getStringTrimmed("org.netbeans.modules.search.Bundle",
+                                                     "TEXT_BUTTON_CUSTOMIZE"));
         }
         return _btModifySearch;
     }
@@ -175,8 +175,8 @@ public class SearchResultsOperator extends NbFrameOperator {
             _btShowInExplorer = 
                 new JButtonOperator(this, 
                                     Bundle.
-                                    getString("org.netbeans.modules.search.Bundle",
-                                              "TEXT_BUTTON_SHOW"));
+                                    getStringTrimmed("org.netbeans.modules.search.Bundle",
+                                                     "TEXT_BUTTON_SHOW"));
         }
         return _btShowInExplorer;
     }
