@@ -452,7 +452,7 @@ public class Action {
             throw new UnsupportedOperationException(getClass().toString()+" does not define shortcut");
         }
         for(int i=0; i<shortcuts.length; i++) {
-            new KeyRobotDriver(null).pushKey(null, shortcuts[i].getKeyCode(), shortcuts[i].getKeyModifiers(), JemmyProperties.getCurrentTimeouts().create("Timeouts.DeltaTimeout"));
+            new KeyRobotDriver(null).pushKey(null, shortcuts[i].getKeyCode(), shortcuts[i].getKeyModifiers(), JemmyProperties.getCurrentTimeouts().create("ComponentOperator.PushKeyTimeout"));
             JemmyProperties.getProperties().getTimeouts().sleep("Action.WaitAfterShortcutTimeout");
         }
         try {

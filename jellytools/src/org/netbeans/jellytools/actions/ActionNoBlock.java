@@ -206,7 +206,7 @@ public class ActionNoBlock extends Action {
         new Thread(new Runnable() {
             public void run() {
                 for(int i=0; i<shortcuts.length; i++) {
-                    new KeyRobotDriver(null).pushKey(null, shortcuts[i].getKeyCode(), shortcuts[i].getKeyModifiers(), JemmyProperties.getCurrentTimeouts().create("Timeouts.DeltaTimeout"));
+                    new KeyRobotDriver(null).pushKey(null, shortcuts[i].getKeyCode(), shortcuts[i].getKeyModifiers(), JemmyProperties.getCurrentTimeouts().create("ComponentOperator.PushKeyTimeout"));
                     JemmyProperties.getProperties().getTimeouts().sleep("Action.WaitAfterShortcutTimeout");
                 }
             }
