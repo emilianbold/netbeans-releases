@@ -101,10 +101,7 @@ public class TargetExecutor implements Runnable {
             name = NbBundle.getMessage (TargetExecutor.class, "TITLE_output_notarget", projectName, fileName);
         }
         // remove & if available.
-        StringTokenizer st = new StringTokenizer (name, "&"); // NOI18N
-        StringBuffer sb = new StringBuffer (st.nextToken());
-        while (st.hasMoreTokens ()) sb.append (st.nextToken ());
-        name = sb.toString ();
+        name = org.openide.awt.Actions.cutAmpersand (name);
 
         final ExecutorTask task;
         synchronized (this) {
@@ -253,7 +250,11 @@ public class TargetExecutor implements Runnable {
             logger.buildFinished (new BuildEvent (project));
             ok = true;
         } catch (ThreadDeath td) {
-            throw td;
+            TopManager.getDefault ().setStatusText (NbBundle.getMessage (TargetExecutor.class, "MSG_target_failed_status"));
+            // don't throw ThreadDeath, just return. ThreadDeath sometimes 
+            // generated when killing process in Execution Window
+            //throw td;
+            return;
         } catch (Throwable t) {
             BuildEvent ev = new BuildEvent (project);
             ev.setException (t);
