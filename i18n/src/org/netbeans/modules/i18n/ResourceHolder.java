@@ -81,8 +81,12 @@ public abstract class ResourceHolder {
      * @return value for key or null if such key os not stored in resource */
     public abstract String getCommentForKey(String key);
     
-    /** Adds new property (key-valkue pair) to resource object. */
+    /** Adds new property (key-value pair) to resource object */
     public abstract void addProperty(Object key, Object value, String comment);
+    
+    /** Adds new property (key-value pair) to resource object, with forcing
+     * of reset the value for existing key. */
+    public abstract void addProperty(Object key, Object value, String comment, boolean forceNewValue);
     
     /** Gets template for reosurce data object. Used by instatianing. 
      * @param clazz <code>Class</code> of object to instantaniate. Have to be one of supported classes. */

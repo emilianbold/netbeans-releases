@@ -98,12 +98,22 @@ public class JavaResourceHolder extends ResourceHolder {
         return null;            
     }
 
-    /** Implements superclass abstract method. Adds new property (key-valkue pair) to resource object. 
-     * @param key key value
-     * @param value "value" value
-     * @param comment comment, can be null
-     */
+    /** Implements superclass abstract method. Adds new property (key-valkue pair) to resource object
+     * without forcing the reset of value if such key already exist in bundle.
+     * @param key key value, if it is <code>null</code> nothing is done
+     * @param value 'value' value, can be <code>null</code>
+     * @param comment comment, can be <code>null</code> */
     public void addProperty(Object key, Object value, String comment) {
+        addProperty(key, value, comment, false);
+    }
+    
+    /** Implements superclass abstract method. Adds new property (key-valkue pair) to resource object. 
+     * @param key key value, if it is <code>null</code> nothing is done
+     * @param value 'value' value, can be <code>null</code>
+     * @param comment comment, can be <code>null</code>
+     * @param forceNewValue if there already exists a key forces to reset its value
+     */
+    public void addProperty(Object key, Object value, String comment, boolean forceNewValue) {
         if(resource == null || key == null)
             return;
 
@@ -121,7 +131,8 @@ public class JavaResourceHolder extends ResourceHolder {
                 if(item == null) {
                     // Item doesn't exist in this entry -> create it.
                     propStructure.addItem(keyValue, valueValue, commentValue);
-                } else if(!item.getValue().equals(valueValue) && I18nUtil.getOptions().isReplaceResourceValue()) {
+                } else if(!item.getValue().equals(valueValue) 
+                    && (forceNewValue ? true : I18nUtil.getOptions().isReplaceResourceValue())) {
                     item.setValue(valueValue);
                     item.setComment(commentValue);
                 }
