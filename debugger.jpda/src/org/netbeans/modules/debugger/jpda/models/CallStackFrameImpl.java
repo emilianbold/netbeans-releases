@@ -41,7 +41,7 @@ public class CallStackFrameImpl implements CallStackFrame {
     ) {
         try {
             this.thread = sf.thread();
-            this.index = thread.frames().indexOf(sf);
+            this.index = indexOf(thread.frames(), sf);
         } catch (Exception e) {
             // this stack frame is invalid
         }
@@ -49,7 +49,15 @@ public class CallStackFrameImpl implements CallStackFrame {
         this.id = id;
     }
     
-    
+    private int indexOf(List frames, StackFrame frame) {
+        int n = frames.size();
+        Location loc = frame.location();
+        for (int i = 0; i < n; i++) {
+            if (loc.equals(((StackFrame)frames.get(i)).location())) return i;
+        }
+        return -1;
+    }
+
     // public interface ........................................................
         
     /**

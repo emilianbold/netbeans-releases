@@ -539,7 +539,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     private ThreadReference getEvaluationThread () {
-        //if (currentThread != null) return currentThread.getThreadReference ();
+        if (currentThread != null) return currentThread.getThreadReference ();
         if (virtualMachine == null) return null;
         List l = virtualMachine.allThreads ();
         if (l.size () < 1) return null;

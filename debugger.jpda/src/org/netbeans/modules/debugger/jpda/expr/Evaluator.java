@@ -58,16 +58,30 @@ public class Evaluator implements JavaParserVisitor {
      */
     public Value evaluate() throws EvaluationException, IncompatibleThreadStateException
     {
-        vm = evaluationContext.getFrame().virtualMachine();
         frame = evaluationContext.getFrame();
-        frameThread = frame.thread();
-        frameIndex = frameThread.frames().indexOf(frame);
-        currentPackage = evaluationContext.getFrame().location().declaringType().name();
-        int idx = currentPackage.lastIndexOf('.');
-        currentPackage = (idx > 0) ? currentPackage.substring(0, idx + 1) : "";
-        operators = new Operators(vm);
-        SimpleNode rootNode = expression.getRoot();
-        return (Value) rootNode.jjtAccept(this, null);
+        synchronized(frame.thread()) {
+            vm = evaluationContext.getFrame().virtualMachine();
+            frameThread = frame.thread();
+            frameIndex = indexOf(frameThread.frames(), frame);
+            if (frameIndex == -1) {
+                throw new IncompatibleThreadStateException("Thread does not contain current frame");
+            }
+            currentPackage = evaluationContext.getFrame().location().declaringType().name();
+            int idx = currentPackage.lastIndexOf('.');
+            currentPackage = (idx > 0) ? currentPackage.substring(0, idx + 1) : "";
+            operators = new Operators(vm);
+            SimpleNode rootNode = expression.getRoot();
+            return (Value) rootNode.jjtAccept(this, null);
+        }
+    }
+
+    private int indexOf(List frames, StackFrame frame) {
+        int n = frames.size();
+        Location loc = frame.location();
+        for (int i = 0; i < n; i++) {
+            if (loc.equals(((StackFrame)frames.get(i)).location())) return i;
+        }
+        return -1;
     }
 
     public Object visit(SimpleNode node, Object data) throws EvaluationException {
@@ -449,6 +463,9 @@ public class Evaluator implements JavaParserVisitor {
             Assert.error(currentNode, "unknownType", name);
         }
 
+        String innerName = frame.location().declaringType().name() + "$" + name;
+        if ((type = getClass(innerName)) != null) return type;
+
         int idx = name.lastIndexOf('.');
         if (idx == -1) {
             if ((type = getClass(currentPackage + name)) != null) return type;
@@ -457,7 +474,7 @@ public class Evaluator implements JavaParserVisitor {
         }
 
         if (idx != -1) {
-            String innerName = name.substring(0, idx) + "$" + name.substring(idx + 1);
+            innerName = name.substring(0, idx) + "$" + name.substring(idx + 1);
             if (innerName.indexOf('.') == -1) innerName = currentPackage + innerName;
             if ((type = getClass(innerName)) != null) return type;
         }
@@ -480,10 +497,6 @@ public class Evaluator implements JavaParserVisitor {
     private ReferenceType getClass(String typeName) throws IncompatibleThreadStateException {
 
         List classes = vm.classesByName(typeName);
-        if (classes.size() != 0) {
-            return (ReferenceType) classes.get(0);
-        }
-        classes = vm.classesByName(frame.location().declaringType().name() + "$" + typeName);
         if (classes.size() != 0) {
             return (ReferenceType) classes.get(0);
         }
@@ -1441,8 +1454,8 @@ public class Evaluator implements JavaParserVisitor {
             } catch (InterruptedException e) {
             }
             if (!evalThread.isFinished()) {
-                evalThread.stop();
-                throw new TimeoutException();
+              evalThread.interrupt();
+              throw new TimeoutException();
             }
             if (evalThread.getException() != null) throw new InvocationTargetException(evalThread.getException());
             return evalThread.getValue();
@@ -1475,7 +1488,9 @@ public class Evaluator implements JavaParserVisitor {
 
         public void run() {
             try {
-                value = obj.invokeMethod(evaluationThread, method, args, options);
+                synchronized(evaluationThread) {
+                    value = obj.invokeMethod(evaluationThread, method, args, options);
+                }
             } catch (Throwable e) {
                 exception = e;
             }

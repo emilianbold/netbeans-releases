@@ -303,7 +303,10 @@ public class JPDAStart extends Task implements Runnable {
             FileObject fos[] = SourceForBinaryQuery.findSourceRoot (u);
             if (fos.length > 0) {
                 try {
-                    u = FileUtil.toFile (fos [0]).toURI ().toURL ();
+                  File file = FileUtil.toFile(fos [0]);
+                  if (file == null) continue;
+//                    u = FileUtil.toFile (fos [0]).toURI ().toURL ();
+                    u = file.toURI ().toURL ();
                 } catch (MalformedURLException e) {
                     ErrorManager.getDefault ().notify (ErrorManager.EXCEPTION, e);
                     continue;

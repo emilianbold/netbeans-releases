@@ -14,7 +14,6 @@
 package org.netbeans.modules.debugger.jpda.expr;
 
 import com.sun.jdi.StackFrame;
-import com.sun.jdi.ThreadReference;
 
 import java.util.*;
 
@@ -42,7 +41,9 @@ public class EvaluationContext {
      * @param staticImports list of static imports
      */
     public EvaluationContext(StackFrame frame, List imports, List staticImports) {
-        if (frame == null || imports == null || staticImports == null) throw new IllegalArgumentException("Neither argument may be null");
+        if (frame == null) throw new IllegalArgumentException("Frame argument must not be null");
+        if (imports == null) throw new IllegalArgumentException("Imports argument must not be null");
+        if (staticImports == null) throw new IllegalArgumentException("Static imports argument must not be null");
         this.frame = frame;
         this.sourceImports = imports;
         this.staticImports = staticImports;
