@@ -342,7 +342,8 @@ public class JavadocModule extends ModuleInstall implements java.beans.PropertyC
     throws java.io.IOException {
         super.writeExternal( objectOutput );
         //objectOutput.writeObject (getProperty (PROP_INSTALL_COUNT));
-        objectOutput.writeInt( ((Integer)(getProperty (PROP_INSTALL_COUNT))).intValue() );
+        Integer i = (Integer)getProperty(PROP_INSTALL_COUNT);
+        objectOutput.writeInt(i != null ? i.intValue() : 0);
     }
 
     private static void notify (Exception e) {        
