@@ -16,7 +16,9 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
 
     <folder name="Shortcuts">
-        <file name="CS-J[org.netbeans.modules.i18n.InsertI18nStringAction].instance" />
+        <file name="CS-J.instance">
+	    <attr name="instanceClass" stringvalue="org.netbeans.modules.i18n.InsertI18nStringAction"/>
+	</file>
     </folder>
 
     <folder name="Actions">
