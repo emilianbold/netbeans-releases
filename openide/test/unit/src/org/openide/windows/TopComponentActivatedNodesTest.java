@@ -18,6 +18,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.Collection;
 import java.util.Iterator;
+import javax.swing.SwingUtilities;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -122,104 +123,122 @@ public class TopComponentActivatedNodesTest extends NbTestCase {
     }
     
     public void testOnceChange () {
-        initListeners ();
-        
-        // select a node
-        try {
-            em.setSelectedNodes (new Node[] { nodes[3], nodes[5] });
+        SwingUtilities.invokeLater (new Runnable () {
+            public void run () {
+                
+                initListeners ();
 
-            Node[] activatedNodes = p.getActivatedNodes ();
+                // select a node
+                try {
+                    em.setSelectedNodes (new Node[] { nodes[3], nodes[5] });
 
-            // check synchronixzation after
-            assertArrays ("ONCE CHANGE: getSelectedNodes equals getActivatedNodes.",
-                em.getSelectedNodes (), p.getActivatedNodes ());
+                    Node[] activatedNodes = p.getActivatedNodes ();
 
-            // lookup
-            Lookup.Result result = p.getLookup ().lookup (new Lookup.Template (Node.class));
-            Collection col = result.allInstances ();
-            Iterator it = col.iterator ();
-            Node[] lookupNodes = new Node[col.size ()];
-            int i = 0;
-            while (it.hasNext ()) {
-                lookupNodes[i] = (Node)it.next ();
-                i++;
+                    // check synchronixzation after
+                    assertArrays ("ONCE CHANGE: getSelectedNodes equals getActivatedNodes.",
+                        em.getSelectedNodes (), p.getActivatedNodes ());
+
+                    // lookup
+                    Lookup.Result result = p.getLookup ().lookup (new Lookup.Template (Node.class));
+                    Collection col = result.allInstances ();
+                    Iterator it = col.iterator ();
+                    Node[] lookupNodes = new Node[col.size ()];
+                    int i = 0;
+                    while (it.hasNext ()) {
+                        lookupNodes[i] = (Node)it.next ();
+                        i++;
+                    }
+
+                    // check nodes in lookup with acivated nodes
+                    assertArrays ("LOOKUP AFTER INTENSIVE CHANGES: nodes in lookup == activated nodes",
+                        lookupNodes, activatedNodes);
+
+                } catch (PropertyVetoException pve) {
+                    fail ("Caught PropertyVetoException. msg:" + pve.getMessage ());
+                } finally {
+                    removeListeners ();
+                }
+                
             }
-
-            // check nodes in lookup with acivated nodes
-            assertArrays ("LOOKUP AFTER INTENSIVE CHANGES: nodes in lookup == activated nodes",
-                lookupNodes, activatedNodes);
-            
-        } catch (PropertyVetoException pve) {
-            fail ("Caught PropertyVetoException. msg:" + pve.getMessage ());
-        } finally {
-            removeListeners ();
-        }
+        });
     }
     
     public void testIntensiveChange () {
-        initListeners ();
-        
-        // select a node
-        try {
-            for (int i = 3; i < 8; i++)
-            em.setSelectedNodes (new Node[] { nodes[i] });
-            
-            Node[] activatedNodes = p.getActivatedNodes ();
+        SwingUtilities.invokeLater (new Runnable () {
+            public void run () {
+                
+                initListeners ();
 
-            // check synchronixzation after
-            assertArrays ("INTENSIVE CHANGES: getSelectedNodes equals getActivatedNodes.",
-                em.getSelectedNodes (), activatedNodes);
+                // select a node
+                try {
+                    for (int i = 3; i < 8; i++)
+                    em.setSelectedNodes (new Node[] { nodes[i] });
 
-            // lookup
-            Lookup.Result result = p.getLookup ().lookup (new Lookup.Template (Node.class));
-            Collection col = result.allInstances ();
-            Iterator it = col.iterator ();
-            Node[] lookupNodes = new Node[col.size ()];
-            int i = 0;
-            while (it.hasNext ()) {
-                lookupNodes[i] = (Node)it.next ();
-                i++;
+                    Node[] activatedNodes = p.getActivatedNodes ();
+
+                    // check synchronixzation after
+                    assertArrays ("INTENSIVE CHANGES: getSelectedNodes equals getActivatedNodes.",
+                        em.getSelectedNodes (), activatedNodes);
+
+                    // lookup
+                    Lookup.Result result = p.getLookup ().lookup (new Lookup.Template (Node.class));
+                    Collection col = result.allInstances ();
+                    Iterator it = col.iterator ();
+                    Node[] lookupNodes = new Node[col.size ()];
+                    int i = 0;
+                    while (it.hasNext ()) {
+                        lookupNodes[i] = (Node)it.next ();
+                        i++;
+                    }
+
+                    // check nodes in lookup with acivated nodes
+                    assertArrays ("LOOKUP AFTER INTENSIVE CHANGES: nodes in lookup == activated nodes",
+                        lookupNodes, em.getSelectedNodes ());
+
+                } catch (PropertyVetoException pve) {
+                    fail ("Caught PropertyVetoException. msg:" + pve.getMessage ());
+                } finally {
+                    removeListeners ();
+                }
             }
-
-            // check nodes in lookup with acivated nodes
-            assertArrays ("LOOKUP AFTER INTENSIVE CHANGES: nodes in lookup == activated nodes",
-                lookupNodes, em.getSelectedNodes ());
-            
-        } catch (PropertyVetoException pve) {
-            fail ("Caught PropertyVetoException. msg:" + pve.getMessage ());
-        } finally {
-            removeListeners ();
-        }
+        });
     }
     
     public void testIntensiveChangeWithLookup () {
-        initListeners ();
-        // select a node
-        try {
-            for (int i = 3; i < 8; i++)
-            em.setSelectedNodes (new Node[] { nodes[i] });
-        } catch (PropertyVetoException pve) {
-            fail ("Caught PropertyVetoException. msg:" + pve.getMessage ());
-        }
-        
-        // get nodes from lookup
-        Lookup.Result result = p.getLookup ().lookup (new Lookup.Template (Node.class));
-        Collection col = result.allInstances ();
-        Iterator it = col.iterator ();
-        Node[] lookupNodes = new Node[col.size ()];
-        int i = 0;
-        while (it.hasNext ()) {
-            lookupNodes[i] = (Node)it.next ();
-            i++;
-        }
+        SwingUtilities.invokeLater (new Runnable () {
+            public void run () {
+                
+                initListeners ();
+                // select a node
+                try {
+                    for (int i = 3; i < 8; i++)
+                    em.setSelectedNodes (new Node[] { nodes[i] });
+                } catch (PropertyVetoException pve) {
+                    fail ("Caught PropertyVetoException. msg:" + pve.getMessage ());
+                } finally {
+                    removeListeners ();
+                }
 
-        // check nodes in lookup with acivated nodes
-        assertArrays ("LOOKUP AFTER INTENSIVE CHANGES: nodes in lookup == activated nodes",
-            lookupNodes, p.getActivatedNodes ());
-        
-        // check nodes in lookup with selected nodes
-        assertArrays ("LOOKUP AFTER INTENSIVE CHANGES: nodes in lookup == activated nodes",
-            lookupNodes, em.getSelectedNodes ());
+                // get nodes from lookup
+                Lookup.Result result = p.getLookup ().lookup (new Lookup.Template (Node.class));
+                Collection col = result.allInstances ();
+                Iterator it = col.iterator ();
+                Node[] lookupNodes = new Node[col.size ()];
+                int i = 0;
+                while (it.hasNext ()) {
+                    lookupNodes[i] = (Node)it.next ();
+                    i++;
+                }
+
+                // check nodes in lookup with acivated nodes
+                assertArrays ("LOOKUP AFTER INTENSIVE CHANGES: nodes in lookup == activated nodes",
+                    lookupNodes, p.getActivatedNodes ());
+
+                // check nodes in lookup with selected nodes
+                assertArrays ("LOOKUP AFTER INTENSIVE CHANGES: nodes in lookup == activated nodes",
+                    lookupNodes, em.getSelectedNodes ());
+            }
+        });
     }
     
     private void assertArrays (String msg, Object[] arr1, Object[] arr2) {

@@ -25,7 +25,8 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="openide unit test config">
 
-    <testbag testattribs="stable" executor="code" name="testbag_1" resultsprocessor="unit">
+    <testbag testattribs="stable or temp" executor="code" name="testbag_1" resultsprocessor="unit">
+
         <testset dir="unit/src">
             <patternset>
                 <include name="org/openide/actions/*Test.class"/>
@@ -77,8 +78,6 @@ Microsystems, Inc. All Rights Reserved.
                 
                 <!-- run also window system tests -->
                 <include name="org/openide/windows/*Test.class"/>
-		<!-- random filed test of change the activated nodes (issue 31244) -->
-                <exclude name="org/openide/windows/TopComponentActivatedNodesTest.class/testOnceChange"/>
             </patternset>
         </testset>      
     </testbag>
@@ -131,8 +130,6 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/openide/nodes/ChildrenArrayTest.class/testNodeEventsFiredAtOnce"/>
                 <!-- Implementation was apparently killed during a refactoring (see #16430): -->
                 <include name="org/openide/explorer/propertysheet/FindHelpTest.class/testFindHelpOnPropertySheetRow"/>
-		<!-- random filed test of change the activated nodes (issue 31244) -->
-                <include name="org/openide/windows/TopComponentActivatedNodesTest.class/testOnceChange"/>
             </patternset>
         </testset>      
     </testbag>
