@@ -57,6 +57,7 @@ import org.netbeans.core.lookup.InstanceLookup;
 import org.netbeans.core.output.OutputTab;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.compiler.CompilationEngineImpl;
+import org.netbeans.core.perftool.StartLog;
 import org.netbeans.core.modules.ModuleSystem;
 
 /** This class is a TopManager for Corona environment.
@@ -889,10 +890,14 @@ public abstract class NbTopManager extends TopManager {
         /** When all module classes are accessible thru systemClassLoader, this
          * method is called to initialize the FolderLookup.
          */
+	    
         public static final synchronized void modulesClassPathInitialized () {
-            // replace the lookup by new one
+	    StartLog.logStart ("NbTopManager$Lkp: initialization of FolderLookup"); // NOI18N
 
+            // replace the lookup by new one
             Lookup lookup = Lookup.getDefault ();
+	    StartLog.logProgress ("Got Lookup");
+
             if (lookup instanceof Lkp) {
                 Lkp lkp = (Lkp)lookup;
 
@@ -902,9 +907,11 @@ public abstract class NbTopManager extends TopManager {
                         org.openide.TopManager.getDefault ().getRepository ().getDefaultFileSystem ().getRoot ()
                     );
                     DataFolder df = DataFolder.create (rootFolder, "Services"); // NOI18N
+		    StartLog.logProgress ("Got Services folder"); // NOI18N
 
                     FolderLookup folder = new FolderLookup (df, "SL["); // NOI18N
                     lkp.lookup = folder;
+		    StartLog.logProgress ("created FolderLookup"); // NOI18N
                     
                     // extend the lookup
                     Lookup[] arr = new org.openide.util.Lookup[] {
@@ -912,15 +919,16 @@ public abstract class NbTopManager extends TopManager {
                         NbTopManager.get ().getInstanceLookup (),
                         folder.getLookup ()
                     };
+		    StartLog.logProgress ("prepared other Lookups"); // NOI18N
 
                     lkp.setLookups (arr);
-
+		    StartLog.logProgress ("Lookups set"); // NOI18N
                 } catch (java.io.IOException ex) {
                     ex.printStackTrace();
                     throw new IllegalStateException ("Cannot initialize folder Services"); // NOI18N
                 }
             }
+	    StartLog.logEnd ("NbTopManager$Lkp: initialization of FolderLookup"); // NOI18N
         }
-
     }
 }
