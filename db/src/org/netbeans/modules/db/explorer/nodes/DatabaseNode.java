@@ -40,6 +40,7 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie
 	public static final String TABLELIST = "tablelist";
 	public static final String TABLE = "table";
 	public static final String VIEW = "view";
+	public static final String VIEWLIST = "viewlist";
 	public static final String VIEWCOLUMN = "viewcolumn";
 	public static final String INDEX = "index";
 	public static final String COLUMN = "column";
@@ -49,6 +50,7 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie
 	public static final String FOREIGN_KEY = "fcolumn";
 	public static final String EXPORTED_KEY = "ekey";
 	public static final String PROCEDURE = "procedure";
+	public static final String PROCEDURELIST = "procedurelist";
 	public static final String PROCEDURE_COLUMN = "procedurecolumn";
 	
 	public DatabaseNode()
@@ -75,7 +77,7 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie
 		String fmt = info.getDisplayname();
 		if (fmt != null) {
 			String dname = MapFormat.format(fmt, info);
-			if (dname != null) setDisplayName(dname);
+//			if (dname != null) setDisplayName(dname);
 		}
 		
 		// Read options
@@ -105,6 +107,7 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie
 
 	public void setName(String newname)
 	{
+		System.out.println("Set name "+newname);
 		super.setName(newname);
 		info.setName(newname);
 	}
