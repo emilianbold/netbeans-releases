@@ -68,11 +68,11 @@ public abstract class ActionUtils {
         
         List actions = new ArrayList();
         if(kind == Constants.MODE_KIND_EDITOR) {
+            actions.add(new CloseAllDocumentsAction());
             CloseAllButThisAction allBut = new CloseAllButThisAction(tc);
-            if (mode.getOpenedTopComponents().size() == 1) {
+            if (mode != null && mode.getOpenedTopComponents().size() == 1) {
                 allBut.setEnabled(false);
             }
-            actions.add(new CloseAllDocumentsAction());
             actions.add(allBut);
             actions.add(null); // Separator
             actions.add(new SaveDocumentAction(tc));
