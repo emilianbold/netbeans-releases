@@ -574,13 +574,14 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
       </classpath>
     </taskdef>
     <property name="jdk-docs-location" value="http://java.sun.com/j2se/1.4.1/docs/api"/>
-    <property name="execution-docs-location" value="http://www.netbeans.org/download/dev/javadoc/ExecutionAPI"/>
-    <property name="io-docs-location" value="http://www.netbeans.org/download/dev/javadoc/InputOutputAPI"/>
+    <property name="javadoc.web.root" value="http://www.netbeans.org/download/dev/javadoc"/>
+    <property name="execution-docs-location" value="${javadoc.web.root}/ExecutionAPI"/>
+    <property name="io-docs-location" value="${javadoc.web.root}/InputOutputAPI"/>
     <!-- XXX delete (and @COMPILER@ token below too) when deprecated by Projects: -->
-    <property name="compiler-docs-location" value="http://www.netbeans.org/download/dev/javadoc/CompilerAPI"/>
-    <property name="loaders-docs-location" value="http://www.netbeans.org/download/dev/javadoc/LoadersAPI"/>
-    <property name="javahelp-docs-location" value="http://www.netbeans.org/download/dev/javadoc/JavaHelpAPI"/>
-    <property name="java-api-docs-location" value="http://www.netbeans.org/download/dev/javadoc/JavaSupportAPIs"/>
+    <property name="compiler-docs-location" value="${javadoc.web.root}/CompilerAPI"/>
+    <property name="loaders-docs-location" value="${javadoc.web.root}/LoadersAPI"/>
+    <property name="javahelp-docs-location" value="${javadoc.web.root}/JavaHelpAPI"/>
+    <property name="java-api-docs-location" value="${javadoc.web.root}/JavaSupportAPIs"/>
     <tstamp/>
     <property name="open-apis-footer" value='&lt;span class="footnote"&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2003 Sun Microsystems, Inc. All rights reserved.&lt;/span&gt;'/>
     <echo message="Build Open API documentation..."/>

@@ -827,7 +827,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   <target name="nbm"/><!-- dummy target -->
 
   <!-- build javadoc for selected modules -->
-  <target name="build-javadoc" depends="init" description="Builds javadoc documentation for modules" >
+  <target name="build-javadoc" depends="init" description="Builds Javadoc documentation for modules; pass -Dmoduleconfig=javadoc and on branches e.g. -Djavadoc.web.root=http://www.netbeans.org/download/release35/javadoc">
       <ant dir="." target="merge">
           <property name="modules" value="${modules}"/>
           <property name="fixedmodules" value="${fixedmodules}"/>
