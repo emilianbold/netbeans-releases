@@ -339,10 +339,10 @@
 				class = org.netbeans.modules.db.explorer.actions.DisconnectAction;
 			},
 			delimiter,
-			{
-				name = "CaptureDatabaseSchema";
-				class = org.netbeans.modules.db.explorer.actions.CaptureSchemaAction;
-			},
+//			{
+//				name = "CaptureDatabaseSchema";
+//				class = org.netbeans.modules.db.explorer.actions.CaptureSchemaAction;
+//			},
 			delimiter,
 			{
 				name = "ExecuteCommand";
