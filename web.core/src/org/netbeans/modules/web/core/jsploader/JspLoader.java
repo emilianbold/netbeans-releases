@@ -44,6 +44,9 @@ public class JspLoader extends UniFileLoader {
     /** Recommended extension for JSP fragments */
     public static final String JSF_EXTENSION = "jsf"; // NOI18N
     
+    /** Recommended extension for JSP pages in XML syntax */
+    public static final String JSPX_EXTENSION = "jspx"; // NOI18N
+    
     public static final String JSP_MIME_TYPE  = "text/x-jsp"; // NOI18N
 
     protected void initialize () {
@@ -52,6 +55,7 @@ public class JspLoader extends UniFileLoader {
         ext.addExtension(JSP_EXTENSION);
         ext.addExtension(JSPF_EXTENSION);
         ext.addExtension(JSF_EXTENSION);
+        ext.addExtension(JSPX_EXTENSION);
         setExtensions(ext);
 
     }
