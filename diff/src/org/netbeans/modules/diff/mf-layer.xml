@@ -14,6 +14,17 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
   <folder name="Services">
+    <file name="org-netbeans-modules-diff-cmdline-CmdlineDiffProvider.instance">
+        <attr name="instanceClass" stringvalue="org.netbeans.modules.diff.cmdline.CmdlineDiffProvider"/>
+        <attr name="instanceCreate" methodvalue="org.netbeans.modules.diff.cmdline.CmdlineDiffProvider.createDefault"/>
+        <attr name="instanceof" stringvalue="org.netbeans.api.diff.DiffProvider"/>
+    </file>
+    <file name="org-netbeans-modules-diff-builtin-visualizer-GraphicalDiffVisualizer.instance">
+        <attr name="instanceClass" stringvalue="org.netbeans.modules.diff.builtin.visualizer.GraphicalDiffVisualizer"/>
+        <attr name="instanceof" stringvalue="org.netbeans.api.diff.DiffVisualizer"/>
+    </file>
+
+    <!--
     <folder name="Hidden"> 
       <file name="org-netbeans-modules-diff-DiffSettings.settings" url="DiffSettings.settings">
         <attr name="SystemFileSystem.layer" stringValue="project"/>
@@ -21,14 +32,18 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/diff/diffSettingsIcon.gif" />
       </file>
     </folder>
+    -->
 
+    <!--
     <file name="org-netbeans-modules-diff-DiffSettingsNode.instance">
       <attr name="SystemFileSystem.layer" stringValue="project"/>
       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.diff.Bundle" />
       <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/diff/diffSettingsIcon.gif" />
     </file>
+    -->
   </folder>
 
+  <!--
   <folder name="UI"> 
     <folder name="Services">
       <folder name="IDEConfiguration">
@@ -42,6 +57,7 @@ SystemFileSystem
       </folder>
     </folder>
   </folder>
+  -->
 
 </filesystem>
 

@@ -16,6 +16,7 @@ package org.netbeans.modules.diff;
 import java.lang.reflect.*;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -88,16 +89,17 @@ public class DiffAction extends NodeAction {
         final FileObject fo2 = (FileObject) fos.get(1);
         //System.out.println("performAction("+fo1+", "+fo2+")");
         //doDiff(fo1, fo2);
-        DiffVisualizer dv = DiffManager.getDefault().getDefaultDiffVisualizer();
+        DiffVisualizer dv = DiffVisualizer.getDefault();
         System.out.println("dv = "+dv);
         if (dv == null) return ;
         List diffs = null;
         if (dv.needsProvider()) {
-            DiffProvider dp = DiffManager.getDefault().getDefaultDiffProvider();
+            DiffProvider dp = DiffProvider.getDefault();
             System.out.println("dp = "+dp);
             if (dp == null) return ;
             try {
-                diffs = dp.createDiff(fo1, fo2);
+                diffs = dp.createDiff(new InputStreamReader(fo1.getInputStream()),
+                                      new InputStreamReader(fo2.getInputStream()));
             } catch (IOException ioex) {
                 TopManager.getDefault().notifyException(ioex);
                 return ;
@@ -105,7 +107,10 @@ public class DiffAction extends NodeAction {
         }
         TopComponent tp;
         try {
-            tp = dv.showDiff(diffs, fo1, fo2);
+            tp = dv.showDiff(diffs, fo1.getName(), fo1.getPackageNameExt('/', '.'),
+                             new InputStreamReader(fo1.getInputStream()),
+                             fo2.getName(), fo2.getPackageNameExt('/', '.'),
+                             new InputStreamReader(fo2.getInputStream()), fo1.getMIMEType());
         } catch (IOException ioex) {
             TopManager.getDefault().notifyException(ioex);
             return ;

@@ -59,6 +59,10 @@ public class CmdlineDiffProvider extends DiffProvider {
             pattern = new RE(DIFF_REGEXP);
         } catch (RESyntaxException resex) {}
     }
+    
+    public static CmdlineDiffProvider createDefault() {
+        return new CmdlineDiffProvider("diff {0} {1}");
+    }
 
     /**
      * Set a new diff command.
