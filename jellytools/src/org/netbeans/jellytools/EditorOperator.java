@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools;
@@ -15,10 +15,10 @@ package org.netbeans.jellytools;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.KeyEvent;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JToolBar;
 import javax.swing.text.BadLocationException;
@@ -39,12 +39,9 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.jemmy.operators.Operator;
 
 import org.openide.cookies.LineCookie;
 import org.openide.loaders.DataObject;
-import org.openide.text.Annotatable;
 import org.openide.text.Annotation;
 import org.openide.text.CloneableEditor;
 import org.openide.text.Line;
@@ -559,21 +556,17 @@ public class EditorOperator extends TopComponentOperator {
      * @see #getAnnotationType
      */
     public Object[] getAnnotations(int lineNumber) {
-        return getAnnotations(getLine(lineNumber)).toArray(new Annotation[0]);
-    }
-    
-    /** Gets annotations from given Line object
-     * @param line instance of org.openide.text.Line
-     * @return list of annotations
-     */
-    private List getAnnotations(Object line) {
+        ArrayList result = new ArrayList();
         try {
-            Method getAnnotations = Annotatable.class.getDeclaredMethod("getAnnotations", null);
-            getAnnotations.setAccessible(true);
-            return (List)getAnnotations.invoke(line, null);
+            Class annotationsClass = Class.forName("org.netbeans.editor.Annotations");
+            Method getLineAnnotationsMethod = annotationsClass.getDeclaredMethod("getLineAnnotations", new Class[] {int.class});
+            getLineAnnotationsMethod.setAccessible(true);
+            Object lineAnnotations = getLineAnnotationsMethod.invoke(getAnnotationsInstance(), new Object[] {new Integer(lineNumber-1)});
+            result = getAnnotations(lineAnnotations);
         } catch (Exception e) {
-            throw new JemmyException("getAnnotations() by reflection failed.", e);
+            throw new JemmyException("getAnnotations failed.", e);
         }
+        return result.toArray(new Annotation[result.size()]);
     }
     
     /**Gets all annotations for current editor (Document).
@@ -583,67 +576,47 @@ public class EditorOperator extends TopComponentOperator {
      * @see #getAnnotationType
      */
     public Object[] getAnnotations() {
-        Document doc = txtEditorPane().getDocument();
-        DataObject dob = (DataObject)doc.getProperty(Document.StreamDescriptionProperty);
-        
-        // get line annotations
-        Set set = ((LineCookie)dob.getCookie(LineCookie.class)).getLineSet();
-        Iterator iter = set.getLines().iterator();
         ArrayList result = new ArrayList();
-        while(iter.hasNext()) {
-            result.addAll(getAnnotations((Line)iter.next()));
-        }
-        // get error and override parser annotations
-        Class javaEditorClass = null;
         try {
-            javaEditorClass = Class.forName("org.netbeans.modules.java.JavaEditor");
-        } catch (ClassNotFoundException e) {
-            // print only warning. Class JavaEditor don't need to be present when 
-            // java module is uninstalled.
-            getOutput().printLine("WARNING: Class org.netbeans.modules.java.JavaEditor not found.");
+            Class annotationsClass = Class.forName("org.netbeans.editor.Annotations");
+            Field lineAnnotationsArrayField = annotationsClass.getDeclaredField("lineAnnotationsArray");
+            lineAnnotationsArrayField.setAccessible(true);
+            ArrayList lineAnnotationsArray = (ArrayList)lineAnnotationsArrayField.get(getAnnotationsInstance());
+            // loop through all lines
+            for(int i=0;i<lineAnnotationsArray.size();i++) {
+                result.addAll(getAnnotations(lineAnnotationsArray.get(i)));
+            }
+        } catch (Exception e) {
+            throw new JemmyException("getAnnotations failed.", e);
         }
-        Object javaEditorInstance = dob.getCookie(javaEditorClass);
-        if(javaEditorInstance != null) {
-            // get error annotations
-            ArrayList errorAnnotations;
-            try {
-                java.lang.reflect.Field annot = javaEditorClass.getDeclaredField("errorAnnotations");
-                annot.setAccessible(true);
-                errorAnnotations = (ArrayList)annot.get(javaEditorInstance);
-            } catch (Exception e) {
-                throw new JemmyException("Get errorAnnotations field failed.", e);
-            }
-            result.addAll(errorAnnotations);
-            
-            // get override parser annotations
-            Class overrideAnnotationSupportClass = null;
-            try {
-                overrideAnnotationSupportClass = Class.forName("org.netbeans.modules.java.OverrideAnnotationSupport");
-            } catch (ClassNotFoundException e) {
-                // print only warning. Class OverrideAnnotationSupport don't need to be present when 
-                // java module is uninstalled.
-                getOutput().printLine("WARNING: Class org.netbeans.modules.java.OverrideAnnotationSupport not found.");
-            }
-            Object overrideAnnotationSupportInstance = null;
-            try {
-                java.lang.reflect.Field overriddensSupport = javaEditorClass.getDeclaredField("overriddensSupport");
-                overriddensSupport.setAccessible(true);
-                overrideAnnotationSupportInstance = overriddensSupport.get(javaEditorInstance);
-            } catch (Exception e) {
-                throw new JemmyException("Get overriddensSupport field failed.", e);
-            }
-            ArrayList overrideAnnotations;
-            try {
-                java.lang.reflect.Field annot = overrideAnnotationSupportClass.getDeclaredField("overrideAnnotations");
-                annot.setAccessible(true);
-                overrideAnnotations = (ArrayList)annot.get(overrideAnnotationSupportInstance);
-            } catch (Exception e) {
-                throw new JemmyException("Get overrideAnnotations field failed.", e);
-            }
-            result.addAll(overrideAnnotations);
-        }
-        // return all line and parser annotations together
         return result.toArray(new Annotation[result.size()]);
+    }
+    
+    /** Returns instance of org.netbeans.editor.Annotations object for this
+     * document. */
+    private Object getAnnotationsInstance() throws Exception {
+        Class baseDocumentClass = Class.forName("org.netbeans.editor.BaseDocument");
+        Method getAnnotationsMethod = baseDocumentClass.getDeclaredMethod("getAnnotations", null);
+        getAnnotationsMethod.setAccessible(true);
+        return getAnnotationsMethod.invoke(txtEditorPane().getDocument(), null);
+    }
+    
+    /** Returns ArrayList of org.openide.text.Annotation from given LineAnnotations
+     * object. */
+    private ArrayList getAnnotations(Object lineAnnotations) throws Exception {
+        Class lineAnnotationsClass = Class.forName("org.netbeans.editor.Annotations$LineAnnotations");
+        Class annotationDescDelegateClass = Class.forName("org.netbeans.modules.editor.NbEditorDocument$AnnotationDescDelegate");
+        Field delegateField = annotationDescDelegateClass.getDeclaredField("delegate");
+        delegateField.setAccessible(true);
+
+        Method getAnnotationsMethod = lineAnnotationsClass.getDeclaredMethod("getAnnotations", null);
+        getAnnotationsMethod.setAccessible(true);
+        Iterator annotations = (Iterator)getAnnotationsMethod.invoke(lineAnnotations, null);
+        ArrayList result = new ArrayList();
+        for (Iterator it = annotations; it.hasNext();) {
+            result.add(delegateField.get(it.next()));
+        }
+        return result;
     }
     
     /** Returns a string uniquely identifying annotation. For editor bookmark
