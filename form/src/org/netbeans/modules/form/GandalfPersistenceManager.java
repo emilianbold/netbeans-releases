@@ -111,7 +111,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
       for (int i; (i = is.read()) != '<'; );
       is.read(buffer);
       String s = new String (buffer);
-      System.out.println("buffer:"+s);
       int pos = s.indexOf("encoding");
       String result=null;
       int startPos, endPos;
@@ -125,7 +124,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
         // encoding not specified in xml
         result = System.getProperty ("file.encoding");
       }
-      System.out.println("result:"+result);
       return result;
     } catch (java.io.IOException e) {
       e.printStackTrace();
@@ -1439,6 +1437,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 /*
  * Log
+ *  41   Gandalf   1.40        11/15/99 Pavel Buzek     
  *  40   Gandalf   1.39        11/15/99 Pavel Buzek     property for encoding
  *  39   Gandalf   1.38        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
