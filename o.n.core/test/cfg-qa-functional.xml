@@ -45,8 +45,15 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/windowsystem/validation/Validation_Docking.class"/>		
-                <include name="gui/windowsystem/validation/Validation_ProjectSwitching.class"/>		
                 <include name="gui/windowsystem/validation/Validation_ResizeMove.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="stable or ide or ws" executor="ide" name="Validation tests - project switching (in ide)" resultsprocessor="unit">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/windowsystem/validation/Validation_ProjectSwitching.class"/>		
             </patternset>
         </testset>
     </testbag>
@@ -58,6 +65,17 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
+
+
+    <testbag testattribs="stable or ide or ws" executor="ide" name="MDI Workspaces tests" resultsprocessor="unit">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/windowsystem/mdi/WorkspacesTest.class"/>		
+            </patternset>
+        </testset>
+    </testbag>
+
+
 <!-- END Window System testbags -->
 
 
@@ -72,23 +90,6 @@ Microsystems, Inc. All Rights Reserved.
 								
 <!-- END Property Editors testbag -->
     
-   <!-- 
-    <testbag testattribs="stable or ide" executor="code" name="testbag_2" resultsprocessor="unit">
-        <testset dir="qa-functional/src">
-            <patternset>
-       
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="dev" executor="code" name="testbag_dev" resultsprocessor="unit">
-        <testset dir="qa-functional/src">
-            <patternset>
-       
-            </patternset>
-        </testset>
-    </testbag>
-    -->
     <executor name="code" antfile="build-qa-functional.xml" target="runcodetest"/>
     
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest"/>
