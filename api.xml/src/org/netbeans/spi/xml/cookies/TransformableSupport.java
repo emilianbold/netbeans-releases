@@ -31,9 +31,9 @@ import org.netbeans.api.xml.cookies.*;
 
 /**
  * Perform Transform action on XML document.
- * Default implementation of TransformableCookie cookie.
+ * Default implementation of {@link TransformableCookie} cookie.
  *
- * @author  Libor Kramolis
+ * @author     Libor Kramolis
  * @deprecated XML tools SPI candidate
  */
 public final class TransformableSupport implements TransformableCookie {
@@ -70,18 +70,17 @@ public final class TransformableSupport implements TransformableCookie {
             Transformer transformer = newTransformer (transformSource);
             
             // transform
-
             if (notifier != null) {
-                Proxy proxy = new Proxy(notifier);
-                transformer.setErrorListener(proxy);
+                Proxy proxy = new Proxy (notifier);
+                transformer.setErrorListener (proxy);
             }
             transformer.transform (xmlSource, outputResult);
             
         } catch (TransformerConfigurationException ex) {
             // thrown if error in style sheet
             if (notifier != null) {
-                CookieObserver.Message message = new DefaultXMLProcessorMessage(ex, CookieObserver.Message.FATAL_ERROR_LEVEL);
-                notifier.receive(message);
+                CookieObserver.Message message = new DefaultXMLProcessorMessage (ex, CookieObserver.Message.FATAL_ERROR_LEVEL);
+                notifier.receive (message);
             }
         }                
     }
@@ -99,30 +98,37 @@ public final class TransformableSupport implements TransformableCookie {
         return getTransformerFactory().newTransformer (xsl);
     }
 
+
+    //
+    // class Proxy
+    //
+
     private static class Proxy implements ErrorListener {
         
         private final CookieObserver peer;
         
         public Proxy (CookieObserver peer) {
-            if (peer == null) throw new NullPointerException();
+            if (peer == null) {
+                throw new NullPointerException();
+            }
             this.peer = peer;
         }
         
-        public void error(TransformerException tex) throws javax.xml.transform.TransformerException {
-            CookieObserver.Message message = new DefaultXMLProcessorMessage(tex, CookieObserver.Message.ERROR_LEVEL);
-            peer.receive(message);
+        public void error (TransformerException tex) throws javax.xml.transform.TransformerException {
+            CookieObserver.Message message = new DefaultXMLProcessorMessage (tex, CookieObserver.Message.ERROR_LEVEL);
+            peer.receive (message);
         }
         
         public void fatalError(TransformerException tex) throws javax.xml.transform.TransformerException {
-            CookieObserver.Message message = new DefaultXMLProcessorMessage(tex, CookieObserver.Message.FATAL_ERROR_LEVEL);
-            peer.receive(message);            
+            CookieObserver.Message message = new DefaultXMLProcessorMessage (tex, CookieObserver.Message.FATAL_ERROR_LEVEL);
+            peer.receive (message);            
         }
         
         public void warning(TransformerException tex) throws javax.xml.transform.TransformerException {
-            CookieObserver.Message message = new DefaultXMLProcessorMessage(tex, CookieObserver.Message.WARNING_LEVEL);
-            peer.receive(message);            
+            CookieObserver.Message message = new DefaultXMLProcessorMessage (tex, CookieObserver.Message.WARNING_LEVEL);
+            peer.receive (message);            
         }
         
-    }
+    } // class Proxy
     
 }
