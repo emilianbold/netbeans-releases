@@ -1348,11 +1348,17 @@ public class GandalfPersistenceManager extends PersistenceManager {
     private void saveConstraints(RADVisualComponent component,
                                  StringBuffer buf,
                                  String indent) {
-        LayoutSupport laySup = component.getParentContainer().getLayoutSupport();
-        if (laySup == null) return;
+        RADVisualContainer parentCont = component.getParentContainer();
+        if (parentCont == null)
+            return;
+
+        LayoutSupport laySup = parentCont.getLayoutSupport();
+        if (laySup == null)
+            return;
 
         LayoutSupport.ConstraintsDesc lsConstr = laySup.getConstraints(component);
-        if (lsConstr == null) return;
+        if (lsConstr == null)
+            return;
 
         DesignLayout.ConstraintsDescription dlConstr =
             Compat31LayoutFactory.createCompatibleConstraints(lsConstr);
