@@ -16,11 +16,12 @@ import java.io.*;
 
 /** Support for JavaCC version 1.1. When JavaCC is required to read directly
 * from string or char[].
-*
-* @author Petr Kuzel
-* @version Aug 4, 2000 
-*/
-public class StringParserInput extends Object implements CharStream {
+ * <p>
+ * Added support for JavaCC 3.2 generated TokenManagers: extends SimpleCharStream.
+ *
+ * @author Petr Kuzel
+ */
+public class StringParserInput extends SimpleCharStream implements CharStream {
     /** the buffer */
     private char[] buffer;
 

@@ -26,9 +26,9 @@ package org.netbeans.modules.xml.text.syntax.javacc.lib;
  * <p>
  * Note: Delete JavaCC generated UCode_CharStream and add import statement
  * that makes this class visible.
- * 
+ *
+ * @see https://javacc.dev.java.net/issues/show_bug.cgi?id=77 
  * @author  Petr Kuzel
- * @version 
  */
 public final class UCode_CharStream extends StringParserInput {
 
