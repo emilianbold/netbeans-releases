@@ -71,6 +71,7 @@ Microsystems, Inc. All Rights Reserved.
 	<target name="clean" depends="build-init, clean-ddgen-src, projectized.clean"/>
 	
 	<target name="clean-ddgen-src">
+		<mkdir dir="${s2b_root_wscompile_config}"/>
 		<delete>
 			<fileset dir="${s2b_root_wscompile_config}">
 				<include name="*.java"/>
