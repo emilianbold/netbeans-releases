@@ -105,7 +105,7 @@ public class ConfigDataLoader extends UniFileLoader {
             BufferedReader br=new BufferedReader(new InputStreamReader(fo.getInputStream()));
             String line;
             while ((line=br.readLine())!=null)
-                if (line.indexOf("\"http://www.netbeans.org/dtds/xtest-cfg-1_0.dtd\"")>=0) { // NOI18N
+                if (line.indexOf("<mconfig ")>=0) { // NOI18N
                     br.close();
                     return fo;
                 }

@@ -144,7 +144,7 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
         }
         public boolean isCellEditable(EventObject event) {
             if (event instanceof MouseEvent) {
-                Object o=tree.getPathForLocation(((MouseEvent)event).getX(), ((MouseEvent)event).getY()).getLastPathComponent();
+                Object o=this.tree.getPathForLocation(((MouseEvent)event).getX(), ((MouseEvent)event).getY()).getLastPathComponent();
                 return  ((o instanceof Include)||(o instanceof TestSet))&&super.isCellEditable(event);
             }
             return super.isCellEditable(event);

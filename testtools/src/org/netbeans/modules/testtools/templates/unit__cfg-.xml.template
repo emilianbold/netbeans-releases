@@ -1,3 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mconfig PUBLIC "-//NetBeans//DTD XTest cfg 1.0//EN"
+                         "http://www.netbeans.org/dtds/xtest-cfg-1_0.dtd">
 <mconfig name="unit Test Type Config">
 
     <!-- testbag with all tests running in code mode (i.e. in standard JVM)
