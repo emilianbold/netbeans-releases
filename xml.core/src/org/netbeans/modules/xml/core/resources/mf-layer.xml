@@ -154,7 +154,7 @@ SystemFileSystem
 <helpctx id="org.netbeans.modules.xml.core.docs.HOMEID"/>
 ]]>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.resources.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/xmlObject.gif"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/blank.gif"/>
                 </file>
 
             </folder> <!-- HelpShortcuts -->
