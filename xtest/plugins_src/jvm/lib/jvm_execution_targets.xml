@@ -73,6 +73,7 @@ Microsystems, Inc. All Rights Reserved.
             
             <sysproperty key="work.dir" value="${xtest.workdir}/sys"/>
             <sysproperty key="xtest.workdir" value="${xtest.workdir}"/>
+            <sysproperty key="xtest.data" value="${xtest.data}"/>
             <sysproperty key="xtest.tmpdir" value="${xtest.tmpdir}"/>
             <sysproperty key="xtest.sketchpad" value="${xtest.sketchpad}"/>
             <sysproperty key="nbjunit.workdir" value="${xtest.workdir}/user"/>

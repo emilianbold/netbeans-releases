@@ -617,26 +617,46 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         getRef().println(message);
     }
     
-    /** Get the testmethod specific golden file from data/goldenfiles/${classname}
+    /** Get the test method specific golden file from ${xtest.data}/goldenfiles/${classname}
+     * directory. If not found, try also deprecated src/data/goldenfiles/${classname}
      * resource directory.
-     * @param filename filename to get from golden files resource directory
-     * @return file
+     * @param filename filename to get from golden files directory
+     * @return golden file
      */    
     public File getGoldenFile(String filename) {
-        // golden files are in data/goldenfiles/${classname}/* ...
         String fullClassName = this.getClass().getName();
+        String goldenFileName = fullClassName.replace('.', '/')+"/"+filename;
+        // golden files are in ${xtest.data}/goldenfiles/${classname}/...
+        File goldenFile = new File(getDataDir()+"/goldenfiles/"+goldenFileName);
+        if(goldenFile.exists()) {
+            // Return if found, otherwise try to find golden file in deprecated
+            // location. When deprecated part is removed, add assertTrue(goldenFile.exists())
+            // instead of if clause.
+            return goldenFile;
+        }
+        
+        /** Deprecated - this part is deprecated */
+        // golden files are in data/goldenfiles/${classname}/* ...
         String className = fullClassName;
         int lastDot = fullClassName.lastIndexOf('.');
         if (lastDot != -1) {
             className = fullClassName.substring(lastDot+1);
         }  
-        String goldenFileName = className+"/"+filename;
+        goldenFileName = className+"/"+filename;
         URL url = this.getClass().getResource("data/goldenfiles/"+goldenFileName);
-        assertNotNull("Golden file data/goldenfiles/"+goldenFileName+" cannot be found",url);
+        assertNotNull("Golden file "+goldenFileName+" cannot be found neither in ${xtest.data}/goldenfiles nor in src/data/goldenfiles", url);
         String resString = convertNBFSURL(url);        
-        File goldenFile = new File(resString);
-        //System.out.println("Res: "+resString);
+        goldenFile = new File(resString);
         return goldenFile;
+        /** Deprecated end. */
+    }
+
+    /** Returns pointer to directory with test data (golden files, sample files, ...).
+     * It is the same from xtest.data property.
+     * @return data directory
+     */
+    public File getDataDir() {
+        return new File(System.getProperty("xtest.data"));
     }
     
     /** Get the default testmethod specific golden file from

@@ -18,6 +18,11 @@ Microsystems, Inc. All Rights Reserved.
     <property name="xtest.workdir" location="work"/>
     <!-- location for results from the harness -->
     <property name="xtest.results" location="results"/>
+    <!-- XTest data directory. It corresponds with test/${xtest.testtype}/data 
+        directory where test developer can store golden files, sample files 
+        or additional resources needed for tests.
+    -->
+    <property name="xtest.data" location="${xtest.workdir}/sys/tests/${xtest.testtype}/data"/>
 
     <property name="xtest.tmpdir" location="${xtest.workdir}/tmpdir"/>
     <property name="xtest.sketchpad" location="${xtest.workdir}/user/sketch-pad"/>
