@@ -176,6 +176,39 @@ Microsystems, Inc. All Rights Reserved.
     </java>
     <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win.exe"/>
   </target>
+
+  <target name="build-macosx" depends="init, clean-build, compile, create-statefile">
+    <mkdir dir="build/scripts/as_setup"/>
+    <copy file="scripts/as-macosx-install.template" tofile="build/scripts/as_setup/as-macosx-install.template"/>
+    <copy file="scripts/as-macosx-uninstall.template" tofile="build/scripts/as-macosx-uninstall.template"/>
+    <copy file="../lib/scripts/run-storage-builder-unix.template"
+          tofile="build/storagebuilder/run-storage-builder-unix.template"/>
+    <move file="build/scripts/statefile" todir="build/scripts/as_setup"/>
+    <exec os="Linux SunOS" executable="unzip">
+      <arg line="${as.installer} -d build/scripts/as_setup"/>
+    </exec>
+    <!-- Ant 'unzip' task does not work from unknown reason on AS Installer exe file so we use 'exec' task. -->
+    <!-- <unzip src="${as.installer}" dest="build/scripts/as_setup"/> -->
+    <java classname="com.installshield.isje.ISJE" fork="true">
+      <arg value="as-macosx.xml" />
+      <arg value="-build" />
+      <arg value="-alias"/>
+      <arg value="basedir=${basedir}"/>
+      <arg value="-alias"/>
+      <arg value="nb.dir=${nb.dir}"/>
+      <arg value="-alias"/>
+      <arg value="as.scripts.dir=build/scripts"/>
+      <arg value="-alias"/>
+      <arg value="storage.builder=${storage.builder}"/>
+      <arg value="-alias"/>
+      <arg value="sb.scripts.dir=build/storagebuilder"/>
+      <classpath>
+        <pathelement path="build/classes" />
+        <path refid="ismp.cp"/>
+      </classpath>
+    </java>
+    <move file="build/disk1/setupMac.command" tofile="dist/${installer.basename}-macosx.command"/>
+  </target>
  
   <target name="compile" depends="init, build-library" description="compile custom beans and panels">
     <mkdir dir="build/classes"/>

@@ -6,11 +6,8 @@ EXECNAME=
 INSTDIR=
 STATEFILE=
 LOGFILE=
-TMPDIR=
 JAVAHOME=
 UNAME=`/bin/uname`
-
-export TMPDIR
 
 cd $INSTDIR
 echo "(`date`) Installing Appserver..." >> $LOGFILE
@@ -32,8 +29,8 @@ if [ "$UNAME" = "Linux" -a ! -x "$EXECNAME" ] ; then
 fi
 
 echo "Executing the following command:" >> $LOGFILE
-echo "$EXECNAME -javahome $JAVAHOME -tmpdir $TMPDIR -silent $STATEFILE" >> $LOGFILE
-$EXECNAME -javahome $JAVAHOME -tmpdir $TMPDIR -silent $STATEFILE >> $LOGFILE
+echo "$EXECNAME -javahome $JAVAHOME -silent $STATEFILE" >> $LOGFILE
+$EXECNAME -javahome $JAVAHOME -silent $STATEFILE >> $LOGFILE
 status=$?
 echo "exitcode = $status" >> $LOGFILE
 

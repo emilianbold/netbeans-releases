@@ -120,7 +120,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
         logEvent(this, Log.DBG,"instDirPath: "+ instDirPath);
         imageDirPath  = nbInstallDir + File.separator + IMAGE_DIRECTORY_NAME;
 	asSetupDirPath = instDirPath + File.separator + AS_SETUP_DIR;
-	if (Util.isWindowsOS()) {
+	if (Util.isWindowsOS() || Util.isMacOSX()) {
 	    statefilePath = asSetupDirPath + File.separator + STATE_FILE_NAME;
 	} else {
 	    statefilePath = instDirPath + File.separator + STATE_FILE_NAME;
@@ -171,8 +171,26 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
 			     INSTALL_BAT, INSTALL);
 		createScript(instDirPath + File.separator + "as-win-uninstall.template",
 			     UNINSTALL_BAT, UNINSTALL);
-	    }
-            else {
+	    } else if (Util.isMacOSX()) {
+                String installTemplate = asSetupDirPath + File.separator + "as-macosx-install.template";
+		boolean executable = createScript(installTemplate, INSTALL_SH, INSTALL);
+		if (!executable) {
+		    // Can't execute install script so exit
+		    //InstallerExceptions.setErrors(true);
+		    //InstallerExceptions.addErrorMsg(resolveString("$L(com.sun.installer.InstallerResources,IE_EXEC_PERM_NOT_SET)") + INSTALL_SH);
+		    logEvent(this, Log.ERROR, "Could not set execute permissions for Mac OS X install script: " + INSTALL_SH);
+		    return;
+		}
+                String uninstallTemplate = instDirPath + File.separator + "as-macosx-uninstall.template";
+		executable = createScript(uninstallTemplate, UNINSTALL_SH, UNINSTALL);
+		if (!executable) {
+		    // Install anyway but can't uninstall
+		    //InstallerExceptions.setWarnings(true);
+                    logEvent(this, Log.ERROR, "Could not set execute permissions for Mac OS X uninstall script: " + UNINSTALL_SH);
+		    //InstallerExceptions.addWarningMsg(msg);
+		    //logEvent(this, Log.DBG, msg);
+		}
+	    } else {
                 String installTemplate = instDirPath + File.separator + "as-unix-install.template";
 		boolean executable = createScript(installTemplate, INSTALL_SH, INSTALL);
 		if (!executable) {
@@ -211,6 +229,8 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
             if (Util.isWindowsOS()) {
                 cmdArray[0] = "\"" + asSetupDirPath + File.separator 
 		    + INSTALL_BAT + "\"";
+            } else if (Util.isMacOSX()) {
+                cmdArray[0] = asSetupDirPath + File.separator + INSTALL_SH;
             } else {
                 cmdArray[0] = instDirPath + File.separator + INSTALL_SH;
             }
@@ -233,8 +253,12 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
 		    Util.deleteDirectory(new File(asSetupDirPath), this);
 		    mutableOperationState.setStatusDescription("");
 		    logEvent(this, Log.DBG,"Deleted contents of: " + asSetupDirPath);
+                } else if (Util.isMacOSX()) {
+		    /*Util.deleteDirectory(new File(asSetupDirPath), this);
+		    mutableOperationState.setStatusDescription("");
+		    logEvent(this, Log.DBG,"Deleted contents of: " + asSetupDirPath);*/
 		} else {
-		    File script = new File(instDirPath, INSTALL_SH);
+		    /*File script = new File(instDirPath, INSTALL_SH);
 		    if (script.exists()) {
 			script.delete();
 			logEvent(this, Log.DBG,"Deleted file: " + script.getAbsolutePath());
@@ -252,7 +276,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
 			    installer.delete();
 			    logEvent(this, Log.DBG,"Deleted file: " + installer.getAbsolutePath());
 			}
-		    }
+		    }*/
 		}
 	    }
             removeAppserverFromAddRemovePrograms();
@@ -303,7 +327,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
             
             String cmdArray[] = new String[1];
 	    if (Util.isWindowsOS()) {
-	    cmdArray[0] = "\"" + uninstallScriptPath + "\"";
+                cmdArray[0] = "\"" + uninstallScriptPath + "\"";
 	    } else {
 		cmdArray[0] = uninstallScriptPath;
 	    }
@@ -770,6 +794,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
         }
     }
 
+    /** Return path to AS install/uninstall log files. */
     public String getPEDirLogPath() {
         String dirPath = "";
 
@@ -780,6 +805,8 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
         /* Which platform first */
         if (Util.isWindowsOS()) {
             dirPath = tmpDir;
+        } else if (Util.isMacOSX()) {
+            dirPath = imageDirPath;
         } else if (Util.isLinuxOS()) {
             dirPath = ((isAdmin) ? "/var/log/wizards":"/var/tmp");
         } else if (Util.isSunOS()) {
@@ -875,11 +902,11 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
     public long getCheckSum() {
         if (Util.isWindowsOS()) {
             return 103000000L;
-        }
-        else if (Util.isSunOS()) {
+        } else if (Util.isSunOS()) {
             return 115000000L;
-        }
-        else if (Util.isLinuxOS()) {
+        } else if (Util.isLinuxOS()) {
+            return 100000000L;
+        } else if (Util.isMacOSX()) {
             return 100000000L;
         }
         return 0L;
@@ -998,11 +1025,14 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
 	} else {
 	    logfile = "as-uninstall.log";
 	}
-        String installerName = findASInstaller();
 	// Replace the script variables with real values
 	if (Util.isWindowsOS()) {
 	    winScriptSetup(reader, writer, logfile, scriptType);
+	} else if (Util.isMacOSX()) {
+            String installerName = asSetupDirPath + File.separator + "setup";
+            unixScriptSetup(reader, writer, logfile, installerName);
 	} else {
+            String installerName = instDirPath + File.separator + findASInstaller();
 	    unixScriptSetup(reader, writer, logfile, installerName);
 	}
         reader.close();
