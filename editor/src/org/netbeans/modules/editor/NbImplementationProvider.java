@@ -14,11 +14,17 @@
 package org.netbeans.modules.editor;
 
 import java.util.ResourceBundle;
+import java.awt.*;
+
 import org.openide.util.NbBundle;
 import org.netbeans.editor.ImplementationProvider;
-import javax.swing.Action;
+
+import javax.swing.*;
+import javax.swing.text.JTextComponent;
+
 import org.openide.util.actions.SystemAction;
 import org.openide.util.Lookup;
+import org.openide.windows.TopComponent;
 
 /** This is NetBeans specific provider of functionality.
  * See base class for detailed comments.
@@ -47,5 +53,14 @@ public class NbImplementationProvider extends ImplementationProvider {
             return null;
         }
     }
-    
+
+    public boolean activateComponent(JTextComponent c) {
+        Container container = SwingUtilities.getAncestorOfClass(TopComponent.class, c);
+        if (container != null) {
+            ((TopComponent)container).requestActive();
+            return true;
+        }
+        return false;
+    }
+
 }

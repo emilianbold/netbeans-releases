@@ -158,10 +158,6 @@ public class NbEditorKit extends ExtKit {
         addSystemActionMapping(gotoAction, org.openide.actions.GotoAction.class);
     }
 
-    public Class getFocusableComponentClass(JTextComponent c) {
-        return TopComponent.class;
-    }
-    
     public String getContentType() {
         if( Boolean.getBoolean( "netbeans.debug.exceptions" ) ){ //NOI18N
             System.out.println("Warning: KitClass "+this.getClass().getName()+" doesn't override the method getContentType.");
