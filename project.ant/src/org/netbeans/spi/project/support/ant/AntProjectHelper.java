@@ -708,6 +708,7 @@ public final class AntProjectHelper {
     /**
      * Get a property provider which defines <code>basedir</code> according to
      * the project directory and also copies all system properties in the current VM.
+     * It may also define <code>ant.home</code> if it is able.
      * @return a stock property provider for initial Ant-related definitions
      * @see PropertyUtils#sequentialPropertyEvaluator
      */

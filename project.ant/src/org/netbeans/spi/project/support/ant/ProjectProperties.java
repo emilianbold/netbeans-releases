@@ -34,9 +34,9 @@ import org.netbeans.modules.project.ant.FileChangeSupportListener;
 import org.netbeans.modules.project.ant.FileChangeSupportEvent;
 import org.openide.filesystems.FileSystem;
 import java.io.OutputStream;
-import java.util.Collections;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileLock;
+import org.openide.modules.InstalledFileLocator;
 
 /**
  * Manages the loaded property files for {@link AntProjectHelper}.
@@ -267,7 +267,10 @@ final class ProjectProperties {
                 m.putAll(p);
             }
             m.put("basedir", FileUtil.toFile(dir).getAbsolutePath()); // NOI18N
-            // XXX define ant.home
+            File antHome = InstalledFileLocator.getDefault().locate("ant", "org.apache.tools.ant.module", false); // NOI18N
+            if (antHome != null) {
+                m.put("ant.home", antHome.getAbsolutePath()); // NOI18N
+            }
             stockPropertyPreprovider = PropertyUtils.fixedPropertyProvider(m);
         }
         return stockPropertyPreprovider;
