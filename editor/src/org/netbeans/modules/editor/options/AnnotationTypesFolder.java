@@ -32,6 +32,8 @@ import org.w3c.dom.*;
 import org.openide.xml.XMLUtil;
 import org.openide.filesystems.FileLock;
 import java.lang.Exception;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 
 /** Representation of the "Editors/AnnotationTypes" folder. All
  * instances created through the createInstance() method are
@@ -54,12 +56,32 @@ public class AnnotationTypesFolder extends FolderInstance{
 
     /** map of annotationtype_name <-> AnnotationType_instance*/
     private Map annotationTypes;
+
+    /** FileObject which represent the folder with annotation types*/
+    private FileObject fo;
     
     /** Creates new AnnotationTypesFolder */
-    private AnnotationTypesFolder(DataFolder fld) {
+    private AnnotationTypesFolder(FileObject fo, DataFolder fld) {
         super(fld);
         recreate();
         instanceFinished();
+        
+        this.fo = fo;
+        
+        // add listener on changes in annotation types folder
+        fo.addFileChangeListener(new FileChangeAdapter() {
+            public void fileDeleted(FileEvent fe) {
+                AnnotationType type;
+                for (Iterator it = AnnotationTypes.getTypes().getAnnotationTypeNames(); it.hasNext(); ) {
+                    type = AnnotationTypes.getTypes().getType((String)it.next());
+                    if ( ((FileObject)type.getProp(AnnotationType.PROP_FILE)).equals(fe.getFile()) ) {
+                        AnnotationTypes.getTypes().removeType(type.getName());
+                        break;
+                    }
+                }
+            }
+        });
+        
     }
 
     /** Gets AnnotationTypesFolder singleton instance. */
@@ -77,7 +99,7 @@ public class AnnotationTypesFolder extends FolderInstance{
             DataObject d = DataObject.find(f);
             DataFolder df = (DataFolder)d.getCookie(DataFolder.class);
             if (df != null)
-                    folder = new AnnotationTypesFolder(df);
+                folder = new AnnotationTypesFolder(f, df);
         } catch (org.openide.loaders.DataObjectNotFoundException ex) {
             if( Boolean.getBoolean( "netbeans.debug.exceptions" ) )
                 ex.printStackTrace();

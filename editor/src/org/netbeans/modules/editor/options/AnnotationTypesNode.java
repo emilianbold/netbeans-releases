@@ -30,6 +30,8 @@ import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.netbeans.editor.AnnotationTypes;
 import java.lang.Boolean;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 /** Node representing the Annotation Types in Options window.
  *
@@ -125,6 +127,21 @@ public class AnnotationTypesNode extends AbstractNode {
     /** Class representing subnodes of AnnotationType node.*/
     private static class AnnotationTypesSubnodes extends Children.Array {
 
+        /** Listener on add/remove of annotation type. */
+        private PropertyChangeListener listener;
+        
+        public AnnotationTypesSubnodes() {
+            super();
+            AnnotationTypes.getTypes().addPropertyChangeListener( listener = new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (evt.getPropertyName() == AnnotationTypes.PROP_ANNOTATION_TYPES) {
+                        AnnotationTypesSubnodes.this.nodes = initCollection();
+                        refresh();
+                    }
+                }
+            });
+        }
+        
         /** Initialize the collection with results of parsing of "Editors/AnnotationTypes" directory */
         protected java.util.Collection initCollection() {
             
