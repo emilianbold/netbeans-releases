@@ -49,6 +49,12 @@ public class EventCustomEditor extends javax.swing.JPanel {
     java.awt.GridBagConstraints gridBagConstraints1;
     setPreferredSize (new java.awt.Dimension(300, 300));
 
+    handlersList.addListSelectionListener (new javax.swing.event.ListSelectionListener () {
+      public void valueChanged (javax.swing.event.ListSelectionEvent evt) {
+        handlersListValueChanged (evt);
+      }
+    }
+    );
 
 
     gridBagConstraints1 = new java.awt.GridBagConstraints ();
@@ -118,9 +124,20 @@ public class EventCustomEditor extends javax.swing.JPanel {
 
   }//GEN-END:initComponents
 
+private void handlersListValueChanged (javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_handlersListValueChanged
+// Add your handling code here:
+    if (handlersList.isSelectionEmpty()) {
+      removeButton.setEnabled(false);
+      editButton.setEnabled(false);
+    } else {
+      removeButton.setEnabled(true);
+      editButton.setEnabled(true);
+    }
+  }//GEN-LAST:event_handlersListValueChanged
+
 private void editButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
 // Add your handling code here:
-  NotifyDescriptor.InputLine nd = new NotifyDescriptor.InputLine ("New name for handler:", "Rename handler");
+  NotifyDescriptor.InputLine nd = new NotifyDescriptor.InputLine ("New Name For Handler:", "Rename Handler");
   Object[] handlers = handlersList.getSelectedValues();
   for (int i=0, n=handlers.length; i<n; i++) {
     nd.setInputText((String)handlers[i]);
@@ -145,7 +162,7 @@ private void removeButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN
 
 private void addButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
 // Add your handling code here:
-  NotifyDescriptor.InputLine nd = new NotifyDescriptor.InputLine ("New handler name:", "Add handler");
+  NotifyDescriptor.InputLine nd = new NotifyDescriptor.InputLine ("New Handler Name:", "Add Handler");
   if (TopManager.getDefault().notify(nd).equals (NotifyDescriptor.OK_OPTION)) {
     changes.getAdded ().add (nd.getInputText());
     handlersModel.addElement(nd.getInputText());

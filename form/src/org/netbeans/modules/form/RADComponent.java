@@ -1282,6 +1282,10 @@ public class RADComponent {
         else 
           return (String) getValue ();
       }
+      
+      public boolean supportsEditingTaggedValues () {
+        return false;
+      }
       /**
       * @return Returns custom property editor to be showen inside the property
       *         sheet.
@@ -1299,10 +1303,7 @@ public class RADComponent {
             }
           }
           eventCombo.addActionListener(new java.awt.event.ActionListener () {
-              public void actionPerformed (java.awt.event.ActionEvent e) {
-                //.addItemListener (new java.awt.event.ItemListener () {
-                //    public void itemStateChanged (java.awt.event.ItemEvent evt) {
-                
+              public void actionPerformed (java.awt.event.ActionEvent e) {               
                 String selected = (String) eventCombo.getEditor().getItem();
                 lastSelectedHandler = selected;
                 HandlerSetChange change = new HandlerSetChange ();
@@ -1376,10 +1377,14 @@ public class RADComponent {
           }
         );
         return TopManager.getDefault ().createDialog (dd);
+      }
+    }
+  }
 }
 
 /*
  * Log
+ *  61   Gandalf   1.60        11/26/99 Pavel Buzek     
  *  60   Gandalf   1.59        11/26/99 Pavel Buzek     EventCustomEditor 
  *       changed to panel, displayed via DialogDescriptor
  *  59   Gandalf   1.58        11/25/99 Ian Formanek    Uses Utilities module
