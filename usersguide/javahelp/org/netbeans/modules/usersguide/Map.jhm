@@ -1325,7 +1325,7 @@
    <mapID target="org.netbeans.core.NbAuthenticator.getPasswordAuthentication" url="pending.html" />
 <!--used for folder nodes in explorer, including root nodes of filesystems, such as JARs, and folders in JARs-->
    <mapID target="org.openide.loaders.DataFolder" url="filesystems/filesystems-objects.html" />
-<!--used for root node of a Javadoc filesystem on the javadoc tab in the Explorer-->
+<!--was used for root node of a Javadoc filesystem on the javadoc tab in the Explorer-->
    <mapID target="org.netbeans.modules.javadoc.search.JavaDocNode" url="pending.html" />
 
    <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.UNCONFIG" url="pending.html" />
