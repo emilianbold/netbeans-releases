@@ -74,13 +74,6 @@ public class NewEjbJarProjectWizardIterator implements WizardDescriptor.Instanti
         AntProjectHelper helper = EjbJarProjectGenerator.createProject(dirF, name, j2eeLevel, serverInstanceID);
         FileObject dir = FileUtil.toFileObject(dirF);
         
-        String srcDir = helper.getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.SRC_DIR);
-        if (srcDir != null) {
-            FileObject srcDirFo = dir.getFileObject(srcDir);
-            if (srcDirFo != null)
-                resultSet.add(srcDirFo);
-        }
-        
         Project earProject = (Project) wiz.getProperty(WizardProperties.EAR_APPLICATION);
         EjbJarProject createdEjbJarProject = (EjbJarProject) ProjectManager.getDefault().findProject(dir);
         if (earProject != null && createdEjbJarProject != null) {
