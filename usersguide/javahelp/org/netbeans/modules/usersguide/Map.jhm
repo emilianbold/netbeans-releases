@@ -1092,7 +1092,7 @@
 
 <!-- XML Module CSH -->
 <mapID target="org.netbeans.modules.xml.tools.actions.ValidateAction" url="xml/xml_validate.html" />
-<mapID target="org.netbeans.modules.xml.tools.doclet.DocletAction" url="xml/dtd/document.html" />
+<mapID target="org.netbeans.modules.xml.tools.doclet.DocletAction" url="xml/dtd/dtd_document.html" />
 
 <!--<mapID target="org.openide.loaders.XMLDataObject"           url="xml/xmlnodes.html" />-->
 <!--<mapID target="org.netbeans.modules.xml.core.XMLDataObject" url="xml/xmlnodes.html" />-->
