@@ -19,6 +19,7 @@ import java.util.*;
 import org.openide.nodes.*;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.form.*;
+import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 
 /**
  * @author Tran Duc Trung, Tomas Pavek
@@ -182,9 +183,11 @@ public abstract class AbstractLayoutSupport implements LayoutSupport
             // we must attach the fake peer to the AWT component again
             if (!comp.isDisplayable()
                     && !(comp instanceof javax.swing.JComponent)
-                    && !(comp instanceof javax.swing.RootPaneContainer))
-                org.netbeans.modules.form.fakepeer.FakePeerSupport
-                    .attachFakePeer(comp);
+                    && !(comp instanceof javax.swing.RootPaneContainer)) {
+                FakePeerSupport.attachFakePeer(comp);
+                if (comp instanceof Container)
+                    FakePeerSupport.attachFakePeerRecursively((Container)comp);
+            }
         }
     }
 
