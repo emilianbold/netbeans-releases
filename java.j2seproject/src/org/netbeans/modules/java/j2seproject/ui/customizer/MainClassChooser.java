@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,22 +16,21 @@ package org.netbeans.modules.java.j2seproject.ui.customizer;
 import javax.swing.JPanel;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.spi.java.project.support.ui.PackageView;
+import org.openide.cookies.SourceCookie;
 import org.openide.explorer.ExplorerManager;
-
 import org.openide.explorer.ExplorerManager.Provider;
-import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.TreeView;
+import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.nodes.Children.*;
+import org.openide.src.ClassElement;
+import org.openide.src.SourceElement;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
-import org.openide.cookies.SourceCookie;
-import org.openide.src.ClassElement;
-import org.openide.src.SourceElement;
+
 
 /** Browse and allow to chooser a project's main class.
  *

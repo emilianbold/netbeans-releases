@@ -7,31 +7,21 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.java.j2seproject.ui.customizer;
 
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.api.project.libraries.LibrariesCustomizer;
-import org.openide.util.WeakListeners;
+import javax.swing.JPanel;
 
-import java.util.Comparator;
-import java.util.Arrays;
-import javax.swing.*;
-import java.awt.*;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
 
 /** Show a warning that no main class is set and allows choose a main class.
  *
  * @author  Jiri Rechtacek
  */
-public class MainClassWarning extends javax.swing.JPanel {
+public class MainClassWarning extends JPanel {
     
     private String projectName;
     private FileObject sourcesRoot;
