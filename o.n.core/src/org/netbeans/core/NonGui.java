@@ -370,8 +370,8 @@ public class NonGui extends NbTopManager implements Runnable {
             try {
                 logger = new TopLogging(getSystemDir());
             } catch (IOException e) {
-                //       System.err.println("Cannot create log file.  Logging disabled."); // [PENDING]
-                //        e.printStackTrace();
+                System.err.println("Cannot create log file. Logging disabled."); // NOI18N
+                e.printStackTrace ();
             }
         }
 
