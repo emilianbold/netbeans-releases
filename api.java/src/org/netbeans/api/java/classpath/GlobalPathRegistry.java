@@ -50,26 +50,24 @@ import org.openide.filesystems.FileObject;
  * </p>
  * <div class="nonnormative">
  * <p>
- * Intended usage pattern:
+ * Intended usage patterns:
  * </p>
  * <ol>
  * <li><p>When a project is opened using
  * {@link org.netbeans.spi.project.ui.ProjectOpenedHook} it should add any paths
  * it defines or uses. When closed it should remove them.</p></li>
- * <li><p>The <b>Fast&nbsp;Open</b> feature of the editor should operate on sources
- * listed in open paths of type {@link ClassPath#SOURCE}, plus perhaps sources
- * corresponding to paths of type {@link ClassPath#COMPILE} (as determined by
- * {@link org.netbeans.api.java.queries.SourceForBinaryQuery}), plus perhaps
- * sources corresponding to paths of type {@link ClassPath#BOOT}.</p></li>
- * <li><p>The editor code responsible for updating code completion databases may
- * initiate parses of source paths when they are opened (which will typically
- * also trigger dependent parses of class paths).</p></li>
+ * <li><p>The <b>Fast&nbsp;Open</b> feature of the editor and other features which
+ * require a global list of relevant sources should use {@link #getSourceRoots} or
+ * the equivalent.</p></li>
  * <li><p>The <b>Javadoc&nbsp;Index&nbsp;Search</b> feature and <b>View&nbsp;&#8594;
- * Documentation&nbsp;Indices</b> submenu should operate on open Javadoc paths.</p></li>
+ * Documentation&nbsp;Indices</b> submenu should operate on open Javadoc paths,
+ * meaning that Javadoc corresponding to registered compile and boot classpaths
+ * (according to {@link JavadocForBinaryQuery}).</p></li>
  * <li><p>Stack trace hyperlinking can use the global list of source paths
- * to find sources (in case no more specific information about their origin is
- * available). Compile and boot paths can be used too in conjunction with a
- * source for binary query.</p></li>
+ * to find sources, in case no more specific information about their origin is
+ * available. The same would be true of debugging: if the debugger cannot find
+ * Java-like sources using more precise means ({@link SourceForBinaryQuery}), it
+ * can use {@link #findResource} as a fallback.</p></li>
  * </ol>
  * </div>
  * @author Jesse Glick
@@ -247,9 +245,10 @@ public final class GlobalPathRegistry {
      * <p>
      * Currently there is no reliable way to listen for changes in the
      * value of this method: while you can listen to changes in the paths
-     * mentioned, it is possible or {@link SourceForBinaryQuery} results to
-     * change, which you would not notice. XXX use new listening features of
-     * SourceForBinaryQuery to implement proper change firing.
+     * mentioned, it is possible for {@link SourceForBinaryQuery} results to
+     * change. In the future a change listener might be added for the value
+     * of the source roots.
+     * </p>
      * @return an immutable set of <code>FileObject</code> source roots
      */
     public synchronized Set/*<FileObject>*/ getSourceRoots() {
