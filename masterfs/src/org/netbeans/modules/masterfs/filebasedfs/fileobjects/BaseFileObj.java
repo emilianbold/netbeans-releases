@@ -223,7 +223,6 @@ public abstract class BaseFileObj extends FileObject {
 
     public final boolean isReadOnly() {
         final File f = getFileName().getFile();
-        assert f.exists() || !isValid(true, f) ;
 
         return !f.canWrite() && f.exists();
     }
@@ -242,26 +241,7 @@ public abstract class BaseFileObj extends FileObject {
         }
         return retVal;
     }
-
-
-    public final boolean isValid(boolean refresh) {            
-        if (refresh) {
-            setValid(getFileName().getFile().exists());                 
-        }
         
-        return isValid();/*getFileName().getFile().exists()*/
-    }
-
-    public final boolean isValid(final boolean refresh, final File f) {                    
-        if (refresh) {
-            File ff = (f != null) ? f : getFileName().getFile();
-            setValid(ff.exists());                 
-        }
-        
-        return isValid();/*getFileName().getFile().exists()*/
-    }
-    
-    
     static File getFile(final File f, final String name, final String ext) {
         File retVal;
 
@@ -294,7 +274,6 @@ public abstract class BaseFileObj extends FileObject {
     final void fireFileDataCreatedEvent(final boolean expected) {
         Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.LISTENERS_CALLS);
         stopWatch.start();
-        assert getFileName().getFile().exists();
         assert getFileName().getFile().isFile();         
 
         final BaseFileObj parent = getExistingParent();
@@ -313,7 +292,6 @@ public abstract class BaseFileObj extends FileObject {
         Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.LISTENERS_CALLS);
         stopWatch.start();
         
-        assert getFileName().getFile().exists();
         assert getFileName().getFile().isDirectory(); 
         
         final BaseFileObj parent = getExistingParent();
@@ -328,9 +306,9 @@ public abstract class BaseFileObj extends FileObject {
         stopWatch.stop();
     }
 
-    FolderObj getExistingParent() {
-        final File parentFile = getFileName().getParent().getFile();
-        final FolderObj parent = (FolderObj) getLocalFileSystem().getFactory().get(parentFile);
+    FolderObj getExistingParent() {         
+        final File parentFile = (getFileName().getParent() == null) ? null : getFileName().getParent().getFile();
+        final FolderObj parent = (parentFile == null) ? null : (FolderObj) getLocalFileSystem().getFactory().get(parentFile);
         return parent;
     }
 
@@ -340,7 +318,8 @@ public abstract class BaseFileObj extends FileObject {
         stopWatch.start();
         
         assert getFileName().getFile().exists();        
-        final BaseFileObj parent = getExistingParent();
+        FileObject p = getParent();
+        final BaseFileObj parent = (BaseFileObj)((p instanceof BaseFileObj) ? p : null);//getExistingParent();
         Enumeration pListeners = (parent != null) ? parent.getListeners() : null;
         
         fireFileChangedEvent(getListeners(), new FileEvent(this, this, expected));
@@ -357,7 +336,8 @@ public abstract class BaseFileObj extends FileObject {
         stopWatch.start();
         
         assert !getFileName().getFile().exists(); 
-        final BaseFileObj parent = getExistingParent();
+        FileObject p = getParent();
+        final BaseFileObj parent = (BaseFileObj)((p instanceof BaseFileObj) ? p : null);//getExistingParent();
         Enumeration pListeners = (parent != null) ?parent.getListeners() : null;        
         
         fireFileDeletedEvent(getListeners(), new FileEvent(this, this, expected));
@@ -404,7 +384,6 @@ public abstract class BaseFileObj extends FileObject {
 
     public void delete(final FileLock lock) throws IOException {
         final File f = getFileName().getFile();
-        assert f.exists() || !isValid(true, f) ;
 
         final FolderObj existingParent = getExistingParent();
         final ChildrenCache childrenCache = (existingParent != null) ? existingParent.getChildrenCache() : null;
@@ -425,7 +404,7 @@ public abstract class BaseFileObj extends FileObject {
             if (childrenCache != null) childrenCache.getChild(BaseFileObj.getNameExt(f), true);
         } finally {
             if (mutexPrivileged != null) mutexPrivileged.exitWriteAccess();
-            isValid(true,f);
+            setValid(false);
         }
 
         fireFileDeletedEvent(false);
@@ -440,6 +419,7 @@ public abstract class BaseFileObj extends FileObject {
 
     abstract protected void setValid(boolean valid);
 
+    abstract protected void refresh(final boolean expected, final boolean isFileDeletedAllowed);
     //TODO: attributes written by VCS must be readable by FileBaseFS and vice versa  
 /**
  * FileBaseFS 

@@ -40,7 +40,6 @@ final class FileObj extends BaseFileObj {
     
     public final java.io.OutputStream getOutputStream(final org.openide.filesystems.FileLock lock) throws java.io.IOException {
         final File f = getFileName().getFile();
-        assert f.exists() || !isValid(true, f) ;
 
         final MutualExclusionSupport.Closeable closable = MutualExclusionSupport.getDefault().addResource(this, false);
         FileOutputStream retVal = null;
@@ -66,7 +65,6 @@ final class FileObj extends BaseFileObj {
 
     public final java.io.InputStream getInputStream() throws java.io.FileNotFoundException {
         final File f = getFileName().getFile();
-        assert f.exists() || !isValid(true, f) ;
                         
         InputStream inputStream;
         MutualExclusionSupport.Closeable closeableReference = null;
@@ -145,21 +143,33 @@ final class FileObj extends BaseFileObj {
 
 
     public final void refresh(final boolean expected) {
+        refresh(expected, true);
+    }
+    
+
+    protected final void refresh(final boolean expected, final boolean isFileDeletedAllowed) {
 //        Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.REFRESH_FILE);
-//        stopWatch.start();
-        boolean isDeleted = (isValid() && !isValid(true));
+//        stopWatch.start();        
+        boolean isFileChangeFired = false;
+        
         if (isValid()) {
             final long oldLastModified = lastModified;
             lastModified();
 
-            if (oldLastModified != -1 && oldLastModified < lastModified) {
+            if (oldLastModified != -1 && lastModified != -1 && oldLastModified < lastModified) {
                 fireFileChangedEvent(expected);
+                isFileChangeFired = true;
             }
-        } else if (isDeleted && getExistingParent() == null) {            
+        } 
+        
+        setValid(getFileName().getFile().exists());        
+        if (!isValid() && !isFileChangeFired && isFileDeletedAllowed) {
             fireFileDeletedEvent(expected);    
         }
+        
 //        stopWatch.stop();
     }
+    
 
     public final Enumeration getChildren(final boolean rec) {
         return Enumerations.empty();

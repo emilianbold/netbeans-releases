@@ -367,7 +367,355 @@ public class FolderObjTest extends NbTestCase {
         assertNull(toDelete);        
         assertEquals(2, l.size());
     }
+    
+    public void testExternalDelete2() throws IOException {
+        File f = new File(testFile, "testDelete2/testForExternalRefresh/");
+        assert !f.exists() : f.getAbsolutePath();
+        assert f.mkdirs() : f.getAbsolutePath();
+        assert f.exists() : f.getAbsolutePath();
+        
+        FileBasedFileSystem fs = FileBasedFileSystem.getInstance(f);
+        
+        FileObject testFo = fs.findFileObject(f);
+        assertNotNull(testFo);
+        assertTrue(testFo.isFolder());
 
+        final List l = new ArrayList ();        
+        FileChangeListener fcl = new FileChangeAdapter () {
+            public void fileDeleted(FileEvent fe) {
+                l.add(fe);
+            }            
+        };
+
+        testFo.addFileChangeListener(fcl);
+        assertEquals(0, l.size());
+        
+        f.delete();
+        testFo.refresh();
+        assertEquals(1, l.size());        
+    }
+
+    public void testExternalDelete2_1() throws IOException {
+        File f = new File(testFile, "testDelete2/testForExternalRefresh/");
+        assert !f.exists() : f.getAbsolutePath();
+        assert f.mkdirs() : f.getAbsolutePath();
+        assert f.exists() : f.getAbsolutePath();
+        
+        FileBasedFileSystem fs = FileBasedFileSystem.getInstance(f);
+        
+        final FileObject testFo = fs.findFileObject(f);
+        assertNotNull(testFo);
+        assertTrue(testFo.isFolder());
+
+        final List l = new ArrayList ();        
+        FileChangeListener fcl = new FileChangeAdapter () {
+            public void fileDeleted(FileEvent fe) {
+                if (fe.getFile().equals(testFo)) {
+                    l.add(fe);
+                }
+            }            
+        };
+
+        testFo.getFileSystem().addFileChangeListener(fcl);
+        assertEquals(0, l.size());
+        
+        f.delete();
+        testFo.getFileSystem().refresh(true);
+        assertEquals(1, l.size());        
+        testFo.getFileSystem().removeFileChangeListener(fcl);
+    }
+
+    public void testExternalDelete2_2() throws IOException {
+        File f = new File(testFile, "testDelete2/testForExternalRefresh/");
+        assert !f.exists() : f.getAbsolutePath();
+        assert f.mkdirs() : f.getAbsolutePath();
+        assert f.exists() : f.getAbsolutePath();
+        
+        FileBasedFileSystem fs = FileBasedFileSystem.getInstance(f);
+        
+        FileObject testFo = fs.findFileObject(f);
+        assertNotNull(testFo);
+        assertTrue(testFo.isFolder());
+
+        final List l = new ArrayList ();        
+        FileChangeListener fcl = new FileChangeAdapter () {
+            public void fileDeleted(FileEvent fe) {
+                l.add(fe);
+            }            
+        };
+
+        testFo.addFileChangeListener(fcl);
+        assertEquals(0, l.size());
+        
+        f.delete();
+        testFo.getFileSystem().refresh(true);
+        assertEquals(1, l.size());        
+    }
+    
+    public void testExternalDelete3() throws IOException {
+        File f = new File(testFile, "testDelete2/testForExternalRefresh3/");
+        assert !f.exists() : f.getAbsolutePath();
+        assert f.mkdirs() : f.getAbsolutePath();
+        assert f.exists() : f.getAbsolutePath();
+        f = new File(f, "f.txt");
+        assert !f.exists() : f.getAbsolutePath();
+        assert f.createNewFile() : f.getAbsolutePath();
+        assert f.exists() : f.getAbsolutePath();
+        
+        
+        FileBasedFileSystem fs = FileBasedFileSystem.getInstance(f);
+        
+        FileObject testFo = fs.findFileObject(f);
+        assertNotNull(testFo);
+        assertTrue(testFo.isData());
+
+        final List l = new ArrayList ();        
+        FileChangeListener fcl = new FileChangeAdapter () {
+            public void fileDeleted(FileEvent fe) {
+                l.add(fe);
+            }            
+        };
+
+        testFo.addFileChangeListener(fcl);
+        assertEquals(0, l.size());
+        
+        f.delete();
+        testFo.refresh();
+        assertEquals(1, l.size());        
+    }
+
+    public void testExternalDelete3_1() throws IOException {
+        File f = new File(testFile, "testDelete2/testForExternalRefresh3/");
+        assert !f.exists() : f.getAbsolutePath();
+        assert f.mkdirs() : f.getAbsolutePath();
+        assert f.exists() : f.getAbsolutePath();
+        f = new File(f, "f.txt");
+        assert !f.exists() : f.getAbsolutePath();
+        assert f.createNewFile() : f.getAbsolutePath();
+        assert f.exists() : f.getAbsolutePath();
+        
+        
+        FileBasedFileSystem fs = FileBasedFileSystem.getInstance(f);
+        
+        FileObject testFo = fs.findFileObject(f);
+        assertNotNull(testFo);
+        assertTrue(testFo.isData());
+
+        final List l = new ArrayList ();        
+        FileChangeListener fcl = new FileChangeAdapter () {
+            public void fileDeleted(FileEvent fe) {
+                l.add(fe);
+            }            
+        };
+
+        testFo.getFileSystem().addFileChangeListener(fcl);
+        assertEquals(0, l.size());
+        
+        f.delete();
+        testFo.getFileSystem().refresh(true);
+        assertEquals(1, l.size());        
+        testFo.getFileSystem().removeFileChangeListener(fcl);
+
+    }
+    
+    public void testExternalDelete3_2() throws IOException {
+        File f = new File(testFile, "testDelete2/testForExternalRefresh3/");
+        assert !f.exists() : f.getAbsolutePath();
+        assert f.mkdirs() : f.getAbsolutePath();
+        assert f.exists() : f.getAbsolutePath();
+        f = new File(f, "f.txt");
+        assert !f.exists() : f.getAbsolutePath();
+        assert f.createNewFile() : f.getAbsolutePath();
+        assert f.exists() : f.getAbsolutePath();
+        
+        
+        FileBasedFileSystem fs = FileBasedFileSystem.getInstance(f);
+        
+        FileObject testFo = fs.findFileObject(f);
+        assertNotNull(testFo);
+        assertTrue(testFo.isData());
+
+        final List l = new ArrayList ();        
+        FileChangeListener fcl = new FileChangeAdapter () {
+            public void fileDeleted(FileEvent fe) {
+                l.add(fe);
+            }            
+        };
+
+        testFo.addFileChangeListener(fcl);
+        assertEquals(0, l.size());
+        
+        f.delete();
+        testFo.getFileSystem().refresh(true);
+        assertEquals(1, l.size());        
+    }
+    
+    
+    public void testExternalDelete4() throws IOException {
+        File f = new File(testFile, "testDelete2/testForExternalRefresh3/");
+        assert !f.exists() : f.getAbsolutePath();
+        assert f.mkdirs() : f.getAbsolutePath();
+        assert f.exists() : f.getAbsolutePath();
+
+        FileBasedFileSystem fs = FileBasedFileSystem.getInstance(f);        
+        FileObject testFolder = fs.findFileObject(f);        
+        assertNotNull(testFolder);
+        assertTrue(testFolder.isFolder());
+        
+        f = new File(f, "f.txt");
+        assert !f.exists() : f.getAbsolutePath();
+        assert f.createNewFile() : f.getAbsolutePath();
+        assert f.exists() : f.getAbsolutePath();
+
+        FileObject testFile = testFolder.getFileObject(f.getName());        
+        assertNotNull(testFile);
+        assertTrue(testFile.isData());
+                        
+
+        final List l = new ArrayList ();        
+        FileChangeListener fcl = new FileChangeAdapter () {
+            public void fileDeleted(FileEvent fe) {
+                l.add(fe);
+            }            
+        };
+
+        testFolder.addFileChangeListener(fcl);
+        assertEquals(0, l.size());
+        
+        f.delete();
+        testFolder.refresh();
+        assertEquals(1, l.size());        
+    }
+
+    public void testExternalDelete4_1() throws IOException {
+        File f = new File(testFile, "testDelete2/testForExternalRefresh3/");
+        assert !f.exists() : f.getAbsolutePath();
+        assert f.mkdirs() : f.getAbsolutePath();
+        assert f.exists() : f.getAbsolutePath();
+
+        FileBasedFileSystem fs = FileBasedFileSystem.getInstance(f);        
+        FileObject testFolder = fs.findFileObject(f);        
+        assertNotNull(testFolder);
+        assertTrue(testFolder.isFolder());
+        
+        f = new File(f, "f.txt");
+        assert !f.exists() : f.getAbsolutePath();
+        assert f.createNewFile() : f.getAbsolutePath();
+        assert f.exists() : f.getAbsolutePath();
+
+        FileObject testFile = testFolder.getFileObject(f.getName());  
+        assertNotNull(testFile);
+        assertTrue(testFile.isData());
+                        
+
+        final List l = new ArrayList ();        
+        FileChangeListener fcl = new FileChangeAdapter () {
+            public void fileDeleted(FileEvent fe) {
+                l.add(fe);
+            }            
+        };
+
+        testFolder.getFileSystem().addFileChangeListener(fcl);
+        assertEquals(0, l.size());
+        
+        f.delete();
+        testFolder.getFileSystem().refresh(true);
+        assertEquals(1, l.size());        
+       testFolder.getFileSystem().removeFileChangeListener(fcl);
+
+    }
+
+    public void testExternalDelete4_2() throws IOException {
+        File f = new File(testFile, "testDelete2/testForExternalRefresh3/");
+        assert !f.exists() : f.getAbsolutePath();
+        assert f.mkdirs() : f.getAbsolutePath();
+        assert f.exists() : f.getAbsolutePath();
+
+        FileBasedFileSystem fs = FileBasedFileSystem.getInstance(f);        
+        FileObject testFolder = fs.findFileObject(f);        
+        assertNotNull(testFolder);
+        assertTrue(testFolder.isFolder());
+        
+        f = new File(f, "f.txt");
+        assert !f.exists() : f.getAbsolutePath();
+        assert f.createNewFile() : f.getAbsolutePath();
+        assert f.exists() : f.getAbsolutePath();
+
+        FileObject testFile = testFolder.getFileObject(f.getName());
+        assertNotNull(testFile);
+        assertTrue(testFile.isData());
+                        
+
+        final List l = new ArrayList ();        
+        FileChangeListener fcl = new FileChangeAdapter () {
+            public void fileDeleted(FileEvent fe) {
+                l.add(fe);
+            }            
+        };
+
+        testFolder.getFileSystem().addFileChangeListener(fcl);
+        assertEquals(0, l.size());
+        
+        f.delete();
+        testFolder.refresh(true);
+        assertEquals(1, l.size());        
+        testFolder.getFileSystem().removeFileChangeListener(fcl);
+
+    }
+    
+//    public void testFileTypeChanged() throws Exception {
+//        String newFileName = "test";
+//        File f = new File(testFile, "testFileTypeNotRemembered/");
+//        assert !f.exists() : f.getAbsolutePath();
+//        assert f.mkdirs() : f.getAbsolutePath();
+//        assert f.exists() : f.getAbsolutePath();
+//
+//        FileBasedFileSystem fs = FileBasedFileSystem.getInstance(testFile);        
+//        FileObject parent = fs.findFileObject(testFile);        
+//        
+//        assertNotNull(parent);
+//        assertTrue(parent.isFolder());
+//        FileObject fo = parent.getFileObject("testFileTypeNotRemembered");
+//        assertTrue(fo.isFolder());
+//
+//        assertTrue(f.delete());
+//        assertTrue(f.createNewFile());
+//        assertTrue(f.isFile());        
+//        
+//        
+//        parent.refresh(true);
+//        fo = fs.findFileObject(f);
+//        assertNotNull(fo);
+//        assertTrue(fo.isData());
+//    }
+//
+//    public void testFileTypeChanged_1() throws Exception {
+//        String newFileName = "test";
+//        File f = new File(testFile, "testFileTypeNotRemembered/");
+//        assert !f.exists() : f.getAbsolutePath();
+//        assert f.mkdirs() : f.getAbsolutePath();
+//        assert f.exists() : f.getAbsolutePath();
+//
+//        FileBasedFileSystem fs = FileBasedFileSystem.getInstance(testFile);        
+//        FileObject parent = fs.findFileObject(testFile);        
+//        
+//        assertNotNull(parent);
+//        assertTrue(parent.isFolder());
+//        FileObject fo = parent.getFileObject("testFileTypeNotRemembered");
+//        assertTrue(fo.isFolder());
+//
+//        assertTrue(f.delete());
+//        assertTrue(f.createNewFile());
+//        assertTrue(f.isFile());        
+//        
+//        
+//        fs.refresh(true);
+//        fo = fs.findFileObject(f);
+//        assertNotNull(fo);
+//        assertTrue(fo.isData());
+//    }
+
+    
     /**
      * Test of getInputStream method, of class org.netbeans.modules.masterfs.filebasedfs.fileobjects.FolderObj.
      */
@@ -510,7 +858,6 @@ public class FolderObjTest extends NbTestCase {
                     hardRef.clear();                    
                     hardRef.add(fo.getParent());                                        
                     fo.getParent().getChildren ();
-
                 }
             }
 
@@ -552,8 +899,9 @@ public class FolderObjTest extends NbTestCase {
             
             assertTrue(file.createNewFile());
             fs.refresh(true);            
+                        
             ref = new WeakReference (fs.findFileObject(file.getParentFile()));
-            assertGC("", ref);                                
+            assertGC(file.getParentFile().getAbsolutePath(), ref);                                                
         }
         
         fs.removeFileChangeListener(fcl);

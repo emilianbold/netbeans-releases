@@ -50,7 +50,7 @@ public final class FileObjectFactory {
         synchronized (allInstances) {
             retVal = this.get(f);
             if (retVal != null) {
-                ((BaseFileObj)retVal).isValid(true, f);
+                ((BaseFileObj)retVal).setValid(f.exists());
             } else {
                 final File parent = f.getParentFile();
                 if (parent != null) {
@@ -110,14 +110,14 @@ public final class FileObjectFactory {
                     for (Iterator iterator = ((List)obj).iterator(); iterator.hasNext();) {
                         WeakReference ref = (WeakReference) iterator.next();
                         final BaseFileObj fo = (BaseFileObj) ((ref != null) ? ref.get() : null);
-                        if (fo != null && (fo.isFolder() || fo.getExistingParent() == null))  {
+                        if (fo != null)  {
                             all2Refresh.add(fo);
                         }                                            
                     }
                 } else {
                     final WeakReference ref = (WeakReference) obj;
                     final BaseFileObj fo = (BaseFileObj) ((ref != null) ? ref.get() : null);
-                    if (fo != null && (fo.isFolder() || fo.getExistingParent() == null))  {
+                    if (fo != null)  {
                         all2Refresh.add(fo);
                     }                    
                 }
@@ -126,8 +126,8 @@ public final class FileObjectFactory {
 
 
         for (Iterator iterator = all2Refresh.iterator(); iterator.hasNext();) {
-            final FileObject fo = (FileObject) iterator.next();
-            fo.refresh(expected);
+            final BaseFileObj fo = (BaseFileObj) iterator.next();
+            fo.refresh(expected, fo.getExistingParent()==null );
         }
     }
 

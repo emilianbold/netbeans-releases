@@ -177,7 +177,6 @@ java.lang.AssertionError: E:\work\nb_all8\openide\masterfs\build
         final Set retVal = new LinkedHashSet();
         
         final File folder = folderName.getFile();
-        assert folder.isDirectory() || !folder.exists();
         assert folderName.getFile().getAbsolutePath ().equals (folderName.toString ());
         
         final File[] childs = folder.listFiles();

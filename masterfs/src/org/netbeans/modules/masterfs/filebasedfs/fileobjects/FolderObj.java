@@ -45,6 +45,7 @@ public final class FolderObj extends BaseFileObj {
      */
     public FolderObj(final File file, final FileNaming name) {
         super(file, name);
+        valid = true;
     }
 
     public final boolean isFolder() {
@@ -53,10 +54,6 @@ public final class FolderObj extends BaseFileObj {
 
 
     public final FileObject getFileObject(final String name, final String ext) {
-        if (!isValid(true)) {
-            return null;   
-        }
-        
         FileObject retVal = null;
         final File f = getFileName().getFile();
         final ChildrenCache childrenCache = getChildrenCache();        
@@ -84,10 +81,6 @@ public final class FolderObj extends BaseFileObj {
     }
 
     public final FileObject[] getChildren() {
-        if (!isValid(true)) {
-            return new FileObject [] {};   
-        }
-        
         final List results = new ArrayList();
 
         final ChildrenCache childrenCache = getChildrenCache();
@@ -120,10 +113,6 @@ public final class FolderObj extends BaseFileObj {
     public final FileObject createFolder(final String name) throws java.io.IOException {
         FolderObj retVal = null;
         File folder2Create;
-        if (!isValid(true)) {
-            //TODO: annotate, NOI18N + bundle 
-            throw new IOException(getPath ());//I18    
-        }        
         final ChildrenCache childrenCache = getChildrenCache();
         
         final Mutex.Privileged mutexPrivileged = childrenCache.getMutexPrivileged();
@@ -157,10 +146,6 @@ public final class FolderObj extends BaseFileObj {
     }
 
     public final FileObject createData(final String name, final String ext) throws java.io.IOException {
-        if (!isValid(true)) {
-            //TODO: annotate, NOI18N + bundle 
-            throw new IOException(getPath ());//I18    
-        }
         final ChildrenCache childrenCache = getChildrenCache();        
         final Mutex.Privileged mutexPrivileged = childrenCache.getMutexPrivileged();
 
@@ -197,10 +182,6 @@ public final class FolderObj extends BaseFileObj {
     }
 
     public final void delete(final FileLock lock) throws IOException {
-        if (!isValid(true)) {
-            //TODO: annotate, NOI18N + bundle 
-            throw new IOException(getPath ());//I18    
-        }        
         final LinkedList all = new LinkedList();
 
         final File file = getFileName().getFile();
@@ -214,18 +195,21 @@ public final class FolderObj extends BaseFileObj {
 
         for (int i = 0; i < all.size(); i++) {
             final BaseFileObj toDel = (BaseFileObj) all.get(i);
-            toDel.isValid(true);
+            toDel.setValid(false);
             toDel.fireFileDeletedEvent(false);
         }
     }
 
 
     public final void refresh(final boolean expected) {
+        refresh(expected, true);
+    }
+
+    protected final void refresh(final boolean expected, final boolean isFileDeletedAllowed) {
 //        Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.REFRESH_FOLDER);
 //        stopWatch.start();
-        
-        isValid(true);
-        
+
+        boolean isFileCreatedFired = false;
         final ChildrenCache cache = getChildrenCache();
         final Mutex.Privileged mutexPrivileged = cache.getMutexPrivileged();
 
@@ -244,27 +228,29 @@ public final class FolderObj extends BaseFileObj {
             final FileName child = (FileName) iterator.next();
             final BaseFileObj childObj = getLocalFileSystem().getFactory().get(child.getFile());
             if (childObj != null && childObj.isData()) {
-                childObj.refresh(expected);
+                ((FileObj)childObj).refresh(expected, false);
             }
         }
 
+        final FileBasedFileSystem localFileSystem = this.getLocalFileSystem();
+        final FileObjectFactory factory = localFileSystem.getFactory();
+        
         final Iterator iterator = refreshResult.entrySet().iterator();
         while (iterator.hasNext()) {
             final Map.Entry entry = (Map.Entry) iterator.next();
             final FileName child = (FileName) entry.getKey();
             final Integer operationId = (Integer) entry.getValue();
 
-            final FileBasedFileSystem localFileSystem = this.getLocalFileSystem();
-            final FileObjectFactory factory = localFileSystem.getFactory();
             BaseFileObj newChild = factory.get(child.getFile());
             newChild = (BaseFileObj) ((newChild != null) ? newChild : getFileObject(child.getName()));
             if (operationId == ChildrenCache.ADDED_CHILD && newChild != null) {
-                newChild.isValid(true);                
-                assert newChild.isValid() : newChild.toString();
+                newChild.setValid(true);
                 
                 if (newChild.isFolder()) {
+                    isFileCreatedFired = true;
                     newChild.fireFileFolderCreatedEvent(expected);
                 } else {
+                    isFileCreatedFired = true;
                     newChild.fireFileDataCreatedEvent(expected);
                 }
 
@@ -292,9 +278,14 @@ public final class FolderObj extends BaseFileObj {
             }
 
         }
-//        stopWatch.stop();
+        setValid(getFileName().getFile().exists());        
+        if (!isValid() && !isFileCreatedFired && isFileDeletedAllowed) {
+            fireFileDeletedEvent(expected);    
+        }
+        
+//        stopWatch.stop();        
     }
-
+    
     //TODO: rewrite partly and check FileLocks for existing FileObjects
     private boolean deleteFile(final File file, final LinkedList all, final FileObjectFactory factory) throws IOException {
         final boolean ret = file.delete();
@@ -356,8 +347,6 @@ public final class FolderObj extends BaseFileObj {
 
     public final java.util.Date lastModified() {
         final File f = getFileName().getFile();
-        assert f.exists() || !isValid(true) ;
-
         return new Date(f.lastModified());
     }
 
@@ -370,7 +359,7 @@ public final class FolderObj extends BaseFileObj {
     }
 
     public final ChildrenCache getChildrenCache() {
-        assert getFileName().getFile().isDirectory() || !getFileName().getFile().exists();
+        //assert getFileName().getFile().isDirectory() || !getFileName().getFile().exists();
         return folderChildren;
     }
 
