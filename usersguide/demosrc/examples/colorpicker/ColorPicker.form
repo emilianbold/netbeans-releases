@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="ISO-8859-1" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.0" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
   <SyntheticProperties>
@@ -9,12 +9,14 @@
     <SyntheticProperty name="generatePosition" type="boolean" value="true"/>
     <SyntheticProperty name="generateSize" type="boolean" value="true"/>
     <SyntheticProperty name="generateCenter" type="boolean" value="true"/>
-    <SyntheticProperty name="encoding" type="java.lang.String" value="ISO-8859-1"/>
   </SyntheticProperties>
 
   <Events>
-    <EventHandler event="windowClosing" handler="exitForm"/>
+    <EventHandler event="windowClosing" listener="java.awt.event.WindowListener" parameters="java.awt.event.WindowEvent" handler="exitForm"/>
   </Events>
+
+  <AuxValues>
+  </AuxValues>
 
   <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
   <SubComponents>
@@ -23,12 +25,12 @@
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
             <TitledBorder title="Color Preview">
-              <Color PropertyName="color" blue="0" green="0" id="black" palette="0" red="0" type="palette"/>
               <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
                 <EtchetBorder>
                   <Color PropertyName="shadow" blue="86" green="86" red="86" type="rgb"/>
                 </EtchetBorder>
               </Border>
+              <Color PropertyName="color" blue="0" green="0" id="black" palette="0" red="0" type="palette"/>
             </TitledBorder>
           </Border>
         </Property>
@@ -65,75 +67,66 @@
       <SubComponents>
         <Component class="javax.swing.JSlider" name="redSlider">
           <Properties>
+            <Property name="maximum" type="int" value="255"/>
             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
               <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
                 <TitledBorder title="Red">
-                  <Color PropertyName="color" blue="0" green="0" id="black" palette="0" red="0" type="palette"/>
                   <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
                     <EtchetBorder>
                       <Color PropertyName="shadow" blue="86" green="86" red="86" type="rgb"/>
                     </EtchetBorder>
                   </Border>
+                  <Color PropertyName="color" blue="0" green="0" id="black" palette="0" red="0" type="palette"/>
                 </TitledBorder>
               </Border>
             </Property>
-            <Property name="maximum" type="int" editor="sun.beans.editors.IntEditor" value="255"/>
           </Properties>
 
           <Events>
-            <EventHandler event="stateChanged" handler="redSliderStateChanged"/>
+            <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="redSliderStateChanged"/>
           </Events>
-          <Constraints>
-            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBoxLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBoxLayout$BoxConstraintsDescription"/>
-          </Constraints>
         </Component>
         <Component class="javax.swing.JSlider" name="greenSlider">
           <Properties>
+            <Property name="maximum" type="int" value="255"/>
             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
               <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
                 <TitledBorder title="Green">
-                  <Color PropertyName="color" blue="0" green="0" id="black" palette="0" red="0" type="palette"/>
                   <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
                     <EtchetBorder>
                       <Color PropertyName="shadow" blue="86" green="86" red="86" type="rgb"/>
                     </EtchetBorder>
                   </Border>
+                  <Color PropertyName="color" blue="0" green="0" id="black" palette="0" red="0" type="palette"/>
                 </TitledBorder>
               </Border>
             </Property>
-            <Property name="maximum" type="int" editor="sun.beans.editors.IntEditor" value="255"/>
           </Properties>
 
           <Events>
-            <EventHandler event="stateChanged" handler="greenSliderStateChanged"/>
+            <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="greenSliderStateChanged"/>
           </Events>
-          <Constraints>
-            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBoxLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBoxLayout$BoxConstraintsDescription"/>
-          </Constraints>
         </Component>
         <Component class="javax.swing.JSlider" name="blueSlider">
           <Properties>
+            <Property name="maximum" type="int" value="255"/>
             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
               <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
                 <TitledBorder title="Blue">
-                  <Color PropertyName="color" blue="0" green="0" id="black" palette="0" red="0" type="palette"/>
                   <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
                     <EtchetBorder>
                       <Color PropertyName="shadow" blue="86" green="86" red="86" type="rgb"/>
                     </EtchetBorder>
                   </Border>
+                  <Color PropertyName="color" blue="0" green="0" id="black" palette="0" red="0" type="palette"/>
                 </TitledBorder>
               </Border>
             </Property>
-            <Property name="maximum" type="int" editor="sun.beans.editors.IntEditor" value="255"/>
           </Properties>
 
           <Events>
-            <EventHandler event="stateChanged" handler="blueSliderStateChanged"/>
+            <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="blueSliderStateChanged"/>
           </Events>
-          <Constraints>
-            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBoxLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBoxLayout$BoxConstraintsDescription"/>
-          </Constraints>
         </Component>
       </SubComponents>
     </Container>
