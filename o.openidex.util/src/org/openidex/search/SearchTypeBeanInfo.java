@@ -18,62 +18,14 @@ package org.openidex.search;
 import java.awt.Image;
 import java.beans.*;
 
+import org.openide.TopManager;
+import org.openide.util.Utilities;
 
 /** Bean info for <code>SearchType</code> class.
  *
  * @author  Petr Kuzel
  * */
 public class SearchTypeBeanInfo extends SimpleBeanInfo {
-
-    // Property identifiers 
-    private static final int PROPERTY_name = 0;
-    private static final int PROPERTY_helpCtx = 1;
-
-    // Property array
-    private static PropertyDescriptor[] properties = new PropertyDescriptor[2];
-
-    static {
-        try {
-
-            properties[PROPERTY_name] = new PropertyDescriptor ( "name", SearchType.class, "getName", "setName" ); // NOI18N
-            properties[PROPERTY_name].setHidden ( true );
-            properties[PROPERTY_helpCtx] = new PropertyDescriptor ( "helpCtx", SearchType.class, "getHelpCtx", null ); // NOI18N
-            properties[PROPERTY_helpCtx].setHidden ( true );
-        } catch( IntrospectionException e) {
-            e.printStackTrace();
-        }
-
-        // Here you can add code for customizing the properties array.
-
-    }
-
-    // EventSet identifiers
-    private static final int EVENT_propertyChangeListener = 0;
-
-    // EventSet array
-    private static EventSetDescriptor[] eventSets = new EventSetDescriptor[1];
-
-    static {
-        try {
-            eventSets[EVENT_propertyChangeListener] = new EventSetDescriptor ( SearchType.class, "propertyChangeListener", PropertyChangeListener.class, new String[0], "addPropertyChangeListener", "removePropertyChangeListener" ); // NOI18N
-        }
-        catch( IntrospectionException e) {
-            e.printStackTrace();
-        }
-
-        // Here you can add code for customizing the event sets array.
-
-    }
-
-    private static Image iconColor16 = null; 
-    private static Image iconColor32 = null;
-    private static Image iconMono16 = null;
-    private static Image iconMono32 = null; 
-    private static String iconNameC16 = "/org/openidex/search/res/find.gif";
-    private static String iconNameC32 = null;
-    private static String iconNameM16 = null;
-    private static String iconNameM32 = null;
-
 
     /**
      * Gets the beans <code>PropertyDescriptor</code>s.
@@ -88,7 +40,17 @@ public class SearchTypeBeanInfo extends SimpleBeanInfo {
      * if a given PropertyDescriptor is an IndexedPropertyDescriptor.
      */
     public PropertyDescriptor[] getPropertyDescriptors() {
-        return properties;
+        try {
+	    PropertyDescriptor[] properties = new PropertyDescriptor[2];
+            properties[0] = new PropertyDescriptor ( "name", SearchType.class, "getName", "setName" ); // NOI18N
+            properties[0].setHidden ( true );
+            properties[1] = new PropertyDescriptor ( "helpCtx", SearchType.class, "getHelpCtx", null ); // NOI18N
+            properties[1].setHidden ( true );
+    	    return properties;
+        } catch( IntrospectionException e) {
+	    TopManager.getDefault().getErrorManager().notify(e);
+	    return null;
+        }
     }
 
     /**
@@ -99,7 +61,14 @@ public class SearchTypeBeanInfo extends SimpleBeanInfo {
      * should be obtained by automatic analysis.
      */
     public EventSetDescriptor[] getEventSetDescriptors() {
-        return eventSets;
+        try {
+	    return new EventSetDescriptor[] {
+        	new EventSetDescriptor ( SearchType.class, "propertyChangeListener", PropertyChangeListener.class, new String[0], "addPropertyChangeListener", "removePropertyChangeListener" ) // NOI18N
+	    };
+        } catch( IntrospectionException e) {
+	    TopManager.getDefault().getErrorManager().notify(e);
+	    return null;
+        }
     }
 
 
@@ -124,36 +93,11 @@ public class SearchTypeBeanInfo extends SimpleBeanInfo {
      * @return  An image object representing the requested icon.  May
      *    return null if no suitable icon is available.
      */
-    public Image getIcon(int iconKind) {
-        switch ( iconKind ) {
-        case ICON_COLOR_16x16:
-            return loadImage( iconNameC16 );
 
-        case ICON_COLOR_32x32:
-            if ( iconNameC32 == null )
-                return null;
-            else {
-                if( iconColor32 == null )
-                    iconColor32 = loadImage( iconNameC32 );
-                return iconColor32;
-            }
-        case ICON_MONO_16x16:
-            if ( iconNameM16 == null )
-                return null;
-            else {
-                if( iconMono16 == null )
-                    iconMono16 = loadImage( iconNameM16 );
-                return iconMono16;
-            }
-        case ICON_MONO_32x32:
-            if ( iconNameM32 == null )
-                return null;
-            else {
-                if( iconNameM32 == null )
-                    iconMono32 = loadImage( iconNameM32 );
-                return iconMono32;
-            }
-        }
+    public Image getIcon(int iconKind) {
+        if (iconKind == ICON_COLOR_16x16)
+            return loadImage( "org/openidex/search/res/find.gif" ); // NOI18N
+
         return null;
     }
 
@@ -167,8 +111,7 @@ public class SearchTypeBeanInfo extends SimpleBeanInfo {
         try {
             return new BeanInfo[] { Introspector.getBeanInfo (org.openide.ServiceType.class) };
         } catch (IntrospectionException ie) {
-            if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
-                ie.printStackTrace ();
+	    TopManager.getDefault().getErrorManager().notify(ie);
             return null;
         }
     }
