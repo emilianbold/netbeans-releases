@@ -87,13 +87,6 @@ implements PropertyChangeListener, DebuggerManagerListener {
         }
     }
 
-//    public void actionPerformed (DebuggerEngine engine, Object action, boolean success) {
-//        if (!success) return;
-//        if (action == DebuggerEngine.ACTION_KILL) {
-//            destroy ();
-//        }
-//    }
-
     public void breakpointAdded (Breakpoint breakpoint) {
         updateBreakpoint (breakpoint);
     }    
@@ -102,7 +95,9 @@ implements PropertyChangeListener, DebuggerManagerListener {
         removeBreakpoint (breakpoint);
     }
     
-    public void currentThreadChanged (JPDAThread oldThread, JPDAThread newThread) {}
+
+    public Breakpoint[] initBreakpoints () {return new Breakpoint [0];}
+    public Watch[] initWatches () {return new Watch [0];}
     public void sessionAdded (Session session) {}
     public void sessionRemoved (Session session) {}
     public void watchAdded (Watch watch) {}

@@ -23,19 +23,15 @@ import java.beans.PropertyChangeEvent;
  */
 public class DebuggerManagerAdapter implements DebuggerManagerListener {
 
-     
     /**
-     * Called when current thread is changed.
+     * Called when set of breakpoints is initialized.
      *
-     * @param oldThread the old current thread
-     * @param newThread the new current thread
+     * @return initial set of breakpoints
      */
-//    public void currentThreadChanged (
-//        AbstractThread oldThread,
-//        AbstractThread newThread
-//    ) {
-//    }
-
+    public Breakpoint[] initBreakpoints () {
+        return new Breakpoint [0];
+    }
+     
     /**
      * Called when some breakpoint is added.
      *
@@ -50,6 +46,15 @@ public class DebuggerManagerAdapter implements DebuggerManagerListener {
      * @param breakpoint removed breakpoint
      */
     public void breakpointRemoved (Breakpoint breakpoint) {
+    }
+
+    /**
+     * Called when set of watches is initialized.
+     *
+     * @return initial set of watches
+     */
+    public Watch[] initWatches () {
+        return new Watch [0];
     }
 
     /**
@@ -86,20 +91,4 @@ public class DebuggerManagerAdapter implements DebuggerManagerListener {
     
     public void propertyChange (PropertyChangeEvent evt) {
     }
-    
-    /**
-     * Called when some debugger engine is added.
-     *
-     * @param engine a new debugger engine
-     */
-//    public void engineAdded (DebuggerEngine engine) {
-//    }
-
-    /**
-     * Called when some debugger engine is removed.
-     *
-     * @param engine removed debugger engine
-     */
-//    public void engineRemoved (DebuggerEngine engine) {
-//    }
 }

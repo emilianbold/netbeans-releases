@@ -33,7 +33,7 @@ public final class LineBreakpoint extends JPDABreakpoint {
     /** Property name constant */
     public static final String          PROP_LINE_NUMBER = "lineNumber"; // NOI18N
     /** Property name constant */
-    public static final String          PROP_CLASS_NAME = "className"; // NOI18N
+    public static final String          PROP_URL = "url"; // NOI18N
     /** Property name constant. */
     public static final String          PROP_CONDITION = "condition"; // NOI18N
     
@@ -73,7 +73,7 @@ public final class LineBreakpoint extends JPDABreakpoint {
         ) return;
         String old = url;
         this.url = url;
-        firePropertyChange (PROP_CLASS_NAME, old, url);
+        firePropertyChange (PROP_URL, old, url);
     }
 
     /**

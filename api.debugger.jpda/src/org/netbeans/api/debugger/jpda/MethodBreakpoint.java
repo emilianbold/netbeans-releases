@@ -36,9 +36,11 @@ public final class MethodBreakpoint extends JPDABreakpoint {
     /** Property name constant. */
     public static final String          PROP_ALL_METHODS = "allMethods"; // NOI18N
     /** Property name constant. */
+    public static final String          PROP_METHOD_ENTRY = "methodEntry"; // NOI18N
+    /** Property name constant. */
     public static final String          PROP_CONDITION = "condition"; // NOI18N
     /** Property name constant. */
-    public static final String          PROP_ANONYMOUS_INNER = "includingAnonymousInner";    //NOI18N
+    public static final String          PROP_ANONYMOUS_INNER = "applyToAnonymousInnerClasses";    //NOI18N
     /** Property name constant */
     public static final String          PROP_CLASS_NAME = "className"; // NOI18N
 
@@ -189,7 +191,7 @@ public final class MethodBreakpoint extends JPDABreakpoint {
         if (this.methodEntry == methodEntry) return;
         this.methodEntry = methodEntry;
         firePropertyChange (
-            PROP_ALL_METHODS, 
+            PROP_METHOD_ENTRY, 
             new Boolean (!methodEntry), 
             new Boolean (methodEntry)
         );
