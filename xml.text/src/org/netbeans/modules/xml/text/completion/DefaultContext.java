@@ -44,7 +44,7 @@ class DefaultContext implements HintContext, Attr {
     public void init(Node node, String preText) {
         peer = node;
         text = preText;   
-        System.err.println("DUMP:" + dump());
+//        System.err.println("DUMP:" + dump());
     }
    
     String dump() {

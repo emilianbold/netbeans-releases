@@ -518,10 +518,8 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport {
                     }
                     break;
                     
-                case ' ':
                 case '<':
                 case '&':
-                case '%':
                     retVal = COMPLETION_POPUP;
                     break;
             }
@@ -532,7 +530,7 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport {
                 case ';':
                     return COMPLETION_HIDE;
             }
-            return COMPLETION_POST_REFRESH;
+            return COMPLETION_POST_REFRESH; //requery it
         }
     }
 
