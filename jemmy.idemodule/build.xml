@@ -29,24 +29,23 @@ Microsystems, Inc. All Rights Reserved.
         <ant dir=".." target="jar" inheritAll="false"/>
         <copy file="../dist/jemmy.jar" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext"/>
         <!-- create javadoc -->
-        <ant dir=".." target="javadoc" inheritAll="false"/>
+        <antcall target="javadoc"/>
         <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}"/>
-        <zip zipfile="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}/jemmy-api.zip" basedir="../dist/javadoc"/>
+        <copy file="javadoc/jemmy-api.zip" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}"/>
     </target>
 
-     <!-- overriden because we need to filter manifest -->
+     <!-- overriden because we need to read jemmy version from version_info -->
     <target name="jar-no-module-deps" unless="module.dependencies">
         <property file="../src/org/netbeans/jemmy/version_info"/>
-        <filter token="VERSION_SUBST" value="${Jemmy-MajorVersion}.${Jemmy-MinorVersion}"/>
-        <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-        <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on" overwrite="true"/>
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" 
-             compress="${build.package.compress}" 
-             index="${build.package.index}" 
-             manifest="manifest-subst.mf" 
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}"
+             compress="${build.package.compress}"
+             index="${build.package.index}"
+             manifest="manifest.mf"
              basedir="${build.classes.dir}">
             <manifest>
                 <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
+                <attribute name="OpenIDE-Module-Implementation-Version" value="${buildnumber}"/>
+                <attribute name="OpenIDE-Module-Specification-Version" value="${Jemmy-MajorVersion}.${Jemmy-MinorVersion}"/>
             </manifest>
 	</jar>
     </target>
