@@ -140,7 +140,13 @@ openide/www/tutorial/questions.html.
         <question id="deploy-jar" when="impl" >
             Do you deploy just module JAR file(s) or other files as well?
             <hint>
-            If your module consists of just one module JAR file, just confirm that.
+            Usually a module consist of one JAR file and also a configuration
+            file that enables it. If so, 
+            Use <api group="java.io.File" name="yourname" type="export" category="friend" /> 
+            tag to define location, name
+            and stability of your files (of course change yourname and private to suite 
+            your needs).
+            
             If it uses more than one JAR, describe where they are located, how
             they refer to each other. 
             If it consist of module JAR(s) and other files, please describe
