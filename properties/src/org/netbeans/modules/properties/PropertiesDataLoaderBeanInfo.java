@@ -33,12 +33,6 @@ public final class PropertiesDataLoaderBeanInfo extends SimpleBeanInfo {
   /** Propertydescriptors */
   private static PropertyDescriptor[] descriptors;
 
-
-  /** Default constructor.
-  */
-  public PropertiesDataLoaderBeanInfo() {
-  }
-
   /**
   * @return Returns an array of PropertyDescriptors
   * describing the editable properties supported by this bean.
@@ -55,11 +49,11 @@ public final class PropertiesDataLoaderBeanInfo extends SimpleBeanInfo {
     if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
         (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
       if (icon == null)
-        icon = loadImage("/com/netbeans/developer/modules/resources/propertiesLoader.gif");
+        icon = loadImage("/com/netbeans/developer/modules/loaders/properties/propertiesObject.gif");
       return icon;
     } else {
       if (icon32 == null)
-        icon32 = loadImage ("/com/netbeans/developer/modules/resources/propertiesLoader32.gif");
+        icon32 = loadImage ("/com/netbeans/developer/modules/loaders/properties/propertiesObject32.gif");
       return icon32;
     }
   }
@@ -83,6 +77,8 @@ public final class PropertiesDataLoaderBeanInfo extends SimpleBeanInfo {
 
 /*
 * <<Log>>
+*  2    Gandalf   1.1         3/9/99   Ian Formanek    Moved images to this 
+*       package
 *  1    Gandalf   1.0         1/22/99  Ian Formanek    
 * $
 */

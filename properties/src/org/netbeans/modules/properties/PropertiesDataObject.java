@@ -38,7 +38,7 @@ public final class PropertiesDataObject extends MultiDataObject {
 
   /** Icon base for the PropertiesNode node */
   private static final String PROPERTIES_ICON_BASE =
-    "com/netbeans/developer/modules/resources/propertiesObject";
+    "com/netbeans/developer/modules/loaders/properties/propertiesObject";
   
   public PropertiesDataObject (final FileObject obj, final MultiFileLoader loader)
                        throws DataObjectExistsException {
@@ -77,6 +77,8 @@ public final class PropertiesDataObject extends MultiDataObject {
 
 /*
  * <<Log>>
+ *  4    Gandalf   1.3         3/9/99   Ian Formanek    Moved images to this 
+ *       package
  *  3    Gandalf   1.2         2/3/99   Jaroslav Tulach Inner class for node is 
  *       not needed
  *  2    Gandalf   1.1         1/22/99  Ian Formanek    

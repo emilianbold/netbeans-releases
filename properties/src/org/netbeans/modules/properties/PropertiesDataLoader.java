@@ -13,12 +13,12 @@
 
 package com.netbeans.developer.modules.loaders.properties;
 
+import com.netbeans.ide.actions.*;
+import com.netbeans.ide.filesystems.FileObject;
 import com.netbeans.ide.loaders.UniFileLoader;
 import com.netbeans.ide.loaders.ExtensionList;
 import com.netbeans.ide.loaders.DataObject;
 import com.netbeans.ide.loaders.MultiDataObject;
-import com.netbeans.ide.filesystems.FileObject;
-import com.netbeans.ide.actions.*;
 import com.netbeans.ide.util.actions.SystemAction;
 import com.netbeans.ide.util.NbBundle;
 
@@ -74,6 +74,8 @@ public final class PropertiesDataLoader extends UniFileLoader {
 
 /*
 * <<Log>>
+*  2    Gandalf   1.1         3/9/99   Ian Formanek    Moved images to this 
+*       package
 *  1    Gandalf   1.0         1/22/99  Ian Formanek    
 * $
 */
