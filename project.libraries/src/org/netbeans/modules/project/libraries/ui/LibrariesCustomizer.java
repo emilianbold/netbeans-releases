@@ -377,6 +377,9 @@ public final class LibrariesCustomizer extends javax.swing.JPanel implements Exp
                 new JButton (NbBundle.getMessage(LibrariesCustomizer.class,"CTL_Ok")),
                 new JButton (NbBundle.getMessage(LibrariesCustomizer.class,"CTL_Cancel"))
             };
+            
+            ((JButton)options[0]).getAccessibleContext().setAccessibleDescription (NbBundle.getMessage(LibrariesCustomizer.class,"AD_Ok"));
+            ((JButton)options[1]).getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(LibrariesCustomizer.class,"AD_Cancel"));
 
             NewLibraryPanel p = new NewLibraryPanel (this.model,(JButton)options[0]);
             DialogDescriptor dd = new DialogDescriptor (p, NbBundle.getMessage(LibrariesCustomizer.class,"CTL_CreateLibrary"),
