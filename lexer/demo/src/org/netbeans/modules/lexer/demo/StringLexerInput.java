@@ -16,7 +16,6 @@ package org.netbeans.modules.lexer.demo;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.LexerInput;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.modules.lexer.util.CharSeq;
 
 /**
  * Token iterator that works over the given char sequence.

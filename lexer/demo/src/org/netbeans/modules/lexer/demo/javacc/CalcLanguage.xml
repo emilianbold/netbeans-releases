@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!DOCTYPE Language SYSTEM "../../../../../../../../libsrc/org/netbeans/modules/lexer/lang/gen/language.dtd">
+<!DOCTYPE Language SYSTEM "../../../../../../../../src/org/netbeans/modules/lexer/lang/gen/language.dtd">
 <Language mimeType="text/x-calc">
     <TokenId name="whitespace">
         <Pattern value=" "/>

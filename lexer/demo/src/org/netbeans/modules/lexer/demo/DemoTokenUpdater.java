@@ -20,10 +20,10 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.LexerInput;
 import org.netbeans.api.lexer.TokenTextMatcher;
-import org.netbeans.modules.lexer.inc.TextTokenUpdater;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.lexer.util.Compatibility;
 import org.netbeans.api.lexer.Lexer;
+import org.netbeans.spi.lexer.util.Compatibility;
+import org.netbeans.spi.lexer.inc.TextTokenUpdater;
 
 /**
  * Token updater working over a swing document.
@@ -78,7 +78,7 @@ public class DemoTokenUpdater extends TextTokenUpdater {
     
     protected Token createToken(TokenId id, int index, int length) {
         String fixedText = null;
-        if (Compatibility.JDK14) {
+        if (Compatibility.charSequenceExists()) {
             TokenTextMatcher matcher = id.getTokenTextMatcher();
             if (matcher != null) {
                 /* The recognizedText would not be a string
@@ -178,10 +178,10 @@ public class DemoTokenUpdater extends TextTokenUpdater {
         try {
             for (int i = 0; i < cnt; i++) {
                 Token t = getToken(i);
-                int length = org.netbeans.modules.lexer.util.Compatibility.getLength(t);
-                String text = org.netbeans.modules.lexer.util.Compatibility.toString(t);
+                int length = org.netbeans.spi.lexer.util.Compatibility.getLength(t);
+                String text = org.netbeans.spi.lexer.util.Compatibility.toString(t);
                 sb.append("[" + i + "] \""
-                    + org.netbeans.modules.lexer.util.LexerUtil.toSource(text)
+                    + org.netbeans.spi.lexer.util.LexerUtilities.toSource(text)
                     + "\", " + t.getId()
                     + ", off=" + offset
                 );

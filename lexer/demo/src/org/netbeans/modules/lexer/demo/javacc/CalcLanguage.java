@@ -3,9 +3,9 @@ package org.netbeans.modules.lexer.demo.javacc;
 
 import org.netbeans.api.lexer.Lexer;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.modules.lexer.lang.MatcherFactory;
-import org.netbeans.modules.lexer.util.IntegerCache;
 import org.netbeans.spi.lexer.AbstractLanguage;
+import org.netbeans.spi.lexer.MatcherFactory;
+import org.netbeans.spi.lexer.util.IntegerCache;
 
 public class CalcLanguage extends AbstractLanguage {
 

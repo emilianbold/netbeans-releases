@@ -18,8 +18,8 @@ import org.netbeans.api.lexer.Lexer;
 import org.netbeans.api.lexer.LexerInput;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.modules.lexer.javacc.LexerInputCharStream;
-import org.netbeans.modules.lexer.javacc.TokenMgrError;
+import org.netbeans.spi.lexer.javacc.LexerInputCharStream;
+import org.netbeans.spi.lexer.javacc.TokenMgrError;
 
 /**
  * Wrapper around generated java token manager
@@ -37,34 +37,41 @@ public class CalcLexer extends CalcTokenManager implements Lexer {
         super(new LexerInputCharStream());
         this.language = language;
     }
-
+    
     public Token nextToken() {
-        int tokenKind;
-        try {
-            tokenKind = getNextToken().kind;
+        TokenId id = null; // Resulting token identification
 
-            switch (tokenKind) {
-                case CalcConstants.ML_COMMENT_START:
-                    tokenKind = getNextToken().kind; // get the rest of the token
-                    break;
-                    
+        try {
+            int tokenKind = getNextToken().kind;
+
+            if (tokenKind != 0) { // EOF not reached
+                switch (tokenKind) {
+                    case CalcConstants.ML_COMMENT_START:
+                        tokenKind = getNextToken().kind; // get the rest of the token
+                        if (tokenKind != 0) { // valid token found
+                            id = language.getValidId(tokenKind);
+                        } else { // EOF reached
+                            id = CalcLanguage.INCOMPLETE_ML_COMMENT;
+                        }
+                        break;
+
+                    default:
+                        id = language.getValidId(tokenKind);
+                        break;
+                }
             }
 
         } catch (TokenMgrError e) {
             throw new IllegalStateException(
-                e + "\nTokenMgrError occurred. curLexState=" + curLexState);
+                e + "\nTokenMgrError occurred. curLexState=" + curLexState
+                + "\nIt's necessary to fix the lexer to be able to correctly"
+                + " recognize the input that caused this exception."
+            );
         }
 
-        if (tokenKind == 0) { // EOF reached
-            return null;
-        }
-
-        TokenId id = language.getId(tokenKind);
-        if (id == null) {
-            throw new IllegalStateException("No tokenID for kind=" + tokenKind);
-        }
-
-        return ((LexerInputCharStream)getCharStream()).getLexerInput().createToken(id);
+        return (id != null)
+            ? ((LexerInputCharStream)getCharStream()).getLexerInput().createToken(id)
+            : null; // EOF reached
     }
     
     public Object getState() {
