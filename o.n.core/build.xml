@@ -21,7 +21,9 @@ Microsystems, Inc. All Rights Reserved.
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
         <pathelement location="../openide/openide-13javac-workaround.jar"/>
-        <pathelement location="../openide/netbeans/lib/openide.jar"/>
+        <fileset dir="../openide/netbeans/lib">
+          <include name="openide*.jar" />
+        </fileset>
 	<pathelement location="../openidex/netbeans/lib/ext/openidex.jar"/>
 	<pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
 	<pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
@@ -34,7 +36,9 @@ Microsystems, Inc. All Rights Reserved.
     <javac srcdir="upgradesrc" destdir="upgradesrc" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}"> 
       <classpath>
         <pathelement location="../openide/openide-13javac-workaround.jar"/>
-        <pathelement location="../openide/netbeans/lib/openide.jar"/>
+        <fileset dir="../openide/netbeans/lib">
+          <include name="openide*.jar" />
+        </fileset>
 	<pathelement location="../openidex/netbeans/lib/ext/openidex.jar"/>
 	<pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
 	<pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>

@@ -20,7 +20,9 @@ Microsystems, Inc. All Rights Reserved.
     <javac srcdir="src" destdir="src">
       <classpath>
         <!--<pathelement location="patches"/>-->
-        <pathelement location="../openide/netbeans/lib/openide.jar"/>
+        <fileset dir="../openide/netbeans/lib">
+          <include name="openide*.jar" />
+        </fileset>
         <pathelement location="../httpserver/netbeans/modules/httpserver.jar"/>
         <pathelement location="../core/release/lib/ext/servlet.jar"/>
       </classpath>

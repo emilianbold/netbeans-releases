@@ -29,7 +29,9 @@ Microsystems, Inc. All Rights Reserved.
         <!-- XXX illegally uses org.netbeans.beaninfo classes: -->
         <pathelement location="../core/netbeans/lib/core.jar"/>
         <pathelement location="release/lib/ext/AbsoluteLayout.jar"/>
-        <pathelement location="../openide/netbeans/lib/openide.jar"/>
+        <fileset dir="../openide/netbeans/lib">
+          <include name="openide*.jar" />
+        </fileset>
         <pathelement location="../openidex/netbeans/lib/ext/openidex.jar"/>
         <pathelement location="../java/netbeans/modules/java.jar"/>
         <pathelement location="../clazz/netbeans/modules/clazz.jar"/>

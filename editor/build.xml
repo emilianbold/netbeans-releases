@@ -27,7 +27,9 @@ Microsystems, Inc. All Rights Reserved.
        <!-- XXX illegal dependency on core! -->
        <pathelement location="../core/netbeans/lib/core.jar"/>
        <pathelement location="libsrc"/>
-       <pathelement location="../openide/netbeans/lib/openide.jar"/>
+        <fileset dir="../openide/netbeans/lib">
+          <include name="openide*.jar" />
+        </fileset>
        <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
       </classpath>
     </javac>

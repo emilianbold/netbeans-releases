@@ -30,7 +30,9 @@ ToDo:
   <target name="compile" depends="check,no-such-luck" if="jpda">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
-        <pathelement location="../openide/netbeans/lib/openide.jar"/>
+        <fileset dir="../openide/netbeans/lib">
+          <include name="openide*.jar" />
+        </fileset>
 	<pathelement location="../debuggercore/netbeans/modules/debuggerCore.jar"/>
       </classpath>
     </javac>

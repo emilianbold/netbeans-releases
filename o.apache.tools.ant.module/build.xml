@@ -24,7 +24,9 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
         <pathelement location="../openide/openide-13javac-workaround.jar"/>
-        <pathelement location="../openide/netbeans/lib/openide.jar"/>
+        <fileset dir="../openide/netbeans/lib">
+          <include name="openide*.jar" />
+        </fileset>
 	<pathelement location="release/modules/ext/ant.jar"/>
 	<pathelement location="release/modules/ext/xerces.jar"/>
 	<!-- Using IDE's version of jaxp + parser, these cannot be overridden: -->

@@ -104,6 +104,7 @@ workspaceswitcher
     <echo message="Building Open APIs..."/>
     <ant dir="../openide" target="netbeans"/>
   </target>
+  
   <target name="all-openidex" depends="all-openide">
     <echo message="Building pending API extensions..."/>
     <ant dir="../openidex" target="netbeans"/>
