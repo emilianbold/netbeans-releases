@@ -14,94 +14,98 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <html>
-<head>
-<meta name="lastupdated" content="01aug2001">
-<title>Obtaining a Database Schema</title>
-<link rel="stylesheet" href="ide.css" type="text/css">
-</head>
+    <head>
+        <title>Obtaining a Database Schema</title>
+        <link rel="stylesheet" href="../../usersguide/ide.css" type="text/css">
+    </head>
 
-<h2>Obtaining a Database Schema</h2>
-<p>Coming Soon</p>
-<!--
-<p>You can capture a database schema in more than one way in the IDE:</p>
-<ul>
-  <li>You can use the Database Schema node under File&nbsp;<img src="images/arrow.gif">&nbsp;New&nbsp;<img src="images/arrow.gif">&nbsp;Databases.</li>
-  <li>You can choose Tools&nbsp;<img src="images/arrow.gif">&nbsp;Capture Database 
-    Schema.</li>
-  <li>You can right-click a filesystem in the Explorer and choose &nbsp;New&nbsp;<img src="images/arrow.gif">&nbsp;Databases.</li>
-</ul>
-<p>Before you start the IDE, you must either place the database driver files in 
-  the IDE's <code>lib/ext</code> directory or add the path to the driver files 
-  to the <code>CLASSPATH</code> environment variable. Doing so enables you to 
-  select the proper database when you create a new schema. You cannot mount the 
-  driver file in the Explorer to enable you to connect to a database.</p>
-<p><b>To capture a schema:</b> </p>
-<ol>
-  <li>Choose File&nbsp;<img src="images/arrow.gif">&nbsp;New to open the New From 
-    Template wizard.</li>
-  <li>Expand the Databases node.</li>
-  <li>Select Database Schema and click Next.</li>
-  <li>On the Target Location panel, specify the name of a target location for 
-    the database schema, or use the default location.</li>
-  <li>Click Next. 
-    <p>The Database Connection panel opens. You have two choices in this panel: 
-    </p>
-    <ul>
-      <li><b>Existing Connection.</b> Choose an existing connection from which 
-        to obtain the schema. 
-        <ol>
-          <li type="a">Click Existing Connection to use an existing connection.</li>
-          <li type="a">Select an existing connection from the combo box of existing 
-            connections.</li>
-        </ol>
-      </li>
-      <li><b>New connection.</b> Provide connection information for a new connection 
-        and obtain the schema from it. 
-        <ol>
-          <li  type="a">Select a driver from the list of existing drivers.</li>
-          <li type="a">Indicate the database URL.</li>
-          <li type="a">Specify User Name and Password, as needed.</li>
-          <li type="a">Click the Advanced Tab to choose a schema other than the 
-            default from the drop-down list. </li>
-          <table width="99%" border="0">
-            <tr valign="top"> 
-              <td width="2%"><img src="images/tip.gif" width="10" height="10"></td>
-              <td width="98%">The schema with the same name as the user name is 
-                set as default, but if a schema with that name does not exist, 
-                you are automatically switched to the Advanced Tab when you press 
-                the Next button and attempt to connect. </td>
-            </tr>
-          </table>
-        </ol>
-      </li>
-    </ul>
-  </li>
-  <li>Click Next. 
-    <p>The Tables and Views panel opens.</p>
-  </li>
-  <li>Select the tables and views you want to capture in the Available Tables 
-    and Views list on the left, then click Add to add them to your list of Selected 
-    Tables and Views on the right. Alternatively, you can click Add All to specify 
-    all tables and views. 
-    <table width="99%" border="0">
-      <tr valign="top"> 
-        <td width="2%"><img src="images/tip.gif" width="10" height="10"></td>
-        <td width="98%">If you specify a table that references a table that you 
-          have not chose to capture, both tables are captured.</td>
-      </tr>
-    </table>
-  </li>
-  <li>Click Finish to complete capturing the schema. 
+    <h2>Obtaining a Database Schema</h2>
+    <p><small><a href="#seealso">See Also</a></small></p>
+    <p>The IDE allows you to capture and create a persistent database schema.</p>
+    <p>To connect to a database to retrieve a schema, the database 
+    driver first needs to be added to the IDE. Database drivers can be added in the Runtime window. For more,
+    see <a href="nbdocs:/org/netbeans/modules/db/docs/adddriver.html">Adding a New Driver</a>.</p>
+    
+    <p><b>To capture a database schema:</b> </p>
+    
+    <ol>
+        <li>Make sure the database server is running.</li>
+        <li>Choose File&nbsp;<img src="images/arrow.gif">&nbsp;New File to open the New File 
+        wizard.</li>
+        <li>Select the Project type.</li>        
+        <li>Select Database in the Categories pane.</li>
+        <li>Select Schema in the File Types pane and click Next.</li>
+        <li>For File Name, provide a name for the schema.</li>
+        <li>Specify where to save the schema or use the default location and click Next.</li>
+        <li>Select an existing database connection from the list or select Add Connection
+        to create a new connection. For more, see <a href="nbdocs:/org/netbeans/modules/db/docs/connectdb.html">Connecting to a Database</a>.</li>
+        <li>Click Next.       
+            <p>You may be prompted by a Connect dialog box to supply a username and password to connect to the database, if required.
+            Enter the user name and password in the Basic setting tab and click OK.</p>
+            <table>
+                <tr> 
+                    <td><img src="images/tip.gif" width="10" height="10"></td>
+                    <td>When connecting to the database, the schema with the same name as the user name is 
+                    set as default, but if a schema with that name does not exist, 
+                    you are automatically switched to the Advanced Tab to select a schema. Choose the correct schema
+                    from the combobox and click OK. </td>
+                </tr>
+            </table>
+        </li> 
+        
+        
+
+        <li>Select the tables and views you want to capture in the Available Tables 
+            and Views list on the left, then click Add to add them to your list of Selected 
+            Tables and Views on the right. Alternatively, you can click Add All to specify 
+            all tables and views. 
+            <table>
+                <tr>
+                    <td valign=top align=left><img src="images/tip.gif" alt="tip"></td>
+                    <td>If you specify a table that references a table that you 
+                    have not chosen to capture, both tables are captured.</td>
+                </tr>
+            </table>
+        </li>
+        <li>Click Finish to complete capturing the schema.</li>
+    </ol>
     <p>The IDE displays a progress bar with information about the status of the 
-      capturing of the database schema, including the table and view information 
-      it is capturing.</p>
-    <p>When schema capturing is complete, the progress bar closes.</p>
-    <p>The IDE saves the captured schema in XML format and displays a node <img src="images/dbschemanode.gif" width="15" height="14"> 
-      for it in the filesystem you specified in the Explorer.</p>
-  </li>
-</ol>
-<hr>-->
-<font size=-2><a href="credits.html">Legal Notices</a></font> 
+    capturing of the database schema, including the table and view information 
+    it is capturing.</p>
+    <p>When schema capturing is complete, the progress bar closes.</p>           
+    <p>The IDE saves the captured schema in XML format and displays the schema node 
+    (&nbsp;<img src="images/dbschemanode.gif" width="15" height="14">&nbsp;) in the Files window 
+    in the location you specified.</p>
+    
+    
+    <table>
 
-</body>
+        <tr> 
+
+            <th colspan=2 align=left><a name="seealso">See Also</a></th>
+
+        </tr>
+
+        <tr> 
+
+            <td width="23"></td>
+
+            <td>
+            <a href="nbdocs:/org/netbeans/modules/db/docs/connectdb.html">Connecting to a Database</a> <br>
+            
+        </tr>
+
+    </table>
+
+    <hr>
+
+    <small><a href="credits.html">Legal Notices</a></small> 
+    <table border="0" cellpadding="20">
+        <tr><td>&nbsp;</td></tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr><td>&nbsp;</td></tr>
+    </table>
+
+    </body>
+
 </html>
