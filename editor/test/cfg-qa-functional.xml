@@ -37,11 +37,11 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="qa-functional/src">
             <patternset>
 		<include name="org/netbeans/test/editor/app/tests/*Performer.class"/>
-                <exclude name="org/netbeans/test/editor/completion/IndentationPerformer.class/testDoWhile" />
-                <exclude name="org/netbeans/test/editor/completion/IndentationPerformer.class/testTwoBrackets" />
-                <exclude name="org/netbeans/test/editor/completion/CompletionPerformer.class/testRepository" />
-                <exclude name="org/netbeans/test/editor/completion/CompletionPerformer.class/testInstantSubstitution" />
-                <exclude name="org/netbeans/test/editor/completion/CompletionPerformer.class/testCCAfterMethods" />
+                <exclude name="org/netbeans/test/editor/app/tests/IndentationPerformer.class/testDoWhile" />
+                <exclude name="org/netbeans/test/editor/app/tests/IndentationPerformer.class/testTwoBrackets" />
+                <exclude name="org/netbeans/test/editor/app/tests/CompletionPerformer.class/testRepository" />
+                <exclude name="org/netbeans/test/editor/app/tests/CompletionPerformer.class/testInstantSubstitution" />
+                <exclude name="org/netbeans/test/editor/app/tests/CompletionPerformer.class/testCCAfterMethods" />
             </patternset>
         </testset>
     </testbag>
@@ -51,11 +51,11 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="all,failing,apps" name="TestApplicationFailings">
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="org/netbeans/test/editor/completion/IndentationPerformer.class/testDoWhile" />
-                <include name="org/netbeans/test/editor/completion/IndentationPerformer.class/testTwoBrackets" />
-                <include name="org/netbeans/test/editor/completion/CompletionPerformer.class/testRepository" />
-                <include name="org/netbeans/test/editor/completion/CompletionPerformer.class/testInstantSubstitution" />
-                <include name="org/netbeans/test/editor/completion/CompletionPerformer.class/testCCAfterMethods" />
+                <include name="org/netbeans/test/editor/app/tests/IndentationPerformer.class/testDoWhile" />
+                <include name="org/netbeans/test/editor/app/tests/IndentationPerformer.class/testTwoBrackets" />
+                <include name="org/netbeans/test/editor/app/tests/CompletionPerformer.class/testRepository" />
+                <include name="org/netbeans/test/editor/app/tests/CompletionPerformer.class/testInstantSubstitution" />
+                <include name="org/netbeans/test/editor/app/tests/CompletionPerformer.class/testCCAfterMethods" />
             </patternset>
         </testset>
     </testbag>    
