@@ -29,6 +29,7 @@ Microsystems, Inc. All Rights Reserved.
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nb_root}/nbbuild/nbantext.jar"/>
 
   <path id="cp">
+        <pathelement location="${jdkhome}/lib/tools.jar"/>
         <pathelement location="${nb_root}/openide/openide-13javac-workaround.jar"/>
         <!--<pathelement location="${nb_root}/openide/netbeans/lib/openide.jar"/>-->
         <pathelement location="${nb_root}/openide/io/netbeans/modules/autoload/openide-io.jar"/>
@@ -41,7 +42,8 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${nb_root}/j2eeserver/external/javax77.jar"/>
         <pathelement location="${nb_root}/j2eeserver/external/jsr88javax.jar"/>
         <pathelement location="${nb_root}/debuggercore/api/netbeans/modules/autoload/debugger-api.jar"/>
-        <!--<pathelement location="${nb_root}/debuggercore/netbeans/modules/autoload/debuggerCore.jar"/>-->
+        <pathelement location="${nb_root}/debuggerjpda/netbeans/modules/jpdaDebugger.jar"/>
+        <pathelement location="${nb_root}/debuggercore/netbeans/modules/autoload/debuggerCore.jar"/>
         <fileset dir="${nb_root}/openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
