@@ -96,7 +96,7 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
                     state = parseDesc();
                 }
                 
-                if (state == DescParser.ERROR) {
+                if (state == DescParser.ERROR) {                    
                     return null;
                 }                
             }
@@ -120,6 +120,16 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
             DescParser parser = new DescParser(data);
             parser.parse();
             smell = parser.template;                
+            if (DEBUG) {
+                if (parser.state == DescParser.ERROR) {
+                    System.err.println("MIMEResolverImpl.Impl parsing error!");
+                } else {
+                    StringBuffer buf = new StringBuffer();
+                    for (int i = 0; i<smell.length; i++)
+                        buf.append("\n" + smell[i]);
+                    System.err.println("Parsed: " + buf.toString());
+                }
+            }
             return parser.state;
         }
         
@@ -387,6 +397,18 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
             }
             return null;
         }
+        
+        /**
+         * For debug puroses only.
+         */
+        public String toString() {
+            StringBuffer buf = new StringBuffer();
+            buf.append("FileElement(");
+            buf.append(fileCheck + " ");
+            buf.append(rule + " ");
+            buf.append("Result:" + mime);
+            return buf.toString();
+        }
     }
 
         
@@ -406,6 +428,47 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
         private byte[]   magic;
         private byte[]   mask;
 
+        
+        /**
+         * For debug purposes only.
+         */
+        public String toString() {
+            int i = 0;
+            StringBuffer buf = new StringBuffer();
+
+            buf.append("fast-check(");
+            
+            if (exts != null) {
+                buf.append("exts:");            
+                for (i = 0; i<exts.length; i++)
+                    buf.append(exts[i] + ", ");
+            }
+            
+            if (mimes != null) {
+                buf.append("mimes:");
+                for (i = 0; i<mimes.length; i++)
+                    buf.append(mimes[i] + ", ");
+            }
+            
+            if (fatts != null) {
+                buf.append("file-attributes:");
+                for (i = 0; i<fatts.length; i++)
+                    buf.append(fatts[i] + "='" + vals[i] + "', ");
+            }
+
+            if (magic != null) {
+                buf.append("magic:" + XMLUtil.toHex(magic, 0, magic.length));
+            }
+            
+            if (mask != null) {
+                buf.append("mask:" + XMLUtil.toHex(mask, 0, mask.length));
+            }
+
+            buf.append(")");
+            
+            return buf.toString();
+        }
+        
         private void addExt(String ext) {
             exts = Util.addString(exts, ext);
         }
@@ -416,7 +479,7 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
         
         private void addAttr(String name, String value) {
             fatts = Util.addString(fatts, name);
-            vals = Util.addString(vals, name);
+            vals = Util.addString(vals, value);
         }
 
         private boolean setMagic(byte[] magic, byte[] mask) {

@@ -93,6 +93,5 @@ class XMLEnvironmentProvider extends SharedClassObject {
         }
         return lookup;
     }
-    
-        
+            
 }

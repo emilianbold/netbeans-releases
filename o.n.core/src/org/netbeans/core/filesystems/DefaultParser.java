@@ -93,12 +93,12 @@ abstract class DefaultParser  extends DefaultHandler {
             parser.setErrorHandler(this);
             parser.setContentHandler(this);
 
-            try {
-                // do not read DTD
-                parser.setFeature("http://xml.org/sax/features/external-parameter-entities", false);  //NOI18N
-            } catch (SAXException ignore) {
-                // parsing may be slower :-(
-            }
+//            try {
+//                // do not read DTD
+//                parser.setFeature("http://xml.org/sax/features/external-parameter-entities", false);  //NOI18N
+//            } catch (SAXException ignore) {
+//                // parsing may be slower :-(
+//            }
 
             InputSource in = new InputSource();                
             is = fo.getInputStream();
@@ -113,6 +113,9 @@ abstract class DefaultParser  extends DefaultHandler {
                 if (emgr != null) {
                     emgr.log("While parsing: " + fo.toString());
                     emgr.notify(emgr.INFORMATIONAL, io);
+                } else if (Boolean.getBoolean("netbeans.debug.exceptions")) {
+                    System.err.println("While parsing: " + fo.toString());
+                    io.printStackTrace();
                 }
                 state = ERROR;
             }
@@ -124,6 +127,12 @@ abstract class DefaultParser  extends DefaultHandler {
                     Exception e = sex.getException();
                     if (e != null) emgr.notify(emgr.WARNING, e);
                     emgr.notify(emgr.INFORMATIONAL, sex);
+                } else if (Boolean.getBoolean("netbeans.debug.exceptions")) {
+                    System.err.println("While parsing: " + fo.toString());
+                    Exception e = sex.getException();
+                    if (e != null) e.printStackTrace();                    
+                    sex.printStackTrace();
+                    
                 }
                 state = ERROR;
             }
@@ -138,6 +147,7 @@ abstract class DefaultParser  extends DefaultHandler {
         }                        
     }
 
+    
     /**
      * Parser default file object
      */

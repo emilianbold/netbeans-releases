@@ -53,7 +53,16 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
         
         SniffingParser sniffer = (SniffingParser) local.get();
         Smell print = sniffer.sniff(fo);
-        return template.match(print);
+//        System.err.println("Print of " + fo);
+//        System.err.println("print " + print);
+//        System.err.println("template " + template);
+        boolean res = template.match(print);
+//        System.err.println("Match " + res);
+        return res;
+    }
+
+    public String toString() {
+       return template.toString();
     }
 
     // XML description -> memory representation ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -223,7 +232,9 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
 
             print = new Smell();
             parse(fo);
-            if (this.state == ERROR) return null;
+            if (this.state == ERROR) {
+                return null;
+            }
             
             lastFileObject = fo;
             return print;
@@ -251,10 +262,12 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
             return STOP;
         }        
         
+        
         public void startElement(String namespaceURI, String localName, String qName, Attributes atts) throws SAXException {            
             if (namespaceURI != null) {
                 print.addElementNS(namespaceURI);
             }
+            if ("".equals(localName)) localName = null;  //#16484
             print.addElementName(localName != null ? localName : qName);
             for (int i = 0; i<atts.getLength(); i++) {
                 print.addElementAtt(atts.getQName(i), atts.getValue(i));
@@ -284,12 +297,17 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
 
         public void comment(char[] ch, int start, int length) {}
         
-        public void error(SAXParseException exception) throws SAXException {
+        public void error(SAXParseException exception) throws SAXException {            
             this.state = ERROR;
             throw STOP;
         }
 
         public void fatalError(SAXParseException exception) throws SAXException {
+            //!!! should be commented out
+            System.err.println("While parsing:" + fo  + " at " + exception.getLineNumber());
+            System.err.println("See #16484 for possible reason description if input file does not contain mentioned error:");
+            exception.printStackTrace();  
+            
             this.state = ERROR;
             throw STOP;
         }
@@ -303,7 +321,7 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
      * Template smell per resolver and print data per FileObject.
      */
     private static class Smell {
-
+        
         private String[] doctypes = null;
         private String[] pis = null;
         
@@ -312,7 +330,45 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
         
         private String[] attns = null;
         private String[] attvs = null;
-        
+
+        public String toString() {
+            StringBuffer buf = new StringBuffer();
+            int i = 0;
+            buf.append("xml-check(");
+            
+            if (doctypes != null) {
+                buf.append("doctypes:");
+                for (i = 0; i<doctypes.length; i++)
+                    buf.append(doctypes[i] + ", ");
+            }
+
+            if (pis != null) {
+                buf.append("PIs:");
+                for (i = 0; i<pis.length; i++)
+                    buf.append(pis[i] + ", ");
+            }
+
+            if (root != null) {
+               buf.append("root:" + root);
+            }
+
+            if (nss != null) {
+                buf.append("root-namespaces:");
+                for (i = 0; i<nss.length; i++)
+                    buf.append(nss[i] + ", ");
+            }
+
+            if (attns != null) {
+                buf.append("attributes:");
+                for (i = 0; i<attns.length; i++)
+                    buf.append(attns[i] + "='" + attvs[i] + "'");
+            }
+
+            buf.append(")");
+            return buf.toString();
+
+        }
+
         private void addDoctype(String s) {
             if (doctypes == null) {
                 doctypes = new String[] { s };
