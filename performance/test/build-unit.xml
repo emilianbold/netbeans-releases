@@ -112,7 +112,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Make ide executable -->
     <target name="make_netbeans_executable">
         <chmod perm="ugo+rx" file="${netbeans.dest.dir}/bin/netbeans"/>
-        <chmod perm="ugo+rx" file="${netbeans.dest.dir}/platform5/lib/nbexec"/>
+        <chmod perm="ugo+rx" dir="${netbeans.dest.dir}" includes="platform?/lib/nbexec"/>
     </target>
         
 </project>
