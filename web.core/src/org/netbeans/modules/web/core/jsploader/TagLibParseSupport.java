@@ -125,6 +125,7 @@ public class TagLibParseSupport implements Node.Cookie {
                             getTagLibEditorData(false).applyParsedData(info.getTagLibraryData(), 
                                                                   jspdo.getPrimaryFile().getFileSystem());
                             getTagLibEditorData(false).setBeanData(info.getBeans());
+                            getTagLibEditorData(false).setErrorPage(info.isErrorPage ());
                         }
                         // if failure do nothing
                     }
@@ -145,6 +146,8 @@ public class TagLibParseSupport implements Node.Cookie {
     /** Data structure which provides data to JSP syntax coloring and code completion for one page. 
     * It does not attempt to faithfully represent the tag library as specified by the JSP spec,
     * it only provides information necessary for syntax coloring and tag completion.
+     * It also provides other information about page such as bean info's and error page
+     * attribute.
     */
     public static class TagLibEditorData extends PropertyChangeSupport {
 
@@ -154,6 +157,7 @@ public class TagLibParseSupport implements Node.Cookie {
 
         private TreeMap libraryMap = new TreeMap();
         private JspInfo.BeanData[] beanData = new JspInfo.BeanData[0];
+        private boolean errorPage = false;
         
         TagLibEditorData(Object sourceBean) {
             super(sourceBean);
@@ -165,6 +169,14 @@ public class TagLibParseSupport implements Node.Cookie {
 
         public JspInfo.BeanData[] getBeanData() {
             return beanData;
+        }
+        
+        public void setErrorPage (boolean errorPage) {
+            this.errorPage = errorPage;
+        }
+        
+        public boolean isErrorPage () {
+            return errorPage;
         }
 
         void applyParsedData(JspInfo.TagLibraryData[] taglibs, FileSystem fs) {

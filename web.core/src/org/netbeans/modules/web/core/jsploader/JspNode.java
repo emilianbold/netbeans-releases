@@ -26,6 +26,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.actions.OpenAction;
 import org.openide.util.NbBundle;
+import org.openide.util.HelpCtx;
 import org.openide.util.actions.SystemAction;
 
 import org.netbeans.modules.web.core.WebExecSupport;
@@ -106,6 +107,14 @@ public class JspNode extends DataNode {
                    }
                    public PropertyEditor getPropertyEditor() {
                        return new LanguageEditor(FeatureFactory.getFactory().getJSPContentLanguages());
+                   }
+                   
+                   public boolean supportsDefaultValue() {
+                       return true;
+                   }
+                   
+                   public void restoreDefaultValue() throws IllegalAccessException,InvocationTargetException {
+                       setValue(NbBundle.getBundle(LanguageEditor.class).getString("CTL_lang_html"));
                    }
                }
             );
@@ -328,5 +337,8 @@ public class JspNode extends DataNode {
         return ICON_BASE;
     }
 
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("jsp_edit");//NOI18N
+    }
 }
 

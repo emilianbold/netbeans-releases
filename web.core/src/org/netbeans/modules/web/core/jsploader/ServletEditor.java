@@ -27,6 +27,11 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
+import javax.swing.Timer;
+import javax.swing.event.CaretListener;
+import javax.swing.text.Caret;
+import javax.swing.event.CaretEvent;
+
 import org.openide.TopManager;
 import org.openide.actions.ToggleBreakpointAction;
 import org.openide.cookies.EditorCookie;
@@ -48,9 +53,12 @@ import org.openide.util.actions.SystemAction;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.Mode;
 import org.openide.windows.Workspace;
+import org.openide.src.SourceElement;
+import org.openide.cookies.SourceCookie;
 
 import org.netbeans.modules.java.Util;
-
+import org.netbeans.modules.java.JavaDataObject;
+ 
 /*
 /** Editor for servlet files generated from JSP files. Main features:
  * <ul>
@@ -183,6 +191,13 @@ public class ServletEditor extends CloneableEditorSupport
 
     public static class ServletEditorComponent extends CloneableEditor {
 
+        static final int SELECTED_NODES_DELAY = 1000;//copied from the JavaEditor
+        Timer timerSelNodes;//copied from the JavaEditor
+        /** Listener on caret movements */
+        CaretListener caretListener; //copied from the JavaEditor
+        /** The last caret offset position. */
+        int lastCaretOffset = -1; //copied from the JavaEditor
+
         /** For externalization. */
         public ServletEditorComponent() {
             super();
@@ -213,7 +228,7 @@ public class ServletEditor extends CloneableEditorSupport
                 getPane().setEditable(false);
             }
             // set the activated nodes
-            setCorrectActivatedNodes();
+//            setCorrectActivatedNodes();
             // register a listener to set activated nodes after a change of the servlet
             ServletEditor se = (ServletEditor)cloneableEditorSupport();
             if (se != null) {
@@ -221,27 +236,122 @@ public class ServletEditor extends CloneableEditorSupport
                     new PropertyChangeListener() {
                         public void propertyChange(PropertyChangeEvent evt) {
                             if (JspEnv.PROP_TIME.equals(evt.getPropertyName()))
-                                setCorrectActivatedNodes();
-                                ServletEditorComponent.this.updateName();
-                                
+                                initializeJavaNodes();
+                            ServletEditorComponent.this.updateName();
                         }
                     }
                 );
             }
+            initializeJavaNodes();
         }
         
-        void setCorrectActivatedNodes() {
+        /* This method is called when parent window of this component has focus,
+         * and this component is preferred one in it.
+         *
+         * copied from the JavaEditor
+        */
+        protected void componentActivated () {
+            pane.addCaretListener(caretListener);
+            super.componentActivated (); 
+        }
+        
+        /** Selects element at the given position. 
+         *  
+         *  copied from the JavaEditor
+         */
+        void selectElementsAtOffset(final int offset) {
             ServletEditor se = (ServletEditor)cloneableEditorSupport();
             if (se != null) {
                 JspDataObject jspdo = se.jspEnv().getJspDataObject();
-                DataObject servlet = jspdo.getServletDataObject();
-                if (servlet != null)
-                    setActivatedNodes(new Node[] { servlet.getNodeDelegate() });
-                else
+                JspServletDataObject servlet = jspdo.getServletDataObject();
+                if (servlet==null) {
                     setActivatedNodes(new Node[] { jspdo.getNodeDelegate() });
+                    return;
+                }
+                SourceCookie.Editor seditor = (SourceCookie.Editor)servlet.getCookie(SourceCookie.Editor.class);
+
+                org.openide.src.Element element = seditor.findElement(offset);
+                org.openide.src.nodes.ElementNodeFactory factory = JavaDataObject.getExplorerFactory();
+                Node n = null;
+                if (element instanceof org.openide.src.MethodElement) {
+                    n = factory.createMethodNode((org.openide.src.MethodElement)element);
+                }
+                else if (element instanceof org.openide.src.ClassElement) {
+                    n = factory.createClassNode((org.openide.src.ClassElement)element);
+                }
+                else if (element instanceof org.openide.src.ConstructorElement) {
+                    n = factory.createConstructorNode((org.openide.src.ConstructorElement)element);
+                }
+                else if (element instanceof org.openide.src.FieldElement) {
+                    n = factory.createFieldNode((org.openide.src.FieldElement)element);
+                }
+                else if (element instanceof org.openide.src.InitializerElement) {
+                    n = factory.createInitializerNode((org.openide.src.InitializerElement)element);
+                }
+                else if (element instanceof org.openide.src.SourceElement) {
+                    n = servlet.getNodeDelegate();
+                }
+                setActivatedNodes((n != null) ? new Node[] { n } : new Node[] { jspdo.getNodeDelegate() });
             }
         }
         
+        /** Obtain a support for this component 
+         *  copied from the JavaEditor
+         */
+        private void initializeJavaNodes() {
+    	    // This local is to keep javac 1.2 happy.
+            ServletEditor se = (ServletEditor)cloneableEditorSupport();
+            if (se != null) {
+                JspDataObject jspdo = se.jspEnv().getJspDataObject();
+                timerSelNodes = new Timer(100, new java.awt.event.ActionListener() {
+                                              public void actionPerformed(java.awt.event.ActionEvent e) {
+                                                  if (lastCaretOffset == -1 && pane != null) {
+                                                      Caret caret = pane.getCaret();
+                                                      if (caret != null)
+                                                        lastCaretOffset = caret.getDot();
+                                                  }
+                                                  selectElementsAtOffset(lastCaretOffset);
+                                              }
+                                          });
+                timerSelNodes.setInitialDelay(100);
+                timerSelNodes.setRepeats(false);
+                timerSelNodes.restart();
+                caretListener = new CaretListener() { 
+                                    public void caretUpdate(CaretEvent e) {
+                                        restartTimerSelNodes(e.getDot());
+                                    }
+                                };
+            }
+            if (lastCaretOffset == -1 && pane != null) {
+                Caret caret = pane.getCaret();
+                if (caret != null) lastCaretOffset = caret.getDot();
+            }
+            selectElementsAtOffset(lastCaretOffset);
+        }
+
+        /**
+         * Refreshes the activated node immediately. Provides system actions
+         * based on the node activated at the time of popu invoke.
+         *
+         *copied from the JavaEditor
+         */
+        public SystemAction[] getSystemActions() {
+            selectElementsAtOffset(lastCaretOffset);
+            timerSelNodes.stop();
+            return super.getSystemActions();
+        }
+        
+        /** Restart the timer which updates the selected nodes after the specified delay from
+         * last caret movement.
+         *
+         * copied from the JavaEditor
+        */
+        void restartTimerSelNodes(int pos) {
+            timerSelNodes.setInitialDelay(SELECTED_NODES_DELAY);
+            timerSelNodes.restart();
+            lastCaretOffset = pos;
+        }
+
     } // JspServletEditorComponent
     
     private static class JspEnv implements CloneableEditorSupport.Env,

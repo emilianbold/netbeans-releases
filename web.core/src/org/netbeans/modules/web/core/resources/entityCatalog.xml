@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE catalog PUBLIC "-//NetBeans//Entity Mapping Registration 1.0//EN" "http://www.netbeans.org/dtds/EntityCatalog-1_0.dtd">
+<catalog>
+    <!-- public ID defined by XMLDataObject -->
+    <public publicId="-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN" uri="nbres:/org/netbeans/modules/web/core/resources/web-app_2_2.dtd"/>
+    <public publicId="-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.1//EN" uri="nbres:/org/netbeans/modules/web/core/resources/web-jsptaglibrary_1_1.dtd"/>
+    <public publicId="-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN" uri="nbres:/org/netbeans/modules/web/core/resources/web-app_2_3.dtd"/>
+    <public publicId="-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.2//EN" uri="nbres:/org/netbeans/modules/web/core/resources/web-jsptaglibrary_1_2.dtd"/>
+</catalog>

@@ -388,6 +388,12 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         return support.getTagLibEditorData().getBeanData();
     }
     
+    public boolean isErrorPage() {
+        TagLibParseSupport support = (dobj == null) ? 
+            null : (TagLibParseSupport)dobj.getCookie(TagLibParseSupport.class);
+        return support.getTagLibEditorData().isErrorPage ();
+    }
+    
     
     /**
      * The mapping of the 'global' tag library URI to the location
@@ -470,7 +476,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                 {"file"});      // NOI18N
             directiveData.put("page", new String[]      // NOI18N
                 {"autoFlush", "buffer", "contentType", "errorPage", "extends",  // NOI18N 
-                 "import", "info", "isErrorPage", "isThreadSafe", "language", "session"});  // NOI18N
+                 "import", "info", "isErrorPage", "isThreadSafe", "language", "pageEncoding", "session"});  // NOI18N
             directiveData.put("taglib", new String[]    // NOI18N
             {"prefix", "uri"}); // NOI18N
         }

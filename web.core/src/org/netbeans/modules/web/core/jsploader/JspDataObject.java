@@ -328,11 +328,11 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
                 DataObject beans[] = compInfo.getBeans();
                 CompilerJob beansJob = new CompilerJob(Compiler.DEPTH_ZERO);
                 for (int i = 0; i < beans.length; i++) {
-                    CompilerCookie c = (CompilerCookie)beans[i].getCookie(CompilerCookie.Compile.class);
-                    if (c != null) {
-                        c.addToJob(beansJob, Compiler.DEPTH_ZERO);
-                    }
-                    else {
+                    if (isFileSystemSuitableForBeansCompilation(beans[i].getPrimaryFile().getFileSystem())) {
+                        CompilerCookie c = (CompilerCookie)beans[i].getCookie(CompilerCookie.Compile.class);
+                        if (c != null) {
+                            c.addToJob(beansJob, Compiler.DEPTH_ZERO);
+                        }
                     }
                 }
                 // now refresh the folders
@@ -436,6 +436,14 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         }*/
 //printJob(job);
 //System.out.println("created JSP compiler for " + getPrimaryFile().getPackageNameExt('/','.'));
+    }
+    
+    private boolean isFileSystemSuitableForBeansCompilation(FileSystem fs) {
+        if (!fs.getCapability().capableOf(FileSystemCapability.COMPILE))
+            return false;
+        if (fs.isReadOnly())
+            return false;
+        return true;
     }
 
     public boolean isUpToDate() {
@@ -993,6 +1001,16 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     public void setQueryString (String params) throws java.io.IOException {
         WebExecSupport.setQueryString(getPrimaryEntry ().getFile (), params);
         firePropertyChange (ServletDataNode.PROP_REQUEST_PARAMS, null, null);
+    }
+    
+    protected org.openide.filesystems.FileObject handleRename (String str) throws java.io.IOException {
+        if ("".equals(str)) // NOI18N
+            throw new IOException(NbBundle.getMessage(JspDataObject.class, "FMT_Not_Valid_FileName"));
+
+        org.openide.filesystems.FileObject retValue;
+        
+        retValue = super.handleRename (str);
+        return retValue;
     }
     
     ////// -------- INNER CLASSES ---------

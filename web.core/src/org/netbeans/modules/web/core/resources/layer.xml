@@ -78,6 +78,7 @@ Microsystems, Inc. All Rights Reserved.
   <folder name="Mount">
       <folder name="java">
           <file name="org-netbeans-modules-web-core-resources-library-servlet.xml">
+              <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle" />
               <![CDATA[
                   <!DOCTYPE Library PUBLIC "-//NetBeans IDE//DTD JavaLibrary//EN" "http://www.netbeans.org/dtds/JavaLibrary-1_0.dtd">
                   <Library>
@@ -90,18 +91,7 @@ Microsystems, Inc. All Rights Reserved.
   <folder name="Services">
     <folder name="Hidden">
 	    <attr name="hidden" boolvalue="true" />
-	    <file name="org-netbeans-modules-web-core-resources-EntityCatalog.xml" >
-		<![CDATA[
-		    <!DOCTYPE catalog PUBLIC "-//NetBeans//Entity Mapping Registration 1.0//EN" "http://www.netbeans.org/dtds/EntityCatalog-1_0.dtd">
-		    <catalog>
-			<!-- public ID defined by XMLDataObject -->
-                        <public publicId="-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN" uri="nbres:/org/netbeans/modules/web/core/resources/web-app_2_2.dtd"/>
-                        <public publicId="-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.1//EN" uri="nbres:/org/netbeans/modules/web/core/resources/web-jsptaglibrary_1_1.dtd"/>
-                        <public publicId="-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN" uri="nbres:/org/netbeans/modules/web/core/resources/web-app_2_3.dtd"/>
-                        <public publicId="-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.2//EN" uri="nbres:/org/netbeans/modules/web/core/resources/web-jsptaglibrary_1_2.dtd"/>
-		    </catalog>
-		]]>
-            </file>
+	    <file name="org-netbeans-modules-web-core-resources-EntityCatalog.xml" url="entityCatalog.xml"/>
     </folder>
 
     <folder name="Looks">
@@ -115,20 +105,7 @@ Microsystems, Inc. All Rights Reserved.
         </file>
         <!-- JSPDefaultLook class defines composite look for servlet, JSP and DD objects 
              it merges available (sub)set of sublooks -->
-        <file name="org.openidex.nodes.looks.CompositeLook$Web-Look.xml">
-            <![CDATA[
-                <!DOCTYPE Look PUBLIC "-//NetBeans IDE//DTD Looks//EN" "http://www.netbeans.org/dtds/Looks-1_0.dtd" >
-                <Look name="Web Element">
-                    <Sublooks>
-                        <Sublook lookid="org.netbeans.modules.web.dd.editors.DDPropertiesLook$DD-Editors"/>
-                        <Sublook lookid="org.openidex.nodes.looks.NodeProxyLook$Web-Basic"/>
-                    </Sublooks>
-                    <Standalone class="org.netbeans.modules.web.core.jsploader.JspNode"/>
-                    <Standalone class="org.netbeans.modules.web.core.jsploader.ServletDataNode"/>
-                    <Standalone class="org.netbeans.modules.web.dd.DDDataObject"/>
-                </Look>
-            ]]>
-        </file>
+        <file name="org.openidex.nodes.looks.CompositeLook$Web-Look.xml" url="web-look.xml"/>
     </folder> <!-- Looks -->
 
 
@@ -224,4 +201,9 @@ Microsystems, Inc. All Rights Reserved.
     </file>
   </folder>      
 
+  <folder name="Web">
+    <folder name="MonitorSupport">
+    </folder>
+  </folder>
+  
 </filesystem>

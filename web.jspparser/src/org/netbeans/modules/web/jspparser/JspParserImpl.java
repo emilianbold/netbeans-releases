@@ -15,6 +15,8 @@ package org.netbeans.modules.web.jspparser;
 
 import java.io.IOException;
 import java.io.File;
+import java.io.StringWriter;
+import java.io.PrintWriter;
 import java.io.FileNotFoundException;
 import java.util.Hashtable;
 import java.util.Map;
@@ -29,6 +31,7 @@ import org.netbeans.modules.web.core.jsploader.CompilationDescriptor;
 import org.netbeans.modules.web.core.jsploader.JspCompileUtil;
 import org.netbeans.modules.web.core.jsploader.ParsingDescriptor;
 import org.netbeans.modules.web.core.jsploader.TagLibParseSupport;
+import org.netbeans.modules.web.core.jsploader.ErrorCompiler;
 
 //import org.apache.jasper.compiler.JspReader;
 import org.apache.jasper.compiler.Parser;
@@ -144,6 +147,22 @@ public class JspParserImpl implements JspParserAPI {
             return new JspParserAPI.ParseResult(alistener.getJspInfo());
         }
         catch (JasperException e) {
+            TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, e);
+            return constructErrorResult(e, jspPage.getPrimaryFile());
+        }
+        catch (ArrayIndexOutOfBoundsException e) {
+            // fixes bug 20919: under some circumstances the parser may throw 
+            // other exceptions than JasperException
+            TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, e);
+            return constructErrorResult(e, jspPage.getPrimaryFile());
+        }
+        catch (ThreadDeath e) {
+            throw e;
+        }
+        catch (Throwable e) {
+            // fixes bug 21169: the parser throws Error
+            // related to Tomcat bug 7124
+            TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, e);
             return constructErrorResult(e, jspPage.getPrimaryFile());
         }
     }
@@ -154,7 +173,7 @@ public class JspParserImpl implements JspParserAPI {
     }
 
     
-    private static JspParserAPI.ParseResult constructErrorResult(JasperException e, FileObject jspPage) {
+    private static JspParserAPI.ParseResult constructErrorResult(Throwable e, FileObject jspPage) {
         JspParserAPI.ErrorDescriptor error = null;
         try {
             error = constructJakartaErrorDescriptor(
@@ -169,7 +188,8 @@ public class JspParserImpl implements JspParserAPI {
             // do nothing, error will just remain to be null
         }
         if (error == null) {
-            error = new JspParserAPI.ErrorDescriptor(jspPage, -1, -1, e.getMessage(), "");
+            error = new JspParserAPI.ErrorDescriptor(jspPage, -1, -1, 
+                ErrorCompiler.getThrowableMessage(e, !(e instanceof JasperException)), "");
         }
         return new JspParserAPI.ParseResult(new JspParserAPI.ErrorDescriptor[] {error});
     }
@@ -243,7 +263,7 @@ public class JspParserImpl implements JspParserAPI {
         TldLocationsCache cache = options.getTldLocationsCache();
         TreeMap result = new TreeMap();
         try {
-            Field ff = TldLocationsCache.class.getDeclaredField("mappings");
+            Field ff = TldLocationsCache.class.getDeclaredField("mappings"); // NOI18N
             ff.setAccessible(true);
             Hashtable mappings = (Hashtable)ff.get(cache);
             for (Iterator it = mappings.keySet().iterator(); it.hasNext(); ) {
