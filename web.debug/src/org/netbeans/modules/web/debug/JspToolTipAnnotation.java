@@ -78,7 +78,7 @@ public class JspToolTipAnnotation extends Annotation implements Runnable {
         Boolean isScriptlet = Utils.isScriptlet(
             doc, ep, NbDocument.findLineOffset(doc, lp.getLine().getLineNumber()) + lp.getColumn()
         );
-        System.err.println("isScriptlet: " + isScriptlet.booleanValue());
+        Utils.getEM().log("isScriptlet: " + isScriptlet.booleanValue());
         
         //if not, try Java
         if ((text == null) && (isScriptlet.booleanValue())) {
@@ -111,7 +111,7 @@ public class JspToolTipAnnotation extends Annotation implements Runnable {
         String old = toolTipText;
         toolTipText = null;
         if (watch != null) {
-            System.err.println("Error: " + watch.getErrorMessage());
+            Utils.getEM().log("Error: " + watch.getErrorMessage());
             if (watch instanceof JavaWatch) {
                 toolTipText = ((JavaWatch) watch).toStringValue ();
             }
