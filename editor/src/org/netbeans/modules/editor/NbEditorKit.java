@@ -704,8 +704,10 @@ public class NbEditorKit extends ExtKit {
         }
         
         public JMenuItem getPopupMenuItem(JTextComponent target) {
-            JMenu menu = new JMenu(org.openide.util.NbBundle.getBundle (NbEditorKit.class).
-                getString(generateFoldPopupAction));
+            String menuText = org.openide.util.NbBundle.getBundle (NbEditorKit.class).
+                getString(generateFoldPopupAction);
+            JMenu menu = new JMenu(menuText);
+            Mnemonics.setLocalizedText(menu, menuText);
             addAction(target, menu, BaseKit.collapseFoldAction);
             addAction(target, menu, BaseKit.expandFoldAction);
             setAddSeparatorBeforeNextAction(true);
