@@ -94,7 +94,7 @@ public final class IntrospectedInfo implements Serializable {
                     }
                 }
             }
-            if (AntModule.err.isLoggable(ErrorManager.UNKNOWN)) {
+            if (AntModule.err.isLoggable(ErrorManager.INFORMATIONAL)) {
                 AntModule.err.log ("IntrospectedInfo.defaults=" + defaults);
             }
             loadedDefaults = true;

@@ -95,10 +95,8 @@ public class HelpAction extends SystemAction
         Component focused = (w != null) ? SwingUtilities.findFocusOwner(w) : null;
         HelpCtx help = (focused == null) ? HelpCtx.DEFAULT_HELP : HelpCtx.findHelp(focused);
 
-        if (Installer.err.isLoggable(ErrorManager.UNKNOWN)) {
-            Installer.err.log(ErrorManager.UNKNOWN, help.toString() + " from " + focused);
-        } else if (Installer.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-            Installer.err.log(ErrorManager.INFORMATIONAL, help.toString());
+        if (Installer.err.isLoggable(ErrorManager.INFORMATIONAL)) {
+            Installer.err.log(help.toString() + " from " + focused);
         }
         return help;
     }

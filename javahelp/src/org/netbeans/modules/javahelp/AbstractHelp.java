@@ -54,7 +54,7 @@ public abstract class AbstractHelp extends Help implements HelpConstants {
             fireChangeEvent(); // since someone may be listening to whether they are ready
         }
         Collection c = helpsets.allInstances();
-        if (Installer.err.isLoggable(ErrorManager.UNKNOWN)) {
+        if (Installer.err.isLoggable(ErrorManager.INFORMATIONAL)) {
             List l = new ArrayList(Math.min(1, c.size()));
             Iterator it = c.iterator();
             while (it.hasNext()) {

@@ -166,27 +166,27 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         switch (elem.getCompletionContext()) {
                 // TAG COMPLETION
                 case JspSyntaxSupport.TAG_COMPLETION_CONTEXT :
-                    if (err.isLoggable (ErrorManager.UNKNOWN)) err.log ("TAG_COMPLETION_CONTEXT");   // NOI18N
+                    if (err.isLoggable (ErrorManager.INFORMATIONAL)) err.log ("TAG_COMPLETION_CONTEXT");   // NOI18N
                     if( !visible && first == ' ' || first == ':' ) return COMPLETION_POPUP;
                     if( visible && first == '>' ) return COMPLETION_HIDE;
                     return visible ? COMPLETION_POST_REFRESH : COMPLETION_CANCEL;
 
                 // ENDTAG COMPLETION
                 case JspSyntaxSupport.ENDTAG_COMPLETION_CONTEXT :
-                    if (err.isLoggable (ErrorManager.UNKNOWN)) err.log ("ENDTAG_COMPLETION_CONTEXT" );   // NOI18N
+                    if (err.isLoggable (ErrorManager.INFORMATIONAL)) err.log ("ENDTAG_COMPLETION_CONTEXT" );   // NOI18N
                     if( visible && first == '>' ) return COMPLETION_HIDE;
                     return visible ? COMPLETION_POST_REFRESH : COMPLETION_CANCEL;
 
                 // DIRECTIVE COMPLETION
                 case JspSyntaxSupport.DIRECTIVE_COMPLETION_CONTEXT :
-                    if (err.isLoggable (ErrorManager.UNKNOWN)) err.log ("DIRECTIVE_COMPLETION_CONTEXT");   // NOI18N
+                    if (err.isLoggable (ErrorManager.INFORMATIONAL)) err.log ("DIRECTIVE_COMPLETION_CONTEXT");   // NOI18N
                     if( !visible && first == '@' || first == ' ' ) return COMPLETION_POPUP;
                     if( visible && first == '=' || first == '>' ) return COMPLETION_HIDE;
                     return visible ? COMPLETION_POST_REFRESH : COMPLETION_CANCEL;
 
                 // CONTENT LANGUAGE
                 case JspSyntaxSupport.CONTENTL_COMPLETION_CONTEXT :
-                    if (err.isLoggable (ErrorManager.UNKNOWN)) err.log ("CONTENTL_COMPLETION_CONTEXT");   // NOI18N
+                    if (err.isLoggable (ErrorManager.INFORMATIONAL)) err.log ("CONTENTL_COMPLETION_CONTEXT");   // NOI18N
                     ExtSyntaxSupport support = getContentLanguageSyntaxSupport();
                     if (support != null) {
                         return support.checkCompletion( target, typedText, visible );
@@ -196,7 +196,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
 //                    return new CompletionQuery.DefaultResult( jspList, "JSP completion4" );
                                         
                 case JspSyntaxSupport.SCRIPTINGL_COMPLETION_CONTEXT :
-                    if (err.isLoggable (ErrorManager.UNKNOWN)) err.log ("SCRIPTINGL_COMPLETION_CONTEXT" );   // NOI18N
+                    if (err.isLoggable (ErrorManager.INFORMATIONAL)) err.log ("SCRIPTINGL_COMPLETION_CONTEXT" );   // NOI18N
                     jspdo = (dobj instanceof JspDataObject) ? (JspDataObject)dobj : null;
                     if (jspdo != null && jspdo.getScriptingLanguage().equals ("text/x-java")) { // NOI18N
                         return ((ExtSyntaxSupport)get( org.netbeans.editor.ext.java.JavaSyntaxSupport.class )).checkCompletion( target, typedText, visible );
