@@ -13,11 +13,13 @@
 
 package org.netbeans.modules.j2ee.ejbjarproject;
 
+import com.sun.rsasign.p;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.*;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.*;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
@@ -284,6 +286,16 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
     
     public String getJ2eePlatformVersion() {
         return helper.getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.J2EE_PLATFORM);
+    }
+
+    public FileObject[] getSourceRoots() {
+        Sources sources = ProjectUtils.getSources(project);
+        SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        FileObject[] roots = new FileObject[groups.length];
+        for (int i=0; i < roots.length; i++) {
+            roots[i] = groups[i].getRootFolder();
+        }
+        return roots; 
     }
     
     private static class IT implements Iterator {
