@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -51,7 +51,7 @@ public class ArtifactProviderTest extends TestBase {
     
     private void verifyArtifact(AntArtifact aa) {
         assertEquals("right project", simple, aa.getProject());
-        assertEquals("right location", URI.create("build/simple-app.jar"), aa.getArtifactLocation());
+        assertEquals("right location", URI.create("build/simple-app.jar"), aa.getArtifactLocations()[0]);
         assertEquals("right target", "jar", aa.getTargetName());
         assertEquals("right clean target", "clean", aa.getCleanTargetName());
         // ID should be target name if that does not cause a conflict
@@ -83,7 +83,7 @@ public class ArtifactProviderTest extends TestBase {
         putExports(helper, exports);
         aa = AntArtifactQuery.findArtifactsByType(simple, "jar");
         assertNotNull("some artifact found", aa);
-        assertEquals("one artifact found", 2, aa.length);
+        assertEquals("two artifacts found", 2, aa.length);
 
         // one type/target/script produces two outputs -> no AA
         e = new Export();
@@ -95,7 +95,14 @@ public class ArtifactProviderTest extends TestBase {
         putExports(helper, exports);
         aa = AntArtifactQuery.findArtifactsByType(simple, "jar");
         assertNotNull("some artifact found", aa);
+        assertEquals("two artifacts found", 2, aa.length);
+        
+        exports.remove(0);
+        putExports(helper, exports);
+        aa = AntArtifactQuery.findArtifactsByType(simple, "jar");
+        assertNotNull("some artifact found", aa);
         assertEquals("one artifact found", 1, aa.length);
+        assertEquals("the artifact has two locations", 2, aa[0].getArtifactLocations().length);
     }
 
     private static void putExports(AntProjectHelper helper, List/*<Export>*/ exports) {

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -505,7 +505,7 @@ public class J2SEProjectProperties {
             VisualClassPathItem vcpi = (VisualClassPathItem)it.next();
             if ( vcpi.getType() == VisualClassPathItem.TYPE_ARTIFACT ||
                     vcpi.getType() == VisualClassPathItem.TYPE_JAR ) {
-                refHelper.destroyForeignFileReference(vcpi.getRaw());
+                refHelper.destroyReference(vcpi.getRaw());
             }
         }
         
@@ -747,11 +747,12 @@ public class J2SEProjectProperties {
                         cpItem = new VisualClassPathItem(null, VisualClassPathItem.TYPE_LIBRARY, pe[i], eval);
                     }
                 } else if (pe[i].startsWith(ANT_ARTIFACT_PREFIX)) {
-                    AntArtifact artifact = refHelper.getForeignFileReferenceAsArtifact(pe[i]);
-                    if ( artifact != null ) {
+                    Object ret[] = refHelper.findArtifactAndLocation(pe[i]);
+                    if ( ret[0] != null ) {
                         // Sub project artifact
-                        String eval = artifact.getArtifactLocation().toString();
-                        cpItem = new VisualClassPathItem( artifact, VisualClassPathItem.TYPE_ARTIFACT, pe[i], eval );
+                        AntArtifactChooser.ArtifactItem ai = new  AntArtifactChooser.ArtifactItem((AntArtifact)ret[0], (URI)ret[1]);
+                        String eval = ai.getArtifactURI().toString();
+                        cpItem = new VisualClassPathItem( ai, VisualClassPathItem.TYPE_ARTIFACT, pe[i], eval );
                     } else {
                         cpItem = new VisualClassPathItem(null, VisualClassPathItem.TYPE_ARTIFACT, pe[i], null);
                     }
@@ -806,8 +807,8 @@ public class J2SEProjectProperties {
                         break;    
                     case VisualClassPathItem.TYPE_ARTIFACT:
                         if (vcpi.getObject() != null) {
-                            AntArtifact aa = (AntArtifact)vcpi.getObject();
-                            String reference = refHelper.createForeignFileReference( aa );
+                            AntArtifactChooser.ArtifactItem ai = (AntArtifactChooser.ArtifactItem)vcpi.getObject();
+                            String reference = refHelper.addReference(ai.getArtifact(), ai.getArtifactURI());
                             sb.append( reference );
                         } else {
                             sb.append(vcpi.getRaw());

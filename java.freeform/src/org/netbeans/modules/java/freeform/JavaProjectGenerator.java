@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -472,15 +472,6 @@ public class JavaProjectGenerator {
             TargetMapping tm = (TargetMapping)it.next();
             if (tm.name.equals("build")) { // NOI18N
                 if (tm.targets.size() == 1) {
-                    if (tm.script != null) {
-                        String script = evaluator.evaluate(tm.script);
-                        File f = new File(script);
-                        if (f.isAbsolute()) {
-                            // #50092 - no exports will be generated when build
-                            // script does not lie within project directory
-                            return new ArrayList();
-                        }
-                    }
                     targetName = (String)tm.targets.get(0);
                     scriptName = tm.script;
                 } else {

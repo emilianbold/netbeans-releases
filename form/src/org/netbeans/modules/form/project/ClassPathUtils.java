@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -250,8 +250,12 @@ public class ClassPathUtils {
                 File jarFile = new File(name);
                 AntArtifact artifact =
                     AntArtifactQuery.findArtifactFromFile(jarFile);
-                if (artifact.getProject() != project)
-                    projectClassPath.addAntArtifact(artifact, null);    //XXX: David, fix it
+                if (artifact.getProject() != project) {
+                    URI[] locs = artifact.getArtifactLocations();
+                    for (int y=0; y<locs.length; y++ ) {
+                        projectClassPath.addAntArtifact(artifact, locs[y]);
+                    }
+                }
             }
         }
 

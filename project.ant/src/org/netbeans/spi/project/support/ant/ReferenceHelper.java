@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -19,10 +19,12 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -86,6 +88,11 @@ public final class ReferenceHelper {
      */
     static final String REFS_NS = "http://www.netbeans.org/ns/ant-project-references/1"; // NOI18N
     
+    /**
+     * Newer version of {@link #REFS_NS} supporting Properties and with changed semantics of <script>.
+     */
+    static final String REFS_NS2 = "http://www.netbeans.org/ns/ant-project-references/2"; // NOI18N
+    
     /** Set of property names which values can be used as additional base
      * directories. */
     private Set/*<String>*/ extraBaseDirectories = new HashSet();
@@ -122,13 +129,13 @@ public final class ReferenceHelper {
 
     /**
      * Load <references> from project.xml.
-     * @param create if true, create an empty element if it was missing, else leave as null
+     * @return can return null if there are no references stored yet
      */
-    private Element loadReferences(boolean create) {
+    private Element loadReferences() {
         assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
-        Element references = aux.getConfigurationFragment(REFS_NAME, REFS_NS, true);
-        if (references == null && create) {
-            references = XMLUtil.createDocument("ignore", null, null, null).createElementNS(REFS_NS, REFS_NAME); // NOI18N
+        Element references = aux.getConfigurationFragment(REFS_NAME, REFS_NS2, true);
+        if (references == null) {
+            references = aux.getConfigurationFragment(REFS_NAME, REFS_NS, true);
         }
         return references;
     }
@@ -138,12 +145,192 @@ public final class ReferenceHelper {
      */
     private void storeReferences(Element references) {
         assert ProjectManager.mutex().isWriteAccess();
-        assert references != null && references.getLocalName().equals(REFS_NAME) && REFS_NS.equals(references.getNamespaceURI());
+        assert references != null && references.getLocalName().equals(REFS_NAME) && 
+            (REFS_NS.equals(references.getNamespaceURI()) || REFS_NS2.equals(references.getNamespaceURI()));
         aux.putConfigurationFragment(references, true);
+    }
+    
+    private void removeOldReferences() {
+        assert ProjectManager.mutex().isWriteAccess();
+        aux.removeConfigurationFragment(REFS_NS, REFS_NAME, true);
     }
     
     /**
      * Add a reference to an artifact coming from a foreign project.
+     * <p>
+     * For more info see {@link #addReference(AntArtifact, URI)}.
+     * @param artifact the artifact to add
+     * @return true if a reference or some property was actually added or modified,
+     *         false if everything already existed and was not modified
+     * @throws IllegalArgumentException if the artifact is not associated with a project
+     * @deprecated to add reference use {@link #addReference(AntArtifact, URI)};
+     *   to check whether reference exist or not use {@link #isReferenced(AntArtifact, URI)}.
+     *   This method creates reference for the first artifact location only.
+     */
+    public boolean addReference(final AntArtifact artifact) throws IllegalArgumentException {
+        Object ret[] = addReference0(artifact, artifact.getArtifactLocations()[0]);
+        return ((Boolean)ret[0]).booleanValue();
+    }
+
+    // @return array of two elements: [Boolean - any modification, String - reference]
+    private Object[] addReference0(final AntArtifact artifact, final URI location) throws IllegalArgumentException {
+        return ((List)ProjectManager.mutex().writeAccess(new Mutex.Action() {
+            public Object run() {
+                int index = findLocationIndex(artifact, location);
+                Project forProj = artifact.getProject();
+                if (forProj == null) {
+                    throw new IllegalArgumentException("No project associated with " + artifact); // NOI18N
+                }
+                // Set up the raw reference.
+                File forProjDir = FileUtil.toFile(forProj.getProjectDirectory());
+                assert forProjDir != null : forProj.getProjectDirectory();
+                String projName = getUsableReferenceID(ProjectUtils.getInformation(forProj).getName());
+                String forProjName = findReferenceID(projName, "project.", forProjDir.getAbsolutePath());
+                if (forProjName == null) {
+                    forProjName = generateUniqueID(projName, "project.", forProjDir.getAbsolutePath());
+                }
+                RawReference ref;
+                File scriptFile = artifact.getScriptLocation();
+                if (canUseVersion10(artifact, forProjDir)) {
+                    String rel = PropertyUtils.relativizeFile(forProjDir, scriptFile);
+                    URI scriptLocation;
+                    try {
+                        scriptLocation = new URI(null, null, rel, null);
+                    } catch (URISyntaxException ex) {
+                        scriptLocation = forProjDir.toURI().relativize(scriptFile.toURI());
+                    }
+                    ref = new RawReference(forProjName, artifact.getType(), scriptLocation, artifact.getTargetName(), artifact.getCleanTargetName(), artifact.getID());
+                } else {
+                    String scriptLocation;
+                    if (scriptFile.getAbsolutePath().startsWith(forProjDir.getAbsolutePath())) {
+                        String rel = PropertyUtils.relativizeFile(forProjDir, scriptFile);
+                        assert rel != null : "Relativization must succeed for files: "+forProjDir+ " "+scriptFile;
+                        scriptLocation = "${project."+forProjName+"}/"+rel;
+                    } else {
+                        scriptLocation = "build.script.reference." + forProjName;
+                        setPathProperty(forProjDir, scriptFile, scriptLocation);
+                        scriptLocation = "${"+scriptLocation+"}";
+                    }
+                    ref = new RawReference(forProjName, artifact.getType(), scriptLocation, 
+                        artifact.getTargetName(), artifact.getCleanTargetName(), 
+                        artifact.getID(), artifact.getProperties());
+                }
+                boolean success = addRawReference0(ref);
+                // Set up ${project.whatever}.
+                FileObject myProjDirFO = AntBasedProjectFactorySingleton.getProjectFor(h).getProjectDirectory();
+                File myProjDir = FileUtil.toFile(myProjDirFO);
+                if (setPathProperty(myProjDir, forProjDir, "project." + forProjName)) {
+                    success = true;
+                }
+                // Set up ${reference.whatever.whatever}.
+                String propertiesFile;
+                String forProjPathProp = "project." + forProjName; // NOI18N
+                URI artFile = location;
+                String refPath;
+                if (artFile.isAbsolute()) {
+                    refPath = new File(artFile).getAbsolutePath();
+                    propertiesFile = AntProjectHelper.PRIVATE_PROPERTIES_PATH;
+                } else {
+                    refPath = "${" + forProjPathProp + "}/" + artFile.getPath(); // NOI18N
+                    propertiesFile = AntProjectHelper.PROJECT_PROPERTIES_PATH;
+                }
+                EditableProperties props = h.getProperties(propertiesFile);
+                String refPathProp = "reference." + forProjName + '.' + getUsableReferenceID(artifact.getID()); // NOI18N
+                if (index > 0) {
+                    refPathProp += "."+index;
+                }
+                if (!refPath.equals(props.getProperty(refPathProp))) {
+                    props.put(refPathProp, refPath);
+                    h.putProperties(propertiesFile, props);
+                    success = true;
+                }
+                ArrayList l = new ArrayList();
+                l.add(Boolean.valueOf(success));
+                l.add("${"+refPathProp+"}"); // NOI18N
+                return l;
+            }
+        })).toArray(new Object[2]);
+    }
+    
+    private int findLocationIndex(final AntArtifact artifact, final URI location) throws IllegalArgumentException {
+        if (location == null) {
+            throw new IllegalArgumentException("location cannot be null");
+        }
+        URI uris[] = artifact.getArtifactLocations();
+        for (int i=0; i<uris.length; i++) {
+            if (uris[i].equals(location)) {
+                return i;
+            }
+        }
+        throw new IllegalArgumentException("location ("+location+") must be in AntArtifact's locations ("+artifact+")");
+    }
+
+    /**
+     * Test whether the artifact can be stored as /1 artifact or not.
+     */
+    private static boolean canUseVersion10(AntArtifact aa, File projectDirectory) {
+        // is there multiple outputs?
+        if (aa.getArtifactLocations().length > 1) {
+            return false;
+        }
+        // has some properties?
+        if (aa.getProperties().keySet().size() > 0) {
+            return false;
+        }
+        // does Ant script lies under project directory?
+        if (!aa.getScriptLocation().getAbsolutePath().startsWith(projectDirectory.getAbsolutePath())) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Helper method which checks collocation status of two files and based on
+     * that it will in private or project properties file set up property with
+     * the given name and with absolute or relative path value.
+     * @return was there any change or not
+     */
+    private boolean setPathProperty(File base, File path, String propertyName) {
+        String value;
+        String propertiesFile;
+        if (CollocationQuery.areCollocated(base, path)) {
+            // Fine, using a relative path to subproject.
+            value = PropertyUtils.relativizeFile(base, path);
+            assert value != null : "These dirs are not really collocated: " + base + " & " + path;
+            propertiesFile = AntProjectHelper.PROJECT_PROPERTIES_PATH;
+        } else {
+            // try relativize against external base dirs
+            value = relativizeFileToExtraBaseFolders(path);
+            if (value != null) {
+                propertiesFile = AntProjectHelper.PROJECT_PROPERTIES_PATH;
+            } else {
+                // use an absolute path.
+                propertiesFile = AntProjectHelper.PRIVATE_PROPERTIES_PATH;
+                value = path.getAbsolutePath();
+            }
+            
+        }
+        EditableProperties props = h.getProperties(propertiesFile);
+        if (!value.equals(props.getProperty(propertyName))) {
+            props.put(propertyName, value);
+            h.putProperties(propertiesFile, props);
+            // check presence of this property in opposite property file and
+            // remove it if necessary
+            propertiesFile = (propertiesFile == AntProjectHelper.PROJECT_PROPERTIES_PATH ? 
+                AntProjectHelper.PRIVATE_PROPERTIES_PATH : AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            props = h.getProperties(propertiesFile);
+            if (props.remove(propertyName) != null) {
+                h.putProperties(propertiesFile, props);
+            }
+            return true;
+        } else {
+            return false;
+        }
+        
+    }
+    
+    /**
+     * Add a reference to an artifact's location coming from a foreign project.
      * <p>
      * Records the name of the foreign project.
      * Normally the foreign project name is that project's code name,
@@ -156,7 +343,7 @@ public final class ReferenceHelper {
      * This property is named <samp>project.<i>foreignProjectName</i></samp>.
      * Example: <samp>project.mylib=../mylib</samp>
      * <p>
-     * Adds a project property to refer to the location of the artifact itself.
+     * Adds a project property to refer to the artifact's location.
      * This property is named <samp>reference.<i>foreignProjectName</i>.<i>targetName</i></samp>
      * and will use <samp>${project.<i>foreignProjectName</i>}</samp> and be a shared
      * property - unless the artifact location is an absolute URI, in which case the property
@@ -174,94 +361,69 @@ public final class ReferenceHelper {
      * <p>
      * Acquires write access.
      * @param artifact the artifact to add
-     * @return true if a reference or some property was actually added or modified,
-     *         false if everything already existed and was not modified
+     * @param location the artifact's location to create reference to
+     * @return name of reference which was created or already existed
      * @throws IllegalArgumentException if the artifact is not associated with a project
+     *   or if the location is not artifact's location
+     * @since 1.5
      */
-    public boolean addReference(final AntArtifact artifact) throws IllegalArgumentException {
-        return ((Boolean)ProjectManager.mutex().writeAccess(new Mutex.Action() {
+    public String addReference(final AntArtifact artifact, URI location) throws IllegalArgumentException {
+        Object ret[] = addReference0(artifact, location);
+        return (String)ret[1];
+    }
+    
+    /**
+     * Tests whether reference for artifact's location was already created by
+     * {@link #addReference(AntArtifact, URI)} for this project or not. This
+     * method returns false also in case when reference exist but needs to be
+     * updated.
+     * <p>
+     * Acquires read access.
+     * @param artifact the artifact to add
+     * @param location the artifact's location to create reference to
+     * @return true if already referenced
+     * @throws IllegalArgumentException if the artifact is not associated with a project
+     *   or if the location is not artifact's location
+     * @since 1.5
+     */
+    public boolean isReferenced(final AntArtifact artifact, final URI location) throws IllegalArgumentException {
+        return ((Boolean)ProjectManager.mutex().readAccess(new Mutex.Action() {
             public Object run() {
+                int index = findLocationIndex(artifact, location);
                 Project forProj = artifact.getProject();
                 if (forProj == null) {
                     throw new IllegalArgumentException("No project associated with " + artifact); // NOI18N
                 }
-                // Set up the raw reference.
                 File forProjDir = FileUtil.toFile(forProj.getProjectDirectory());
                 assert forProjDir != null : forProj.getProjectDirectory();
                 String projName = getUsableReferenceID(ProjectUtils.getInformation(forProj).getName());
                 String forProjName = findReferenceID(projName, "project.", forProjDir.getAbsolutePath());
                 if (forProjName == null) {
-                    forProjName = generateUniqueID(projName, "project.", forProjDir.getAbsolutePath());
-                }
-                File scriptFile = artifact.getScriptLocation();
-                URI scriptLocation;
-                String rel = PropertyUtils.relativizeFile(forProjDir, scriptFile);
-                try {
-                    scriptLocation = new URI(null, null, rel, null);
-                } catch (URISyntaxException ex) {
-                    scriptLocation = forProjDir.toURI().relativize(scriptFile.toURI());
-                }
-                RawReference ref = new RawReference(forProjName, artifact.getType(), scriptLocation, artifact.getTargetName(), artifact.getCleanTargetName(), artifact.getID());
-                Element references = loadReferences(true);
-                boolean success;
-                try {
-                    success = addRawReference(ref, references);
-                } catch (IllegalArgumentException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                     return Boolean.FALSE;
                 }
-                if (success) {
-                    storeReferences(references);
+                RawReference ref = getRawReference(forProjName, getUsableReferenceID(artifact.getID()));
+                if (ref == null) {
+                    return Boolean.FALSE;
                 }
-                // Set up ${project.whatever}.
-                FileObject myProjDirFO = AntBasedProjectFactorySingleton.getProjectFor(h).getProjectDirectory();
-                File myProjDir = FileUtil.toFile(myProjDirFO);
-                String forProjPath;
-                String propertiesFile;
-                if (CollocationQuery.areCollocated(myProjDir, forProjDir)) {
-                    // Fine, using a relative path to subproject.
-                    forProjPath = PropertyUtils.relativizeFile(myProjDir, forProjDir);
-                    assert forProjPath != null : "These dirs are not really collocated: " + myProjDir + " & " + forProjDir;
-                    propertiesFile = AntProjectHelper.PROJECT_PROPERTIES_PATH;
-                } else {
-                    forProjPath = relativizeFileToExtraBaseFolders(forProjDir);
-                    if (forProjPath != null) {
-                        propertiesFile = AntProjectHelper.PROJECT_PROPERTIES_PATH;
-                    } else {
-                        // Use an absolute path.
-                        forProjPath = forProjDir.getAbsolutePath();
-                        propertiesFile = AntProjectHelper.PRIVATE_PROPERTIES_PATH;
-                    }
+                File script = h.resolveFile(eval.evaluate(ref.getScriptLocationValue()));
+                if (!artifact.getType().equals(ref.getArtifactType()) ||
+                        !artifact.getID().equals(ref.getID()) ||
+                        !artifact.getScriptLocation().equals(script) ||
+                        !artifact.getProperties().equals(ref.getProperties()) ||
+                        !artifact.getTargetName().equals(ref.getTargetName()) ||
+                        !artifact.getCleanTargetName().equals(ref.getCleanTargetName())) {
+                    return Boolean.FALSE;
                 }
-                EditableProperties props = h.getProperties(propertiesFile);
-                String forProjPathProp = "project." + forProjName; // NOI18N
-                if (!forProjPath.equals(props.getProperty(forProjPathProp))) {
-                    props.put(forProjPathProp, forProjPath);
-                    h.putProperties(propertiesFile, props);
-                    success = true;
+                
+                String reference = "reference." + forProjName + '.' + getUsableReferenceID(artifact.getID()); // NOI18N
+                if (index > 0) {
+                    reference += "."+index;
                 }
-                // Set up ${reference.whatever.whatever}.
-                URI artFile = artifact.getArtifactLocation();
-                String refPath;
-                if (artFile.isAbsolute()) {
-                    refPath = new File(artFile).getAbsolutePath();
-                    propertiesFile = AntProjectHelper.PRIVATE_PROPERTIES_PATH;
-                } else {
-                    refPath = "${" + forProjPathProp + "}/" + artFile.getPath(); // NOI18N
-                    propertiesFile = AntProjectHelper.PROJECT_PROPERTIES_PATH;
-                }
-                props = h.getProperties(propertiesFile);
-                String refPathProp = "reference." + forProjName + '.' + getUsableReferenceID(artifact.getID()); // NOI18N
-                if (!refPath.equals(props.getProperty(refPathProp))) {
-                    props.put(refPathProp, refPath);
-                    h.putProperties(propertiesFile, props);
-                    success = true;
-                }
-                return Boolean.valueOf(success);
+                return Boolean.valueOf(eval.getProperty(reference) != null);
             }
         })).booleanValue();
     }
-
+    
     /**
      * Add a raw reference to a foreign project artifact.
      * Does not check if such a project already exists; does not create a project
@@ -284,25 +446,46 @@ public final class ReferenceHelper {
     public boolean addRawReference(final RawReference ref) {
         return ((Boolean)ProjectManager.mutex().writeAccess(new Mutex.Action() {
             public Object run() {
-                Element references = loadReferences(true);
-                boolean success;
                 try {
-                    success = addRawReference(ref, references);
+                    return Boolean.valueOf(addRawReference0(ref));
                 } catch (IllegalArgumentException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                    return Boolean.FALSE;
-                }
-                if (success) {
-                    storeReferences(references);
-                    return Boolean.TRUE;
-                } else {
                     return Boolean.FALSE;
                 }
             }
         })).booleanValue();
     }
     
-    private static boolean addRawReference(RawReference ref, Element references) throws IllegalArgumentException {
+    private boolean addRawReference0(final RawReference ref) throws IllegalArgumentException {
+        Element references = loadReferences();
+        if (references == null) {
+            references = XMLUtil.createDocument("ignore", null, null, null).createElementNS(ref.getNS(), REFS_NAME); // NOI18N
+        }
+        boolean modified = false;
+        if (references.getNamespaceURI().equals(REFS_NS) && ref.getNS().equals(REFS_NS2)) {
+            // upgrade all references to version /2 here:
+            references = upgradeTo20(references);
+            removeOldReferences();
+            modified = true;
+        }
+        modified = updateRawReferenceElement(ref, references);
+        if (modified) {
+            storeReferences(references);
+        }
+        return modified;
+    }
+    
+    private Element upgradeTo20(Element references) {
+        Element references20 = XMLUtil.createDocument("ignore", null, null, null).createElementNS(REFS_NS2, REFS_NAME); // NOI18N
+        RawReference rr[] = getRawReferences(references);
+        for (int i=0; i<rr.length; i++) {
+            rr[i].upgrade();
+            updateRawReferenceElement(rr[i], references20);
+        }
+        return references20;
+    }
+    
+    private static boolean updateRawReferenceElement(RawReference ref, Element references) throws IllegalArgumentException {
         // Linear search; always keeping references sorted first by foreign project
         // name, then by target name.
         Element nextRefEl = null;
@@ -325,7 +508,8 @@ public final class ReferenceHelper {
                 if (testRef.getID().equals(ref.getID())) {
                     // Key match, check if it needs to be updated.
                     if (testRef.getArtifactType().equals(ref.getArtifactType()) &&
-                            testRef.getScriptLocation().equals(ref.getScriptLocation()) &&
+                            testRef.getScriptLocationValue().equals(ref.getScriptLocationValue()) &&
+                            testRef.getProperties().equals(ref.getProperties()) &&
                             testRef.getTargetName().equals(ref.getTargetName()) &&
                             testRef.getCleanTargetName().equals(ref.getCleanTargetName())) {
                         // Match on other fields. Return without changing anything.
@@ -344,7 +528,7 @@ public final class ReferenceHelper {
             }
         }
         // Need to insert a new record before nextRef.
-        Element newRefEl = ref.toXml(references.getOwnerDocument());
+        Element newRefEl = ref.toXml(references.getNamespaceURI(), references.getOwnerDocument());
         // Note: OK if nextRefEl == null, that means insert as last child.
         references.insertBefore(newRefEl, nextRefEl);
         return true;
@@ -366,24 +550,21 @@ public final class ReferenceHelper {
      * @param id the ID of the build artifact (usually build target name)
      * @return true if a reference or some property was actually removed,
      *         false if the reference was not there and no property was removed
+     * @deprecated use {@link #destroyReference} instead; was unused anyway
      */
     public boolean removeReference(final String foreignProjectName, final String id) {
-        return removeReference(foreignProjectName, id, false);
+        return removeReference(foreignProjectName, id, false, null);
     }
     
-    private boolean removeReference(final String foreignProjectName, final String id, final boolean escaped) {
+    private boolean removeReference(final String foreignProjectName, final String id, final boolean escaped, final String reference) {
         return ((Boolean)ProjectManager.mutex().writeAccess(new Mutex.Action() {
             public Object run() {
-                Element references = loadReferences(true);
                 boolean success;
                 try {
-                    success = removeRawReference(foreignProjectName, id, references, escaped);
+                    success = removeRawReference0(foreignProjectName, id, escaped);
                 } catch (IllegalArgumentException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                     return Boolean.FALSE;
-                }
-                if (success) {
-                    storeReferences(references);
                 }
                 // Note: try to delete obsoleted properties from both project.properties
                 // and private.properties, just in case.
@@ -393,7 +574,11 @@ public final class ReferenceHelper {
                 };
                 // Check whether there are any other references using foreignProjectName.
                 // If not, we can delete ${project.foreignProjectName}.
-                RawReference[] refs = getRawReferences(references);
+                RawReference[] refs = new RawReference[0];
+                Element references = loadReferences();
+                if (references != null) {
+                    refs = getRawReferences(references);
+                }
                 boolean deleteProjProp = true;
                 for (int i = 0; i < refs.length; i++) {
                     if (refs[i].getForeignProjectName().equals(foreignProjectName)) {
@@ -412,11 +597,22 @@ public final class ReferenceHelper {
                         }
                     }
                 }
-                String refProp = "reference." + foreignProjectName + '.' + getUsableReferenceID(id); // NOI18N
+                
+                String refProp = reference;
+                if (refProp == null) {
+                    refProp = "reference." + foreignProjectName + '.' + getUsableReferenceID(id); // NOI18N
+                }
+                // remove also build script property if exist any:
+                String buildScriptProperty = "build.script.reference." + foreignProjectName;
                 for (int i = 0; i < PROPS_PATHS.length; i++) {
                     EditableProperties props = h.getProperties(PROPS_PATHS[i]);
                     if (props.containsKey(refProp)) {
                         props.remove(refProp);
+                        h.putProperties(PROPS_PATHS[i], props);
+                        success = true;
+                    }
+                    if (props.containsKey(buildScriptProperty)) {
+                        props.remove(buildScriptProperty);
                         h.putProperties(PROPS_PATHS[i], props);
                         success = true;
                     }
@@ -435,8 +631,13 @@ public final class ReferenceHelper {
      * @param fileReference file reference as created by 
      *    {@link #createForeignFileReference(File, String)}
      * @return true if the reference was actually removed; otherwise false
+     * @deprecated use {@link #destroyReference} instead; was unused anyway
      */
     public boolean removeReference(final String fileReference) {
+        return removeFileReference(fileReference);
+    }
+    
+    private boolean removeFileReference(final String fileReference) {
         return ((Boolean)ProjectManager.mutex().writeAccess(new Mutex.Action() {
             public Object run() {
                 boolean success = false;
@@ -479,25 +680,29 @@ public final class ReferenceHelper {
     public boolean removeRawReference(final String foreignProjectName, final String id) {
         return ((Boolean)ProjectManager.mutex().writeAccess(new Mutex.Action() {
             public Object run() {
-                Element references = loadReferences(true);
-                boolean success;
                 try {
-                    success = removeRawReference(foreignProjectName, id, references, false);
+                    return Boolean.valueOf(removeRawReference0(foreignProjectName, id, false));
                 } catch (IllegalArgumentException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                    return Boolean.FALSE;
-                }
-                if (success) {
-                    storeReferences(references);
-                    return Boolean.TRUE;
-                } else {
                     return Boolean.FALSE;
                 }
             }
         })).booleanValue();
     }
     
-    private static boolean removeRawReference(String foreignProjectName, String id, Element references, boolean escaped) throws IllegalArgumentException {
+    private boolean removeRawReference0(final String foreignProjectName, final String id, boolean escaped) throws IllegalArgumentException {
+        Element references = loadReferences();
+        if (references == null) {
+            return false;
+        }
+        boolean success = removeRawReferenceElement(foreignProjectName, id, references, escaped);
+        if (success) {
+            storeReferences(references);
+        }
+        return success;
+    }
+    
+    private static boolean removeRawReferenceElement(String foreignProjectName, String id, Element references, boolean escaped) throws IllegalArgumentException {
         // As with addRawReference, do a linear search through.
         List/*<Element>*/subEls = Util.findSubElements(references);
         Iterator it = subEls.iterator();
@@ -541,7 +746,7 @@ public final class ReferenceHelper {
     public RawReference[] getRawReferences() {
         return (RawReference[])ProjectManager.mutex().readAccess(new Mutex.Action() {
             public Object run() {
-                Element references = loadReferences(false);
+                Element references = loadReferences();
                 if (references != null) {
                     try {
                         return getRawReferences(references);
@@ -584,7 +789,7 @@ public final class ReferenceHelper {
     RawReference getRawReference(final String foreignProjectName, final String id, final boolean escaped) {
         return (RawReference)ProjectManager.mutex().readAccess(new Mutex.Action() {
             public Object run() {
-                Element references = loadReferences(false);
+                Element references = loadReferences();
                 if (references != null) {
                     try {
                         return getRawReference(foreignProjectName, id, references, escaped);
@@ -649,20 +854,6 @@ public final class ReferenceHelper {
                     String propertiesFile;
                     String path;
                     File myProjDir = FileUtil.toFile(AntBasedProjectFactorySingleton.getProjectFor(h).getProjectDirectory());
-                    if (CollocationQuery.areCollocated(myProjDir, file)) {
-                        propertiesFile = AntProjectHelper.PROJECT_PROPERTIES_PATH;
-                        path = PropertyUtils.relativizeFile(myProjDir, file);
-                        assert path != null : "expected relative path from " + myProjDir + " to " + file;
-                    } else {
-                        path = relativizeFileToExtraBaseFolders(file);
-                        if (path != null) {
-                            propertiesFile = AntProjectHelper.PROJECT_PROPERTIES_PATH;
-                        } else {
-                            propertiesFile = AntProjectHelper.PRIVATE_PROPERTIES_PATH;
-                            path = file.getAbsolutePath();
-                        }
-                    }
-                    EditableProperties props = h.getProperties(propertiesFile);
                     String fileID = file.getName();
                     // if the file is folder then add to ID string also parent folder name,
                     // i.e. if external source folder name is "src" the ID will
@@ -676,10 +867,7 @@ public final class ReferenceHelper {
                     if (prop == null) {
                         prop = generateUniqueID(fileID, "file.reference.", file.getAbsolutePath()); // NOI18N
                     }
-                    if (!path.equals(props.getProperty("file.reference." + prop))) { // NOI18N
-                        props.put("file.reference." + prop, path); // NOI18N
-                        h.putProperties(propertiesFile, props);
-                    }
+                    setPathProperty(myProjDir, file, "file.reference." + prop);
                     return "${file.reference." + prop + '}'; // NOI18N
                 }
             }
@@ -867,11 +1055,11 @@ public final class ReferenceHelper {
      * @param artifact a known build artifact to refer to
      * @return a string which can refer to that artifact file somehow
      * @throws IllegalArgumentException if the artifact is not associated with a project
+     * @deprecated use {@link #addReference(AntArtifact, URI)} instead
      */
     public String createForeignFileReference(AntArtifact artifact) throws IllegalArgumentException {
-        addReference(artifact);
-        String projID = findReferenceID(artifact);
-        return "${reference." + projID + '.' + getUsableReferenceID(artifact.getID()) + '}'; // NOI18N
+        Object ret[] = addReference0(artifact, artifact.getArtifactLocations()[0]);
+        return (String)ret[1];
     }
 
     /**
@@ -883,7 +1071,8 @@ public final class ReferenceHelper {
     }
     
     
-    private static final Pattern FOREIGN_FILE_REFERENCE = Pattern.compile("\\$\\{reference\\.([^.${}]+)\\.([^.${}]+)\\}"); // NOI18N
+    private static final Pattern FOREIGN_FILE_REFERENCE = Pattern.compile("\\$\\{reference\\.([^.${}]+)\\.([^.${}]+)\\.([\\d&&[^.${}]]+)\\}"); // NOI18N
+    private static final Pattern FOREIGN_FILE_REFERENCE_OLD = Pattern.compile("\\$\\{reference\\.([^.${}]+)\\.([^.${}]+)\\}"); // NOI18N
     private static final Pattern FOREIGN_PLAIN_FILE_REFERENCE = Pattern.compile("\\$\\{file\\.reference\\.([^${}]+)\\}"); // NOI18N
     
     /**
@@ -894,29 +1083,86 @@ public final class ReferenceHelper {
      * <p>Acquires read access.
      * @param reference a reference string as present in an Ant property
      * @return a corresponding Ant artifact object if there is one, else null
+     * @deprecated use {@link #findArtifactAndLocation} instead
      */
     public AntArtifact getForeignFileReferenceAsArtifact(final String reference) {
-        return (AntArtifact)ProjectManager.mutex().readAccess(new Mutex.Action() {
+        Object ret[] = findArtifactAndLocation(reference);
+        return (AntArtifact)ret[0];
+    }
+    
+    /**
+     * Try to find an <code>AntArtifact</code> object and location corresponding
+     * to a given reference. If the supplied string is not a recognized 
+     * reference to a build artifact, returns null.
+     * <p>
+     * Acquires read access.
+     * @param reference a reference string as present in an Ant property and as
+     *   created by {@link #addReference(AntArtifact, URI)}
+     * @return always returns array of two items. The items may be null. First
+     *   one is instance of AntArtifact and second is instance of URI and is 
+     *   AntArtifact's location
+     * @since 1.5
+     */
+    public Object[] findArtifactAndLocation(final String reference) {
+        return ((List)ProjectManager.mutex().readAccess(new Mutex.Action() {
             public Object run() {
+                ArrayList l = new ArrayList();
+                AntArtifact aa = null;
                 Matcher m = FOREIGN_FILE_REFERENCE.matcher(reference);
-                if (m.matches()) {
-                    RawReference ref = getRawReference(m.group(1), m.group(2), true);
-                    if (ref != null) {
-                        return ref.toAntArtifact(ReferenceHelper.this);
+                boolean matches = m.matches();
+                int index = 0;
+                if (!matches) {
+                    m = FOREIGN_FILE_REFERENCE_OLD.matcher(reference);
+                    matches = m.matches();
+                } else {
+                    try {
+                        index = Integer.parseInt(m.group(3));
+                    } catch (NumberFormatException ex) {
+                        ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, 
+                            "Could not parse reference ("+reference+") for the jar index. " + // NOI18N
+                            "Expected number: "+m.group(3)); // NOI18N
+                        matches = false;
                     }
                 }
-                return null;
+                if (matches) {
+                    RawReference ref = getRawReference(m.group(1), m.group(2), true);
+                    if (ref != null) {
+                        aa = ref.toAntArtifact(ReferenceHelper.this);
+                    }
+                }
+                if (aa == null) {
+                    l.add(null);
+                    l.add(null);
+                    return l;
+                }
+                assert index <= aa.getArtifactLocations().length;
+                URI uri = aa.getArtifactLocations()[index];
+                l.add(aa);
+                l.add(uri);
+                return l;
             }
-        });
+        })).toArray(new Object[2]);
+    }
+    
+    /**
+     * Remove a reference to a foreign file from the project.
+     * See {@link #destroyReference} for more information.
+     * @param reference an Ant-interpretable foreign file reference as created e.g.
+     *                  by {@link #createForeignFileReference(File,String)} or
+     *                  by {@link #createForeignFileReference(AntArtifact)}
+     * @deprecated use {@link #destroyReference} instead which does exactly 
+     *   the same but has more appropriate name
+     */
+    public void destroyForeignFileReference(String reference) {
+        destroyReference(reference);
     }
     
     /**
      * Remove a reference to a foreign file from the project.
      * If the passed string consists of an Ant property reference corresponding to
      * a known inter-project reference created by 
-     * {@link #createForeignFileReference(AntArtifact)} or file reference created by
-     * {@link #createForeignFileReference(File, String)}, that reference is removed using
-     * {@link #removeReference(String, String)} or {@link #removeReference(String)}.
+     * {@link #addReference(AntArtifact, URI)} or file reference created by
+     * {@link #createForeignFileReference(File, String)}, that reference is removed.
      * Since this would break any other identical foreign
      * file references present in the project, you should first confirm that this
      * reference was the last one of its kind (by string match).
@@ -928,20 +1174,26 @@ public final class ReferenceHelper {
      * @param reference an Ant-interpretable foreign file reference as created e.g.
      *                  by {@link #createForeignFileReference(File,String)} or
      *                  by {@link #createForeignFileReference(AntArtifact)}
+     * @return true if reference was really destroyed or not
+     * @since 1.5
      */
-    public void destroyForeignFileReference(String reference) {
+    public boolean destroyReference(String reference) {
         Matcher m = FOREIGN_FILE_REFERENCE.matcher(reference);
-        if (m.matches()) {
+        boolean matches = m.matches();
+        if (!matches) {
+            m = FOREIGN_FILE_REFERENCE_OLD.matcher(reference);
+            matches = m.matches();
+        }
+        if (matches) {
             String forProjName = m.group(1);
             String id = m.group(2);
-            removeReference(forProjName, id, true);
-            return;
+            return removeReference(forProjName, id, true, reference.substring(2, reference.length()-1));
         }
         m = FOREIGN_PLAIN_FILE_REFERENCE.matcher(reference);
         if (m.matches()) {
-            removeReference(reference);
-            return;
+            return removeFileReference(reference);
         }
+        return false;
     }
     
     /**
@@ -972,10 +1224,13 @@ public final class ReferenceHelper {
         
         private final String foreignProjectName;
         private final String artifactType;
-        private final URI scriptLocation;
+        private URI scriptLocation;
+        // introduced in /2 version
+        private String newScriptLocation;
         private final String targetName;
         private final String cleanTargetName;
         private final String artifactID;
+        private final Properties props;
         
         /**
          * Create a raw reference descriptor.
@@ -989,15 +1244,38 @@ public final class ReferenceHelper {
          * @throws IllegalArgumentException if the script location is given an absolute URI
          */
         public RawReference(String foreignProjectName, String artifactType, URI scriptLocation, String targetName, String cleanTargetName, String artifactID) throws IllegalArgumentException {
+           this(foreignProjectName, artifactType, scriptLocation, null, targetName, cleanTargetName, artifactID, new Properties());
+        }
+        
+        /**
+         * Create a raw reference descriptor.
+         * As this is basically just a struct, does no real work.
+         * @param foreignProjectName the name of the foreign project (usually its code name)
+         * @param artifactType the {@link AntArtifact#getType type} of the build artifact
+         * @param newScriptLocation absolute path to the build script; can contain Ant-like properties
+         * @param targetName the Ant target name
+         * @param cleanTargetName the Ant clean target name
+         * @param artifactID the {@link AntArtifact#getID ID} of the build artifact
+         * @param props optional properties to be used for target execution; never null
+         * @throws IllegalArgumentException if the script location is given an absolute URI
+         * @since 1.5
+         */
+        public RawReference(String foreignProjectName, String artifactType, String newScriptLocation, String targetName, String cleanTargetName, String artifactID, Properties props) throws IllegalArgumentException {
+           this(foreignProjectName, artifactType, null, newScriptLocation, targetName, cleanTargetName, artifactID, props);
+        }
+        
+        private RawReference(String foreignProjectName, String artifactType, URI scriptLocation, String newScriptLocation, String targetName, String cleanTargetName, String artifactID, Properties props) throws IllegalArgumentException {
             this.foreignProjectName = foreignProjectName;
             this.artifactType = artifactType;
-            if (scriptLocation.isAbsolute()) {
+            if (scriptLocation != null && scriptLocation.isAbsolute()) {
                 throw new IllegalArgumentException("Cannot use an absolute URI " + scriptLocation + " for script location"); // NOI18N
             }
             this.scriptLocation = scriptLocation;
+            this.newScriptLocation = newScriptLocation;
             this.targetName = targetName;
             this.cleanTargetName = cleanTargetName;
             this.artifactID = artifactID;
+            this.props = props;
         }
         
         private static final List/*<String>*/ SUB_ELEMENT_NAMES = Arrays.asList(new String[] {
@@ -1014,6 +1292,14 @@ public final class ReferenceHelper {
          * @throws IllegalArgumentException if anything is missing or duplicated or malformed etc.
          */
         static RawReference create(Element xml) throws IllegalArgumentException {
+            if (REFS_NS.equals(xml.getNamespaceURI())) {
+                return create1(xml);
+            } else {
+                return create2(xml);
+            }
+        }
+        
+        private static RawReference create1(Element xml) throws IllegalArgumentException {
             if (!REF_NAME.equals(xml.getLocalName()) || !REFS_NS.equals(xml.getNamespaceURI())) {
                 throw new IllegalArgumentException("bad element name: " + xml); // NOI18N
             }
@@ -1046,25 +1332,97 @@ public final class ReferenceHelper {
             return new RawReference(values[0], values[1], scriptLocation, values[3], values[4], values[5]);
         }
         
+        private static RawReference create2(Element xml) throws IllegalArgumentException {
+            if (!REF_NAME.equals(xml.getLocalName()) || !REFS_NS2.equals(xml.getNamespaceURI())) {
+                throw new IllegalArgumentException("bad element name: " + xml); // NOI18N
+            }
+            List nl = Util.findSubElements(xml);
+            if (nl.size() < 6) {
+                throw new IllegalArgumentException("missing or extra data: " + xml); // NOI18N
+            }
+            String[] values = new String[6];
+            for (int i = 0; i < 6; i++) {
+                Element el = (Element)nl.get(i);
+                if (!REFS_NS2.equals(el.getNamespaceURI())) {
+                    throw new IllegalArgumentException("bad subelement ns: " + el); // NOI18N
+                }
+                String elName = el.getLocalName();
+                int idx = SUB_ELEMENT_NAMES.indexOf(elName);
+                if (idx == -1) {
+                    throw new IllegalArgumentException("bad subelement name: " + elName); // NOI18N
+                }
+                String val = Util.findText(el);
+                if (val == null) {
+                    throw new IllegalArgumentException("empty subelement: " + el); // NOI18N
+                }
+                if (values[idx] != null) {
+                    throw new IllegalArgumentException("duplicate " + elName + ": " + values[idx] + " and " + val); // NOI18N
+                }
+                values[idx] = val;
+            }
+            Properties props = new Properties();
+            if (nl.size() == 7) {
+                Element el = (Element)nl.get(6);
+                if (!REFS_NS2.equals(el.getNamespaceURI())) {
+                    throw new IllegalArgumentException("bad subelement ns: " + el); // NOI18N
+                }
+                if (!"properties".equals(el.getLocalName())) { // NOI18N
+                    throw new IllegalArgumentException("bad subelement. expected 'properties': " + el); // NOI18N
+                }
+                Iterator it = Util.findSubElements(el).iterator();
+                while (it.hasNext()) {
+                    el = (Element)it.next();
+                    String key = el.getAttribute("name");
+                    String value = Util.findText(el);
+                    props.setProperty(key, value);
+                }
+            }
+            assert !Arrays.asList(values).contains(null);
+            return new RawReference(values[0], values[1], values[2], values[3], values[4], values[5], props);
+        }
+        
         /**
          * Write a RawReference as an XML &lt;reference&gt; fragment.
          */
-        Element toXml(Document ownerDocument) {
-            Element el = ownerDocument.createElementNS(REFS_NS, REF_NAME);
+        Element toXml(String namespace, Document ownerDocument) {
+            Element el = ownerDocument.createElementNS(namespace, REF_NAME);
             String[] values = {
                 foreignProjectName,
                 artifactType,
-                scriptLocation.toString(),
+                newScriptLocation != null ? newScriptLocation : scriptLocation.toString(),
                 targetName,
                 cleanTargetName,
                 artifactID,
             };
             for (int i = 0; i < 6; i++) {
-                Element subel = ownerDocument.createElementNS(REFS_NS, (String)SUB_ELEMENT_NAMES.get(i));
+                Element subel = ownerDocument.createElementNS(namespace, (String)SUB_ELEMENT_NAMES.get(i));
                 subel.appendChild(ownerDocument.createTextNode(values[i]));
                 el.appendChild(subel);
             }
+            if (props.keySet().size() > 0) {
+                assert namespace.equals(REFS_NS2) : "can happen only in /2"; // NOI18N
+                Element propEls = ownerDocument.createElementNS(namespace, "properties"); // NOI18N
+                el.appendChild(propEls);
+                List keys = new ArrayList(props.keySet());
+                Collections.sort(keys);
+                Iterator it = keys.iterator();
+                while (it.hasNext()) {
+                    String key = (String)it.next();
+                    Element propEl = ownerDocument.createElementNS(namespace, "property"); // NOI18N
+                    propEl.appendChild(ownerDocument.createTextNode(props.getProperty(key)));
+                    propEl.setAttribute("name", key); // NOI18N
+                    propEls.appendChild(propEl);
+                }
+            }
             return el;
+        }
+        
+        private String getNS() {
+            if (newScriptLocation != null) {
+                return REFS_NS2;
+            } else {
+                return REFS_NS;
+            }
         }
         
         /**
@@ -1093,9 +1451,23 @@ public final class ReferenceHelper {
          * project directory.
          * This is the script which would be called to build the desired artifact.
          * @return the script location
+         * @deprecated use {@link #getScriptLocationValue} instead; may return null now
          */
         public URI getScriptLocation() {
             return scriptLocation;
+        }
+        
+        /**
+         * Get absolute path location of the foreign project's build script.
+         * This is the script which would be called to build the desired artifact.
+         * @return absolute path possibly containing Ant properties
+         */
+        public String getScriptLocationValue() {
+            if (newScriptLocation != null) {
+                return newScriptLocation;
+            } else {
+                return "${project."+foreignProjectName+"}/"+scriptLocation.toString();
+            }
         }
         
         /**
@@ -1121,6 +1493,10 @@ public final class ReferenceHelper {
          */
         public String getID() {
             return artifactID;
+        }
+        
+        public Properties getProperties() {
+            return props;
         }
         
         /**
@@ -1171,8 +1547,16 @@ public final class ReferenceHelper {
             });
         }
         
+        private void upgrade() {
+            assert newScriptLocation == null && scriptLocation != null : "was already upgraded "+this;
+            newScriptLocation = "${project."+foreignProjectName+"}/" +scriptLocation.toString(); // NOI18N
+            scriptLocation = null;
+        }
+        
         public String toString() {
-            return "ReferenceHelper.RawReference<" + foreignProjectName + "," + artifactType + "," + scriptLocation + "," + targetName + "," + cleanTargetName + "," + artifactID + ">"; // NOI18N
+            return "ReferenceHelper.RawReference<" + foreignProjectName + "," + 
+                artifactType + "," + newScriptLocation != null ? newScriptLocation : scriptLocation + 
+                "," + targetName + "," + cleanTargetName + "," + artifactID + ">"; // NOI18N
         }
         
     }

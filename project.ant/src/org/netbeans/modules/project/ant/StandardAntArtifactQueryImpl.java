@@ -7,13 +7,14 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.project.ant;
 
 import java.io.File;
+import java.net.URI;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifact;
@@ -41,9 +42,12 @@ public class StandardAntArtifactQueryImpl implements AntArtifactQueryImplementat
         }
         AntArtifact[] artifacts = prov.getBuildArtifacts();
         for (int i = 0; i < artifacts.length; i++) {
-            File testFile = new File(artifacts[i].getScriptLocation().toURI().resolve(artifacts[i].getArtifactLocation()));
-            if (file.equals(testFile)) {
-                return artifacts[i];
+            URI uris[] = artifacts[i].getArtifactLocations();
+            for (int y = 0; y < uris.length; y++) {
+                File testFile = new File(artifacts[i].getScriptLocation().toURI().resolve(uris[y]));
+                if (file.equals(testFile)) {
+                    return artifacts[i];
+                }
             }
         }
         return null;

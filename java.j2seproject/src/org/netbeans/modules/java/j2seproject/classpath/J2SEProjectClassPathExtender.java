@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.File;
 import java.net.URI;
 import java.util.List;
+import org.netbeans.modules.java.j2seproject.ui.customizer.AntArtifactChooser;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
@@ -157,7 +158,8 @@ public class J2SEProjectClassPathExtender implements ProjectClassPathExtender {
                             String raw = props.getProperty (classPathId);
                             J2SEProjectProperties.PathParser parser = new J2SEProjectProperties.PathParser ();
                             List resources = (List) parser.decode(raw, project, helper.getAntProjectHelper(), eval, refHelper);
-                            VisualClassPathItem item = VisualClassPathItem.create (artifact);
+                            AntArtifactChooser.ArtifactItem ai = new AntArtifactChooser.ArtifactItem(artifact, artifactElement);
+                            VisualClassPathItem item = VisualClassPathItem.create (ai);
                             if (!resources.contains(item)) {
                                 resources.add (item);
                                 raw = parser.encode (resources, project, helper.getAntProjectHelper(), refHelper);

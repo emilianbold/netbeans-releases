@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -48,7 +48,7 @@ final class SimpleAntArtifact extends AntArtifact {
         this.cleanTargetName = cleanTargetName;
     }
     
-    public URI getArtifactLocation() {
+    private URI getArtifactLocation0() {
         String locationResolved = eval.getProperty(locationProperty);
         if (locationResolved == null) {
             return URI.create("file:/UNDEFINED"); // NOI18N
@@ -65,6 +65,10 @@ final class SimpleAntArtifact extends AntArtifact {
                 return URI.create("file:/BROKEN"); // NOI18N
             }
         }
+    }
+    
+    public URI[] getArtifactLocations() {
+        return new URI[]{getArtifactLocation0()};
     }
     
     public String getCleanTargetName() {

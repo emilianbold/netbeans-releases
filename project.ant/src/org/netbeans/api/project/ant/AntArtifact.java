@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -17,6 +17,8 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Properties;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.openide.ErrorManager;
@@ -37,6 +39,8 @@ import org.openide.filesystems.URLMapper;
  * @author Jesse Glick
  */
 public abstract class AntArtifact {
+
+    private final Properties PROPS = new Properties();
     
     /**
      * Empty constructor for use from subclasses.
@@ -86,11 +90,32 @@ public abstract class AntArtifact {
     
     /**
      * Get the location of the build artifact relative to the Ant script.
-     * For example, <samp>dist/mylib.jar</samp>.
+     * See {@link #getArtifactLocations}.
      * @return a URI to the build artifact, resolved relative to {@link #getScriptLocation};
      *         may be either relative, or an absolute <code>file</code>-protocol URI
+     * @deprecated use {@link #getArtifactLocations} instead
      */
-    public abstract URI getArtifactLocation();
+    public URI getArtifactLocation() {
+        // XXX: diagnostic thread dump - this method should not be called anymore
+        Thread.dumpStack();
+        return getArtifactLocations()[0];
+    }
+
+    /**
+     * Get the locations of the build artifacts relative to the Ant script.
+     * For example, <samp>dist/mylib.jar</samp>. The method is not defined 
+     * as abstract only for backward compatibility reasons. It has to be 
+     * always overriden. The order is important and should stay the same
+     * unless the artifact was changed.
+     * @return an array of URIs to the build artifacts, resolved relative to {@link #getScriptLocation};
+     *         may be either relative, or an absolute <code>file</code>-protocol URI
+     * @since 1.5
+     */
+    public URI[] getArtifactLocations() {
+        // XXX: diagnostic thread dump - this method must be always overriden
+        Thread.dumpStack();
+        return new URI[]{getArtifactLocation()};
+    }
 
     /**
      * Returns identifier of the AntArtifact which must be <strong>unique within
@@ -104,22 +129,29 @@ public abstract class AntArtifact {
 
     /**
      * Convenience method to find the actual artifact, if it currently exists.
-     * Uses {@link #getScriptFile} or {@link #getScriptLocation} and resolves {@link #getArtifactLocation} from it.
-     * Note that a project which has been cleaned more recently than it has been built
-     * will generally not have the build artifact on disk and so this call may easily
-     * return null. If you do not rely on the actual presence of the file but just need to
-     * refer to it abstractly, use {@link #getArtifactLocation} instead.
+     * See {@link #getArtifactFiles}.
      * @return the artifact file on disk, or null if it could not be found
+     * @deprecated use {@link #getArtifactFiles} instead
      */
     public final FileObject getArtifactFile() {
-        URI artifactLocation = getArtifactLocation();
+        // XXX: diagnostic thread dump - do not call this method
+        Thread.dumpStack();
+        FileObject fos[] = getArtifactFiles();
+        if (fos.length > 0) {
+            return fos[0];
+        } else {
+            return null;
+        }
+    }
+    
+    private FileObject getArtifactFile(URI artifactLocation) {
         assert !artifactLocation.isAbsolute() ||
             (!artifactLocation.isOpaque() && "file".equals(artifactLocation.getScheme())) // NOI18N
             : artifactLocation;
         URL artifact;
         try {
             // XXX this should probably use something in PropertyUtils?
-            artifact = getScriptLocation().toURI().resolve(getArtifactLocation()).normalize().toURL();
+            artifact = getScriptLocation().toURI().resolve(artifactLocation).normalize().toURL();
         } catch (MalformedURLException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             return null;
@@ -131,6 +163,28 @@ public abstract class AntArtifact {
         } else {
             return null;
         }
+    }
+    
+    /**
+     * Convenience method to find the actual artifacts, if they currently exist.
+     * Uses {@link #getScriptFile} or {@link #getScriptLocation} and resolves {@link #getArtifactLocations} from it.
+     * Note that a project which has been cleaned more recently than it has been built
+     * will generally not have the build artifacts on disk and so this call may easily
+     * return empty array. If you do not rely on the actual presence of the file but just need to
+     * refer to it abstractly, use {@link #getArtifactLocations} instead.
+     * @return the artifact files which exist on disk, or empty array if none could be found
+     * @since 1.5
+     */
+    public final FileObject[] getArtifactFiles() {
+        URI artifactLocations[] = getArtifactLocations();
+        ArrayList l = new ArrayList();
+        for (int i=0; i<artifactLocations.length; i++) {
+            FileObject fo = getArtifactFile(artifactLocations[i]);
+            if (fo != null) {
+                l.add(fo);
+            }
+        }
+        return (FileObject[])l.toArray(new FileObject[l.size()]);
     }
     
     /**
@@ -154,6 +208,18 @@ public abstract class AntArtifact {
      */
     public Project getProject() {
         return FileOwnerQuery.getOwner(getScriptLocation().toURI());
+    }
+
+    /**
+     * Optional properties which are used for Ant target execution. Only
+     * properties necessary for customization of Ant target execution should
+     * be used. These properties are stored in project.xml of project using 
+     * this artifact so care should be taken in defining what properties
+     * are used, e.g. never use absolute path like values
+     * @since 1.5
+     */
+    public Properties getProperties() {
+        return PROPS;
     }
     
 }

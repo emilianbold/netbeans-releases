@@ -346,8 +346,9 @@ final class LibrariesNode extends AbstractNode {
                 }
                 else if (prop.startsWith(ANT_ARTIFACT_PREFIX)) {
                     //Project reference
-                    AntArtifact artifact = refHelper.getForeignFileReferenceAsArtifact(prop);
-                    if ( artifact != null ) {
+                    Object ret[] = refHelper.findArtifactAndLocation(prop);
+                    if ( ret[0] != null ) {
+                        AntArtifact artifact = (AntArtifact)ret[0];
                         Project project = artifact.getProject();
                         result.add (new Key(project,currentClassPath, propName));
                     }
@@ -504,18 +505,18 @@ final class LibrariesNode extends AbstractNode {
         }
 
         public void actionPerformed(ActionEvent e) {
-            AntArtifact artifacts[] = AntArtifactChooser.showDialog(JavaProjectConstants.ARTIFACT_TYPE_JAR, project);
-                if ( artifacts != null ) {
-                    addArtifacts( artifacts );
+            AntArtifactChooser.ArtifactItem ai[] = AntArtifactChooser.showDialog(JavaProjectConstants.ARTIFACT_TYPE_JAR, project);
+                if ( ai != null ) {
+                    addArtifacts( ai );
                 }
         }
 
-        private void addArtifacts (AntArtifact[] artifacts) {
+        private void addArtifacts (AntArtifactChooser.ArtifactItem[] artifactItems) {
             J2SEProjectClassPathExtender cpExtender = (J2SEProjectClassPathExtender) project.getLookup().lookup(J2SEProjectClassPathExtender.class);
             if (cpExtender != null) {
-                for (int i=0; i<artifacts.length;i++) {
+                for (int i=0; i<artifactItems.length;i++) {
                     try {
-                        cpExtender.addAntArtifact(classPathId, artifacts[i], null); //XXX: David, fix it
+                        cpExtender.addAntArtifact(classPathId, artifactItems[i].getArtifact(), artifactItems[i].getArtifactURI());
                     } catch (IOException ioe) {
                         ErrorManager.getDefault().notify(ioe);
                     }

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -22,6 +22,9 @@ import java.net.URI;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.io.File;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
@@ -145,51 +148,46 @@ class ProjectNode extends AbstractNode {
 
 
         public boolean hasJavadoc() {
-            try {
-                AntArtifactProvider provider = (AntArtifactProvider) project.getLookup().lookup(AntArtifactProvider.class);
-                if (provider == null) {
-                    return false;
-                }
-                AntArtifact[] artifacts = provider.getBuildArtifacts();
-                if (artifacts.length==0) {
-                    return false;
-                }
-                URI artifactLocation = artifacts[0].getArtifactLocation();
-                File scriptLocation = artifacts[0].getScriptLocation();
-                URL artifactURL = scriptLocation.toURI().resolve(artifactLocation).normalize().toURL();
-                if (FileUtil.isArchiveFile(artifactURL)) {
-                    artifactURL = FileUtil.getArchiveRoot(artifactURL);
-                }
-                URL[] urls = JavadocForBinaryQuery.findJavadoc(artifactURL).getRoots();
-                return urls.length>0;
-            } catch (MalformedURLException mue) {
-                return false;
-            }
+            return findJavadoc().size() > 0;
         }
 
         public void showJavadoc() {
-            try {
-                AntArtifactProvider provider = (AntArtifactProvider) project.getLookup().lookup(AntArtifactProvider.class);
-                AntArtifact[] artifacts = provider.getBuildArtifacts();
-                //XXX: J2SEProject has a single artifact, if changed must return FileObject[]
-                URI artifactLocation = artifacts[0].getArtifactLocation();
-                File scriptLocation = artifacts[0].getScriptLocation();
-                URL artifactURL = scriptLocation.toURI().resolve(artifactLocation).normalize().toURL();
+            Set us = findJavadoc();
+            URL[] urls = (URL[])us.toArray(new URL[us.size()]);
+            URL pageURL = ShowJavadocAction.findJavadoc("overview-summary.html",urls);
+            if (pageURL == null) {
+                pageURL = ShowJavadocAction.findJavadoc("index.html",urls);
+            }
+            ProjectInformation info = (ProjectInformation) project.getLookup().lookup(ProjectInformation.class);
+            ShowJavadocAction.showJavaDoc (pageURL, info == null ?
+                NbBundle.getMessage (ProjectNode.class,"TXT_UnknownProjectName") : info.getDisplayName());
+        }
+        
+        private Set findJavadoc() {
+            AntArtifactProvider provider = (AntArtifactProvider) project.getLookup().lookup(AntArtifactProvider.class);
+            if (provider == null) {
+                return new HashSet();
+            }
+            AntArtifact[] artifacts = provider.getBuildArtifacts();
+            if (artifacts.length==0) {
+                return new HashSet();
+            }
+            File scriptLocation = artifacts[0].getScriptLocation();
+            URI artifactLocations[] = artifacts[0].getArtifactLocations();
+            Set urls = new HashSet();
+            URL artifactURL;
+            for (int i=0; i<artifactLocations.length; i++) {
+                try {
+                    artifactURL = scriptLocation.toURI().resolve(artifactLocations[i]).normalize().toURL();
+                } catch (MalformedURLException mue) {
+                    continue;
+                }
                 if (FileUtil.isArchiveFile(artifactURL)) {
                     artifactURL = FileUtil.getArchiveRoot(artifactURL);
                 }
-                URL[] urls = JavadocForBinaryQuery.findJavadoc(artifactURL).getRoots();
-                ProjectInformation info = (ProjectInformation) project.getLookup().lookup(ProjectInformation.class);
-                
-                URL pageURL = ShowJavadocAction.findJavadoc("overview-summary.html",urls);
-                if (pageURL == null) {
-                    pageURL = ShowJavadocAction.findJavadoc("index.html",urls);
-                }
-                ShowJavadocAction.showJavaDoc (pageURL, info == null ?
-                    NbBundle.getMessage (ProjectNode.class,"TXT_UnknownProjectName") : info.getDisplayName());
-            } catch (MalformedURLException mue) {
-                ErrorManager.getDefault().notify (mue);
+                urls.addAll(Arrays.asList(JavadocForBinaryQuery.findJavadoc(artifactURL).getRoots()));
             }
+            return urls;
         }
 
     }
@@ -269,7 +267,7 @@ class ProjectNode extends AbstractNode {
                        if (!RemoveClassPathRootAction.isReferenced (new EditableProperties[] {
                            props,
                            helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH)}, ref)) {
-                           refHelper.destroyForeignFileReference (ref);
+                           refHelper.destroyReference(ref);
                        }
                        Project project = FileOwnerQuery.getOwner(helper.getAntProjectHelper().getProjectDirectory());
                        assert project != null;

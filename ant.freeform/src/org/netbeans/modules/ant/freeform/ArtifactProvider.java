@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -26,6 +26,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.ErrorManager;
 import org.w3c.dom.Element;
 
@@ -57,11 +58,10 @@ final class ArtifactProvider implements AntArtifactProvider {
             String artifactKey = artifact.getType() + artifact.getTargetName() + artifact.getScriptLocation().getAbsolutePath();
             FreeformArtifact alreadyHasArtifact = (FreeformArtifact)uniqueArtifacts.get(artifactKey);
             if (alreadyHasArtifact != null) {
-                // #50076: There is multiple output jars produced by
-                // one type/target/script. Do not report this AA.
-                artifacts.remove(alreadyHasArtifact);
+                alreadyHasArtifact.addLocation(readArtifactLocation(export, project.evaluator()));
                 continue;
             } else {
+                artifact.addLocation(readArtifactLocation(export, project.evaluator()));
                 uniqueArtifacts.put(artifactKey, artifact);
             }
             
@@ -84,10 +84,34 @@ final class ArtifactProvider implements AntArtifactProvider {
         return (AntArtifact[]) artifacts.toArray(new AntArtifact[artifacts.size()]);
     }
     
+    public static URI readArtifactLocation(Element export, PropertyEvaluator eval) {
+        Element locEl = Util.findElement(export, "location", FreeformProjectType.NS_GENERAL); // NOI18N
+        assert locEl != null;
+        String loc = Util.findText(locEl);
+        assert loc != null;
+        String locationResolved = eval.evaluate(loc);
+        if (locationResolved == null) {
+            return URI.create("file:/UNDEFINED"); // NOI18N
+        }
+        File locF = new File(locationResolved);
+        if (locF.isAbsolute()) {
+            return locF.toURI();
+        } else {
+            // Project-relative path.
+            try {
+                return new URI(null, null, locationResolved.replace(File.separatorChar, '/'), null);
+            } catch (URISyntaxException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                return URI.create("file:/BROKEN"); // NOI18N
+            }
+        }
+    }
+
     private final class FreeformArtifact extends AntArtifact {
         
         private final Element export;
         private String id = null;
+        private Set locations = new HashSet();
         
         public FreeformArtifact(Element export) {
             this.export = export;
@@ -188,27 +212,12 @@ final class ArtifactProvider implements AntArtifactProvider {
             return id;
         }
 
-        public URI getArtifactLocation() {
-            Element locEl = Util.findElement(export, "location", FreeformProjectType.NS_GENERAL); // NOI18N
-            assert locEl != null;
-            String loc = Util.findText(locEl);
-            assert loc != null;
-            String locationResolved = project.evaluator().evaluate(loc);
-            if (locationResolved == null) {
-                return URI.create("file:/UNDEFINED"); // NOI18N
-            }
-            File locF = new File(locationResolved);
-            if (locF.isAbsolute()) {
-                return locF.toURI();
-            } else {
-                // Project-relative path.
-                try {
-                    return new URI(null, null, locationResolved.replace(File.separatorChar, '/'), null);
-                } catch (URISyntaxException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                    return URI.create("file:/BROKEN"); // NOI18N
-                }
-            }
+        public URI[] getArtifactLocations() {
+            return (URI[])locations.toArray(new URI[locations.size()]);
+        }
+        
+        private void addLocation(URI u) {
+            locations.add(u);
         }
         
         public String toString() {

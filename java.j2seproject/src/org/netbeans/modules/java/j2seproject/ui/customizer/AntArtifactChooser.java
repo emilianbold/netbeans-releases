@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -18,6 +18,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
@@ -152,8 +153,12 @@ public class AntArtifactChooser extends JPanel implements PropertyChangeListener
             AntArtifact artifacts[] = AntArtifactQuery.findArtifactsByType( project, artifactType );
         
             for( int i = 0; i < artifacts.length; i++ ) {
-                model.addElement( new ArtifactItem( artifacts[i]));
+                URI uris[] = artifacts[i].getArtifactLocations();
+                for( int y = 0; y < uris.length; y++ ) {
+                    model.addElement( new ArtifactItem(artifacts[i], uris[y]));
+                }
             }
+            jListArtifacts.setSelectionInterval(0, model.size());
         }
         
     }
@@ -171,7 +176,7 @@ public class AntArtifactChooser extends JPanel implements PropertyChangeListener
     /** Shows dialog with the artifact chooser 
      * @return null if canceled selected jars if some jars selected
      */
-    public static AntArtifact[] showDialog( String artifactType, Project master ) {
+    public static ArtifactItem[] showDialog( String artifactType, Project master ) {
         
         JFileChooser chooser = ProjectChooser.projectChooser();
         chooser.setDialogTitle( NbBundle.getMessage( AntArtifactChooser.class, "LBL_AACH_Title" ) ); // NOI18N
@@ -208,18 +213,19 @@ public class AntArtifactChooser extends JPanel implements PropertyChangeListener
                 return null;
             }
             
-            DefaultListModel model = (DefaultListModel)accessory.jListArtifacts.getModel();
-            
-            AntArtifact artifacts[] = new AntArtifact[ model.size() ];
-            
-            // XXX Adding references twice            
-            for( int i = 0; i < artifacts.length; i++ ) {
-                artifacts[i] = ((ArtifactItem)model.getElementAt( i )).getArtifact();
-            }
-            
             FoldersListSettings.getDefault().setLastUsedArtifactFolder (FileUtil.normalizeFile(chooser.getCurrentDirectory()));
-            return artifacts;
             
+            Object[] tmp = new Object[accessory.jListArtifacts.getModel().getSize()];
+            int count = 0;
+            for(int i = 0; i < tmp.length; i++) {
+                if (accessory.jListArtifacts.isSelectedIndex(i)) {
+                    tmp[count] = accessory.jListArtifacts.getModel().getElementAt(i);
+                    count++;
+                }
+            }
+            ArtifactItem artifactItems[] = new ArtifactItem[count];
+            System.arraycopy(tmp, 0, artifactItems, 0, count);
+            return artifactItems;
         }
         else {
             return null; 
@@ -227,20 +233,29 @@ public class AntArtifactChooser extends JPanel implements PropertyChangeListener
                 
     }
        
-    private static class ArtifactItem {
+    /**
+     * Pair of AntArtifact and one of jars it produces.
+     */
+    public static class ArtifactItem {
         
         private AntArtifact artifact;
+        private URI artifactURI;
         
-        ArtifactItem( AntArtifact artifact ) {
+        public ArtifactItem(AntArtifact artifact, URI artifactURI) {
             this.artifact = artifact;
+            this.artifactURI = artifactURI;
         }
         
-        AntArtifact getArtifact() {
+        public AntArtifact getArtifact() {
             return artifact;
         }
         
+        public URI getArtifactURI() {
+            return artifactURI;
+        }
+        
         public String toString() {
-            return artifact.getArtifactLocation().toString();
+            return artifactURI.toString();
         }
         
     }

@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <?xml-stylesheet type="text/xml" href="../../nbbuild/javadoctools/apichanges.xsl"?>
@@ -75,6 +75,43 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+
+        <change>
+            <api name="general"/>
+            <summary>AntArtifact enhancements</summary>
+            <version major="1" minor="5"/>
+            <date day="13" month="1" year="2005"/>
+            <author login="dkonecny"/>
+            <compatibility addition="yes" deprecation="yes">
+                <p>
+                    New schema was defined, but upgrade from old schema to new
+                    one is realized only after some new features are used. If
+                    project's artifact does not define any properties for 
+                    artifact nor produce multiple outputs and Ant script lies
+                    under the project's directory then old schema is
+                    always used. Once project start using some of these new 
+                    features the schema will be upgraded automatically to new
+                    version. This affects any project type which is using 
+                    ant/project module.
+                </p>
+            </compatibility>
+            <description>
+                <p>
+                    Several enhancements of AntArtifact were implemented:
+                </p>
+                <ol>
+                    <li>execution of artifact's target can be customized by properties</li>
+                    <li>artifact can produce several build outputs</li>
+                    <li>Ant script path is not persisted as URI, but string possibly containing Ant properties</li>
+                </ol>
+                <p>
+                    ReferenceHelper class was simplified as part of the implementation.
+                </p>
+            </description>
+            <issue number="47788"/>
+            <issue number="50484"/>
+            <issue number="50092"/>
+        </change>
 
          <change>
              <api name="general"/>

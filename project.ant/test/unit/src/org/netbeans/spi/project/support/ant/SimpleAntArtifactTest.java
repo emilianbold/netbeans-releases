@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -73,10 +73,10 @@ public class SimpleAntArtifactTest extends NbTestCase {
         assertEquals("correct type", "jar", art.getType());
         assertEquals("correct target name", "dojar", art.getTargetName());
         assertEquals("correct clean target name", "clean", art.getCleanTargetName());
-        assertEquals("correct artifact location", URI.create("build/proj2.jar"), art.getArtifactLocation());
-        assertEquals("no artifact file yet", null, art.getArtifactFile());
+        assertEquals("correct artifact location", URI.create("build/proj2.jar"), art.getArtifactLocations()[0]);
+        assertEquals("no artifact file yet", 0, art.getArtifactFiles().length);
         FileObject artfile = FileUtil.createData(sisterprojdir, "build/proj2.jar");
-        assertEquals("now have an artifact file", artfile, art.getArtifactFile());
+        assertEquals("now have an artifact file", artfile, art.getArtifactFiles()[0]);
         assertEquals("correct script location", new File(FileUtil.toFile(sisterprojdir), "build.xml"), art.getScriptLocation());
         assertEquals("no script file yet", null, art.getScriptFile());
         FileObject scriptfile = FileUtil.createData(sisterprojdir, "build.xml");
@@ -84,7 +84,7 @@ public class SimpleAntArtifactTest extends NbTestCase {
         assertEquals("correct project", pm.findProject(sisterprojdir), art.getProject());
         
         art = sisterh.createSimpleAntArtifact("jar", "build.jar.absolute", sisterh.getStandardPropertyEvaluator(), "dojar", "clean");
-        assertEquals("correct artifact location", (new File(getWorkDir().getAbsolutePath()+"/build/proj3.jar")).toURI(), art.getArtifactLocation());
+        assertEquals("correct artifact location", (new File(getWorkDir().getAbsolutePath()+"/build/proj3.jar")).toURI(), art.getArtifactLocations()[0]);
     }
     
 }

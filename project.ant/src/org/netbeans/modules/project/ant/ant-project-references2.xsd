@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://www.netbeans.org/ns/ant-project-references/2"
+            xmlns="http://www.netbeans.org/ns/ant-project-references/2"
+            elementFormDefault="qualified">
+    <xsd:element name="references">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="reference" minOccurs="0" maxOccurs="unbounded">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="foreign-project" type="xsd:NCName"/>
+                            <xsd:element name="artifact-type" type="xsd:NCName"/>
+                            <!-- semantics of script field changed in /2 version (#50092) -->
+                            <xsd:element name="script" type="xsd:NCName"/>
+                            <xsd:element name="target" type="xsd:NCName"/>
+                            <xsd:element name="clean-target" type="xsd:NCName"/>
+                            <xsd:element name="id" type="xsd:NCName"/>
+                            <xsd:element name="properties" minOccurs="0" type="properties"/>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:complexType name="properties">
+        <xsd:sequence>
+            <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                <xsd:element name="property" type="property-definition"/>
+            </xsd:choice>
+        </xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:complexType name="property-definition">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="name" type="xsd:NMTOKEN"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+        
+</xsd:schema>

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -18,6 +18,7 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
+import java.util.TreeSet;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -195,6 +196,7 @@ public class ReferenceHelperTest extends NbTestCase {
         assertEquals("correct foreign project name", "otherproj", ref.getForeignProjectName());
         assertEquals("correct artifact type", "jar", ref.getArtifactType());
         assertEquals("correct script location", URI.create("build.xml"), ref.getScriptLocation());
+        assertEquals("correct script location", "${project.otherproj}/build.xml", ref.getScriptLocationValue());
         assertEquals("correct target name", "dojar", ref.getTargetName());
         assertEquals("correct clean target name", "clean", ref.getCleanTargetName());
         assertEquals("correct ID name", "dojarID", ref.getID());
@@ -211,7 +213,7 @@ public class ReferenceHelperTest extends NbTestCase {
         ref = refs[0];
         assertEquals("correct foreign project name", "otherproj", ref.getForeignProjectName());
         assertEquals("correct artifact type", "jar", ref.getArtifactType());
-        assertEquals("correct script location", URI.create("build.xml"), ref.getScriptLocation());
+        assertEquals("correct script location", "${project.otherproj}/build.xml", ref.getScriptLocationValue());
         assertEquals("correct target name", "dojar", ref.getTargetName());
         assertEquals("correct clean target name", "clean", ref.getCleanTargetName());
         assertEquals("correct ID name", "dojarID", ref.getID());
@@ -247,7 +249,7 @@ public class ReferenceHelperTest extends NbTestCase {
         ref = r.getRawReference("otherproj", "dojarID");
         assertEquals("correct foreign project name", "otherproj", ref.getForeignProjectName());
         assertEquals("correct modified artifact type", "war", ref.getArtifactType());
-        assertEquals("correct script location", URI.create("build.xml"), ref.getScriptLocation());
+        assertEquals("correct script location", "${project.otherproj}/build.xml", ref.getScriptLocationValue());
         assertEquals("correct target name", "dojar", ref.getTargetName());
         assertEquals("correct clean target name", "clean", ref.getCleanTargetName());
         assertEquals("correct ID name", "dojarID", ref.getID());
@@ -258,7 +260,7 @@ public class ReferenceHelperTest extends NbTestCase {
         ref = r.getRawReference("otherproj", "dojarID");
         assertEquals("correct foreign project name", "otherproj", ref.getForeignProjectName());
         assertEquals("correct modified artifact type", "war", ref.getArtifactType());
-        assertEquals("correct script location", URI.create("build2.xml"), ref.getScriptLocation());
+        assertEquals("correct script location", "${project.otherproj}/build2.xml", ref.getScriptLocationValue());
         assertEquals("correct target name", "dojar", ref.getTargetName());
         assertEquals("correct clean target name", "clean2", ref.getCleanTargetName());
         assertEquals("correct ID name", "dojarID", ref.getID());
@@ -278,21 +280,21 @@ public class ReferenceHelperTest extends NbTestCase {
         ref = refs[0];
         assertEquals("correct foreign project name", "aardvark", ref.getForeignProjectName());
         assertEquals("correct modified artifact type", "jar", ref.getArtifactType());
-        assertEquals("correct script location", URI.create("build.xml"), ref.getScriptLocation());
+        assertEquals("correct script location", "${project.aardvark}/build.xml", ref.getScriptLocationValue());
         assertEquals("correct target name", "jar", ref.getTargetName());
         assertEquals("correct clean target name", "clean", ref.getCleanTargetName());
         assertEquals("correct ID name", "jarID", ref.getID());
         ref = refs[1];
         assertEquals("correct foreign project name", "otherproj", ref.getForeignProjectName());
         assertEquals("correct modified artifact type", "war", ref.getArtifactType());
-        assertEquals("correct script location", URI.create("build2.xml"), ref.getScriptLocation());
+        assertEquals("correct script location", "${project.otherproj}/build2.xml", ref.getScriptLocationValue());
         assertEquals("correct target name", "dojar", ref.getTargetName());
         assertEquals("correct clean target name", "clean2", ref.getCleanTargetName());
         assertEquals("correct ID name", "dojarID", ref.getID());
         ref = refs[2];
         assertEquals("correct foreign project name", "otherproj2", ref.getForeignProjectName());
         assertEquals("correct modified artifact type", "ear", ref.getArtifactType());
-        assertEquals("correct script location", URI.create("build.xml"), ref.getScriptLocation());
+        assertEquals("correct script location", "${project.otherproj2}/build.xml", ref.getScriptLocationValue());
         assertEquals("correct target name", "dojar", ref.getTargetName());
         assertEquals("correct clean target name", "clean", ref.getCleanTargetName());
         assertEquals("correct ID name", "dojarID", ref.getID());
@@ -359,14 +361,16 @@ public class ReferenceHelperTest extends NbTestCase {
         // Add one artifact. Check that the raw reference is there.
         assertFalse("project not initially modified", pm.isModified(p));
         AntArtifact art = sisterh.createSimpleAntArtifact("jar", "build.jar", sisterh.getStandardPropertyEvaluator(), "dojar", "clean");
+        assertFalse("reference exist", r.isReferenced(art, art.getArtifactLocations()[0]));
         assertTrue("added a ref to proj2.dojar", r.addReference(art));
+        assertTrue("reference exist", r.isReferenced(art, art.getArtifactLocations()[0]));
         assertTrue("project now modified", pm.isModified(p));
         ReferenceHelper.RawReference[] refs = r.getRawReferences();
         assertEquals("one ref now", 1, refs.length);
         ReferenceHelper.RawReference ref = refs[0];
         assertEquals("correct foreign project name", "proj2", ref.getForeignProjectName());
         assertEquals("correct artifact type", "jar", ref.getArtifactType());
-        assertEquals("correct script location", URI.create("build.xml"), ref.getScriptLocation());
+        assertEquals("correct script location", "${project.proj2}/build.xml", ref.getScriptLocationValue());
         assertEquals("correct target name", "dojar", ref.getTargetName());
         assertEquals("correct clean target name", "clean", ref.getCleanTargetName());
         // Check that the project properties are correct.
@@ -383,11 +387,13 @@ public class ReferenceHelperTest extends NbTestCase {
             h.resolveFile(pev.getProperty("reference.proj2.dojar")));
         // Check no-op adds.
         pm.saveProject(p);
+        assertTrue("reference exist", r.isReferenced(art, art.getArtifactLocations()[0]));
         assertFalse("no-op add", r.addReference(art));
         assertFalse("project not modified by no-op add", pm.isModified(p));
         // Try another artifact from the same project.
         art = sisterh.createSimpleAntArtifact("javadoc", "build.javadoc", sisterh.getStandardPropertyEvaluator(), "dojavadoc", "clean");
-        assertTrue("added a ref to proj2.dojavadoc", r.addReference(art));
+        assertFalse("reference does not exist", r.isReferenced(art, art.getArtifactLocations()[0]));
+        assertNotNull("added a ref to proj2.dojavadoc", r.addReference(art, art.getArtifactLocations()[0]));
         assertTrue("project now modified", pm.isModified(p));
         refs = r.getRawReferences();
         assertEquals("two refs now", 2, refs.length);
@@ -397,7 +403,7 @@ public class ReferenceHelperTest extends NbTestCase {
         ref = refs[1];
         assertEquals("correct foreign project name", "proj2", ref.getForeignProjectName());
         assertEquals("correct artifact type", "javadoc", ref.getArtifactType());
-        assertEquals("correct script location", URI.create("build.xml"), ref.getScriptLocation());
+        assertEquals("correct script location", "${project.proj2}/build.xml", ref.getScriptLocationValue());
         assertEquals("correct target name", "dojavadoc", ref.getTargetName());
         assertEquals("correct clean target name", "clean", ref.getCleanTargetName());
         props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -412,33 +418,35 @@ public class ReferenceHelperTest extends NbTestCase {
             new File(new File(FileUtil.toFile(sisterprojdir), "build"), "javadoc"),
             h.resolveFile(pev.getProperty("reference.proj2.dojavadoc")));
         pm.saveProject(p);
-        assertFalse("no-op add", r.addReference(art));
+        assertTrue("reference exist", r.isReferenced(art, art.getArtifactLocations()[0]));
+        r.addReference(art, art.getArtifactLocations()[0]);
         assertFalse("project not modified by no-op add", pm.isModified(p));
         // Try modifying the second artifact in some way.
         // Note that only changes in the type, clean target, and artifact path count as modifications.
         art = sisterh.createSimpleAntArtifact("javadoc.html", "build.javadoc", sisterh.getStandardPropertyEvaluator(), "dojavadoc", "clean");
-        assertTrue("successful modification of proj2.dojavadoc by type", r.addReference(art));
+        assertFalse("reference exist but needs to be updated", r.isReferenced(art, art.getArtifactLocations()[0]));
+        r.addReference(art, art.getArtifactLocations()[0]);
         assertTrue("project modified by ref mod", pm.isModified(p));
         refs = r.getRawReferences();
         assertEquals("still two refs", 2, refs.length);
         ref = refs[1];
         assertEquals("correct foreign project name", "proj2", ref.getForeignProjectName());
         assertEquals("correct modified artifact type", "javadoc.html", ref.getArtifactType());
-        assertEquals("correct script location", URI.create("build.xml"), ref.getScriptLocation());
+        assertEquals("correct script location", "${project.proj2}/build.xml", ref.getScriptLocationValue());
         assertEquals("correct target name", "dojavadoc", ref.getTargetName());
         assertEquals("correct clean target name", "clean", ref.getCleanTargetName());
         art = sisterh.createSimpleAntArtifact("javadoc.html", "build.javadoc", sisterh.getStandardPropertyEvaluator(), "dojavadoc", "realclean");
-        assertTrue("successful modification of proj2.dojavadoc by clean target", r.addReference(art));
+        r.addReference(art, art.getArtifactLocations()[0]);
         pm.saveProject(p);
         art = sisterh.createSimpleAntArtifact("javadoc.html", "build.javadoc.complete", sisterh.getStandardPropertyEvaluator(), "dojavadoc", "realclean");
-        assertTrue("successful modification of proj2.dojavadoc by artifact location property", r.addReference(art));
+        r.addReference(art, art.getArtifactLocations()[0]);
         assertTrue("project modified by ref mod", pm.isModified(p));
         refs = r.getRawReferences();
         assertEquals("still two refs", 2, refs.length);
         ref = refs[1];
         assertEquals("correct foreign project name", "proj2", ref.getForeignProjectName());
         assertEquals("correct modified artifact type", "javadoc.html", ref.getArtifactType());
-        assertEquals("correct script location", URI.create("build.xml"), ref.getScriptLocation());
+        assertEquals("correct script location", "${project.proj2}/build.xml", ref.getScriptLocationValue());
         assertEquals("correct target name", "dojavadoc", ref.getTargetName());
         assertEquals("correct modified clean target name", "realclean", ref.getCleanTargetName());
         // Check that changing the artifact location property changed the reference property too.
@@ -456,12 +464,13 @@ public class ReferenceHelperTest extends NbTestCase {
         // Check that changing the value of the artifact location property
         // in the subproject modifies this project.
         pm.saveProject(p);
-        assertFalse("no-op add", r.addReference(art));
+        assertTrue("reference exist but needs to be updated", r.isReferenced(art, art.getArtifactLocations()[0]));
+        r.addReference(art, art.getArtifactLocations()[0]);
         assertFalse("project not modified by no-op add", pm.isModified(p));
         props = sisterh.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         props.setProperty("build.javadoc.complete", "build/total-javadoc");
         sisterh.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
-        assertTrue("add ref modifying just because artifact location changed", r.addReference(art));
+        r.addReference(art, art.getArtifactLocations()[0]);
         assertTrue("project modified by new ${reference.proj2.dojavadoc}", pm.isModified(p));
         props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         assertEquals("correct ${reference.proj2.dojavadoc}",
@@ -472,14 +481,14 @@ public class ReferenceHelperTest extends NbTestCase {
             h.resolveFile(pev.getProperty("reference.proj2.dojavadoc")));
         // Now try removing first ref. Should remove raw ref, ref property, but not project property.
         pm.saveProject(p);
-        assertTrue("remove proj2.dojar succeeded", r.removeReference("proj2", "dojar"));
+        assertTrue("remove proj2.dojar succeeded", r.destroyReference("${reference.proj2.dojar}"));
         assertTrue("remove ref modified project", pm.isModified(p));
         refs = r.getRawReferences();
         assertEquals("now have just one ref", 1, refs.length);
         ref = refs[0];
         assertEquals("correct foreign project name", "proj2", ref.getForeignProjectName());
         assertEquals("correct modified artifact type", "javadoc.html", ref.getArtifactType());
-        assertEquals("correct script location", URI.create("build.xml"), ref.getScriptLocation());
+        assertEquals("correct script location", "${project.proj2}/build.xml", ref.getScriptLocationValue());
         assertEquals("correct target name", "dojavadoc", ref.getTargetName());
         assertEquals("correct modified clean target name", "realclean", ref.getCleanTargetName());
         props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -491,10 +500,10 @@ public class ReferenceHelperTest extends NbTestCase {
             "${project.proj2}/build/total-javadoc",
             props.getProperty("reference.proj2.dojavadoc"));
         pm.saveProject(p);
-        assertFalse("no-op remove proj2.dojar failed", r.removeReference("proj2", "dojar"));
+        assertFalse("no-op remove proj2.dojar failed", r.destroyReference("${reference.proj2.dojar}"));
         assertFalse("no-op remove did not modify project", pm.isModified(p));
         // Try removing second ref. Should now remove project property.
-        assertTrue("remove proj2.dojavadoc succeeded", r.removeReference("proj2", "dojavadoc"));
+        assertTrue("remove proj2.dojavadoc succeeded", r.destroyReference("${reference.proj2.dojavadoc}"));
         assertTrue("remove ref modified project", pm.isModified(p));
         refs = r.getRawReferences();
         assertEquals("now have no refs", 0, refs.length);
@@ -517,7 +526,7 @@ public class ReferenceHelperTest extends NbTestCase {
         Project p = pm.findProject(projdir);
         ReferenceHelper referenceHelperProj4 = (ReferenceHelper)p.getLookup().lookup(ReferenceHelper.class);
         AntArtifact art = proj4Helper.createSimpleAntArtifact("jar", "build.jar", proj4Helper.getStandardPropertyEvaluator(), "do.jar", "clean");
-        String ref = referenceHelperProj4.createForeignFileReference(art);
+        String ref = referenceHelperProj4.addReference(art, art.getArtifactLocations()[0]);
         assertEquals("Project reference was not correctly escaped", "${reference.pro-ject_4.do_jar}", ref);
         
         // test that it can be found
@@ -534,6 +543,26 @@ public class ReferenceHelperTest extends NbTestCase {
         assertNull("Reference was not deleted", rr);
     }
         
+    public void testArtifactProperties() throws Exception {
+        assertFalse("project not initially modified", pm.isModified(p));
+        AntArtifact art = sisterh.createSimpleAntArtifact("jar", "build.jar", sisterh.getStandardPropertyEvaluator(), "dojar", "clean");
+        art.getProperties().setProperty("configuration", "debug");
+        assertFalse("reference exist", r.isReferenced(art, art.getArtifactLocations()[0]));
+        assertEquals("added a ref to proj2.dojar", "${reference.proj2.dojar}", r.addReference(art, art.getArtifactLocations()[0]));
+        assertTrue("reference exist", r.isReferenced(art, art.getArtifactLocations()[0]));
+        assertTrue("project now modified", pm.isModified(p));
+        ProjectManager.getDefault().saveAllProjects();
+        ReferenceHelper.RawReference[] refs = r.getRawReferences();
+        assertEquals("one ref now", 1, refs.length);
+        ReferenceHelper.RawReference ref = refs[0];
+        assertEquals("correct foreign project name", "proj2", ref.getForeignProjectName());
+        assertEquals("correct artifact type", "jar", ref.getArtifactType());
+        assertEquals("correct script location", "${project.proj2}/build.xml", ref.getScriptLocationValue());
+        assertEquals("correct target name", "dojar", ref.getTargetName());
+        assertEquals("correct clean target name", "clean", ref.getCleanTargetName());
+        assertEquals("correct property keys", Collections.singleton("configuration"), ref.getProperties().keySet());
+        assertEquals("correct property values", Collections.singleton("debug"), new TreeSet(ref.getProperties().values()));
+    }
 
     /**
      * Check that the {@link SubprojectProvider} implementation behaves correctly.
@@ -541,11 +570,11 @@ public class ReferenceHelperTest extends NbTestCase {
      */
     public void testSubprojectProviderImpl() throws Exception {
         AntArtifact art = sisterh.createSimpleAntArtifact("jar", "build.jar", sisterh.getStandardPropertyEvaluator(), "dojar", "clean");
-        assertTrue("added a ref to proj2.dojar", r.addReference(art));
+        assertNotNull("added a ref to proj2.dojar", r.addReference(art, art.getArtifactLocations()[0]));
         art = sisterh.createSimpleAntArtifact("javadoc", "build.javadoc", sisterh.getStandardPropertyEvaluator(), "dojavadoc", "clean");
-        assertTrue("added a ref to proj2.dojavadoc", r.addReference(art));
+        assertNotNull("added a ref to proj2.dojavadoc", r.addReference(art, art.getArtifactLocations()[0]));
         art = seph.createSimpleAntArtifact("jar", "build.jar", seph.getStandardPropertyEvaluator(), "dojar", "clean");
-        assertTrue("added a ref to proj3.dojar", r.addReference(art));
+        assertNotNull("added a ref to proj3.dojar", r.addReference(art, art.getArtifactLocations()[0]));
         SubprojectProvider sp = r.createSubprojectProvider();
         Set/*<Project>*/ subprojs = sp.getSubprojects();
         assertEquals("two subprojects", 2, subprojs.size());
@@ -580,10 +609,10 @@ public class ReferenceHelperTest extends NbTestCase {
         assertEquals("correct project", sisterprojdir, art.getProject().getProjectDirectory());
         assertEquals("correct target name", "dojar", art.getTargetName());
         assertEquals("correct type", "jar", art.getType());
-        assertEquals("correct artifact location", URI.create("dist/proj2.jar"), art.getArtifactLocation());
-        art = r.getForeignFileReferenceAsArtifact("reference.proj2.dojar");
+        assertEquals("correct artifact location", URI.create("dist/proj2.jar"), art.getArtifactLocations()[0]);
+        art = (AntArtifact)r.findArtifactAndLocation("reference.proj2.dojar")[0];
         assertNull("bad format", art);
-        art = r.getForeignFileReferenceAsArtifact("${reference.proj2.doojar}");
+        art = (AntArtifact)r.findArtifactAndLocation("${reference.proj2.doojar}")[0];
         assertNull("wrong target name", art);
         File f2 = new File(new File(FileUtil.toFile(sisterprojdir2), "dist"), "proj2.jar");
         assertEquals("reference ID must be unique", "${reference.proj2-1.dojar}", r.createForeignFileReference(f2, "jar"));
@@ -609,7 +638,7 @@ public class ReferenceHelperTest extends NbTestCase {
         assertEquals("reference correctly evaluated", f, h.resolveFile(refval));
         val = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty("project.proj3");
         assertEquals("reference correctly evaluated", FileUtil.toFile(sepprojdir).getAbsolutePath(), val);
-        art = r.getForeignFileReferenceAsArtifact("${reference.proj3.dojar}");
+        art = (AntArtifact)r.findArtifactAndLocation("${reference.proj3.dojar}")[0];
         assertNotNull("got the reference back", art);
         assertEquals("correct project", sepprojdir, art.getProject().getProjectDirectory());
         assertEquals("correct target name", "dojar", art.getTargetName());
@@ -644,8 +673,8 @@ public class ReferenceHelperTest extends NbTestCase {
         assertEquals("Foreign file reference was not correctly created", "${file.reference.m_y_l_i_b.jar-2}", ref);
         refval = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(ref.substring(2, ref.length()-1));
         assertEquals("Reference was not correctly evaluated", "../jars3/m y l i b.jar", refval);
-        assertTrue("Reference was not removed", r.removeReference(ref));
-        assertFalse("There should not be any reference", r.removeReference(ref));
+        assertTrue("Reference was not removed", r.destroyReference(ref));
+        assertFalse("There should not be any reference", r.destroyReference(ref));
         refval = pev.evaluate(ref);
         assertEquals("Reference was not removed", ref, refval);
         
@@ -692,7 +721,7 @@ public class ReferenceHelperTest extends NbTestCase {
         art = ref.toAntArtifact(r);
         assertNotNull("now artifact will be found", art);
         assertEquals("correct directory", sisterprojdir, art.getProject().getProjectDirectory());
-        assertEquals("correct artifact location", URI.create("dist/proj2.jar"), art.getArtifactLocation());
+        assertEquals("correct artifact location", URI.create("dist/proj2.jar"), art.getArtifactLocations()[0]);
         assertEquals("correct script location", new File(FileUtil.toFile(sisterprojdir), "build.xml"), art.getScriptLocation());
         assertEquals("correct target name", "dojar", art.getTargetName());
         assertEquals("correct clean target name", "clean", art.getCleanTargetName());

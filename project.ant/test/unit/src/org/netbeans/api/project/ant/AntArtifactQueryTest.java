@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -88,7 +88,7 @@ public class AntArtifactQueryTest extends NbTestCase {
         AntArtifact art = AntArtifactQuery.findArtifactFromFile(proj2Jar);
         assertNotNull("found an artifact matching " + proj2Jar, art);
         assertEquals("correct project", pm.findProject(sisterprojdir), art.getProject());
-        assertEquals("correct artifact file", proj2JarFO, art.getArtifactFile());
+        assertEquals("correct artifact file", proj2JarFO, art.getArtifactFiles()[0]);
         assertEquals("correct target name", "dojar", art.getTargetName());
         assertEquals("correct clean target name", "clean", art.getCleanTargetName());
         assertEquals("correct type", "jar", art.getType());

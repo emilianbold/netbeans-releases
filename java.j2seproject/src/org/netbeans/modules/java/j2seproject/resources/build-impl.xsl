@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!--
@@ -27,7 +27,8 @@ introduced by support for multiple source roots. -jglick
                 xmlns:j2seproject1="http://www.netbeans.org/ns/j2se-project/1"   
                 xmlns:j2seproject2="http://www.netbeans.org/ns/j2se-project/2"
                 xmlns:projdeps="http://www.netbeans.org/ns/ant-project-references/1"
-                exclude-result-prefixes="xalan p projdeps">
+                xmlns:projdeps2="http://www.netbeans.org/ns/ant-project-references/2"
+                exclude-result-prefixes="xalan p projdeps projdeps2">
 <!-- XXX should use namespaces for NB in-VM tasks from ant/browsetask and debuggerjpda/ant (Ant 1.6.1 and higher only) -->
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
     <xsl:template match="/">
@@ -1034,6 +1035,35 @@ is divided into following sections:
         <target name="{$targetname}">
             <xsl:attribute name="depends">init</xsl:attribute>
             <xsl:attribute name="unless">no.deps</xsl:attribute>
+            
+            <xsl:variable name="references2" select="/p:project/p:configuration/projdeps2:references"/>
+            <xsl:for-each select="$references2/projdeps2:reference[not($type) or projdeps2:artifact-type = $type]">
+                <xsl:variable name="subproj" select="projdeps2:foreign-project"/>
+                <xsl:variable name="subtarget">
+                    <xsl:choose>
+                        <xsl:when test="$type">
+                            <xsl:value-of select="projdeps2:target"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="projdeps2:clean-target"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:variable>
+                <xsl:variable name="script" select="projdeps2:script"/>
+                <xsl:choose>
+                    <xsl:when test="projdeps2:properties">
+                        <ant target="{$subtarget}" inheritall="false" antfile="{$script}">
+                            <xsl:for-each select="projdeps2:properties/projdeps2:property">
+                                <property name="{@name}" value="{.}"/>
+                            </xsl:for-each>
+                        </ant>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <ant target="{$subtarget}" inheritall="false" antfile="{$script}"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:for-each>
+            
             <xsl:variable name="references" select="/p:project/p:configuration/projdeps:references"/>
             <xsl:for-each select="$references/projdeps:reference[not($type) or projdeps:artifact-type = $type]">
                 <xsl:variable name="subproj" select="projdeps:foreign-project"/>
@@ -1050,6 +1080,7 @@ is divided into following sections:
                 <xsl:variable name="script" select="projdeps:script"/>
                 <ant target="{$subtarget}" inheritall="false" antfile="${{project.{$subproj}}}/{$script}"/>
             </xsl:for-each>
+            
         </target>
     </xsl:template>
     
