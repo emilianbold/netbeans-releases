@@ -483,6 +483,13 @@ public final class NbMainExplorer extends CloneableTopComponent {
             // enhancement 9940, add MiniStatusBarListener a status bar's state
             ideSettings.addPropertyChangeListener (new MiniStatusBarStateListener ());
         }
+        
+        /** Overriden to explicitely set persistence type of ExplorerTab
+         * to PERSISTENCE_ALWAYS 
+         */
+        public int getPersistenceType() {
+            return TopComponent.PERSISTENCE_ALWAYS;
+        }
 
         /** Initialize visual content of component */
         protected void componentShowing () {
