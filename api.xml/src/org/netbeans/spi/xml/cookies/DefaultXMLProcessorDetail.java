@@ -56,6 +56,15 @@ public class DefaultXMLProcessorDetail extends XMLProcessorDetail {
         this.lineNumber = spex.getLineNumber();
         this.publicId = spex.getPublicId();
         this.systemId = spex.getSystemId();
+
+        if ( Util.THIS.isLoggable() ) /* then */ {
+            Util.THIS.debug ("DefaultXMLProcessorDetail: SAXParseException");
+            Util.THIS.debug ("    exception= " + exception);
+            Util.THIS.debug ("    columnNumber= " + columnNumber);
+            Util.THIS.debug ("    lineNumber= " + lineNumber);
+            Util.THIS.debug ("    publicId= " + publicId);
+            Util.THIS.debug ("    systemId= " + systemId);
+        }
     }
 
     /**
@@ -92,10 +101,22 @@ public class DefaultXMLProcessorDetail extends XMLProcessorDetail {
             // may be better
             tryWrappedLocator(trex);
         }
+
+        if ( Util.THIS.isLoggable() ) /* then */ {
+            Util.THIS.debug ("DefaultXMLProcessorDetail: TransformerException");
+            Util.THIS.debug ("    exception= " + exception);
+            Util.THIS.debug ("    columnNumber= " + columnNumber);
+            Util.THIS.debug ("    lineNumber= " + lineNumber);
+            Util.THIS.debug ("    publicId= " + publicId);
+            Util.THIS.debug ("    systemId= " + systemId);
+        }
     }
 
     // use location information from wrapped exception or do nothing
     private void tryWrappedLocator(Exception ex) {
+        if ( Util.THIS.isLoggable() ) /* then */ {
+            Util.THIS.debug ("DefaultXMLProcessorDetail.tryWrappedLocator: " + ex);
+        }
 
         // I saw SAXException wrapped in TransformerException and vice versa
 
