@@ -3322,6 +3322,10 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     check-cluster-implementation-dependencies"
   />
   
+  <!-- JST: One day also add 
+    check-external-libraries
+  -->
+  
   <target name="all-verification" >
     <echo message="Runs verification tests to check the IDE before commit" />
   </target>
@@ -3430,6 +3434,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <output type="dependencies" file="${golden.files.dir}/deps.txt" />
       <output type="implementation-dependencies" file="${golden.files.dir}/impl-deps.txt" />
       <output type="public-packages" file="${golden.files.dir}/public-packages.txt" />
+      <output type="external-libraries" file="${golden.files.dir}/external-libraries.txt" />
     </deps>
   </target>
   
@@ -3480,6 +3485,52 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </fail>
   </target>
 
+  <target name="check-external-libraries" depends="generate-golden-files" >
+    <property name="check.external.libraries.template" location="../ide/golden/external-libraries.txt" />
+    <property name="check.external.libraries.generated" location="${golden.files.dir}/external-libraries.txt" />
+  
+    <condition property="check-external-libraries-are-they-the-same" >
+        <filesmatch file1="${check.external.libraries.template}" file2="${check.external.libraries.generated}" />
+    </condition>
+    
+    
+    <exec os="Linux SunOS Solaris Mac OS X" dir="." executable="diff" failonerror="no" timeout="60000" >
+      <arg value="-u" />
+      <arg value="${check.external.libraries.template}" />
+      <arg value="${check.external.libraries.generated}" />
+    </exec>
+    
+    <fail unless="check-external-libraries-are-they-the-same" >!
+    *** List of external libraries has changed! ***
+    
+    Differences were found while comparing file 
+    ${check.external.libraries.template} 
+    with 
+    ${check.external.libraries.generated}
+    
+    This means that the set of external libraries (JARs that are not NetBeans
+    modules or does not have NetBeans-Own-Library: true in manifest) has 
+    changed since the previously known one. Some libraries may have been added, 
+    some of them may have been removed, they MD5 checksum or size has been changed.
+    
+    Changing the external libraries is ok, but requires legal approval everytime
+    new version of a library is put into the product. If you have the approval
+    want to change the list of external libraries, then please
+    update the golden file at 
+    ${check.external.libraries.template}
+    and run the test once again. 
+    
+    Read more about the Verification Framework:
+    http://openide.netbeans.org/proposals/arch/clusters.html#verify
+    
+    Look at for information about reviews:
+    http://openide.netbeans.org/tutorial/review-steps.html
+    
+    Check the page about APIs:
+    http://openide.netbeans.org/tutorial/api-design.html#api
+    </fail>
+  </target>
+  
   <target name="check-modules" depends="generate-golden-files" >
     <property name="check.modules.template" location="../ide/golden/modules.txt" />
     <property name="check.modules.generated" location="${golden.files.dir}/modules.txt" />

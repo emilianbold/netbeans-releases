@@ -120,6 +120,69 @@ public class ModuleDependenciesTest extends NbTestCase {
         assertTrue ("is there too: " + res, res.indexOf ("is.too\n") >= 0);
     }
 
+    
+    public void testMd5CheckSumForExternalBinaries() throws Exception {
+        File notAModule = generateJar (new String[] { "not/X.class", "not/resource/X.html" }, createManifest ());
+        
+        Manifest m = createManifest ();
+        m.getMainAttributes ().putValue ("NetBeans-Own-Library", "true");
+        File withoutPkgs = generateJar (new String[] { "DefaultPkg.class", "is/X.class", "is/too/MyClass.class", "not/as/it/is/resource/X.xml" }, m);
+        
+        m = createManifest ();
+        m.getMainAttributes ().putValue ("OpenIDE-Module", "my.another.module/3");
+        m.getMainAttributes ().putValue ("OpenIDE-Module-Public-Packages", "is.there.*, is.recursive.**");
+        File withPkgs = generateJar (new String[] { "is/there/A.class", "not/there/B.class", "is/recursive/Root.class", "is/recursive/sub/Under.class", "not/res/X.jpg"}, m);
+
+        m = createManifest ();
+        m.getMainAttributes ().putValue ("OpenIDE-Module", "my.very.public.module/10");
+        m.getMainAttributes ().putValue ("OpenIDE-Module-Public-Packages", "-");
+        File allPkgs = generateJar (new String[] { "not/very/A.class", "not/very/B.class", "not/very/sub/Root.class", "not/res/X.jpg"}, m);
+        
+        File parent = notAModule.getParentFile ();
+        assertEquals ("All parents are the same 1", parent, withoutPkgs.getParentFile ());
+        assertEquals ("All parents are the same 2", parent, withPkgs.getParentFile ());
+        assertEquals ("All parents are the same 3", parent, allPkgs.getParentFile ());
+        
+        
+        File output = PublicPackagesInProjectizedXMLTest.extractString ("");
+        output.delete ();
+        assertFalse ("Is gone", output.exists ());
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"deps\" classname=\"org.netbeans.nbbuild.ModuleDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "  <deps>" +
+            "    <input name=\"ahoj\" >" +
+            "      <jars dir=\"" + parent + "\" > " +
+            "        <include name=\"" + notAModule.getName () + "\" />" +
+            "        <include name=\"" + withoutPkgs.getName () + "\" />" +
+            "        <include name=\"" + withPkgs.getName () + "\" />" +
+            "        <include name=\"" + allPkgs.getName () + "\" />" +
+            "      </jars>" +
+            "    </input>" +
+            "    <output type=\"external-libraries\" file=\"" + output + "\" />" +
+            "  </deps >" +
+            "</target>" +
+            "</project>"
+        );
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        
+        assertTrue ("Result generated", output.exists ());
+        
+        String res = readFile (output);
+        
+        assertEquals ("No slashes", -1, res.indexOf ("/"));
+        assertEquals ("No back slashes", -1, res.indexOf ("\\"));
+        
+        assertEquals ("No module1", -1, res.indexOf (withPkgs.getName ()));
+        assertEquals ("No module2", -1, res.indexOf (allPkgs.getName ()));
+        assertEquals ("Specially marked nb package is not there either", -1, res.indexOf (withoutPkgs.getName ()));
+        assertTrue ("There is just the one JAR: " + res, res.indexOf (notAModule.getName ()) >= 0);
+        assertTrue ("And its size: " + res, res.indexOf (String.valueOf (notAModule.length ())) >= 0);
+    }
+
+    
     public void testPublicPackagesOfAModuleThatDoesNotDefineThemButTheyAreProvidedByModuleTheModuleDependsOn () throws Exception {
         File notAModule = generateJar (new String[] { "is/cp/X.class", "not/cp/resource/X.html" }, createManifest ());
         

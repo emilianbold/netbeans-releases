@@ -30,6 +30,7 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
     private List inputs = new ArrayList ();
     private List outputs = new ArrayList ();
     private Set modules;
+    private Set external;
     
     public ModuleDependencies () {
     }
@@ -50,7 +51,7 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
         if (outputs.size () == 0) throw new BuildException ("At least one <output> tag has to be specified");
 
         try {
-            modules = readModuleInfo ();
+            readModuleInfo ();
 
             Iterator it = outputs.iterator ();
             while (it.hasNext ()) {
@@ -84,6 +85,10 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
                     generateGroupDependencies (o.file, true);                    
                     continue;
                 }
+                if ("external-libraries".equals (o.type.getValue ())) {
+                    generateExternalLibraries (o.file);                    
+                    continue;
+                }
             }
         
         } catch (IOException ex) {
@@ -91,8 +96,18 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
         }
     }
     
-    private Set readModuleInfo () throws IOException {
-        TreeSet modules = new TreeSet ();
+    private void readModuleInfo () throws IOException {
+        modules = new TreeSet ();
+        
+        class Comp implements java.util.Comparator {
+            public int compare (Object o1, Object o2) {
+                File f1 = (File)o1;
+                File f2 = (File)o2;
+
+                return f1.getName ().compareTo (f2.getName ());
+            }
+        }
+        external = new TreeSet (new Comp ());
         
         Iterator it = inputs.iterator (); 
         if (!it.hasNext ()) throw new BuildException ("At least one <input> tag is needed");
@@ -112,6 +127,7 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
                 java.util.jar.Manifest manifest = file.getManifest ();
                 if (manifest == null) {
                     // process only manifest files
+                    external.add (f);
                     continue;
                 }
                 
@@ -120,6 +136,9 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
                 
                 if (module == null) {
                     // skip this one
+                    if (manifest.getMainAttributes ().getValue ("NetBeans-Own-Library") == null) {
+                        external.add (f);
+                    }
                     continue;
                 }
 
@@ -178,8 +197,6 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
                 modules.add (m);
             }
         }
-        
-        return modules;
     }
     
     
@@ -295,6 +312,48 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
             ModuleInfo m = (ModuleInfo)it.next ();
             w.print ("MODULE ");
             w.print (m.getName ());
+            w.println ();
+        }
+        w.close ();
+    }
+    
+    private void generateExternalLibraries (File output) throws BuildException, IOException {
+        PrintWriter w = new PrintWriter (new FileWriter (output));
+        Iterator it = external.iterator ();
+        
+        String SPACES = "                                                     ";
+        while (it.hasNext ()) {
+            File f = (File)it.next ();
+            
+            java.security.MessageDigest dig;
+            
+            try {
+                dig = java.security.MessageDigest.getInstance ("MD5");
+            } catch (java.security.NoSuchAlgorithmException ex) {
+                throw new BuildException (ex);
+            }
+            InputStream is = new BufferedInputStream (new FileInputStream (f));
+            byte[] arr = new byte[4092];
+            for (;;) {
+                int len = is.read (arr);
+                if (len == -1) {
+                    break;
+                }
+                dig.update (arr, 0, len);
+            }
+            
+            byte[] res = dig.digest ();
+            is.close ();
+            
+            w.print ("LIBRARY ");
+            w.print ((f.getName () + SPACES).substring (0, 50));
+            String size = SPACES + f.length ();
+            w.print (size.substring (size.length () - 15));
+            w.print (" ");
+            for (int i = 0; i < res.length; i++) {
+                String hex = "00" + Integer.toHexString (res[i]);
+                w.print (hex.substring (hex.length () - 2));
+            }
             w.println ();
         }
         w.close ();
@@ -479,6 +538,7 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
                 "implementation-dependencies",
                 "group-dependencies",
                 "group-implementation-dependencies",
+                "external-libraries",
             };
         }
     }
