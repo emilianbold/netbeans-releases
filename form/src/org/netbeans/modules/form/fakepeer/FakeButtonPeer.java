@@ -1,16 +1,16 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is Forte for Java, Community Edition. The Initial
  * Developer of the Original Code is Sun Microsystems, Inc. Portions
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
- 
+
 /* $Id$ */
 
 package org.netbeans.modules.form.fakepeer;
@@ -19,7 +19,6 @@ import java.awt.*;
 import java.awt.peer.ButtonPeer;
 import javax.swing.*;
 
-import javax.swing.plaf.basic.BasicGraphicsUtils;
 
 /**
  *
@@ -43,8 +42,6 @@ class FakeButtonPeer extends FakeComponentPeer implements ButtonPeer
     //
     //
 
-    private static final Insets MARGINS = new Insets(4, 8, 4, 8);
-
     private class Delegate extends Component
     {
         public void paint(Graphics g) {
@@ -52,33 +49,29 @@ class FakeButtonPeer extends FakeComponentPeer implements ButtonPeer
 
             Dimension sz = target.getSize();
 
+            // background & border
             Color c = getBackground();
             if (c == null)
-                c = SystemColor.control;
-
+                c = SystemColor.control; // light gray
             g.setColor(c);
-            g.fillRect(0, 0, sz.width, sz.height);
+            FakePeerUtils.drawButton(g, 0, 0, sz.width, sz.height);
 
-            BasicGraphicsUtils.drawBezel(g, 0, 0, sz.width, sz.height,
-                                         false, false, SystemColor.controlShadow,
-                                         SystemColor.controlDkShadow,
-                                         SystemColor.controlHighlight,
-                                         SystemColor.controlLtHighlight);
-
-            c = getForeground();
-            if (c == null)
-                c = SystemColor.controlText;
-            g.setColor(c);
-            g.setFont(_target.getFont());
-
+            // label
             String label = target.getLabel();
+            if (label != null) {
+                c = getForeground();
+                if (c == null)
+                    c = SystemColor.controlText;
+                g.setColor(c);
+                g.setFont(_target.getFont());
 
-            FontMetrics fm = g.getFontMetrics();
-            int w = fm.stringWidth(label);
-            int h = fm.getHeight() - fm.getDescent();
-            int x =(sz.width - w) / 2;
+                FontMetrics fm = g.getFontMetrics();
+                int w = fm.stringWidth(label),
+                    h = fm.getHeight() - fm.getDescent(),
+                    x =(sz.width - w) / 2;
 
-            g.drawString(label, x,(sz.height - h) / 2 + h);
+                g.drawString(label, x,(sz.height - h) / 2 + h - 2);
+            }
         }
 
         public Dimension getMinimumSize() {
@@ -92,4 +85,6 @@ class FakeButtonPeer extends FakeComponentPeer implements ButtonPeer
                                  h + MARGINS.top + MARGINS.bottom);
         }
     }
+
+    private static final Insets MARGINS = new Insets(4, 8, 4, 8);
 }

@@ -69,5 +69,44 @@ class FakeTextAreaPeer extends FakeTextComponentPeer implements TextAreaPeer
 
     private class Delegate extends FakeTextComponentPeer.Delegate
     {
+        public void paint(Graphics g) {
+            super.paint(g);
+
+            TextArea target =(TextArea) _target;
+            String text = target.getText();
+
+            if (text != null) { // draw the text
+                Color c = getForeground();
+                if (c == null)
+                    c = SystemColor.controlText;
+                g.setColor(c);
+                g.setFont(target.getFont());
+
+                FontMetrics fm = g.getFontMetrics();
+                int th = fm.getHeight(),
+                    ty = th,
+                    h = target.getSize().height,
+                    i = target.getCaretPosition(),
+                    len = text.length();
+                StringBuffer buf = new StringBuffer(len);
+
+                for ( ; i < len; i++) {
+                    char ch = text.charAt(i);
+                    if (ch != '\n' && ch != '\r') buf.append(ch);
+                    else if (ch == '\n') {
+                        g.drawString(buf.toString(),4,ty);
+                        if (ty > h) break;
+                        ty += th;
+                        buf.delete(0,buf.length());
+                    }
+                }
+                g.drawString(buf.toString(),4,ty);
+            }
+        }
+
+        public Dimension getMinimumSize() {
+            TextArea target = (TextArea)_target;
+            return FakeTextAreaPeer.this.getMinimumSize(target.getColumns(),target.getRows());
+        }
     }
 }

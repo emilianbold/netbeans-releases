@@ -45,39 +45,41 @@ class FakeLabelPeer extends FakeComponentPeer implements LabelPeer
     //
     //
 
-    private class Delegate extends Component {
+    private class Delegate extends Component 
+    {
         public void paint(Graphics g) {
             Label target =(Label) _target;
 
-            Dimension sz = target.getSize();
-            Color c;
-
-            c = getBackground();
-            if (c == null)
-                c = SystemColor.control;
-            g.setColor(c);
-            g.fillRect(0, 0, sz.width, sz.height);
-
-            c = getForeground();
-            if (c == null)
-                c = SystemColor.controlText;
-            g.setColor(c);
-            g.setFont(target.getFont());
-
             String label = target.getText();
-            int alignment = target.getAlignment();
+            if (label != null) {
+                Dimension sz = target.getSize();
 
-            FontMetrics fm = g.getFontMetrics();
-            int w = fm.stringWidth(label);
-            int h = fm.getHeight() - fm.getDescent();
+                Color c = getBackground();
+                if (c == null)
+                    c = SystemColor.control;
+                g.setColor(c);
+                g.fillRect(0, 0, sz.width, sz.height);
 
-            int x = 0;
-            if (alignment == Label.RIGHT)
-                x = sz.width - w;
-            else if (alignment == Label.CENTER)
-                x =(sz.width - w) / 2;
+                c = getForeground();
+                if (c == null)
+                    c = SystemColor.controlText;
+                g.setColor(c);
+                g.setFont(target.getFont());
 
-            g.drawString(label, x,(sz.height - h) / 2 + h);
+                int alignment = target.getAlignment();
+
+                FontMetrics fm = g.getFontMetrics();
+                int w = fm.stringWidth(label);
+                int h = fm.getHeight() - fm.getDescent();
+
+                int x = 0;
+                if (alignment == Label.RIGHT)
+                    x = sz.width - w;
+                else if (alignment == Label.CENTER)
+                    x =(sz.width - w) / 2;
+
+                g.drawString(label, x,(sz.height - h) / 2 + h - 2);
+            }
         }
 
         public Dimension getMinimumSize() {

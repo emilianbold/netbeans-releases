@@ -37,11 +37,11 @@ class FakeTextFieldPeer extends FakeTextComponentPeer implements TextFieldPeer
     }
 
     public Dimension getPreferredSize(int columns) {
-        return new Dimension(100, 20);
+        return _delegate.getMinimumSize(); //new Dimension(100, 20);
     }
 
     public Dimension getMinimumSize(int columns) {
-        return new Dimension(100, 20);
+        return _delegate.getMinimumSize(); //new Dimension(100, 20);
     }
 
     public void setEchoCharacter(char c) {
@@ -62,5 +62,36 @@ class FakeTextFieldPeer extends FakeTextComponentPeer implements TextFieldPeer
 
     private class Delegate extends FakeTextComponentPeer.Delegate
     {
+        public void paint(Graphics g) {
+            super.paint(g);
+
+            TextField target =(TextField) _target;
+            String text = target.getText();
+
+            if (text != null) { // draw the text
+                String textOut = text.substring(target.getCaretPosition());
+                Dimension sz = target.getSize();
+                Color c = getForeground();
+
+                if (c == null)
+                    c = SystemColor.controlText;
+                g.setColor(c);
+                g.setFont(target.getFont());
+
+                FontMetrics fm = g.getFontMetrics();
+                int h = fm.getHeight() - fm.getDescent();
+                g.drawString(textOut, 4, 1 + h); //(sz.height - h) / 2 + h -2);
+            }
+        }
+
+        public Dimension getMinimumSize() {
+            String text =((TextField)_target).getText();
+
+            FontMetrics fm = this.getFontMetrics(_target.getFont());
+            int w = fm.stringWidth(text);
+            int h = fm.getHeight();
+
+            return new Dimension(w > 92 ? 100 : w+8, h + 4);
+       }
     }
 }

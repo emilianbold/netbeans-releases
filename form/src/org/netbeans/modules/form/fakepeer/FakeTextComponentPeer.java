@@ -1,16 +1,16 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is Forte for Java, Community Edition. The Initial
  * Developer of the Original Code is Sun Microsystems, Inc. Portions
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
- 
+
 /* $Id$ */
 
 package org.netbeans.modules.form.fakepeer;
@@ -18,7 +18,6 @@ package org.netbeans.modules.form.fakepeer;
 import java.awt.*;
 import java.awt.peer.TextComponentPeer;
 
-import javax.swing.plaf.basic.BasicGraphicsUtils;
 
 /**
  *
@@ -29,6 +28,7 @@ class FakeTextComponentPeer extends FakeComponentPeer
     implements TextComponentPeer
 {
     private String _text;
+    private int _caretPosition = 0;
 
     FakeTextComponentPeer(TextComponent target) {
         super(target);
@@ -36,6 +36,11 @@ class FakeTextComponentPeer extends FakeComponentPeer
 
     Component createDelegate() {
         return new Delegate();
+    }
+
+    void initDelegate() {
+        _text = ((TextComponent)_target).getText();
+        super.initDelegate();
     }
 
     public boolean isFocusTraversable() {
@@ -68,11 +73,12 @@ class FakeTextComponentPeer extends FakeComponentPeer
     }
 
     public void setCaretPosition(int pos) {
-        //noop
+        if (pos == 0 || (_text != null && _text.length() > pos))
+            _caretPosition = pos;
     }
 
     public int getCaretPosition() {
-        return 0;
+        return _caretPosition;
     }
 
     public int getIndexAtPoint(int x, int y) {
@@ -95,19 +101,17 @@ class FakeTextComponentPeer extends FakeComponentPeer
     {
         public void paint(Graphics g) {
             Dimension sz = _target.getSize();
+            int w = sz.width,
+                h = sz.height;
 
+            // background & border
             Color c = getBackground();
             if (c == null)
-                c = Color.white;//SystemColor.text;
-
+                c = SystemColor.window; // white
             g.setColor(c);
-            g.fillRect(0, 0, sz.width, sz.height);
+            FakePeerUtils.drawLoweredBox(g,0,0,w,h);
 
-            BasicGraphicsUtils.drawLoweredBezel(g, 0, 0, sz.width, sz.height,
-                                                SystemColor.controlShadow,
-                                                SystemColor.controlDkShadow,
-                                                SystemColor.controlHighlight,
-                                                SystemColor.controlLtHighlight);
+            g.setClip(1,1,w-5,h-3);
         }
     }
 }

@@ -1,16 +1,16 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is Forte for Java, Community Edition. The Initial
  * Developer of the Original Code is Sun Microsystems, Inc. Portions
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
- 
+
 /* $Id$ */
 
 package org.netbeans.modules.form.fakepeer;
@@ -34,11 +34,11 @@ class FakeScrollPanePeer extends FakeContainerPeer implements ScrollPanePeer
     }
 
     public int getHScrollbarHeight() {
-        return 10;
+        return 16;
     }
 
     public int getVScrollbarWidth() {
-        return 10;
+        return 16;
     }
 
     public void setScrollPosition(int x, int y) {}
@@ -46,4 +46,27 @@ class FakeScrollPanePeer extends FakeContainerPeer implements ScrollPanePeer
     public void setUnitIncrement(Adjustable adj, int u) {}
     public void setValue(Adjustable adj, int v) {}
 
+    //
+    //
+    //
+
+    private class Delegate extends Component
+    {
+        public void paint(Graphics g) {
+            ScrollPane target =(ScrollPane) _target;
+
+            Dimension sz = target.getSize();
+
+            // background & border
+            Color c = getBackground();
+            if (c == null)
+                c = SystemColor.scrollbar; // light gray
+            g.setColor(c);
+            FakePeerUtils.drawLoweredBox(g,0,0,sz.width,sz.height);
+        }
+
+        public Dimension getMinimumSize() {
+            return ((ScrollPane)_target).getViewportSize();
+        }
+    }
 }

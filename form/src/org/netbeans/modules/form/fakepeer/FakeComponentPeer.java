@@ -230,20 +230,14 @@ abstract class FakeComponentPeer implements FakePeer
         public void paint(Graphics g) {
             Dimension sz = _target.getSize();
 
+            // background & border
             Color c = getBackground();
             if (c == null)
-                c = SystemColor.text;
-
+                c = SystemColor.window;
             g.setColor(c);
-            g.fillRect(0, 0, sz.width, sz.height);
+            FakePeerUtils.drawLoweredBox(g,0,0,sz.width,sz.height);
 
-            javax.swing.plaf.basic.BasicGraphicsUtils.drawLoweredBezel(
-                    g, 0, 0, sz.width, sz.height,
-                    SystemColor.controlShadow,
-                    SystemColor.controlDkShadow,
-                    SystemColor.controlHighlight,
-                    SystemColor.controlLtHighlight);
-
+            // by default display the class name
             g.setFont(new Font("Dialog", Font.BOLD, 12));
 
             String className = _target.getClass().getName();
@@ -255,10 +249,8 @@ abstract class FakeComponentPeer implements FakePeer
 
             int x =(sz.width - w) / 2;
 
-            //        g.setColor(Color.white);
-            //        g.drawString(className, x+1,(sz.height - h) / 2 + h + 1);
-            g.setColor(Color.black);
-            g.drawString(className, x,(sz.height - h) / 2 + h);
+            g.setColor(SystemColor.text);
+            g.drawString(className, x,(sz.height - h) / 2 + h - 1);
 
         }
 
