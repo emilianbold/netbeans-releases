@@ -131,7 +131,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	    StringBuffer drive = new StringBuffer(" :\\");
 	    drive.setCharAt(0, getWinSystemDrive());
 	    sysDrive = drive.toString();
-	    tempPath = resolveString("$D(install)");
+	    tempPath = resolveString("$D(install)") + "\\Java";
 	} else {
 	    // String isAdmin = (String)System.getProperties().get("isAdmin");
 	    // if (isAdmin != null && isAdmin.equals("yes")) {  // if root user
@@ -154,13 +154,22 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
         
         String desc;
         if (Util.isJDKAlreadyInstalled()) {
-            desc = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.dirSelectionDescErr,"
-            + "$L(org.netbeans.installer.Bundle,JDK.name),"
-            + installedJdk + ","
-            + "$L(org.netbeans.installer.Bundle,Product.displayName))");
+            if (Util.isJREAlreadyInstalled()) {
+                desc = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.dirSelectionDescErr,"
+                + "$L(org.netbeans.installer.Bundle,JDK.shortName),"
+                + installedJdk + ","
+                + "$L(org.netbeans.installer.Bundle,Product.displayName))");
+            } else {
+                //Warning message when JDK is installed but public JRE is NOT installed
+                desc = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.dirSelectionDescErrJRE,"
+                + "$L(org.netbeans.installer.Bundle,JDK.shortName),"
+                + installedJdk + ","
+                + "$L(org.netbeans.installer.Bundle,Product.displayName),"
+                + "$L(org.netbeans.installer.Bundle,JRE.shortName))");
+            }
         } else {
             desc = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.description,"
-            + "$L(org.netbeans.installer.Bundle,JDK.name),"
+            + "$L(org.netbeans.installer.Bundle,JDK.shortName),"
             + "$L(org.netbeans.installer.Bundle,Product.displayName))");
         }
         
@@ -238,11 +247,11 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	// j2se install dir components
         
         //#49200: On Windows JDK 1.5.0 installer uses default installation dir
-        //"C:\Program Files\jdk1.5.0" whereas JDK 1.4.2_X uses "C:\j2sdk1.4.2_X"
+        //"C:\Program Files\Java\jdk1.5.0" whereas JDK 1.4.2_X uses "C:\j2sdk1.4.2_X"
         //ie. "Program Files" is missing.
 	String j2seInstallDir = tempPath + File.separator
-        + resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.defaultJdkInstallDirectory)");
-	/*j2seDir = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.defaultJdkInstallDirectory)");
+        + resolveString("$L(org.netbeans.installer.Bundle,JDK.defaultInstallDirectory)");
+	/*j2seDir = resolveString("$L(org.netbeans.installer.Bundle,JDK.defaultInstallDirectory)");
 	String j2seInstallDir = null;
 	if (Util.isWindowsOS()) {
 	    j2seInstallDir = sysDrive + j2seDir;

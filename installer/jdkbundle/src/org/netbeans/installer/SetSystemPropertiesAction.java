@@ -32,6 +32,7 @@ import java.util.StringTokenizer;
  */
 public class SetSystemPropertiesAction extends WizardAction {
     String installedJdk = null;
+    String installedJre = null;
     
     public void build(WizardBuilderSupport support) {
         try {
@@ -57,8 +58,18 @@ public class SetSystemPropertiesAction extends WizardAction {
             if (installedJdk != null)  {
                 //If JDK is already installed then only installing NetBeans
                 Util.setInstalledJdk(installedJdk);
-                logEvent(this, Log.DBG,"installedJdk: " + installedJdk);
+                logEvent(this, Log.DBG,"-- installedJDK: " + installedJdk);
                 Util.setJDKAlreadyInstalled(true);
+            } else {
+                logEvent(this, Log.DBG,"-- installedJDK NOT FOUND");
+            }
+            installedJre = findJreHome();
+            if (installedJre != null)  {
+                Util.setInstalledJre(installedJre);
+                logEvent(this, Log.DBG,"-- installedJRE: " + installedJre);
+                Util.setJREAlreadyInstalled(true);
+            } else {
+                logEvent(this, Log.DBG,"-- installedJRE NOT FOUND");
             }
 	}
     }
@@ -77,7 +88,7 @@ public class SetSystemPropertiesAction extends WizardAction {
         }
     }
     
-    private String findJdkHome(){
+    private String findJdkHome() {
         String jdkHome = null;
         try{
             logEvent(this, Log.DBG,"Checking Win32 Registry ... ");
@@ -97,13 +108,85 @@ public class SetSystemPropertiesAction extends WizardAction {
                 reader = new BufferedReader(new InputStreamReader(new FileInputStream(regFile.getAbsolutePath()),"UTF-16"));
             }
             
+            String bundledVersion = resolveString("$L(org.netbeans.installer.Bundle,JDK.version)");
             String line;
             while ((line = reader.readLine()) != null) {
-                logEvent(this, Log.DBG,"findJdkHome line: " + line);
+                //logEvent(this, Log.DBG,"findJdkHome line: " + line);
                 if (line.startsWith("[HKEY_LOCAL_MACHINE\\SOFTWARE\\JavaSoft\\Java Development Kit")){
                     String version = line.substring(line.lastIndexOf("\\") + 1);
-                    if (version.startsWith("1.5.0")) {
-                    
+                    //Strip off trailing square bracket "]"
+                    if (version.lastIndexOf("]") == (version.length() - 1)) {
+                        version = version.substring(0, version.length() - 1);
+                    }
+                    logEvent(this, Log.DBG,"findJdkHome version: '" + version + "'");
+                    //Must be equal to match "1.5.0" and not eg."1.5.0_01"
+                    if (bundledVersion.equals(version)) {
+                        line = reader.readLine();
+                        StringTokenizer st = new StringTokenizer(line,"\"");
+                        String firstToken="",lastToken="";
+                        if (st.hasMoreTokens())  firstToken = st.nextToken();
+                        if (firstToken.compareTo("JavaHome") == 0) {
+                            while (st.hasMoreTokens())  lastToken = st.nextToken();
+                            StringBuffer stringBuffer = new StringBuffer();
+                            int index=0;
+                            for (int i=0; i<lastToken.length(); i++) {
+                                if ((lastToken.charAt(i) == '\\') && (index==0)) {
+                                    index++;
+                                } else {
+                                    stringBuffer.append(lastToken.charAt(i));
+                                    if(index > 0) index=0;
+                                }
+                            }
+                            jdkHome=stringBuffer.toString();
+                            if (!Util.checkJdkHome(jdkHome)) { 
+				System.getProperties().put("corruptJdk",jdkHome);
+				logEvent(this, Log.DBG, "corruptJdk: " + System.getProperties().get("corruptJdk"));
+				jdkHome = null;
+			    }
+                        }
+                    }
+                }
+            }
+            reader.close();
+        } catch(Exception ex){
+            ex.printStackTrace();
+        }
+        return jdkHome;
+    }
+    
+    private String findJreHome() {
+        String jreHome = null;
+        try{
+            logEvent(this, Log.DBG,"Checking Win32 Registry ... ");
+            File regFile = File.createTempFile("forte",".reg");
+            
+            String command = "regedit -e " + regFile.getAbsolutePath() + " \"HKEY_LOCAL_MACHINE\\SOFTWARE\\JavaSoft\\Java Runtime Environment\"";
+            RunCommand runCommand = new RunCommand();
+            runCommand.execute(command);
+            runCommand.getReturnStatus();
+            BufferedReader reader;
+
+            if (Util.isWindows98()) {
+                reader = new BufferedReader(new InputStreamReader(new FileInputStream(regFile.getAbsolutePath())));
+            } else if (Util.isWindowsNT()) {
+                reader = new BufferedReader(new InputStreamReader(new FileInputStream(regFile.getAbsolutePath())));
+            } else {
+                reader = new BufferedReader(new InputStreamReader(new FileInputStream(regFile.getAbsolutePath()),"UTF-16"));
+            }
+            
+            String bundledVersion = resolveString("$L(org.netbeans.installer.Bundle,JRE.version)");
+            String line;
+            while ((line = reader.readLine()) != null) {
+                //logEvent(this, Log.DBG,"findJreHome line: " + line);
+                if (line.startsWith("[HKEY_LOCAL_MACHINE\\SOFTWARE\\JavaSoft\\Java Runtime Environment")){
+                    String version = line.substring(line.lastIndexOf("\\") + 1);
+                    //Strip off trailing square bracket "]"
+                    if (version.lastIndexOf("]") == (version.length() - 1)) {
+                        version = version.substring(0, version.length() - 1);
+                    }
+                    logEvent(this, Log.DBG,"findJreHome version: '" + version + "'");
+                    //Must be equal to match "1.5.0" and not eg."1.5.0_01"
+                    if (bundledVersion.equals(version)) {
                         line = reader.readLine();
                         StringTokenizer st = new StringTokenizer(line,"\"");
                         String firstToken="",lastToken="";
@@ -115,16 +198,16 @@ public class SetSystemPropertiesAction extends WizardAction {
                             for (int i=0; i<lastToken.length(); i++) {
                                 if ((lastToken.charAt(i) == '\\') && (index==0)) {
                                     index++;
-                                }else {
+                                } else {
                                     stringBuffer.append(lastToken.charAt(i));
                                     if(index > 0) index=0;
                                 }
                             }
-                            jdkHome=stringBuffer.toString();
-                            if (!Util.checkJdkHome(jdkHome)) { 
-				System.getProperties().put("corruptJdk",jdkHome);
-				logEvent(this, Log.DBG, "corruptJdk: " + System.getProperties().get("corruptJdk"));
-				jdkHome=null;
+                            jreHome=stringBuffer.toString();
+                            if (!Util.checkJreHome(jreHome)) { 
+				System.getProperties().put("corruptJre",jreHome);
+				logEvent(this, Log.DBG, "corruptJre: " + System.getProperties().get("corruptJre"));
+				jreHome = null;
 			    }
                         }
                     }
@@ -134,7 +217,7 @@ public class SetSystemPropertiesAction extends WizardAction {
         } catch(Exception ex){
             ex.printStackTrace();
         }
-        return jdkHome;
+        return jreHome;
     }
     
 }

@@ -32,6 +32,7 @@ public class NbSummaryPanel extends TextDisplayPanel
     
     private String nbInstallDir = "";
     private String j2seInstallDir = "";
+    private String jreInstallDir = "";
     
     public NbSummaryPanel() {
         setTextSource(TEXT_PROPERTY);
@@ -56,6 +57,7 @@ public class NbSummaryPanel extends TextDisplayPanel
             nbInstallDir = (String) service.getProductBeanProperty
             (productURL, "beanNB", "installLocation");
             j2seInstallDir = (String) System.getProperties().get("j2seInstallDir");
+            jreInstallDir = (String) System.getProperties().get("jreInstallDir");
             logEvent(this, Log.DBG, "queryEnter nbInstallDir: " + nbInstallDir);
             if (type == ProductService.POST_INSTALL) {
                 logEvent(this, Log.DBG, "queryEnter POST_INSTALL PANEL");
@@ -165,6 +167,13 @@ public class NbSummaryPanel extends TextDisplayPanel
             + j2seInstallDir;
         }
         
+        if (Util.isWindowsOS() && !Util.isJREAlreadyInstalled()) {
+            summaryMessage += "<br><br>"
+            + "$L(org.netbeans.installer.Bundle,JRE.shortName)" + " "
+            + "$L(org.netbeans.installer.Bundle,SummaryPanel.description4)" + "<br>"
+            + jreInstallDir;
+        }
+        
         summaryMessage += "<br><br>"
         + "$L(org.netbeans.installer.Bundle,Product.displayName)" + " "
         + "$L(org.netbeans.installer.Bundle,SummaryPanel.description4)" + "<br>"
@@ -187,6 +196,14 @@ public class NbSummaryPanel extends TextDisplayPanel
                 + "$L(org.netbeans.installer.Bundle,JDK.shortName),"
                 + j2seInstallDir + ",uninstall.sh)";
             }
+        }
+        
+        //How to uninstall public JRE. We will show this message only when we installed
+        //JRE. JRE is installer together with JDK only. If only JDK is already installed
+        //we do not install JRE.
+        if (Util.isWindowsOS() && !Util.isJREAlreadyInstalled() && !Util.isJDKAlreadyInstalled()) {
+            summaryMessage += "$L(org.netbeans.installer.Bundle,SummaryPanel.description7,"
+            + "$L(org.netbeans.installer.Bundle,JRE.shortName))";
         }
         
         return summaryMessage;

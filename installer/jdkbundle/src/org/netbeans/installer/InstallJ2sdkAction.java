@@ -39,6 +39,7 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
     
     private String statusDesc = "";
     private String j2seInstallDir = "";
+    private String jreInstallDir = "";
     private String tempDir = "";
     private String defaultSubdir = "";
     private String origJ2SEInstallDir = "";
@@ -73,6 +74,14 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         String productURL = ProductService.DEFAULT_PRODUCT_SOURCE;
         instDirPath = resolveString((String)pservice.getProductBeanProperty(productURL,null,"absoluteInstallLocation")); */
         origJ2SEInstallDir = (String) System.getProperties().get("j2seInstallDir");
+        logEvent(this, Log.DBG,"$D(common): " + resolveString("$D(common)"));
+        logEvent(this, Log.DBG,"$D(install): " + resolveString("$D(install)"));
+        jreInstallDir = resolveString("$D(install)") + "\\Java\\"
+        + resolveString("$L(org.netbeans.installer.Bundle,JRE.defaultInstallDirectory)");
+        logEvent(this, Log.DBG,"jreInstallDir: " + jreInstallDir);
+        
+        System.getProperties().put("jreInstallDir",jreInstallDir);
+        
         tempDir = resolveString("$J(temp.dir)");
         logEvent(this, Log.DBG,"Tempdir: " + tempDir);
         
@@ -81,14 +90,14 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
     
     public void install(ProductActionSupport support) {
         long currtime = System.currentTimeMillis();
-        statusDesc = resolveString("$L(org.netbeans.installer.Bundle,ProgressPanel.installMessage," +
-        "$L(org.netbeans.installer.Bundle,JDK.shortName))")
+        statusDesc = resolveString("$L(org.netbeans.installer.Bundle,ProgressPanel.installMessage,"
+        + "$L(org.netbeans.installer.Bundle,JDK.shortName))")
 	+ " "
 	+ resolveString("$L(org.netbeans.installer.Bundle,ProgressPanel.waitMessage)") ;
         
         support.getOperationState().setStatusDescription(statusDesc);
         
-        defaultSubdir = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.defaultJdkInstallDirectory)");
+        defaultSubdir = resolveString("$L(org.netbeans.installer.Bundle,JDK.defaultInstallDirectory)");
         
         try {
             init(support);
@@ -146,10 +155,7 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
 	    // Put the command and arguments together for windows
             if (Util.isWindowsNT() || Util.isWindows98()) {
                 cmdArray[0] = j2seInstallDir + File.separator + execName
-                + " /s /v\"/qn ADDLOCAL=ToolsFeature,DemosFeature,SourceFeature INSTALLDIR=\\\"" + j2seInstallDir + "\\\"\"";
-                //envP = new String[2];
-                //envP[0] = "TMP=" + tempDir;
-                //envP[1] = "TEMP=" + tempDir;
+                + " /s /v\"/qn INSTALLDIR=\\\"" + j2seInstallDir + "\\\"\"";
             } else if (Util.isWindowsOS()) {
                 cmdArray[0] = execPath;
                 cmdArray[1] = "\"" + logPath + "\""; //logfile
@@ -179,6 +185,17 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
                     logEvent(this, Log.DBG,"Now cleaning up this file " + file.getAbsolutePath());
                 }
             }
+            
+            //Run JRE installer separately on Win NT / Win 98.
+            if (Util.isWindowsNT() || Util.isWindows98()) {
+                //Install public JRE only when it is not already installed.
+                if (!Util.isJREAlreadyInstalled()) {
+                    cmdArray[0] = "msiexec.exe /qn /i \"" + resolveString("$D(common)")
+                    + "\\Java\\Update\\Base Images\\jdk1.5.0.b64\\patch-jdk1.5.0.b64\\jre.msi\"";
+                    runCommand(cmdArray, envP, support);
+                }
+            }
+            
             
             //Move JDK up one dir level
             if (!Util.isWindowsOS()) {
@@ -309,9 +326,8 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         return true;
     }
     
-    
-    
-    /**Returns checksum for j2sdk directory in bytes*/
+    /** Returns checksum for j2sdk directory in bytes. It does not include public JRE on Windows.
+     * JRE can be installed on another disk so it is split. */
     public long getCheckSum() {
         if (Util.isWindowsOS()) {
             return 130000000L;
@@ -363,6 +379,12 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
             logEvent(this, Log.DBG, "sysDir: " + sysDir);
 	    req.addBytes(sysDir, 130000000L);
             
+            if (!Util.isJREAlreadyInstalled()) {
+                jreInstallDir = resolveString("$D(install)") + "\\Java\\"
+                + resolveString("$L(org.netbeans.installer.Bundle,JRE.defaultInstallDirectory)");
+                req.addBytes(jreInstallDir,70000000L);
+            }
+
             req.addBytes(tempDir, 50000000L);
 	}
 	logEvent(this, Log.DBG, "Total (not necessarily on one disk when tempdir is redirected) Mbytes = " + (req.getTotalBytes()>>20));
@@ -545,8 +567,7 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         while ((line = reader.readLine()) != null) {
             if (line.startsWith("J2SE_INSTALL_DIR=")) {
                 line = "J2SE_INSTALL_DIR=" + origJ2SEInstallDir;
-            }
-            else if (line.startsWith("J2SE_VER=")) {
+            } else if (line.startsWith("J2SE_VER=")) {
                 line = "J2SE_VER=" + "1.5.0";
             }
             writer.write(line + System.getProperty("line.separator"));
@@ -592,8 +613,20 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
                 line = "SET TMP=" + tempDir;
             } else if (line.startsWith("SET TEMP=")) {
                 line = "SET TEMP=" + tempDir;
+            } else if (line.startsWith("SET JRE_MSI_PROJECT=")) {
+                //Installation of public JRE. Path must be set according to JDK version.
+                line = "SET JRE_MSI_PROJECT=\"" + resolveString("$D(common)") 
+                + "\\Java\\Update\\Base Images\\jdk1.5.0.b64\\patch-jdk1.5.0.b64\\jre.msi\"";
+                logEvent(this, Log.DBG, "JRE line:" + line);
             }
-            writer.write(line + System.getProperty("line.separator"));
+            if (line.startsWith("start /w msiexec")) {
+                //Install public JRE only when it is not already installed.
+                if (!Util.isJREAlreadyInstalled()) {
+                    writer.write(line + System.getProperty("line.separator"));
+                }
+            } else {
+                writer.write(line + System.getProperty("line.separator"));
+            }
         }
         reader.close();
         
@@ -716,7 +749,8 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
     class ProgressThread extends Thread {
         private boolean loop = true;
         private  MutableOperationState mos;
-        private File j2seDir;
+        private File jdkDir;
+        private File jreDir;
         
         //progress bar related variables
         private long percentageCompleted = 0L;
@@ -742,10 +776,14 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         public ProgressThread() {
             this.mos = mutableOperationState;
             lastPathShown = j2seInstallDir;
-            j2seDir = new File(j2seInstallDir);
+            jdkDir = new File(j2seInstallDir);
+            jreDir = new File(jreInstallDir);
             logFile = new File(j2seInstallDir, "install.log");
             checksum = getCheckSum();
-            
+            //JRE is installed by default, adjust checksum to display progress bar correctly
+            if (!Util.isJREAlreadyInstalled()) {
+                checksum += 70000000L;
+            }
         }
         
         public void run() {
@@ -753,7 +791,7 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
             while (loop) {
                 logEvent(this, Log.DBG,"looping");
                 try {
-                    if (j2seDir.exists()) {
+                    if (jdkDir.exists()) {
                         //logEvent(this, Log.DBG,"going 2 updateProgressBar");
                         updateProgressBar();
                         //logEvent(this, Log.DBG,"going 2 updateStatusDetail");
@@ -800,7 +838,7 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
             
         }
         
-        /**check if the operation is canceled. If not yield to other threads.*/
+        /** Check if the operation is canceled. If not yield to other threads. */
         private boolean isCanceled() {
             if(mos.isCanceled() && loop) {
                 logEvent(this, Log.DBG,"MOS is cancelled");
@@ -814,28 +852,31 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
             return mos.isCanceled();
         }
         
-        /** Updates the progress bar*/
+        /** Updates the progress bar. */
         private void updateProgressBar() {
-            if (isCanceled()) return;
-            long size = Util.getFileSize(j2seDir);
+            if (isCanceled()) {
+                return;
+            }
+            long size = Util.getFileSize(jdkDir) + Util.getFileSize(jreDir);
             long perc = (size * 100) / checksum;
             logEvent(this, Log.DBG,"installed size = " + size + " perc = " + perc);
-            if (perc <= percentageCompleted)
+            if (perc <= percentageCompleted) {
                 return;
+            }
             long increment = perc - percentageCompleted;
             mos.updatePercentComplete(ESTIMATED_TIME, increment, 100L);
             percentageCompleted = perc;
         }
         
-        /** Updates the status detail*/
+        /** Updates the status detail. */
         public void updateStatusDetail() {
             if (isCanceled()) return;
-            if (!j2seDir.exists()) {
-                mos.setStatusDetail(resolveString("$L(com.sun.installer.InstallerResources,J2SDK_EXTRACT_MSG)"));
+            if (!jdkDir.exists()) {
+                mos.setStatusDetail(resolveString("$L(org.netbeans.installer.Bundle,ProgressPanel.prepareMessage)"));
                 logEvent(this, Log.DBG,"StatusDetailThread-> " + lastPathShown + " NOT created yet");
                 return;
             }
-            String recentFilePath = fileComp.getMostRecentFile(j2seDir).getAbsolutePath();
+            String recentFilePath = fileComp.getMostRecentFile(jdkDir).getAbsolutePath();
             logEvent(this, Log.DBG,"StatusDetailThread-> " + recentFilePath + "  MODIFIED!!!");
             String filename = getDisplayPath(recentFilePath);
             if (Util.isWindowsOS()) {
