@@ -151,6 +151,7 @@ public class LocalePanel extends JPanel {
         new Locale("th", "TH", ""), // NOI18N // Thai Thailand 
         new Locale("tr", "TR", ""), // NOI18N // Turkish Turkey 
         new Locale("uk", "UA", ""), // NOI18N // Ukranian Ukraine 
+        new Locale("vi", "VN", ""), // NOI18N // Vietnamese Vietnam
         new Locale("zh", "CN", ""), // NOI18N // Chinese (Simplified) China 
         new Locale("zh", "HK", ""), // NOI18N // Chinese Hong Kong 
         new Locale("zh", "TW", ""), // NOI18N // Chinese (Traditional) Taiwan
