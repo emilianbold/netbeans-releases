@@ -151,17 +151,12 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
 
         getAllBeanProperties();
         for (int i=0; i < knownBeanProperties.length; i++) {
-            if (!FormUtils.isIgnoredProperty(
-                    beanClass,
-                    knownBeanProperties[i].getName()))
-            {
-                try {
-                    knownBeanProperties[i].reinstateProperty();
-                }
-                catch (Exception ex) {
-                    ErrorManager.getDefault()
-                        .notify(ErrorManager.INFORMATIONAL, ex);
-                }
+            try {
+                knownBeanProperties[i].reinstateProperty();
+            }
+            catch (Exception ex) {
+                ErrorManager.getDefault()
+                    .notify(ErrorManager.INFORMATIONAL, ex);
             }
         }
     }
@@ -323,7 +318,7 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
      * @return true if the component has hidden state, false otherwise
      */
     public boolean hasHiddenState() {
-        String name = getBeanClass().getName();
+        String name = beanClass.getName();
         if (name.startsWith("javax.") // NOI18N
               || name.startsWith("java.") // NOI18N
               || name.startsWith("org.openide.")) // NOI18N
@@ -631,6 +626,7 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
         boolean empty = knownBeanProperties == null;
         int validCount = 0;
         List newProps = null;
+        Object[] propAccessClsf = null;
 
         int descIndex = 0;
         for (int i=0; i < propNames.length; i++) {
@@ -654,7 +650,11 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
                 int j = descIndex;
                 do {
                     if (descriptors[j].getName().equals(name)) {
-                        prop = createBeanProperty(descriptors[j]);
+                        if (propAccessClsf == null)
+                            propAccessClsf = FormUtils.getPropertiesAccessClsf(beanClass);
+
+                        prop = createBeanProperty(descriptors[j], propAccessClsf);
+
                         if (!empty) {
                             if (newProps == null)
                                 newProps = new ArrayList();
@@ -951,25 +951,28 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
         ArrayList normalProps = new ArrayList();
         ArrayList expertProps = new ArrayList();
 
-        Object[] propsClsf = FormUtils.getPropertiesClassification(getBeanInfo());
-        PropertyDescriptor[] props = getBeanInfo().getPropertyDescriptors();
+        Object[] propsCats = FormUtils.getPropertiesCategoryClsf(
+                                 beanClass, getBeanInfo().getBeanDescriptor());
+        Object[] propsAccess = FormUtils.getPropertiesAccessClsf(beanClass);
 
+        PropertyDescriptor[] props = getBeanInfo().getPropertyDescriptors();
         for (int i = 0; i < props.length; i++) {
             PropertyDescriptor pd = props[i];
-            Object propType = FormUtils.getPropertyType(pd, propsClsf);
-            List listToAdd;
 
-            if (propType == FormUtils.PROP_PREFERRED)
+            Object propCat = FormUtils.getPropertyCategory(pd, propsCats);
+            List listToAdd;
+            if (propCat == FormUtils.PROP_PREFERRED)
                 listToAdd = prefProps;
-            else if (propType == FormUtils.PROP_NORMAL)
+            else if (propCat == FormUtils.PROP_NORMAL)
                 listToAdd = normalProps;
-            else if (propType == FormUtils.PROP_EXPERT)
+            else if (propCat == FormUtils.PROP_EXPERT)
                 listToAdd = expertProps;
             else continue; // PROP_HIDDEN
 
             FormProperty prop = (FormProperty) nameToProperty.get(pd.getName());
             if (prop == null)
-                prop = createBeanProperty(pd);
+                prop = createBeanProperty(pd, propsAccess);
+
             if (prop != null)
                 listToAdd.add(prop);
         }
@@ -1044,20 +1047,21 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
         eventProperties = eventProps;
     }
 
-    protected RADProperty createBeanProperty(PropertyDescriptor desc) {
+    protected RADProperty createBeanProperty(PropertyDescriptor desc,
+                                             Object[] propAccessClsf)
+    {
         if (desc.getPropertyType() == null)
             return null;
 
         RADProperty prop = new RADProperty(this, desc);
+
+        int access = FormUtils.getPropertyAccess(desc, propAccessClsf);
+        if (access != 0)
+            prop.setAccessType(access);
+
         setPropertyListener(prop);
 //        prop.addPropertyChangeListener(getPropertyListener());
         nameToProperty.put(desc.getName(), prop);
-
-        // should or should not values of "visible" and "enabled" properties
-        // be set (tied) to bean instances?
-//        if (("visible".equals(desc.getName()) || "enabled".equals(desc.getName()))
-//              && beanInstance instanceof java.awt.Component)
-//            prop.setAccessType(FormProperty.DETACHED_WRITE);
 
         return prop;
     }
@@ -1088,11 +1092,12 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
 //                prop.addPropertyChangeListener(getPropertyListener());
                 nameToProperty.put(prop.getName(), prop);
 
-                Object propType = FormUtils.getPropertyType(
-                            prop.getPropertyDescriptor(),
-                            FormUtils.getPropertiesClassification(beanInfo));
+                Object propCategory = FormUtils.getPropertyCategory(
+                    prop.getPropertyDescriptor(),
+                    FormUtils.getPropertiesCategoryClsf(
+                        beanClass, getBeanInfo().getBeanDescriptor()));
 
-                if (propType == FormUtils.PROP_PREFERRED)
+                if (propCategory == FormUtils.PROP_PREFERRED)
                     prefProps.add(prop);
                 else normalProps.add(prop);
             }

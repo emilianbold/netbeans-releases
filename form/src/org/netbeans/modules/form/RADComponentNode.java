@@ -386,10 +386,6 @@ public class RADComponentNode extends FormNode
 
                 for (int i=0; i < properties.length; i++) {
                     FormProperty prop = properties[i];
-                    if (FormUtils.isIgnoredProperty(component.getBeanClass(),
-                                                    prop.getName()))
-                        continue;
-
                     try {
                         prop.reinstateProperty();
 //                        if (prop.isChanged()) // [what if changed to default value?]

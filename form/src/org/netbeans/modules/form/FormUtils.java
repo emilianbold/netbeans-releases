@@ -63,9 +63,9 @@ public class FormUtils
     static final Object PROP_EXPERT = new Object();
     static final Object PROP_HIDDEN = new Object();
 
-    /** A table modifying categories of properties taken from Swing beaninfos
-     * (which is not always very nice). */
-    private static Object[][] propsClassifications = {
+    /** Table defining categories of properties. It overrides original Swing
+     * definition from beaninfo (which is often inadequate). */
+    private static Object[][] propertyCategories = {
         { java.awt.Component.class, CLASS_AND_SUBCLASSES,
                 "locale", PROP_HIDDEN,
                 "locationOnScreen", PROP_HIDDEN,
@@ -300,6 +300,13 @@ public class FormUtils
         { javax.swing.JFileChooser.class, CLASS_EXACTLY,
                 "acceptAllFileFilter", PROP_HIDDEN,
                 "choosableFileFilters", PROP_HIDDEN }
+    };
+
+    /** Table with explicit changes to propeties accessibility. E.g. some
+     * properties needs to be restricted to "detached write". */
+    private static Object[][] propertiesAccess = {
+        { javax.swing.JFrame.class, CLASS_AND_SUBCLASSES,
+              "defaultCloseOperation", new Integer(FormProperty.DETACHED_WRITE) }
     };
 
     /** List of components that should never be containers; some of them are
@@ -769,17 +776,22 @@ public class FormUtils
 
     // ---------
 
-    /** Returns explicit changes in properties classification (preferred, normal,
-     * expert). Used for SWING components to correct default (insufficient)
-     * classification taken from BeanInfo.
+    /** Returns explicit property category classification (defined in
+     * propertyCategories table)for properties of given class.
+     * The returned array can be used in getPropertyCategory method to get
+     * category for individual property. Used for SWING components to
+     * correct their default (insufficient) classification.
      */
-    static Object[] getPropertiesClassification(BeanInfo beanInfo) {
+    static Object[] getPropertiesCategoryClsf(Class beanClass,
+                                              BeanDescriptor beanDescriptor)
+    {
         ArrayList reClsf = null;
-        Class beanClass = beanInfo.getBeanDescriptor().getBeanClass();
+//        Class beanClass = beanInfo.getBeanDescriptor().getBeanClass();
 
+        // some magic with JComponents first...
         if (javax.swing.JComponent.class.isAssignableFrom(beanClass)) {
             reClsf = new ArrayList(8);
-            Object isContainerValue = beanInfo.getBeanDescriptor().getValue("isContainer"); // NOI18N
+            Object isContainerValue = beanDescriptor.getValue("isContainer"); // NOI18N
             if (isContainerValue == null || Boolean.TRUE.equals(isContainerValue)) {
                 reClsf.add("font"); // NOI18N
                 reClsf.add(PROP_NORMAL);
@@ -790,8 +802,9 @@ public class FormUtils
             }
         }
 
-        for (int i=0; i < propsClassifications.length; i++) {
-            Object[] clsf = propsClassifications[i];
+        return collectPropertiesClsf(beanClass, propertyCategories, reClsf);
+/*        for (int i=0; i < propertyCategories.length; i++) {
+            Object[] clsf = propertyCategories[i];
             Class refClass = (Class)clsf[0];
             Object subclasses = clsf[1];
 
@@ -815,26 +828,20 @@ public class FormUtils
             reClsf.toArray(clsfArray);
             return clsfArray;
         }
-        return null;
+        return null; */
     }
 
     /** Returns type of property (PROP_PREFERRED, PROP_NORMAL, PROP_EXPERT or
-     * PROP_HIDDEN) based on PropertyDescriptor and explicit changes in
+     * PROP_HIDDEN) based on PropertyDescriptor and definitions in
      * properties classification for given bean class (returned from
-     * getPropertiesClassification(BeanInfo beanInfo) method).
+     * getPropertiesCategoryClsf method).
      */
-    static Object getPropertyType(PropertyDescriptor pd,
-                                  Object[] propsClsf) {
-        if (propsClsf != null) {
-            String propName = pd.getName();
-
-            int i = propsClsf.length;
-            while (i > 0) {
-                if (propsClsf[i-2].equals(propName))
-                    return propsClsf[i-1];
-                i -= 2;
-            }
-        }
+    static Object getPropertyCategory(PropertyDescriptor pd,
+                                      Object[] propsClsf)
+    {
+        Object cat = findPropertyClsf(pd.getName(), propsClsf);
+        if (cat != null)
+            return cat;
 
         if (pd.isHidden())
             return PROP_HIDDEN;
@@ -843,6 +850,69 @@ public class FormUtils
         if (pd.isPreferred() || Boolean.TRUE.equals(pd.getValue("preferred"))) // NOI18N
             return PROP_PREFERRED;
         return PROP_NORMAL;
+    }
+
+    /** Returns explicit property access type classification for properties of
+     * given class (defined in propertiesAccess table). The returned array can
+     * be used in getPropertyAccess method to get the access type for
+     * individual property.
+     */
+    static Object[] getPropertiesAccessClsf(Class beanClass) {
+        return collectPropertiesClsf(beanClass, propertiesAccess, null);
+    }
+
+    /** Returns access type for given property (as FormProperty constant).
+     * 0 if no restriction is explicitly defined.
+     */
+    static int getPropertyAccess(PropertyDescriptor pd,
+                                 Object[] propsClsf)
+    {
+        Object access = findPropertyClsf(pd.getName(), propsClsf);
+        return access == null ? 0 : ((Integer)access).intValue();
+    }
+
+    private static Object[] collectPropertiesClsf(Class beanClass,
+                                                  Object[][] table,
+                                                  java.util.List list)
+    {
+        for (int i=0; i < table.length; i++) {
+            Object[] clsf = table[i];
+            Class refClass = (Class)clsf[0];
+            Object subclasses = clsf[1];
+
+            if (refClass.equals(beanClass)
+                ||
+                (subclasses == CLASS_AND_SUBCLASSES
+                         && refClass.isAssignableFrom(beanClass))
+                ||
+                (subclasses == CLASS_AND_SWING_SUBCLASSES
+                         && refClass.isAssignableFrom(beanClass)
+                         && beanClass.getName().startsWith("javax.swing."))) { // NOI18N
+                if (list == null)
+                    list = new ArrayList(8);
+                for (int j=2; j < clsf.length; j++)
+                    list.add(clsf[j]);
+            }
+        }
+
+        if (list != null) {
+            Object[] array = new Object[list.size()];
+            list.toArray(array);
+            return array;
+        }
+        return null;
+    }
+
+    private static Object findPropertyClsf(String name, Object[] clsf) {
+        if (clsf != null) {
+            int i = clsf.length;
+            while (i > 0) {
+                if (clsf[i-2].equals(name))
+                    return clsf[i-1];
+                i -= 2;
+            }
+        }
+        return null;
     }
 
     static boolean isContainerContentDependentProperty(Class beanClass,
