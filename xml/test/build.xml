@@ -49,11 +49,17 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Main targets -->
     <!-- ============ -->
     
-    <target depends="runtests" name="all"/>
+    <target depends="runtests_all" name="all"/>
     
-    <!-- This calls target which will call compilers according to cfg file.
-         You should not change this target unless you realy know what you are doing -->
+    <!-- Dummy for XTest runtime -->
     <target name="buildtests">
+        <echo message="Dummy target. Run 'buildtest_all' instead."/>
+    </target>
+    
+    <!-- Builds whole XML family together.
+         This calls target which will call compilers according to cfg file.
+         You should not change this target unless you realy know what you are doing -->
+    <target name="buildtests_all">
        <!--ant antfile="build.xml" dir="../../../test" target="build-xml-lib"/-->
        <!-- Collect sources to all_src dir -->
        <delete dir="qa-functional/src" quiet="true"/>
@@ -84,11 +90,16 @@ Microsystems, Inc. All Rights Reserved.
         <echo message='Deleting "qa-functional/src"'/>
         <delete dir="qa-functional/src" quiet="true"/>
         <ant antfile="${xtest.module_harness.antfile}" dir="." target="cleantests"/>
-    </target> 
-
+    </target>
+    
+    <!-- Dummy for XTest runtime -->
+    <target name="runtests" depends="buildtests">
+        <echo message="Dummy target. Run 'runtests_all' instead."/>
+    </target>
+    
     <!-- This target runs tests. You should not change this --> 
     <!-- target unless you realy know what you are doing -->
-    <target depends="buildtests" name="runtests">
+    <target depends="buildtests_all" name="runtests_all">
         <echo message="Module: Running tests for ${xtest.module}, testtype ${xtest.testtype}, attribs=${xtest.attribs}"/>
         <ant antfile="${xtest.module_harness.antfile}" dir="." target="runtests"/>
     </target>
