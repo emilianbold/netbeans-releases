@@ -43,13 +43,15 @@ class SearchThreadJdk12 extends IndexSearchThread {
     private boolean splitedIndex = false;
     private int currentIndexNumber;
     private FileObject folder = null;
+    private boolean caseSensitive;
     
     public SearchThreadJdk12 ( String toFind,
                                FileObject fo,
-                               IndexSearchThread.DocIndexItemConsumer diiConsumer ) {
+                               IndexSearchThread.DocIndexItemConsumer diiConsumer, boolean caseSensitive ) {
 
         super( toFind, fo, diiConsumer );
-
+        this.caseSensitive = caseSensitive;
+        
         if ( fo.isFolder() ) {
             // Documentation uses splited index - resolve the right file
             
@@ -128,7 +130,7 @@ class SearchThreadJdk12 extends IndexSearchThread {
 
             try {    
                 in = new BufferedReader( new InputStreamReader( fo.getInputStream () ));        
-                pd.parse( in, sc = new SearchCallbackJdk12( splitedIndex ), true );
+                pd.parse( in, sc = new SearchCallbackJdk12( splitedIndex, caseSensitive ), true );
             }
             catch ( java.io.IOException e ) {
                // Do nothing
@@ -238,7 +240,7 @@ class SearchThreadJdk12 extends IndexSearchThread {
         
         int printText = 0;
         
-        SearchCallbackJdk12( boolean splited ) {
+        SearchCallbackJdk12( boolean splited, boolean caseSensitive ) {
             super();
             this.splited = splited;
         }
@@ -302,7 +304,13 @@ class SearchThreadJdk12 extends IndexSearchThread {
                     
                 }
                 
-                if ( text.startsWith( toFind ) ) {
+                if ( text.startsWith( toFind ) && caseSensitive ) {
+                    DocIndexItem dii = new DocIndexItem( text, null, contextURL, hrefVal );
+                    //insertDocIndexItem( dii );
+                    currentDii = dii;
+                    where = IN_DESCRIPTION;
+                }
+                else if ( text.toUpperCase().startsWith( toFind.toUpperCase() ) && !caseSensitive ) {
                     DocIndexItem dii = new DocIndexItem( text, null, contextURL, hrefVal );
                     //insertDocIndexItem( dii );
                     currentDii = dii;

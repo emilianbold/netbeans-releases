@@ -24,7 +24,7 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.modules.javadoc.comments.AutoCommenter;
 import org.netbeans.modules.javadoc.settings.ExternalJavadocSettings;
-
+import org.netbeans.modules.javadoc.search.Jdk12SearchType;
 /** Options for applets - which applet viewer use ...
 *
 * @author Petr Hrebejk
@@ -42,6 +42,7 @@ public class DocumentationSettings extends SystemOption {
     private static final String PROP_AUTOCOMENT_ERR_MASK = "autocommentErrorMask";
     private static final String PROP_EXECUTOR            = "executorEngine";
     private static final String PROP_SEARCH              = "searchEngine";
+    private static final String PROP_FS_SETTING          = "filesystemSetting";
     
     /** generation */
     //private static boolean externalJavadoc = false;
@@ -69,8 +70,9 @@ public class DocumentationSettings extends SystemOption {
         if( getProperty( PROP_EXECUTOR ) == null )
             setExecutor(new ExternalJavadocSettings().getName());
         if( getProperty( PROP_SEARCH ) == null )
-            setSearchEngine("");
-        
+            setSearchEngine(new Jdk12SearchType().getName());
+        if( getProperty( PROP_FS_SETTING ) == null )
+            setFileSystemSettings( new java.util.HashMap() );
     }
 
 
@@ -234,6 +236,14 @@ public class DocumentationSettings extends SystemOption {
     public void setSearchEngine(java.lang.String search) {
         putProperty( PROP_SEARCH , search, true );
     }    
+    
+    public java.util.HashMap getFileSystemSettings(){
+        return (java.util.HashMap)getProperty( PROP_FS_SETTING );
+    }
+
+    public void setFileSystemSettings(java.util.HashMap map){
+        putProperty( PROP_FS_SETTING, map, true );
+    }
 }
 
 

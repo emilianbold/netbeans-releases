@@ -34,3 +34,6 @@ OpenIDE-Module-Class: Service
 
 Name: org/netbeans/modules/javadoc/settings/StdDocletSettings.class
 OpenIDE-Module-Class: Service
+
+Name: org/netbeans/modules/javadoc/search/Jdk12SearchType.class
+OpenIDE-Module-Class: Service

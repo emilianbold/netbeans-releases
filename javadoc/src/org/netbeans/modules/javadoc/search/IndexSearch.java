@@ -41,11 +41,14 @@ import org.openide.cookies.OpenCookie;
 import org.openide.util.HelpCtx;
 import org.openide.util.SharedClassObject;
 
+import org.openide.execution.NbClassPath;
+import org.openide.filesystems.FileObject;
+
 import org.netbeans.modules.javadoc.settings.DocumentationSettings;
 
 /** Main window for documentation index search
  *
- * @author Petr Hrebejk
+ * @author Petr Hrebejk, Petr Suchomel
  */
 public class IndexSearch
             extends TopComponent
@@ -684,9 +687,18 @@ public class IndexSearch
             //((DefaultListModel)resultsList.getModel()).clear();
 
             for( int i = 0; i < docSystems.length; i++ ) {
-                IndexSearchThread searchThread = new SearchThreadJdk12( toFind,  docSystems[i].getIndexFile() , diiConsumer );
-                tasks.add( searchThread );
-                searchThread.go();
+                //IndexSearchThread searchThread = new SearchThreadJdk12( toFind,  docSystems[i].getIndexFile() , diiConsumer );
+                try {
+                    JavaDocFSSettings setting = new JavaDocFSSettings( docSystems[i].getIndexFile().getFileSystem() );
+                    //System.out.println(setting.getSearchTypeEngine().getName());
+                    IndexSearchThread searchThread = setting.getSearchTypeEngine().getSearchThread( toFind,  docSystems[i].getIndexFile() , diiConsumer );
+
+                    tasks.add( searchThread );
+                    searchThread.go();
+                }
+                catch(org.openide.filesystems.FileStateInvalidException fsEx){
+                    fsEx.printStackTrace();
+                }
             }
             searchButton.setText( STR_STOP );
         }
