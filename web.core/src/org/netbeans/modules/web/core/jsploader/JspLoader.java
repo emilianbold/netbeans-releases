@@ -89,7 +89,6 @@ public class JspLoader extends UniFileLoader {
                         SystemAction.get (FileSystemAction.class),
                         null,
                         SystemAction.get (org.openide.actions.ExecuteAction.class),
-                        SystemAction.get (org.netbeans.modules.web.execution.ExecuteForceReloadAction.class),
                         null,
                         SystemAction.get (CutAction.class),
                         SystemAction.get (CopyAction.class),
@@ -133,13 +132,6 @@ public class JspLoader extends UniFileLoader {
         JspDataObject obj = createJspObject(primaryFile, this);
         // [PENDING] add these from JspDataObject, not from the loader
         obj.getCookieSet0 ().add (new TagLibParseSupport(primaryFile));
-
-        if (isFileBased) {
-            Node.Cookie execSupport = obj.createExecSupport();
-            if (execSupport != null) {
-                obj.getCookieSet0 ().add (execSupport);
-            }
-        }
         return obj;
     }
 

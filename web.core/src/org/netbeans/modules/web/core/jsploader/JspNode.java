@@ -30,7 +30,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.actions.SystemAction;
 
 import org.netbeans.modules.web.core.WebExecSupport;
-import org.netbeans.modules.j2ee.impl.ServerExecSupport;
 import org.netbeans.modules.web.core.LanguageEditor;
 import org.netbeans.modules.web.core.FeatureFactory;
 
@@ -197,11 +196,6 @@ public class JspNode extends DataNode {
                    }
                }
               );
-
-        // add execution/debugger properties
-        ServerExecSupport wes = (ServerExecSupport)getDataObject().getCookie(ServerExecSupport.class);
-        if (wes != null)
-            wes.addProperties(ps);
 
         // remove the params property
         //ps.remove(ExecSupport.PROP_FILE_PARAMS);

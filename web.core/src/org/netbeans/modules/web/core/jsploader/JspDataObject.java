@@ -50,11 +50,6 @@ import org.openide.compiler.ExternalCompilerGroup;
 
 import org.netbeans.modules.web.core.ServletSettings;
 import org.netbeans.modules.web.core.QueryStringCookie;
-import org.netbeans.modules.j2ee.server.ServerInstance;
-import org.netbeans.modules.j2ee.server.web.FfjJspCompileContext;
-import org.netbeans.modules.j2ee.server.datamodel.WebStandardData;
-import org.netbeans.modules.j2ee.impl.ServerExecSupport;
-import org.netbeans.modules.j2ee.impl.ServerRegistryImpl;
 import org.netbeans.modules.web.context.WebContextObject;
 
 import org.netbeans.modules.java.environment.Utilities;
@@ -155,11 +150,6 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
 
     protected EditorCookie createServletEditor() {
         return new ServletEditor(this);
-    }
-    
-    /** Creates an execution (and debugging) support for this page. May return null. */
-    protected Node.Cookie createExecSupport() {
-        return new ServerExecSupport(getPrimaryEntry());
     }
     
     public synchronized CompileData getPlugin() {
@@ -348,9 +338,12 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
             FileObject root = JspCompileUtil.getContextRoot(getPrimaryFile());
             DataObject wco = DataObject.find(root);
             if (!(wco instanceof WebContextObject)) {
+                /*
+                PENDING
                 ServerRegistryImpl source = ServerRegistryImpl.getRegistry();
                 source.addServerRegistryListener(
                     ServerRegistryImpl.weakServerRegistryListener(listener, source));
+                */
             }
             else {
                 wco.addPropertyChangeListener(WeakListener.propertyChange(listener, wco));
@@ -505,6 +498,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         return compileData.getServletFileObject();
     }
     
+    
     /////// -------- FIELDS AND METHODS FOR MANIPULATING THE PARSED INFORMATION -------- ////////
     
     /** Updates the information about statically included pages for these pages.
@@ -594,7 +588,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
 
     ////// -------- INNER CLASSES ---------
 
-    private class Listener extends FileChangeAdapter implements PropertyChangeListener, ServerRegistryImpl.ServerRegistryListener {
+    private class Listener extends FileChangeAdapter implements PropertyChangeListener/*, ServerRegistryImpl.ServerRegistryListener */{
         
         Listener() {
         }
@@ -626,7 +620,8 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
                     DataObject dobj = (DataObject)evt.getSource();
                     if (dobj.getPrimaryFile().getPackageNameExt('/','.').equals("")) { // NOI18N
                         dobj.removePropertyChangeListener(this);
-                        ServerRegistryImpl.getRegistry().removeServerRegistryListener(this);
+                        // PENDING
+                        //ServerRegistryImpl.getRegistry().removeServerRegistryListener(this);
                         JspDataObject.this.addWebContextListener();
                     }
                 }
@@ -639,6 +634,8 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         }
         
         // implementation of ServerRegistryImpl.ServerRegistryListener
+        /*
+        PENDING
         public void added(ServerRegistryImpl.ServerEvent added) {
             serverChange();
         }
@@ -654,12 +651,12 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         public void removed(ServerRegistryImpl.ServerEvent removed) {
             serverChange();
         }
+        */
         
         private void serverChange() {
             refreshPlugin(true);
             firePropertyChange0(PROP_SERVER_CHANGE, null, null);
         }
-        
     }
 }
 

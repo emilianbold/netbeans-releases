@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.*;
 
-import org.netbeans.modules.j2ee.server.ServerInstance;
+//import org.netbeans.modules.j2ee.server.ServerInstance;
 import org.netbeans.modules.web.context.WebContextObject;
 import org.openide.ErrorManager;
 
@@ -39,7 +39,7 @@ public class CompileData {
 
     private JspDataObject jspPage;
     private FileObject docRoot;
-    private ServerInstance serverInstance;
+    //private ServerInstance serverInstance;
     private String servletEncoding;
     
     private final static boolean debug = false;
@@ -52,10 +52,10 @@ public class CompileData {
     public CompileData(JspDataObject jspPage) {
         this.jspPage = jspPage;
         this.docRoot = JspCompileUtil.getContextRoot(jspPage.getPrimaryFile());
-        serverInstance = JspCompileUtil.getCurrentServerInstance(jspPage);
-        servletJavaRoot = getServletJavaRootFromServer();
-        servletResourceName = getServletResourceNameFromServer();
-        servletEncoding = getServletEncodingFromServer();
+//        serverInstance = JspCompileUtil.getCurrentServerInstance(jspPage);
+//        servletJavaRoot = getServletJavaRootFromServer();
+//        servletResourceName = getServletResourceNameFromServer();
+//        servletEncoding = getServletEncodingFromServer();
     }
     
     public FileObject getServletJavaRoot() {
@@ -112,7 +112,7 @@ public class CompileData {
      * For now just hardcoded for Tomcat 5, but needs 
      * to be changed to talk to the plugin through the server integration API.
      */
-    private File getServletJavaRootFromServer() {
+/*    private File getServletJavaRootFromServer() {
         // PENDING - Tomcat specific
         File catalinaBase = getCatalinaBase();
         if (catalinaBase == null) {
@@ -122,11 +122,11 @@ public class CompileData {
         File workDir = new File(hostBase, getContextRootString());
         //System.out.println("returning servlet root " + workDir);
         return workDir;
-    }
+    }*/
     
     /** PENDING - remove this, as this is Tomcat-specific.
      */
-    private File getCatalinaBase() {
+/*    private File getCatalinaBase() {
         Class siClass = serverInstance.getClass();
         if (siClass.getName().equals("org.netbeans.modules.tomcat.tomcat40.Tomcat40Instance")) {
             try {
@@ -154,7 +154,7 @@ public class CompileData {
             }
         }
         return null;
-    }
+    }*/
         
     /** Finds the context path used by this JSP during deployment.
      */
@@ -193,26 +193,26 @@ public class CompileData {
      * For now just hardcoded for Tomcat 5, but needs
      * to be changed to talk to the plugin through the server integration API.
      */
-    private String getServletResourceNameFromServer() {
+/*    private String getServletResourceNameFromServer() {
         // PENDING - Tomcat specific
         String jspPath = JspCompileUtil.findRelativePath(docRoot, jspPage.getPrimaryFile());
         int lastDot = jspPath.lastIndexOf('.');
         return jspPath.substring(0, lastDot) + "$jsp.java";
-    }
+    }*/
 
     /** Returns the encoding of the servlet from the server.
      * For now just hardcoded for Tomcat 5, but needs
      * to be changed to talk to the plugin through the server integration API.
      */
-    private String getServletEncodingFromServer() {
+/*    private String getServletEncodingFromServer() {
         // PENDING - Tomcat specific
         return "UTF8"; // NOI18N
-    }
+    }*/
     
     /** Returns server instance for which this CompileData was created. */
-    public ServerInstance getServerInstance() {
+/*    public ServerInstance getServerInstance() {
         return serverInstance;
-    }
+    }*/
     
     /** Returns encoding for the servlet generated from the JSP. */
     public String getServletEncoding() {
@@ -223,8 +223,8 @@ public class CompileData {
         StringBuffer sb = new StringBuffer();
         sb.append("--COMPILE DATA--"); // NOI18N
         sb.append("\n"); // NOI18N
-        sb.append("server          : " + serverInstance); // NOI18N
-        sb.append("\n"); // NOI18N
+//        sb.append("server          : " + serverInstance); // NOI18N
+//        sb.append("\n"); // NOI18N
         sb.append("JSP page        : " + jspPage.getPrimaryFile().getPackageNameExt('/','.')); // NOI18N
         sb.append("\n"); // NOI18N
         sb.append("servletJavaRoot : " + servletJavaRoot + ", exists= " +  // NOI18N

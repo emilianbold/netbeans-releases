@@ -36,14 +36,14 @@ import org.openide.loaders.DataFolder;
 import org.openide.execution.NbClassPath;
 import org.openide.util.NbBundle;
 
-import org.netbeans.modules.j2ee.server.web.WebServerInstance;
-import org.netbeans.modules.j2ee.server.datamodel.WebStandardData;
-import org.netbeans.modules.j2ee.server.ServerInstance;
-import org.netbeans.modules.j2ee.server.Server;
+//import org.netbeans.modules.j2ee.server.web.WebServerInstance;
+//import org.netbeans.modules.j2ee.server.datamodel.WebStandardData;
+//import org.netbeans.modules.j2ee.server.ServerInstance;
+//import org.netbeans.modules.j2ee.server.Server;
 import org.netbeans.modules.web.core.WebExecUtil;
 
-import org.netbeans.modules.web.webdata.WebDataFactory;
-import org.netbeans.modules.web.webdata.WebResourceImpl;
+//import org.netbeans.modules.web.webdata.WebDataFactory;
+//import org.netbeans.modules.web.webdata.WebResourceImpl;
 
 import org.openide.filesystems.FileUtil;
 
@@ -58,16 +58,16 @@ public class JspCompileUtil {
     /** Returns the current ServerInstance for the given resource file. 
      *  May return null if the server registry does not contain any web server.
      */
-    public static WebServerInstance getCurrentServerInstance(DataObject resource) {
+/*    public static WebServerInstance getCurrentServerInstance(DataObject resource) {
         FileObject fo = resource.getPrimaryFile();
         ServerInstance si = WebDataFactory.getFactory().findServerInstance(getResourceData(fo));
         if (si instanceof WebServerInstance)
             return (WebServerInstance)si;
         return null;
-    }
+    }*/
     
     /** Gets WebStandardData implementation for a given resource. */
-    public static WebStandardData.WebResource getResourceData(FileObject fo) {
+/*    public static WebStandardData.WebResource getResourceData(FileObject fo) {
     	WebStandardData.WebResource result = WebDataFactory.getFactory().
     	    findResource(fo.getPackageNameExt('/','.'), WebDataFactory.getFactory().findWebModule(fo));
     	// hack to work around a bug in WebDataFactoryImpl
@@ -83,13 +83,13 @@ public class JspCompileUtil {
     	    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
     	}
     	return result;
-    }
+    }*/
 
     
     /** Gets a FileObject for a given WebResource. */
-    public static FileObject getFOForWebResource(WebStandardData.WebResource res) {
+/*    public static FileObject getFOForWebResource(WebStandardData.WebResource res) {
             return ((WebResourceImpl)res).getFileObject();
-    }
+    }*/
     
     /** Finds a fileobject for an absolute file name or null if not found */
     public static FileObject findFileObjectForFile(String fileName) {
