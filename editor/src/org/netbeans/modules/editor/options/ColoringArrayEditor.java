@@ -37,8 +37,6 @@ public class ColoringArrayEditor extends PropertyEditorSupport {
 
     private ColoringArrayEditorPanel editor;
 
-    private static final String HELP_ID = "editing.fonts"; // !!! NOI18N
-
     public boolean supportsCustomEditor() {
         return true;
     }
@@ -62,7 +60,7 @@ public class ColoringArrayEditor extends PropertyEditorSupport {
     }
 
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(HELP_ID);
+        return HelpCtx.DEFAULT_HELP;
     }
     
     public void setAsText( String s ) {

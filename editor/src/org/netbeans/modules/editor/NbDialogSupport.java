@@ -40,7 +40,6 @@ public class NbDialogSupport implements DialogSupport.DialogFactory {
     private static HashMap helpIDs;
     
     private static final String HELP_ID_MacroSavePanel = "editing.macros.recording"; // !!! NOI18N
-    private static final String HELP_ID_KeySequenceInputPanel = "editing.csh.shortcutseq"; // !!! NOI18N
     private static final String HELP_ID_FindPanel = "editing.find"; // !!! NOI18N
     private static final String HELP_ID_GotoDialogPanel = "editing.goto"; // !!! NOI18N
     private static final String HELP_ID_JavaFastImportPanel = "editing.fastimport"; // !!! NOI18N
@@ -53,7 +52,6 @@ public class NbDialogSupport implements DialogSupport.DialogFactory {
         {
             helpIDs = new HashMap(7);
             helpIDs.put("org.netbeans.editor.MacroSavePanel", HELP_ID_MacroSavePanel);
-            helpIDs.put("org.netbeans.editor.KeySequenceInputPanel", HELP_ID_KeySequenceInputPanel);
             helpIDs.put("org.netbeans.editor.ext.FindDialogSupport$FindPanel", HELP_ID_FindPanel);
             helpIDs.put("org.netbeans.editor.ext.GotoDialogPanel", HELP_ID_GotoDialogPanel);
             helpIDs.put("org.netbeans.editor.ext.ScrollCompletionPane", HELP_ID_ScrollCompletionPane);

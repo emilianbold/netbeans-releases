@@ -16,7 +16,6 @@ package org.netbeans.modules.editor;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.ext.ExtFormatter;
 import org.openide.text.IndentEngine;
-import org.openide.util.HelpCtx;
 
 /**
 * Java indentation engine that delegates to java formatter
@@ -28,17 +27,11 @@ public class SimpleIndentEngine extends FormatterIndentEngine {
 
     static final long serialVersionUID = -6445463074939516878L;
 
-    private static final String HELP_ID = "editing.indentation.simple"; // !!! NOI18N
-
     public SimpleIndentEngine() {
     }
 
     protected ExtFormatter createFormatter() {
         return new ExtFormatter.Simple(BaseKit.class);
-    }
-
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(HELP_ID);
     }
 
     protected boolean acceptMimeType(String mimeType) {

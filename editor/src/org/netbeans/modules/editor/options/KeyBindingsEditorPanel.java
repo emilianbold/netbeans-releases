@@ -447,8 +447,6 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
      * Encapsulation for components of dialog asking for new KeySequence
      */
     private class KeySequenceRequester {
-        
-        static final String HELP_ID_KeySequenceInputPanel = "editing.csh.shortcutseq"; // !!! NOI18N
 
         KeySequenceInputPanel input;
         DialogDescriptor dd;
@@ -478,7 +476,7 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
                                              } );
 
             dd = new DialogDescriptor ( input, getBundleString( "KBEP_AddSequence" ), // NOI18N
-                                        true, buttons, buttons[0], DialogDescriptor.BOTTOM_ALIGN, new HelpCtx(HELP_ID_KeySequenceInputPanel), new ActionListener(){
+                                        true, buttons, buttons[0], DialogDescriptor.BOTTOM_ALIGN, HelpCtx.DEFAULT_HELP, new ActionListener(){
                                             public void actionPerformed( ActionEvent evt ) {
                                                 if( evt.getSource() == buttons[1] ) { // Clear pressed
                                                     input.clear();          // Clear entered KeyStrokes, start again
