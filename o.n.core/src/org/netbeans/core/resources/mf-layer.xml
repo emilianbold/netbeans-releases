@@ -57,9 +57,18 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Help">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <file name="org-netbeans-core-actions-AboutAction.instance"/>
-            <file name="org-netbeans-core-actions-ModuleHelpAction.instance"/>
             <file name="org-openide-actions-HelpAction.instance"/>
             <file name="org-netbeans-core-actions-TipOfTheDayAction.instance"/>
+            <file name="master-help.xml">
+                <![CDATA[<?xml version="1.0"?>
+<!DOCTYPE helpctx PUBLIC
+          "-//NetBeans//DTD Help Context 1.0//EN"
+          "http://www.netbeans.org/dtds/helpcontext-1_0.dtd">
+<helpctx id="org.netbeans.core.Help.MASTER_ID" showmaster="true"/>
+]]>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresbootloc:/org/netbeans/core/resources/actions/moduleHelp.gif"/>
+            </file>
         </folder>
         <folder name="System">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
@@ -322,10 +331,22 @@ Microsystems, Inc. All Rights Reserved.
        <attr name="Window/Help" boolvalue="true" />
        <folder name="Help">
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-          <file name="org-netbeans-core-actions-ModuleHelpAction$MasterOnly.instance"/>
-          <attr name="org-netbeans-core-actions-ModuleHelpAction$MasterOnly.instance/org-netbeans-core-actions-ModuleHelpAction$ShortcutsOnly.instance" boolvalue="true" />
-          <file name="org-netbeans-core-actions-ModuleHelpAction$ShortcutsOnly.instance"/>
-          <attr name="org-netbeans-core-actions-ModuleHelpAction$ShortcutsOnly.instance/Separator1[javax-swing-JSeparator].instance" boolvalue="true" />
+          <file name="master-help.xml">
+              <![CDATA[<?xml version="1.0"?>
+<!DOCTYPE helpctx PUBLIC
+          "-//NetBeans//DTD Help Context 1.0//EN"
+          "http://www.netbeans.org/dtds/helpcontext-1_0.dtd">
+<helpctx id="org.netbeans.core.Help.MASTER_ID" showmaster="true"/>
+]]>
+              <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+              <attr name="SystemFileSystem.icon" urlvalue="nbresbootloc:/org/netbeans/core/resources/actions/moduleHelp.gif"/>
+          </file>
+          <attr name="master-help.xml/HelpShortcuts" boolvalue="true"/>
+          <folder name="HelpShortcuts">
+              <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+              <attr name="SystemFileSystem.icon" urlvalue="nbresbootloc:/org/netbeans/core/resources/actions/moduleHelp.gif"/>
+          </folder>
+          <attr name="HelpShortcuts/Separator1[javax-swing-JSeparator].instance" boolvalue="true"/>
           <file name="Separator1[javax-swing-JSeparator].instance"/>
           <!-- Miscellaneous help menu items (URLs) now installed by utilities module. -->
           <attr name="Separator1[javax-swing-JSeparator].instance/org-netbeans-core-actions-WelcomeAction.instance" boolvalue="true" />
@@ -533,6 +554,14 @@ Microsystems, Inc. All Rights Reserved.
                 <public publicId="-//NetBeans//DTD Filesystem 1.0//EN" uri="nbresboot:/org/openide/filesystems/filesystem.dtd"/>
                 <public publicId="-//NetBeans//DTD DefaultAttributes 1.0//EN" uri="nbresboot:/org/openide/filesystems/attributes.dtd"/>
 
+                <!-- Cf. org.netbeans.core.Help: -->
+                <public publicId="-//Sun Microsystems Inc.//DTD JavaHelp HelpSet Version 1.0//EN"
+                        uri="nbresboot:/org/netbeans/core/resources/helpset_1_0.dtd"/>
+                <public publicId="-//NetBeans//DTD JavaHelp Help Set Reference 1.0//EN"
+                        uri="nbresboot:/org/netbeans/core/resources/helpsetref-1_0.dtd"/>
+                <public publicId="-//NetBeans//DTD Help Context 1.0//EN"
+                        uri="nbresboot:/org/netbeans/core/resources/helpcontext-1_0.dtd"/>
+
             </catalog>    
             ]]>
             <!-- Optimization only: -->
@@ -547,11 +576,20 @@ Microsystems, Inc. All Rights Reserved.
         </file>
 
     </folder>
+
+    <!-- Container for help sets. -->
+    <folder name="JavaHelp">
+        <attr name="hidden" boolvalue="true" />
+    </folder>
+
   </folder>
   
   <!-- tempaltes for services in Lookup, should have the same subdirectory as objects under the -->
   
   <folder name="ServiceTemplates">    
   </folder>
+
+  <!-- For debugging only, comment out if desired: -->
+  <file name="debug-sfs-structure[org-netbeans-core-projects-SystemFileSystem$StructureNode].instance"/>
 
 </filesystem>
