@@ -228,7 +228,7 @@ public class LibraryManagerTest extends NbTestCase {
             if (supportedTypes.contains(volumeType)) {
                 List l = (List) contents.get (volumeType);
                 if (l == null) {
-                    l = Collections.emptyList();
+                    l = Collections.EMPTY_LIST;
                 }
                 return Collections.unmodifiableList(l);
             }

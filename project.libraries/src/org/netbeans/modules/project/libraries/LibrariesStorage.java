@@ -56,7 +56,14 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
      * Create libraries that need to be populated later.
      */
     public LibrariesStorage() {
-        this.initStorage();   //Create folder, in future we will allow to create libraries
+        this(initStorage());           
+    }
+    
+    /**
+     * Constructor for tests
+     */
+    LibrariesStorage (FileObject storage) {
+        this.storage = storage;
         if (storage != null) {
             this.loadFromStorage();
             this.storage.addFileChangeListener (this);
@@ -71,19 +78,16 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
 
 
     /**
-     * Lazily initialize storage.
+     * Initialize the default storage.
      * @return new storage or null on I/O error.
      */
-    private final FileObject initStorage () {
-        FileSystem storageFS = Repository.getDefault().getDefaultFileSystem();
-        if (storage == null) {
-            try {
-                storage = FileUtil.createFolder(storageFS.getRoot(), LIBRARIES_REPOSITORY);
-            } catch (IOException e) {
-                // storage remains null
-            }
+    private static final FileObject initStorage () {
+        FileSystem storageFS = Repository.getDefault().getDefaultFileSystem();        
+        try {
+            return FileUtil.createFolder(storageFS.getRoot(), LIBRARIES_REPOSITORY);
+        } catch (IOException e) {
+            return null;
         }
-        return storage;
     }
 
 
