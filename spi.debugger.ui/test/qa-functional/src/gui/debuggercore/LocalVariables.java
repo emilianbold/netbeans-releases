@@ -64,6 +64,7 @@ public class LocalVariables extends JellyTestCase {
         projectNode.performPopupAction(Utilities.setMainProjectAction);
         
         projectNode.performPopupActionNoBlock(Utilities.projectPropertiesAction);
+        Utilities.sleep(2000);
         NbDialogOperator dialog = new NbDialogOperator(Utilities.projectPropertiesTitle + Utilities.testProjectName);
         org.netbeans.jellytools.nodes.Node helper = new org.netbeans.jellytools.nodes.Node(new JTreeOperator(dialog), "Run|" + Utilities.runningProjectTreeItem);
         helper.select();
@@ -78,6 +79,7 @@ public class LocalVariables extends JellyTestCase {
         projectNode.performPopupAction(Utilities.setMainProjectAction);
         
         projectNode.performPopupActionNoBlock(Utilities.projectPropertiesAction);
+        Utilities.sleep(2000);
         NbDialogOperator dialog = new NbDialogOperator(Utilities.projectPropertiesTitle + Utilities.testProjectName);
         org.netbeans.jellytools.nodes.Node helper = new org.netbeans.jellytools.nodes.Node(new JTreeOperator(dialog), "Run|Running Project");
         helper.select();
@@ -92,18 +94,22 @@ public class LocalVariables extends JellyTestCase {
         
         // create new line breakpoint
         editorOperator.setCaretPosition(53, 1);
+        Utilities.sleep(500);
         //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.toggleBreakpointItem).toString(), null).perform();
         new Action(null, null, Utilities.toggleBreakpointShortcut).performShortcut();
         
         // start debugging
         editorOperator.setCaretPosition(28, 1);
+        Utilities.sleep(500);
         //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runToCursorItem).toString(), null).perform();
         new Action(null, null, Utilities.runToCursorShortcut).performShortcut();
         MainWindowOperator mwo = MainWindowOperator.getDefault();
+        Utilities.sleep(2000);
         mwo.waitStatusText("Thread main stopped at Variables.java:28.");
         
         // show local variables view and check values
         Utilities.showLocalVariablesView();
+        Utilities.sleep(2000);
         TopComponentOperator localVarsOper = new TopComponentOperator(Utilities.localVarsViewTitle);
         JTableOperator jTableOperator = new JTableOperator(localVarsOper);
         
@@ -136,6 +142,7 @@ public class LocalVariables extends JellyTestCase {
         // continue to breakpoint
         //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.continueItem).toString(), null).perform();
         new Action(null, null, Utilities.continueShortcut).performShortcut();
+        Utilities.sleep(2000);
         mwo.waitStatusText("Thread main stopped at Variables.java:53.");
         
         count = 1;

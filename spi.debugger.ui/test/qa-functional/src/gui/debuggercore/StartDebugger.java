@@ -63,8 +63,8 @@ public class StartDebugger extends JellyTestCase {
 
         //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runInDebuggerItem).toString(), null).perform();
         new Action(null, null, Utilities.debugProjectShortcut).performShortcut();
-        Utilities.sleep(1000);
         MainWindowOperator mwo = MainWindowOperator.getDefault();
+        Utilities.sleep(1000);
         mwo.waitStatusText(Utilities.runningStatusBarText);
 
         // finnish bedugging session
@@ -87,8 +87,8 @@ public class StartDebugger extends JellyTestCase {
 
         //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.stepIntoItem).toString(), null).perform();
         new Action(null, null, Utilities.stepIntoShortcut).performShortcut();
-        Utilities.sleep(1000);
         MainWindowOperator mwo = MainWindowOperator.getDefault();
+        Utilities.sleep(1000);
         mwo.waitStatusText("Thread main stopped at MemoryView.java:241.");
         
         // finnish bedugging session
@@ -118,8 +118,8 @@ public class StartDebugger extends JellyTestCase {
         
         //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runToCursorItem).toString(), null).perform();
         new Action(null, null, Utilities.runToCursorShortcut).performShortcut();
-        Utilities.sleep(1000);
         MainWindowOperator mwo = MainWindowOperator.getDefault();
+        Utilities.sleep(1000);
         mwo.waitStatusText("Thread main stopped at MemoryView.java:112.");
         
         // finnish bedugging session

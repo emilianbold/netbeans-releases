@@ -62,6 +62,7 @@ public class Watches extends JellyTestCase {
         projectNode.performPopupAction(Utilities.setMainProjectAction);
         
         projectNode.performPopupActionNoBlock(Utilities.projectPropertiesAction);
+        Utilities.sleep(2000);
         NbDialogOperator dialog = new NbDialogOperator(Utilities.projectPropertiesTitle + Utilities.testProjectName);
         org.netbeans.jellytools.nodes.Node helper = new org.netbeans.jellytools.nodes.Node(new JTreeOperator(dialog), "Run|" + Utilities.runningProjectTreeItem);
         helper.select();
@@ -79,6 +80,7 @@ public class Watches extends JellyTestCase {
         projectNode.performPopupAction(Utilities.setMainProjectAction);
         
         projectNode.performPopupActionNoBlock(Utilities.projectPropertiesAction);
+        Utilities.sleep(2000);
         NbDialogOperator dialog = new NbDialogOperator(Utilities.projectPropertiesTitle + Utilities.testProjectName);
         org.netbeans.jellytools.nodes.Node helper = new org.netbeans.jellytools.nodes.Node(new JTreeOperator(dialog), "Run|Running Project");
         helper.select();
@@ -91,6 +93,7 @@ public class Watches extends JellyTestCase {
         Utilities.sleep(2000);
         EditorOperator editorOperator = new EditorOperator("MemoryView.java");
         editorOperator.setCaretPosition(103, 1);
+        Utilities.sleep(500);
         //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.toggleBreakpointItem).toString(), null).perform();
         new Action(null, null, Utilities.toggleBreakpointShortcut).performShortcut();
         
@@ -104,6 +107,7 @@ public class Watches extends JellyTestCase {
         //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runInDebuggerItem).toString(), null).perform();
         new Action(null, null, Utilities.debugProjectShortcut).performShortcut();
         MainWindowOperator mwo = MainWindowOperator.getDefault();
+        Utilities.sleep(2000);
         mwo.waitStatusText("Thread main stopped at MemoryView.java:103.");
         
         // check watches and values
@@ -173,6 +177,7 @@ public class Watches extends JellyTestCase {
         projectNode.performPopupAction(Utilities.setMainProjectAction);
         
         projectNode.performPopupActionNoBlock(Utilities.projectPropertiesAction);
+        Utilities.sleep(2000);
         NbDialogOperator dialog = new NbDialogOperator(Utilities.projectPropertiesTitle + Utilities.testProjectName);
         org.netbeans.jellytools.nodes.Node helper = new org.netbeans.jellytools.nodes.Node(new JTreeOperator(dialog), "Run|Running Project");
         helper.select();
@@ -249,6 +254,7 @@ public class Watches extends JellyTestCase {
         Utilities.sleep(2000);
         EditorOperator editorOperator = new EditorOperator("Variables.java");
         editorOperator.setCaretPosition(53, 1);
+        Utilities.sleep(2000);
         //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runToCursorItem).toString(), null).perform();
         new Action(null, null, Utilities.runToCursorShortcut).performShortcut();
         MainWindowOperator mwo = MainWindowOperator.getDefault();
@@ -354,6 +360,7 @@ public class Watches extends JellyTestCase {
     public void CreateWatch(String exp) {
         //new ActionNoBlock(Utilities.runMenu + "|" + Utilities.newWatchItem, null).perform();
         new ActionNoBlock(null, null, Utilities.newWatchShortcut).performShortcut();
+        Utilities.sleep(500);
         NbDialogOperator dialog = new NbDialogOperator(Utilities.newWatchTitle);
         new JTextFieldOperator(dialog, 0).typeText(exp);
         dialog.ok();
