@@ -130,11 +130,6 @@ implements ItemListener, Runnable {
     setLayout(new BorderLayout ());
     add(split, BorderLayout.CENTER);
     add(toolbar = createToolbar(), BorderLayout.NORTH);
-    
-    // initialize managing of cut/copy/paste/delete actions
-    actions = new ExplorerActions();
-
-    refreshRoots ();
   }
 
   /** Clones the explorer 
@@ -182,7 +177,7 @@ implements ItemListener, Runnable {
     
     if (actions != null) {
       actions.detach ();
-      //actions = null;
+      actions = null;
     }
     tabs.removeChangeListener (managersListener);
   }
@@ -194,6 +189,14 @@ implements ItemListener, Runnable {
     
     ExplorerManager currentManager = 
       getRootPanel (currentRoot).getExplorerManager ();
+    // attach actions if we are activated
+    if (this.equals(TopComponent.getRegistry().getActivated())) {
+      if (actions == null) {
+        actions = new ExplorerActions();
+      }
+      actions.attach(currentManager);
+    }
+    
     propertySheet.setNodes (currentManager.getSelectedNodes ());
     setActivatedNodes (currentManager.getSelectedNodes ());
     updateTitle ();
@@ -616,8 +619,7 @@ implements ItemListener, Runnable {
       }
       currentRoot = (Node)roots.get (index);
 
-      ExplorerManager currentManager = 
-        getRootPanel (currentRoot).getExplorerManager ();
+      ExplorerManager currentManager = getRootPanel (currentRoot).getExplorerManager ();
       if (actions != null)
         actions.attach(currentManager);
       propertySheet.setNodes (currentManager.getSelectedNodes ());
@@ -679,6 +681,7 @@ implements ItemListener, Runnable {
 
 /*
 * Log
+*  34   Gandalf   1.33        8/20/99  Ian Formanek    Reverted last 2 changes
 *  33   Gandalf   1.32        8/20/99  Ian Formanek    Fixed bug with explorer 
 *       when starting clean IDE
 *  32   Gandalf   1.31        8/19/99  David Simonek   cut/copy/paste/delete 
