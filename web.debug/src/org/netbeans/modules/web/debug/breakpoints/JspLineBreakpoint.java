@@ -141,6 +141,9 @@ public class JspLineBreakpoint extends Breakpoint {
         if (h == hidden) return;
         boolean old = hidden;
         hidden = h;
+        if (javalb != null) {
+            javalb.setHidden(h);
+        }
         firePropertyChange(PROP_HIDDEN, new Boolean(old), new Boolean(h));
     }
     
