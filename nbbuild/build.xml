@@ -209,6 +209,10 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module ant/docs..."/>
     <ant dir="../ant/docs" target="netbeans"/>
   </target>
+  <target name="all-ant/grammar" depends="all-openide,all-ant,all-xml/core">
+    <echo message="Building module ant/grammar..."/>
+    <ant dir="../ant/grammar" target="netbeans"/>
+  </target>
   <target name="all-apisupport" depends="all-openide,all-core,all-core/javahelp,all-jarpackager,all-apisupport/lite,all-java/api,all-openide/deprecated,all-java/srcmodel,all-openide/compiler,all-openide/execution,all-openide/io">
     <echo message="Building module apisupport..."/>
     <ant dir="../apisupport" target="netbeans"/>
