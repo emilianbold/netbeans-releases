@@ -159,8 +159,9 @@ final class NbErrorManager extends ErrorManager {
         PrintWriter log = getLogWriter ();
         
         if (prefix != null)
-            log.print ("[" + prefix + "] "); // NOI18N
-        log.println ("*********** Exception occurred ************ at " + ex.getDate()); // NOI18N
+            log.print ("[" + prefix + "] "); // NOI18N        
+        String level = ex.getSeverity() == INFORMATIONAL ? "INFORMATIONAL " : "";// NOI18N
+        log.println (level + "*********** Exception occurred ************ at " + ex.getDate()); // NOI18N
         ex.printStackTrace(log);
         log.flush();
 
