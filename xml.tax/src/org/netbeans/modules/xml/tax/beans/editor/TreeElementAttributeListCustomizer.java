@@ -345,7 +345,7 @@ public class TreeElementAttributeListCustomizer extends JPanel implements Custom
             //column.setPreferredWidth (50);
         }
         
-        updateView (peer);
+        updateView();
         
         TreeObjectListProxyListener proxy = new TreeObjectListProxyListener(peer);
         proxy.addPropertyChangeListener(WeakListener.propertyChange(this, proxy));
@@ -357,11 +357,11 @@ public class TreeElementAttributeListCustomizer extends JPanel implements Custom
         if (e.getSource() == null)
             return;
         
-        updateView (peer);
+        updateView();
     }
     
     /** Update visualization accordingly. */
-    private void updateView (TreeNamedObjectMap model) {
+    private void updateView () {
         tableModel.fireTableDataChanged();
     }
     
