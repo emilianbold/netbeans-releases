@@ -213,11 +213,20 @@ public class RADVisualComponent extends RADComponent {
         for (int i=0; i < constraintsProperties.length; i++) {
             if (constraintsProperties[i] instanceof FormProperty) {
                 FormProperty prop = (FormProperty)constraintsProperties[i];
-                // we suppose constraints property is not RADProperty...
+
+                // we suppose the constraint property is not a RADProperty...
                 prop.addPropertyChangeListener(getConstraintsListener());
-                // temporarily no property context - until we solve
-                // persistence for advanced constraints properties
-//                prop.setPropertyContext(new RADProperty.RADPropertyContext(this));
+
+                // Temporary hack - we allow multiple property editors for non
+                // primitive constraint properties - from the standard supports
+                // this is only the case of JTabbedPane for which there is a
+                // special persistence (but not for others).
+                // [But custom (non-standard) layout supports should not be
+                // restricted this way...]
+                if (!prop.getValueType().isPrimitive())
+                    prop.setPropertyContext(
+                        new RADProperty.RADPropertyContext(this));
+
                 if (isReadOnly()) {
                     int type = prop.getAccessType() | FormProperty.NO_WRITE;
                     prop.setAccessType(type);

@@ -31,6 +31,12 @@ public class FormCodeSupport {
             return new PropertyValueOrigin(property);
     }
 
+    public static CodeExpressionOrigin createOrigin(Class type,
+                                                    PropertyEditor prEd)
+    {
+        return new PropertyEditorOrigin(type, prEd);
+    }
+
     public static CodeExpressionOrigin createOrigin(RADComponent component) {
         return new RADComponentOrigin(component);
     }
@@ -39,13 +45,20 @@ public class FormCodeSupport {
                                               Node.Property property,
                                               boolean allowChangeFiring)
     {
-        FormProperty fProperty = null;
-        if (!allowChangeFiring && property instanceof FormProperty) {
-            FormProperty fProp = (FormProperty) property;
-            if (fProp.isChangeFiring()) {
-                fProp.setChangeFiring(false);
-                fProperty = fProp;
+        FormProperty fProperty = property instanceof FormProperty ?
+                                 (FormProperty) property : null;
+
+        if (fProperty != null) {
+            if (!allowChangeFiring) {
+                if (fProperty.isChangeFiring())
+                    fProperty.setChangeFiring(false);
+                else
+                    allowChangeFiring = true; // just not to set firing back
             }
+
+            Object metaOrigin = expression.getOrigin().getMetaObject();
+            if (metaOrigin instanceof PropertyEditor)
+                fProperty.setCurrentEditor((PropertyEditor)metaOrigin);
         }
 
         try {
@@ -57,7 +70,7 @@ public class FormCodeSupport {
         }
         expression.setOrigin(createOrigin(property));
 
-        if (fProperty != null)
+        if (fProperty != null && !allowChangeFiring)
             fProperty.setChangeFiring(true);
     }
 
@@ -118,7 +131,6 @@ public class FormCodeSupport {
         }
     }
 
-
     static final class FormPropertyValueOrigin implements CodeExpressionOrigin {
         private FormProperty property;
 
@@ -150,6 +162,40 @@ public class FormCodeSupport {
 
         public String getJavaCodeString(String parentStr, String[] paramsStr) {
             return property.getJavaInitializationString();
+        }
+
+        public CodeExpression[] getCreationParameters() {
+            return CodeStructure.EMPTY_PARAMS;
+        }
+    }
+
+    static final class PropertyEditorOrigin implements CodeExpressionOrigin {
+        private Class type;
+        private PropertyEditor propertyEditor;
+
+        public PropertyEditorOrigin(Class type, PropertyEditor prEd) {
+            this.type = type;
+            this.propertyEditor = prEd;
+        }
+
+        public Class getType() {
+            return type;
+        }
+
+        public CodeExpression getParentExpression() {
+            return null;
+        }
+
+        public Object getValue() {
+            return propertyEditor.getValue();
+        }
+
+        public Object getMetaObject() {
+            return propertyEditor;
+        }
+
+        public String getJavaCodeString(String parentStr, String[] paramsStr) {
+            return propertyEditor.getJavaInitializationString();
         }
 
         public CodeExpression[] getCreationParameters() {

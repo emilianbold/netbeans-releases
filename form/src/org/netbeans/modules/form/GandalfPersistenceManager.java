@@ -768,16 +768,23 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 return false; // should not happen
 
             Object tabName = null;
+            PropertyEditor tabNamePropEd = null;
             Object toolTip = null;
+            PropertyEditor toolTipPropEd = null;
             Object icon = null;
+            PropertyEditor iconPropEd = null;
 
             org.w3c.dom.Node[] propNodes = findSubNodes(constrNode, XML_PROPERTY);
             if (propNodes != null)
                 for (int i=0; i < propNodes.length; i++) {
-                    node = propNodes[i];
-                    Object value;
+                    Object value = null;
+                    PropertyEditor prEd = null;
                     try {
-                        value = getEncodedPropertyValue(node);
+                        Object editorOrValue = getEncodedProperty(propNodes[i]);
+                        if (editorOrValue instanceof PropertyEditor)
+                            prEd = (PropertyEditor) editorOrValue;
+                        else
+                            value = editorOrValue;
                     }
                     catch (Exception ex) {
                         if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
@@ -785,13 +792,19 @@ public class GandalfPersistenceManager extends PersistenceManager {
                         continue;
                     }
 
-                    String name = findAttribute(node, ATTR_PROPERTY_NAME);
-                    if ("tabTitle".equals(name)) // NOI18N
+                    String name = findAttribute(propNodes[i], ATTR_PROPERTY_NAME);
+                    if ("tabTitle".equals(name)) { // NOI18N
                         tabName = value;
-                    else if ("tabToolTip".equals(name)) // NOI18N
+                        tabNamePropEd = prEd;
+                    }
+                    else if ("tabToolTip".equals(name)) { // NOI18N
                         toolTip = value;
-                    else if ("tabIcon".equals(name)) // NOI18N
+                        toolTipPropEd = prEd;
+                    }
+                    else if ("tabIcon".equals(name)) { // NOI18N
                         icon = value;
+                        iconPropEd = prEd;
+                    }
                 }
 
             if (tabName == null
@@ -813,18 +826,13 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     contCodeExp,
                     addTabMethod1,
                     new CodeExpression[] { 
-                        tabName != null ?
-                            codeStructure.createExpression(
-                                String.class, tabName, tabName.toString()) :
-                            codeStructure.createNullExpression(String.class),
-                        icon != null ?
-                            codeStructure.createExpression(
-                                javax.swing.Icon.class, icon, icon.toString()) : // [??]
-                            codeStructure.createNullExpression(
-                                              javax.swing.Icon.class),
+                        createExpressionForProperty(
+                            codeStructure, String.class, tabName, tabNamePropEd),
+                        createExpressionForProperty(
+                            codeStructure, javax.swing.Icon.class, icon, iconPropEd),
                         compExp,
-                        codeStructure.createExpression(
-                            String.class, toolTip, toolTip.toString()) });
+                        createExpressionForProperty(
+                            codeStructure, String.class, toolTip, toolTipPropEd) });
             }
             else if (icon != null) {
                 if (addTabMethod2 == null)
@@ -837,12 +845,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     contCodeExp,
                     addTabMethod2,
                     new CodeExpression[] {
-                        tabName != null ?
-                            codeStructure.createExpression(
-                                String.class, tabName, tabName.toString()) :
-                            codeStructure.createNullExpression(String.class),
-                        codeStructure.createExpression(
-                            javax.swing.Icon.class, icon, icon.toString()), // [??]
+                        createExpressionForProperty(
+                            codeStructure, String.class, tabName, tabNamePropEd),
+                        createExpressionForProperty(
+                            codeStructure, javax.swing.Icon.class, icon, iconPropEd),
                         compExp });
             }
             else {
@@ -854,11 +860,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 CodeStructure.createStatement(
                     contCodeExp,
                     addTabMethod3,
-                        new CodeExpression[] {
-                        tabName != null ?
-                            codeStructure.createExpression(
-                                String.class, tabName, tabName.toString()) :
-                            codeStructure.createNullExpression(String.class),
+                    new CodeExpression[] {
+                        createExpressionForProperty(
+                            codeStructure, String.class, tabName, tabNamePropEd),
                         compExp });
             }
         }
@@ -1145,15 +1149,22 @@ public class GandalfPersistenceManager extends PersistenceManager {
         org.w3c.dom.Node[] propNodes = findSubNodes(layoutNode, XML_PROPERTY);
         String[] propertyNames;
         Object[] propertyValues;
+        PropertyEditor[] propertyEditors;
 
         if (propNodes != null && propNodes.length > 0) {
             propertyNames = new String[propNodes.length];
             propertyValues = new Object[propNodes.length];
+            propertyEditors = new PropertyEditor[propNodes.length];
+
             for (int i=0; i < propNodes.length; i++) {
                 node = propNodes[i];
                 propertyNames[i] = findAttribute(node, ATTR_PROPERTY_NAME);
                 try {
-                    propertyValues[i] = getEncodedPropertyValue(node);
+                    Object editorOrValue = getEncodedProperty(node);
+                    if (editorOrValue instanceof PropertyEditor)
+                        propertyEditors[i] = (PropertyEditor) editorOrValue;
+                    else
+                        propertyValues[i] = editorOrValue;
                 }
                 catch (Exception ex) {
                     if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
@@ -1164,6 +1175,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         else {
             propertyNames = null;
             propertyValues = null;
+            propertyEditors = null;
         }
 
         CodeStructure codeStructure = layoutSupport.getCodeStructure();
@@ -1177,21 +1189,19 @@ public class GandalfPersistenceManager extends PersistenceManager {
             int vgap = findName(layoutPropNames[1], propertyNames);
             if (hgap >= 0 || vgap >= 0) {
                 layoutParams = new CodeExpression[2];
-                Object value;
 
-                value = hgap >= 0 ? propertyValues[hgap] : new Integer(0);
-                layoutParams[0] = codeStructure.createExpression(
-                                      Integer.TYPE, value, value.toString());
+                layoutParams[0] = createExpressionForProperty(
+                    codeStructure, Integer.TYPE,
+                    hgap >= 0 ? propertyValues[hgap] : new Integer(0),
+                    hgap >= 0 ? propertyEditors[hgap] : null);
 
-                value = vgap >= 0 ? propertyValues[vgap] : new Integer(0);
-                layoutParams[1] = codeStructure.createExpression(
-                                      Integer.TYPE, value, value.toString());
-
-                paramTypes = new Class[] { Integer.TYPE, Integer.TYPE };
+                layoutParams[1] = createExpressionForProperty(
+                    codeStructure, Integer.TYPE,
+                    vgap >= 0 ? propertyValues[vgap] : new Integer(0),
+                    vgap >= 0 ? propertyEditors[vgap] : null);
             }
             else {
                 layoutParams = CodeStructure.EMPTY_PARAMS;
-                paramTypes = new Class[0];
             }
             layoutClass = java.awt.BorderLayout.class;
         }
@@ -1202,57 +1212,52 @@ public class GandalfPersistenceManager extends PersistenceManager {
             int vgap = findName(layoutPropNames[2], propertyNames);
             if (hgap >= 0 || vgap >= 0) {
                 layoutParams = new CodeExpression[3];
-                Object value;
 
-                value = alignment >= 0 ? propertyValues[alignment] : new Integer(1);
-                layoutParams[0] = codeStructure.createExpression(
-                                      Integer.TYPE, value, value.toString());
+                layoutParams[0] = createExpressionForProperty(
+                    codeStructure, Integer.TYPE,
+                    alignment >= 0 ? propertyValues[alignment] : new Integer(1),
+                    alignment >= 0 ? propertyEditors[alignment] : null);
 
-                value = hgap >= 0 ? propertyValues[hgap] : new Integer(5);
-                layoutParams[1] = codeStructure.createExpression(
-                                      Integer.TYPE, value, value.toString());
+                layoutParams[1] = createExpressionForProperty(
+                    codeStructure, Integer.TYPE,
+                    hgap >= 0 ? propertyValues[hgap] : new Integer(5),
+                    hgap >= 0 ? propertyEditors[hgap] : null);
 
-                value = vgap >= 0 ? propertyValues[vgap] : new Integer(5);
-                layoutParams[2] = codeStructure.createExpression(
-                                      Integer.TYPE, value, value.toString());
-
-                paramTypes = new Class[] { Integer.TYPE, Integer.TYPE, Integer.TYPE };
+                layoutParams[2] = createExpressionForProperty(
+                    codeStructure, Integer.TYPE,
+                    vgap >= 0 ? propertyValues[vgap] : new Integer(5),
+                    vgap >= 0 ? propertyEditors[vgap] : null);
             }
             else if (alignment >= 0) {
                 layoutParams = new CodeExpression[1];
-                Object value;
 
-                value = alignment >= 0 ? propertyValues[alignment] : new Integer(1);
-                layoutParams[0] = codeStructure.createExpression(
-                                      Integer.TYPE, value, value.toString());
-
-                paramTypes = new Class[] { Integer.TYPE };
+                layoutParams[0] = createExpressionForProperty(
+                    codeStructure, Integer.TYPE,
+                    alignment >= 0 ? propertyValues[alignment] : new Integer(1),
+                    alignment >= 0 ? propertyEditors[alignment] : null);
             }
             else {
                 layoutParams = CodeStructure.EMPTY_PARAMS;
-                paramTypes = new Class[0];
             }
             layoutClass = java.awt.FlowLayout.class;
         }
 
         else if (convIndex == LAYOUT_GRIDBAG) {
             layoutParams = CodeStructure.EMPTY_PARAMS;
-            paramTypes = new Class[0];
             layoutClass = java.awt.GridBagLayout.class;
         }
 
         else if (convIndex == LAYOUT_BOX) {
             int axis = findName(layoutPropNames[0],
                                 propertyNames);
-            Object axisObj = axis >= 0 ?
-                                 propertyValues[axis] :
-                                 new Integer(javax.swing.BoxLayout.X_AXIS);
 
             layoutParams = new CodeExpression[2];
             layoutParams[0] = layoutSupport.getContainerCodeExpression();
-            layoutParams[1] = codeStructure.createExpression(Integer.TYPE,
-                                                             axisObj,
-                                                             axisObj.toString());
+            layoutParams[1] = createExpressionForProperty(
+                codeStructure, Integer.TYPE,
+                axis >= 0 ? propertyValues[axis] : new Integer(javax.swing.BoxLayout.X_AXIS),
+                axis >= 0 ? propertyEditors[axis] : null);
+
             paramTypes = new Class[] { java.awt.Container.class, Integer.TYPE };
             layoutClass = javax.swing.BoxLayout.class;
         }
@@ -1264,44 +1269,42 @@ public class GandalfPersistenceManager extends PersistenceManager {
             int vgap = findName(layoutPropNames[3], propertyNames);
             if (hgap >= 0 || vgap >= 0) {
                 layoutParams = new CodeExpression[4];
-                Object value;
 
-                value = rows >= 0 ? propertyValues[rows] : new Integer(1);
-                layoutParams[0] = codeStructure.createExpression(
-                                      Integer.TYPE, value, value.toString());
+                layoutParams[0] = createExpressionForProperty(
+                    codeStructure, Integer.TYPE,
+                    rows >= 0 ? propertyValues[rows] : new Integer(1),
+                    rows >= 0 ? propertyEditors[rows] : null);
 
-                value = columns >= 0 ? propertyValues[columns] : new Integer(0);
-                layoutParams[1] = codeStructure.createExpression(
-                                      Integer.TYPE, value, value.toString());
+                layoutParams[1] = createExpressionForProperty(
+                    codeStructure, Integer.TYPE,
+                    columns >= 0 ? propertyValues[columns] : new Integer(0),
+                    columns >= 0 ? propertyEditors[columns] : null);
 
-                value = hgap >= 0 ? propertyValues[hgap] : new Integer(0);
-                layoutParams[2] = codeStructure.createExpression(
-                                      Integer.TYPE, value, value.toString());
+                layoutParams[2] = createExpressionForProperty(
+                    codeStructure, Integer.TYPE,
+                    hgap >= 0 ? propertyValues[hgap] : new Integer(0),
+                    hgap >= 0 ? propertyEditors[hgap] : null);
 
-                value = vgap >= 0 ? propertyValues[vgap] : new Integer(0);
-                layoutParams[3] = codeStructure.createExpression(
-                                      Integer.TYPE, value, value.toString());
-
-                paramTypes = new Class[] { Integer.TYPE, Integer.TYPE,
-                                           Integer.TYPE, Integer.TYPE };
+                layoutParams[3] = createExpressionForProperty(
+                    codeStructure, Integer.TYPE,
+                    vgap >= 0 ? propertyValues[vgap] : new Integer(0),
+                    vgap >= 0 ? propertyEditors[vgap] : null);
             }
             else if (rows >= 0 || columns >= 0) {
                 layoutParams = new CodeExpression[2];
-                Object value;
 
-                value = rows >= 0 ? propertyValues[rows] : new Integer(1);
-                layoutParams[0] = codeStructure.createExpression(
-                                      Integer.TYPE, value, value.toString());
+                layoutParams[0] = createExpressionForProperty(
+                    codeStructure, Integer.TYPE,
+                    rows >= 0 ? propertyValues[rows] : new Integer(1),
+                    rows >= 0 ? propertyEditors[rows] : null);
 
-                value = columns >= 0 ? propertyValues[columns] : new Integer(0);
-                layoutParams[1] = codeStructure.createExpression(
-                                      Integer.TYPE, value, value.toString());
-
-                paramTypes = new Class[] { Integer.TYPE, Integer.TYPE };
+                layoutParams[1] = createExpressionForProperty(
+                    codeStructure, Integer.TYPE,
+                    columns >= 0 ? propertyValues[columns] : new Integer(0),
+                    columns >= 0 ? propertyEditors[columns] : null);
             }
             else {
                 layoutParams = CodeStructure.EMPTY_PARAMS;
-                paramTypes = new Class[0];
             }
             layoutClass = java.awt.GridLayout.class;
         }
@@ -1313,19 +1316,18 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 layoutParams = new CodeExpression[2];
                 Object value;
 
-                value = hgap >= 0 ? propertyValues[hgap] : new Integer(0);
-                layoutParams[0] = codeStructure.createExpression(
-                                      Integer.TYPE, value, value.toString());
+                layoutParams[0] = createExpressionForProperty(
+                    codeStructure, Integer.TYPE,
+                    hgap >= 0 ? propertyValues[hgap] : new Integer(0),
+                    hgap >= 0 ? propertyEditors[hgap] : null);
 
-                value = vgap >= 0 ? propertyValues[vgap] : new Integer(0);
-                layoutParams[1] = codeStructure.createExpression(
-                                      Integer.TYPE, value, value.toString());
-
-                paramTypes = new Class[] { Integer.TYPE, Integer.TYPE };
+                layoutParams[1] = createExpressionForProperty(
+                    codeStructure, Integer.TYPE,
+                    vgap >= 0 ? propertyValues[vgap] : new Integer(0),
+                    vgap >= 0 ? propertyEditors[vgap] : null);
             }
             else {
                 layoutParams = CodeStructure.EMPTY_PARAMS;
-                paramTypes = new Class[0];
             }
             layoutClass = java.awt.CardLayout.class;
         }
@@ -1337,7 +1339,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 nullLayout = Boolean.TRUE.equals(propertyValues[i]); 
 
             layoutParams = CodeStructure.EMPTY_PARAMS;
-            paramTypes = new Class[0];
             layoutClass = nullLayout ? null :
                           org.netbeans.lib.awtextra.AbsoluteLayout.class;
         }
@@ -1346,6 +1347,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         CodeExpression layoutExp;
         if (layoutClass != null) {
+            if (paramTypes == null) {
+                paramTypes = new Class[layoutParams.length];
+                for (int i=0; i < layoutParams.length; i++)
+                    paramTypes[i] = layoutParams[i].getOrigin().getType();
+            }
+
             Constructor layoutConstructor;
             try {
                 layoutConstructor = layoutClass.getConstructor(paramTypes);
@@ -1368,6 +1375,21 @@ public class GandalfPersistenceManager extends PersistenceManager {
             new CodeExpression[] { layoutExp });
 
         return convIndex;
+    }
+
+    private static CodeExpression createExpressionForProperty(
+                                      CodeStructure codeStructure,
+                                      Class type,
+                                      Object value,
+                                      PropertyEditor propEd)
+    {
+        return propEd != null ?
+            codeStructure.createExpression(FormCodeSupport.createOrigin(
+                                                           type, propEd)) :
+            codeStructure.createExpression(type,
+                                           value,
+                                           value != null ?
+                                               value.toString() : "null"); // NOI18N
     }
 
     private static int findName(String name, String[] names) {
@@ -3241,12 +3263,17 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
             try {
                 Class valueType = getClassFromString(typeStr);
-                Object value = getEncodedPropertyValue(valueNode);
+                Object editorOrValue = getEncodedProperty(valueNode);
 
-                origin = CodeStructure.createOrigin(
+                origin = editorOrValue instanceof PropertyEditor ?
+                         FormCodeSupport.createOrigin(
                              valueType,
-                             value,
-                             value != null ? value.toString() : "null"); // NOI18N
+                             (PropertyEditor) editorOrValue) :
+                         CodeStructure.createOrigin(
+                             valueType,
+                             editorOrValue,
+                             editorOrValue != null ?
+                                 editorOrValue.toString() : "null"); // NOI18N
             }
             catch (Exception ex) {
                 if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
@@ -3618,7 +3645,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         return value;
     }
 
-    private Object getEncodedPropertyValue(org.w3c.dom.Node propertyNode)
+    private Object getEncodedProperty(org.w3c.dom.Node propertyNode)
         throws IOException,
                ClassNotFoundException,
                IllegalAccessException,
@@ -3651,7 +3678,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
                                              valueType);
                 if (prEd != null) {
                     prEd.setValue(value);
-                    value = prEd.getValue();
+//                    value = prEd.getValue();
+                    // [or ignore the property editor and use the value??]
                 }
             }
             catch (IllegalArgumentException e) { // should not happen
@@ -3670,8 +3698,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
                         isXMLSerialized = true;
                         String serValue = findAttribute(node,
                                                         ATTR_PROPERTY_VALUE);
-                        if (serValue != null)
+                        if (serValue != null) {
                             value = decodeValue(serValue);
+                            prEd = null;
+                        }
                         break;
                     }
                 }
@@ -3681,13 +3711,15 @@ public class GandalfPersistenceManager extends PersistenceManager {
                         org.w3c.dom.Node node = propChildren.item(i);
                         if (node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
                             ((XMLPropertyEditor)prEd).readFromXML(node);
-                            value = prEd.getValue();
                             break;
                         }
                     }
                 }
             }
         }
+
+        if (prEd != null)
+            return prEd;
 
         return value;
     }
