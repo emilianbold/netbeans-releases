@@ -334,6 +334,7 @@ public class FormModel
         if (comp instanceof RADVisualComponent) {
             RADVisualComponent vcomp = (RADVisualComponent) comp;
             vcomp.getParentContainer().remove(vcomp);
+            vcomp.resetConstraintsProperties();
         }
         else if (comp instanceof RADMenuItemComponent) {
             RADMenuItemComponent menuComp = (RADMenuItemComponent)comp;
@@ -582,6 +583,8 @@ public class FormModel
     
     public FormDesigner getFormDesigner() {
         if (formDesigner == null) {
+            if (!formLoaded)
+                System.err.println("[Warning] Form designer requested before form loaded.");
             formDesigner = new FormDesigner(this);
             formDesigner.setName(java.text.MessageFormat.format(
                 FormEditor.getFormBundle().getString(formDataObject.isReadOnly() ?
