@@ -60,11 +60,6 @@ public final class BiNode extends AbstractNode {
 
     private BiAnalyser biAnalyser;
 
-    static BiIconEditor ie = null;
-    static {
-        ie = new BiIconEditor();
-    }
-
     private PropertySupport[] descSubnodeDescriptor =  new PropertySupport[] {
                 new PropertySupport.ReadWrite (
                     PROP_NULL_DESCRIPTOR,
@@ -218,6 +213,7 @@ public final class BiNode extends AbstractNode {
                 ) {
                     public Object getValue () throws
                         IllegalAccessException, InvocationTargetException {
+                        ie.setAsText(biAnalyser.getIconC16());    
                         return biAnalyser.getIconC16();                        
                     }
                     
@@ -245,6 +241,7 @@ public final class BiNode extends AbstractNode {
                 ) {
                     public Object getValue () throws
                         IllegalAccessException, InvocationTargetException {
+                        ie.setAsText(biAnalyser.getIconM16());    
                         return biAnalyser.getIconM16();                        
                     }
                     
@@ -272,6 +269,7 @@ public final class BiNode extends AbstractNode {
                 ) {
                     public Object getValue () throws
                         IllegalAccessException, InvocationTargetException {
+                        ie.setAsText(biAnalyser.getIconC32());
                         return biAnalyser.getIconC32();
                     }
                     
@@ -299,6 +297,7 @@ public final class BiNode extends AbstractNode {
                 ) {
                     public Object getValue () throws
                         IllegalAccessException, InvocationTargetException {
+                        ie.setAsText(biAnalyser.getIconM32());
                         return biAnalyser.getIconM32();
                     }
                     
@@ -448,27 +447,14 @@ public final class BiNode extends AbstractNode {
         }
     }
     
-    class ImagePropertySupportRW extends PropertySupport.ReadWrite
+    abstract class ImagePropertySupportRW extends PropertySupport.ReadWrite
     {
+        BiIconEditor ie = null;
+        
         ImagePropertySupportRW(String name, Class type,
                               String displayName, String shortDescription) {
             super(name, type, displayName, shortDescription);
-        }
-
-        public Object getValue () throws
-            IllegalAccessException, InvocationTargetException {
-            return ie.getValue();
-        }
-
-        public void setValue (Object val) throws
-            IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-            try {
-                if( val != null ){
-                    ie.setAsText( (String)val );  
-                }
-            } catch (ClassCastException e) {
-                throw new IllegalArgumentException ();
-            }
+            ie = new BiIconEditor();
         }
 
         public PropertyEditor getPropertyEditor() {

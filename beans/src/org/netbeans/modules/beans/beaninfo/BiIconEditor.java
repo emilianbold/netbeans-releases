@@ -41,7 +41,7 @@ import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
  *
  * @author Jan Jancura
  */
-public class BiIconEditor extends PropertyEditorSupport {
+class BiIconEditor extends PropertyEditorSupport {
     
     /** Standard variable for localization. */
     static java.util.ResourceBundle bundle = org.openide.util.NbBundle.getBundle(
@@ -348,8 +348,8 @@ public class BiIconEditor extends PropertyEditorSupport {
             
             rbClasspath.setSelected(true);
             bSelect.setEnabled(true);
-            //tfName.setText(((BiImageIcon)i).name);
-            //HelpCtx.setHelpIDString(this, IconPanel.class.getName());
+            tfName.setText(((BiImageIcon)i).name);
+            HelpCtx.setHelpIDString(this, IconPanel.class.getName());
         }
         
         void updateIcon() {
