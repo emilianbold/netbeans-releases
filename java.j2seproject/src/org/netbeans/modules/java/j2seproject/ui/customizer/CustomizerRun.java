@@ -222,13 +222,15 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     
     private class MainClassListener implements ActionListener /*, DocumentListener */ {
         
-        private final JButton okButton = new JButton (NbBundle.getMessage (CustomizerRun.class, "LBL_ChooseMainClass_OK"));
+        private final JButton okButton;
         private SourceRoots sourceRoots;
         private JTextField mainClassTextField;
         
-        MainClassListener( SourceRoots sourceRoots, JTextField mainClassTextField ) {
+        MainClassListener( SourceRoots sourceRoots, JTextField mainClassTextField ) {            
             this.sourceRoots = sourceRoots;
             this.mainClassTextField = mainClassTextField;
+            this.okButton  = new JButton (NbBundle.getMessage (CustomizerRun.class, "LBL_ChooseMainClass_OK"));
+            this.okButton.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (CustomizerRun.class, "AD_ChooseMainClass_OK"));
         }
         
         // Implementation of ActionListener ------------------------------------
