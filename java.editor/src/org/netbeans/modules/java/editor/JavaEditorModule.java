@@ -15,16 +15,22 @@ package org.netbeans.modules.java.editor;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.LocaleSupport;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsChangeListener;
+import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.ext.java.JavaSettingsInitializer;
 import org.netbeans.editor.ext.java.JavaSettingsNames;
+import org.netbeans.modules.editor.FormatterIndentEngine;
+import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.java.JavaIndentEngine;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.java.NbJavaSettingsInitializer;
 import org.netbeans.modules.editor.NbLocalizer;
+import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.modules.java.editor.options.JavaPrintOptions;
 import org.netbeans.modules.java.editor.options.JavaOptions;
 import org.netbeans.modules.javacore.IndentationSettingsProvider;
@@ -44,9 +50,8 @@ public class JavaEditorModule extends ModuleInstall {
 
     private NbLocalizer settingsNamesLocalizer;
     private NbLocalizer optionsLocalizer;
-    private IndentationSettingsProvider isProvider = null;
-    private static JavaIndentEngine indentEng = null;
-
+    private JavaIndentationSettingsProvider jisProvider = null;
+    
     /** Module installed again. */
     public void restored () {
         Settings.addInitializer(new JavaSettingsInitializer(JavaKit.class));
@@ -62,19 +67,20 @@ public class JavaEditorModule extends ModuleInstall {
         optionsLocalizer = new NbLocalizer(JavaOptions.class);
         LocaleSupport.addLocalizer(settingsNamesLocalizer);
         LocaleSupport.addLocalizer(optionsLocalizer);
-        if (isProvider == null) {
-            isProvider = new JavaIndentationSettingsProvider();
+        if (jisProvider == null) {
+            jisProvider = new JavaIndentationSettingsProvider();
+            JMManager.setIndentationSettingsProvider(jisProvider);
         }
-        JMManager.setIndentationSettingsProvider(isProvider);
 
     }
 
     /** Called when module is uninstalled. Overrides superclass method. */
     public void uninstalled() {
         
-        JMManager.setIndentationSettingsProvider(null);
-        if (indentEng != null && isProvider != null){
-            indentEng.removePropertyChangeListener((PropertyChangeListener)isProvider);
+        if (jisProvider != null) {
+            jisProvider.release();
+            JMManager.setIndentationSettingsProvider(null);
+            jisProvider = null;
         }
         
         // Options
@@ -96,28 +102,60 @@ public class JavaEditorModule extends ModuleInstall {
     
     private static class JavaIndentationSettingsProvider implements IndentationSettingsProvider, PropertyChangeListener{
         
-        PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        private static final Map indentSettings2propertyName
+                = new HashMap();
+        
+        static {
+            indentSettings2propertyName.put(
+                    JavaIndentEngine.JAVA_FORMAT_LEADING_STAR_IN_COMMENT_PROP,
+                    JavaSettingsNames.JAVA_FORMAT_LEADING_STAR_IN_COMMENT
+            );
+            indentSettings2propertyName.put(
+                    JavaIndentEngine.JAVA_FORMAT_NEWLINE_BEFORE_BRACE_PROP,
+                    JavaSettingsNames.JAVA_FORMAT_NEWLINE_BEFORE_BRACE
+            );
+            indentSettings2propertyName.put(
+                    JavaIndentEngine.JAVA_FORMAT_SPACE_BEFORE_PARENTHESIS_PROP,
+                    JavaSettingsNames.JAVA_FORMAT_SPACE_BEFORE_PARENTHESIS
+            );
+            indentSettings2propertyName.put(
+                    JavaIndentEngine.JAVA_FORMAT_STATEMENT_CONTINUATION_INDENT_PROP,
+                    JavaSettingsNames.JAVA_FORMAT_STATEMENT_CONTINUATION_INDENT
+            );
+            indentSettings2propertyName.put(
+                    FormatterIndentEngine.EXPAND_TABS_PROP,
+                    SettingsNames.EXPAND_TABS
+            );
+            indentSettings2propertyName.put(
+                    FormatterIndentEngine.SPACES_PER_TAB_PROP,
+                    SettingsNames.SPACES_PER_TAB
+            );
+        }
+        
+        private JavaIndentEngine indentEng = null;
+
+        private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
         
         public JavaIndentationSettingsProvider(){
-            java.util.Enumeration enum = IndentEngine.indentEngines();
-            while (enum.hasMoreElements()){
-                Object indent = enum.nextElement();
-                if (indent instanceof JavaIndentEngine){
-                    indentEng = (JavaIndentEngine) indent;
-                    break;
+            BaseOptions javaOptions = BaseOptions.getOptions(JavaKit.class);
+            if (javaOptions instanceof JavaOptions) {
+                IndentEngine eng = javaOptions.getIndentEngine();
+                if (eng instanceof JavaIndentEngine) {
+                    indentEng = (JavaIndentEngine)eng;
+                    indentEng.addPropertyChangeListener(this);
                 }
-            }
-            if (indentEng != null){
-                indentEng.addPropertyChangeListener(this);
             }
         }
 
         public Object getPropertyValue(String propertyName) {
-            if (indentEng!=null){
-                return indentEng.getValue(propertyName);
-            }else{
-                return null;
+            if (indentEng != null){
+                String settingsPropertyName = (String)indentSettings2propertyName.get(propertyName);
+                if (settingsPropertyName != null) {
+                    return indentEng.getValue(settingsPropertyName);
+                }
             }
+
+            return null;
         }
 
         public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
@@ -132,6 +170,12 @@ public class JavaEditorModule extends ModuleInstall {
             if (evt == null) return;
             pcs.firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
         }
-        
+
+        public void release() {
+            if (indentEng != null) {
+                indentEng.removePropertyChangeListener(this);
+            }
+        }
+
     }
 }
