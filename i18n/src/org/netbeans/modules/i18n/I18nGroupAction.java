@@ -64,9 +64,9 @@ public abstract class I18nGroupAction extends SystemAction {
     }
 
     /** Gets icon resource. Overrides suprclass method. */
-    protected String iconResource () {
-        return "org/netbeans/modules/i18n/i18nAction.gif"; // NOI18N
-    }
+//     protected String iconResource () {
+//         return "org/netbeans/modules/i18n/i18nAction.gif"; // NOI18N
+//     }
 
     /** Gets help context. Implements abstract superclass method. */
     public HelpCtx getHelpCtx () {
@@ -98,7 +98,7 @@ public abstract class I18nGroupAction extends SystemAction {
                 // Binary-incompatible across SystemAction.icon ImageIcon -> Icon change:
                 //menu.setIcon (getIcon ());
                 if(icon == null) {
-                    icon = new ImageIcon(I18nGroupAction.class.getResource("/org/netbeans/modules/i18n/i18nAction.gif")); // NOI18N
+                    icon = new ImageIcon(I18nGroupAction.class.getResource("/org/netbeans/modules/i18n/empty.gif")); // NOI18N
                 }
 
                 setIcon(icon);

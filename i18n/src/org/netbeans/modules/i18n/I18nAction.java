@@ -103,7 +103,7 @@ public class I18nAction extends NodeAction {
     /** Gets the action's icon location.
      * @return the action's icon location
      */
-    protected String iconResource () {
-        return "org/netbeans/modules/i18n/i18nAction.gif"; // NOI18N
-    }
+//     protected String iconResource () {
+//         return "org/netbeans/modules/i18n/i18nAction.gif"; // NOI18N
+//     }
 }

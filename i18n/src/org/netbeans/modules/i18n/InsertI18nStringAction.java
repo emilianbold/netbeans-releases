@@ -270,9 +270,9 @@ public class InsertI18nStringAction extends CookieAction {
     /** Gets the action's icon location.
      * @return the action's icon location
      */
-    protected String iconResource () {
-        return "org/netbeans/modules/i18n/insertI18nStringAction.gif"; // NOI18N
-    }
+//     protected String iconResource () {
+//         return "org/netbeans/modules/i18n/insertI18nStringAction.gif"; // NOI18N
+//     }
 
     protected boolean asynchronous() {
       return false;
