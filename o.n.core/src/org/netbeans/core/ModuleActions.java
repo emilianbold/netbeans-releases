@@ -16,7 +16,7 @@ package com.netbeans.developer.impl;
 import java.util.*;
 import javax.swing.event.*;
 
-import com.netbeans.ide.actions.ServicesAction;
+import com.netbeans.ide.actions.ToolsAction;
 import com.netbeans.ide.modules.ManifestSection;
 import com.netbeans.ide.util.actions.SystemAction;
 
@@ -24,7 +24,7 @@ import com.netbeans.ide.util.actions.SystemAction;
 *
 * @author jtulach
 */
-class ModuleActions extends Object implements ServicesAction.Model {
+class ModuleActions extends Object implements ToolsAction.Model {
   /** array of all actions added by modules */
   private static SystemAction[] array;
   /** map of (ManifestSection.ActionSection, List (SystemAction)) */
@@ -39,7 +39,7 @@ class ModuleActions extends Object implements ServicesAction.Model {
   /** Initializes the model.
   */
   public static void initialize () {
-    ServicesAction.setModel (INSTANCE);
+    ToolsAction.setModel (INSTANCE);
   }
 
   /** Array with all activated actions.
@@ -141,6 +141,8 @@ class ModuleActions extends Object implements ServicesAction.Model {
 
 /*
 * Log
+*  2    Gandalf   1.1         5/13/99  Jaroslav Tulach Services changed to 
+*       tools.
 *  1    Gandalf   1.0         5/13/99  Jaroslav Tulach 
 * $
 */
