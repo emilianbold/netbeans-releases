@@ -37,10 +37,19 @@ public final class MasterURLMapper extends URLMapper {
         final FileSystem hfs = MasterFileSystem.getDefault();
         if (!url.getProtocol().equals("file")) return null;  //NOI18N
         //TODO: review and simplify         
-        String filePath = FileUtil.normalizeFile(new File(URI.create(url.toExternalForm()))).getAbsolutePath();
-        FileObject retVal = hfs.findResource(filePath);
-        if (!(retVal instanceof MasterFileObject)) return null;
+        FileObject retVal = null;
+        String filePath = null;
+        try {
+            filePath = FileUtil.normalizeFile(new File(URI.create(url.toExternalForm()))).getAbsolutePath();
+        } catch (IllegalArgumentException e) {
+            StringBuffer sb = new StringBuffer();
+            sb.append(e.getLocalizedMessage()).append(" [").append(url.toExternalForm()).append("]");//NOI18N
+            throw new IllegalArgumentException(sb.toString());
+        }
 
+        retVal = hfs.findResource(filePath);
+        if (!(retVal instanceof MasterFileObject)) return null;
+        
         return new FileObject[]{retVal};
     }
 
