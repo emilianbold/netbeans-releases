@@ -29,6 +29,7 @@ import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.InstanceSupport;
 import org.openide.modules.ManifestSection;
 import org.openide.TopManager;
+import org.openide.ErrorManager;
 import org.openide.actions.*;
 import org.openide.nodes.*;
 import org.openide.util.actions.SystemAction;
@@ -54,6 +55,9 @@ public final class LoaderPoolNode extends AbstractNode {
     /** The only instance of the LoaderPoolNode class in the system.
     * This value is returned from the getLoaderPoolNode() static method */
     private static LoaderPoolNode loaderPoolNode;
+    private static final ErrorManager err =
+        TopManager.getDefault ().getErrorManager ().getInstance ("org.netbeans.core.LoaderPoolNode");
+
     /** The only instance of the NbLoaderPool class in the system.
     * This value is returned from the getNbLoaderPool() static method */
     private static LoaderPoolNode.NbLoaderPool loaderPool;
@@ -213,10 +217,9 @@ public final class LoaderPoolNode extends AbstractNode {
                                // Compute resulting order.
                                if (mustbe12) {
                                    if (mustbe21) {
-                                       if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
-                                           // PLEASE DO NOT COMMENT OUT:
-                                           System.err.println ("Warning: mutually contradictory loader ordering will be ignored; " +
-                                                               l1 + " and " + l2); // NOI18N
+                                       err.log (ErrorManager.USER,
+                                                "Warning: mutually contradictory loader ordering will be ignored; " + // NOI18N
+                                                l1 + " and " + l2); // NOI18N
                                        return 0;
                                    } else {
                                        return -1;
@@ -230,17 +233,15 @@ public final class LoaderPoolNode extends AbstractNode {
                                }
                            }
                            private void warn (String yourLoader, String otherLoader, String otherRepn) {
-                               // PLEASE DO NOT COMMENT OUT:
-                               System.err.println ("Warning: a possible error in the manifest containing " + yourLoader + " was found."); // NOI18N
-                               System.err.println ("The loader specified an Install-{After,Before} on " + otherLoader + ", but this is a DataLoader class."); // NOI18N
-                               System.err.println ("Probably you wanted " + otherRepn + " which is the loader's representation class."); // NOI18N
+                               err.log (ErrorManager.USER, "Warning: a possible error in the manifest containing " + yourLoader + " was found."); // NOI18N
+                               err.log (ErrorManager.USER, "The loader specified an Install-{After,Before} on " + otherLoader + ", but this is a DataLoader class."); // NOI18N
+                               err.log (ErrorManager.USER, "Probably you wanted " + otherRepn + " which is the loader's representation class."); // NOI18N
                            }
                        };
         try {
             loaders = Utilities.partialSort (loaders, c, true);
         } catch (Utilities.UnorderableException uue) {
-            if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
-                uue.printStackTrace ();
+            err.notify (ErrorManager.WARNING, uue);
             // leave order as it was
         }
         update ();
@@ -258,7 +259,7 @@ public final class LoaderPoolNode extends AbstractNode {
     */
     private static synchronized void writePool (ObjectOutputStream oos)
     throws IOException {
-        //System.err.println("writePool");
+        err.log ("writePool");
         oos.writeObject (installBefores);
         oos.writeObject (installAfters);
 
@@ -276,11 +277,11 @@ public final class LoaderPoolNode extends AbstractNode {
             }
 
             if (obj != null) {
-                //System.err.println("writing " + l.getDisplayName ());
+                err.log ("writing " + l.getDisplayName ());
                 oos.writeObject (obj);
             }
         }
-        //System.err.println("writing null");
+        err.log ("writing null");
         oos.writeObject (null);
 
         // Write out system loaders now:
@@ -296,14 +297,14 @@ public final class LoaderPoolNode extends AbstractNode {
                 obj = null;
             }
             if (obj != null) {
-                //System.err.println("writing " + l.getDisplayName ());
+                err.log ("writing " + l.getDisplayName ());
                 oos.writeObject (obj);
             }
         }
-        //System.err.println("writing null");
+        err.log ("writing null");
         oos.writeObject (null);
 
-        //System.err.println("done writing");
+        err.log ("done writing");
     }
 
     /** Reads loader from the input stream.
@@ -320,23 +321,19 @@ public final class LoaderPoolNode extends AbstractNode {
         for (;;) {
             NbMarshalledObject obj = (NbMarshalledObject)ois.readObject ();
             if (obj == null) {
-                //System.err.println("reading null");
+                err.log ("reading null");
                 break;
             }
 
             try {
                 DataLoader loader = (DataLoader)obj.get ();
-                //System.err.println("reading " + loader.getDisplayName ());
+                err.log ("reading " + loader.getDisplayName ());
                 l.add (loader);
                 classes.add (loader.getClass ());
             } catch (IOException ex) {
-                if (System.getProperty ("netbeans.debug.exceptions") != null) {
-                    ex.printStackTrace();
-                }
+                err.notify (ErrorManager.WARNING, ex);
             } catch (ClassNotFoundException ex) {
-                if (System.getProperty ("netbeans.debug.exceptions") != null) {
-                    ex.printStackTrace();
-                }
+                err.notify (ErrorManager.WARNING, ex);
             }
         }
 
@@ -344,25 +341,21 @@ public final class LoaderPoolNode extends AbstractNode {
         for (;;) {
             NbMarshalledObject obj = (NbMarshalledObject) ois.readObject ();
             if (obj == null) {
-                //System.err.println("reading null");
+                err.log ("reading null");
                 break;
             }
             try {
                 // Just reads its shared state, nothing more.
                 DataLoader loader = (DataLoader) obj.get ();
-                //System.err.println("reading " + loader.getDisplayName ());
+                err.log ("reading " + loader.getDisplayName ());
             } catch (IOException ex) {
-                if (System.getProperty ("netbeans.debug.exceptions") != null) {
-                    ex.printStackTrace();
-                }
+                err.notify (ErrorManager.WARNING, ex);
             } catch (ClassNotFoundException ex) {
-                if (System.getProperty ("netbeans.debug.exceptions") != null) {
-                    ex.printStackTrace();
-                }
+                err.notify (ErrorManager.WARNING, ex);
             }
         }
 
-        //System.err.println("done reading");
+        err.log ("done reading");
 
         // Explanation: modules are permitted to restoreDefault () before
         // the loader pool is de-externalized. This means that all loader manifest
@@ -617,7 +610,7 @@ public final class LoaderPoolNode extends AbstractNode {
         /** Called from the request task */
         public void run () {
             super.fireChangeEvent(new ChangeEvent (this));
-            //System.out.println ("Loaders Change event fired...."); // NOI18N
+            err.log ("change event fired");
         }
 
 
