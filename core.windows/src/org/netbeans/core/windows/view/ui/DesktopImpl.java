@@ -166,6 +166,9 @@ public final class DesktopImpl {
     }
     
     private void setViewComponent( Component component) {
+        if (viewComponent == component) {
+            return;
+        }
         if (viewComponent != null) {
 //            System.out.println("desktopimpl : removing compl");
             desktop.remove(viewComponent);
