@@ -228,6 +228,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
             pendingCaretLine = -1;
         } else {
             textView.setDocument (new PlainDocument());
+            textView.setEditorKit(new DefaultEditorKit());
         }
     }
     

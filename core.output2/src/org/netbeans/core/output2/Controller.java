@@ -717,11 +717,13 @@ public class Controller { //XXX public only for debug access to logging code
      * releasing it if it has not been shown again.
      */
     public void notifyRemoved(OutputTab tab) {
+        assert SwingUtilities.isEventDispatchThread();
         if (log) log ("Tab " + tab + " has been CLOSED.  Disposing its IO.");
         NbIO io = tab.getIO();
         NbWriter w = io.writer();
         if (w != null && w.isClosed()) {
-            tab.getDocument().dispose();
+            //Will dispose the document
+            tab.setDocument(null);
         } else if (w != null) {
             //Something is still writing to the stream, but we're getting rid of the tab.  Don't dispose
             //the writer, just kill the tab's document
