@@ -73,7 +73,6 @@ public class NbPath extends Task {
 
         // prepare ant.class.path property
         String ant_path = null;
-        String ant_jars [] = new String [] { "ext/ant.jar", "optional.jar" }; // will find both optional.jar & ant-optional.jar
         
         if (null != anthome)
             ant_path = lookupAnt(anthome);
@@ -82,10 +81,13 @@ public class NbPath extends Task {
             ant_path = lookupAnt(System.getProperty("ant.home"));
         
         if (null == ant_path)
-            ant_path = lookupJarsFromPath(getProject().getProperty(NB_LIBRARY_PATH), ant_jars);
+            // will find both optional.jar & ant-optional.jar
+            ant_path = lookupJarsFromPath(getProject().getProperty(NB_LIBRARY_PATH), 
+                                          new String [] { "ext/ant.jar", "optional.jar" });
 
         if (null == ant_path)
-            ant_path = lookupJarsFromPath(System.getProperty("java.class.path", ""), ant_jars);
+            ant_path = lookupJarsFromPath(System.getProperty("java.class.path", ""), 
+                                          new String [] { "ant.jar", "optional.jar" });
 
         if (null == ant_path)
             ant_path = "";
