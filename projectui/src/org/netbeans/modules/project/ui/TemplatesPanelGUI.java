@@ -84,6 +84,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     private static final RequestProcessor RP = new RequestProcessor();
     
     private String presetTemplateName = null;
+    private Node pleaseWait;
 
     /** Creates new form TemplatesPanelGUI */
     public TemplatesPanelGUI (Builder firer) {
@@ -157,6 +158,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             if (ExplorerManager.PROP_SELECTED_NODES.equals (event.getPropertyName ())) {
                 Node[] selectedNodes = (Node[]) event.getNewValue();
                 if (selectedNodes != null && selectedNodes.length == 1) {
+                    assert pleaseWait == null || !pleaseWait.equals (selectedNodes[0]) : "Cannot be fired a propertyChange with PleaseWaitNode, but was " + selectedNodes[0]; 
                     try {
                         ((ExplorerProviderPanel)this.projectsPanel).setSelectedNodes(new Node[0]);
                     } catch (PropertyVetoException e) {
@@ -229,25 +231,23 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         this.jLabel1.setDisplayedMnemonic(this.firer.getCategoriesMnemonic());
         this.jLabel2.setText (this.firer.getTemplatesName());
         this.jLabel2.setDisplayedMnemonic (this.firer.getTemplatesMnemonic());                                                
-        this.categoriesPanel.addPropertyChangeListener(this);                        
-        this.projectsPanel.addPropertyChangeListener(this);
         this.description.setEditorKit(new HTMLEditorKit());
-        
-//        // please wait node, see issue 52900
-//        Node pleaseWait = new AbstractNode (Children.LEAF) {
-//            public Image getIcon (int ignore) {
-//                return PLEASE_WAIT_ICON;
-//            }
-//        };
-//        pleaseWait.setName (NbBundle.getBundle (TemplatesPanelGUI.class).getString ("LBL_TemplatesPanel_PleaseWait"));
-//        Children ch = new Children.Array ();
-//        ch.add (new Node[] {pleaseWait});
-//        final Node root = new AbstractNode (ch);
-//        SwingUtilities.invokeLater (new Runnable () {
-//            public void run () {
-//                ((ExplorerProviderPanel)categoriesPanel).setRootNode (root);
-//            }
-//        });
+
+        // please wait node, see issue 52900
+        pleaseWait = new AbstractNode (Children.LEAF) {
+            public Image getIcon (int ignore) {
+                return PLEASE_WAIT_ICON;
+            }
+        };
+        pleaseWait.setName (NbBundle.getBundle (TemplatesPanelGUI.class).getString ("LBL_TemplatesPanel_PleaseWait"));
+        Children ch = new Children.Array ();
+        ch.add (new Node[] {pleaseWait});
+        final Node root = new AbstractNode (ch);
+        SwingUtilities.invokeLater (new Runnable () {
+            public void run () {
+                ((ExplorerProviderPanel)categoriesPanel).setRootNode (root);
+            }
+        });
     }
 
     /** This method is called from within the constructor to
@@ -570,6 +570,10 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
 
     void doFinished (FileObject temlatesFolder, String category, String template) {
         assert temlatesFolder != null;
+        
+        this.categoriesPanel.addPropertyChangeListener(this);                        
+        this.projectsPanel.addPropertyChangeListener(this);
+        
         this.setTemplatesFolder (temlatesFolder);
         this.setSelectedCategoryByName (category);
         this.setSelectedTemplateByName (template);
