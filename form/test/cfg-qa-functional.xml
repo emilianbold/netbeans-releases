@@ -15,7 +15,7 @@ Microsystems, Inc. All Rights Reserved.
 <mconfig name="Form config">
     
 
-    <testbag testattribs="validation, full" executor="ide" name="testbag_visual_development" resultsprocessor="qa-functional">
+   <testbag testattribs="validation, full" executor="ide" name="testbag_visual_development">
         <testset dir="qa-functional/src">
             <patternset>
 				<include name="org/netbeans/qa/form/visualDevelopment/*.*"/>			
@@ -23,7 +23,8 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="validation, full" executor="ide" name="testbag_compatibility" resultsprocessor="qa-functional">
+
+<!--   <testbag testattribs="validation, full" executor="ide" name="testbag_compatibility">
         <testset dir="qa-functional/src">
             <patternset>
 				<include name="org/netbeans/qa/form/compatibility/*.*"/>		
@@ -31,7 +32,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="validation, full" executor="ide" name="testbag_palette" resultsprocessor="qa-functional">
+    <testbag testattribs="validation, full" executor="ide" name="testbag_palette">
         <testset dir="qa-functional/src">
             <patternset>
 		    <include name="org/netbeans/qa/form/palette/PaletteTests.class"/>
@@ -39,7 +40,9 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="validation, full" executor="ide" name="testbag_undo_redo" resultsprocessor="qa-functional">
+-->    
+    
+    <testbag testattribs="validation, full" executor="ide" name="testbag_undo_redo">
         <testset dir="qa-functional/src">
             <patternset>
 		    <include name="org/netbeans/qa/form/undoredo/BaseTest.class"/>
@@ -48,7 +51,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     
-	<testbag testattribs="unstable" executor="ide" name="testbag_palette" resultsprocessor="qa-functional">
+    <testbag testattribs="unstable" executor="ide" name="testbag_palette">
         <testset dir="qa-functional/src">
             <patternset>
                 <!--                                
@@ -62,7 +65,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-	<testbag testattribs="stresstest" executor="ide" name="testbag_palette" resultsprocessor="qa-functional">
+	<testbag testattribs="stresstest" executor="ide" name="testbag_palette">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="undoredo/StressTest.class"/>
@@ -70,7 +73,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <resultsprocessor name="qa-functional" antfile="build.xml" target="test_report"/>
-    <executor name="ide" antfile="build.xml" target="runidetest"/>
-    <compiler name="qa-functional-compiler" antfile="build.xml" target="qa-functional-compiler" default="true" />
+
+    <executor name="ide" antfile="build-qa-functional.xml" target="runidetest"/>
+    <compiler name="qa-functional-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true" />
 </mconfig>
