@@ -135,10 +135,10 @@ public class ExplorerPanelTest extends NbTestCase {
         assertTrue("Copy action has to be enabled", copy.isEnabled());
         assertTrue("Cut action has to be enabled", cut.isEnabled());
         
-        copy.actionPerformed (new java.awt.event.ActionEvent (this, 0, ""));
+        copy.actionPerformed (new java.awt.event.ActionEvent (this, 0, "waitFinished"));
         assertEquals ("clipboardCopy invoked", 1, enabledNode.countCopy);
         
-        cut.actionPerformed (new java.awt.event.ActionEvent (this, 0, ""));
+        cut.actionPerformed (new java.awt.event.ActionEvent (this, 0, "waitFinished"));
         assertEquals ("clipboardCut invoked", 1, enabledNode.countCut);
         
 
@@ -175,7 +175,7 @@ public class ExplorerPanelTest extends NbTestCase {
         manager.setSelectedNodes (new Node[] { enabledNode, enabledNode2 });
         assertTrue ("It gets enabled", delete.isEnabled ());
         
-        delete.actionPerformed(new java.awt.event.ActionEvent (this, 0, ""));
+        delete.actionPerformed(new java.awt.event.ActionEvent (this, 0, "waitFinished"));
         
         assertEquals ("Destoy was called", 1, enabledNode.countDelete);
         assertEquals ("Destoy was called", 1, enabledNode2.countDelete);
@@ -209,7 +209,7 @@ public class ExplorerPanelTest extends NbTestCase {
         
         assertTrue ("Paste is enabled", paste.isEnabled ());
         
-        paste.actionPerformed(new java.awt.event.ActionEvent (this, 0, ""));
+        paste.actionPerformed(new java.awt.event.ActionEvent (this, 0, "waitFinished"));
         assertEquals ("Paste invoked", 1, arr[0].count);
         
         manager.setSelectedNodes (new Node[] { disabledNode });

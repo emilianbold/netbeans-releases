@@ -287,6 +287,7 @@ public class Install extends ModuleInstall {
         ArrayList pendingTasks = new ArrayList( 10 );
         // XXX no access to running actions at the moment
         //pendingTasks.addAll(CallableSystemAction.getRunningActions());
+        pendingTasks.addAll(org.netbeans.core.ModuleActions.getDefaultInstance().getRunningActions());
         
         if ( !Boolean.getBoolean( "netbeans.full.hack" ) ) { // NOI18N
             // Avoid showing the tasks in the dialog when running internal tests
