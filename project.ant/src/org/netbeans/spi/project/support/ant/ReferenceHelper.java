@@ -87,11 +87,6 @@ public final class ReferenceHelper {
     final PropertyEvaluator eval;
     private final AuxiliaryConfiguration aux;
 
-    /** @deprecated Use the constructor that takes a property evaluator instead. */
-    public ReferenceHelper(AntProjectHelper helper, AuxiliaryConfiguration aux) {
-        this(helper, aux, helper.getStandardPropertyEvaluator());
-    }
-    
     /**
      * Create a new reference helper.
      * It needs an {@link AntProjectHelper} object in order to update references
