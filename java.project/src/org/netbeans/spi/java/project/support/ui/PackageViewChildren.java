@@ -525,10 +525,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
          */
         public Transferable clipboardCopy () throws IOException {
             try {
-                ExTransferable t = ExTransferable.create (super.clipboardCopy ());
-                PackageTransferable pt = new PackageTransferable (this, DnDConstants.ACTION_COPY);
-                t.put (pt);
-                return t;
+                return new PackageTransferable (this, DnDConstants.ACTION_COPY);
             } catch (ClassNotFoundException e) {
                 Exception ioe = new IOException ();
                 throw (IOException) ErrorManager.getDefault().annotate(ioe,e);
@@ -537,9 +534,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         
         public Transferable clipboardCut () throws IOException {
             try {
-                ExTransferable t = ExTransferable.create (super.clipboardCut ());
-                t.put (new PackageTransferable (this, DnDConstants.ACTION_MOVE));
-                return t;
+                return new PackageTransferable (this, DnDConstants.ACTION_MOVE);
             } catch (ClassNotFoundException e) {
                 Exception ioe = new IOException ();
                 throw (IOException) ErrorManager.getDefault().annotate(ioe,e);
@@ -550,14 +545,14 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
             if (t.isDataFlavorSupported(ExTransferable.multiFlavor)) {
                 try {
                     MultiTransferObject mto = (MultiTransferObject) t.getTransferData (ExTransferable.multiFlavor);
-                    List result = new ArrayList ();
+                    boolean hasPackageFlavor = false;
                     for (int i=0; i < mto.getCount(); i++) {
                         DataFlavor[] flavors = mto.getTransferDataFlavors(i);
-                        if (!isPackageFlavor(flavors)) {
-                            result.addAll (Arrays.asList(super.getPasteTypes(mto.getTransferableAt(i))));
+                        if (isPackageFlavor(flavors)) {
+                            hasPackageFlavor = true;
                         }
                     }
-                    return (PasteType[]) result.toArray(new PasteType[result.size()]);
+                    return hasPackageFlavor ? new PasteType[0] : super.getPasteTypes (t);
                 } catch (UnsupportedFlavorException e) {
                     ErrorManager.getDefault().notify(e);
                     return new PasteType[0];

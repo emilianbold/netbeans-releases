@@ -14,8 +14,14 @@
 package org.netbeans.spi.java.project.support.ui;
 
 
+import java.awt.datatransfer.Transferable;
 import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.util.Arrays;
+import java.util.ResourceBundle;
 import javax.swing.Icon;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.SourceGroup;
@@ -29,6 +35,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.datatransfer.ExTransferable;
+import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 
 public class PackageViewTest extends NbTestCase {
@@ -434,6 +442,139 @@ public class PackageViewTest extends NbTestCase {
         
     }
     
+    public void testCopyPaste () throws Exception {
+        //Setup 2 sourcegroups
+        FileObject workDirFo = TestUtil.makeScratchDir( this );        
+        FileObject root1 = workDirFo.createFolder("src1");
+        FileObject tmp = root1.createFolder ("src1test1");
+        root1.createFolder ("src1test2");
+        createFile(tmp, "src1test1", "File1");
+        createFile(tmp, "src1test1", "File2");
+        FileObject root2 = workDirFo.createFolder("src2");
+        SourceGroup group1 = new SimpleSourceGroup(root1);
+        SourceGroup group2 = new SimpleSourceGroup(root2);
+        Node rn1 = PackageView.createPackageView( group1 );        
+        Node rn2 = PackageView.createPackageView( group2 );
+        Node[] nodes = rn1.getChildren().getNodes(true);
+        
+        //Single package into same source root
+        Transferable t = nodes[0].clipboardCopy();
+        PasteType[] pts = rn1.getPasteTypes(t);
+        assertEquals ("Single package into same source root",0, pts.length);        
+        
+        //Multiple packages into same source root
+        t = new ExTransferable.Multi (new Transferable[] {nodes[0].clipboardCopy(),
+                                                          nodes[1].clipboardCopy()});
+        pts = rn1.getPasteTypes(t);
+        assertEquals ("Multiple packages into same source root",0,pts.length);
+        
+        //Single file into package
+        Node[] fileNodes = nodes[0].getChildren().getNodes(true);
+        t = fileNodes[0].clipboardCopy();
+        pts = nodes[1].getPasteTypes(t);
+        assertEquals ("Single file into package",1, pts.length);        
+        pts[0].paste();
+        Node[] resultNodes = nodes[1].getChildren().getNodes(true);
+        assertEquals ("Wrong paste result",1, resultNodes.length);        
+        assertEquals ("Wrong paste result",fileNodes[0].getDisplayName(), resultNodes[0].getDisplayName());                
+        ((DataObject)resultNodes[0].getCookie(DataObject.class)).delete();
+        
+        //Multiple files into package
+        t = new ExTransferable.Multi (new Transferable[] {fileNodes[0].clipboardCopy(),
+                                                          fileNodes[1].clipboardCopy()});
+        pts = nodes[1].getPasteTypes(t);
+        assertEquals ("Multiple files into package",1, pts.length);        
+        pts[0].paste();
+        assertNodes (nodes[1].getChildren(), new String[] {
+            fileNodes[0].getDisplayName(),
+            fileNodes[1].getDisplayName(),
+        });       
+        resultNodes = nodes[1].getChildren().getNodes(true);
+        for (int i=0; i< resultNodes.length; i++) {
+            DataObject dobj = (DataObject) resultNodes[i].getCookie(DataObject.class);
+            if (dobj != null)
+                dobj.delete ();
+        }
+                
+        //Single file into source root
+        t = fileNodes[0].clipboardCopy();
+        pts = rn1.getPasteTypes(t);
+        assertEquals ("Single file into package",1, pts.length);        
+        pts[0].paste();
+        String defaultPackageName = ResourceBundle.getBundle("org/netbeans/spi/java/project/support/ui/Bundle").getString("LBL_DefaultPackage");
+        assertNodes(rn1.getChildren(), new String[] {
+            defaultPackageName,
+            "src1test1",
+            "src1test2",
+        });
+        resultNodes = rn1.getChildren().getNodes (true);
+        for (int i=0; i< resultNodes.length; i++) {
+            if (defaultPackageName.equals (resultNodes[i].getDisplayName())) {
+                assertNodes (resultNodes[i].getChildren(), new String[] {
+                    fileNodes[0].getDisplayName(),
+                });
+                resultNodes = resultNodes[i].getChildren().getNodes(true);
+                for (int j=0; j<resultNodes.length; j++) {
+                    DataObject dobj = (DataObject) resultNodes[j].getCookie (DataObject.class);
+                    if (dobj != null) {
+                        dobj.delete ();
+                    }
+                }
+                break;
+            }
+        }        
+        //Multiple files into source root
+        t = new ExTransferable.Multi (new Transferable[] {fileNodes[0].clipboardCopy(),
+                                                          fileNodes[1].clipboardCopy()});
+        pts = rn1.getPasteTypes(t);
+        assertEquals ("Multiple files into source root",1, pts.length);        
+        pts[0].paste();
+        assertNodes(rn1.getChildren(), new String[] {
+            defaultPackageName,
+            "src1test1",
+            "src1test2",
+        });
+        resultNodes = rn1.getChildren().getNodes (true);
+        for (int i=0; i< resultNodes.length; i++) {
+            if (defaultPackageName.equals (resultNodes[i].getDisplayName())) {
+                assertNodes (resultNodes[i].getChildren(), new String[] {
+                    fileNodes[0].getDisplayName(),
+                    fileNodes[1].getDisplayName()
+                });
+                resultNodes = resultNodes[i].getChildren().getNodes(true);                
+                for (int j=0; j<resultNodes.length; j++) {
+                    DataObject dobj = (DataObject) resultNodes[j].getCookie (DataObject.class);
+                    if (dobj != null) {
+                        dobj.delete ();
+                    }
+                }
+                break;
+            }
+        }
+        
+        //Single package into different source root
+        t = nodes[0].clipboardCopy();
+        pts = rn2.getPasteTypes(t);
+        assertEquals ("Single package into different source root",1,pts.length);
+        pts[0].paste ();
+        assertNodes (rn2.getChildren(), new String[] {"src1test1"});
+        ((DataObject)rn2.getChildren().getNodes(true)[0].getCookie(DataObject.class)).delete();
+        
+        //Multiple packages into different source root
+        t = new ExTransferable.Multi (new Transferable[] {nodes[0].clipboardCopy(),
+                                                          nodes[1].clipboardCopy()});
+        pts = rn2.getPasteTypes(t);
+        assertEquals ("Multiple packages into different source root",1,pts.length);
+        pts[0].paste ();
+        assertNodes (rn2.getChildren(), new String[] {"src1test1","src1test2"});
+        resultNodes = rn2.getChildren().getNodes(true);
+        for (int i=0; i< resultNodes.length; i++) {
+            DataObject dobj = (DataObject) resultNodes[i].getCookie(DataObject.class);
+            if (dobj != null)
+                dobj.delete ();
+        }
+    }
+    
         
     public static void assertNodes( Children children, String[] nodeNames ) {
         assertNodes( children, nodeNames, null );
@@ -507,6 +648,24 @@ public class PackageViewTest extends NbTestCase {
         
         assertTrue( "Arrays have to be equal ", Arrays.equals( names, chNames ) );
         
+    }
+    
+    private static FileObject createFile (FileObject parent, String pkg, String name) throws IOException {
+        FileObject fo = parent.createData (name,"java");
+        FileLock lock = fo.lock();
+        try {
+            PrintWriter out = new PrintWriter (new OutputStreamWriter (fo.getOutputStream(lock)));            
+            try {
+                out.println ("package "+pkg+";");
+                out.println("public class "+name+" {");            
+                out.println("}");
+            } finally {
+                out.close ();
+            }
+        } finally {
+            lock.releaseLock();
+        }
+        return fo;
     }
     
     private static class SimpleSourceGroup implements SourceGroup {

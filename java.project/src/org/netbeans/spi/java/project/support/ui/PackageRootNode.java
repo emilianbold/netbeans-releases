@@ -111,7 +111,8 @@ final class PackageRootNode extends AbstractNode {
             try {
                 MultiTransferObject mto = (MultiTransferObject) t.getTransferData (ExTransferable.multiFlavor);
                 List l = new ArrayList ();
-                boolean doFolderCopy = true;
+                boolean isPackageFlavor = false;
+                boolean hasTheSameRoot = false;
                 int op = -1;
                 for (int i=0; i < mto.getCount(); i++) {
                     Transferable pt = mto.getTransferableAt(i);
@@ -125,16 +126,20 @@ final class PackageRootNode extends AbstractNode {
                             PackageViewChildren.PackageNode pkgNode = (PackageViewChildren.PackageNode) pt.getTransferData(flavors[j]);
                             if ( !((PackageViewChildren)getChildren()).getRoot().equals( pkgNode.getRoot() ) ) {
                                 l.add(pkgNode);
-                            } else {
-                                doFolderCopy = false;
                             }
+                            else {
+                                hasTheSameRoot = true;
+                            }
+                            isPackageFlavor = true;
                         }
                     }
                 }
-                list.add (new PackageViewChildren.PackagePasteType (this.group.getRootFolder(),
-                        (PackageViewChildren.PackageNode[]) l.toArray(new PackageViewChildren.PackageNode[l.size()]),
-                        op));
-                if ( doFolderCopy ) {
+                if (isPackageFlavor && !hasTheSameRoot) {
+                    list.add (new PackageViewChildren.PackagePasteType (this.group.getRootFolder(),
+                                    (PackageViewChildren.PackageNode[]) l.toArray(new PackageViewChildren.PackageNode[l.size()]),
+                                    op));
+                }
+                else if (!isPackageFlavor) {
                     list.addAll( Arrays.asList( getDataFolderNodeDelegate().getPasteTypes( t ) ) );
                 }
             } catch (UnsupportedFlavorException e) {
@@ -146,18 +151,17 @@ final class PackageRootNode extends AbstractNode {
         else {
             DataFlavor[] flavors = t.getTransferDataFlavors();
             FileObject root = this.group.getRootFolder();
-            boolean doFolderCopy = true;
+            boolean isPackageFlavor = false;
             if (root!= null  && root.canWrite()) {
                 for (int i=0; i<flavors.length; i++) {
                     if (PackageViewChildren.SUBTYPE.equals(flavors[i].getSubType ()) &&
                             PackageViewChildren.PRIMARY_TYPE.equals(flavors[i].getPrimaryType ())) {
+                        isPackageFlavor = true;
                         try {
                             int op = Integer.valueOf (flavors[i].getParameter (PackageViewChildren.MASK)).intValue ();
                             PackageViewChildren.PackageNode pkgNode = (PackageViewChildren.PackageNode) t.getTransferData(flavors[i]);
                             if ( !((PackageViewChildren)getChildren()).getRoot().equals( pkgNode.getRoot() ) ) {
                                 list.add(new PackageViewChildren.PackagePasteType (root, new PackageViewChildren.PackageNode[] {pkgNode}, op));
-                            } else {
-                                doFolderCopy = false;
                             }
                         } catch (IOException ioe) {
                             ErrorManager.getDefault().notify(ioe);
@@ -168,7 +172,7 @@ final class PackageRootNode extends AbstractNode {
                     }
                 }
             }
-            if ( doFolderCopy ) {
+            if (!isPackageFlavor) {
                 list.addAll( Arrays.asList( getDataFolderNodeDelegate().getPasteTypes( t ) ) );
             }
         }
