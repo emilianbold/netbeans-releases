@@ -376,8 +376,12 @@ final class NbErrorManager extends ErrorManager {
             int cnt = 0;
 
             for (int i = 0; i < arr.length; i++) {
+                if (arr[i].getLocalizedMessage() != null)
+                    pw.println(arr[i].getLocalizedMessage());
+                else if (arr[i].getMessage() != null) pw.println(arr[i].getMessage());
+                
                 if (arr[i].getStackTrace() != null) {
-                    cnt++;
+                    cnt++;                    
                     arr[i].getStackTrace ().printStackTrace(pw);
                 }
             }
