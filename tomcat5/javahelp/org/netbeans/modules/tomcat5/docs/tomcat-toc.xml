@@ -20,9 +20,7 @@
 <tocitem text="Tomcat Web Server">
 	<tocitem text="About the Tomcat Web Server" target="tomcat_plugin" />
 	<tocitem text="Setting Up the Tomcat Web Server">
-		<tocitem text="Viewing the Tomcat Web Server in the IDE" target="tomcat_top_node" />
-        <tocitem text="Setting a Context Path for a Web Application" target="tomcat_context_add" />
-	<tocitem text="Starting and Stopping a Tomcat Web Server" target="tomcat_start" />
+	<tocitem text="Viewing the Tomcat Web Server in the IDE" target="tomcat_top_node" />
 	<tocitem text="Customizing a Tomcat Web Server" target="tomcat_internal_props"/>
 	<tocitem text="Reconfiguring a Tomcat Web Server" target="tomcat_edit_config" />
 	<tocitem text="Adding a Tomcat Web Server" target="tomcat_addinstall" />
