@@ -91,7 +91,7 @@ public final class ClassName implements Comparable, Comparator, Serializable {
 		String type;
 		char lastChar = classType.charAt(classType.length()-1);
 		if (i != -1 && lastChar == ';') {
-		    type = classType.substring(1, classType.length()-2);
+		    type = classType.substring(i+1, classType.length()-1);
 		    cn = (ClassName)cache.get(type);
 		    if (cn != null)
 		        return cn;
