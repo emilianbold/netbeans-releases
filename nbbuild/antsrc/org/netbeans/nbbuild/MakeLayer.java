@@ -46,7 +46,7 @@ public class MakeLayer extends MatchingTask {
         topdir = t;
     }
     
-    /** Set wheather there is absolute path in top dir or not
+    /** Set whether there is absolute path in top dir or not
      * default value is false
      */
     public void setAbsolutePath( boolean absolutePath ) {
@@ -61,13 +61,13 @@ public class MakeLayer extends MatchingTask {
         if (dest == null) {
             throw new BuildException("You must specify output file", getLocation());
         }
-        UpToDate upToDate = (UpToDate) this.getProject().createTask( "uptodate" );
+        UpToDate upToDate = (UpToDate) this.getProject().createTask( "uptodate" ); //NOI18N
         fileset.setDir( topdir );
         upToDate.addSrcfiles( fileset );
         upToDate.setTargetFile( dest );
-        upToDate.setProperty(dest.getAbsolutePath() + ".property");
+        upToDate.setProperty(dest.getAbsolutePath() + ".property"); //NOI18N
         upToDate.execute();
-        if (this.getProject().getProperty(dest.getAbsolutePath() + ".property") != null)
+        if (this.getProject().getProperty(dest.getAbsolutePath() + ".property") != null) //NOI18N
             return;
         
         int lengthAdjust = (absolutePath) ? 0 : 1;
@@ -84,11 +84,11 @@ public class MakeLayer extends MatchingTask {
         for (int i=0; i <files.length; i++) {
             File aFileName = new File(topdir, files[i]);
             try {
-                layerFile.write(("<file name=\""+aFileName.getName()+"\"\n").replace(File.separatorChar,'/'));
-                layerFile.write(("  url=\""+aFileName.getAbsolutePath().substring(topdir.getAbsolutePath().length()+lengthAdjust)+"\"/>\n").replace(File.separatorChar,'/'));
+                layerFile.write(("<file name=\""+aFileName.getName()+"\"\n").replace(File.separatorChar,'/')); //NOI18N
+                layerFile.write(("  url=\""+aFileName.getAbsolutePath().substring(topdir.getAbsolutePath().length()+lengthAdjust)+"\"/>\n").replace(File.separatorChar,'/')); //NOI18N
             }
             catch(IOException ex) {
-                throw new BuildException(ex, getLocation());
+                throw new BuildException("I/O error while writing layer file "+dest.getAbsolutePath(), ex, getLocation());
             }
         }
         
@@ -96,7 +96,7 @@ public class MakeLayer extends MatchingTask {
             layerFile.close();
         }
         catch (IOException e) {
-            throw new BuildException(e, getLocation());
+            throw new BuildException("I/O error when trying to close layer file "+dest.getAbsolutePath(), e, getLocation());
         }
     }
 }
