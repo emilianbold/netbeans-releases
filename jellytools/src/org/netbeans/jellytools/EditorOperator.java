@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools;
@@ -401,13 +401,19 @@ public class EditorOperator extends TopComponentOperator {
      * @param offset position inside document (0 means the beginning)
      * @param length number of characters to be deleted
      */
-    public void delete(int offset, int length) {
-        try {
-            txtEditorPane().getDocument().remove(offset, length);
-        } catch (BadLocationException e) {
-            throw new JemmyException("Cannot delete "+length+" characters from position "
-                                     +offset+".", e);
-        }
+    public void delete(final int offset, final int length) {
+        // run in dispatch thread
+        runMapping(new MapVoidAction("remove") {    // NOI18N
+            public void map() {
+                try {
+                    txtEditorPane().getDocument().remove(offset, length);
+                } catch (BadLocationException e) {
+                    throw new JemmyException("Cannot delete "+length+
+                                             " characters from position "+
+                                             offset+".", e);
+                }
+            }
+        });
     }
     
     /** Deletes given number of characters from current caret possition.
