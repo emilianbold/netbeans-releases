@@ -223,15 +223,22 @@ final class I18nWizardDescriptor extends WizardDescriptor {
         
         /** Helper method. It's actually next button event handler. */
         private void handleNextButton() {
-            panels.nextPanel();
-            
-            try {
-                updateState ();
-            } catch(IllegalStateException ise) {
-                panels.previousPanel();
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ise.getMessage()));
-                updateState();
-            }
+
+            // #40531 workaround
+            Runnable performer = new Runnable() {
+                public void run() {
+                    panels.nextPanel();
+                    
+                    try {
+                        updateState ();
+                    } catch(IllegalStateException ise) {
+                        panels.previousPanel();
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ise.getMessage()));
+                        updateState();
+                    }
+                }
+            };
+            org.openide.util.Mutex.EVENT.writeAccess(performer);
         }
     } // End of inner class Listener;
 
