@@ -341,6 +341,9 @@ public class ServerInstance implements Node.Cookie {
         if (thisSS == null) //this case should not occur =>
             return cd; //attempt to start server (serverInstance remains null)
         ServerDebugInfo thisSDI = thisSS.getDebugInfo(target);
+        //should not occur -> workaround for issue #56714
+        if (thisSDI == null)
+            return cd;
         
         //get all server instances
         ServerInstance[] serverInstances = ServerRegistry.getInstance().getServerInstances();
