@@ -1,7 +1,7 @@
-**/Bundle.properties
-**/*.html
-**/*.gif
-**/*.template
-exclude **/package.html
-exclude www/**
+i18n/**/Bundle.properties
+i18n/**/*.html
+i18n/**/*.gif
+i18n/**/*.template
+exclude i18n/**/package.html
+exclude i18n/www/**
 
