@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.j2ee.ejbjarproject;
 
-import com.sun.rsasign.p;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
