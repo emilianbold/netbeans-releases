@@ -15,6 +15,7 @@ package org.netbeans.nbbuild;
 
 import java.io.*;
 import java.util.*;
+import java.io.FileOutputStream;
 
 import org.w3c.dom.*;
 import org.xml.sax.InputSource;
@@ -41,7 +42,7 @@ class UpdateTracking {
     private static final String INST_ORIGIN = "installer"; // NOI18N
 
     /** Platform dependent file name separator */
-    private static final String FILE_SEPARATOR = System.getProperty ("file.separator");                
+    private static final String FILE_SEPARATOR = System.getProperty ("file.separator");  // NOI18N           
 
     /** The name of the install_later file */
     public static final String TRACKING_DIRECTORY = "update_tracking"; // NOI18N
@@ -53,10 +54,20 @@ class UpdateTracking {
     private String origin = NBM_ORIGIN;
     private String nbPath = null;
     private Module module = null;
+    protected InputStream is = null;
+    protected OutputStream os = null;
    
     // for generating xml in build process
     public UpdateTracking( String nbPath ) {
         this.nbPath = nbPath;
+        origin = INST_ORIGIN;
+    }
+    
+    /**
+     * Use this constructor, only when you want to use I/O Streams
+     */
+    public UpdateTracking () {
+        this.nbPath = null;
         origin = INST_ORIGIN;
     }
     
@@ -72,14 +83,30 @@ class UpdateTracking {
         return version;
     }
     
+    public String getVersionForCodeName( String codeName ) throws BuildException {
+        module = new Module();
+        module.setCodename( codeName );
+        if (this.is == null) {
+            File directory = new File( nbPath + FILE_SEPARATOR + TRACKING_DIRECTORY );
+            setTrackingFile(directory, getTrackingFileName());
+            if (!trackingFile.exists() || !trackingFile.isFile())
+                throw new BuildException ("Tracking file " + trackingFile.getAbsolutePath() + " cannot be found for module codenamebase " + codeName );
+        }
+        read();
+        if ( module.getVersions().size() != 1 ) 
+            throw new BuildException ("Module with codenamebase " + codeName + " has got " + module.getVersions().size() + " specification versions. Correct number is 1.");
+        return ((Version) module.getVersions().get(0)).getVersion();
+    }
+    
     public String[] getListOfNBM( String codeName ) throws BuildException {
         module = new Module();
         module.setCodename( codeName );
-        File directory = new File( nbPath + FILE_SEPARATOR + TRACKING_DIRECTORY );
-        trackingFile = new File(directory, getTrackingFileName());
-
-        if (!trackingFile.exists() || !trackingFile.isFile())
-            throw new BuildException ("Tracking file " + trackingFile.getAbsolutePath() + " cannot be found for module codenamebase " + codeName );
+        if (this.is == null) {
+            File directory = new File( nbPath + FILE_SEPARATOR + TRACKING_DIRECTORY );
+            setTrackingFile(directory, getTrackingFileName());
+            if (!trackingFile.exists() || !trackingFile.isFile())
+                throw new BuildException ("Tracking file " + trackingFile.getAbsolutePath() + " cannot be found for module codenamebase " + codeName );
+        }
         
         read();
         
@@ -99,7 +126,7 @@ class UpdateTracking {
         File updateDirectory = new File( nbPath, TRACKING_DIRECTORY );
         File[] trackingFiles = updateDirectory.listFiles( new FileFilter() { // Get only *.xml files
             public boolean accept( File file ) {
-                return file.isFile() &&file.getName().endsWith(".xml");
+                return file.isFile() &&file.getName().endsWith(".xml"); //NOI18N
             }
         } );
         if (trackingFiles != null)
@@ -121,7 +148,7 @@ class UpdateTracking {
             Element e_version = document.createElement(ELEMENT_VERSION);
             e_version.setAttribute(ATTR_VERSION, ver.getVersion());
             e_version.setAttribute(ATTR_ORIGIN, ver.getOrigin());
-            e_version.setAttribute(ATTR_LAST, "true");                          //NO I18N
+            e_version.setAttribute(ATTR_LAST, "true");                          //NOI18N
             e_version.setAttribute(ATTR_INSTALL, Long.toString(ver.getInstall_time()));
             e_module.appendChild( e_version );
             Iterator it3 = ver.getFiles().iterator();
@@ -135,27 +162,63 @@ class UpdateTracking {
         }
         
         //document.getDocumentElement().normalize();
-        File directory = new File( nbPath + FILE_SEPARATOR + TRACKING_DIRECTORY );
-        if (!directory.exists()) {
-            directory.mkdirs();
+        if (this.os == null) {
+            File directory = new File( nbPath + FILE_SEPARATOR + TRACKING_DIRECTORY );
+            if (!directory.exists()) {
+                directory.mkdirs();
+            }
+            setTrackingFile(directory, this.getTrackingFileName());
+            FileOutputStream fos = null;
+            try {
+                fos = new FileOutputStream(new File(directory,this.getTrackingFileName()));
+            } catch (Exception e) {
+                throw new BuildException("Could not get outputstream to write update tracking", e);
+            }
+            this.setTrackingOutputStream(fos);
         }
-        trackingFile = new File(directory, getTrackingFileName());
         try {
-	    OutputStream os = new FileOutputStream(trackingFile);
-            XMLUtil.write(document, os);
-            os.close();
+            try {
+                XMLUtil.write(document, this.os);
+            } finally {
+                this.os.close();
+            }
         } catch (Exception e) {
             e.printStackTrace();
-            trackingFile.delete();
-            throw new BuildException("Could not write update tracking file", e);
+            if ((trackingFile != null) && (trackingFile.exists()))
+                trackingFile.delete();
+            throw new BuildException("Could not write update tracking", e);
         }        
     }
 
+    protected void setTrackingFile (File dir, String tFname) throws BuildException {
+        this.trackingFile = new File(dir,tFname);
+//        this.trackingFile.mkdirs();
+        try {
+            //setTrackingOutputStream(new FileOutputStream(this.trackingFile));
+            if (this.trackingFile.exists())
+                setTrackingInputStream(new FileInputStream(this.trackingFile));
+        } catch (java.io.FileNotFoundException fnf) {
+            throw new BuildException("Unable to find tracking file "+this.trackingFile.getAbsolutePath(), fnf);
+        }
+    }
+    
+    public void setTrackingOutputStream(OutputStream tos) {
+        this.os = tos;
+    }
+    
+    public OutputStream getTrackingOutputStream() {
+        return this.os;
+    }
+    
+    public void setTrackingInputStream(InputStream tis) {
+        this.is = tis;
+    }
+    
     public String getTrackingFileName() throws BuildException {
         String trackingFileName = module.getCodenamebase();
         if ( ( trackingFileName == null ) || ( trackingFileName.length() == 0 ) )
             throw new BuildException ("Empty codenamebase, unable to locate tracking file");
-        trackingFileName = trackingFileName.replace('.', '-') + ".xml";
+        trackingFileName = trackingFileName.replace('.', '-') + ".xml"; //NOI18N
         return trackingFileName;
     }
 
@@ -163,27 +226,37 @@ class UpdateTracking {
     private void read() throws BuildException {
         /** org.w3c.dom.Document document */
         org.w3c.dom.Document document;
-        if (trackingFile.exists()) {
-            InputStream is;
-            try {
-                is = new FileInputStream( trackingFile );
-                
-            InputSource xmlInputSource = new InputSource( is );
+        if (this.is == null) {
+            File directory = new File( nbPath + FILE_SEPARATOR + TRACKING_DIRECTORY );
+            if (!directory.exists()) {
+                directory.mkdirs();
+            }
+            setTrackingFile(directory,getTrackingFileName());
+        }
+        try {
+            InputSource xmlInputSource = new InputSource( this.is );
             document = XMLUtil.parse( xmlInputSource, false, false, new ErrorCatcher(), null );
             if (is != null)
                 is.close();
-            }
-            catch ( org.xml.sax.SAXException e ) {
+        } catch ( org.xml.sax.SAXException e ) {
+            e.printStackTrace();
+            if (trackingFile == null) {
+                throw new BuildException ("Update tracking data in external InputStream is not well formatted XML document.", e);
+            } else {
                 throw new BuildException ("Update tracking file " + trackingFile.getAbsolutePath() + " is not well formatted XML document.", e);
             }
-            catch ( java.io.IOException e ) {
+        } catch ( java.io.IOException e ) {
+            e.printStackTrace();
+            if (trackingFile == null) {
+                throw new BuildException ("I/O error while accessing tracking data in InputStream", e);
+            } else {
                 throw new BuildException ("I/O error while accessing tracking file " + trackingFile.getAbsolutePath(), e);
             }
+        }
             
-            org.w3c.dom.Element element = document.getDocumentElement();
-            if ((element != null) && element.getTagName().equals(ELEMENT_MODULE)) {
-                scanElement_module(element);
-            }
+        org.w3c.dom.Element element = document.getDocumentElement();
+        if ((element != null) && element.getTagName().equals(ELEMENT_MODULE)) {
+            scanElement_module(element);
         }
     }    
     
@@ -275,7 +348,7 @@ class UpdateTracking {
          */
         String getCodenamebase() {
 	    String codenamebase = new String(codename);
-            int idx = codenamebase.lastIndexOf ('/');
+            int idx = codenamebase.lastIndexOf ('/'); //NOI18N
             if (idx != -1) codenamebase = codenamebase.substring (0, idx);
 
             return codenamebase;
@@ -431,9 +504,9 @@ class UpdateTracking {
             Iterator it = files.iterator();
             while (it.hasNext()) {
                 ModuleFile file = (ModuleFile) it.next();
-                if (file.getName().indexOf("_" + locale + ".") == -1
-                    && file.getName().indexOf("_" + locale + "/") == -1
-                    && !file.getName().endsWith("_" + locale) )
+                if (file.getName().indexOf("_" + locale + ".") == -1 // NOI18N
+                    && file.getName().indexOf("_" + locale + "/") == -1 // NOI18N
+                    && !file.getName().endsWith("_" + locale) ) // NOI18N
                     newFiles.add ( file );
             }
             files = newFiles;
