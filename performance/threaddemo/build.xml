@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="openide.jar" location="${openide}/netbeans/lib/openide.jar"/>
     <property name="looks" location="${openide}/looks"/>
     <property name="looks.jar" location="${looks}/netbeans/modules/autoload/openide-looks.jar"/>
-    <property name="Spin.jar" location="???/spin-1.1/Spin.jar"/>
+    <property name="Spin.jar" location="/usr/java/tools/spin/Spin.jar"/>
     <!-- only needed for optit target: -->
     <property name="optit" location="???/optit"/>
     <property name="junit.jar" location="${nbroot}/junit/external/junit-3.8.1.jar"/>
