@@ -789,8 +789,22 @@ public abstract class NbTestCase extends TestCase implements NbTest {
                 MemoryCounter.ClassInfo ci = (MemoryCounter.ClassInfo)it.next();
                 sum += ci.getTotalSize();
             }
-            if (sum > limit) 
-		fail(message + ": " + sum + ">" + limit);
+            if (sum > limit) {
+                StringBuffer sb = new StringBuffer (4096);
+                sb.append (message); 
+                sb.append (": ");
+                sb.append (sum);
+                sb.append (">");
+                sb.append (limit);
+                sb.append ('\n');
+                for(Iterator it = c.iterator(); it.hasNext(); ) {
+                    sb.append ("  ");
+                    MemoryCounter.ClassInfo ci = (MemoryCounter.ClassInfo)it.next();
+                    sb.append (ci.toString ());
+                    sb.append ('\n');
+                }
+		fail(sb.toString());
+            }
         } catch (Exception e) {
             fail("Could not traverse ferefence graph");
         }
