@@ -59,6 +59,7 @@
 <mapID target="filesystems.removing" url="filesystems/filesystems_removing.html" />
 <mapID target="filesystems.settings" url="filesystems/filesystems_settings.html" />
 <mapID target="filesystems.disable-compile" url="filesystems/filesystems_disable-compile.html" />
+<mapID target="filesystems.diff" url="filesystems/filesystems_diff.html" />
 <mapID target="filesystems.jdk" url="filesystems/filesystems_jdk.html" />
 <mapID target="filesystems.ignore-files" url="filesystems/filesystems_ignore-files.html" />
 

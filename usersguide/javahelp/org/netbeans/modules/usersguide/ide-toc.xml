@@ -42,6 +42,7 @@
      <tocitem text="Configuring a Mounted Filesystem" target="filesystems.settings" />
      <tocitem text="Mounting the Java 2 SDK" target="filesystems.jdk" />
      <tocitem text="Specifying Files to Ignore in a Filesystem" target="filesystems.ignore-files" />
+     <tocitem text="Comparing Two Files in the IDE" target="filesystems.diff" />
    </tocitem>    
    <tocitem text="Object Management in the IDE" target="objects">
     <tocitem text="The Explorer" target="explorer" />
