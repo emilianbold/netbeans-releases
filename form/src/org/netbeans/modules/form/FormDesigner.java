@@ -126,13 +126,13 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             Lookups.fixed(new Object[] { formEditorSupport.getFormDataObject(),
                                          this })
         }));
+        
+        formToolBar = new FormToolBar(this);
     }
     
     private void initialize() {
         initialized = true;
         removeAll();
-        
-        formToolBar = new FormToolBar(this);
 
         componentLayer = new ComponentLayer();
         handleLayer = new HandleLayer(this);
