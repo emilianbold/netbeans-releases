@@ -19,7 +19,17 @@ Microsystems, Inc. All Rights Reserved.
     <attr name="Beans/JSP_Servlet" boolvalue="true"/>
     <folder name="JSP_Servlet">
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/Servlet_JSP.html" />
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
+        <attr name="SystemFileSystem.localizingBundle"
+	      stringvalue="org.netbeans.modules.web.core.Bundle"/>
+
+      <attr name="webapp.warImage/JSPs" boolvalue="true"/>
+      <attr name="JSPs/Servlet.java" boolvalue="true"/>
+      <attr name="Servlet.java/Filters" boolvalue="true"/>
+      <attr name="Filters/Listeners" boolvalue="true"/>	    
+      <attr name="Listeners/Html.html" boolvalue="true"/>	    
+      <attr name="Listeners/TLD.tld" boolvalue="true"/>	    
+
+      <!-- Web module --> 
       <file name="webapp.warImage" url="templates/WebModule.template">
           <attr name="template" boolvalue="true"/>
           <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/context/resources/WebModule.html"/>
@@ -34,27 +44,47 @@ Microsystems, Inc. All Rights Reserved.
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.context.Bundle"/>
       </file>
 --> 
-      <file name="JSP.jsp" url="templates/JSP.template">
+      <folder name="JSPs">
+        <attr name="JSP.jsp/JSP.jspx" boolvalue="true"/>
+        <attr name="JSP.jspx/JSP.jspf" boolvalue="true"/>
+	<attr name="templateWizardURL" 
+              urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSP.html"/>
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.context.Bundle"/>
+	<!-- Basic JSP --> 
+        <file name="JSP.jsp" url="templates/JSP.template">
           <attr name="template" boolvalue="true"/>
-          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSP.html"/>
-          <attr name="SystemFileSystem.localizingBundle"
-stringvalue="org.netbeans.modules.web.core.Bundle"/>
-          <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.dd.wizards.ServletIterator.createJspIterator"/>
-      </file>
-      <file name="JSP.jspx" url="templates/JSPDoc.template">
+	  <attr name="templateWizardURL" 
+                urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSP.html"/>
+	  <attr name="SystemFileSystem.localizingBundle"
+		      stringvalue="org.netbeans.modules.web.core.Bundle"/>
+	  <attr name="templateWizardIterator" 
+                methodvalue="org.netbeans.modules.web.dd.wizards.ServletIterator.createJspIterator"/>
+        </file>
+
+	<!--  JSP Document --> 
+        <file name="JSP.jspx" url="templates/JSPDoc.template">
           <attr name="template" boolvalue="true"/>
-          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSPDoc.html"/>
-          <attr name="SystemFileSystem.localizingBundle"
-stringvalue="org.netbeans.modules.web.core.Bundle"/>
-          <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.dd.wizards.ServletIterator.createJspDocIterator"/>
-      </file>
-      <file name="JSP.jspf" url="templates/JSPF.template">
+          <attr name="templateWizardURL" 
+                urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSPDoc.html"/>
+          <attr name="SystemFileSystem.localizingBundle" 
+                stringvalue="org.netbeans.modules.web.core.Bundle"/>
+          <attr name="templateWizardIterator" 
+                methodvalue="org.netbeans.modules.web.dd.wizards.ServletIterator.createJspDocIterator"/>
+        </file>
+
+        <!--  JSP Fragment --> 
+        <file name="JSP.jspf" url="templates/JSPF.template">
           <attr name="template" boolvalue="true"/>
-          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSPF.html"/>
+          <attr name="templateWizardURL" 
+                urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSPF.html"/>
           <attr name="SystemFileSystem.localizingBundle"
-stringvalue="org.netbeans.modules.web.core.Bundle"/>
-          <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.dd.wizards.ServletIterator.createJspfIterator"/>
-      </file>
+                stringvalue="org.netbeans.modules.web.core.Bundle"/>
+          <attr name="templateWizardIterator" 
+                methodvalue="org.netbeans.modules.web.dd.wizards.ServletIterator.createJspfIterator"/>
+        </file>
+      </folder> 
+     
+      <!-- Servlet --> 
       <file name="Servlet.java" url="templates/Servlet.template">
           <attr name="template" boolvalue="true"/>
           <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/Servlet.html"/>
