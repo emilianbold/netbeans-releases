@@ -55,6 +55,7 @@ public final class SerialDataNode extends DataNode {
     private boolean noBeanInfo = false;
     private final SerialDataConvertor convertor;
     private WeakReference settingInstance = new WeakReference(null);
+    private boolean isNameChanged = false;
 
     /** used by general setting objects */
     public SerialDataNode(DataObject dobj) {
@@ -121,6 +122,8 @@ public final class SerialDataNode extends DataNode {
     }
     /** cache setting object */
     private void setSettingsInstance(Object obj) {
+        if (obj == settingInstance.get()) return;
+        isNameChanged = false;
         settingInstance = new WeakReference(obj);
     }
     
@@ -334,6 +337,7 @@ public final class SerialDataNode extends DataNode {
                 nameSetter = clazz.getMethod ("setDisplayName", param); // NOI18N
             }
         } catch (Exception ex) {
+            // ignore
         }
         return nameSetter;
     }
@@ -353,9 +357,11 @@ public final class SerialDataNode extends DataNode {
                 Object bean = ic.instanceCreate();
                 setSettingsInstance(bean);
                 nameSetter.invoke(bean, new Object[] {name});
+                isNameChanged = true;
                 resolvePropertyChange();
                 return;
             } catch (Exception ex) {
+                // ignore
             }
         }
         super.setName(name);
@@ -368,7 +374,7 @@ public final class SerialDataNode extends DataNode {
     public String getDisplayName () {
         String name;
         Object setting = getSettingInstance();
-        if (setting != null) {
+        if (setting != null && isNameChanged) {
             // due to async storing ask a bean for name first
             name = getNameForBean();
             if (name != null) {
@@ -1001,6 +1007,7 @@ public final class SerialDataNode extends DataNode {
             String name = e.getPropertyName();
             firePropertyChange (name, e.getOldValue (), e.getNewValue ());
             if (name != null && name.equals("name")) { // NOI18N
+                SerialDataNode.this.isNameChanged = true;
                 // ensure the display name is updated also for ServiceTypes
                 SerialDataNode.this.fireDisplayNameChange(null, null);
             }
