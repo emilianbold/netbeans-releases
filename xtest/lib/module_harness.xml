@@ -503,7 +503,7 @@ ${xtest.ide.security} ${xtest.ide.commandline.jvmargs} ${xtest.ide.commandline.s
         <property name="junit.properties.file" value=""/>
         
         <!-- run the tests -->        
-        <junitTest workDir="${xtest.workdir}/sys" 
+        <junitTest workDir="${xtest.workdir}/sys"  jdkHome="${jdkhome}"
             testMode="${xtest.testrunner.mode}" jvmArgs="${xtest.jvmargs}" timeout="${xtest.timeout}">
             <classpath  refid="test.classpath"/>
             
