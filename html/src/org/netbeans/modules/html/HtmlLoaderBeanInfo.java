@@ -15,9 +15,8 @@ package com.netbeans.developer.modules.loaders.html;
 
 import java.beans.*;
 import java.awt.Image;
-import java.util.ResourceBundle;
 
-import org.openide.util.NbBundle;
+import org.openide.loaders.UniFileLoader;
 
 /** Html data loader bean info.
 *
@@ -25,26 +24,19 @@ import org.openide.util.NbBundle;
 */
 public class HtmlLoaderBeanInfo extends SimpleBeanInfo {
 
+  public BeanInfo[] getAdditionalBeanInfo () {
+    try {
+      return new BeanInfo[] { Introspector.getBeanInfo (UniFileLoader.class) };
+    } catch (IntrospectionException ie) {
+      if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
+        ie.printStackTrace ();
+      return null;
+    }
+  }
+
   /** Icons for image data loader. */
   private static Image icon;
   private static Image icon32;
-
-  /** Propertydescriptors */
-  private static PropertyDescriptor[] descriptors;
-
-  /** Default constructor
-  */
-  public HtmlLoaderBeanInfo() {
-  }
-
-  /**
-  * @return Returns an array of PropertyDescriptors
-  * describing the editable properties supported by this bean.
-  */
-  public PropertyDescriptor[] getPropertyDescriptors () {
-    if (descriptors == null) initializeDescriptors();
-    return descriptors;
-  }
 
   /** @param type Desired type of the icon
   * @return returns the Image loader's icon
@@ -62,30 +54,11 @@ public class HtmlLoaderBeanInfo extends SimpleBeanInfo {
     }
   }
 
-  private static void initializeDescriptors () {
-    try {
-      final ResourceBundle bundle =
-        NbBundle.getBundle(HtmlLoaderBeanInfo.class);
-
-      descriptors =  new PropertyDescriptor[] {
-        new PropertyDescriptor ("displayName", HtmlLoader.class, // NOI18N
-                                "getDisplayName", null), // NOI18N
-        new PropertyDescriptor ("extensions", HtmlLoader.class, // NOI18N
-                                "getExtensions", "setExtensions") // NOI18N
-      };
-      descriptors[0].setDisplayName(bundle.getString("PROP_Name"));
-      descriptors[0].setShortDescription(bundle.getString("HINT_Name"));
-      descriptors[1].setDisplayName(bundle.getString("PROP_Extensions"));
-      descriptors[1].setShortDescription(bundle.getString("HINT_Extensions"));
-    } catch (IntrospectionException e) {
-      e.printStackTrace ();
-    }
-  }
-
 }
 
 /*
 * Log
+*  6    Gandalf   1.5         1/16/00  Jesse Glick     
 *  5    Gandalf   1.4         1/13/00  Ian Formanek    NOI18N
 *  4    Gandalf   1.3         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
 *       Microsystems Copyright in File Comment

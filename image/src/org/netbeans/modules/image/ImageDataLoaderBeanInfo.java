@@ -15,9 +15,8 @@ package com.netbeans.developer.modules.loaders.image;
 
 import java.beans.*;
 import java.awt.Image;
-import java.util.ResourceBundle;
 
-import org.openide.util.NbBundle;
+import org.openide.loaders.UniFileLoader;
 
 /** Image data loader bean info.
 *
@@ -28,19 +27,15 @@ public class ImageDataLoaderBeanInfo extends SimpleBeanInfo {
   /** Icons for image data loader. */
   private static Image icon;
   private static Image icon32;
-
-  /** Property descriptors. */
-  private static PropertyDescriptor[] descriptors;
-
-
-  /** Default constructor.
-  */
-  public ImageDataLoaderBeanInfo() {
-  }
-
-  public PropertyDescriptor[] getPropertyDescriptors () {
-    if (descriptors == null) initializeDescriptors();
-    return descriptors;
+  
+  public BeanInfo[] getAdditionalBeanInfo () {
+    try {
+      return new BeanInfo[] { Introspector.getBeanInfo (UniFileLoader.class) };
+    } catch (IntrospectionException ie) {
+      if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
+        ie.printStackTrace ();
+      return null;
+    }
   }
 
   public Image getIcon(final int type) {
@@ -56,29 +51,11 @@ public class ImageDataLoaderBeanInfo extends SimpleBeanInfo {
     }
   }
 
-  private static void initializeDescriptors () {
-    final ResourceBundle bundle =
-      NbBundle.getBundle(ImageDataLoaderBeanInfo.class);
-    try {
-      descriptors =  new PropertyDescriptor[] {
-        new PropertyDescriptor ("displayName", ImageDataLoader.class, // NOI18N
-                                "getDisplayName", null), // NOI18N
-        new PropertyDescriptor ("extensions", ImageDataLoader.class, // NOI18N
-                                "getExtensions", "setExtensions") // NOI18N
-      };
-      descriptors[0].setDisplayName(bundle.getString("PROP_Name"));
-      descriptors[0].setShortDescription(bundle.getString("HINT_Name"));
-      descriptors[1].setDisplayName(bundle.getString("PROP_Extensions"));
-      descriptors[1].setShortDescription(bundle.getString("HINT_Extensions"));
-    } catch (IntrospectionException e) {
-      e.printStackTrace ();
-    }
-  }
-
 }
 
 /*
  * Log
+ *  9    Gandalf   1.8         1/16/00  Jesse Glick     
  *  8    Gandalf   1.7         1/5/00   Ian Formanek    NOI18N
  *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
