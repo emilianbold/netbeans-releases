@@ -19,8 +19,10 @@ import java.io.IOException;
 import java.util.*;
 
 import org.apache.tools.ant.FileScanner;
+import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.taskdefs.MatchingTask;
+import org.apache.tools.ant.taskdefs.UpToDate;
 
 /** Create a fragment of a module's XML layer.
  *
@@ -29,7 +31,7 @@ import org.apache.tools.ant.taskdefs.MatchingTask;
 public class MakeLayer extends MatchingTask {
 
     private File dest = null;
-    private List topdirs = new ArrayList ();
+    private File topdir = null;
     private boolean absolutePath = false;
 
     /** Target file containing list of all classes. */
@@ -41,7 +43,7 @@ public class MakeLayer extends MatchingTask {
      * There should be subdirectories under this matching pacgages.
      */
     public void setTopdir (File t) {
-        topdirs.add (t);
+        topdir = t;
     }
     
     /** Set wheather there is absolute path in top dir or not
@@ -51,31 +53,23 @@ public class MakeLayer extends MatchingTask {
         this.absolutePath = absolutePath;
     }
 
-    /** Nested topdir addition. */
-    public class Topdir {
-        /** Path to an extra topdir. */
-        public void setPath (File t) {
-            topdirs.add (t);
-        }
-    }
-
-    /** Add a nested topdir.
-     * If there is more than one topdir total, build products
-     * may be taken from any of them, including from multiple places
-     * for the same module. (Later topdirs may override build
-     * products in earlier topdirs.)
-     */
-    public Topdir createTopdir () {
-        return new Topdir ();
-    }
     
     public void execute()  throws BuildException {
-        if (topdirs.isEmpty()) {
-            throw new BuildException ("You must set at least one topdir attribute", location);
+        if (topdir == null) {
+            throw new BuildException ("You must set at topdir attribute", location);
         }
         if (dest == null) {
             throw new BuildException("You must specify output file", location);
         }
+        UpToDate upToDate = (UpToDate) this.getProject().createTask( "uptodate" );
+        fileset.setDir( topdir );
+        upToDate.addSrcfiles( fileset );
+        upToDate.setTargetFile( dest );
+        upToDate.setProperty(dest.getAbsolutePath() + ".property");
+        upToDate.execute();
+        if (this.getProject().getProperty(dest.getAbsolutePath() + ".property") != null)
+            return;
+        
         int lengthAdjust = (absolutePath) ? 0 : 1;
         FileWriter layerFile;
         try {
@@ -84,20 +78,17 @@ public class MakeLayer extends MatchingTask {
         catch (IOException e) {
             throw new BuildException(e.fillInStackTrace(),location);
         }
-        for (int j = 0; j < topdirs.size (); j++) {
-            File topdir = (File) topdirs.get (j);
         
-            FileScanner scanner = getDirectoryScanner (topdir);
-            String[] files = scanner.getIncludedFiles ();
-            for (int i=0; i <files.length; i++) {
-                File aFileName = new File(topdir, files[i]);
-                try {
-                    layerFile.write(("<file name=\""+aFileName.getName()+"\"\n").replace(File.separatorChar,'/'));
-                    layerFile.write(("  url=\""+aFileName.getAbsolutePath().substring(topdir.getAbsolutePath().length()+lengthAdjust)+"\"/>\n").replace(File.separatorChar,'/'));
-                }
-                catch(IOException ex) {
-                    throw new BuildException(ex.fillInStackTrace(),location);
-                }
+        FileScanner scanner = getDirectoryScanner (topdir);
+        String[] files = scanner.getIncludedFiles ();
+        for (int i=0; i <files.length; i++) {
+            File aFileName = new File(topdir, files[i]);
+            try {
+                layerFile.write(("<file name=\""+aFileName.getName()+"\"\n").replace(File.separatorChar,'/'));
+                layerFile.write(("  url=\""+aFileName.getAbsolutePath().substring(topdir.getAbsolutePath().length()+lengthAdjust)+"\"/>\n").replace(File.separatorChar,'/'));
+            }
+            catch(IOException ex) {
+                throw new BuildException(ex.fillInStackTrace(),location);
             }
         }
         
