@@ -22,7 +22,7 @@ import com.netbeans.ide.util.NbBundle;
 /** Data loader which recognizes image files.
 * @author Petr Hamernik, Jaroslav Tulach
 */
-public class ImageDataLoader extends UniFileDataLoader {
+public class ImageDataLoader extends UniFileLoader {
 
   /** Creates new ImageDataLoader without the extension. */
   public ImageDataLoader() {
@@ -63,13 +63,14 @@ public class ImageDataLoader extends UniFileDataLoader {
   */
   protected MultiDataObject createMultiObject (FileObject primaryFile)
   throws DataObjectExistsException, java.io.IOException {
-    return new ImageDataObject(fo);
+    return new ImageDataObject(primaryFile, this);
   }
 
 }
 
 /*
  * Log
+ *  4    Gandalf   1.3         1/7/99   Ian Formanek    
  *  3    Gandalf   1.2         1/6/99   Jan Jancura     
  *  2    Gandalf   1.1         1/6/99   Ian Formanek    Updated to new 
  *       DataSystem

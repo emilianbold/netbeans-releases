@@ -34,7 +34,7 @@ import com.netbeans.ide.nodes.*;
 *
 * @author Petr Hamernik, Jaroslav Tulach, Ian Formanek
 */
-public class ImageDataObject extends UniFileDataObject implements OpenCookie {
+public class ImageDataObject extends MultiDataObject implements OpenCookie {
   /** generated Serialized Version UID */
   static final long serialVersionUID = -6035788991669336965L;
 
@@ -52,8 +52,8 @@ public class ImageDataObject extends UniFileDataObject implements OpenCookie {
   /** New instance.
   * @param pf primary file object for this data object
   */
-  public ImageDataObject(FileObject pf) throws DataObjectExistsException {
-    super(pf);
+  public ImageDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
+    super(pf, loader);
   }
 
   /** Help context for this object.
@@ -88,10 +88,7 @@ public class ImageDataObject extends UniFileDataObject implements OpenCookie {
     try {
       if (viewers.isEmpty()) {
         ImageViewer v = new ImageViewer(this);
-
-        MultiObjectFrame mf = TopManager.getDefault ().getDefaultMultiFrame();
-        mf.addView(v);
-        mf.setVisible(true);
+        v.open ();
 
         viewers = v.getReference();
       }
@@ -112,7 +109,6 @@ public class ImageDataObject extends UniFileDataObject implements OpenCookie {
     while (en.hasMoreElements()) {
       ImageViewer comp = (ImageViewer)en.nextElement();
       comp.close();
-      comp.removeFromFrame();
     }
     super.handleDelete();
   }
@@ -146,6 +142,7 @@ public class ImageDataObject extends UniFileDataObject implements OpenCookie {
 
 /*
  * Log
+ *  2    Gandalf   1.1         1/7/99   Ian Formanek    
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $
  * Beta Change History:
