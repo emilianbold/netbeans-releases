@@ -2414,6 +2414,16 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../j2ee/ejbjarproject" target="netbeans"/>
   </target>
 
+  <target name="all-j2ee/ejbfreeform" depends="init, all-j2ee/ejbapi, all-j2ee/ejbjarproject">
+    <echo message="Building module j2ee/ejbfreeform.."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../j2ee/ejbfreeform" target="netbeans"/>
+  </target>
+
   <target name="all-j2ee/sunappsrv8" depends="init">
     <echo message="Building module j2ee/sunappsrv8.."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
