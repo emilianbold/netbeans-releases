@@ -797,7 +797,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="all-xml" depends="all-xml/api, all-xml/tax, all-xml/core, all-xml/catalog, all-xml/tools, all-xml/text-edit, all-xml/tree-edit, all-xml/css, all-xml/xsl, all-xml/schema"/>
 
-  <target name="all-treefs" depends="all-openide">
+  <target name="all-treefs" depends="all-openide,all-java/srcmodel">
     <echo message="Building module treefs..."/>
     <ant dir="../treefs" target="netbeans"/>
   </target>
