@@ -860,7 +860,9 @@
 
    <!--csh for java actions-->
    <mapID target="org.netbeans.modules.java.ui.actions.SynchronizeAction" url="java/synchronizing/new-interface.html" />
-   
+   <mapID target="java.sync.csh.confirmchanges" url="java/synchronizing/new-interface.html" /> <!--Help button on synchronize  dialog-->
+
+      
    <mapID target="org.netbeans.editor.GO_TO_DECLARATION" url="pending.html" />
    <mapID target="org.netbeans.editor.REFORMAT_CODE" url="pending.html" />
 
