@@ -746,18 +746,24 @@ class DataFolderPanel extends TopComponent implements
                 directoryName.setText(""); // NOI18N
             }
         } else {
-            File f = FileUtil.toFile(fs.getRoot());
+            FileObject fo = fs.getRoot();
+            if (fo != null) {
+            File f = FileUtil.toFile(fo);
             if (f != null) {
-                // The folder does not really exist, but the FS root does
-                // exist on disk. Guess that the resulting file name will
-                // be derived simply from the folder of the root (not always
-                // true, note).
-                File f2 = new File(f, name.replace('/', File.separatorChar)); // NOI18N
-                directoryName.setText(f2.getAbsolutePath());
+                    // The folder does not really exist, but the FS root does
+                    // exist on disk. Guess that the resulting file name will
+                    // be derived simply from the folder of the root (not always
+                    // true, note).
+                    File f2 = new File(f, name.replace('/', File.separatorChar)); // NOI18N
+                    directoryName.setText(f2.getAbsolutePath());
+                } else {
+                    // The folder has not been made, and even if it were, the FS
+                    // root is not on disk anyway. Leave it blank.
+                    directoryName.setText(""); // NOI18N
+                }
             } else {
-                // The folder has not been made, and even if it were, the FS
-                // root is not on disk anyway. Leave it blank.
-                directoryName.setText(""); // NOI18N
+                //issue 34896, for whatever reason the root is sometimes null
+                directoryName.setText(""); //NOI18N
             }
         }
     }
@@ -768,14 +774,26 @@ class DataFolderPanel extends TopComponent implements
             if (!isValid ()) {
                 editor.setDataFolder (null);
             } else {
-                if (df == null && system != null && system.get () != null) {
-                    df = DataFolder.findFolder (((FileSystem)system.get ()).getRoot ());
+                FileSystem fs = null;
+                if (system != null) {
+                    fs = (FileSystem) system.get();
                 }
-                String name = df.getPrimaryFile ().getPath ();
-                if (name.equals(packageName.getText())) {
-                    editor.setDataFolder (df);
+                if (df == null && fs!= null) {
+                    FileObject fo = fs.getRoot();
+                    //issue 34896, for whatever reason the root is sometimes null
+                    if (fo != null) {
+                        df = DataFolder.findFolder (fo);
+                    }
+                }
+                if (df != null) {
+                    String name = df.getPrimaryFile ().getPath ();
+                    if (name.equals(packageName.getText())) {
+                        editor.setDataFolder (df);
+                    } else {
+                        editor.setDataFolder (null);
+                    }
                 } else {
-                    editor.setDataFolder (null);
+                    editor.setDataFolder(null);
                 }
             }
         }
