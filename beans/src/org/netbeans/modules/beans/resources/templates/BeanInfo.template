@@ -55,7 +55,6 @@ public class __NAME__ extends SimpleBeanInfo {
      * information should be obtained by automatic analysis.
      */
     public BeanDescriptor getBeanDescriptor() {
-	//return beanDescriptor;
 	return getBdescriptor();
     }
 
@@ -72,7 +71,6 @@ public class __NAME__ extends SimpleBeanInfo {
      * if a given PropertyDescriptor is an IndexedPropertyDescriptor.
      */
     public PropertyDescriptor[] getPropertyDescriptors() {
-        //return properties;
 	return getPdescriptor();
     }
 
@@ -84,7 +82,6 @@ public class __NAME__ extends SimpleBeanInfo {
      * should be obtained by automatic analysis.
      */
     public EventSetDescriptor[] getEventSetDescriptors() {
-        //return eventSets;
 	return getEdescriptor();
     }
 
@@ -96,7 +93,6 @@ public class __NAME__ extends SimpleBeanInfo {
      * should be obtained by automatic analysis.
      */
     public MethodDescriptor[] getMethodDescriptors() {
-        //return methods;
 	return getMdescriptor();
     }
 
