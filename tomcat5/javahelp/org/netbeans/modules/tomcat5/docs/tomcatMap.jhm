@@ -53,6 +53,11 @@ help\
 	<mapID target="org.netbeans.modules.tomcat5.nodes.TomcatInstanceNode.PropertySheet" 
            url="tomcat/tomcat_internal_props.html" />
 	<mapID target="org.netbeans.modules.tomcat5.nodes.TomcatFactoryNode" 
-           url="tomcat/tomcat_top_node.html" />
+	   url="tomcat/tomcat_top_node.html" />
+
+        <mapID target="org.netbeans.core.NbAuthenticator.getPasswordAuthentication" 
+		url="/org/netbeans/modules/usersguide/pending.html" />
+
+
  		
 </map>
