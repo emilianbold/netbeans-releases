@@ -58,7 +58,7 @@
     <tocitem text="Specifying Files to Ignore" target="files.ignore-files" />
   </tocitem>
 
-  <tocitem text="Using Version Control with the IDE" >
+  <tocitem text="Using Version Control" >
     <tocitem text="About Version Control" target="vcs.about" />
     <tocitem text="Working with Version Control" target="vcs.overview" />
     <tocitem text="VCS Tasks: Quick Reference" target="vcs.quickref" />
