@@ -34,7 +34,7 @@ public class JPDAConnect extends Task {
      * Host to connect to.
      * By default, localhost.
      */
-    public void setHost(String h) {
+    public void setHost (String h) {
         host = h;
     }
     

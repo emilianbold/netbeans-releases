@@ -223,7 +223,7 @@ public class JPDAStart extends Task implements Runnable {
             sourcePath = ClassPathSupport.createProxyClassPath (
                 new ClassPath[] {
                     sourcePath,
-                    convertToSourcePath (project, sourcepath)
+                    convertToClassPath (project, sourcepath)
                 }
             );
         sourcePath = ClassPathSupport.createProxyClassPath (
@@ -238,6 +238,35 @@ public class JPDAStart extends Task implements Runnable {
             }
         );
         return sourcePath;
+    }
+    
+    static ClassPath convertToClassPath (Project project, Path path) {
+        String[] paths = path.list ();
+        List l = new ArrayList ();
+        int i, k = paths.length;
+        for (i = 0; i < k; i++) {
+            URL u = null;
+            try {
+                File f = FileUtil.normalizeFile (project.resolveFile (paths [i]));
+                if (!isValid (f, project)) {
+                    continue;
+                }
+                String pathString = paths [i].toLowerCase ();
+                if (pathString.endsWith (".jar")) {
+                    u = new URL ("jar:" + f.toURI () + "!/");
+                } else if (pathString.endsWith (".zip")) {
+                    u = new URL ("jar:" + f.toURI () + "!/");
+                } else {
+                    u = f.toURI ().toURL ();
+                }
+            } catch (MalformedURLException e) {
+                ErrorManager.getDefault ().notify (ErrorManager.EXCEPTION, e);
+                continue;
+            }
+            l.add (u);
+        }
+        URL[] urls = (URL[]) l.toArray (new URL [l.size ()]);
+        return ClassPathSupport.createClassPath (urls);
     }
 
     /**
@@ -258,12 +287,12 @@ public class JPDAStart extends Task implements Runnable {
                     continue;
                 }
                 String pathString = paths [i].toLowerCase ();
-                if (pathString.endsWith(".jar")) {
-                    u = new URL("jar:" + f.toURI() + "!/");
-                } else if (pathString.endsWith(".zip")) {
-                    u = new URL("jar:" + f.toURI() + "!/");
+                if (pathString.endsWith (".jar")) {
+                    u = new URL ("jar:" + f.toURI () + "!/");
+                } else if (pathString.endsWith (".zip")) {
+                    u = new URL ("jar:" + f.toURI () + "!/");
                 } else {
-                    u = f.toURI().toURL();
+                    u = f.toURI ().toURL ();
                 }
             } catch (MalformedURLException e) {
                 ErrorManager.getDefault ().notify (ErrorManager.EXCEPTION, e);
@@ -272,18 +301,18 @@ public class JPDAStart extends Task implements Runnable {
             FileObject fos[] = SourceForBinaryQuery.findSourceRoot (u);
             if (fos.length > 0) {
                 try {
-                    u = FileUtil.toFile(fos[0]).toURI().toURL();
+                    u = FileUtil.toFile (fos [0]).toURI ().toURL ();
                 } catch (MalformedURLException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+                    ErrorManager.getDefault ().notify (ErrorManager.EXCEPTION, e);
                     continue;
                 }
-                if (!exist.contains(u)) {
-                    l.add(ClassPathSupport.createResource(u));
-                    exist.add(u);
+                if (!exist.contains (u)) {
+                    l.add (ClassPathSupport.createResource (u));
+                    exist.add (u);
                 }
             }
         }
-        return ClassPathSupport.createClassPath(l);
+        return ClassPathSupport.createClassPath (l);
     }
 
     /**
