@@ -19,15 +19,16 @@ import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
-/** Factory capable to create DeploymentManager that can deploy to 
+/** Factory capable to create DeploymentManager that can deploy to
  * Tomcat 5.
  *
- * Tomcat URI has following format: 
- * <CODE>tomcat:[home=&lt;home_path&gt;:[base=&lt;base_path&gt;:]]&lt;manager_app_url&gt;</CODE>
+ * Tomcat URI has following format:
+ * <PRE><CODE>tomcat:[home=&lt;home_path&gt;:[base=&lt;base_path&gt;:]]&lt;manager_app_url&gt;</CODE></PRE>
+ * for example
+ * <PRE><CODE>tomcat:http://localhost:8080/manager/</CODE></PRE>
  * where paths values will be used as CATALINA_HOME and CATALINA_BASE properties and manager_app_url
  * denotes URL of manager application configured on this server and has to start with <CODE>http:</CODE>.
- *
- * @author  Radim Kubacki
+ * @author Radim Kubacki
  */
 public class TomcatFactory implements DeploymentFactory {
     
@@ -49,7 +50,9 @@ public class TomcatFactory implements DeploymentFactory {
         return instance;
     }
     
-    /** Get the ErrorManager that logs module events. */
+    /** Get the {@link org.openide.ErrorManager} that logs module events.
+     * @return Module specific ErrorManager.
+     */
     public static ErrorManager getEM () {
         return err;
     }
@@ -58,6 +61,13 @@ public class TomcatFactory implements DeploymentFactory {
     public TomcatFactory() {
     }
     
+    /** Factory method to create DeploymentManager.
+     * @param uri URL of configured manager application.
+     * @param uname user with granted manager role
+     * @param passwd user's password
+     * @throws DeploymentManagerCreationException
+     * @return {@link TomcatManager}
+     */    
     public DeploymentManager getDeploymentManager(String uri, String uname, String passwd) 
     throws DeploymentManagerCreationException {
         if (!handlesURI (uri)) {
@@ -84,6 +94,10 @@ public class TomcatFactory implements DeploymentFactory {
         return NbBundle.getMessage (TomcatFactory.class, "LBL_TomcatFactoryVersion");
     }
     
+    /**
+     * @param str
+     * @return <CODE>true</CODE> for URIs beggining with <CODE>tomcat:</CODE> prefix
+     */    
     public boolean handlesURI(String str) {
         return str != null && str.startsWith (tomcatUriPrefix) && str.indexOf ("http:", tomcatUriPrefix.length ()) >= 0;
     }

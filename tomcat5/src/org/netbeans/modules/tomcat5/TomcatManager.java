@@ -63,7 +63,12 @@ public class TomcatManager implements DeploymentManager {
     /** CATALINA_BASE of disconnected TomcatManager. */
     private String catalinaBase;
     
-    /** Creates an instance of connected TomcatManager */
+    /** Creates an instance of connected TomcatManager
+     * @param conn <CODE>true</CODE> to create connected manager
+     * @param uri URI for DeploymentManager
+     * @param uname username
+     * @param passwd password
+     */
     public TomcatManager (boolean conn, String uri, String uname, String passwd) {
         if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
             TomcatFactory.getEM ().log ("Creating connected TomcatManager uri="+uri+", uname="+uname);
@@ -107,7 +112,8 @@ public class TomcatManager implements DeploymentManager {
     }
      */
     
-    /** Returns URI.
+    /** Returns URI of TomcatManager.
+     * @return URI
      */
     public String getUri () {
         return ((catalinaHome != null)? "home="+catalinaHome + ":": "") +// NOI18N
@@ -298,6 +304,13 @@ public class TomcatManager implements DeploymentManager {
         return impl;
     }
     
+    /** Deploys web module using deploy command
+     * @param targets Array containg one web module
+     * @param is Web application stream
+     * @param deplPlan Server specific data
+     * @throws IllegalStateException when TomcatManager is disconnected
+     * @return Object that reports about deployment progress
+     */    
     public ProgressObject distribute (Target[] targets, InputStream is, InputStream deplPlan) 
     throws IllegalStateException {
         if (!isConnected ()) {
@@ -320,7 +333,9 @@ public class TomcatManager implements DeploymentManager {
         return impl;
     }
     
-    /** Connected / disconnected status. */
+    /** Connected / disconnected status.
+     * @return <CODE>true</CODE> when connected.
+     */
     public boolean isConnected () {
         return connected;
     }
