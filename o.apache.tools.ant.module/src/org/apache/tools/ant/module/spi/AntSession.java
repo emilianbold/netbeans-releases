@@ -107,7 +107,7 @@ public final class AntSession {
      * Note that this logger may also receive the event so it must be reentrant.
      * </p>
      * <p class="nonnormative">
-     * Loggers are discouraged from using facility merely to create hyperlinks
+     * Loggers are discouraged from using this facility merely to create hyperlinks
      * for which the target is known. Use {@link #println} instead. This method
      * is primarily intended for use from the standard logger to deliver stack
      * trace lines to other loggers which may be able to hyperlink them.
