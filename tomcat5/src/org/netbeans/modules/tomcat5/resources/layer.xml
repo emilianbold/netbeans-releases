@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -65,6 +65,40 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
 
     </folder>
+    <folder name="JavaHelp">
+      <!-- Merge after Core IDE Help: -->
+      <attr name="org-netbeans-modules-usersguide-above-regular.txt/org-netbeans-modules-tomcat-tomcat5-helpset.xml" boolvalue="true"/>
+      <!-- Merge after Web Services Help: -->
+      <attr name="com-sun-forte4j-webdesigner-docs-helpset.xml/org-netbeans-modules-tomcat-tomcat5-helpset.xml" boolvalue="true"/>
+      <file name="org-netbeans-modules-tomcat-tomcat5-helpset.xml" url="helpset-decl.xml"/>
+      <!-- Merge before 3rd party help: -->
+      <attr name="org-netbeans-modules-tomcat-tomcat5-helpset.xml/org-netbeans-modules-usersguide-below-regular.txt" boolvalue="true"/>
+    </folder>
+    
+  <folder name="Menu">
+    <folder name="Help">
+      <folder name="HelpShortcuts">
+        <!-- Insert helpset under the separator line below the Usersguide help -->
+        <attr name="org-netbeans-modules-usersguide-sep.instance/org-netbeans-modules-tomcat-tomcat5-mainpage.xml" boolvalue="true"/>
+        <!-- Insert helpset under Web Services Help -->
+        <attr name="com-sun-forte4j-webdesigner-docs-mainpage.xml/org-netbeans-modules-web-monitor-mainpage.xml" boolvalue="true"/>
+        <file name="org-netbeans-modules-tomcat-tomcat5-mainpage.xml" url="help-main-ref.xml">
+          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.tomcat.tomcat5.Bundle"/>
+          <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/tomcat/tomcat5/resources/blank.gif"/>
+        </file>
+        <attr name="org-netbeans-modules-tomcat-tomcat5-mainpage.xml/org-netbeans-modules-usersguide-lower-sep.instance" boolvalue="true"/>
+      </folder>
+    </folder>
+  </folder>
+
+  <folder name="Actions">
+    <folder name="Help">
+      <file name="org-netbeans-modules-tomcat-tomcat5-mainpage.xml" url="help-main-ref.xml">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.tomcat.tomcat5.Bundle"/>
+        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/tomcat/tomcat5/resources/Tomcat5Icon.gif"/>
+      </file>
+    </folder>
+  </folder>    
 
     <!-- PENDING: settings for storing of Tomcat instances    
     <folder name="xml">
