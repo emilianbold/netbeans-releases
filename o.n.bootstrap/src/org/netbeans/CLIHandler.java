@@ -235,7 +235,7 @@ public abstract class CLIHandler extends Object {
      * @return the file to be used as lock file or null parsing of args failed
      */
     static Status initialize(String[] args, ClassLoader loader, boolean doAllInit, boolean failOnUnknownOptions) {
-        return initialize(new Args(args, System.in, System.out), (Integer)null, allCLIs(loader), doAllInit, failOnUnknownOptions);
+        return initialize(new Args(args, System.in, System.out, System.getProperty ("user.dir")), (Integer)null, allCLIs(loader), doAllInit, failOnUnknownOptions);
     }
     
     /**
@@ -389,6 +389,7 @@ public abstract class CLIHandler extends Object {
                                     for (int a = 0; a < arr.length; a++) {
                                         os.writeUTF(arr[a]);
                                     }
+                                    os.writeUTF (args.getCurrentDirectory().toString()); 
                                     os.flush();
                                     break;
                                 case REPLY_EXIT:
@@ -533,12 +534,14 @@ public abstract class CLIHandler extends Object {
         private final String[] argsBackup;
         private InputStream is;
         private OutputStream os;
+        private File currentDir;
         
-        Args(String[] args, InputStream is, OutputStream os) {
+        Args(String[] args, InputStream is, OutputStream os, String currentDir) {
             argsBackup = args;
             reset();
             this.is = is;
             this.os = os;
+            this.currentDir = new File (currentDir);
         }
         
         void reset() {
@@ -561,6 +564,10 @@ public abstract class CLIHandler extends Object {
          */
         public OutputStream getOutputStream() {
             return os;
+        }
+        
+        public File getCurrentDirectory () {
+            return currentDir;
         }
         
         /**
@@ -662,8 +669,9 @@ public abstract class CLIHandler extends Object {
                 for (int i = 0; i < args.length; i++) {
                     args[i] = is.readUTF();
                 }
+                String currentDir = is.readUTF ();
                 
-                Args arguments = new Args(args, new IS(is, os), new OS(is, os));
+                Args arguments = new Args(args, new IS(is, os), new OS(is, os), currentDir);
                 int res = notifyHandlers(arguments, handlers, WHEN_INIT, failOnUnknownOptions);
                 
                 if (res == 0) {
