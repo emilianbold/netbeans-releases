@@ -13,9 +13,11 @@
 
 package org.netbeans.modules.projectimport.eclipse.wizard;
 
+import java.awt.Color;
 import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.projectimport.eclipse.EclipseUtils;
@@ -33,6 +35,9 @@ final class SelectionPanel extends JPanel {
     public SelectionPanel() {
         super();
         initComponents();
+        Color lblBgr = UIManager.getColor("Label.background"); // NOI18N
+        wsDescription.setBackground(lblBgr);
+        note.setBackground(lblBgr);
         workspaceDir.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) { workspaceChanged(); }
             public void removeUpdate(DocumentEvent e) { workspaceChanged(); }
@@ -132,8 +137,6 @@ final class SelectionPanel extends JPanel {
         workspaceDir = new javax.swing.JTextField();
         worskpaceBrowse = new javax.swing.JButton();
         workSpaceLBL = new javax.swing.JLabel();
-        filler = new javax.swing.JLabel();
-        wsDescription = new javax.swing.JLabel();
         projectDir = new javax.swing.JTextField();
         projectBrowse = new javax.swing.JButton();
         projectLBL = new javax.swing.JLabel();
@@ -144,6 +147,8 @@ final class SelectionPanel extends JPanel {
         projectDestLBL = new javax.swing.JLabel();
         projectDestDir = new javax.swing.JTextField();
         projectDestBrowse = new javax.swing.JButton();
+        wsDescription = new javax.swing.JTextArea();
+        note = new javax.swing.JTextArea();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -178,19 +183,6 @@ final class SelectionPanel extends JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(workSpaceLBL, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 10;
-        gridBagConstraints.weighty = 1.0;
-        add(filler, gridBagConstraints);
-
-        wsDescription.setText(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "LBL_SpecifyWorkspaceDescription"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 24, 0);
-        add(wsDescription, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -316,6 +308,31 @@ final class SelectionPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 11, 0, 0);
         add(projectDestBrowse, gridBagConstraints);
 
+        wsDescription.setEditable(false);
+        wsDescription.setLineWrap(true);
+        wsDescription.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/projectimport/eclipse/wizard/Bundle").getString("LBL_SpecifyWorkspaceDescription"));
+        wsDescription.setWrapStyleWord(true);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 24, 0);
+        add(wsDescription, gridBagConstraints);
+
+        note.setEditable(false);
+        note.setLineWrap(true);
+        note.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/projectimport/eclipse/wizard/Bundle").getString("LBL_NoteAboutWorkspaceAdvantage"));
+        note.setWrapStyleWord(true);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
+        add(note, gridBagConstraints);
+
     }
     // </editor-fold>//GEN-END:initComponents
     
@@ -385,7 +402,7 @@ final class SelectionPanel extends JPanel {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup;
-    private javax.swing.JLabel filler;
+    private javax.swing.JTextArea note;
     private javax.swing.JButton projectBrowse;
     private javax.swing.JRadioButton projectButton;
     private javax.swing.JLabel projectButtonLBL;
@@ -399,6 +416,6 @@ final class SelectionPanel extends JPanel {
     private javax.swing.JLabel workspaceButtonLBL;
     private javax.swing.JTextField workspaceDir;
     private javax.swing.JButton worskpaceBrowse;
-    private javax.swing.JLabel wsDescription;
+    private javax.swing.JTextArea wsDescription;
     // End of variables declaration//GEN-END:variables
 }

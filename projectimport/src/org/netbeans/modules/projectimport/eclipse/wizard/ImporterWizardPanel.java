@@ -52,7 +52,7 @@ abstract class ImporterWizardPanel implements WizardDescriptor.Panel {
         comp.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE); // NOI18N
         comp.putClientProperty("WizardPanel_contentSelectedIndex",  // NOI18N
                 new Integer(wizardNumber));
-        comp.putClientProperty("WizardPanel_contentData", new String[] {
+        comp.putClientProperty("WizardPanel_contentData", new String[] { // NOI18N
             WORKSPACE_LOCATION_STEP, PROJECTS_SELECTION_STEP
         });
         comp.setPreferredSize(new java.awt.Dimension(500, 380));

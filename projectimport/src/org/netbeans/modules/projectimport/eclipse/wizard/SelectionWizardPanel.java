@@ -47,14 +47,14 @@ final class SelectionWizardPanel extends ImporterWizardPanel implements
         String propName = evt.getPropertyName();
         if ("errorMessage".equals(propName)) { //NOI18N
             setErrorMessage((String) evt.getNewValue());
-        } else if ("workspaceChoosen".equals(propName)) {
+        } else if ("workspaceChoosen".equals(propName)) { // NOI18N
             String[] steps;
             if (((Boolean) evt.getNewValue()).booleanValue()) {
                 steps = new String[] { WORKSPACE_LOCATION_STEP, PROJECTS_SELECTION_STEP };
             } else {
                 steps = new String[] { PROJECT_SELECTION_STEP };
             }
-            panel.putClientProperty("WizardPanel_contentData", steps);
+            panel.putClientProperty("WizardPanel_contentData", steps); // NOI18N
         }
     }
     
