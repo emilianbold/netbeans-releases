@@ -1,7 +1,7 @@
 Manifest-version: 1.0
 Main-Class: org.netbeans.jemmy.JemmyProperties
 Jemmy-MajorVersion: 2.2
-Jemmy-MinorVersion: 4.15
+Jemmy-MinorVersion: 4.16
 Jemmy-Build: @BUILD_NUMBER@
 
 Name: org/netbeans/jemmy
@@ -47,7 +47,7 @@ Name: org/netbeans/jemmy/explorer
 Implementation-Version: 03/02/24-12:37:57
 
 Name: org/netbeans/jemmy/operators
-Implementation-Version: 03/04/11-14:10:32
+Implementation-Version: 05/01/31-15:22:31
 
 Name: org/netbeans/jemmy/util
 Implementation-Version: 03/02/24-12:38:13

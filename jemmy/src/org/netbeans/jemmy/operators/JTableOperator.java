@@ -795,6 +795,7 @@ implements Outputable, Timeoutable {
      * @return Point indicating coordinates (x - column, y - row)
      */
     public Point findCell(TableCellChooser chooser, int[] rows, int[] columns, int index) {
+        System.out.println("On findCell invocation, index = " + index);
 	TableModel model = getModel();
         int[] realRows;
         if(rows != null) {
@@ -818,6 +819,7 @@ implements Outputable, Timeoutable {
 	for(int i = 0; i < realRows.length; i++) {
 	    for(int j = 0; j < realColumns.length; j++) {
 		if(chooser.checkCell(this, realRows[i], realColumns[j])) {
+                    System.out.println("Cell is OK, count="+count+", index="+index+", i="+i+", j="+j);
 		    if(count == index) {
 			return(new Point(realColumns[j], realRows[i]));
 		    } else {

@@ -117,13 +117,14 @@ public class jemmy_005 extends JemmyTest {
                     finalize();
                     return(1);
                 }
-
-                if(pmo.showMenuItems("XXX|submenu", "|").length != 2) {
+                
+                ComponentChooser[] choosers1 = {new MenuItemChooser("XXX"), new MenuItemChooser("submenu")};
+                if(pmo.showMenuItems(choosers1).length != 2) {
                     finalize();
                     return(1);
                 }
 
-                if(!pmo.showMenuItem("XXX|submenu", "|").getText().equals("submenu")) {
+                if(!pmo.showMenuItem(choosers1).getText().equals("submenu")) {
                     finalize();
                     return(1);
                 }
@@ -200,6 +201,19 @@ public class jemmy_005 extends JemmyTest {
 	}
     }
 
+    public static class MenuItemChooser implements ComponentChooser {
+        String text;
+        public MenuItemChooser(String text) {
+            this.text = text;
+        }
+        public boolean checkComponent(Component comp) {
+            return(comp instanceof JMenuItem &&
+                    Operator.getDefaultStringComparator().equals(text, ((JMenuItem)comp).getText()));
+        }
+        public String getDescription() {
+            return("MenuItem with \"" + text + "\" text");
+        }
+    }
     class ListChecker implements Waitable {
 	public Object actionProduced(Object obj) {
 	    TreePath[] pths = (TreePath[])obj;

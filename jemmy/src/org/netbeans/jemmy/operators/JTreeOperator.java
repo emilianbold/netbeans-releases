@@ -463,12 +463,17 @@ public class JTreeOperator extends JComponentOperator
      * @param index a child index.
      * @return a node child.
      */
-    public Object getChild(Object node, int index) {
+    public Object getChild(final Object node, final int index) {
 	Object result = null;
 	try {
+/*
 	    lockQueue();
 	    result = ((JTree)getSource()).getModel().getChild(node, index);
 	    unlockQueue();
+*/
+            result = runMapping(new MapAction("getChild") {
+  public Object map() {
+     return ((JTree)getSource()).getModel().getChild(node, index);		}});
 	} catch(Exception e) {
 	    unlockAndThrow(e);
 	}

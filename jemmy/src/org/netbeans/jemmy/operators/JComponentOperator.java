@@ -75,6 +75,8 @@ public class JComponentOperator extends ContainerOperator
      * @see #getDump
      */
     public static final String TOOLTIP_TEXT_DPROP = "Tooltip text";
+    public static final String A11Y_NAME_DPROP = "Accessible name";
+    public static final String A11Y_DESCRIPTION_DPROP = "Accessible decription";
 
     private final static long WAIT_TOOL_TIP_TIMEOUT = 10000;
     private final static long SHOW_TOOL_TIP_TIMEOUT = 0;
@@ -331,6 +333,12 @@ public class JComponentOperator extends ContainerOperator
 	if(((JComponent)getSource()).getToolTipText() != null) {
 	    result.put(TOOLTIP_TEXT_DPROP, ((JComponent)getSource()).getToolTipText());
 	}
+        if(System.getProperty("jemmy.dump.a11y") != null &
+           System.getProperty("jemmy.dump.a11y").equals("on")) {
+            AccessibleContext a11y = ((JComponent)getSource()).getAccessibleContext();
+            result.put(A11Y_NAME_DPROP, a11y.getAccessibleName());
+            result.put(A11Y_DESCRIPTION_DPROP, a11y.getAccessibleDescription());
+        }
 	return(result);
     }
 

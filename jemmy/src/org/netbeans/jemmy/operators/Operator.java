@@ -500,6 +500,17 @@ public abstract class Operator extends Object
             return(new String[0]);
         }
     }
+    public ComponentChooser[] getParentPath(ComponentChooser path[]) {
+        if(path.length > 1) {
+            ComponentChooser[] ppath = new ComponentChooser[path.length - 1];
+            for(int i = 0; i < ppath.length; i++) {
+                ppath[i] = path[i];
+            }
+            return(ppath);
+        } else {
+            return(new ComponentChooser[0]);
+        }
+    }
 
     /**
      * Parses a string to a string array

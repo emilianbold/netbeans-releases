@@ -619,6 +619,14 @@ implements Outputable, Timeoutable {
 	pushMenuNoBlock(parseString(path));
     }
 
+    public JMenuItemOperator[] showMenuItems(ComponentChooser[] choosers) {
+        if(choosers == null || choosers.length == 0) {
+            return(JMenuItemOperator.getMenuItems((MenuElement)getSource(), this));
+        } else {
+            return(JMenuItemOperator.getMenuItems((JMenu)pushMenu(choosers), this));
+        }
+    }
+
     /**
      * Shows submenu of menu specified by a <code>path</code> parameter.
      * @param path an array of menu texts.
@@ -691,6 +699,22 @@ implements Outputable, Timeoutable {
      */
     public JMenuItemOperator[] showMenuItems(String path) {
         return(showMenuItems(path, getComparator()));
+    }
+
+    public JMenuItemOperator showMenuItem(ComponentChooser[] choosers) {
+        ComponentChooser[] parentPath = getParentPath(choosers);
+        JMenu menu;
+        ContainerOperator menuCont;
+        if(parentPath.length > 0) {
+            menu = (JMenu)pushMenu(getParentPath(choosers));
+            menuCont = new ContainerOperator(menu.getPopupMenu());
+            menuCont.copyEnvironment(this);
+        } else {
+            menuCont = this;
+        }
+        JMenuItemOperator result = new JMenuItemOperator(menuCont, choosers[choosers.length - 1]);
+        result.copyEnvironment(this);
+        return(result);
     }
 
     /**

@@ -9,14 +9,10 @@ import org.netbeans.jemmy.demo.Demonstrator;
 
 import org.netbeans.jemmy.operators.*;
 
-import java.awt.event.MouseListener;
-import java.awt.event.MouseEvent;
-
-import java.io.PrintWriter;
-
 import java.lang.reflect.InvocationTargetException;
 
 import javax.swing.*;
+import org.netbeans.jemmy.ComponentChooser;
 
 public class jemmy_002 extends JemmyTest {
     public int runIt(Object obj) {
@@ -72,7 +68,18 @@ public class jemmy_002 extends JemmyTest {
 
             mbo.closeSubmenus();
 
-            if(!mbo.showMenuItem("menu|submenu").getText().equals("submenu")) {
+            ComponentChooser[] choosers1 = {
+                    new jemmy_005.MenuItemChooser("menu"), 
+                    new jemmy_005.MenuItemChooser("submenu")};
+
+            if(mbo.showMenuItems(choosers1).length != 3) {
+		finalize();
+		return(1);
+            }
+
+
+            mbo.closeSubmenus();
+            if(!mbo.showMenuItem(choosers1).getText().equals("submenu")) {
 		finalize();
 		return(1);
             }

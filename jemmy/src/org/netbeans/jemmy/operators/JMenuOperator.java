@@ -531,6 +531,10 @@ implements Outputable, Timeoutable{
 	pushMenuNoBlock(parseString(path));
     }
 
+    public JMenuItemOperator[] showMenuItems(ComponentChooser[] choosers) {
+        return(JMenuItemOperator.getMenuItems((JMenu)pushMenu(choosers), this));
+    }
+
     /**
      * Shows submenu of menu specified by a <code>path</code> parameter.
      * @param path an array of menu texts.
@@ -539,7 +543,7 @@ implements Outputable, Timeoutable{
      * @throws TimeoutExpiredException
      */
     public JMenuItemOperator[] showMenuItems(String[] path, StringComparator comparator) {
-        return(JMenuItemOperator.getMenuItems((JMenu)pushMenu(path, comparator), this));
+        return(showMenuItems(JMenuItemOperator.createChoosers(path, comparator)));
     }
 
     /**
@@ -601,6 +605,22 @@ implements Outputable, Timeoutable{
         return(showMenuItems(path, getComparator()));
     }
 
+    public JMenuItemOperator showMenuItem(ComponentChooser[] choosers) {
+        ComponentChooser[] parentPath = getParentPath(choosers);
+        JMenu menu;
+        if(parentPath.length > 0) {
+            menu = (JMenu)pushMenu(parentPath);
+        } else {
+            push();
+            menu = (JMenu)getSource();
+        }
+        JPopupMenuOperator popup = new JPopupMenuOperator(menu.getPopupMenu());
+        popup.copyEnvironment(this);
+        JMenuItemOperator result = new JMenuItemOperator(popup, choosers[choosers.length - 1]);
+        result.copyEnvironment(this);
+        return(result);
+    }
+
     /**
      * Expends all menus to show menu item specified by a <code>path</code> parameter.
      * @param path an array of menu texts.
@@ -612,7 +632,7 @@ implements Outputable, Timeoutable{
         String[] parentPath = getParentPath(path);
         JMenu menu;
         if(parentPath.length > 0) {
-            menu = (JMenu)pushMenu(getParentPath(path), comparator);
+            menu = (JMenu)pushMenu(parentPath, comparator);
         } else {
             push();
             menu = (JMenu)getSource();
