@@ -15,7 +15,6 @@
         <pathelement location="${openide/compiler.dir}/${nb.modules/autoload.dir}/openide-compiler.jar"/>
         <pathelement location="${openide/execution.dir}/${nb.modules.dir}/org-openide-execution.jar"/>
         <pathelement location="${openide/io.dir}/${nb.modules.dir}/org-openide-io.jar"/> 
-        <pathelement location="${core/term.dir}/${nb.modules.dir}/org-netbeans-lib-terminalemulator.jar"/>
     </path>
     
     <path id="codetest.classpath">
@@ -29,7 +28,6 @@
         <pathelement location="${openide/compiler.dir}/${nb.modules/autoload.dir}/openide-compiler.jar"/>
         <pathelement location="${openide/execution.dir}/${nb.modules.dir}/org-openide-execution.jar"/>
         <pathelement location="${openide/io.dir}/${nb.modules.dir}/org-openide-io.jar"/> 
-        <pathelement location="${core/term.dir}/${nb.modules.dir}/org-netbeans-lib-terminalemulator.jar"/>
         <pathelement location="${core/settings.dir}/${nb.modules.dir}/org-netbeans-modules-settings.jar"/>
         <fileset dir="${libs/xerces.dir}/${nb.modules/autoload.dir}/ext">
             <include name="xerces-*.jar"/>
