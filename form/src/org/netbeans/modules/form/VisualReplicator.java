@@ -345,6 +345,13 @@ public class VisualReplicator {
             return;
         }
 
+        // keep double buffering turned off for JComponent in fake peer container
+        if ("doubleBuffered".equals(property.getName()) // NOI18N
+                && targetComp instanceof JComponent
+                && hasAwtParent(metacomp)
+                && (getDesignRestrictions() & ATTACH_FAKE_PEERS) != 0)
+            return;
+
         java.lang.reflect.Method writeMethod =
             property.getPropertyDescriptor().getWriteMethod();
         if (writeMethod == null)
