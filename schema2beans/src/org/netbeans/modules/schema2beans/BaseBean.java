@@ -2493,6 +2493,12 @@ public abstract class BaseBean implements Cloneable, Bean {
 
     public String nameChild(Object childObj, boolean returnConstName,
                             boolean returnSchemaName) {
+        return nameChild(childObj, returnConstName, returnSchemaName, false);
+    }
+    
+    public String nameChild(Object childObj, boolean returnConstName,
+                            boolean returnSchemaName,
+                            boolean returnXPathName) {
         BeanProp[] props = beanProps();
         Object propValue;
         BeanProp prop = null;
@@ -2523,7 +2529,12 @@ public abstract class BaseBean implements Cloneable, Bean {
                 return prop.getBeanName();
             else if (returnSchemaName)
                 return prop.dtdName;
-            else
+            else if (returnXPathName) {
+                if (index < 0)
+                    return prop.dtdName;
+                else
+                    return prop.dtdName+"[position()="+index+"]";
+            } else
                 return prop.getBeanName()+"."+Integer.toHexString(prop.indexToId(index));
         }
         return null;
@@ -2536,4 +2547,22 @@ public abstract class BaseBean implements Cloneable, Bean {
     public void _setChanged(boolean changed) {
         throw new UnsupportedOperationException();
     }
+
+    public String _getXPathExpr() {
+		if (parent() == null) {
+			return "/"+dtdName();
+		} else {
+			String parentXPathExpr = parent()._getXPathExpr();
+			String myExpr = parent().nameChild(this, false, false, true);
+			return parentXPathExpr + "/" + myExpr;
+		}
+    }
+
+	public String _getXPathExpr(Object childObj) {
+		String childName = nameChild(childObj, false, false, true);
+		if (childName == null) {
+			throw new IllegalArgumentException("childObj ("+childObj.toString()+") is not a child of this bean ("+dtdName()+")");
+		}
+		return _getXPathExpr() + "/" + childName;
+	}
 }

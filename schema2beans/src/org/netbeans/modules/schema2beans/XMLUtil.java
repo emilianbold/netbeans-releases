@@ -15,6 +15,7 @@ package org.netbeans.modules.schema2beans;
 
 import java.io.*;
 import org.w3c.dom.*;
+import org.xml.sax.*;
 
 public class XMLUtil {
     private XMLUtil() {}
@@ -600,6 +601,142 @@ public class XMLUtil {
     protected static void printLevel(StringBuffer out, int level, String indent) {
         for (int i = 0; i < level; ++i) {
             out.append(indent);
+        }
+    }
+
+    /**
+     * Given an XPath expression, find it's location in a Document
+     * @return null if not found
+     */
+    public static Locator findLocationXPath(InputSource in, String xpathExpr) throws IOException, org.xml.sax.SAXException {
+        XMLReader parser;
+        try {
+            javax.xml.parsers.SAXParserFactory spf
+                = javax.xml.parsers.SAXParserFactory.newInstance();
+            spf.setNamespaceAware(true);
+            parser = spf.newSAXParser().getXMLReader();
+        } catch (javax.xml.parsers.ParserConfigurationException e) {
+            throw new RuntimeException(e);
+        }
+        XPathLocator locator = new XPathLocator(xpathExpr);
+        parser.setContentHandler(locator);
+        parser.parse(in);
+        return locator.getDocumentLocator();
+    }
+
+    private static class XPathLocator
+        extends org.xml.sax.helpers.DefaultHandler implements ContentHandler {
+        private String xpathExpr;
+        private String[] xpathParts;
+        private int partNum;
+        private String desiredElementName;
+        private int desiredPosition;
+        private boolean isAttribute;
+        private Locator locator = null;
+        private Locator resultLocator = null;
+
+        public XPathLocator(String xpathExpr) {
+            xpathExpr = xpathExpr.trim();
+            if (xpathExpr.startsWith("/"))
+                xpathExpr = xpathExpr.substring(1, xpathExpr.length());
+            this.xpathExpr = xpathExpr;
+            xpathParts = xpathExpr.split("/");  // This is a bit too simple.
+            partNum = 0;
+            setElementName();
+        }
+
+        private void setElementName() {
+            desiredElementName = xpathParts[partNum].trim();
+            desiredPosition = 0;
+            isAttribute = false;
+            int startPos = desiredElementName.indexOf('[');
+            int endPos = desiredElementName.indexOf(']');
+            //System.out.println("desiredElementName="+desiredElementName);
+            if (startPos >= 0) {
+                if (endPos < 0)
+                    throw new IllegalArgumentException("XPath subexpression ("+desiredElementName+") is missing an ending ']'.");
+                String subExpr = desiredElementName.substring(startPos+1,
+                                                              endPos).trim();
+                desiredElementName = desiredElementName.substring(0, startPos);
+                //System.out.println("subExpr="+subExpr);
+                if (subExpr.startsWith("position()=")) {
+                    desiredPosition = Integer.parseInt(subExpr.substring(11, subExpr.length()));
+                } else {
+                    boolean allDigits = subExpr.length() > 0;
+                    for (int i = 0; i < subExpr.length(); ++i) {
+                        if (!Character.isDigit(subExpr.charAt(i))) {
+                            allDigits = false;
+                            break;
+                        }
+                    }
+                    if (allDigits) {
+                        desiredPosition = Integer.parseInt(subExpr);
+                    } else {
+                        throw new UnsupportedOperationException("XPath ("+subExpr+" in "+xpathExpr+") not supported.");
+                    }
+                }
+            } else if (desiredElementName.startsWith("@")) {
+                isAttribute = true;
+                desiredElementName = desiredElementName.substring(1, desiredElementName.length());
+            }
+            //System.out.println("desiredElementName="+desiredElementName);
+        }
+
+        /**
+         * @return true means done
+         */
+        private boolean foundGotoNext() {
+            ++partNum;
+            if (partNum >= xpathParts.length) {
+                // Found the final one!
+                resultLocator = new org.xml.sax.helpers.LocatorImpl(locator);
+                return true;
+            } else {
+                // goto the next subexpression
+                setElementName();
+                return false;
+            }
+        }
+
+        public Locator getDocumentLocator() {
+            return resultLocator;
+        }
+        
+        public void setDocumentLocator(Locator locator) {
+            this.locator = locator;  
+        }
+
+        public void startElement(String namespaceURI, String localName,
+                                 String rawName, Attributes attrs) throws SAXException {
+            if (resultLocator != null) {
+                // It's already found.
+                return;
+            }
+            if (desiredElementName.equals(localName) ||
+                desiredElementName.equals(rawName)) {
+                //System.out.println("Found "+desiredElementName);
+                if (desiredPosition == 0) {
+                    // Found the one we wanted
+                    if (!foundGotoNext()) {
+                        // See if the next one is an attribute, in which case
+                        // we need to handle it here.
+                        if (isAttribute) {
+                            // Now go find an attribute.
+                            for (int i = 0, size = attrs.getLength();
+                                 i < size; ++i) {
+                                if (desiredElementName.equals(attrs.getLocalName(i)) ||
+                                    desiredElementName.equals(attrs.getQName(i))) {
+                                    // Found our attribute
+                                    foundGotoNext();
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    --desiredPosition;
+                }
+            }
         }
     }
 }
