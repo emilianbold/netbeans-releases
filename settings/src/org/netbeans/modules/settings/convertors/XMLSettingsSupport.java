@@ -42,6 +42,9 @@ final class XMLSettingsSupport {
     /** File extension for xml settings. */
     public static final String XML_EXT = "settings"; //NOI18N
     
+    /** Logging for events in XML settings system. */
+    private static final ErrorManager err = ErrorManager.getDefault().getInstance("XMLSettingsSupport"); // NOI18N
+    
     /** Store instanceof elements.
      * @param classes everything what class extends or implements
      * @param pw output
@@ -53,11 +56,13 @@ final class XMLSettingsSupport {
             clazzNames.add(((Class)it.next()).getName());
         }
         it = clazzNames.iterator();
+        StringBuffer sb = new StringBuffer (200);  // XXX estimate right capacity
         while (it.hasNext()) {
-            pw.print("    <instanceof class=\""); // NOI18N
-            pw.print((String)it.next());
-            pw.println("\"/>"); // NOI18N
+            sb.append("    <instanceof class=\""). // NOI18N
+            append((String)it.next()).
+            append("\"/>\n"); // NOI18N
         }
+        pw.print(sb.toString());
     }
     
     /** Store settings version 1.0
@@ -69,8 +74,8 @@ final class XMLSettingsSupport {
         PrintWriter pw = new PrintWriter (os);
         
         pw.println ("<?xml version=\"1.0\"?>"); // NOI18N
-        pw.print   ("<!DOCTYPE settings PUBLIC \""); pw.print(INSTANCE_DTD_ID); // NOI18N
-            pw.print("\" \""); pw.print(INSTANCE_DTD_WWW); pw.println("\">"); // NOI18N
+        pw.println ("<!DOCTYPE settings PUBLIC \""+INSTANCE_DTD_ID+ // NOI18N
+            "\" \""+INSTANCE_DTD_WWW+"\">"); // NOI18N
         pw.println ("<settings version=\"1.0\">"); // NOI18N
         storeModule(mi, pw);
         storeInstanceOf(getSuperClasses(inst.getClass(), null), pw);
@@ -81,7 +86,7 @@ final class XMLSettingsSupport {
         pw.flush ();
     }
     
-    /** Store a default instance. Ensure copatibility for settings declared in
+    /** Store a default instance. Ensure compatibility for settings declared in
      * a manifest.
      * @param clazz class of instance
      * @param os output
@@ -91,12 +96,12 @@ final class XMLSettingsSupport {
         
         PrintWriter pw = new PrintWriter (os);
         pw.println ("<?xml version=\"1.0\"?>"); // NOI18N
-        pw.print   ("<!DOCTYPE settings PUBLIC \""); pw.print(INSTANCE_DTD_ID); // NOI18N
-            pw.print("\" \""); pw.print(INSTANCE_DTD_WWW); pw.println("\">"); // NOI18N
+        pw.println ("<!DOCTYPE settings PUBLIC \""+INSTANCE_DTD_ID+ // NOI18N
+            "\" \""+INSTANCE_DTD_WWW+"\">"); // NOI18N
         pw.println ("<settings version=\"1.0\">"); // NOI18N
         storeModule(mi, pw);
         storeInstanceOf(getSuperClasses(clazz, null), pw);
-        pw.print   ("    <instance class=\""); pw.print(clazz.getName()); pw.println("\"/>"); // NOI18N
+        pw.println ("    <instance class=\""+clazz.getName()+"\"/>"); // NOI18N
         pw.println ("</settings>"); // NOI18N
         pw.flush ();
     }
@@ -107,14 +112,16 @@ final class XMLSettingsSupport {
         
         String modulName = mi.getCodeName();
         SpecificationVersion spec = mi.getSpecificationVersion();
-        pw.print("    <module"); // NOI18N
+        StringBuffer sb = new StringBuffer (80);
+        sb.append("    <module"); // NOI18N
         if (modulName != null && modulName.length() != 0) {
-            pw.print(" name=\""); pw.print(modulName); pw.print('"');// NOI18N
+            sb.append(" name=\"").append(modulName).append('"');// NOI18N
         }
         if (spec != null) {
-            pw.print(" spec=\""); pw.print(spec.toString()); pw.print('"');// NOI18N
+            sb.append(" spec=\"").append(spec.toString()).append('"');// NOI18N
         }
-        pw.println("/>"); // NOI18N
+        sb.append("/>"); // NOI18N
+        pw.print(sb.toString());
     }
     
     
@@ -228,7 +235,7 @@ final class XMLSettingsSupport {
     private static final int BLOCK = 100;
     private static final int BUFFSIZE = INDENT + BLOCK;
     private static void storeSerialData (Object inst, PrintWriter pw) throws IOException {
-        pw.print ("    <serialdata class=\""); pw.print(inst.getClass().getName()); pw.println("\">"); // NOI18N
+        pw.println ("    <serialdata class=\""+inst.getClass().getName()+"\">"); // NOI18N
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream (1024);
         ObjectOutput oo = new SpecialObjectOutputStream (baos);
@@ -701,18 +708,31 @@ final class XMLSettingsSupport {
                 }
             }
         }
-                
+         
         /** Parse settings file. */
         public void parse() throws IOException {
-            stack = new Stack();
             InputStream in = null;
             
             try {
+                if (header) {
+                    in = source.getInputStream();
+                    Set iofs = quickParse(in);
+                    if (iofs != null) {
+                        instanceOf = iofs;
+                        return;
+                    }
+                }
+            }
+            catch (IOException ioe) {
+                // ignore - fallback to XML parser follows
+            }
+            stack = new Stack();
+            try {
+                in = source.getInputStream();
                 XMLReader reader = org.openide.xml.XMLUtil.createXMLReader();
                 reader.setContentHandler(this);
                 reader.setErrorHandler(this);
                 reader.setEntityResolver(this);
-                in = source.getInputStream();
                 reader.parse(new org.xml.sax.InputSource(in));
             } catch (XMLSettingsSupport.StopSAXException ex) {
                 // Ok, header is read
@@ -762,6 +782,312 @@ final class XMLSettingsSupport {
                 stack = null;
             }
         }
+
+        // Encoding irrelevant for these getBytes() calls: all are ASCII...
+        // (unless someone has their system encoding set to UCS-16!)
+        private static final byte[] MODULE_SETTINGS_INTRO = "<?xml version=\"1.0\"?> <!DOCTYPE settings PUBLIC \"-//NetBeans//DTD Session settings 1.0//EN\" \"http://www.netbeans.org/dtds/sessionsettings-1_0.dtd\"> <settings version=\"".getBytes(); // NOI18N
+        private static final byte[] MODULE_SETTINGS_INTRO_END = "> <".getBytes(); // NOI18N
+        private static final byte[] MODULE_SETTINGS_MODULE_NAME = "odule name=\"".getBytes(); // NOI18N
+        private static final byte[] MODULE_SETTINGS_MODULE_SPEC = "spec=\"".getBytes(); // NOI18N
+        private static final byte[] MODULE_SETTINGS_MODULE_IMPL = "impl=\"".getBytes(); // NOI18N
+        private static final byte[] MODULE_SETTINGS_TAG_END = "> <".getBytes(); // NOI18N
+        private static final byte[] MODULE_SETTINGS_INSTANCE = "nstance".getBytes(); // NOI18N
+        private static final byte[] MODULE_SETTINGS_INSTANCE_CLZ = "class=\"".getBytes(); // NOI18N
+        private static final byte[] MODULE_SETTINGS_INSTANCE_MTD = "method=\"".getBytes(); // NOI18N
+        private static final byte[] MODULE_SETTINGS_OF = "f class=\"".getBytes(); // NOI18N
+        private static final byte[] MODULE_SETTINGS_SERIAL = "erialdata class=\"".getBytes(); // NOI18N
+        private static final byte[] MODULE_SETTINGS_END = "settings>".getBytes(); // NOI18N
+        
+        /** Attempts to read the stream in the same way as SAX parser but avoids using it.
+         * If it does not manage to parse it this way, it returns null, in which case
+         * you have to use a real parser.
+         * @see "#36718"
+         */
+        private Set quickParse(InputStream is) throws IOException {
+            Set iofs = new HashSet();   // <String>
+
+            if (!expect(is, MODULE_SETTINGS_INTRO)) {
+                err.log("Could not read intro "+source); // NOI18N
+                return null;
+            }
+            version = readTo(is, '"');
+            if (version == null) {
+                err.log("Could not read version "+source); // NOI18N
+                return null;
+            }
+            if (!expect(is, MODULE_SETTINGS_INTRO_END)) {
+                err.log("Could not read stuff after cnb "+source); // NOI18N
+                return null;
+            }
+            // Now we have (module?, instanceof*, (instance | serialdata)).
+            int c;
+        PARSE:
+            while (true) {
+                c = is.read();
+                switch (c) {
+                case 'm':
+                    // <module />
+                    if (!expect(is, MODULE_SETTINGS_MODULE_NAME)) {
+                        err.log("Could not read up to <module name=\" "+source); // NOI18N
+                        return null;
+                    }
+                    String codeName = readTo(is, '"');
+                    if (codeName == null) {
+                        err.log("Could not read module name value "+source); // NOI18N
+                        return null;
+                    }
+                    codeName = codeName.intern();
+                    resolveModuleElm(codeName);
+                    c = is.read();
+                    if (c == '/') {
+                        if (!expect(is, MODULE_SETTINGS_TAG_END)) {
+                            err.log("Could not read up to end of module tag "+source); // NOI18N
+                            return null;
+                        }
+                        break;
+                    }
+                    else if (c != ' ') {
+                        err.log("Could not space after module name "+source); // NOI18N
+                        return null;
+                    }
+                    // <module spec/>
+                    if (!expect(is, MODULE_SETTINGS_MODULE_SPEC)) {
+                        err.log("Could not read up to spec=\" "+source); // NOI18N
+                        return null;
+                    }
+                    String mspec = readTo(is, '"');
+                    if (mspec == null) {
+                        err.log("Could not read module spec value "+source); // NOI18N
+                        return null;
+                    }
+                    try {
+                        moduleSpec = new SpecificationVersion(mspec);
+                    } catch (NumberFormatException nfe) {
+                        return null;
+                    }
+                    c = is.read();
+                    if (c == '/') {
+                        if (!expect(is, MODULE_SETTINGS_TAG_END)) {
+                            err.log("Could not read up to end of <module name spec/> tag "+source); // NOI18N
+                            return null;
+                        }
+                        break;
+                    }
+                    else if (c != ' ') {
+                        err.log("Could not read space after module name "+source); // NOI18N
+                        return null;
+                    }
+                    // <module impl/>
+                    if (!expect(is, MODULE_SETTINGS_MODULE_IMPL)) {
+                        err.log("Could not read up to impl=\" "+source); // NOI18N
+                        return null;
+                    }
+                    moduleImpl = readTo(is, '"');
+                    if (moduleImpl == null) {
+                        err.log("Could not read module impl value "+source); // NOI18N
+                        return null;
+                    }
+                    moduleImpl = moduleImpl.intern();
+                    // /> >
+                    if (!expect(is, MODULE_SETTINGS_TAG_END)) {
+                        err.log("Could not read up to /> < "+source); // NOI18N
+                        return null;
+                    }
+                    break;
+                case 'i':
+                    // <instanceof> or <instance>
+                    if (!expect(is, MODULE_SETTINGS_INSTANCE)) {
+                        err.log("Could not read up to instance "+source); // NOI18N
+                        return null;
+                    }
+                    // Now we need to check which one
+                    c = is.read();
+                    if (c == 'o') {
+                        if (!expect(is, MODULE_SETTINGS_OF)) {
+                            err.log("Could not read up to instance"); // NOI18N
+                            return null;
+                        }
+                        String iof = readTo(is, '"');
+                        if (iof == null) {
+                            err.log("Could not read instanceof value "+source); // NOI18N
+                            return null;
+                        }
+                        iof = org.openide.util.Utilities.translate(iof).intern();
+                        iofs.add (iof);
+                        if (is.read() != '/') {
+                            err.log("No / at end of <instanceof> " + iof+" "+source); // NOI18N
+                            return null;
+                        }
+                        if (!expect(is, MODULE_SETTINGS_TAG_END)) {
+                            err.log("Could not read up to next tag after <instanceof> " + iof+" "+source); // NOI18N
+                            return null;
+                        }
+                    }
+                    else if (c == ' ') {
+                        // read class and optional method
+                        if (!expect(is, MODULE_SETTINGS_INSTANCE_CLZ)) {
+                            err.log("Could not read up to class=\" "+source); // NOI18N
+                            return null;
+                        }
+                        instanceClass = readTo(is, '"');
+                        if (instanceClass == null) {
+                            err.log("Could not read instance class value "+source); // NOI18N
+                            return null;
+                        }
+                        instanceClass = org.openide.util.Utilities.translate(instanceClass).intern();
+                        c = is.read();
+                        if (c == '/') {
+                            if (!expect(is, MODULE_SETTINGS_TAG_END)) {
+                                err.log("Could not read up to end of instance tag "+source); // NOI18N
+                                return null;
+                            }
+                            break;
+                        }
+                        else if (c != ' ') {
+                            err.log("Could not space after instance class "+source); // NOI18N
+                            return null;
+                        }
+                        // <instance method/>
+                        if (!expect(is, MODULE_SETTINGS_INSTANCE_MTD)) {
+                            err.log("Could not read up to method=\" "+source); // NOI18N
+                            return null;
+                        }
+                        instanceMethod = readTo(is, '"');
+                        if (instanceMethod == null) {
+                            err.log("Could not read method value "+source); // NOI18N
+                            return null;
+                        }
+                        instanceMethod = instanceMethod.intern();
+                        c = is.read();
+                        if (c == '/') {
+                            if (!expect(is, MODULE_SETTINGS_TAG_END)) {
+                                err.log("Could not read up to end of instance tag "+source); // NOI18N
+                                return null;
+                            }
+                            break;
+                        }
+                        err.log("Strange stuff after method attribute "+source); // NOI18N
+                        return null;
+                    }
+                    else {
+                        err.log("Could not read after to instance "+source); // NOI18N
+                        return null;
+                    }
+                    break;
+                case 's':
+                    // <serialdata class
+                    if (!expect(is, MODULE_SETTINGS_SERIAL)) {
+                        err.log("Could not read up to <serialdata class=\" "+source); // NOI18N
+                        return null;
+                    }
+                    instanceClass = readTo(is, '"');
+                    if (instanceClass == null) {
+                        err.log("Could not read serialdata class value "+source); // NOI18N
+                        return null;
+                    }
+                    instanceClass = org.openide.util.Utilities.translate(instanceClass).intern();
+                    // here we are complete for header, otherwise we would need to go through serialdata stream
+                    c = is.read();
+                    if (c != '>') {
+                        err.log("Could not read up to end of serialdata tag "+source); // NOI18N
+                        return null;
+                    }
+                    break PARSE;
+                case '/':
+                    // </settings
+                    // XXX do not read further is neader is set
+                    if (!expect(is, MODULE_SETTINGS_END)) {
+                        err.log("Could not read up to end of settings tag "+source); // NOI18N
+                        return null;
+                    }
+                    break PARSE;
+                default:
+                    err.log("Strange stuff after <" + (char)c+" "+source); // NOI18N
+                    return null;
+                }
+            }
+            if (instanceClass != null && !iofs.isEmpty()) {
+                return iofs;
+            }
+            return null;
+        }
+
+        /** Read some stuff from a stream and skip over it.
+         * Newlines conventions and whitespaces are normalized to one space.
+         * @return true upon success, false if stream contained something else
+         */
+        private boolean expect(InputStream is, byte[] stuff) throws IOException {
+            int len = stuff.length;
+            boolean inWhitespace = false;
+            for (int i = 0; i < len; ) {
+                int c = is.read();
+                if (c == 10 || c == 13 || c == ' ' || c == '\t') {
+                    // Normalize: s/[\t \r\n]+/\n/g
+                    if (inWhitespace) {
+                        continue;
+                    } else {
+                        inWhitespace = true;
+                        c = ' ';
+                    }
+                } else {
+                    inWhitespace = false;
+                }
+                if (c != stuff[i++]) {
+                    return false;
+                }
+            }
+            if (stuff[len - 1] == 10) {
+                // Expecting something ending in a \n - so we have to
+                // read any further \r or \n and discard.
+                if (!is.markSupported()) throw new IOException("Mark not supported"); // NOI18N
+                is.mark(1);
+                int c = is.read();
+                if (c != -1 && c != 10 && c != 13) {
+                    // Got some non-newline character, push it back!
+                    is.reset();
+                }
+            }
+            return true;
+        }
+        /** Read a maximal string until delim is encountered (which will be removed from stream).
+         * This impl reads only ASCII, for speed.
+         * Newline conventions are normalized to Unix \n.
+         * @return the read string, or null if the delim is not encountered before EOF.
+         */
+        private String readTo(InputStream is, char delim) throws IOException {
+            if (delim == 10) {
+                // Not implemented - stream might have "foo\r\n" and we would
+                // return "foo" and leave "\n" in the stream.
+                throw new IOException("Not implemented"); // NOI18N
+            }
+            CharArrayWriter caw = new CharArrayWriter(100);
+            boolean inNewline = false;
+            while (true) {
+                int c = is.read();
+                if (c == -1) return null;
+                if (c > 126) return null;
+                if (c == 10 || c == 13) {
+                    // Normalize: s/[\r\n]+/\n/g
+                    if (inNewline) {
+                        continue;
+                    } else {
+                        inNewline = true;
+                        c = 10;
+                    }
+                } else if (c < 32 && c != 9) {
+                    // Random control character!
+                    return null;
+                } else {
+                    inNewline = false;
+                }
+                if (c == delim) {
+                    return caw.toString();
+                } else {
+                    caw.write(c);
+                }
+            }
+        }
+
     }
     
     final static class StopSAXException extends SAXException {
