@@ -1010,13 +1010,21 @@ Tag:
     <!-- so on Unix try to use native ZIP first -->
     <delete file="NetBeans-${buildnum}.zip"/>
     <!-- XXX Ant 1.5.2 can store +x bit, see zipfileset -->
+<!--
     <exec executable="zip" dir="." os="Linux SunOS Solaris Mac OS X" failonerror="false">
       <arg value="-r"/>
       <arg value="NetBeans-${buildnum}.zip"/>
       <arg value="${netbeans.dest}"/>
     </exec>
-    <zip zipfile="NetBeans-${buildnum}.zip" basedir=".">
-      <include name="${netbeans.dest}/"/>
+-->
+
+    <!-- see issue #35744 http://www.netbeans.org/issues/show_bug.cgi?id=35744 -->
+    <delete file="NetBeans-${buildnum}.zip"/>
+    <zip destfile="NetBeans-${buildnum}.zip" update="true" duplicate="preserve">
+      <zipfileset file="${netbeans.dest}/bin/runide.sh" filemode="755" prefix="${netbeans.dest}/bin"/>
+      <zipfileset file="${netbeans.dest}/bin/*.com" filemode="755" prefix="${netbeans.dest}/bin"/>
+      <zipfileset file="${netbeans.dest}/bin/*.exe" filemode="755" prefix="${netbeans.dest}/bin"/>
+      <zipfileset dir="${netbeans.dest}" prefix="${netbeans.dest}"/>
     </zip>
     <echo>Build created; see NetBeans-${buildnum}.zip (in nbbuild/).
 If you like, you may run the IDE straight from
