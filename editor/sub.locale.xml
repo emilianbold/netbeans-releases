@@ -18,7 +18,7 @@
                 <!-- create full destination directory -->
                 <mkdir dir="${destdir}/${idedir}" />
                 <!-- create final jar file -->
-                <jar jarfile="${destdir}/${idedir}/editor_${locale}.jar" basedir="${basedir}/src" includes="**/*_ja.*" />
+                <jar jarfile="${destdir}/${idedir}/editor_${locale}.jar" basedir="${basedir}/src" includes="**/*_${locale}.*" />
         </target>
 
 </project>
