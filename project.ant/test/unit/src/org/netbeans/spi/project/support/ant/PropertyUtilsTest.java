@@ -7,24 +7,31 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.spi.project.support.ant;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.netbeans.api.project.TestUtil;
+import java.util.Set;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileUtil;
 
@@ -56,7 +63,6 @@ public class PropertyUtilsTest extends NbTestCase {
     public void testEvaluate() throws Exception {
         // XXX check override order, property name evaluation, $$ escaping, bare or final $,
         // cyclic errors, undef'd property substitution, no substs in predefs, etc.
-        // XXX check also evaluateAll
         Map/*<String,String>*/ m1 = Collections.singletonMap("y", "val");
         Map/*<String,String>*/ m2 = new HashMap();
         m2.put("x", "${y}");
@@ -216,6 +222,204 @@ public class PropertyUtilsTest extends NbTestCase {
             "/home/me/foo/subdir is in /home/me",
             PropertyUtils.evaluateString("${outdir2} is in ${homedir}", predefs,
                                          Arrays.asList(new Map[] {defs1, defs2})));
+    }
+    
+    public void testFixedPropertyProvider() throws Exception {
+        Map defs = new HashMap();
+        defs.put("key1", "val1");
+        defs.put("key2", "val2");
+        PropertyProvider pp = PropertyUtils.fixedPropertyProvider(defs);
+        assertEquals(defs, pp.getProperties());
+    }
+    
+    public void testSequentialEvaluatorBasic() throws Exception {
+        Map defs1 = new HashMap();
+        defs1.put("key1", "val1");
+        defs1.put("key2", "val2");
+        defs1.put("key5", "5=${key1}");
+        defs1.put("key6", "6=${key3}");
+        Map defs2 = new HashMap();
+        defs2.put("key3", "val3");
+        defs2.put("key4", "4=${key1}:${key3}");
+        defs2.put("key7", "7=${undef}");
+        PropertyEvaluator eval = PropertyUtils.sequentialPropertyEvaluator(null, new PropertyProvider[] {
+            PropertyUtils.fixedPropertyProvider(defs1),
+            PropertyUtils.fixedPropertyProvider(defs2),
+        });
+        String[] vals = {
+            "val1",
+            "val2",
+            "val3",
+            "4=val1:val3",
+            "5=val1",
+            "6=${key3}",
+            "7=${undef}",
+        };
+        Map all = eval.getProperties();
+        assertEquals("right # of props", vals.length, all.size());
+        for (int i = 1; i <= vals.length; i++) {
+            assertEquals("key" + i + " is correct", vals[i - 1], eval.getProperty("key" + i));
+            assertEquals("key" + i + " is correct in all properties", vals[i - 1], all.get("key" + i));
+        }
+        assertEquals("evaluate works", "5=val1 x ${undef}", eval.evaluate("${key5} x ${undef}"));
+        // And test the preprovider...
+        Map predefs = Collections.singletonMap("key3", "preval3");
+        eval = PropertyUtils.sequentialPropertyEvaluator(PropertyUtils.fixedPropertyProvider(predefs), new PropertyProvider[] {
+            PropertyUtils.fixedPropertyProvider(defs1),
+            PropertyUtils.fixedPropertyProvider(defs2),
+        });
+        vals = new String[] {
+            "val1",
+            "val2",
+            "preval3",
+            "4=val1:preval3",
+            "5=val1",
+            "6=preval3",
+            "7=${undef}",
+        };
+        all = eval.getProperties();
+        assertEquals("right # of props", vals.length, all.size());
+        for (int i = 1; i <= vals.length; i++) {
+            assertEquals("key" + i + " is correct", vals[i - 1], eval.getProperty("key" + i));
+            assertEquals("key" + i + " is correct in all properties", vals[i - 1], all.get("key" + i));
+        }
+        assertEquals("evaluate works", "4=val1:preval3 x ${undef} x preval3", eval.evaluate("${key4} x ${undef} x ${key3}"));
+    }
+    
+    public void testSequentialEvaluatorChanges() throws Exception {
+        TestMutablePropertyProvider predefs = new TestMutablePropertyProvider(new HashMap());
+        TestMutablePropertyProvider defs1 = new TestMutablePropertyProvider(new HashMap());
+        TestMutablePropertyProvider defs2 = new TestMutablePropertyProvider(new HashMap());
+        predefs.defs.put("x", "xval1");
+        predefs.defs.put("y", "yval1");
+        defs1.defs.put("a", "aval1");
+        defs1.defs.put("b", "bval1=${x}");
+        defs1.defs.put("c", "cval1=${z}");
+        defs2.defs.put("m", "mval1");
+        defs2.defs.put("n", "nval1=${x}:${b}");
+        defs2.defs.put("o", "oval1=${z}");
+        PropertyEvaluator eval = PropertyUtils.sequentialPropertyEvaluator(predefs, new PropertyProvider[] {
+            defs1,
+            defs2,
+        });
+        TestPCL l = new TestPCL();
+        eval.addPropertyChangeListener(l);
+        Map/*<String,String>*/ result = new HashMap();
+        result.put("x", "xval1");
+        result.put("y", "yval1");
+        result.put("a", "aval1");
+        result.put("b", "bval1=xval1");
+        result.put("c", "cval1=${z}");
+        result.put("m", "mval1");
+        result.put("n", "nval1=xval1:bval1=xval1");
+        result.put("o", "oval1=${z}");
+        assertEquals("correct initial vals", result, eval.getProperties());
+        assertEquals("no changes yet", Collections.EMPTY_SET, l.changed);
+        // Change predefs.
+        predefs.defs.put("x", "xval2");
+        predefs.mutated();
+        Map/*<String,String>*/ oldvals = new HashMap();
+        oldvals.put("x", result.get("x"));
+        oldvals.put("b", result.get("b"));
+        oldvals.put("n", result.get("n"));
+        Map/*<String,String>*/ newvals = new HashMap();
+        newvals.put("x", "xval2");
+        newvals.put("b", "bval1=xval2");
+        newvals.put("n", "nval1=xval2:bval1=xval2");
+        result.putAll(newvals);
+        assertEquals("some changes", newvals.keySet(), l.changed);
+        assertEquals("right old values", oldvals, l.oldvals);
+        assertEquals("right new values", newvals, l.newvals);
+        assertEquals("right total values now", result, eval.getProperties());
+        l.reset();
+        // Change some other defs.
+        defs1.defs.put("z", "zval1");
+        defs1.defs.remove("b");
+        defs1.mutated();
+        defs2.defs.put("m", "mval2");
+        defs2.mutated();
+        oldvals.clear();
+        oldvals.put("b", result.get("b"));
+        oldvals.put("c", result.get("c"));
+        oldvals.put("m", result.get("m"));
+        oldvals.put("n", result.get("n"));
+        oldvals.put("o", result.get("o"));
+        oldvals.put("z", result.get("z"));
+        newvals.clear();
+        newvals.put("b", null);
+        newvals.put("c", "cval1=zval1");
+        newvals.put("m", "mval2");
+        newvals.put("n", "nval1=xval2:${b}");
+        newvals.put("o", "oval1=zval1");
+        newvals.put("z", "zval1");
+        result.putAll(newvals);
+        result.remove("b");
+        assertEquals("some changes", newvals.keySet(), l.changed);
+        assertEquals("right old values", oldvals, l.oldvals);
+        assertEquals("right new values", newvals, l.newvals);
+        assertEquals("right total values now", result, eval.getProperties());
+        l.reset();
+    }
+    
+    private static final class TestMutablePropertyProvider implements PropertyProvider {
+        
+        public final Map/*<String,String>*/ defs;
+        private final List/*<ChangeListener>*/ listeners = new ArrayList();
+        
+        public TestMutablePropertyProvider(Map/*<String,String>*/ defs) {
+            this.defs = defs;
+        }
+        
+        public void mutated() {
+            ChangeEvent ev = new ChangeEvent(this);
+            Iterator it = listeners.iterator();
+            while (it.hasNext()) {
+                ((ChangeListener)it.next()).stateChanged(ev);
+            }
+        }
+        
+        public Map getProperties() {
+            return defs;
+        }
+        
+        public void addChangeListener(ChangeListener l) {
+            listeners.add(l);
+        }
+        
+        public void removeChangeListener(ChangeListener l) {
+            listeners.remove(l);
+        }
+        
+    }
+    
+    private static final class TestPCL implements PropertyChangeListener {
+        
+        public final Set/*<String>*/ changed = new HashSet();
+        public final Map/*<String,String*/ newvals = new HashMap();
+        public final Map/*<String,String*/ oldvals = new HashMap();
+        
+        public TestPCL() {}
+        
+        public void reset() {
+            changed.clear();
+            newvals.clear();
+            oldvals.clear();
+        }
+        
+        public void propertyChange(PropertyChangeEvent evt) {
+            String prop = evt.getPropertyName();
+            String nue = (String)evt.getNewValue();
+            String old = (String)evt.getOldValue();
+            changed.add(prop);
+            if (prop != null) {
+                newvals.put(prop, nue);
+                oldvals.put(prop, old);
+            } else {
+                assertNull("null prop name -> null new value", nue);
+                assertNull("null prop name -> null old value", old);
+            }
+        }
+        
     }
     
 }

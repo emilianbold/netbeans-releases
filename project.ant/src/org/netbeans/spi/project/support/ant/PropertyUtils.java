@@ -13,6 +13,8 @@
 
 package org.netbeans.spi.project.support.ant;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -21,14 +23,18 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectManager;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -37,6 +43,7 @@ import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.TopologicalSortException;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 
 /**
  * Support for working with Ant properties and property files.
@@ -388,14 +395,7 @@ public class PropertyUtils {
     }
     
     /*public? */ static FileObject resolveFileObject(FileObject basedir, String filename) {
-        File f = resolveFile(FileUtil.toFile(basedir), filename);
-        FileObject[] fos = FileUtil.fromFile(f);
-        if (fos.length > 0) {
-            // XXX if length > 1, still succeed?
-            return fos[0];
-        } else {
-            return null;
-        }
+        return FileUtil.toFileObject(resolveFile(FileUtil.toFile(basedir), filename));
     }
     
     /*public? */ static String resolvePath(File basedir, String path) {
@@ -464,6 +464,141 @@ public class PropertyUtils {
             l.add(s);
         }
         return (String[])l.toArray(new String[l.size()]);
+    }
+    
+    /**
+     * Produce a trivial property producer using only a fixed list of property definitions.
+     * Its values are constant, and it never fires changes.
+     * @param defs a map from property names to values (it is illegal to modify this map
+     *             after passing it to this method)
+     * @return a matching property producer
+     */
+    /*XXX public?*/ static PropertyProvider fixedPropertyProvider(Map/*<String,String>*/ defs) {
+        return new FixedPropertyProvider(defs);
+    }
+    
+    private static final class FixedPropertyProvider implements PropertyProvider {
+        
+        private final Map/*<String,String>*/ defs;
+        
+        public FixedPropertyProvider(Map/*<String,String>*/ defs) {
+            this.defs = defs;
+        }
+        
+        public Map getProperties() {
+            return defs;
+        }
+        
+        public void addChangeListener(ChangeListener l) {}
+        
+        public void removeChangeListener(ChangeListener l) {}
+        
+    }
+    
+    /**
+     * Produce a property evaluator based on a series of definitions.
+     * Each batch of definitions can refer to properties within itself
+     * (so long as there is no cycle) or any previous batch.
+     * However the special first provider cannot refer to properties within itself.
+     * @param preprovider an initial context (may be null)
+     * @param providers a sequential list of property groups
+     * @return an evaluator
+     */
+    /*XXX public*/ static PropertyEvaluator sequentialPropertyEvaluator(PropertyProvider preprovider, PropertyProvider[] providers) {
+        return new SequentialPropertyEvaluator(preprovider, providers);
+    }
+    
+    private static final class SequentialPropertyEvaluator implements PropertyEvaluator, ChangeListener {
+        
+        private final PropertyProvider preprovider;
+        private final PropertyProvider[] providers;
+        private Map/*<String,String>*/ defs;
+        private final List/*<PropertyChangeListener>*/ listeners = new ArrayList();
+        
+        public SequentialPropertyEvaluator(PropertyProvider preprovider, PropertyProvider[] providers) {
+            this.preprovider = preprovider;
+            this.providers = providers;
+            // XXX defer until someone asks for them
+            defs = compose(preprovider, providers);
+            // XXX defer until someone is listening?
+            if (preprovider != null) {
+                preprovider.addChangeListener(WeakListeners.change(this, preprovider));
+            }
+            for (int i = 0; i < providers.length; i++) {
+                providers[i].addChangeListener(WeakListeners.change(this, providers[i]));
+            }
+        }
+        
+        public String getProperty(String prop) {
+            return (String)defs.get(prop);
+        }
+        
+        public String evaluate(String text) {
+            Object result = subst(text, defs, Collections.EMPTY_SET);
+            assert result instanceof String : "Unexpected result " + result + " from " + text + " on " + defs;
+            return (String)result;
+        }
+        
+        public Map getProperties() {
+            return defs;
+        }
+        
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            listeners.add(listener);
+        }
+        
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            listeners.add(listener);
+        }
+        
+        public void stateChanged(ChangeEvent e) {
+            Map/*<String,String>*/ newdefs = compose(preprovider, providers);
+            if (!defs.equals(newdefs)) {
+                Set/*<String>*/ props = new HashSet(defs.keySet());
+                props.addAll(newdefs.keySet());
+                List/*<PropertyChangeEvent>*/ events = new LinkedList();
+                Iterator it = props.iterator();
+                while (it.hasNext()) {
+                    String prop = (String)it.next();
+                    assert prop != null;
+                    String oldval = (String)defs.get(prop);
+                    String newval = (String)newdefs.get(prop);
+                    if (newval != null) {
+                        if (newval.equals(oldval)) {
+                            continue;
+                        }
+                    } else {
+                        assert oldval != null : "should not have had " + prop;
+                    }
+                    events.add(new PropertyChangeEvent(this, prop, oldval, newval));
+                }
+                assert !events.isEmpty();
+                defs = newdefs;
+                Iterator it2 = listeners.iterator();
+                while (it2.hasNext()) {
+                    PropertyChangeListener l = (PropertyChangeListener)it2.next();
+                    Iterator it3 = events.iterator();
+                    while (it3.hasNext()) {
+                        l.propertyChange((PropertyChangeEvent)it3.next());
+                    }
+                }
+            }
+        }
+        
+        private static Map/*<String,String>*/ compose(PropertyProvider preprovider, PropertyProvider[] providers) {
+            Map/*<String,String>*/ predefs;
+            if (preprovider != null) {
+                predefs = preprovider.getProperties();
+            } else {
+                predefs = Collections.EMPTY_MAP;
+            }
+            Map/*<String,String>*/[] defs = new Map[providers.length];
+            for (int i = 0; i < providers.length; i++) {
+                defs[i] = providers[i].getProperties();
+            }
+            return evaluateAll(predefs, Arrays.asList(defs));
+        }
+        
     }
     
 }
