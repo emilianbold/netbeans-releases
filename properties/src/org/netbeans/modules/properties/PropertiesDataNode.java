@@ -15,39 +15,43 @@
 package org.netbeans.modules.properties;
 
 
-import java.awt.Image;
-import java.awt.Toolkit;
-import java.awt.datatransfer.*;
-import java.beans.*;
-import java.io.*;
-import java.lang.reflect.InvocationTargetException;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.OutputStreamWriter;
 import java.text.MessageFormat;
-import java.util.ResourceBundle;
 import java.util.Iterator;
-import javax.swing.text.Document;
 
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.util.datatransfer.*;
-import org.openide.actions.InstantiateAction;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.datatransfer.NewType;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.actions.OpenAction;
-import org.openide.nodes.*;
-import org.openide.loaders.*;
-import org.openide.*;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.loaders.DataNode;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.MultiDataObject;
+import org.openide.DialogDescriptor;
+import org.openide.NotifyDescriptor;
+import org.openide.TopManager;
 
 
-/** Standard node representing a data object.
-*
-* @author Petr Jiricka
-*/
+/** 
+ * Standard node representing <code>PropertiesDataObject</code>.
+ *
+ * @author Petr Jiricka
+ * @see PropertiesDataObject
+ */
 public class PropertiesDataNode extends DataNode {
 
+    /** Icon base for the <code>PropertiesDataNode</code> node. */
+    private static final String PROPERTIES_ICON_BASE = "org/netbeans/modules/properties/propertiesObject"; // NOI18N
+    
     /** Generated serialized version UID. */
     static final long serialVersionUID = -7882925922830244768L;
 
@@ -65,7 +69,7 @@ public class PropertiesDataNode extends DataNode {
     
     /** Initializes instance. Sets icon base and default action. */
     private void initialize () {
-        setIconBase(PropertiesDataObject.PROPERTIES_ICON_BASE);
+        setIconBase(PROPERTIES_ICON_BASE);
         setDefaultAction (SystemAction.get(OpenAction.class));
     }
 
@@ -161,14 +165,14 @@ public class PropertiesDataNode extends DataNode {
                                     } catch (IllegalArgumentException e) {   
                                         // catch & report badly formatted names
                                         NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
-                                            java.text.MessageFormat.format(
+                                            MessageFormat.format(
                                                 NbBundle.getBundle(PropertiesDataNode.class).getString("MSG_LangExists"),
                                                     new Object[] {locale}), NotifyDescriptor.ERROR_MESSAGE);
                                         TopManager.getDefault().notify(msg);
                                     } catch (IOException e) {
                                         // catch & report IO error
                                         NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
-                                            java.text.MessageFormat.format(
+                                            MessageFormat.format(
                                                 NbBundle.getBundle(PropertiesDataNode.class).getString("MSG_LangExists"),
                                                     new Object[] {locale}), NotifyDescriptor.ERROR_MESSAGE);
                                             TopManager.getDefault().notify(msg);

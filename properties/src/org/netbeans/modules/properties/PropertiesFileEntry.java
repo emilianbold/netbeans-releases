@@ -312,7 +312,7 @@ public class PropertiesFileEntry extends PresentableFileEntry {
     
     /** Children of a node representing s single properties file.
     * Contains nodes representing individual properties. */
-    class PropKeysChildren extends Children.Keys {
+    private class PropKeysChildren extends Children.Keys {
 
         /** Listens to changes on the properties file entry */
         private PropertyChangeListener pcl = null;
@@ -390,7 +390,7 @@ public class PropertiesFileEntry extends PresentableFileEntry {
                             break;
                     }
                 }
-            }; // end of inner class
+            }; // End of annonymous class.
 
             ((PropertiesDataObject)PropertiesFileEntry.this.getDataObject()).getBundleStructure().
             addPropertyBundleListener (new WeakListenerPropertyBundle(pbl));

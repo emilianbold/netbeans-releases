@@ -210,7 +210,7 @@ public class PropertiesTableModel extends AbstractTableModel {
             if (obj.getBundleStructure().getEntryCount() == 1)
                 return leading+NbBundle.getBundle(PropertiesTableModel.class).getString("LBL_ColumnValue");
             else
-                return leading+Util.getPropertiesLabel (obj.getBundleStructure().getNthEntry(column - 1));
+                return leading+Util.getLocaleLabel (obj.getBundleStructure().getNthEntry(column - 1));
         }
     }
 
@@ -418,14 +418,6 @@ public class PropertiesTableModel extends AbstractTableModel {
             return value;
         }
 
-        // TEMP>>
-/*        public Object clone() {
-            String c = (comment == null ? null : new String(comment));
-            String v = (value == null ? null : new String(value));
-            return new StringPair(c, v);
-        }*/
-        // TEMP<<
-        
         /** Overrides superclass method. */
         public boolean equals(Object obj) {
             if(obj == null || !(obj instanceof StringPair))

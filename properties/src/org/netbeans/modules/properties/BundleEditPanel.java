@@ -16,13 +16,10 @@ package org.netbeans.modules.properties;
 
 
 import java.awt.*;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import javax.swing.event.*;
@@ -39,6 +36,7 @@ import org.openide.windows.TopComponent;
 
 
 /**
+ * Panel used for table view at bundle of properties files.
  * @author  Petr Jiricka
  */
 public class BundleEditPanel extends JPanel {
@@ -51,325 +49,39 @@ public class BundleEditPanel extends JPanel {
     
     /** Reference to column selection model for managing editing cells, together with #rowSelections.*/
     private ListSelectionModel columnSelections;
+
+    /** Listener on settings (colors particulary) changes. */
+    private PropertyChangeListener settingsListener;
+    
+    /** Class representing settings used in table view. */
+    private static TableViewSettingsFactory.TableViewSettings settings;
     
     /** Generated serialized version UID. */
     static final long serialVersionUID =-843810329041244483L;
-
-    /** Default implementation of PropertiesSettings interface. */
-    public static final PropertiesSettings DEFAULT_SETTINGS = new PropertiesSettings() {
-        public Color getKeyColor() {return Color.blue;}
-        public Color getKeyBackground() {return Color.white;}
-        public Color getValueColor() {return Color.magenta;}
-        public Color getValueBackground() {return Color.white;}
-        public Color getHighlightColor() {return Color.black;}
-        public Color getHighlightBackground() {return Color.yellow;}
-        public Color getShadowColor() {return new Color(SystemColor.controlHighlight.getRGB());}
-
-        public KeyStroke[] getKeyStrokesFindNext() {return new KeyStroke[] {KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0)};}
-        public KeyStroke[] getKeyStrokesFindPrevious() {return new KeyStroke[] {KeyStroke.getKeyStroke(KeyEvent.VK_F3, Event.SHIFT_MASK)};}
-        public KeyStroke[] getKeyStrokesToggleHighlight() {return new KeyStroke[] {KeyStroke.getKeyStroke(KeyEvent.VK_H, Event.SHIFT_MASK | Event.ALT_MASK)};}
-       
-        public void settingsUpdated() {}
-        public void addPropertyChangeListener(PropertyChangeListener listener) {}
-        public void removePropertyChangeListener(PropertyChangeListener listener) {}
-    };
     
-    /** Class representing colors in table view. */
-    static PropertiesSettings settings;
-    
-    /** Listener on color changes. */    
-    private PropertyChangeListener settingsListener;
-
     
     /** Creates new form BundleEditPanel */
-    public BundleEditPanel(final PropertiesDataObject obj, PropertiesTableModel ptm) {
+    public BundleEditPanel(final PropertiesDataObject obj, PropertiesTableModel propTableModel) {
         this.obj = obj;
 
         initComponents ();
         
         initSettings();
         
-        // Set header renderer.
-        final DefaultTableCellRenderer headerRenderer = new DefaultTableCellRenderer() {
-            // Sorted column.
-            private int column;
-            
-	    public Component getTableCellRendererComponent(JTable table, Object value,
-                         boolean isSelected, boolean hasFocus, int row, int column) {
-                
-                this.column = column;             
-                             
-	        if (table != null) {
-	            JTableHeader header = table.getTableHeader();
-	            if (header != null) {
-	                this.setForeground(header.getForeground());
-	                this.setBackground(header.getBackground());
-	                this.setFont(header.getFont());
-	            }
-                }
-
-                setText((value == null) ? "" : value.toString()); // NOI18N
-		this.setBorder(UIManager.getBorder("TableHeader.cellBorder")); // NOI18N
-	        return this;
-            }
-            
-            // Overrides superclass for painting ascending/descending marks for sorted column header.
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-
-                // If the column is the sorted one draw mark on it header.
-                if(column == obj.getBundleStructure().getSortIndex() ) {
-                    
-                    Color oldColor = g.getColor();
-
-                    FontMetrics fm = g.getFontMetrics();
-                    Rectangle space = fm.getStringBounds(" ", g).getBounds(); // NOI18N
-                    Rectangle mark = fm.getStringBounds("\u25B2", g).getBounds(); // NOI18N
-                    Rectangle bounds = this.getBounds();
-                    
-                    Insets insets = this.getInsets();
-
-                    BevelBorderUIResource bevelUI = (BevelBorderUIResource)BorderUIResource.getLoweredBevelBorderUIResource();
-                    
-                    boolean ascending = obj.getBundleStructure().getSortOrder();
-
-                    int x1, x2, x3, y1, y2, y3; 
-                    
-                    if(ascending) {
-                        // Ascending order.
-                        x1 = space.width + mark.width/2;
-                        x2 = space.width;
-                        x3 = space.width + mark.width;
-
-                        y1 = bounds.y + insets.top+2;
-                        y2 = bounds.y + bounds.height - insets.bottom-2;
-                        y3 = y2;
-                    } else {
-                        // Descending order.
-                        x1 = space.width;
-                        x2 = space.width + mark.width;
-                        x3 = space.width + mark.width/2;
-
-                        y1 = bounds.y + insets.top + 2;
-                        y2 = y1;
-                        y3 = bounds.y + bounds.height - insets.bottom - 2;
-                    }
-
-                    // Draw bevel border.
-                    // Draw shadow outer color.
-                    g.setColor(bevelUI.getShadowOuterColor(this));
-                    if(ascending)
-                        g.drawLine(x1, y1, x2, y2);
-                    else
-                        g.drawPolyline(new int[] {x2, x1, x3}, new int[] {y2, y1, y3}, 3);
-                        
-                    // Draw shadow inner color.
-                    g.setColor(bevelUI.getShadowInnerColor(this));
-                    if(ascending)
-                        g.drawLine(x1, y1+1, x2+1, y2-1);
-                    else
-                        g.drawPolyline(new int[] {x2-1, x1+1, x3}, new int[] {y2+1, y1+1, y3-1}, 3);
-                        
-                    // Draw highlihght outer color.
-                    g.setColor(bevelUI.getHighlightOuterColor(this));
-                    if(ascending)
-                        g.drawPolyline(new int[] {x1, x3, x2}, new int[] {y1, y3, y2}, 3);
-                    else
-                        g.drawLine(x2, y2, x3, y3);
-                        
-                    // Draw highlight inner color.
-                    g.setColor(bevelUI.getHighlightInnerColor(this));
-                    if(ascending)
-                        g.drawPolyline(new int[] {x1, x3-1, x2+1}, new int[] {y1+1, y3-1, y2-1}, 3);
-                    else
-                        g.drawLine(x2-1, y2+1, x3, y3-1);
-                    
-                    g.setColor(oldColor);
-                }
-            }
-
-        };
-
-        // This subclass of Default column model is provided due correct set of column widths,
-        // see the JTable and horizontal scrolling problem in Java Discussion Forum.
-        table.setColumnModel(new DefaultTableColumnModel() {
-            
-            /** Helper listener. */
-            private AncestorListener ancestorListener;
-
-            /** Overrides superclass method. */
-            public void addColumn(TableColumn aColumn) {
-                if (aColumn == null) {
-                    throw new IllegalArgumentException("Object is null"); // NOI18N
-                }
-
-                tableColumns.addElement(aColumn);
-                aColumn.addPropertyChangeListener(this);
-
-                // this method call is only difference with overriden superclass method
-                adjustColumnWidths();
-                
-                // set header renderer this 'ugly' way (for each column),
-                // in jdk1.2 is not possible to set default renderer
-                // for JTableHeader like in jdk1.3
-                aColumn.setHeaderRenderer(headerRenderer);
-                
-                // Post columnAdded event notification
-                    fireColumnAdded(new TableColumnModelEvent(this, 0,
-                    getColumnCount() - 1));
-            }
-
-            /** Helper method adjusting the table according top component or mode which contains it, the
-             * minimal width of column is 1/10 of screen width. */
-            private void adjustColumnWidths() {
-                // The least initial width of column (1/10 of screen witdh).
-                int columnWidth = Toolkit.getDefaultToolkit().getScreenSize().width/10;
-
-                // Try to set widths according parent (viewport) width.
-                int totalWidth = 0;
-                TopComponent tc = (TopComponent)SwingUtilities.getAncestorOfClass(TopComponent.class, table);
-                if(tc != null) {
-                    totalWidth = tc.getBounds().width;
-                } else {
-                    if(ancestorListener == null) {
-                        table.addAncestorListener(ancestorListener = new AncestorListener() {
-                            /** If the ancestor is TopComponent adjustColumnWidths. */
-                            public void ancestorAdded(AncestorEvent evt) {
-                                if(evt.getAncestor() instanceof TopComponent) {
-                                    adjustColumnWidths();
-                                    table.removeAncestorListener(ancestorListener);
-                                    ancestorListener = null;
-                                }
-                            }
-
-                            /** Does nothing. */
-                            public void ancestorMoved(AncestorEvent evt) {
-                            }
-
-                            /** Does nothing. */
-                            public void ancestorRemoved(AncestorEvent evt) {
-                            }
-                        });
-                    }
-                }
-
-                // Decrease of insets of scrollpane and insets set in layout manager.
-                // Note: Layout constraints hardcoded instead of getting via method call -> 
-                // keep consistent with numbers in initComponents method.
-                totalWidth -= scrollPane.getInsets().left + scrollPane.getInsets().right + 12 + 11;
-
-                // Helper variable for keeping additional pixels which remains after division.
-                int remainder = 0;
-                
-                // If calculations were succesful try to set the widths in case calculated width
-                // for one column is not less than 1/10 of screen width.
-                if(totalWidth > 0) {
-                    int computedColumnWidth = totalWidth / table.getColumnCount();
-                    if(computedColumnWidth > columnWidth) {
-                        columnWidth = computedColumnWidth - table.getColumnModel().getColumnMargin();
-                        remainder = totalWidth % table.getColumnCount();
-                    }
-                }
-                
-                // Set the column widths.
-                for (int i = 0; i < table.getColumnCount(); i++) {
-                    TableColumn column = table.getColumnModel().getColumn(i);
-                    
-                    // Add remainder to first column.
-                    if(i==0) {
-                        // It is necessary to set both 'widths', see javax.swing.TableColumn.
-                        column.setPreferredWidth(columnWidth + remainder);
-                        column.setWidth(columnWidth + remainder); 
-                    } else {                    
-                        // It is necessary to set both 'widths', see javax.swing.TableColumn.
-                        column.setPreferredWidth(columnWidth);
-                        column.setWidth(columnWidth);
-                    }
-                }
-                
-                // Recalculate total column width.
-                recalcWidthCache();
-
-                // Revalidate table so the widths will fit properly.
-                table.revalidate();
-
-                // Repaint header afterwards. Seems stupid but necessary.
-                table.getTableHeader().repaint();
-            }
-        });
+        // Sets table column model.
+        table.setColumnModel(new TableViewColumnModel());
         
         // Sets table model.
-        table.setModel(ptm);
+        table.setModel(propTableModel);
 
-        // table cell editor
+        // Sets table cell editor.
         JTextField textField = new JTextField();
         textField.setBorder(new LineBorder(Color.black));
         table.setDefaultEditor(PropertiesTableModel.StringPair.class,
             new PropertiesTableCellEditor(textField, textComment, textValue));
 
-        // set renderer
-        table.setDefaultRenderer(PropertiesTableModel.StringPair.class, new DefaultTableCellRenderer() {
-            public Component getTableCellRendererComponent(JTable table,
-                    Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-
-                PropertiesTableModel.StringPair sp = (PropertiesTableModel.StringPair)value;
-                        
-                JLabel label = (JLabel)super.getTableCellRendererComponent(table, sp, isSelected, hasFocus, row, column);
-                label.setText(sp.getValue() == null ? "" : UtilConvert.unicodesToChars(sp.toString())); // NOI18N
-         
-                // Set background color.
-                if(sp.isKeyType())
-                    label.setBackground(settings.getKeyBackground());
-                else {
-                    if( sp.getValue() != null)
-                        label.setBackground(settings.getValueBackground());
-                    else
-                        label.setBackground(settings.getShadowColor());
-                }
-
-                // Set foregound color.
-                if(sp.isKeyType())
-                    label.setForeground(settings.getKeyColor());
-                else
-                    label.setForeground(settings.getValueColor());
-                
-                return label;
-            }
-
-            // Overrides superclass method. It adds the highlighting of search occurences in it.
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-
-                // If there is a highlihgt flag set do additional drawings.
-                if(FindPerformer.getFindPerformer(BundleEditPanel.this.table).isHighlightSearch()) {
-                    String text = getText();
-                    String findString = FindPerformer.getFindPerformer(BundleEditPanel.this.table).getFindString();
-
-                    // If there is a findString and the cell could contain it go ahead.
-                    if(text != null && text.length()>0 && findString != null && findString.length()>0) {
-                        int index = 0;
-                        int width = (int)g.getFontMetrics().getStringBounds(findString, g).getWidth();
-
-                        Color oldColor = g.getColor();                    
-                        // In each iteration highlight one occurence of findString in this cell.
-                        while((index = text.indexOf(findString, index)) >= 0) {
-
-                            int x = (int)g.getFontMetrics().getStringBounds(text.substring(0, index), g).getWidth()+this.getInsets().left;
-
-                            g.setColor(settings.getHighlightBackground());
-                            g.fillRect(x, 0, width, g.getClipBounds().height);
-
-                            g.setColor(settings.getHighlightColor());
-                            g.drawString(findString, x, -(int)g.getFontMetrics().getStringBounds(findString, g).getY());
-
-                            index += findString.length();
-                        }
-                        // Reset original color.
-                        g.setColor(oldColor);
-                    }
-                }
-            }
-        });
+        // Sets renderer.
+        table.setDefaultRenderer(PropertiesTableModel.StringPair.class, new TableViewRenderer());
 
         // selection listeners
         rowSelections = table.getSelectionModel();
@@ -502,36 +214,22 @@ public class BundleEditPanel extends JPanel {
         return table;
     }
 
-    /** Initializes #settings variable. */
+    /** Initializes <code>settings</code> variable. */
     private void initSettings() {
-        try {
-            // Test for editor module only.
-            Class editorModule = Class.forName("org.netbeans.modules.editor.EditorModule", // NOI18N
-                false, this.getClass().getClassLoader());
-            
-            Class options = Class.forName("org.netbeans.modules.properties.syntax.PropertiesOptions", // NOI18N
-                false, this.getClass().getClassLoader());
-            Method settingsMethod = options.getMethod ("getSettings", null); // NOI18N
-            settings = (PropertiesSettings)settingsMethod.invoke (options.newInstance(), null);
-        } catch (NoClassDefFoundError err) {
-        } catch (ClassNotFoundException e) {
-        } catch (NoSuchMethodException e) {
-        } catch (InvocationTargetException e) {
-        } catch (IllegalAccessException e) {
-        } catch (InstantiationException e) {
-        }
-
-        // settings were not gained (editor module is probably not installed), use our defaults
         if(settings == null)
-            settings = DEFAULT_SETTINGS;        
+            synchronized(getClass()) {
+                if(settings == null) {
+                    settings = TableViewSettingsFactory.getTableViewSettings();
 
-        // listen on changes of setting settings
-        settings.addPropertyChangeListener(WeakListener.propertyChange(settingsListener = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                // settings changed repaint table
-                BundleEditPanel.this.repaint();
+                    // Listen on changes of setting settings.
+                    settings.addPropertyChangeListener(WeakListener.propertyChange(settingsListener = new PropertyChangeListener() {
+                        public void propertyChange(PropertyChangeEvent evt) {
+                            // settings changed repaint table
+                            BundleEditPanel.this.repaint();
+                        }
+                    }, settings));
+                }
             }
-        }, settings));
     }
     
     /** This method is called from within the constructor to
@@ -769,27 +467,284 @@ public class BundleEditPanel extends JPanel {
     // End of variables declaration//GEN-END:variables
 
 
-    /** Interface used for gaining colors and keystrokes for table view, from
-     * editor module via soft dependence. There are two implemenations.
-     * The default one in this class, containing default colors and key strokes, and implementaion 
-     * in syntax/PropertiesOptions class which passes colors and keystrokes from editor settings. That 
-     * implementaiton is available only when Editor module is installed. */
-    public interface PropertiesSettings {
-        public Color getKeyColor();
-        public Color getKeyBackground();
-        public Color getValueColor();
-        public Color getValueBackground();
-        public Color getHighlightColor();
-        public Color getHighlightBackground();
-        public Color getShadowColor();
+    /** Header renderer used in table view. */
+    private class TableViewHeaderRenderer extends DefaultTableCellRenderer {
+        /** Sorted column. */
+        private int column;
 
-        public KeyStroke[] getKeyStrokesFindNext();
-        public KeyStroke[] getKeyStrokesFindPrevious();
-        public KeyStroke[] getKeyStrokesToggleHighlight();
-        
-        public void settingsUpdated();
-        public void addPropertyChangeListener(PropertyChangeListener listener);
-        public void removePropertyChangeListener(PropertyChangeListener listener);
-   } // End of interface PropertiesSettings.
-   
+        /** Overrides superclass method. */
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                     boolean isSelected, boolean hasFocus, int row, int column) {
+
+            this.column = column;             
+
+            if (table != null) {
+                JTableHeader header = table.getTableHeader();
+                if (header != null) {
+                    this.setForeground(header.getForeground());
+                    this.setBackground(header.getBackground());
+                    this.setFont(header.getFont());
+                }
+            }
+
+            setText((value == null) ? "" : value.toString()); // NOI18N
+            this.setBorder(UIManager.getBorder("TableHeader.cellBorder")); // NOI18N
+            return this;
+        }
+
+        /** Overrides superclass method. Adds painting ascending/descending marks for sorted column header. */
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+
+            // If the column is the sorted one draw mark on it header.
+            if(column == obj.getBundleStructure().getSortIndex() ) {
+
+                Color oldColor = g.getColor();
+
+                FontMetrics fm = g.getFontMetrics();
+                Rectangle space = fm.getStringBounds(" ", g).getBounds(); // NOI18N
+                Rectangle mark = fm.getStringBounds("\u25B2", g).getBounds(); // NOI18N
+                Rectangle bounds = this.getBounds();
+
+                Insets insets = this.getInsets();
+
+                BevelBorderUIResource bevelUI = (BevelBorderUIResource)BorderUIResource.getLoweredBevelBorderUIResource();
+
+                boolean ascending = obj.getBundleStructure().getSortOrder();
+
+                int x1, x2, x3, y1, y2, y3; 
+
+                if(ascending) {
+                    // Ascending order.
+                    x1 = space.width + mark.width/2;
+                    x2 = space.width;
+                    x3 = space.width + mark.width;
+
+                    y1 = bounds.y + insets.top+2;
+                    y2 = bounds.y + bounds.height - insets.bottom-2;
+                    y3 = y2;
+                } else {
+                    // Descending order.
+                    x1 = space.width;
+                    x2 = space.width + mark.width;
+                    x3 = space.width + mark.width/2;
+
+                    y1 = bounds.y + insets.top + 2;
+                    y2 = y1;
+                    y3 = bounds.y + bounds.height - insets.bottom - 2;
+                }
+
+                // Draw bevel border.
+                // Draw shadow outer color.
+                g.setColor(bevelUI.getShadowOuterColor(this));
+                if(ascending)
+                    g.drawLine(x1, y1, x2, y2);
+                else
+                    g.drawPolyline(new int[] {x2, x1, x3}, new int[] {y2, y1, y3}, 3);
+
+                // Draw shadow inner color.
+                g.setColor(bevelUI.getShadowInnerColor(this));
+                if(ascending)
+                    g.drawLine(x1, y1+1, x2+1, y2-1);
+                else
+                    g.drawPolyline(new int[] {x2-1, x1+1, x3}, new int[] {y2+1, y1+1, y3-1}, 3);
+
+                // Draw highlihght outer color.
+                g.setColor(bevelUI.getHighlightOuterColor(this));
+                if(ascending)
+                    g.drawPolyline(new int[] {x1, x3, x2}, new int[] {y1, y3, y2}, 3);
+                else
+                    g.drawLine(x2, y2, x3, y3);
+
+                // Draw highlight inner color.
+                g.setColor(bevelUI.getHighlightInnerColor(this));
+                if(ascending)
+                    g.drawPolyline(new int[] {x1, x3-1, x2+1}, new int[] {y1+1, y3-1, y2-1}, 3);
+                else
+                    g.drawLine(x2-1, y2+1, x3, y3-1);
+
+                g.setColor(oldColor);
+            }
+        }
+    } // End of inner class TableViewHeaderRenderer.
+
+    
+    /** 
+     * This subclass of Default column model is provided due correct set of column widths,
+     * see the JTable and horizontal scrolling problem in Java Discussion Forum.
+     */
+    private class TableViewColumnModel extends DefaultTableColumnModel {
+        /** Helper listener. */
+        private AncestorListener ancestorListener;
+
+        /** Table header rendrer. */
+        private final TableCellRenderer headerRenderer = new TableViewHeaderRenderer();
+
+        /** Overrides superclass method. */
+        public void addColumn(TableColumn aColumn) {
+            if (aColumn == null) {
+                throw new IllegalArgumentException("Object is null"); // NOI18N
+            }
+
+            tableColumns.addElement(aColumn);
+            aColumn.addPropertyChangeListener(this);
+
+            // this method call is only difference with overriden superclass method
+            adjustColumnWidths();
+
+            // set header renderer this 'ugly' way (for each column),
+            // in jdk1.2 is not possible to set default renderer
+            // for JTableHeader like in jdk1.3
+            aColumn.setHeaderRenderer(headerRenderer);
+
+            // Post columnAdded event notification
+                fireColumnAdded(new TableColumnModelEvent(this, 0,
+                getColumnCount() - 1));
+        }
+
+        /** Helper method adjusting the table according top component or mode which contains it, the
+         * minimal width of column is 1/10 of screen width. */
+        private void adjustColumnWidths() {
+            // The least initial width of column (1/10 of screen witdh).
+            int columnWidth = Toolkit.getDefaultToolkit().getScreenSize().width/10;
+
+            // Try to set widths according parent (viewport) width.
+            int totalWidth = 0;
+            TopComponent tc = (TopComponent)SwingUtilities.getAncestorOfClass(TopComponent.class, table);
+            if(tc != null) {
+                totalWidth = tc.getBounds().width;
+            } else {
+                if(ancestorListener == null) {
+                    table.addAncestorListener(ancestorListener = new AncestorListener() {
+                        /** If the ancestor is TopComponent adjustColumnWidths. */
+                        public void ancestorAdded(AncestorEvent evt) {
+                            if(evt.getAncestor() instanceof TopComponent) {
+                                adjustColumnWidths();
+                                table.removeAncestorListener(ancestorListener);
+                                ancestorListener = null;
+                            }
+                        }
+
+                        /** Does nothing. */
+                        public void ancestorMoved(AncestorEvent evt) {
+                        }
+
+                        /** Does nothing. */
+                        public void ancestorRemoved(AncestorEvent evt) {
+                        }
+                    });
+                }
+            }
+
+            // Decrease of insets of scrollpane and insets set in layout manager.
+            // Note: Layout constraints hardcoded instead of getting via method call -> 
+            // keep consistent with numbers in initComponents method.
+            totalWidth -= scrollPane.getInsets().left + scrollPane.getInsets().right + 12 + 11;
+
+            // Helper variable for keeping additional pixels which remains after division.
+            int remainder = 0;
+
+            // If calculations were succesful try to set the widths in case calculated width
+            // for one column is not less than 1/10 of screen width.
+            if(totalWidth > 0) {
+                int computedColumnWidth = totalWidth / table.getColumnCount();
+                if(computedColumnWidth > columnWidth) {
+                    columnWidth = computedColumnWidth - table.getColumnModel().getColumnMargin();
+                    remainder = totalWidth % table.getColumnCount();
+                }
+            }
+
+            // Set the column widths.
+            for (int i = 0; i < table.getColumnCount(); i++) {
+                TableColumn column = table.getColumnModel().getColumn(i);
+
+                // Add remainder to first column.
+                if(i==0) {
+                    // It is necessary to set both 'widths', see javax.swing.TableColumn.
+                    column.setPreferredWidth(columnWidth + remainder);
+                    column.setWidth(columnWidth + remainder); 
+                } else {                    
+                    // It is necessary to set both 'widths', see javax.swing.TableColumn.
+                    column.setPreferredWidth(columnWidth);
+                    column.setWidth(columnWidth);
+                }
+            }
+
+            // Recalculate total column width.
+            recalcWidthCache();
+
+            // Revalidate table so the widths will fit properly.
+            table.revalidate();
+
+            // Repaint header afterwards. Seems stupid but necessary.
+            table.getTableHeader().repaint();
+        }
+    } // End of inner class TableViewColumnModel.
+
+    
+    /** Renderer which renders cells in table view. */
+    private class TableViewRenderer extends DefaultTableCellRenderer {
+        /** Overrides superclass method. */
+        public Component getTableCellRendererComponent(JTable table,
+                Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+
+            PropertiesTableModel.StringPair sp = (PropertiesTableModel.StringPair)value;
+
+            JLabel label = (JLabel)super.getTableCellRendererComponent(table, sp, isSelected, hasFocus, row, column);
+            label.setText(sp.getValue() == null ? "" : UtilConvert.unicodesToChars(sp.toString())); // NOI18N
+
+            // Set background color.
+            if(sp.isKeyType())
+                label.setBackground(settings.getKeyBackground());
+            else {
+                if( sp.getValue() != null)
+                    label.setBackground(settings.getValueBackground());
+                else
+                    label.setBackground(settings.getShadowColor());
+            }
+
+            // Set foregound color.
+            if(sp.isKeyType())
+                label.setForeground(settings.getKeyColor());
+            else
+                label.setForeground(settings.getValueColor());
+
+            return label;
+        }
+
+        /** Overrides superclass method. It adds the highlighting of search occurences in it. */
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+
+            // If there is a highlihgt flag set do additional drawings.
+            if(FindPerformer.getFindPerformer(BundleEditPanel.this.table).isHighlightSearch()) {
+                String text = getText();
+                String findString = FindPerformer.getFindPerformer(BundleEditPanel.this.table).getFindString();
+
+                // If there is a findString and the cell could contain it go ahead.
+                if(text != null && text.length()>0 && findString != null && findString.length()>0) {
+                    int index = 0;
+                    int width = (int)g.getFontMetrics().getStringBounds(findString, g).getWidth();
+
+                    Color oldColor = g.getColor();                    
+                    // In each iteration highlight one occurence of findString in this cell.
+                    while((index = text.indexOf(findString, index)) >= 0) {
+
+                        int x = (int)g.getFontMetrics().getStringBounds(text.substring(0, index), g).getWidth()+this.getInsets().left;
+
+                        g.setColor(settings.getHighlightBackground());
+                        g.fillRect(x, 0, width, g.getClipBounds().height);
+
+                        g.setColor(settings.getHighlightColor());
+                        g.drawString(findString, x, -(int)g.getFontMetrics().getStringBounds(findString, g).getY());
+
+                        index += findString.length();
+                    }
+                    // Reset original color.
+                    g.setColor(oldColor);
+                }
+            }
+        }
+    } // End of inner class TableViewRenderer.
+    
 }

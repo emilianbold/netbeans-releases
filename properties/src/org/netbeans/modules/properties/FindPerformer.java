@@ -42,11 +42,11 @@ import org.openide.util.WeakListener;
 
 /**
  * FindPerformer is ActionPerformer on FindAction which is invoked on Resource Bundles table view component.
- * Does actual dirty job search on the actual activated table and sets the results as highlighted text on particular cell.
+ * Does actual dirty job, search on the actual activated table and sets the results as highlighted text on particular cell.
  *
  * @author  Peter Zavadsky
  */
-public class FindPerformer extends java.lang.Object implements ActionPerformer {
+public class FindPerformer implements ActionPerformer {
 
     /** Table on which perform the search. */
     private JTable table;
@@ -92,6 +92,9 @@ public class FindPerformer extends java.lang.Object implements ActionPerformer {
   
     /** Keeps history of found strings. */
     private HashSet history = new HashSet();
+
+    /** Helper variable keeping <code>settings</code>. */
+    private TableViewSettingsFactory.TableViewSettings settings;
 
     // Initializes action listener use to register for key strokes to table.
     {
@@ -147,8 +150,10 @@ public class FindPerformer extends java.lang.Object implements ActionPerformer {
                     registerKeyStrokes();
                 }
             };
-        BundleEditPanel.settings.addPropertyChangeListener(WeakListener.propertyChange(
-            settingsListener, BundleEditPanel.settings));
+            
+        settings = TableViewSettingsFactory.getTableViewSettings();
+        settings.addPropertyChangeListener(WeakListener.propertyChange(
+            settingsListener, settings));
         
         registerKeyStrokes();
     }
@@ -190,7 +195,7 @@ public class FindPerformer extends java.lang.Object implements ActionPerformer {
     /** Register key strokes F3 and Shift-F3 (next & previous search) to table. */
     private synchronized void registerKeyStrokes() {
         // Register key strokes to table.
-        KeyStroke[] keyStrokes = BundleEditPanel.settings.getKeyStrokesFindNext();
+        KeyStroke[] keyStrokes = settings.getKeyStrokesFindNext();
         for(int i=0; i<keyStrokes.length; i++) {
             table.registerKeyboardAction(
                 findNextActionListener,
@@ -199,7 +204,7 @@ public class FindPerformer extends java.lang.Object implements ActionPerformer {
             );
         }
 
-        keyStrokes = BundleEditPanel.settings.getKeyStrokesFindPrevious();
+        keyStrokes = settings.getKeyStrokesFindPrevious();
         for(int i=0; i<keyStrokes.length; i++) {
             table.registerKeyboardAction(
                 findPreviousActionListener,
@@ -208,7 +213,7 @@ public class FindPerformer extends java.lang.Object implements ActionPerformer {
             );
         }
 
-        keyStrokes = BundleEditPanel.settings.getKeyStrokesToggleHighlight();
+        keyStrokes = settings.getKeyStrokesToggleHighlight();
         for(int i=0; i<keyStrokes.length; i++) {
             table.registerKeyboardAction(
                 toggleHighlightListener,

@@ -40,19 +40,11 @@ import org.openide.util.WeakListener;
  * Object that provides main functionality for properties data loader.
  * This class is final only for performance reasons,
  * can be unfinaled if desired.
+ * Represents set of .properties files with same basic name (name without locale postfix).
  *
  * @author Ian Formanek
  */
 public final class PropertiesDataObject extends MultiDataObject {
-    
-    /** Generated Serialized Version UID. */
-    static final long serialVersionUID = 4795737295255253334L;
-
-    /** Icon base for the <code>PropertiesDataNode</code> node. */
-    static final String PROPERTIES_ICON_BASE = "org/netbeans/modules/properties/propertiesObject"; // NOI18N
-    
-    /** Icon bas2 for the <code>PropertiesDataNode</code> node. */
-    static final String PROPERTIES_ICON_BASE2 = "org/netbeans/modules/properties/propertiesLocale"; // NOI18N
     
     /** MIME type for properties. */
     public static final String MIME_PROPERTIES = "text/x-properties"; // NOI18N
@@ -63,6 +55,9 @@ public final class PropertiesDataObject extends MultiDataObject {
     /** Helper variable. Flag if cookies were initialized. */
     private transient boolean cookiesInitialized = false;
     
+    /** Generated Serialized Version UID. */
+    static final long serialVersionUID = 4795737295255253334L;
+
 
     /** Constructor. */
     public PropertiesDataObject (final FileObject obj, final MultiFileLoader loader) throws DataObjectExistsException {

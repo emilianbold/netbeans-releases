@@ -17,14 +17,12 @@ package org.netbeans.modules.properties;
 
 import java.beans.*;
 import java.io.*;
-import java.lang.ref.*;
-import java.lang.reflect.*;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
-import java.util.*;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeEvent;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.WeakHashMap;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -36,10 +34,8 @@ import javax.swing.undo.UndoableEdit;
 
 import org.openide.awt.UndoRedo;
 import org.openide.cookies.EditCookie;
-import org.openide.cookies.OpenCookie;
 import org.openide.cookies.PrintCookie;
 import org.openide.cookies.SaveCookie;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
@@ -47,22 +43,19 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.Node;
-import org.openide.nodes.NodeAdapter;
 import org.openide.NotifyDescriptor;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
-import org.openide.text.NbDocument;
-import org.openide.text.PositionRef;
 import org.openide.TopManager;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListener;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.CloneableTopComponent;
-import org.openide.windows.TopComponent;
 
 
 /** Support for viewing porperties files (EditCookie) by opening them in a text editor */
-public class PropertiesEditorSupport extends CloneableEditorSupport implements EditCookie, PrintCookie, Serializable {
+public class PropertiesEditorSupport extends CloneableEditorSupport 
+implements EditCookie, PrintCookie, Serializable {
     
     /** New lines in this file was delimited by '\n'. */
     private static final byte NEW_LINE_N = 0;
@@ -198,8 +191,8 @@ public class PropertiesEditorSupport extends CloneableEditorSupport implements E
      * @param doc the document to read into
      * @param stream the open stream to read from
      * @param kit the associated editor kit
-     * @throws IOException if there was a problem reading the file
-     * @throws BadLocationException should not normally be thrown
+     * @throws <code>IOException</code> if there was a problem reading the file
+     * @throws <code>BadLocationException</code> should not normally be thrown
      * @see #saveFromKitToStream
      */
     protected void loadFromStreamToKit (StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
@@ -276,7 +269,7 @@ public class PropertiesEditorSupport extends CloneableEditorSupport implements E
      * @return the message or null if nothing should be displayed
      */
     protected String messageOpening() {
-        String name = myEntry.getDataObject().getPrimaryFile().getName()+"("+Util.getPropertiesLabel(myEntry)+")"; // NOI18N
+        String name = myEntry.getDataObject().getPrimaryFile().getName()+"("+Util.getLocaleLabel(myEntry)+")"; // NOI18N
         
         return NbBundle.getMessage(
             CloneableEditorSupport.class, 
@@ -291,7 +284,7 @@ public class PropertiesEditorSupport extends CloneableEditorSupport implements E
      * @return the message or null if nothing should be displayed
      */
     protected String messageOpened() {
-        String name = myEntry.getDataObject().getPrimaryFile().getName()+"("+Util.getPropertiesLabel(myEntry)+")"; // NOI18N        
+        String name = myEntry.getDataObject().getPrimaryFile().getName()+"("+Util.getLocaleLabel(myEntry)+")"; // NOI18N        
         
         return NbBundle.getMessage(
             CloneableEditorSupport.class,
@@ -306,7 +299,7 @@ public class PropertiesEditorSupport extends CloneableEditorSupport implements E
      * @return name of the editor
      */
     protected String messageName () {
-        String name = myEntry.getDataObject().getPrimaryFile().getName()+"("+Util.getPropertiesLabel(myEntry)+")"; // NOI18N
+        String name = myEntry.getDataObject().getPrimaryFile().getName()+"("+Util.getLocaleLabel(myEntry)+")"; // NOI18N
         
         if(isModified()) {
             return NbBundle.getMessage (
@@ -329,7 +322,7 @@ public class PropertiesEditorSupport extends CloneableEditorSupport implements E
      * @return text to show to the user
      */
     protected String messageSave () {
-        String name = myEntry.getDataObject().getPrimaryFile().getName()+"("+Util.getPropertiesLabel(myEntry)+")"; // NOI18N        
+        String name = myEntry.getDataObject().getPrimaryFile().getName()+"("+Util.getLocaleLabel(myEntry)+")"; // NOI18N        
         
         return NbBundle.getMessage (
             CloneableEditorSupport.class,

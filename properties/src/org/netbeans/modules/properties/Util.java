@@ -11,18 +11,21 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
+
 package org.netbeans.modules.properties;
 
-import java.util.*;
+
+import java.util.Locale;
 
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiDataObject;
-import org.openide.util.*;
+import org.openide.util.NbBundle;
 
-/** Miscellaneous utilities for Properties data loader.
-*
-* @author Petr Jiricka
-*/
+
+/**
+ * Miscellaneous utilities for Properties data loader.
+ * @author Petr Jiricka
+ */
 public final class Util extends Object {
 
     /** Character used to separate parts of bundle properties file name */
@@ -78,7 +81,7 @@ public final class Util extends Object {
         String myName   = fe.getFile().getName();
         String baseName = getPrimaryFileObject(fe).getName();
         if (!myName.startsWith(baseName))
-            throw new InternalError("Never happens - error in Properties loader");
+            throw new InternalError("Never happens - error in Properties loader"); // NOI18N
         return myName.substring(baseName.length());
     }
 
@@ -86,7 +89,7 @@ public final class Util extends Object {
     *   for example for file <code>Bundle_en_US.properties</code> returns <code>en</code> (if Bundle.properties exists)
     *   @return language for this locale or <code>null</code> if no language is present
     */
-    public static String getLanguage(MultiDataObject.Entry fe) {
+    private static String getLanguage(MultiDataObject.Entry fe) {
         String part = getLocalePartOfFileName(fe);
         return getFirstPart(part);
     }
@@ -95,7 +98,7 @@ public final class Util extends Object {
     *   for example for file <code>Bundle_en_US.properties</code> returns <code>US</code> (if Bundle.properties exists)
     *   @return language for this locale or <code>null</code> if no country is present
     */
-    public static String getCountry(MultiDataObject.Entry fe) {
+    private static String getCountry(MultiDataObject.Entry fe) {
         try {
             String part = getLocalePartOfFileName(fe);
             int start = part.indexOf(PRB_SEPARATOR_CHAR, 1);
@@ -112,7 +115,7 @@ public final class Util extends Object {
     *   for example for file <code>Bundle_en_US_POSIX.properties</code> returns <code>POSIX</code> (if Bundle.properties exists)
     *   @return language for this locale or <code>null</code> if no variant is present
     */
-    public static String getVariant(MultiDataObject.Entry fe) {
+    private static String getVariant(MultiDataObject.Entry fe) {
         try {
             String part = getLocalePartOfFileName(fe);
             int start = part.indexOf(PRB_SEPARATOR_CHAR, 1);
@@ -134,12 +137,12 @@ public final class Util extends Object {
             if (part.length() == 0)
                 return null;
             if (part.charAt(0) != PRB_SEPARATOR_CHAR)
-                throw new InternalError("Never happens - error in Properties loader (" + part + ")");
+                throw new InternalError("Never happens - error in Properties loader (" + part + ")"); // NOI18N
             int end = part.indexOf(PRB_SEPARATOR_CHAR, 1);
             String result;
             result = (end == -1) ? part.substring(1) : part.substring(1, end);
-            //return (result.length() == 0) ? null : result;
-            return (result.length() == 0) ? "" : result; // TEMP
+
+            return (result.length() == 0) ? "" : result;
         }
         catch (ArrayIndexOutOfBoundsException ex) {
             return null;
@@ -147,10 +150,10 @@ public final class Util extends Object {
     }
 
     /** Returns a label for properties nodes for individual locales */
-    public static String getPropertiesLabel(MultiDataObject.Entry fe) {
-
+    public static String getLocaleLabel(MultiDataObject.Entry fe) {
         // locale-specific part of the file name
         String temp = getLocalePartOfFileName(fe);
+        
         if (temp.length() > 0)
             if (temp.charAt(0) == PRB_SEPARATOR_CHAR)
                 temp = temp.substring(1);
@@ -158,65 +161,48 @@ public final class Util extends Object {
         // start constructing the result
         StringBuffer result = new StringBuffer(temp);
         if (temp.length() > 0)
-            result.append(" - ");
-        // pad by whitespaces to length LABEL_FIRST_PART_LENGTH
-        /*    if (result.length() < LABEL_FIRST_PART_LENGTH)
-              result.append(new String("                                ").
-                substring(0, LABEL_FIRST_PART_LENGTH - result.length()));*/
+            result.append(" - "); // NOI18N
 
-        // append the language
+        // Append language.
         String lang = getLanguage(fe);
         if (lang == null)
             temp = NbBundle.getBundle(Util.class).getString("LAB_DefaultBundle_Label");
         else {
-            temp = (new Locale(lang, "")).getDisplayLanguage();
+            temp = (new Locale(lang, "")).getDisplayLanguage(); // NOI18N
             if (temp.length() == 0)
                 temp = lang;
         }
         result.append(temp);
 
-        // append the country
+        // Append country.
         String coun = getCountry(fe);
-        if (coun == null)
-            temp = "";
+        if(coun == null)
+            temp = ""; // NOI18N
         else {
             temp = (new Locale(lang, coun)).getDisplayCountry();
             if (temp.length() == 0)
                 temp = coun;
         }
-        if (temp.length() != 0) {
-            result.append(" / ");
+        if(temp.length() != 0) {
+            result.append("/"); // NOI18N
             result.append(temp);
         }
 
-        // append the variant
+        // Append variant.
         String variant = getVariant(fe);
-        if (variant == null)
-            temp = "";
+        if(variant == null)
+            temp = ""; // NOI18N
         else {
             temp = (new Locale(lang, coun, variant)).getDisplayVariant();
             if (temp.length() == 0)
                 temp = variant;
         }
         if (temp.length() != 0) {
-            result.append(" / ");
+            result.append("/"); // NOI18N
             result.append(temp);
         }
 
-        // return the result
         return result.toString();
     }
 
 }
-
-/*
- * <<Log>>
- *  4    Gandalf   1.3         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  3    Gandalf   1.2         8/17/99  Petr Jiricka    Added stringToKey 
- *       utility method
- *  2    Gandalf   1.1         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  1    Gandalf   1.0         5/12/99  Petr Jiricka    
- * $
- */
