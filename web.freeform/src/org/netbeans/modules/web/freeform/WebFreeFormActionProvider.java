@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.web.freeform;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -21,12 +22,21 @@ import javax.swing.JButton;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
+import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -67,6 +77,7 @@ public class WebFreeFormActionProvider implements ActionProvider {
      * semantics in project.xml.
      */
     static final String FILE_SCRIPT_PATH = "nbproject/ide-file-targets.xml"; // NOI18N
+    
     /**
      * Script to hold non-file-sensitive generated targets like debug.
      * These import the original build script and share its basedir, so that
@@ -74,36 +85,36 @@ public class WebFreeFormActionProvider implements ActionProvider {
      */
     static final String GENERAL_SCRIPT_PATH = "nbproject/ide-targets.xml"; // NOI18N
     
-    static final String PROJECT_PROPERTIES_PATH = "nbproject/project.properties";
-    
-    private static final String LOAD_PROPS_TARGET = "-load-props";
-    private static final String CHECK_PROPS_TARGET = "-check-props";
-    private static final String INIT_TARGET = "-init";
-    private static final String DEBUG_TARGET = "debug-nb";
-    private static final String DISPLAY_BROWSER = "debug-display-browser";
+    private static final String LOAD_PROPS_TARGET = "-load-props"; // NOI18N
+    private static final String CHECK_PROPS_TARGET = "-check-props"; // NOI18N
+    private static final String INIT_TARGET = "-init"; // NOI18N
+    private static final String DEBUG_TARGET = "debug-nb"; // NOI18N
+    private static final String DISPLAY_BROWSER = "debug-display-browser"; // NOI18N
 
-    private static final String[] projectProperties = 
-            new String[] {
-                        "session.name",
-                        "jpda.host",
-                        "jpda.address",
-                        "jpda.transport",
-                        "web.docbase.dir",
-                        "debug.sourcepath",
-                        "client.url"
-            };
-    
+    private static final String[] DEBUG_PROPERTIES = new String[] {
+        WebFreeformProperties.JPDA_SESSION_NAME,
+        WebFreeformProperties.JPDA_HOST,
+        WebFreeformProperties.JPDA_ADDRESS,
+        WebFreeformProperties.JPDA_TRANSPORT,
+        WebFreeformProperties.DEBUG_SOURCEPATH,
+        WebFreeformProperties.CLIENT_URL
+    };
+            
+    private static final String DEBUG_PROPERTIES_TEMPLATE = "/org/netbeans/modules/web/freeform/resources/debug-properties.template"; // NOI18N
+               
     private final Project project;
     private final AntProjectHelper helper;
+    private final AuxiliaryConfiguration aux;
 
     private static final String[] SUPPORTED_ACTIONS = {
         ActionProvider.COMMAND_DEBUG,
     };
     
     /** Creates a new instance of WebFreeFormActionProvider */
-    public WebFreeFormActionProvider(Project aProject, AntProjectHelper aHelper) {
+    public WebFreeFormActionProvider(Project aProject, AntProjectHelper aHelper, AuxiliaryConfiguration aAux) {
         project = aProject;
         helper = aHelper;
+        aux = aAux;
     }
 
     public boolean isActionEnabled(String command, org.openide.util.Lookup context) throws IllegalArgumentException {
@@ -136,6 +147,7 @@ public class WebFreeFormActionProvider implements ActionProvider {
             return;
         
         //let's generate a debug target
+        String propertiesFile = writeDebugProperties();
         
         //read script document
         Document script = readCustomScript(GENERAL_SCRIPT_PATH);
@@ -144,7 +156,7 @@ public class WebFreeFormActionProvider implements ActionProvider {
 
         //append comments and target
         writeComments(script);
-        writeTargets(script);
+        writeTargets(script, propertiesFile);
         
         //save script
         writeCustomScript(script, GENERAL_SCRIPT_PATH);
@@ -228,7 +240,7 @@ public class WebFreeFormActionProvider implements ActionProvider {
         // See corresponding schema.
         
         Element data = helper.getPrimaryConfigurationData(true);
-        Element properties = Util.findElement(data, "properties", NS_GENERAL);
+        Element properties = Util.findElement(data, "properties", NS_GENERAL); // NOI18N
         if (properties != null) {
             Iterator/*<Element>*/ propertiesIt = Util.findSubElements(properties).iterator();
             while (propertiesIt.hasNext()) {
@@ -239,12 +251,12 @@ public class WebFreeFormActionProvider implements ActionProvider {
                     assert name != null;
                     String text = Util.findText(el);
                     assert text != null;
-                    nue.setAttribute("name", name);
-                    nue.setAttribute("value", text);
+                    nue.setAttribute("name", name); // NOI18N
+                    nue.setAttribute("value", text); // NOI18N
                 } else if (el.getLocalName().equals("property-file")) { // NOI18N
                     String text = Util.findText(el);
                     assert text != null;
-                    nue.setAttribute("file", text);
+                    nue.setAttribute("file", text); // NOI18N
                 } else {
                     assert false : el;
                 }
@@ -258,8 +270,8 @@ public class WebFreeFormActionProvider implements ActionProvider {
      * @param script Script to write to.
      */
     private void writeComments(Document script) {
-        Comment comm4Edit = script.createComment(" " + NbBundle.getMessage(WebFreeFormActionProvider.class, "COMMENT_edit_target") + " ");
-        Comment comm4Info = script.createComment(" " + NbBundle.getMessage(WebFreeFormActionProvider.class, "COMMENT_more_info_debug") + " ");
+        Comment comm4Edit = script.createComment(" " + NbBundle.getMessage(WebFreeFormActionProvider.class, "COMMENT_edit_target") + " "); // NOI18N
+        Comment comm4Info = script.createComment(" " + NbBundle.getMessage(WebFreeFormActionProvider.class, "COMMENT_more_info_debug") + " "); // NOI18N
 
         Element scriptRoot = script.getDocumentElement();
         scriptRoot.appendChild(comm4Edit);
@@ -270,8 +282,8 @@ public class WebFreeFormActionProvider implements ActionProvider {
      * Appends necessary targets to script.
      * @param script Script to write to.
      */
-    private void writeTargets(Document script) {
-        createLoadPropertiesTarget(script);
+    private void writeTargets(Document script, String propertiesFile) {
+        createLoadPropertiesTarget(script, propertiesFile);
         createCheckPropertiesTarget(script);
         createInitTarget(script);
         createDebugTarget(script);
@@ -285,11 +297,11 @@ public class WebFreeFormActionProvider implements ActionProvider {
      *  </target>
      * @param script Script to write to.
      */
-    private void createLoadPropertiesTarget(Document script) {
-        Element target = script.createElement("target");
+    private void createLoadPropertiesTarget(Document script, String propertiesFile) {
+        Element target = script.createElement("target"); // NOI18N
         target.setAttribute("name", LOAD_PROPS_TARGET); // NOI18N
-        Element property = script.createElement("property");
-        property.setAttribute("file", PROJECT_PROPERTIES_PATH);// NOI18N
+        Element property = script.createElement("property"); // NOI18N
+        property.setAttribute("file", propertiesFile);// NOI18N
         target.appendChild(property);
         script.getDocumentElement().appendChild(target);
     }
@@ -297,23 +309,22 @@ public class WebFreeFormActionProvider implements ActionProvider {
     /**
      * Creates target:
      * <target name="-check-props">
-     *     <fail unless="session.name"/>
+     *     <fail unless="jpda.session.name"/>
      *     <fail unless="jpda.host"/>
      *     <fail unless="jpda.address"/>
      *     <fail unless="jpda.transport"/>
-     *     <fail unless="web.docbase.dir"/>
      *     <fail unless="debug.sourcepath"/>
      *     <fail unless="client.url"/>
      * </target>
      * @param script Script to write to.
      */
     private void createCheckPropertiesTarget(Document script) {
-        Element target = script.createElement("target");
+        Element target = script.createElement("target"); // NOI18N
         target.setAttribute("name", CHECK_PROPS_TARGET); // NOI18N
         Element fail;
-        for (int i = 0; i < projectProperties.length; i++) {
-            fail = script.createElement("fail");
-            fail.setAttribute("unless", projectProperties[i]);
+        for (int i = 0; i < DEBUG_PROPERTIES.length; i++) {
+            fail = script.createElement("fail"); // NOI18N
+            fail.setAttribute("unless", DEBUG_PROPERTIES[i]); // NOI18N
             target.appendChild(fail);
         }
         
@@ -326,18 +337,18 @@ public class WebFreeFormActionProvider implements ActionProvider {
      * @param script Script to write to.
      */
     private void createInitTarget(Document script) {
-        Element target = script.createElement("target");
+        Element target = script.createElement("target"); // NOI18N
         target.setAttribute("name", INIT_TARGET); // NOI18N
-        target.setAttribute("depends", LOAD_PROPS_TARGET + ", " + CHECK_PROPS_TARGET);
+        target.setAttribute("depends", LOAD_PROPS_TARGET + ", " + CHECK_PROPS_TARGET); // NOI18N
         script.getDocumentElement().appendChild(target);
     }
     
     /**
      * Creates target:
-     * <target name="debug-nb" depends="-init">
+     * <target name="debug-nb" depends="-init" if="netbeans.home">
      *     <nbjpdaconnect name="${session.name}" host="${jpda.host}" address="${jpda.address}" transport="${jpda.transport}">
      *         <sourcepath>
-     *             <path path="${web.docbase.dir}:${debug.sourcepath}"/>
+     *             <path path="${debug.sourcepath}"/>
      *         </sourcepath>
      *     </nbjpdaconnect>
      *     <antcall target="debug-display-browser"/>
@@ -347,20 +358,21 @@ public class WebFreeFormActionProvider implements ActionProvider {
     private void createDebugTarget(Document script) {
         Element target = script.createElement("target");
         target.setAttribute("name", DEBUG_TARGET); // NOI18N
-        target.setAttribute("depends", INIT_TARGET);
+        target.setAttribute("depends", INIT_TARGET); // NOI18N
+        target.setAttribute("if", "netbeans.home"); // NOI18N
         Element nbjpdaconnect = script.createElement("nbjpdaconnect"); // NOI18N
-        nbjpdaconnect.setAttribute("name", "${session.name}");
-        nbjpdaconnect.setAttribute("host", "${jpda.host}");
-        nbjpdaconnect.setAttribute("address", "${jpda.address}");
-        nbjpdaconnect.setAttribute("transport", "${jpda.transport}");
-        Element sourcepath = script.createElement("sourcepath");
-        Element path = script.createElement("path");
-        path.setAttribute("path", "${web.docbase.dir}:${debug.sourcepath}");
+        nbjpdaconnect.setAttribute("name", "${" + WebFreeformProperties.JPDA_SESSION_NAME + "}"); // NOI18N
+        nbjpdaconnect.setAttribute("host", "${" + WebFreeformProperties.JPDA_HOST + "}"); // NOI18N
+        nbjpdaconnect.setAttribute("address", "${" + WebFreeformProperties.JPDA_ADDRESS + "}"); // NOI18N
+        nbjpdaconnect.setAttribute("transport", "${" + WebFreeformProperties.JPDA_TRANSPORT + "}"); // NOI18N
+        Element sourcepath = script.createElement("sourcepath"); // NOI18N
+        Element path = script.createElement("path"); // NOI18N
+        path.setAttribute("path", "${debug.sourcepath}"); // NOI18N
         sourcepath.appendChild(path);
         nbjpdaconnect.appendChild(sourcepath);
         target.appendChild(nbjpdaconnect);
-        Element antcall = script.createElement("antcall");
-        antcall.setAttribute("target", DISPLAY_BROWSER);
+        Element antcall = script.createElement("antcall"); // NOI18N
+        antcall.setAttribute("target", DISPLAY_BROWSER); // NOI18N
         target.appendChild(antcall);
         
         script.getDocumentElement().appendChild(target);
@@ -374,10 +386,10 @@ public class WebFreeFormActionProvider implements ActionProvider {
      * @param script Script to write to.
      */
     private void createDisplayBrowserTarget(Document script) {
-        Element target = script.createElement("target");
+        Element target = script.createElement("target"); // NOI18N
         target.setAttribute("name", DISPLAY_BROWSER); // NOI18N
-        Element nbbrowse = script.createElement("nbbrowse");
-        nbbrowse.setAttribute("url", "${client.url}");
+        Element nbbrowse = script.createElement("nbbrowse"); // NOI18N
+        nbbrowse.setAttribute("url", "${client.url}"); // NOI18N
         target.appendChild(nbbrowse);
         
         script.getDocumentElement().appendChild(target);
@@ -482,6 +494,49 @@ public class WebFreeFormActionProvider implements ActionProvider {
         helper.putPrimaryConfigurationData(data, true);
         ProjectManager.getDefault().saveProject(project);
     }
+    
+    private String writeDebugProperties() throws IOException {
+        String fileName = "debug"; // NOI18N
+        String file;
+        int i = 0;
+        do {
+            file = "nbproject/" + fileName + (i != 0 ? String.valueOf(i) : "") + ".properties"; // NOI18N
+            i++;
+        } while (helper.resolveFileObject(file) != null);
+        FileObject fo = FileUtil.createData(project.getProjectDirectory(), file);
+        FileLock lock = fo.lock();
+        OutputStream out = null;
+        InputStream in = null;
+        try {
+            out = new BufferedOutputStream(fo.getOutputStream(lock));
+            in = getClass().getResourceAsStream(DEBUG_PROPERTIES_TEMPLATE);
+            byte[] buffer = new byte[4096];
+            int read;
+            do {
+                read = in.read(buffer);
+                out.write(buffer, 0, read);
+            } while (read == buffer.length);
+        }
+        finally {
+            if (in != null)
+                in.close();
+            if (out != null)
+                out.close();
+            lock.releaseLock();
+        }
+        
+        // set the generated properties
+        EditableProperties ep = helper.getProperties(file);
+        ProjectInformation pi = ProjectUtils.getInformation(project);
+        ep.setProperty(WebFreeformProperties.JPDA_SESSION_NAME, pi.getName());
+        ep.setProperty(WebFreeformProperties.SRC_FOLDERS, findSourceFolders(JavaProjectConstants.SOURCES_TYPE_JAVA));
+        ep.setProperty(WebFreeformProperties.WEB_DOCBASE_DIR, findSourceFolders(WebProjectConstants.TYPE_DOC_ROOT));
+        String contextPath = findContextPath();
+        ep.setProperty(WebFreeformProperties.CLIENT_URL, ep.getProperty(WebFreeformProperties.CLIENT_URL) + (contextPath != null ? contextPath : "/")); // NOI18N
+        helper.putProperties(file, ep);
+        
+        return file;
+    }
 
     /**
      * Jump to an action binding in the editor.
@@ -573,6 +628,39 @@ public class WebFreeFormActionProvider implements ActionProvider {
         }
         parser.parse(in, new Handler());
         return line[0];
+    }
+    
+    private String findSourceFolders(String type) {
+        StringBuffer result = new StringBuffer();
+        Element data = helper.getPrimaryConfigurationData(true);
+        Element foldersEl = Util.findElement(data, "folders", NS_GENERAL); // NOI18N
+        if (foldersEl != null) {
+            for (Iterator i = Util.findSubElements(foldersEl).iterator(); i.hasNext();) {
+                Element sourceFolderEl = (Element)i.next();
+                Element typeEl = Util.findElement(sourceFolderEl , "type", NS_GENERAL); // NOI18N
+                if (typeEl == null || !Util.findText(typeEl).equals(type))
+                    continue;
+                Element locationEl = Util.findElement(sourceFolderEl , "location", NS_GENERAL); // NOI18N
+                if (locationEl == null)
+                    continue;
+                String location = Util.findText(locationEl);
+                if (result.length() > 0)
+                    result.append(":"); // NOI18N
+                result.append(location);
+            }
+        }
+        return result.toString();
+    }
+    
+    private String findContextPath() {
+        Element data = aux.getConfigurationFragment("web-data", WebProjectNature.NS_WEB, true); // NOI18N
+        Element webModulEl = Util.findElement(data, "web-module", WebProjectNature.NS_WEB); // NOI18N
+        if (webModulEl == null)
+            return null;
+        Element contextPathEl = Util.findElement(webModulEl, "context-path", WebProjectNature.NS_WEB); // NOI18N
+        if (contextPathEl == null)
+            return null;
+        return Util.findText(contextPathEl);
     }
     
 }
