@@ -141,8 +141,6 @@ public class ConnectAction extends DatabaseAction {
                         } catch (SQLException exc) {
                             // hack for Pointbase Network Server
                             String message = MessageFormat.format(bundle.getString("ERR_UnableObtainSchemas"), new String[] {exc.getMessage()}); // NOI18N
-                            System.out.println("con="+con.getDatabase());
-                            System.out.println("nfo="+con.getDatabase());
                             if(con.getDriver().equals(PointbasePlus.DRIVER))
                                 if(exc.getErrorCode()==PointbasePlus.ERR_SERVER_REJECTED)
                                     message = MessageFormat.format(bundle.getString("EXC_PointbaseServerRejected"),
