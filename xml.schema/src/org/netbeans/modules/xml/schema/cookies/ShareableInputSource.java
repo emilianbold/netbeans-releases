@@ -52,13 +52,18 @@ final class ShareableInputSource extends InputSource {
            stream = new ByteStream(in , bufferSize);
            stream.mark(bufferSize);
            initialized[1] = true;
+           System.out.println("per.getByteStream neni null");
+        }
+        else{
+            System.out.println("je null");
         }
         return stream;
     }
 
     public Reader getCharacterStream() {
-        if (initialized[0] == false) {
-            reader = new CharacterStream(peer.getCharacterStream(), bufferSize/2);
+        Reader in = peer.getCharacterStream();
+        if (initialized[0] == false && in != null) {
+            reader = new CharacterStream(in, bufferSize/2);
             initialized[0] = true;
             try {
                 reader.mark(bufferSize/2);
