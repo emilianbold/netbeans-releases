@@ -159,7 +159,11 @@ public class NbTopManager extends TopManager {
     TopComponent curTc = TopComponent.getRegistry().getActivated();
     Frame mainWindow = TopManager.getDefault().getWindowManager().getMainWindow();
     Frame owner = null;
-    if ((curTc != null) && (SwingUtilities.findFocusOwner(curTc) != null)) {
+    // Beware - main window is always set as a parent for non-modal
+    // dialogs, because they sometims tend to live longer that currently
+    // active top components (find dialog in editor is good example)
+    if ((curTc != null) && d.isModal() &&
+        (SwingUtilities.findFocusOwner(curTc) != null)) {
       // try to find top component's parent frame
       Component comp = SwingUtilities.windowForComponent(curTc);
       while ((comp != null) && !(comp instanceof Frame)) {
