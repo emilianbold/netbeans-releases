@@ -56,6 +56,7 @@ public class EarProjectGenerator {
     private static final String DEFAULT_DOC_BASE_FOLDER = "conf"; //NOI18N
     private static final String DEFAULT_SRC_FOLDER = "src"; //NOI18N
     private static final String DEFAULT_BUILD_DIR = "build"; //NOI18N
+    private static final String DEFAULT_RESOURCE_FOLDER = "setup"; //NOI18N
     
     private static final String META_INF = "META-INF"; //NOI18N
     
@@ -97,6 +98,7 @@ public class EarProjectGenerator {
         ep.put (EarProjectProperties.SOURCE_ROOT, "."); //NOI18N
         ep.setProperty(EarProjectProperties.META_INF, DEFAULT_SRC_FOLDER+"/"+DEFAULT_DOC_BASE_FOLDER); //NOI18N
         ep.setProperty(EarProjectProperties.SRC_DIR, DEFAULT_SRC_FOLDER); //NOI18N
+        ep.setProperty(EarProjectProperties.RESOURCE_DIR, DEFAULT_RESOURCE_FOLDER);
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         
         Project p = ProjectManager.getDefault().findProject(h.getProjectDirectory ());

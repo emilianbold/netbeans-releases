@@ -575,6 +575,15 @@ public final class EarProject implements J2eeProject, Project, AntProjectListene
             }
         }
 
+        File getFile(String propname) {
+            String prop = helper.getStandardPropertyEvaluator().getProperty(propname);
+            if (prop != null) {
+                return helper.resolveFile(prop);
+            } else {
+                return null;
+            }
+        }
+
     public String getServerID () {
         return helper.getStandardPropertyEvaluator ().getProperty (EarProjectProperties.J2EE_SERVER_TYPE);
     }

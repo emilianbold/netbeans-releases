@@ -102,6 +102,10 @@ public final class ProjectEar extends J2eeAppProvider
         return project.getFileObject (EarProjectProperties.META_INF);
     }
     
+    public File getEnterpriseResourceDirectory() {
+        return project.getFile(EarProjectProperties.RESOURCE_DIR);
+    }
+
     public ClassPathProvider getClassPathProvider () {
         return (ClassPathProvider) project.getLookup ().lookup (ClassPathProvider.class);
     }
