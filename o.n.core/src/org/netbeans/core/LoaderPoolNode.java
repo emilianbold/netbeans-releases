@@ -514,7 +514,7 @@ public final class LoaderPoolNode extends IndexedNode {
    */
     protected void superFireChangeEvent (ChangeEvent che) {
       super.fireChangeEvent(che);
-      System.out.println ("Loaders Change event fired....");
+//      System.out.println ("Loaders Change event fired....");
     }
 
   } // end of NbLoaderPool
@@ -523,6 +523,7 @@ public final class LoaderPoolNode extends IndexedNode {
 
 /*
 * Log
+*  9    Gandalf   1.8         3/18/99  Ian Formanek    
 *  8    Gandalf   1.7         3/18/99  Jaroslav Tulach 
 *  7    Gandalf   1.6         2/16/99  David Simonek   
 *  6    Gandalf   1.5         1/20/99  Jaroslav Tulach 
