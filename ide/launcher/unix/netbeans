@@ -47,15 +47,10 @@ if [ ! -z "$netbeans_extraclusters" ] ; then
     netbeans_clusters="$netbeans_clusters:$netbeans_extraclusters"
 fi
 
-jdkhomeswitch=
-if [ ! -z "$netbeans_jdkhome" ] ; then
-    jdkhomeswitch="--jdkhome \"$netbeans_jdkhome\""
-fi
-
 case "`uname`" in
     Darwin*)
         "$progdir"/../platform4/lib/nbexec \
-            $jdkhomeswitch \
+            --jdkhome "$netbeans_jdkhome" \
             -J-Dcom.apple.mrj.application.apple.menu.about.name=NetBeans \
             -J-Xdock:name=NetBeans \
             "-J-Xdock:icon=$progdir/../nb4.0/netbeans.icns" \
@@ -68,7 +63,7 @@ case "`uname`" in
         ;;
     *)
         "$progdir"/../platform4/lib/nbexec \
-            $jdkhomeswitch \
+            --jdkhome "$netbeans_jdkhome" \
             --branding nb \
             --clusters "$netbeans_clusters" \
             --userdir "${netbeans_default_userdir}" \
