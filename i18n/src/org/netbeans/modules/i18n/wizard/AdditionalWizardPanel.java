@@ -70,8 +70,7 @@ public class AdditionalWizardPanel extends JPanel {
         
         postInitComponents();        
         
-        //Accessibility    
-        this.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(AdditionalWizardPanel.class).getString("ACS_AdditionalWizardPanel"));        
+        //Accessibility   
         sourceCombo.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(AdditionalWizardPanel.class).getString("ACS_sourceCombo"));        
         
         addAdditionalComponent();
@@ -213,6 +212,9 @@ public class AdditionalWizardPanel extends JPanel {
          * @return <code>AdditionalPanel</code> instance */
         protected Component createComponent() {
             JPanel panel = new JPanel();
+            
+            //Accessibility
+            panel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(AdditionalWizardPanel.class).getString("ACS_AdditionalWizardPanel"));                    
             
             panel.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(2)); // NOI18N
             panel.setName(NbBundle.getBundle(getClass()).getString("TXT_ModifyAdditional"));

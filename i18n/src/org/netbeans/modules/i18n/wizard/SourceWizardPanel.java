@@ -115,8 +115,7 @@ public class SourceWizardPanel extends JPanel {
         removeButton.setEnabled(!sourcesList.isSelectionEmpty());
     }
     
-    private void initAccessibility() {
-        this.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(getClass()).getString("ACS_SourceWizardPanel"));
+    private void initAccessibility() {        
         addButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SourceWizardPanel.class).getString("ACS_CTL_AddSource"));
         removeButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SourceWizardPanel.class).getString("ACS_CTL_RemoveSource"));
         sourcesList.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SourceWizardPanel.class).getString("ACS_sourcesList"));
@@ -323,13 +322,16 @@ public class SourceWizardPanel extends JPanel {
         
         /** Gets component to display. Implements superclass abstract method. 
          * @return this instance */
-        protected Component createComponent() {
-            Component component = new SourceWizardPanel(this);
+        protected Component createComponent() {                                    
+            Component component = new SourceWizardPanel(this);            
             if(testWizard)
                 component.setName(NbBundle.getBundle(SourceWizardPanel.class).getString("TXT_SelecTestSources"));
             else
                 component.setName(NbBundle.getBundle(SourceWizardPanel.class).getString("TXT_SelectSources"));                
             
+            // Accessibility            
+            component.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SourceWizardPanel.class).getString("ACS_SourceWizardPanel"));            
+            //--
             return component;
         }
 

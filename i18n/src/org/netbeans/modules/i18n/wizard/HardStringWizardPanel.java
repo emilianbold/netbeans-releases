@@ -233,8 +233,7 @@ public class HardStringWizardPanel extends JPanel {
         hardStringTable.getColumnModel().getColumn(COLUMN_INDEX_CUSTOM).setMaxWidth(30);
     }
     
-    private void initAccessibility() {
-        this.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(HardStringWizardPanel.class).getString("ACS_HardStringWizardPanel"));
+    private void initAccessibility() {        
         sourceCombo.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(HardStringWizardPanel.class).getString("ACS_CTL_sourceCombo"));
         hardStringTable.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(HardStringWizardPanel.class).getString("ACS_hardStringTable"));
     }
@@ -521,6 +520,8 @@ public class HardStringWizardPanel extends JPanel {
          * @return this instance */
         protected Component createComponent() {
             JPanel panel = new JPanel();
+            
+            panel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(HardStringWizardPanel.class).getString("ACS_HardStringWizardPanel"));            
             
             Integer index;
             

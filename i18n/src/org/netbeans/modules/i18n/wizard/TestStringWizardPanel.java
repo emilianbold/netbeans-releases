@@ -87,8 +87,7 @@ public class TestStringWizardPanel extends JPanel {
     
     /** Creates new form HardCodedStringsPanel */
     private TestStringWizardPanel() {
-        initComponents();
-        this.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(getClass()).getString("ACS_TestStringWizardPanel"));                
+        initComponents();        
         
         postInitComponents();
         
@@ -502,6 +501,7 @@ public class TestStringWizardPanel extends JPanel {
          * @return this instance */
         protected Component createComponent() {
             JPanel panel = new JPanel();
+            panel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(TestStringWizardPanel.class).getString("ACS_TestStringWizardPanel"));                            
             
             panel.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(2)); // NOI18N
             panel.setName(NbBundle.getBundle(TestStringWizardPanel.class).getString("TXT_FoundMissingResource"));

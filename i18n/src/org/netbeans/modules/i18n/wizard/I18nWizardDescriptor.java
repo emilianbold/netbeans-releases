@@ -75,10 +75,14 @@ public class I18nWizardDescriptor extends WizardDescriptor {
         Listener listener = new Listener();
 
         // Button init.
-        nextButton.setText(NbBundle.getBundle(I18nWizardDescriptor.class).getString("CTL_Next"));
+        nextButton.setText(NbBundle.getBundle(I18nWizardDescriptor.class).getString("CTL_Next"));        
+        nextButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(I18nWizardDescriptor.class).getString("ACSD_NEXT"));
         previousButton.setText(NbBundle.getBundle(I18nWizardDescriptor.class).getString("CTL_Previous"));
+        previousButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(I18nWizardDescriptor.class).getString("ACSD_PREVIOUS"));
         finishButton.setText(NbBundle.getBundle(I18nWizardDescriptor.class).getString("CTL_Finish"));
+        finishButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(I18nWizardDescriptor.class).getString("ACSD_FINISH"));
         cancelButton.setText(NbBundle.getBundle(I18nWizardDescriptor.class).getString("CTL_Cancel"));
+        cancelButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(I18nWizardDescriptor.class).getString("ACSD_CANCEL"));
         
         nextButton.addActionListener(listener);
         previousButton.addActionListener(listener);
@@ -126,7 +130,7 @@ public class I18nWizardDescriptor extends WizardDescriptor {
         
         updateDefaultButton();
     }
-    
+           
     /** Updates default button. */
     private void updateDefaultButton() {
         JRootPane root = getRootPane();
@@ -141,6 +145,7 @@ public class I18nWizardDescriptor extends WizardDescriptor {
         }
     }
 
+    
     /** Gets root pane. It's retrieved from current panel if possible. 
      * @return root pane or null of not available */
     private JRootPane getRootPane() {
@@ -173,7 +178,6 @@ public class I18nWizardDescriptor extends WizardDescriptor {
         
         return rootPane;
     }
-
     
     /** Listener to changes in the iterator and panels. 
      * Hack, it's private in super. */
@@ -339,7 +343,9 @@ public class I18nWizardDescriptor extends WizardDescriptor {
             if(changeListener != null)
                 changeListener.stateChanged(new ChangeEvent(this));
         }
-
+	                	        
     } // End of nested class Panel.
     
 }
+
+

@@ -145,8 +145,7 @@ public class ResourceWizardPanel extends JPanel {
     }
     
     
-    private void initAccesibility() {
-        this.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(AdditionalWizardPanel.class).getString("ACS_ResourceWizardPanel"));     
+    private void initAccesibility() {        
         addButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ResourceWizardPanel.class).getString("ACS_CTL_SelectResource"));
         addAllButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ResourceWizardPanel.class).getString("ACS_CTL_SelectResourceAll"));
         resourcesTable.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ResourceWizardPanel.class).getString("ACS_resourcesTable"));
@@ -385,6 +384,9 @@ public class ResourceWizardPanel extends JPanel {
          * @return this instance */
         protected Component createComponent() {
             JPanel panel = new JPanel();
+
+            // Accessibility
+            panel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ResourceWizardPanel.class).getString("ACS_ResourceWizardPanel"));                 
             
             panel.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(1)); // NOI18N
             if(testWizard)
