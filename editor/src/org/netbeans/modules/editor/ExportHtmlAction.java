@@ -306,7 +306,7 @@ public class ExportHtmlAction extends CookieAction {
             JFileChooser chooser = new JFileChooser();
             chooser.setFileFilter (new javax.swing.filechooser.FileFilter () {
                 public boolean accept(File f) {
-                    if (f.isFile() && f.getName().endsWith (HTML_EXT)) {
+                    if (f.isFile() && f.getName().endsWith (HTML_EXT) || f.isDirectory()) {
                         return true;
                     }
                     else
