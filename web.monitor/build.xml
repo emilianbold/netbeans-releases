@@ -114,6 +114,7 @@ Microsystems, Inc. All Rights Reserved.
          <pathelement location="${f4jroot}/dd2beans/netbeans/modules/dd2beans.jar"/>
          <pathelement location="extra/servlet.jar"/>	
          <pathelement location="${nbroot}/web/netbeans/modules/jsp.jar"/>
+	 <pathelement location="${f4jroot}/core/release/lib/ext/parser.jar"/>
       </classpath>
      </javac>
   </target>
