@@ -35,6 +35,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="ant"    	testtypes="qa-functional"  attributes="validation"/>
       <module name="beans"  	testtypes="qa-func"        attributes="validation"/>
       <module name="clazz"  	testtypes="qa-functional"  attributes="validation"/>
+      <module name="corba"   	testtypes="qa-functional"  attributes="validation"/>  
       <module name="core"   	testtypes="qa-functional"  attributes="validation"/>  
       <module name="editor" 	testtypes="qa-functional"  attributes="validation"/>
       <module name="i18n"   	testtypes="qa-functional"  attributes="validation"/>
@@ -60,6 +61,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="ant"    	testtypes="qa-functional"  attributes="validation"/>
       <module name="beans"  	testtypes="qa-func"        attributes="validation"/>
       <module name="clazz"  	testtypes="qa-functional"  attributes="validation"/>
+      <module name="corba"   	testtypes="qa-functional"  attributes="validation"/>  
       <module name="core"   	testtypes="qa-functional"  attributes="validation"/>  
       <module name="editor" 	testtypes="qa-functional"  attributes="validation"/>
       <module name="i18n"   	testtypes="qa-functional"  attributes="validation"/>
@@ -88,6 +90,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="ant"    	testtypes="qa-functional"  attributes="validation,full"/>
       <module name="beans"  	testtypes="qa-func"        attributes="validation,full"/>
       <module name="clazz"  	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="corba"   	testtypes="qa-functional"  attributes="validation,full"/>  
       <module name="core"   	testtypes="qa-functional"  attributes="validation,full"/>  
       <module name="editor" 	testtypes="qa-functional"  attributes="validation,full"/>
       <module name="i18n"   	testtypes="qa-functional"  attributes="validation,full"/>
@@ -113,6 +116,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="ant"    	testtypes="qa-functional"  attributes="validation,full"/>
       <module name="beans"  	testtypes="qa-func"        attributes="validation,full"/>
       <module name="clazz"  	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="corba"   	testtypes="qa-functional"  attributes="validation,full"/>  
       <module name="core"   	testtypes="qa-functional"  attributes="validation,full"/>  
       <module name="editor" 	testtypes="qa-functional"  attributes="validation,full"/>
       <module name="i18n"   	testtypes="qa-functional"  attributes="validation,full"/>
