@@ -928,20 +928,22 @@ public class BeanProp implements BaseProperty {
                                                getMessage("CannotInsertElementAlreadyInGraph_msg"));
         }
 	}
-	
+
+    /*
 	//  If String, store a copy of the string
 	if (value instanceof java.lang.String) {
 	    
 	    //	An empty optional String is equivalement to a null string
 	    if (!this.isBean()
 	        && ((this.type & Common.MASK_INSTANCE) == Common.TYPE_0_1)
-		&& value.equals("")) { // NOI18N    
+            && value.equals("")) { // NOI18N    
 		    
-		value = null;
+            value = null;
 	    } else {
-		value = new String((String)value);
+            value = new String((String)value);
 	    }
 	}
+    */
 	
 	if (DDLogFlags.debug) {
 	    TraceLogger.put(TraceLogger.DEBUG, TraceLogger.SVC_DD,
@@ -1259,8 +1261,11 @@ public class BeanProp implements BaseProperty {
 	DOMBinding b = null;
 	
 	//	The attribute value lives in the DOMBinding object
-	if (index != 0 || this.bindingsSize() != 0)
+	if (index != 0 || this.bindingsSize() != 0) {
 	    b = (DOMBinding)this.bindings.get(index);
+    } else if (DDLogFlags.debug) {
+        System.err.println("What DOMBinding should I use for BeanProp.setAttributeValue?!?");
+    }
 	
 	if (b != null) {
 	    Object oldValue = b.getAttributeValue(this, ap.getDtdName());
