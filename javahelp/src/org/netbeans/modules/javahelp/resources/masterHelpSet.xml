@@ -50,4 +50,10 @@ Microsystems, Inc. All Rights Reserved.
             <helpaction image="helpviewer_page-setup">javax.help.PrintSetupAction</helpaction>
         </toolbar>
     </presentation>
-</helpset>
+    <presentation displayviews=false>
+        <name>NBSecondaryWindow</name>
+        <size width=600 height=400 />
+        <location x=200 y=200 />
+    </presentation>
+
+    </helpset>
