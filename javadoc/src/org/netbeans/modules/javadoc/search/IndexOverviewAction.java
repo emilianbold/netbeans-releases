@@ -13,14 +13,20 @@
 
 package org.netbeans.modules.javadoc.search;
 
+import java.awt.Toolkit;
+import javax.swing.JPopupMenu;
+
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.net.URL;
 import java.util.*;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.ErrorManager;
-import org.openide.awt.Actions;
 import org.openide.awt.HtmlBrowser;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.HelpCtx;
@@ -29,10 +35,14 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.actions.Presenter;
 
 /**
+ * Action which shows mounted Javadoc filesystems with known indexes as a submenu,
+ * so you can choose a Javadoc set.
  * @author Jesse Glick
  */
-public class IndexOverviewAction extends SystemAction implements Presenter.Menu, Presenter.Popup {
+public class IndexOverviewAction extends SystemAction implements Presenter.Menu {
     
+    private static final ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.modules.javadoc.search.IndexOverviewAction.IndexMenu"); // NOI18N
+        
     public void actionPerformed(ActionEvent ev) {
         // do nothing -- should never be called
     }
@@ -50,94 +60,106 @@ public class IndexOverviewAction extends SystemAction implements Presenter.Menu,
     }
     
     public JMenuItem getMenuPresenter() {
-        return new SpecialSubMenu(this, new ActSubMenuModel(), false);
+        return new IndexMenu();
     }
     
-    public JMenuItem getPopupPresenter() {
-        return new SpecialSubMenu(this, new ActSubMenuModel(), true);
-    }
-    
-    /** Special submenu which notifies model when it is added as a component.
+    /**
+     * Lazy menu which when added to its parent menu, will begin creating the
+     * list of filesystems and finding their titles. When the popup for it
+     * is created, it will create submenuitems for each available index.
      */
-    private static final class SpecialSubMenu extends Actions.SubMenu {
+    private final class IndexMenu extends JMenu implements HelpCtx.Provider {
         
-        private final ActSubMenuModel model;
-
-        SpecialSubMenu(SystemAction action, ActSubMenuModel model, boolean popup) {
-            super(action, model, popup);
-            this.model = model;
+        private int itemHash = 0;
+        
+        public IndexMenu() {
+            Mnemonics.setLocalizedText(this, IndexOverviewAction.this.getName());
+            setIcon(IndexOverviewAction.this.getIcon());
+        }
+        
+        public HelpCtx getHelpCtx() {
+            return IndexOverviewAction.this.getHelpCtx();
         }
         
         public void addNotify() {
-            model.addNotify();
+            if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                err.log("addNotify");
+            }
             super.addNotify();
-            setEnabled(model.getCount() > 0);
+            IndexBuilder.getDefault();
         }
         
-        // removeNotify not useful--might be called before action is invoked
+        public JPopupMenu getPopupMenu() {
+            List[] data = IndexBuilder.getDefault().getIndices();
+            int newHash = computeDataHash(data);
+            if (newHash != itemHash) {
+                if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                    err.log("recreating popup menu (" + itemHash + " -> " + newHash + ")");
+                }
+                itemHash = newHash;
+                // Probably need to recreate the menu.
+                removeAll();
+                List names = data[0]; // List<String>
+                List indices = data[1]; // List<FileObject>
+                int size = names.size();
+                if (size != indices.size()) throw new IllegalStateException();
+                if (size > 0) {
+                    for (int i = 0; i < size; i++) {
+                        try {
+                            add(new IndexMenuItem((String)names.get(i), (FileObject)indices.get(i)));
+                        } catch (FileStateInvalidException e) {
+                            err.notify(ErrorManager.INFORMATIONAL, e);
+                        }
+                    }
+                } else {
+                    JMenuItem dummy = new JMenuItem(NbBundle.getMessage(IndexOverviewAction.class, "CTL_no_indices_found"));
+                    dummy.setEnabled(false);
+                    add(dummy);
+                }
+            }
+            return super.getPopupMenu();
+        }
+        
+        private int computeDataHash(List[] data) {
+            int x = data[0].hashCode();
+            Iterator it = data[1].iterator();
+            while (it.hasNext()) {
+                FileObject fo = (FileObject)it.next();
+                // Just using fo.hashCode() does not work because sometimes the FileObject
+                // is collected and recreated randomly, and now has a new hash code...
+                x += fo.getPath().hashCode();
+                try {
+                    x += fo.getFileSystem().getSystemName().hashCode();
+                } catch (FileStateInvalidException e) {
+                    err.notify(ErrorManager.INFORMATIONAL, e);
+                }
+            }
+            return x;
+        }
+        
+    }
+
+    /**
+     * Menu item representing one Javadoc index.
+     */
+    private final class IndexMenuItem extends JMenuItem implements ActionListener, HelpCtx.Provider {
+        
+        private final URL u;
+        
+        public IndexMenuItem(String display, FileObject index) throws FileStateInvalidException {
+            super(display);
+            u = index.getURL();
+            addActionListener(this);
+        }
+        
+        public void actionPerformed(ActionEvent ev) {
+            HtmlBrowser.URLDisplayer.getDefault().showURL(u);
+        }
+        
+        public HelpCtx getHelpCtx() {
+            return IndexOverviewAction.this.getHelpCtx();
+        }
         
     }
     
-    /** Model to use for the submenu.
-     */
-    private static final class ActSubMenuModel implements Actions.SubMenuModel {
-        
-        private List displayNames; // List<String>
-        // index.html files:
-        private List associatedInfo; // List<FileObject>
-        
-        private Set listeners = new HashSet(); // Set<ChangeListener>
-        
-        public int getCount() {
-            return displayNames != null ? displayNames.size() : 0;
-        }
-        
-        public String getLabel(int index) {
-            return (String)displayNames.get(index);
-        }
-        
-        public HelpCtx getHelpCtx(int index) {
-            return HelpCtx.DEFAULT_HELP; // could add something special here, or new HelpCtx(IndexOverviewAction.class)
-        }
-        
-        public void performActionAt(int index) {
-            FileObject f = (FileObject)associatedInfo.get(index);
-            try {
-                HtmlBrowser.URLDisplayer.getDefault().showURL(f.getURL());
-            } catch (FileStateInvalidException fsie) {
-                ErrorManager.getDefault().notify(fsie);
-            }
-        }
-        
-        public synchronized void addChangeListener(ChangeListener l) {
-            listeners.add(l);
-        }
-        
-        public synchronized void removeChangeListener(ChangeListener l) {
-            listeners.remove(l);
-        }
-        
-        /** You may use this is you have attached other listeners to things that will affect displayNames, for example. */
-        private synchronized void fireStateChanged() {
-            if (listeners.size() == 0) return;
-            ChangeEvent ev = new ChangeEvent(this);
-            Iterator it = listeners.iterator();
-            while (it.hasNext())
-                ((ChangeListener)it.next()).stateChanged(ev);
-        }
-        
-        void addNotify() {
-            IndexBuilder index = IndexBuilder.getDefault();
-            List[] overviews = index.getIndices();
-            if (overviews[0].isEmpty()) {
-                displayNames = Collections.EMPTY_LIST;
-                associatedInfo = Collections.EMPTY_LIST;
-            } else {
-                overviews[0].add(0, null);
-                overviews[1].add(0, null);
-                displayNames = overviews[0];
-                associatedInfo = overviews[1];
-            }
-        }
-    }
 }

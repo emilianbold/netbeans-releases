@@ -14,6 +14,8 @@
 package org.netbeans.modules.javadoc.search;
 
 import java.io.*;
+import java.lang.ref.*;
+import java.text.Collator;
 import java.util.*;
 import javax.swing.text.html.parser.*;
 
@@ -23,15 +25,12 @@ import org.openide.filesystems.*;
 import org.openide.util.RequestProcessor;
 
 /**
- * @author Svata Dedic
+ * Builds index of Javadoc filesystems.
+ * @author Svata Dedic, Jesse Glick
  */
 public class IndexBuilder implements Runnable, RepositoryListener {
-    /**
-     * Refresh delay v ms
-     */
-    static final int REFRESH_DELAY = 1000;
 
-    static final String[] INDEX_FILE_NAMES = {
+    private static final String[] INDEX_FILE_NAMES = {
         "overview-summary.html", // NOI18N
         "api/overview-summary.html", // NOI18N
         "index.html", // NOI18N
@@ -40,16 +39,20 @@ public class IndexBuilder implements Runnable, RepositoryListener {
         "api/index.htm", // NOI18N
     };
 
-    static IndexBuilder INSTANCE;
+    private static IndexBuilder INSTANCE;
 
-    static RequestProcessor.Task    task;
+    private static RequestProcessor.Task    task;
+    
+    private final ErrorManager err;
+    
+    private Reference cachedData;
 
     /**
      * WeakMap<FileSystem : info> of information extracted from filesystems.
      */
     Map     filesystemInfo = Collections.EMPTY_MAP;
 
-    static class Info {
+    private static class Info {
         /**
          * Display name / title of the helpset
          */
@@ -63,29 +66,60 @@ public class IndexBuilder implements Runnable, RepositoryListener {
 
     private IndexBuilder() {
         Repository.getDefault().addRepositoryListener(this);
+        err = ErrorManager.getDefault().getInstance("org.netbeans.modules.javadoc.search.IndexBuilder"); // NOI18N
+        if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+            err.log("new IndexBuilder");
+        }
     }
 
-    public static void initialize() {
-        getDefault();
-    }
-
-    synchronized static IndexBuilder getDefault() {
+    /**
+     * Get the default index builder instance.
+     * It will start parsing asynch.
+     */
+    public synchronized static IndexBuilder getDefault() {
         if (INSTANCE != null)
             return INSTANCE;
         INSTANCE = new IndexBuilder();
         scheduleTask();
         return INSTANCE;
     }
-
+    
     public void run() {
+        cachedData = null;
         refreshIndex();
     }
 
+    /**
+     * Get the important information from the index builder.
+     * Waits for parsing to complete first, if necessary.
+     * @return two lists, one of String display names, the other of FileObject indices
+     */
     public List[] getIndices() {
+        task.waitFinished();
+        if (cachedData != null) {
+            List[] data = (List[])cachedData.get();
+            if (data != null) {
+                if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                    err.log("getIndices (cached)");
+                }
+                return data;
+            }
+        }
+        
+        if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+            err.log("getIndices");
+        }
         Map m = this.filesystemInfo;
-        List display = new ArrayList(m.size());
-        List fos = new ArrayList(m.size());
         Iterator it = m.entrySet().iterator();
+        final Collator c = Collator.getInstance();
+        class Pair implements Comparable {
+            public String display;
+            public FileObject fo;
+            public int compareTo(Object o) {
+                return c.compare(display, ((Pair)o).display);
+            }
+        }
+        SortedSet pairs = new TreeSet(); // SortedSet<Pair>
         for (int i = 0; i < m.size(); i++) {
             Map.Entry e = (Map.Entry)it.next();
             FileSystem fs = (FileSystem)e.getKey();
@@ -93,19 +127,44 @@ public class IndexBuilder implements Runnable, RepositoryListener {
             FileObject fo = fs.findResource(info.indexFileName);
             if (fo == null)
                 continue;
-            display.add(info.title);
-            fos.add(fo);
+            Pair p = new Pair();
+            p.display = info.title;
+            p.fo = fo;
+            pairs.add(p);
         }
-        return new List[] { display, fos };
+        List display = new ArrayList(pairs.size());
+        List fos = new ArrayList(pairs.size());
+        it = pairs.iterator();
+        while (it.hasNext()) {
+            Pair p = (Pair)it.next();
+            display.add(p.display);
+            fos.add(p.fo);
+        }
+        List[] data = new List[] {display, fos};
+        cachedData = new WeakReference(data);
+        return data;
     }
 
-    public void refreshIndex() {
+    private void refreshIndex() {
+        if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+            err.log("refreshIndex");
+        }
+        Map oldMap;
+        synchronized (this) {
+            oldMap = this.filesystemInfo;
+        }
         Enumeration e = FileSystemCapability.DOC.fileSystems();
-        Collection c = new LinkedList();
         Map m = new WeakHashMap();
 
         while (e.hasMoreElements()) {
             FileSystem fs = (FileSystem)e.nextElement();
+            Info oldInfo = (Info)oldMap.get(fs);
+            if (oldInfo != null) {
+                // No need to reparse.
+                m.put(fs, oldInfo);
+                continue;
+            }
+            
             FileObject index = null;
             for (int i = 0; i < INDEX_FILE_NAMES.length; i++) {
                 if ((index = fs.findResource(INDEX_FILE_NAMES[i])) != null) {
@@ -152,41 +211,22 @@ public class IndexBuilder implements Runnable, RepositoryListener {
             }
             if (index != null) {
                 // Try to find a title.
-                final String[] title = new String[1];
-                try {
-                    Reader r = new InputStreamReader(index.getInputStream());
-                    try {
-                        class TitleParser extends Parser {
-                            public TitleParser() throws IOException {
-                                super(DTD.getDTD("html32")); // NOI18N
-                            }
-                            protected void handleTitle(char[] text) {
-                                title[0] = new String(text);
-                            }
-                        }
-                        new TitleParser().parse(r);
-                    } finally {
-                        r.close();
-                    }
-                } catch (IOException ioe) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
-                }
+                String title = parseTitle(index);
                 JavaDocFSSettings fss = JavaDocFSSettings.getSettingForFS(fs);
-                if (title[0] != null && fss != null) {
+                if (title != null && fss != null) {
                     JavadocSearchType st = fss.getSearchTypeEngine();
                     if (st == null)
                         continue;
-                    title[0] = st.getOverviewTitleBase(title[0]);
+                    title = st.getOverviewTitleBase(title);
                 }
-                if ("".equals(title[0])) { // NOI18N
-                    title[0] = java.text.MessageFormat.format(ResourceUtils.getBundledString(
+                if ("".equals(title)) { // NOI18N
+                    title = java.text.MessageFormat.format(ResourceUtils.getBundledString(
                             "FMT_NoOverviewTitle"), new Object[] { index.getPath(),
                                                                    fs.getDisplayName(),
                                                                    fs.getSystemName() });
                 }
-                c.add(fs);
                 Info info = new Info();
-                info.title = title[0] == null ? fs.getDisplayName() : title[0];
+                info.title = title == null ? fs.getDisplayName() : title;
                 info.indexFileName = index.getPath();
                 m.put(fs, info);
             }
@@ -195,11 +235,65 @@ public class IndexBuilder implements Runnable, RepositoryListener {
             }
         }
     }
+    
+    /**
+     * Attempt to find the title of an HTML file object.
+     * May return null if there is no title tag, or "" if it is empty.
+     */
+    private String parseTitle(FileObject html) {
+        try {
+            // #32551: first try to find title the easy way, only then fall back.
+            // XXX character set may be an issue here...
+            BufferedReader b = new BufferedReader(new InputStreamReader(html.getInputStream()));
+            String line;
+            while ((line = b.readLine()) != null) {
+                if (line.equalsIgnoreCase("<title>")) { // NOI18N
+                    String title = b.readLine();
+                    if (title != null) {
+                        String next = b.readLine();
+                        if ("</title>".equalsIgnoreCase(next)) { // NOI18N
+                            if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                                err.log("Fast parsing of " + title);
+                            }
+                            return title;
+                        }
+                    }
+                }
+            }
+            // OK, fall back to slower parsing mode.
+            final String[] title = new String[1];
+            // XXX technically this should use an encoding according to the HTML character
+            // set specification...
+            Reader r = new InputStreamReader(html.getInputStream());
+            try {
+                class TitleParser extends Parser {
+                    public TitleParser() throws IOException {
+                        super(DTD.getDTD("html32")); // NOI18N
+                    }
+                    protected void handleTitle(char[] text) {
+                        title[0] = new String(text);
+                        if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                            err.log("Slow parsing of " + title[0]);
+                        }
+                    }
+                }
+                new TitleParser().parse(r);
+                return title[0];
+            } finally {
+                r.close();
+            }
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+            return null;
+        }
+    }
 
-    synchronized static void scheduleTask() {
+    private synchronized static void scheduleTask() {
         if (task == null)
             task = RequestProcessor.getDefault().create(getDefault());
-        task.schedule(REFRESH_DELAY);
+        // Give it a small delay to avoid restarting too many times e.g. during
+        // project switch:
+        task.schedule(100);
     }
 
     public void fileSystemAdded(RepositoryEvent ev) {
@@ -211,6 +305,6 @@ public class IndexBuilder implements Runnable, RepositoryListener {
     }
 
     public void fileSystemPoolReordered(RepositoryReorderedEvent ev) {
-
+        // do nothing here - do not care about order
     }
 }

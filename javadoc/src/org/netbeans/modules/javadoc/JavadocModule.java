@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
-import org.netbeans.modules.javadoc.search.IndexBuilder;
 import org.openide.filesystems.FileSystemCapability;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.modules.ModuleInstall;
@@ -37,16 +36,6 @@ public class JavadocModule extends ModuleInstall {
     private static final long serialVersionUID = 984124010415492146L;
     
     private static Collection floatingTopComponents;
-
-    public void installed() {
-        super.installed();
-        IndexBuilder.initialize();
-    }
-
-    public void restored() {
-        super.restored();
-        IndexBuilder.initialize();
-    }
 
     protected Object writeReplace(){
         return null;
