@@ -482,7 +482,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         BufferedImage image = config.createCompatibleImage(r.width, r.height);
         Graphics2D g = image.createGraphics();
         AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER,
-                                                       0.5f);
+                                                       0.7f);
 
         g.setComposite(ac);
         g.translate(-r.x, -r.y);
