@@ -45,52 +45,51 @@ class OpenFile extends Object {
   * @param wait whether to wait until requested to return a status
   * @param addr address to send reply to, if waiting
   * @param port port to send reply to, if waiting
-  * @return whether to reply immediately even if should be waiting
-  * @exception IOException if the file cannot be found
   */
-  static boolean open (File f, boolean wait, InetAddress addr, int port) throws IOException {
+  static void open (File f, final boolean wait, InetAddress addr, int port) {
     FileObject fo = find (f);
     
     if (fo != null) {
-      DataObject obj = DataObject.find (fo);
-      OpenCookie open = (OpenCookie) obj.getCookie (OpenCookie.class);
-      ViewCookie view = (ViewCookie) obj.getCookie (ViewCookie.class);
-      if (open != null || view != null) {
-        if (open != null)
-          open.open ();
-        else
-          view.view ();
-        if (wait) {
-          // Could look for a SaveCookie just to see, but need not.
-          Server.waitFor (obj, addr, port);
-        }
-      } else {
-        Node n = obj.getNodeDelegate ();
-        if (fo.isRoot ()) {
-          // Try to get the node used in the usual Repository, which
-          // has a non-blank display name and is thus nicer.
-          FileSystem fs = fo.getFileSystem ();
-          Node reponode = TopManager.getDefault ().getPlaces ().nodes ().repository ();
-          Children repokids = reponode.getChildren ();
-          Enumeration fsenum = repokids.nodes ();
-          while (fsenum.hasMoreElements ()) {
-            Node fsnode = (Node) fsenum.nextElement ();
-            DataFolder df = (DataFolder) fsnode.getCookie (DataFolder.class);
-            if (df != null && df.getPrimaryFile ().getFileSystem ().equals (fs)) {
-              n = fsnode;
-              break;
+      try {
+        DataObject obj = DataObject.find (fo);
+        final OpenCookie open = (OpenCookie) obj.getCookie (OpenCookie.class);
+        final ViewCookie view = (ViewCookie) obj.getCookie (ViewCookie.class);
+        if (open != null || view != null) {
+          TopManager.getDefault ().setStatusText (SettingsBeanInfo.getString (wait ? "MSG_openingAndWaiting" : "MSG_opening", f.toString ()));
+          if (open != null)
+            open.open ();
+          else
+            view.view ();
+          TopManager.getDefault ().setStatusText ("");
+          if (wait) {
+            // Could look for a SaveCookie just to see, but need not.
+            Server.waitFor (obj, addr, port);
+          }
+        } else {
+          Node n = obj.getNodeDelegate ();
+          if (fo.isRoot ()) {
+            // Try to get the node used in the usual Repository, which
+            // has a non-blank display name and is thus nicer.
+            FileSystem fs = fo.getFileSystem ();
+            Node reponode = TopManager.getDefault ().getPlaces ().nodes ().repository ();
+            Children repokids = reponode.getChildren ();
+            Enumeration fsenum = repokids.nodes ();
+            while (fsenum.hasMoreElements ()) {
+              Node fsnode = (Node) fsenum.nextElement ();
+              DataFolder df = (DataFolder) fsnode.getCookie (DataFolder.class);
+              if (df != null && df.getPrimaryFile ().getFileSystem ().equals (fs)) {
+                n = fsnode;
+                break;
+              }
             }
           }
+          TopManager.getDefault ().getNodeOperation ().explore (n);
+          if (wait)
+              TopManager.getDefault ().notify (new NotifyDescriptor.Message (SettingsBeanInfo.getString ("MSG_cannotOpenWillClose", f)));
         }
-        TopManager.getDefault ().getNodeOperation ().explore (n);
-        if (wait) {
-            TopManager.getDefault ().notify (new NotifyDescriptor.Message (SettingsBeanInfo.getString ("MSG_cannotOpenWillClose", f)));
-            return true;
-        }
+      } catch (IOException ioe) {
+        TopManager.getDefault ().notifyException (ioe);
       }
-      return false;
-    } else {
-      return false;
     }
   }
 
