@@ -24,7 +24,8 @@ import org.netbeans.spi.debugger.DebuggerEngineProvider;
 public class JSR45DebuggerEngineProvider extends DebuggerEngineProvider {
     
     private String language;
-    
+    private DebuggerEngine.Destructor desctuctor;
+
     JSR45DebuggerEngineProvider (String language) {
         this.language = language;
     }
@@ -42,6 +43,11 @@ public class JSR45DebuggerEngineProvider extends DebuggerEngineProvider {
     }
 
     public void setDestructor (DebuggerEngine.Destructor desctuctor) {
+        this.desctuctor = desctuctor;
+    }
+
+    public DebuggerEngine.Destructor getDesctuctor() {
+        return desctuctor;
     }
 }
 

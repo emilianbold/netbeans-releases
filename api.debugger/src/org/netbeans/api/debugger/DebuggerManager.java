@@ -14,11 +14,8 @@
 package org.netbeans.api.debugger;
 
 import java.beans.*;
-import java.io.*;
-import java.net.URL;
 import java.util.*;
 import java.util.HashMap;
-import java.util.Set;
 import org.netbeans.spi.debugger.DelegatingDebuggerEngineProvider;
 import org.netbeans.spi.debugger.DelegatingSessionProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
@@ -181,7 +178,7 @@ public final class DebuggerManager {
     private boolean                           breakpointsInitialized = false;
     private Vector                            watches = new Vector ();
     private boolean                           watchesInitialized = false;
-    static private ArrayList                  debuggerPlugIns;
+//    static private ArrayList                  debuggerPlugIns;
     private SessionListener                   sessionListener = new SessionListener ();
     private Vector                            listener = new Vector ();
     private HashMap                           listeners = new HashMap ();
@@ -281,6 +278,7 @@ public final class DebuggerManager {
         ArrayList sessionProviders = new ArrayList ();
         ArrayList engines = new ArrayList ();
         Lookup l = info.getLookup ();
+        Lookup l2 = info.getLookup ();
         sessionProviders.addAll (
             l.lookup (
                 null,
@@ -316,6 +314,7 @@ public final class DebuggerManager {
                 );
                 sessionToStart = s;
                 l = s.getLookup ();
+                l2 = s.getLookup ();
                 addSession (s);
                 //S ystem.out.println("@  StartDebugging new Session: " + s);
             }
@@ -323,10 +322,10 @@ public final class DebuggerManager {
             // init DebuggerEngines
             ArrayList engineProviders = new ArrayList ();
             engineProviders.addAll (
-                l.lookup (null, DebuggerEngineProvider.class)
+                l2.lookup (null, DebuggerEngineProvider.class)
             );
             engineProviders.addAll (
-                l.lookup (null, DelegatingDebuggerEngineProvider.class)
+                l2.lookup (null, DelegatingDebuggerEngineProvider.class)
             );
             int j, jj = engineProviders.size ();
             for (j = 0; j < jj; j++) {
@@ -497,8 +496,6 @@ public final class DebuggerManager {
      * @param expr expression to watch for (the format is the responsibility 
      *    of the debugger plug-in implementation, but it is typically 
      *    a variable name).
-     * @param hidden <code>true</code> if the watch should be hidden for
-     *    a user
      * @return the new watch
      */
     public Watch createWatch (String expr) {
@@ -539,7 +536,7 @@ public final class DebuggerManager {
     /**
     * Removes watch.
     *
-    * @param b watch to be removed
+    * @param w watch to be removed
     */
     void removeWatch (Watch w) {
         if (!watchesInitialized) initWatches ();
@@ -630,8 +627,8 @@ public final class DebuggerManager {
      * Notifies registered listeners about a change.
      * Notifies {@link #listener registered listeners} that a breakpoint
      * {@link DebuggerManagerListener#breakpointAdded was added}
-     * and {@link #pcs property change listeners} that its properties
-     * {@link PropertyChangeSupport#firePropertyChange(String, Object, Object)}
+     * and its properties
+     * {@link PropertyChangeSupport#firePropertyChange(PropertyChangeEvent)}
      * were changed.
      *
      * @param breakpoint  a breakpoint that was created
@@ -666,8 +663,8 @@ public final class DebuggerManager {
      * Notifies registered listeners about a change.
      * Notifies {@link #listener registered listeners} that a breakpoint
      * {@link DebuggerManagerListener#breakpointRemoved was removed}
-     * and {@link #pcs property change listeners} that its properties
-     * {@link PropertyChangeSupport#firePropertyChange(String, Object, Object)}
+     * and its properties
+     * {@link PropertyChangeSupport#firePropertyChange(PropertyChangeEvent)}
      * were changed.
      *
      * @param breakpoint  a breakpoint that was removed
@@ -735,11 +732,11 @@ public final class DebuggerManager {
      * Notifies registered listeners about a change.
      * Notifies {@link #listener registered listeners} that a watch
      * {@link DebuggerManagerListener#watchAdded was added}
-     * and {@link #pcs property change listeners} that its properties
-     * {@link PropertyChangeSupport#firePropertyChange(String, Object, Object)}
+     * and its properties
+     * {@link PropertyChangeSupport#firePropertyChange(PropertyChangeEvent)}
      * were changed.
      *
-     * @param Watch  a watch that was created
+     * @param watch  a watch that was created
      */
     private void fireWatchCreated (final Watch watch) {
         initDebuggerManagerListeners ();
@@ -771,11 +768,11 @@ public final class DebuggerManager {
      * Notifies registered listeners about a change.
      * Notifies {@link #listener registered listeners} that a watch
      * {@link DebuggerManagerListener#watchRemoved was removed}
-     * and {@link #pcs property change listeners} that its properties
-     * {@link PropertyChangeSupport#firePropertyChange(String, Object, Object)}
+     * and its properties
+     * {@link PropertyChangeSupport#firePropertyChange(PropertyChangeEvent)}
      * were changed.
      *
-     * @param Watch  a watch that was removed
+     * @param watch  a watch that was removed
      */
     private void fireWatchRemoved (final Watch watch) {
         initDebuggerManagerListeners ();
@@ -831,9 +828,9 @@ public final class DebuggerManager {
     /**
      * Notifies registered listeners about a change.
      * Notifies {@link #listener registered listeners} that a session
-     * {@link DebuggerManagerListener#engineAdded was added}
-     * and {@link #pcs property change listeners} that its properties
-     * {@link PropertyChangeSupport#firePropertyChange(String, Object, Object)}
+     * {@link DebuggerManagerListener#sessionAdded was added}
+     * and its properties
+     * {@link PropertyChangeSupport#firePropertyChange(PropertyChangeEvent)}
      * were changed.
      *
      * @param session a session that was created
@@ -871,9 +868,9 @@ public final class DebuggerManager {
     /**
      * Notifies registered listeners about a change.
      * Notifies {@link #listener registered listeners} that a session
-     * {@link DebuggerManagerListener#engineRemoved was removed}
-     * and {@link #pcs property change listeners} that its properties
-     * {@link PropertyChangeSupport#firePropertyChange(String, Object, Object)}
+     * {@link DebuggerManagerListener#sessionRemoved was removed}
+     * and its properties
+     * {@link PropertyChangeSupport#firePropertyChange(PropertyChangeEvent)}
      * were changed.
      *
      * @param session a session that was removed

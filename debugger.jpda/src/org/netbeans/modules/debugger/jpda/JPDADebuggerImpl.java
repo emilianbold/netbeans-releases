@@ -389,6 +389,13 @@ public class JPDADebuggerImpl extends JPDADebugger {
             }
             virtualMachine = null;
             setState (STATE_DISCONNECTED);
+            if (jsr45EngineProviders != null) {
+                for (Iterator i = jsr45EngineProviders.iterator(); i.hasNext();) {
+                    JSR45DebuggerEngineProvider provider = (JSR45DebuggerEngineProvider) i.next();
+                    provider.getDesctuctor().killEngine();
+                }
+                jsr45EngineProviders = null;
+            }
             javaEngineProvider.getDestructor ().killEngine ();
         }
     }
@@ -608,7 +615,14 @@ public class JPDADebuggerImpl extends JPDADebugger {
             }
     }
 
+    private Set jsr45EngineProviders;
+
     private DebuggerInfo createJSR45DI (final String language) {
+        if (jsr45EngineProviders == null) {
+            jsr45EngineProviders = new HashSet(1);
+        }
+        JSR45DebuggerEngineProvider provider = new JSR45DebuggerEngineProvider(language);
+        jsr45EngineProviders.add(provider);
         return DebuggerInfo.create (
             "netbeans-jpda-JSR45DICookie-" + language,
             new Object[] {
@@ -619,7 +633,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                         return javaEngineProvider.getSession ();
                     }
                 },
-                new JSR45DebuggerEngineProvider (language)
+                provider
             }
         );
     }
