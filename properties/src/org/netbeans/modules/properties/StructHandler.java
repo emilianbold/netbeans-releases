@@ -131,18 +131,20 @@ public class StructHandler extends Element /*implements TaskListener*/ {
     */
     void autoParse() {
         if (getStatus()) {
-            // If there is previous parsing task waiting, cancel it.
+            // If there is previous parsing task waiting, try to cancel it.
             if(parsingTask != null)
                 parsingTask.cancel();
-            // Request parsing time to start after 500 milliseconds.
-            parsingTask = RequestProcessor.postRequest(
-                    new Runnable() {
-                        public void run() {
-                            reparseNowBlocking();
-                        }
-                    },
-                    500 // Time to wait before start the parsing task.
-                );
+            // Request parsing to start after 500 milliseconds.
+            synchronized (this) {
+                parsingTask = RequestProcessor.postRequest(
+                        new Runnable() {
+                            public void run() {
+                                reparseNowBlocking();
+                            }
+                        },
+                        500 // Time to wait before start the parsing task.
+                    );
+            }
         }
     }
 
@@ -166,8 +168,7 @@ public class StructHandler extends Element /*implements TaskListener*/ {
             dataRef = new SoftReference(data);
             hardReference = data;
             data.ps.structureChanged();
-        }
-        else {
+        } else {
             // update calls notification methods according to changes
             data.ps.update(res);
         }

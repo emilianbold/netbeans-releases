@@ -46,45 +46,47 @@ public class PropertiesStructure extends Element {
     /** Updates the current structure by the new structure obtained by reparsing the document.
     * Looks for changes between the structures and according to them calls update methods.
     */
-    public synchronized void update(PropertiesStructure struct) {
-        boolean structChanged = false;
-        Element.ItemElem curItem;
-        Element.ItemElem oldItem;
+    public void update(PropertiesStructure struct) {
+        synchronized(getParent()) {
+            boolean structChanged = false;
+            Element.ItemElem curItem;
+            Element.ItemElem oldItem;
 
-        ArrayMapList new_items = struct.items;
-        ArrayMapList changed  = new ArrayMapList();
-        ArrayMapList inserted = new ArrayMapList();
-        ArrayMapList deleted  = new ArrayMapList();
+            ArrayMapList new_items = struct.items;
+            ArrayMapList changed  = new ArrayMapList();
+            ArrayMapList inserted = new ArrayMapList();
+            ArrayMapList deleted  = new ArrayMapList();
 
-        for (Iterator it = new_items.iterator(); it.hasNext(); ) {
-            curItem = (Element.ItemElem)it.next();
-            curItem.setParent(this);
-            oldItem = getItem(curItem.getKey());
-            if (oldItem == null) {
-                inserted.add(curItem.getKey(), curItem);
+            for (Iterator it = new_items.iterator(); it.hasNext(); ) {
+                curItem = (Element.ItemElem)it.next();
+                curItem.setParent(this);
+                oldItem = getItem(curItem.getKey());
+                if (oldItem == null) {
+                    inserted.add(curItem.getKey(), curItem);
+                }
+                else {
+                    if (!curItem.equals(oldItem))
+                        changed.add(curItem.getKey(), curItem);
+                    items.remove(oldItem.getKey());
+                }
             }
+
+            deleted = items;
+            if ((deleted.size() > 0) || (inserted.size() > 0))
+                structChanged = true;
+
+
+            // assign the new structure
+            items = new_items;
+
+            // notification
+            if (structChanged)
+                structureChanged(changed, inserted, deleted);
             else {
-                if (!curItem.equals(oldItem))
-                    changed.add(curItem.getKey(), curItem);
-                items.remove(oldItem.getKey());
+                // notify about changes in all items
+                for (Iterator it = changed.iterator(); it.hasNext(); )
+                    itemChanged((Element.ItemElem)it.next());
             }
-        }
-
-        deleted = items;
-        if ((deleted.size() > 0) || (inserted.size() > 0))
-            structChanged = true;
-
-
-        // assign the new structure
-        items = new_items;
-
-        // notification
-        if (structChanged)
-            structureChanged(changed, inserted, deleted);
-        else {
-            // notify about changes in all items
-            for (Iterator it = changed.iterator(); it.hasNext(); )
-                itemChanged((Element.ItemElem)it.next());
         }
     }
 
@@ -147,45 +149,49 @@ public class PropertiesStructure extends Element {
     /** Renames an item.
     * @return true if the item has been renamed successfully, false if another item with the same name exists.
     */                         
-    public synchronized boolean renameItem(String oldKey, String newKey) {
-        Element.ItemElem item = getItem(newKey);
-        if (item == null) {
-            item = getItem(oldKey);
-            if (item == null)
+    public boolean renameItem(String oldKey, String newKey) {
+        synchronized(getParent()) {
+            Element.ItemElem item = getItem(newKey);
+            if (item == null) {
+                item = getItem(oldKey);
+                if (item == null)
+                    return false;
+                item.setKey(newKey);
+                return true;
+            }
+            else
                 return false;
-            item.setKey(newKey);
-            return true;
         }
-        else
-            return false;
     }
 
     /** Deletes an item from the structure, if exists.
     * @return true if the item has been deleted successfully, false if it didn't exist.
     */                         
-    public synchronized boolean deleteItem(String key) {
-        Element.ItemElem item = getItem(key);
-        //System.out.println("-------------item --------------------\n" + item);
-        if (item == null)
-            return false;
-        try {
-            item.getBounds().setText("");
-            return true;
-        }
-        catch (IOException e) {
-            // PENDING
-            return false;
-        }
-        catch (BadLocationException e) {
-            // PENDING
-            return false;
+    public boolean deleteItem(String key) {
+        synchronized(getParent()) {
+            Element.ItemElem item = getItem(key);
+            //System.out.println("-------------item --------------------\n" + item);
+            if (item == null)
+                return false;
+            try {
+                item.getBounds().setText("");
+                return true;
+            }
+            catch (IOException e) {
+                // PENDING
+                return false;
+            }
+            catch (BadLocationException e) {
+                // PENDING
+                return false;
+            }
         }
     }
 
     /** Adds an item to the end of the file, or before the terminating comment, if exists.
     * @return true if the item has been added successfully, false if another item with the same name exists.
     */                         
-    public synchronized boolean addItem(String key, String value, String comment) {
+    public boolean addItem(String key, String value, String comment) {
         Element.ItemElem item = getItem(key);
         if (item != null)
             return false;
@@ -197,7 +203,7 @@ public class PropertiesStructure extends Element {
                                     new Element.CommentElem(null, comment));
         // find the position where to add it
         try {
-            synchronized (getParent()) {
+            synchronized(getParent()) {
                 PositionBounds pos = getSuitablePositionBoundsForInsert();
                 pos.insertAfter(item.printString());
                 return true;
