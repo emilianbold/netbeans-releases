@@ -14,6 +14,8 @@
 package org.netbeans.core.windows.view.dnd;
 
 
+import java.awt.TexturePaint;
+import java.awt.image.BufferedImage;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.Debug;
 import org.netbeans.core.windows.view.Controller;
@@ -505,10 +507,11 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
         private void paintShape (Shape s, Graphics2D g) {
             Color oldColor = g.getColor();
             Stroke oldStroke = g.getStroke();
-            
+            Paint oldPaint = g.getPaint();
             g.setColor(Color.red);        	
 	
             g.setStroke(createIndicationStroke());
+            g.setPaint(createPaint());
             Color fillColor = Constants.SWITCH_DROP_INDICATION_FADE ? FILL_COLOR : null; 
             if(s instanceof Rectangle) {
                 drawIndicationRectangle(g, (Rectangle)s, lastDropComponent, fillColor);
@@ -519,21 +522,15 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
             }
             g.setColor(oldColor);
             g.setStroke(oldStroke);
+            g.setPaint(oldPaint);
         }
         
         /** Creates indication pen stroke. Utility method. */
         private Stroke createIndicationStroke() {
-            return new BasicStroke(2); // width of stroke is bigger to default one
-    //        float[] dashPattern = { 1, 1 };
-    //        return new BasicStroke(
-    //            3.0F, // width
-    //            BasicStroke.CAP_BUTT, // decoration of the ends
-    //            BasicStroke.JOIN_MITER, // decoration applied when segments meet
-    //            1.0F, // mitter limit where to trim the join
-    //            dashPattern, // dashing pattern
-    //            0.0F // offset to start the dashing pattern
-    //        ); // PENDING
+            return new BasicStroke(3);
         }        
+        
+        
         
         
         private Shape getClipForIndication (Shape indication, boolean translate, Component target) {
@@ -619,6 +616,7 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
             }
             r = SwingUtilities.convertRectangle(source, r, pane);
             // XXX Shrinks the rectangle to take into account the width of pen stroke.	
+            
             g.drawRect(r.x+1, r.y+1, r.width-2, r.height-2);
             if ( fillColor != null ) {
                 g.setColor(fillColor);
@@ -638,7 +636,20 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
                 g.setColor( fillColor );
                 g.fill(path);
             }
-        }        
+        }   
+        
+        private TexturePaint createPaint() {
+            BufferedImage image = new BufferedImage(2,2,BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2 = image.createGraphics();
+            g2.setColor(new Color(255, 90, 0));
+            g2.fillRect(0,0,1,1);
+            g2.fillRect(1,1,1,1);
+            g2.setColor(new Color(255, 90, 0, 0));
+            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.75f));
+            g2.fillRect(1,0,1,1);
+            g2.fillRect(0,1,1,1);
+            return new TexturePaint(image, new Rectangle(0,0,2,2));
+        }
     }
 
 }
