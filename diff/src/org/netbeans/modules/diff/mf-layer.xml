@@ -51,7 +51,14 @@ Microsystems, Inc. All Rights Reserved.
 
   </folder>
 
-  <folder name="UI"> 
+  <!-- register into action pool to allow user to define shortcut, put it on toolbar etc. -->  
+  <folder name="Actions">
+      <folder name="Versioning">
+          <file name="org-netbeans-modules-diff-DiffAction.instance"/>
+      </folder>
+  </folder>
+
+  <folder name="UI">
     <folder name="Services">
       <folder name="IDEConfiguration">
         <folder name="ServerAndExternalToolSettings">
