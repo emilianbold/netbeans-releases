@@ -343,7 +343,7 @@ to make the first user start faster and better.)
 Number:   ${buildnumber}
 Date:     ${TODAY}
 Branding:
-Branch:   dev
+Branch:   trunk
 Tag:
 </echo>
   </target>
