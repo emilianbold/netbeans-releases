@@ -50,7 +50,6 @@ public class URLNode extends Node {
     }
 
     static final OpenAction openAction = new OpenAction();
-    static final OpenInNewWindowAction openInNewWindowAction = new OpenInNewWindowAction();
     static final EditAction editAction = new EditAction();
     static final CutAction cutAction = new CutAction();
     static final CopyAction copyAction = new CopyAction();
@@ -64,7 +63,6 @@ public class URLNode extends Node {
     public void verifyPopup() {
         verifyPopup(new Action[]{
             openAction,
-            openInNewWindowAction,
             editAction,
             cutAction,
             copyAction,
@@ -97,11 +95,6 @@ public class URLNode extends Node {
     /** performs EditAction with this node */    
     public void edit() {
         editAction.perform(this);
-    }
-
-    /** performs OpenInNewWindowAction with this node */    
-    public void openInNewWindow() {
-        openInNewWindowAction.perform(this);
     }
 
     /** performs CutAction with this node */    
