@@ -155,6 +155,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
     loadNonVisuals (mainElement, formManager2);
     loadContainer (mainElement, formManager2, topComp, null);
 
+    FormEditor.displayErrorLog ();
+
     return formManager2;
   }
 
@@ -202,21 +204,23 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
   private boolean loadComponent (org.w3c.dom.Node node, FormManager2 formManager2, RADComponent comp, ComponentContainer parentContainer) {
     try {
-//      System.out.println (">>> loadComponent: "+node.getNodeName ());
       if (!(comp instanceof FormContainer)) {
         comp.initialize (formManager2);
         String className = findAttribute (node, ATTR_COMPONENT_CLASS);
         String compName = findAttribute (node, ATTR_COMPONENT_NAME);
         Class compClass = null;
-//      System.out.println ("  name: "+compName);
-//      System.out.println ("  class: "+className);
         try {
           compClass = TopManager.getDefault ().systemClassLoader ().loadClass (className);
         } catch (Exception e) {
-          e.printStackTrace (); // [PENDING - better notification]
+          FormEditor.fileError (java.text.MessageFormat.format (
+            FormEditor.getFormBundle ().getString ("FMT_ERR_ClassNotFound"),
+            new Object [] {
+              e.getMessage (),
+              e.getClass ().getName (),
+            }
+          ), e); 
           return false; // failed to load the component!!!
         }
-//      System.out.println ("  class success: "+compClass.getName ());
         comp.setComponent (compClass);
         comp.setName (compName);
       }
@@ -1268,6 +1272,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 /*
  * Log
+ *  25   Gandalf   1.24        8/6/99   Ian Formanek    displaying error log
  *  24   Gandalf   1.23        8/2/99   Ian Formanek    NonVisuals element is 
  *       not saved if empty
  *  23   Gandalf   1.22        8/2/99   Ian Formanek    Proper encoding of 
