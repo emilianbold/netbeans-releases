@@ -43,6 +43,7 @@ Microsystems, Inc. All Rights Reserved.
   
 
   <target name="compile" depends="init">
+    <mkdir dir="build"/>
     <javac srcdir="src" destdir="build"
            deprecation="${build.compiler.deprecation}"
            debug="${build.compiler.debug}"
