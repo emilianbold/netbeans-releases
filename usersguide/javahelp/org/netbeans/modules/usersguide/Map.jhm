@@ -1,0 +1,837 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE map
+  PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 1.0//EN"
+         "http://java.sun.com/products/javahelp/map_1_0.dtd">
+
+<map version="1.0">
+
+<mapID target="ide.credits" url="credits.html" />
+<mapID target="ide.print" url="printing.html" />
+<mapID target="ide.welcome" url="workspace/welcome.html" />
+<mapID target="pending" url="pending.html" />
+
+<mapID target="gs.ide" url="getstart/ide.html" />
+<mapID target="gs.tour" url="getstart/idetour.html" />
+<mapID target="gs.key" url="getstart/keyconcepts.html" />
+<mapID target="gs.wkspc" url="getstart/wkspcs.html" />
+<mapID target="gs.csw" url="getstart/colorswitch.html" />
+<mapID target="gs.cont" url="getstart/createcontainer.html" />
+<mapID target="gs.lyt" url="getstart/chooselyout.html" />
+<mapID target="gs.label" url="getstart/addinglabel.html" />
+<mapID target="gs.button" url="getstart/addingbutton.html" />
+<mapID target="gs.setup" url="getstart/setupbutton.html" />
+<mapID target="gs.evt" url="getstart/addingevt.html" />
+<mapID target="gs.run" url="getstart/compandrun.html" />
+<mapID target="gs.step" url="getstart/steppingcode.html" />
+<mapID target="gs.view" url="getstart/viewingclass.html" />
+
+<mapID target="project" url="project/project.html" />
+<mapID target="project.adding-existing" url="project/project_adding-existing.html" />
+<mapID target="project.adding-new" url="project/project_adding-new.html" />
+<mapID target="project.comp-run-debug" url="project/project_comp-run-debug.html" />
+<mapID target="project.creating" url="project/project_creating.html" />
+<mapID target="project.delete-file" url="project/project_delete-file.html" />
+<mapID target="project.importing" url="project/project_importing.html" />
+<mapID target="project.save-options" url="project/project_save-options.html" />
+<mapID target="project.settings" url="project/project_settings.html" />
+<mapID target="project.switching" url="project/project_switching.html" />
+
+
+<mapID target="objects" url="objects/objects.html" />
+<mapID target="browser" url="objects/browser.html" />
+<mapID target="browser.member" url="objects/browser/browser_member.html" />
+<mapID target="browser.object" url="objects/browser/browser_object.html" />
+<mapID target="browser.package" url="objects/browser/browser_package.html" />
+<mapID target="browser.packagefilter" url="objects/browser/browser_packagefilter.html" />
+
+<mapID target="explorer" url="objects/explorer.html" />
+
+<mapID target="filesystems" url="objects/filesystems.html" />
+<mapID target="filesystems.mount" url="objects/filesystems/filesystems_mounting.html" />
+<mapID target="filesystems.openfile" url="objects/filesystems/filesystems_openfile.html" />
+<mapID target="filesystems.order" url="objects/filesystems/filesystems_order.html" />
+<mapID target="filesystems.removing" url="objects/filesystems/filesystems_removing.html" />
+<mapID target="filesystems.settings" url="objects/filesystems/filesystems_settings.html" />
+
+<mapID target="objects.clipboard-ops" url="objects/objects_clipboard-ops.html" />
+<mapID target="objects.file-extensions" url="objects/objects_file-extensions.html" />
+<mapID target="objects.icons" url="objects/objects_icons.html" />
+<mapID target="objects.opening" url="objects/objects_opening.html" />
+<mapID target="objects.packages" url="objects/objects_packages.html" />
+<mapID target="objects.properties" url="objects/objects_properties.html" />
+<mapID target="objects.refresh" url="objects/objects_refreshing.html" />
+<mapID target="objects.runtime" url="objects/objects_runtime.html" />
+<mapID target="objects.saving" url="objects/objects_saving.html" />
+
+<mapID target="search" url="objects/search.html" />
+<mapID target="search.combo" url="objects/search/search_combo.html" />
+<mapID target="search.date" url="objects/search/search_date.html" />
+<mapID target="search.filetype" url="objects/search/search_filetype.html" />
+<mapID target="search.modify" url="objects/search/search_modifying.html" />
+<mapID target="search.name" url="objects/search/search_name.html" />
+<mapID target="search.predefine" url="objects/search/search_predefining.html" />
+<mapID target="search.window" url="objects/search/search_results-window.html" />
+<mapID target="search.status" url="objects/search/search_status.html" />
+<mapID target="search.text" url="objects/search/search_text.html" />
+
+
+<mapID target="gui.intro" url="gui/intro.html" />
+<mapID target="gui.formeditor" url="gui/formeditor.html" />
+<mapID target="gui.modes" url="gui/modes.html" />
+<mapID target="gui.component-inspector" url="gui/component-inspector.html" />
+<mapID target="gui.creatingforms" url="gui/creatingforms.html" />
+<mapID target="gui.csh.developerforms" url="gui/csh/developer-forms.html" />
+<mapID target="gui.components.intro" url="gui/components/intro.html" />
+<mapID target="gui.components.palette" url="gui/components/palette.html" />
+<mapID target="gui.components.adding" url="gui/components/adding.html" />
+<mapID target="gui.components.moving" url="gui/components/moving.html" />
+<mapID target="gui.components.reordering" url="gui/components/reordering.html" />
+<mapID target="gui.components.selecting" url="gui/components/selecting.html" />
+<mapID target="gui.components.editing" url="gui/components/editing.html" />
+<mapID target="gui.components.connecting" url="gui/components/connecting.html" />
+<mapID target="gui.layouts.intro" url="gui/layouts/intro.html" />
+<mapID target="gui.layouts.setting" url="gui/layouts/setting.html" />
+<mapID target="gui.layouts.props" url="gui/layouts/props.html" />
+<mapID target="gui.layouts.constraints" url="gui/layouts/constraints.html" />
+<mapID target="gui.layouts.gbcustomizer" url="gui/layouts/gbcustomizer.html" />
+<mapID target="gui.layouts.custom_mgr" url="gui/layouts/custom_mgr.html" />
+<mapID target="gui.layouts.managers.intro" url="gui/layouts/managers/intro.html" />
+<mapID target="gui.layouts.managers.border" url="gui/layouts/managers/border.html" />
+<mapID target="gui.layouts.managers.flow" url="gui/layouts/managers/flow.html" />
+<mapID target="gui.layouts.managers.grid" url="gui/layouts/managers/grid.html" />
+<mapID target="gui.layouts.managers.gridbag" url="gui/layouts/managers/gridbag.html" />
+<mapID target="gui.layouts.managers.card" url="gui/layouts/managers/card.html" />
+<mapID target="gui.layouts.managers.box" url="gui/layouts/managers/box.html" />
+<mapID target="gui.layouts.managers.absolute" url="gui/layouts/managers/absolute.html" />
+<mapID target="gui.layouts.managers.null" url="gui/layouts/managers/null.html" />
+<mapID target="gui.source.intro" url="gui/source/intro.html" />
+<mapID target="gui.source.guarded" url="gui/source/guarded.html" />
+<mapID target="gui.source.modifying" url="gui/source/modifying.html" />
+<mapID target="gui.source.options" url="gui/source/options.html" />
+<mapID target="gui.source.props" url="gui/source/props.html" />
+<mapID target="gui.source.external" url="gui/source/external.html" />
+<mapID target="gui.source.initializing.intro" url="gui/source/initializing/intro.html" />
+<mapID target="gui.source.initializing.formconnect" url="gui/source/initializing/formconnect.html" />
+<mapID target="gui.source.initializing.prepost" url="gui/source/initializing/prepost.html" />
+<mapID target="gui.events.intro" url="gui/events/intro.html" />
+<mapID target="gui.events.defining" url="gui/events/defining.html" />
+<mapID target="gui.events.removing" url="gui/events/removing.html" />
+<mapID target="gui.events.renaming" url="gui/events/renaming.html" />
+<mapID target="gui.events.multiple" url="gui/events/multiple.html" />
+<mapID target="gui.connecting.intro" url="gui/connecting/intro.html" />
+<mapID target="gui.connecting.source" url="gui/connecting/source.html" />
+<mapID target="gui.connecting.target" url="gui/connecting/target.html" />
+<mapID target="gui.connecting.code" url="gui/connecting/code.html" />
+<mapID target="gui.menus.intro" url="gui/menus/intro.html" />
+<mapID target="gui.menus.menubar" url="gui/menus/menubar.html" />
+<mapID target="gui.menus.menu" url="gui/menus/menu.html" />
+<mapID target="gui.menus.popup" url="gui/menus/popup.html" />
+<mapID target="gui.menus.item" url="gui/menus/item.html" />
+<mapID target="gui.menus.events" url="gui/menus/events.html" />
+<mapID target="gui.scrollbars" url="gui/scrollbars.html" />
+<mapID target="gui.tabbedpane" url="gui/tabbedpane.html" />
+<mapID target="gui.splitpane" url="gui/splitpane.html" />
+<mapID target="gui.tablelist" url="gui/tablelist.html" />
+<mapID target="gui.mdi" url="gui/mdi.html" />
+<mapID target="gui.configuring" url="gui/configuring.html" />
+<mapID target="gui.custompalette" url="gui/custompalette.html" />
+
+
+<mapID target="beans.intro" url="beans/intro.html" />
+<mapID target="beans.creating" url="beans/creating/creating.html" />
+<mapID target="beans.properties" url="beans/creating/properties.html" />
+<mapID target="beans.eventsets" url="beans/creating/eventsets.html" />
+<mapID target="beans.deleting" url="beans/creating/deleting.html" />
+<mapID target="beans.beaninfo.generating" url="beans/creating/beaninfo/generating.html" />
+<mapID target="beans.beaninfo.nodes" url="beans/creating/beaninfo/nodes.html" />
+<mapID target="beans.customizing" url="beans/customizing.html" />
+<mapID target="beans.container" url="beans/container.html" />
+<mapID target="beans.adding" url="beans/adding.html" />
+
+<mapID target="synchronizing.intro" url="synchronizing/intro.html" />
+<mapID target="synchronizing.properties" url="synchronizing/properties.html" />
+<mapID target="synchronizing.new-interface" url="synchronizing/new-interface.html" />
+<mapID target="synchronizing.update-interface" url="synchronizing/update-interface.html" />
+
+<mapID target="compile.jump" url="compile/compile.jump.html" />
+<mapID target="compile.program" url="compile/compile.html" />
+<mapID target="compile.error" url="compile/error.html" />
+<mapID target="compile.stop" url="compile/stop.html" />
+<mapID target="compile.disable" url="compile/disable.html" />
+<mapID target="compile.delete" url="compile/delete.html" />
+<mapID target="compile.configure" url="compile/configure.html" />
+<mapID target="compile.options" url="compile/options.html" />
+<mapID target="compile.new" url="compile/new.html" />
+<mapID target="compile.external" url="compile/external.html" />
+<mapID target="compile.internal" url="compile/internal.html" />
+
+
+<mapID target="run.jump" url="run/run.jump.html" />
+<mapID target="run.run" url="run/run.html" />
+<mapID target="run.debug" url="run/debug.html" />
+<mapID target="run.arguments" url="run/arguments.html" />
+<mapID target="run.mainclass" url="run/mainclass.html" />
+<mapID target="run.disable" url="run/disable.html" />
+<mapID target="run.workspace" url="run/workspace.html" />
+<mapID target="run.options" url="run/options.html" />
+<mapID target="run.executors" url="run/executors.html" />
+<mapID target="run.project.jump" url="run/project.jump.html" />
+<mapID target="run.project" url="run/project.html" />
+<mapID target="run.external" url="run/external.html" />
+<mapID target="run.applet" url="run/applet.html" />
+<mapID target="run.jsp" url="run/jsp.html" />
+<mapID target="run.new" url="run/new.html" />
+<mapID target="run.remove" url="run/remove.html" />
+<mapID target="run.file" url="run/file.html" />
+
+
+<mapID target="editing.intro" url="editing/intro.html" />
+<mapID target="editing.editorwindow" url="editing/editorwindow.html" />
+<mapID target="editing.opening" url="editing/opening.html" />
+<mapID target="editing.selecting-text" url="editing/selecting-text.html" />
+<mapID target="editing.using-abbreviations" url="editing/using-abbreviations.html" />
+<mapID target="editing.wordmatch" url="editing/wordmatch.html" />
+<mapID target="editing.find" url="editing/find.html" />
+<mapID target="editing.formatting" url="editing/formatting.html" />
+<mapID target="editing.navigating" url="editing/navigating/navigating.html" />
+<mapID target="editing.scrolling" url="editing/navigating/scrolling.html" />
+<mapID target="editing.jumplist" url="editing/navigating/jumplist.html" />
+<mapID target="editing.bookmarks" url="editing/navigating/bookmarks.html" />
+<mapID target="editing.codecompletion" url="editing/codecompletion/intro.html" />
+<mapID target="editing.completing-exp" url="editing/codecompletion/completing-exp.html" />
+<mapID target="editing.parserdatabase" url="editing/codecompletion/parserdatabase.html" />
+<mapID target="editing.settingdelay" url="editing/codecompletion/settingdelay.html" />
+<mapID target="editing.disablingdelay" url="editing/codecompletion/disabling.html" />
+<mapID target="editing.configuring" url="editing/configuring/configuring.html" />
+<mapID target="editing.setting-globalshorts" url="editing/configuring/setting-globalshorts.html" />
+<mapID target="editing.settingkeybdshorts" url="editing/configuring/settingkeybdshorts.html" />
+<mapID target="editing.javaeditor-props" url="editing/configuring/javaeditor-props.html" />
+<mapID target="editing.keybindings" url="editing/configuring/keybindings.html" />
+
+<mapID target="debug.overview" url="debug/debug.html" />
+
+<mapID target="debug.breakpoint" url="debug/breakpoint/breakpoint.set.html" />
+<mapID target="debug.breakpoint.line" url="debug/breakpoint/breakpoint.line.html" />
+<mapID target="debug.breakpoint.method" url="debug/breakpoint/breakpoint.method.html" />
+<mapID target="debug.breakpoint.thread" url="debug/breakpoint/breakpoint.thread.html" />
+<mapID target="debug.breakpoint.variable" url="debug/breakpoint/breakpoint.variable.html" />
+<mapID target="debug.breakpoint.exception" url="debug/breakpoint/breakpoint.exception.html" />
+<mapID target="debug.breakpoint.class" url="debug/breakpoint/breakpoint.class.html" />
+<mapID target="debug.breakpoint.condition" url="debug/breakpoint/breakpoint.condition.html" />
+<mapID target="debug.breakpoint.source" url="debug/breakpoint/breakpoint.source.html" />
+<mapID target="debug.breakpoint.enable" url="debug/breakpoint/breakpoint.enable.html" />
+<mapID target="debug.breakpoint.remove" url="debug/breakpoint/breakpoint.remove.html" />
+<mapID target="debug.add.breakpoint" url="debug/breakpoint/breakpoint.window.html" />
+
+<mapID target="debug.running.jump" url="debug/running/running.jump.html" />
+<mapID target="debug.running.debugger" url="debug/running/running.debugger.html" />
+<mapID target="debug.running.first" url="debug/running/running.first.html" />
+<mapID target="debug.running.cursor" url="debug/running/running.cursor.html" />
+<mapID target="debug.running.resume" url="debug/running/running.resume.html" />
+<mapID target="debug.step" url="debug/running/stepping.html" />
+<mapID target="debug.running.end" url="debug/running/running.end.html" />
+
+<mapID target="debug.watches.jump" url="debug/watches/watch.jump.html" />
+<mapID target="debug.watch" url="debug/watches/watch.html" />
+<mapID target="debug.watch.fix" url="debug/watches/fix.html" />
+<mapID target="debug.watch.delete" url="debug/watches/delete_watch.html" />
+
+<mapID target="debug.threads.jump" url="debug/threads/threads.jump.html" />
+<mapID target="debug.threads.suspend" url="debug/threads/suspend.html" />
+<mapID target="debug.threads.resume" url="debug/threads/resume.html" />
+
+<mapID target="debug.jpda" url="debug/jpda/jpda.html" />
+<mapID target="debug.jpda.install" url="debug/jpda/install.html" />
+
+
+<mapID target="javadoc.jump" url="javadoc/javadoc.jump.html" />
+<mapID target="javadoc.generate" url="javadoc/generate.html" />
+<mapID target="javadoc.search" url="javadoc/search.html" />
+<mapID target="javadoc.search.path" url="javadoc/search_path.html" />
+<mapID target="javadoc.addcomment" url="javadoc/addcomment.html" />
+<mapID target="javadoc.customize" url="javadoc/customize.html" />
+<mapID target="javadoc.search.window" url="javadoc/search_window.html" />
+<mapID target="javadoc.auto.comment" url="javadoc/auto_comment.window.html" />
+<mapID target="javadoc.comment" url="javadoc/comment.html" />
+<mapID target="javadoc.doc.window" url="javadoc/doc_comment.window.html" />
+
+<mapID target="cvs" url="cvs-nb/cvs.html" />
+<mapID target="cvs.commands" url="cvs-nb/cvs_commands.html" />
+<mapID target="cvs.create-fs" url="cvs-nb/cvs_create-fs.html" />
+<mapID target="cvs.mountpoint" url="cvs-nb/cvs_mountpoint.html" />
+<mapID target="cvs.options" url="cvs-nb/cvs_options.html" />
+<mapID target="cvs.repository" url="cvs-nb/cvs_repository.html" />
+<mapID target="cvs.settings" url="cvs-nb/cvs_settings.html" />
+
+
+<mapID target="workspace.jump" url="workspace/workspace.jump.html" />
+<mapID target="workspace.defined" url="workspace/workspace.html" />
+<mapID target="workspace.create" url="workspace/workspace.create.html" />
+<mapID target="workspace.rename" url="workspace/workspace.rename.html" />
+<mapID target="workspace.auto" url="workspace/workspace.auto.html" />
+<mapID target="workspace.delete" url="workspace/workspace.delete.html" />
+<mapID target="workspace.dock" url="workspace/docking.html" />
+<mapID target="workspace.clone" url="workspace/clone.html" />
+
+<mapID target="corba.basics" url="corba/corba.html" />
+<mapID target="corba.features" url="corba/features.html" />
+<mapID target="corba.supp" url="corba/support.html" />
+<mapID target="corba.templates" url="corba/corbatemplates.html" />
+<mapID target="corba.nameservc" url="corba/addnameservice.html" />
+<mapID target="corba.servcnodes" url="corba/servcnodes.html" />
+<mapID target="corba.install" url="corba/installing.html" />
+<mapID target="corba.run" url="corba/runningIDL.html" />
+<mapID target="corba.config" url="corba/configuring.html" />
+<mapID target="corba.access" url="corba/accessing.html" />
+<mapID target="corba.props" url="corba/properties.html" />
+<mapID target="corba.genprops" url="corba/genprops.html" />
+<mapID target="corba.exprops" url="corba/expertprops.html" />
+<mapID target="corba.wizard" url="corba/wizardinfo.html" />
+
+<mapID target="configure" url="configure/configure.html" />
+
+<mapID target="shortcuts.editor" url="shortcuts/editorcuts.html" />
+<mapID target="shortcuts.kybd" url="shortcuts/kybdshortcuts.html" />
+<mapID target="shortcuts.menus" url="shortcuts/menucuts.html" />
+
+<mapID target="glossary" url="glossary/masterGlossary.html" />
+
+<!--csh-->
+  <mapID target="org.openide.util.HelpCtx.DEFAULT_HELP" url="pending.html" />
+  <mapID target="org.openide.explorer.ExplorerPanel" url="pending.html" />
+  <mapID target="org.openide.actions.ExecuteAction" url="pending.html" />
+  <mapID target="org.openide.actions.CompileAction" url="pending.html" />
+  <mapID target="org.openide.actions.CompileAllAction" url="pending.html" />
+  <mapID target="org.openide.actions.AddWatchAction" url="pending.html" />
+  <mapID target="org.openide.actions.BuildAction" url="pending.html" />
+  <mapID target="org.openide.actions.BuildAllAction" url="pending.html" />
+  <mapID target="org.openide.actions.CloneViewAction" url="pending.html" />
+
+  <mapID target="org.openide.actions.CloseViewAction" url="pending.html" />
+  <mapID target="org.openide.actions.CustomizeAction" url="pending.html" />
+  <mapID target="org.openide.actions.CustomizeBeanAction" url="pending.html" />
+  <mapID target="org.openide.actions.CustomizeBeanAction.dialog" url="pending.html" />
+  <mapID target="org.openide.actions.CopyAction" url="pending.html" />
+  <mapID target="org.openide.actions.CutAction" url="pending.html" />
+  <mapID target="org.openide.actions.DeleteAction" url="pending.html" />
+  <mapID target="org.openide.actions.EditAction" url="pending.html" />
+  <mapID target="org.openide.actions.FileSystemAction" url="pending.html" />
+  <mapID target="org.openide.actions.FindAction" url="pending.html" />
+  <mapID target="org.openide.actions.FinishDebuggerAction" url="pending.html" />
+  <mapID target="org.openide.actions.GarbageCollectAction" url="pending.html" />
+  <mapID target="org.openide.actions.GoAction" url="pending.html" />
+  <mapID target="org.openide.actions.GotoAction" url="pending.html" />
+  <mapID target="org.openide.actions.GoToCursorAction" url="pending.html" />
+  <mapID target="org.openide.actions.HelpAction" url="pending.html" />
+  <mapID target="org.openide.actions.InstantiateAction" url="pending.html" />
+  <mapID target="org.openide.actions.MoveDownAction" url="pending.html" />
+  <mapID target="org.openide.actions.MoveUpAction" url="pending.html" />
+  <mapID target="org.openide.actions.NewTemplateAction" url="pending.html" />
+  <mapID target="org.openide.actions.NewTemplateAction$From" url="pending.html" />
+  <mapID target="org.openide.actions.NextTabAction" url="pending.html" />
+  <mapID target="org.openide.actions.OpenAction" url="pending.html" />
+  <mapID target="org.openide.actions.OpenLocalExplorerAction" url="pending.html" />
+  <mapID target="org.openide.actions.PasteAction" url="pending.html" />
+  <mapID target="org.openide.actions.NextTabAction" url="pending.html" />
+  <mapID target="org.openide.actions.PreviousTabAction" url="pending.html" />
+  <mapID target="org.openide.actions.PrintAction" url="pending.html" />
+  <mapID target="org.openide.actions.PropertiesAction" url="pending.html" />
+  <mapID target="org.openide.actions.RedoAction" url="pending.html" />
+  <mapID target="org.openide.actions.RenameAction" url="pending.html" />
+  <mapID target="org.openide.actions.ReorderAction" url="pending.html" />
+  <mapID target="org.openide.actions.ReplaceAction" url="pending.html" />
+  <mapID target="org.openide.actions.SaveAction" url="pending.html" />
+  <mapID target="org.openide.actions.SaveAllAction" url="pending.html" />
+  <mapID target="org.openide.actions.SaveAsTemplateAction" url="pending.html" />
+  <mapID target="org.openide.actions.StepOutAction" url="pending.html" />
+  <mapID target="org.openide.actions.ToggleBreakpointAction" url="pending.html" />
+  <mapID target="org.openide.actions.TraceIntoAction" url="pending.html" />
+  <mapID target="org.openide.actions.TraceOverAction" url="pending.html" />
+  <mapID target="org.openide.actions.UndoAction" url="pending.html" />
+  <mapID target="org.openide.actions.ViewAction" url="pending.html" />
+  <mapID target="org.openide.actions.UndockAction" url="pending.html" />
+  <mapID target="org.openide.actions.WorkspaceSwitchAction" url="pending.html" />
+  <mapID target="org.openide.awt.HtmlBrowser$BrowserComponent" url="pending.html" />
+  <mapID target="org.openide.debugger.DebuggerType" url="pending.html" />
+  <mapID target="org.openide.debugger.DebuggerType$Default" url="pending.html" />
+  <mapID target="org.openide.execution.Executor" url="pending.html" />
+  <mapID target="org.openide.execution.ProcessExecutor" url="pending.html" />
+  <mapID target="org.openide.execution.ThreadExecutor" url="pending.html" />
+  <mapID target="org.openide.explorer.propertysheet.PropertySheetSettings" url="pending.html" />
+  <mapID target="org.openide.explorer.propertysheet.SetDefaultValueAction" url="pending.html" />
+  <mapID target="org.openide.explorer.propertysheet.editors.ModifierEditor" url="pending.html" /> 
+  <mapID target="org.openide.explorer.propertysheet.editors.IconEditor$IconPanel" url="pending.html" />
+  <mapID target="org.openide.explorer.propertysheet.editors.StringArrayCustomEditor" url="pending.html" />
+  <mapID target="org.openide.explorer.propertysheet.editors.ErrorExpressionPanel" url="pending.html" /> 
+  <mapID target="org.openide.filesystems.RefreshAction" url="pending.html" />
+  <mapID target="org.openide.text.PrintSettings" url="pending.html" />
+  <mapID target="org.openide.loaders.GroupShadow" url="pending.html" />
+  <mapID target="org.openide.loaders.DataFolder" url="pending.html" />
+  <mapID target="org.openide.loaders.DataFolder$NewFolder" url="pending.html" />
+  <mapID target="org.openide.loaders.DefaultDataObject" url="pending.html" />
+  <mapID target="org.openide.loaders.InstanceDataObject" url="pending.html" />
+  <mapID target="org.openide.loaders.XMLDataObject" url="pending.html" />
+  <mapID target="org.openide.nodes.BeanNode" url="pending.html" />
+  <mapID target="org.openide.src.nodes.ElementNode" url="pending.html" />
+  <mapID target="org.openide.src.nodes.SourceOptions" url="pending.html" />
+  <mapID target="org.openide.text.EditorSupport$Editor" url="pending.html" />
+  <mapID target="org.openide.loaders.DataFolder$Paste.move" url="pending.html" />
+  <mapID target="org.openide.loaders.DataFolder$Paste.instantiate" url="pending.html" />
+  <mapID target="org.openide.loaders.DataFolder$Paste.copy" url="pending.html" />  
+  <mapID target="org.openide.loaders.DataFolder$Paste.shadow" url="pending.html" />
+  <mapID target="org.openide.loaders.DataFolder$SerializePaste" url="pending.html" /> 
+  <mapID target="org.openide.loaders.DataFolder$InstantiatePaste" url="pending.html" /> 
+  <mapID target="org.openide.options.SystemOption" url="pending.html" />  
+  <mapID target="org.openide.src.nodes.ClassElementNode.MENU_CREATE_BLOCK" url="pending.html" />
+  <mapID target="org.openide.src.nodes.ClassElementNode.MENU_CREATE_CLASS" url="pending.html" />  
+  <mapID target="org.openide.src.nodes.ClassElementNode.MENU_CREATE_CONSTRUCTOR" url="pending.html" />
+  <mapID target="org.openide.src.nodes.SourceEditSupport.newElement0" url="pending.html" /> 
+  <mapID target="org.openide.src.nodes.SourceEditSupport.newElement1" url="pending.html" /> 
+  <mapID target="org.openide.src.nodes.SourceEditSupport.newElement2" url="pending.html" /> 
+  <mapID target="org.openide.src.nodes.SourceEditSupport.newElement3" url="pending.html" />
+  <mapID target="org.openide.src.nodes.SourceEditSupport.newElement4" url="pending.html" /> 
+  <mapID target="org.openide.src.nodes.SourceEditSupport.newElement5" url="pending.html" />
+  <mapID target="org.openide.src.nodes.ClassElementNode.MENU_CREATE_INTERFACE" url="pending.html" /> 
+  <mapID target="org.openide.src.nodes.ClassElementNode.MENU_CREATE_METHOD" url="pending.html" /> 
+  <mapID target="org.openide.src.nodes.ClassElementNode.MENU_CREATE_VARIABLE" url="pending.html" /> 
+  <mapID target="org.openide.actions.CleanAction" url="pending.html" />
+  <mapID target="org.openide.actions.CleanAllAction" url="pending.html" />
+  <mapID target="org.openide.actions.ToolsAction" url="pending.html" />
+  <mapID target="org.openide.src.nodes.DefaultFactory$ElementCategoryNode" url="pending.html" /> 
+   <mapID target="org.openide.awt.MenuBar$MenuFolder.File" url="pending.html" /> 
+   <mapID target="org.openide.awt.MenuBar$MenuFolder.Edit" url="pending.html" />
+   <mapID target="org.openide.awt.MenuBar$MenuFolder.View" url="pending.html" /> 
+   <mapID target="org.openide.awt.MenuBar$MenuFolder.Build" url="pending.html" />
+   <mapID target="org.openide.awt.MenuBar$MenuFolder.Debug" url="pending.html" />
+   <mapID target="org.openide.awt.MenuBar$MenuFolder.Tools" url="pending.html" />
+   <mapID target="org.openide.awt.MenuBar$MenuFolder.Window" url="pending.html" /> 
+   <mapID target="org.openide.awt.MenuBar$MenuFolder.Help" url="pending.html" />
+
+   <mapID target="org.netbeans.core.actions.SaveSettingsAction" url="pending.html" />
+   <mapID target="org.netbeans.core.actions.SettingsAction" url="pending.html" />
+
+
+   <mapID target="org.netbeans.beaninfo.editors.BeanEditor" url="pending.html" />
+   <mapID target="org.netbeans.modules.editor.options.ColoringArrayEditor$FakeNode" url="pending.html" />
+   <mapID target="org.netbeans.modules.editor.options.ColoringArrayEditorPanel" url="pending.html" />
+   <mapID target="org.netbeans.modules.editor.options.ColoringEditorPanel" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.form.editors2.ColorEditor$NbColorChooser" url="pending.html" />
+   <mapID target="org.netbeans.beaninfo.editors.ColorEditor$NbColorChooser" url="pending.html" /> 
+   <mapID target="org.netbeans.beaninfo.editors.CustomTableModelEditor" url="pending.html" /> 
+   <mapID target="org.netbeans.beaninfo.editors.DimensionCustomEditor" url="pending.html" /> 
+   <mapID target="org.netbeans.beaninfo.editors.FontEditor$FontPanel" url="pending.html" /> 
+   <mapID target="org.netbeans.beaninfo.editors.InsetsCustomEditor" url="pending.html" /> 
+   <mapID target="org.netbeans.beaninfo.editors.PointCustomEditor" url="pending.html" /> 
+   <mapID target="org.netbeans.beaninfo.editors.RectangleCustomEditor" url="pending.html" />
+   <mapID target="org.netbeans.beaninfo.editors.StringCustomEditor" url="pending.html" /> 
+   <mapID target="org.netbeans.core.actions.OptionsAction" url="pending.html" /> 
+   <mapID target="org.netbeans.core.MainWindow" url="pending.html" />
+   <mapID target="org.netbeans.core.ActionsPoolNode" url="pending.html" />
+   <mapID target="org.netbeans.core.ControlPanelNode" url="pending.html" />
+   <mapID target="org.netbeans.core.DataSystem" url="pending.html" /> 
+   <mapID target="org.netbeans.core.Desktop$TemplatesNode" url="pending.html" /> 
+   <mapID target="org.netbeans.core.DesktopNode$TemplatesNode" url="pending.html" /> 
+   <mapID target="org.netbeans.core.DesktopNode" url="pending.html" /> 
+   <mapID target="org.netbeans.core.DesktopNode$StartupNode" url="pending.html" /> 
+   <mapID target="org.netbeans.core.EnvironmentNode" url="pending.html" />
+   <mapID target="org.netbeans.core.FSPoolNode" url="pending.html" /> 
+   <mapID target="org.netbeans.core.LoaderPoolNode" url="pending.html" /> 
+   <mapID target="org.netbeans.core.MenuFolderNode" url="pending.html" /> 
+   <mapID target="org.netbeans.core.ModuleNode" url="pending.html" /> 
+   <mapID target="org.netbeans.core.ModuleNode$Item" url="pending.html" /> 
+   <mapID target="org.netbeans.core.actions.DockingAction" url="pending.html" />
+   <mapID target="org.netbeans.core.actions.EditorViewAction" url="pending.html" /> 
+   <mapID target="org.netbeans.core.actions.ExecutionViewAction" url="pending.html" /> 
+   <mapID target="org.netbeans.core.actions.ExecutionViewAction$ExecutionView" url="pending.html" /> 
+   <mapID target="org.netbeans.core.actions.ExplorerViewAction" url="pending.html" /> 
+   <mapID target="org.netbeans.core.actions.GlobalPropertiesAction" url="pending.html" /> 
+   <mapID target="org.netbeans.core.actions.OpenExplorerAction" url="pending.html" /> 
+   <mapID target="org.netbeans.core.actions.OutputWindowAction" url="pending.html" /> 
+   <mapID target="org.netbeans.core.actions.OpenedWindowsAction" url="pending.html" /> 
+   <mapID target="org.netbeans.core.actions.OpenedWindowsAction$WindowAction" url="pending.html" />
+   <mapID target="org.netbeans.core.actions.StopCompileAction" url="pending.html" /> 
+   <mapID target="org.netbeans.core.execution.ExecutionSettings" url="pending.html" />
+   <mapID target="org.netbeans.core.execution.ExecutorRepositoryNode" url="pending.html" /> 
+   <mapID target="org.netbeans.core.DataSystem" url="pending.html" /> 
+   <mapID target="org.netbeans.core.DesktopNode$ProjectSettingsNode" url="pending.html" /> 
+   <mapID target="org.netbeans.core.IDESettings" url="pending.html" /> 
+   <mapID target="org.netbeans.core.Main.showTipsOfTheDay" url="pending.html" /> 
+   <mapID target="org.netbeans.core.NbMainExplorer" url="pending.html" /> 
+   <mapID target="org.netbeans.core.NbPlaces$SessionNode" url="pending.html" /> 
+   <mapID target="org.netbeans.core.ModuleFSSection$Jar" url="pending.html" /> 
+   <mapID target="org.netbeans.core.ModuleFSSection$Local" url="pending.html" /> 
+   <mapID target="org.netbeans.core.ModuleNode$AutoLoadModulesAction" url="pending.html" /> 
+   <mapID target="org.netbeans.core.TemplatesExplorer.dialog" url="pending.html" /> 
+   <mapID target="org.netbeans.core.ToolbarFolderNode" url="pending.html" /> 
+   <mapID target="org.netbeans.core.actions.AddFSAction" url="pending.html" /> 
+   <mapID target="org.netbeans.core.actions.AddJarAction" url="pending.html" /> 
+   <mapID target="org.netbeans.core.actions.HTMLViewAction" url="pending.html" /> 
+   <mapID target="org.netbeans.core.actions.NextWorkspaceAction" url="pending.html" /> 
+   <mapID target="org.netbeans.core.actions.PreviousWorkspaceAction" url="pending.html" /> 
+   <mapID target="org.netbeans.core.actions.AboutAction" url="pending.html" /> 
+   <mapID target="org.netbeans.core.actions.TipOfTheDayAction" url="pending.html" /> 
+   <mapID target="org.netbeans.core.actions.UnmountFSAction" url="pending.html" /> 
+   <mapID target="org.netbeans.core.actions.SetArgumentsAction" url="pending.html" /> 
+   <mapID target="org.netbeans.core.actions.StatusLineAction" url="pending.html" /> 
+   <mapID target="org.netbeans.core.actions.SystemExit" url="pending.html" /> 
+   <mapID target="org.netbeans.core.actions.SystemExit.dialog" url="pending.html" /> 
+   <mapID target="org.netbeans.core.execution.ExternalExecutionSettings" url="pending.html" /> 
+   <mapID target="org.netbeans.core.execution.ProcessNode" url="pending.html" /> 
+   <mapID target="org.netbeans.core.execution.ProcessNodeItem" url="pending.html" /> 
+   <mapID target="org.netbeans.core.execution.ProcessNodeItem$TerminateProcessAction" url="pending.html" /> 
+   <mapID target="org.netbeans.core.output.OutputSettings" url="pending.html" /> 
+   <mapID target="org.netbeans.core.windows.nodes.WorkspaceContext" url="pending.html" /> 
+   <mapID target="org.netbeans.core.windows.nodes.WorkspaceContext$TopFramePasteType" url="pending.html" /> 
+   <mapID target="org.netbeans.core.windows.nodes.WorkspaceNewType" url="pending.html" /> 
+   <mapID target="org.netbeans.core.windows.nodes.WorkspacePoolContext" url="pending.html" /> 
+   <mapID target="org.netbeans.core.windows.nodes.WorkspacePoolContext$WorkspacePasteType" url="pending.html" /> 
+   <mapID target="org.netbeans.core.output.OutputTab" url="pending.html" />
+   <mapID target="org.netbeans.core.actions.NextOutJumpAction" url="pending.html" /> 
+   <mapID target="org.netbeans.core.actions.PreviousOutJumpAction" url="pending.html" />
+   <mapID target="org.netbeans.core.actions.ModuleHelpAction" url="pending.html" /> 
+   <mapID target="org.netbeans.core.JavaHelp$HelpComponent" url="pending.html" />
+   <mapID target="org.netbeans.modules.projects.settings.SettingsAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.projects.MainClassHelper" url="pending.html" />
+   <mapID target="org.openide.awt.MenuBar$MenuFolder.Project" url="pending.html" /> 
+
+
+   <mapID target="org.netbeans.modules.form.editors2.BorderEditor$BorderPanel" url="pending.html" />
+   <mapID target="org.netbeans.modules.text.TXTDataObject" url="pending.html" />
+   <mapID target="org.netbeans.modules.beans.EventSetPatternNode" url="pending.html" />
+   <mapID target="org.netbeans.modules.beans.IdxPropertyPatternNode" url="pending.html" />
+   <mapID target="org.netbeans.modules.beans.PatternGroupNode" url="pending.html" />
+   <mapID target="org.netbeans.modules.beans.PatternGroupNode.MENU_CREATE_IDXPROPERTY" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.beans.PatternGroupNode.MENU_CREATE_MULTICASTSE" url="pending.html" />
+   <mapID target="org.netbeans.modules.beans.PatternGroupNode.MENU_CREATE_UNICASTSE" url="pending.html" />
+   <mapID target="org.netbeans.modules.beans.PatternGroupNode.MENU_CREATE_PROPERTY" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.beans.PatternGroupNode.Indexed Property" url="pending.html" />
+   <mapID target="org.netbeans.modules.beans.PatternGroupNode.Multicast Event Source" url="pending.html" />
+   <mapID target="org.netbeans.modules.beans.PatternGroupNode.Unicast Event Source" url="pending.html" />
+   <mapID target="org.netbeans.modules.beans.PatternGroupNode.Property" url="pending.html" />
+   <mapID target="org.netbeans.modules.beans.PatternGroupNode.dialogProperty" url="pending.html" />
+   <mapID target="org.netbeans.modules.beans.PatternGroupNode.dialogIdxProperty" url="pending.html" />
+   <mapID target="org.netbeans.modules.beans.PatternGroupNode.dialogUniCastES" url="pending.html" />
+   <mapID target="org.netbeans.modules.beans.PatternGroupNode.dialogMultiCastES" url="pending.html" />
+   <mapID target="org.netbeans.modules.beans.PatternNode" url="pending.html" />
+   <mapID target="org.netbeans.modules.beans.PropertyPatternNode" url="pending.html" />
+   <mapID target="org.netbeans.modules.objectbrowser.ObjectBrowser" url="pending.html" />
+   <mapID target="org.netbeans.modules.objectbrowser.PackageFilterPanel" url="pending.html" />
+   <mapID target="org.netbeans.modules.objectbrowser.ShowBrowserAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.debugger.core.CoreDebugger.dialog" url="pending.html" />
+   <mapID target="org.netbeans.modules.debugger.session.actions.StartSessionAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.debugger.support.actions.AddBreakpointAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.debugger.support.actions.SuspendDebuggerAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.debugger.support.actions.ResumeDebuggerAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.debugger.support.actions.CreateVariableAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.debugger.support.actions.AddBreakpointAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.debugger.support.actions.ConnectAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.java.JavaInternalCompilerType" url="pending.html" />
+   <mapID target="org.netbeans.modules.java.JavaExternalCompilerType" url="pending.html" />
+   <mapID target="org.netbeans.modules.java.settings.CompilerSettings" url="pending.html" />
+   <mapID target="org.netbeans.modules.java.settings.ErrorExpressionPanel" url="pending.html" />
+   <mapID target="org.netbeans.modules.java.settings.ExternalCompilerSettings" url="pending.html" />
+   <mapID target="org.netbeans.modules.debugger.support.actions.ConnectAction.dialog" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.debugger.support.actions.AddBreakpointAction.dialog" url="pending.html" />
+   <mapID target="org.netbeans.modules.debugger.support.actions.GoToSourceAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.debugger.support.actions.SuspendAction.dialog" url="pending.html" />
+   <mapID target="org.netbeans.modules.debugger.support.actions.SwitchOnAction.dialog" url="pending.html" />
+   <mapID target="org.netbeans.modules.debugger.support.actions.DebuggerViewAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.debugger.support.DebuggerSettings" url="pending.html" />
+   <mapID target="org.netbeans.modules.httpserver.HttpServerSettings" url="pending.html" />
+   <mapID target="org.netbeans.modules.applet.AppletDebuggerType" url="pending.html" />
+   <mapID target="org.netbeans.modules.applet.AppletExecutor" url="pending.html" />
+   <mapID target="org.netbeans.modules.autoupdate.ModuleAutoUpdater.update" url="pending.html" />
+   <mapID target="org.netbeans.modules.autoupdate.ModuleAutoUpdater.$Checker" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.autoupdate.ModuleAutoUpdater.Downloader" url="pending.html" />
+   <mapID target="org.netbeans.modules.autoupdate.ModuleAutoUpdater.UpdateAction" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.autoupdate.update" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.autoupdate.$Checker" url="pending.html" />
+   <mapID target="org.netbeans.modules.autoupdate.Downloader" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.autoupdate.UpdateAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.autoupdate.LicenceDialog" url="pending.html" />
+   <mapID target="org.netbeans.modules.beans.BiFeatureNode" url="pending.html" />
+   <mapID target="org.netbeans.modules.beans.BiIncludeAllAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.beans.BiNode" url="pending.html" />
+   <mapID target="org.netbeans.modules.beans.BiNode$SubNode" url="pending.html" />
+   <mapID target="org.netbeans.modules.beans.BiToggleAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.beans.GenerateBeanInfoAction" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.beans.GenerateBeanInfoAction.dialog" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.beans.beaninfo.GenerateBeanInfoAction" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.beans.beaninfo.GenerateBeanInfoAction.dialog" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.objectbrowser.ObjectBrowserSettings" url="pending.html" />
+   <mapID target="org.netbeans.modules.objectbrowser.ClassBrowserHierarchyTranslator.dialog" url="pending.html" />
+   <mapID target="org.netbeans.modules.clazz.ClassDataObject" url="pending.html" />
+   <mapID target="org.netbeans.modules.clazz.SerDataObject" url="pending.html" />
+   <mapID target="org.netbeans.modules.form.FormDataObject" url="pending.html" />
+   <mapID target="org.netbeans.modules.form.FormEditor$ComponentInspector" url="pending.html" />
+   <mapID target="org.netbeans.modules.form.FormLoaderSettings" url="pending.html"/> 
+   <mapID target="org.netbeans.modules.form.FormTopComponent" url="pending.html"/> 
+   <mapID target="org.netbeans.modules.form.actions.ComponentInspectorAction" url="pending.html"/>
+   <mapID target="org.netbeans.modules.form.actions.DesignModeAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.form.actions.EventsAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.form.actions.GotoEditorAction" url="pending.html"/> 
+   <mapID target="org.netbeans.modules.form.actions.GotoFormAction" url="pending.html"/> 
+   <mapID target="org.netbeans.modules.form.actions.InstallBeanAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.form.actions.InstallToPaletteAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.form.actions.SelectLayoutAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.form.actions.ShowGridAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.form.actions.TestModeAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.form.palette.BeanInstaller.installBean" url="pending.html" />
+   <mapID target="org.netbeans.modules.form.palette.BeanInstaller.selectPaletteCategory" url="pending.html" />
+   <mapID target="org.netbeans.modules.form.palette.ComponentPalette" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.form.palette.ComponentPalette.selectionButton" url="pending.html" />
+   <mapID target="org.netbeans.modules.form.palette.ComponentPalette.connectionButton" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.form.palette.ComponentPalette.paletteItem" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.form.palette.PaletteAction" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.form.palette.PaletteCategoryNode" url="pending.html" />
+   <mapID target="org.netbeans.modules.form.palette.PaletteNode" url="pending.html" />
+   <mapID target="org.netbeans.modules.form.ParametersPicker" url="pending.html"/>
+   <mapID target="org.netbeans.modules.java.JavaConnections.dialog" url="pending.html"/>
+   <mapID target="org.netbeans.modules.java.JavaDataObject" url="pending.html" />
+   <mapID target="org.netbeans.modules.java.SynchronizeAction" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.java.settings.JavaSettings" url="pending.html" />
+   <mapID target="org.netbeans.modules.java.settings.JavaSynchronizationSettings" url="pending.html" />
+   <mapID target="org.netbeans.modules.url.BookmarksNode" url="pending.html" />
+   <mapID target="org.netbeans.modules.html.HtmlLoader.Obj" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.image.ImageViewer" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.url.OpenInNewWindowAction" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.url.BookmarksAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.url.URLDataObject" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.openfile.OpenFile.dialog" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.openfile.OpenFileAction" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.openfile.Settings" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.editor.NbDialogCreator.findDialog" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.editor.NbDialogCreator.gotoDialog" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.form.RADLayoutNode" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.form.RADChildren$NonVisualNode" url="pending.html" />
+   <mapID target="org.netbeans.modules.editor.java.JCUpdateAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.javadoc.search.SearchDocAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.debugger.support.nodes.BreakpointsView" url="pending.html" />
+   <mapID target="org.netbeans.modules.debugger.support.nodes.ThreadsView" url="pending.html" />
+   <mapID target="org.netbeans.modules.debugger.support.nodes.WatchesView" url="pending.html" />
+   <mapID target="org.netbeans.modules.form.FormEditor$ComponentInspector" url="pending.html" />
+   <mapID target="org.netbeans.modules.form.FormTopComponent" url="pending.html" />
+   <mapID target="org.netbeans.modules.objectbrowser.ObjectBrowser" url="pending.html" />
+   <mapID target="org.netbeans.core.actions.ExecutionViewAction$ExecutionView" url="pending.html" />
+   <mapID target="org.netbeans.beaninfo.editors.ServiceTypePanel" url="pending.html" />
+   <mapID target="org.netbeans.modules.form.ConnectionWizard1" url="pending.html" />
+   <mapID target="org.netbeans.modules.form.ConnectionWizard2" url="pending.html" />
+   <mapID target="org.netbeans.modules.form.ConnectionWizard3" url="pending.html" />
+   <mapID target="org.openide.compiler.CompilerType" url="pending.html" />
+   <mapID target="org.openide.debugger.DebuggerType" url="pending.html" />
+   <mapID target="org.openide.debugger.DebuggerType$Default" url="pending.html" />
+   <mapID target="org.openide.execution.Executor" url="pending.html" />
+   <mapID target="org.netbeans.modules.java.JavaExternalCompilerType" url="pending.html" />
+   <mapID target="org.netbeans.modules.java.JavaInternalCompilerType" url="pending.html" />
+   <mapID target="org.netbeans.modules.debugger.support.ProcessDebuggerType" url="pending.html" />
+
+   <mapID target="org.netbeans.modules.debugger.jpda.JPDADebuggerType" url="pending.html" />
+   <mapID target="org.netbeans.modules.debugger.debug.ToolsDebuggerType" url="pending.html" />
+   <mapID target="org.netbeans.beaninfo.editors.NbProcessDescriptorCustomEditor" url="pending.html" />
+   <mapID target="org.netbeans.modules.editor.options.BaseOptionsBeanInfo$KeyBindingListPropertyEditor" url="pending.html" />
+   <mapID target="org.netbeans.modules.editor.options.BaseOptionsBeanInfo$AbbrevMapEditor" url="pending.html" />
+   <mapID target="org.netbeans.beaninfo.editors.CompilerTypeEditor$NoCompiler" url="pending.html" />
+   <mapID target="org.netbeans.modules.javadoc.search.JavaDocNode" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.javadoc.search.IndexSearch" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.javadoc.comments.AutoCommentTopComponent" url="pending.html" />
+   <mapID target="org.netbeans.modules.javadoc.comments.AutoCommentAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.java.support.AutoCommentAction" url="pending.html"  />
+   <mapID target="org.netbeans.modules.java.support.AutoCommentAction.dialog" url="pending.html"  />
+   <mapID target="org.netbeans.modules.java.support.AutoCommentPanel.dialog" url="pending.html"  />
+   <mapID target="org.netbeans.modules.javadoc.GenerateDocAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.javadoc.DestinationPanel" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.javadoc.comments.JavaDocEditorPanel" url="pending.html" />
+   <mapID target="org.netbeans.modules.form.FormCustomEditorAdvanced" url="pending.html" />
+   <mapID target="org.netbeans.modules.form.FormCustomEditor.tabbedPane" url="pending.html" />
+   <mapID target="org.netbeans.core.WorkspaceSwitcher" url="pending.html" />
+   <mapID target="org.netbeans.modules.javadoc.settings.StdDocletSettings" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.javadoc.settings.JavadocSettings" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.javadoc.settings.DocumentationSettings" url="pending.html" />
+
+   <mapID target="org.netbeans.modules.editor.options.AllOptions" url="pending.html" />
+   <mapID target="org.netbeans.modules.editor.options.BaseOptions" url="pending.html" />
+   <mapID target="org.netbeans.modules.editor.options.BasePrintOptions" url="pending.html" />
+   <mapID target="org.netbeans.modules.form.PropertyPicker" url="pending.html" />
+   <mapID target="org.netbeans.core.NbNodeOperation$Sheet" url="pending.html" /> 
+   <mapID target="java.awt.Button" url="pending.html" />
+   <mapID target="java.awt.Label" url="pending.html" />
+   <mapID target="java.awt.TextField" url="pending.html" /> 
+   <mapID target="java.awt.TextArea" url="pending.html" /> 
+   <mapID target="java.awt.Checkbox" url="pending.html" /> 
+   <mapID target="java.awt.Choice" url="pending.html" /> 
+   <mapID target="java.awt.List" url="pending.html" /> 
+   <mapID target="java.awt.Scrollbar" url="pending.html" />
+   <mapID target="java.awt.ScrollPane" url="pending.html" />
+   <mapID target="java.awt.Panel" url="pending.html" />
+   <mapID target="java.awt.Canvas" url="pending.html" />
+   <mapID target="java.awt.MenuBar" url="pending.html" />
+   <mapID target="java.awt.PopupMenu" url="pending.html" />
+   <mapID target="javax.swing.JLabel" url="pending.html" />
+   <mapID target="javax.swing.JButton" url="pending.html" />
+   <mapID target="javax.swing.JCheckBox" url="pending.html" />
+   <mapID target="javax.swing.JRadioButton" url="pending.html" />
+   <mapID target="javax.swing.JComboBox" url="pending.html" />
+   <mapID target="javax.swing.JList" url="pending.html" />
+   <mapID target="javax.swing.JTextField" url="pending.html" />
+   <mapID target="javax.swing.JTextArea" url="pending.html" />
+   <mapID target="javax.swing.JToggleButton" url="pending.html" />
+   <mapID target="javax.swing.JPanel" url="pending.html" />
+   <mapID target="javax.swing.JTabbedPane" url="pending.html" />
+   <mapID target="javax.swing.JScrollBar" url="pending.html" />
+   <mapID target="javax.swing.JScrollPane" url="pending.html" />
+   <mapID target="javax.swing.JMenuBar" url="pending.html" />
+   <mapID target="javax.swing.JPopupMenu" url="pending.html" />
+   <mapID target="javax.swing.JSlider" url="pending.html" />
+   <mapID target="javax.swing.JProgressBar" url="pending.html" />
+   <mapID target="javax.swing.JSplitPane" url="pending.html" />
+   <mapID target="javax.swing.JPasswordField" url="pending.html" />
+   <mapID target="javax.swing.JSeparator" url="pending.html" />
+   <mapID target="javax.swing.JTextPane" url="pending.html" />
+   <mapID target="javax.swing.JEditorPane" url="pending.html" />
+   <mapID target="javax.swing.JTree" url="pending.html" />
+   <mapID target="javax.swing.JTable" url="pending.html" />
+   <mapID target="javax.swing.JToolBar" url="pending.html" />
+   <mapID target="javax.swing.JInternalFrame" url="pending.html" />
+   <mapID target="javax.swing.JLayeredPane" url="pending.html" />
+   <mapID target="javax.swing.JDesktopPane" url="pending.html" />
+   <mapID target="javax.swing.JOptionPane" url="pending.html" />
+   <mapID target="org.netbeans.modules.icebrowser.ICEBrowserSettings" url="pending.html" />
+   <mapID target="org.netbeans.modules.autoupdate.Settings" url="pending.html" />
+   <mapID target="org.netbeans.modules.projects.settings.ProjectOption" url="pending.html" />
+   <mapID target="org.netbeans.modules.autoupdate.ProxyDialog" url="pending.html" />
+   <mapID target="org.netbeans.modules.projects.settings.OptionsAction" url="pending.html" />
+   <mapID target="org.openide.actions.BuildProjectAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.projects.ProjectDataObject" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.projects.AddToProjectAction" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.projects.Add2ProjectAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.projects.ImportProjectAction" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.projects.NewProjectAction" url="pending.html" /> 
+   <mapID target="org.openide.actions.CompileProjectAction" url="pending.html" /> 
+   <mapID target="org.openide.actions.OpenProjectAction" url="pending.html" /> 
+   <mapID target="org.openide.actions.SaveProjectAction" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.projects.SetMainClassAction" url="pending.html" /> 
+   <mapID target="org.openide.actions.ExecuteProjectAction" url="pending.html" />
+   <mapID target="org.openide.actions.DebugProjectAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.projects.SetMainClassCookieAction" url="pending.html" />
+ 
+   <mapID target="org.netbeans.core.actions.ConfigureShortcutsAction" url="pending.html" />
+   <mapID target="org.netbeans.core.ShortcutsEditor" url="pending.html" />
+   <mapID target="org.netbeans.core.ActionsPanel" url="pending.html" />
+   <mapID target="org.netbeans.modules.projects.SetMainClassCookieAction" url="pending.html" />
+
+   <mapID target="org.netbeans.modules.java.SynchronizeAction" url="pending.html" />
+
+   <mapID target="org.netbeans.modules.editor.java.JCExtension" url="pending.html" />
+   <mapID target="org.netbeans.modules.editor.java.JCProviderPanel" url="pending.html" />
+   <mapID target="org.netbeans.editor.ext.JCView" url="pending.html" />
+
+   <mapID target="org.openide.loaders.TemplateWizard1" url="pending.html" />
+   <mapID target="org.openide.loaders.TemplateWizard2" url="pending.html" />
+
+
+   <mapID target="org.netbeans.modules.vcs.cmdline.CvsCustomizer" url="pending.html" />
+   <mapID target="org.netbeans.modules.vcs.cmdline.commands.CvsRevisionChooser" url="pending.html" />
+   <mapID target="org.netbeans.modules.vcs.cmdline.commands.CvsBranchFrame" url="pending.html" />
+   <mapID target="org.netbeans.modules.vcs.cmdline.commands.CvsDiffFrame" url="pending.html" />
+   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.LIST" url="pending.html" />
+   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.LIST_SUB" url="pending.html" />
+   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.INIT" url="pending.html" />
+   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.UPDATE" url="pending.html" />
+   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.COMMIT" url="pending.html" />
+   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.ADD" url="pending.html" />
+   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.REMOVE" url="pending.html" />
+   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.IMPORT" url="pending.html" />
+   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.CHECKOUT" url="pending.html" />
+   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.STATUS" url="pending.html" />
+   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.LOG" url="pending.html" />
+   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.CHECKOUT_REV" url="pending.html" />
+   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.UPDATE_REV" url="pending.html" />
+   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.COMMIT_REV" url="pending.html" />
+   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.MERGE" url="pending.html" />
+   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.REM_STICKY" url="pending.html" />
+   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.TAGS" url="pending.html" />
+   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.BRANCHES" url="pending.html" />
+   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.DIFF" url="pending.html" />
+   <mapID target="org.netbeans.modules.vcs.cmdline.commands.AddTagDialog" url="pending.html" />
+   <mapID target="org.netbeans.modules.vcs.cmdline.AdditionalCommandDialog" url="pending.html" />
+   <mapID target="org.netbeans.modules.vcs.cmdline.ErrorCommandDialog" url="pending.html" />
+   <mapID target="org.netbeans.modules.vcs.RetrievingDialog" url="pending.html" />
+   <mapID target="org.netbeans.modules.debugger.support.nodes.DebuggerView" url="pending.html" />
+   <mapID target="org.netbeans.core.FSPoolNode$FSNode" url="pending.html" />
+   <mapID target="org.netbeans.modules.group.CreateGroupAction" url="pending.html" />
+
+   <mapID target="org.netbeans.editor.GO_TO_DECLARATION" url="pending.html" />
+   <mapID target="org.netbeans.editor.REFORMAT_CODE" url="pending.html" />
+   <mapID target="org.netbeans.modules.search.RepositorySearchAction" url="pending.html" />
+   <mapID target="org.openidex.search.SearchType" url="pending.html" />
+   <mapID target="org.netbeans.modules.web.wizards.beanjsp.ide.netbeans.JSPPageWizardAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.web.core.ServletSettings" url="pending.html" />
+
+   <mapID target="org.netbeans.modules.editor.java.NbEditorJavaKit$ToggleBreakpointAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.editor.java.NbEditorJavaKit$AddWatchAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.editor.java.NbEditorJavaKit$GotoDeclarationAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.editor.java.NbEditorJavaKit$GotoSourceAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.editor.java.NbEditorJavaKit$GotoHelpAction" url="pending.html" />
+   <mapID target="org.netbeans.editor.ActionFactory$FormatAction" url="pending.html" />
+
+   <mapID target="org.netbeans.editor.ActionFactory$RemoveSelectionAction" url="pending.html" />
+   <mapID target="org.netbeans.editor.BaseKit$CutAction" url="pending.html" />
+   <mapID target="org.netbeans.editor.BaseKit$CopyAction" url="pending.html" />
+   <mapID target="org.netbeans.editor.BaseKit$PasteAction" url="pending.html" />
+
+   <mapID target="org.netbeans.modules.web.wizards.beanjsp.ui.JSPBeansSelectionPanel" url="pending.html" />
+   <mapID target="org.netbeans.modules.web.wizards.beanjsp.ui.JSPBizMethodsPanel" url="pending.html" />
+   <mapID target="org.netbeans.modules.web.wizards.beanjsp.ui.JSPDisplayFieldsPanel" url="pending.html" />
+   <mapID target="org.netbeans.modules.web.wizards.beanjsp.ui.JSPInputFieldsPanel" url="pending.html" />
+   <mapID target="org.netbeans.modules.web.wizards.beanjsp.ui.JSPPageGenerationPanel" url="pending.html" />
+   <mapID target="org.netbeans.modules.web.wizards.beanjsp.ui.JSPPageNameAndStyleInfoPanel" url="pending.html" />
+   <mapID target="org.netbeans.modules.web.wizards.beanjsp.ui.JSPPageTypeOptionPanel" url="pending.html" />
+   <mapID target="org.netbeans.modules.web.wizards.beanjsp.ui.JSPSubmitAndErrorURLInfoPanel" url="pending.html" />
+   <mapID target="org.netbeans.modules.web.wizards.beanjsp.ui.JSPSubmitProcessOptionPanel" url="pending.html" />
+
+   <mapID target="org.netbeans.modules.autoupdate.AutoCheckInfo" url="pending.html" />
+   <mapID target="org.netbeans.modules.autoupdate.Wizard" url="pending.html" />
+   <mapID target="org.netbeans.modules.autoupdate.CertDialog" url="pending.html" />
+
+   <mapID target="org.netbeans.modules.search.types.ModificationDateType" url="pending.html" />
+   <mapID target="org.netbeans.modules.search.types.FullTextType" url="pending.html" />
+   <mapID target="org.netbeans.modules.search.types.ObjectNameType" url="pending.html" />
+   <mapID target="class org.netbeans.modules.search.types.ModificationDateType" url="pending.html" />
+   <mapID target="class org.netbeans.modules.search.types.FullTextType" url="pending.html" />
+   <mapID target="class org.netbeans.modules.search.types.ObjectNameType" url="pending.html" />
+
+   <mapID target="org.netbeans.modules.web.core.EditQueryStringAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.web.core.jsploader.EditServletAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.web.core.jswdk.Execute2Action" url="pending.html" />
+ 
+   <mapID target="org.netbeans.beaninfo.LoaderActionsPanel" url="pending.html" />
+   <mapID target="org.netbeans.modules.autoupdate.AutoCheckInfo" url="pending.html" />
+   <mapID target="org.openide.src.nodes.MethodCustomizer" url="pending.html" />
+   <mapID target="org.openide.src.nodes.FieldCustomizer" url="pending.html" />
+   <mapID target="org.openide.src.nodes.ClassCustomizer" url="pending.html" />
+
+   <mapID target="org.netbeans.core.actions.ConfigureShortcutsAction" url="pending.html" />
+
+   <mapID target="org.netbeans.core.windows.nodes.ModeContext" url="pending.html" />
+   <mapID target="org.openide.explorer.propertysheet.PropertySheet$BeanPasteType" url="pending.html" />
+   <mapID target="org.openide.text.DefaultPrintable.cancelDialog" url="pending.html" />
+   <mapID target="org.openide.actions.NewAction" url="pending.html" />
+   <mapID target="org.openide.actions.StartDebuggerAction" url="pending.html" />
+   <mapID target="org.netbeans.beaninfo.ExLocalFileSystemBeanInfo$RootEd" url="pending.html" />
+   <mapID target="org.netbeans.beaninfo.LocalFileSystemBeanInfo$RootEd" url="pending.html" />
+   <mapID target="org.openide.explorer.propertysheet.editors.FileEditor" url="pending.html" />
+   <mapID target="org.netbeans.beaninfo.JarFileEditor" url="pending.html" />
+   <mapID target="org.netbeans.core.NbAuthenticator.getPasswordAuthentication" url="pending.html" />
+   <mapID target="org.netbeans.core.actions.EmptyAction" url="pending.html" />
+
+   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.UNCONFIG" url="pending.html" />
+   <mapID target="org.openide.windows.TopComponent" url="pending.html" /> 
+   <mapID target="org.openide.text.NbDocument$Colors" url="pending.html" />
+   <mapID target="org.netbeans.core.ServicesNode$MakeDefaultAction" url="pending.html" />
+   <mapID target="org.netbeans.beaninfo.editors.DebuggerTypeEditor$NoDebugger" url="pending.html" />
+   <mapID target="org.netbeans.beaninfo.editors.ExecutorEditor$NoExecutor" url="pending.html" />
+
+
+</map>
+

@@ -1,0 +1,326 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE toc
+  PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 1.0//EN"
+         "http://java.sun.com/products/javahelp/toc_1_0.dtd">
+
+<toc version="1.0">
+
+<tocitem text="Forte for Java - Help" >
+
+<tocitem text="IDE" target="ide.welcome" /> 
+
+<tocitem text="Legal Notices" target="ide.credits" />
+
+<tocitem text="Getting Started" target="gs.ide">
+  <tocitem text="Key Concepts" target="gs.key" />
+  <tocitem text="A Tour of the IDE" target="gs.tour" />
+  <tocitem text="Workspaces" target="gs.wkspc" />
+  <tocitem text="Creating the ColorSwitch Application" target="gs.csw">
+    <tocitem text="Creating a Container" target="gs.cont" />
+    <tocitem text="Choosing a Layout Manager" target="gs.lyt" />
+    <tocitem text="Adding a Label" target="gs.label" />
+    <tocitem text="Adding a Button" target="gs.button" />
+    <tocitem text="Setting Up the Button to Switch Color" target="gs.setup" />
+    <tocitem text="Adding Event Handler Code" target="gs.evt" />
+    <tocitem text="Compiling and Running Your Program" target="gs.run" />
+    <tocitem text="Stepping Through the Code" target="gs.step" />
+    <tocitem text="Viewing the Class Hierarchy" target="gs.view" />
+  </tocitem>
+</tocitem>
+
+<tocitem text="Projects in the IDE" target="project">
+  <tocitem text="Creating a New Project" target="project.creating" />
+  <tocitem text="Importing a Project From Another IDE" target="project.importing"/>
+  <tocitem text="Adding an Existing File to a Project" target="project.adding-existing" />
+  <tocitem text="Adding a New File to a Project" target="project.adding-new" />
+  <tocitem text="Compiling, Running, and Debugging a Project" target="project.comp-run-debug" />
+  <tocitem text="Deleting a File in a Project" target="project.delete-file" />
+  <tocitem text="Saving a Project and Adjusting Save Settings" target="project.save-options" />
+  <tocitem text="Switching to a Different Project" target="project.switching" />
+  <tocitem text="Changing Project Settings" target="project.settings"/>
+</tocitem>
+
+<tocitem text="Managing Objects in the IDE" target="objects">
+  <tocitem text="The Explorer" target="explorer" />
+  <tocitem text="The Object Browser" target="browser">
+     <tocitem text="Packages Pane in the Object Browser" target="browser.package" />
+     <tocitem text="Creating a Custom Package Filter" target="browser.packagefilter" />
+     <tocitem text="Object Pane in the Object Browser" target="browser.object" />
+     <tocitem text="Members Pane in the Object Browser" target="browser.member" />
+  </tocitem>
+  <tocitem text="Opening a File in the IDE" target="objects.opening" />
+  <tocitem text="Creating or Deleting a Package" target="objects.packages" />
+  <tocitem text="Filesystems" target="filesystems">
+     <tocitem text="Mounting a Filesystem" target="filesystems.mount" />
+     <tocitem text="Changing the Mount Order of Filesystems" target="filesystems.order" />
+     <tocitem text="Opening a File Not Mounted in a Filesystem" target="filesystems.openfile" />
+     <tocitem text="Unmounting a Filesystem" target="filesystems.removing" />
+     <tocitem text="Configuring a Mounted Filesystem" target="filesystems.settings" />
+  </tocitem>
+  <tocitem text="Properties Window" target="objects.properties" />
+  <tocitem text="Cut, Copy, Paste, and Delete Commands" target="objects.clipboard-ops" />
+  <tocitem text="Saving Work" target="objects.saving" />
+  <tocitem text="File Searches" target="search">
+     <tocitem text="Searching for a File by Object Name" target="search.name" />
+     <tocitem text="Searching for a File by Text in the File" target="search.text" />
+     <tocitem text="Searching for a File by Type" target="search.filetype" />
+     <tocitem text="Searching for a File by Date" target="search.date" />
+     <tocitem text="Searching for a File by CVS Status" target="search.status" />
+     <tocitem text="Searching With a Combination of Criteria" target="search.combo" />
+     <tocitem text="Predefining and Saving Search Criteria" target="search.predefine" />
+     <tocitem text="Modifying Existing Search Criteria" target="search.modify" />
+     <tocitem text="Exploring With the Search Results Window" target="search.window" />
+  </tocitem>
+  <tocitem text="Refreshing a View" target="objects.refresh" />
+  <tocitem text="Runtime Tab in the Explorer" target="objects.runtime" />
+  <tocitem text="Adding a File Extension to an Object Type" target="objects.file-extensions" />
+  <tocitem text="Node Icons in the Explorer and the Object Browser" target="objects.icons" />
+</tocitem>
+
+
+<tocitem text="Editing Source Files" target="editing.intro">
+  <tocitem text="Source Editor" target="editing.editorwindow"/>
+  <tocitem text="Opening a File in the Source Editor" target="editing.opening"/>
+  <tocitem text="Using Source Editor Abbreviations" target="editing.using-abbreviations"/>
+  <tocitem text="Using the Word Match Feature" target="editing.wordmatch"/>
+  <tocitem text="Formatting Code" target="editing.formatting"/>
+  <tocitem text="Using Java Code Completion" target="editing.codecompletion">
+    <tocitem text="Completing an Expression" target="editing.completing-exp"/>
+    <tocitem text="Updating the Parser Database" target="editing.parserdatabase"/>
+    <tocitem text="Setting the Code Completion Delay" target="editing.settingdelay"/>
+    <tocitem text="Disabling Automatic Code Completion " target="editing.disablingdelay"/>
+  </tocitem>
+  <tocitem text="Navigating the Source Editor" target="editing.navigating">
+    <tocitem text="Navigating With the Jump List" target="editing.jumplist"/>
+    <tocitem text="Using Source Editor Bookmarks" target="editing.bookmarks"/>
+    <tocitem text="Scrolling Shortcuts" target="editing.scrolling"/>
+  </tocitem>
+  <tocitem text="Finding and Replacing Text" target="editing.find"/>
+  <tocitem text="Text Selection Shortcuts" target="editing.selecting-text"/>
+  <tocitem text="Configuring the Source Editor" target="editing.configuring">    
+    <tocitem text="Setting Global Source Editor Keyboard Shortcuts" target="editing.setting-globalshorts"/>
+    <tocitem text="Setting Keyboard Shortcuts for a Specific Editor" target="editing.settingkeybdshorts"/>
+    <tocitem text="Java Editor Properties" target="editing.javaeditor-props"/>
+    <tocitem text="Key Bindings Property Editor" target="editing.keybindings"/>
+  </tocitem>
+</tocitem>
+
+<tocitem text="Designing Java GUIs" target="gui.intro">
+  <tocitem text="Form Editor" target="gui.formeditor">
+    <tocitem text="Form Editor Modes" target="gui.modes" />
+  </tocitem>
+  <tocitem text="Component Inspector" target="gui.component-inspector" />
+  <tocitem text="Creating a New Form" target="gui.creatingforms" />
+  <tocitem text="Working With Components" target="gui.components.intro">
+    <tocitem text="Component Palette" target="gui.components.palette" />
+    <tocitem text="Adding a New Component" target="gui.components.adding" />
+    <tocitem text="Selecting Components" target="gui.components.selecting" />
+    <tocitem text="Moving or Copying a Component" target="gui.components.moving" />
+    <tocitem text="Reordering Components Within a Container" target="gui.components.reordering" />
+    <tocitem text="Editing Component Properties" target="gui.components.editing" />
+    <tocitem text="Connecting Components" target="gui.components.connecting" />
+  </tocitem>
+  <tocitem text="Working With Layouts" target="gui.layouts.intro">
+    <tocitem text="Setting the Layout Manager" target="gui.layouts.setting" />
+    <tocitem text="Setting Layout Properties" target="gui.layouts.props" />
+    <tocitem text="Setting Layout Constraints" target="gui.layouts.constraints" />
+    <tocitem text="Standard Layout Managers" target="gui.layouts.managers.intro">
+      <tocitem text="Flow Layout" target="gui.layouts.managers.flow" />
+      <tocitem text="Border Layout" target="gui.layouts.managers.border" />
+      <tocitem text="Grid Layout" target="gui.layouts.managers.grid" />
+      <tocitem text="Card Layout" target="gui.layouts.managers.card" />
+      <tocitem text="Absolute Layout" target="gui.layouts.managers.absolute" />
+      <tocitem text="GridBag Layout" target="gui.layouts.managers.gridbag" />
+      <tocitem text="Box Layout" target="gui.layouts.managers.box" />
+      <tocitem text="Null Layout" target="gui.layouts.managers.null" />
+    </tocitem>
+    <tocitem text="Using the GridBag Customizer" target="gui.layouts.gbcustomizer" />
+    <tocitem text="Using a Custom Layout Manager" target="gui.layouts.custom_mgr" />
+  </tocitem>
+  <tocitem text="Working With Source Code" target="gui.source.intro">
+    <tocitem text="Guarded Text" target="gui.source.guarded" />
+    <tocitem text="Modifying Code Generation for a Component" target="gui.source.modifying" />
+    <tocitem text="Code Generation Options" target="gui.source.options" />
+    <tocitem text="Code Generation Container Properties" target="gui.source.props" />
+    <tocitem text="Setting Initialization Code" target="gui.source.initializing.intro">
+      <tocitem text="Using the Form Connection Property Editor" target="gui.source.initializing.formconnect" />
+      <tocitem text="Setting Pre- and Post-Initialization Code" target="gui.source.initializing.prepost" />
+    </tocitem>
+    <tocitem text="Modifying Forms Externally" target="gui.source.external" />
+  </tocitem>
+  <tocitem text="Managing Component Events" target="gui.events.intro">
+    <tocitem text="Defining an Event Handler" target="gui.events.defining" />
+    <tocitem text="Removing an Event Handler" target="gui.events.removing" />
+    <tocitem text="Renaming an Event Handler" target="gui.events.renaming" />
+    <tocitem text="Adding Multiple Handlers for One Event" target="gui.events.multiple" />
+  </tocitem>
+  <tocitem text="Using the Connection Wizard" target="gui.connecting.intro">
+    <tocitem text="Specifying the Connection Source" target="gui.connecting.source" />
+    <tocitem text="Specifying the Connection Target" target="gui.connecting.target" />
+    <tocitem text="Specifying Property Values and Method Parameters" target="gui.connecting.code" />
+  </tocitem>
+  <tocitem text="Creating a Menu" target="gui.menus.intro">
+    <tocitem text="Creating a Menu Bar" target="gui.menus.menubar" />
+    <tocitem text="Adding a Menu to a Menu Bar" target="gui.menus.menu" />
+    <tocitem text="Creating a Popup Menu" target="gui.menus.popup" />
+    <tocitem text="Adding a Menu Item" target="gui.menus.item" />
+    <tocitem text="Adding an Event Handler to a Menu Item" target="gui.menus.events" />
+  </tocitem>
+  <tocitem text="Creating a Scrollbar" target="gui.scrollbars" />
+  <tocitem text="Creating a Tabbed Pane" target="gui.tabbedpane" />
+  <tocitem text="Creating a Split Pane" target="gui.splitpane" />
+  <tocitem text="Creating a Table or List" target="gui.tablelist" />
+  <tocitem text="Creating Multiple Document Interface (MDI) Applications" target="gui.mdi" />
+  <tocitem text="Configuring the Form Editor" target="gui.configuring" />
+  <tocitem text="Customizing the Component Palette" target="gui.custompalette" />
+</tocitem>
+
+<tocitem text="Working With Beans" target="beans.intro">
+  <tocitem text="Creating a Bean" target="beans.creating">
+    <tocitem text="Creating a Bean Property" target="beans.properties" />
+    <tocitem text="Creating a Bean Event Set" target="beans.eventsets" />
+    <tocitem text="Deleting a Property or Event Set" target="beans.deleting" />
+    <tocitem text="Generating BeanInfo" target="beans.beaninfo.generating">
+      <tocitem text="BeanInfo Editor Dialog Box" target="beans.beaninfo.nodes" />
+    </tocitem>
+  </tocitem>
+  <tocitem text="Customizing a Bean" target="beans.customizing" />
+  <tocitem text="Making a Bean a Container" target="beans.container" />
+  <tocitem text="Adding a Bean to the Component Palette" target="beans.adding" />
+</tocitem>
+
+<tocitem text="Synchronizing Source Code" target="synchronizing.intro">
+  <tocitem text="Setting Source Synchronization Properties" target="synchronizing.properties" />
+  <tocitem text="Synchronizing Source in a New Interface" target="synchronizing.new-interface" />
+  <tocitem text="Synchronizing Source When Updating an Interface" target="synchronizing.update-interface" />
+</tocitem>
+
+<tocitem text="Compiling a Program" target="compile.jump">
+  <tocitem text="Compiling a Program" target="compile.program" />
+  <tocitem text="Correcting Errors in Source Code" target="compile.error" />
+  <tocitem text="Stopping a Compile" target="compile.stop"/>
+  <tocitem text="Disabling Compilation of a Single Source File" target="compile.disable"/>
+  <tocitem text="Deleting .class Files" target="compile.delete"/>
+  <tocitem text="Specifying Which Compiler to Use" target="compile.configure"/>
+  <tocitem text="Setting Compiler Options for a Project" target="compile.options"/>
+  <tocitem text="Defining a New Compiler Type" target="compile.new"/>
+</tocitem>
+
+<tocitem text="Running a Program" target="run.jump">
+  <tocitem text="Running a Program" target="run.run" />
+  <tocitem text="Running a Program in the Debugger" target="run.debug" />
+  <tocitem text="Specifying Arguments for Program Execution" target="run.arguments" />
+  <tocitem text="Specifying the Main Class to Run for a Project" target="run.mainclass"/>
+  <tocitem text="Disabling Execution of a Class File" target="run.disable"/>
+  <tocitem text="Running Workspace" target="run.workspace" />
+  <tocitem text="Setting Run-Time Options for the Environment" target="run.options" />
+  <tocitem text="The Executors That Run Your Programs" target="run.executors" />
+  <tocitem text="Setting Executors at the Class Level" target="run.file" />
+  <tocitem text="Setting Executors at the Project Level" target="run.project.jump">
+    <tocitem text="Specifying the Default Executor for a Project" target="run.project" />
+    <tocitem text="Configuring the External Executor" target="run.external" />
+    <tocitem text="Configuring the Applet Executor" target="run.applet" />
+    <tocitem text="Configuring the JSP Executor" target="run.jsp" />
+     <tocitem text="Defining a New Executor" target="run.new" />
+    <tocitem text="Removing an Executor" target="run.remove" />
+  </tocitem>
+</tocitem>
+        
+<tocitem text="Debugging Applets and Applications" target="debug.overview">
+  <tocitem text="Running Your Program in the Debugger" target="debug.running.jump">
+     <tocitem text="Starting a Debugging Session" target="debug.running.debugger" />
+     <tocitem text="Running to the First Line of the Program" target="debug.running.first" />
+     <tocitem text="Running to the Cursor Location" target="debug.running.cursor" />
+     <tocitem text="Stepping Through Your Program" target="debug.step" />
+     <tocitem text="Resuming a Program in the Debugger" target="debug.running.resume" />
+     <tocitem text="Ending a Debugging Session" target="debug.running.end" />
+  </tocitem>
+  <tocitem text="Setting Breakpoints" target="debug.breakpoint">
+     <tocitem text="Setting a Breakpoint on a Line" target="debug.breakpoint.line" />
+     <tocitem text="Setting a Breakpoint on a Method Name" target="debug.breakpoint.method" />
+     <tocitem text="Setting a Breakpoint on a Thread" target="debug.breakpoint.thread" />
+     <tocitem text="Setting a Breakpoint on a Variable" target="debug.breakpoint.variable" />
+     <tocitem text="Setting a Breakpoint on an Exception" target="debug.breakpoint.exception" />
+     <tocitem text="Setting a Breakpoint on a Class" target="debug.breakpoint.class" />
+     <tocitem text="Setting a Conditional Breakpoint" target="debug.breakpoint.condition" />
+     <tocitem text="Add Breakpoint Dialog Box" target="debug.add.breakpoint" />
+     <tocitem text="Viewing the Source for a Breakpoint" target="debug.breakpoint.source" />    
+     <tocitem text="Disabling a Breakpoint" target="debug.breakpoint.enable" />
+     <tocitem text="Removing a Breakpoint" target="debug.breakpoint.remove" />
+  </tocitem>
+  <tocitem text="Viewing the Value of Variables and Expressions" target="debug.watches.jump">
+     <tocitem text="Watching the Value of a Variable or Expression" target="debug.watch" />
+     <tocitem text="Setting a Watch to a Fixed Value" target="debug.watch.fix" />
+     <tocitem text="Deleting a Watch Variable or Expression" target="debug.watch.delete" />
+   </tocitem>
+  <tocitem text="Examining Threads" target="debug.threads.jump">
+    <tocitem text="Suspending Execution of a Thread" target="debug.threads.suspend" />
+    <tocitem text="Resuming Execution of a Thread" target="debug.threads.resume" />
+  </tocitem>
+  <tocitem text="Using the Java Platform Debugger Architecture" target="debug.jpda"></tocitem>
+  <tocitem text="Installing the JPDA" target="debug.jpda.install"></tocitem>
+</tocitem>
+
+<tocitem text="Generating API Documentation With Javadoc" target="javadoc.jump">
+  <tocitem text="Generating Documentation With Javadoc" target="javadoc.generate"/>
+  <tocitem text="Searching Through Javadoc-Generated Documentation" target="javadoc.search"/>
+  <tocitem text="Specifying the Documentation Search Path" target="javadoc.search.path"/>
+  <tocitem text="Javadoc Comments" target="javadoc.comment"/>
+  <tocitem text="Adding a Javadoc Comment to Source Code" target="javadoc.addcomment"/>
+  <tocitem text="Customizing the Output of Javadoc" target="javadoc.customize"/>
+  <tocitem text="Javadoc Search Tool" target="javadoc.search.window"/>
+  <tocitem text="Auto Comment Tool" target="javadoc.auto.comment"/>
+  <tocitem text="Javadoc Comment Dialog Box" target="javadoc.doc.window"/>
+</tocitem>
+
+<tocitem text="CVS Filesystems" target="cvs">
+  <tocitem text="Setting up a CVS Repository and a Working Directory" target="cvs.repository" />
+  <tocitem text="Mounting a CVS Filesystem" target="cvs.create-fs" />
+  <tocitem text="Setting a Relative Mountpoint for a CVS Fileystem" target="cvs.mountpoint" />
+  <tocitem text="Calling CVS Commands With Options" target="cvs.options" />
+  <tocitem text="Reconfiguring a CVS Filesystem" target="cvs.settings" />
+  <tocitem text="CVS Commands" target="cvs.commands" />
+</tocitem>
+
+<tocitem text="Developing Java Server Pages"></tocitem>
+
+<tocitem text="Managing Workspaces and Windows" target="workspace.jump">
+  <tocitem text="Workspaces in the IDE" target="workspace.defined"/>
+  <tocitem text="Creating a Workspace" target="workspace.create"/>
+  <tocitem text="Renaming a Workspace" target="workspace.rename"/>
+  <tocitem text="Changing the Automatic Loading of Workspaces" target="workspace.auto"/>
+  <tocitem text="Deleting a Workspace" target="workspace.delete"/>
+  <tocitem text="Docking and Undocking Windows" target="workspace.dock"/>
+  <tocitem text="Cloning the Source Editor or Web Browser" target="workspace.clone"/>
+</tocitem>
+
+<tocitem text="CORBA Basics" target="corba.basics">
+  <tocitem text="CORBA Features" target="corba.features">
+    <tocitem text="Adding a Running Naming Service" target="corba.nameservc" />
+    <tocitem text="Naming Service Nodes" target="corba.servcnodes" />
+  </tocitem>
+  <tocitem text="CORBA Support" target="corba.supp"></tocitem>
+  <tocitem text="CORBA Templates" target="corba.templates"></tocitem>
+  <tocitem text="Accessing ORB Utility Classes" target="corba.access"></tocitem>
+  <tocitem text="Installing CORBA Support" target="corba.install"></tocitem>
+  <tocitem text="Running the IDL Compiler From the IDE" target="corba.run"></tocitem>
+  <tocitem text="Configuring the IDE" target="corba.config"></tocitem>
+  <tocitem text="CORBA Properties" target="corba.props">
+    <tocitem text="General Properties" target="corba.genprops" />
+    <tocitem text="Expert Properties" target="corba.exprops" />
+  </tocitem>
+  <tocitem text="The CORBA Wizard" target="corba.wizard"></tocitem>
+</tocitem>
+
+<tocitem text="Configuring the IDE" target="configure"></tocitem>
+
+<tocitem text="Keyboard Shortcuts" target="shortcuts.kybd">
+  <tocitem text="Menu Shortcuts" target="shortcuts.menus" />
+  <tocitem text="Editor Shortcuts" target="shortcuts.editor" />
+</tocitem>
+
+<tocitem text="Glossary" target="glossary"></tocitem>
+
+</tocitem>
+</toc>
+
