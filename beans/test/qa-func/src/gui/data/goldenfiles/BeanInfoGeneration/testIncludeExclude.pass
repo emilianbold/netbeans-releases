@@ -13,8 +13,8 @@ public class TestFileBeanInfo extends SimpleBeanInfo {
     
     
     // Property identifiers 
-    private static final int PROPERTY_nonIndexProperty = 0;
-    private static final int PROPERTY_indexProperty = 1;
+    private static final int PROPERTY_indexProperty = 0;
+    private static final int PROPERTY_nonIndexProperty = 1;
 
     // Property array 
     /*lazy PropertyDescriptor*/
@@ -22,8 +22,8 @@ public class TestFileBeanInfo extends SimpleBeanInfo {
         PropertyDescriptor[] properties = new PropertyDescriptor[2];
     
         try {
-            properties[PROPERTY_nonIndexProperty] = new PropertyDescriptor ( "nonIndexProperty", TestFile.class, "getNonIndexProperty", "setNonIndexProperty" );
             properties[PROPERTY_indexProperty] = new IndexedPropertyDescriptor ( "indexProperty", TestFile.class, "getIndexProperty", "setIndexProperty", "getIndexProperty", "setIndexProperty" );
+            properties[PROPERTY_nonIndexProperty] = new PropertyDescriptor ( "nonIndexProperty", TestFile.class, "getNonIndexProperty", "setNonIndexProperty" );
         }
         catch( IntrospectionException e) {}
         
