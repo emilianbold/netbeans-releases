@@ -1664,11 +1664,17 @@ public class GandalfPersistenceManager extends PersistenceManager {
         bytes[count++] = Byte.parseByte(singleNum);
         ByteArrayInputStream bis = new ByteArrayInputStream(bytes, 0, count);
         try {
-            ObjectInputStream ois = new NbObjectInputStream(bis);
-            Object ret = ois.readObject();
-            return ret;
-        } catch (Exception e) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) e.printStackTrace(); // NOI18N
+            ObjectInputStream ois = new ObjectInputStream(bis) {
+                protected Class resolveClass(ObjectStreamClass v)
+                throws IOException, ClassNotFoundException {
+                    return PersistenceObjectRegistry.loadClass(v.getName());
+                }
+            };
+            return ois.readObject();
+        }
+        catch (Exception e) {
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                e.printStackTrace();
             throw new IOException();
         }
     }
