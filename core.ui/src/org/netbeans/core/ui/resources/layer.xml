@@ -269,6 +269,19 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="org-netbeans-core-actions-MemoryMeterAction.instance/org-openide-actions-GarbageCollectAction.instance" boolvalue="true" />
             <file name="org-openide-actions-GarbageCollectAction.instance"/>
         </folder>
+        <folder name="WorkspaceSwitcher">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+            <file name="org-netbeans-core-windows-WorkspaceSwitcher.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.core.awt.TabControl" />
+                <attr name="instanceCreate" methodvalue="org.netbeans.core.windows.WorkspaceSwitcher.createSwitcher" />
+            </file>
+        </folder>
+        <folder name="StatusLine">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+            <file name="org-netbeans-core-actions-StatusLineAction.instance">
+                 <attr name="instanceClass" stringvalue="org.netbeans.core.actions.StatusLineAction"/>
+            </file>
+        </folder>
     </folder>
     
     <folder name="Shortcuts">
