@@ -193,41 +193,41 @@ public final class ConstantPool {
               break;
 
           case CONSTANT_Class: {
-              int nameIndex = cpr.readShort();
+              int nameIndex = cpr.readUnsignedShort();
               newEntry = new CPClassInfo(this, nameIndex);
               break;
           }
 
           case CONSTANT_String: {
-              int nameIndex = cpr.readShort();
+              int nameIndex = cpr.readUnsignedShort();
               newEntry = new CPStringInfo(this, nameIndex);
               break;
           }
 
           case CONSTANT_FieldRef: {
-              int classIndex = cpr.readShort();
-              int natIndex = cpr.readShort();
+              int classIndex = cpr.readUnsignedShort();
+              int natIndex = cpr.readUnsignedShort();
               newEntry = new CPFieldInfo(this, classIndex, natIndex);
               break;
           }
 
           case CONSTANT_MethodRef: {
-              int classIndex = cpr.readShort();
-              int natIndex = cpr.readShort();
+              int classIndex = cpr.readUnsignedShort();
+              int natIndex = cpr.readUnsignedShort();
               newEntry = new CPMethodInfo(this, classIndex, natIndex);
               break;
           }
 
           case CONSTANT_InterfaceMethodRef: {
-              int classIndex = cpr.readShort();
-              int natIndex = cpr.readShort();
+              int classIndex = cpr.readUnsignedShort();
+              int natIndex = cpr.readUnsignedShort();
               newEntry = new CPInterfaceMethodInfo(this, classIndex, natIndex);
               break;
           }
 
           case CONSTANT_NameAndType: {
-              int nameIndex = cpr.readShort();
-              int descIndex = cpr.readShort();
+              int nameIndex = cpr.readUnsignedShort();
+              int descIndex = cpr.readUnsignedShort();
               newEntry = new CPNameAndTypeInfo(this, nameIndex, descIndex);
               break;
           }

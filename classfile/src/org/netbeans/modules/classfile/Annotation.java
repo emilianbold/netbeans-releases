@@ -38,10 +38,10 @@ public class Annotation {
      */
     static void load(DataInputStream in, ConstantPool pool, 
 		     boolean visible, Map map) throws IOException {
-	int nattrs = in.readShort();
+	int nattrs = in.readUnsignedShort();
 	for (int i = 0; i < nattrs; i++) {
-	    int type = in.readShort();
-	    int npairs = in.readShort();
+	    int type = in.readUnsignedShort();
+	    int npairs = in.readUnsignedShort();
 	    List pairList = new ArrayList();
 	    for (int j = 0; j < npairs; j++)
 		pairList.add(AnnotationComponent.load(in, pool));

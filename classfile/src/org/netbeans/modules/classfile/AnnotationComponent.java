@@ -33,7 +33,7 @@ public class AnnotationComponent {
 
     static AnnotationComponent load(DataInputStream in, ConstantPool pool) 
 	throws IOException {
-	int iName = in.readShort();
+	int iName = in.readUnsignedShort();
 	String name = ((CPName)pool.get(iName)).getName();
 	ElementValue value = ElementValue.load(in, pool);
 	return new AnnotationComponent(name, value);
