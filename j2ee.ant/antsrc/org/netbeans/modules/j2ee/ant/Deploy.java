@@ -37,10 +37,16 @@ public class Deploy extends Task implements Deployment.Logger {
     private boolean forceRedeploy = false;
     
     /**
-     * Holds value of property clientUrl.
+     *  Context root to execute the default web client in J2EE application.
+     */
+    private String contextRoot;
+    
+    /**
+     * Part to build returned property client.url
      */
     private String clientUrlPart;
 
+    
     public void execute() throws BuildException { 
 
         J2eeModuleProvider jmp = null;
@@ -53,7 +59,7 @@ public class Deploy extends Task implements Deployment.Logger {
         }
 
         try {
-            String clientUrl = Deployment.getDefault ().deploy (jmp, debugmode, null, clientUrlPart, forceRedeploy, this);
+            String clientUrl = Deployment.getDefault ().deploy (jmp, debugmode, contextRoot, clientUrlPart, forceRedeploy, this);
             if (clientUrl != null) {
                 getProject().setProperty("client.url", clientUrl);
             }
