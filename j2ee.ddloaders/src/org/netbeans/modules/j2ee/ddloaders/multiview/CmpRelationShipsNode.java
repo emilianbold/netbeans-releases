@@ -31,14 +31,21 @@ class CmpRelationShipsNode extends EjbSectionNode {
         final EjbJarMultiViewDataObject dataObject = (EjbJarMultiViewDataObject) getSectionNodeView().getDataObject();
         final CmpRelationshipsTableModel model = new CmpRelationshipsTableModel(dataObject);
         final InnerTablePanel innerTablePanel = new InnerTablePanel(getSectionNodeView(), model) {
+            {
+                resolveEnableAddButton();
+            }
             public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
                 if (source == key) {
+                    resolveEnableAddButton();
                     scheduleRefreshView();
                 }
             }
 
             protected void editCell(int row, int column) {
                 model.editRow(row);
+            }
+            private void resolveEnableAddButton() {
+                getAddButton().setEnabled(dataObject.getEjbJar().getEnterpriseBeans().getEntity().length > 0);
             }
         };
         return innerTablePanel;

@@ -519,7 +519,10 @@ class CmpRelationshipsDialogHelper {
         }
 
         private void validateFields() {
-            if (roleA.getRoleName().equals(roleB.getRoleName())) {
+
+            final String roleNameA = roleA.getRoleName();
+            final String roleNameB = roleB.getRoleName();
+            if (roleNameA == roleNameB || (roleNameA != null && roleNameA.equals(roleNameB))) {
                 errorLabel.setText(Utils.getBundleMessage("MSG_SameRoleNames"));
                 dialogDescriptor.setValid(false);
             } else {
