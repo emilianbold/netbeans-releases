@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -221,14 +221,19 @@ public class CheckoutNeeded extends Task {
            Map.Entry entry = (Map.Entry)mb.next();
            String name = (String)entry.getKey()+"/test.branch";
            getProject().setProperty(name,(String)entry.getValue());
+           name = (String)entry.getKey()+"/nbproject.branch";
+           getProject().setProperty(name,(String)entry.getValue());
        }
           
        StringBuffer buff = new StringBuffer();
        Iterator ms = modules_set.iterator();
        while (ms.hasNext()) {
             if (buff.length() != 0) buff.append(",");
-            buff.append((String)ms.next());
-            buff.append("/test");
+            String module = (String)ms.next();
+            buff.append(module);
+            buff.append("/test,");
+            buff.append(module);
+            buff.append("/nbproject");
        }
        return buff.toString();
     }
