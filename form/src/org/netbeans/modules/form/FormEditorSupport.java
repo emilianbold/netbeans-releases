@@ -120,7 +120,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
       if (!formLoaded) {
         if (!loadForm ()) {
           TopManager.getDefault ().setStatusText ("");
-          return null; // [PENDING]
+          return super.openAt (pos);
         }
       }
     }
@@ -282,7 +282,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
     if (!loadManager.supportsAdvancedFeatures ()) {
       Object result = TopManager.getDefault().notify(
-        new NotifyDescriptor.Confirmation("The form is saved in an older format. Do you want to convert the form to the new XML persistence format?\nNote: If you answer No, some new features of the form editor will not be available",
+        new NotifyDescriptor.Confirmation(FormEditor.getFormBundle ().getString ("MSG_ConvertForm"),
                                           NotifyDescriptor.YES_NO_OPTION,
                                           NotifyDescriptor.QUESTION_MESSAGE)
         );
@@ -405,6 +405,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  33   Gandalf   1.32        9/8/99   Ian Formanek    openAt behaves correctly
+ *       when form load fails, i18nized
  *  32   Gandalf   1.31        9/7/99   Ian Formanek    Method getFormManager 
  *       made public, removed some obsoleted code, improved errors notification
  *  31   Gandalf   1.30        8/17/99  Ian Formanek    Fixed closing forms if 
