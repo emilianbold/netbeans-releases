@@ -107,6 +107,7 @@ public class Arch extends Task implements ErrorHandler {
         
         
         org.w3c.dom.Document q;
+        Source qSource;
         try {
             javax.xml.parsers.DocumentBuilderFactory factory = javax.xml.parsers.DocumentBuilderFactory.newInstance ();
             factory.setValidating(true);
@@ -116,8 +117,10 @@ public class Arch extends Task implements ErrorHandler {
 
             if (generateTemplate) {
                 q = builder.parse(getClass().getResourceAsStream("Arch-api-questions.xml"));
+                qSource = new DOMSource (q);
             } else {
                 q = builder.parse (questionsFile);
+                qSource = new javax.xml.transform.stream.StreamSource (questionsFile);
             }
         } catch (SAXParseException ex) {
             log(ex.getSystemId() + ":" + ex.getLineNumber() + ": " + ex.getLocalizedMessage(), Project.MSG_ERR);
@@ -230,7 +233,6 @@ public class Arch extends Task implements ErrorHandler {
             log("Transforming " + questionsFile + " into " + output);
             
             javax.xml.transform.Transformer t = javax.xml.transform.TransformerFactory.newInstance().newTransformer(ss);
-            javax.xml.transform.Source s = new javax.xml.transform.dom.DOMSource (q);
             javax.xml.transform.Result r = new javax.xml.transform.stream.StreamResult (output);
             if (stylesheet == null) {
                 stylesheet = this.getProject ().getProperty ("arch.stylesheet");
@@ -257,9 +259,11 @@ public class Arch extends Task implements ErrorHandler {
             }
             
             t.setParameter("arch.target", archTarget);
-            t.setParameter("arch.when", getProject ().getProperty ("arch.when"));
-
-            t.transform(s, r);
+            String when = getProject().getProperty("arch.when");
+            if (when != null) {
+                t.setParameter("arch.when", when);
+            }
+            t.transform(qSource, r);
         } catch (javax.xml.transform.TransformerConfigurationException ex) {
             throw new BuildException (ex);
         } catch (javax.xml.transform.TransformerException ex) {
