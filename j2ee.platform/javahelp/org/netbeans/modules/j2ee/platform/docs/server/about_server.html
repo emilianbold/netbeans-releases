@@ -47,20 +47,30 @@ are supported by the IDE:</p>
 	        that uses JSR-109 stubs to this server. When you <a href="../consume/wsc_create.html">create the web service client</a>,
 		make sure that you select JAXRPC Static Stub in the Web service client type drop-down.</td></tr></table></li></ul>
 </ul>
-<p>When you register a server with the IDE, you make its libraries available for production,
- or deployment, or both. If you deploy your applications to a remote instance of the
- SJS Application Server, its libraries are available at runtime. However, during 
- development, you might need a local instance of this server.</p>
-<p>You can have multiple instances of the SJS Application Server registered with the 
-IDE. Once you have registered your local instance, you can register remote instances, 
-but you always have to specify the local folder that contains the local installation of 
-the SJS Application Server.</p>
 <h3>Servers in the IDE</h3>
 <p>Before you can deploy an enterprise application, web application, JSP, servlet, or EJB module, 
 the server to which you are going to deploy needs to be registered with the IDE. 
 By default, only the bundled Tomcat Web Server is registered with the IDE. 
-You must <a href="server_register.html">register</a> all other servers yourself.
-When a server is registered with the IDE, you can see its node in the Runtime 
+You are not able to deploy to the SJS Application Server
+or an external Tomcat web Server until you <a href="server_register.html">register</a> it with the IDE.</p>
+<table cellpadding="3" cellspacing="0" border="0">
+   <tr valign="top">
+      <td><img src="../images/tip.gif" alt="tip">&nbsp;</td>
+      <td>
+	      Only once you have registered the SJS Application Server
+	      can you begin developing enterprise applications.
+      </td>
+   </tr>
+</table>
+<p>When you register a server with the IDE, you make its libraries available for production,
+ or deployment, or both. If you deploy your applications to a remote instance of the
+ SJS Application Server, its libraries are available at runtime. However, during 
+ development, you might need a local instance of this server.
+You can have multiple instances of the SJS Application Server registered with the 
+IDE. Once you have registered your local instance, you can register remote instances, 
+but you always have to specify the local folder that contains the local installation of 
+the SJS Application Server.</p>
+<p>When a server is registered with the IDE, you can see its node in the Runtime 
 window under the the Server Registry node. When you create a project in the New Project wizard, 
 you select the server to which you want to deploy your application. After you create the
  application, you can change the server by right-clicking the project,
