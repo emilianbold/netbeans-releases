@@ -70,8 +70,6 @@ public class RootNode extends DatabaseNode {
         return true;
     }
     
-    boolean ok = false;
-    
     /**
      * Connects the debug property in sfactory and debugMode property in DBExplorer module's option.
      */
@@ -101,6 +99,8 @@ public class RootNode extends DatabaseNode {
         }
         option.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent e) {
+                System.out.println("EVENT: "+(e==null?"NULL":e.getPropertyName()));
+                System.out.println("EVENT: "+(DatabaseOption.PROP_AUTO_CONNECTION==null?"NULL":DatabaseOption.PROP_AUTO_CONNECTION));
                 if (e.getPropertyName().equals(DatabaseOption.PROP_AUTO_CONNECTION))
                     if(((Boolean)e.getNewValue()).booleanValue())
                         try {
