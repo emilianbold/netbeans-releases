@@ -127,7 +127,7 @@ public class CustomizerWSClientHost extends javax.swing.JPanel implements Proper
     }
     
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(WebProjectProperties.class.getPackage().getName() + ".CustomizerWebServiceClients"); // NOI18N
+        return new HelpCtx(CustomizerWSClientHost.class);
     }
     
 }

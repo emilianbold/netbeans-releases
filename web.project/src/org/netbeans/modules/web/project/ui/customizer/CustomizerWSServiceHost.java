@@ -126,6 +126,6 @@ public class CustomizerWSServiceHost extends javax.swing.JPanel implements /*Web
     }    
     
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(WebProjectProperties.class.getPackage().getName() + ".CustomizerWebServices"); // NOI18N
+        return new HelpCtx(CustomizerWSServiceHost.class);
     }
 }
