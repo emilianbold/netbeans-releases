@@ -13,6 +13,7 @@
 
 package org.netbeans.spi.project.support.ant;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,12 +27,18 @@ import java.io.Reader;
 import java.io.Writer;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.Icon;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifact;
@@ -454,6 +461,48 @@ public class AntBasedTestUtil {
            os.close();
        }
        return count;
+    }
+    
+    public static final class TestPCL implements PropertyChangeListener {
+        
+        public final Set/*<String>*/ changed = new HashSet();
+        public final Map/*<String,String*/ newvals = new HashMap();
+        public final Map/*<String,String*/ oldvals = new HashMap();
+        
+        public TestPCL() {}
+        
+        public void reset() {
+            changed.clear();
+            newvals.clear();
+            oldvals.clear();
+        }
+        
+        public void propertyChange(PropertyChangeEvent evt) {
+            String prop = evt.getPropertyName();
+            String nue = (String)evt.getNewValue();
+            String old = (String)evt.getOldValue();
+            changed.add(prop);
+            if (prop != null) {
+                newvals.put(prop, nue);
+                oldvals.put(prop, old);
+            } else {
+                assert nue == null : "null prop name -> null new value";
+                assert old == null : "null prop name -> null old value";
+            }
+        }
+        
+    }
+    
+    public static final class TestCL implements ChangeListener {
+        
+        public boolean changed = false;
+        
+        public TestCL() {}
+        
+        public void stateChanged(ChangeEvent e) {
+            changed = true;
+        }
+        
     }
     
 }

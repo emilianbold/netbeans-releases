@@ -130,6 +130,7 @@ public class PropertyUtils {
                         if (bp == null) {
                             USER_BUILD_PROPERTIES.getParentFile().mkdirs();
                             new FileOutputStream(USER_BUILD_PROPERTIES).close();
+                            assert USER_BUILD_PROPERTIES.isFile() : "Did not actually make " + USER_BUILD_PROPERTIES;
                             bp = FileUtil.toFileObject(USER_BUILD_PROPERTIES);
                             assert bp != null : "Could not make " + USER_BUILD_PROPERTIES + "; no masterfs?";
                         }
@@ -183,8 +184,11 @@ public class PropertyUtils {
      * Create a property provider based on a properties file.
      * The file need not exist at the moment; if it is created or deleted an appropriate
      * change will be fired. If its contents are changed on disk a change will also be fired.
+     * @param propertiesFile a path to a (possibly nonexistent) *.properties file
+     * @return a supplier of properties from such a file
+     * @see Properties#load
      */
-    /* public? */ static PropertyProvider propertiesFilePropertyProvider(File propertiesFile) {
+    public static PropertyProvider propertiesFilePropertyProvider(File propertiesFile) {
         assert propertiesFile != null;
         return new FilePropertyProvider(propertiesFile);
     }

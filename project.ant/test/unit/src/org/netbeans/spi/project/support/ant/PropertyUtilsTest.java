@@ -13,33 +13,29 @@
 
 package org.netbeans.spi.project.support.ant;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.junit.NbTestCase;
-import org.openide.util.Utilities;
-import java.io.OutputStream;
-import org.openide.filesystems.FileUtil;
-
 import org.openide.filesystems.FileLock;
-
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  * Test functionality of PropertyUtils.
@@ -247,7 +243,7 @@ public class PropertyUtilsTest extends NbTestCase {
         assertEquals("key2 correct from disk", "val2", p2.getProperty("key2"));
         // Test the property provider too.
         PropertyProvider gpp = PropertyUtils.globalPropertyProvider();
-        TestCL l = new TestCL();
+        AntBasedTestUtil.TestCL l = new AntBasedTestUtil.TestCL();
         gpp.addChangeListener(l);
         p = PropertyUtils.getGlobalProperties();
         assertEquals("correct initial definitions", p, gpp.getProperties());
@@ -308,6 +304,63 @@ public class PropertyUtilsTest extends NbTestCase {
         defs.put("key2", "val2");
         PropertyProvider pp = PropertyUtils.fixedPropertyProvider(defs);
         assertEquals(defs, pp.getProperties());
+    }
+    
+    public void testPropertiesFilePropertyProvider() throws Exception {
+        clearWorkDir();
+        final FileObject scratch = FileUtil.toFileObject(getWorkDir());
+        PropertyProvider pp = PropertyUtils.propertiesFilePropertyProvider(new File(FileUtil.toFile(scratch), "test.properties"));
+        AntBasedTestUtil.TestCL l = new AntBasedTestUtil.TestCL();
+        pp.addChangeListener(l);
+        assertEquals("no defs yet (no file)", Collections.EMPTY_MAP, pp.getProperties());
+        assertFalse("no changes yet", l.changed);
+        final FileObject[] testProperties = new FileObject[1];
+        scratch.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+            public void run() throws IOException {
+                testProperties[0] = FileUtil.createData(scratch, "test.properties");
+                FileLock lock = testProperties[0].lock();
+                try {
+                    OutputStream os = testProperties[0].getOutputStream(lock);
+                    try {
+                        
+                        PrintWriter pw = new PrintWriter(os);
+                        pw.println("a=aval");
+                        pw.flush();
+                    } finally {
+                        os.close();
+                    }
+                } finally {
+                    lock.releaseLock();
+                }
+            }
+        });
+        assertTrue("got a change when file was created", l.changed);
+        l.changed = false;
+        assertEquals("one key", Collections.singletonMap("a", "aval"), pp.getProperties());
+        FileLock lock = testProperties[0].lock();
+        try {
+            OutputStream os = testProperties[0].getOutputStream(lock);
+            try {
+                PrintWriter pw = new PrintWriter(os);
+                pw.println("a=aval");
+                pw.println("b=bval");
+                pw.flush();
+            } finally {
+                os.close();
+            }
+        } finally {
+            lock.releaseLock();
+        }
+        Map m = new HashMap();
+        m.put("a", "aval");
+        m.put("b", "bval");
+        assertTrue("got a change when file was changed", l.changed);
+        l.changed = false;
+        assertEquals("right properties", m, pp.getProperties());
+        testProperties[0].delete();
+        assertTrue("got a change when file was deleted", l.changed);
+        l.changed = false;
+        assertEquals("no defs again (file deleted)", Collections.EMPTY_MAP, pp.getProperties());
     }
     
     public void testSequentialEvaluatorBasic() throws Exception {
@@ -380,7 +433,7 @@ public class PropertyUtilsTest extends NbTestCase {
             defs1,
             defs2,
         });
-        TestPCL l = new TestPCL();
+        AntBasedTestUtil.TestPCL l = new AntBasedTestUtil.TestPCL();
         eval.addPropertyChangeListener(l);
         Map/*<String,String>*/ result = new HashMap();
         result.put("x", "xval1");
@@ -502,48 +555,4 @@ public class PropertyUtilsTest extends NbTestCase {
         
     }
 
-    // XXX move to AntBasedTestUtil
-    static final class TestPCL implements PropertyChangeListener {
-        
-        public final Set/*<String>*/ changed = new HashSet();
-        public final Map/*<String,String*/ newvals = new HashMap();
-        public final Map/*<String,String*/ oldvals = new HashMap();
-        
-        public TestPCL() {}
-        
-        public void reset() {
-            changed.clear();
-            newvals.clear();
-            oldvals.clear();
-        }
-        
-        public void propertyChange(PropertyChangeEvent evt) {
-            String prop = evt.getPropertyName();
-            String nue = (String)evt.getNewValue();
-            String old = (String)evt.getOldValue();
-            changed.add(prop);
-            if (prop != null) {
-                newvals.put(prop, nue);
-                oldvals.put(prop, old);
-            } else {
-                assertNull("null prop name -> null new value", nue);
-                assertNull("null prop name -> null old value", old);
-            }
-        }
-        
-    }
-    
-    // XXX move to AntBasedTestUtil
-    static final class TestCL implements ChangeListener {
-        
-        public boolean changed = false;
-        
-        public TestCL() {}
-        
-        public void stateChanged(ChangeEvent e) {
-            changed = true;
-        }
-        
-    }
-    
 }

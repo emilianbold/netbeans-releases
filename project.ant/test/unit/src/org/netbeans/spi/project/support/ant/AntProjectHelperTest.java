@@ -225,7 +225,7 @@ public class AntProjectHelperTest extends NbTestCase {
         assertEquals("correct evaluateString", "value1:value2",
             pev.evaluate("${shared.prop}:${private.prop}"));
         // #44213: try modifying build.properties.
-        PropertyUtilsTest.TestPCL l = new PropertyUtilsTest.TestPCL();
+        AntBasedTestUtil.TestPCL l = new AntBasedTestUtil.TestPCL();
         pev.addPropertyChangeListener(l);
         FileObject buildProperties = scratch.getFileObject("userdir/build.properties");
         assertNotNull("have build.properties", buildProperties);
@@ -656,7 +656,7 @@ public class AntProjectHelperTest extends NbTestCase {
         assertEquals("correct number of defs", 3, defs.size());
         assertEquals("correct value", "value1", defs.get("shared.prop"));
         // Test changes.
-        PropertyUtilsTest.TestCL l = new PropertyUtilsTest.TestCL();
+        AntBasedTestUtil.TestCL l = new AntBasedTestUtil.TestCL();
         pp.addChangeListener(l);
         EditableProperties p = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         p.setProperty("foo", "bar");
