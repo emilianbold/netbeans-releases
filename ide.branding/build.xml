@@ -32,6 +32,10 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
       <include name="**/*_nb.jar"/>
       <include name="${nb.modules.dir}/org-netbeans-modules-ide-branding.jar" />
       <include name="${nb.system.dir}/Modules/org-netbeans-modules-ide-branding.xml" />
+      <include name="nbos2icons.zip" />
+      <include name="netbeans.icns" />
+      <include name="netbeans.png" />
+      <include name="shortcuts.pdf" />
     </patternset>
   
   
