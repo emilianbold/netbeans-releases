@@ -44,6 +44,7 @@ import org.openide.util.io.NbMarshalledObject;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.Workspace;
 import org.openide.windows.Mode;
+import org.openide.windows.TopComponent;
 
 import com.netbeans.developer.impl.output.OutputTab;
 
@@ -165,7 +166,7 @@ implements ItemListener, Runnable {
     super.addNotify ();
 
     tabs.addChangeListener (managersListener);
-
+    
     SwingUtilities.invokeLater (this);
   }
   
@@ -184,12 +185,19 @@ implements ItemListener, Runnable {
   public void run () {
     refreshRoots ();
     
-    ExplorerManager currentManager = getRootPanel (currentRoot).getExplorerManager ();
+    ExplorerManager currentManager = 
+      getRootPanel (currentRoot).getExplorerManager ();
+    // attach actions if we are activated
+    if (this.equals(TopComponent.getRegistry().getActivated())) {
+      if (actions == null) {
+        actions = new ExplorerActions();
+      }
+      actions.attach(currentManager);
+    }
+    
     propertySheet.setNodes (currentManager.getSelectedNodes ());
     setActivatedNodes (currentManager.getSelectedNodes ());
     updateTitle ();
-    
-    actions = new ExplorerActions ();
   }
 
   /** Refreshes current state of components, so they
@@ -377,7 +385,8 @@ implements ItemListener, Runnable {
   */
   protected void componentActivated () {
     if (actions != null) {
-      ExplorerManager currentManager = getRootPanel (currentRoot).getExplorerManager ();
+      ExplorerManager currentManager = 
+        getRootPanel (currentRoot).getExplorerManager ();
       actions.attach (currentManager);
     }
   }
@@ -602,11 +611,15 @@ implements ItemListener, Runnable {
       int index = tabs.getSelectedIndex ();
       if (index < 0 || index >= roots.size ()) {
         currentRoot = null;
+        if (actions != null)
+          actions.detach();
         return;
       }
       currentRoot = (Node)roots.get (index);
 
       ExplorerManager currentManager = getRootPanel (currentRoot).getExplorerManager ();
+      if (actions != null)
+        actions.attach(currentManager);
       propertySheet.setNodes (currentManager.getSelectedNodes ());
       
       updateTitle ();
@@ -666,6 +679,7 @@ implements ItemListener, Runnable {
 
 /*
 * Log
+*  30   Gandalf   1.29        8/17/99  David Simonek   commentaries removed
 *  29   Gandalf   1.28        8/13/99  Jaroslav Tulach New Main Explorer
 *  28   Gandalf   1.27        8/9/99   Ian Formanek    Generated Serial Version 
 *       UID
