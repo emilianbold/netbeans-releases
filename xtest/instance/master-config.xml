@@ -75,6 +75,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="properties" 	testtypes="qa-functional"  attributes="validation"/>
       <module name="qa"       	testtypes="serialization"  attributes="validation"/>
       <module name="qa"       	testtypes="qa-functional"  attributes="validation"/>
+      <module name="vcscore"	testtypes="qa-functional"  attributes=""/>      
       <module name="vcsgeneric"	testtypes="qa-functional"  attributes="validation"/>      
       <module name="xml"	testtypes="qa-functional"  attributes="validation"/>
       <module name="xml/catalog"	testtypes="qa-functional"  attributes="validation"/>
@@ -116,6 +117,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="qa"       	testtypes="qa-functional"  attributes="validation"/>
       -->
       <module name="rmi" 	testtypes="qa-functional"  attributes="validation"/>
+      <module name="vcscore"	testtypes="qa-functional"  attributes=""/>      
       <module name="vcsgeneric"	testtypes="qa-functional"  attributes="validation"/>      
       <module name="xml"	testtypes="qa-functional"  attributes="validation"/>
       <module name="xml/catalog"	testtypes="qa-functional"  attributes="validation"/>
@@ -151,6 +153,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="properties" 	testtypes="qa-functional"  attributes="validation,full"/>
       <module name="qa"       	testtypes="serialization"  attributes="validation,full"/>
       <module name="qa"       	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="vcscore"	testtypes="qa-functional"  attributes=""/>      
       <module name="vcsgeneric"	testtypes="qa-functional"  attributes="validation,full"/>      
       <module name="xml"	testtypes="qa-functional"  attributes="validation,full"/>
       <module name="xml/catalog"	testtypes="qa-functional"  attributes="validation,full"/>
@@ -186,6 +189,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="qa"       	testtypes="qa-functional"  attributes="validation,full"/>
       -->
       <module name="rmi" 	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="vcscore"	testtypes="qa-functional"  attributes=""/>      
       <module name="vcsgeneric"	testtypes="qa-functional"  attributes="validation,full"/>      
       <module name="xml"	testtypes="qa-functional"  attributes="validation,full"/>
       <module name="xml/catalog"	testtypes="qa-functional"  attributes="validation,full"/>
@@ -212,6 +216,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="projects" 	testtypes="qa-functional"   attributes="validation,full,jdk14"/>
       <module name="qa" 	testtypes="serialization"   attributes="validation,full"/>
       <module name="qa"       	testtypes="qa-functional"   attributes="validation,full"/>
+      <module name="vcscore"	testtypes="qa-functional"  attributes=""/>      
       <module name="vcsgeneric"	testtypes="qa-functional"   attributes="validation,full"/>      
       <module name="xml"	testtypes="qa-functional"  attributes="validation,full"/>
       <module name="xml/catalog"	testtypes="qa-functional"  attributes="validation,full"/>
@@ -237,6 +242,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="projects" 	testtypes="qa-functional"   attributes="validation,full,jdk13"/>
       <module name="qa" 	testtypes="serialization"   attributes="validation,full"/>
       <module name="qa"       	testtypes="qa-functional"   attributes="validation,full"/>
+      <module name="vcscore"	testtypes="qa-functional"  attributes=""/>      
       <module name="vcsgeneric"	testtypes="qa-functional"   attributes="validation,full"/>      
       <module name="xml"	testtypes="qa-functional"  attributes="validation,full"/>
       <module name="xml/catalog"	testtypes="qa-functional"  attributes="validation,full"/>
@@ -300,6 +306,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="openide"  	testtypes="qa-functional"  attributes="validation"/>
       <module name="qa"       	testtypes="serialization"  attributes="validation"/>
       <module name="qa"       	testtypes="qa-functional"  attributes="validation"/>
+      <module name="vcscore"	testtypes="qa-functional"  attributes=""/>      
       <module name="vcsgeneric"	testtypes="qa-functional"  attributes="validation"/>      
       <module name="xml"	testtypes="qa-functional"  attributes="validation"/>
       <module name="xml/catalog"	testtypes="qa-functional"  attributes="validation"/>
