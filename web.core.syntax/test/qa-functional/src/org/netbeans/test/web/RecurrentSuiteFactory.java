@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -34,7 +34,7 @@ import org.openide.filesystems.FileUtil;
  */
 public class RecurrentSuiteFactory {
     private static boolean debug = false;
-
+    
     public static Test createSuite(Class clazz, File projectsDir, FileObjectFilter filter) {
         String clazzName = clazz.getName();
         NbTestSuite suite = new NbTestSuite(clazzName);
@@ -60,6 +60,11 @@ public class RecurrentSuiteFactory {
                     ProjectInformation projectInfo =  ProjectUtils.getInformation(project);
                     // find recursively all test.*[.jsp|.jspx|.jspf|.html] files in
                     // the web/ folder
+                    
+                    // TODO check if the project is of current version and if necessery update it.
+                    // enables transparent update, see: org.netbeans.modules.web.project.UpdateHelper
+                    // System.setProperty("webproject.transparentUpdate",  "true");
+                    
                     FileObject prjDir = project.getProjectDirectory();
                     FileObject webDir = prjDir.getFileObject("web");
                     Enumeration fileObjs = webDir.getChildren(true);
