@@ -51,6 +51,8 @@ public class FreeformProjectGenerator {
     /** Location of original project. This property should be set/used when NB 
      * project metadata are stored in different folder. */
     public static final String PROP_PROJECT_LOCATION = "project.dir"; // NOI18N
+    /** Prefix used in paths to refer to project location. */
+    public static final String PROJECT_LOCATION_PREFIX = "${" + PROP_PROJECT_LOCATION + "}/"; // NOI18N
 
     /** Keep root elements in this order. */
     private static final String[] rootElementsOrder = new String[]{"name", "properties", "folders", "ide-actions", "export", "view", "subprojects"}; // NOI18N
@@ -1109,7 +1111,7 @@ public class FreeformProjectGenerator {
             if (projectBase.equals(freeformBase)) {
                 return PropertyUtils.relativizeFile(projectBase, location);
             } else {
-                return "${"+PROP_PROJECT_LOCATION+"}/"+PropertyUtils.relativizeFile(projectBase, location); // NOI18N
+                return PROJECT_LOCATION_PREFIX + PropertyUtils.relativizeFile(projectBase, location);
             }
         } else {
             return location.getAbsolutePath();
@@ -1125,12 +1127,11 @@ public class FreeformProjectGenerator {
      * @return resolved File or null if file could not be resolved
      */
     public static String resolveFile(PropertyEvaluator evaluator, File freeformProjectBase, String val) {
-        String location = evaluator.evaluate(val).replace('/', File.separatorChar).replace('\\', File.separatorChar);
-        File f = PropertyUtils.resolveFile(freeformProjectBase, location);
-        if (f != null) {
-            return f.getAbsolutePath();
+        String location = evaluator.evaluate(val);
+        if (location == null) {
+            return null;
         }
-        return null;
+        return PropertyUtils.resolveFile(freeformProjectBase, location).getAbsolutePath();
     }
     
 }
