@@ -28,21 +28,7 @@ Microsystems, Inc. All Rights Reserved.
   <taskdef name="tojar" classname="org.netbeans.nbbuild.ToJar" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
 
-  <target name="compile" depends="no-jikes-hack,normal-compile"/>
-  <target name="query-build.compiler">
-    <property name="build.compiler-is-${build.compiler}" value="true"/>
-  </target>
-  <target name="no-jikes-hack" if="build.compiler-is-jikes" depends="query-build.compiler">
-    <echo>Note: building form module with Javac not Jikes...</echo>
-    <antcall target="actually-compile">
-      <param name="build.compiler" value="modern"/>
-    </antcall>
-  </target>
-  <target name="normal-compile" unless="build.compiler-is-jikes" depends="query-build.compiler">
-    <antcall target="actually-compile"/>
-  </target>
-  <!-- The effect of the above is ${build.compiler} =~ s/^jikes$/modern/ -->
-  <target name="actually-compile">
+  <target name="compile">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
         <pathelement location="../openide/openide-13javac-workaround.jar"/>
