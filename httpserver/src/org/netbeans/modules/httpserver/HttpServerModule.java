@@ -24,10 +24,15 @@ import org.openide.util.NbBundle;
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 
-import com.sun.web.server.HttpServer;
-import com.sun.web.server.HttpServerException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import com.sun.web.core.Container;
 import com.sun.web.core.Context;
+import com.sun.web.core.HttpServletRequestFacade;
+import com.sun.web.core.SecurityModule;
+import com.sun.web.server.HttpServer;
+import com.sun.web.server.HttpServerException;
 
 /**
 * Module installation class for Http Server
@@ -180,6 +185,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
       throw new InternalError();
     }  
     Context context = server.getDefaultContext();
+    context.setSecurityModule (new NbSecurityModule (context));
     context.setClassLoader(TopManager.getDefault().systemClassLoader());
     
     Container container = context.getContainer();
@@ -194,10 +200,56 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
   }
 
 
+  static class NbSecurityModule implements SecurityModule {
+
+    public NbSecurityModule (Context context1) {
+      context = context1;
+    }
+
+    public Context getContext() {
+      return context;
+    }
+
+    public boolean authenticateRequest(HttpServletRequest httpservletrequest, HttpServletResponse httpservletresponse)
+      throws IOException {
+      return true;
+    }
+
+    public boolean authorizeRequest(HttpServletRequest httpservletrequest, HttpServletResponse httpservletresponse)
+      throws IOException {
+
+      HttpServerSettings op = HttpServerSettings.OPTIONS;
+
+      String requestURI = httpservletrequest.getRequestURI ();
+      String contextPath = context.getPath();
+      String lookupPath = requestURI.substring(contextPath.length(), requestURI.length());
+      int i = lookupPath.indexOf("?");
+      if(i > -1) lookupPath = lookupPath.substring(0, i);
+      if(lookupPath.length() < 1) lookupPath = "/";
+      String s = lookupPath.toLowerCase();
+      if(s.startsWith("/web-inf")) {
+        httpservletresponse.sendError(403);
+        return false;
+      } if (s.startsWith(op.getRepositoryBaseURL()) || s.startsWith(op.getClasspathBaseURL())) {
+        return true;
+      } else {
+        httpservletresponse.sendError(404);
+        return false;
+      }
+
+    }
+
+    private Context context;
+  }
+
 }
 
 /*
  * Log
+ *  31   Gandalf   1.30        11/24/99 Ian Formanek    Fixed bug 4767 - 
+ *       Security problem:  Internal HTTP Server allows access to directories 
+ *       including and below root directory under NT.  Could default Project 
+ *       Settings | HTTP Server | Grant Access To to 127.0.0.0?
  *  30   Gandalf   1.29        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  29   Gandalf   1.28        10/10/99 Petr Hamernik   console debug messages 
