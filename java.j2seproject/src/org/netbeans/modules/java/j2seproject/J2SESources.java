@@ -74,21 +74,27 @@ public class J2SESources implements Sources, PropertyChangeListener  {
             String displayName = rootNames[i];
             String prop = "${" + propNames[i] + "}";
             if (displayName.length() ==0) {
-                //If the name is not given, it should be either a relative path in the project dir
-                //or absolute path when the root is not under the project dir
-                File sourceRoot = helper.resolveFile(evaluator.evaluate(prop));
-                if (sourceRoot != null) {
-                    String srPath = sourceRoot.getAbsolutePath();
-                    String pdPath = projectDir.getAbsolutePath() + File.separatorChar;
-                    if (srPath.startsWith(pdPath)) {
-                        displayName = srPath.substring(pdPath.length());
-                    }
-                    else {
-                        displayName = sourceRoot.getAbsolutePath();
-                    }
+                //If the prop is src.dir use the default name
+                if ("src.dir".equals(propNames[i])) {   //NOI18N
+                    displayName = NbBundle.getMessage(J2SESources.class,"NAME_src.dir");
                 }
                 else {
-                    displayName = NbBundle.getMessage(J2SEProject.class, "NAME_src.dir");
+                    //If the name is not given, it should be either a relative path in the project dir
+                    //or absolute path when the root is not under the project dir
+                    File sourceRoot = helper.resolveFile(evaluator.evaluate(prop));
+                    if (sourceRoot != null) {
+                        String srPath = sourceRoot.getAbsolutePath();
+                        String pdPath = projectDir.getAbsolutePath() + File.separatorChar;
+                        if (srPath.startsWith(pdPath)) {
+                            displayName = srPath.substring(pdPath.length());
+                        }
+                        else {
+                            displayName = sourceRoot.getAbsolutePath();
+                        }
+                    }
+                    else {
+                        displayName = NbBundle.getMessage(J2SEProject.class, "NAME_src.dir");
+                    }
                 }
             }
             h.addPrincipalSourceRoot(prop, displayName, /*XXX*/null, null);
@@ -100,21 +106,27 @@ public class J2SESources implements Sources, PropertyChangeListener  {
             String displayName = rootNames[i];
             String prop = "${" + propNames[i] + "}";
             if (displayName.length() ==0) {
-                //If the name is not given, it should be either a relative path in the project dir
-                //or absolute path when the root is not under the project dir
-                File sourceRoot = helper.resolveFile(evaluator.evaluate(prop));
-                if (sourceRoot != null) {
-                    String srPath = sourceRoot.getAbsolutePath();
-                    String pdPath = projectDir.getAbsolutePath() + File.separatorChar;
-                    if (srPath.startsWith(pdPath)) {
-                        displayName = srPath.substring(pdPath.length());
-                    }
-                    else {
-                        displayName = sourceRoot.getAbsolutePath();
-                    }
+                //If the prop is test.src.dir use the default name
+                if ("test.src.dir".equals(propNames[i])) {   //NOI18N
+                    displayName = NbBundle.getMessage(J2SESources.class,"NAME_test.src.dir");
                 }
                 else {
-                    displayName = NbBundle.getMessage(J2SEProject.class, "NAME_test.src.dir");
+                    //If the name is not given, it should be either a relative path in the project dir
+                    //or absolute path when the root is not under the project dir
+                    File sourceRoot = helper.resolveFile(evaluator.evaluate(prop));
+                    if (sourceRoot != null) {
+                        String srPath = sourceRoot.getAbsolutePath();
+                        String pdPath = projectDir.getAbsolutePath() + File.separatorChar;
+                        if (srPath.startsWith(pdPath)) {
+                            displayName = srPath.substring(pdPath.length());
+                        }
+                        else {
+                            displayName = sourceRoot.getAbsolutePath();
+                        }
+                    }
+                    else {
+                        displayName = NbBundle.getMessage(J2SEProject.class, "NAME_test.src.dir");
+                    }
                 }
             }
             h.addPrincipalSourceRoot(prop, displayName, /*XXX*/null, null);

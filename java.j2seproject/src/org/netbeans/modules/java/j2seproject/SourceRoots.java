@@ -32,6 +32,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.WeakListeners;
 import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Document;
@@ -53,6 +54,9 @@ public final class SourceRoots {
 
     public static final String PROP_ROOT_PROPERTIES = "rootProperties";    //NOI18N
     public static final String PROP_ROOTS = "roots";   //NOI18N
+
+    private static final String defaultSourceLabel = NbBundle.getMessage(SourceRoots.class,"NAME_src.dir");
+    private static final String defaultTestLabel = NbBundle.getMessage(SourceRoots.class,"NAME_test.src.dir");
 
     private final UpdateHelper helper;
     private final PropertyEvaluator evaluator;
@@ -281,7 +285,8 @@ public final class SourceRoots {
                             Element newRootNode = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "root"); //NOI18N
                             newRootNode.setAttribute("id",rootName);    //NOI18N
                             String label = (String) newRoots2lab.get (newRoot);
-                            if (label != null && label.length()>0) {
+                            if (label != null && label.length()>0 &&
+                               !((label.equals(defaultSourceLabel) && "src.dir".equals(rootName))||(label.equals(defaultTestLabel) && "test.src.dir".equals(rootName)))) { //NOI18N
                                 newRootNode.setAttribute("name",label); //NOI18N
                             }
                             ownerElement.appendChild (newRootNode);

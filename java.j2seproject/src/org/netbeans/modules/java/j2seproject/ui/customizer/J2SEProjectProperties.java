@@ -873,21 +873,36 @@ public class J2SEProjectProperties {
 
         public Object decode(String raw, Project project, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
             SourceRoots roots = null;
+            boolean tests;
             if (SOURCE_ROOTS.equals(raw)) {
                 roots = ((J2SEProject)project).getSourceRoots();
+                tests = false;
             }
             else if (TEST_ROOTS.equals(raw)) {
                 roots = ((J2SEProject)project).getTestSourceRoots();
+                tests = true;
             }
             else {
                 return null;
             }
             String[] rootLabels = roots.getRootNames();
+            String[] rootProps = roots.getRootProperties();
             URL[] rootURLs = roots.getRootURLs();
             Object[][] data = new Object[rootURLs.length] [2];
             for (int i=0; i< rootURLs.length; i++) {
                 data[i][0] = new File (URI.create (rootURLs[i].toExternalForm()));
-                data[i][1] = rootLabels[i] == null ? "" : rootLabels[i];    //NOI18N
+                if (rootLabels[i].length()>0) {
+                    data[i][1] = rootLabels[i];
+                }
+                else if (!tests && "src.dir".equals(rootProps[i])) {   //NOI18N
+                    data[i][1] = NbBundle.getMessage(J2SEProjectProperties.class,"NAME_src.dir");
+                }
+                else if (tests && "test.src.dir".equals(rootProps[i])) { //NOI18N
+                    data[i][1] = data[i][1] = NbBundle.getMessage(J2SEProjectProperties.class,"NAME_test.src.dir");;
+                }
+                else {
+                    data[i][1] = "";    //NOI18N
+                }
             }
             return VisualSourceRootsSupport.createSourceModel(data);
         }

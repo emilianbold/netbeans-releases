@@ -110,7 +110,6 @@ public class J2SEProjectGenerator {
                     String propName = "test.src.dir";
                     Element root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
                     root.setAttribute ("id",propName);   //NOI18N
-                    root.setAttribute ("name",NbBundle.getMessage(J2SEProjectGenerator.class, "NAME_test.src.dir"));
                     testRoots.appendChild(root);
                     EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                     props.put(propName,testLoc);
@@ -166,7 +165,6 @@ public class J2SEProjectGenerator {
         if (srcRoot != null) {
             Element root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
             root.setAttribute ("id","src.dir");   //NOI18N
-            root.setAttribute ("name",NbBundle.getMessage(J2SEProjectGenerator.class, "NAME_src.dir"));
             sourceRoots.appendChild(root);
             ep.setProperty("src.dir", srcRoot); // NOI18N
         }
@@ -175,7 +173,6 @@ public class J2SEProjectGenerator {
         if (testRoot != null) {
             Element root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
             root.setAttribute ("id","test.src.dir");   //NOI18N
-            root.setAttribute ("name",NbBundle.getMessage(J2SEProjectGenerator.class, "NAME_test.src.dir"));
             testRoots.appendChild (root);
             ep.setProperty("test.src.dir", testRoot); // NOI18N
         }
