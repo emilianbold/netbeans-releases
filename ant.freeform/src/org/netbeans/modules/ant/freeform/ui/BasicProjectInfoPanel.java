@@ -18,8 +18,11 @@ import javax.swing.JFileChooser;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.ant.freeform.Util;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 
 /**
  * @author  David Konecny
@@ -28,7 +31,12 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel {
     
     private DocumentListener documentListener;
     private ChangeListener listener;
-    private boolean modified = false;
+    /** Was antScript property edited by user? */
+    private boolean antScriptTouched = false;
+    /** Was projectFolder property edited by user? */
+    private boolean projectFolderTouched = false;
+    /** Was projectName property edited by user? */
+    private boolean projectNameTouched = false;
     
     public BasicProjectInfoPanel(String projectLocation, String antScript, String projectName, String projectFolder, ChangeListener listener) {
         initComponents();
@@ -108,22 +116,88 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel {
         private boolean ignoreEvent = false;
         
         private void update(DocumentEvent e) {
-            // XXX: add some real logic here
-            if (projectLocation.getDocument() == e.getDocument() && !modified) {
-                if (getProjectLocation().exists() && getProjectLocation().isDirectory() && projectLocation.getText().length() > 0) {
-                    ignoreEvent = true;
-                    antScript.setText(getProjectLocation().getAbsolutePath()+File.separatorChar+"build.xml"); //NOI18N
-                    projectFolder.setText(getProjectLocation().getAbsolutePath()); //NOI18N
-                    ignoreEvent = false;
-                }
-            } else {
-                if (!ignoreEvent) {
-                    modified = true;
-                }
+            if (ignoreEvent) {
+                // side-effect of changes done in this handler
+                return;
             }
+            
+            // start ignoring events
+            ignoreEvent = true;
+            
+            if (projectLocation.getDocument() == e.getDocument()) {
+                updateAntScriptLocation();
+                updateProjectName();
+                updateProjectFolder();
+            }
+            if (antScript.getDocument() == e.getDocument()) {
+                updateProjectName();
+            }
+            
+            // stop ignoring events
+            ignoreEvent = false;
+            
+            if (projectFolder.getDocument() == e.getDocument()) {
+                projectFolderTouched = true;
+            }
+            if (antScript.getDocument() == e.getDocument()) {
+                antScriptTouched = true;
+            }
+            if (projectName.getDocument() == e.getDocument()) {
+                projectNameTouched = true;
+            }
+            
             listener.stateChanged(null);
         }
+
+        private boolean isValidProjectLocation() {
+            return (getProjectLocation().exists() && getProjectLocation().isDirectory() &&
+            projectLocation.getText().length() > 0 && (!projectLocation.getText().endsWith(":")));
+        }
         
+        private void updateAntScriptLocation() {
+            if (antScriptTouched) {
+                return;
+            }
+            if (isValidProjectLocation()) {
+                File as = new File(getProjectLocation().getAbsolutePath()+File.separatorChar+"build.xml");
+                if (as.exists()) {
+                    antScript.setText(as.getAbsolutePath());
+                    return;
+                }
+            }
+            antScript.setText(""); //NOI18N
+        }
+        
+        private void updateProjectName() {
+            if (projectNameTouched) {
+                return;
+            }
+            if (getAntScript().exists()) {
+                File as = new File(getAntScript().getAbsolutePath());
+                if (as.exists()) {
+                    FileObject fo = FileUtil.toFileObject(as);
+                    assert fo != null : as;
+                    String name = Util.getAntScriptName(fo);
+                    if (name != null) {
+                        projectName.setText(name);
+                        return;
+                    }
+                }
+            }
+            projectName.setText(""); //NOI18N
+        }
+        
+        private void updateProjectFolder() {
+            if (projectFolderTouched) {
+                return;
+            }
+            if (isValidProjectLocation()) {
+                projectFolder.setText(getProjectLocation().getAbsolutePath());
+            } else {
+                projectFolder.setText(""); //NOI18N
+            }
+        }
+
         /** This method is called from within the constructor to
          * initialize the form.
          * WARNING: Do NOT modify this code. The content of this method is
@@ -142,7 +216,6 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel {
         projectFolder = new javax.swing.JTextField();
         browseAntScript = new javax.swing.JButton();
         browseProjectFolder = new javax.swing.JButton();
-        jPanel1 = new javax.swing.JPanel();
         projectLocation = new javax.swing.JTextField();
         jLabel6 = new javax.swing.JLabel();
         browseProjectLocation = new javax.swing.JButton();
@@ -154,16 +227,16 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel {
         jLabel1.setText("Select folder that contains existing J2SE project and locate the build script.");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(jLabel1, gridBagConstraints);
 
         jLabel2.setText("Ant Script:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 12);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 12);
         add(jLabel2, gridBagConstraints);
 
         jLabel3.setText("Specify a name and project folder for NetBeans project data.");
@@ -171,32 +244,32 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 6, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 6, 0);
         add(jLabel3, gridBagConstraints);
 
         jLabel4.setText("Project Name:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(jLabel4, gridBagConstraints);
 
         jLabel5.setText("Project Folder:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 12);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 12);
         add(jLabel5, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 0.8;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 12);
+        gridBagConstraints.weightx = 1.0;
         add(antScript, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -204,14 +277,15 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        gridBagConstraints.weightx = 1.0;
         add(projectName, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 12);
+        gridBagConstraints.weightx = 1.0;
         add(projectFolder, gridBagConstraints);
 
         browseAntScript.setText("Browse...");
@@ -241,28 +315,19 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel {
         add(browseProjectFolder, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(jPanel1, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 0.8;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        gridBagConstraints.weightx = 1.0;
         add(projectLocation, gridBagConstraints);
 
         jLabel6.setText("Location:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(jLabel6, gridBagConstraints);
 
         browseProjectLocation.setText("Browse...");
@@ -290,8 +355,9 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weighty = 1.0;
         add(mainProject, gridBagConstraints);
 
     }//GEN-END:initComponents
@@ -344,7 +410,6 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JCheckBox mainProject;
     private javax.swing.JTextField projectFolder;

@@ -471,4 +471,24 @@ public class FreeformProjectGenerator {
         public String sourceLevel;
     }
     
+
+    /**
+     * Returns Ant script to which delegates the freeform project
+     * represented by the given AntProjectHelper.
+     */
+    public static FileObject getAntScript(AntProjectHelper helper) {
+        String antScript = getProperties(helper).getProperty(PROP_ANT_SCRIPT);
+        if (antScript != null) {
+            File f = FileUtil.normalizeFile(new File(antScript));
+            assert f.exists() : f;
+            FileObject fo = FileUtil.toFileObject(f);
+            assert fo != null : f;
+            return fo;
+        } else {
+            FileObject fo = helper.getProjectDirectory().getFileObject("build.xml");
+            assert fo != null : helper.getProjectDirectory();
+            return fo;
+        }
+    }
+
 }

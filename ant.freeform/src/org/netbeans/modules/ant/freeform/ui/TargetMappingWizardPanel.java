@@ -14,13 +14,18 @@
 package org.netbeans.modules.ant.freeform.ui;
 
 import java.awt.Component;
+import java.io.File;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.ant.freeform.Util;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 
 /**
@@ -75,6 +80,10 @@ public class TargetMappingWizardPanel implements WizardDescriptor.Panel {
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor)settings;        
         wizardDescriptor.putProperty("NewProjectWizard_Title", component.getClientProperty("NewProjectWizard_Title")); //NOI18N
+        File f = (File)wizardDescriptor.getProperty(NewJ2SEFreeformProjectWizardIterator.PROP_ANT_SCRIPT);
+        FileObject fo = FileUtil.toFileObject(f);
+        List l = Util.getAntScriptTargetNames(fo);
+        component.setTargetNames(l);
     }
     
     public void storeSettings(Object settings) {

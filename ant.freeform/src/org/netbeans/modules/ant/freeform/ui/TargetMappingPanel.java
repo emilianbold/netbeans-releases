@@ -20,8 +20,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import javax.swing.ComboBoxModel;
+import javax.swing.JComboBox;
 import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
+import org.netbeans.modules.ant.freeform.Util;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.filesystems.FileObject;
 
 // XXX: validate that entered target really exists in the Ant script, etc.
 
@@ -38,26 +42,64 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
     public static String TEST_ACTION = "test"; // NOI18N
 
     private boolean initialized;
+    private List targetNames;
     
     public TargetMappingPanel() {
         initComponents();
     }
     
+    public void setTargetNames(List list) {
+        targetNames = list;
+        targetNames.add(0, ""); //NOI18N
+        updateCombos();
+    }
+    
+    private void updateCombos() {
+        Iterator it = targetNames.iterator();
+        while (it.hasNext()) {
+            String name = (String)it.next();
+            buildCombo.addItem(name);
+            cleanCombo.addItem(name);
+            javadocCombo.addItem(name);
+            runCombo.addItem(name);
+            testCombo.addItem(name);
+        }
+        selectItem(buildCombo, "build", false);
+        selectItem(cleanCombo, "clean", false);
+        selectItem(javadocCombo, "javadoc", false);
+        selectItem(runCombo, "run", false);
+        selectItem(testCombo, "test", false);
+    }
+
+    private void selectItem(JComboBox combo, String item, boolean add) {
+        ComboBoxModel model = combo.getModel();
+        for (int i=0; i<model.getSize(); i++) {
+            if (model.getElementAt(i).equals(item)) {
+                model.setSelectedItem(item);
+                return;
+            }
+        }
+        if (add) {
+            combo.addItem(item);
+            model.setSelectedItem(item);
+        }
+    }
+
     private void initMappings(Map/*<String,List>*/ map) {
         if (map.get(BUILD_ACTION) != null) {
-            buildTargetName.setText(getListAsString((List)map.get(BUILD_ACTION)));
+            selectItem(buildCombo, getListAsString((List)map.get(BUILD_ACTION)), true);
         }
         if (map.get(CLEAN_ACTION) != null) {
-            cleanTargetName.setText(getListAsString((List)map.get(CLEAN_ACTION)));
+            selectItem(cleanCombo, getListAsString((List)map.get(CLEAN_ACTION)), true);
         }
         if (map.get(JAVADOC_ACTION) != null) {
-            javadocTargetName.setText(getListAsString((List)map.get(JAVADOC_ACTION)));
+            selectItem(javadocCombo, getListAsString((List)map.get(JAVADOC_ACTION)), true);
         }
         if (map.get(RUN_ACTION) != null) {
-            runTargetName.setText(getListAsString((List)map.get(RUN_ACTION)));
+            selectItem(runCombo, getListAsString((List)map.get(RUN_ACTION)), true);
         }
         if (map.get(TEST_ACTION) != null) {
-            testTargetName.setText(getListAsString((List)map.get(TEST_ACTION)));
+            selectItem(testCombo, getListAsString((List)map.get(TEST_ACTION)), true);
         }
     }
     
@@ -85,28 +127,28 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         }
         return l;
     }
+
+    private boolean storeTarget(Map map, String key, JComboBox combo) {
+        if (combo.getModel().getSelectedItem() == null) {
+            return false;
+        }
+        String value = (String)combo.getModel().getSelectedItem();
+        if (value.length() == 0) {
+            return false;
+        }
+        map.put(key, getStringAsList(value));
+        return true;
+    }
     
     public Map/*<String,List>*/ getMapping() {
         HashMap map = new HashMap();
-        
-        if (buildTargetName.getText().length() > 0) {
-            map.put(BUILD_ACTION, getStringAsList(buildTargetName.getText()));
+        if (storeTarget(map, BUILD_ACTION, buildCombo) && storeTarget(map, CLEAN_ACTION, cleanCombo)) {
+            String val = (String)cleanCombo.getModel().getSelectedItem()+","+(String)buildCombo.getModel().getSelectedItem();
+            map.put(REBUILD_ACTION, getStringAsList(val)); //NOI18N
         }
-        if (cleanTargetName.getText().length() > 0) {
-            map.put(CLEAN_ACTION, getStringAsList(cleanTargetName.getText()));
-        }
-        if (buildTargetName.getText().length() > 0 && cleanTargetName.getText().length() > 0) {
-            map.put(REBUILD_ACTION, getStringAsList(cleanTargetName.getText()+","+buildTargetName.getText())); //NOI18N
-        }
-        if (runTargetName.getText().length() > 0) {
-            map.put(RUN_ACTION, getStringAsList(runTargetName.getText()));
-        }
-        if (javadocTargetName.getText().length() > 0) {
-            map.put(JAVADOC_ACTION, getStringAsList(javadocTargetName.getText()));
-        }
-        if (testTargetName.getText().length() > 0) {
-            map.put(TEST_ACTION, getStringAsList(testTargetName.getText()));
-        }
+        storeTarget(map, RUN_ACTION, runCombo);
+        storeTarget(map, JAVADOC_ACTION, javadocCombo);
+        storeTarget(map, TEST_ACTION, testCombo);
         return map;
     }
     
@@ -122,121 +164,110 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         jLabel2 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
-        buildTargetName = new javax.swing.JTextField();
-        cleanTargetName = new javax.swing.JTextField();
-        runTargetName = new javax.swing.JTextField();
-        jPanel1 = new javax.swing.JPanel();
         jLabel6 = new javax.swing.JLabel();
-        javadocTargetName = new javax.swing.JTextField();
         jLabel7 = new javax.swing.JLabel();
-        testTargetName = new javax.swing.JTextField();
+        buildCombo = new javax.swing.JComboBox();
+        cleanCombo = new javax.swing.JComboBox();
+        javadocCombo = new javax.swing.JComboBox();
+        runCombo = new javax.swing.JComboBox();
+        testCombo = new javax.swing.JComboBox();
 
         setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setText("Specify Ant targets executed by common menu items.");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(jLabel1, gridBagConstraints);
 
         jLabel2.setText("Build:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         add(jLabel2, gridBagConstraints);
 
         jLabel4.setText("Clean:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         add(jLabel4, gridBagConstraints);
 
         jLabel5.setText("Run:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel5, gridBagConstraints);
-
-        buildTargetName.setText("build");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(buildTargetName, gridBagConstraints);
-
-        cleanTargetName.setText("clean");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(cleanTargetName, gridBagConstraints);
-
-        runTargetName.setText("run");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(runTargetName, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(jPanel1, gridBagConstraints);
 
         jLabel6.setText("Generate Javadoc:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel6, gridBagConstraints);
-
-        javadocTargetName.setText("javadoc");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(javadocTargetName, gridBagConstraints);
 
         jLabel7.setText("Test:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(jLabel7, gridBagConstraints);
 
-        testTargetName.setText("test");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(buildCombo, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(cleanCombo, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(javadocCombo, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(runCombo, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(testTargetName, gridBagConstraints);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(testCombo, gridBagConstraints);
 
     }//GEN-END:initComponents
 
     public void initValues(AntProjectHelper helper, List panels) {
         if (!initialized) {
+            FileObject as = FreeformProjectGenerator.getAntScript(helper);
+            setTargetNames(Util.getAntScriptTargetNames(as));
             initMappings(FreeformProjectGenerator.getTargetMappings(helper));
             initialized = true;
         }
@@ -250,18 +281,17 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
     }    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextField buildTargetName;
-    private javax.swing.JTextField cleanTargetName;
+    private javax.swing.JComboBox buildCombo;
+    private javax.swing.JComboBox cleanCombo;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JTextField javadocTargetName;
-    private javax.swing.JTextField runTargetName;
-    private javax.swing.JTextField testTargetName;
+    private javax.swing.JComboBox javadocCombo;
+    private javax.swing.JComboBox runCombo;
+    private javax.swing.JComboBox testCombo;
     // End of variables declaration//GEN-END:variables
     
 }

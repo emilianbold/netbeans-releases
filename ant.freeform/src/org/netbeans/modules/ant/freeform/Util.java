@@ -14,9 +14,14 @@
 package org.netbeans.modules.ant.freeform;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
+import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -104,6 +109,56 @@ public class Util {
             }
         }
         return elements;
+    }
+
+    /**
+     * Returns name of the Ant script represented by the given file object.
+     * @param fo Ant script which name should be returned
+     * @return name of the Ant script as specified in name attribute of
+     *    project element or null if fo does not represent valid Ant script
+     */
+    public static String getAntScriptName(FileObject fo) {
+        AntProjectCookie apc = getAntProjectCookie(fo);
+        if (apc == null) {
+            return null;
+        }
+        return apc.getProjectElement().getAttribute("name"); //NOI18N
+    }
+    
+    private static AntProjectCookie getAntProjectCookie(FileObject fo) {
+        DataObject dob;
+        try {
+            dob = DataObject.find(fo);
+        } catch (DataObjectNotFoundException ex) {
+            return null;
+        }
+        assert dob != null;
+        return (AntProjectCookie)dob.getCookie(AntProjectCookie.class);
+    }
+
+    /**
+     * Returns sorted list of targets name of the Ant script represented by the
+     * given file object.
+     * @param fo Ant script which target names should be returned
+     * @return sorted list of target names or null if fo does not represent 
+     * valid Ant script
+     */
+    public static List/*<String>*/ getAntScriptTargetNames(FileObject fo) {
+        AntProjectCookie apc = getAntProjectCookie(fo);
+        if (apc == null) {
+            return null;
+        }
+        ArrayList names = new ArrayList();
+        Iterator it = findSubElements(apc.getProjectElement()).iterator();
+        while (it.hasNext()) {
+            Element el = (Element)it.next();
+            if (!el.getLocalName().equals("target")) { // NOI18N
+                continue;
+            }
+            names.add(el.getAttribute("name")); // NOI18N
+        }
+        Collections.sort(names);
+        return names;
     }
     
 }
