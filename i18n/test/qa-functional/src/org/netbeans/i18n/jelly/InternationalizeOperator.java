@@ -14,12 +14,12 @@ import org.netbeans.jellytools.properties.PropertySheetOperator;
  * @author eh103527
  * @version 1.0
  */
-public class InternationalizeOperator extends NbFrameOperator {
+public class InternationalizeOperator extends NbDialogOperator {
     
     /** Creates new InternationalizeTestFrameFrameOperator that can handle it.
      */
     public InternationalizeOperator() {
-        super("Internationalize");
+        super(Bundle.getStringTrimmed("org.netbeans.modules.i18n.Bundle", "CTL_I18nDialogTitle"));
     }
     
     private JLabelOperator _lblBundleName;
@@ -56,7 +56,7 @@ public class InternationalizeOperator extends NbFrameOperator {
      */
     public JLabelOperator lblBundleName() {
         if (_lblBundleName==null) {
-            _lblBundleName = new JLabelOperator(this, "Bundle Name:");
+            _lblBundleName = new JLabelOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.i18n.Bundle", "LBL_BundleName"));
         }
         return _lblBundleName;
     }
@@ -76,7 +76,7 @@ public class InternationalizeOperator extends NbFrameOperator {
      */
     public JButtonOperator btBrowse() {
         if (_btBrowse==null) {
-            _btBrowse = new JButtonOperator(this, "Browse...");
+            _btBrowse = new JButtonOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.i18n.Bundle", "CTL_BrowseButton"));
         }
         return _btBrowse;
     }
@@ -86,7 +86,7 @@ public class InternationalizeOperator extends NbFrameOperator {
      */
     public JButtonOperator btNew() {
         if (_btNew==null) {
-            _btNew = new JButtonOperator(this, "New...");
+            _btNew = new JButtonOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.i18n.Bundle", "CTL_NewButton"));
         }
         return _btNew;
     }
@@ -96,7 +96,7 @@ public class InternationalizeOperator extends NbFrameOperator {
      */
     public JLabelOperator lblComment() {
         if (_lblComment==null) {
-            _lblComment = new JLabelOperator(this, "Comment:");
+            _lblComment = new JLabelOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.i18n.Bundle", "LBL_Comment"));
         }
         return _lblComment;
     }
@@ -136,7 +136,7 @@ public class InternationalizeOperator extends NbFrameOperator {
      */
     public JLabelOperator lblKey() {
         if (_lblKey==null) {
-            _lblKey = new JLabelOperator(this, "Key:");
+            _lblKey = new JLabelOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.i18n.Bundle", "LBL_Key"));
         }
         return _lblKey;
     }
@@ -146,7 +146,7 @@ public class InternationalizeOperator extends NbFrameOperator {
      */
     public JLabelOperator lblValue() {
         if (_lblValue==null) {
-            _lblValue = new JLabelOperator(this, "Value:");
+            _lblValue = new JLabelOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.i18n.Bundle", "LBL_Value"));
         }
         return _lblValue;
     }
@@ -206,7 +206,7 @@ public class InternationalizeOperator extends NbFrameOperator {
      */
     public JLabelOperator lblReplaceString() {
         if (_lblReplaceString==null) {
-            _lblReplaceString = new JLabelOperator(this, "Replace String:");
+            _lblReplaceString = new JLabelOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.i18n.Bundle", "LBL_ReplaceFormat"));
         }
         return _lblReplaceString;
     }
@@ -216,7 +216,7 @@ public class InternationalizeOperator extends NbFrameOperator {
      */
     public JButtonOperator btFormat() {
         if (_btFormat==null) {
-            _btFormat = new JButtonOperator(this, "Format...");
+            _btFormat = new JButtonOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.i18n.Bundle", "CTL_Format"));
         }
         return _btFormat;
     }
@@ -226,7 +226,7 @@ public class InternationalizeOperator extends NbFrameOperator {
      */
     public JButtonOperator btArguments() {
         if (_btArguments==null) {
-            _btArguments = new JButtonOperator(this, "Arguments...");
+            _btArguments = new JButtonOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.i18n.Bundle", "LBL_Arguments"));
         }
         return _btArguments;
     }
@@ -236,7 +236,7 @@ public class InternationalizeOperator extends NbFrameOperator {
      */
     public JButtonOperator btReplace() {
         if (_btReplace==null) {
-            _btReplace = new JButtonOperator(this, "Replace");
+            _btReplace = new JButtonOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.i18n.Bundle", "CTL_ReplaceButton"));
         }
         return _btReplace;
     }
@@ -246,7 +246,7 @@ public class InternationalizeOperator extends NbFrameOperator {
      */
     public JButtonOperator btSkip() {
         if (_btSkip==null) {
-            _btSkip = new JButtonOperator(this, "Skip");
+            _btSkip = new JButtonOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.i18n.Bundle", "CTL_ReplaceButton"));
         }
         return _btSkip;
     }
@@ -256,7 +256,7 @@ public class InternationalizeOperator extends NbFrameOperator {
      */
     public JButtonOperator btInfo() {
         if (_btInfo==null) {
-            _btInfo = new JButtonOperator(this, "Info");
+            _btInfo = new JButtonOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.i18n.Bundle", "CTL_InfoButton"));
         }
         return _btInfo;
     }
@@ -266,7 +266,7 @@ public class InternationalizeOperator extends NbFrameOperator {
      */
     public JButtonOperator btClose() {
         if (_btClose==null) {
-            _btClose = new JButtonOperator(this, "Close");
+            _btClose = new JButtonOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.i18n.Bundle", "CTL_CloseButton"));
         }
         return _btClose;
     }
@@ -276,7 +276,7 @@ public class InternationalizeOperator extends NbFrameOperator {
      */
     public JButtonOperator btHelp() {
         if (_btHelp==null) {
-            _btHelp = new JButtonOperator(this, "Help");
+            _btHelp = new JButtonOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.i18n.Bundle", "CTL_HelpButton"));
         }
         return _btHelp;
     }
