@@ -47,4 +47,24 @@ Microsystems, Inc. All Rights Reserved.
 	    <attr name="instanceClass" stringvalue="org.netbeans.core.output2.OutputWindowAction"/>
 	</file>
     </folder>
+    
+    <folder name="Windows2">
+        <folder name="Modes">
+            <file name="output.wsmode" url="resources/output.wsmode" />
+            <folder name="output">
+                <file name="output.wstcref" url="resources/output.wstcref" />
+            </folder>
+        </folder>
+        
+        <folder name="Components">
+            <file name="output.settings" url="resources/output.settings" />
+        </folder>
+        
+        <folder name="Groups">
+            <folder name="debugger">
+                <file name="output.wstcgrp" url="resources/output.wstcgrp" />
+            </folder>
+        </folder>
+                
+    </folder>
 </filesystem>

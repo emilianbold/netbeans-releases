@@ -482,9 +482,6 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         
         <folder name="Groups">
-            <folder name="debugger">
-                <file name="output.wstcgrp" url="groups/debugger/output.wstcgrp" />
-            </folder>
             <!-- commented out as bugfix #40102
             <folder name="execution">
                 <file name="output.wstcgrp" url="groups/execution/output.wstcgrp" />
@@ -496,7 +493,6 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
 
         <folder name="Components">
-            <file name="output.settings" url="components/output.settings" />
             <file name="properties.settings" url="components/properties.settings" />
         </folder>
 
