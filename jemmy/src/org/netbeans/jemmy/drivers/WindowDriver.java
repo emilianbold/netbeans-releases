@@ -19,9 +19,36 @@ package org.netbeans.jemmy.drivers;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 
+/**
+ * Defines how to work with windows.
+ */
 public interface WindowDriver extends Driver {
+
+    /**
+     * Activates a window.
+     * @param oper Window operator.
+     */
     public void activate(ComponentOperator oper);
+
+    /**
+     * Closes a window.
+     * @param oper Window operator.
+     */
     public void close(ComponentOperator oper);
+
+    /**
+     * Change window location.
+     * @param oper Window operator.
+     * @param x New x coordinate
+     * @param y New y coordinate
+     */
     public void move(ComponentOperator oper, int x, int y);
+
+    /**
+     * Change window size.
+     * @param oper Window operator.
+     * @param width New window width.
+     * @param height New window height.
+     */
     public void resize(ComponentOperator oper, int width, int height);
 }

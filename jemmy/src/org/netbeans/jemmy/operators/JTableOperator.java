@@ -21,6 +21,7 @@ import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.Outputable;
+import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.TestOut;
 import org.netbeans.jemmy.Timeoutable;
 import org.netbeans.jemmy.TimeoutExpiredException;
@@ -743,15 +744,21 @@ implements Outputable, Timeoutable {
     /**
      * Does mouse click on the cell.
      */
-    public void clickOnCell(int row, int column, int clickCount, int button, int modifiers) {
+    public void clickOnCell(final int row, final int column, final int clickCount, final int button, final int modifiers) {
 	output.printLine("Click on (" + 
 			 Integer.toString(row) + ", " +
 			 Integer.toString(column) + 
 			 ") cell");
 	output.printGolden("Click on cell");
 	makeComponentVisible();
-	Point point = getPointToClick(row, column);
-	clickMouse(point.x, point.y, clickCount, button, modifiers);
+        scrollToCell(row, column);
+        getQueueTool().invokeSmoothly(new QueueTool.QueueAction("Path selecting") {
+                public Object launch() {
+                    Point point = getPointToClick(row, column);
+                    clickMouse(point.x, point.y, clickCount, button, modifiers);
+                    return(null);
+                }
+            });
     }
 
     /**

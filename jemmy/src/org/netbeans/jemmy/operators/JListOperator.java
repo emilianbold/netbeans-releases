@@ -21,6 +21,7 @@ import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.JemmyInputException;
 import org.netbeans.jemmy.Outputable;
+import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.TestOut;
 import org.netbeans.jemmy.TimeoutExpiredException;
 
@@ -434,7 +435,7 @@ public class JListOperator extends JComponentOperator
      * @return Click point or null if list does not contains itemIndex'th item.
      * @throws NoSuchItemException
      */
-    public Object clickOnItem(int itemIndex, int clickCount) {
+    public Object clickOnItem(final int itemIndex, final int clickCount) {
 	output.printLine("Click " + Integer.toString(clickCount) +
 			 " times on JList\n    : " + getSource().toString());
 	output.printGolden("Click " + Integer.toString(clickCount) +
@@ -453,26 +454,35 @@ public class JListOperator extends JComponentOperator
 	if(((JList)getSource()).getAutoscrolls()) {
 	    ((JList)getSource()).ensureIndexIsVisible(itemIndex);
 	}
-	Rectangle rect = getCellBounds(itemIndex, itemIndex);
-	if(rect == null) {
-	    output.printErrLine("Impossible to determine click point for " +
-				Integer.toString(itemIndex) + "'th item");
-	    return(null);
-	}
-	Point point = new Point((int)(rect.getX() + rect.getWidth() / 2),
-				(int)(rect.getY() + rect.getHeight() / 2));
-	Object result = getModel().getElementAt(itemIndex);
-	clickMouse(point.x, point.y, clickCount);
-	return(result);
+        return(getQueueTool().invokeSmoothly(new QueueTool.QueueAction("Path selecting") {
+                public Object launch() {
+                    Rectangle rect = getCellBounds(itemIndex, itemIndex);
+                    if(rect == null) {
+                        output.printErrLine("Impossible to determine click point for " +
+                                            Integer.toString(itemIndex) + "'th item");
+                        return(null);
+                    }
+                    Point point = new Point((int)(rect.getX() + rect.getWidth() / 2),
+                                            (int)(rect.getY() + rect.getHeight() / 2));
+                    Object result = getModel().getElementAt(itemIndex);
+                    clickMouse(point.x, point.y, clickCount);
+                    return(result);
+                }
+            }));
     }
     
-    public Object clickOnItem(String item, StringComparator comparator, int clickCount) {
-	int index = findItemIndex(item, comparator, 0);
-	if(index != -1) {
-	    return(clickOnItem(index, clickCount));
-	} else {
-	    throw(new NoSuchItemException(item));
-	}
+    public Object clickOnItem(final String item, final StringComparator comparator, final int clickCount) {
+        scrollToItem(findItemIndex(item, comparator, 0));
+        return(getQueueTool().invokeSmoothly(new QueueTool.QueueAction("Path selecting") {
+                public Object launch() {
+                    int index = findItemIndex(item, comparator, 0);
+                    if(index != -1) {
+                        return(clickOnItem(index, clickCount));
+                    } else {
+                        throw(new NoSuchItemException(item));
+                    }
+                }
+            }));
     }
     
     /**
@@ -585,8 +595,14 @@ public class JListOperator extends JComponentOperator
         driver.selectItem(this, index);
     }
 
-    public void selectItem(String item) {
-	selectItem(findItemIndex(item));
+    public void selectItem(final String item) {
+        scrollToItem(findItemIndex(item));
+        getQueueTool().invokeSmoothly(new QueueTool.QueueAction("Path selecting") {
+                public Object launch() {
+                    driver.selectItem(JListOperator.this, findItemIndex(item));
+                    return(null);
+                }
+            });
     }
 
     public void selectItems(int[] indices) {

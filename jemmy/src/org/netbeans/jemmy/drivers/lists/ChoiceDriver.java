@@ -17,6 +17,8 @@
 
 package org.netbeans.jemmy.drivers.lists;
 
+import java.awt.Point;
+
 import java.awt.event.KeyEvent;
 
 import org.netbeans.jemmy.Timeout;
@@ -30,29 +32,41 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.ChoiceOperator;
 
 public class ChoiceDriver extends SupportiveDriver implements ListDriver {
+    private final static int RIGHT_INDENT = 3;
     public ChoiceDriver() {
 	super(new Class[] {ChoiceOperator.class});
     }
     public void selectItem(ComponentOperator oper, int index) {
-	int current = ((ChoiceOperator)oper).getSelectedIndex();
-	int diff = 0;
-	int key = 0;
-	if(index > current) {
-	    diff = index - current;
-	    key = KeyEvent.VK_DOWN;
-	} else {
-	    diff = current - index;
-	    key = KeyEvent.VK_UP;
-	}
+        ChoiceOperator coper = (ChoiceOperator)oper;
+        Point pointToClick = getClickPoint(oper);
 	DriverManager.getMouseDriver(oper).
-	    clickMouse(oper, oper.getCenterXForClick(), oper.getCenterYForClick(),
+	    clickMouse(oper, pointToClick.x, pointToClick.y,
 		       1, oper.getDefaultMouseButton(), 0,
 		       oper.getTimeouts().create("ComponentOperator.MouseClickTimeout"));
 	KeyDriver kdriver = DriverManager.getKeyDriver(oper);
 	Timeout pushTimeout = oper.getTimeouts().create("ComponentOperator.PushKeyTimeout");
-	for(int i = 0; i < diff; i++) {
-	    kdriver.pushKey(oper, key, 0, pushTimeout);
-	}
-	kdriver.pushKey(oper, KeyEvent.VK_ENTER, 0, pushTimeout);
+        if(System.getProperty("java.version").startsWith("1.4")) {
+            while(coper.getSelectedIndex() != index) {
+                kdriver.pushKey(oper, (index > coper.getSelectedIndex()) ? KeyEvent.VK_DOWN : KeyEvent.VK_UP, 0, pushTimeout);
+            }
+        } else {
+            int current = ((ChoiceOperator)oper).getSelectedIndex();
+            int diff = 0;
+            int key = 0;
+            if(index > current) {
+                diff = index - current;
+                key = KeyEvent.VK_DOWN;
+            } else {
+                diff = current - index;
+                key = KeyEvent.VK_UP;
+            }
+            for(int i = 0; i < diff; i++) {
+                kdriver.pushKey(oper, key, 0, pushTimeout);
+            }
+        }
+        kdriver.pushKey(oper, KeyEvent.VK_ENTER, 0, pushTimeout);
+    }
+    private Point getClickPoint(ComponentOperator oper) {
+        return(new Point(oper.getWidth() - RIGHT_INDENT, oper.getHeight()/2));
     }
 }

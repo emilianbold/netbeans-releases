@@ -224,12 +224,9 @@ public class EventDispatcher implements Outputable, Timeoutable {
     }
 
     static {
-	Timeouts.initDefault("EventDispatcher.WaitQueueEmptyTimeout",
-			     WAIT_QUEUE_EMPTY_TIMEOUT);
-	Timeouts.initDefault("EventDispatcher.RobotAutoDelay",
-			     ROBOT_AUTO_DELAY);
-	Timeouts.initDefault("EventDispatcher.WaitComponentUnderMouseTimeout",
-			     WAIT_COMPONENT_UNDER_MOUSE_TIMEOUT);
+	Timeouts.initDefault("EventDispatcher.WaitQueueEmptyTimeout", WAIT_QUEUE_EMPTY_TIMEOUT);
+	Timeouts.initDefault("EventDispatcher.RobotAutoDelay", ROBOT_AUTO_DELAY);
+	Timeouts.initDefault("EventDispatcher.WaitComponentUnderMouseTimeout", WAIT_COMPONENT_UNDER_MOUSE_TIMEOUT);
 	try {
 	    keyFields = Class.forName("java.awt.event.KeyEvent").getFields();
 	} catch(ClassNotFoundException e) {

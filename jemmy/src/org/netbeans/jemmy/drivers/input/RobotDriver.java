@@ -106,9 +106,22 @@ public class RobotDriver extends SupportiveDriver {
 	} catch(IllegalAccessException e) {
 	    throw(new JemmyException("Exception during java.awt.Robot accessing", e));
 	}
-	if ((JemmyProperties.getCurrentDispatchingModel() & JemmyProperties.QUEUE_MODEL_MASK) != 0) {
-	    qtool.waitEmpty();
-	}
+        if(!qtool.isDispatchThread()) {
+            try {
+                robotReference.invokeMethod("waitForIdle", null, null);
+            } catch(InvocationTargetException e) {
+                throw(new JemmyException("Exception during java.awt.Robot accessing", e));
+            } catch(IllegalStateException e) {
+                throw(new JemmyException("Exception during java.awt.Robot accessing", e));
+            } catch(NoSuchMethodException e) {
+                throw(new JemmyException("Exception during java.awt.Robot accessing", e));
+            } catch(IllegalAccessException e) {
+                throw(new JemmyException("Exception during java.awt.Robot accessing", e));
+            }
+            if ((JemmyProperties.getCurrentDispatchingModel() & JemmyProperties.QUEUE_MODEL_MASK) != 0) {
+                qtool.waitEmpty();
+            }
+        }
     }
     protected void pressModifiers(ComponentOperator oper, int modifiers) {
 	if       ((modifiers & InputEvent.SHIFT_MASK) != 0) {

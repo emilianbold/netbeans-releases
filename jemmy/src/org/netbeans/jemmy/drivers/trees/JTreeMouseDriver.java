@@ -28,6 +28,7 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
 import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.Timeout;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
@@ -45,56 +46,73 @@ import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator;
 
 public class JTreeMouseDriver extends SupportiveDriver implements TreeDriver {
+    QueueTool queueTool;
     public JTreeMouseDriver() {
 	super(new Class[] {JTreeOperator.class});
+	queueTool = new QueueTool();
     }
     public void selectItem(ComponentOperator oper, int index) {
-        ((JTreeOperator)oper).scrollToRow(index);
 	selectItems(oper, new int[] {index});
     }
-    public void selectItems(ComponentOperator oper, int[] indices) {
-	checkSupported(oper);
-	MouseDriver mdriver = DriverManager.getMouseDriver(oper);
-	JTreeOperator toper = (JTreeOperator)oper;
-	toper.clearSelection();
-	Point p = toper.getPointToClick(indices[0]);
-	Timeout clickTime = oper.getTimeouts().create("ComponentOperator.MouseClickTimeout");
-	mdriver.clickMouse(oper, p.x, p.y, 1, Operator.getDefaultMouseButton(),
-			   0, clickTime);
-	for(int i = 1; i < indices.length; i++) {
-	    p = toper.getPointToClick(indices[i]);
-	    toper.scrollToRow(indices[i]);
-	    mdriver.clickMouse(oper, p.x, p.y, 1, Operator.getDefaultMouseButton(),
-			       InputEvent.CTRL_MASK, clickTime);
-	}
+    public void selectItems(final ComponentOperator oper, int[] indices) {
+        ((JTreeOperator)oper).clearSelection();
+        checkSupported(oper);
+        final MouseDriver mdriver = DriverManager.getMouseDriver(oper);
+        final JTreeOperator toper = (JTreeOperator)oper;
+        final Timeout clickTime = oper.getTimeouts().create("ComponentOperator.MouseClickTimeout");
+        QueueTool qt = new QueueTool();
+        for(int i = 0; i < indices.length; i++) {
+            final int index = i;
+            if(!queueTool.isDispatchThread()) {
+                toper.scrollToRow(indices[i]);
+            }
+            final Point p = toper.getPointToClick(indices[index]);
+            queueTool.invokeSmoothly(new QueueTool.QueueAction("Path selecting") {
+                    public Object launch() {
+                        mdriver.clickMouse(oper, p.x, p.y, 1, Operator.getDefaultMouseButton(),
+                                           (index == 0) ? 0 : InputEvent.CTRL_MASK, clickTime);
+                        return(null);
+                    }
+                });
+        }
     }
-    public void expandItem(ComponentOperator oper, int index) {
+    public void expandItem(ComponentOperator oper, final int index) {
 	checkSupported(oper);
-	JTreeOperator toper = (JTreeOperator)oper;
-	MouseDriver mdriver = DriverManager.getMouseDriver(oper);
+	final JTreeOperator toper = (JTreeOperator)oper;
+	final MouseDriver mdriver = DriverManager.getMouseDriver(oper);
 	if(!toper.isExpanded(index)) {
-	    Point p = toper.getPointToClick(index);
-	    mdriver.clickMouse(oper, p.x, p.y, 2, Operator.getDefaultMouseButton(),
-			       0, oper.getTimeouts().
-			       create("ComponentOperator.MouseClickTimeout"));
+            queueTool.invokeSmoothly(new QueueTool.QueueAction("Path selecting") {
+                    public Object launch() {
+                        Point p = toper.getPointToClick(index);
+                        mdriver.clickMouse(toper, p.x, p.y, 2, Operator.getDefaultMouseButton(),
+                                           0, toper.getTimeouts().
+                                           create("ComponentOperator.MouseClickTimeout"));
+                        return(null);
+                    }
+                });
 	}
     }
 
-    public void collapseItem(ComponentOperator oper, int index) {
+    public void collapseItem(ComponentOperator oper, final int index) {
 	checkSupported(oper);
-	JTreeOperator toper = (JTreeOperator)oper;
-	MouseDriver mdriver = DriverManager.getMouseDriver(oper);
+	final JTreeOperator toper = (JTreeOperator)oper;
+	final MouseDriver mdriver = DriverManager.getMouseDriver(oper);
 	if(toper.isExpanded(index)) {
-	    Point p = toper.getPointToClick(index);
-	    mdriver.clickMouse(oper, p.x, p.y, 2, Operator.getDefaultMouseButton(),
-			       0, oper.getTimeouts().
-			       create("ComponentOperator.MouseClickTimeout"));
+            queueTool.invokeSmoothly(new QueueTool.QueueAction("Path selecting") {
+                    public Object launch() {
+                        Point p = toper.getPointToClick(index);
+                        mdriver.clickMouse(toper, p.x, p.y, 2, Operator.getDefaultMouseButton(),
+                                           0, toper.getTimeouts().
+                                           create("ComponentOperator.MouseClickTimeout"));
+                        return(null);
+                    }
+                });
 	}
     }
 
     public void editItem(ComponentOperator oper, int index, Object newValue, Timeout waitEditorTime) {
 	JTextComponentOperator textoper = startEditingAndReturnEditor(oper, index, waitEditorTime);
-	TextDriver text = DriverManager.getTextDriver(JTextComponentOperator.class);
+	final TextDriver text = DriverManager.getTextDriver(JTextComponentOperator.class);
 	text.clearText(textoper);
 	text.typeText(textoper, newValue.toString(), 0);
 	DriverManager.getKeyDriver(oper).
@@ -107,18 +125,29 @@ public class JTreeMouseDriver extends SupportiveDriver implements TreeDriver {
 	startEditingAndReturnEditor(oper, index, waitEditorTime);
     }
 
-    private JTextComponentOperator startEditingAndReturnEditor(ComponentOperator oper, int index, Timeout waitEditorTime) {
+    private JTextComponentOperator startEditingAndReturnEditor(ComponentOperator oper, final int index, Timeout waitEditorTime) {
 	checkSupported(oper);
-	JTreeOperator toper = (JTreeOperator)oper;
-	Point p = toper.getPointToClick(index);
-	MouseDriver mdriver = DriverManager.getMouseDriver(oper);
-	mdriver.clickMouse(oper, p.x, p.y, 1, Operator.getDefaultMouseButton(),
-			   0, oper.getTimeouts().
+	final JTreeOperator toper = (JTreeOperator)oper;
+	final MouseDriver mdriver = DriverManager.getMouseDriver(oper);
+        queueTool.invokeSmoothly(new QueueTool.QueueAction("Path selecting") {
+                public Object launch() {
+                    Point p = toper.getPointToClick(index);
+                    mdriver.clickMouse(toper, p.x, p.y, 1, Operator.getDefaultMouseButton(),
+			   0, toper.getTimeouts().
 			   create("ComponentOperator.MouseClickTimeout"));
+                    return(null);
+                }
+            });
 	oper.getTimeouts().sleep("JTreeOperator.BeforeEditTimeout");
-	mdriver.clickMouse(oper, p.x, p.y, 1, Operator.getDefaultMouseButton(),
-			   0, oper.getTimeouts().
-			   create("ComponentOperator.MouseClickTimeout"));
+        queueTool.invokeSmoothly(new QueueTool.QueueAction("Path selecting") {
+                public Object launch() {
+                    Point p = toper.getPointToClick(index);
+                    mdriver.clickMouse(toper, p.x, p.y, 1, Operator.getDefaultMouseButton(),
+                                       0, toper.getTimeouts().
+                                       create("ComponentOperator.MouseClickTimeout"));
+                    return(null);
+                }
+            });
 	toper.getTimeouts().
 	    setTimeout("ComponentOperator.WaitComponentTimeout", waitEditorTime.getValue());
 	return(new JTextComponentOperator((JTextComponent)toper.

@@ -21,6 +21,7 @@ import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Outputable;
+import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.TestOut;
 import org.netbeans.jemmy.Timeoutable;
 import org.netbeans.jemmy.TimeoutExpiredException;
@@ -861,10 +862,19 @@ public class JTreeOperator extends JComponentOperator
     /**
      * Selects the path.
      */
-    public void selectPath(TreePath path) {
+    public void selectPath(final TreePath path) {
 	output.printLine("Selecting \"" + path.toString() + "\" path");
 	output.printGolden("Selecting path");
-	driver.selectItem(this, getRowForPath(path));
+        scrollToPath(path);
+        getQueueTool().invokeSmoothly(new QueueTool.QueueAction("Path selecting") {
+                public Object launch() {
+                    driver.selectItem(JTreeOperator.this, getRowForPath(path));
+                    return(null);
+                }
+            });
+ 	if(getVerification()) {
+	    waitSelected(path);
+	}
     }
 
     /**
@@ -874,6 +884,9 @@ public class JTreeOperator extends JComponentOperator
 	output.printLine("Collapsing \"" + Integer.toString(row) + "\" row");
 	output.printGolden("Collapsing path");
 	driver.selectItem(this, row);
+ 	if(getVerification()) {
+	    waitSelected(row);
+	}
     }
 
     /**

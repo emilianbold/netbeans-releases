@@ -19,11 +19,26 @@ package org.netbeans.jemmy.drivers;
 
 import org.netbeans.jemmy.JemmyException;
 
+/**
+ * Is thrown as a result of attempt to use driver for unsupported operator type.
+ */
 public class UnsupportedOperatorException extends JemmyException {
+
+    /**
+     * Constructor.
+     */
     public UnsupportedOperatorException(Class driver, Class operator) {
 	super(driver.getName() + " operators are not supported by " +
 	      operator.getName() + " driver!");
     }
+
+    /**
+     * Checks if operator class is in the list of supported classes.
+     * @param driver Driver class
+     * @param supported Supported classes.
+     * @param operator Operator class.
+     * @throws UnsupportedOperatorException if class is not supported.
+     */
     public static void checkSupported(Class driver, Class[] supported, Class operator) {
 	for(int i = 0; i < supported.length; i++) {
 	    if(supported[i].isAssignableFrom(operator)) {

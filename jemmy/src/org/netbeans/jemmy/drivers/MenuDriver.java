@@ -19,6 +19,15 @@ package org.netbeans.jemmy.drivers;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 
+/**
+ * Defines how to work with manus.
+ */
 public interface MenuDriver extends Driver {
+
+    /**
+     * Pushes menu.
+     * @param oper Menu operator.
+     * @param chooser Object defining menupath.
+     */
     public Object pushMenu(ComponentOperator oper, PathChooser chooser);
 }

@@ -156,12 +156,9 @@ public class EventTool implements Timeoutable, Outputable {
     }
 
     static {
-	Timeouts.initDefault("EventTool.WaitEventTimeout",
-			     WAIT_EVENT_TIMEOUT);
-	Timeouts.initDefault("EventTool.WaitNoEventTimeout",
-			     WAIT_NO_EVENT_TIMEOUT);
-	Timeouts.initDefault("EventTool.EventCheckingDelta",
-			     EVENT_CHECKING_DELTA);
+	Timeouts.initDefault("EventTool.WaitEventTimeout", WAIT_EVENT_TIMEOUT);
+	Timeouts.initDefault("EventTool.WaitNoEventTimeout", WAIT_NO_EVENT_TIMEOUT);
+	Timeouts.initDefault("EventTool.EventCheckingDelta", EVENT_CHECKING_DELTA);
 	listenerSet = new ListenerSet();
 	if(System.getProperty("jemmy.event_listening") == null ||
 	   !System.getProperty("jemmy.event_listening").equals("no")) {

@@ -76,6 +76,10 @@ public class QueueTool implements Outputable, Timeoutable {
 	return(Toolkit.getDefaultToolkit().getSystemEventQueue());
     }
 
+    public static boolean isDispatchThread() {
+	return(getQueue().isDispatchThread());
+    }
+
     /**
      * Checks if system event queue is empty.
      */
@@ -84,16 +88,11 @@ public class QueueTool implements Outputable, Timeoutable {
     }
 
     static {
-	Timeouts.initDefault("QueueTool.WaitQueueEmptyTimeout",
-			     WAIT_QUEUE_EMPTY_TIMEOUT);
-	Timeouts.initDefault("QueueTool.QueueCheckingDelta",
-			     QUEUE_CHECKING_DELTA);
-	Timeouts.initDefault("QueueTool.LockTimeout",
-			     LOCK_TIMEOUT);
-	Timeouts.initDefault("QueueTool.InvocationTimeout",
-			     INVOCATION_TIMEOUT);
-	Timeouts.initDefault("QueueTool.MaximumLockingTime",
-			     MAXIMUM_LOCKING_TIME);
+	Timeouts.initDefault("QueueTool.WaitQueueEmptyTimeout", WAIT_QUEUE_EMPTY_TIMEOUT);
+	Timeouts.initDefault("QueueTool.QueueCheckingDelta", QUEUE_CHECKING_DELTA);
+	Timeouts.initDefault("QueueTool.LockTimeout", LOCK_TIMEOUT);
+	Timeouts.initDefault("QueueTool.InvocationTimeout", INVOCATION_TIMEOUT);
+	Timeouts.initDefault("QueueTool.MaximumLockingTime", MAXIMUM_LOCKING_TIME);
     }
 
     /**
@@ -231,6 +230,35 @@ public class QueueTool implements Outputable, Timeoutable {
 	QueueAction result = new ActionRunnable(action, param);
 	invoke(result);
 	return(result);
+    }
+
+    public Object invokeSmoothly(QueueAction action) {
+        if(!getQueue().isDispatchThread()) {
+            return(invokeAndWait(action));
+        } else {
+            try {
+                return(action.launch());
+            } catch(Exception e) {
+                throw(new JemmyException("Exception in " + action.getDescription(), 
+                                         action.getException()));
+            }
+        }
+    }
+
+    public void invokeSmoothly(Runnable runnable) {
+        if(!getQueue().isDispatchThread()) {
+            invokeAndWait(runnable);
+        } else {
+            runnable.run();
+        }
+    }
+
+    public Object invokeSmoothly(Action action, Object param) {
+        if(!getQueue().isDispatchThread()) {
+            return(invokeAndWait(action, param));
+        } else {
+            return(action.launch(param));
+        }
     }
 
     /**

@@ -19,6 +19,14 @@ package org.netbeans.jemmy.drivers;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 
+/**
+ * Defines how to manage focus.
+ */
 public interface FocusDriver extends Driver {
+
+    /**
+     * Makes a compoennt having focus.
+     * @param operator Component operator.
+     */
     public void giveFocus(ComponentOperator operator);
 }

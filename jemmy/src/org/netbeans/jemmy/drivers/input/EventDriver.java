@@ -24,6 +24,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 
 import org.netbeans.jemmy.ComponentIsNotVisibleException;
+import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.Timeout;
 
@@ -44,8 +45,7 @@ public class EventDriver extends SupportiveDriver {
 	this(new Class[] {ComponentOperator.class});
     }
     public void dispatchEvent(Component comp, AWTEvent event) {
-	Dispatcher disp = new Dispatcher(comp, event);
-	queueTool.invokeAndWait(disp);
+        queueTool.invokeSmoothly(new Dispatcher(comp, event));
     }
     protected void checkVisibility(Component component) {
 	if(!component.isVisible()) {

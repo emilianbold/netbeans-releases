@@ -261,6 +261,7 @@ public abstract class Operator extends Object
 	setVisualizer(anotherOperator.getVisualizer());
 	setComparator(anotherOperator.getComparator());
 	setVerification(anotherOperator.getVerification());
+        setCharBindingMap(anotherOperator.getCharBindingMap());
 	setProperties(anotherOperator.getProperties());
     }
 
@@ -624,7 +625,7 @@ public abstract class Operator extends Object
      * @see Operator.MapAction
      */
     protected Object runMapping(MapAction action) {
-	return(queueTool.invokeAndWait(action));
+	return(runMappingPrimitive(action));
     }
 
     /**
@@ -633,7 +634,7 @@ public abstract class Operator extends Object
      * @see Operator.MapCharacterAction
      */
     protected char runMapping(MapCharacterAction action) {
-	return(((Character)queueTool.invokeAndWait(action)).charValue());
+	return(((Character)runMappingPrimitive(action)).charValue());
     }
 
     /**
@@ -642,7 +643,7 @@ public abstract class Operator extends Object
      * @see Operator.MapByteAction
      */
     protected byte runMapping(MapByteAction action) {
-	return(((Byte)queueTool.invokeAndWait(action)).byteValue());
+	return(((Byte)runMappingPrimitive(action)).byteValue());
     }
 
     /**
@@ -651,7 +652,7 @@ public abstract class Operator extends Object
      * @see Operator.MapIntegerAction
      */
     protected int runMapping(MapIntegerAction action) {
-	return(((Integer)queueTool.invokeAndWait(action)).intValue());
+	return(((Integer)runMappingPrimitive(action)).intValue());
     }
 
     /**
@@ -660,7 +661,7 @@ public abstract class Operator extends Object
      * @see Operator.MapLongAction
      */
     protected long runMapping(MapLongAction action) {
-	return(((Long)queueTool.invokeAndWait(action)).longValue());
+	return(((Long)runMappingPrimitive(action)).longValue());
     }
 
     /**
@@ -669,7 +670,7 @@ public abstract class Operator extends Object
      * @see Operator.MapFloatAction
      */
     protected float runMapping(MapFloatAction action) {
-	return(((Float)queueTool.invokeAndWait(action)).floatValue());
+	return(((Float)runMappingPrimitive(action)).floatValue());
     }
 
     /**
@@ -678,7 +679,7 @@ public abstract class Operator extends Object
      * @see Operator.MapDoubleAction
      */
     protected double runMapping(MapDoubleAction action) {
-	return(((Double)queueTool.invokeAndWait(action)).doubleValue());
+	return(((Double)runMappingPrimitive(action)).doubleValue());
     }
 
     /**
@@ -687,7 +688,7 @@ public abstract class Operator extends Object
      * @see Operator.MapBooleanAction
      */
     protected boolean runMapping(MapBooleanAction action) {
-	return(((Boolean)queueTool.invokeAndWait(action)).booleanValue());
+	return(((Boolean)runMappingPrimitive(action)).booleanValue());
     }
 
     /**
@@ -696,7 +697,7 @@ public abstract class Operator extends Object
      * @see Operator.MapVoidAction
      */
     protected void runMapping(MapVoidAction action) {
-	queueTool.invokeAndWait(action);
+	runMappingPrimitive(action);
     }
 
     /**
@@ -725,6 +726,10 @@ public abstract class Operator extends Object
     ////////////////////////////////////////////////////////
     //Private                                             //
     ////////////////////////////////////////////////////////
+
+    private Object runMappingPrimitive(QueueTool.QueueAction action) {
+        return(queueTool.invokeSmoothly(action));
+    }
 
     private String[] createNames(String title, int count) {
 	String[] result = new String[count];

@@ -24,6 +24,8 @@ import java.awt.event.KeyEvent;
 
 import javax.swing.text.JTextComponent;
 
+import org.netbeans.jemmy.QueueTool;
+
 import org.netbeans.jemmy.drivers.DriverManager;
 import org.netbeans.jemmy.drivers.SupportiveDriver;
 import org.netbeans.jemmy.drivers.TableDriver;
@@ -34,8 +36,10 @@ import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
 
 public class JTableMouseDriver extends SupportiveDriver implements TableDriver {
+    QueueTool queueTool;
     public JTableMouseDriver() {
 	super(new Class[] {JTableOperator.class});;
+	queueTool = new QueueTool();
     }
     public void selectCell(ComponentOperator oper, int row, int column) {
 	clickOnCell((JTableOperator)oper, row, column, 1);
@@ -60,13 +64,18 @@ public class JTableMouseDriver extends SupportiveDriver implements TableDriver {
 		    oper.getTimeouts().
 		    create("ComponentOperator.PushKeyTimeout"));
     }
-    protected void clickOnCell(JTableOperator oper, int row, int column, int clickCount) {
-	Point point = oper.getPointToClick(row, column);
-	DriverManager.getMouseDriver(oper).
-	    clickMouse(oper, point.x, point.y, clickCount, 
-		       oper.getDefaultMouseButton(), 
-		       0, 
-		       oper.getTimeouts().create("ComponentOperator.MouseClickTimeout"));
+    protected void clickOnCell(final JTableOperator oper, final int row, final int column, final int clickCount) {
+        queueTool.invokeSmoothly(new QueueTool.QueueAction("Path selecting") {
+                public Object launch() {
+                    Point point = oper.getPointToClick(row, column);
+                    DriverManager.getMouseDriver(oper).
+                        clickMouse(oper, point.x, point.y, clickCount, 
+                                   oper.getDefaultMouseButton(), 
+                                   0, 
+                                   oper.getTimeouts().create("ComponentOperator.MouseClickTimeout"));
+                    return(null);
+                }
+            });
     }
 }
 

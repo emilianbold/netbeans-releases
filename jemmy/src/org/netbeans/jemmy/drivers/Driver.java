@@ -17,6 +17,13 @@
 
 package org.netbeans.jemmy.drivers;
 
+/**
+ * Drifines interface for all drivers.
+ */
 public interface Driver {
+
+    /**
+     * Returns array of operator classes which are supported by this driver.
+     */
     public Class[] getSupported();
 }

@@ -22,6 +22,8 @@ import java.awt.Rectangle;
 
 import java.awt.event.InputEvent;
 
+import org.netbeans.jemmy.QueueTool;
+
 import org.netbeans.jemmy.drivers.DriverManager;
 import org.netbeans.jemmy.drivers.MultiSelListDriver;
 import org.netbeans.jemmy.drivers.SupportiveDriver;
@@ -30,8 +32,10 @@ import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
 public class JListMouseDriver extends SupportiveDriver implements MultiSelListDriver {
+    QueueTool queueTool;
     public JListMouseDriver() {
 	super(new Class[] {JListOperator.class});
+	queueTool = new QueueTool();
     }
     public void selectItem(ComponentOperator oper, int index) {
 	clickOnItem((JListOperator)oper, index);
@@ -45,14 +49,21 @@ public class JListMouseDriver extends SupportiveDriver implements MultiSelListDr
     protected void clickOnItem(JListOperator oper, int index) {
 	clickOnItem(oper, index, 0);
     }
-    protected void clickOnItem(JListOperator oper, int index, int modifiers) {
-	oper.scrollToItem(index);
-	Rectangle rect = oper.getCellBounds(index, index);
-	DriverManager.getMouseDriver(oper).
-	    clickMouse(oper, 
-		       rect.x + rect.width / 2,
-		       rect.y + rect.height / 2,
-		       1, oper.getDefaultMouseButton(), modifiers,
-		       oper.getTimeouts().create("ComponentOperator.MouseClickTimeout"));
+    protected void clickOnItem(final JListOperator oper, final int index, final int modifiers) {
+        if(!queueTool.isDispatchThread()) {
+            oper.scrollToItem(index);
+        }
+        queueTool.invokeSmoothly(new QueueTool.QueueAction("Path selecting") {
+                public Object launch() {
+                    Rectangle rect = oper.getCellBounds(index, index);
+                    DriverManager.getMouseDriver(oper).
+                        clickMouse(oper, 
+                                   rect.x + rect.width / 2,
+                                   rect.y + rect.height / 2,
+                                   1, oper.getDefaultMouseButton(), modifiers,
+                                   oper.getTimeouts().create("ComponentOperator.MouseClickTimeout"));
+                    return(null);
+                }
+            });
     }
 }

@@ -21,9 +21,43 @@ import org.netbeans.jemmy.Timeout;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 
+/**
+ * Defines how to simulate keyboard operations.
+ */
 public interface KeyDriver extends Driver {
+
+    /**
+     * Presses a key.
+     * @param oper Component operator.
+     * @param keyCode
+     * @param modifiers
+     */
     public void pressKey(ComponentOperator oper, int keyCode, int modifiers);
+
+    /**
+     * Releases a key.
+     * @param oper Component operator.
+     * @param keyCode
+     * @param modifiers
+     */
     public void releaseKey(ComponentOperator oper, int keyCode, int modifiers);
+
+    /**
+     * Pushes a key.
+     * @param oper Component operator.
+     * @param keyCode
+     * @param modifiers
+     * @param pushTime Time between pressing and releasing.
+     */
     public void pushKey(ComponentOperator oper, int keyCode, int modifiers, Timeout pushTime);
+
+    /**
+     * Types a symbol.
+     * @param oper Component operator.
+     * @param keyCode
+     * @param keyChar Symbol to be typed.
+     * @param modifiers
+     * @param pushTime Time between pressing and releasing.
+     */
     public void typeKey(ComponentOperator oper, int keyCode, char keyChar, int modifiers, Timeout pushTime);
 }

@@ -19,6 +19,15 @@ package org.netbeans.jemmy.drivers;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 
+/**
+ * Defines how to work with lists allowing multiple selection.
+ */
 public interface MultiSelListDriver extends ListDriver {
+
+    /**
+     * Selects some items.
+     * @param oper List operator.
+     * @param indices Item indices.
+     */
     public void selectItems(ComponentOperator oper, int[] indices);
 }
