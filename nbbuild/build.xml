@@ -326,6 +326,10 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module debuggerjpda..."/>
     <ant dir="../debuggerjpda" target="netbeans"/>
   </target>
+  <target name="all-debuggerjpda/ant" depends="all-debuggerjpda,all-debuggercore,all-debuggercore/oldapi">
+    <echo message="Building module debuggerjpda/ant..."/>
+    <ant dir="../debuggerjpda/ant" target="netbeans"/>
+  </target>
   <target name="all-debuggertools" depends="all-openide,all-debuggercore,all-openide/io,all-openide/execution">
     <echo message="Building module debuggertools..."/>
     <ant dir="../debuggertools" target="netbeans"/>

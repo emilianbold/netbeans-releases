@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project name="debuggerjpda/ant" basedir="." default="netbeans">
+
+    <property name="nbm_alias" value="nb_ide"/>
+    <property name="homepage.base" value="netbeans.org"/>
+    <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
+    <property name="license.file" value="../../nbbuild/standard-nbm-license.txt"/>
+
+    <target name="init">
+        <ant dir="../../ant/external"/>
+    </target>
+
+    <target name="compile" depends="init">
+        <javac srcdir="src" destdir="src" debug="true" deprecation="true" source="1.4">
+            <classpath>
+                <fileset dir="../../ant/external">
+                    <include name="ant-1*.jar"/>
+                </fileset>
+                <pathelement location="${java.home}/../lib/tools.jar"/>
+                <pathelement location="../../openide/netbeans/lib/openide.jar"/>
+                <pathelement location="../../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
+                <pathelement location="../../debuggercore/oldapi/netbeans/modules/autoload/openide-debugger.jar"/>
+                <pathelement location="../../debuggercore/netbeans/modules/autoload/debuggerCore.jar"/>
+                <pathelement location="../../debuggerjpda/netbeans/modules/jpdaDebugger.jar"/>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="jars" depends="compile">
+        <mkdir dir="netbeans/modules"/>
+        <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
+        <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
+        <jar jarfile="netbeans/modules/org-netbeans-modules-debugger-jpda-ant.jar" manifest="manifest-subst.mf" compress="false">
+            <fileset dir="src">
+                <excludesfile name="../../nbbuild/standard-jar-excludes.txt"/>
+                <exclude name="**/*.class"/>
+                <exclude name="META-INF/*.properties"/>
+            </fileset>
+        </jar>
+        <mkdir dir="netbeans/ant/nblib"/>
+        <jar jarfile="netbeans/ant/nblib/nbjpdaconnect.jar" compress="false">
+            <fileset dir="src">
+                <excludesfile name="../../nbbuild/standard-jar-excludes.txt"/>
+                <include name="**/*.class"/>
+                <include name="META-INF/*.properties"/>
+            </fileset>
+        </jar>
+    </target>
+
+    <target name="netbeans" depends="jars" description="Build the module."/>
+
+    <target name="nbm" depends="netbeans" description="Prepare the module for distribution via Auto Update.">
+        <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../../nbbuild/nbantext.jar"/>
+        <makenbm file="org-netbeans-modules-debugger-jpda-ant.nbm"
+                 topdir="."
+                 module="netbeans/modules/org-netbeans-modules-debugger-jpda-ant.jar"
+                 homepage="http://debuggerjpda.netbeans.org/"
+                 needsrestart="false"
+                 distribution="http://${dist.base}/org-netbeans-modules-debugger-jpda-ant.jar">
+            <license file="${license.file}"/>
+            <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
+        </makenbm>
+    </target>
+
+    <target name="clean" description="Clean all build products.">
+        <delete>
+            <fileset dir="src">
+                <include name="**/*.class"/>
+            </fileset>
+        </delete>
+        <delete dir="netbeans"/>
+        <delete dir="Info"/>
+        <delete file="org-netbeans-modules-debugger-jpda-ant.nbm"/>
+    </target>
+
+</project>
