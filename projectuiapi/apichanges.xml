@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <?xml-stylesheet type="text/xml" href="../../nbbuild/javadoctools/apichanges.xsl"?>
@@ -114,7 +114,7 @@ is the proper place.
 
         <change id="ProjectCustomizer.addition">
             <api name="general"/>
-            <summary>Added suport class for creating standard project customizer dialogs.</summary>
+            <summary>Added support class for creating standard project customizer dialogs</summary>
             <version major="1" minor="4"/>
             <date day="16" month="1" year="2005"/>
             <author login="phrebejk"/>
