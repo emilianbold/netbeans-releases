@@ -375,7 +375,7 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
                 while( iter.hasNext() ) {
                     KeyStroke[] s1 = ((KeySequence)iter.next()).getKeyStrokes();
                     if( isOverlapingSequence( s1, seq ) ) {
-                        Object[] values = { KeySequenceInputPanel.keySequenceToString( s1 ), acts[i] };
+                        Object[] values = { Utilities.keySequenceToString( s1 ), acts[i] };
                         return MessageFormat.format( bundle.getString( "KBEP_FMT_Collision" ), values );
                     }
                 }
@@ -443,7 +443,7 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
         }
 
         public String toString() {
-            return KeySequenceInputPanel.keySequenceToString( sequence );
+            return Utilities.keySequenceToString( sequence );
         }
     }
 
