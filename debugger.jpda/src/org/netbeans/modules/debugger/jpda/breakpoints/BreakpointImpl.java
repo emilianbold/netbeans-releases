@@ -284,4 +284,18 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
             }
         }
     }
+    
+    /**
+     * Support method for simple patterns.
+     */
+    static boolean match (String name, String pattern) {
+        if (pattern.startsWith ("*"))
+            return name.endsWith (pattern.substring (1));
+        else
+        if (pattern.endsWith ("*"))
+            return name.startsWith (
+                pattern.substring (0, pattern.length () - 1)
+            );
+        return name.equals (pattern);
+    }
 }
