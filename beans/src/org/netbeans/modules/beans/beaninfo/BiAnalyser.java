@@ -468,9 +468,9 @@ public class BiAnalyser extends Object implements Node.Cookie {
         if ( nullDescriptor ) {
             sb.append( TAB + GenerateBeanInfoAction.getString( "COMMENT_NullDescriptor" ) );
             sb.append( TAB + "private static BeanDescriptor beanDescriptor = null;\n" ); // NOI18N
-            sb.append( TAB  + "private static BeanDescriptor getBdescriptor(){\n");
-            sb.append( TABx2+ "return beanDescriptor;\n" + TAB + "}\n\n" ); // NOI18N
-            bis.setDescriptorSection( sb.toString(), "  \n" ); // NOI18N
+            sb.append( TAB  + "private static BeanDescriptor getBdescriptor(){\n\n");
+            //sb.append( TABx2+ "return beanDescriptor;\n" + TAB + "}\n\n" ); // NOI18N
+            bis.setDescriptorSection( sb.toString(), "\n" + TABx2+ "return beanDescriptor;\n" + TAB + "}\n\n" ); // NOI18N
             return;
         }
         
@@ -528,8 +528,8 @@ public class BiAnalyser extends Object implements Node.Cookie {
             sb.append( TAB + GenerateBeanInfoAction.getString( "COMMENT_NullProperties" ) );
             sb.append( TAB + "private static PropertyDescriptor[] properties = null;\n" ); // NOI18N
             sb.append( TAB  + "private static PropertyDescriptor[] getPdescriptor(){\n");
-            sb.append( TABx2+ "return properties;\n" + TAB + "}\n\n" ); // NOI18N
-            bis.setPropertiesSection( sb.toString(), "  \n" ); // NOI18N
+            //sb.append( TABx2+ "return properties;\n" + TAB + "}\n\n" ); // NOI18N
+            bis.setPropertiesSection( sb.toString(), TABx2+ "return properties;\n" + TAB + "}\n\n" ); // NOI18N
             return;
         }
 
@@ -615,8 +615,8 @@ public class BiAnalyser extends Object implements Node.Cookie {
             sb.append( TAB + GenerateBeanInfoAction.getString( "COMMENT_NullMethods" ) );
             sb.append( TAB + "private static MethodDescriptor[] methods = null;\n" ); // NOI18N
             sb.append( TAB  + "private static MethodDescriptor[] getMdescriptor(){\n");
-            sb.append( TABx2+ "return methods;\n" + TAB + "}\n\n" ); // NOI18N
-            bis.setMethodsSection( sb.toString(), "  \n" ); // NOI18N
+            //sb.append( TABx2+ "return methods;\n" + TAB + "}\n\n" ); // NOI18N
+            bis.setMethodsSection( sb.toString(), TABx2+ "return methods;\n" + TAB + "}\n\n" ); // NOI18N
             return;
         }
 
@@ -706,8 +706,8 @@ public class BiAnalyser extends Object implements Node.Cookie {
             sb.append( TAB + GenerateBeanInfoAction.getString( "COMMENT_NullEventSets" ) );
             sb.append( TAB + "private static EventSetDescriptor[] eventSets = null;\n" ); // NOI18N
             sb.append( TAB  + "private static EventSetDescriptor[] getEdescriptor(){\n");
-            sb.append( TABx2+ "return eventSets;\n" + TAB + "}\n\n" ); // NOI18N
-            bis.setEventSetsSection( sb.toString(), "  \n" ); // NOI18N
+            //sb.append( TABx2+ "return eventSets;\n" + TAB + "}\n\n" ); // NOI18N
+            bis.setEventSetsSection( sb.toString(), TABx2+ "return eventSets;\n" + TAB + "}\n\n" ); // NOI18N
             return;
         }
 
