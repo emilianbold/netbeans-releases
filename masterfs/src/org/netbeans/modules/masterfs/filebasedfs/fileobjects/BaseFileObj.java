@@ -96,14 +96,14 @@ public abstract class BaseFileObj extends FileObject {
     }
 
     public final String getName() {
-        final File file = getFileName().getFile();
-        final String name = (file.getParentFile() == null) ? file.getAbsolutePath() : file.getName();
+        final String name = getFileName ().getName ();
         final int i = name.lastIndexOf(EXTENSION_SEPARATOR);
         /** period at first position is not considered as extension-separator */
         String retVal = i <= 0 || i == name.length() ? name : name.substring(0, i); // NOI18N;
         assert assertGetNameExt(name, retVal, getExt());
         if (retVal.endsWith(String.valueOf(UNC_PREFIX)) || retVal.endsWith(PATH_SEPARATOR)) {//NOI18N
             //TODO: UNCPath workaround
+            File file = getFileName ().getFile ();
             boolean isPermittedToStripSlash = !(file.getParentFile() == null && new FileInfo(file).isUNCFolder());
             if (isPermittedToStripSlash) {
                 assert (file.getParentFile() == null);
@@ -114,13 +114,11 @@ public abstract class BaseFileObj extends FileObject {
     }
 
     public final String getExt() {
-        final File file = getFileName().getFile();
-        final String name = (file.getParentFile() == null) ? file.getAbsolutePath() : file.getName();
+        final String name = getFileName ().getName ();
         final int i = name.lastIndexOf(EXTENSION_SEPARATOR) + 1;
         /** period at first position is not considered as extension-separator */
         String retVal = i <= 1 || i == name.length() ? "" : name.substring(i); // NOI18N;
         if (retVal.endsWith(String.valueOf(EXTENSION_SEPARATOR)) || retVal.endsWith(PATH_SEPARATOR)) {//NOI18N
-            assert (file.getParentFile() == null);
             retVal = retVal.substring(0, retVal.length() - 1);
         }
 
