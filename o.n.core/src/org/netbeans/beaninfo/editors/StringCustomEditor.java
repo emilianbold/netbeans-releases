@@ -33,7 +33,7 @@ static final long serialVersionUID =7348579663907322425L;
   public StringCustomEditor(StringEditor ed) {
     editor = ed;
     String s = (String) editor.getValue ();
-    if (s == null) s = "";
+    if (s == null) s = ""; // NOI18N
     initComponents ();
     textArea.setText (s);
     setBorder (new javax.swing.border.EmptyBorder (new java.awt.Insets(8, 8, 8, 8)));
@@ -65,7 +65,7 @@ static final long serialVersionUID =7348579663907322425L;
     textAreaScroll.setViewportView (textArea);
 
 
-    add (textAreaScroll, "Center");
+    add (textAreaScroll, "Center"); // NOI18N
 
   }//GEN-END:initComponents
 
@@ -80,6 +80,7 @@ static final long serialVersionUID =7348579663907322425L;
 
 /*
  * Log
+ *  11   Gandalf   1.10        1/13/00  Petr Jiricka    i18n
  *  10   Gandalf   1.9         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  9    Gandalf   1.8         8/18/99  Ian Formanek    Fixed bug 2322 - Some PE

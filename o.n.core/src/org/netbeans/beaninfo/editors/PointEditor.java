@@ -31,7 +31,7 @@ public class PointEditor extends ArrayOfIntSupport {
     PointEditor.class);
 
   public PointEditor() {
-    super("java.awt.Point", 2);
+    super("java.awt.Point", 2); // NOI18N
   }
 
   /** Abstract method for translating the value from getValue() method to array of int. */
@@ -73,13 +73,14 @@ public class PointEditor extends ArrayOfIntSupport {
 
   /** Provides name of XML tag to use for XML persistence of the property value */
   protected String getXMLValueTag () {
-    return "Point";
+    return "Point"; // NOI18N
   }
 
 }
 
 /*
  * Log
+ *  7    Gandalf   1.6         1/13/00  Petr Jiricka    i18n
  *  6    Gandalf   1.5         1/11/00  Radko Najman    fixed bug #4910
  *  5    Gandalf   1.4         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment

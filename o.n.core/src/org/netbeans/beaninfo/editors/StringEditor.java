@@ -29,11 +29,11 @@ public class StringEditor extends PropertyEditorSupport {
 
   public String getJavaInitializationString () {
     String s = (String) getValue ();
-    s = Utilities.replaceString (s, "\\", "\\\\");
-    s = Utilities.replaceString (s, "\"", "\\\"");
-    s = Utilities.replaceString (s, "\n", "\\n");
-    s = Utilities.replaceString (s, "\t", "\\t");
-    return "\""+s+"\"";
+    s = Utilities.replaceString (s, "\\", "\\\\"); // NOI18N
+    s = Utilities.replaceString (s, "\"", "\\\""); // NOI18N
+    s = Utilities.replaceString (s, "\n", "\\n"); // NOI18N
+    s = Utilities.replaceString (s, "\t", "\\t"); // NOI18N
+    return "\""+s+"\""; // NOI18N
   }
   
   public boolean supportsCustomEditor () {
@@ -48,6 +48,7 @@ public class StringEditor extends PropertyEditorSupport {
 
 /*
  * Log
+ *  5    Gandalf   1.4         1/13/00  Petr Jiricka    i18n
  *  4    Gandalf   1.3         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  3    Gandalf   1.2         9/14/99  Ian Formanek    Fixed bug 3875 - The 

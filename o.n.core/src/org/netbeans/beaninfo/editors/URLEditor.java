@@ -41,7 +41,7 @@ public class URLEditor extends PropertyEditorSupport implements org.openide.expl
   
   public String getJavaInitializationString () {
     URL url = (URL) getValue ();
-    return "\""+url.toString ()+"\"";
+    return "\""+url.toString ()+"\""; // NOI18N
   }
   
   public boolean supportsCustomEditor () {
@@ -51,9 +51,9 @@ public class URLEditor extends PropertyEditorSupport implements org.openide.expl
 //--------------------------------------------------------------------------
 // XMLPropertyEditor implementation
 
-  public static final String XML_URL = "Url";
+  public static final String XML_URL = "Url"; // NOI18N
 
-  public static final String ATTR_VALUE = "value";
+  public static final String ATTR_VALUE = "value"; // NOI18N
 
   /** Called to load property value from specified XML subtree. If succesfully loaded, 
   * the value should be available via the getValue method.
@@ -88,6 +88,7 @@ public class URLEditor extends PropertyEditorSupport implements org.openide.expl
 
 /*
  * Log
+ *  5    Gandalf   1.4         1/13/00  Petr Jiricka    i18n
  *  4    Gandalf   1.3         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  3    Gandalf   1.2         7/19/99  Ian Formanek    XML Serialization

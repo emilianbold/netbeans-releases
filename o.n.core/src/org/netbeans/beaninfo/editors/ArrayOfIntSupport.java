@@ -55,12 +55,12 @@ abstract class ArrayOfIntSupport extends java.beans.PropertyEditorSupport implem
   */
   public String getJavaInitializationString() {
     int[] val = getValues();
-    StringBuffer buf = new StringBuffer("new ");
+    StringBuffer buf = new StringBuffer("new "); // NOI18N
     
     buf.append(className);
-    buf.append("(");
+    buf.append("("); // NOI18N
     addArray(buf, val);
-    buf.append(")");
+    buf.append(")"); // NOI18N
     return buf.toString();
   }
 
@@ -86,23 +86,23 @@ abstract class ArrayOfIntSupport extends java.beans.PropertyEditorSupport implem
     if (val == null)
       return null;
     else {
-      StringBuffer buf = new StringBuffer("[");
+      StringBuffer buf = new StringBuffer("["); // NOI18N
       addArray(buf, val);
-      buf.append("]");
+      buf.append("]"); // NOI18N
       return buf.toString();
     }
   }
 
-  /** Add array of integers to the StringBuffer. Numbers are separated by ", " string */
+  /** Add array of integers to the StringBuffer. Numbers are separated by ", " string */  // NOI18N
   private void addArray(StringBuffer buf, int[] arr) {
     for (int i = 0; i < count; i++) {
       if (arr == null)
-        buf.append("0");
+        buf.append("0"); // NOI18N
       else
         buf.append(arr[i]);
       
       if (i < count - 1)
-        buf.append(", ");
+        buf.append(", "); // NOI18N
     }
   }
   
@@ -116,7 +116,7 @@ abstract class ArrayOfIntSupport extends java.beans.PropertyEditorSupport implem
     int[] newVal = new int[count];
     int nextNumber = 0;
 
-    StringTokenizer tuk = new StringTokenizer(text, "[] ,;", false);
+    StringTokenizer tuk = new StringTokenizer(text, "[] ,;", false); // NOI18N
     while (tuk.hasMoreTokens()) {
       String token = tuk.nextToken();
       if (nextNumber >= count)
@@ -150,16 +150,16 @@ abstract class ArrayOfIntSupport extends java.beans.PropertyEditorSupport implem
 
   /** @return the format info for the user. Can be rewritten in subclasses. */
   String getHintFormat() {
-    StringBuffer buf = new StringBuffer("[");
+    StringBuffer buf = new StringBuffer("["); // NOI18N
     for (int i = 0; i < count; i++) {
-      buf.append("<n");
+      buf.append("<n"); // NOI18N
       buf.append(i);
-      buf.append(">");
+      buf.append(">"); // NOI18N
       
       if (i < count - 1)
-        buf.append(", ");
+        buf.append(", "); // NOI18N
     }
-    buf.append("]");
+    buf.append("]"); // NOI18N
 
     return buf.toString();
   }
@@ -167,7 +167,7 @@ abstract class ArrayOfIntSupport extends java.beans.PropertyEditorSupport implem
 //--------------------------------------------------------------------------
 // XMLPropertyEditor implementation
 
-  public static final String ATTR_VALUE = "value";
+  public static final String ATTR_VALUE = "value"; // NOI18N
 
   /** Provides name of XML tag to use for XML persistence of the property value */
   protected abstract String getXMLValueTag ();
@@ -208,6 +208,7 @@ abstract class ArrayOfIntSupport extends java.beans.PropertyEditorSupport implem
 
 /*
  * Log
+ *  6    Gandalf   1.5         1/13/00  Petr Jiricka    i18n
  *  5    Gandalf   1.4         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  4    Gandalf   1.3         7/19/99  Ian Formanek    XML Serialization

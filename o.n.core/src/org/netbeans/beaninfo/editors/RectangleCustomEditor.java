@@ -40,10 +40,10 @@ static final long serialVersionUID =-9015667991684634296L;
     this.editor = editor;
     Rectangle rectangle = (Rectangle)editor.getValue ();
     if (rectangle == null) rectangle = new Rectangle (0, 0, 0, 0);
-    xField.setText (""+rectangle.x);
-    yField.setText (""+rectangle.y);
-    widthField.setText (""+rectangle.width);
-    heightField.setText (""+rectangle.height);
+    xField.setText (""+rectangle.x); // NOI18N
+    yField.setText (""+rectangle.y); // NOI18N
+    widthField.setText (""+rectangle.width); // NOI18N
+    heightField.setText (""+rectangle.height); // NOI18N
 
     setBorder (new javax.swing.border.EmptyBorder (new java.awt.Insets(5, 5, 5, 5)));
     jPanel2.setBorder (new javax.swing.border.CompoundBorder (
@@ -185,7 +185,7 @@ static final long serialVersionUID =-9015667991684634296L;
     jPanel2.add (heightField, gridBagConstraints1);
 
 
-    add (jPanel2, "Center");
+    add (jPanel2, "Center"); // NOI18N
 
   }//GEN-END:initComponents
 
@@ -222,6 +222,7 @@ static final long serialVersionUID =-9015667991684634296L;
 
 /*
  * Log
+ *  12   Gandalf   1.11        1/13/00  Petr Jiricka    i18n
  *  11   Gandalf   1.10        1/11/00  Radko Najman    fixed bug #4910
  *  10   Gandalf   1.9         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment

@@ -51,8 +51,8 @@ static final long serialVersionUID =3718340148720193844L;
     widthLabel.setText (bundle.getString ("CTL_Width"));
     heightLabel.setText (bundle.getString ("CTL_Height"));
 
-    widthField.setText (""+dimension.width);
-    heightField.setText (""+dimension.height);
+    widthField.setText (""+dimension.width); // NOI18N
+    heightField.setText (""+dimension.height); // NOI18N
     HelpCtx.setHelpIDString (this, DimensionCustomEditor.class.getName ());
   }
 
@@ -90,7 +90,7 @@ static final long serialVersionUID =3718340148720193844L;
     java.awt.GridBagConstraints gridBagConstraints1;
     insidePanel.setBorder (new javax.swing.border.CompoundBorder(
   new javax.swing.border.TitledBorder(
-  new javax.swing.border.EtchedBorder(), "Dimension"), 
+  new javax.swing.border.EtchedBorder(), "Dimension"),
   new javax.swing.border.EmptyBorder(new java.awt.Insets(5, 5, 5, 5))));
 
       widthLabel = new javax.swing.JLabel ();
@@ -138,7 +138,7 @@ static final long serialVersionUID =3718340148720193844L;
     insidePanel.add (heightField, gridBagConstraints1);
 
 
-    add (insidePanel, "Center");
+    add (insidePanel, "Center"); // NOI18N
 
   }//GEN-END:initComponents
 
@@ -169,6 +169,7 @@ static final long serialVersionUID =3718340148720193844L;
 
 /*
  * Log
+ *  12   Gandalf   1.11        1/13/00  Petr Jiricka    i18n
  *  11   Gandalf   1.10        1/11/00  Radko Najman    fixed bug #4910
  *  10   Gandalf   1.9         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment

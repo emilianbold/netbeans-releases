@@ -22,7 +22,7 @@ import java.util.Properties;
 public class PropertiesEditor extends PropertyEditorSupport {
 
   public String getAsText(String s) {
-    return "<Properties>";
+    return org.openide.util.NbBundle.getBundle(PropertiesEditor.class).getString("CTL_TextProperties");
   }
 
   /** sets new value */
@@ -45,6 +45,7 @@ public class PropertiesEditor extends PropertyEditorSupport {
 
 /*
  * Log
+ *  3    Gandalf   1.2         1/13/00  Petr Jiricka    i18n
  *  2    Gandalf   1.1         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  1    Gandalf   1.0         6/4/99   Ian Formanek    

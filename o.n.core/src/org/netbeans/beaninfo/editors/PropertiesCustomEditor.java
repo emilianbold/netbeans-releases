@@ -37,7 +37,7 @@ static final long serialVersionUID =2473843831910895646L;
     if (props == null) props = new Properties ();
     ByteArrayOutputStream baos = new ByteArrayOutputStream ();
     try {
-      props.store (baos, "");
+      props.store (baos, ""); // NOI18N
     } catch (IOException e) {
       // strange, strange -> ignore
     }
@@ -76,7 +76,7 @@ static final long serialVersionUID =2473843831910895646L;
     textAreaScroll.setViewportView (textArea);
 
 
-    add (textAreaScroll, "Center");
+    add (textAreaScroll, "Center"); // NOI18N
 
   }//GEN-END:initComponents
 
@@ -91,6 +91,7 @@ static final long serialVersionUID =2473843831910895646L;
 
 /*
  * Log
+ *  8    Gandalf   1.7         1/13/00  Petr Jiricka    i18n
  *  7    Gandalf   1.6         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  6    Gandalf   1.5         8/18/99  Ian Formanek    Fixed bug 2322 - Some PE

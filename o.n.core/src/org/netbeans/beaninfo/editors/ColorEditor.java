@@ -218,16 +218,16 @@ public final class ColorEditor implements PropertyEditor, org.openide.explorer.p
     switch (color.getPalette ()) {
     default:
     case AWT_PALETTE:
-      return "java.awt.Color." + color.getID ();
+      return "java.awt.Color." + color.getID (); // NOI18N
     case SYSTEM_PALETTE:
-      return "java.awt.SystemColor." + systemGenerate [getIndex (systemColorNames, color.getID ())];
+      return "java.awt.SystemColor." + systemGenerate [getIndex (systemColorNames, color.getID ())]; // NOI18N
     case SWING_PALETTE:
       initSwingConstants();
       int i = getIndex (swingColorNames, color.getID ());
-      if (i < 0) return "new java.awt.Color (" + color.getRed () + ", " + color.getGreen () +
-                        ", " + color.getBlue () + ")";
-      return "(java.awt.Color) javax.swing.UIManager.getDefaults ().get (\"" +
-             color.getID () + "\")";
+      if (i < 0) return "new java.awt.Color (" + color.getRed () + ", " + color.getGreen () + // NOI18N
+                        ", " + color.getBlue () + ")"; // NOI18N
+      return "(java.awt.Color) javax.swing.UIManager.getDefaults ().get (\"" + // NOI18N
+             color.getID () + "\")"; // NOI18N
     }
   }
 
@@ -385,7 +385,7 @@ static final long serialVersionUID =-6230228701104365037L;
 
     String getAsText () {
       if (id != null) return id;
-      return "[" + getRed () + "," + getGreen () + "," + getBlue () + "]";
+      return "[" + getRed () + "," + getGreen () + "," + getBlue () + "]"; // NOI18N
     }
   }
 
@@ -467,7 +467,7 @@ static final long serialVersionUID =-6230228701104365037L;
     /** Cell of the list showing palette colors */
     final class MyListCellRenderer extends JPanel implements ListCellRenderer {
 
-      protected Border hasFocusBorder = new LineBorder (UIManager.getColor ("List.focusCellHighlight"));
+      protected Border hasFocusBorder = new LineBorder (UIManager.getColor ("List.focusCellHighlight")); // NOI18N
       protected Border noFocusBorder = new EmptyBorder(1, 1, 1, 1);
 
       boolean selected, hasFocus;
@@ -500,8 +500,8 @@ static final long serialVersionUID =-6230228701104365037L;
         Dimension rectangle = getSize ();
         Color color = g.getColor ();
 
-        if (selected) g.setColor (UIManager.getColor ("List.selectionBackground"));
-        else g.setColor (UIManager.getColor ("List.background"));
+        if (selected) g.setColor (UIManager.getColor ("List.selectionBackground")); // NOI18N
+        else g.setColor (UIManager.getColor ("List.background")); // NOI18N
         g.fillRect (0, 0, rectangle.width - 1, rectangle.height - 1);
 
         if (hasFocus) {
@@ -513,8 +513,8 @@ static final long serialVersionUID =-6230228701104365037L;
         g.drawRect (6, rectangle.height / 2 - 5 , 10, 10);
         g.setColor (colors [index]);
         g.fillRect (7, rectangle.height / 2 - 4 , 9, 9);
-        if (selected) g.setColor (UIManager.getColor ("List.selectionForeground"));
-        else g.setColor (UIManager.getColor ("List.foreground"));
+        if (selected) g.setColor (UIManager.getColor ("List.selectionForeground")); // NOI18N
+        else g.setColor (UIManager.getColor ("List.foreground")); // NOI18N
         FontMetrics fm = g.getFontMetrics ();
         g.drawString (names [index], 22, (rectangle.height - fm.getHeight ()) / 2 + fm.getAscent ());
         g.setColor (color);
@@ -541,17 +541,17 @@ static final long serialVersionUID =-6230228701104365037L;
 //--------------------------------------------------------------------------
 // XMLPropertyEditor implementation
 
-  public static final String XML_COLOR = "Color";
+  public static final String XML_COLOR = "Color"; // NOI18N
 
-  public static final String ATTR_TYPE = "type";
-  public static final String ATTR_RED = "red";
-  public static final String ATTR_GREEN = "green";
-  public static final String ATTR_BLUE = "blue";
-  public static final String ATTR_ID = "id";
-  public static final String ATTR_PALETTE = "palette";
+  public static final String ATTR_TYPE = "type"; // NOI18N
+  public static final String ATTR_RED = "red"; // NOI18N
+  public static final String ATTR_GREEN = "green"; // NOI18N
+  public static final String ATTR_BLUE = "blue"; // NOI18N
+  public static final String ATTR_ID = "id"; // NOI18N
+  public static final String ATTR_PALETTE = "palette"; // NOI18N
 
-  public static final String VALUE_PALETTE = "palette";
-  public static final String VALUE_RGB = "rgb";
+  public static final String VALUE_PALETTE = "palette"; // NOI18N
+  public static final String VALUE_RGB = "rgb"; // NOI18N
 
   /** Called to load property value from specified XML subtree. If succesfully loaded, 
   * the value should be available via the getValue method.
@@ -603,6 +603,7 @@ static final long serialVersionUID =-6230228701104365037L;
 
 /*
  * Log
+ *  21   Gandalf   1.20        1/13/00  Petr Jiricka    i18n
  *  20   Gandalf   1.19        12/8/99  Petr Nejedly    Enabled setValue(null)
  *  19   Gandalf   1.18        11/26/99 Patrik Knakal   
  *  18   Gandalf   1.17        10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

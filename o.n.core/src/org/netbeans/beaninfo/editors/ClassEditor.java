@@ -31,8 +31,8 @@ public class ClassEditor extends java.beans.PropertyEditorSupport {
    */
   public String getJavaInitializationString() {
     Class clazz = (Class)getValue();
-    if (clazz == null) return "null";
-    return "Class.forName (\"" + clazz.getName () + "\")";
+    if (clazz == null) return "null"; // NOI18N
+    return "Class.forName (\"" + clazz.getName () + "\")"; // NOI18N
   }
 
   //----------------------------------------------------------------------
@@ -45,7 +45,7 @@ public class ClassEditor extends java.beans.PropertyEditorSupport {
   */
   public String getAsText() {
     Class clazz = (Class)getValue();
-    if (clazz == null) return "null";
+    if (clazz == null) return "null"; // NOI18N
     return clazz.getName ();
   }
 
@@ -66,6 +66,7 @@ public class ClassEditor extends java.beans.PropertyEditorSupport {
 
 /*
  * Log
+ *  5    Gandalf   1.4         1/13/00  Petr Jiricka    i18n
  *  4    Gandalf   1.3         1/10/00  Jan Jancura     Bug 1592
  *  3    Gandalf   1.2         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment

@@ -36,13 +36,13 @@ public class ServiceTypeEditor extends java.beans.PropertyEditorSupport {
   /** message to be used in custom editor */
   private String message;
 
-  /** type which will be used to indicate "none", i.e. a no-op */
+  /** type which will be used to indicate "none", i.e. a no-op */ // NOI18N
   private ServiceType none;
   
   /** constructs new property editor.
   */
   public ServiceTypeEditor() {
-    this (ServiceType.class, "", null);  
+    this (ServiceType.class, "", null);   // NOI18N
   }
 
   /** constructs new property editor.
@@ -80,7 +80,7 @@ public class ServiceTypeEditor extends java.beans.PropertyEditorSupport {
   *    current value.
   */
   public String getJavaInitializationString() {
-    return "???";
+    return "???"; // NOI18N
   }
 
   
@@ -148,6 +148,7 @@ public class ServiceTypeEditor extends java.beans.PropertyEditorSupport {
 
 /*
  * Log
+ *  4    Gandalf   1.3         1/13/00  Petr Jiricka    i18n
  *  3    Gandalf   1.2         10/29/99 Jesse Glick     Added "(no compiler)" 
  *       etc. to service type selection panel.
  *  2    Gandalf   1.1         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

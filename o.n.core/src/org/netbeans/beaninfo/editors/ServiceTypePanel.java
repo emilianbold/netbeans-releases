@@ -103,7 +103,7 @@ public class ServiceTypePanel extends ExplorerPanel {
   /** Fires property change.
   */
   void firePropertyChange () {
-    firePropertyChange ("serviceType", null, null);
+    firePropertyChange ("serviceType", null, null); // NOI18N
   }
   
   /** Updates the current state of the explorer manager.
@@ -160,12 +160,12 @@ public class ServiceTypePanel extends ExplorerPanel {
     listView1.setPopupAllowed (false);
 
 
-    add (listView1, "Center");
+    add (listView1, "Center"); // NOI18N
 
     propertySheetView1 = new org.openide.explorer.propertysheet.PropertySheetView ();
 
 
-    add (propertySheetView1, "East");
+    add (propertySheetView1, "East"); // NOI18N
 
   }//GEN-END:initComponents
 
@@ -207,7 +207,7 @@ public class ServiceTypePanel extends ExplorerPanel {
             Node.Property[] props = sets[ii].getProperties ();
             List nueprops = new ArrayList ();
             for (int j = 0; j < props.length; j++)
-              if (! props[j].getName ().equals ("name"))
+              if (! props[j].getName ().equals ("name")) // NOI18N
                 nueprops.add (props[j]);
             return (Node.Property[]) nueprops.toArray (new Node.Property[nueprops.size ()]);
           }
@@ -222,6 +222,7 @@ public class ServiceTypePanel extends ExplorerPanel {
 
 /*
  * Log
+ *  7    Gandalf   1.6         1/13/00  Petr Jiricka    i18n
  *  6    Gandalf   1.5         11/26/99 Patrik Knakal   
  *  5    Gandalf   1.4         11/5/99  Jesse Glick     Context help jumbo 
  *       patch.

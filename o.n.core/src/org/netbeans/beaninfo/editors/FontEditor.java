@@ -89,9 +89,9 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
       font = new Font( fonts[0], Font.PLAIN, 10 );
     } else font = (Font) object;
 
-    fontName = font.getName () + " " + font.getSize () + " " + getStyleName (font.getStyle ());
+    fontName = font.getName () + " " + font.getSize () + " " + getStyleName (font.getStyle ()); // NOI18N
 
-    support.firePropertyChange ("", null, null);
+    support.firePropertyChange ("", null, null); // NOI18N
   }
 
   public String getAsText () {
@@ -103,8 +103,8 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
   }
 
   public String getJavaInitializationString () {
-    return "new java.awt.Font (\"" + font.getName () + "\", " + font.getStyle () +
-           ", " + font.getSize () + ")";
+    return "new java.awt.Font (\"" + font.getName () + "\", " + font.getStyle () + // NOI18N
+           ", " + font.getSize () + ")"; // NOI18N
   }
 
   public String[] getTags () {
@@ -200,7 +200,7 @@ static final long serialVersionUID =8377025140456676594L;
       add (tfStyle);
 
       c.gridwidth = GridBagConstraints.REMAINDER;
-      tfSize = new JTextField ("" + FontEditor.this.font.getSize ());
+      tfSize = new JTextField ("" + FontEditor.this.font.getSize ()); // NOI18N
       tfSize.addActionListener (new ActionListener () {
         public void actionPerformed (ActionEvent e) {
           setValue ();
@@ -259,7 +259,7 @@ static final long serialVersionUID =8377025140456676594L;
           public void valueChanged (ListSelectionEvent e) {
             if (!lSize.isSelectionEmpty ()) {
               int i = lSize.getSelectedIndex ();
-              tfSize.setText ("" + sizes [i]);
+              tfSize.setText ("" + sizes [i]); // NOI18N
               setValue ();
             }
           }
@@ -285,7 +285,7 @@ static final long serialVersionUID =8377025140456676594L;
           FontEditor.this.paintValue (g, new Rectangle (0, 0, getSize ().width - 1, getSize ().height - 1));
         }
       };
-      p.add ("Center", pp);
+      p.add ("Center", pp); // NOI18N
       la.setConstraints (p, c);
       add (p);
 
@@ -320,11 +320,11 @@ static final long serialVersionUID =8377025140456676594L;
 //--------------------------------------------------------------------------
 // XMLPropertyEditor implementation
 
-  public static final String XML_FONT = "Font";
+  public static final String XML_FONT = "Font"; // NOI18N
 
-  public static final String ATTR_NAME = "name";
-  public static final String ATTR_STYLE = "style";
-  public static final String ATTR_SIZE = "size";
+  public static final String ATTR_NAME = "name"; // NOI18N
+  public static final String ATTR_STYLE = "style"; // NOI18N
+  public static final String ATTR_SIZE = "size"; // NOI18N
 
   /** Called to load property value from specified XML subtree. If succesfully loaded, 
   * the value should be available via the getValue method.
@@ -364,6 +364,7 @@ static final long serialVersionUID =8377025140456676594L;
 
 /*
  * Log
+ *  11   Gandalf   1.10        1/13/00  Petr Jiricka    i18n
  *  10   Gandalf   1.9         1/13/00  Pavel Buzek     
  *  9    Gandalf   1.8         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
