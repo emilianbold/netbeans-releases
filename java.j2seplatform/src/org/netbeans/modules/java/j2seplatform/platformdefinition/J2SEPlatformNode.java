@@ -12,14 +12,17 @@
  */
 package org.netbeans.modules.java.j2seplatform.platformdefinition;
 
+import java.text.MessageFormat;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 class J2SEPlatformNode extends AbstractNode {
 
     private J2SEPlatformImpl platform;
+    private String toolTip;
 
     public J2SEPlatformNode (J2SEPlatformImpl platform, DataObject definition) {
         super (Children.LEAF, Lookups.fixed(new Object[] {platform, definition}));
@@ -41,6 +44,17 @@ class J2SEPlatformNode extends AbstractNode {
 
     public void setDisplayName(String name) {
         this.setName (name);
+    }
+    
+    public synchronized String getShortDescription() {
+        if (this.toolTip == null) {
+            this.toolTip = MessageFormat.format (
+            NbBundle.getMessage(J2SEPlatformNode.class,"TXT_J2SEPlatformToolTip"),
+            new Object[] {
+                this.platform.getSpecification().getVersion()
+            });
+        }
+        return this.toolTip;
     }
 
     public boolean hasCustomizer () {
