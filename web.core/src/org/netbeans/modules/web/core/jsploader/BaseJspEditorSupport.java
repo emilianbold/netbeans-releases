@@ -53,6 +53,7 @@ import org.openide.util.TaskListener;
 import org.openide.util.Task;
 
 import org.netbeans.modules.web.core.jsploader.TagLibParseSupport;
+import org.openide.windows.CloneableOpenSupport;
 
 public class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, EditorCookie, OpenCookie, LineCookie, CloseCookie, PrintCookie {
     
@@ -248,6 +249,10 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
         
         protected FileLock takeLock() throws IOException {
             return ((MultiDataObject)getDataObject()).getPrimaryEntry().takeLock();
+        }
+        
+        public CloneableOpenSupport findCloneableOpenSupport() {
+            return (BaseJspEditorSupport)getDataObject().getCookie(BaseJspEditorSupport.class);
         }
     }
     
