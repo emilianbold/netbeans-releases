@@ -108,7 +108,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Task is use at submodules' build scripts -->
     <target name="build-xml-lib">
-        <javac classpathref="xmllib.classpath" srcdir="qa-lib/src" verbose="true"/>
+        <javac classpathref="xmllib.classpath" srcdir="qa-lib/src"/>
         <jar basedir="qa-lib/src" jarfile="qa-lib/xml-test-lib.jar"/>
     </target>
     
