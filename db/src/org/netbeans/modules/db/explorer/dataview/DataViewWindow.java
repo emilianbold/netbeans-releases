@@ -725,7 +725,7 @@ public class DataViewWindow extends TopComponent {
                         ret = DialogDisplayer.getDefault().notify(ndesc);
                         if (ret instanceof JButton)
                             try {
-                                retv = ((JButton) DialogDisplayer.getDefault().notify(ndesc)).getText();
+                                retv = ((JButton) ret).getText();
                             } catch (ClassCastException exc) {
                                 retv = cancel; //window closed by close button or Esc key
                             }
