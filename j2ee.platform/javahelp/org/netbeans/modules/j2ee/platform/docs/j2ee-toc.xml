@@ -226,6 +226,7 @@
 <tocitem text="Developing Web Services">
          <tocitem text="About Web Services" >
 		<tocitem text="About Web Services" target="about_web_service" />
+		<tocitem text="About the Wscompile Tool" target="about_wscompile" />
 		<tocitem text="About RPC-Style Web Services" target="about_web_service_rpc" />
 		<tocitem text="About Document-Style Web Services" target="about_web_service_message" />
 		<tocitem text="Working with Web Services" target="ws_process" />
@@ -238,21 +239,22 @@
 	        <tocitem text="Adding a SOAP Message Handler" target="add_soap_message" />
 	</tocitem>
 	<tocitem text="Configuring and Building Web Services" >
-		 <tocitem text="Using the Wscompile Tool" target="about_wscompile" />
 		 <tocitem text="Setting Wscompile Features for a Web Service" target="select_wscompile_ws" />
  		 <tocitem text="Building a Web Service" target="build_ws" />
                  <tocitem text="Tweaking the WSDL File" target="about_wsdl" />
 	 </tocitem>
-	 <tocitem text="Exposing Web Services" >
-		 <tocitem text="Registering a Web Service" target="tbd" />
-		 <tocitem text="Testing a Web Service" target="test_ws" />
+	 <tocitem text="Exposing and Testing Web Services" >
                  <tocitem text="Exposing a Web Service" target="expose_ws" />
+		 <tocitem text="Registering a Web Service" target="register_ws" />
+		 <tocitem text="Testing a Web Service on the Service Side" target="test_ws" /> 
 	 </tocitem>
          <tocitem text="Consuming Web Services" >
-	         <tocitem text="Creating a Web Service Client" target="create_wsc" />
+		 <tocitem text="Creating a Web Service Client" target="create_wsc" />
+		 <tocitem text="Testing a Web Service on the Client Side" target="test_ws_clientside" /> 
 		 <tocitem text="Calling a Web Service Operation" target="call_ws_operation" />
                  <tocitem text="Setting Wscompile Features for a Web Service Client" target="select_wscompile_wsc" />
 		 <tocitem text="Building a Web Service Client" target="tbd" />
+		 <tocitem text="Deploying a Web Service Client" target="tbd" />
 	 </tocitem>
 	
       </tocitem> <!-- Working With Web Service Clients -->
