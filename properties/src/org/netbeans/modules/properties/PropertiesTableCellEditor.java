@@ -138,7 +138,7 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
             }
             
             // the cell is a properties key 
-            return new PropertiesTableModel.StringPair(UtilConvert.charsToUnicodes(commentComponent.getText()),
+            return new PropertiesTableModel.StringPair(UtilConvert.charsToUnicodes(commentComponent.getText(), true),
                 UtilConvert.charsToUnicodes(value),
                 isKeyCell
             );

@@ -25,6 +25,7 @@ import java.io.BufferedWriter;
 import java.util.Hashtable;
 import java.util.Date;
 import java.util.Enumeration;
+import java.io.UnsupportedEncodingException;
 
 /**
  * Contains conversion utilities which allow reading and storing a properties file 
@@ -432,7 +433,16 @@ public class UtilConvert {
     * Converts chars to encoded '\\uxxxx'.
      * Note there are not converted '\\"', '\\'', '\\ ', '\\\\' and java special chars escapes.
     */
-    public static String charsToUnicodes(String theString) {
+    public static String charsToUnicodes(String s){
+        return charsToUnicodes(s, false);
+    }
+    
+    
+    /**
+    * Converts chars to encoded '\\uxxxx'. If escapeWhiteSpaces is true, then white spaces won't be converted
+     * Note there are not converted '\\"', '\\'', '\\ ', '\\\\' and java special chars escapes.
+    */
+    public static String charsToUnicodes(String theString, boolean escapeWhiteSpaces) {
         if(theString == null) return null;
         char aChar;
         int len = theString.length();
@@ -440,7 +450,14 @@ public class UtilConvert {
 
         for(int x=0; x<len; ) {
             aChar = theString.charAt(x++);
-            if ((aChar < 20) || (aChar > 127)) {
+            if ((aChar < 20) || (aChar > 127) ) {
+
+                if (escapeWhiteSpaces && Character.isWhitespace(aChar)){
+                    // do not convert white spaces
+                    outBuffer.append(aChar);
+                    continue;
+                }
+                
                 outBuffer.append('\\');
                 outBuffer.append('u');
                 outBuffer.append(toHex((aChar >> 12) & 0xF));
