@@ -46,12 +46,17 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
     private boolean initialized;
     private List/*<String>*/ targetNames;
     private List/*<TargetMapping>*/ targetMappings;
-    private String defaultScript = null;
     private List/*<FreeformProjectGenerator.CustomTarget>*/ custTargets;
     private CustomTargetsModel customTargetsModel;
     private String antScript;
 
     private String projectType;
+    
+    /** Any change in standard tasks which needs to be persisted? */
+    private boolean dirtyRegular;
+    
+    /** Any change in custom tasks which needs to be persisted? */
+    private boolean dirtyCustom;
     
     public TargetMappingPanel(String type) {
         initComponents();
@@ -98,17 +103,17 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         return (FreeformProjectGenerator.CustomTarget)custTargets.get(index);
     }
 
-    public void setTargetNames(List list) {
+    public void setTargetNames(List list, boolean selectDefaults) {
         targetNames = list;
         targetNames.add(0, ""); //NOI18N
-        updateCombos();
+        updateCombos(selectDefaults);
     }
 
     public void setScript(String script) {
-        this.defaultScript = script;
+        this.antScript = script;
     }
 
-    private void updateCombos() {
+    private void updateCombos(boolean selectDefaults) {
         Iterator it = targetNames.iterator();
         while (it.hasNext()) {
             String name = (String)it.next();
@@ -121,14 +126,16 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
             else if (projectType.equals("webapps")) //NOI18N
                 redeployCombo.addItem(name);
         }
-        selectItem(buildCombo, "build", false); //NOI18N
-        selectItem(cleanCombo, "clean", false); //NOI18N
-        selectItem(javadocCombo, "javadoc", false); //NOI18N
-        selectItem(runCombo, "run", false); //NOI18N
-        if (projectType.equals("j2se")) //NOI18N
-            selectItem(testCombo, "test", false);
-        else if (projectType.equals("webapps")) //NOI18N
-            selectItem(redeployCombo, "run-deploy", false); //NOI18N
+        if (selectDefaults) {
+            selectItem(buildCombo, "build", false); //NOI18N
+            selectItem(cleanCombo, "clean", false); //NOI18N
+            selectItem(javadocCombo, "javadoc", false); //NOI18N
+            selectItem(runCombo, "run", false); //NOI18N
+            if (projectType.equals("j2se")) //NOI18N
+                selectItem(testCombo, "test", false);
+            else if (projectType.equals("webapps")) //NOI18N
+                selectItem(redeployCombo, "run-deploy", false); //NOI18N
+        }
     }
 
     private void selectItem(JComboBox combo, String item, boolean add) {
@@ -211,17 +218,19 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         return l;
     }
 
-    private boolean storeTarget(String key, JComboBox combo) {
-        if (combo.getModel().getSelectedItem() == null) {
-            return false;
-        }
-        String value = (String)combo.getModel().getSelectedItem();
-        if (value.length() == 0) {
-            return false;
+    private void storeTarget(String key, JComboBox combo) {
+        if (combo.getModel().getSelectedItem() == null || ((String)combo.getModel().getSelectedItem()).length() == 0) {
+            removeTargetMapping(key);
+            return;
         }
         FreeformProjectGenerator.TargetMapping tm = getTargetMapping(key);
-        tm.targets = getStringAsList(value);
-        return true;
+        String value = (String)combo.getModel().getSelectedItem();
+        List l = getStringAsList(value);
+        if (!l.equals(tm.targets)) {
+            dirtyRegular = true;
+        }
+        tm.targets = l;
+        return;
     }
 
     private FreeformProjectGenerator.TargetMapping getTargetMapping(String key) {
@@ -234,16 +243,37 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         }
         FreeformProjectGenerator.TargetMapping tm = new FreeformProjectGenerator.TargetMapping();
         tm.name = key;
-        tm.script = defaultScript;
+        tm.script = antScript;
         targetMappings.add(tm);
+        dirtyRegular = true;
         return tm;
     }
 
+    private void removeTargetMapping(String key) {
+        Iterator it = targetMappings.iterator();
+        while (it.hasNext()) {
+            FreeformProjectGenerator.TargetMapping tm = (FreeformProjectGenerator.TargetMapping)it.next();
+            if (tm.name.equals(key)) {
+                it.remove();
+                dirtyRegular = true;
+                return;
+            }
+        }
+    }
+
     public List/*<FreeformProjectGenerator.TargetMapping>*/ getMapping() {
-        if (storeTarget(BUILD_ACTION, buildCombo) && storeTarget(CLEAN_ACTION, cleanCombo)) {
+        storeTarget(BUILD_ACTION, buildCombo);
+        storeTarget(CLEAN_ACTION, cleanCombo);
+        // update rebuilt:
+        if (cleanCombo.getModel().getSelectedItem() != null &&
+                ((String)cleanCombo.getModel().getSelectedItem()).length() > 0 &&
+                buildCombo.getModel().getSelectedItem() != null &&
+                ((String)buildCombo.getModel().getSelectedItem()).length() > 0) {
             FreeformProjectGenerator.TargetMapping tm = getTargetMapping(REBUILD_ACTION);
             String val = (String)cleanCombo.getModel().getSelectedItem()+","+(String)buildCombo.getModel().getSelectedItem();
             tm.targets = getStringAsList(val);
+        } else {
+            removeTargetMapping(REBUILD_ACTION);
         }
         storeTarget(RUN_ACTION, runCombo);
         storeTarget(JAVADOC_ACTION, javadocCombo);
@@ -514,6 +544,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         }
         custTargets.remove(index);
         customTargetsModel.fireTableDataChanged();        
+        dirtyCustom = true;
         updateButtons();
     }//GEN-LAST:event_removeActionPerformed
 
@@ -523,6 +554,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         ct.script = antScript;
         custTargets.add(ct);
         customTargetsModel.fireTableDataChanged();
+        dirtyCustom = true;
         updateButtons();
     }//GEN-LAST:event_addActionPerformed
 
@@ -536,11 +568,11 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
             FileObject as = FreeformProjectGenerator.getAntScript(helper, project.evaluator());
             List l = Util.getAntScriptTargetNames(as);
             if (l != null) {
-                setTargetNames(l);
+                setTargetNames(l, false);
                 initAntTargetEditor(l);
             }
-            defaultScript = FreeformProjectGenerator.getProperties(helper).getProperty(FreeformProjectGenerator.PROP_ANT_SCRIPT);
-            antScript = (defaultScript == null ? null : "${"+FreeformProjectGenerator.PROP_ANT_SCRIPT+"}");
+            antScript = FreeformProjectGenerator.getProperties(helper).getProperty(FreeformProjectGenerator.PROP_ANT_SCRIPT);
+            antScript = (antScript == null ? null : "${"+FreeformProjectGenerator.PROP_ANT_SCRIPT+"}");
             initMappings(FreeformProjectGenerator.getTargetMappings(helper), antScript);
             
             custTargets = FreeformProjectGenerator.getCustomContextMenuActions(helper);
@@ -565,19 +597,27 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
             return;
         }
         List mapping = getMapping();
-        FreeformProjectGenerator.putTargetMappings(helper, mapping);
-        FreeformProjectGenerator.putContextMenuAction(helper, mapping);
-        
-        ArrayList l = new ArrayList(custTargets);
-        Iterator it = l.iterator();
-        while (it.hasNext()) {
-            FreeformProjectGenerator.CustomTarget ct = (FreeformProjectGenerator.CustomTarget)it.next();
-            // XXX: for now just ignore all incomplete records
-            if (ct.label == null || ct.label.length() == 0 || ct.targets == null || ct.targets.size() == 0) {
-                it.remove();
-            }
+        if (dirtyRegular) {
+            FreeformProjectGenerator.putTargetMappings(helper, mapping);
+            FreeformProjectGenerator.putContextMenuAction(helper, mapping);
         }
-        FreeformProjectGenerator.putCustomContextMenuActions(helper, l);
+
+        if (dirtyCustom) {
+            ArrayList l = new ArrayList(custTargets);
+            Iterator it = l.iterator();
+            while (it.hasNext()) {
+                FreeformProjectGenerator.CustomTarget ct = (FreeformProjectGenerator.CustomTarget)it.next();
+                // ignore row if target was not set
+                if (ct.targets == null || ct.targets.size() == 0) {
+                    it.remove();
+                    continue;
+                }
+                if (ct.label == null || ct.label.length() == 0) {
+                    ct.label = (String)ct.targets.get(0);
+                }
+            }
+            FreeformProjectGenerator.putCustomContextMenuActions(helper, l);
+        }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -659,10 +699,15 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         public void setValueAt(Object val, int rowIndex, int columnIndex) {
             FreeformProjectGenerator.CustomTarget ct = getItem(rowIndex);
             if (columnIndex == 0) {
-                ct.targets = Collections.singletonList(val);
+                if (((String)val).length() > 0) {
+                    ct.targets = Collections.singletonList(val);
+                } else {
+                    ct.targets = null;
+                }
             } else {
                 ct.label = (String)val;
             }
+            dirtyCustom = true;
         }
         
     }

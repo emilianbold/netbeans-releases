@@ -16,6 +16,8 @@ package org.netbeans.modules.ant.freeform;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -48,6 +50,13 @@ public class FreeformProjectGenerator {
     /** Location of original project. This property should be set/used when NB 
      * project metadata are stored in different folder. */
     public static final String PROP_PROJECT_LOCATION = "project.location";
+
+    /** Keep root elements in this order. */
+    private static final String[] rootElementsOrder = new String[]{"name", "properties", "folders", "ide-actions", "export", "view", "subprojects"}; // NOI18N
+    private static final String[] viewElementsOrder = new String[]{"items", "context-menu"}; // NOI18N
+    private static final String[] folderElementsOrder = new String[]{"source-folder", "build-folder"}; // NOI18N
+    private static final String[] viewItemElementsOrder = new String[]{"source-folder", "source-file"}; // NOI18N
+    private static final String[] contextMenuElementsOrder = new String[]{"ide-action", "action"}; // NOI18N
     
     private FreeformProjectGenerator() {}
 
@@ -58,9 +67,9 @@ public class FreeformProjectGenerator {
      * @param dir freeform project folder; cannot be null
      * @param name name of new project; cannot be null
      * @param antScript Ant script file; can be null what means default Ant script location
-     * @param mappings list of TargetMapping instances
-     * @param sources list of SourceFolder instances
-     * @param compUnits list of JavaCompilationUnit instances
+     * @param mappings list of TargetMapping instances; cannot be null; can be empty array
+     * @param sources list of SourceFolder instances; cannot be null; can be empty array
+     * @param compUnits list of JavaCompilationUnit instances; cannot be null; can be empty array
      */
     public static AntProjectHelper createJavaProject(File location, File dir, String name, File antScript, List mappings, List sources, List compUnits) throws IOException {
         FileObject dirFO = createProjectDir (dir);
@@ -127,6 +136,7 @@ public class FreeformProjectGenerator {
             tm.name = actionEl.getAttribute("name"); // NOI18N
             List/*<Element>*/ subElems = Util.findSubElements(actionEl);
             List/*<String>*/ targetNames = new ArrayList(subElems.size());
+            List/*<TargetMapping.Context>*/ contexts = new ArrayList();
             Iterator it2 = subElems.iterator();
             while (it2.hasNext()) {
                 Element subEl = (Element)it2.next();
@@ -138,12 +148,59 @@ public class FreeformProjectGenerator {
                     tm.script = Util.findText(subEl);
                     continue;
                 }
-                // XXX: add context here
+                if (subEl.getLocalName().equals("context")) { // NOI18N
+                    TargetMapping.Context ctx = new TargetMapping.Context();
+                    Iterator it3 = Util.findSubElements(subEl).iterator();
+                    while (it3.hasNext()) {
+                        Element contextSubEl = (Element)it3.next();
+                        if (contextSubEl.getLocalName().equals("property")) { // NOI18N
+                            ctx.property = Util.findText(contextSubEl);
+                            continue;
+                        }
+                        if (contextSubEl.getLocalName().equals("format")) { // NOI18N
+                            ctx.format = Util.findText(contextSubEl);
+                            continue;
+                        }
+                        if (contextSubEl.getLocalName().equals("folder")) { // NOI18N
+                            ctx.folder = Util.findText(contextSubEl);
+                            continue;
+                        }
+                    }
+                    contexts.add(ctx);
+                }
             }
             tm.targets = targetNames;
+            if (contexts.size() > 0) {
+                tm.contexts = contexts;
+            }
             list.add(tm);
         }
         return list;
+    }
+
+    /**
+     * Append child element to the correct position according to given
+     * order.
+     * @param parent parent to which the child will be added
+     * @param el element to be added
+     * @param order order of the elements which must be followed
+     */
+    private static void appendChildElement(Element parent, Element el, String[] order) {
+        Element insertBefore = null;
+        List l = Arrays.asList(order);
+        int index = l.indexOf(el.getLocalName());
+        assert index != -1 : el.getLocalName()+" was not found in "+l; // NOI18N
+        Iterator it = Util.findSubElements(parent).iterator();
+        while (it.hasNext()) {
+            Element e = (Element)it.next();
+            int index2 = l.indexOf(e.getLocalName());
+            assert index2 != -1 : e.getLocalName()+" was not found in "+l; // NOI18N
+            if (index2 > index) {
+                insertBefore = e;
+                break;
+            }
+        }
+        parent.insertBefore(el, insertBefore);
     }
     
     /**
@@ -155,35 +212,60 @@ public class FreeformProjectGenerator {
     public static void putTargetMappings(AntProjectHelper helper, List/*<TargetMapping>*/ mappings) {
         Element data = helper.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
-        Element actionsEl = Util.findElement(data, "ide-actions", FreeformProjectType.NS_GENERAL); // NOI18N
-        if (actionsEl != null) {
-            data.removeChild(actionsEl);
+        Element actions = Util.findElement(data, "ide-actions", FreeformProjectType.NS_GENERAL); // NOI18N
+        if (actions != null) {
+            data.removeChild(actions);
         }
         
-        Element actions = doc.createElementNS(FreeformProjectType.NS_GENERAL, "ide-actions"); // NOI18N
+        actions = doc.createElementNS(FreeformProjectType.NS_GENERAL, "ide-actions"); // NOI18N
         Iterator it = mappings.iterator();
         while (it.hasNext()) {
             TargetMapping tm = (TargetMapping)it.next();
             Element action = doc.createElementNS(FreeformProjectType.NS_GENERAL, "action"); //NOI18N
             action.setAttribute("name", tm.name);
-            Iterator it2 = tm.targets.iterator();
-            while (it2.hasNext()) {
-                String targetName = (String)it2.next();
-                Element target = doc.createElementNS(FreeformProjectType.NS_GENERAL, "target"); //NOI18N
-                target.appendChild(doc.createTextNode(targetName)); // NOI18N
-                action.appendChild(target);
-            }
             if (tm.script != null) {
                 Element script = doc.createElementNS(FreeformProjectType.NS_GENERAL, "script"); //NOI18N
                 script.appendChild(doc.createTextNode(tm.script)); // NOI18N
                 action.appendChild(script);
             }
+            if (tm.targets != null) {
+                Iterator it2 = tm.targets.iterator();
+                while (it2.hasNext()) {
+                    String targetName = (String)it2.next();
+                    Element target = doc.createElementNS(FreeformProjectType.NS_GENERAL, "target"); //NOI18N
+                    target.appendChild(doc.createTextNode(targetName)); // NOI18N
+                    action.appendChild(target);
+                }
+            }
+            if (tm.contexts != null && tm.contexts.size() > 0) {
+                Iterator it2 = tm.contexts.iterator();
+                while (it2.hasNext()) {
+                    Element context = doc.createElementNS(FreeformProjectType.NS_GENERAL, "context"); //NOI18N
+                    TargetMapping.Context ctx = (TargetMapping.Context)it2.next();
+                    if (ctx.property != null) {
+                        Element property = doc.createElementNS(FreeformProjectType.NS_GENERAL, "property"); //NOI18N
+                        property.appendChild(doc.createTextNode(ctx.property)); // NOI18N
+                        context.appendChild(property);
+                    }
+                    if (ctx.format != null) {
+                        Element format = doc.createElementNS(FreeformProjectType.NS_GENERAL, "format"); //NOI18N
+                        format.appendChild(doc.createTextNode(ctx.format)); // NOI18N
+                        context.appendChild(format);
+                    }
+                    if (ctx.folder != null) {
+                        Element folder = doc.createElementNS(FreeformProjectType.NS_GENERAL, "folder"); //NOI18N
+                        folder.appendChild(doc.createTextNode(ctx.folder)); // NOI18N
+                        context.appendChild(folder);
+                    }
+                    action.appendChild(context);
+                }
+            }
             actions.appendChild(action);
         }
-        data.appendChild(actions);
+        appendChildElement(data, actions, rootElementsOrder);
         helper.putPrimaryConfigurationData(data, true);
     }
-
+    
     /**
      * Update context menu actions. Project is left modified and 
      * you must save it explicitely.
@@ -197,12 +279,12 @@ public class FreeformProjectGenerator {
         Element viewEl = Util.findElement(data, "view", FreeformProjectType.NS_GENERAL); // NOI18N
         if (viewEl == null) {
             viewEl = doc.createElementNS(FreeformProjectType.NS_GENERAL, "view"); // NOI18N
-            data.appendChild(viewEl);
+            appendChildElement(data, viewEl, rootElementsOrder);
         }
         Element contextMenuEl = Util.findElement(viewEl, "context-menu", FreeformProjectType.NS_GENERAL); // NOI18N
         if (contextMenuEl == null) {
             contextMenuEl = doc.createElementNS(FreeformProjectType.NS_GENERAL, "context-menu"); // NOI18N
-            viewEl.appendChild(contextMenuEl);
+            appendChildElement(viewEl, contextMenuEl, viewElementsOrder);
         }
         List/*<Element>*/ contextMenuElements = Util.findSubElements(contextMenuEl);
         Iterator it = contextMenuElements.iterator();
@@ -216,11 +298,9 @@ public class FreeformProjectGenerator {
         it = mappings.iterator();
         while (it.hasNext()) {
             TargetMapping tm = (TargetMapping)it.next();
-            if (tm.targets.size() > 0) {
-                Element ideAction = doc.createElementNS(FreeformProjectType.NS_GENERAL, "ide-action"); //NOI18N
-                ideAction.setAttribute("name", tm.name);
-                contextMenuEl.appendChild(ideAction);
-            }
+            Element ideAction = doc.createElementNS(FreeformProjectType.NS_GENERAL, "ide-action"); //NOI18N
+            ideAction.setAttribute("name", tm.name);
+            appendChildElement(contextMenuEl, ideAction, contextMenuElementsOrder);
         }
         helper.putPrimaryConfigurationData(data, true);
     }
@@ -285,12 +365,12 @@ public class FreeformProjectGenerator {
         Element viewEl = Util.findElement(data, "view", FreeformProjectType.NS_GENERAL); // NOI18N
         if (viewEl == null) {
             viewEl = doc.createElementNS(FreeformProjectType.NS_GENERAL, "view"); // NOI18N
-            data.appendChild(viewEl);
+            appendChildElement(data, viewEl, rootElementsOrder);
         }
         Element contextMenuEl = Util.findElement(viewEl, "context-menu", FreeformProjectType.NS_GENERAL); // NOI18N
         if (contextMenuEl == null) {
             contextMenuEl = doc.createElementNS(FreeformProjectType.NS_GENERAL, "context-menu"); // NOI18N
-            viewEl.appendChild(contextMenuEl);
+            appendChildElement(viewEl, contextMenuEl, viewElementsOrder);
         }
         List/*<Element>*/ contextMenuElements = Util.findSubElements(contextMenuEl);
         Iterator it = contextMenuElements.iterator();
@@ -313,14 +393,16 @@ public class FreeformProjectGenerator {
             Element label = doc.createElementNS(FreeformProjectType.NS_GENERAL, "label"); //NOI18N
             label.appendChild(doc.createTextNode(ct.label)); // NOI18N
             action.appendChild(label);
-            Iterator it2 = ct.targets.iterator();
-            while (it2.hasNext()) {
-                String targetName = (String)it2.next();
-                Element target = doc.createElementNS(FreeformProjectType.NS_GENERAL, "target"); //NOI18N
-                target.appendChild(doc.createTextNode(targetName)); // NOI18N
-                action.appendChild(target);
+            if (ct.targets != null) {
+                Iterator it2 = ct.targets.iterator();
+                while (it2.hasNext()) {
+                    String targetName = (String)it2.next();
+                    Element target = doc.createElementNS(FreeformProjectType.NS_GENERAL, "target"); //NOI18N
+                    target.appendChild(doc.createTextNode(targetName)); // NOI18N
+                    action.appendChild(target);
+                }
             }
-            contextMenuEl.appendChild(action);
+            appendChildElement(contextMenuEl, action, contextMenuElementsOrder);
         }
         helper.putPrimaryConfigurationData(data, true);
     }
@@ -343,7 +425,13 @@ public class FreeformProjectGenerator {
         public String script;
         public List/*<String>*/ targets;
         public String name;
-        //public String context;
+        public List/*<Context>*/ contexts;
+        
+        public static final class Context {
+            public String property;
+            public String format;
+            public String folder;
+        }
     }
 
     private static AntProjectHelper createProject(final FileObject locationFO, final FileObject dirFO, final String name, final File antScript, final List mappings, final List sources, final List compUnits, final List webModules) throws IOException {
@@ -396,7 +484,7 @@ public class FreeformProjectGenerator {
                         data.appendChild(props);
                     }
                     h[0].putPrimaryConfigurationData(data, true);
-
+                    
                     putTargetMappings(h[0], mappings);
                     
                     List sourceFolders = new ArrayList(sources);
@@ -413,7 +501,7 @@ public class FreeformProjectGenerator {
                     if (sources.size() > 0) {
                         putSourceViews(h[0], sources, null);
                     }
-                    if (compUnits != null) {
+                    if (compUnits.size() > 0) {
                         putJavaCompilationUnits(h[0], aux, compUnits);
                     }
                     if (webModules != null) {
@@ -518,7 +606,7 @@ public class FreeformProjectGenerator {
         Element foldersEl = Util.findElement(data, "folders", FreeformProjectType.NS_GENERAL); // NOI18N
         if (foldersEl == null) {
             foldersEl = doc.createElementNS(FreeformProjectType.NS_GENERAL, "folders"); // NOI18N
-            data.appendChild(foldersEl);
+            appendChildElement(data, foldersEl, rootElementsOrder);
         } else {
             List/*<Element>*/ sourceFolders = Util.findSubElements(foldersEl);
             Iterator it = sourceFolders.iterator();
@@ -550,17 +638,17 @@ public class FreeformProjectGenerator {
                 el.appendChild(doc.createTextNode(sf.label)); // NOI18N
                 sourceFolderEl.appendChild(el);
             }
-            if (sf.location != null) {
-                el = doc.createElementNS(FreeformProjectType.NS_GENERAL, "location"); // NOI18N
-                el.appendChild(doc.createTextNode(sf.location)); // NOI18N
-                sourceFolderEl.appendChild(el);
-            }
             if (sf.type != null) {
                 el = doc.createElementNS(FreeformProjectType.NS_GENERAL, "type"); // NOI18N
                 el.appendChild(doc.createTextNode(sf.type)); // NOI18N
                 sourceFolderEl.appendChild(el);
             }
-            foldersEl.appendChild(sourceFolderEl);
+            if (sf.location != null) {
+                el = doc.createElementNS(FreeformProjectType.NS_GENERAL, "location"); // NOI18N
+                el.appendChild(doc.createTextNode(sf.location)); // NOI18N
+                sourceFolderEl.appendChild(el);
+            }
+            appendChildElement(foldersEl, sourceFolderEl, folderElementsOrder);
         }
         helper.putPrimaryConfigurationData(data, true);
     }
@@ -625,12 +713,12 @@ public class FreeformProjectGenerator {
         Element viewEl = Util.findElement(data, "view", FreeformProjectType.NS_GENERAL); // NOI18N
         if (viewEl == null) {
             viewEl = doc.createElementNS(FreeformProjectType.NS_GENERAL, "view"); // NOI18N
-            data.appendChild(viewEl);
+            appendChildElement(data, viewEl, rootElementsOrder);
         }
         Element itemsEl = Util.findElement(viewEl, "items", FreeformProjectType.NS_GENERAL); // NOI18N
         if (itemsEl == null) {
             itemsEl = doc.createElementNS(FreeformProjectType.NS_GENERAL, "items"); // NOI18N
-            viewEl.appendChild(itemsEl);
+            appendChildElement(viewEl, itemsEl, viewElementsOrder);
         }
         List/*<Element>*/ sourceViews = Util.findSubElements(itemsEl);
         Iterator it = sourceViews.iterator();
@@ -660,7 +748,7 @@ public class FreeformProjectGenerator {
                 el.appendChild(doc.createTextNode(sf.location)); // NOI18N
                 sourceFolderEl.appendChild(el);
             }
-            itemsEl.appendChild(sourceFolderEl);
+            appendChildElement(itemsEl, sourceFolderEl, viewItemElementsOrder);
         }
         helper.putPrimaryConfigurationData(data, true);
     }
@@ -671,18 +759,18 @@ public class FreeformProjectGenerator {
         Element viewEl = Util.findElement(data, "view", FreeformProjectType.NS_GENERAL); // NOI18N
         if (viewEl == null) {
             viewEl = doc.createElementNS(FreeformProjectType.NS_GENERAL, "view"); // NOI18N
-            data.appendChild(viewEl);
+            appendChildElement(data, viewEl, rootElementsOrder);
         }
         Element itemsEl = Util.findElement(viewEl, "items", FreeformProjectType.NS_GENERAL); // NOI18N
         if (itemsEl == null) {
             itemsEl = doc.createElementNS(FreeformProjectType.NS_GENERAL, "items"); // NOI18N
-            viewEl.appendChild(itemsEl);
+            appendChildElement(viewEl, itemsEl, viewElementsOrder);
         }
         Element fileEl = doc.createElementNS(FreeformProjectType.NS_GENERAL, "source-file"); // NOI18N
         Element el = doc.createElementNS(FreeformProjectType.NS_GENERAL, "location"); // NOI18N
         el.appendChild(doc.createTextNode(antPath)); // NOI18N
         fileEl.appendChild(el);
-        itemsEl.appendChild(fileEl);
+        appendChildElement(itemsEl, fileEl, viewItemElementsOrder);
         helper.putPrimaryConfigurationData(data, true);
     }
 

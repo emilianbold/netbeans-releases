@@ -88,7 +88,7 @@ public class TargetMappingWizardPanel implements WizardDescriptor.Panel {
         // Util.getAntScriptTargetNames can return null when script is 
         // invalid but first panel checks script validity so it is OK here.
         List l = Util.getAntScriptTargetNames(fo);
-        component.setTargetNames(l);
+        component.setTargetNames(l, true);
         File projDir = (File)wizardDescriptor.getProperty(NewJ2SEFreeformProjectWizardIterator.PROP_PROJECT_FOLDER);
         File antScript = (File)wizardDescriptor.getProperty(NewJ2SEFreeformProjectWizardIterator.PROP_ANT_SCRIPT);
         if (!antScript.getParentFile().equals(projDir) && antScript.getName().equals("build.xml")) { // NOI18N
