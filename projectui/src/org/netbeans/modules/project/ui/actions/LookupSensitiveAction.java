@@ -33,7 +33,7 @@ public abstract class LookupSensitiveAction extends BasicAction implements Looku
     private Lookup lookup;    
     private Class[] watch;
     private Lookup.Result[] results;
-    private boolean refreshing = false;
+    private static boolean refreshing = false;
                 
     /** Formats the name with following 
      */    
