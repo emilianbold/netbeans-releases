@@ -149,7 +149,6 @@ is the proper place.
                 </p>
             </description>
             <class package="org.netbeans.modules.j2eeserver.devmodules.spi" name="J2eeModuleProvider"/>
-            <class package="org.netbeans.modules.j2eeserver.devmodules.spi" name="J2eeModuleProvider.ConfigSupport"/>
         </change>
         <change id="CMP-Mapping-and-Auto-Resources.common">
             <api name="common"/>
