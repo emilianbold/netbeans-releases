@@ -17,9 +17,11 @@ package org.apache.tools.ant.module.loader;
 
 import java.io.*;
 
-import org.w3c.dom.*;
+//import org.w3c.dom.*;
 import org.xml.sax.*;
-import org.apache.xerces.parsers.DOMParser;
+import org.xml.sax.helpers.*;
+//import javax.xml.parsers.*;
+//import org.apache.xerces.parsers.DOMParser;
 
 import org.openide.*;
 import org.openide.actions.*;
@@ -27,6 +29,8 @@ import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
+
+import org.apache.tools.ant.module.AntModule;
 
 /** Recognizes single files in the Repository as being of Ant Project type.
  */
@@ -72,6 +76,28 @@ public class AntProjectDataLoader extends UniFileLoader {
 
     }
   
+    private static class ResolvedThrow extends SAXException {
+        public boolean match;
+        public ResolvedThrow (boolean match) {
+            super ("determined"); // NOI18N
+            this.match = match;
+        }
+    }
+
+    private static class QuickieHandler extends DefaultHandler {
+        public void startElement (String namespace, String name, String qname, Attributes attrs) throws SAXException {
+            throw new ResolvedThrow (name.equals ("project") && // NOI18N
+                                     attrs.getValue ("", "name") != null && // NOI18N
+                                     attrs.getValue ("", "basedir") != null && // NOI18N
+                                     attrs.getValue ("", "default") != null); // NOI18N
+        }
+        public InputSource resolveEntity (String publicID, String systemID) {
+            //System.err.println ("resolveEntity: " + publicID + " " + systemID);
+            // Read nothing whatsoever.
+            return new InputSource (new ByteArrayInputStream (new byte[] { }));
+        }
+    }
+
     /** Determines whether a given file should be handled by this loader.
      * @param fo the file object to interrogate
      * @return the fileojbect if we will handle it otherwise null
@@ -95,6 +121,74 @@ public class AntProjectDataLoader extends UniFileLoader {
                     return null;
                 }
                 // OK, first attempt to parse this file.
+                try {
+                    XMLReader r;
+                    try {
+                        r = XMLReaderFactory.createXMLReader ();
+                    } catch (SAXException ignore) {
+                        // [PENDING] is this really a good idea??
+                        System.setProperty ("org.xml.sax.driver", "org.apache.xerces.parsers.SAXParser");
+                        // try again
+                        r = XMLReaderFactory.createXMLReader ();
+                    }
+                    r.setFeature ("http://xml.org/sax/features/validation", false); // NOI18N
+                    //r.setFeature ("http://xml.org/sax/features/external-general-entities", false); // NOI18N
+                    //r.setFeature ("http://xml.org/sax/features/external-parameter-entities", false); // NOI18N
+                    QuickieHandler h = new QuickieHandler ();
+                    r.setContentHandler (h);
+                    r.setDTDHandler (h);
+                    r.setEntityResolver (h);
+                    r.setErrorHandler (h);
+                    r.parse (new InputSource (fo2.getInputStream ()));
+                    throw new IllegalStateException ();
+                } catch (ResolvedThrow rt) {
+                    recognizeIt (fo2, rt.match);
+                    return rt.match ? fo2 : null;
+                } catch (Exception e) {
+                    // SAXConfiguration or general SAX fatal parse error or IOException etc.
+                    AntModule.err.annotate (e, "Affected file: " + fo2); // NOI18N
+                    AntModule.err.notify (ErrorManager.INFORMATIONAL, e);
+                    return null;
+                }
+                /*
+                SAXParserFactory sax = SAXParserFactory.newInstance ();
+                sax.setValidating (false);
+                sax.setNamespaceAware (false);
+                class ResolvedThrow extends SAXException {
+                    public boolean match;
+                    public ResolvedThrow (boolean match) {
+                        super ("determined"); // NOI18N
+                        this.match = match;
+                    }
+                }
+                class QuickieHandler extends HandlerBase {
+                    public void startElement (String name, AttributeList attrs) throws SAXException {
+                        throw new ResolvedThrow (name.equals ("project") && // NOI18N
+                                                 attrs.getValue ("name") != null && // NOI18N
+                                                 attrs.getValue ("basedir") != null && // NOI18N
+                                                 attrs.getValue ("default") != null); // NOI18N
+                    }
+                    public InputSource resolveEntity (String publicID, String systemID) {
+                        //System.err.println ("resolveEntity: " + publicID + " " + systemID);
+                        // Read nothing whatsoever.
+                        return new InputSource (new ByteArrayInputStream (new byte[] { }));
+                    }
+                }
+                try {
+                    SAXParser p = sax.newSAXParser ();
+                    p.parse (fo2.getInputStream, new QuickieHandler ());
+                    throw new IllegalStateException ();
+                } catch (ResolvedThrow rt) {
+                    recognizeIt (fo2, rt.match);
+                    return rt.match ? fo2 : null;
+                } catch (Exception e) {
+                    // SAXConfiguration or general SAX fatal parse error or IOException etc.
+                    AntModule.err.annotate (e, "Affected file: " + fo2); // NOI18N
+                    AntModule.err.notify (ErrorManager.INFORMATIONAL, e);
+                    return null;
+                }
+                */
+                /*
                 // [PENDING] would probably be more efficient and not much more work to use a SAXParser
                 // here instead. No need to parse the whole document when only the document element matters.
                 DOMParser parser = new DOMParser();
@@ -144,6 +238,7 @@ public class AntProjectDataLoader extends UniFileLoader {
                     System.err.println ("Affected file: " + fo2); // NOI18N
                     return null;
                 }
+                */
             }
         }
     }
