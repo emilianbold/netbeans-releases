@@ -229,7 +229,10 @@ public class NbEditorKit extends ExtKit {
                             }
 
                             if (action != null){
-                                JMenuItem item = new JMenuItem (action);
+                                JMenuItem item = (action instanceof Presenter.Popup) ?
+                                    ((Presenter.Popup)action).getPopupPresenter() :
+                                    new JMenuItem (action);                                            
+
                                 if (item != null && !(item instanceof JMenu)) {
                                     Keymap km = (Keymap)Lookup.getDefault().lookup(Keymap.class);
                                     if (km!=null){
