@@ -687,16 +687,37 @@ public class ResultModel implements TaskListener {
 
             FileObject fileFolder = originalDataObject.getPrimaryFile().getParent();
             if(fileFolder != null) {
-                String hint = fileFolder.getPath();
                 disableDelegation(DELEGATE_SET_SHORT_DESCRIPTION |
-                                   DELEGATE_GET_SHORT_DESCRIPTION);
-                setShortDescription (hint);
+                                   DELEGATE_GET_DISPLAY_NAME | DELEGATE_GET_SHORT_DESCRIPTION);
+                setShortDescription ("");  // NOI18N
             }
 
         }
 
 
-        /** Gets system actions for this node. Overrides superclass method. 
+        public String getDisplayName() {
+            FileObject fileFolder = originalDataObject.getPrimaryFile().getParent();
+            if(fileFolder != null) {
+                String hint = fileFolder.getPath();
+                String orig = getOriginal().getDisplayName();
+                return orig + " " + hint;
+            } else {
+                return getOriginal().getDisplayName();
+            }
+        }
+
+        public String getHtmlDisplayName() {
+            FileObject fileFolder = originalDataObject.getPrimaryFile().getParent();
+            if(fileFolder != null) {
+                String hint = fileFolder.getPath();
+                String orig = getOriginal().getDisplayName();
+                return "<html>" + orig + " <font color='!controlShadow'>" + hint;  // NOI18N
+            } else {
+                return getOriginal().getHtmlDisplayName();
+            }
+        }
+
+        /** Gets system actions for this node. Overrides superclass method.
          * Adds <code>RemoveFromSearchAction<code>. */
         public SystemAction[] getActions() {
             List originalActions = new ArrayList(Arrays.asList(super.getActions()));
