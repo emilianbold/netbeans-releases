@@ -230,9 +230,10 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
      */
     protected abstract String getDisplayName();
     
-    /** Icon Base for MultiView editor
-     */
-    protected abstract String getIconBase();
+    /** Icon for XML View */
+    protected java.awt.Image getXmlViewIcon() {
+        return org.openide.util.Utilities.loadImage("org/netbeans/modules/xml/multiview/resources/xmlObject.gif"); //NOI18N
+    }
     
     public void modelUpdatedFromUI() {
         changedFromUI=true;

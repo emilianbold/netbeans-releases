@@ -169,7 +169,6 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
         if (editorMode != null) {
             editorMode.dockInto(mvtc);
         }
-        mvtc.setIcon(org.openide.util.Utilities.loadImage(dObj.getIconBase()+".gif"));
         this.mvtc=mvtc;
         return mvtc;
     }
@@ -343,7 +342,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
         }
         
         public java.awt.Image getIcon() {
-            return dObj.getNodeDelegate().getIcon(java.beans.BeanInfo.ICON_COLOR_16x16);
+            return dObj.getXmlViewIcon();
         }
         
         public int getPersistenceType() {
