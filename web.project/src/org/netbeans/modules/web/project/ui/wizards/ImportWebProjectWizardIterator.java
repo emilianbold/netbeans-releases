@@ -346,21 +346,8 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         }
         
         public boolean isValid () {
-            File f = new File(panel.moduleLocationTextField.getText().trim());
-            if (!f.isDirectory()) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ImportWebProjectWizardIterator.class,"MSG_ProvideExistingSourcesLocation")); //NOI18N
-                return false; //Existing sources location not specified
-            }
-
-            String prjName = panel.projectNameTextField.getText().trim();
-            if (prjName == null || prjName.length() == 0) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ImportWebProjectWizardIterator.class,"MSG_ProvideProjectName")); //NOI18N
-                return false; //Project name not specified
-            }
-            
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); //NOI18N
-
-            return true;
+            getComponent();
+            return panel.valid(wizardDescriptor);
         }
         
         private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
@@ -385,23 +372,23 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
             }
         }
         public void readSettings (Object settings) {
-            wizardDescriptor = (WizardDescriptor) settings;
+            wizardDescriptor = (WizardDescriptor) settings;        
+            panel.read(wizardDescriptor);
+
+            // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
+            // this name is used in NewProjectWizard to modify the title
+            Object substitute = ((JComponent) panel).getClientProperty("NewProjectWizard_Title"); //NOI18N
+            if (substitute != null) {
+                wizardDescriptor.putProperty("NewProjectWizard_Title", substitute); //NOI18N
+            }
         }
         
         public void storeSettings (Object settings) {
-            WizardDescriptor d = (WizardDescriptor)settings;
-            String name = panel.projectNameTextField.getText().trim();
-            String contextPath = panel.jTextFieldContextPath.getText().trim();
-            if (!contextPath.startsWith("/")) //NOI18N
-                contextPath = "/" + contextPath; //NOI18N
-
+            WizardDescriptor d = (WizardDescriptor) settings;
+            panel.store(d);
+            ((WizardDescriptor) d).putProperty ("NewProjectWizard_Title", null); //NOI18N
+                       
             String moduleLoc = panel.moduleLocationTextField.getText().trim();
-
-            d.putProperty(WizardProperties.PROJECT_DIR, FileUtil.normalizeFile(new File(panel.createdFolderTextField.getText())));
-            d.putProperty(WizardProperties.SOURCE_ROOT, new File(moduleLoc));
-            d.putProperty(WizardProperties.NAME, name);
-            d.putProperty(WizardProperties.CONTEXT_PATH, contextPath);
-
             if (moduleLoc.length() > 0) {
                 File f = new File(moduleLoc);
                 FileObject fo;
@@ -450,7 +437,7 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         private Dialog dialog;
             
         public void validate() throws WizardValidationException {
-            File dirF = new File(panel.createdFolderTextField.getText());
+            File dirF = new File(panel.projectLocationTextField.getText());
             JButton ok = new JButton(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_IW_Buildfile_OK")); //NOI18N
             ok.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "ACS_IW_BuildFileDialog_OKButton_LabelMnemonic")); //NOI18N
             ok.setMnemonic(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_IW_BuildFileDialog_OK_LabelMnemonic").charAt(0)); //NOI18N

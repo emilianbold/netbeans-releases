@@ -14,11 +14,16 @@
 package org.netbeans.modules.web.project.ui.wizards;
 
 import java.io.File;
+import java.text.MessageFormat;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
+
+import org.netbeans.modules.web.project.ui.FoldersListSettings;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 
 import org.openide.filesystems.FileUtil;
@@ -29,14 +34,16 @@ import org.openide.util.NbBundle;
  *
  * @author  Pavel Buzek, Radko Najman
  */
-public class ImportLocationVisual extends javax.swing.JPanel implements DocumentListener, HelpCtx.Provider {
+public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provider {
     
     private ImportWebProjectWizardIterator.ThePanel panel;
     private Document moduleDocument;
-    private Document locationDocument;
     private Document nameDocument;
     private boolean contextModified = false;
-    
+    private boolean locationModified = false;
+    private boolean locationComputed = false;
+    private WizardDescriptor wizardDescriptor;
+
     /** Creates new form TestPanel */
     public ImportLocationVisual (ImportWebProjectWizardIterator.ThePanel panel) {
         this.panel = panel;
@@ -45,14 +52,149 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
 
         setName(NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_ImportTitle")); //NOI18N
         
-        locationDocument = projectLocationTextField.getDocument ();
-        locationDocument.addDocumentListener (this);
-        projectNameTextField.getDocument ().addDocumentListener (this);
         moduleDocument = moduleLocationTextField.getDocument ();
-        moduleDocument.addDocumentListener (this);
         nameDocument = projectNameTextField.getDocument();
-        nameDocument.addDocumentListener(this);
+
+        DocumentListener pl = new DocumentListener () {
+            public void changedUpdate(DocumentEvent e) {
+                dataChanged(e);
+            }
+
+            public void insertUpdate(DocumentEvent e) {
+                dataChanged(e);
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                dataChanged(e);
+            }
+        };
+        moduleLocationTextField.getDocument().addDocumentListener(pl);
+
+        projectNameTextField.getDocument().addDocumentListener (new DocumentListener (){
+            public void changedUpdate(DocumentEvent e) {
+                dataChanged(e);
+            }
+
+            public void insertUpdate(DocumentEvent e) {
+                dataChanged(e);
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                dataChanged(e);
+            }
+        });
+        
+        projectLocationTextField.getDocument().addDocumentListener (new DocumentListener (){
+            public void changedUpdate(DocumentEvent e) {
+                fireChanges();
+            }
+
+            public void insertUpdate(DocumentEvent e) {
+                fireChanges();
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                fireChanges();
+            }
+        });     
+
     }
+    
+    void read (WizardDescriptor settings) {
+        this.wizardDescriptor = settings;
+        
+        String projectName = null;
+        File projectLocation = (File) settings.getProperty(WizardProperties.PROJECT_DIR);
+        if (projectLocation == null) {
+            projectLocation = ProjectChooser.getProjectsFolder();                
+            int index = FoldersListSettings.getDefault().getNewProjectCount();
+            String formater = NbBundle.getMessage(ImportLocationVisual.class, "LBL_NPW1_DefaultProjectName"); //NOI18N
+            File file;
+            do {
+                index++;                            
+                projectName = MessageFormat.format(formater, new Object[] {new Integer (index)});                
+                file = new File(projectLocation, projectName);                
+            } while (file.exists());                                
+            settings.putProperty (NewWebProjectWizardIterator.PROP_NAME_INDEX, new Integer(index));                        
+        } else
+            projectName = (String) settings.getProperty(WizardProperties.NAME);
+
+        projectNameTextField.setText (projectName);                
+        jTextFieldContextPath.setText("/" + projectNameTextField.getText().replace(' ', '_'));
+        moduleLocationTextField.selectAll();
+    }
+
+    void store (WizardDescriptor settings) {
+        File srcRoot = null;
+        String srcPath = moduleLocationTextField.getText();
+        if (srcPath.length() > 0) {
+            srcRoot = FileUtil.normalizeFile(new File(srcPath));           
+        }
+        settings.putProperty (WizardProperties.SOURCE_ROOT, srcRoot);
+        settings.putProperty (WizardProperties.NAME, projectNameTextField.getText());
+        File projectsDir = new File(projectLocationTextField.getText());
+        
+        settings.putProperty (WizardProperties.PROJECT_DIR, projectsDir);
+        projectsDir = projectsDir.getParentFile();
+        if (projectsDir != null && projectsDir.isDirectory())
+            ProjectChooser.setProjectsFolder (projectsDir);
+        
+        String contextPath = jTextFieldContextPath.getText().trim();
+        if (!contextPath.startsWith("/")) //NOI18N
+            contextPath = "/" + contextPath; //NOI18N
+        settings.putProperty(WizardProperties.CONTEXT_PATH, contextPath);
+    }
+    
+    boolean valid (WizardDescriptor settings) {
+        if (projectNameTextField.getText().trim().length() == 0) {
+            wizardDescriptor.putProperty( "WizardPanel_errorMessage", NbBundle.getMessage(ImportLocationVisual.class, "MSG_ProvideProjectName"));
+            return false; // Display name not specified
+        }
+        
+        File destFolder = new File(projectLocationTextField.getText());
+        File[] kids = destFolder.listFiles();
+        if ( destFolder.exists() && kids != null && kids.length > 0) {
+            String file = null;
+            for (int i=0; i< kids.length; i++) {
+                String childName = kids[i].getName();
+                if ("nbproject".equals(childName)) {   //NOI18N
+                    file = NbBundle.getMessage (ImportLocationVisual.class,"TXT_NetBeansProject");
+                }
+                else if ("build".equals(childName)) {    //NOI18N
+                    file = NbBundle.getMessage (ImportLocationVisual.class,"TXT_BuildFolder");                                        
+                }
+                else if ("dist".equals(childName)) {   //NOI18N
+                    file = NbBundle.getMessage (ImportLocationVisual.class,"TXT_DistFolder");                    
+                }
+//                else if ("build.xml".equals(childName)) {   //NOI18N
+//                    file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_BuildXML");                    
+//                }
+                else if ("manifest.mf".equals(childName)) { //NOI18N
+                    file = NbBundle.getMessage (ImportLocationVisual.class,"TXT_Manifest");                    
+                }
+                if (file != null) {
+                    String format = NbBundle.getMessage (ImportLocationVisual.class,"MSG_ProjectFolderInvalid");
+                    wizardDescriptor.putProperty( "WizardPanel_errorMessage", MessageFormat.format(format, new Object[] {file}));  //NOI18N
+                    return false;
+                }
+            }
+        }
+        
+        String fileName = moduleLocationTextField.getText();
+        if (fileName.length()==0) {
+            wizardDescriptor.putProperty( "WizardPanel_errorMessage", "");  //NOI18N
+            return false;
+        }
+        File f = new File (fileName);        
+        if (!f.isDirectory() || !f.canRead()) {
+            wizardDescriptor.putProperty( "WizardPanel_errorMessage", NbBundle.getMessage(ImportLocationVisual.class,"MSG_IllegalSources"));
+            return false;
+        }
+        
+        wizardDescriptor.putProperty( "WizardPanel_errorMessage", "");  //NOI18N
+        return true;
+    }
+
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -72,8 +214,6 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         jLabelPrjLocation = new javax.swing.JLabel();
         projectLocationTextField = new javax.swing.JTextField();
         jButtonPrjLocation = new javax.swing.JButton();
-        createdFolderLabel = new javax.swing.JLabel();
-        createdFolderTextField = new javax.swing.JTextField();
         jLabelContextPath = new javax.swing.JLabel();
         jTextFieldContextPath = new javax.swing.JTextField();
 
@@ -144,21 +284,28 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(projectNameTextField, gridBagConstraints);
         projectNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NWP1_ProjectName_A11YDesc"));
 
         jLabelPrjLocation.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_ProjectLocation_LabelMnemonic").charAt(0));
         jLabelPrjLocation.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabelPrjLocation.setLabelFor(projectLocationTextField);
-        jLabelPrjLocation.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_ProjectLocation_Label"));
+        jLabelPrjLocation.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_CreatedProjectFolder_Lablel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(jLabelPrjLocation, gridBagConstraints);
+
+        projectLocationTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                projectLocationTextFieldKeyReleased(evt);
+            }
+        });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -181,28 +328,6 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(jButtonPrjLocation, gridBagConstraints);
         jButtonPrjLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NWP1_BrowseLocation_A11YDesc"));
-
-        createdFolderLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_CreatedProjectFolder_LablelMnemonic").charAt(0));
-        createdFolderLabel.setLabelFor(createdFolderTextField);
-        createdFolderLabel.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_CreatedProjectFolder_Lablel"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
-        add(createdFolderLabel, gridBagConstraints);
-
-        createdFolderTextField.setEditable(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.RELATIVE;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
-        add(createdFolderTextField, gridBagConstraints);
-        createdFolderTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NWP1_CreatedProjectFolder_A11YDesc"));
 
         jLabelContextPath.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_ContextPath_CheckBoxMnemonic").charAt(0));
         jLabelContextPath.setLabelFor(jTextFieldContextPath);
@@ -235,6 +360,10 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
 
     }//GEN-END:initComponents
 
+    private void projectLocationTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_projectLocationTextFieldKeyReleased
+        locationModified = true;
+    }//GEN-LAST:event_projectLocationTextFieldKeyReleased
+
     private void jTextFieldContextPathKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextFieldContextPathKeyReleased
         contextModified = true;
     }//GEN-LAST:event_jTextFieldContextPathKeyReleased
@@ -256,8 +385,6 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
     }//GEN-LAST:event_jButtonSrcLocationActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel createdFolderLabel;
-    public javax.swing.JTextField createdFolderTextField;
     private javax.swing.JButton jButtonPrjLocation;
     private javax.swing.JButton jButtonSrcLocation;
     private javax.swing.JLabel jLabelContextPath;
@@ -286,66 +413,56 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         return chooser;
     }
     
-    // Implementation of DocumentListener --------------------------------------
-    public void changedUpdate(DocumentEvent e) {
-        updateTexts(e);
-    }
-    
-    public void insertUpdate(DocumentEvent e) {
-        updateTexts(e);
-    }
-    
-    public void removeUpdate(DocumentEvent e) {
-        updateTexts(e);
-    }
-    // End if implementation of DocumentListener -------------------------------
-    
     /** Handles changes in the project name and project directory
      */
-    private void updateTexts(DocumentEvent e) {
+    private void dataChanged(DocumentEvent e) {
         if (e.getDocument() == moduleDocument) {
             String moduleFolder = moduleLocationTextField.getText().trim();
             FileObject fo;
             try {
-                fo= FileUtil.toFileObject(new File(moduleFolder));
+                fo = FileUtil.toFileObject(new File(moduleFolder));
             } catch (IllegalArgumentException exc) {
                 return;
             }
-            if (fo != null && isJakartaStructure(fo)) {
-                projectLocationTextField.setText(moduleFolder);
-                createdFolderTextField.setText(moduleFolder);
-            }
-        } else if (e.getDocument() == locationDocument || !projectLocationTextField.getText().equals(moduleLocationTextField.getText())) {
-            StringBuffer folder = new StringBuffer(projectLocationTextField.getText().trim());
-            if (!folder.toString().endsWith(File.separator))
-                folder.append(File.separatorChar);
-            folder.append(projectNameTextField.getText().trim());
-            createdFolderTextField.setText(folder.toString());
+            
+            if (fo != null && !locationComputed)
+                if (!containsWebInf(fo) && !locationModified)
+                    projectLocationTextField.setText(moduleFolder);
+                else
+                    computeLocation();
+        } else if (e.getDocument() == nameDocument) {
+            if (!contextModified)
+                jTextFieldContextPath.setText("/" + projectNameTextField.getText().replace(' ', '_'));
+            if (locationComputed)
+                computeLocation();
         }
 
-        if (e.getDocument() == nameDocument && !contextModified)
-            jTextFieldContextPath.setText("/" + projectNameTextField.getText().replace(' ', '_'));
-
+        fireChanges();
+    }
+    
+    private void fireChanges() {
         panel.fireChangeEvent();
     }
     
-    private boolean isJakartaStructure(FileObject dir) {
-        boolean web = false;
-        boolean src = false;
+    private void computeLocation() {
+        if (locationModified) //modified by the user, don't compute the location
+            return;
+        
+        File projectLocation = ProjectChooser.getProjectsFolder();        
+        StringBuffer folder = new StringBuffer(projectLocation.getAbsolutePath());
+        if (!folder.toString().endsWith(File.separator))
+            folder.append(File.separatorChar);
+        folder.append(projectNameTextField.getText().trim());
+        projectLocationTextField.setText(folder.toString());
+        locationComputed = true;
+    }
     
+    private boolean containsWebInf(FileObject dir) {
         FileObject[] ch = dir.getChildren();
-        for (int i = 0; i < ch.length; i++) {
+        for (int i = 0; i < ch.length; i++)
             if (ch[i].isFolder())
-                if (ch[i].getName().equals("web")) { //NOI18N
-                    web = true;
-                    if (src)
-                        return true;
-                } else if (ch[i].getName().equals("src")) { //NOI18N
-                    src = true;
-                    if (web)
-                        return true;
-                }
-        }
+                if (ch[i].getName().equals("WEB-INF")) //NOI18N
+                    return true;
     
         return false;
     }
