@@ -149,7 +149,7 @@ public class CheckoutNeeded extends Task {
               getProject().setProperty(instance+".branch",cvs_root);
           checkout(instance);
           
-          readMasterConfig(modules_set,new File(master_config),config,testroot);
+          readMasterConfig(modules_set,project.resolveFile(master_config),config,testroot);
           log("Master config read: "+modules_set);
           Iterator mod = modules_set.iterator();
           while (mod.hasNext()) {

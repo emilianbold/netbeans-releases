@@ -170,7 +170,11 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${xtest.workdir}/sys/tests"/>
         <mkdir dir="${xtest.workdir}/sys/ide"/>
         <mkdir dir="${xtest.workdir}/user"/>
-        
+
+        <!-- create testbag info for report -->
+        <testbaginfo name="${tbag.name}" testType="${tbag.testtype}" testAttribs="${xtest.attribs}"
+                      executor="${tbag.executor}" module="${xtest.module}"
+                      outfile="${xtest.workdir}/xmlresults/testbag.xml"/>  
         
         <antcall target="prepare-tests"/>
         <antcall target="${xtest.exectype}_test_bootstrap"/>
@@ -236,10 +240,30 @@ Microsystems, Inc. All Rights Reserved.
         <property name="xtest.ide.commandline.suffix" value=""/>
         <property name="xtest.jvmargs" value=""/>
         <property name="junit.properties.file" value=""/>
+        <property name="xtest.reuse.ide" value="false"/>
+        
+        <condition property="xtest.reuse.ide.false">
+           <equals arg1="${xtest.reuse.ide}" arg2="false"/>
+        </condition>
+        <antcall target="delete-userdir"/>
+        
+        <condition property="xtest.reuse.and.noexist">
+           <not>
+              <or>
+                 <equals arg1="${xtest.reuse.ide}" arg2="false"/>
+                 <available file="${xtest.userdir}/system/ide.log" property="ide.userdir.available"/>
+              </or>
+           </not>
+        </condition>
+        <antcall target="check-userdir"/>
+        <antcall target="ide_test_bootstrap_cont"/>
+    </target>
+    
+    <target name="ide_test_bootstrap_cont" unless="xtest.reuse.and.noexist">
 
         <ide-jvmargs jvmargs="${xtest.jvmargs}" property="xtest.ide.commandline.jvmargs"/>
             
-        <property name="args" value="-jdkhome ${jdkhome} -userdir &quot;${xtest.userdir}&quot; -cp:p &quot;${xtest.ide.path}&quot; -nosplash -J-Dtest.class=${test.class} -J-Dtest.classpath=&quot;${test.classpath}&quot; -J-Dtest.basedir=&quot;${basedir}&quot; -J-Dtest.ant.file=&quot;${ant.file}&quot; -J-Dtest.target=${test.target} -J-Dxtest.home=&quot;${xtest.home}&quot; -J-Dxtest.includes=&quot;${xtest.includes}&quot; -J-Dxtest.excludes=&quot;${xtest.excludes}&quot; -J-Dtbag.classpath=&quot;${tbag.classpath}&quot; -J-Dtbag.patternset.include=${tbag.patternset.include} -J-Dtbag.patternset.exclude=${tbag.patternset.exclude} -J-Dtbag.testtype=${tbag.testtype} -J-Dtbag.formater=${tbag.formater} -J-Dtbag.name=&quot;${tbag.name}&quot; -J-Dtbag.executor=${tbag.executor} -J-Dxtest.module=${xtest.module} -J-Dxtest.attribs=&quot;${xtest.attribs}&quot; -J-Dxtest.distexec=true -J-Dtest.exit=true -J-Dtest.propertyfile=&quot;${test.propertyfile}&quot; -J-Dxtest.workdir=&quot;${xtest.workdir}&quot; -J-Dxtest.results=&quot;${xtest.results}&quot; -J-Dxtest.results.testrun.dir=&quot;${xtest.results.testrun.dir}&quot; -J-Dtest.output.redirect=true -J-Dnetbeans.full.hack=true -J-Djunit.properties.file=${junit.properties.file} -J-Dnetbeans.windows=${xtest.ide.winsys} ${xtest.ide.commandline.jvmargs} ${xtest.ide.commandline.suffix}"/>
+        <property name="args" value="-jdkhome ${jdkhome} -userdir &quot;${xtest.userdir}&quot; -cp:p &quot;${xtest.ide.path}&quot; -nosplash -J-Dtest.class=${test.class} -J-Dtest.classpath=&quot;${test.classpath}&quot; -J-Dtest.basedir=&quot;${basedir}&quot; -J-Dtest.ant.file=&quot;${ant.file}&quot; -J-Dtest.target=${test.target} -J-Dtest.reuse.ide=${xtest.reuse.ide} -J-Dxtest.home=&quot;${xtest.home}&quot; -J-Dxtest.includes=&quot;${xtest.includes}&quot; -J-Dxtest.excludes=&quot;${xtest.excludes}&quot; -J-Dtbag.classpath=&quot;${tbag.classpath}&quot; -J-Dtbag.patternset.include=${tbag.patternset.include} -J-Dtbag.patternset.exclude=${tbag.patternset.exclude} -J-Dtbag.testtype=${tbag.testtype} -J-Dtbag.formater=${tbag.formater} -J-Dtbag.name=&quot;${tbag.name}&quot; -J-Dtbag.executor=${tbag.executor} -J-Dxtest.module=${xtest.module} -J-Dxtest.attribs=&quot;${xtest.attribs}&quot; -J-Dxtest.distexec=true -J-Dtest.exit=true -J-Dtest.propertyfile=&quot;${test.propertyfile}&quot; -J-Dxtest.workdir=&quot;${xtest.workdir}&quot; -J-Dxtest.results=&quot;${xtest.results}&quot; -J-Dxtest.results.testrun.dir=&quot;${xtest.results.testrun.dir}&quot; -J-Dtest.output.redirect=true -J-Dnetbeans.full.hack=true -J-Djunit.properties.file=${junit.properties.file} -J-Dnetbeans.windows=${xtest.ide.winsys} ${xtest.ide.commandline.jvmargs} ${xtest.ide.commandline.suffix}"/>
         <echo message="ARGUMENTS = ${args}"/>
 
         <copy file="${xtest.home}/lib/patches/testmain.jar" todir="${netbeans.home}/lib/patches"/>
@@ -274,6 +298,14 @@ Microsystems, Inc. All Rights Reserved.
         <available file="${xtest.workdir}/ide.flag" property="testbag.failure"/>
         <antcall target="testbag-failure"/>
         
+    </target>
+
+    <target name="check-userdir" if="xtest.reuse.and.noexist">
+        <testbaginfo unexpectedFailure="This testbag wants to reuse old userdir, but it doesn't exists. Testbag wasn't executed." outfile="${xtest.workdir}/xmlresults/testbag.xml"/> 
+    </target>
+    
+    <target name="delete-userdir" if="xtest.reuse.ide.false">
+        <delete dir="${xtest.userdir}"/>
     </target>
     
     <target name="copy-user-jars" depends="init,ide-extra-jars" if="xtest.extra.jars.ide">
@@ -315,14 +347,18 @@ Microsystems, Inc. All Rights Reserved.
         <testbaginfo unexpectedFailure="testbag did not finish correctly, some tests did not have to run" outfile="${xtest.workdir}/xmlresults/testbag.xml"/> 
     </target>
     
+    
+    
     <!-- ================= -->
     <!-- Main JUnit target -->
     <!-- ================= -->
     <target name="junit_test">
         <!-- create testbag info for report -->
+        <!-- moved to target test
         <testbaginfo name="${tbag.name}" testType="${tbag.testtype}" testAttribs="${xtest.attribs}"
                       executor="${tbag.executor}" module="${xtest.module}"
                       outfile="${xtest.workdir}/xmlresults/testbag.xml"/>  
+        -->
         <property name="xtest.jvmargs" value=""/>
         <property name="junit.properties.file" value=""/>
         
@@ -408,7 +444,6 @@ Microsystems, Inc. All Rights Reserved.
         
         <!--  now delete all the stuff -->
         <delete dir="${xtest.workdir}/sys/tests" />
-        <delete dir="${xtest.workdir}/sys/ide"/>        
         <delete dir="${xtest.workdir}/user"/>
         <delete dir="${xtest.workdir}/xmlresults"/>
     </target>
@@ -421,7 +456,9 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="${xtest.workdir}/sys/ide/system/ide.log" todir="${xtest.current.results}/sys/ide"/>
          <!-- delete zip and ide workdir -->
         <delete file="${xtest.workdir}/sys/ide.zip"/>
+        <!--
         <delete dir="${xtest.workdir}/sys/ide"/>
+        -->
     </target>
     
     <!-- ======== -->
@@ -451,7 +488,8 @@ Microsystems, Inc. All Rights Reserved.
         <javac srcdir="${compile.srcdir.parsed}" 
                deprecation="${build.compiler.deprecation}"
                debug="${build.compiler.debug}"
-               excludes="${compile.excludes}">
+               excludes="${compile.excludes}"
+               fork="true">
             <classpath>
            	<pathelement path="${junit.path}"/>
     		<pathelement path="${xerces.path}"/>
