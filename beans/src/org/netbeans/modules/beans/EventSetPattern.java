@@ -363,6 +363,44 @@ public class EventSetPattern extends Pattern {
                 declaringClass.removeMethod( removeListenerMethod );
             }
         }
+        
+        //** BOB - Matula
+        
+        // delete associated "fire" methods
+        declaringClass = getDeclaringClass();
+        ClassElement listener = ClassElement.forName( type.toString() );
+        boolean canDelete = false;
+
+        if ( listener != null ) {
+            MethodElement methods[] = listener.getMethods();
+            MethodElement sourceMethods[] = declaringClass.getMethods();
+            String method;
+            
+            for( int i = 0; i < methods.length; i++ ) {
+                method = "fire" + // NOI18N
+                    Pattern.capitalizeFirstLetter( type.getClassName().getName() ) +
+                    Pattern.capitalizeFirstLetter( methods[i].getName().getName() );
+                if ( (methods[i].getModifiers() & Modifier.PUBLIC) != 0 ) {
+                    for ( int j = 0; j < sourceMethods.length; j++ ) {
+                        if (sourceMethods[j].getName().getName().equals(method)) {
+                            if (!canDelete) {
+                                // Ask, if the fire methods can be deleted
+                                String mssg = MessageFormat.format( PatternNode.bundle.getString( "FMT_DeleteFire" ),
+                                                                    new Object[] { } );
+                                NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
+                                if ( TopManager.getDefault().notify( nd ).equals( NotifyDescriptor.NO_OPTION ) ) {
+                                    return;
+                                } else {
+                                      canDelete = true;
+                                }
+                            }
+                            declaringClass.removeMethod(sourceMethods[j]);
+                        }
+                    }
+                }
+            }
+        }
+        //** EOB - Matula
     }
 
     // Utility methods --------------------------------------------------------------------
@@ -553,6 +591,7 @@ public class EventSetPattern extends Pattern {
 
 /*
  * Log
+ *  15   ???       ???         6/12/00  Martin Matula   Various bugfixes - 6528
  *  14   Gandalf   1.13        1/13/00  Petr Hrebejk    i18n mk3
  *  13   Gandalf   1.12        1/12/00  Petr Hrebejk    i18n  
  *  12   Gandalf   1.11        1/4/00   Petr Hrebejk    Various bugfixes - 5036,

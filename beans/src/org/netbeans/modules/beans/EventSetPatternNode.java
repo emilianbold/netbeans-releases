@@ -193,6 +193,10 @@ public class EventSetPatternNode extends PatternNode implements IconBases {
                            throw new InvocationTargetException(e);
                        }
                    }
+
+                   public PropertyEditor getPropertyEditor () {
+                       return new org.netbeans.modules.beans.EventTypeEditor();
+                   }
                };
     }
 
@@ -278,6 +282,8 @@ public class EventSetPatternNode extends PatternNode implements IconBases {
 
 /*
 * Log
+*  7    ???       ???         6/13/00  Martin Matula   Property editor for 
+        listener types
 *  6    Gandalf   1.5         1/12/00  Petr Hrebejk    i18n  
 *  5    Gandalf   1.4         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
 *       Microsystems Copyright in File Comment
