@@ -36,11 +36,13 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
   
-    <testbag testattribs="stable" executor="ide" name="testbag_1" resultsprocessor="unit">
+    <testbag testattribs="stable" executor="ide" name="Unit tests running in the IDE" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/netbeans/core/filesystems/*.class"/>
                 <include name="org/netbeans/beaninfo/editors/*.class"/>
+                <!-- this includes all tests testing layers -->
+                <include name="**/ValidateLayer*Test.class"/> 
                 <exclude name="org/netbeans/core/filesystems/MIMEResolverImplTest.class"/>
             </patternset>
         </testset>
@@ -53,7 +55,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="stable" executor="code" name="testbag_3" resultsprocessor="unit">
+    <testbag testattribs="stable" executor="code" name="Unit tests in code mode" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/netbeans/core/*Test.class"/>
@@ -68,6 +70,8 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/core/lookup/*Test?.class"/>
                 <exclude name="org/netbeans/core/lookup/InstanceDataObjectModuleTest4.class"/>
                 <include name="org/netbeans/PatchByteCodeTest.class"/>
+                <!-- these tests are run in IDE mode-->
+                <exclude  name="**/ValidateLayer*Test.class"/> 
             </patternset>
         </testset>
     </testbag>
