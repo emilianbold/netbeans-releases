@@ -204,17 +204,18 @@ public class TargetExecutor implements Runnable {
                 System.getProperties ().putAll (weirdoProps);
                 weirdoProps = null; // make sure GC'able quickly
             }
-            Iterator defs = DefinitionRegistry.getDefs (true).entrySet ().iterator ();
+            Iterator defs = DefinitionRegistry.getDefs ("task").entrySet ().iterator (); // NOI18N
             while (defs.hasNext ()) {
                 Map.Entry entry = (Map.Entry) defs.next ();
                 project.addTaskDefinition ((String) entry.getKey (), (Class) entry.getValue ());
             }
-            defs = DefinitionRegistry.getDefs (false).entrySet ().iterator ();
+            defs = DefinitionRegistry.getDefs ("type").entrySet ().iterator (); // NOI18N
             while (defs.hasNext ()) {
                 Map.Entry entry = (Map.Entry) defs.next ();
                 project.addDataTypeDefinition ((String) entry.getKey (), (Class) entry.getValue ());
             }
             project.setUserProperty("ant.file", buildFile.getAbsolutePath()); // NOI18N
+            // XXX set also ant.version acc. to org/apache/tools/ant/version.properties?
             Iterator it = properties.entrySet ().iterator ();
             while (it.hasNext ()) {
                 Map.Entry entry = (Map.Entry) it.next ();
@@ -243,6 +244,13 @@ public class TargetExecutor implements Runnable {
         // Interesting fact: Project.build{Started,Finished} is protected!
         // So it must be fired directly on the listener. Poor API design IMHO.
         logger.buildStarted (new BuildEvent (project));
+        /* Ant 1.4:
+        // Save & restore system output streams.
+        PrintStream sysout = System.out;
+        PrintStream syserr = System.err;
+        System.setOut(new PrintStream(new DemuxOutputStream(project, false)));
+        System.setErr(new PrintStream(new DemuxOutputStream(project, true)));
+         */
         try {
             // Execute the configured project
             //writer.println("#4"); // NOI18N
@@ -267,6 +275,11 @@ public class TargetExecutor implements Runnable {
             BuildEvent ev = new BuildEvent (project);
             ev.setException (t);
             logger.buildFinished (ev);
+        /* Ant 1.4:
+        } finally {
+            System.setOut(sysout);
+            System.setErr(syserr);
+         */
         }
 
         // Now check to see if the Project defined any cool new custom tasks.

@@ -35,18 +35,17 @@ import org.apache.tools.ant.module.AntModule;
 public final class IntrospectedInfo implements Serializable {
     
     private static IntrospectedInfo defaults = null;
+    private static boolean loadedDefaults = false;
     
     /** Are the default definitions loaded yet? */
-    static boolean isDefaultsPrepared () {
-        return defaults != null;
+    static synchronized boolean isDefaultsPrepared () {
+        return loadedDefaults;
     }
     
     /** Get default definitions specified by Ant's defaults.properties.
      * @return the singleton defaults
      */
-    public static IntrospectedInfo getDefaults () {
-        if (defaults != null) return defaults;
-        synchronized (IntrospectedInfo.class) {
+    public static synchronized IntrospectedInfo getDefaults () {
             if (defaults != null) return defaults;
             AntModule.err.log ("IntrospectedInfo.getDefaults: loading...");
             defaults = new IntrospectedInfo ();
@@ -75,49 +74,78 @@ public final class IntrospectedInfo implements Serializable {
             } else {
                 AntModule.err.log ("Could not open default typedefs");
             }
-            for (int i = 0; i < 2; i++) {
-                boolean task = (i == 0);
-                Map m = DefinitionRegistry.getDefs (task);
+            Iterator kit = DefinitionRegistry.getKinds().iterator();
+            while (kit.hasNext()) {
+                String kind = (String)kit.next();
+                Map m = DefinitionRegistry.getDefs (kind);
                 if (m.size () > 0) {
-                    AntModule.err.log ("Introspecting " + m.size () + " ad-hoc defs (task=" + task + ")...");
+                    AntModule.err.log ("Introspecting " + m.size () + " ad-hoc defs (kind=" + kind + ")...");
                     Iterator it = m.entrySet ().iterator ();
                     while (it.hasNext ()) {
                         Map.Entry entry = (Map.Entry) it.next ();
                         String name = (String) entry.getKey ();
                         Class def = (Class) entry.getValue ();
-                        defaults.register (name, def, task);
+                        defaults.register (name, def, kind);
                     }
                 }
             }
-            // [PENDING] ErrorManager.isLoggable > NB3.1
-            AntModule.err.log ("IntrospectedInfo.defaults=" + defaults);
+            if (AntModule.err.isLoggable(ErrorManager.UNKNOWN)) {
+                AntModule.err.log ("IntrospectedInfo.defaults=" + defaults);
+            }
+            loadedDefaults = true;
             return defaults;
-        }
     }
     
     private static final long serialVersionUID = -2290064038236292995L;
     
     private Map clazzes = Collections.synchronizedMap (new HashMap ()); // Map<String,IntrospectedClass>
-    private Map tasks = new HashMap (); // Map<String,String>
-    private Map types = new HashMap (); // Map<String,String>
+    /** definitions first by kind then by name to class name */
+    private Map namedefs = new HashMap(); // Map<String,Map<String,String>>
     
     /** Make new empty set of info.
      */
     public IntrospectedInfo () {
     }
+    private void readObject(ObjectInputStream is) throws IOException, ClassNotFoundException {
+        is.defaultReadObject();
+        if (namedefs == null) {
+            // Compatibility with older versions of this class.
+            namedefs = new HashMap();
+            ObjectInputStream.GetField fields = is.readFields();
+            namedefs.put("task", fields.get("tasks", new HashMap())); // NOI18N
+            namedefs.put("type", fields.get("types", new HashMap())); // NOI18N
+        }
+    }
     
     /** Get task definitions.
      * @return an immutable map from task names to class names
+     * @deprecated since 2.4, look up by kind instead
      */
     public Map getTaskdefs () {
-        return Collections.unmodifiableMap (tasks);
+        return getDefs("task"); // NOI18N
     }
     
     /** Get type definitions.
      * @return an immutable map from type names to class names
+     * @deprecated since 2.4, look up by kind instead
      */
     public Map getTypedefs () {
-        return Collections.unmodifiableMap (types);
+        return getDefs("type"); // NOI18N
+    }
+    
+    /** Get definitions.
+     * @param the kind of definition, e.g. <code>task</code>
+     * @return an immutable map from definition names to class names
+     */
+    public Map getDefs(String kind) {
+        synchronized (namedefs) {
+            Map m = (Map)namedefs.get(kind);
+            if (m != null) {
+                return Collections.unmodifiableMap(m);
+            } else {
+                return Collections.EMPTY_MAP;
+            }
+        }
     }
     
     private IntrospectedClass getData (String clazz) throws IllegalArgumentException {
@@ -205,7 +233,7 @@ public final class IntrospectedInfo implements Serializable {
     }
     
     /** Register a new definition.
-     * May change the defined task/type for a given name, but currently
+     * May change the defined task/type for a given name, but
      * will not redefine structure if classes are modified.
      * Also any class definitions contained in the default map (if not this one)
      * are just ignored; you should refer to the default map for info on them.
@@ -213,15 +241,68 @@ public final class IntrospectedInfo implements Serializable {
      * @param clazz the implementing class
      * @param task true for a task, false for a data type
      * @throws various errors if the class could not be resolved, e.g. NoClassDefFoundError
+     * @deprecated since 2.4, should register by kind instead
      */
     public synchronized void register (String name, Class clazz, boolean task) {
-        (task ? tasks : types).put (name, clazz.getName ());
+        register(name, clazz, task ? "task" : "type"); // NOI18N
+    }
+    /** Register a new definition.
+     * May change the defined task/type for a given name, but
+     * will not redefine structure if classes are modified.
+     * Also any class definitions contained in the default map (if not this one)
+     * are just ignored; you should refer to the default map for info on them.
+     * @param name name of the task or type as it appears in scripts
+     * @param clazz the implementing class
+     * @param kind the kind of definition to register (<code>task</code> or <code>type</code> currently)
+     * @throws various errors if the class could not be resolved, e.g. NoClassDefFoundError
+     * @since 2.4
+     */
+    public synchronized void register(String name, Class clazz, String kind) {
+        synchronized (namedefs) {
+            Map m = (Map)namedefs.get(kind);
+            if (m == null) {
+                m = new HashMap(); // Map<String,String>
+                namedefs.put(kind, m);
+            }
+            m.put(name, clazz.getName());
+        }
         analyze (clazz);
     }
+    /** Unregister a definition.
+     * Removes it from the definition mapping, though structural
+     * information about the implementing class (and classes referenced
+     * by that class) will not be removed.
+     * If the definition was not registered before, does nothing.
+     * @param name the definition name
+     * @param kind the kind of definition (<code>task</code> etc.)
+     * @since 2.4
+     */
+    public synchronized void unregister(String name, String kind) {
+        synchronized (namedefs) {
+            Map m = (Map)namedefs.get(kind);
+            if (m != null) {
+                m.remove(name);
+            }
+        }
+    }
+    
+    /** Reanalyze a class' structure.
+     * Information about this class' structure (nested elements etc.) will
+     * be reexamined, which may produce different results if this is a different
+     * version of the same class than was last introspected. All referenced classes
+     * which are defined in this <code>IntrospectedInfo</code> (but not traversing
+     * into the default one if different from this one) will also be reanalyzed.
+     * @param clazz the root class to analyze again
+     * @throws various errors if the class could not be resolved, e.g. NoClassDefFoundError
+     * @since ???
+     * /
+    public synchronized void reanalyze(Class clazz) {
+        // XXX
+    }*/
     
     private void analyze (Class clazz) {
         if (isKnown (clazz.getName ()) || getDefaults ().isKnown (clazz.getName ())) {
-            // Currently will not try to redefine anything.
+            // Will not try to redefine anything.
             return;
         }
         //AntModule.err.log ("IntrospectedInfo.analyze: clazz=" + clazz.getName ());
@@ -298,20 +379,25 @@ public final class IntrospectedInfo implements Serializable {
      * @param p project to scan
      */
     public void scanProject (Project p) {
-        scanMap (p.getTaskDefinitions (), true);
-        scanMap (p.getDataTypeDefinitions (), false);
+        scanMap (p.getTaskDefinitions (), "task"); // NOI18N
+        scanMap (p.getDataTypeDefinitions (), "type"); // NOI18N
         AntModule.err.log ("IntrospectedInfo.scanProject: p=" + p.getName () + "; this=" + this);
     }
     
-    private void scanMap (Map/*<String,Class>*/ m, boolean task) {
+    private void scanMap (Map/*<String,Class>*/ m, String kind) {
+        if (kind == null) throw new IllegalArgumentException();
         Iterator it = m.entrySet ().iterator ();
         while (it.hasNext ()) {
             Map.Entry entry = (Map.Entry) it.next ();
             String name = (String) entry.getKey ();
             Class clazz = (Class) entry.getValue ();
-            Map registry = task ? tasks : types; // Map<String,String>
+            Map registry = (Map)namedefs.get(kind); // Map<String,String>
+            if (registry == null) {
+                registry = new HashMap();
+                namedefs.put(kind, registry);
+            }
             synchronized (this) {
-                Map defaults = task ? getDefaults ().getTaskdefs () : getDefaults ().getTypedefs (); // Map<String,String>
+                Map defaults = getDefaults ().getDefs (kind); // Map<String,String>
                 if (registry.get (name) == null && defaults.get (name) == null) {
                     registry.put (name, clazz.getName ());
                 }
@@ -334,7 +420,7 @@ public final class IntrospectedInfo implements Serializable {
     }
     
     public String toString () {
-        return "IntrospectedInfo[tasks=" + tasks + ",types=" + types + ",clazzes=" + clazzes + "]"; // NOI18N
+        return "IntrospectedInfo[namedefs=" + namedefs + ",clazzes=" + clazzes + "]"; // NOI18N
     }
     
     private static final class IntrospectedClass implements Serializable {

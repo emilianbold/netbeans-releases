@@ -49,9 +49,9 @@ public class AntProjectChildren extends ElementChildren implements ChangeListene
             return new Node[] { new AntTaskNode (el) };
         } else {
             // Data type, hopefully.
-            String clazz = (String) IntrospectedInfo.getDefaults ().getTypedefs ().get (type);
+            String clazz = (String) IntrospectedInfo.getDefaults ().getDefs ("type").get (type); // NOI18N
             if (clazz == null) {
-                clazz = (String) AntSettings.getDefault ().getCustomDefs ().getTypedefs ().get (type);
+                clazz = (String) AntSettings.getDefault ().getCustomDefs ().getDefs ("type").get (type); // NOI18N
             }
             if (clazz != null) {
                 AntModule.err.log ("AntProjectChildren.createNodes: type=" + type + " clazz=" + clazz);

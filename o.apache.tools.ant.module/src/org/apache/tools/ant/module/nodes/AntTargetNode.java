@@ -280,8 +280,8 @@ public class AntTargetNode extends ElementNode {
     public NewType[] getNewTypes () {
         if (! AntProjectNode.isScriptReadOnly ((AntProjectCookie) getCookie (AntProjectCookie.class))) {
             List names = new ArrayList ();
-            names.addAll (IntrospectedInfo.getDefaults ().getTaskdefs ().keySet ());
-            names.addAll (AntSettings.getDefault ().getCustomDefs ().getTaskdefs ().keySet ());
+            names.addAll (IntrospectedInfo.getDefaults ().getDefs ("task").keySet ()); // NOI18N
+            names.addAll (AntSettings.getDefault ().getCustomDefs ().getDefs ("task").keySet ()); // NOI18N
             Collections.sort (names);
             return new NewType[] { new TaskNewType (names) };
         } else {
@@ -313,7 +313,7 @@ public class AntTargetNode extends ElementNode {
             ActionListener helplistener = new ActionListener () {
                     public void actionPerformed (ActionEvent ignore) {
                         help.setText (NbBundle.getMessage (AntTargetNode.class, "LBL_help_on_task", combo.getSelectedItem ()));
-                        help.setEnabled (IntrospectedInfo.getDefaults ().getTaskdefs ().containsKey (combo.getSelectedItem ()));
+                        help.setEnabled (IntrospectedInfo.getDefaults ().getDefs ("task").containsKey (combo.getSelectedItem ())); // NOI18N
                     }
                 };
             helplistener.actionPerformed (null);
@@ -343,10 +343,10 @@ public class AntTargetNode extends ElementNode {
 
     protected boolean canPasteElement (Element el2) {
         String name = el2.getNodeName ();
-        if (IntrospectedInfo.getDefaults ().getTaskdefs ().containsKey (name)) {
+        if (IntrospectedInfo.getDefaults ().getDefs ("task").containsKey (name)) { // NOI18N
             return true;
         }
-        if (AntSettings.getDefault ().getCustomDefs ().getTaskdefs ().containsKey (name)) {
+        if (AntSettings.getDefault ().getCustomDefs ().getDefs ("task").containsKey (name)) { // NOI18N
             return true;
         }
         return false;

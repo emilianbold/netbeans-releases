@@ -287,15 +287,15 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
         return type.equals ("target") || // NOI18N
                type.equals ("property") || // NOI18N
                type.equals ("taskdef") || // NOI18N
-               IntrospectedInfo.getDefaults ().getTypedefs ().containsKey (type) ||
-               AntSettings.getDefault ().getCustomDefs ().getTypedefs ().containsKey (type);
+               IntrospectedInfo.getDefaults ().getDefs ("type").containsKey (type) || // NOI18N
+               AntSettings.getDefault ().getCustomDefs ().getDefs ("type").containsKey (type); // NOI18N
     }
 
     public NewType[] getNewTypes () {
         if (! isScriptReadOnly ((AntProjectCookie) getCookie(AntProjectCookie.class))) {
             List names = new ArrayList ();
-            names.addAll (IntrospectedInfo.getDefaults ().getTypedefs ().keySet ());
-            names.addAll (AntSettings.getDefault ().getCustomDefs ().getTypedefs ().keySet ());
+            names.addAll (IntrospectedInfo.getDefaults ().getDefs ("type").keySet ()); // NOI18N
+            names.addAll (AntSettings.getDefault ().getCustomDefs ().getDefs ("type").keySet ()); // NOI18N
             Collections.sort (names);
             names.add (0, "target"); // NOI18N
             names.add (1, "property"); // NOI18N
