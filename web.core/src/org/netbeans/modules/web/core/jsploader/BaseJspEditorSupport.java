@@ -21,7 +21,11 @@ import java.io.Writer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInput;
+import java.util.Arrays;
+import java.util.List;
+import java.util.ArrayList;
 
+import javax.swing.Action;
 import javax.swing.Timer;
 import javax.swing.event.CaretListener;
 import javax.swing.JEditorPane;
@@ -343,6 +347,21 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
             initialize();
         }
         
+        public Action[] getActions() {
+            Action[] sa = super.getActions();
+            Action[] jspServletActions = new SystemAction[] {
+                null,
+                SystemAction.get(ValidateAction.class),
+                SystemAction.get(EditServletAction.class),
+                null,
+                SystemAction.get(ExecuteAction.class),
+            };
+            List acs = new ArrayList(Arrays.asList(sa));
+            acs.addAll(Arrays.asList(jspServletActions));
+            return (Action[])acs.toArray(new Action[0]);
+        }
+
+        /*
         public SystemAction[] getSystemActions() {
             SystemAction[] sa = super.getSystemActions();
             SystemAction[] jspServletActions = new SystemAction[] {
@@ -353,6 +372,7 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
             };
             return SystemAction.linkActions(sa, jspServletActions);
         }
+        */
         
         protected void notifyParsingDone() {
         }
