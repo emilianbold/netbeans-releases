@@ -123,7 +123,7 @@
     <mapID target="ent_app_build" url="enterprise/general/ent_app_build.html" />
     <mapID target="ent_app_server" url="enterprise/general/ent_app_server.html" />
     <mapID target="ent_app_verify" url="enterprise/general/ent_app_verify.html" />
-    
+    <mapID target="ent_app_deploy" url="enterprise/general/ent_app_deploy.html" />
 
     !-- New Project Wizard csh -->
     <mapID target="org.netbeans.modules.j2ee.earproject.ui.wizards.NewEarProjectWizardIterator" url="enterprise/csh/NewEarProjectWizardIterator.html" />
