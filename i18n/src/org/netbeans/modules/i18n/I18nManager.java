@@ -313,8 +313,9 @@ public class I18nManager {
             topComponent.setCloseOperation(TopComponent.CLOSE_EACH);
             topComponent.setLayout(new BorderLayout());
             topComponent.add(i18nPanel, BorderLayout.CENTER);
-            topComponent.setName(name);
-
+            topComponent.setName(name);            
+            topComponent.setToolTipText(I18nUtil.getBundle().getString("CTL_I18nDialogTitle"));
+            
              // dock into I18N mode if possible
             Workspace[] currentWs = TopManager.getDefault().getWindowManager().getWorkspaces();
             for (int i = currentWs.length; --i >= 0; ) {
