@@ -35,8 +35,8 @@ public final class ArgumentSeries {
     }
     
     /** @return keys */
-    public Iterator getKeys() {
-        return Collections.unmodifiableSet(argument2Values.keySet()).iterator();
+    public String[] getKeys() {
+        return (String[]) argument2Values.keySet().toArray(new String[argument2Values.size()]);
     }
     
     /** @return an iteration of values for a given key */

@@ -315,9 +315,9 @@ public final class BenchmarkSuite implements Test {
         }
         
         /** Creates arguments for given params */
-        private static void createArgs(Iterator keys, ArgumentSeries as, MapArgBenchmark mab, List mapList) {
-            if (keys.hasNext()) {
-                String key = (String) keys.next();
+        private static void createArgs(String[] keys, int level, ArgumentSeries as, MapArgBenchmark mab, List mapList) {
+            if (level < keys.length) {
+                String key = keys[level];
                 Iterator vals = as.getValues(key);
                 while (vals.hasNext()) {
                     List localMapList = new ArrayList(11);
@@ -328,16 +328,16 @@ public final class BenchmarkSuite implements Test {
                         int i = interval.getStart();
                         List localMapList2 = new ArrayList(11);
                         for (; i < interval.getEnd(); i += interval.getStep()) {
-                            createArgsAndPut(keys, as, mab, localMapList2, key, new Integer(i));
+                            createArgsAndPut(keys, level + 1, as, mab, localMapList2, key, new Integer(i));
                             localMapList.addAll(localMapList2);
                             localMapList2.clear();
                         }
                         if (i >= interval.getEnd()) {
-                            createArgsAndPut(keys, as, mab, localMapList2, key, new Integer(interval.getEnd()));
+                            createArgsAndPut(keys, level + 1, as, mab, localMapList2, key, new Integer(interval.getEnd()));
                             localMapList.addAll(localMapList2);
                         }
                     } else {
-                        createArgsAndPut(keys, as, mab, localMapList, key, next);
+                        createArgsAndPut(keys, level + 1, as, mab, localMapList, key, next);
                     }
                     mapList.addAll(localMapList);
                 }
@@ -346,8 +346,8 @@ public final class BenchmarkSuite implements Test {
             }
         }
             
-        private static void createArgsAndPut(Iterator keys, ArgumentSeries as, MapArgBenchmark mab, List mapList, Object key, Object val) {
-            createArgs(keys, as, mab, mapList);
+        private static void createArgsAndPut(String[] keys, int level, ArgumentSeries as, MapArgBenchmark mab, List mapList, Object key, Object val) {
+            createArgs(keys, level, as, mab, mapList);
             int size = mapList.size();
             for (int i = 0; i < size; i++) {
                 Map map = (Map) mapList.get(i);
@@ -364,7 +364,7 @@ public final class BenchmarkSuite implements Test {
                 final int size = argSeries.size();
                 for (int i = 0; i < size; i++) {
                     ArgumentSeries as = (ArgumentSeries) argSeries.get(i);
-                    createArgs(as.getKeys(), as, test, args);
+                    createArgs(as.getKeys(), 0, as, test, args);
                 }
                 
                 test.setArgumentArray((Map[]) args.toArray(new Map[args.size()]));
