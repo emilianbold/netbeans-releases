@@ -21,6 +21,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.ui.OpenProjectList;
+import org.netbeans.modules.project.ui.ProjectUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -52,8 +53,11 @@ public class CloseProject extends ProjectAction implements PropertyChangeListene
         
     protected void actionPerformed( Lookup context ) {
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, null );        
-        for( int i = 0; i < projects.length; i++ ) {
-            OpenProjectList.getDefault().close( projects[i] );
+        // show all modified documents, if an user cancel it then no project is closed
+        if (ProjectUtilities.closeAllDocuments (projects)) {
+            for( int i = 0; i < projects.length; i++ ) {
+                OpenProjectList.getDefault().close( projects[i] );
+            }
         }
     }
     
