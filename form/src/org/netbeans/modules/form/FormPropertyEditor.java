@@ -85,7 +85,7 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   public void setValue(Object value) {
     this.value = value;
     currentEditor.setValue (value);
-    Thread.dumpStack();
+//    Thread.dumpStack();
     //firePropertyChange();
   }
   
@@ -276,6 +276,7 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
 
 /*
  * Log
+ *  3    Gandalf   1.2         5/31/99  Ian Formanek    Removed dumpStack
  *  2    Gandalf   1.1         5/30/99  Ian Formanek    
  *  1    Gandalf   1.0         5/24/99  Ian Formanek    
  * $
