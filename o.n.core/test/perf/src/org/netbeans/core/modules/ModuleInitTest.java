@@ -24,10 +24,24 @@ import org.netbeans.performance.Benchmark;
 import org.openide.TopManager;
 
 // initial run (04-sep-02) with empty dummy modules under JDK 1.4.1rc:
-// 0 -    0.92Mb, 2.75s
-// 10 -   1.44Mb, 3.36s
-// 100 -  1.71Mb, 4.5s
+// 0    - 0.92Mb, 2.75s
+// 10   - 1.44Mb, 3.36s
+// 100  - 1.71Mb, 4.5s
 // 1000 - 7.21Mb, 9-12s
+
+// another run (04-sep-02) with module dependencies:
+// 0    - 0.92Mb, 2.77s
+// 10   - 1.41Mb, 3.37s
+// 100  - 1.69Mb, 4.3s
+// 1000 - 7.72Mb, 10-12s
+// So dependencies only seem to have a small startup time impact
+// for a lot of modules (hundreds, a second or so).
+
+// 7ms/module to read manifest & .xml file, plus .25ms/module to get file list from Modules/
+// .35ms/module to check dependency & orderings
+// 2.4ms/module to open JAR & create classloader
+// .2ms/m to look for nonexistent sections [already improving]
+// .14ms/m to look for nonexistent module installs [how to improve?]
 
 /**
  * Benchmark measuring initialization of the module system.
@@ -122,23 +136,126 @@ public class ModuleInitTest extends Benchmark {
         }
     }
     
+    // Sorry, I can't easily draw this dependency graph.
+    // It is complicated - that is the whole point.
+    private static final int cyclesize = 8;
+    // Base names of cyclic pattern of modules:
+    private static final String[] names = {"aut1", "prv1", "reg1", "aut2", "reg2", "reg3", "dis1", "eag1"};
+    // Types: 0 = regular, 1 = autoload, 2 = eager
+    private static final int[] types = {1, 1, 0, 1, 0, 0, 0, 2};
+    // Intra-set dependencies (list of indices of other modules):
+    private static final int[][] intradeps = {{}, {}, {0}, {}, {0, 3}, {3}, {3}, {4, 5}};
+    // Inter-set dependencies (list of indices of analogous modules in the previous cycle):
+    private static final int[][] interdeps = {{0}, {}, {2}, {}, {}, {}, {6}, {5}};
+    // Whether the module should be permitted to be enabled or not:
+    private static final boolean[] enabled = {true, true, true, true, true, true, false, true};
+    // Provided tokens from the module; freeform, but if ends in '#' that will get subst'd w/ cycle
+    private static final String[][] provides = {{}, {"tok#"}, {}, {}, {}, {}, {}, {}};
+    // Required tokens; same syntax as above.
+    private static final String[][] requires = {{}, {}, {"tok#"}, {}, {}, {}, {}, {}};
+    // E.g.: module #16 (0-indexed) is in the third cycle and is a reg1, thus named reg1_002.
+    // It depends on module #14, aut1_002 (from intradeps) and module #9, reg1_001 (from interdeps).
+    // It also depends on tok_002, provided only by module #15, prv1_002.
+    // All of these will be enabled, along with some other modules (indirectly).
+    static {
+        if (names.length != cyclesize ||
+                types.length != cyclesize ||
+                intradeps.length != cyclesize ||
+                interdeps.length != cyclesize ||
+                enabled.length != cyclesize ||
+                provides.length != cyclesize ||
+                requires.length != cyclesize) {
+            throw new Error();
+        }
+    }
+    
     private void createModules(int size, File mods, File amods, File emods) throws IOException {
-        // XXX be more sophisticated - this only creates dummy modules
-        // 1. Add inter-module dependencies of varying depths
-        // 2. Make some modules eager, some autoload, a few disabled
-        // 3. Create layers - some overlap, some fresh files, some fresh top-level dirs, some empty, some w/ contents
-        // 4. Add random contents to JARs so they are bigger
+        // XXX be more sophisticated
+        // - create layers - some overlap, some fresh files, some fresh top-level dirs, some empty, some w/ contents
+        // - add random contents to JARs so they are bigger
+        File[] moddirs = {mods, amods, emods}; // indexed by types[n]
         for (int i = 0; i < size; i++) {
-            String num = Integer.toString(i);
-            while (num.length() < 4) num = "0" + num;
+            int which = i % cyclesize;
+            int cycle = i / cyclesize;
+            String cycleS = Integer.toString(cycle);
+            // Enough for 1000*cyclesize modules to sort nicely:
+            while (cycleS.length() < 3) cycleS = "0" + cycleS;
             Manifest mani = new Manifest();
             Attributes attr = mani.getMainAttributes();
             attr.putValue("Manifest-Version", "1.0");
-            attr.putValue("OpenIDE-Module", "module" + num);
+            String name = names[which] + "_" + cycleS;
+            attr.putValue("OpenIDE-Module", name + "/1");
             // Avoid requiring javahelp:
             attr.putValue("OpenIDE-Module-IDE-Dependencies", "IDE/1 > 2.2");
             attr.putValue("OpenIDE-Module-Specification-Version", "1.0");
-            OutputStream os = new FileOutputStream(new File(mods, "module" + num + ".jar"));
+            StringBuffer deps = null;
+            for (int j = 0; j < intradeps[which].length; j++) {
+                if (deps == null) {
+                    deps = new StringBuffer(1000);
+                } else {
+                    deps.append(", ");
+                }
+                deps.append(names[intradeps[which][j]]);
+                deps.append('_');
+                deps.append(cycleS);
+                deps.append("/1 > 1.0");
+            }
+            if (cycle > 0) {
+                String oldCycleS = Integer.toString(cycle - 1);
+                while (oldCycleS.length() < 3) oldCycleS = "0" + oldCycleS;
+                for (int j = 0; j < interdeps[which].length; j++) {
+                    if (deps == null) {
+                        deps = new StringBuffer(1000);
+                    } else {
+                        deps.append(", ");
+                    }
+                    deps.append(names[interdeps[which][j]]);
+                    deps.append('_');
+                    deps.append(oldCycleS);
+                    deps.append("/1 > 1.0");
+                }
+            }
+            if (!enabled[which]) {
+                if (deps == null) {
+                    deps = new StringBuffer(1000);
+                } else {
+                    deps.append(", ");
+                }
+                // An impossible dependency.
+                deps.append("honest.man.in.washington");
+            }
+            if (deps != null) {
+                attr.putValue("OpenIDE-Module-Module-Dependencies", deps.toString());
+            }
+            if (provides[which].length > 0) {
+                StringBuffer buf = new StringBuffer(100);
+                for (int j = 0; j < provides[which].length; j++) {
+                    if (j > 0) {
+                        buf.append(", ");
+                    }
+                    String tok = provides[which][j];
+                    if (tok.endsWith("#")) {
+                        tok = tok.substring(0, tok.length() - 1) + "_" + cycleS;
+                    }
+                    buf.append(tok);
+                }
+                attr.putValue("OpenIDE-Module-Provides", buf.toString());
+            }
+            if (requires[which].length > 0) {
+                StringBuffer buf = new StringBuffer(100);
+                for (int j = 0; j < requires[which].length; j++) {
+                    if (j > 0) {
+                        buf.append(", ");
+                    }
+                    String tok = requires[which][j];
+                    if (tok.endsWith("#")) {
+                        tok = tok.substring(0, tok.length() - 1) + "_" + cycleS;
+                    }
+                    buf.append(tok);
+                }
+                attr.putValue("OpenIDE-Module-Requires", buf.toString());
+            }
+            OutputStream os = new FileOutputStream(new File(moddirs[types[which]], name + ".jar"));
             try {
                 JarOutputStream jos = new JarOutputStream(os, mani);
                 jos.close();
@@ -166,7 +283,7 @@ public class ModuleInitTest extends Benchmark {
             "-Dnetbeans.home=" + homedir.getAbsolutePath(),
             "-Dnetbeans.user=" + userdir.getAbsolutePath(),
             //"-Dmodules.dir=" + new File(homedir, "modules").getAbsolutePath(),
-            //log ? "-Dorg.netbeans.log.startup=print" : "-Dignore=me",
+            log ? "-Dorg.netbeans.log.startup=print" : "-Dignore=me",
             "-Dnetbeans.suppress.sysprop.warning=true",
             "-Dlog=" + log,
             "-classpath",
