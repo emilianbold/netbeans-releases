@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -27,21 +27,22 @@ public class DriverSpecification {
 
     /** Used DBConnection */
     private HashMap desc;
-    
+
     private String catalog, schema;
-    
+
     private DatabaseMetaData dmd;
-    
-    private boolean mixedCaseIndentifiers, upperCaseIndentifiers, lowerCaseIndentifiers;
 
     private ResultSet rs;
 
+    private String quoteString;
+    
     /** Owned factory */
     SpecificationFactory factory;
 
     /** Constructor */
     public DriverSpecification(HashMap description) {
         desc = description;
+        quoteString = null;
     }
 
     public DriverSpecificationFactory getDriverSpecificationFactory() {
@@ -58,10 +59,10 @@ public class DriverSpecification {
             return;
         } else
             catalog.trim();
-        
+
         ResultSet rs;
         LinkedList list = new LinkedList();
-        
+
         try {
             rs = dmd.getCatalogs();
             while (rs.next())
@@ -75,51 +76,28 @@ public class DriverSpecification {
             rs = null;
             return;
         }
-        
+
         if (list.contains(catalog))
             this.catalog = catalog;
         else
             this.catalog = null; //hack for Sybase ODBC driver
     }
-    
+
     public void setSchema(String schema) {
         this.schema = schema;
     }
-    
+
     public String getSchema() {
         return schema;
     }
-    
+
     public void setMetaData(DatabaseMetaData dmd) {
         this.dmd = dmd;
-        
-        try {
-            mixedCaseIndentifiers = dmd.storesMixedCaseIdentifiers();
-            if (!mixedCaseIndentifiers) {
-                upperCaseIndentifiers = dmd.storesUpperCaseIdentifiers();
-                lowerCaseIndentifiers = dmd.storesLowerCaseIdentifiers();
-            }
-        } catch (SQLException exc) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                exc.printStackTrace();
-        }
-    }
-    
-    private String caseConversion(String pattern) {
-        if (upperCaseIndentifiers ^ lowerCaseIndentifiers) {
-            if (upperCaseIndentifiers)
-                return pattern.toUpperCase();
-            if (lowerCaseIndentifiers)
-                return pattern.toLowerCase();
-        }
-        
-        return pattern;
     }
 
     public void getTables(String tableNamePattern, String[] types) {
         try {
-            if (!mixedCaseIndentifiers && tableNamePattern != null)
-                tableNamePattern = caseConversion(tableNamePattern);
+            tableNamePattern = quoteString(tableNamePattern);
             rs = dmd.getTables(catalog, schema, tableNamePattern, types);
         } catch (SQLException exc) {
             if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
@@ -130,8 +108,7 @@ public class DriverSpecification {
 
     public void getProcedures(String procedureNamePattern) {
         try {
-            if (!mixedCaseIndentifiers && procedureNamePattern != null)
-                procedureNamePattern = caseConversion(procedureNamePattern);
+            procedureNamePattern = quoteString(procedureNamePattern);
             rs = dmd.getProcedures(catalog, schema, procedureNamePattern);
         } catch (SQLException exc) {
             if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
@@ -142,8 +119,7 @@ public class DriverSpecification {
 
     public void getPrimaryKeys(String table) {
         try {
-            if (!mixedCaseIndentifiers && table != null)
-                table = caseConversion(table);
+            table = quoteString(table);
             rs = dmd.getPrimaryKeys(catalog, schema, table);
         } catch (SQLException exc) {
             if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
@@ -154,8 +130,7 @@ public class DriverSpecification {
 
     public void getIndexInfo(String table, boolean unique, boolean approximate) {
         try {
-            if (!mixedCaseIndentifiers && table != null)
-                table = caseConversion(table);
+            table = quoteString(table);
             rs = dmd.getIndexInfo(catalog, schema, table, unique, approximate);
         } catch (SQLException exc) {
             if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
@@ -166,12 +141,8 @@ public class DriverSpecification {
 
     public void getColumns(String tableNamePattern, String columnNamePattern) {
         try {
-            if (!mixedCaseIndentifiers) {
-                if (tableNamePattern != null)
-                    tableNamePattern = caseConversion(tableNamePattern);
-                if (columnNamePattern != null)
-                    columnNamePattern = caseConversion(columnNamePattern);
-            }
+            tableNamePattern = quoteString(tableNamePattern);
+            columnNamePattern = quoteString(columnNamePattern);
             rs = dmd.getColumns(catalog, schema, tableNamePattern, columnNamePattern);
         } catch (SQLException exc) {
             if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
@@ -182,12 +153,8 @@ public class DriverSpecification {
 
     public void getProcedureColumns(String procedureNamePattern, String columnNamePattern) {
         try {
-            if (!mixedCaseIndentifiers) {
-                if (procedureNamePattern != null)
-                    procedureNamePattern = caseConversion(procedureNamePattern);
-                if (columnNamePattern != null)
-                    columnNamePattern = caseConversion(columnNamePattern);
-            }
+            procedureNamePattern = quoteString(procedureNamePattern);
+            columnNamePattern = quoteString(columnNamePattern);
             rs = dmd.getProcedureColumns(catalog, schema, procedureNamePattern, columnNamePattern);
         } catch (SQLException exc) {
             if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
@@ -198,8 +165,7 @@ public class DriverSpecification {
 
     public void getExportedKeys(String table) {
         try {
-            if (!mixedCaseIndentifiers && table != null)
-                table = caseConversion(table);
+            table = quoteString(table);
             rs = dmd.getExportedKeys(catalog, schema, table);
         } catch (SQLException exc) {
             if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
@@ -210,8 +176,7 @@ public class DriverSpecification {
 
     public void getImportedKeys(String table) {
         try {
-            if (!mixedCaseIndentifiers && table != null)
-                table = caseConversion(table);
+            table = quoteString(table);
             rs = dmd.getImportedKeys(catalog, schema, table);
         } catch (SQLException exc) {
             if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
@@ -219,18 +184,18 @@ public class DriverSpecification {
             rs = null;
         }
     }
-    
+
     public ResultSet getResultSet() {
         return rs;
     }
-    
+
     public HashMap getRow() {
         HashMap rset = new HashMap();
         Object value;
-        
+
         try {
             int count = rs.getMetaData().getColumnCount();
-            
+
             for (int i = 1; i <= count; i++) {
                 value = null;
                 try {
@@ -239,7 +204,7 @@ public class DriverSpecification {
                 }  catch (SQLException exc) {
                     if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
                         exc.printStackTrace();
-                    
+
                     rset = null;
                     break;
                 }
@@ -248,18 +213,18 @@ public class DriverSpecification {
         } catch (SQLException exc) {
             if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
                 exc.printStackTrace();
-            
+
             rset = null;
         }
-        
+
         return rset;
     }
 
     //another patches
-    
+
     public boolean areViewsSupported() {
         LinkedList list = new LinkedList();
-        
+
         list.add("PointBase"); // NOI18N
         list.add("MySQL"); // NOI18N
         list.add("HypersonicSQL"); // NOI18N
@@ -274,5 +239,36 @@ public class DriverSpecification {
             //PENDING
             return true;
         }
-    }    
+    }
+
+    private String getQuoteString() {
+        if (quoteString == null) {
+            try {
+                quoteString = dmd.getIdentifierQuoteString();
+                if (quoteString == null || quoteString.equals(" ")) //NOI18N
+                    quoteString = ""; //NOI18N
+                else
+                    quoteString.trim();
+            } catch (SQLException exc) {
+                quoteString = ""; //NOI18N
+            }
+        }
+        
+        return quoteString;
+    }
+    
+    private String quoteString(String str) {
+        try {
+            if (dmd.getDatabaseProductName().trim().equals("PointBase")) { //NOI18N
+                //hack for PointBase - DatabaseMetaData methods require quoted arguments for case sensitive identifiers
+                String quoteStr = getQuoteString();
+                if (str != null && !str.equals("%") && !quoteStr.equals("")) //NOI18N
+                    str = quoteStr + str + quoteStr;
+            }
+        } catch (SQLException exc) {
+            //PENDING
+        }
+        
+        return str;
+    }
 }
