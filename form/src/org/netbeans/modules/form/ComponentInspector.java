@@ -661,19 +661,39 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
 
         // performs the paste action
         public Transferable paste() throws IOException {
-            Transferable[] transOut = new Transferable[p.length];
+            FormModel thisForm = focusedForm.getFormModel();
+            boolean compoundEditOnThisForm = thisForm.isUndoRedoRecording()
+                                             && thisForm.startCompoundEdit();
 
-            boolean compoundUndoableEditStarted =
-                focusedForm.getFormModel().isUndoRedoRecording()
-                && focusedForm.getFormModel().startCompoundEdit();
+            // if this is cut operation from different form, start compound
+            // undoable edit also on the source form
+            FormModel sourceForm = null;
+            boolean compoundEditOnSourceForm = false;
+            if (p.length > 0 && p[0] instanceof CopySupport.RADPaste) {
+                CopySupport.RADPaste radPaste = (CopySupport.RADPaste) p[0];
+                if (radPaste.isComponentCut()) {
+                    RADComponent sourceComp = radPaste.getSourceComponent(true);
+                    if (sourceComp != null) {
+                        sourceForm = sourceComp.getFormModel();
+                        if (sourceForm != null && sourceForm != thisForm
+                                && sourceForm.isUndoRedoRecording())
+                            compoundEditOnSourceForm =
+                                sourceForm.startCompoundEdit();
+                    }
+                }
+            }
+
+            Transferable[] transOut = new Transferable[p.length];
 
             for (int i=0; i < p.length; i++) {
                 Transferable newTrans = p[i].paste();
                 transOut[i] = newTrans != null ? newTrans : t[i];
             }
 
-            if (compoundUndoableEditStarted)
-                focusedForm.getFormModel().endCompoundEdit();
+            if (compoundEditOnSourceForm)
+                sourceForm.endCompoundEdit();
+            if (compoundEditOnThisForm)
+                thisForm.endCompoundEdit();
 
             return new ExTransferable.Multi(transOut);
         }

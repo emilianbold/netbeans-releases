@@ -125,17 +125,8 @@ class CopySupport {
         }
 
         public Transferable paste() throws java.io.IOException {
-            boolean fromCut =
-                transferable.isDataFlavorSupported(getComponentCutFlavor());
-
-            RADComponent sourceComponent = null;
-            try {
-                sourceComponent = (RADComponent) transferable.getTransferData(
-                                     fromCut ? getComponentCutFlavor() :
-                                               getComponentCopyFlavor());
-            }
-            catch (java.io.IOException e) { } // ignore - should not happen
-            catch (UnsupportedFlavorException e) { } // ignore - should not happen
+            boolean fromCut = isComponentCut();
+            RADComponent sourceComponent = getSourceComponent(fromCut);
 
             if (sourceComponent == null)
                 return null;
@@ -227,6 +218,25 @@ class CopySupport {
             }
 
             return ExTransferable.EMPTY;
+        }
+
+        boolean isComponentCut() {
+            return transferable.isDataFlavorSupported(getComponentCutFlavor());
+        }
+
+        RADComponent getSourceComponent(boolean fromCut) {
+            RADComponent sourceComponent = null;
+            try {
+                Object obj = transferable.getTransferData(
+                               fromCut ? getComponentCutFlavor() :
+                                         getComponentCopyFlavor());
+                if (obj instanceof RADComponent)
+                    sourceComponent = (RADComponent) obj;
+            }
+            catch (java.io.IOException e) { } // ignore - should not happen
+            catch (UnsupportedFlavorException e) { } // ignore - should not happen
+
+            return sourceComponent;
         }
     }
 
