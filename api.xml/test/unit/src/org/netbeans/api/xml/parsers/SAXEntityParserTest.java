@@ -1,10 +1,15 @@
 /*
- * SAXEntityParserTest.java
- * NetBeans JUnit based test
+ *                 Sun Public License Notice
  *
- * Created on April 16, 2002, 5:09 PM
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.api.xml.parsers;
 
 import java.io.*;
@@ -38,8 +43,10 @@ public class SAXEntityParserTest extends NbTestCase {
     public void testParse() throws Exception {
         System.out.println("testParse");
         
-        InputSource input = new InputSource(new StringReader("<!ELEMENT x ANY>"));
+        // DTD parser test        
         
+        InputSource input = new InputSource(new StringReader("<!ELEMENT x ANY>"));
+                
         XMLReader peer = XMLReaderFactory.createXMLReader("org.apache.crimson.parser.XMLReaderImpl");
         TestDeclHandler dtdHandler = new TestDeclHandler();
         peer.setProperty("http://xml.org/sax/properties/declaration-handler", dtdHandler);
@@ -47,9 +54,27 @@ public class SAXEntityParserTest extends NbTestCase {
         parser.parse(input);
 
         // Add your test code below by replacing the default call to fail.
-        assertTrue("DTD entity parser did not detected x decl!", dtdHandler.pass);
+        assertTrue("DTD entity parser did not detected 'x' decl!", dtdHandler.pass);
 
+        // Reentrance test
+        
+        boolean exceptionThrown = false;
+        try {
+            parser.parse(new InputSource(new StringReader("")));
+        } catch (IllegalStateException ex) {
+            exceptionThrown = true;
+        } finally {
+            assertTrue("Parser may not be reused!", exceptionThrown);
+        }
     }        
+    
+    /**
+     * Wrapping may not broke relative references.
+     */
+    private void relativeReferenceTest() {
+        
+    }
+    
     
     class TestDeclHandler implements DeclHandler {
         

@@ -59,6 +59,9 @@ public class SAXEntityParser implements XMLReader {
     // defines wrapping logic
     private final boolean generalEntity;
 
+    // was client parser already used
+    private boolean used = false;
+    
     /** 
      * Creates a new instance of general entity parser.
      * @param peer parser that will be used for parsing. Wrapped parser is 
@@ -88,6 +91,11 @@ public class SAXEntityParser implements XMLReader {
     public void parse( InputSource entity) throws IOException, SAXException {     
         
         if (entity == null) throw new NullPointerException();
+        
+        synchronized (this) {
+            checkUsed();
+            used = true;
+        }
 
         // log warning for common errors
 
@@ -218,6 +226,10 @@ public class SAXEntityParser implements XMLReader {
     
     public void setProperty(String name, Object val) throws org.xml.sax.SAXNotRecognizedException, org.xml.sax.SAXNotSupportedException {
         peer.setProperty(name, val);
+    }
+
+    private synchronized void checkUsed() {
+        if (used == true) throw new IllegalStateException();        
     }
     
     /**
