@@ -55,6 +55,11 @@
 # use a different X display if set to "yes" -
 # often helpful, esp. for GUI tests which pop up a lot of windows
 #
+# nestdisplay=yes
+# use Xnest rather than X (if spawndisplay is turned on)
+# may work better for some X servers; e.g. with my XFree86 4.2.0,
+# the best is Xnest + JDK 1.4.0 (JDK 1.4.2 crashes the server sometimes)
+#
 # nbclasspath=
 # NB bundles all its own libs, so normally this can be left blank.
 #
@@ -118,6 +123,11 @@ then
     spawndisplay=no
 fi
 
+if [ -z "$nestdisplay" ]
+then
+    nestdisplay=no
+fi
+
 if [ -z "$testedmodule" ]
 then
     testedmodule=validate
@@ -144,22 +154,34 @@ then
     display=:69
     xauthority=/tmp/.Xauthority-$display
     export XAUTHORITY=$xauthority
-    Xnest -kb -name 'NetBeans test display' $display &
-    xpid=$!
+    if [ $nestdisplay = yes ]
+    then
+        Xnest -kb -name 'NetBeans test display' $display &
+        xpid=$!
+    else
+        X $display &
+        xpid=$!
+    fi
     xauth generate $display .
     export DISPLAY=$display
-    sleep 3 # give X time to start
+    sleep 5 # give X time to start
     twmrc=/tmp/.twmrc-$display
     echo 'RandomPlacement' > $twmrc
     twm -f $twmrc &
     twmpid=$!
     trap "rm $xauthority; kill $xpid; rm $twmrc; kill $twmpid" EXIT
     sleep 2 # give WM time to work
-    xmessage -timeout 3 'Testing X server...minimize this nested display window if you want.'
+    if [ $nestdisplay = yes ]
+    then
+        message='Testing X server...minimize this nested display window if you want.'
+    else
+        message='Testing X server...use Ctrl-Alt-F7/8 to toggle screens.'
+    fi
+    xmessage -timeout 3 "$message"
     status=$?
     if [ $status != 0 ]
     then
-        echo "Sample X client failed with status $status!" 1>&2
+        echo "Sample X client failed with status $status! Try 'xhost +local:' if you disallow remote logins" 1>&2
         exit 2
     fi
 fi
