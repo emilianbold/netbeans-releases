@@ -82,6 +82,7 @@ public abstract class IndexSearchThread extends Thread  {
 
 /* 
  * Log
+ *  5    Gandalf   1.4         7/26/99  Petr Hrebejk    
  *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  3    Gandalf   1.2         5/16/99  Petr Hrebejk    
