@@ -150,6 +150,7 @@ public class DiffAction extends NodeAction {
             } else {
                 tp.show();
             }
+            tp.requestFocus();
         }
         /*
         RequestProcessor.postRequest(new Runnable() {
