@@ -60,8 +60,8 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
             new Throwable("I have been called twice!").printStackTrace();
         }
         mgr = NbTopManager.get().getModuleSystem().getManager();
-        final File jar1 = new File(InstanceDataObjectModuleTestHid.class.getResource("data/test1.jar").getPath());
-        final File jar2 = new File(InstanceDataObjectModuleTestHid.class.getResource("data/test2.jar").getPath());
+        final File jar1 = toFile (InstanceDataObjectModuleTestHid.class.getResource("data/test1.jar"));
+        final File jar2 = toFile (InstanceDataObjectModuleTestHid.class.getResource("data/test2.jar"));
         try {
             mgr.mutex().writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws Exception {
@@ -75,6 +75,28 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
             throw me.getException();
         }
         //System.err.println("loaded module: " + idomJar);
+    }
+    
+    protected static File toFile (java.net.URL url) throws java.io.IOException {
+        File f = new File (url.getPath ());
+        if (f.exists ()) {
+            return f;
+        }
+        
+        String n = url.getPath ();
+        int indx = n.lastIndexOf ('/');
+        if (indx != -1) {
+            n = n.substring (indx + 1);
+        }
+        n = n + url.getPath ().hashCode ();
+        
+        f = File.createTempFile (n, ".jar");
+        java.io.FileOutputStream out = new java.io.FileOutputStream (f);
+        org.openide.filesystems.FileUtil.copy (url.openStream (), out);
+        out.close ();
+       //f.deleteOnExit ();
+        
+        return f;
     }
     
     protected void tearDown() throws Exception {

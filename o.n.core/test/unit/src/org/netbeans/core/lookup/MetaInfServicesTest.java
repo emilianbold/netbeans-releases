@@ -52,8 +52,8 @@ public class MetaInfServicesTest extends NbTestCase {
         try {
             mgr.mutex().writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws Exception {
-                    File jar1 = new File(MetaInfServicesTest.class.getResource("data/services-jar-1.jar").getPath());
-                    File jar2 = new File(MetaInfServicesTest.class.getResource("data/services-jar-2.jar").getPath());
+                    File jar1 = InstanceDataObjectModuleTestHid.toFile(MetaInfServicesTest.class.getResource("data/services-jar-1.jar"));
+                    File jar2 = InstanceDataObjectModuleTestHid.toFile(MetaInfServicesTest.class.getResource("data/services-jar-2.jar"));
                     m1 = mgr.create(jar1, new ModuleHistory(), false, false, false);
                     m2 = mgr.create(jar2, new ModuleHistory(), false, false, false);
                     return null;

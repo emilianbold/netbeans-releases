@@ -373,7 +373,12 @@ public class JarClassLoader extends ProxyClassLoader {
         }
         
         protected URL doGetResource(String name) throws MalformedURLException {
-            ZipEntry ze = src.getEntry(name);
+            ZipEntry ze;
+            try {
+                ze = src.getEntry(name);
+            } catch (IllegalStateException ex) {
+                return null;
+            }
             if (VERBOSE) {
                 if (ze != null)
                     System.err.println("Loading " + name + " from " + src.getName()); // NOI18N
@@ -382,7 +387,12 @@ public class JarClassLoader extends ProxyClassLoader {
         }
         
         protected byte[] readClass(String name, String path) throws IOException {
-            ZipEntry ze = src.getEntry(path);
+            ZipEntry ze;
+            try {
+                ze = src.getEntry(path);
+            } catch (IllegalStateException ex) {
+                return null;
+            }
             if (ze == null) return null;
             if (VERBOSE) {
                 System.err.println("Loading " + path + " from " + src.getName()); // NOI18N

@@ -98,7 +98,7 @@ public class InstanceDataObjectModuleTest7 extends InstanceDataObjectModuleTestH
             // Make sure there is time for changes to take effect:
             Thread.sleep(2000);
             DataObject obj2 = findIt("Services/Misc/inst-2.settings");
-            assertTrue("same data object", (obj1 == obj2));
+            assertSame ("same data object", obj1, obj2);
             InstanceCookie inst2 = (InstanceCookie)obj2.getCookie(InstanceCookie.class);
             assertNotNull("Had an instance", inst2);
             assertTrue("InstanceCookie changed", inst1 != inst2);

@@ -60,6 +60,17 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
+	  <!-- should be "stable OR cache one day -->    
+    <testbag testattribs="cache" executor="ide" name="Testing lookup in real IDE" resultsprocessor="unit">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="org/netbeans/core/lookup/*Test.class"/>
+                <include name="org/netbeans/core/lookup/*Test?.class"/>
+                <exclude name="org/netbeans/core/lookup/InstanceDataObjectModuleTest4.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
     <testbag testattribs="stable" executor="code" name="Unit tests in code mode" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
