@@ -14,6 +14,7 @@ package org.netbeans.jellytools;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
@@ -31,6 +32,7 @@ import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -464,7 +466,7 @@ public class MainWindowOperator extends JFrameOperator {
      *      // compile action will produce at least two messages: "Compiling ...",
      *      // "Finished ..."
      *      new CompileAction().performAPI();
-
+     *
      *      // waits for "Compiling" status text
      *      stt.waitText("Compiling");
      *      // waits for "Finished" status text
@@ -523,6 +525,9 @@ public class MainWindowOperator extends JFrameOperator {
         public void stateChanged(ChangeEvent evt) {
             synchronized (this) {
                 statusTextHistory.add(StatusDisplayer.getDefault().getStatusText());
+                // print message to jemmy output stream
+                JemmyProperties.getCurrentOutput().printTrace("Status text changed to: \""+
+                                           StatusDisplayer.getDefault().getStatusText()+"\"");
             }
         }
         
@@ -607,6 +612,28 @@ public class MainWindowOperator extends JFrameOperator {
         /** Calls {@link #stop} at the end of life cycle of this class. */
         public void finalize() {
             stop();
+        }
+
+        /** Returns list of elements collected from the moment method 
+         * {@link #start} was called. Remember, if <tt>removeCompared</tt> 
+         * parameter is set to <tt>true</tt> in some of methods,
+         * messages already compared are removed from history array.
+         * @return ArrayList of elements representing status text messages
+         */
+        public ArrayList getStatusTextHistory() {
+            return statusTextHistory;
+        }
+
+        /** Prints list of elements collected from the moment method 
+         * {@link #start} was called. Remember, if <tt>removeCompared</tt> 
+         * parameter is set to <tt>true</tt> in some of methods,
+         * messages already compared are removed from history array.
+         * @param outputPrintStream stream to print output in
+         */
+        public void printStatusTextHistory(PrintStream outputPrintStream) {
+            for (int i = 0; i < statusTextHistory.size(); i ++) {
+                outputPrintStream.println(statusTextHistory.get(i).toString());
+            }
         }
     }
 }
