@@ -34,7 +34,6 @@ import org.netbeans.modules.db.explorer.dlg.UnsupportedDatabaseDialog;
 
 public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOperations {
     
-    public static final String AUTOPBCONN = "automatically PB connection"; //NOI18N
     static final long serialVersionUID =-8322295510950137669L;
 
     public void connect(String dbsys) throws DatabaseException {
@@ -43,24 +42,20 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
 
         try {
 
-            if(AUTOPBCONN.equals(dbsys))
-                dbsys = null;
-            else
+            // check if there is connected connection by Pointbase driver
+            // Pointbase driver doesn't permit the concurrently connection
+            if (drvurl.startsWith("com.pointbase.jdbc.jdbcUniversalDriver")) {
+                Node n[] = getParent().getNode().getChildren().getNodes();
+                for (int i = 0; i < n.length; i++)
+                    if(n[i] instanceof ConnectionNode) {
+                        ConnectionNodeInfo cinfo = (ConnectionNodeInfo)((ConnectionNode)n[i]).getInfo();
+                        if(cinfo.getDriver().startsWith("com.pointbase.jdbc.jdbcUniversalDriver")) //NOI18N
+                            if(!(cinfo.getDatabase().equals(dburl)&&cinfo.getUser().equals(getUser())))
+                                if((cinfo.getConnection()!=null))
+                                    throw new Exception(bundle.getString("EXC_PBConcurrentConn")); // NOI18N
+                    }
+            }
 
-                // check if there is connected connection by Pointbase driver
-                // Pointbase driver doesn't permit the concurrently connection
-                if (drvurl.startsWith("com.pointbase.jdbc.jdbcUniversalDriver")) {
-                    Node n[] = getParent().getNode().getChildren().getNodes();
-                    for (int i = 0; i < n.length; i++)
-                        if(n[i] instanceof ConnectionNode) {
-                            ConnectionNodeInfo cinfo = (ConnectionNodeInfo)((ConnectionNode)n[i]).getInfo();
-                            if(cinfo.getDriver().startsWith("com.pointbase.jdbc.jdbcUniversalDriver")) //NOI18N
-                                if(!(cinfo.getDatabase().equals(dburl)&&cinfo.getUser().equals(getUser())))
-                                    if((cinfo.getConnection()!=null))
-                                        throw new Exception(bundle.getString("EXC_PBConcurrentConn")); // NOI18N
-                        }
-                }
-            
             Properties dbprops = getConnectionProperties();
 
             DatabaseConnection con = new DatabaseConnection(drvurl, dburl, getUser(), getPassword());
@@ -138,4 +133,28 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
             throw new IOException(e.getMessage());
         }
     }
+
+    public Object put(Object key, Object obj) {
+
+        if (key.equals(USER) || key.equals(DRIVER) || key.equals(DATABASE)) {
+            DatabaseOption option = RootNode.getOption();
+            Vector cons = option.getConnections();
+            Enumeration enu = cons.elements();
+            while (enu.hasMoreElements()) {
+                DatabaseConnection dburl = (DatabaseConnection)enu.nextElement();
+                if (dburl.getDatabase().equals(getDatabase())
+                        && (dburl.getUser().equals(get(USER))) ) {
+                    if (key.equals(USER)) {
+                        dburl.setUser(obj.toString());
+                    } else if (key.equals(DRIVER)) {
+                        dburl.setDriver(obj.toString());
+                    } else if (key.equals(DATABASE)) {
+                        dburl.setDatabase(obj.toString());
+                    }
+                }
+            }
+        }
+        return super.put(key, obj);
+    }
+    
 }
