@@ -35,11 +35,21 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.openide.util.ContextGlobalProvider;
+
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 
 
 import org.openide.util.LookupListener;
+import org.openide.util.Utilities;
+
+import org.openide.util.actions.CallbackSystemAction;
+import org.openide.util.actions.CallbackSystemActionTest.SurviveFocusChgCallbackAction;
+
+
+import org.openide.util.actions.SystemAction;
+
 
 import org.openide.windows.TopComponent;
 
@@ -170,7 +180,139 @@ public class MultiViewActionMapTest extends NbTestCase {
         handler.requestVisible(Accessor.DEFAULT.createPerspective(desc3));
         assertEquals(2, list.getCount());
     }
+    
+    
+//   //
+//    // Set of tests for ActionMap and context.. copied from CallbackSystemActionTest
+//    //
+//    
+//    public void testLookupOfStateInActionMap () throws Exception {
+//        
+//        class MyAction extends javax.swing.AbstractAction 
+//                       implements org.openide.util.actions.ActionPerformer {
+//            int actionPerformed;
+//            int performAction;
+//            
+//            public void actionPerformed (java.awt.event.ActionEvent ev) {
+//                actionPerformed++;
+//            }
+//            
+//            public void performAction (SystemAction a) {
+//		performAction++;
+//            }
+//        }
+//        MyAction action = new MyAction ();
+//        
+//        ActionMap map = new ActionMap ();
+//        CallbackSystemAction system = (CallbackSystemAction)SystemAction.get(SurviveFocusChgCallbackAction.class);
+//        system.setActionPerformer (null);
+//        map.put (system.getActionMapKey(), action);
+//
+//        javax.swing.Action clone;
+//        clone = system.createContextAwareInstance(org.openide.util.Lookup.EMPTY);
+//        
+//        assertTrue ("Action should not be enabled if no callback provided", !clone.isEnabled());
+//        
+//        system.setActionPerformer (action);
+//        assertTrue ("Is enabled, because it has a performer", clone.isEnabled());
+//        system.setActionPerformer (null);
+//        assertTrue ("Is disabled, because the performer has been unregistered", !clone.isEnabled ());
+//        
+//        //
+//        // test with actionmap
+//        //
+//        action.setEnabled (false);
+//        
+//        org.openide.util.Lookup context = org.openide.util.lookup.Lookups.singleton(map);
+//        clone = system.createContextAwareInstance(context);
+//        
+//        CntListener listener = new CntListener ();
+//        clone.addPropertyChangeListener (listener);
+//        
+//        assertTrue ("Not enabled now", !clone.isEnabled ());
+//        action.setEnabled (true);
+//        assertTrue ("Clone is enabled because the action in ActionMap is", clone.isEnabled ());
+//        listener.assertCnt ("One change expected", 1);
+//        
+//        system.setActionPerformer (action);
+//        clone.actionPerformed(new java.awt.event.ActionEvent (this, 0, ""));
+//        assertEquals ("MyAction.actionPerformed invoked", 1, action.actionPerformed);
+//        assertEquals ("MyAction.performAction is not invoked", 0, action.performAction);
+//        
+//        
+//        action.setEnabled (false);
+//        assertTrue ("Clone is disabled because the action in ActionMap is", !clone.isEnabled ());
+//        listener.assertCnt ("Another change expected", 1);
+//        
+//        clone.actionPerformed(new java.awt.event.ActionEvent (this, 0, ""));
+//        assertEquals ("MyAction.actionPerformed invoked again", 2, action.actionPerformed);
+//        assertEquals ("MyAction.performAction is not invoked, remains 0", 0, action.performAction);
+//        
+//    }   
+//    
+//   private static final class CntListener extends Object
+//    implements java.beans.PropertyChangeListener {
+//        private int cnt;
+//        
+//        public void propertyChange(java.beans.PropertyChangeEvent evt) {
+//            cnt++;
+//        }
+//        
+//        public void assertCnt (String msg, int count) {
+//            assertEquals (msg, count, this.cnt);
+//            this.cnt = 0;
+//        }
+//    } // end of CntListener    
 
+    public void testActionsGlobalContext() throws Exception {
+        Lookup look = Utilities.actionsGlobalContext();
+        MVElemTopComponent elem1 = new MVElemTopComponent();
+        MVElemTopComponent elem2 = new MVElemTopComponent();
+        MVElemTopComponent elem3 = new MVElemTopComponent();
+        MultiViewDescription desc1 = new MVDesc("desc1", null, 0, elem1);
+        MultiViewDescription desc2 = new MVDesc("desc2", null, 0, elem2);
+        MultiViewDescription desc3 = new MVDesc("desc3", null, 0, elem3);
+        MultiViewDescription[] descs = new MultiViewDescription[] { desc1, desc2, desc3 };
+        TopComponent tc = MultiViewFactory.createMultiView(descs, desc1);
+        // WARNING: as anything else the first element's action map is set only after the tc is opened..
+        tc.open();
+        tc.requestActive();
+        
+        ActionMap map = (ActionMap)look.lookup(ActionMap.class);
+        assertNotNull("is null", map);
+        assertEquals("is wrong class=" + map.getClass(), map.getClass(), MultiViewActionMap.class);
+        Action res = map.get("testkey");
+        assertNull(res);
+        Action act = new TestAction("MultiViewAction");
+        // add action to the MVTC map
+        elem1.getVisualRepresentation().getActionMap().put("testkey", act);
+        res = map.get("testkey");
+        assertNotNull(res);
+        
+        // test switching to a different component..
+        TopComponent tc2 = new TopComponent();
+        tc2.open();
+        tc2.requestActive();
+        map = (ActionMap)look.lookup(ActionMap.class);
+        res = map.get("testkey");
+        assertNull(res);
+        
+        // switch back and test a different element..
+        tc.requestActive();
+        map = (ActionMap)look.lookup(ActionMap.class);
+        MultiViewHandler handler = MultiViews.findMultiViewHandler(tc);
+        // test related hack, easy establishing a  connection from Desc->perspective
+        Accessor.DEFAULT.createPerspective(desc2);
+        handler.requestVisible(Accessor.DEFAULT.createPerspective(desc2));
+        res = map.get("testkey");
+        assertNull(res);
+        // now switch back to the original element and see if the action is stil there..
+        Accessor.DEFAULT.createPerspective(desc1);
+        handler.requestVisible(Accessor.DEFAULT.createPerspective(desc1));
+        res = map.get("testkey");
+        assertNotNull(res);
+        
+    }
     
     
     private class TestAction extends  AbstractAction {
