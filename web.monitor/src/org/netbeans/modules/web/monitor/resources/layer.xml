@@ -23,11 +23,17 @@ Microsystems, Inc. All Rights Reserved.
        <file name="org-netbeans-modules-web-monitor-client-MonitorAction.instance"/>
     </folder>
 
-    <folder name="View">
+    <!--<folder name="View">
         <attr name="org-netbeans-modules-form-actions-FormEditorAction.instance/org-netbeans-modules-web-monitor-client-MonitorAction.instance" boolvalue="true" />
        <file name="org-netbeans-modules-web-monitor-client-MonitorAction.instance"/>
        <attr name="org-netbeans-modules-web-monitor-client-MonitorAction.instance/Separator2.instance" boolvalue="true" />
-   </folder>
+   </folder>-->
+    <folder name="Window">
+        <attr name="org-netbeans-core-output-OutputWindowAction.instance/org-netbeans-modules-web-monitor-client-MonitorAction.instance" boolvalue="true" />
+        <file name="org-netbeans-modules-web-monitor-client-MonitorAction.instance"/>
+        <attr name="org-netbeans-modules-web-monitor-client-MonitorAction.instance/Form" boolvalue="true" />
+    </folder>
+
 
    <folder name="Help">
       <folder name="HelpShortcuts">
@@ -61,6 +67,13 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
   </folder>
 
+    <folder name="Shortcuts">
+        <file name="C-7.instance">
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.web.monitor.client.MonitorAction" />
+        </file>
+    </folder>
+
+  
   <folder name="Services">
     
     <folder name="JavaHelp">

@@ -26,7 +26,9 @@ package  org.netbeans.modules.web.monitor.client;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.windows.Mode;
 import org.openide.windows.Workspace;
+import org.openide.windows.WindowManager;
 
 
 public class MonitorAction extends CallableSystemAction {
@@ -74,7 +76,7 @@ public class MonitorAction extends CallableSystemAction {
 		log("Transaction view was created by: " + //NOI18N
 				   "performAction"); //NOI18N
 	} 
-	tv.open(); 
+        openTransactionView(tv);
     }
     
 
@@ -86,7 +88,7 @@ public class MonitorAction extends CallableSystemAction {
 	if(debug) log("runMonitor()"); //NOI18N
 	if (tv == null) 
 	    tv = new TransactionView(getController());
-	tv.open(); 
+	openTransactionView(tv);
     }  
 
     /**
@@ -98,8 +100,22 @@ public class MonitorAction extends CallableSystemAction {
 		      workspace.toString());
 	if (tv == null) 
 	    tv = new TransactionView(getController());
-	tv.open(workspace); 
+	openTransactionView(tv);
     }  
+    
+    private static void openTransactionView(TransactionView tv) {
+        WindowManager wm = WindowManager.getDefault();
+        Mode mode = wm.findMode(tv);
+        
+        if(mode == null) {
+            mode = wm.findMode("debugger"); // NOI18N
+            if(mode != null) {
+                mode.dockInto(tv);
+            }
+        }
+        
+        tv.open();
+    }
 
     /**
      * This method is used by the executor to set the hostname and the
