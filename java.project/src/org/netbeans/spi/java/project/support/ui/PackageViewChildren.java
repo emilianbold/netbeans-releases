@@ -545,6 +545,11 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                 if ( !kids[i].isFolder() ) {
                     return false;
                 }  
+                else {
+                    if (!isEmpty(kids[i])) {
+                        return false;
+                    }
+                }
             }
             return true;
         }
