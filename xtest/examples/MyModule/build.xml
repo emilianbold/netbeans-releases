@@ -12,11 +12,15 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="junit" default="compile" basedir=".">
+<project name="MyModule" default="jar" basedir=".">
 
   <target name="compile">
     <javac srcdir="src" destdir="src">
     </javac>
+  </target>
+
+  <target name="jar" depends="compile">
+     <jar jarfile="mymodule.jar" basedir="src"/>
   </target>
 
   <target name="clean">
@@ -25,10 +29,11 @@ Microsystems, Inc. All Rights Reserved.
         <include name="**/*.class"/>
       </fileset>
     </delete>
+    <delete file="mymodule.jar"/>
   </target>
 
-  <target name="test" depends="compile">
-    <ant dir="test/unit" antfile="build.xml" />
+  <target name="test" depends="jar">
+    <ant dir="test" antfile="build.xml" />
   </target>
 
 </project>

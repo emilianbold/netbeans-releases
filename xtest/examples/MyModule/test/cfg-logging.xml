@@ -14,7 +14,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="Logging examples config">
     
-    <testbag testattribs="all" executor="ide" name="testbag_1" resultsprocessor="logging">
+    <testbag testattribs="all" executor="code" name="testbag_1" resultsprocessor="logging">
         <testset dir="logging/src">
             <patternset>
                 <include name="golden/*"/>
@@ -23,7 +23,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="stable" executor="ide" name="testbag_2" resultsprocessor="logging">
+    <testbag testattribs="stable" executor="code" name="testbag_2" resultsprocessor="logging">
         <testset dir="logging/src">
             <patternset>
                 <include name="golden/*"/>
@@ -33,7 +33,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="failing" executor="ide" name="testbag_3" resultsprocessor="logging">
+    <testbag testattribs="failing" executor="code" name="testbag_3" resultsprocessor="logging">
         <testset dir="logging/src">
             <patternset>
                 <include name="golden/GoldenTest1.class/testPart2"/>
@@ -43,5 +43,6 @@ Microsystems, Inc. All Rights Reserved.
 
     <resultsprocessor name="logging" antfile="build.xml" target="test_report"/>
     <executor name="ide" antfile="build.xml" target="runidetest"/>
-
+    <executor name="code" antfile="build.xml" target="runcodetest"/>
 </mconfig>
+
