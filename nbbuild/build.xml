@@ -777,6 +777,10 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <ant dir="../xtest" antfile="build.xml" target="netbeans"/>
   </target>
 
+  <target name="all-jasm" depends="all-openide,all-openide/loaders,all-editor,all-java/srcmodel,all-openide/deprecated,all-openide/execution,all-openide/compiler,all-clazz">
+      <ant dir="../jasm" target="netbeans"/>
+  </target>
+
   <!-- #27098: MakeParserDB requires several modules to have been successfully built. -->
   <!-- Target all/mmm should depend on makeparserdb-modules if mmm/build.xml uses <makeparserdb>. -->
   <target name="makeparserdb-modules" depends="all-openide,all-openide/loaders,all-openide/execution,all-openide/io,all-core,all-classfile,all-java/api,all-java/srcmodel,all-java,all-editor,all-debuggercore/oldapi,all-openide/compiler,all-core/execution,all-core/compiler,all-core/output,all-core/term"/>
