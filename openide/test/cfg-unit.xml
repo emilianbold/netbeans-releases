@@ -110,8 +110,6 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart5"/>
                 <exclude name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart7"/>
                 <exclude name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart8"/>
-                <!-- does not work an nobody knows why -->
-                <exclude name="org/openide/loaders/FolderInstanceTest.class/testFolderInstanceNeverPassesInvObjects"/>
                 
                 <!-- excluded because this test locks. See issue #26848 -->
                 <exclude name="org/openide/loaders/FolderLookupTest.class"/>
