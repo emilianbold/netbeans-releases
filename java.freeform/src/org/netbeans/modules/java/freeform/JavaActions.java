@@ -799,8 +799,8 @@ final class JavaActions implements ActionProvider {
             try {
                 lines.getLineSet().getCurrent(line).show(Line.SHOW_GOTO);
             } catch (IndexOutOfBoundsException e) {
-                ErrorManager.getDefault().annotate(e, ErrorManager.UNKNOWN, "path=" + path + " match=" + match + " line=" + line, null, null, null); // NOI18N
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                // XXX reproducibly thrown if the document was already open. Why?? (file.refresh() above does not help.)
+                ErrorManager.getDefault().getInstance(JavaActions.class.getName()).log(ErrorManager.WARNING, e + " [file=" + file + " match=" + match + " line=" + line + "]"); // NOI18N
                 lines.getLineSet().getCurrent(0).show(Line.SHOW_GOTO);
             }
         }
