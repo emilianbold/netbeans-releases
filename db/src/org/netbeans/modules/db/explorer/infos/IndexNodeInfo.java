@@ -46,17 +46,25 @@ public class IndexNodeInfo extends TableNodeInfo
           DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEXCOLUMN, drvSpec.rs);
           String newixname = (String)info.get("ixname");
           if (ixname != null && newixname != null && newixname.equals(ixname)) {
-            String way = (String)info.get("ord");
+            String way;
+            if (info.get("ord") instanceof java.lang.Boolean) //HACK for PointBase
+              way = "A";
+            else
+              way = (String) info.get("ord");
             if (way == null) way = "A";
             info.put(DatabaseNodeInfo.ICONBASE, info.get(DatabaseNodeInfo.ICONBASE+way));
-            if (info != null) children.add(info);
-            else throw new Exception("unable to create node information for index");
+            if (info != null)
+              children.add(info);
+            else {
+      	  		drvSpec.rs.close();
+              throw new Exception("unable to create node information for index");
+            }
           }
         }
 	  		drvSpec.rs.close();
       }
  		} catch (Exception e) {
-			throw new DatabaseException(e.getMessage());	
+      throw new DatabaseException(e.getMessage());	
 		}
 	}
 
@@ -92,6 +100,7 @@ public class IndexNodeInfo extends TableNodeInfo
 
 /*
  * <<Log>>
+ *  15   Gandalf   1.14        1/27/00  Radko Najman    HACK for PointBase
  *  14   Gandalf   1.13        1/25/00  Radko Najman    new driver adaptor 
  *       version
  *  13   Gandalf   1.12        12/15/99 Radko Najman    driver adaptor
