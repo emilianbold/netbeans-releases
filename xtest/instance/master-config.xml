@@ -209,6 +209,10 @@ Microsystems, Inc. All Rights Reserved.
         <module name="performance"   testtypes="qa-functional"  attributes="measure_ui"/>  
   </config>
   
+  <config name="qa-web-performance">
+ 	<module name="web"   testtypes="qa-performance"  attributes="measure_ide"/>  
+  </config>
+  
   <config name="david">
       <module name="jndi"    	testtypes="qa-functional"  attributes="validation">
           <property file="../../../nbextra/qa/jndi/jndi.properties"/>
