@@ -146,8 +146,15 @@ public final class ProjectManager {
      *         registered {@link ProjectFactory}
      *         (might be null even if {@link #isProject} returns true)
      * @throws IOException if the project was recognized but could not be loaded
+     * @throws IllegalArgumentException if the supplied file object is null or not a folder
      */
-    public Project findProject(final FileObject projectDirectory) throws IOException {
+    public Project findProject(final FileObject projectDirectory) throws IOException, IllegalArgumentException {
+        if (projectDirectory == null) {
+            throw new IllegalArgumentException("Attempted to pass a null directory to findProject"); // NOI18N
+        }
+        if (!projectDirectory.isFolder()) {
+            throw new IllegalArgumentException("Attempted to pass a non-directory to findProject: " + projectDirectory); // NOI18N
+        }
         try {
             return (Project)mutex().readAccess(new Mutex.ExceptionAction() {
                 public Object run() throws IOException {
@@ -250,8 +257,15 @@ public final class ProjectManager {
      * @param projectDirectory a directory which may be some project's top directory
      * @return true if the directory is likely to contain a project according to
      *              some registered {@link ProjectFactory}
+     * @throws IllegalArgumentException if the supplied file object is null or not a folder
      */
-    public boolean isProject(final FileObject projectDirectory) {
+    public boolean isProject(final FileObject projectDirectory) throws IllegalArgumentException {
+        if (projectDirectory == null) {
+            throw new IllegalArgumentException("Attempted to pass a null directory to isProject"); // NOI18N
+        }
+        if (!projectDirectory.isFolder()) {
+            throw new IllegalArgumentException("Attempted to pass a non-directory to isProject: " + projectDirectory); // NOI18N
+        }
         return ((Boolean)mutex().readAccess(new Mutex.Action() {
             public Object run() {
                 synchronized (dir2Proj) {
@@ -303,7 +317,7 @@ public final class ProjectManager {
     
     private boolean checkForProject(FileObject dir) {
         assert dir != null;
-        assert dir.isFolder();
+        assert dir.isFolder() : dir;
         //assert mutex().canRead();
         Iterator it = factories.allInstances().iterator();
         while (it.hasNext()) {
@@ -397,8 +411,9 @@ public final class ProjectManager {
      * at any time, current UI principles dictate that the "save project" concept
      * should be internal only - i.e. a project customizer should automatically
      * save the project when it is closed e.g. with an "OK" button. Currently there
-     * is no UI display of modified projects nor it is ensured that modified projects
-     * are saved at system exit time the way modified files are.
+     * is no UI display of modified projects; this module does not ensure that modified projects
+     * are saved at system exit time the way modified files are, though the Project UI
+     * implementation module currently does this check.
      * </p>
      * @param p the project to save
      * @throws IOException if it cannot be saved
