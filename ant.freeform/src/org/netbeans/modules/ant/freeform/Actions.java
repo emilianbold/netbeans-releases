@@ -321,9 +321,14 @@ public final class Actions implements ActionProvider {
                 continue;
             }
             String rawtext = Util.findText(propEl);
-            assert rawtext != null;
+            if (rawtext == null) {
+                // Legal to have e.g. <property name="intentionally-left-blank"/>
+                rawtext = ""; // NOI18N
+            }
             String evaltext = project.evaluator().evaluate(rawtext); // might be null
-            props.setProperty(propEl.getAttribute("name"), evaltext);
+            if (evaltext != null) {
+                props.setProperty(propEl.getAttribute("name"), evaltext); // NOI18N
+            }
         }
         TARGET_RUNNER.runTarget(scriptFile, targetNameArray, props);
     }
