@@ -363,7 +363,45 @@ public class ClassFile {
     public final Collection getInnerClasses(){
         return Arrays.asList(innerClasses);
     }
-    
+
+    /* Return the collection of all unique class references in this class.
+     *
+     * @return a Set of ClassNames specifying the referenced classnames.
+     */
+    public final Set getAllClassNames() {
+        Set set = new HashSet();
+
+        // include all class name constants from constant pool
+        Collection c = constantPool.getAllConstants(CPClassInfo.class);
+        for (Iterator i = c.iterator(); i.hasNext();) {
+            CPClassInfo ci = (CPClassInfo)i.next();
+            set.add(ci.getClassName());
+        }
+
+	// scan variables and methods for other class references
+	// (inner classes will caught above)
+	for (int i = 0; i < variables.length; i++)
+	    addClassNames(set, variables[i].getDescriptor());
+	for (int i = 0; i < methods.length; i++)
+	    addClassNames(set, methods[i].getDescriptor());
+
+        return Collections.unmodifiableSet(set);
+    }
+
+    private void addClassNames(Set set, String type) {
+        int i = 0;
+        while ((i = type.indexOf('L', i)) != -1) {
+            int j = type.indexOf(';', i);
+            if (j > i) {
+		// get name, minus leading 'L' and trailing ';'
+                String classType = type.substring(i + 1, j);
+		set.add(ClassName.getClassName(classType));
+                i = j + 1;
+            } else
+		break;
+        }
+    }
+
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append("ClassFile: "); //NOI18N

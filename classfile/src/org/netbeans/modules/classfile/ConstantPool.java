@@ -119,6 +119,10 @@ public final class ConstantPool {
     /* Return the collection of all unique class references in pool.
      *
      * @return a Set of ClassNames specifying the referenced classnames.
+     *
+     * @deprecated use <code>ClassFile.getAllClassNames()</code>,
+     * as all class references cannot be reliably determined from just
+     * the constant pool structure.
      */
     public final Set getAllClassNames() {
         Set set = new HashSet();
@@ -129,30 +133,7 @@ public final class ConstantPool {
             CPClassInfo ci = (CPClassInfo)i.next();
             set.add(ci.getClassName());
         }
-        
-	// scan all UTF strings for strings that might be type
-	// descriptors
-	c = getAllConstantsImpl(CPUTF8Info.class);
-        for (Iterator i = c.iterator(); i.hasNext();) {
-	    CPUTF8Info utf = (CPUTF8Info)i.next();
-	    addClassNames(set, utf.getName());
-	}
- 
         return Collections.unmodifiableSet(set);
-    }
-
-    private void addClassNames(Set set, String type) {
-        int i = 0;
-        while ((i = type.indexOf('L', i)) != -1) {
-            int j = type.indexOf(';', i);
-            if (j > i) {
-		// get name, minus leading 'L' and trailing ';'
-                String classType = type.substring(i + 1, j);
-		set.add(ClassName.getClassName(classType));
-                i = j + 1;
-            } else
-		break;
-        }
     }
 
     final String getString(int index) {
