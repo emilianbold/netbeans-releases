@@ -9,6 +9,7 @@ public class TestFile {
     
     /** Registers ActionListener to receive events.
      * @param listener The listener to register.
+     *
      */
     public synchronized void addActionListener(java.awt.event.ActionListener listener) {
         if (listenerList == null ) {
@@ -19,6 +20,7 @@ public class TestFile {
     
     /** Removes ActionListener from the list of listeners.
      * @param listener The listener to remove.
+     *
      */
     public synchronized void removeActionListener(java.awt.event.ActionListener listener) {
         listenerList.remove(java.awt.event.ActionListener.class, listener);
