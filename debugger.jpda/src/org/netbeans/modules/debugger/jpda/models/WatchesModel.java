@@ -21,6 +21,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.Watch;
@@ -59,9 +63,8 @@ public class WatchesModel implements TreeModel {
     private Listener            listener;
     private Vector              listeners = new Vector ();
     private ContextProvider     lookupProvider;
-    // Watch to Expression or Exception
-    private WeakHashMap         watchToExpression = new WeakHashMap();
-
+    private Map                 watchToJPDAWatch = new HashMap ();
+    
     
     public WatchesModel (ContextProvider lookupProvider) {
         debugger = (JPDADebuggerImpl) lookupProvider.
@@ -85,7 +88,7 @@ public class WatchesModel implements TreeModel {
     throws UnknownTypeException, NoInformationException {
         if (parent == ROOT) {
             
-            // 1) ger Watches
+            // 1) get Watches
             Watch[] ws = DebuggerManager.getDebuggerManager ().
                 getWatches ();
             Watch[] fws = new Watch [to - from];
@@ -93,40 +96,17 @@ public class WatchesModel implements TreeModel {
             
             // 2) create JPDAWatches for Watches
             int i, k = fws.length;
-            JPDAWatch[] jws = new JPDAWatch [k];
+            Object[] result = new Object [k];
             for (i = 0; i < k; i++) {
-                
-                // 2.1) get Expression
-                Object expression = watchToExpression.get (
-                    fws [i].getExpression ()
-                );
-                    // expression contains Expression or Exception 
-                if (expression == null) {
-                    try {
-                        expression = Expression.parse (
-                            fws [i].getExpression (), 
-                            Expression.LANGUAGE_JAVA_1_5
-                        );
-                    } catch (ParseException e) {
-                        expression = e;
-                    }
-                    watchToExpression.put (
-                        fws [i].getExpression (), 
-                        expression
-                    );
-                }
-                
-                // 2.2) create a new JPDAWatch
-                if (expression instanceof Exception)
-                    jws [i] = new JPDAWatchImpl 
-                        (this, fws [i], (Exception) expression);
+                if (watchToJPDAWatch.containsKey (fws [i]))
+                    result [i] = watchToJPDAWatch.get (fws [i]);
                 else
-                    jws [i] = evaluate (fws [i], (Expression) expression);
+                    result [i] = fws [i];
             }
             
             if (listener == null)
                 listener = new Listener (this, debugger);
-            return jws;
+            return result;
         }
         if (parent instanceof JPDAWatchImpl) {
             return getLocalsTreeModel ().getChildren (parent, from, to);
@@ -160,6 +140,8 @@ public class WatchesModel implements TreeModel {
         if (node == ROOT) return false;
         if (node instanceof JPDAWatchImpl) 
             return ((JPDAWatchImpl) node).isPrimitive ();
+        if (node instanceof Watch) 
+            return true;
         return getLocalsTreeModel ().isLeaf (node);
     }
 
@@ -201,6 +183,41 @@ public class WatchesModel implements TreeModel {
         return localsTreeModel;
     }
 
+    // map from expression to Expression or Exception
+    private WeakHashMap         watchToExpression = new WeakHashMap();
+
+    private void evaluate (Watch watch) {
+        String text = watch.getExpression ();
+        
+        // 1) resolve text expression to Expression or Exception
+        Object expression = watchToExpression.get (text);
+        if (expression == null) {
+            try {
+                expression = Expression.parse (
+                    text, 
+                    Expression.LANGUAGE_JAVA_1_5
+                );
+            } catch (ParseException e) {
+                expression = e;
+            }
+            watchToExpression.put (
+                text, 
+                expression
+            );
+        }
+
+        // 2) create a new JPDAWatch
+        JPDAWatch jpdaWatch = null;
+        if (expression instanceof Exception)
+            jpdaWatch = new JPDAWatchImpl 
+                (this, watch, (Exception) expression);
+        else
+            jpdaWatch = evaluate (watch, (Expression) expression);
+        
+        watchToJPDAWatch.put (watch, jpdaWatch);
+        fireTreeChanged ();
+    }
+    
     JPDAWatch evaluate (Watch w, Expression expr) {
         try {
             Value v = debugger.evaluateIn (expr);
@@ -280,9 +297,9 @@ public class WatchesModel implements TreeModel {
             m.fireTreeChanged ();
         }
         
-        // currently waiting / running refresh task
+        // currently waiting / running refresh tasks
         // there is at most one
-        private RequestProcessor.Task task;
+        private RequestProcessor.Task[] tasks = new RequestProcessor.Task [0];
         
         public void propertyChange (PropertyChangeEvent evt) {
             final WatchesModel m = getModel ();
@@ -296,23 +313,38 @@ public class WatchesModel implements TreeModel {
                 m.fireTreeChanged ();
             }
 
-            if (task != null) {
-                // cancel old task
-                task.cancel ();
-                if (verbose)
-                    System.out.println("WM cancel old task " + task);
-                task = null;
-            }
-            
-            task = RequestProcessor.getDefault ().post (new Runnable () {
-                public void run () {
+            synchronized (tasks) {
+                // cancel old tasks
+                int i, k = tasks.length;
+                for (i = 0; i < k; i++) {
+                    tasks [i].cancel ();
                     if (verbose)
-                        System.out.println("WM do task " + task);
-                    m.fireTreeChanged ();
+                        System.out.println("WM cancel old task " + tasks [i]);
                 }
-            }, 500);
-            if (verbose)
-                System.out.println("WM  create task " + task);
+
+                Watch[] ws = DebuggerManager.getDebuggerManager ().
+                    getWatches ();
+                k = ws.length;
+                tasks = new RequestProcessor.Task [k];
+                for (i = 0; i < k; i++) {
+                    final Watch watch = ws [i];
+                    final int in = i;
+                    tasks [i] = RequestProcessor.
+                        getDefault ().post (
+                            new Runnable () {
+                                public void run () {
+                                    if (verbose)
+                                        System.out.println 
+                                            ("WM do task " + tasks [in]);
+                                    m.evaluate (watch);
+                                }
+                            }, 
+                            500
+                        );
+                    if (verbose)
+                        System.out.println("WM  create task " + tasks [i]);
+                } // for
+            } // synchronized
         }
         
         private void destroy () {
@@ -330,12 +362,14 @@ public class WatchesModel implements TreeModel {
             for (i = 0; i < k; i++)
                 ws [i].removePropertyChangeListener (this);
 
-            if (task != null) {
-                // cancel old task
-                task.cancel ();
-                if (verbose)
-                    System.out.println("WM cancel old task " + task);
-                task = null;
+            synchronized (tasks) {
+                // cancel old tasks
+                k = tasks.length;
+                for (i = 0; i < k; i++) {
+                    tasks [i].cancel ();
+                    if (verbose)
+                        System.out.println("WM cancel old task " + tasks [i]);
+                }
             }
         }
     }
