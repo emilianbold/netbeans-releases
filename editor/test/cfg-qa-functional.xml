@@ -37,6 +37,14 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
+
+    <testbag testattribs="all,exper" name="abbrev-gui">
+        <testset dir="qa-functional/src">
+            <patternset>
+		<include name="org/netbeans/test/editor/suites/abbrevs/*Performer.class"/>
+            </patternset>
+        </testset>
+    </testbag>
     
     <resultsprocessor name="qa-functional" antfile="build.xml" target="test_report" default="true"/>
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
