@@ -18,8 +18,7 @@ Microsystems, Inc. All Rights Reserved.
          runidetest executor -->
     <import file="../../../nbbuild/templates/xtest-qa-functional.xml"/>
     
-    <!-- Root folders -->
-    <property name="nbextra.qa.performance.dist.dir" location="${nbextra.dir}/qa/performance/dist"/>
+    <property file="${nball.dir}/performance/performancetestutilities/dist/performance-tests.properties"/>
     
     <!-- path reference used in both compiler and executor -->
     <path id="jemmy.and.jelly.path">
