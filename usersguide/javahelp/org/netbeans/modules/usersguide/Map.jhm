@@ -33,6 +33,8 @@
 <mapID target="proj_free_debug" url="project/proj_free_debug.html" />
 <mapID target="proj_webfree_debug" url="project/proj_webfree_debug.html" />
 <mapID target="proj_stand_customize" url="project/proj_stand_customize.html" />
+<mapID target="proj_gloss_freeform" url="project/csh/glossary_freeform.html" />
+<mapID target="proj_gloss_standard" url="project/csh/glossary_standard.html" />
 
 <mapID target="files.diff" url="files/files_diff.html" />
 <!--<mapID target="files.icons" url="files/files_icons.html" />-->
@@ -307,6 +309,7 @@
 <mapID target="ant_target-jdk" url="ant/ant_target-jdk.html" />
 <mapID target="ant_tasks-classpath" url="ant/ant_tasks-classpath.html" />
 <mapID target="ant_version" url="ant/ant_version.html" />
+<mapID target="ant_exp-classpath" url="ant/exp-classpath.html" />
 
 <!--configure/modules/shortcuts targets-->
 
