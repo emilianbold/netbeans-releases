@@ -246,14 +246,51 @@ public class DataViewWindow extends TopComponent {
             JMenuItem miCopyValue = new JMenuItem (bundle.getString ("CopyCellValue")); //NOI18N
             miCopyValue.addActionListener(new ActionListener () {
                 public void actionPerformed (ActionEvent e) {
-                    Object o = jtable.getValueAt(jtable.getSelectedRow(), jtable.getSelectedColumn());
-                    String output = (o != null) ? o.toString () : "";
-                    ExClipboard clipboard = (ExClipboard) Lookup.getDefault().lookup (ExClipboard.class);
-                    StringSelection strSel = new StringSelection (output);
-                    clipboard.setContents (strSel, strSel);
+                    try {
+                        Object o = jtable.getValueAt(jtable.getSelectedRow(), jtable.getSelectedColumn());
+                        String output = (o != null) ? o.toString () : ""; //NOI18N
+                        ExClipboard clipboard = (ExClipboard) Lookup.getDefault().lookup (ExClipboard.class);
+                        StringSelection strSel = new StringSelection (output);
+                        clipboard.setContents (strSel, strSel);
+                    } catch (ArrayIndexOutOfBoundsException exc) {
+                    }
                 }
             });
             tablePopupMenu.add (miCopyValue);
+            
+            JMenuItem miCopyRowValues = new JMenuItem (bundle.getString ("CopyRowValues")); //NOI18N
+            miCopyRowValues.addActionListener(new ActionListener () {
+                public void actionPerformed (ActionEvent e) {
+                    try {
+                    	int[] rows = jtable.getSelectedRows ();
+                    	int[] columns;
+                    	if (jtable.getRowSelectionAllowed ()) {
+                            columns = new int[jtable.getColumnCount ()];
+                    	    for (int a = 0; a < columns.length; a ++)
+                                columns[a] = a;
+                    	} else {
+                    	    columns = jtable.getSelectedColumns ();
+                    	}
+                    	if (rows != null  &&  columns != null) {
+                            StringBuffer output = new StringBuffer ();
+                            for (int row = 0; row < rows.length; row ++) {
+                                for (int column = 0; column < columns.length; column ++) {
+                                    if (column > 0)
+                                        output.append ('\t'); //NOI18N
+                                    Object o = jtable.getValueAt(rows[row], columns[column]);
+                                    output.append (o != null ? o.toString () : ""); //NOI18N
+                                }
+                                output.append ('\n'); //NOI18N
+                            }
+                	    ExClipboard clipboard = (ExClipboard) Lookup.getDefault().lookup (ExClipboard.class);
+                            StringSelection strSel = new StringSelection (output.toString ());
+	                    clipboard.setContents (strSel, strSel);
+	                }
+                    } catch (ArrayIndexOutOfBoundsException exc) {
+                    }
+                }
+            });
+            tablePopupMenu.add (miCopyRowValues);
 
             // Table with results
             //      TableSorter sorter = new TableSorter();
@@ -265,8 +302,29 @@ public class DataViewWindow extends TopComponent {
             //    	sorter.addMouseListenerToHeaderInTable(table);
             jtable.addMouseListener (new MouseAdapter () {
                 public void mouseReleased (MouseEvent e) {
-                    if (e.getButton() == MouseEvent.BUTTON3)
+                    if (e.getButton() == MouseEvent.BUTTON3) {
+                    	int row = jtable.rowAtPoint (e.getPoint ());
+                    	int column = jtable.columnAtPoint (e.getPoint ());
+                    	boolean inSelection = false;
+                        int[] rows = jtable.getSelectedRows ();
+                        for (int a = 0; a < rows.length; a ++)
+                            if (rows[a] == row) {
+                                inSelection = true;
+                                break;
+                            }
+                        if (!jtable.getRowSelectionAllowed ()) {
+                            inSelection = false;
+                            int[] columns = jtable.getSelectedColumns ();
+                            for (int a = 0; a < columns.length; a ++)
+                                if (columns[a] == column) {
+                                    inSelection = true;
+                                    break;
+                                }
+                        }
+                        if (!inSelection)
+                            jtable.changeSelection (row, column, false, false);
                         tablePopupMenu.show(jtable, e.getX (), e.getY ());
+                    }
                 }
             });
             tableLabel.setLabelFor(jtable);
