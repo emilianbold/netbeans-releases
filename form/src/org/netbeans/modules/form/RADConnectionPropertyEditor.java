@@ -115,10 +115,16 @@ public class RADConnectionPropertyEditor
                 designValue.initialize();
 
             if (designValue.type == RADConnectionDesignValue.TYPE_VALUE) {
-                if ("java.lang.String".equals(designValue.requiredTypeName)) return "\""+designValue.value+"\""; // NOI18N
-                else if ("long".equals(designValue.requiredTypeName)) return designValue.value+"L"; // NOI18N
-                else if ("float".equals(designValue.requiredTypeName)) return designValue.value+"F"; // NOI18N
-                else if ("double".equals(designValue.requiredTypeName)) return designValue.value+"D"; // NOI18N
+                if ("java.lang.String".equals(designValue.requiredTypeName)) // NOI18N
+                    return "\""+designValue.value+"\""; // NOI18N
+                else if ("long".equals(designValue.requiredTypeName)) // NOI18N
+                    return designValue.value+"L"; // NOI18N
+                else if ("float".equals(designValue.requiredTypeName)) // NOI18N
+                    return designValue.value+"F"; // NOI18N
+                else if ("double".equals(designValue.requiredTypeName)) // NOI18N
+                    return designValue.value+"D"; // NOI18N
+                else if ("char".equals(designValue.requiredTypeName)) // NOI18N
+                    return "\'"+designValue.value+"\'"; // NOI18N
                 else return designValue.value;
             }
             else if (designValue.type == RADConnectionDesignValue.TYPE_CODE)
