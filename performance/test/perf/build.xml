@@ -96,6 +96,12 @@ Microsystems, Inc. All Rights Reserved.
 	<antcall target="test"/>
     </target>
 
+    <target name="test-swing">
+        <property name="tests.specs" value="javax.swing.ListCellTest"/>
+        <property name="tests.output" value="report/swing.xml"/>
+	<antcall target="test"/>
+    </target>
+
     <target name="test-exceptions">
         <property name="tests.specs" value="org.netbeans.performance.platform.ExceptionConstruct"/>
         <property name="tests.output" value="report/exceptions.xml"/>
