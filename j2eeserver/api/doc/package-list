@@ -63,3 +63,5 @@ javax.swing.text.rtf
 javax.swing.tree
 javax.swing.undo
 javax.transaction
+javax.management.j2ee
+javax.enterprise.deploy.spi

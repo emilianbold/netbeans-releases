@@ -266,7 +266,7 @@ symbols and copy jar file(s)">
     <delete dir="J2EEServerAPIs"/>
     <mkdir dir="J2EEServerAPIs"/>
     <javadoc destdir="J2EEServerAPIs"
-             packagenames="org.netbeans.modules.j2ee.deployment.api"
+             packagenames="org.netbeans.modules.j2ee.deployment.devmodules.api,org.netbeans.modules.j2ee.deployment.devmodules.spi,org.netbeans.modules.j2ee.deployment.plugins.api,org.netbeans.modules.j2ee.deployment.plugins.spi"
 	     doctitle="NetBeans j2eeserver module APIs"
              windowtitle="NetBeans j2eeserver module APIs"
              overview="api/doc/overview.html"
@@ -276,7 +276,7 @@ symbols and copy jar file(s)">
              author="false"
              version="false"
              maxmemory="64m"
-             stylesheetfile="../openide/api/doc/javadoc.css"
+             stylesheetfile="../nbbuild/javadoctools/javadoc.css"
     >
       <sourcepath>
         <pathelement location="src"/>
@@ -306,6 +306,17 @@ symbols and copy jar file(s)">
         </fileset>
       </classpath>
     </javadoc>
+    <copy todir="J2EEServerAPIs">
+            <fileset dir="api/doc/">
+              <include name="*.html"/>
+              <exclude name="overview.html"/> 
+            </fileset>
+    </copy>
+    <copy todir="J2EEServerAPIs">
+        <fileset dir="src">
+            <include name="**/netbeans-deployment.dtd"/>
+        </fileset>
+    </copy>
     <zip zipfile="J2EEServerAPIs.zip" basedir="J2EEServerAPIs"/>
   </target>
 </project>
