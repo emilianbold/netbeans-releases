@@ -122,7 +122,7 @@
 						<TD class="pass" rowspan="{$platformCount}"><xsl:value-of select="$buildTotal"/></TD>
 					</xsl:if>
 					<TD class="pass">
-						<xsl:value-of select="@osName"/>-<xsl:value-of select="@osVersion"/>-<xsl:value-of select="@osArch"/>
+						<B><xsl:value-of select="@osName"/>-<xsl:value-of select="@osVersion"/>-<xsl:value-of select="@osArch"/></B>
 					</TD>
 					<xsl:variable name="passed" select="sum(key('platformAndBuild',concat(./@osName,./@osVersion,./@osArch,$currentBuild))/@testsPass)"/>
 					<xsl:variable name="failed" select="sum(key('platformAndBuild',concat(./@osName,./@osVersion,./@osArch,$currentBuild))/@testsFail)"/>
@@ -142,7 +142,7 @@
 					</TD>
 					<TD class="pass">
 						<xsl:for-each select="key('platformAndBuild',concat(./@osName,./@osVersion,./@osArch,$currentBuild))">
-							<A HREF="../{@webLink}/index.html">
+							<A HREF="../{@webLink}index.html">
 								<xsl:value-of select="@host"/>
 							</A>
 							<BR/>

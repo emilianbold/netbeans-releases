@@ -36,6 +36,11 @@
 		</xsl:if>	
 	</UL>
 	<HR/>	
+	<xsl:if test="count(//TestRun)=0">
+		<BLOCKQUOTE>
+			<H3>No failures/errors encountered</H3>
+		</BLOCKQUOTE>
+	</xsl:if>
 	<xsl:apply-templates/>
 </xsl:template>
 

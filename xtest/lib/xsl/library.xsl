@@ -17,7 +17,7 @@
 <xsl:template name="copyright">
 <xsl:comment>
                  Sun Public License Notice
- 
+ 	
  The contents of this file are subject to the Sun Public License
  Version 1.0 (the "License"). You may not use this file except in
  compliance with the License. A copy of the License is available at
@@ -35,6 +35,20 @@
 	<HTML>		
 		<xsl:call-template name="copyright"/>
 		<STYLE>
+			BODY  {
+  				font-family: Verdana, sans-serif, helvetica, arial;
+  				font-size: 13px;
+  				background-color: #FFFFFF;
+			}
+			TD	{
+  				font-family: Verdana, sans-serif, helvetica, arial;
+  				font-size: 13px;
+			}
+
+			TH	{
+				font-family: helvetica, arial, sans-serif;
+				font-size: 12pt;
+			}
     		.error {
 	    		font-weight:bold; background:#EEEEE0; color:purple;
 	    		}
@@ -47,16 +61,45 @@
 	    	.header {
 		    	background:#A6CAF0;
 	    	}
+	    	
+	    	A:link {
+  				color: #001692;
+			}
+
+			A:visited {
+  				color: #001692;
+			}
+
+			A:hover {
+  				color: red;
+			}
+
+			.default  {
+				font-family: Verdana, sans-serif, helvetica, arial;
+				font-size: 13px;
+			}
+
+			H1 {font-size: 18pt; font-weight : bold; color: #CC3333;}
+			H2 {font-size: 14pt; font-weight: bold; color: #CC3333; }
+			H3 {font-size: 10pt; font-weight: bold; color: #CC3333; }
+			H4,H5,H6 {font-size: 10pt; font-weight: normal; color: #CC3333; }
+
+			.h1 {font-size: 18pt; font-weight : bold; color: #CC3333;}
+			.h2 {font-size: 14pt; font-weight: bold; color: #CC3333; }
+			.h3 {font-size: 10pt; font-weight: bold; color: #CC3333; }
+			.h4 {font-size: 10pt; font-weight: normal; color: #CC3333; }
+	    	
+	    	UL	{
+				list-style-type: circle;
+			}
+			
+
+			PRE,SAMP,CODE,TT {
+  				font-family: Courier New, Monospaced;
+  			}			
+	    	
 		</STYLE>
 		<HEAD>
-	
-			<!-- this is for opened pages only !!! - due to really fast connection to netbeans.org -->
-			<!-- 
-			<LINK rel="Stylesheet" href="http://www.netbeans.org/netbeans.css" type="text/css" title="NetBeans OpenSource Style"/>
-			-->
-			<!-- this is for internal pages only !!! - due to really fast connection to netbeans.org -->	
-			<LINK rel="Stylesheet" href="http://ffjqa.czech.sun.com/netbeans.css" type="text/css" title="NetBeans OpenSource Style"/>
-	
 			<TITLE><xsl:value-of select="$html-title"/></TITLE>
 		</HEAD>
 		<BODY>		

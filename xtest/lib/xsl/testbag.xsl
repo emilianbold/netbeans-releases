@@ -36,7 +36,7 @@
 	<LI>Module: <xsl:value-of select="@module"/></LI>
 	<LI>Test Type: <xsl:value-of select="@testType"/></LI>
 	<xsl:if test="string(@executor)='ide'">
-		<LI><A HREF="../sys/ide">IDE User Directory</A></LI>
+		<LI><A HREF="../sys/ide/">IDE User Directory</A></LI>
 	</xsl:if>
 	<xsl:if test="@unexpectedFailure">
 		<LI><B><FONT color="#FF0000">!!!<xsl:value-of select="@unexpectedFailure"/>!!!</FONT></B></LI>

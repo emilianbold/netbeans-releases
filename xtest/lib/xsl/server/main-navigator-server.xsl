@@ -62,6 +62,9 @@
 			<BR/>
 			<LI><A HREF="testreport-failures.html" TARGET="report">Failures Report</A></LI>	
 			<UL>
+				<xsl:if test="count(document('testreport-failures.xml',/*)/XTestResultsReport/TestRun)=0">
+					<LI>No failures/errors encountered</LI>
+				</xsl:if>
 				<xsl:for-each select="document('testreport-failures.xml',/*)/XTestResultsReport/TestRun">
 					<LI>
 						<A HREF="testreport-failures.html#{@runID}" TARGET="report">
