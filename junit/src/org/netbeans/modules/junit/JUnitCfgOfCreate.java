@@ -46,6 +46,12 @@ import org.openide.util.NbBundle;
  * @author  vstejskal
  */
 public class JUnitCfgOfCreate extends JPanel {
+    
+    /**
+     * whether the dialog should support the case that tests for whole folders
+     * are about to be created
+     */
+    private final boolean forFolders;
 
     private class Pair {
         public String  name;
@@ -59,10 +65,16 @@ public class JUnitCfgOfCreate extends JPanel {
         }
     }
     
-    /** Creates new form JUnitCfgOfCreate */
-    private JUnitCfgOfCreate() {
-        initBundle();
+    /**
+     * Creates a JUnit configuration panel.
+     *
+     * @param  forFolders  whether the options should support the case that
+     *                     tests for whole folders are about to be created
+     */
+    private JUnitCfgOfCreate(final boolean forFolders) {
+        this.forFolders = forFolders;
         
+        initBundle();
         try {
             initComponents();
             addAccessibleDescriptions();
@@ -96,26 +108,29 @@ public class JUnitCfgOfCreate extends JPanel {
         this.chkJavaDoc.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkJavaDoc.toolTip"));
         this.chkJavaDoc.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkJavaDoc.AD"));
         
+        if (forFolders) {
+            this.chkExceptions.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkExceptions.toolTip"));
+            this.chkExceptions.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkExceptions.AD"));
         
-        this.chkExceptions.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkExceptions.toolTip"));
-        this.chkExceptions.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkExceptions.AD"));
+            this.chkAbstractImpl.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkAbstractImpl.toolTip"));
+            this.chkAbstractImpl.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkAbstractImpl.AD"));
         
-        this.chkAbstractImpl.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkAbstractImpl.toolTip"));
-        this.chkAbstractImpl.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkAbstractImpl.AD"));
+            this.chkPackagePrivateClasses.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkPackagePrivateClasses.toolTip"));
+            this.chkPackagePrivateClasses.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkPackagePrivateClasses.AD"));
         
-        this.chkPackagePrivateClasses.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkPackagePrivateClasses.toolTip"));
-        this.chkPackagePrivateClasses.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkPackagePrivateClasses.AD"));
-        
-        this.chkGenerateSuites.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkGenerateSuites.toolTip"));
-        this.chkGenerateSuites.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkGenerateSuites.AD"));
+            this.chkGenerateSuites.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkGenerateSuites.toolTip"));
+            this.chkGenerateSuites.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkGenerateSuites.AD"));
+        }
         
         this.chkEnabled.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkEnabled.toolTip"));
         this.chkEnabled.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkEnabled.AD"));
         
         // labels
         
-        this.cboSuiteClass.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.cboSuiteClass.AD"));
-        this.cboSuiteClass.getAccessibleContext().setAccessibleName(bundle.getString("JUnitCfgOfCreate.cboSuiteClass.AN"));
+        if (forFolders) {
+            this.cboSuiteClass.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.cboSuiteClass.AD"));
+            this.cboSuiteClass.getAccessibleContext().setAccessibleName(bundle.getString("JUnitCfgOfCreate.cboSuiteClass.AN"));
+        }
         
         this.cboTestClass.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.cboTestClass.AD"));
         this.cboTestClass.getAccessibleContext().setAccessibleName(bundle.getString("JUnitCfgOfCreate.cboTestClass.AN"));
@@ -136,10 +151,12 @@ public class JUnitCfgOfCreate extends JPanel {
                 continue;
             
             item = new Pair(foTemplates[i].getName(), foTemplates[i]);
-            // add template to Suite templates list
-            cboSuiteClass.addItem(item);
-            if (foTemplates[i].getPath().equals(JUnitSettings.getDefault().getSuiteTemplate()))
-                cboSuiteClass.setSelectedItem(item);
+            if (forFolders) {
+                // add template to Suite templates list
+                cboSuiteClass.addItem(item);
+                if (foTemplates[i].getPath().equals(JUnitSettings.getDefault().getSuiteTemplate()))
+                    cboSuiteClass.setSelectedItem(item);
+            }
     
             // add template to Class templates list
             cboTestClass.addItem(item);
@@ -148,30 +165,35 @@ public class JUnitCfgOfCreate extends JPanel {
         }
     }
     
-    /** Displays dialog and updates JUnit options according to the user's settings. */
-    // not actually the cleanes implementation with the argument, but it
-    // will work for the time being ...
-    public static boolean configure() {
+    /**
+     * Displays a configuration dialog and updates JUnit options according
+     * to the user's settings.
+     *
+     * @param  forFolders  whether tests for folders are about to be created
+     */
+    public static boolean configure(final boolean forFolders) {
         // check if the dialog can be displayed
         if (!JUnitSettings.getDefault().isCfgCreateEnabled())
             return true;
         
         // create panel
-        JUnitCfgOfCreate cfg = new JUnitCfgOfCreate();
+        JUnitCfgOfCreate cfg = new JUnitCfgOfCreate(forFolders);
         
         // setup the panel
         cfg.fillTemplates();
         cfg.chkPublic.setSelected(JUnitSettings.getDefault().isMembersPublic());
         cfg.chkProtected.setSelected(JUnitSettings.getDefault().isMembersProtected());
         cfg.chkPackage.setSelected(JUnitSettings.getDefault().isMembersPackage());
-        cfg.chkExceptions.setSelected(JUnitSettings.getDefault().isGenerateExceptionClasses());
-	cfg.chkAbstractImpl.setSelected(JUnitSettings.getDefault().isGenerateAbstractImpl());
         cfg.chkComments.setSelected(JUnitSettings.getDefault().isBodyComments());
         cfg.chkContent.setSelected(JUnitSettings.getDefault().isBodyContent());
         cfg.chkJavaDoc.setSelected(JUnitSettings.getDefault().isJavaDoc());        
-        cfg.chkGenerateSuites.setSelected(JUnitSettings.getDefault().isGenerateSuiteClasses());        
+        if (forFolders) {
+            cfg.chkGenerateSuites.setSelected(JUnitSettings.getDefault().isGenerateSuiteClasses());        
+            cfg.chkPackagePrivateClasses.setSelected(JUnitSettings.getDefault().isIncludePackagePrivateClasses());
+            cfg.chkAbstractImpl.setSelected(JUnitSettings.getDefault().isGenerateAbstractImpl());
+            cfg.chkExceptions.setSelected(JUnitSettings.getDefault().isGenerateExceptionClasses());
+        }
         cfg.chkEnabled.setSelected(JUnitSettings.getDefault().isCfgCreateEnabled());
-        cfg.chkPackagePrivateClasses.setSelected(JUnitSettings.getDefault().isIncludePackagePrivateClasses());
         cfg.chkSetUp.setSelected(JUnitSettings.getDefault().isGenerateSetUp());
         cfg.chkTearDown.setSelected(JUnitSettings.getDefault().isGenerateTearDown());
         
@@ -190,9 +212,11 @@ public class JUnitCfgOfCreate extends JPanel {
         if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
             FileObject  foTemplate;
             
-            // store Suite class template
-            foTemplate = (FileObject)((Pair)cfg.cboSuiteClass.getSelectedItem()).item;
-            JUnitSettings.getDefault().setSuiteTemplate(foTemplate.getPath());
+            if (forFolders) {
+                // store Suite class template
+                foTemplate = (FileObject)((Pair)cfg.cboSuiteClass.getSelectedItem()).item;
+                JUnitSettings.getDefault().setSuiteTemplate(foTemplate.getPath());
+            }
             
             // store Test class template
             foTemplate = (FileObject)((Pair)cfg.cboTestClass.getSelectedItem()).item;
@@ -202,14 +226,16 @@ public class JUnitCfgOfCreate extends JPanel {
             JUnitSettings.getDefault().setMembersPublic(cfg.chkPublic.isSelected());
             JUnitSettings.getDefault().setMembersProtected(cfg.chkProtected.isSelected());
             JUnitSettings.getDefault().setMembersPackage(cfg.chkPackage.isSelected());
-            JUnitSettings.getDefault().setGenerateExceptionClasses(cfg.chkExceptions.isSelected());
-            JUnitSettings.getDefault().setGenerateAbstractImpl(cfg.chkAbstractImpl.isSelected());
             JUnitSettings.getDefault().setBodyComments(cfg.chkComments.isSelected());
             JUnitSettings.getDefault().setBodyContent(cfg.chkContent.isSelected());
             JUnitSettings.getDefault().setJavaDoc(cfg.chkJavaDoc.isSelected());
             JUnitSettings.getDefault().setCfgCreateEnabled(cfg.chkEnabled.isSelected());
-            JUnitSettings.getDefault().setGenerateSuiteClasses(cfg.chkGenerateSuites.isSelected());
-            JUnitSettings.getDefault().setIncludePackagePrivateClasses(cfg.chkPackagePrivateClasses.isSelected());
+            if (forFolders) {
+                JUnitSettings.getDefault().setGenerateSuiteClasses(cfg.chkGenerateSuites.isSelected());
+                JUnitSettings.getDefault().setIncludePackagePrivateClasses(cfg.chkPackagePrivateClasses.isSelected());
+                JUnitSettings.getDefault().setGenerateAbstractImpl(cfg.chkAbstractImpl.isSelected());
+                JUnitSettings.getDefault().setGenerateExceptionClasses(cfg.chkExceptions.isSelected());
+            }
             JUnitSettings.getDefault().setGenerateSetUp(cfg.chkSetUp.isSelected());
             JUnitSettings.getDefault().setGenerateTearDown(cfg.chkTearDown.isSelected());
             
@@ -257,54 +283,55 @@ public class JUnitCfgOfCreate extends JPanel {
      */
     private void createTemplatesPanel() {
         
-        /* create the components: */
-        JLabel lblSuiteClass = new JLabel();
-        JLabel lblTestClass = new JLabel();
-        cboSuiteClass = new JComboBox();
-        cboTestClass = new JComboBox();
-        
-        /* set texts: */
-        Mnemonics.setLocalizedText(
-               lblSuiteClass,
-               bundle.getString("JUnitCfgOfCreate.lblSuiteClass.text"));//NOI18N
-        Mnemonics.setLocalizedText(
-                lblTestClass,
-                bundle.getString("JUnitCfgOfCreate.lblTestClass.text"));//NOI18N
-        
-        /* set label-for: */
-        lblSuiteClass.setLabelFor(cboSuiteClass);
-        lblTestClass.setLabelFor(cboTestClass);
-        
-        /* set layout: */
         GridBagConstraints gbc = new GridBagConstraints();
         GridBagLayout gbl = new GridBagLayout();
         jpTemplates = new SizeRestrictedPanel(gbl, false, true);
         
         gbc.anchor = GridBagConstraints.WEST;
-        
-        gbc.gridx = 0;
         gbc.gridy = 0;
-        gbc.weightx = 0.0d;
-        gbc.insets = new Insets(0, 0, 5, 12);
-        jpTemplates.add(lblSuiteClass, gbc);
         
-        gbc.gridx = 1;
-        gbc.gridy = 0;
-        gbc.weightx = 1.0d;
-        gbc.insets = new Insets(0, 0, 5, 0);
-        jpTemplates.add(cboSuiteClass, gbc);
+        if (forFolders) {
+            /* create label and combo-box for the test suite template chooser */
+            JLabel lblSuiteClass = new JLabel();
+            Mnemonics.setLocalizedText(
+               lblSuiteClass,
+               bundle.getString("JUnitCfgOfCreate.lblSuiteClass.text"));//NOI18N
+            cboSuiteClass = new JComboBox();
+            lblSuiteClass.setLabelFor(cboSuiteClass);
+            
+            /* set layout: */
+            gbc.gridx = 0;
+            gbc.weightx = 0.0d;
+            gbc.insets = new Insets(0, 0, 5, 12);
+            jpTemplates.add(lblSuiteClass, gbc);
         
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.weightx = 0.0d;
-        gbc.insets = new Insets(0, 0, 0, 12);
-        jpTemplates.add(lblTestClass, gbc);
+            gbc.gridx = 1;
+            gbc.weightx = 1.0d;
+            gbc.insets = new Insets(0, 0, 5, 0);
+            jpTemplates.add(cboSuiteClass, gbc);
+            
+            gbc.gridy++;
+        }
+        {
+            /* create label and combo-box for the test case template chooser */
+            JLabel lblTestClass = new JLabel();
+            Mnemonics.setLocalizedText(
+                lblTestClass,
+                bundle.getString("JUnitCfgOfCreate.lblTestClass.text"));//NOI18N
+            cboTestClass = new JComboBox();
+            lblTestClass.setLabelFor(cboTestClass);
         
-        gbc.gridx = 1;
-        gbc.gridy = 1;
-        gbc.weightx = 1.0d;
-        gbc.insets = new Insets(0, 0, 0, 0);
-        jpTemplates.add(cboTestClass, gbc);
+            /* set layout: */
+            gbc.gridx = 0;
+            gbc.weightx = 0.0d;
+            gbc.insets = new Insets(0, 0, 0, 12);
+            jpTemplates.add(lblTestClass, gbc);
+        
+            gbc.gridx = 1;
+            gbc.weightx = 1.0d;
+            gbc.insets = new Insets(0, 0, 0, 0);
+            jpTemplates.add(cboTestClass, gbc);
+        }
     }
     
     /**
@@ -317,10 +344,12 @@ public class JUnitCfgOfCreate extends JPanel {
         chkPublic = new JCheckBox();
         chkProtected = new JCheckBox();
         chkPackage = new JCheckBox();
-        chkPackagePrivateClasses = new JCheckBox();
-        chkAbstractImpl = new JCheckBox();
-        chkExceptions = new JCheckBox();
-        chkGenerateSuites = new JCheckBox();
+        if (forFolders) {
+            chkPackagePrivateClasses = new JCheckBox();
+            chkAbstractImpl = new JCheckBox();
+            chkExceptions = new JCheckBox();
+            chkGenerateSuites = new JCheckBox();
+        }
         chkSetUp = new JCheckBox();
         chkTearDown = new JCheckBox();
         chkContent = new JCheckBox();
@@ -337,22 +366,24 @@ public class JUnitCfgOfCreate extends JPanel {
         Mnemonics.setLocalizedText(
                 chkPackage,
                 bundle.getString("JUnitCfgOfCreate.chkPackage.text"));  //NOI18N
-        Mnemonics.setLocalizedText(
+        if (forFolders) {
+            Mnemonics.setLocalizedText(
                 chkPackagePrivateClasses,
                 bundle.getString(
                     "JUnitCfgOfCreate.chkPackagePrivateClasses.text")); //NOI18N
-        Mnemonics.setLocalizedText(
+            Mnemonics.setLocalizedText(
                 chkAbstractImpl,
                 bundle.getString(
                     "JUnitCfgOfCreate.chkAbstractImpl.text"));          //NOI18N
-        Mnemonics.setLocalizedText(
+            Mnemonics.setLocalizedText(
                 chkExceptions,
                 bundle.getString(
                     "JUnitCfgOfCreate.chkExceptions.text"));            //NOI18N
-        Mnemonics.setLocalizedText(
+            Mnemonics.setLocalizedText(
                 chkGenerateSuites,
                 bundle.getString(
                     "JUnitCfgOfCreate.chkGenerateSuites.text"));        //NOI18N
+        }
         Mnemonics.setLocalizedText(
                 chkSetUp,
                 bundle.getString("JUnitCfgOfCreate.chkSetUp.text"));    //NOI18N
@@ -373,13 +404,17 @@ public class JUnitCfgOfCreate extends JPanel {
         JComponent methodAccessLevels = createChkBoxGroup(
                 bundle.getString("JUnitCfgOfCreate.groupAccessLevels"), //NOI18N
                 new JCheckBox[] {chkPublic, chkProtected, chkPackage});
-        JComponent classTypes = createChkBoxGroup(
+        JComponent classTypes = null;
+        JComponent optionalClasses = null;
+        if (forFolders) {
+            classTypes = createChkBoxGroup(
                 bundle.getString("JUnitCfgOfCreate.groupClassTypes"),   //NOI18N
                 new JCheckBox[] {chkPackagePrivateClasses,
                                  chkAbstractImpl, chkExceptions});
-        JComponent optionalClasses = createChkBoxGroup(
+            optionalClasses = createChkBoxGroup(
                 bundle.getString("JUnitCfgOfCreate.groupOptClasses"),   //NOI18N
                 new JCheckBox[] {chkGenerateSuites});
+        }
         JComponent optionalCode = createChkBoxGroup(
                 bundle.getString("JUnitCfgOfCreate.groupOptCode"),      //NOI18N
                 new JCheckBox[] {chkSetUp, chkTearDown, chkContent});
@@ -390,25 +425,33 @@ public class JUnitCfgOfCreate extends JPanel {
         /* create the left column of options: */
         Box leftColumn = Box.createVerticalBox();
         leftColumn.add(methodAccessLevels);
-        leftColumn.add(Box.createVerticalStrut(11));
-        leftColumn.add(classTypes);
+        if (forFolders) {
+            leftColumn.add(Box.createVerticalStrut(11));
+            leftColumn.add(classTypes);
+        }
         leftColumn.add(Box.createVerticalGlue());
         
         /* set alignments for BoxLayout: */
         methodAccessLevels.setAlignmentX(0.0f);
-        classTypes.setAlignmentX(0.0f);
+        if (forFolders) {
+            classTypes.setAlignmentX(0.0f);
+        }
         
         /* create the right column of options: */
         Box rightColumn = Box.createVerticalBox();
-        rightColumn.add(optionalClasses);
-        rightColumn.add(Box.createVerticalStrut(11));
+        if (forFolders) {
+            rightColumn.add(optionalClasses);
+            rightColumn.add(Box.createVerticalStrut(11));
+        }
         rightColumn.add(optionalCode);
         rightColumn.add(Box.createVerticalStrut(11));
         rightColumn.add(optionalComments);
         rightColumn.add(Box.createVerticalGlue());
         
         /* set alignments for BoxLayout: */
-        optionalClasses.setAlignmentX(0.0f);
+        if (forFolders) {
+            optionalClasses.setAlignmentX(0.0f);
+        }
         optionalCode.setAlignmentX(0.0f);
         optionalComments.setAlignmentX(0.0f);
         

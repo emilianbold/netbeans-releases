@@ -48,7 +48,7 @@ import org.openide.util.actions.CookieAction;
 /** Action sensitive to some cookie that does something useful.
  *
  * @author  vstejskal, David Konecny
- * @version 1.0
+ * @author  Marian Petras
  */
 public class CreateTestAction extends CookieAction {
     
@@ -103,12 +103,14 @@ public class CreateTestAction extends CookieAction {
     }
 
     protected void performAction(Node[] nodes) {
+        boolean folderSelected = isFolderSelected(nodes);
+        
         DataObject doTestTempl = null;
         DataObject doSuiteTempl = null;
         
         // show configuration dialog
         // when dialog is canceled, escape the action
-        if (!JUnitCfgOfCreate.configure())
+        if (!JUnitCfgOfCreate.configure(folderSelected))
             return;
         
         String temp = null;
@@ -173,6 +175,22 @@ public class CreateTestAction extends CookieAction {
         } finally {
             progress.hide();
         }
+    }
+    
+    /**
+     * Detects whether at least one of the given nodes represents
+     * a <code>DataFolder</code>.
+     *
+     * @return  <code>true</code> if at least one of the nodes represents
+     *          a <code>DataFolder</code>; <code>false</code> otherwise
+     */
+    private static boolean isFolderSelected(Node[] nodes) {
+        for (int i = 0; i < nodes.length; i++) {
+            if (nodes[i].getCookie(DataFolder.class) != null) {
+                return true;
+            }
+        }
+        return false;
     }
     
     private void createSuiteTest(ClassPath testClassPath, DataFolder folder,
