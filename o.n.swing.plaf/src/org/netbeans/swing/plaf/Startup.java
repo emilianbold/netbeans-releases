@@ -156,7 +156,7 @@ public final class Startup {
     private void installTheme(LookAndFeel lf) {
         //Load the theme
         if (themeURL != null) {
-          NbTheme nbTheme = new NbTheme(themeURL);
+          NbTheme nbTheme = new NbTheme(themeURL, lf);
           MetalLookAndFeel.setCurrentTheme(nbTheme);
         }
     }
@@ -170,15 +170,8 @@ public final class Startup {
             globalCustoms = new AllLFCustoms();
             installLFCustoms (globalCustoms);
         }
-
         installPerLFDefaults();
-
-        LookAndFeel lf = UIManager.getLookAndFeel();
-        if (!(lf instanceof MetalLookAndFeel)) {
-            //If not metal, install the theme info *after* the rest
-            installTheme(UIManager.getLookAndFeel());
-        }
-
+        installTheme(UIManager.getLookAndFeel());
         attachListener();
     }
 

@@ -115,25 +115,26 @@ public class NbTheme extends MetalTheme implements org.xml.sax.DocumentHandler {
     private UIDefaults defaults;
     public String getName(){ return "NetBeans XML Theme"; } // NOI18N
     /** Create a new instance of NBTheme */
-    public NbTheme(URL themeURL) {
+    public NbTheme(URL themeURL, LookAndFeel lf) {
         this.themeURL = themeURL;
+        defaults = lf.getDefaults();
         initThemeDefaults();
-        defaults = UIManager.getDefaults();
         parseTheme();
+        UIManager.getDefaults().putAll (defaults);
     }
     
     /** Add any custom UIDefault values for Metal L&F here */
-    static void initThemeDefaults () {
-        UIManager.put(PRIMARY1, new ColorUIResource(102, 102, 153)); 
-        UIManager.put(PRIMARY2, new ColorUIResource(153, 153, 204)); 
-        UIManager.put(PRIMARY3, new ColorUIResource(204, 204, 255)); 
+    void initThemeDefaults () {
+        defaults.put(PRIMARY1, new ColorUIResource(102, 102, 153)); 
+        defaults.put(PRIMARY2, new ColorUIResource(153, 153, 204)); 
+        defaults.put(PRIMARY3, new ColorUIResource(204, 204, 255)); 
 
-        UIManager.put(SECONDARY1, new ColorUIResource(102, 102, 102)); 
-        UIManager.put(SECONDARY2, new ColorUIResource(153, 153, 153)); 
-        UIManager.put(SECONDARY3, new ColorUIResource(204, 204, 204)); 
+        defaults.put(SECONDARY1, new ColorUIResource(102, 102, 102)); 
+        defaults.put(SECONDARY2, new ColorUIResource(153, 153, 153)); 
+        defaults.put(SECONDARY3, new ColorUIResource(204, 204, 204)); 
         
-        UIManager.put(WHITE, new ColorUIResource(255,255,255)); 
-        UIManager.put(BLACK, new ColorUIResource(0,0,0)); 
+        defaults.put(WHITE, new ColorUIResource(255,255,255)); 
+        defaults.put(BLACK, new ColorUIResource(0,0,0)); 
     }
     
     private void parseTheme(){
@@ -248,8 +249,9 @@ public class NbTheme extends MetalTheme implements org.xml.sax.DocumentHandler {
         } else {
             if(fontstylename.equals(FONTSTYLE_ITALIC)) fontstyle = Font.ITALIC;
         }
+        
         FontUIResource resource = new FontUIResource (fontname, fontstyle, fontsize);
-        UIManager.put (key, resource);
+        defaults.put (key, resource);
     }
         
     private final void handleColor (org.xml.sax.AttributeList atts) throws SAXException  {
@@ -258,25 +260,25 @@ public class NbTheme extends MetalTheme implements org.xml.sax.DocumentHandler {
         int b = intFromAttr (atts, BLUE_ATTR);
         String key = atts.getValue(KEY_ATTR);
         ColorUIResource resource = new ColorUIResource (r,g,b);
-        UIManager.put (key, resource);
+        defaults.put (key, resource);
     }
 
     private final void handleMetric (org.xml.sax.AttributeList atts) throws SAXException  {
         String key = atts.getValue(KEY_ATTR);
         Integer resource = Integer.valueOf (atts.getValue(VALUE_ATTR));
-        UIManager.put (key, resource);
+        defaults.put (key, resource);
     }
     
     private final void handleString (org.xml.sax.AttributeList atts) throws SAXException  {
         String key = atts.getValue (KEY_ATTR);
         String resource = atts.getValue (VALUE_ATTR);
-        UIManager.put (key, resource);
+        defaults.put (key, resource);
     }
 
     private final void handleBool (org.xml.sax.AttributeList atts) throws SAXException  {
         String key = atts.getValue (KEY_ATTR);
         Boolean resource = Boolean.valueOf (key);
-        UIManager.put (key, resource);
+        defaults.put (key, resource);
     }
     
     private final void handleDim (org.xml.sax.AttributeList atts) throws SAXException  {
@@ -284,7 +286,7 @@ public class NbTheme extends MetalTheme implements org.xml.sax.DocumentHandler {
         int width = intFromAttr (atts, WIDTH_ATTR);
         int height = intFromAttr (atts, HEIGHT_ATTR);
         DimensionUIResource resource = new DimensionUIResource (width, height);
-        UIManager.put (key, resource);
+        defaults.put (key, resource);
     }
     
     private final void handleInsets (org.xml.sax.AttributeList atts) throws SAXException  {
@@ -295,7 +297,7 @@ public class NbTheme extends MetalTheme implements org.xml.sax.DocumentHandler {
         int right = intFromAttr (atts, RIGHT_ATTR);
         InsetsUIResource resource = new InsetsUIResource (top, left, bottom,
           right);
-        UIManager.put (key, resource);
+        defaults.put (key, resource);
     }
 
     private final void handleEtchedBorder (org.xml.sax.AttributeList atts) {
@@ -305,7 +307,7 @@ public class NbTheme extends MetalTheme implements org.xml.sax.DocumentHandler {
         if (type != null) 
             i = type.equals (TYPE_LOWERED) ? EtchedBorder.LOWERED : EtchedBorder.RAISED;
         BorderUIResource.EtchedBorderUIResource resource = new BorderUIResource.EtchedBorderUIResource (i);
-        UIManager.put (key, resource);
+        defaults.put (key, resource);
     }
     
     private final void handleBevelBorder (org.xml.sax.AttributeList atts) {
@@ -315,7 +317,7 @@ public class NbTheme extends MetalTheme implements org.xml.sax.DocumentHandler {
         if (type != null) 
             i = type.equals (TYPE_LOWERED) ? BevelBorder.LOWERED : BevelBorder.RAISED;
         BorderUIResource.BevelBorderUIResource resource = new BorderUIResource.BevelBorderUIResource (i);
-        UIManager.put (key, resource);
+        defaults.put (key, resource);
     }
     
     private final void handleEmptyBorder (org.xml.sax.AttributeList atts) throws SAXException {
@@ -325,7 +327,7 @@ public class NbTheme extends MetalTheme implements org.xml.sax.DocumentHandler {
         int bottom = intFromAttr (atts, BOTTOM_ATTR);
         int right = intFromAttr (atts, RIGHT_ATTR);
         BorderUIResource.EmptyBorderUIResource resource = new BorderUIResource.EmptyBorderUIResource (top, left, bottom, right);
-        UIManager.put (key, resource);
+        defaults.put (key, resource);
     }
     
     private final void handleLineBorder (org.xml.sax.AttributeList atts) throws SAXException {
@@ -339,7 +341,7 @@ public class NbTheme extends MetalTheme implements org.xml.sax.DocumentHandler {
         }
         Color c = new Color (r,g,b);
         BorderUIResource.LineBorderUIResource resource = new BorderUIResource.LineBorderUIResource (c);
-        UIManager.put (key, resource);
+        defaults.put (key, resource);
     }
     
     private final int intFromAttr (final org.xml.sax.AttributeList atts, final String key) throws SAXException {
