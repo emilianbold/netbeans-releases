@@ -297,7 +297,6 @@ public class Property {
             throw new JemmyException("Exception while synchronizing value of property and property editor - property.getValue() != pe.getValue()", e);
         }
         try {
-            JemmyProperties.getCurrentOutput().printTrace("Setting property \""+getName()+"\" to value \""+textValue+"\".");
             pe.setAsText(textValue);
             property.setValue(pe.getValue());
         } catch (IllegalAccessException iae) {
@@ -386,29 +385,23 @@ public class Property {
      */
     public void openEditor() {
         if(supportsCustomEditor()) {
-            final JTableOperator table = this.propertySheetOper.tblSheet();
-            for(int row=0;row<table.getRowCount();row++) {
-                if(table.getValueAt(row, 1) instanceof Node.Property) {
-                    if(this.property == (Node.Property)table.getValueAt(row, 1)) {
-                        // Need to request focus before selection because invokeCustomEditor action works
-                        // only when table is focused
-                        table.makeComponentVisible();
-                        table.requestFocus();
-                        table.waitHasFocus();
-                        // need to select property first
-                        ((javax.swing.JTable)table.getSource()).changeSelection(row, 0, false, false);
-                        // find action
-                        final Action customEditorAction = ((JComponent)table.getSource()).getActionMap().get("invokeCustomEditor");  // NOI18N
-                        // run action in a separate thread (no block)
-                        new Thread(new Runnable() {
-                            public void run() {
-                                customEditorAction.actionPerformed(new ActionEvent(table.getSource(), 0, null));
-                            }
-                        }, "Thread to open custom editor no block").start(); // NOI18N
-                        return;
-                    }
+            final JTableOperator table = propertySheetOper.tblSheet();
+            // Need to request focus before selection because invokeCustomEditor action works
+            // only when table is focused
+            table.makeComponentVisible();
+            table.requestFocus();
+            table.waitHasFocus();
+            // need to select property first
+            ((javax.swing.JTable)table.getSource()).changeSelection(getRow(), 0, false, false);
+            // find action
+            final Action customEditorAction = ((JComponent)table.getSource()).getActionMap().get("invokeCustomEditor");  // NOI18N
+            // run action in a separate thread (no block)
+            new Thread(new Runnable() {
+                public void run() {
+                    customEditorAction.actionPerformed(new ActionEvent(table.getSource(), 0, null));
                 }
-            }
+            }, "Thread to open custom editor no block").start(); // NOI18N
+            return;
         }
     }
     
@@ -456,29 +449,21 @@ public class Property {
             return false;
         }
         final JTableOperator table = propertySheetOper.tblSheet();
-        for(int row=0;row<table.getRowCount();row++) {
-            if(table.getValueAt(row, 1) instanceof Node.Property) {
-                if(property == (Node.Property)table.getValueAt(row, 1)) {
-                    table.clickForEdit(row, 1);
-                    long oldTimeout = propertySheetOper.getTimeouts().getTimeout("ComponentOperator.WaitComponentTimeout");
-                    propertySheetOper.getTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout", 1000);
-                    try {
-                        new JTextFieldOperator(propertySheetOper);
-                        return true;
-                    } catch (JemmyException e) {
-                        // property cannot be edited as text by inplace editor
-                        return false;
-                    } finally {
-                        // push ESC to stop editing
-                        table.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
-                        // reset timeout
-                        propertySheetOper.getTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout", oldTimeout);
-                    }
-                }
-            }
+        table.clickForEdit(getRow(), 1);
+        long oldTimeout = propertySheetOper.getTimeouts().getTimeout("ComponentOperator.WaitComponentTimeout");
+        propertySheetOper.getTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout", 1000);
+        try {
+            new JTextFieldOperator(propertySheetOper);
+            return true;
+        } catch (JemmyException e) {
+            // property cannot be edited as text by inplace editor
+            return false;
+        } finally {
+            // push ESC to stop editing
+            table.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
+            // reset timeout
+            propertySheetOper.getTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout", oldTimeout);
         }
-        // never should happen
-        throw new JemmyException("Property "+getName()+" not found in this sheet:\n"+propertySheetOper.getSource().toString());
     }
     
     /** Returns class name of renderer used to render this property. It can
@@ -506,36 +491,29 @@ public class Property {
     /** Returns component which represents renderer for this property. */
     private Component getRenderer() {
         final JTableOperator table = propertySheetOper.tblSheet();
-        for(int row=0;row<table.getRowCount();row++) {
-            if(table.getValueAt(row, 1) instanceof Node.Property) {
-                if(property == (Node.Property)table.getValueAt(row, 1)) {
-                    // gets component used to render a value
-                    TableCellRenderer renderer = table.getCellRenderer(row,1);
-                    Component comp = renderer.getTableCellRendererComponent(
-                                                        (JTable)table.getSource(), 
-                                                        table.getValueAt(row, 1), 
-                                                        false, 
-                                                        false, 
-                                                        row, 
-                                                        1
-                    );
-                    // We need to find a real renderer because it can be embedded
-                    // in ButtonPanel (supplies custom editor button "...")
-                    // or IconPanel(supplies property marking).
-                    try {
-                        Class clazz = Class.forName("org.openide.explorer.propertysheet.RendererPropertyDisplayer");
-                        Method findInnermostRendererMethod = clazz.getDeclaredMethod("findInnermostRenderer", new Class[] {JComponent.class});
-                        findInnermostRendererMethod.setAccessible(true);
-                        comp = (Component)findInnermostRendererMethod.invoke(null, new Object[] {comp});
-                    } catch (Exception e) {
-                        throw new JemmyException("RendererPropertyDisplayer.findInnermostRenderer() by reflection failed.", e);
-                    }
-                    return comp;
-                }
-            }
+        int row = getRow();
+        // gets component used to render a value
+        TableCellRenderer renderer = table.getCellRenderer(row, 1);
+        Component comp = renderer.getTableCellRendererComponent(
+                                            (JTable)table.getSource(), 
+                                            table.getValueAt(row, 1),
+                                            false, 
+                                            false, 
+                                            row, 
+                                            1
+        );
+        // We need to find a real renderer because it can be embedded
+        // in ButtonPanel (supplies custom editor button "...")
+        // or IconPanel(supplies property marking).
+        try {
+            Class clazz = Class.forName("org.openide.explorer.propertysheet.RendererPropertyDisplayer");
+            Method findInnermostRendererMethod = clazz.getDeclaredMethod("findInnermostRenderer", new Class[] {JComponent.class});
+            findInnermostRendererMethod.setAccessible(true);
+            comp = (Component)findInnermostRendererMethod.invoke(null, new Object[] {comp});
+        } catch (Exception e) {
+            throw new JemmyException("RendererPropertyDisplayer.findInnermostRenderer() by reflection failed.", e);
         }
-        // never should happen
-        throw new JemmyException("Property "+getName()+" not found in this sheet:\n"+propertySheetOper.getSource().toString());
+        return comp;
     }
     
     /** Gets short description for this property. Short description is also 
@@ -544,5 +522,22 @@ public class Property {
     */
     public String getShortDescription() {
         return this.property.getShortDescription();
+    }
+
+    /* 
+    * @return row number of property inside property sheet (starts at 0). 
+     * If there are categories shown in property sheet, rows occupied by their 
+     * names must by taken into account.
+     */
+    public int getRow() {
+        JTableOperator table = this.propertySheetOper.tblSheet();
+        for(int row=0;row<table.getRowCount();row++) {
+            if(table.getValueAt(row, 1) instanceof Node.Property) {
+                if(this.property == (Node.Property)table.getValueAt(row, 1)) {
+                    return row;
+                }
+            }
+        }
+        throw new JemmyException("Cannot determine row number of property \""+getName()+"\"");
     }
 }
