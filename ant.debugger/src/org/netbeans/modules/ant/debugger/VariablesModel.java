@@ -17,10 +17,11 @@ import java.util.Vector;
 import org.apache.tools.ant.module.api.support.TargetLister;
 import org.apache.tools.ant.module.spi.TaskStructure;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModel;
-import org.netbeans.spi.viewmodel.TreeModelListener;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 /**
@@ -116,7 +117,7 @@ public class VariablesModel implements TreeModel, NodeModel, TableModel {
      * 
      * @param l the listener to add
      */
-    public void addTreeModelListener (TreeModelListener l) {
+    public void addModelListener (ModelListener l) {
         listeners.add (l);
     }
 
@@ -125,7 +126,7 @@ public class VariablesModel implements TreeModel, NodeModel, TableModel {
      *
      * @param l the listener to remove
      */
-    public void removeTreeModelListener (TreeModelListener l) {
+    public void removeModelListener (ModelListener l) {
         listeners.remove (l);
     }
     
@@ -250,6 +251,8 @@ public class VariablesModel implements TreeModel, NodeModel, TableModel {
         Vector v = (Vector) listeners.clone ();
         int i, k = v.size ();
         for (i = 0; i < k; i++)
-            ((TreeModelListener) v.get (i)).treeChanged ();
+            ((ModelListener) v.get (i)).modelChanged (
+                new ModelEvent.TreeChanged (this)
+            );
     }
 }

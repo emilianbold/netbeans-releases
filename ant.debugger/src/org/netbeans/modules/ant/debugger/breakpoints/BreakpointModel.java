@@ -22,11 +22,12 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.ant.debugger.AntDebugger;
 import org.netbeans.modules.ant.debugger.Utils;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModel;
-import org.netbeans.spi.viewmodel.TreeModelListener;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.openide.filesystems.FileObject;
@@ -122,7 +123,7 @@ public class BreakpointModel implements NodeModel, TableModel, Constants {
      * 
      * @param l the listener to add
      */
-    public void addTreeModelListener (TreeModelListener l) {
+    public void addModelListener (ModelListener l) {
         listeners.add (l);
     }
 
@@ -131,7 +132,7 @@ public class BreakpointModel implements NodeModel, TableModel, Constants {
      *
      * @param l the listener to remove
      */
-    public void removeTreeModelListener (TreeModelListener l) {
+    public void removeModelListener (ModelListener l) {
         listeners.remove (l);
     }
         
@@ -216,7 +217,9 @@ public class BreakpointModel implements NodeModel, TableModel, Constants {
         Vector v = (Vector) listeners.clone ();
         int i, k = v.size ();
         for (i = 0; i < k; i++)
-            ((TreeModelListener) v.get (i)).treeChanged ();
+            ((ModelListener) v.get (i)).modelChanged (
+                new ModelEvent.TreeChanged (this)
+            );
     }
     
     private static AntDebugger getDebugger () {

@@ -20,11 +20,12 @@ import org.apache.tools.ant.module.api.support.TargetLister;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModel;
-import org.netbeans.spi.viewmodel.TreeModelListener;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.openide.text.Annotatable;
@@ -296,7 +297,7 @@ NodeActionsProvider {
      * 
      * @param l the listener to add
      */
-    public void addTreeModelListener (TreeModelListener l) {
+    public void addModelListener (ModelListener l) {
         listeners.add (l);
     }
 
@@ -305,7 +306,7 @@ NodeActionsProvider {
      *
      * @param l the listener to remove
      */
-    public void removeTreeModelListener (TreeModelListener l) {
+    public void removeModelListener (ModelListener l) {
         listeners.remove (l);
     }
 
@@ -316,7 +317,9 @@ NodeActionsProvider {
         Vector v = (Vector) listeners.clone ();
         int i, k = v.size ();
         for (i = 0; i < k; i++)
-            ((TreeModelListener) v.get (i)).treeChanged ();
+            ((ModelListener) v.get (i)).modelChanged (
+                new ModelEvent.TreeChanged (this)
+            );
     }
     
     
