@@ -406,7 +406,7 @@ public abstract class NbTopManager extends TopManager {
     */
     public void openProject (ProjectCookie project) throws IOException, UserCancelException {
         if (showExitDialog (null)) {
-            NbProjectOperation.setProject (project);
+            NbProjectOperation.setOpeningProject (project);
         }
         else {
             throw new UserCancelException ();
