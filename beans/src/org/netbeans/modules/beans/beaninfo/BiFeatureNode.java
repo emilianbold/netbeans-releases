@@ -193,70 +193,30 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
                    }
                });
 
-        ps.put(new PropertySupport.ReadWrite (
-                   PROP_EXPERT,
-                   Boolean.TYPE,
-                   GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_EXPERT ),
-                   GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_EXPERT )
-               ) {
-                   public Object getValue () {
-                       return new Boolean( biFeature.isExpert () );
-                   }
-                   public void setValue (Object val) throws
-                       IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                       try {
-                           biFeature.setExpert ( ((Boolean)val).booleanValue() );
-                       } catch (ClassCastException e) {
-                           throw new IllegalArgumentException ();
-                       }
-                   }
-               });
-        ps.put(new PropertySupport.ReadWrite (
-                   PROP_HIDDEN,
-                   Boolean.TYPE,
-                   GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_HIDDEN ),
-                   GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_HIDDEN )
-               ) {
-                   public Object getValue () {
-                       return new Boolean( biFeature.isHidden () );
-                   }
-                   public void setValue (Object val) throws
-                       IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                       try {
-                           biFeature.setHidden ( ((Boolean)val).booleanValue() );
-                       } catch (ClassCastException e) {
-                           throw new IllegalArgumentException ();
-                       }
-                   }
-               });
-        ps.put(new PropertySupport.ReadWrite (
-                   PROP_PREFERRED,
-                   Boolean.TYPE,
-                   GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_PREFERRED ),
-                   GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_PREFERRED )
-               ) {
-                   public Object getValue () {
-                       return new Boolean( biFeature.isPreferred () );
-                   }
-                   public void setValue (Object val) throws
-                       IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                       try {
-                           biFeature.setPreferred ( ((Boolean)val).booleanValue() );
-                       } catch (ClassCastException e) {
-                           throw new IllegalArgumentException ();
-                       }
-                   }
-               });
-          ps.put(new CodePropertySupportRW(//PropertySupport.ReadWrite (
-          //ps.put(new PropertySupport.ReadWrite (
-               PROP_DISPLAY_NAME,
+        ps.put( BiNode.createProperty ( biFeature, Boolean.TYPE,
+                                        PROP_EXPERT, 
+                                        GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_EXPERT ),
+                                        GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_EXPERT ),
+                                        "isExpert", "setExpert" ));
+        ps.put( BiNode.createProperty ( biFeature, Boolean.TYPE,
+                                        PROP_HIDDEN, 
+                                        GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_HIDDEN ),
+                                        GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_HIDDEN ),
+                                        "isHidden", "setHidden" ));
+        ps.put( BiNode.createProperty ( biFeature, Boolean.TYPE,
+                                        PROP_PREFERRED, 
+                                        GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_PREFERRED ),
+                                        GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_PREFERRED ),
+                                        "isPreferred", "setPreferred" ));
+
+        ps.put(new CodePropertySupportRW(
+                   PROP_DISPLAY_NAME,
                    String.class,
                    GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_DISPLAY_NAME ),
                    GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_DISPLAY_NAME )
                ) {
                    public Object getValue () {
-                       String toRet = biFeature.getDisplayName() != null ? biFeature.getDisplayName() : "null";
-                       return toRet;
+                       return biFeature.getDisplayName() != null ? biFeature.getDisplayName() : "null";
                    }
                    public void setValue (Object val) throws
                        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
@@ -291,27 +251,6 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
                        }
                    }
                 });
-        /*
-        ps.put(new PropertySupport.ReadWrite (
-                   PROP_INCLUDED,
-                   Boolean.TYPE,
-                   GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_INCLUDED ),
-                   GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_INCLUDED )
-               ) {
-                   public Object getValue () {
-                       return new Boolean( biFeature.isIncluded () );
-                   }
-                   public void setValue (Object val) throws
-                       IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                       try {
-                           biFeature.setIncluded ( ((Boolean)val).booleanValue() );
-                           setIconBase( biFeature.getIconBase() );
-                       } catch (ClassCastException e) {
-                           throw new IllegalArgumentException ();
-                       }
-                   }
-               });
-               */
         // Add special properties according to type of feature
         if( ! (biFeature instanceof BiFeature.Descriptor) )
             addIncludedProperty( ps );
@@ -380,45 +319,19 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
     protected void addExpertProperty( Sheet sheet ) {
         Sheet.Set ps = Sheet.createExpertSet();
 
-        ps.put(new PropertySupport.ReadWrite (
-                   PROP_BOUND,
-                   Boolean.TYPE,
-                   GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_BOUND ),
-                   GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_BOUND )
-               ) {
-                   public Object getValue () {
-                       return new Boolean( ((BiFeature.Property)biFeature).isBound () );
-                   }
-                   public void setValue (Object val) throws
-                       IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                       try {
-                           ((BiFeature.Property)biFeature).setBound(((Boolean)val).booleanValue() );
-                       } catch (ClassCastException e) {
-                           throw new IllegalArgumentException ();
-                       }
-                   }
-               });
-        ps.put(new PropertySupport.ReadWrite (
-                   PROP_CONSTRAINED,
-                   Boolean.TYPE,
-                   GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_CONSTRAINED ),
-                   GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_CONSTRAINED )
-               ) {
-                   public Object getValue () {
-                       return new Boolean(((BiFeature.Property)biFeature).isConstrained () );
-                   }
-                   public void setValue (Object val) throws
-                       IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                       try {
-                           ((BiFeature.Property)biFeature).setConstrained ( ((Boolean)val).booleanValue() );
-                       } catch (ClassCastException e) {
-                           throw new IllegalArgumentException ();
-                       }
-                   }
-               });
+        ps.put( BiNode.createProperty ( (BiFeature.Property)biFeature, Boolean.TYPE,
+                                        PROP_BOUND, 
+                                        GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_BOUND ),
+                                        GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_BOUND ),
+                                        "isBound", "setBound" ));
+        ps.put( BiNode.createProperty ( (BiFeature.Property)biFeature, Boolean.TYPE,
+                                        PROP_CONSTRAINED, 
+                                        GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_CONSTRAINED ),
+                                        GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_CONSTRAINED ),
+                                        "isConstrained", "setConstrained" ));
         ps.put(new PropertySupport (
                    PROP_MODE,
-                   int.class,
+                   Integer.TYPE,    //int.class !!!!????,
                    GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_MODE ),
                    GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_MODE ),
                    true,
@@ -440,24 +353,11 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
                        return new org.netbeans.modules.beans.ModePropertyEditor();
                    }
                });
-        ps.put(new PropertySupport.ReadWrite (
-                   PROP_EDITOR_CLASS,
-                   String.class,
-                   GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_EDITOR_CLASS ),
-                   GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_EDITOR_CLASS )
-               ) {
-                   public Object getValue () {
-                       return ((BiFeature.Property)biFeature).getPropertyEditorClass ();
-                   }
-                   public void setValue (Object val) throws
-                       IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                       try {
-                           ((BiFeature.Property)biFeature).setPropertyEditorClass ( (String)val );
-                       } catch (ClassCastException e) {
-                           throw new IllegalArgumentException ();
-                       }
-                   }
-               });
+        ps.put( BiNode.createProperty ( (BiFeature.Property)biFeature, String.class,
+                                        PROP_EDITOR_CLASS, 
+                                        GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_EDITOR_CLASS ),
+                                        GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_EDITOR_CLASS ),
+                                        "getPropertyEditorClass", "setPropertyEditorClass" ));
 
         if ( biFeature instanceof BiFeature.IdxProperty ) {
             ps.put(new PropertySupport (
@@ -512,39 +412,17 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
     void addExpertEventSet ( Sheet sheet ) {
         Sheet.Set ps = Sheet.createExpertSet();
 
-        ps.put(new PropertySupport.ReadOnly (
-                   PROP_UNICAST,
-                   Boolean.TYPE,
-                   GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_UNICAST ),
-                   GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_UNICAST )
-               ) {
-                   public Object getValue () {
-                       return new Boolean( ((BiFeature.EventSet)biFeature).isUnicast () );
-                   }
-                   public void setValue (Object val) throws
-                       IllegalAccessException {
-                       throw new IllegalAccessException(GenerateBeanInfoAction.getString("MSG_Cannot_Write"));
-                   }
-               });
-        ps.put(new PropertySupport.ReadWrite (
-                   PROP_IN_DEFAULT_EVENTSET,
-                   Boolean.TYPE,
-                   GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_IN_DEFAULT_EVENTSET ),
-                   GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_IN_DEFAULT_EVENTSET )
-               ) {
-                   public Object getValue () {
-                       return new Boolean( ((BiFeature.EventSet)biFeature).isInDefaultEventSet () );
-                   }
-                   public void setValue (Object val) throws
-                       IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                       try {
-                           ((BiFeature.EventSet)biFeature).setInDefaultEventSet(((Boolean)val).booleanValue() );
-                       } catch (ClassCastException e) {
-                           throw new IllegalArgumentException ();
-                       }
-                   }
-               });
+        ps.put( BiNode.createProperty ( (BiFeature.EventSet)biFeature, Boolean.TYPE,
+                                        PROP_UNICAST, 
+                                        GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_UNICAST ),
+                                        GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_UNICAST ),
+                                        "isUnicast", null ));
 
+        ps.put( BiNode.createProperty ( (BiFeature.EventSet)biFeature, Boolean.TYPE,
+                                        PROP_IN_DEFAULT_EVENTSET, 
+                                        GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_IN_DEFAULT_EVENTSET ),
+                                        GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_IN_DEFAULT_EVENTSET ),
+                                        "isInDefaultEventSet", "setInDefaultEventSet" ));
 
         sheet.put( ps );
 

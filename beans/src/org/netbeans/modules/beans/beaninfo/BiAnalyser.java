@@ -349,35 +349,35 @@ public class BiAnalyser extends Object implements Node.Cookie {
         this.nullEventSets = nullEventSets;
     }
 
-    boolean isLazyDescriptor() {
+    public boolean isLazyDescriptor() {
         return lazyDescriptor;
     }
 
-    boolean isLazyProperties() {
+    public boolean isLazyProperties() {
         return lazyProperties;
     }
 
-    boolean isLazyMethods() {
+    public boolean isLazyMethods() {
         return lazyMethods;
     }
 
-    void setLazyDescriptor( boolean lazyDescriptor ) {
+    public void setLazyDescriptor( boolean lazyDescriptor ) {
         this.lazyDescriptor = lazyDescriptor;
     }
 
-    void setLazyProperties( boolean lazyProperties ) {
+    public void setLazyProperties( boolean lazyProperties ) {
         this.lazyProperties = lazyProperties;
     }
 
-    void setLazyMethods( boolean lazyMethods ) {
+    public void setLazyMethods( boolean lazyMethods ) {
         this.lazyMethods = lazyMethods;
     }
 
-    boolean isLazyEventSets() {
+    public boolean isLazyEventSets() {
         return lazyEventSets;
     }
 
-    void setLazyEventSets( boolean lazyEventSets ) {
+    public void setLazyEventSets( boolean lazyEventSets ) {
         this.lazyEventSets = lazyEventSets;
     }
     

@@ -93,6 +93,7 @@ public final class BiNode extends AbstractNode {
                 }
             };
 
+            
     private PropertySupport[] propSubnodeProperties =  new PropertySupport[] {
                 new PropertySupport.ReadWrite (
                     PROP_NULL_PROPERTIES,
@@ -159,90 +160,6 @@ public final class BiNode extends AbstractNode {
                 }
             };
 
-    private PropertySupport[] descLazySubnodeDescriptor =  new PropertySupport[] {
-                new PropertySupport.ReadWrite (
-                    PROP_NULL_DESCRIPTOR,
-                    Boolean.TYPE,
-                    GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_LAZY_DESCRIPTOR ),
-                    GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_LAZY_DESCRIPTOR )
-                ) {
-                    public Object getValue () {
-                        return new Boolean(  biAnalyser.isLazyDescriptor () );
-                    }
-                    public void setValue (Object val) throws
-                        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                        try {                            
-                            biAnalyser.setLazyDescriptor ( ((Boolean)val).booleanValue() );                            
-                        } catch (ClassCastException e) {
-                            throw new IllegalArgumentException ();
-                        }
-                    }
-                }
-            };
-
-    private PropertySupport[] propLazySubnodeProperties =  new PropertySupport[] {
-                new PropertySupport.ReadWrite (
-                    PROP_NULL_PROPERTIES,
-                    Boolean.TYPE,
-                    GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_LAZY_PROPERTIES ),
-                    GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_LAZY_PROPERTIES )
-                ) {
-                    public Object getValue () {
-                        return new Boolean( biAnalyser.isLazyProperties () );
-                    }
-                    public void setValue (Object val) throws
-                        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                        try {
-                            biAnalyser.setLazyProperties ( ((Boolean)val).booleanValue() );
-                        } catch (ClassCastException e) {
-                            throw new IllegalArgumentException ();
-                        }
-                    }
-                }
-            };
-
-    private PropertySupport[] eventLazySubnodeProperties =  new PropertySupport[] {
-                new PropertySupport.ReadWrite (
-                    PROP_NULL_EVENTS,
-                    Boolean.TYPE,
-                    GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_LAZY_EVENTS ),
-                    GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_LAZY_EVENTS )
-                ) {
-                    public Object getValue () {
-                        return new Boolean( biAnalyser.isLazyEventSets () );
-                    }
-                    public void setValue (Object val) throws
-                        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                        try {
-                            biAnalyser.setLazyEventSets ( ((Boolean)val).booleanValue() );
-                        } catch (ClassCastException e) {
-                            throw new IllegalArgumentException ();
-                        }
-                    }
-                }
-            };
-
-    private PropertySupport[] methodLazySubnodeProperties =  new PropertySupport[] {
-                new PropertySupport.ReadWrite (
-                    PROP_NULL_PROPERTIES,
-                    Boolean.TYPE,
-                    GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_LAZY_METHODS ),
-                    GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_LAZY_METHODS )
-                ) {
-                    public Object getValue () {
-                        return new Boolean( biAnalyser.isLazyMethods () );
-                    }
-                    public void setValue (Object val) throws
-                        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                        try {
-                            biAnalyser.setLazyMethods ( ((Boolean)val).booleanValue() );
-                        } catch (ClassCastException e) {
-                            throw new IllegalArgumentException ();
-                        }
-                    }
-                }
-            };
-            
     // constructors ..................................................................................
 
     /**
@@ -283,28 +200,52 @@ public final class BiNode extends AbstractNode {
                                "CTL_NODE_Descriptor", // NOI18N
                                ICON_BASE_PATTERNS,
                                descSubnodeDescriptor ,
-                               descLazySubnodeDescriptor ),//new PropertySupport[0] ),
-
+                               new Node.Property[] {
+                                    createProperty (biAnalyser, Boolean.TYPE,
+                                    PROP_LAZY_DESCRIPTOR, 
+                                    GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_LAZY_DESCRIPTOR ),
+                                    GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_LAZY_DESCRIPTOR ),
+                                    "isLazyDescriptor", "setLazyDescriptor" )}
+                               ),
+                               
                     new SubNode( biAnalyser,
                                new Class[] { BiFeature.Property.class, BiFeature.IdxProperty.class },
                                "CTL_NODE_Properties", // NOI18N
                                ICON_BASE_PATTERNS,
                                propSubnodeProperties,
-                               propLazySubnodeProperties ),
+                               new Node.Property[] {
+                                    createProperty (biAnalyser, Boolean.TYPE,
+                                    PROP_LAZY_DESCRIPTOR, 
+                                    GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_LAZY_PROPERTIES ),
+                                    GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_LAZY_PROPERTIES ),
+                                    "isLazyProperties", "setLazyProperties" )} 
+                               ),
 
                     new SubNode( biAnalyser,
                                new Class[] { BiFeature.EventSet.class },
                                "CTL_NODE_EventSets", // NOI18N
                                ICON_BASE_PATTERNS,
                                eventSubnodeProperties, 
-                               eventLazySubnodeProperties ),
+                               new Node.Property[] {
+                                    createProperty (biAnalyser, Boolean.TYPE,
+                                    PROP_LAZY_EVENTS, 
+                                    GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_LAZY_EVENTS ),
+                                    GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_LAZY_EVENTS ),
+                                    "isLazyEventSets", "setLazyEventSets" )}
+                               ),
 
                     new SubNode( biAnalyser, 
                            new Class[] { BiFeature.Method.class },
                            "CTL_NODE_Methods",
                            ICON_BASE_PATTERNS,
                            methodSubnodeProperties, 
-                           methodLazySubnodeProperties )
+                           new Node.Property[] {
+                                createProperty (biAnalyser, Boolean.TYPE,
+                                PROP_LAZY_METHODS, 
+                                GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_LAZY_METHODS ),
+                                GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_LAZY_METHODS ),
+                                "isLazyMethods", "setLazyMethods" )} 
+                           )
             });
         
         Sheet sheet = Sheet.createDefault();
@@ -437,65 +378,25 @@ public final class BiNode extends AbstractNode {
                     }                    
                 }
               );
-        ps.put( new PropertySupport.ReadWrite (
-                    PROP_BI_DEFAULT_PROPERTY,
-                    Integer.TYPE,
-                    GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_BI_DEFAULT_PROPERTY ),
-                    GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_BI_DEFAULT_PROPERTY )
-                ) {
-                    public Object getValue () {
-                        return new Integer( biAnalyser.getDefaultPropertyIndex() );
-                    }
-                    public void setValue (Object val) throws
-                        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                        try {
-                            biAnalyser.setDefaultPropertyIndex ( ((Integer)val).intValue() );
-                        } catch (ClassCastException e) {
-                            throw new IllegalArgumentException ();
-                        }
-                    }
-                }
-              );
-        ps.put( new PropertySupport.ReadWrite (
-                    PROP_BI_DEFAULT_EVENT,
-                    Integer.TYPE,
-                    GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_BI_DEFAULT_EVENT ),
-                    GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_BI_DEFAULT_EVENT )
-                ) {
-                    public Object getValue () {
-                        return new Integer( biAnalyser.getDefaultEventIndex() );
-                    }
-                    public void setValue (Object val) throws
-                        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                        try {
-                            biAnalyser.setDefaultEventIndex ( ((Integer)val).intValue() );
-                        } catch (ClassCastException e) {
-                            throw new IllegalArgumentException ();
-                        }
-                    }
-                }
-              );
+        ps.put( createProperty (biAnalyser, Integer.TYPE,
+                                PROP_BI_DEFAULT_PROPERTY, 
+                                GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_BI_DEFAULT_PROPERTY ),
+                                GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_BI_DEFAULT_PROPERTY ),
+                                "getDefaultPropertyIndex", "setDefaultPropertyIndex" ) );
+        
+        ps.put( createProperty (biAnalyser, Integer.TYPE,
+                                PROP_BI_DEFAULT_EVENT, 
+                                GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_BI_DEFAULT_EVENT ),
+                                GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_BI_DEFAULT_EVENT ),
+                                "getDefaultEventIndex", "setDefaultEventIndex" ) );
+
         //only if it is super class version (since 3.3)      
         if(biAnalyser.isSuperclassVersion()){      
-            ps.put( new PropertySupport.ReadWrite (
-                        PROP_USE_SUPERCLASS,
-                        Boolean.TYPE,
-                        GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_USE_SUPERCLASS ),
-                        GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_USE_SUPERCLASS )
-                    ) {
-                        public Object getValue () {
-                            return new Boolean( biAnalyser.isUseSuperClass() );
-                        }
-                        public void setValue (Object val) throws
-                            IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                            try {
-                                biAnalyser.setUseSuperClass( ((Boolean)val).booleanValue() );
-                            } catch (ClassCastException e) {
-                                throw new IllegalArgumentException ();
-                            }
-                        }
-                    }
-                  );
+            ps.put( createProperty (biAnalyser, Boolean.TYPE,
+                                PROP_USE_SUPERCLASS, 
+                                GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_USE_SUPERCLASS ),
+                                GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_USE_SUPERCLASS ),
+                                "isUseSuperClass", "setUseSuperClass" ) );
         }              
         setSheet(sheet);
 
@@ -522,7 +423,7 @@ public final class BiNode extends AbstractNode {
         private Class key; 
         
         SubNode ( BiAnalyser biAnalyser, Class[] keys, String titleKey, String iconBase,
-                  PropertySupport[] properties, PropertySupport[] expert ) {
+                  Node.Property[] properties, Node.Property[] expert ) {
             super ( new BiChildren (  biAnalyser, keys ) );
             setDisplayName (NbBundle.getBundle(BiNode.class).
                             getString (titleKey));
@@ -672,6 +573,24 @@ public final class BiNode extends AbstractNode {
             };
         }
     }    
+
+    public static Node.Property createProperty (Object inst, Class type,
+                                                String name, String dispName,
+                                                String shortDesc,
+                                                String getter, String setter ) {
+        Node.Property prop;
+
+        try {
+            prop = new PropertySupport.Reflection (inst, type, getter, setter);
+        } catch (NoSuchMethodException e) {            
+            throw new IllegalStateException (e.getMessage() + " " + getter);
+        }
+        
+        prop.setName (name);
+        prop.setDisplayName (dispName);
+        prop.setShortDescription (shortDesc);
+        return prop;
+    }
 }
 
 

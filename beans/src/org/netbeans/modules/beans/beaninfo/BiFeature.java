@@ -30,7 +30,7 @@ import org.netbeans.modules.beans.EventSetPattern;
 * 
 * @author Petr Hrebejk
 */
-abstract class BiFeature extends Object implements IconBases, Node.Cookie {
+public abstract class BiFeature extends Object implements IconBases, Node.Cookie {
 
     /** generated Serialized Version UID */
     //static final long serialVersionUID = -8680621542479107034L;
@@ -235,7 +235,7 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
     abstract void analyzeCreationString( String statement );
     abstract void analyzeCustomizationString( String statement );
 
-    static class Descriptor extends BiFeature {
+    public static class Descriptor extends BiFeature {
         ClassElement element;
         private String varName;
         private ClassElement ce;
@@ -310,7 +310,7 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
         }
     }
     
-    static class Property extends BiFeature {
+    public static class Property extends BiFeature {
 
         private PropertyPattern pattern;
 
@@ -462,7 +462,7 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
         }
     }
 
-    static class IdxProperty extends Property {
+    public static class IdxProperty extends Property {
 
         private boolean niGetter;
         private boolean niSetter;
@@ -569,7 +569,7 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
 
     }
 
-    static class EventSet extends BiFeature {
+    public static class EventSet extends BiFeature {
 
         EventSetPattern pattern;
 
@@ -687,7 +687,7 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
 
     }
 
-    static class Method extends BiFeature {
+    public static class Method extends BiFeature {
       MethodElement element;
       private String varName;
       private MethodElement me;
