@@ -310,6 +310,8 @@ public final class SettingChildren extends FilterNode.Children {
         
         public SettingFilterNode (Node original) {
             super (original);
+	    // need to keep the values in this FilterNode, not delegates
+	    disableDelegation(DELEGATE_SET_VALUE | DELEGATE_GET_VALUE);
 
             FileObject pf = ((DataObject) getCookie (DataObject.class)).getPrimaryFile ();
             weakL = new FSL (this);
