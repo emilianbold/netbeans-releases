@@ -59,20 +59,18 @@ public class Evaluator implements JavaParserVisitor {
     public Value evaluate() throws EvaluationException, IncompatibleThreadStateException
     {
         frame = evaluationContext.getFrame();
-        synchronized(frame.thread()) {
-            vm = evaluationContext.getFrame().virtualMachine();
-            frameThread = frame.thread();
-            frameIndex = indexOf(frameThread.frames(), frame);
-            if (frameIndex == -1) {
-                throw new IncompatibleThreadStateException("Thread does not contain current frame");
-            }
-            currentPackage = evaluationContext.getFrame().location().declaringType().name();
-            int idx = currentPackage.lastIndexOf('.');
-            currentPackage = (idx > 0) ? currentPackage.substring(0, idx + 1) : "";
-            operators = new Operators(vm);
-            SimpleNode rootNode = expression.getRoot();
-            return (Value) rootNode.jjtAccept(this, null);
+        vm = evaluationContext.getFrame().virtualMachine();
+        frameThread = frame.thread();
+        frameIndex = indexOf(frameThread.frames(), frame);
+        if (frameIndex == -1) {
+            throw new IncompatibleThreadStateException("Thread does not contain current frame");
         }
+        currentPackage = evaluationContext.getFrame().location().declaringType().name();
+        int idx = currentPackage.lastIndexOf('.');
+        currentPackage = (idx > 0) ? currentPackage.substring(0, idx + 1) : "";
+        operators = new Operators(vm);
+        SimpleNode rootNode = expression.getRoot();
+        return (Value) rootNode.jjtAccept(this, null);
     }
 
     private int indexOf(List frames, StackFrame frame) {
@@ -1487,15 +1485,13 @@ public class Evaluator implements JavaParserVisitor {
         }
 
         public void run() {
-            try {
-                synchronized(evaluationThread) {
-                    value = obj.invokeMethod(evaluationThread, method, args, options);
-                }
-            } catch (Throwable e) {
-                exception = e;
-            }
-            finished = true;
             synchronized (this) {
+                try {
+                    value = obj.invokeMethod(evaluationThread, method, args, options);
+                } catch (Throwable e) {
+                    exception = e;
+                }
+                finished = true;
                 notify();
             }
         }

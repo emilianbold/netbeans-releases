@@ -29,8 +29,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
@@ -38,30 +36,24 @@ import org.netbeans.api.debugger.LookupProvider;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.AbstractDICookie;
 import org.netbeans.api.debugger.jpda.AttachingDICookie;
-import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.DebuggerStartException;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
-import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.models.LocalsTreeModel;
 import org.netbeans.modules.debugger.jpda.models.ThreadsTreeModel;
 import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
-import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
 import org.netbeans.modules.debugger.jpda.util.Operator;
 import org.netbeans.modules.debugger.jpda.expr.Expression;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationContext;
-import org.netbeans.modules.debugger.jpda.expr.EvaluationException;
 import org.netbeans.modules.debugger.jpda.expr.ParseException;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
-import org.netbeans.spi.debugger.DelegatingDebuggerEngineProvider;
 import org.netbeans.spi.debugger.DelegatingSessionProvider;
-import org.netbeans.spi.debugger.jpda.EngineContextProvider;
 
 import org.netbeans.spi.viewmodel.NoInformationException;
 import org.netbeans.spi.viewmodel.TreeModel;
@@ -83,7 +75,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private Exception                   exception;
     private Thread                      startingThread;
     private int                         state = 0;
-    private ArrayList                   breakpointImpls;
     private Operator                    operator;
     private PropertyChangeSupport       pcs;
     private JPDAThreadImpl              currentThread;
@@ -232,8 +223,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
      */
     public void fixClasses (Map classes) {
         synchronized (LOCK2) {
-            EngineContextProvider ec = (EngineContextProvider) lookupProvider.
-                lookupFirst (EngineContextProvider.class);
             Map map = new HashMap ();
             Iterator i = classes.keySet ().iterator ();
             while (i.hasNext ()) {
@@ -372,7 +361,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
         if (currentCallStackFrame == null) {
             throw new InvalidExpressionException("No current context (stack frame)");
         }
-        return evaluateIn(expression, ((CallStackFrameImpl)currentCallStackFrame).getStackFrame());
+        synchronized (LOCK) {
+            return evaluateIn(expression, ((CallStackFrameImpl)currentCallStackFrame).getStackFrame());
+        }
     }
 
     public Value evaluateIn (Expression expression, StackFrame frame) throws InvalidExpressionException {
@@ -386,7 +377,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
         try {
             org.netbeans.modules.debugger.jpda.expr.Evaluator evaluator = expression.evaluator(
                     new EvaluationContext(frame, imports, staticImports));
-            return evaluator.evaluate();
+            synchronized (LOCK) {
+                return evaluator.evaluate();
+            }
         } catch (Throwable e) {
             InvalidExpressionException iee = new InvalidExpressionException(e.getMessage());
             iee.initCause(e);
@@ -457,7 +450,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
         operator = o;
         Iterator i = vm.allThreads ().iterator ();
-        int s = 0;
         while (i.hasNext ()) {
             ThreadReference tr = (ThreadReference) i.next ();
             if (tr.isSuspended ()) {
@@ -571,12 +563,14 @@ public class JPDADebuggerImpl extends JPDADebugger {
         if (currentThread == null)
             throw new InvalidExpressionException ("No current context");
         try {
-            return org.netbeans.modules.debugger.jpda.expr.Evaluator.invokeVirtual (
-                reference,
-                method,
-                getEvaluationThread (),
-                Arrays.asList (arguments)
-            );
+            synchronized (LOCK) {
+                return org.netbeans.modules.debugger.jpda.expr.Evaluator.invokeVirtual (
+                    reference,
+                    method,
+                    getEvaluationThread (),
+                    Arrays.asList (arguments)
+                );
+            }
         } catch (org.netbeans.modules.debugger.jpda.expr.Evaluator.TimeoutException e) {
             throw new InvalidExpressionException(e.getMessage());
         } catch (InvocationTargetException e) {
@@ -641,7 +635,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
         if (t.getStackDepth () > 0)
             try {
                 CallStackFrame f = t.getCallStack () [0];
-                String ds = f.getDefaultStratum ();
                 List l = f.getAvailableStrata ();
                 int i, k = l.size ();
                 for (i = 0; i < k; i++) {
