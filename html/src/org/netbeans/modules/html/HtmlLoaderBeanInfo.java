@@ -53,11 +53,11 @@ public class HtmlLoaderBeanInfo extends SimpleBeanInfo {
     if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
         (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
       if (icon == null)
-        icon = loadImage("/com/netbeans/developer/modules/loaders/html/htmlLoader.gif");
+        icon = loadImage("/com/netbeans/developer/modules/loaders/html/htmlLoader.gif"); // NOI18N
       return icon;
     } else {
       if (icon32 == null)
-        icon32 = loadImage ("/com/netbeans/developer/modules/loaders/html/htmlLoader32.gif");
+        icon32 = loadImage ("/com/netbeans/developer/modules/loaders/html/htmlLoader32.gif"); // NOI18N
       return icon32;
     }
   }
@@ -68,10 +68,10 @@ public class HtmlLoaderBeanInfo extends SimpleBeanInfo {
         NbBundle.getBundle(HtmlLoaderBeanInfo.class);
 
       descriptors =  new PropertyDescriptor[] {
-        new PropertyDescriptor ("displayName", HtmlLoader.class,
-                                "getDisplayName", null),
-        new PropertyDescriptor ("extensions", HtmlLoader.class,
-                                "getExtensions", "setExtensions")
+        new PropertyDescriptor ("displayName", HtmlLoader.class, // NOI18N
+                                "getDisplayName", null), // NOI18N
+        new PropertyDescriptor ("extensions", HtmlLoader.class, // NOI18N
+                                "getExtensions", "setExtensions") // NOI18N
       };
       descriptors[0].setDisplayName(bundle.getString("PROP_Name"));
       descriptors[0].setShortDescription(bundle.getString("HINT_Name"));
@@ -86,6 +86,7 @@ public class HtmlLoaderBeanInfo extends SimpleBeanInfo {
 
 /*
 * Log
+*  5    Gandalf   1.4         1/13/00  Ian Formanek    NOI18N
 *  4    Gandalf   1.3         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
 *       Microsystems Copyright in File Comment
 *  3    Gandalf   1.2         6/9/99   Ian Formanek    ---- Package Change To 

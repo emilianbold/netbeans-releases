@@ -28,7 +28,7 @@ import org.openide.util.actions.*;
 public class HtmlDataObject extends MultiDataObject {
 
   private static final String HTML_ICON_BASE =
-    "/com/netbeans/developer/modules/loaders/html/htmlObject";
+    "/com/netbeans/developer/modules/loaders/html/htmlObject"; // NOI18N
 
 static final long serialVersionUID =8354927561693097159L;
   /** New instance.
@@ -48,13 +48,14 @@ static final long serialVersionUID =8354927561693097159L;
   }
 
   public HelpCtx getHelpCtx () {
-    return new HelpCtx (HtmlLoader.class.getName () + ".Obj");
+    return new HelpCtx (HtmlLoader.class.getName () + ".Obj"); // NOI18N
   }
 
 }
 
 /*
  * Log
+ *  4    Gandalf   1.3         1/13/00  Ian Formanek    NOI18N
  *  3    Gandalf   1.2         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  2    Gandalf   1.1         8/9/99   Ian Formanek    Generated Serial Version

@@ -51,9 +51,9 @@ public class HtmlLoader extends UniFileLoader {
     super (HtmlDataObject.class);
     setDisplayName(NbBundle.getBundle(HtmlLoader.class).
                    getString("PROP_HtmlLoader_Name"));
-    getExtensions ().addExtension ("html");
-    getExtensions ().addExtension ("htm");
-    getExtensions ().addExtension ("shtml");
+    getExtensions ().addExtension ("html"); // NOI18N
+    getExtensions ().addExtension ("htm"); // NOI18N
+    getExtensions ().addExtension ("shtml"); // NOI18N
 
     setActions (new SystemAction[] {
       SystemAction.get (ViewAction.class),
@@ -94,6 +94,7 @@ public class HtmlLoader extends UniFileLoader {
 
 /*
 * Log
+*  26   Gandalf   1.25        1/13/00  Ian Formanek    NOI18N
 *  25   Gandalf   1.24        11/27/99 Patrik Knakal   
 *  24   Gandalf   1.23        11/25/99 Jesse Glick     Fixed bogus 
 *       representation class.
