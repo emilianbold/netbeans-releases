@@ -303,8 +303,14 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Removes results from previous test execution of given testtype  -->
     <!-- xtest.testtype is defined either by default or by test executor -->
-    <target name="cleanresults">
+    <target name="cleanresults"
+            description="Deletes results from previous executed testtype.">
         <delete dir="${xtest.results}/${xtest.testtype}"/>
+    </target>
+    
+    <target name="realclean" depends="clean,cleanresults"
+            description="Deletes classes, lib/test.jar and *all* results.">
+        <delete dir="${xtest.results}"/>
     </target>
     
 </project>
