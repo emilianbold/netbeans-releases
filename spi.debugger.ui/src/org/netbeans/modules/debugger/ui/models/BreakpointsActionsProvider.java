@@ -14,6 +14,7 @@
 package org.netbeans.modules.debugger.ui.models;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeSupport;
 import java.util.Vector;
 import javax.swing.AbstractAction;
@@ -120,6 +121,12 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
         },
         Models.MULTISELECTION_TYPE_ANY
     );
+    static { 
+        DELETE_ACTION.putValue (
+            Action.MNEMONIC_KEY, 
+            new Integer (KeyEvent.VK_DELETE)
+        );
+    };
     private static final Action SET_GROUP_NAME_ACTION = Models.createAction (
         NbBundle.getBundle(BreakpointsActionsProvider.class).getString("CTL_BreakpointAction_SetGroupName_Label"),
         new Models.ActionPerformer () {

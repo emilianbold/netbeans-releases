@@ -15,6 +15,7 @@ package org.netbeans.modules.debugger.ui.models;
 
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.util.*;
 import javax.swing.*;
 
@@ -64,6 +65,12 @@ public class WatchesActionsProvider implements NodeActionsProvider {
         },
         Models.MULTISELECTION_TYPE_ANY
     );
+    static { 
+        DELETE_ACTION.putValue (
+            Action.MNEMONIC_KEY, 
+            new Integer (KeyEvent.VK_DELETE)
+        );
+    };
     private static final Action CUSTOMIZE_ACTION = Models.createAction (
         NbBundle.getBundle(WatchesActionsProvider.class).getString("CTL_WatchAction_Customize"),
         new Models.ActionPerformer () {

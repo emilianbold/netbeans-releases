@@ -37,6 +37,7 @@ import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.ColumnModel;
 import org.netbeans.spi.viewmodel.ComputingException;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.explorer.ExplorerActions;
 
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
@@ -69,6 +70,9 @@ ExplorerManager.Provider, PropertyChangeListener {
     private Node.Property[]     columns;
     private List                expandedPaths = new ArrayList ();
     private TreeModelRoot       currentTreeModelRoot;
+    
+    private ExplorerActions     explorerActions = new ExplorerActions ();
+    {explorerActions.setConfirmDelete (false);}
     
     
     public TreeTable () {
@@ -137,20 +141,36 @@ ExplorerManager.Provider, PropertyChangeListener {
     public ExplorerManager getExplorerManager () {
         if (explorerManager == null) {
             explorerManager = new ExplorerManager ();
-            explorerManager.addPropertyChangeListener (this);
         }
         return explorerManager;
     }
     
     public void propertyChange (PropertyChangeEvent evt) {
-        if (
-            !evt.getPropertyName ().equals (ExplorerManager.PROP_SELECTED_NODES)
-        ) return;
-        
+        String propertyName = evt.getPropertyName ();
         TopComponent tc = (TopComponent) SwingUtilities.
             getAncestorOfClass (TopComponent.class, this);
         if (tc == null) return;
-        tc.setActivatedNodes ((Node[]) evt.getNewValue ());
+        if (propertyName.equals (TopComponent.Registry.PROP_CURRENT_NODES)) {
+            if (equalNodes ()) {
+                explorerActions.attach (getExplorerManager ());
+            } else
+                explorerActions.detach ();
+        } else
+        if (propertyName.equals (ExplorerManager.PROP_SELECTED_NODES)) {
+            tc.setActivatedNodes ((Node[]) evt.getNewValue ());
+        }
+    }
+    
+    private boolean equalNodes () {
+        Node[] ns1 = TopComponent.getRegistry ().getCurrentNodes ();
+        Node[] ns2 = getExplorerManager ().getSelectedNodes ();
+        if (ns1 == ns2) return true;
+        if ( (ns1 == null) || (ns2 == null) ) return false;
+        if (ns1.length != ns2.length) return false;
+        int i, k = ns1.length;
+        for (i = 0; i < k; i++)
+            if (!ns1 [i].equals (ns2 [i])) return false;
+        return true;
     }
     
     private Node.Property[] createColumns (CompoundModel model) {
@@ -227,6 +247,18 @@ ExplorerManager.Provider, PropertyChangeListener {
         super.requestFocusInWindow ();
         return treeTable.requestFocusInWindow ();
     }
+    
+    public void addNotify () {
+        super.addNotify ();
+        TopComponent.getRegistry ().addPropertyChangeListener (this);
+        getExplorerManager ().addPropertyChangeListener (this);
+    }
+    
+    public void removeNotify () {
+        super.removeNotify ();
+        TopComponent.getRegistry ().removePropertyChangeListener (this);
+        getExplorerManager ().removePropertyChangeListener (this);
+    }
 
     
     private static class MyTreeTable extends TreeTableView {
@@ -256,7 +288,6 @@ ExplorerManager.Provider, PropertyChangeListener {
                 String[] path = NodeOp.createPath (en, em.getRootContext ());
                 result.add (path);
             }
-            System.out.println("");
             return result;
         }
         

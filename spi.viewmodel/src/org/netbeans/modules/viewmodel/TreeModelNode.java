@@ -14,6 +14,7 @@
 package org.netbeans.modules.viewmodel;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyEditor;
 import java.lang.IllegalAccessException;
 import java.util.Collections;
@@ -196,6 +197,53 @@ public class TreeModelNode extends AbstractNode {
     
     public Object getObject () {
         return object;
+    }
+    
+    private static Integer DEL = new Integer (KeyEvent.VK_DELETE);
+    
+    public boolean canDestroy () {
+        try {
+            Action[] as = model.getActions (object);
+            int i, k = as.length;
+            for (i = 0; i < k; i++) {
+                if (as [i] == null) continue;
+                Object key = as [i].getValue (Action.MNEMONIC_KEY);
+                if ( (key != null) &&
+                     (key.equals (DEL))
+                ) return as [i].isEnabled ();
+            }
+            return false;
+        } catch (UnknownTypeException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    public boolean canCopy () {
+        return false;
+    }
+    
+    public boolean canCut () {
+        return false;
+    }
+    
+    public void destroy () {
+        try {
+            Action[] as = model.getActions (object);
+            int i, k = as.length;
+            for (i = 0; i < k; i++) {
+                if (as [i] == null) continue;
+                Object key = as [i].getValue (Action.MNEMONIC_KEY);
+                if ( (key != null) &&
+                     (key.equals (DEL))
+                ) {
+                    as [i].actionPerformed (null);
+                    return;
+                }
+            }
+        } catch (UnknownTypeException e) {
+            e.printStackTrace();
+        }
     }
     
     
