@@ -279,15 +279,68 @@
     <tocitem text="Installing Ant Documentation" target="ant_docs" />
   </tocitem>
   
+  <!--OLD VCS IDS :
+  
   <tocitem text="Using Version Control in the IDE" >
-    <tocitem text="About" target="vcs.about" />
+    <tocitem text="About" target="vcs.overview" />
+    <tocitem text="Mounting a VCS Working Directory" target="vcsgeneric.mounting" />
+    <tocitem text="Setting a Relative Mount Point" target="vcs.mountpoint" />
+    <tocitem text="Calling Version Control Commands" target="vcsgeneric.calling" />
+    <tocitem text="VCS Command Output" target="vcs.output" />
+    <tocitem text="Versioning Window" target="vcs.revexplorer" />
+    <tocitem text="Refreshing VCS File Status Information" target="vcs.refresh" />
+    <tocitem text="Comparing File Revisions Visually" target="vcs.diffs" />
+    <tocitem text="Adding a Binary File to a VCS Repository" target="vcs.binary" />         
+    <tocitem text="Searching for a File by VCS Status" target="search.status" />
+    <tocitem text="VCS Profiles" target="vcsgeneric.newprofile" />
+    <tocitem text="VCS Support on Windows 95, Windows 98, and Windows ME" target="vcs.cygwin" />
+    <tocitem text="Configuring Version Control Settings" target="vcs.globalsettings" />
+    <tocitem text="CVS Support" >
+      <tocitem text="About" target="vcs.cvs-intro" />
+      <tocitem text="Getting Files from a CVS Repository" target="cvs.checkout" />
+      <tocitem text="CVS Commands" target="cvs.commands" />
+      <tocitem text="Merging File Revisions" target="cvs.merge" />
+      <tocitem text="Resolving Merge Conflicts" target="cvs.merge-resolve" />
+      <tocitem text="Creating and Applying a Patch" target="vcs.patch" />
+      <tocitem text="Setting Up a Local CVS Repository" target="cvs.local" />
+      <tocitem text="CVS Command Arguments" >
+        <tocitem text="Add Arguments" target="args_add"/>
+        <tocitem text="Annotate Arguments" target="args_annotate"/>
+        <tocitem text="Checkout Arguments" target="args_checkout"/>
+        <tocitem text="Commit Arguments" target="args_commit"/>
+        <tocitem text="Diff Arguments" target="args_diff"/>
+        <tocitem text="Global Arguments" target="args_global"/>
+        <tocitem text="Log Arguments" target="args_log"/>
+        <tocitem text="Remove Arguments" target="args_remove"/>
+        <tocitem text="Add Tag Arguments" target="args_tag"/>
+        <tocitem text="Update Arguments" target="args_update"/>
+      </tocitem>
+    </tocitem>  
+    <tocitem text="Using VCS Groups" > 
+      <tocitem text="About" target="vcs.groups" />
+      <tocitem text="Adding and Deleting a VCS Group" target="vcs.groupsadd" />
+      <tocitem text="Adding Files to VCS Groups" target="vcs.groupsaddfile" />
+      <tocitem text="Moving and Removing Files From VCS Groups" target="vcs.groupsmovefile" />
+      <tocitem text="Calling VCS Commands on VCS Groups" target="vcs.groupscommands" />
+      <tocitem text="Preparing VCS Groups for Check-In to the Repository" target="vcs.groupsverify" />
+      <tocitem text="Resolving Problems With Grouped Files" target="vcs.groupsresolve" />
+      <tocitem text="Configuring VCS Group Settings" target="vcs.groupsproperties" />
+    </tocitem>
+  </tocitem>-->
+  
+  <!--NEW VCS IDS -->
+  
+  <tocitem text="Using Version Control in the IDE" >
+    <tocitem text="About Version Control" target="vcs.about" />
 	<tocitem text="Working with Version Control" target="vcs.overview" />
 	<tocitem text="VCS Tasks: Quick Reference" target="vcs.quickref" />
+	<tocitem text="Viewing Versioning Information" target="vcs.viewing" />
     <tocitem text="Setting Up VCS" target="vcs.repositorysetup" />
-    <tocitem text="Checking Out Files with VCS" target="vcs.checkout" />
+    <tocitem text="Checking Out Files with CVS" target="vcs.checkout" />
     <tocitem text="Comparing File Revisions" target="vcs.diff" />
     <tocitem text="Committing Files to a VCS Repository" target="vcs.commit" />
     <tocitem text="Merging File Revisions" target="vcs.merge" />
+    <tocitem text="Resolving Merge Conflicts" target="vcs.mergeconflict" />
     <tocitem text="Creating and Applying a Patch" target="vcs.patch" />
     <tocitem text="Configuring Version Control Settings" target="vcs.configure" />
     <tocitem text="Using CVS in the IDE" target="vcs.cvs" />
