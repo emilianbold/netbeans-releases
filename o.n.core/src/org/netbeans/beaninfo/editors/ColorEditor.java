@@ -35,6 +35,7 @@ import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.colorchooser.AbstractColorChooserPanel;
 import javax.swing.colorchooser.ColorSelectionModel;
+import javax.swing.colorchooser.DefaultColorSelectionModel;
 import javax.swing.event.*;
 import javax.swing.Icon;
 import javax.swing.JColorChooser;
@@ -145,7 +146,18 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
     /** Gets <code>staticChooser</code> instance. */
     public static JColorChooser getStaticChooser(ColorEditor ce) {
         if (staticChooser == null) {
-            staticChooser = new JColorChooser () {
+            staticChooser = new JColorChooser (new DefaultColorSelectionModel(Color.white)
+                                                {
+                                                    public void setSelectedColor(Color color) {
+                                                        if (color instanceof SuperColor) {
+                                                            super.setSelectedColor((SuperColor) color);
+                                                        } 
+                                                        else if (color instanceof Color) {
+                                                            super.setSelectedColor(new SuperColor(color));
+                                                        }
+                                                    }
+                                                } )
+                            {
                                 public void setColor (Color c) {
                                     if (c == null) return;
                                     super.setColor (c);
@@ -194,10 +206,12 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
         if(object != null) {
             if (object instanceof SuperColor) {
                 color = (SuperColor) object;
-            } else if (object instanceof Color) {
+            } 
+            else if (object instanceof Color) {
                 color = new SuperColor((Color) object);
             }
-        } else {
+        } 
+        else {
             color = null;
         }
 
@@ -217,6 +231,8 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
             throw new IllegalArgumentException(null);
         }
         
+        text.trim();
+        
         if("null".equals(text)) { // NOI18N
             setValue(null);
             return;
@@ -224,7 +240,7 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
 
         try {
             if(text.startsWith("[") && text.endsWith("]")) { // NOI18N
-                String string = text.substring(1, text.length() - 2);
+                String string = text.substring(1, text.length() - 1);
 
                 int index1 = string.indexOf(',');
                 int index2 = string.length() > index1 ? string.indexOf(',', index1 + 1) : -1;
@@ -309,7 +325,7 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
                 initSwingConstants();
                 return swingColorNames;
             default: 
-                return getAWTColorNames();
+                return null;
         }
     }
 
@@ -527,9 +543,14 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
 
         SuperColor (Color color) {
             super (color.getRed (), color.getGreen (), color.getBlue ());
+            
+            //jkozak: When user sets color by RGB values, maybe we shouldn't
+            //        change the color to AWT-Palette constant.
+            /*
             int i = getIndex (ColorEditor.awtColors, color);
             if (i < 0) return;
             id = getAWTColorNames()[i];
+             */
         }
 
         SuperColor (String id, int palette, Color color) {
@@ -549,10 +570,12 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
                 objPalette = ((SuperColor)obj).getPalette();
             }
             
-            if (objID != null)
-                return superEquals && objID.equals(getID()) && objPalette == getPalette();
-            else
-                return superEquals;
+            if (objID != null) {
+                return superEquals && objID.equals(getID()) && (objPalette == getPalette());
+            }
+            else {
+                return superEquals && (objID == getID()) && (objPalette == getPalette());
+            }
         }
 
         /** Gets ID of this color. */
