@@ -339,8 +339,37 @@ public class ClassFile {
         return Arrays.asList(innerClasses);
     }
     
-    static String externalizeClassName(String s) {
-        return s.replace('/', '.').replace('$', '.');
+    public static String externalizeClassName(String s) {
+        StringBuffer sb = new StringBuffer(s);
+	int arrays = 0;
+	boolean atBeginning = true;
+	int length = sb.length();
+	for (int i = 0; i < length; i++) {
+	    char ch = sb.charAt(i);
+	    switch (ch) {
+	      case '[': 
+		if (atBeginning)
+		    arrays++; 
+		break;
+
+	      case '/':
+	      case '$':
+		sb.setCharAt(i, '.');
+		atBeginning = false;
+		break;
+
+	      default:
+		atBeginning = false;
+	    }
+	}
+
+	if (arrays > 0) {
+	    sb.delete(0, arrays);
+	    for (int i = 0; i < arrays; i++)
+	      sb.append("[]");
+	}
+
+        return sb.toString();
     }
     
     public String toString() {

@@ -20,7 +20,7 @@
 package org.netbeans.modules.classfile;
 
 import java.io.*;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * Class representing a Java class file constant pool.
@@ -99,32 +99,39 @@ public class ConstantPool {
      *
      * @param type   the constant pool type to return.
      */
-    public final Object[] getAllConstants(Class classType) {        
+    public final Collection getAllConstants(Class classType) {        
+        return Collections.unmodifiableCollection(
+		   getAllConstantsImpl(classType));
+    }
+
+    private Collection getAllConstantsImpl(Class classType) {
         int n = cpEntries.length;
-        ArrayList v = new ArrayList(n);
+        Collection c = new ArrayList(n);
         for (int i = CONSTANT_POOL_START; i < n; i++) {
             if (cpEntries[i] != null && 
                 cpEntries[i].getClass().equals(classType)) {
-                v.add(cpEntries[i]);
+                c.add(cpEntries[i]);
             }
         }
-        return v.toArray();
+        return c;
     }
 
-    /* Return an array of all class references in pool.
+    /* Return the collection of all unique class references in pool.
+     *
+     * @return a Set of Strings specifying the referenced classnames.
      */
-    public final String[] getAllClassNames() {
+    public final Set getAllClassNames() {
         /* Collect all class references.  The safest way to do this
          * is to combine the ClassInfo constants with any UTF8Info
          * constants which match the pattern "L*;".
          */        
-        Object[] oa = getAllConstants(CPClassInfo.class);
-        ArrayList v = new ArrayList(oa.length);        
-        for (int i = 0; i < oa.length; i++) {
-            CPClassInfo ci = (CPClassInfo)oa[i];
-            v.add(ci.getInternalName());
+        Collection c = getAllConstantsImpl(CPClassInfo.class);
+        Set set = new HashSet(c.size());
+        for (Iterator i = c.iterator(); i.hasNext();) {
+            CPClassInfo ci = (CPClassInfo)i.next();
+            set.add(ci.getInternalName());
         }
-        return (String[])v.toArray(new String[1]);
+        return Collections.unmodifiableSet(set);
     }
 
     final String getString(int index) {

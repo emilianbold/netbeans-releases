@@ -32,7 +32,7 @@ public abstract class CPEntry {
     ConstantPool pool;
     Object value;
 
-    protected CPEntry(ConstantPool pool) {
+    CPEntry(ConstantPool pool) {
 	this.pool = pool;
     }
     
