@@ -23,6 +23,7 @@ import javax.swing.tree.*;
 
 import org.openide.*;
 import org.openide.explorer.*;
+import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.explorer.propertysheet.editors.*;
 import org.openide.explorer.view.*;
 import org.openide.loaders.*;
@@ -43,8 +44,8 @@ public class DataObjectTreeView extends DataObjectPanel {
     private ExplorerPanel			expPanel;
     private TreeView                    	reposTree;
     
-    public DataObjectTreeView (PropertyEditorSupport my) {
-        super(my);
+    public DataObjectTreeView (PropertyEditorSupport my, PropertyEnv env) {
+        super(my, env);
         initComponent();
         
         reposTree.getAccessibleContext().setAccessibleName( NbBundle.getMessage(DataObjectTreeView.class, "ACSN_DataObjectPanel"));

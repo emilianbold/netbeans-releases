@@ -23,6 +23,7 @@ import javax.swing.tree.*;
 
 import org.openide.*;
 import org.openide.explorer.*;
+import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.explorer.propertysheet.editors.*;
 import org.openide.explorer.view.*;
 import org.openide.loaders.*;
@@ -57,7 +58,10 @@ public class DataObjectPanel extends JPanel {
     
     protected PropertyEditorSupport myEditor;
     
-    public DataObjectPanel(PropertyEditorSupport my) {
+    private PropertyEnv env;
+    
+    public DataObjectPanel(PropertyEditorSupport my, PropertyEnv env) {
+        this.env = env;
         myEditor = my;
     }
     
@@ -276,10 +280,8 @@ public class DataObjectPanel extends JPanel {
     }
     
     protected void setOkButtonEnabled (boolean b) {
-        if (myEditor instanceof DataObjectEditor) {
-            ((DataObjectEditor) myEditor).setOkButtonEnabled(b);
-        } else if (myEditor instanceof DataObjectArrayEditor) {
-            ((DataObjectArrayEditor) myEditor).setOkButtonEnabled(b);
+        if (env != null) {
+            env.setState(b ? env.STATE_VALID : env.STATE_INVALID);
         }
     }
     

@@ -172,30 +172,21 @@ public class DataObjectEditor extends PropertyEditorSupport implements ExPropert
         return getDataObjectPanel();
     }
     
-    void setOkButtonEnabled(boolean state) {
-        if (env != null) {
-            env.setState(state ? PropertyEnv.STATE_VALID:PropertyEnv.STATE_INVALID);
-        }
-    }
-    
     /**
      * Lazy initializes customEditor (DataObjectPanel).
      * Passes all parameters gathered in method attachEnv.
      */
     private DataObjectPanel getDataObjectPanel() {
-        if (customEditor == null) {
-            // lazy init ...
-            if (guiType != null) {
-                if ("TreeView".equals(guiType)) {
-                    customEditor = new DataObjectTreeView(this);
-                } else if ("ListView".equals(guiType)) {
-                    customEditor = new DataObjectListView(this);
-                } else {
-                    customEditor = new DataObjectListView(this);
-                }
+        if (guiType != null) {
+            if ("TreeView".equals(guiType)) {
+                customEditor = new DataObjectTreeView(this,env);
+            } else if ("ListView".equals(guiType)) {
+                customEditor = new DataObjectListView(this,env);
             } else {
-                customEditor = new DataObjectListView(this);
+                customEditor = new DataObjectListView(this,env);
             }
+        } else {
+            customEditor = new DataObjectListView(this,env);
         }
         if (cookies != null) {
             customEditor.setDataFilter(new CookieFilter(cookies, dataFilter));
