@@ -450,10 +450,12 @@ public abstract class CLIHandler extends Object {
                         
                         // connection ok, but secret key not recognized
                         // delete the lock file
-                        
-                    } catch (IOException ex2) {
-                        ex2.printStackTrace();
+                    } catch (java.net.SocketTimeoutException ex2) {
                         // connection failed, the port is dead
+                        enterState(33, block);
+                    } catch (IOException ex2) {
+                        // some strange exception
+                        ex2.printStackTrace();
                         enterState(33, block);
                     }
                     if (cleanLockFile) {
