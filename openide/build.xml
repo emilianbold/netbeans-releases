@@ -204,10 +204,10 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="jars-with-lib" depends="libs,compile,13javac-workaround,vers-prep" description="Create JAR files.">
-    <mkdir dir="netbeans/lib"/>
+    <mkdir dir="standalone"/>
     <filter token="Class-Path" value="Class-Path"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <locjar jarfile="netbeans/lib/openide.jar"
+    <locjar jarfile="standalone/openide-remainder.jar"
             manifest="manifest-subst.mf"
 	    compress="false">
       <locale name="ja"/>
@@ -217,11 +217,13 @@ Microsystems, Inc. All Rights Reserved.
            <include name="org/openide/**" />
       	   <exclude name="org/openide/filesystems/**" />
            <exclude name="org/openide/util/**"/>
+           <exclude name="org/openide/xml/"/>
            <exclude name="org/openide/nodes/**"/>
            <exclude name="org/openide/explorer/**"/>
            <exclude name="org/openide/resources/propertysheet/**"/>
 
            <exclude name="org/openide/resources/defaultNode.gif"/>
+           <exclude name="org/openide/resources/defaultNode32.gif"/>
            <exclude name="org/openide/resources/actions/paste.gif"/>
            <exclude name="org/openide/resources/actions/copy.gif"/>
            <exclude name="org/openide/resources/actions/delete.gif"/>   
@@ -256,6 +258,9 @@ Microsystems, Inc. All Rights Reserved.
       <fileset dir="src">
            <!-- But include all localized resources -->
            <include name="org/openide/**/*_*" />
+           
+           <!-- Not this guy: -->
+           <exclude name="org/openide/filesystems/filesystem1_1.dtd"/>
 
            <!-- Include also editors package (it is not part of explorer library) -->
            <include name="org/openide/explorer/propertysheet/editors/*.class"/>
@@ -265,11 +270,11 @@ Microsystems, Inc. All Rights Reserved.
       </fileset>
     </locjar>
     
+    <!-- It also needs regexp.jar: -->
+    <copy file="${binroot}/core/release/lib/ext/regexp.jar" tofile="standalone/regexp.jar"/>
     
-    <!-- Create binary compatibility kit. NOBODY should compile against it unless they -->
-    <!-- are trying to make their code obsolete! -->
+    <!-- openide-compat.jar not really needed for standalone users:
     <mkdir dir="netbeans/lib/patches"/>
-    <!-- Use the same manifest to ensure that packages are defined correctly. -->
     <filter token="Class-Path" value="X-Commented-Out-Class-Path"/>
     <copy file="manifest.mf" tofile="manifest-compat-subst.mf" filtering="on"/>
     <jar jarfile="netbeans/lib/patches/openide-compat.jar"
@@ -277,6 +282,7 @@ Microsystems, Inc. All Rights Reserved.
          manifest="manifest-compat-subst.mf"
 	 excludesfile="../nbbuild/standard-jar-excludes.txt"
 	 compress="false"/>
+    -->
   </target>
 
   <target name="netbeans" depends="jars" description="Build everything needed for inclusion in the IDE."/>
@@ -287,11 +293,11 @@ Microsystems, Inc. All Rights Reserved.
   <target name="libs" depends="lib-util,lib-fs,lib-nodes,lib-explorer" />
   
   <target name="lib-util" depends="compile,13javac-workaround,vers-prep">
-	<mkdir dir="netbeans/lib" />
+	<mkdir dir="standalone"/>
         <copy file="openide-util.mf" tofile="openide-util-subst.mf" filtering="on"/>
         
         <!-- include nearly whole org.openide.util, plus some important stuff around -->
-  	<jar jarfile="netbeans/lib/openide-util.jar"
+  	<jar jarfile="standalone/openide-util.jar"
 	     manifest="openide-util-subst.mf"
 	     compress="false">
              <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt" >
@@ -301,7 +307,9 @@ Microsystems, Inc. All Rights Reserved.
              	  <include name="org/openide/util/datatransfer/*"/>
                   <include name="org/openide/util/actions/*"/>
                   <include name="org/openide/util/lookup/*"/>
+                  <include name="org/openide/xml/"/>
                   
+                  <!-- XXX review distribution of JPopupMenuPlus, JPopupMenuUtils, etc. -->
                   <include name="org/openide/awt/JPopupMenu*class" />
                   <include name="org/openide/awt/NbPopupMenuUI*class" />
                   <include name="org/openide/loaders/OperationListener*class" />
@@ -333,10 +341,10 @@ Microsystems, Inc. All Rights Reserved.
   </target>        
   
   <target name="lib-fs" depends="compile,13javac-workaround,vers-prep">
-	<mkdir dir="netbeans/lib" />
+	<mkdir dir="standalone"/>
         <copy file="openide-fs.mf" tofile="openide-fs-subst.mf" filtering="on"/>
         
-  	<jar jarfile="netbeans/lib/openide-fs.jar"
+  	<jar jarfile="standalone/openide-fs.jar"
 	     manifest="openide-fs-subst.mf"
 	     compress="false">
              <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt" >
@@ -347,19 +355,25 @@ Microsystems, Inc. All Rights Reserved.
                   
 <!--                  <exclude name="org/openide/filesystems/RefreshAction.class" /> -->
              </fileset>
+             <fileset dir="src">
+                 <!-- Make sure this does not get skipped: -->
+                 <include name="org/openide/filesystems/filesystem1_1.dtd"/>
+             </fileset>
         </jar>
   </target>        
              	
   <target name="lib-nodes" depends="compile,13javac-workaround,vers-prep">
-	<mkdir dir="netbeans/lib" />
+	<mkdir dir="standalone"/>
         <copy file="openide-nodes.mf" tofile="openide-nodes-subst.mf" filtering="on"/>
         
-  	<jar jarfile="netbeans/lib/openide-nodes.jar"
+  	<jar jarfile="standalone/openide-nodes.jar"
 	     manifest="openide-nodes-subst.mf"
 	     compress="false">
              <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt" >
                   <include name="org/openide/nodes/*"/>
                   <include name="org/openide/cookies/*"/>
+                  <include name="org/openide/resources/defaultNode.gif"/>
+                  <include name="org/openide/resources/defaultNode32.gif"/>
                   
                   <!-- exclude localized resources, they are part of openide.jar -->
                   <exclude name="org/openide/nodes/*_*" />
@@ -369,10 +383,10 @@ Microsystems, Inc. All Rights Reserved.
   </target>        
 
   <target name="lib-explorer" depends="compile,13javac-workaround,vers-prep">
-	<mkdir dir="netbeans/lib" />
+	<mkdir dir="standalone"/>
         <copy file="openide-explorer.mf" tofile="openide-explorer-subst.mf" filtering="on"/>
         
-  	<jar jarfile="netbeans/lib/openide-explorer.jar"
+  	<jar jarfile="standalone/openide-explorer.jar"
 	     manifest="openide-explorer-subst.mf"
 	     compress="false">
              <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt" >
@@ -390,7 +404,6 @@ Microsystems, Inc. All Rights Reserved.
                   <include name="org/openide/actions/PropertiesAction*"/>
                   <include name="org/openide/actions/DeleteAction*"/>
                   <include name="org/openide/resources/propertysheet/*"/>
-                  <include name="org/openide/resources/defaultNode.gif"/>
                   <include name="org/openide/resources/actions/paste.gif"/>
                   <include name="org/openide/resources/actions/copy.gif"/>
                   <include name="org/openide/resources/actions/delete.gif"/>   
@@ -765,46 +778,48 @@ Set jmf.home to the location of your JMF installation to continue."/>
     <delete file="OpenAPIs.tar.bz2"/>
     <delete dir="examplemodules"/>
     <delete dir="compatkit-work"/>
+    <delete dir="standalone"/>
   </target>
   <target name="real-clean" depends="clean" description="As for clean, but also remove example module reload area.">
     <delete dir="examplemodulereload"/>
   </target>
 
     <target  name="standalone-fs" depends="standalone-fs-prepare" description="Creates zip file suitable for download. Zip file contains all jars necessary + xerces.jar for using standalone filesystems.">
-        <zip compress="true" zipfile="standalone-fs/nbfilesystems.zip">
-            <fileset dir="netbeans/lib">
+        <zip compress="true" zipfile="standalone/nbfilesystems.zip">
+            <fileset dir="standalone">
                 <include name="openide-fs.jar"/>
                 <include name="openide-util.jar"/>
+                <include name="README-FS.txt"/>
             </fileset>
-            <fileset dir="standalone-fs" includes="Readme"/>  
             <fileset dir="${binroot}/core/release/lib/ext" includes="xerces.jar"/>                      
         </zip>
-        <delete file="standalone-fs/Readme"/>
     </target>
 
     <target  name="standalone-fs-light" depends="standalone-fs-prepare" description="Creates zip file suitable for download. Zip file contains all jars necessary for using standalone filesystems. Without xerces.jar.">
-        <zip compress="true" zipfile="standalone-fs/nbfilesystems-light.zip">
-            <fileset dir="netbeans/lib">
+        <zip compress="true" zipfile="standalone/nbfilesystems-light.zip">
+            <fileset dir="standalone">
                 <include name="openide-fs.jar"/>
                 <include name="openide-util.jar"/>
+                <include name="README-FS.txt"/>
             </fileset>
-            <fileset dir="standalone-fs" includes="Readme"/>  
         </zip>
-        <delete file="standalone-fs/Readme"/>
     </target>
 
     <target name="standalone-fs-prepare" depends="lib-util,lib-fs">
-        <mkdir dir="standalone-fs"/>        
-        <echo file="standalone-fs/Readme"><![CDATA[FileSystem Library
-==================
+        <mkdir dir="standalone"/>
+        <echo file="standalone/README-FS.txt"><![CDATA[FileSystems Library
+===================
 
 Please visit the documentation at http://openide.netbeans.org/fs/
 
-If you want to use the library in your application just put openide-fs.jar and xerces.jar into classpath:
+If you want to use the library in your application just put nbfilesystems.jar
+into your classpath:
 
-	java -cp openide-fs.jar:xerces.jar yourpackage.YourClass
+	java -cp nbfilesystems.jar yourpackage.YourClass
 
-With comments and questions mail nbdev@netbeans.org mailing list.
+nbfilesystems-light.jar is similar but requires an XML parser in the classpath too.
+
+Comments or questions? Post to the dev@openide.netbeans.org mailing list.
 ]]></echo>
 
     </target>
