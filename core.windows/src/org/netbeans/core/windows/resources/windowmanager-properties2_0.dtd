@@ -203,7 +203,11 @@ Microsystems, Inc. All Rights Reserved.
      "orientation" sets orientation of splitter. "horizontal" means splitting
      along x axis - components are from left to right. "vertical" means splitting
      along y axis - components are from top to bottom.
-     "number" sets number of cell in given split cell. It is number from 1 to N.
+     "number" sets number of cell in given split cell. It is integer number. Number defines
+     position of given cell in array of cells. It is possible to define for example
+     20 for first cell and 40 for second cell. Later it is possible to insert third cell between
+     first and second by using 30 for third cell. It is usefull for platform to allow third party
+     modules to modify (insert) their own modes to existing layout.
      Cells are counted from left to right in case of vertical split and
      from top to bottom in case of horizontal split.
      "weight" is double number from 0 to 1. It sets relative size of cell
