@@ -135,38 +135,38 @@ public class KeyBindingsMIMEOptionFile extends MIMEOptionFile{
         ArrayList removed = new ArrayList();
         
         Map defaultKeybs = base.getDefaultKeyBindingsMap();
+
         // if default keybindings don't exist for appropriate kit, set them empty
         if (defaultKeybs == null) defaultKeybs = new HashMap();
         
         // save XML
         for( Iterator i = properties.keySet().iterator(); i.hasNext(); ) {
-                String key = (String)i.next();
+            String key = (String)i.next();
             // Process deleted properties
             if (properties.get(key) instanceof String){
-                // put removed keybindings to deleted Map
-                removed.add(key);
-                
-                // if deleted property is in default set, mark it as deleted 
+                // if deleted property is in default set, mark it as deleted
                 if (defaultKeybs.containsKey(key)){
                     Element keybElem = doc.createElement(TAG_BIND);
                     keybElem.setAttribute(ATTR_KEY, key);
                     keybElem.setAttribute(ATTR_REMOVE, Boolean.TRUE.toString());
                     rootElem.appendChild(keybElem);
+                }else{
+                    // put removed keybindings to deleted Map
+                    removed.add(key);
                 }
                 
                 // if property is not in default set, it will not be written and will be deleted
-                
                 continue;
             }
-                
+            
             // if property is in default set we don't have to write it
             if ((properties.get(key) instanceof MultiKeyBinding) && (!defaultKeybs.containsKey(key))){
-                    MultiKeyBinding mkb = (MultiKeyBinding) properties.get(key);
-                  
-                    Element keybElem = doc.createElement(TAG_BIND);
-                    keybElem.setAttribute(ATTR_KEY, key);
-                    keybElem.setAttribute(ATTR_ACTION_NAME, mkb.actionName);
-                    rootElem.appendChild(keybElem);
+                MultiKeyBinding mkb = (MultiKeyBinding) properties.get(key);
+                
+                Element keybElem = doc.createElement(TAG_BIND);
+                keybElem.setAttribute(ATTR_KEY, key);
+                keybElem.setAttribute(ATTR_ACTION_NAME, mkb.actionName);
+                rootElem.appendChild(keybElem);
             }
         }
         
