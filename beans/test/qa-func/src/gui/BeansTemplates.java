@@ -85,6 +85,7 @@ public class BeansTemplates extends JellyTestCase {
         tlso.tree().setComparator(comparator);
         tlso.selectLocation(sampleDir);
         tlso.finish();
+        new EventTool().waitNoEvent(1500);
         
         writeResult(NAME_JAVA_BEAN);
         compareReferenceFiles();
