@@ -541,7 +541,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                 }
                 updateMainWindowBoundsSeparatedHelp();
                 updateEditorAreaBoundsHelp();
-                updateSeparateBoundsForView(hierarchy.getSplitRootElement());
+//                updateSeparateBoundsForView(hierarchy.getSplitRootElement());
             }
         }
 
@@ -723,7 +723,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         ViewHelper.computeSplitWeights(splitLocation, splitAccessor, firstAccessor, secondAccessor, controllerHandler);
         
         // XXX PENDING
-        updateSeparateBoundsForView(splitView);
+//        updateSeparateBoundsForView(splitView);
     }
     
     public void userClosedTopComponent(ModeView modeView, TopComponent tc) {
@@ -948,7 +948,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
     
     // XXX PENDING This is just for the cases split modes doesn't have a separated
     // opposite ones, so they keep the bounds for them. Revise.
-    private void updateSeparateBoundsForView(ViewElement view) {
+    void updateSeparateBoundsForView(ViewElement view) {
         if (view.getComponent() instanceof JComponent) {
             // when updating the views after resizing the split, do
             // set the preffered size accordingly to prevent jumping splits

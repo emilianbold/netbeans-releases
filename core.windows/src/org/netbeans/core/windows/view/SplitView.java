@@ -115,7 +115,7 @@ public class SplitView extends ViewElement {
         int dividerSize = getDividerSize();
 //        debugLog("deviderSize=" + dividerSize);
         if (getOrientation() == javax.swing.JSplitPane.VERTICAL_SPLIT) {
-            firstDim = new Dimension(availableSpace.width, (int)(availableSpace.height  * location /*- dividerSize*/));
+            firstDim = new Dimension(availableSpace.width, (int)(availableSpace.height  * location /*- (dividerSize/2) */));
             secondDim = new Dimension(availableSpace.width, (int)(availableSpace.height * (1D - location) - dividerSize));
         } else {
             firstDim = new Dimension((int)(availableSpace.width * location /*- dividerSize*/), availableSpace.height);
@@ -232,17 +232,18 @@ public class SplitView extends ViewElement {
             splitPane.addPropertyChangeListener("topDividerLocation", // NOI18N
                 new PropertyChangeListener() {
                     public void propertyChange(PropertyChangeEvent evt) {
-                        int absoluteLocation = ((Integer)evt.getNewValue()).intValue();
-                        double relativeLocation;
-                        if(splitPane.getOrientation() == JSplitPane.VERTICAL_SPLIT) {
-                            relativeLocation = (double)absoluteLocation/(splitPane.getHeight() - splitPane.getDividerSize());
-                        } else {
-                            relativeLocation = (double)absoluteLocation/(splitPane.getWidth() - splitPane.getDividerSize());
-                        }
-//                        debugLog("userMovedSplit - relative location=" + relativeLocation + " absolute=" + absoluteLocation);
-//                        debugLog("  moved on " + SplitView.this.hashCode() + " current size=" + SplitView.this.getComponent().getSize());
-                        getController().userMovedSplit(relativeLocation,
-                            SplitView.this, getFirst(), getSecond());
+                        splitChangedForView(SplitView.this);
+                        ((DefaultView)getController()).updateSeparateBoundsForView(SplitView.this);
+//                        double relativeLocation;
+//                        if(splitPane.getOrientation() == JSplitPane.VERTICAL_SPLIT) {
+//                            relativeLocation = (double)absoluteLocation/(splitPane.getHeight() - splitPane.getDividerSize());
+//                        } else {
+//                            relativeLocation = (double)absoluteLocation/(splitPane.getWidth() - splitPane.getDividerSize());
+//                        }
+////                        debugLog("userMovedSplit - relative location=" + relativeLocation + " absolute=" + absoluteLocation);
+////                        debugLog("  moved on " + SplitView.this.hashCode() + " current size=" + SplitView.this.getComponent().getSize());
+//                        getController().userMovedSplit(relativeLocation,
+//                            SplitView.this, getFirst(), getSecond());
                     }
                 }
             );
@@ -266,5 +267,22 @@ public class SplitView extends ViewElement {
     private static void debugLog(String message) {
         Debug.log(SplitView.class, message);
     }
+    
+   private void splitChangedForView(ViewElement view) {
+        if(view instanceof SplitView) {
+            SplitView sv = (SplitView)view;
+            JSplitPane sp = (JSplitPane)sv.getComponent();
+            int absoluteLocation = sp.getDividerLocation();
+            double relativeLocation;
+            if(sp.getOrientation() == JSplitPane.VERTICAL_SPLIT) {
+                relativeLocation = (double)absoluteLocation/(sp.getHeight() - sp.getDividerSize() );
+            } else {
+                relativeLocation = (double)absoluteLocation/(sp.getWidth() - sp.getDividerSize() );
+            }
+            getController().userMovedSplit(relativeLocation, sv, sv.getFirst(), sv.getSecond());
+//            splitChangedForView(sv.getFirst());
+//            splitChangedForView(sv.getSecond());
+        }
+    }    
 }
 
