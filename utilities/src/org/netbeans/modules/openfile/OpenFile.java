@@ -257,13 +257,14 @@ public class OpenFile extends Object {
         FileSystem existing = repository.findFileSystem(jarFileSystem.getSystemName());
         
         if(existing == null) {
-            if(TopManager.getDefault().notify(new NotifyDescriptor.Confirmation (SettingsBeanInfo.getString ("MSG_mountArchiveConfirm", file),
-                SettingsBeanInfo.getString ("LBL_mountArchiveConfirm"))).equals (NotifyDescriptor.OK_OPTION)) {
+            // have commented out (issue #23223)
+//             if(TopManager.getDefault().notify(new NotifyDescriptor.Confirmation (SettingsBeanInfo.getString ("MSG_mountArchiveConfirm", file),
+//                 SettingsBeanInfo.getString ("LBL_mountArchiveConfirm"))).equals (NotifyDescriptor.OK_OPTION)) {
                 repository.addFileSystem(jarFileSystem);
                 existing = jarFileSystem;
-            } else {
-                return null;
-            }
+//             } else {
+//                 return null;
+//             }
         }
         
         // The root folder will be displayed in the Explorer:
@@ -543,31 +544,33 @@ public class OpenFile extends Object {
         // If no guess, always show full dialog.
         if (pkgLevel != -1) {
             String guessed = (String) pkgs.get(pkgLevel);
-            Object yesOption = new JButton (SettingsBeanInfo.getString ("LBL_quickMountYes"));
-            ((JButton)yesOption).getAccessibleContext().setAccessibleDescription(SettingsBeanInfo.getString ("ACS_LBL_quickMountYes"));
-            Object noOption = new JButton (SettingsBeanInfo.getString ("LBL_quickMountNo"));
-            ((JButton)noOption).setMnemonic((SettingsBeanInfo.getString ("LBL_quickMountNo_Mnem")).charAt(0));  
-            ((JButton)noOption).getAccessibleContext().setAccessibleDescription(SettingsBeanInfo.getString ("ACS_LBL_quickMountNo"));
-            Object cancelOption = new JButton(SettingsBeanInfo.getString("LBL_cancelButton"));
-            ((JButton)cancelOption).getAccessibleContext().setAccessibleDescription(SettingsBeanInfo.getString ("ACS_LBL_cancelButton")); 
-            Object result = TopManager.getDefault ().notify (new NotifyDescriptor
-                            ("".equals (guessed) ? // NOI18N
-                             SettingsBeanInfo.getString ("MSG_quickMountDefault", f.getName ()) :
-                             SettingsBeanInfo.getString ("MSG_quickMount", f.getName (), guessed), // message
-                             SettingsBeanInfo.getString ("LBL_quickMountTitle"), // title
-                             NotifyDescriptor.YES_NO_OPTION, // optionType
-                             NotifyDescriptor.QUESTION_MESSAGE, // messageType
-                             new Object[] { yesOption, noOption, cancelOption }, // options
-                             yesOption // initialValue
-                            ));
-            if (result.equals (yesOption)) {
+
+            // have commented out (issue #23223)
+//             Object yesOption = new JButton (SettingsBeanInfo.getString ("LBL_quickMountYes"));
+//             ((JButton)yesOption).getAccessibleContext().setAccessibleDescription(SettingsBeanInfo.getString ("ACS_LBL_quickMountYes"));
+//             Object noOption = new JButton (SettingsBeanInfo.getString ("LBL_quickMountNo"));
+//             ((JButton)noOption).setMnemonic((SettingsBeanInfo.getString ("LBL_quickMountNo_Mnem")).charAt(0));  
+//             ((JButton)noOption).getAccessibleContext().setAccessibleDescription(SettingsBeanInfo.getString ("ACS_LBL_quickMountNo"));
+//             Object cancelOption = new JButton(SettingsBeanInfo.getString("LBL_cancelButton"));
+//             ((JButton)cancelOption).getAccessibleContext().setAccessibleDescription(SettingsBeanInfo.getString ("ACS_LBL_cancelButton")); 
+//             Object result = TopManager.getDefault ().notify (new NotifyDescriptor
+//                             ("".equals (guessed) ? // NOI18N
+//                              SettingsBeanInfo.getString ("MSG_quickMountDefault", f.getName ()) :
+//                              SettingsBeanInfo.getString ("MSG_quickMount", f.getName (), guessed), // message
+//                              SettingsBeanInfo.getString ("LBL_quickMountTitle"), // title
+//                              NotifyDescriptor.YES_NO_OPTION, // optionType
+//                              NotifyDescriptor.QUESTION_MESSAGE, // messageType
+//                              new Object[] { yesOption, noOption, cancelOption }, // options
+//                              yesOption // initialValue
+//                             ));
+//             if (result.equals (yesOption)) {
                 dirToMount[0] = (File) dirs.get(pkgLevel);
                 mountPackage[0] = guessed;
                 return;
-            } else if (! result.equals (noOption)) {
-                // Dialog closed--just stop everything.
-                return;
-            }
+//             } else if (! result.equals (noOption)) {
+//                 // Dialog closed--just stop everything.
+//                 return;
+//             }
         }
 
         final PackagePanel panel = new PackagePanel(f, pkgLevel, dirs, pkgs);
@@ -602,7 +605,6 @@ public class OpenFile extends Object {
                   }
               }));
         dialog[0].show ();
-
     }
 
     /** Filtered reader for Java sources - it simply excludes
