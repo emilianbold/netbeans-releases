@@ -18,6 +18,7 @@ import java.util.*;
 
 import org.openide.loaders.ExtensionList;
 import org.openide.util.enum.ArrayEnumeration;
+import org.openide.util.NbBundle;
 import org.openide.explorer.propertysheet.editors.*;
 
 /** Property editor for {@link ExtensionList}s.
@@ -125,8 +126,13 @@ public class ExtensionListEditor extends Object implements PropertyEditor, Strin
     * @param text  The string to be parsed.
     */
     public void setAsText (String text) throws java.lang.IllegalArgumentException {
-        StringTokenizer st = new StringTokenizer (text, ",. \n\t"); // NOI18N
-        setAs (st);
+        if ( NbBundle.getMessage ( org.openide.explorer.propertysheet.PropertyPanel.class, "CTL_Different_Values").equals( text ) ) {
+            setValue( new String[] { text } );
+        }
+        else {
+            StringTokenizer st = new StringTokenizer (text, ",. \n\t"); // NOI18N
+            setAs (st);
+        }
     }
 
     /*
