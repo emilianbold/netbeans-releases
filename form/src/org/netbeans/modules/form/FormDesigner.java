@@ -64,8 +64,8 @@ public class FormDesigner extends TopComponent
 
     private VisualReplicator replicator = new VisualReplicator(
         null,
-        new Class[] { Window.class, java.applet.Applet.class,
-//                      RootPaneContainer.class,
+        new Class[] { Window.class,
+                      java.applet.Applet.class,
                       MenuComponent.class },
         VisualReplicator.ATTACH_FAKE_PEERS | VisualReplicator.DISABLE_FOCUSING);
 
@@ -75,10 +75,8 @@ public class FormDesigner extends TopComponent
     private RADComponent connectionTarget;
 
     /** The icons for FormDesigner */
-    private static String iconURL = "org/netbeans/modules/form/resources/formDesigner.gif"; // NOI18N
-
-    /** The FormLoaderSettings instance */
-    private static FormLoaderSettings formSettings = FormEditor.getFormSettings();
+    private static String iconURL =
+        "org/netbeans/modules/form/resources/formDesigner.gif"; // NOI18N
 
     // ----------
     // constructors and setup
