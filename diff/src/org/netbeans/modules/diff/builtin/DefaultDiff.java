@@ -341,10 +341,17 @@ public class DefaultDiff extends Diff implements Serializable {
         
         public DiffTopComponent(Component c) {
             setLayout(new BorderLayout());
-            add(c, BorderLayout.CENTER);
-            putClientProperty("PersistenceType", "Never");
+            add(c, BorderLayout.CENTER);            
             getAccessibleContext().setAccessibleName(NbBundle.getMessage(DiffTopComponent.class, "ACSN_Diff_Top_Component")); // NOI18N
             getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DiffTopComponent.class, "ACSD_Diff_Top_Component")); // NOI18N
+        }
+        
+        public int getPersistenceType(){
+            return TopComponent.PERSISTENCE_NEVER;
+        }
+        
+        protected String preferredID(){
+            return "DiffTopComponent";    //NOI18N       
         }
         
         public void open(Workspace workspace) {
