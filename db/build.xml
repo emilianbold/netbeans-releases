@@ -72,22 +72,22 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="javahelp">
-    <mkdir dir="javahelp/org/netbeans/modules/db/docs/JavaHelpSearch"/>
+    <mkdir dir="javahelp/org/netbeans/modules/db/docs/JavaHelpSearch2"/>
     <jhindexer basedir="javahelp/org/netbeans/modules/db/docs/"
-               db="javahelp/org/netbeans/modules/db/docs/JavaHelpSearch"
+               db="javahelp/org/netbeans/modules/db/docs/JavaHelpSearch2"
                jhall="${binroot}/nbbuild/lib/jhall.jar">
       <include name="**/*.html"/>
-      <exclude name="JavaHelpSearch/"/>
+      <exclude name="JavaHelpSearch2/"/>
       <exclude name="ja/"/>
       <exclude name="credits.html"/>
     </jhindexer>
-    <mkdir dir="javahelp/org/netbeans/modules/db/docs/ja/JavaHelpSearch"/>
+    <mkdir dir="javahelp/org/netbeans/modules/db/docs/ja/JavaHelpSearch2"/>
     <jhindexer basedir="javahelp/org/netbeans/modules/db/docs/ja/"
-               db="javahelp/org/netbeans/modules/db/docs/ja/JavaHelpSearch"
+               db="javahelp/org/netbeans/modules/db/docs/ja/JavaHelpSearch2"
                locale="ja"
                jhall="${binroot}/nbbuild/lib/jhall.jar">
       <include name="**/*.html"/>
-      <exclude name="JavaHelpSearch/"/>
+      <exclude name="JavaHelpSearch2/"/>
       <exclude name="credits.html"/>
     </jhindexer>
     <mkdir dir="netbeans/modules/docs"/>

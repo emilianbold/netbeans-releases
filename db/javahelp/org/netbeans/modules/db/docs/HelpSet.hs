@@ -42,7 +42,7 @@ Microsystems, Inc. All Rights Reserved.
    <type>javax.help.SearchView</type>
  
   <data engine="com.sun.java.help.search.DefaultSearchEngine">
-      JavaHelpSearch
+      JavaHelpSearch2
    </data>
   </view> 
 
