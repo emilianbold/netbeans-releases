@@ -3247,6 +3247,9 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <antcall target="doclean-external">
       <param name="extmodule" value="qa"/>
     </antcall>
+    <antcall target="doclean-external">
+      <param name="extmodule" value="html/editor"/>
+    </antcall>
     <!-- This step must be last: -->
     <echo message="Cleaning NetBeans-specific Ant extensions..."/>
     <delete file="nbantext.jar" quiet="true"/>
