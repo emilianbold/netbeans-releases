@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<!DOCTYPE Language SYSTEM "../../../../../../../../src/org/netbeans/modules/lexer/language.dtd">
+<Language mimeType="text/x-java">
+    <TokenId name="whitespace">
+        <SampleText value=" "/>
+    </TokenId>
+    <TokenId name="plus">
+        <SampleText value="+"/>
+        <Category name="operator"/>
+    </TokenId>
+    <TokenId name="minus">
+        <SampleText value="-"/>
+        <Category name="operator"/>
+    </TokenId>
+    <TokenId name="mul">
+        <SampleText value="*"/>
+        <Category name="operator"/>
+    </TokenId>
+    <TokenId name="div">
+        <SampleText value="/"/>
+        <Category name="operator"/>
+    </TokenId>
+    <TokenId name="lparen">
+        <SampleText value="("/>
+        <Category name="separator"/>
+    </TokenId>
+    <TokenId name="rparen">
+        <SampleText value=")"/>
+        <Category name="separator"/>
+    </TokenId>
+    <TokenId name="mul3">
+        <SampleText value="***"/>
+        <Category name="operator"/>
+    </TokenId>
+    <TokenId name="constant">
+        <Category name="literal"/>
+    </TokenId>
+    <TokenId name="error"/>
+</Language>

@@ -19,12 +19,14 @@ Microsystems, Inc. All Rights Reserved.
   <!-- <property name="build.compiler.debug" value="on"/> -->
   <!-- <property name="build.compiler.deprecation" value="on"/> -->
 
-  <property name="democlass" value="org.netbeans.modules.lexer.demo.javacc.CalcPaneDemo"/>
-  <property name="testclass" value="org.netbeans.modules.lexer.demo.javacc.CalcAlgorithmTest"/>
+  <property name="javaccdemoclass" value="org.netbeans.modules.lexer.demo.javacc.CalcPaneDemo"/>
+  <property name="javacctestclass" value="org.netbeans.modules.lexer.demo.javacc.CalcAlgorithmTest"/>
+  <property name="antlrdemoclass" value="org.netbeans.modules.lexer.demo.antlr.CalcPaneDemo"/>
+  <property name="antlrtestclass" value="org.netbeans.modules.lexer.demo.antlr.CalcAlgorithmTest"/>
 
   <target name="compile">
-    <!-- build complete jar -->
-    <ant dir="${lexer.module.root}" target="jars" inheritAll="false"/>
+    <!-- build complete lexer.jar -->
+    <ant dir="${lexer.module.root}" target="netbeans" inheritAll="false"/>
                
     <javac srcdir="src" destdir="src"
            deprecation="${build.compiler.deprecation}"
@@ -32,28 +34,49 @@ Microsystems, Inc. All Rights Reserved.
       <classpath>
         <pathelement location="${lexer.module.root}/tmp"/>
         <pathelement location="${lexerjar}"/>
+        <fileset id="antlr.runtime" dir="${lexer.module.root}/external">
+          <include name="antlr*.jar"/>
+        </fileset>
       </classpath>
     </javac>
   </target>
 
-  <target name="demo" depends="compile">
-    <java classname="${democlass}" fork="true">
+  <target name="javacc" depends="compile">
+    <java classname="${javaccdemoclass}" fork="true">
       <classpath>
         <pathelement location="${lexerjar}"/>
         <pathelement location="src"/>
       </classpath>
     </java>
-
   </target>
 
-  <target name="test" depends="compile">
-    <java classname="${testclass}" fork="true">
+  <target name="javacctest" depends="compile">
+    <java classname="${javacctestclass}" fork="true">
       <classpath>
         <pathelement location="${lexerjar}"/>
         <pathelement location="src"/>
       </classpath>
     </java>
+  </target>
 
+  <target name="antlr" depends="compile">
+    <java classname="${antlrdemoclass}" fork="true">
+      <classpath>
+        <pathelement location="${lexerjar}"/>
+        <pathelement location="src"/>
+        <fileset refid="antlr.runtime"/>
+      </classpath>
+    </java>
+  </target>
+
+  <target name="antlrtest" depends="compile">
+    <java classname="${antlrtestclass}" fork="true">
+      <classpath>
+        <pathelement location="${lexerjar}"/>
+        <pathelement location="src"/>
+        <fileset refid="antlr.runtime"/>
+      </classpath>
+    </java>
   </target>
 
   <target name="clean">
@@ -64,8 +87,20 @@ Microsystems, Inc. All Rights Reserved.
     </delete>
   </target>
 
+  <target name="genall">
+    <ant dir="${lexer.module.root}/demo/src/org/netbeans/modules/lexer/demo/antlr" antfile="calcBuild.xml" inheritAll="false"/>
+    <ant dir="${lexer.module.root}/demo/src/org/netbeans/modules/lexer/demo/javacc" antfile="calcBuild.xml" inheritAll="false"/>
+    <ant dir="${lexer.module.root}/editorbridge/calc/src/org/netbeans/modules/lexer/editorbridge/calc/lang/" antfile="calcBuild.xml" inheritAll="false"/>
+  </target>
+
+  <target name="buildall" depends="compile">
+    <ant dir="${lexer.module.root}/editorbridge/calc" target="netbeans" inheritAll="false"/>
+  </target>
+
   <target name="cleanall" depends="clean">
     <ant dir="${lexer.module.root}" target="clean" inheritAll="false"/>
+    <ant dir="${lexer.module.root}/editorbridge" target="clean" inheritAll="false"/>
+    <ant dir="${lexer.module.root}/editorbridge/calc" target="clean" inheritAll="false"/>
   </target>
 
   <!-- helper task to create zip file of the whole lexer module -->
@@ -81,11 +116,16 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="help">
     <echo message="Targets:"/>
-    <echo message="demo     Run editor pane demo (Requires JDK1.4)"/>
-    <echo message="test     Run test that checks generated lexer correctness (Requires JDK1.4)"/>
-    <echo message="compile  Compile the demo sources"/>
-    <echo message="clean    Clean the *.class files under src subdir"/>
-    <echo message="cleanall In addition to clean run the clean target in ../build.xml"/>
+    <echo message="javacc      Run javacc-based editor pane demo (Requires JDK1.4)"/>
+    <echo message="javacctest  Run javacc-based test that checks generated lexer correctness (Requires JDK1.4)"/>
+    <echo message="antlr       Run antlr-based editor pane demo (Requires JDK1.4)"/>
+    <echo message="antlrtest   Run antlr-based test that checks generated lexer correctness (Requires JDK1.4)"/>
+    <echo message="compile     Compile the demo sources"/>
+    <echo message="clean       Clean the *.class files under src subdir"/>
+    <echo message="genall      Regenerate all the lexer sources from the grammarss in the lexer module."/>
+    <echo message="            It requires to have JavaCC.zip under external subdirectory."/>
+    <echo message="buildall    Build everything in the lexer module"/>
+    <echo message="cleanall    Clean everything in the lexer module"/>
   </target>
 
 </project>

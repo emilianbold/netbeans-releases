@@ -1,0 +1,15 @@
+// $ANTLR 2.7.1: Calc.g -> CalcScannerTokenTypes.txt$
+CalcScanner    // output token vocab name
+WHITESPACE=4
+PLUS=5
+MINUS=6
+MUL=7
+MUL3=8
+DIV=9
+LPAREN=10
+RPAREN=11
+CONSTANT=12
+FLOAT=13
+INTEGER=14
+DIGIT=15
+ERROR=16

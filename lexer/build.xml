@@ -21,28 +21,10 @@ Microsystems, Inc. All Rights Reserved.
   <property name="nbroot" location=".."/>
   <!-- <property name="build.compiler.debug" value="on"/> -->
 
-  <!-- Patterns for sources that need openide util or antlr classes -->
-  <!-- <property name="src.openide.util" value="org/netbeans/modules/lexer/lang/LookupLanguageProvider.java"/> -->
-  <!-- <property name="src.antlr" value="org/netbeans/modules/lexer/antlr/**/*.java"/> -->
-
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="tojar" classname="org.netbeans.nbbuild.ToJar" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
-
-  <target name="compile-base" depends="hack13">
-    <javac srcdir="src" destdir="src"
-           excludes="${src.openide.util},${src.antlr}"
-           deprecation="${build.compiler.deprecation}"
-           debug="${build.compiler.debug}">
-      <classpath>
-        <fileset dir="../core/external">
-          <include name="xml-apis*.jar"/>
-        </fileset>
-        <pathelement location="tmp"/>
-      </classpath>
-    </javac>
-  </target>
 
   <target name="hack13">
     <available property="hack13" classname="java.lang.CharSequence" />
@@ -61,34 +43,21 @@ Microsystems, Inc. All Rights Reserved.
     <javac srcdir="tmp" destdir="tmp" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" />
   </target>
 
-  <!-- <target name="compile-antlr" depends="compile-base">
+  <target name="compile" depends="hack13">
     <javac srcdir="src" destdir="src"
-           includes="${src.antlr}"
            deprecation="${build.compiler.deprecation}"
            debug="${build.compiler.debug}">
       <classpath>
-        <pathelement location="${xmlparser}"/>
-        <pathelement location="${antlr}"/>
+        <fileset dir="../core/external">
+          <include name="xml-apis*.jar"/>
+        </fileset>
+        <fileset dir="external">
+          <include name="antlr*.jar"/>
+        </fileset>
         <pathelement location="tmp"/>
       </classpath>
     </javac>
-  </target> -->
-
-  <!-- <target name="compile-openide-util" depends="compile-base">
-    <javac srcdir="src" destdir="src"
-           includes="${src.openide.util}"
-           deprecation="${build.compiler.deprecation}"
-           debug="${build.compiler.debug}">
-      <classpath>
-        <pathelement location="../openide/netbeans/lib/openide-util.jar"/>
-        <pathelement location="tmp"/>
-      </classpath>
-    </javac>
-  </target> -->
-
-  <!-- JavaCC does not require runtime and therefore it's included in base compilation -->
-  <!-- <target name="compile" depends="compile-antlr,compile-openide-util"/> -->
-  <target name="compile" depends="compile-base"/>
+  </target>
 
   <target name="jars" depends="compile">
     <mkdir dir="netbeans/modules"/>

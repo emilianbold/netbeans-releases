@@ -11,23 +11,30 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.lexer.demo.javacc;
+package org.netbeans.modules.lexer.demo.antlr;
 
-import org.netbeans.api.lexer.Language;
+import antlr.LexerSharedInputState;
+import antlr.TokenStreamException;
 import org.netbeans.api.lexer.Lexer;
 import org.netbeans.api.lexer.LexerInput;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.spi.lexer.javacc.LexerInputCharStream;
-import org.netbeans.spi.lexer.javacc.TokenMgrError;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.spi.lexer.antlr.AntlrToken;
+import org.netbeans.spi.lexer.util.LexerInputReader;
 
 /**
- * Wrapper around generated java token manager
+ * Wrapper for antlr generated {@link antlr.CharScanner}
+ * that implements the {@link org.netbeans.lexer.Lexer}.
+ * <br>It supports extended tokens formed from
+ * two or more sub-tokens. For example the error
+ * tokens are typically returned
+ * just as "everything-else" single characters
+ * from the scanner and formed into one extended
+ * error token in the lexer.
  *
  * @author Miloslav Metelka
  * @version 1.00
  */
-
 
 public class CalcLexer implements Lexer {
     
@@ -35,49 +42,48 @@ public class CalcLexer implements Lexer {
     
     private CalcLanguage language;
     
-    private CalcTokenManager tm;
-
+    private CalcScanner scanner;
+    
     private LexerInput lexerInput;
     
-    /** Integer id of the extended token */
+    /** Int id of the extended token */
     private int extendedTokenIntId;
     
     /** Length of the extended token. Zero if not in extended token. */
     private int extendedTokenLength;
     
-    /** Token type after the extended token. */
+    /** Token int id after the extended token. */
     private int followsExtendedTokenIntId = INVALID_TOKEN_INT_ID;
     
     public CalcLexer(CalcLanguage language) {
-        this.tm = new CalcTokenManager(new LexerInputCharStream());
         this.language = language;
+        this.scanner = new CalcScanner((LexerSharedInputState)null);
     }
     
     public Token nextToken() {
-        TokenId id = null; // Resulting token identification
-        int tokenLength = 0;
         int tokenIntId = followsExtendedTokenIntId;
+        int tokenLength = 0;
 
         next_token: {
             while (true) {
                 if (tokenIntId == INVALID_TOKEN_INT_ID) {
-                    // token must be fetched from token manager
+                    // token must be fetched from scanner
                     try {
-                        org.netbeans.spi.lexer.javacc.Token javaccToken = tm.getNextToken();
-                        if (javaccToken != null) {
-                            tokenIntId = javaccToken.kind;
-                            tokenLength = lexerInput.getReadLength() - extendedTokenLength;
+                        AntlrToken antlrToken = (AntlrToken)scanner.nextToken();
+                        if (antlrToken != null) {
+                            tokenIntId = antlrToken.getType();
+                            tokenLength = antlrToken.getLength();
 
-                        } else { // antlrToken is null - no more tokens from token manager
-                            tokenIntId = CalcConstants.EOF;
+                        } else { // antlrToken is null - no more tokens from scanner
+                            tokenIntId = CalcScannerTokenTypes.EOF;
                             /* In this case the tokenIntId is set to EOF
                              * and tokenLength is 0.
                              * The loop will be broken automatically.
                              */
                         }
-                    } catch (TokenMgrError e) {
+                    } catch (TokenStreamException e) {
                         throw new IllegalStateException(
-                            e + "\nTokenMgrError occurred."
+                            e + "\nTokenStreamException occurred."
                             + "\nIt's necessary to fix the lexer to be able to correctly"
                             + " recognize the input that caused this exception."
                         );
@@ -86,7 +92,7 @@ public class CalcLexer implements Lexer {
                 } else { // tokenIntId != INVALID_TOKEN_INT_ID
                     /* It means that extended token was returned
                      * in the previous call to nextToken().
-                     * The token manager already found a valid token previously
+                     * The scanner already found a valid token previously
                      * (that valid token ended the extended token)
                      * and the token type of that valid token was stored
                      * in followsExtendedTokenIntId and the length
@@ -101,15 +107,10 @@ public class CalcLexer implements Lexer {
                  * EOF is considered a valid token type here.
                  */
 
-                if (extendedTokenLength == 0) { // currently not in extended token
+                if (extendedTokenLength == 0) { // not in extended token
                     switch (tokenIntId) { // check for types that start extended token
-                        case CalcConstants.ERROR:
+                        case CalcScannerTokenTypes.ERROR:
                             extendedTokenIntId = tokenIntId;
-                            extendedTokenLength = tokenLength;
-                            break; // get next token inside the loop
-
-                        case CalcConstants.ML_COMMENT_START:
-                            extendedTokenIntId = CalcLanguage.INCOMPLETE_ML_COMMENT_INT;
                             extendedTokenLength = tokenLength;
                             break; // get next token inside the loop
 
@@ -119,26 +120,13 @@ public class CalcLexer implements Lexer {
                     }
 
                 } else { // currently in extended token
-                    boolean continueExtended = false;
+                    boolean continueExtended = (extendedTokenIntId == tokenIntId);
                     boolean includeCurrent = false;
-                    switch (extendedTokenIntId) {
-                        case CalcConstants.ERROR:
-                            continueExtended = (tokenIntId == CalcConstants.ERROR);
-                            // includeCurrent stays false
-                            break;
-                            
-                        case CalcLanguage.INCOMPLETE_ML_COMMENT_INT:
-                            continueExtended = false; // do not continue extended token
-                            includeCurrent = true; // but include current token
-                            if (tokenIntId != CalcConstants.EOF) {
-                                extendedTokenIntId = tokenIntId;
-                            } // in case of EOF INCOMPLETE_ML_COMMENT_INT will be returned
-                    }
-
-                    /* Some additional checking can be done
-                     * if e.g. starting and ending token types
-                     * differ for the extended token.
+                    /* Some additional checking may need to be done here
+                     * to set the continueExtended and includeCurrent variables
+                     * appropriately.
                      */
+
                     if (continueExtended) { // extended
                         extendedTokenLength += tokenLength;
 
@@ -179,32 +167,32 @@ public class CalcLexer implements Lexer {
                     } // END-OF Stop extending
                 } // END-OF currently in extended token
 
-                tokenIntId = INVALID_TOKEN_INT_ID; // push to get next token from token manager
+                tokenIntId = INVALID_TOKEN_INT_ID; // push to get next token from scanner
             } // END-OF while (true)
         } // END-OF next_token label statement
 
 
         // Find the tokenId
-        return (tokenIntId != CalcConstants.EOF)
+        return (tokenIntId != CalcScannerTokenTypes.EOF)
             ? lexerInput.createToken(language.getValidId(tokenIntId), tokenLength)
             : null;
     }
-    
+
     public Object getState() {
-        return (tm.curLexState == tm.defaultLexState)
-            ? null
-            : CalcLanguage.CONSTANT_TO_INTEGER[tm.curLexState];
+        return null;
     }
 
     public void restart(LexerInput input, Object state) {
         this.lexerInput = input;
-        LexerInputCharStream charStream = (LexerInputCharStream)tm.getCharStream();
-        charStream.setLexerInput(lexerInput);
-        tm.ReInit(charStream,
-            (state != null)
-                ? ((Integer)state).intValue()
-                : tm.defaultLexState
-        );
-    }
+        followsExtendedTokenIntId = INVALID_TOKEN_INT_ID;
+        extendedTokenLength = 0;
 
+        LexerSharedInputState inputState = null;
+        if (lexerInput != null) {
+            inputState = new LexerSharedInputState(new LexerInputReader(lexerInput));
+        }
+        scanner.setInputState(inputState);
+        scanner.resetText();
+    }
+    
 }

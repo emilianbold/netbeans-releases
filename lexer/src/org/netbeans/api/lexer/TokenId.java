@@ -53,7 +53,7 @@ public final class TokenId {
     
     private final List categoryNamesList;
     
-    private final TokenTextMatcher tokenTextMatcher;
+    private final SampleTextMatcher sampleTextMatcher;
     
     public TokenId(String name, int intId) {
         this(name, intId, null, null);
@@ -73,13 +73,13 @@ public final class TokenId {
      * @param categoryNames names of categories into which this TokenId belongs.
      *  It can be retrieved by {@link #getCategoryNames()}. It can be null
      *  to indicate that tokenId does not belong to any token category.
-     * @param tokenTextMatcher matcher to one or more fixed texts
+     * @param sampleTextMatcher matcher to one or more sample texts
      *  or null if there is no matcher (the tokens with this tokenId have always
      *  variable text).
      *
      */
     public TokenId(String name, int intId, String[] categoryNames,
-    TokenTextMatcher tokenTextMatcher) {
+    SampleTextMatcher sampleTextMatcher) {
         
         if (name == null) {
             throw new NullPointerException("TokenId name cannot be null");
@@ -98,7 +98,7 @@ public final class TokenId {
         this.name = name;
         this.intId = intId;
         this.categoryNamesList = internCategoryNames(categoryNames);
-        this.tokenTextMatcher = tokenTextMatcher;
+        this.sampleTextMatcher = sampleTextMatcher;
     }
     
     /** @return the unique name of the TokenId. The name must be unique
@@ -151,11 +151,11 @@ public final class TokenId {
     
     /**
      * @return a valid matcher if the tokens with this tokenId
-     * have some fixed text(s) (e.g. keywords or operators)
+     * have some sample text(s) (e.g. keywords or operators)
      * or null if the text of the tokens always varies.
      */
-    public TokenTextMatcher getTokenTextMatcher() {
-        return tokenTextMatcher;
+    public SampleTextMatcher getSampleTextMatcher() {
+        return sampleTextMatcher;
     }
     
     /** Get the possibly reused copy of the categoryNames list.
@@ -190,9 +190,9 @@ public final class TokenId {
             sb.append(", cats=");
             sb.append(categoryNamesList.toString());
         }
-        if (tokenTextMatcher != null) {
-            sb.append(", tokenTextMatcher=");
-            sb.append(tokenTextMatcher);
+        if (sampleTextMatcher != null) {
+            sb.append(", sampleTextMatcher=");
+            sb.append(sampleTextMatcher);
         }
         
         return sb.toString();

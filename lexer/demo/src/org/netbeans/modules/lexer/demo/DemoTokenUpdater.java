@@ -19,7 +19,7 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.LexerInput;
-import org.netbeans.api.lexer.TokenTextMatcher;
+import org.netbeans.api.lexer.SampleTextMatcher;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Lexer;
 import org.netbeans.spi.lexer.util.Compatibility;
@@ -77,9 +77,9 @@ public class DemoTokenUpdater extends TextTokenUpdater {
     }
     
     protected Token createToken(TokenId id, int index, int length) {
-        String fixedText = null;
+        String sampleText = null;
         if (Compatibility.charSequenceExists()) {
-            TokenTextMatcher matcher = id.getTokenTextMatcher();
+            SampleTextMatcher matcher = id.getSampleTextMatcher();
             if (matcher != null) {
                 /* The recognizedText would not be a string
                  * in the normal applications. It would be
@@ -89,13 +89,13 @@ public class DemoTokenUpdater extends TextTokenUpdater {
                  */
                 CharSequence recognizedText
                     = (CharSequence)(Object)getDocumentText(index, length); // 1.3 compilability 
-                fixedText = matcher.match(recognizedText);
+                sampleText = matcher.match(recognizedText);
             }
         }
 
         Token token;
-        if (fixedText != null) {
-            token = new DemoFixedToken(id, fixedText);
+        if (sampleText != null) {
+            token = new DemoSampleToken(id, sampleText);
         } else {
             token = new DemoToken(this, id, index, length);
         }
@@ -110,8 +110,8 @@ public class DemoTokenUpdater extends TextTokenUpdater {
     protected void add(Token token, int lookahead, Object state) {
         add(token);
 
-        if (token instanceof DemoFixedToken) {
-            DemoFixedToken dft = (DemoFixedToken)token;
+        if (token instanceof DemoSampleToken) {
+            DemoSampleToken dft = (DemoSampleToken)token;
             dft.setLookahead(lookahead);
             dft.setState(state);
         } else {
@@ -123,23 +123,23 @@ public class DemoTokenUpdater extends TextTokenUpdater {
     
     public int getLookahead() {
         Token token = getToken(getValidPreviousIndex());
-        return (token instanceof DemoFixedToken)
-            ? ((DemoFixedToken)token).getLookahead()
+        return (token instanceof DemoSampleToken)
+            ? ((DemoSampleToken)token).getLookahead()
             : ((DemoToken)token).getLookahead();
     }
 
     public Object getState() {
         Token token = getToken(getValidPreviousIndex());
-        return (token instanceof DemoFixedToken)
-            ? ((DemoFixedToken)token).getState()
+        return (token instanceof DemoSampleToken)
+            ? ((DemoSampleToken)token).getState()
             : ((DemoToken)token).getState();
     }
 
     public int getLookback() {
         if (maintainLookbacks) {
             Token token = getToken(getValidPreviousIndex());
-            return (token instanceof DemoFixedToken)
-                ? ((DemoFixedToken)token).getLookback()
+            return (token instanceof DemoSampleToken)
+                ? ((DemoSampleToken)token).getLookback()
                 : ((DemoToken)token).getLookback();
                 
         } else { // do not maintain the lookbacks
@@ -150,8 +150,8 @@ public class DemoTokenUpdater extends TextTokenUpdater {
     protected void setLookback(int lookback) {
         if (maintainLookbacks) {
             Token token = getToken(getValidPreviousIndex());
-            if (token instanceof DemoFixedToken) {
-                ((DemoFixedToken)token).setLookback(lookback);
+            if (token instanceof DemoSampleToken) {
+                ((DemoSampleToken)token).setLookback(lookback);
             } else {
                 ((DemoToken)token).setLookback(lookback);
             }
@@ -201,8 +201,8 @@ public class DemoTokenUpdater extends TextTokenUpdater {
                     );
                     
                 } else {
-                    DemoFixedToken dft = (DemoFixedToken)t;
-                    sb.append(", type=fixed"
+                    DemoSampleToken dft = (DemoSampleToken)t;
+                    sb.append(", type=sample"
                         + ", la=" + dft.getLookahead()
                         + ", lb=" + dft.getLookback()
                         + ", st=" + dft.getState()

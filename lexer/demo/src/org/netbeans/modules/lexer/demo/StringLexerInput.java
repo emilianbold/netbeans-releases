@@ -58,6 +58,10 @@ public class StringLexerInput implements LexerInput {
         return Math.max(lookaheadIndex, inputIndex + eof) - tokenIndex;
     }
     
+    public int getReadLength() {
+        return inputIndex - tokenIndex;
+    }
+    
     public void backup(int count) {
         lookaheadIndex = Math.max(lookaheadIndex, inputIndex + eof);
         inputIndex -= count;
@@ -68,10 +72,27 @@ public class StringLexerInput implements LexerInput {
         }
     }
     
-    public final Token createToken(TokenId id) {
-        Token ret = new StringToken(id, text.substring(tokenIndex, inputIndex));
-        tokenIndex = inputIndex;
+    public Token createToken(TokenId id, int tokenLength) {
+        if (tokenLength <= 0) {
+            throw new IllegalArgumentException("tokenLength="
+                + tokenLength + " <= 0");
+        }
+
+        if (tokenIndex + tokenLength > inputIndex) {
+            throw new IllegalArgumentException("tokenLength="
+                + tokenLength + " > number-of-read-characters="
+                + (inputIndex - tokenIndex)
+            );
+        }
+
+        Token ret = new StringToken(id, text.substring(tokenIndex,
+            tokenIndex + tokenLength));
+        tokenIndex += tokenLength;
         return ret;
     }
     
+    public Token createToken(TokenId id) {
+        return createToken(id, inputIndex - tokenIndex);
+    }
+
 }
