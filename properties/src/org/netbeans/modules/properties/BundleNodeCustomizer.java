@@ -143,7 +143,6 @@ public class BundleNodeCustomizer extends JPanel {
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(localesLabel, gridBagConstraints1);
         
-        localesList.setPreferredSize(new java.awt.Dimension(250, 0));
         localesList.setCellRenderer(new DefaultListCellRenderer() {
             public Component getListCellRendererComponent(
             JList list,

@@ -172,7 +172,6 @@ public class LocaleNodeCustomizer extends JPanel {
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(keyLabel, gridBagConstraints1);
         
-        keyList.setPreferredSize(new java.awt.Dimension(250, 0));
         keyList.setCellRenderer(new DefaultListCellRenderer() {
             public Component getListCellRendererComponent(
             JList list,
