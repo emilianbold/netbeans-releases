@@ -413,7 +413,11 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                 return false; // XXX For now
             }
         }
-        
+
+        public boolean canCut () {
+            return !isDefaultPackage;    
+        }
+
         public void setName(String name) {
             System.out.println( "Rename to " + name );
             assert false : "Cannot rename";
