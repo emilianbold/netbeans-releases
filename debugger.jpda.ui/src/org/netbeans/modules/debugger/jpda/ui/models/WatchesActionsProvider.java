@@ -17,6 +17,7 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.util.*;
 import javax.swing.*;
+import javax.swing.KeyStroke;
 import org.netbeans.api.debugger.DebuggerManager;
 
 import org.netbeans.api.debugger.jpda.JPDAWatch;
@@ -63,6 +64,12 @@ public class WatchesActionsProvider implements NodeActionsProvider {
         },
         Models.MULTISELECTION_TYPE_ANY
     );
+    static { 
+        DELETE_ACTION.putValue (
+            Action.ACCELERATOR_KEY,
+            KeyStroke.getKeyStroke ("DELETE")
+        );
+    };
     private static final Action CUSTOMIZE_ACTION = Models.createAction (
         NbBundle.getBundle(WatchesActionsProvider.class).getString("CTL_WatchAction_Customize"),
         new Models.ActionPerformer () {

@@ -20,6 +20,7 @@ import java.util.Vector;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
+import javax.swing.KeyStroke;
 
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -123,8 +124,8 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
     );
     static { 
         DELETE_ACTION.putValue (
-            Action.MNEMONIC_KEY, 
-            new Integer (KeyEvent.VK_DELETE)
+            Action.ACCELERATOR_KEY,
+            KeyStroke.getKeyStroke ("DELETE")
         );
     };
     private static final Action SET_GROUP_NAME_ACTION = Models.createAction (

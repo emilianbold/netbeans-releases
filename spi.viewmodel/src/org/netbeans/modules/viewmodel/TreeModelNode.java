@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.WeakHashMap;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.KeyStroke;
 
 import org.netbeans.spi.viewmodel.ColumnModel;
 import org.netbeans.spi.viewmodel.ComputingException;
@@ -201,17 +202,15 @@ public class TreeModelNode extends AbstractNode {
         return object;
     }
     
-    private static Integer DEL = new Integer (KeyEvent.VK_DELETE);
-    
     public boolean canDestroy () {
         try {
             Action[] as = model.getActions (object);
             int i, k = as.length;
             for (i = 0; i < k; i++) {
                 if (as [i] == null) continue;
-                Object key = as [i].getValue (Action.MNEMONIC_KEY);
+                Object key = as [i].getValue (Action.ACCELERATOR_KEY);
                 if ( (key != null) &&
-                     (key.equals (DEL))
+                     (key.equals (KeyStroke.getKeyStroke ("DELETE")))
                 ) return as [i].isEnabled ();
             }
             return false;
@@ -235,9 +234,9 @@ public class TreeModelNode extends AbstractNode {
             int i, k = as.length;
             for (i = 0; i < k; i++) {
                 if (as [i] == null) continue;
-                Object key = as [i].getValue (Action.MNEMONIC_KEY);
+                Object key = as [i].getValue (Action.ACCELERATOR_KEY);
                 if ( (key != null) &&
-                     (key.equals (DEL))
+                     (key.equals (KeyStroke.getKeyStroke ("DELETE")))
                 ) {
                     as [i].actionPerformed (null);
                     return;
