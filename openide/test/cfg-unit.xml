@@ -60,7 +60,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="stable OR sheet" executor="code" name="property sheet blinking tests">
+    <testbag testattribs="sheet" executor="code" name="property sheet blinking tests">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/openide/explorer/propertysheet/*"/>
