@@ -34,12 +34,14 @@ public class EntityOverviewPanel extends EntityOverviewForm {
     private EjbJarMultiViewDataObject dataObject;
     private Entity entity;
     private static final String PK_COMPOUND = Utils.getBundleMessage("LBL_Compound_PK");
+    private EntityHelper entityHelper;
 
     /**
      * Creates new form EntityOverviewForm
      */
     public EntityOverviewPanel(SectionNodeView sectionNodeView, final Entity entity, final EntityHelper entityHelper) {
         super(sectionNodeView);
+        this.entityHelper = entityHelper;
         dataObject = (EjbJarMultiViewDataObject) sectionNodeView.getDataObject();
 
         JTextField ejbNameTextField = getEjbNameTextField();
@@ -84,12 +86,7 @@ public class EntityOverviewPanel extends EntityOverviewForm {
             primaryKeyClassComboBox.setVisible(true);
             primaryKeyClassTextField.setVisible(false);
 
-            primaryKeyFieldComboBox.addItem(PK_COMPOUND);
-            CmpField[] cmpFields = entityHelper.cmpFields.getCmpFields();
-            for (int i = 0; i < cmpFields.length; i++) {
-                CmpField cmpField = cmpFields[i];
-                primaryKeyFieldComboBox.addItem(cmpField.getFieldName());
-            }
+            initPrimaryKeyFieldComboBox();
             primaryKeyFieldComboBox.setEditor(new ValidatingTextField());
             final ItemComboBoxHelper primaryKeyComboBoxHelper = new ItemComboBoxHelper(dataObject,
                     primaryKeyFieldComboBox) {
@@ -180,11 +177,23 @@ public class EntityOverviewPanel extends EntityOverviewForm {
         });
     }
 
+    private void initPrimaryKeyFieldComboBox() {
+        final JComboBox primaryKeyFieldComboBox = getPrimaryKeyFieldComboBox();
+        primaryKeyFieldComboBox.removeAll();
+        primaryKeyFieldComboBox.addItem(PK_COMPOUND);
+        CmpField[] cmpFields = entityHelper.cmpFields.getCmpFields();
+        for (int i = 0; i < cmpFields.length; i++) {
+            CmpField cmpField = cmpFields[i];
+            primaryKeyFieldComboBox.addItem(cmpField.getFieldName());
+        }
+    }
+
     public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
         super.dataModelPropertyChange(source, propertyName, oldValue, newValue);
     }
 
     public void refreshView() {
+        initPrimaryKeyFieldComboBox();
         super.refreshView();
         getReentrantCheckBox().setSelected(entity.isReentrant());
     }
