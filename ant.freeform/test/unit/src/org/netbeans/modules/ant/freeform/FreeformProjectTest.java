@@ -20,8 +20,23 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
+// XXX testAuxiliaryConfiguration
+// XXX testCacheProvider
+// XXX testClassPathProvider
+// XXX testSubprojectProvider
+// XXX testGlobalPathRegistryUsage
+// XXX testBasicActions
+// XXX testContextActions
+// XXX testLogicalViewItems
+// XXX testLogicalViewActions
+// XXX testAntArtifact
+// XXX testExternalSourceRoots
+// XXX testSourceForBinaryQuery
+// XXX testSourceLevelQuery
+
 /**
  * Test functionality of FreeformProject.
+ * This class just tests the basic functionality found in the "simple" project.
  * @author Jesse Glick
  */
 public class FreeformProjectTest extends TestBase {
