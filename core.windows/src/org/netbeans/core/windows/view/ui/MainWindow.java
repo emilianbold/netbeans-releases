@@ -13,8 +13,35 @@
 
 package org.netbeans.core.windows.view.ui;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Image;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.text.Format;
+import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.Locale;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenuBar;
+import javax.swing.JPanel;
+import javax.swing.JRootPane;
+import javax.swing.JSeparator;
+import javax.swing.MenuElement;
+import javax.swing.MenuSelectionManager;
+import javax.swing.UIManager;
+import javax.swing.WindowConstants;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.core.windows.Constants;
-import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.openide.ErrorManager;
 import org.openide.LifecycleManager;
@@ -27,18 +54,6 @@ import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-
-import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.util.Arrays;
-import java.util.Locale;
-import org.openide.windows.TopComponent;
 
 /** The MainWindow of IDE. Holds toolbars, main menu and also entire desktop
  * if in MDI user interface. Singleton.
@@ -108,7 +123,7 @@ public final class MainWindow extends JFrame {
         
         initListeners();
 
-        setDefaultCloseOperation (DO_NOTHING_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
         getAccessibleContext().setAccessibleDescription(
                 NbBundle.getBundle(MainWindow.class).getString("ACSD_MainWindow"));
@@ -406,15 +421,19 @@ public final class MainWindow extends JFrame {
         updateTitle(projectName);
     }
     
+    private static final String BUILD_NUMBER = System.getProperty("netbeans.buildnumber"); // NOI18N
+    private static final String TITLE_NO_PROJECT = NbBundle.getMessage(MainWindow.class, "CTL_MainWindow_Title_No_Project", BUILD_NUMBER);
+    private static final Format FORMAT_PROJECT = new MessageFormat(NbBundle.getMessage(MainWindow.class, "CTL_MainWindow_Title"));
+    
     /** Updates the MainWindow's title */
     private void updateTitle(String projectName) {
-        String buildNumber = System.getProperty("netbeans.buildnumber"); // NOI18N
-        String subTitle;
-        if(projectName == null) {
-            setTitle(NbBundle.getMessage(MainWindow.class, "CTL_MainWindow_Title_No_Project", buildNumber));
+        // XXX might be a good idea to put this into a RequestProcessor task
+        // scheduled for 100msec in the future to coalesce changes (also need
+        // to then repost back to EQ); seems that JFrame.setTitle can be expensive
+        if (projectName == null) {
+            setTitle(TITLE_NO_PROJECT);
         } else {
-            subTitle = projectName;
-            setTitle(NbBundle.getMessage(MainWindow.class, "CTL_MainWindow_Title", buildNumber, subTitle));
+            setTitle(FORMAT_PROJECT.format(new Object[] {BUILD_NUMBER, projectName}));
         }
         
     }

@@ -7,30 +7,33 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.core.windows;
 
-
+import java.awt.Frame;
+import java.awt.Image;
+import java.awt.Rectangle;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.net.URL;
+import java.util.Iterator;
+import java.util.Set;
+import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import org.netbeans.core.windows.actions.ActionUtils;
 import org.netbeans.core.windows.persistence.PersistenceManager;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.windows.*;
-
-import javax.swing.*;
-import java.awt.*;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.net.URL;
-import java.util.Iterator;
-import java.util.Set;
-
+import org.openide.windows.Mode;
+import org.openide.windows.TopComponent;
+import org.openide.windows.TopComponentGroup;
+import org.openide.windows.WindowManager;
+import org.openide.windows.Workspace;
 
 /**
  * This class extends WindowManager to provide all window system functionality.
@@ -91,6 +94,10 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     
     /** Singleton accessor, returns instance of window manager implementation */
     public static WindowManagerImpl getInstance() {
+        if (defaultInstance != null) {
+            // Save a bunch of time accessing global lookup, acc. to profiler.
+            return defaultInstance;
+        }
         return (WindowManagerImpl)Lookup.getDefault().lookup(WindowManager.class);
     }
 
