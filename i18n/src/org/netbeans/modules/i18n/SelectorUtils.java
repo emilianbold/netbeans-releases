@@ -45,6 +45,7 @@ import org.openide.util.UserCancelException;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import java.net.URL;
+import org.netbeans.api.project.ProjectInformation;
 
 
 
@@ -136,13 +137,10 @@ public class SelectorUtils {
      * @return root <code>Node</code> 
      */
     static public Node bundlesNode(Project prj, FileObject file, boolean includeFiles) {
-        // to initialize nodeDelegates correctly
-        sourcesNode(prj, ALL_FILTER);
-
         java.util.List nodes = new LinkedList();      
 
         ClassPath cp = ClassPath.getClassPath(file, ClassPath.EXECUTE);
-        if (cp != null) nodes.addAll(getRootNodes(getRoots(cp), BUNDLES_FILTER, includeFiles));
+        if (cp != null) nodes.addAll(getRootNodes(prj, getRoots(cp), BUNDLES_FILTER, includeFiles));
         
         return createRootFor(nodes, prj);
     }
@@ -170,7 +168,8 @@ public class SelectorUtils {
     }
 
 
-    private static java.util.List getRootNodes(java.util.List roots, 
+    private static java.util.List getRootNodes(Project prj,
+                                               java.util.List roots, 
                                                FilteredNode.NodeFilter filter,
                                                boolean includeFiles) {
         java.util.List nodes = new ArrayList(roots.size());      
@@ -179,15 +178,38 @@ public class SelectorUtils {
             try {
                 FileObject rfo = (FileObject)it.next();
                 if (includeFiles || (FileUtil.toFile(rfo)!=null)) {
-                    FilteredNode node = 
-                        new FilteredNode(DataObject.find(rfo).getNodeDelegate(),filter);
-                    // TODO - some display name
-                    // node.setDisplayName(cp.getDisplayName());
+                    Project owner = org.netbeans.api.project.FileOwnerQuery.getOwner(rfo);
+                    Node origNode = DataObject.find(rfo).getNodeDelegate();
+                    FilteredNode node =  new FilteredNode(origNode,filter, getDisplayName(rfo, owner, prj!=owner));
                     nodes.add(node);
                 }
             } catch (org.openide.loaders.DataObjectNotFoundException ex) {}
         }
         return nodes;
+    }
+
+
+    private static String getDisplayName(FileObject fo, Project owner, boolean incPrjName) {
+        if (owner != null) {
+            SourceGroup grp = getSourceGroup(fo, owner);
+            String n = (grp!=null)?grp.getDisplayName():fo.getName(); 
+            if (incPrjName) {
+                ProjectInformation pi = (ProjectInformation)owner.getLookup().lookup(ProjectInformation.class);
+                if (pi != null) n  += " ["+pi.getDisplayName()+"]";
+            }
+            return n;
+        } else 
+            return FileUtil.getFileDisplayName(fo);
+    }
+
+    private static SourceGroup getSourceGroup(FileObject file, Project prj) {
+      Sources src = ProjectUtils.getSources(prj);
+      SourceGroup[] srcgrps = src.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+      for (int i = 0 ; i < srcgrps.length; i++) {
+          if (file == srcgrps[i].getRootFolder())
+              return srcgrps[i];
+      }
+      return null;
     }
 
 

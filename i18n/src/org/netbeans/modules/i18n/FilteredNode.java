@@ -30,6 +30,7 @@ import org.openide.nodes.Node;
 public class FilteredNode extends FilterNode {
 
   private NodeFilter filter;
+  private String newName = null;
 
   /**
    * Decides which nodes should be included in the hierarchy and which
@@ -39,15 +40,27 @@ public class FilteredNode extends FilterNode {
     public boolean acceptNode(Node node) ;
   }
 
+  public FilteredNode(Node original, NodeFilter filter ) {
+      this(original, filter, null);
+  }
 
-  public FilteredNode(Node original, NodeFilter filter) {
+
+
+  public FilteredNode(Node original, NodeFilter filter, String newName) {
     super(original, new FilteredChildren(original, filter));
     this.filter = filter;
+    this.newName = newName;
+  }
+
+  public String getDisplayName() { 
+    if (newName != null) return newName; else return super.getDisplayName();
   }
     
   public Node cloneNode() {
     return new FilteredNode(this.getOriginal().cloneNode(), this.filter);
   }
+
+    
 
 
   /**
