@@ -71,7 +71,7 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
         
         if (moduleProvider instanceof J2eeAppProvider) {
             J2eeAppProvider ear = (J2eeAppProvider) moduleProvider;
-            J2eeModuleProvider clientProvider = ear.getChildModuleProvider(clientName);
+            J2eeModuleProvider clientProvider = ConfigurationStorage.getChildModuleProvider(ear, clientName);
             if (clientProvider != null)
                 clientModule = clientProvider.getJ2eeModule();
         } else {

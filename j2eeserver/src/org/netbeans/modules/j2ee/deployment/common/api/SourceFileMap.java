@@ -7,8 +7,11 @@
 package org.netbeans.modules.j2ee.deployment.common.api;
 
 import java.io.File;
+import javax.enterprise.deploy.model.DDBean;
+import javax.enterprise.deploy.model.DeployableObject;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.deployment.config.DDCommon;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -25,6 +28,28 @@ import org.openide.util.Lookup;
  * @author  nn136682
  */
 public abstract class SourceFileMap {
+    
+    /**
+     * Returns the concrete file for the given distribution path.
+     * @param distributionPath distribution path for to find source file for.
+     */
+    public abstract FileObject[] findSourceFile(String distributionPath);
+
+    /**
+     * Returns the relative path in distribution of the given concrete source file.
+     * @param distributionPath distribution path for to find source file for.
+     */
+    public abstract File getDistributionPath(FileObject sourceFile);
+    
+    /**
+     * Return source roots this file mapping is operate on.
+     */
+    public abstract FileObject[] getSourceRoots();
+
+    /**
+     * Return context name, typically the J2EE module project name.
+     */
+    public abstract String getContextName();
     
     /**
      * Add new mapping or update existing mapping of the given distribution path.
@@ -46,26 +71,31 @@ public abstract class SourceFileMap {
     public abstract FileObject remove(String distributionPath);
 
     /**
-     * Returns the concrete file for the ginven distribution path.
-     * @param distributionPath distribution path for to find source file for.
+     * Returns a source file map for the module, or null if none can be identified.
+     *
+     * @param source A non-null source file (java, descriptor or dbschema) to establish mapping context.
      */
-    public abstract FileObject findSourceFile(String distributionPath);
-
-    
-    /**
-     * Gets a source file mapping using the given primary file.
-     * @param primary a non-null abssolute path of a module file such a primary configuration 
-     * descriptor.
-     */
-    public static final SourceFileMap getExtraFileMap(File primary) {
-        FileObject primaryFO = FileUtil.toFileObject(primary);
-        Project owner = FileOwnerQuery.getOwner(primaryFO);
+    public static final SourceFileMap findSourceMap(FileObject source) {
+        Project owner = FileOwnerQuery.getOwner(source);
         if (owner != null) {
             Lookup l = owner.getLookup();
             J2eeModuleProvider projectModule = (J2eeModuleProvider) l.lookup(J2eeModuleProvider.class);
             if (projectModule != null) {
                 return projectModule.getSourceFileMap();
             }
+        }
+        return null;
+    }
+
+    /**
+     * Returns a source file map for the module, or null if none can be identified.
+     *
+     * @param ddbean An instance of ddbean to establish mapping context.
+     */
+    public static final SourceFileMap findSourceMap(DDBean ddbean) {
+        if (ddbean instanceof DDCommon) {
+            DDCommon dd = (DDCommon) ddbean;
+            return dd.getModuleProvider().getSourceFileMap();
         }
         return null;
     }

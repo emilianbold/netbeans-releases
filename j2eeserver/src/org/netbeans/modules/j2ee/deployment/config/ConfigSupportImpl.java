@@ -20,8 +20,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.impl.ServerString;
 import org.netbeans.modules.j2ee.deployment.impl.Server;
@@ -38,6 +40,7 @@ import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ServerString;
 import org.netbeans.modules.j2ee.deployment.impl.gen.nbd.WebContextRoot;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ConfigurationSupport;
 import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentPlanSplitter;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
@@ -297,7 +300,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
             FileObject primary = findPrimaryConfigurationFO();
             if (primary == null) {
                 ServerInstance instance = ServerRegistry.getInstance ().getServerInstance (getProvider ().getServerInstanceID ());
-                ModuleDeploymentSupport mds = new ModuleDeploymentSupport(getProvider().getJ2eeModule());
+                ModuleDeploymentSupport mds = new ModuleDeploymentSupport(getProvider());
                 DeploymentConfiguration config;
                 if(instance != null) {
                     config = instance.getDeploymentManagerForConfiguration().createConfiguration(mds.getDeployableObject());
@@ -446,18 +449,25 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
             return EMPTY_FILE_LIST;
         }
         
-        File[] files = new File[fnames.length];
+        ArrayList files = new ArrayList();
         for (int i = 0; i < fnames.length; i++) {
             File path = new File(fnames[i]);
             String fname = path.getName();
-            FileObject fo = provider.findDeploymentConfigurationFile(fname);
-            if (fo == null) {
-                files[i] = provider.getDeploymentConfigurationFile(fname);
-            } else if (! existingOnly) {
-                files[i] = FileUtil.toFile(fo);
+            File file = null;
+            if (existingOnly) {
+                FileObject fo = provider.findDeploymentConfigurationFile(fname);
+                if (fo != null) {
+                    file = FileUtil.toFile(fo);
+                }
+            } else {
+                file = provider.getDeploymentConfigurationFile(fname);
+            }
+            
+            if (file != null) {
+                files.add(file);
             }
         }
-        return files;
+        return (File[])files.toArray(new File[files.size()]);
     }
     
     public static FileObject[] getConfigurationFiles(J2eeModuleProvider jmp) {
@@ -500,35 +510,9 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         return null;
     }
     
-    /**
-     * Return straigth file mapping servide for configuration files.
-     * Note: mapping root is folder containing primary configuration file.
-     */
-    public SourceFileMap getDefaultConfigFileMap() {
-        // Assumption: by the time the config file map is requested, config files should already exist
-        FileObject primaryFO = getProvider().findDeploymentConfigurationFile(getPrimaryConfigurationFileName());
-        return new StraightFileMap(primaryFO.getParent());
-    }
-
-    /**
-     * Straight file mapping service.
-     * Map a distribution path to a file using distribution path as relative path to a mapping root.
-     */
-    private static final class StraightFileMap extends SourceFileMap {
-        private FileObject root;
-        public StraightFileMap(FileObject root) {
-            this.root = root;
-        }
-        public boolean add(String distributionPath, FileObject sourceFile) {
-            return sourceFile.getPath().startsWith(root.getPath());
-        }
-        public FileObject findSourceFile(String distributionPath) {
-            String path = distributionPath.startsWith("/") ? distributionPath.substring(1) : distributionPath; //NOI18N
-            FileObject fo = root.getFileObject(path);
-            return fo;
-        }
-        public FileObject remove(String distributionPath) {
-            return findSourceFile(distributionPath);
-        }
+    public void setCMPMappingInfo(String ejbName, OriginalCMPMapping mapping) {
+        DeploymentConfiguration config = getStorage().getDeploymentConfiguration();
+        ConfigurationSupport serverConfig = this.getServer().geConfigurationSupport();
+        serverConfig.setMappingInfo(config, ejbName, mapping);
     }
 }

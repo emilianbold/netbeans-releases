@@ -529,6 +529,8 @@ public final class ServerRegistry implements java.io.Serializable {
             for (Iterator j=servers.values().iterator(); j.hasNext();) {
 		Server s = (Server) j.next();
 		String[] paths = s.getDeploymentPlanFiles(allTypes[i]);
+                if (paths == null)
+                    continue;
 		for (int k=0 ; k<paths.length; k++) {
 		    File path = new File(paths[k]);
 		    configNames.add(path.getName());

@@ -21,6 +21,7 @@ import javax.enterprise.deploy.spi.*;
 import org.netbeans.modules.j2ee.deployment.impl.gen.nbd.*;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.modules.j2ee.deployment.impl.ui.RegistryNodeProvider;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ConfigurationSupport;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.util.Lookup;
@@ -50,7 +51,7 @@ public class Server implements Node.Cookie {
     
     public Server(FileObject fo) throws Exception {
         //long t0 = System.currentTimeMillis();
-        
+        initDeploymentConfigurationFileList(fo);
         name = fo.getName();
         FileObject descriptor = fo.getFileObject("Descriptor");
         if(descriptor == null) {
@@ -248,6 +249,11 @@ public class Server implements Node.Cookie {
         return beanUIFactory.getUICustomization(bean);
     }
     
+    public ConfigurationSupport geConfigurationSupport() {
+        ConfigurationSupport cs = (ConfigurationSupport) lkp.lookup (ConfigurationSupport.class);
+        return cs;
+    }
+
     public ServerInstance[] getInstances() {
         Collection ret = new ArrayList();
         for (Iterator i=ServerRegistry.getInstance().getInstances().iterator(); i.hasNext();) {

@@ -16,8 +16,10 @@ package org.netbeans.modules.j2ee.deployment.devmodules.spi;
 import java.util.Collection;
 import java.util.Enumeration;
 import javax.enterprise.deploy.shared.ModuleType;
+import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
 import org.netbeans.modules.j2ee.deployment.config.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
+import org.netbeans.modules.j2ee.deployment.impl.DefaultSourceMap;
 import org.netbeans.modules.j2ee.deployment.impl.Server;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
@@ -105,6 +107,11 @@ public abstract class J2eeModuleProvider {
          * @return relative path inside distribution content.
          */
         public String getContentRelativePath(String deploymentConfigurationFileName);
+        /**
+         * Push the CMP and CMR mapping info to the server configuraion.
+         * This call is typically used by CMP mapping wizard.
+         */
+        public void setCMPMappingInfo(String ejbname, OriginalCMPMapping mapping);
     }
     
     /**
@@ -127,12 +134,28 @@ public abstract class J2eeModuleProvider {
     abstract public FileObject findDeploymentConfigurationFile (String name);
     
     /**
+     * Returns directory containing definition for enterprise resources needed for
+     * the module execution; return null if not supported
+     */
+    public FileObject getEnterpriseResourceDirectory() {
+        return null;
+    }
+    
+    /**
+     * Returns list of root directories for source files including configuration files.
+     * Examples: file objects for src/java, src/conf.
+     */
+    public FileObject[] getSourceRoots() {
+        return new FileObject[0];
+    }
+    
+    /**
      * Return destination path-to-source file mappings.
      * Default returns config file mapping with straight mapping from the configuration
      * directory to distribution directory.
      */
     public SourceFileMap getSourceFileMap() {
-        return getConfigSupportImpl().getDefaultConfigFileMap();
+        return new DefaultSourceMap(getDeploymentName(), getSourceRoots());
     }
     
     /** If the module wants to specify a target server instance for deployment 
@@ -195,16 +218,16 @@ public abstract class J2eeModuleProvider {
     /**
      * Returns all configuration files known to this J2EE Module.
      */
-    protected final FileObject[] getConfigurationFiles() {
+    public final FileObject[] getConfigurationFiles() {
         addFCL();
         return ConfigSupportImpl.getConfigurationFiles(this);
     }
     
     List listeners = new ArrayList();
-    protected final void addConfigurationFilesListener(ConfigurationFilesListener l) {
+    public final void addConfigurationFilesListener(ConfigurationFilesListener l) {
         listeners.add(l);
     }
-    protected final void removeConfigurationFilesListener(ConfigurationFilesListener l) {
+    public final void removeConfigurationFilesListener(ConfigurationFilesListener l) {
         listeners.remove(l);
     }
     private void fireConfigurationFilesChanged(boolean added, FileObject fo) {
@@ -238,9 +261,9 @@ public abstract class J2eeModuleProvider {
             while(fullPath.getParentFile() != null) {
                 rel = new File(fullPath.getName(), rel.getPath());
                 if (rel.equals(relativePath)) {
-                    FileObject root = FileUtil.toFileObject(rel);
+                    FileObject root = FileUtil.toFileObject(fullPath);
                     FCL fcl = new FCL();
-                    root.addFileChangeListener((FileChangeListener) WeakListeners.create(FileChangeListener.class, fcl, root));
+                    root.addFileChangeListener(fcl);
                     return;
                 }
                 fullPath = fullPath.getParentFile();
@@ -310,4 +333,5 @@ public abstract class J2eeModuleProvider {
     private ConfigSupportImpl getConfigSupportImpl() {
         return (ConfigSupportImpl) getConfigSupport();
     }
+    
 }
