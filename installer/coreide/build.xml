@@ -42,7 +42,10 @@ Microsystems, Inc. All Rights Reserved.
           <include name="ppk/*.jar"/>
           <include name="lib/ppk/*.jar"/>
           <exclude name="lib/conversion.jar"/>
-        </fileset>        
+        </fileset>
+        <fileset dir="../lib">
+          <include name="dist/*.jar"/>
+        </fileset>
     </path>
     <property name="ismp.cp-set" value="true" />
   </target>
@@ -90,7 +93,9 @@ Microsystems, Inc. All Rights Reserved.
       <arg value="-alias"/>
       <arg value="basedir=${basedir}"/>
       <arg value="-alias"/>
-      <arg value="nb.dir=${nb.dir}"/>      
+      <arg value="nb.dir=${nb.dir}"/>
+      <arg value="-alias"/>
+      <arg value="ismp.home=${ismp.home}"/>
       <classpath>
         <pathelement path="build/classes" />      
         <path refid="ismp.cp"/>
@@ -105,7 +110,9 @@ Microsystems, Inc. All Rights Reserved.
       <arg value="-alias"/>
       <arg value="basedir=${basedir}"/>
       <arg value="-alias"/>
-      <arg value="nb.dir=${nb.dir}"/>      
+      <arg value="nb.dir=${nb.dir}"/>
+      <arg value="-alias"/>
+      <arg value="ismp.home=${ismp.home}"/>
       <classpath>
         <pathelement path="build/classes" />      
         <path refid="ismp.cp"/>
@@ -121,7 +128,7 @@ Microsystems, Inc. All Rights Reserved.
     <move file="build/disk1/setupsolarisX86.bin" tofile="dist/${installer.basename}-solx86.bin"/>
   </target>
 
-  <target name="compile" depends="init" description="compile custom beans and panels">
+  <target name="compile" depends="init, build-library" description="compile custom beans and panels">
     <mkdir dir="build/classes"/>
     
     <javac destdir="build/classes" srcdir="src" source="1.4" target="1.4" debug="true" deprecation="true">
@@ -134,6 +141,11 @@ Microsystems, Inc. All Rights Reserved.
             <include name="**/*.properties"/>
         </fileset>
     </copy>
+  </target>
+  
+  <!-- Build library -->
+  <target name="build-library" description="compile shared library">
+    <ant antfile="../lib/build.xml" target="jar" inheritAll="false"/>
   </target>
 
   <target name="run" depends="init" description="run the installer">
