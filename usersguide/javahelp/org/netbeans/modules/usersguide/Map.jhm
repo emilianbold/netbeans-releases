@@ -241,6 +241,7 @@
 
 <mapID target="run.jump" url="run/run_jump.html" />
 <mapID target="run.run" url="run/run.html" />
+<mapID target="run.debugmode" url="run/run_debug.html" />
 <mapID target="run.debug.applet" url="run/run_applet.html" />
 <mapID target="run.startup" url="run/startup.html" />
 <mapID target="run.arguments" url="run/arguments.html" />
@@ -254,6 +255,8 @@
 <mapID target="run.external" url="run/external.html" />
 <mapID target="run.internal" url="run/internal.html" />
 <mapID target="run.applet" url="run/applet.html" />
+<mapID target="run.jarexecutor" url="run/jarexecutor.html" />
+<mapID target="run.debugexecutor" url="run/debugexecutor.html" />
 <mapID target="run.localeexecutor" url="run/locale_executor.html" />
 <mapID target="run.new" url="run/new.html" />
 <mapID target="run.remove" url="run/remove.html" />
@@ -402,7 +405,6 @@
 <mapID target="debug.debugger.default" url="debug/debugger/default.html" />
 <mapID target="debug.debugger.jdk" url="debug/debugger/jdk.html" />
 <mapID target="debug.debugger.applet" url="debug/debugger/applet.html" />
-<mapID target="debug.debugger.executor" url="debug/debugger/debug_executor.html" />
 <mapID target="debug.debugger.project_default" url="debug/debugger/project_default.html" />
 <mapID target="debug.service.new" url="debug/debugger/new.html" />
 <mapID target="debug.service.remove" url="debug/debugger/remove.html" />
@@ -680,7 +682,7 @@
   <mapID target="org.openide.awt.HtmlBrowser$BrowserComponent" url="pending.html" />
   <mapID target="org.openide.execution.ProcessExecutor" url="run/external.html" />
   <mapID target="org.openide.execution.ThreadExecutor" url="run/internal.html" />
-  <mapID target="org.netbeans.modules.debugger.multisession.DebuggerExecutor" url="pending.html" />
+  <mapID target="org.netbeans.modules.debugger.multisession.DebuggerExecutor" url="run/debugexecutor.html" />
   <mapID target="org.netbeans.modules.debugger.delegator.DelegatingDebugger.dialog" url="debug/sessions/finishdialog.html" />
   <mapID target="org.openide.explorer.propertysheet.PropertySheetSettings" url="pending.html" />
   <mapID target="org.openide.explorer.propertysheet.SetDefaultValueAction" url="pending.html" />
@@ -1021,7 +1023,7 @@
 
 
    <mapID target="org.netbeans.modules.jarpackager.options.JarPackagerOption" url="jarpackager/jarpackager_options.html" />
-   <mapID target="org.netbeans.modules.jarpackager.JarExecutor" url="run/external.html" />
+   <mapID target="org.netbeans.modules.jarpackager.JarExecutor" url="run/jarexecutor.html" />
 
    <mapID target="org.netbeans.modules.vcscore.settings.GeneralVcsSettingsNode" url="vcs-nb/vcs_globalsettings.html" />
    <mapID target="org.netbeans.modules.vcscore.grouping.VcsGroupSettings" url="vcs-nb/vcsgroups/vcs_groupsproperties.html" />

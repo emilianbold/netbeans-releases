@@ -161,6 +161,7 @@
   <tocitem text="Running Java Programs" target="run.jump">
     <tocitem text="The Running Workspace" target="run.workspace" />
     <tocitem text="Running a Java Program" target="run.run" />
+    <tocitem text="Running a Program in Debug Mode" target="run.debugmode" />
     <tocitem text="Running and Debugging an Applet" target="run.debug.applet" />
     <tocitem text="Specifying the Main Class to Run" target="run.mainclass" />
     <tocitem text="Running a Class When the IDE Starts" target="run.startup" />
@@ -175,6 +176,8 @@
     <tocitem text="External Executor" target="run.external"/>
     <tocitem text="Internal Executor" target="run.internal"/>
     <tocitem text="Applet Executor" target="run.applet"/>
+    <tocitem text="JAR Executor" target="run.jarexecutor"/>
+    <tocitem text="Debugger Executor" target="run.debugexecutor"/>
     <tocitem text="Locale Executor" target="run.localeexecutor"/>
     <tocitem text="Specifying the Default Executor" target="run.project" />
     <tocitem text="Defining a New Executor Type" target="run.new" />
@@ -252,7 +255,6 @@
     <tocitem text="Default Debugger" target="debug.debugger.default"/>
     <tocitem text="Applet Debugger" target="debug.debugger.applet"/>
     <tocitem text="JDK 1.1 Debugger" target="debug.debugger.jdk"/>
-    <tocitem text="Debugger Executor" target="debug.debugger.executor"/>
     <tocitem text="Specifying the Default Debugger" target="debug.debugger.project_default"/>
     <tocitem text="Defining a New Debugger Type" target="debug.service.new"/>
     <tocitem text="Setting a Debugger Type in a Template" target="debug.debugger.template" />
