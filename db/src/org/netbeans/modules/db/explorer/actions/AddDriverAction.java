@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -25,11 +25,11 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
-import org.openide.util.actions.SystemAction;
 
 import org.netbeans.modules.db.explorer.dlg.AddDriverDialog;
 import org.netbeans.modules.db.explorer.driver.JDBCDriver;
 import org.netbeans.modules.db.explorer.driver.JDBCDriverManager;
+import org.netbeans.modules.db.explorer.infos.DriverListNodeInfo;
 
 public class AddDriverAction extends DatabaseAction {
     static final long serialVersionUID =-109193000951395612L;
@@ -72,15 +72,22 @@ public class AddDriverAction extends DatabaseAction {
                     
                     try {
                         JDBCDriverManager.getDefault().addDriver(new JDBCDriver(name, drvClass, (URL[]) drvLoc.toArray(new URL[drvLoc.size()])));
-                        
-                        //REIMPLEMENT !!!
-                        DatabaseAction dbAction = (DatabaseAction) SystemAction.get(RefreshChildrenAction.class);
-                        dbAction.performAction(n);
                     } catch (IOException exc) {
                         //PENDING
-                        System.out.println("!!! " + exc.getMessage());
                     }
                     
+                    javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            try {
+                                DriverListNodeInfo info = (DriverListNodeInfo) n[0].getCookie(DriverListNodeInfo.class);
+                                if (info != null)
+                                    info.refreshChildren();
+                            } catch (Exception exc) {
+//                                exc.printStackTrace();
+                            }
+                        }
+                    });
+
                 }
             }
         };

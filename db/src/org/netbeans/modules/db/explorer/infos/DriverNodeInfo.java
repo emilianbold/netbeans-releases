@@ -60,14 +60,18 @@ public class DriverNodeInfo extends DatabaseNodeInfo {
             } catch (ClassNotFoundException exc) {
                 //PENDING
             }
-        }        
-        
-        try {
-            // refresh list of drivers after driver delete action
-            getParent().refreshChildren();
-        } catch (Exception e) {
-            throw new IOException(e.getMessage());
         }
+        
+        // refresh list of drivers after driver delete action
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                try {
+                    getParent().refreshChildren();
+                } catch (Exception exc) {
+//                    exc.printStackTrace();
+                }
+            }
+        });
     }
     
     public String getIconBase() {
