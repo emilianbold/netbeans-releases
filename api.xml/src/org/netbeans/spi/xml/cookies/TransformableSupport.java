@@ -19,6 +19,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.Source;
 import javax.xml.transform.Result;
+import javax.xml.transform.ErrorListener;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.stream.StreamSource;
@@ -64,9 +65,43 @@ public final class TransformableSupport implements TransformableCookie {
         URL url = dataObject.getPrimaryFile().getURL();
         Source xmlSource = new StreamSource (url.toExternalForm());
 
-        Transformer transformer = newTransformer (transformSource);
-//        transformer.setErrorListener (ErrorListener listener); //!!! notitier ???
-        transformer.transform (xmlSource, outputResult);
+        // prepare transformer == parse stylesheet, errors may occure
+        
+        try {
+            Transformer transformer = newTransformer (transformSource);
+            
+            // transform
+
+            if (notifier != null) {
+                Proxy proxy = new Proxy(notifier);
+                transformer.setErrorListener(proxy);
+            }
+            transformer.transform (xmlSource, outputResult);
+            
+        } catch (TransformerConfigurationException ex) {
+            // thrown if error in style sheet, unwrap first TransformerException
+            TransformerException tException = ex;
+            do {                
+                Throwable wrapped = tException.getException();
+                if (wrapped instanceof TransformerException) {
+                    tException = (TransformerException) wrapped;
+                } else {
+                    tException = null;
+                }
+            } while (tException instanceof TransformerConfigurationException);
+            
+            if (tException instanceof TransformerException) {
+                if (notifier != null) {
+                    ProcessorNotifier.Message message = new ProcessorNotifier.Message(tException);
+                    notifier.fatalError(message);
+                }
+            } else {
+                if (notifier != null) {
+                    notifier.message(ex.getLocalizedMessage());
+                }
+                
+            }
+        }                
     }
 
     
@@ -80,6 +115,32 @@ public final class TransformableSupport implements TransformableCookie {
 
     private static Transformer newTransformer (Source xsl) throws TransformerConfigurationException {
         return getTransformerFactory().newTransformer (xsl);
+    }
+
+    private static class Proxy implements ErrorListener {
+        
+        private final ProcessorNotifier peer;
+        
+        public Proxy (ProcessorNotifier peer) {
+            if (peer == null) throw new NullPointerException();
+            this.peer = peer;
+        }
+        
+        public void error(TransformerException tex) throws javax.xml.transform.TransformerException {
+            ProcessorNotifier.Message message = new ProcessorNotifier.Message(tex);
+            peer.error(message);
+        }
+        
+        public void fatalError(TransformerException tex) throws javax.xml.transform.TransformerException {
+            ProcessorNotifier.Message message = new ProcessorNotifier.Message(tex);
+            peer.fatalError(message);            
+        }
+        
+        public void warning(TransformerException tex) throws javax.xml.transform.TransformerException {
+            ProcessorNotifier.Message message = new ProcessorNotifier.Message(tex);
+            peer.warning(message);            
+        }
+        
     }
     
 }
