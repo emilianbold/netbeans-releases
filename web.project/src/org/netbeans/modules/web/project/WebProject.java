@@ -19,11 +19,14 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.ref.SoftReference;
 import java.util.*;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
+import org.openide.filesystems.FileLock;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -60,8 +63,11 @@ import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
@@ -97,6 +103,7 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
     private final Lookup lookup;
     private final ProjectWebModule webModule;
     private FileObject libFolder = null;
+    private CopyOnSaveSupport css;
     
     WebProject(final AntProjectHelper helper) throws IOException {
         this.helper = helper;
@@ -107,6 +114,7 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
         webModule = new ProjectWebModule (this, helper);
         lookup = createLookup(aux);
         helper.addAntProjectListener(this);
+        css = new CopyOnSaveSupport();
     }
 
     public FileObject getProjectDirectory() {
@@ -440,6 +448,8 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
                     }
                     libFolder.addFileChangeListener (WebProject.this);
                 }
+                // Register copy on save support
+                css.initialize();
                 // Check up on build scripts.
                 genFilesHelper.refreshBuildScript(
                     GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
@@ -491,6 +501,14 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
                 ProjectManager.getDefault().saveProject(WebProject.this);
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(e);
+            }
+            
+            // Unregister copy on save support
+            try {
+                css.cleanup();
+            } 
+            catch (FileStateInvalidException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
             
             // unregister project's classpaths to GlobalPathRegistry
@@ -551,4 +569,105 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
         }
         
     }
+
+    public class CopyOnSaveSupport extends FileChangeAdapter {
+
+        /** Creates a new instance of CopyOnSaveSupport */
+        public CopyOnSaveSupport() {
+        }
+
+        public void initialize() throws FileStateInvalidException {
+            getWebModule().getDocumentBase().getFileSystem().addFileChangeListener(this);
+        }
+
+        public void cleanup() throws FileStateInvalidException {
+            getWebModule().getDocumentBase().getFileSystem().removeFileChangeListener(this);
+        }
+
+        /** Fired when a file is changed.
+        * @param fe the event describing context where action has taken place
+        */
+        public void fileChanged (FileEvent fe) {
+            try {
+                handleCopyFileToDestDir(fe.getFile());
+            }
+            catch (IOException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
+        }
+
+        public void fileDataCreated (FileEvent fe) {
+            try {
+                handleCopyFileToDestDir(fe.getFile());
+            }
+            catch (IOException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
+        }
+        
+        /** Copies a content file to an appropriate  destination directory, 
+         * if applicable and relevant.
+         */
+        private void handleCopyFileToDestDir(FileObject fo) throws IOException {
+            if (!fo.isVirtual()) {
+                FileObject docBase = getWebModule().getDocumentBase();
+                if (FileUtil.isParentOf(docBase, fo)) {
+                    // inside docbase
+                    String path = FileUtil.getRelativePath(docBase, fo);
+                    FileObject webBuildBase = getWebModule().getContentDirectory();
+                    if (webBuildBase != null) {
+                        // project was built
+                        FileObject destFile = ensureDestinationFileExists(webBuildBase, path, fo.isFolder());
+                        if (!fo.isFolder()) {
+                            InputStream is = null;
+                            OutputStream os = null;
+                            FileLock fl = null;
+                            try {
+                                is = fo.getInputStream();
+                                fl = destFile.lock();
+                                os = destFile.getOutputStream(fl);
+                                FileUtil.copy(is, os);
+                            }
+                            finally {
+                                if (is != null) {
+                                    is.close();
+                                }
+                                if (os != null) {
+                                    os.close();
+                                }
+                                if (fl != null) {
+                                    fl.releaseLock();
+                                }
+                            }
+                            //System.out.println("copied + " + FileUtil.copy(fo.getInputStream(), destDir, fo.getName(), fo.getExt()));
+                        }
+                    }
+                }
+            }
+        }
+
+        /** Returns the destination (parent) directory needed to create file with relative path path under webBuilBase
+         */
+        private FileObject ensureDestinationFileExists(FileObject webBuildBase, String path, boolean isFolder) throws IOException {
+            FileObject current = webBuildBase;
+            StringTokenizer st = new StringTokenizer(path, "/");
+            while (st.hasMoreTokens()) {
+                String pathItem = st.nextToken();
+                FileObject newCurrent = current.getFileObject(pathItem);
+                if (newCurrent == null) {
+                    // need to create it
+                    if (isFolder || st.hasMoreTokens()) {
+                        // create a folder
+                        newCurrent = FileUtil.createFolder(current, pathItem);
+                    }
+                    else {
+                        newCurrent = FileUtil.createData(current, pathItem);
+                    }
+                }
+                current = newCurrent;
+            }
+            return current;
+        }
+    }
+    
 }
