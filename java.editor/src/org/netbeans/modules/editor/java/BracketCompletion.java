@@ -535,6 +535,12 @@ class BracketCompletion {
       caret.setDot(dotPos+1);
     }
   }
+  
+  private static boolean isEscapeSequence(BaseDocument doc, int dotPos) throws BadLocationException{
+      if (dotPos <= 0) return false;
+      char previousChar = doc.getChars(dotPos-1,1)[0];
+      return previousChar == '\\';
+  }
 
   /** 
    * Check for conditions and possibly complete an already inserted
@@ -548,6 +554,9 @@ class BracketCompletion {
   char theBracket) 
 				    throws BadLocationException 
   {
+    if (isEscapeSequence(doc, dotPos)){
+        return;
+    } 
     if ((posWithinQuotes(doc,
 			dotPos+1, 
 			theBracket,
