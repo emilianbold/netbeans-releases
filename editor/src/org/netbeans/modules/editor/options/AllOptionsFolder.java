@@ -51,7 +51,7 @@ import org.openide.loaders.DataObjectExistsException;
  *  @author  Martin Roskanin
  *  @since 08/2001
  */
-public class AllOptionsFolder extends org.openide.loaders.FolderInstance{
+public class AllOptionsFolder{
     
     /** folder for Editor Settings main node */
     public static final String FOLDER = "Editors";
@@ -77,10 +77,7 @@ public class AllOptionsFolder extends org.openide.loaders.FolderInstance{
     
     /** Creates new AllOptionsFolder */
     private AllOptionsFolder(DataFolder fld) {
-        super(fld);
         folder = fld;
-        recreate();
-        instanceFinished();
     }
     
     /** Gets the singleton of global options MIME folder */
@@ -147,13 +144,6 @@ public class AllOptionsFolder extends org.openide.loaders.FolderInstance{
                 return settingsFolder;
             }
         }
-        return null;
-    }
-    
-    /** It should creates a new instance of XML files founded in this folder.
-     *  But no known XML settings are stored in this folder. */
-    protected Object createInstance(InstanceCookie[] cookies)
-    throws java.io.IOException, ClassNotFoundException {
         return null;
     }
     
