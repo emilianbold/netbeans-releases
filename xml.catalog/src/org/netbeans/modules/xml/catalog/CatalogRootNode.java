@@ -288,6 +288,10 @@ public final class CatalogRootNode extends AbstractNode implements Node.Cookie {
             return activatedNodes.length > 0;
         }
         
+        protected boolean asynchronous() {
+            return false;
+        }
+        
         protected synchronized void performAction(Node[] activatedNodes) {
             if (enable(activatedNodes) == false) return;
             try {

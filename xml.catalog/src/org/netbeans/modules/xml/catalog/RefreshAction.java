@@ -62,5 +62,8 @@ final class RefreshAction extends CookieAction {
         return CookieAction.MODE_ALL;
     }
     
+    protected boolean asynchronous() {
+        return false;
+    }
 
 }

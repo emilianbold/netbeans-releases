@@ -282,6 +282,10 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
             }
         }
         
+        protected boolean asynchronous() {
+            return false;
+        }
+        
     }
     
 }
