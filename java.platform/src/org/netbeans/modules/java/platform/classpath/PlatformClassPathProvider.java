@@ -55,8 +55,7 @@ public class PlatformClassPathProvider implements ClassPathProvider {
                 return bootClassPath;
             }
             else if (ClassPath.COMPILE.equals(type) &&
-                    ((sourcePath  != null && sourcePath.contains(fo)) ||
-                    (libraryPath != null && libraryPath.contains(fo)))) {
+                    libraryPath != null && libraryPath.contains(fo)) {
                 return libraryPath;
             }
         }
