@@ -75,6 +75,11 @@ public abstract class InstanceProperties {
     public static final String REMOVE_FORBIDDEN = "removeForbidden"; //NOI18N
     
     /**
+     * HTTP port property, The port where the instance runs
+     */
+    public static final String HTTP_PORT_NUMBER = "httpportnumber";
+    
+    /**
      * List of listeners which listen to instance properties changes
      */
     private List/*<PropertyChangeListener>*/ changeListeners = Collections.synchronizedList(new LinkedList());
