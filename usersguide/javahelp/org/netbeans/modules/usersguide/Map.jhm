@@ -486,8 +486,7 @@
 
 <!-- Web apps help -->
 
-<mapID target="overview_IE" url="web/concepts/webmod.html" />
-
+<mapID target="intro" url="web/overvw/Intro.html" />
 <mapID target="concepts_jspsyn" url="web/concepts/jspsyntax.html" />
 <mapID target="concepts_deploydes" url="web/concepts/deployd.html" />
 <mapID target="concepts_jsp" url="web/concepts/jsp.html" />
@@ -501,7 +500,6 @@
 <mapID target="spec_version" url="web/concepts/spec_version.html" />
 <mapID target="concepts_html" url="web/concepts/html.html" />
 <mapID target="concepts_jar" url="web/concepts/jar.html" />
-
 <mapID target="ctx_tagattcust" url="web/taglib/ctx_tagattcust.html" />
 <mapID target="taglib_createtaglib" url="web/taglib/createtaglib.html" />
 <mapID target="taglib_generate" url="web/taglib/generate.html" />
@@ -509,8 +507,157 @@
 <mapID target="ctx_taglibcust" url="web/taglib/ctx_taglibcust.html" />
 <mapID target="ctx_tagcust" url="web/taglib/ctx_tagcust.html" />
 <mapID target="ctx_scrvarcust" url="web/taglib/ctx_scrvarcust.html" />
-
 <mapID target="ctx_repaddto" url="web/taglibUI/ctx_repaddto.html" />
+<mapID target="tagsupport_fromrepository" url="web/taglibUI/repaddfrom.html" />
+<mapID target="tagsupport_fromfilesys" url="web/taglibUI/addfilesys.html" />
+<mapID target="jsp_create" url="web/create_jsp/jsp_create.html" />
+<mapID target="jsp_edit" url="web/create_jsp/jsp_edit.html" />
+<mapID target="jsp_queryparams" url="web/create_jsp/jsp_queryparams.html" />
+<mapID target="jsp_props" url="web/create_jsp/jsp_props.html" />
+<mapID target="jsp_validate" url="web/create_jsp/jsp_validate.html" />
+<mapID target="jsp_servletview" url="web/create_jsp/jsp_servletview.html" />
+<mapID target="jsp_debug" url="web/jsp/jsp_debug.html" />
+<mapID target="quickref_webmod" url="web/overvw/mod_quickref.html" />
+<mapID target="servlet_create" url="web/servlet/servlet_create.html" />	
+<mapID target="servlet_edit" url="web/servlet/servlet_edit.html" />	
+<mapID target="webmod_createnew" url="web/webmod/mod_createnew.html" />
+<mapID target="webmod_cvs" url="web/webmod/mod_cvs.html" />
+<mapID target="webmod_newdir" url="web/webmod/mod_newdir.html" />        
+<mapID target="webmod_reverse" url="web/webmod/mod_reverse.html" />
+<mapID target="webmod_loadexist" url="web/webmod/mod_loadexist.html" />
+<mapID target="webmod_dbggrprops" url="web/webmod/mod_dbggrprops.html" />      
+<mapID target="webmod_addjar" url="web/webmod/mod_addjar.html" />
+<mapID target="webmod_addservlet" url="web/webmod/mod_addservlet.html" />
+<mapID target="webmod_usetags" url="web/webmod/mod_usetags.html" />
+<mapID target="webmod_editdd" url="web/webmod/mod_editdd.html" />
+<mapID target="webmod_placefiles" url="web/webmod/mod_placefiles.html" />
+<mapID target="webmod_struct" url="web/concepts/webmod_struct.html" />
+<mapID target="webmod_techsupport" url="web/concepts/webmod_techsupport.html" />
+<mapID target="webmod_idesupport" url="web/concepts/webmod_idesupport.html" />
+<mapID target="webmod_servconfig" url="web/webmod/mod_servconfig.html" />
+<mapID target="webmod_server_set" url="web/webmod/mod_server_set.html" />
+<mapID target="webmod_packagewar" url="web/webmod/mod_packagewar.html" />
+<mapID target="webmod_deploy" url="web/webmod/mod_deploy.html" />
+<mapID target="webmod_webxmlprops" url="web/webmod/mod_webxml_props.html" />
+<mapID target="webmod_webinfprops" url="web/webmod/mod_webinf_props.html" />
+<mapID target="webmod_xml" url="web/webmod/mod_xml.html" />
+<mapID target="webmod_browser" url="web/webmod/mod_browser.html" />
+<mapID target="webmod_addtglb" url="web/webmod/mod_addtglb.html" />
+<mapID target="webmod_jstl" url="web/webmod/mod_jstl.html" />
+<mapID target="webmod_addcompapplet" url="web/webmod/mod_addcompapplet.html" />
+<mapID target="webmod_addapplet" url="web/webmod/mod_addapplet.html" />
+<mapID target="webmod_addtagf" url="web/webmod/mod_tagf_add.html" />
+<mapID target="war_delete" url="web/warpkg/war_delete.html" />
+<mapID target="war_editprop" url="web/warpkg/war_editprop.html" />
+<mapID target="war_unpack" url="web/warpkg/war_unpack.html" />
+<mapID target="war_viewcont" url="web/warpkg/war_viewcont.html" />
+<mapID target="war_xtrafiles" url="web/warpkg/war_xtrafiles.html" />
+<mapID target="workingwith_webmod" url="web/overvw/mod_process.html" />
+<mapID target="filter_addtodd" url="web/servlet/filter_addtodd.html" />
+<mapID target="filter_create" url="web/servlet/filter_create.html" />
+<mapID target="filter_props" url="web/servlet/filter_props.html" />
+<mapID target="listen_addtodd" url="web/servlet/listen_addtodd.html" />
+<mapID target="listen_props" url="web/servlet/listen_props.html" />
+<mapID target="listen_create" url="web/servlet/listen_create.html" />
+<mapID target="servlet_props" url="web/servlet/servlet_props.html" />
+<mapID target="ieglossary_URL_query_string" url="web/glossary/URL_query_string.html" />
+
+<!-- map ids to other help sets -->
+<mapID target="org.netbeans.modules.editor.html.HTMIndentEngine" 
+  url="/org/netbeans/modules/usersguide/editing/configuring/indentation.html" />
+
+<mapID target="org.netbeans.modules.web.core.syntax.JspIndentEngine" 
+  url="/org/netbeans/modules/usersguide/editing/configuring/indentation.html" />
+
+<!-- context sensitive help map IDs -->
+
+	<mapID target="org.netbeans.modules.web.html.HtmlDataObject" 
+            url="webmod/mod_html_node.html" />
+      <!-- NOTE THE INTENTIONAL EXCLUSION OF .web -->
+      <!-- this might be a generic (not web module) object -->
+	<mapID target="org.netbeans.modules.html.HtmlDataNode.PropertySheet" 
+            url="webmod/mod_html_props.html" />
+
+	<mapID target="org.netbeans.modules.web.dd.DDDataObject" 
+            url="webmod/mod_webxml_node.html" />
+	<mapID target="org.netbeans.modules.web.dd.DDDataNode.PropertySheet" 
+            url="webmod/mod_webxml_props.html" />
+
+
+	<mapID target="org.netbeans.modules.web.context.WebInfObject" 
+            url="webmod/mod_webinf_node.html" />
+	<mapID target="org.netbeans.modules.web.context.WebInfObject.PropertySheet" 
+            url="webmod/mod_webinf_props.html" />
+
+        <mapID target="org.netbeans.modules.web.context.BaseWizardPanel" 
+            url="webmod/mod_newdir.html" />  
+
+	<mapID target="org.netbeans.modules.web.dd.wizards.ListenerPanel" 
+            url="servlet/listen_addtodd.html" />
+
+        <mapID target="org.netbeans.modules.web.war.WarNode" 
+           url="warpkg/war_node.html" />
+        <!-- called from dialog boxes invoked from WEB-INF property sheet -->
+        <mapID target="org.netbeans.modules.web.war.WarNode.PropertySheet" 
+           url="warpkg/war_editprop.html" />
+	<mapID target="org.netbeans.modules.web.war.ui.ExtraFilesPropertyEditorSupport" 
+            url="warpkg/war_xtrafiles.html" />
+      <!-- NOTE: There is no property sheet for WAR files. You edit from
+           WEB-INF property sheet. This was an error -->
+	<mapID target="org.netbeans.modules.web.war.ui.WarFilterPropertyEditorSupport" 
+            url="warpkg/war_editprop.html" />
+
+        <!-- Web Module Node in Projects Window -->
+        <mapID target="org.netbeans.modules.web.context.WebAppNode" 
+            url="concepts/webmod.html" />
+
+      <!-- reference issue 39843 -->
+
+        <mapID target="org.netbeans.modules.web.core.jsploader.ServletDataNode" 
+            url="concepts/servlet.html" /> <!-- TEMP -->
+        <mapID target="org.netbeans.modules.web.core.jsploader.ServletProperties" 
+            url="servlet/servlet_props.html" />
+
+        <mapID target="org.netbeans.modules.web.core.jsploader.JspNode" 
+            url="create_jsp/jsp_node.html" />
+        <mapID target="org.netbeans.modules.web.core.jsploader.JspNode.PropertySheet" 
+            url="create_jsp/jsp_props.html" />
+
+        <mapID target="org.netbeans.modules.web.core.jsploader.JspNode.Tag" 
+            url="create_jsp/tag_node.html" />
+        <mapID target="org.netbeans.modules.web.core.jsploader.JspNode.Tag.PropertySheet" 
+            url="create_jsp/tag_props.html" />
+
+	<mapID target="org.netbeans.modules.web.dd.wizards.new.servlet"
+            url="servlet/servlet_create.html" /><!-- TEMP -->
+	<mapID target="org.netbeans.modules.web.dd.wizards.dd.servlet"
+            url="servlet/servlet_create.html" /><!-- TEMP -->
+
+	<mapID target="org.netbeans.modules.web.dd.wizards.new.filter"
+            url="servlet/filter_create.html" /><!-- TEMP -->
+	<mapID target="org.netbeans.modules.web.dd.wizards.dd.filter"
+            url="servlet/filter_addtodd.html" /><!-- TEMP -->
+	<mapID target="org.netbeans.modules.web.dd.wizards.dd2.filter"
+            url="servlet/filter_addtodd.html" /><!-- TEMP -->
+
+      <!-- when implemented -->
+	<mapID target="org.netbeans.modules.web.dd.wizards.new.listener"
+            url="servlet/listen_create.html" /><!-- TEMP -->
+	<mapID target="org.netbeans.modules.web.dd.wizards.dd.listener"
+            url="servlet/listen_addtodd.html" /><!-- TEMP -->
+
+	<mapID target="org.netbeans.modules.web.dd.wizards.new.jspdoc"
+            url="create_jsp/jsp_create.html" /> <!-- TEMP -->
+
+	<mapID target="org.netbeans.modules.web.dd.wizards.new.jspf"
+            url="create_jsp/jsp_create.html" /> <!-- TEMP -->
+ 
+      <!-- when implemented -->
+	<mapID target="org.netbeans.modules.web.dd.wizards.new.jsptag"
+            url="create_jsp/jsp_create.html" /> <!-- TEMP -->
+
+	<mapID target="org.netbeans.modules.web.dd.wizards.new.jsp"
+            url="create_jsp/jsp_create.html" /> <!-- TEMP -->
 <mapID target="tagsupport_fromrepository" url="web/taglibUI/repaddfrom.html" />
 <mapID target="tagsupport_fromfilesys" url="web/taglibUI/addfilesys.html" />
 
