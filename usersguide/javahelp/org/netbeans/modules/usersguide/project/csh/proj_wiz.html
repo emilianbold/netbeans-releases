@@ -1,0 +1,73 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright © 2004 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<title>New Project Wizard: Choose Project</title>
+<link rel="StyleSheet" href="../../ide.css" type="text/css">
+</head>
+<body>
+<h2>New Project Wizard: Choose Project</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+<p>You use the New Project wizard to create a new IDE project. To open the New 
+  Project wizard, choose File <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;New 
+  Project (Ctrl-Shift-N). Select a template category and a project template and 
+  click Next. 
+<p>For each project category, there are two types of project templates: 
+<ul>
+  <li><b><a href="../proj_stand_about.html">Standard templates</a>.</b> Templates 
+    in which the IDE controls all source and classpath settings, compilation, 
+    running, and debugging. Standard project templates can only contain one source 
+    directory and optionally one JUnit test directory. To work with multiple source 
+    directories, you create a project for each directory and set up classpath 
+    dependencies between the projects. Standard project templates have a (<img src="../../images/j2seProject.gif" width="16" height="16" alt="J2SE project icon">) 
+    icon for J2SE project and a (<img src="../../images/webProjectIcon.gif" width="16" height="16" alt="web project icon">) 
+    icon for web application project.</li>
+  <li><b><a href="../proj_free_about.html">Freeform templates</a>.</b> Templates 
+    in which your own Ant script controls all classpath settings, compilation, 
+    running, and debugging. The settings you configure when creating the project 
+    are used to tell the IDE how your Ant script manages your source code and 
+    must match the settings in your Ant script. 
+    <p>Freeform projects can contain as many source directories as your Ant script 
+      is configured to handle. If your Ant script does not contain targets for 
+      all IDE actions, like debugging and running your project, you can easily 
+      write Ant targets for these actions. Freeform projects have a (<img src="../../images/freeform-project.png" width="16" height="16" alt="freeform project icon">) 
+      icon in the New Project wizard.</p>
+    <p></p>
+  </li>
+</ul>
+<p>For more information on each of the project templates, see the following topics: 
+<ul>
+  <li>Web Application</li>
+  <li>Web Project with Existing Sources</li>
+  <li>Web Project with Existing Ant Script</li>
+  <li><a href="proj_j2sestand_wiz.html">Java Application/Class Library</a></li>
+  <li><a href="proj_j2seexist_wiz.html">Java Project with Existing Sources</a></li>
+  <li><a href="proj_j2sefree_wiz1.html">Java Project with Existing Ant Script</a></li>
+</ul>
+<table>
+  <tr> 
+    <td valign="top"><img src="../../images/tip.gif" alt="Tip"></td>
+    <td>Plug-in modules may install additional project templates. See the module's 
+      online help for more information. 
+</table>
+<table>
+  <tr> 
+    <th colspan=2 align=left><a name="seealso">See also</a></th>
+  </tr>
+  <tr> 
+    <td width="23"></td>
+    <td>&nbsp; </td>
+  </tr>
+</table>
+
+<hr><font size=-2><a href="../../credits.html">Legal Notices</a></font>
+
+<table border="0" cellpadding="20">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>
