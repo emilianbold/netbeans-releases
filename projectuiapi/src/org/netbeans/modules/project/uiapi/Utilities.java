@@ -43,5 +43,10 @@ public class Utilities {
     public static ProjectChooserFactory getProjectChooserFactory() {
         return (ProjectChooserFactory)Lookup.getDefault().lookup( ProjectChooserFactory.class );
     }
-        
+    
+    /** Gets an object the OpenProjects can delegate to
+     */
+    public static OpenProjectsTrampoline getOpenProjectsTrampoline() {
+        return (OpenProjectsTrampoline)Lookup.getDefault().lookup( OpenProjectsTrampoline.class );
+    }    
 }

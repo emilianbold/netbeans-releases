@@ -73,13 +73,16 @@ public final class OpenProjectList {
     /** Property change listeners */
     private PropertyChangeSupport pchSupport;
     
+    
     OpenProjectList() {
         openProjects = new ArrayList();
         pchSupport = new PropertyChangeSupport( this );
         recentProjects = new RecentProjectList( 5 ); 
     }
     
-        
+           
+    // Implementation of the class ---------------------------------------------
+    
     public static OpenProjectList getDefault() {
         boolean needNotify = false;
         
@@ -98,7 +101,7 @@ public final class OpenProjectList {
                          mainProjectDir.equals( FileUtil.toFile( p.getProjectDirectory() ).getPath() ) ) {
                         INSTANCE.mainProject = p;
                     }
-                }            
+                }          
             }
         }
         if ( needNotify ) {            
@@ -400,7 +403,8 @@ public final class OpenProjectList {
         if ( pLRU == null ) {
             // Needs init from the project API            
             PrivilegedTemplates pt = (PrivilegedTemplates)project.getLookup().lookup( PrivilegedTemplates.class );
-            pLRU = new ArrayList( Arrays.asList( pt.getPrivilegedTemplates() ) );
+            String ptNames[] = pt == null ? null : pt.getPrivilegedTemplates();
+            pLRU = new ArrayList( Arrays.asList( pt == null ? new String[0]: ptNames ) );
             lrusAsString.put( projectPath, pLRU );
         }
 
@@ -538,5 +542,5 @@ public final class OpenProjectList {
         
     }
     
-    
+       
 }
