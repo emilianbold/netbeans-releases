@@ -47,6 +47,7 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.spi.java.platform</package>
             </public-packages>
             <javadoc/>
+            <unit-tests/>
         </data>
     </configuration>
 </project>
