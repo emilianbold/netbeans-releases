@@ -257,7 +257,7 @@ public final class ToolbarPool extends JComponent implements Accessible {
 
             java.awt.Window w = javax.swing.SwingUtilities.windowForComponent (this);
             if (w != null) {
-                w.validate();
+//                w.validate();
             }
         }
     }
