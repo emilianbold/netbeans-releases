@@ -52,7 +52,8 @@ class HandleLayer extends JPanel
     private boolean viewOnly;
 
     private ComponentDragger componentDragger;
-    private Point lastLeftButtonPressedPoint;
+    private Point lastLeftMousePoint;
+    private Point prevLeftMousePoint;
     private boolean draggingCanceled = false;
 
     private int resizeType;
@@ -253,7 +254,7 @@ class HandleLayer extends JPanel
     /** Selects component at the position e.getPoint() on component layer.
      * What component is selected further depends on whether CTRL or ALT
      * keys are hold. */
-    private void selectComponent(MouseEvent e) {
+    private RADComponent selectComponent(MouseEvent e) {
         boolean ctrl = e.isControlDown() && !e.isAltDown();
         boolean alt = e.isAltDown() && !e.isControlDown();
 
@@ -283,6 +284,30 @@ class HandleLayer extends JPanel
                 formDesigner.clearSelection();
         }
         repaint();
+
+        return hitMetaComp;
+    }
+
+    private void processDoubleClick(MouseEvent e) {
+        if (e.isShiftDown() || e.isControlDown()) return;
+
+        RADComponent metacomp  = getMetaComponentAt(e.getPoint(), COMP_SELECTED);
+
+        if (e.isAltDown()) {
+            if (metacomp instanceof RADVisualComponent) {
+                metacomp = ((RADVisualComponent)metacomp).getParentContainer();
+                if (metacomp == null) return;
+            }
+        }
+
+        Node node = metacomp.getNodeReference();
+        if (node != null) {
+            SystemAction action = node.getDefaultAction();
+            if (action != null) {// && action.isEnabled()) {
+                action.actionPerformed(new ActionEvent(
+                        node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
+            }
+        }
     }
 
     private void processMouseClickInLayoutSupport(RADComponent metacomp,
@@ -298,17 +323,6 @@ class HandleLayer extends JPanel
             Container cont = (Container) formDesigner.getComponent(metacont);
             Point p = SwingUtilities.convertPoint(HandleLayer.this, e.getPoint(), cont);
             ((LayoutSupportArranging)laysup).processMouseClick(p, cont);
-        }
-    }
-
-    private void invokeDefaultAction(RADComponent metacomp) {
-        Node node = metacomp.getNodeReference();
-        if (node != null) {
-            SystemAction action = node.getDefaultAction();
-            if (action != null && action.isEnabled()) {
-                action.actionPerformed(new ActionEvent(
-                        node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
-            }
         }
     }
 
@@ -774,6 +788,7 @@ class HandleLayer extends JPanel
         public void mouseReleased(MouseEvent e) {
             if (!HandleLayer.this.isVisible())
                 return;
+
             if (MouseUtils.isRightMouseButton(e)) {
                 if (componentDragger == null) {
                     showContextMenu(e.getPoint());
@@ -789,6 +804,15 @@ class HandleLayer extends JPanel
                 else if (draggingCanceled) {
                     draggingCanceled = false;
                 }
+                else if (prevLeftMousePoint != null
+                         && prevLeftMousePoint.distance(e.getPoint()) <= 2
+                         && !e.isShiftDown()
+                         && !e.isControlDown()
+                         && !e.isAltDown()) {
+                    formDesigner.startInPlaceEditing(
+                        getMetaComponentAt(e.getPoint(), COMP_SELECTED));
+                }
+
 /*                    else {
                     ComponentPalette palette = ComponentPalette.getDefault();
                     if (palette.getMode() == PaletteAction.MODE_SELECTION) {
@@ -805,6 +829,8 @@ class HandleLayer extends JPanel
                         }
                     }
                 } */
+                prevLeftMousePoint = lastLeftMousePoint;
+                lastLeftMousePoint = null;
                 e.consume();
             }
         }
@@ -832,7 +858,7 @@ class HandleLayer extends JPanel
             else if (MouseUtils.isLeftMouseButton(e)) {
                 boolean modifier = e.isControlDown() || e.isAltDown() || e.isShiftDown();
                 if (!modifier)
-                    lastLeftButtonPressedPoint = e.getPoint();
+                    lastLeftMousePoint = e.getPoint();
 
                 ComponentPalette palette = ComponentPalette.getDefault();
 
@@ -840,16 +866,14 @@ class HandleLayer extends JPanel
                     if (!modifier)
                         checkResizing(e.getPoint());
 
-                    if (modifier || resizeType == 0)
-                        selectComponent(e);
-
-                    if (!modifier && resizeType == 0) {
-                        RADComponent hitMetaComp = getMetaComponentAt(
-                                                   e.getPoint(), COMP_DEEPEST);
+                    if (resizeType == 0) {
                         if (e.getClickCount() == 2)
-                            invokeDefaultAction(hitMetaComp);
-                        else if (formDesigner.isComponentSelected(hitMetaComp))
-                            processMouseClickInLayoutSupport(hitMetaComp, e);
+                            processDoubleClick(e);
+                        else {
+                            RADComponent hitMetaComp = selectComponent(e);
+                            if (!modifier) // plain single click
+                                processMouseClickInLayoutSupport(hitMetaComp, e);
+                        }
                     }
                 }
                 else if (!viewOnly) {
@@ -902,11 +926,11 @@ class HandleLayer extends JPanel
             Point p = e.getPoint();
 
             if (componentDragger == null
-                && lastLeftButtonPressedPoint != null
-                && (resizeType !=0 || lastLeftButtonPressedPoint.distance(p) > 5))
+                && lastLeftMousePoint != null
+                && (resizeType != 0 || lastLeftMousePoint.distance(p) > 6))
             { // start dragging
-                componentDragger = createComponentDragger(lastLeftButtonPressedPoint);
-                lastLeftButtonPressedPoint = null;
+                componentDragger = createComponentDragger(lastLeftMousePoint);
+//                lastLeftMousePoint = null;
             }
 
             if (componentDragger != null)

@@ -193,6 +193,8 @@ public class RADComponentNode extends AbstractNode
         else {
             if (component instanceof RADVisualContainer) {
                 actions.add(SystemAction.get(EditContainerAction.class));
+                if (!(component instanceof RADVisualFormContainer))
+                    actions.add(SystemAction.get(EditFormAction.class));
                 actions.add(null);
                 actions.add(SystemAction.get(SelectLayoutAction.class));
                 actions.add(SystemAction.get(CustomizeLayoutAction.class));

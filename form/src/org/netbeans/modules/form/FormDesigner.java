@@ -127,16 +127,28 @@ public class FormDesigner extends TopComponent
         if (workspace == null)
             workspace = TopManager.getDefault().getWindowManager().getCurrentWorkspace();
 
-        Mode mode = workspace.findMode(getName());
+        String formName = "Form " + formModel.getFormDataObject().getName(); // NOI18N
+        Mode mode = workspace.findMode(formName);
+
         if (mode != null) { // try to reuse mode
             TopComponent[] comps = mode.getTopComponents();
             int i;
             for (i=0; i < comps.length; i++)
                 if (comps[i].isOpened()) break;
 
-            if (i == comps.length) // only closed top components
+            if (i == comps.length) // all top components closed
                 mode.dockInto(this);
+            else mode = null;
         }
+
+        if (mode == null) { // create new mode
+            mode = workspace.createMode(
+                     formName,
+                     FormEditor.getFormBundle().getString("CTL_FormWindowTitle"), // NOI18N
+                     null);
+            mode.dockInto(this);
+        }
+
         super.open(workspace);
     }
 
@@ -525,6 +537,14 @@ public class FormDesigner extends TopComponent
                     }
                 };
             SwingUtilities.invokeLater(repopulateTask);
+
+            // set TopComponent's name (visible in title)
+            String name = formModel.getFormDataObject().getName();
+            if (!(topDesignContainer instanceof FormContainer))
+                name += " / " + topDesignContainer.getName(); // NOI18N
+            if (formModel.isReadOnly())
+                name += " " + FormEditor.getFormBundle().getString("CTL_FormTitle_RO"); // NOI18N
+            setName(name);
         }
     }
 

@@ -531,11 +531,17 @@ public class FormModel
         if (formDesigner == null) {
             if (!formLoaded)
                 System.err.println("[Warning] Form designer requested before form loaded.");
+
             formDesigner = new FormDesigner(this);
-            formDesigner.setName(java.text.MessageFormat.format(
-                FormEditor.getFormBundle().getString(formDataObject.isReadOnly() ?
-                             "FMT_FormWindowTitle_RO" : "FMT_FormWindowTitle"), // NOI18N
-                new Object[] { formDataObject.getName() }));
+            String name = formDataObject.getName();
+            if (isReadOnly())
+                name += " " + FormEditor.getFormBundle().getString("CTL_FormTitle_RO"); // NOI18N
+            formDesigner.setName(name);
+
+//            formDesigner.setName(java.text.MessageFormat.format(
+//                FormEditor.getFormBundle().getString(formDataObject.isReadOnly() ?
+//                             "FMT_FormWindowTitle_RO" : "FMT_FormWindowTitle"), // NOI18N
+//                new Object[] { formDataObject.getName() }));
         }
         return formDesigner;
     }
