@@ -940,8 +940,8 @@ class OutWriter extends OutputWriter implements Runnable {
      */
     public synchronized void reset() throws IOException {
         if (unused) {
-//            if (Controller.log) Controller.log ("Reset on an unused IO.  Ignoring - " + this);
-//            return;
+            if (Controller.log) Controller.log ("Reset on an unused IO.  Ignoring - " + this);
+            return;
         }
         if (Controller.log) Controller.log (this + ": OutWriter reset for " + owner.getName());
         clearListeners();
