@@ -13,23 +13,30 @@
 
 package threaddemo.views;
 
+import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.*;
 import javax.swing.Action;
+import javax.swing.event.*;
 import org.netbeans.spi.looks.*;
 import org.openide.actions.*;
 import org.openide.cookies.*;
-import org.openide.util.Lookup;
-import org.openide.util.Mutex;
+import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.NewType;
+import threaddemo.data.*;
 import threaddemo.model.*;
 
 /**
  * A look which wraps phadhails.
  * @author Jesse Glick
  */
-final class PhadhailLook extends Look implements PhadhailListener, PhadhailEditorSupport.Saver {
+final class PhadhailLook extends Look implements PhadhailListener, LookupListener, ChangeListener {
+    
+    private static final Map phadhails2Results = new HashMap(); // Map<Phadhail,Lookup.Result>
+    private static final Map results2Phadhails = new HashMap(); // Map<Lookup.Result,Phadhail>
+    private static final Map phadhails2DomProviders = new HashMap(); // Map<Phadhail,DomProvider>
+    private static final Map domProviders2Phadhails = new HashMap(); // Map<DomProvider,Phadhail>
     
     PhadhailLook() {
         super("PhadhailLook");
@@ -47,16 +54,69 @@ final class PhadhailLook extends Look implements PhadhailListener, PhadhailEdito
     public void detachFrom(Object o) {
         Phadhail ph = (Phadhail)o;
         ph.removePhadhailListener(this);
+        Lookup.Result r = (Lookup.Result)phadhails2Results.remove(ph);
+        if (r != null) {
+            r.removeLookupListener(this);
+            assert results2Phadhails.containsKey(r);
+            results2Phadhails.remove(r);
+        }
+        DomProvider p = (DomProvider)phadhails2DomProviders.remove(ph);
+        if (p != null) {
+            p.removeChangeListener(this);
+            assert domProviders2Phadhails.containsKey(p);
+            domProviders2Phadhails.remove(p);
+        }
     }
     
     public boolean isLeaf(Object o, Lookup e) {
         Phadhail ph = (Phadhail)o;
-        return !ph.hasChildren();
+        return !ph.hasChildren() &&
+               PhadhailLookups.getLookup(ph).lookup(DomProvider.class) == null;
     }
     
-    public List getChildObjects(Object o, Lookup e) {
+    // XXX Look.getChildObjects should not be called off AWT, yet sometimes it is (by Children)
+    private static final Map children = new HashMap(); // Map<Phadhail,List<Object>>
+    public List getChildObjects(final Object o, Lookup e) {
+        if (!EventQueue.isDispatchThread()) {
+            // XXX see comment above... need to hack around threading of Children here
+            List l = (List)children.remove(o);
+            if (l != null) {
+                return l;
+            } else {
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        children.put(o, getChildObjects(o, null));
+                        refreshChildren(o);
+                    }
+                });
+                return null;
+            }
+        }
         Phadhail ph = (Phadhail)o;
-        return ph.getChildren();
+        if (ph.hasChildren()) {
+            return ph.getChildren();
+        } else {
+            DomProvider p = (DomProvider)PhadhailLookups.getLookup(ph).lookup(DomProvider.class);
+            if (p != null) {
+                if (!phadhails2DomProviders.containsKey(ph)) {
+                    phadhails2DomProviders.put(ph, p);
+                    assert !domProviders2Phadhails.containsKey(p);
+                    domProviders2Phadhails.put(p, ph);
+                    p.addChangeListener(this);
+                    p.prepare();
+                }
+                if (p.isValid()) {
+                    try {
+                        return Collections.singletonList(p.getDocument().getDocumentElement());
+                    } catch (IOException x) {
+                        assert false : x;
+                    }
+                } else {
+                    System.err.println("DOM tree is invalid");
+                }
+            }
+            return null;
+        }
     }
     
     public String getName(Object o, Lookup e) {
@@ -116,92 +176,25 @@ final class PhadhailLook extends Look implements PhadhailListener, PhadhailEdito
         }
     }
     
-    // cache of save cookies for unsaved phadhails
-    private final Map saveCookies = new WeakHashMap(); // Map<Phadhail,SaveCookie>
-    
-    public void addSaveCookie(Phadhail ph, SaveCookie s) {
-        saveCookies.put(ph, s);
-        fireLookupItemsChange(ph);
-    }
-    
-    public void removeSaveCookie(Phadhail ph) {
-        saveCookies.remove(ph);
-        fireLookupItemsChange(ph);
-    }
-    
-    // cache of editor supports; need to retain identity since they have state
-    private final Map editorCookies = new WeakHashMap(); // Map<Phadhail,EditorCookie>
-    
     public Collection getLookupItems(Object o, Lookup env) {
         Phadhail ph = (Phadhail)o;
-        SaveCookie sc = (SaveCookie)saveCookies.get(ph);
-        if (sc != null) {
-            Collection c = new ArrayList(2);
-            c.add(new EditorCookieItem(ph));
-            c.add(new SimpleItem(sc));
-            return c;
-        } else if (!ph.hasChildren()) {
-            return Collections.singleton(new EditorCookieItem(ph));
-        } else {
-            return Collections.EMPTY_SET;
+        Lookup.Result r = (Lookup.Result)phadhails2Results.get(ph);
+        if (r == null) {
+            r = PhadhailLookups.getLookup(ph).lookup(new Lookup.Template());
+            phadhails2Results.put(ph, r);
+            assert !results2Phadhails.containsKey(r);
+            results2Phadhails.put(r, ph);
+            r.addLookupListener(this);
         }
+        return r.allItems();
     }
     
-    private final class EditorCookieItem extends Lookup.Item {
-        
-        private final Phadhail ph;
-        
-        public EditorCookieItem(Phadhail ph) {
-            this.ph = ph;
-        }
-        
-        public String getDisplayName() {
-            return getInstance().toString();
-        }
-        
-        public String getId() {
-            return getInstance().toString();
-        }
-        
-        public Object getInstance() {
-            PhadhailEditorSupport phes = (PhadhailEditorSupport)editorCookies.get(ph);
-            if (phes == null) {
-                phes = new PhadhailEditorSupport(ph, PhadhailLook.this);
-                editorCookies.put(ph, phes);
-            }
-            return phes;
-        }
-        
-        public Class getType() {
-            return PhadhailEditorSupport.class;
-        }
-        
-    }
-    
-    private static final class SimpleItem extends Lookup.Item {
-        
-        private final Object o;
-        
-        public SimpleItem(Object o) {
-            this.o = o;
-        }
-        
-        public String getDisplayName() {
-            return o.toString();
-        }
-        
-        public String getId() {
-            return o.toString();
-        }
-        
-        public Object getInstance() {
-            return o;
-        }
-        
-        public Class getType() {
-            return o.getClass();
-        }
-        
+    public void resultChanged(LookupEvent ev) {
+        // XXX #33372: should be able to do ev.getResult()
+        Lookup.Result r = (Lookup.Result)ev.getSource();
+        Phadhail ph = (Phadhail)results2Phadhails.get(r);
+        assert ph != null;
+        fireLookupItemsChange(ph);
     }
     
     public void childrenChanged(PhadhailEvent ev) {
@@ -213,6 +206,14 @@ final class PhadhailLook extends Look implements PhadhailListener, PhadhailEdito
         assert ev.getPhadhail().mutex().canRead();
         fireNameChange(ev.getPhadhail(), ev.getOldName(), ev.getNewName());
         fireDisplayNameChange(ev.getPhadhail(), ev.getOldName(), ev.getNewName());
+    }
+    
+    public void stateChanged(ChangeEvent e) {
+        System.err.println("PL: got change");
+        DomProvider p = (DomProvider)e.getSource();
+        Phadhail ph = (Phadhail)domProviders2Phadhails.get(p);
+        assert ph != null;
+        refreshChildren(ph);
     }
     
 }

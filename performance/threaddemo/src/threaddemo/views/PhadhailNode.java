@@ -22,20 +22,21 @@ import org.openide.nodes.*;
 import org.openide.util.WeakListener;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.NewType;
+import threaddemo.data.*;
 import threaddemo.model.*;
+
+// XXX view of DOM tree too
 
 /**
  * A plain node view of a phadhail tree.
  * @author Jesse Glick
  */
-final class PhadhailNode extends AbstractNode implements PhadhailListener, PhadhailEditorSupport.Saver {
+final class PhadhailNode extends AbstractNode implements PhadhailListener {
     
     private final Phadhail ph;
-    private PhadhailEditorSupport editor = null;
-    private SaveCookie save = null;
     
     public PhadhailNode(Phadhail ph) {
-        super(ph.hasChildren() ? new PhadhailChildren(ph) : Children.LEAF);
+        super(ph.hasChildren() ? new PhadhailChildren(ph) : Children.LEAF, PhadhailLookups.getLookup(ph));
         this.ph = ph;
         ph.addPhadhailListener((PhadhailListener)WeakListener.create(PhadhailListener.class, this, ph));
     }
@@ -90,19 +91,6 @@ final class PhadhailNode extends AbstractNode implements PhadhailListener, Phadh
         }
     }
     
-    public Node.Cookie getCookie(Class clazz) {
-        if (clazz.isAssignableFrom(PhadhailEditorSupport.class) && !ph.hasChildren()) {
-            if (editor == null) {
-                editor = new PhadhailEditorSupport(ph, this);
-            }
-            return editor;
-        } else if (clazz == SaveCookie.class) {
-            return save;
-        } else {
-            return super.getCookie(clazz);
-        }
-    }
-    
     public Action[] getActions(boolean context) {
         return new Action[] {
             SystemAction.get(OpenAction.class),
@@ -114,16 +102,6 @@ final class PhadhailNode extends AbstractNode implements PhadhailListener, Phadh
             SystemAction.get(RenameAction.class),
             SystemAction.get(ToolsAction.class),
         };
-    }
-    
-    public void addSaveCookie(Phadhail ph, SaveCookie s) {
-        save = s;
-        fireCookieChange();
-    }
-    
-    public void removeSaveCookie(Phadhail ph) {
-        save = null;
-        fireCookieChange();
     }
     
     private static final class PhadhailChildren extends Children.Keys {
