@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.editor.options;
+package com.netbeans.developer.modules.text.options;
 
 import java.awt.Font;
 import java.awt.Color;

@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.editor.options;
+package com.netbeans.developer.modules.text.options;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -317,6 +317,8 @@ public class ColoringEditor extends PropertyEditorSupport {
 
 /*
  * Log
+ *  2    Gandalf   1.1         7/3/99   Ian Formanek    Changed package 
+ *       statement to make it compilable
  *  1    Gandalf   1.0         6/30/99  Ales Novak      
  * $
  */
