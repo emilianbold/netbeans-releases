@@ -413,6 +413,20 @@ public class GraphManager extends Object {
 
     protected void write(java.io.Writer out, Entity entity) throws java.io.IOException {
         out.write("<!ENTITY "+entity.getNodeName());
+        /*
+          We don't seem to be able to get any useful info out of the
+          Entity object.
+          
+        out.write(" notation ");
+        if (entity.getNotationName() != null)
+            out.write(entity.getNotationName());
+        out.write(" publicid ");
+        if (entity.getPublicId() != null)
+            out.write(entity.getPublicId());
+        out.write(" systemid ");
+        if (entity.getSystemId() != null)
+            out.write(entity.getSystemId());
+        */
         out.write(" UNKNOWN>");
     }
 
