@@ -84,7 +84,6 @@ public class WebProjectProperties {
     public static final String WAR_CONTENT_ADDITIONAL = "war.content.additional"; //NOI18N
 
     public static final String LAUNCH_URL_RELATIVE = "client.urlPart"; //NOI18N
-    public static final String LAUNCH_URL_FULL = "launch.url.full"; //NOI18N
     public static final String DISPLAY_BROWSER = "display.browser"; //NOI18N
     public static final String CONTEXT_PATH = "context.path"; //NOI18N
     public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance"; //NOI18N
@@ -157,7 +156,6 @@ public class WebProjectProperties {
         new PropertyDescriptor( WAR_CONTENT_ADDITIONAL, PROJECT, WAR_CONTENT_ADDITIONAL_PARSER ),
         
         new PropertyDescriptor( LAUNCH_URL_RELATIVE, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( LAUNCH_URL_FULL, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( DISPLAY_BROWSER, PROJECT, BOOLEAN_PARSER ),
         new PropertyDescriptor( J2EE_SERVER_TYPE, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( J2EE_SERVER_INSTANCE, PRIVATE, STRING_PARSER ),

@@ -16,21 +16,17 @@ package org.netbeans.modules.web.project.ui.customizer;
 import org.netbeans.modules.web.project.ProjectWebModule;
 
 import javax.swing.JPanel;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.Document;
 
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.openide.util.HelpCtx;
 
-public class CustomizerRun extends JPanel implements WebCustomizer.Panel, DocumentListener, HelpCtx.Provider {
+public class CustomizerRun extends JPanel implements WebCustomizer.Panel, HelpCtx.Provider {
     
     // Helper for storing properties
     private VisualPropertySupport vps;
     private ProjectWebModule wm;
-    private Document doc;
 
     String[] serverInstanceIDs;
     String[] serverNames;
@@ -56,14 +52,18 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, Docume
         serverNames = new String[serverInstanceIDs.length];
         serverURLs = new String[serverInstanceIDs.length];
         for (int i = 0; i < serverInstanceIDs.length; i++) {
+            String serverInstanceDisplayName = 
+                    deployment.getServerInstanceDisplayName(serverInstanceIDs [i]);
+            // if displayName not set use instanceID instead
+            if (serverInstanceDisplayName == null) {                
+                serverInstanceDisplayName = serverInstanceIDs [i];
+            }
             serverNames[i] = deployment.getServerDisplayName (deployment.getServerID (serverInstanceIDs [i])) 
-             + " (" + deployment.getServerInstanceDisplayName (serverInstanceIDs [i]) + ")"; //NOI18N
-            serverURLs[i] = deployment.getServerInstanceDisplayName (serverInstanceIDs [i]);
+             + " (" + serverInstanceDisplayName + ")"; //NOI18N
         }
 
         vps.register(jCheckBoxDisplayBrowser, WebProjectProperties.DISPLAY_BROWSER);
         vps.register(jTextFieldRelativeURL, WebProjectProperties.LAUNCH_URL_RELATIVE);
-        vps.register(jTextFieldFullURL, WebProjectProperties.LAUNCH_URL_FULL);
         vps.register(jComboBoxServer, serverNames, serverInstanceIDs, WebProjectProperties.J2EE_SERVER_INSTANCE);
 
         WebProjectProperties.PropertyDescriptor.Saver contextPathSaver = new WebProjectProperties.PropertyDescriptor.Saver() {
@@ -88,9 +88,6 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, Docume
         vps.register(jTextFieldContextPath, WebProjectProperties.CONTEXT_PATH);
 
         jTextFieldRelativeURL.setEditable(jCheckBoxDisplayBrowser.isSelected());
-        doc = jTextFieldContextPath.getDocument();
-        doc.addDocumentListener(this);
-        jTextFieldRelativeURL.getDocument().addDocumentListener(this);
         initialized = true;
     } 
     
@@ -110,8 +107,6 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, Docume
         jLabelContextPathDesc = new javax.swing.JLabel();
         jLabelRelativeURL = new javax.swing.JLabel();
         jTextFieldRelativeURL = new javax.swing.JTextField();
-        jLabelFullURL = new javax.swing.JLabel();
-        jTextFieldFullURL = new javax.swing.JTextField();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -185,12 +180,14 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, Docume
         add(jLabelContextPathDesc, gridBagConstraints);
 
         jLabelRelativeURL.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeRun_RelativeURL_LabelMnemonic").charAt(0));
-        jLabelRelativeURL.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_RelativeURL_JLabel"));
         jLabelRelativeURL.setLabelFor(jTextFieldRelativeURL);
+        jLabelRelativeURL.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_RelativeURL_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 24, 11, 0);
         add(jLabelRelativeURL, gridBagConstraints);
 
@@ -199,47 +196,20 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, Docume
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 11, 11, 11);
         add(jTextFieldRelativeURL, gridBagConstraints);
         jTextFieldRelativeURL.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACS_CustomizeRun_RelativeURL_A11YDesc"));
-
-        jLabelFullURL.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeRun_FullURL_LabelMnemonic").charAt(0));
-        jLabelFullURL.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_FullURL_JLabel"));
-        jLabelFullURL.setLabelFor(jTextFieldFullURL);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 24, 0, 0);
-        add(jLabelFullURL, gridBagConstraints);
-
-        jTextFieldFullURL.setEditable(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 11);
-        add(jTextFieldFullURL, gridBagConstraints);
-        jTextFieldFullURL.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACS_CustomizeRun_FullURL_A11YDesc"));
 
     }//GEN-END:initComponents
 
     private void jComboBoxServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBoxServerActionPerformed
         if (jComboBoxServer.getSelectedIndex() == -1 || !initialized)
             return;
-        jTextFieldContextPath.getDocument ().removeDocumentListener (this);
         String newCtxPath = wm.getContextPath(serverInstanceIDs [jComboBoxServer.getSelectedIndex ()]);
         if (newCtxPath != null) {
             jTextFieldContextPath.setText(newCtxPath);
         }
-        jTextFieldContextPath.getDocument ().addDocumentListener (this);
-        setFullURL();
     }//GEN-LAST:event_jComboBoxServerActionPerformed
 
     private void jCheckBoxDisplayBrowserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBoxDisplayBrowserActionPerformed
@@ -248,7 +218,6 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, Docume
         jLabelContextPathDesc.setEnabled(editable);
         jLabelRelativeURL.setEnabled(editable);
         jTextFieldRelativeURL.setEditable(editable);
-        jLabelFullURL.setEnabled(editable);
     }//GEN-LAST:event_jCheckBoxDisplayBrowserActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -256,41 +225,12 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, Docume
     private javax.swing.JComboBox jComboBoxServer;
     private javax.swing.JLabel jLabelContextPath;
     private javax.swing.JLabel jLabelContextPathDesc;
-    private javax.swing.JLabel jLabelFullURL;
     private javax.swing.JLabel jLabelRelativeURL;
     private javax.swing.JLabel jLabelServer;
     private javax.swing.JTextField jTextFieldContextPath;
-    private javax.swing.JTextField jTextFieldFullURL;
     private javax.swing.JTextField jTextFieldRelativeURL;
     // End of variables declaration//GEN-END:variables
 
-    // Implementation of DocumentListener --------------------------------------
-    public void changedUpdate(DocumentEvent e) {
-        setFullURL();
-    }
-
-    public void insertUpdate(DocumentEvent e) {
-        changedUpdate(e);
-    }
-
-    public void removeUpdate(DocumentEvent e) {
-        changedUpdate(e);
-    }
-    // End if implementation of DocumentListener -------------------------------
-
-    private void setFullURL() {
-        int index = jComboBoxServer.getSelectedIndex();
-        StringBuffer fullURL = new StringBuffer();
-        fullURL.append(serverURLs[index]);
-        if (jTextFieldContextPath.getText().startsWith("/")) //NOI18N
-            fullURL.append(jTextFieldContextPath.getText().trim().substring(1));
-        else
-            fullURL.append(jTextFieldContextPath.getText().trim());
-        fullURL.append("/");
-        fullURL.append(jTextFieldRelativeURL.getText().trim());
-        jTextFieldFullURL.setText(fullURL.toString());
-    }
-    
     /** Help context where to find more about the paste type action.
      * @return the help context for this action
      */
