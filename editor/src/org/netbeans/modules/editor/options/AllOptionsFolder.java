@@ -82,6 +82,8 @@ public class AllOptionsFolder{
     // List of already initialized options
     private static Map installedOptions = new Hashtable();
     
+    private static Object INSTALLED_OPTIONS_LOCK = new Object();
+    
     /** Listens to changes on the Modules folder */
     private static FileChangeListener moduleRegListener;
 
@@ -264,34 +266,38 @@ public class AllOptionsFolder{
     }
     
     /** Returns kitClass of uninstalled option */ 
-    private synchronized static Class uninstallOption(){
+    private static Class uninstallOption(){
         List updatedInstalledOptions = AllOptionsFolder.getDefault().getInstalledOptions();
-        Iterator i = installedOptions.keySet().iterator();
-        while (i.hasNext()){
-            Object obj = i.next();
-            if(obj instanceof Class){
-                Class clz = (Class)obj;
-                if (!updatedInstalledOptions.contains(obj)){
-                    installedOptions.remove(obj);
-                    return (Class)obj;
+        synchronized (INSTALLED_OPTIONS_LOCK){
+            Iterator i = installedOptions.keySet().iterator();
+            while (i.hasNext()){
+                Object obj = i.next();
+                if(obj instanceof Class){
+                    Class clz = (Class)obj;
+                    if (!updatedInstalledOptions.contains(obj)){
+                        installedOptions.remove(obj);
+                        return (Class)obj;
+                    }
                 }
             }
+            return null;            
         }
-        return null;
     }
     
     private static void updateOptions(){
-        Iterator i = installedOptions.values().iterator();        
-        while (i.hasNext()){
-            Object obj = i.next();
-            if (obj instanceof BaseOptions){
-                BaseOptions bo = (BaseOptions)obj;
-                if (bo != null){
-                    bo.initPopupMenuItems();
+        synchronized (INSTALLED_OPTIONS_LOCK){
+            Iterator i = installedOptions.values().iterator();        
+            while (i.hasNext()){
+                Object obj = i.next();
+                if (obj instanceof BaseOptions){
+                    BaseOptions bo = (BaseOptions)obj;
+                    if (bo != null){
+                        bo.initPopupMenuItems();
+                    }
                 }
             }
+            uninstallOption();        
         }
-        uninstallOption();        
     }
     
     /** Returns true if BaseOptions has been initialized */
@@ -319,12 +325,14 @@ public class AllOptionsFolder{
     }
     
     /** Gets the instance of BaseOptions from InstanceCookie */
-    protected synchronized BaseOptions getBO(InstanceCookie ic){
+    protected BaseOptions getBO(InstanceCookie ic){
         initInstance(ic);
         BaseOptions ret = null;
         try{
-            ret = (installedOptions.get(ic.instanceClass()) instanceof BaseOptions) ? (BaseOptions) installedOptions.get(ic.instanceClass())
-            : null;
+            synchronized (INSTALLED_OPTIONS_LOCK){
+                ret = (installedOptions.get(ic.instanceClass()) instanceof BaseOptions) ? (BaseOptions) installedOptions.get(ic.instanceClass())
+                : null;
+            }
         }catch(ClassNotFoundException cnfe){
             cnfe.printStackTrace();
             
@@ -335,15 +343,17 @@ public class AllOptionsFolder{
     }
     
     /** Create the instance of appropriate BaseOption subclass */
-    private synchronized void initInstance(InstanceCookie ic){
+    private void initInstance(InstanceCookie ic){
         try{
-            if (installedOptions.containsKey(ic.instanceClass())) {
-                return;
+            synchronized (INSTALLED_OPTIONS_LOCK){
+                if (installedOptions.containsKey(ic.instanceClass())) {
+                    return;
+                }
+                Object optionObj = ic.instanceCreate();
+                if (!(optionObj instanceof BaseOptions)) return;
+                installedOptions.put(ic.instanceClass(), (BaseOptions)optionObj);
+                processInitializers((BaseOptions)optionObj, false);
             }
-            Object optionObj = ic.instanceCreate();
-            if (!(optionObj instanceof BaseOptions)) return;
-            installedOptions.put(ic.instanceClass(), (BaseOptions)optionObj);
-            processInitializers((BaseOptions)optionObj, false);
         }catch(ClassNotFoundException cnfe){
             cnfe.printStackTrace();
         }catch(IOException ioex){
@@ -358,42 +368,39 @@ public class AllOptionsFolder{
     
     /** Lazily inits MIME Option class. If processOldTypeOption is true initializers for this option will be processed. */
     public void loadMIMEOption(Class kitClass, boolean processOldTypeOption){
-        // bugfix of #23262. Neccessary to take a lock of Settings.class first to prevent the deadlock
-        synchronized (Settings.class){
-            synchronized (this){
-                String contentType = BaseKit.getKit(kitClass).getContentType();
-                if (contentType == null) return;
-                FileObject optionFO = TopManager.getDefault().getRepository().getDefaultFileSystem().
-                findResource(FOLDER+"/"+contentType+"/"+OPTION_FILE_NAME); //NOI18N
-                if (optionFO == null) {
-                    // old type of BaseOptions.
-                    // Options weren't transfered to XML form for this kitClass yet.
-                    // We have to find them via BaseOptions.getOptions and process initializers.
-                    if (processOldTypeOption){
-                        BaseOptions oldBO = BaseOptions.getOptions(kitClass);
-                        if (oldBO != null){
-                            if (!installedOptions.containsKey(kitClass)){
-                                installedOptions.put(kitClass, oldBO);
-                                processInitializers(oldBO, false);
-                            }
+        String contentType = BaseKit.getKit(kitClass).getContentType();
+        if (contentType == null) return;
+        FileObject optionFO = TopManager.getDefault().getRepository().getDefaultFileSystem().
+        findResource(FOLDER+"/"+contentType+"/"+OPTION_FILE_NAME); //NOI18N
+        if (optionFO == null) {
+            // old type of BaseOptions.
+            // Options weren't transfered to XML form for this kitClass yet.
+            // We have to find them via BaseOptions.getOptions and process initializers.
+            if (processOldTypeOption){
+                BaseOptions oldBO = BaseOptions.getOptions(kitClass);
+                if (oldBO != null){
+                    synchronized (INSTALLED_OPTIONS_LOCK){
+                        if (!installedOptions.containsKey(kitClass)){
+                            installedOptions.put(kitClass, oldBO);
+                            processInitializers(oldBO, false);
                         }
                     }
-                    return;
-                }
-                
-                try{
-                    DataObject optionDO = DataObject.find(optionFO);
-                    if (optionDO == null) return;
-                    
-                    InstanceCookie ic = (InstanceCookie)optionDO.getCookie(InstanceCookie.class);
-                    if (ic == null) return;
-                    
-                    initInstance(ic);
-                    
-                }catch(DataObjectNotFoundException donf){
-                    donf.printStackTrace();
                 }
             }
+            return;
+        }
+
+        try{
+            DataObject optionDO = DataObject.find(optionFO);
+            if (optionDO == null) return;
+
+            InstanceCookie ic = (InstanceCookie)optionDO.getCookie(InstanceCookie.class);
+            if (ic == null) return;
+
+            initInstance(ic);
+
+        }catch(DataObjectNotFoundException donf){
+            donf.printStackTrace();
         }
     }
     
