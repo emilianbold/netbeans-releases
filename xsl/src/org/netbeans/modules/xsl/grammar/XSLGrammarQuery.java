@@ -792,11 +792,14 @@ public class XSLGrammarQuery implements GrammarQuery{
             // Load the XSLCustomizer from the XML layer
             FileSystem fs = Repository.getDefault().getDefaultFileSystem();
             FileObject fo = fs.findResource(CUSTOMIZER_FOLDER); 
+            if (fo == null) return null;
             DataObject df = DataObject.find(fo);
             if (!(df instanceof DataObject.Container)) {
                 return null;
             }
 
+            // ??? What is it? Should not we use naming instead?
+            
             FolderLookup lookup =
                 new FolderLookup((DataObject.Container) df);
             Lookup.Template template =
