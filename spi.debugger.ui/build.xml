@@ -17,6 +17,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="compile">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
+	<pathelement location="../openide/openide-13javac-workaround.jar"/>
         <fileset dir="../openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>

@@ -20,6 +20,7 @@ Microsystems, Inc. All Rights Reserved.
     <javac srcdir="src" destdir="src">
       <classpath>
         <!--<pathelement location="patches"/>-->
+	<pathelement location="../openide/openide-13javac-workaround.jar"/>
         <fileset dir="../openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>

@@ -22,6 +22,7 @@ Microsystems, Inc. All Rights Reserved.
       <exclude name="org/netbeans/modules/i18n/form/"/>
       <exclude name="org/netbeans/modules/i18n/jsp/"/>
       <classpath>
+	<pathelement location="../openide/openide-13javac-workaround.jar"/>
         <fileset dir="../openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
@@ -35,6 +36,7 @@ Microsystems, Inc. All Rights Reserved.
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <include name="org/netbeans/modules/i18n/form/"/>
       <classpath>
+	<pathelement location="../openide/openide-13javac-workaround.jar"/>
         <fileset dir="../openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
@@ -50,6 +52,7 @@ Microsystems, Inc. All Rights Reserved.
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <include name="org/netbeans/modules/i18n/jsp/"/>
       <classpath>
+	<pathelement location="../openide/openide-13javac-workaround.jar"/>
         <fileset dir="../openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
