@@ -17,7 +17,6 @@ import java.awt.Dialog;
 import java.io.IOException;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -25,29 +24,20 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.module.api.support.ActionUtils;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.j2ee.deployment.impl.projects.*;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
-import org.netbeans.modules.j2ee.deployment.execution.*;
 import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.jpda.*;
-import javax.enterprise.deploy.spi.Target;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.modules.j2ee.deployment.impl.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.netbeans.modules.web.api.webmodule.URLCookie;
 import org.netbeans.modules.web.project.ui.NoSelectedServerWarning;
@@ -55,13 +45,13 @@ import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.modules.web.project.ui.ServletUriPanel;
 import org.netbeans.modules.web.project.ui.SetExecutionUriAction;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.openide.*;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.web.project.parser.ParserWebModule;
+import org.netbeans.modules.web.project.parser.JspNameUtil;
 
 import org.netbeans.api.web.dd.DDProvider;
 import org.netbeans.api.web.dd.WebApp;
 import org.netbeans.api.web.dd.Servlet;
-import org.netbeans.api.web.dd.ServletMapping;
 import org.netbeans.api.java.classpath.ClassPath;
 
 import org.openide.DialogDescriptor;
@@ -77,6 +67,8 @@ import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import java.lang.reflect.Modifier;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
+import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 
 /** Action provider of the Web project. This is the place where to do
  * strange things to Web actions. E.g. compile-single.
@@ -416,6 +408,12 @@ class WebActionProvider implements ActionProvider {
             } else {
                 files = findJsps (context);
                 if (files != null) {
+                    for (int i=0; i < files.length; i++) {
+                        FileObject jsp = files[i];
+                        if (areIncludesModified(jsp)) {
+                            invalidateClassFile(project, jsp);
+                        }
+                    }
                     setAllPropertiesForSingleJSPCompilation(p, files);
                     targetNames = new String [] {"compile-single-jsp"};
                 } else {
@@ -436,7 +434,69 @@ class WebActionProvider implements ActionProvider {
             ErrorManager.getDefault().notify(e);
         }
     }
+
+    /* Deletes translated class/java file to force recompilation of the page with all includes
+     */
+    public void invalidateClassFile(WebProject wp, FileObject jsp) {
+        String dir = antProjectHelper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.BUILD_GENERATED_DIR);
+        if (dir == null) {
+            return;
+        }
+        dir = dir + "/src"; //NOI18N
+        WebModule wm = WebModule.getWebModule(jsp);
+        if (wm == null) {
+            return;
+        }
+        String name = JspNameUtil.getServletName(wm.getDocumentBase(), jsp);
+        if (name == null) {
+            return;
+        }
+        String filePath = name.substring(0, name.lastIndexOf('.')).replace('.', '/');
         
+        String fileClass = dir + '/' + filePath + ".class"; //NOI18N
+        String fileJava = dir + '/' + filePath + ".java"; //NOI18N
+        
+        File fC = antProjectHelper.resolveFile(fileClass);
+        File fJ = antProjectHelper.resolveFile(fileJava);
+        if ((fJ != null) && (fJ.exists())) {
+            fJ.delete();
+        }
+        if ((fC != null) && (fC.exists())) {
+            fC.delete();
+        }
+    }
+    
+    /* checks if timestamp of any of the included pages is higher than the top page
+     */
+    public boolean areIncludesModified(FileObject jsp){
+        boolean modified = false;
+        WebModule wm = WebModule.getWebModule(jsp);
+        JspParserAPI jspParser = JspParserFactory.getJspParser();
+        JspParserAPI.ParseResult result = jspParser.analyzePage(jsp, new ParserWebModule(wm), JspParserAPI.ERROR_IGNORE);
+        if (!result.isParsingSuccess()) {
+            modified = true;
+        } else {
+            List includes = result.getPageInfo().getDependants();
+            if ((includes != null) && (includes.size() > 0)) {
+                long jspTS = jsp.lastModified().getTime();
+                int size = includes.size();
+                for (int i=0; i<size; i++) {
+                    String filename = (String)includes.get(i);
+                    filename = FileUtil.toFile(wm.getDocumentBase()).getPath() + filename;
+                    File f = new File(filename);
+                    if (f != null) {
+                        long incTS = f.lastModified();
+                        if (incTS > jspTS) {
+                            modified = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return modified;
+    }
+    
     // PENDING - should not this be in some kind of an API?
     private boolean decodeBoolean(String raw) {
         if ( raw != null ) {
