@@ -388,7 +388,6 @@ public class AntTargetNode extends ElementNode implements ChangeListener {
 
             help.setText(NbBundle.getMessage(AntTargetNode.class, "LBL_task_help"));
             help.setMnemonic((NbBundle.getMessage(AntTargetNode.class, "LBL_task_help_mnem")).charAt(0));
-            jLabel1.setFont(new java.awt.Font("Arial", 0, 11));
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
             gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 6);
@@ -411,7 +410,6 @@ public class AntTargetNode extends ElementNode implements ChangeListener {
                         }
                     });
             
-            help.setFont(new java.awt.Font("Arial", 0, 11));
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 2;
             gridBagConstraints.gridy = 0;
@@ -421,7 +419,6 @@ public class AntTargetNode extends ElementNode implements ChangeListener {
             }
 
             
-            combo.setFont(new java.awt.Font("Arial", 0, 12));
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 1;
             gridBagConstraints.gridy = 0;
