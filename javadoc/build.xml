@@ -30,6 +30,9 @@ Microsystems, Inc. All Rights Reserved.
         <fileset dir="../openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
+	<fileset dir="../core/external">
+	    <include name="regexp*.jar"/>
+	</fileset>
         <pathelement location="../java/netbeans/modules/java.jar"/>
         <fileset dir="../core/external">
           <include name="xml-apis*.jar" />

@@ -3,6 +3,7 @@ OpenIDE-Module: org.netbeans.modules.javadoc/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/javadoc/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/javadoc/resources/mf-layer.xml
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.java/1 > 1.7
+OpenIDE-Module-Package-Dependencies: org.apache.regexp[RE]
 OpenIDE-Module-Specification-Version: 1.9
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 2.12
