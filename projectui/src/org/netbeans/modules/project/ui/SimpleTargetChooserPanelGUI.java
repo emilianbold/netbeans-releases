@@ -61,9 +61,13 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         expectedExtension = ext.length() == 0 ? "" : "." + ext; // NOI18N
     }
         
+    public String getRelativeTargetFolder() {
+        return folderTextField.getText().trim();
+    }
+    
     public String getTargetFolder() {
         
-        String text = folderTextField.getText().trim();
+        String text = getRelativeTargetFolder();
         
         if ( text.length() == 0 ) {
             return FileUtil.toFile( project.getProjectDirectory() ).getPath();

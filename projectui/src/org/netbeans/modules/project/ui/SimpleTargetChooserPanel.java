@@ -103,10 +103,24 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
 
     public void storeSettings(Object settings) { 
         if( isValid() ) {
+            // XXX Better test for canWrite
             String folderName = gui.getTargetFolder();
-            FileObject folder = FileUtil.fromFile( new File( folderName ) )[0];            
-            Templates.setTargetFolder( (WizardDescriptor)settings, folder );
-            Templates.setTargetName( (WizardDescriptor)settings, gui.getTargetName() );
+            File f = new File( folderName );
+            try {
+                if ( !f.exists() ) {
+                    // XXX add deletion of the file in uninitalize ow the wizard
+                    String relativeFolder = gui.getRelativeTargetFolder();
+                    FileObject prjDir = project.getProjectDirectory();
+                    FileUtil.createFolder( prjDir, relativeFolder );
+                }                
+                FileObject folder = FileUtil.fromFile( f )[0];            
+                Templates.setTargetFolder( (WizardDescriptor)settings, folder );
+                Templates.setTargetName( (WizardDescriptor)settings, gui.getTargetName() );
+            }
+            catch( java.io.IOException e ) {
+                // XXX
+                // Can't create the folder
+            }
         }
     }
 
