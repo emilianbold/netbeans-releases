@@ -222,7 +222,12 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
     }//GEN-END:initComponents
 
     private void targetComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_targetComboBoxActionPerformed
-        StringTokenizer tok = new StringTokenizer((String) targetComboBox.getSelectedItem(), " ,"); // NOI18N
+        String selection = (String) targetComboBox.getSelectedItem();
+        if (selection == null) {
+            // Why? Not sure. #45097.
+            selection = "";
+        }
+        StringTokenizer tok = new StringTokenizer(selection, " ,"); // NOI18N
         List/*<String>*/ targetsL = Collections.list(tok);
         String description = "";
         if (targetsL.size() == 1) {
