@@ -284,6 +284,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
 
     private volatile DO lastEvent = null;
     private int lastPostedLine = -1;
+    private int lastFiredLine = -1;
     public void stateChanged(ChangeEvent changeEvent) {
         if (Controller.verbose) Controller.log (changeEvent != null ? "Document got change event from writer" : "Document timer polling");
         if (dlisteners.isEmpty()) {
@@ -295,15 +296,14 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
                 if (Controller.verbose) Controller.log ("Last event not consumed, not firing");
                 return;
             }
-            boolean initial = lastPostedLine == - 1;
+            boolean noPostedLine = lastPostedLine == - 1;
 
             int lineCount = getLines().getLineCount();
-            int lastLine = lastPostedLine;
             lastPostedLine = lineCount;
             
-            if (Controller.verbose) Controller.log ("Document may fire event - last fired getLine=" + lastLine + " getLine count now " + lineCount);
-            if (lastLine != lineCount || initial) {
-                lastEvent = new DO (Math.max(0, lastLine), initial);
+            if (Controller.verbose) Controller.log ("Document may fire event - last fired getLine=" + lastFiredLine + " getLine count now " + lineCount);
+            if (lastFiredLine != lastPostedLine || noPostedLine) {
+                lastEvent = new DO(Math.max(0, lastFiredLine), noPostedLine);
 //                evts.add (lastEvent);
                 Mutex.EVENT.readAccess (new Runnable() {
                     public void run() {
@@ -311,6 +311,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
                         fireDocumentEvent (lastEvent);
                     }
                 });
+                lastFiredLine = lastPostedLine;
             } else {
                 if (Controller.verbose) Controller.log ("Line count is still " + lineCount + " - not firing");
             }

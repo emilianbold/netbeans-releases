@@ -153,6 +153,30 @@ public class OutputWindowTest extends TestCase {
         
     }
 
+    public void testScrollToEnd() throws Exception {
+        System.out.println("testScrollToEnd");
+        NbIO io2 = (NbIO) provider.getIO("ScrollDown", true);
+        io2.select();
+        sleep();
+        AbstractOutputTab tab = win.getSelectedTab();
+        assertNotNull("Selected tab should not be null", tab);
+
+        AbstractOutputPane pane = tab.getOutputPane();
+        OutputDocument doc = (OutputDocument) pane.getDocument();
+        
+        for (int i = 0; i < 20; i++) {
+            io2.getOut().println("Hellooo... ");
+        }
+        sleep();
+        int end = doc.getEndPosition().getOffset();
+        int carretPos = pane.getCaretPos();
+        assertEquals("Caret position should be at the end (end: " + end
+                + ", carretPos: " + carretPos + ")",
+                end, carretPos);
+        io2.closeInputOutput();
+        sleep();
+    }
+
     public void testAbleToRetrieveSameInputOutputInstance() {
         System.out.println ("testAbleToRetrieveSameInputOutputInstance");
         NbIO io2 = (NbIO) provider.getIO("Test2", true);
