@@ -515,6 +515,9 @@ public class ProjectTab extends TopComponent
                 TreeNode tns[] = new TreeNode[ sp.length + 1 ];
                 
                 for ( int i = sp.length; i >= 0; i--) {
+                    if ( n == null ) { // Fix for 54832 it seems that sometimes                         
+                        return null;   // we get unparented node
+                    }
                     tns[i] = Visualizer.findVisualizer( n );
                     n = n.getParentNode();                    
                 }                
