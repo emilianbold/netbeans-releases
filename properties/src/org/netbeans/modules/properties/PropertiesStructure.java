@@ -210,7 +210,7 @@ public class PropertiesStructure extends Element {
         try {
             synchronized(getParent()) {
                 PositionBounds pos = getSuitablePositionBoundsForInsert();
-                pos.insertAfter(item.printString());
+                pos.insertAfter("\n"+item.printString()); // NOI18N
                 return true;
             }
         }

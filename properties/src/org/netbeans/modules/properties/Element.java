@@ -171,11 +171,10 @@ public abstract class Element extends Object implements Serializable {
 
         
         /** Get a string representation of the key for printing. Treats the '=' sign as a part of the key
-         * Starts with new line character (so we are sure key begins at new line).
          * @return the string
          */
         public String printString() {
-            return "\n"+getValue()+"="; // NOI18N
+            return getValue()+"="; // NOI18N
         }
     } // End of nested class KeyElem.
     
@@ -224,8 +223,7 @@ public abstract class Element extends Object implements Serializable {
             int candidate = 0;
 
             StringBuffer sb = new StringBuffer();
-            // Set new line at the beginnig, the previous valkue shouldn't have been ended correctly.
-            sb.append("\n");
+            
             sb.append(value);
 
             for (int i=0; i<sb.length(); ) {
@@ -352,7 +350,7 @@ public abstract class Element extends Object implements Serializable {
          * @return the string
          */
         public String printString() {
-            return comment.printString() +
+            return (comment.printString().length()>0 ? comment.printString() + "\n": "")+ // NOI18N
                 ((key   == null) ? "" : key.printString()) + // NOI18N
                 ((value == null) ? "" : value.printString()); // NOI18N
         }
