@@ -235,6 +235,7 @@ public class OptionsAction extends CallableSystemAction {
             super.addNotify ();
             
             javax.swing.SwingUtilities.invokeLater(this);
+            org.openide.util.RequestProcessor.getDefault ().post (this, 500);
         }
         
         public synchronized void prepareNodes () {
@@ -260,7 +261,9 @@ public class OptionsAction extends CallableSystemAction {
         
         public synchronized void run () {
             if (!javax.swing.SwingUtilities.isEventDispatchThread ()) {
+                prepareNodes ();
                 javax.swing.SwingUtilities.invokeLater(this);
+                return;
             }
             
             if (toExpand == null) {
