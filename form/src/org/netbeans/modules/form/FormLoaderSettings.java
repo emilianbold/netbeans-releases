@@ -88,7 +88,7 @@ public class FormLoaderSettings extends SystemOption {
      * is indented to reflect the hierarchy(i.e. the code for subcomponents of
      * Container is indented to the right).
      */
-    private static boolean indentAWTHierarchy = true;
+    private static boolean indentAWTHierarchy = false;
     /** If true, the event sets are sorted in the propertySheet
      * according to the name of the EventSet(i.e. its addXXX method).
      * If false, the original order is used.
