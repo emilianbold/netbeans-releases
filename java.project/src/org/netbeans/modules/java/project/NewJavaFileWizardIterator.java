@@ -85,7 +85,7 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.Instantiating
         };
     }
         
-    public Set/*<DataObject>*/ instantiate (/*WizardDescriptor wizardDescriptor*/) throws IOException {
+    public Set/*<FileObject>*/ instantiate () throws IOException {
         FileObject dir = Templates.getTargetFolder( wiz );
         
         DataFolder df = DataFolder.findFolder( dir );
@@ -108,7 +108,7 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.Instantiating
             });
         }
         
-        return Collections.singleton(dobj);
+        return Collections.singleton(dobj.getPrimaryFile ());
     }
     
         
