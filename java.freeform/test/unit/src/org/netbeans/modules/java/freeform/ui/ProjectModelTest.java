@@ -59,31 +59,31 @@ public class ProjectModelTest extends NbTestCase {
         sf.location = "loc1";
         sf.label = "label_loc1";
         sf.type = "java";
-        pm.addSourceFolder(sf);
+        pm.addSourceFolder(sf, false);
         assertEquals("Number of source folders does not match", 1, pm.getSourceFoldersCount());
         assertEquals("Number of comp units does not match", 1, pm.getJavaCompilationUnits().size());
         assertEquals("Number of comp unit keys does not match", 1, pm.createCompilationUnitKeys().size());
         List keys = generateKeys(new Object[]{"loc1"}, new String[]{"label_loc1"});
         assertKeyEquals(keys, pm.createCompilationUnitKeys());
         JavaProjectGenerator.JavaCompilationUnit cu1 = (JavaProjectGenerator.JavaCompilationUnit)pm.getJavaCompilationUnits().get(0);
-        JavaProjectGenerator.JavaCompilationUnit cu2 = pm.getCompilationUnit((ProjectModel.CompilationUnitKey)keys.get(0));
+        JavaProjectGenerator.JavaCompilationUnit cu2 = pm.getCompilationUnit((ProjectModel.CompilationUnitKey)keys.get(0), false);
         assertEquals("Must be the same instance", cu1, cu2);
 
         sf = new JavaProjectGenerator.SourceFolder();
         sf.location = "loc2";
         sf.label = "label_loc2";
         sf.type = "java";
-        pm.addSourceFolder(sf);
+        pm.addSourceFolder(sf, false);
         assertEquals("Number of source folders does not match", 2, pm.getSourceFoldersCount());
         assertEquals("Number of comp units does not match", 2, pm.getJavaCompilationUnits().size());
         assertEquals("Number of comp unit keys does not match", 2, pm.createCompilationUnitKeys().size());
         keys = generateKeys(new Object[]{"loc1", "loc2"}, new String[]{"label_loc1", "label_loc2"});
         assertKeyEquals(keys, pm.createCompilationUnitKeys());
         cu1 = (JavaProjectGenerator.JavaCompilationUnit)pm.getJavaCompilationUnits().get(0);
-        cu2 = pm.getCompilationUnit((ProjectModel.CompilationUnitKey)keys.get(0));
+        cu2 = pm.getCompilationUnit((ProjectModel.CompilationUnitKey)keys.get(0), false);
         assertEquals("Must be the same instance", cu1, cu2);
         cu1 = (JavaProjectGenerator.JavaCompilationUnit)pm.getJavaCompilationUnits().get(1);
-        cu2 = pm.getCompilationUnit((ProjectModel.CompilationUnitKey)keys.get(1));
+        cu2 = pm.getCompilationUnit((ProjectModel.CompilationUnitKey)keys.get(1), false);
         assertEquals("Must be the same instance", cu1, cu2);
         
         assertEquals("Source level does not match", "custom_source_level", 
@@ -111,7 +111,7 @@ public class ProjectModelTest extends NbTestCase {
         sf.location = "loc1";
         sf.label = "label_loc1";
         sf.type = "java";
-        pm.addSourceFolder(sf);
+        pm.addSourceFolder(sf, false);
         assertEquals("Number of source folders does not match", 1, pm.getSourceFoldersCount());
         assertEquals("Number of comp units does not match", 1, pm.getJavaCompilationUnits().size());
         assertEquals("Number of comp unit keys does not match", 1, pm.createCompilationUnitKeys().size());
@@ -122,7 +122,7 @@ public class ProjectModelTest extends NbTestCase {
         sf.location = "loc2";
         sf.label = "label_loc2";
         sf.type = "java";
-        pm.addSourceFolder(sf);
+        pm.addSourceFolder(sf, false);
         assertEquals("Number of source folders does not match", 2, pm.getSourceFoldersCount());
         assertEquals("Number of comp units does not match", 2, pm.getJavaCompilationUnits().size());
         assertEquals("Number of comp unit keys does not match", 2, pm.createCompilationUnitKeys().size());
@@ -133,7 +133,7 @@ public class ProjectModelTest extends NbTestCase {
         sf.location = "locWEB";
         sf.label = "label_locWEB";
         sf.type = "web";
-        pm.addSourceFolder(sf);
+        pm.addSourceFolder(sf, false);
         assertEquals("Number of source folders does not match", 3, pm.getSourceFoldersCount());
         assertEquals("Number of comp units does not match", 2, pm.getJavaCompilationUnits().size());
         assertEquals("Number of comp unit keys does not match", 2, pm.createCompilationUnitKeys().size());
@@ -158,7 +158,7 @@ public class ProjectModelTest extends NbTestCase {
         sf.location = "loc3";
         sf.label = "label_loc3";
         sf.type = "java";
-        pm.addSourceFolder(sf);
+        pm.addSourceFolder(sf, false);
         assertEquals("Number of source folders does not match", 3, pm.getSourceFoldersCount());
         assertEquals("Number of comp units does not match", 1, pm.getJavaCompilationUnits().size());
         assertEquals("Number of comp unit keys does not match", 1, pm.createCompilationUnitKeys().size());
@@ -169,7 +169,7 @@ public class ProjectModelTest extends NbTestCase {
         sf.location = "locWEB";
         sf.label = "label_locWEB";
         sf.type = "web";
-        pm.addSourceFolder(sf);
+        pm.addSourceFolder(sf, false);
         assertEquals("Number of source folders does not match", 4, pm.getSourceFoldersCount());
         assertEquals("Number of comp units does not match", 1, pm.getJavaCompilationUnits().size());
         assertEquals("Number of comp unit keys does not match", 1, pm.createCompilationUnitKeys().size());
@@ -340,7 +340,7 @@ public class ProjectModelTest extends NbTestCase {
         sf.label = "something";
         sf.type = "java";
         l = pm.getSourceFolders();
-        pm.addSourceFolder(sf);
+        pm.addSourceFolder(sf, false);
         l2 = pm.updatePrincipalSourceFolders(l, false);
         assertEquals("One principal source must be added", 2, l2.size());
         
@@ -349,14 +349,14 @@ public class ProjectModelTest extends NbTestCase {
         sf2.location = "..\\something2";
         sf2.label = "something2";
         sf2.type = "java";
-        pm.addSourceFolder(sf);
-        pm.addSourceFolder(sf2);
+        pm.addSourceFolder(sf, false);
+        pm.addSourceFolder(sf2, false);
         pm.removeSourceFolder(0);
         pm.removeSourceFolder(0);
-        pm.addSourceFolder(sf);
-        pm.addSourceFolder(sf2);
+        pm.addSourceFolder(sf, false);
+        pm.addSourceFolder(sf2, false);
         pm.removeSourceFolder(0);
-        pm.addSourceFolder(sf);
+        pm.addSourceFolder(sf, false);
         l = pm.getSourceFolders();
         l2 = pm.updatePrincipalSourceFolders(l, false);
         assertEquals("Two principal sources must be added", 4, l2.size());
@@ -378,8 +378,8 @@ public class ProjectModelTest extends NbTestCase {
         sf2_.label = "something2";
         sf2_.type = null;
         pm = createEmptyProjectModel();
-        pm.addSourceFolder(sf2);
-        pm.addSourceFolder(sf2_);
+        pm.addSourceFolder(sf2, false);
+        pm.addSourceFolder(sf2_, false);
         l = pm.getSourceFolders();
         l2 = pm.updatePrincipalSourceFolders(l, false);
         assertEquals("No principal sources added in this case because it already exist", l.size(), l2.size());
