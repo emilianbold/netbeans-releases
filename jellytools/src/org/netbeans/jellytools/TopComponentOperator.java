@@ -13,6 +13,7 @@
 package org.netbeans.jellytools;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.io.IOException;
@@ -167,7 +168,7 @@ public class TopComponentOperator extends JComponentOperator {
         if(getSource() instanceof TopComponent) {
             // activate TopComponent, i.e. switch tab control to be active.
             // run in dispatch thread
-            runMapping(new MapVoidAction("close") {
+            runMapping(new MapVoidAction("requestActive") {
                 public void map() {
                     ((TopComponent)getSource()).requestActive();
                 }
@@ -455,12 +456,7 @@ public class TopComponentOperator extends JComponentOperator {
         Rectangle r = new Rectangle();
         ta.getTabRect(index, r);
         Point p = new Point (r.x + (r.width / 2), r.y + (r.height / 2));
-        
-        //Jirka, is this necessary?
         Component tabsComp = ta.getComponentAt(p);
-        p = SwingUtilities.convertPoint(ta, p, tabsComp);
-        
-        // need a constant to satisfy that we are in tab
         new JPopupMenuOperator(JPopupMenuOperator.callPopup(tabsComp, p.x, p.y)).pushMenu(popupPath);
     }
     
@@ -479,6 +475,17 @@ public class TopComponentOperator extends JComponentOperator {
         return null;
     }
 
+    Container findTabDisplayer() {
+        return ContainerOperator.findContainer(findTabbedAdapter(), new ComponentChooser() {
+            public boolean checkComponent(Component comp) {
+                return comp.getClass().getName().endsWith("TabDisplayer");
+            }
+        
+            public String getDescription() {
+                return "org.netbeans.swing.tabcontrol.TabDisplayer";
+            }
+        });
+    }
     /**
      * Waits the topcomponent to be closed.
      */

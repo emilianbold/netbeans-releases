@@ -13,6 +13,7 @@
 package org.netbeans.jellytools;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.Iterator;
@@ -87,7 +88,7 @@ public class EditorWindowOperator extends JFrameOperator {
     public JButtonOperator btLeft() {
         if(_btLeft == null) {
             _btLeft = new JButtonOperator(
-                        new ContainerOperator(getEditor().findTabbedAdapter()), 0);
+                        new ContainerOperator(getEditor().findTabDisplayer()), 0);
         }
         return _btLeft;
     }
@@ -99,7 +100,7 @@ public class EditorWindowOperator extends JFrameOperator {
     public JButtonOperator btRight() {
         if(_btRight == null) {
             _btRight = new JButtonOperator(
-                        new ContainerOperator(getEditor().findTabbedAdapter()), 1);
+                        new ContainerOperator(getEditor().findTabDisplayer()), 1);
         }
         return _btRight;
     }
@@ -111,7 +112,7 @@ public class EditorWindowOperator extends JFrameOperator {
     public JButtonOperator btDown() {
         if(_btDown == null) {
             _btDown = new JButtonOperator(
-                        new ContainerOperator(getEditor().findTabbedAdapter()), 2);
+                        new ContainerOperator(getEditor().findTabDisplayer()), 2);
         }
         return _btDown;
     }
@@ -194,31 +195,15 @@ public class EditorWindowOperator extends JFrameOperator {
      * @return true if tabs were moved, false otherwise
      */
     public boolean jumpLeft() {
-        TabbedAdapter ta = getEditor().findTabbedAdapter();
-        
         if(btLeft().isEnabled()) {
-            Rectangle r = new Rectangle();
-            for (int i=0; i < ta.getModel().size(); i++) {
-                ta.getTabRect(i, r);
-                if (r.width > 0 && r.height > 0) {
-                    //We've found the first visible tab
-                    break;
-                }
-            }
-            if (r.width < 0 || r.height < 0) {
-                return false;
-            }
-            Point p = new Point (r.x + (r.width / 2), r.y + (r.width / 2));
-            Component tabsComp = ta.getComponentAt(p);
-            p = SwingUtilities.convertPoint (ta, p, tabsComp);
-            
+            Container cont = getEditor().findTabDisplayer();
             // click left corner
-            new JComponentOperator((JComponent)tabsComp).clickMouse(p.x, p.y, 1);
+            new ContainerOperator(cont).clickMouse(cont.getX()+1, cont.getY()+cont.getHeight()/2, 1);
             return true;
         }
         return false;
     }
-
+    
     /** Pushes rigth arrow control button in top right corner intended to 
      * move tabs to be visible right ones. If the button is not enabled, 
      * it does nothing.

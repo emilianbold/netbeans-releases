@@ -41,6 +41,7 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JFrameOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.jemmy.util.NameComponentChooser;
 
 /**
  * Handle NetBeans main window. It manipulates with toolbars and 
@@ -297,21 +298,9 @@ public class MainWindowOperator extends JFrameOperator {
      * @param y relative move along y direction
      */
     public void dragNDropToolbar(ContainerOperator toolbarOper, int x, int y) {
-        ComponentChooser chooser = new ComponentChooser() {
-            public boolean checkComponent(Component comp) {
-                if(comp instanceof JPanel) {
-                    String className = comp.getClass().getName();
-                    return className.equals("org.openide.awt.Toolbar$ToolbarBump") ||
-                           // used in Windows L&F
-                           className.equals("org.openide.awt.Toolbar$ToolbarGrip");
-                }
-                return false;
-            }
-            public String getDescription() {
-                return "org.openide.awt.Toolbar$ToolbarBump or org.openide.awt.Toolbar$ToolbarGrip";
-            }
-        };
-        Component comp = findComponent((Container)toolbarOper.getSource(), chooser);
+        // find toolbar drag and drop area. It is a component named "grip"
+        Component comp = findComponent((Container)toolbarOper.getSource(), 
+                                       new NameComponentChooser("grip"));
         new ComponentOperator(comp).dragNDrop(comp.getWidth()/2, comp.getHeight()/2, x, y);
     }
     
