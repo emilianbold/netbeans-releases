@@ -43,7 +43,7 @@ public class JspNode extends DataNode {
 
     private static final String EXECUTION_SET_NAME = "Execution"; // NOI18N
     private static final String SHEETNAME_TEXT_PROPERTIES = "textProperties"; // NOI18N
-    private static final String PROP_ENCODING = "encoding"; // NOI18N
+   
 
     private static final String ICON_BASE_JSP = "org/netbeans/modules/web/core/resources/jspObject"; // NOI18N
     private static final String ICON_BASE_TAG = "org/netbeans/modules/web/core/resources/tag"; // NOI18N
@@ -140,34 +140,7 @@ public class JspNode extends DataNode {
                    }
                }
             );
-        // encoding
-/*        ps.put(new PropertySupport.ReadWrite (
-                   JspDataObject.PROP_ENCODING,
-                   String.class,
-                   NbBundle.getBundle(EncodingEditor.class).getString("PROP_encoding"),
-                   NbBundle.getBundle(EncodingEditor.class).getString("HINT_encoding")
-               ) {
-                   public Object getValue() {
-                       return ((JspDataObject)getDataObject()).getEncoding();
-                   }
-                   public void setValue (Object val) throws InvocationTargetException {
-                       if (val instanceof String) {
-                           try {
-                               ((JspDataObject)getDataObject()).setEncoding((String)val);
-                           } catch(IOException e) {
-                               throw new InvocationTargetException (e);
-                           }
-                       }
-                       else {
-                           throw new IllegalArgumentException();
-                       }
-                   }
-                   public PropertyEditor getPropertyEditor() {
-                       return new EncodingEditor();
-                   }
-               }
-            );*/
-
+ 
         ps = new Sheet.Set ();
         ps.setName(EXECUTION_SET_NAME);
         ps.setDisplayName(NbBundle.getBundle(JspNode.class).getString("PROP_executionSetName"));
@@ -209,63 +182,6 @@ public class JspNode extends DataNode {
         ps.setName(SHEETNAME_TEXT_PROPERTIES);
         ps.setDisplayName(NbBundle.getBundle(JspNode.class).getString("PROP_textfileSetName")); // NOI18N
         ps.setShortDescription(NbBundle.getBundle(JspNode.class).getString("HINT_textfileSetName")); // NOI18N
-        ps.put(new PropertySupport.ReadWrite(PROP_ENCODING, 
-            String.class, NbBundle.getBundle(JspNode.class).getString("PROP_fileEncoding"), // NOI18N
-                          NbBundle.getBundle(JspNode.class).getString("HINT_fileEncoding")) { // NOI18N
-            public Object getValue() {
-                String enc = JspDataObject.getFileEncoding0(getDataObject().getPrimaryFile());
-                if (enc == null)
-                    return getDefaultEncodingDisplay();
-                else
-                    return enc;
-            }
-            
-            public void setValue(Object enc) throws InvocationTargetException {
-                String encoding = (String)enc;
-                if (isDefaultEncoding(encoding)) {
-                    encoding = null;
-                }
-                else {
-                    try {
-                        sun.io.CharToByteConverter.getConverter(encoding);
-                    } catch (IOException ex) {
-                        InvocationTargetException t =  new InvocationTargetException(ex);
-                        wrapThrowable(t, ex,
-                            NbBundle.getMessage(JspNode.class, "FMT_UnsupportedEncoding", encoding) // NOI18N
-                            );
-                        throw t;
-                    }
-                }
-                try {
-                    Util.setFileEncoding(getDataObject().getPrimaryFile(), encoding);
-                    // clear the old attribute (backward compatibility)
-                    getDataObject().getPrimaryFile().setAttribute ("AttrEncoding", null);   // NOI18N
-                } catch (IOException ex) {
-                    throw new InvocationTargetException(ex);
-                }
-            }
-            
-            /** Finds out whether encoding enc entered from the keyboard is 
-             * the same as the platform default encoging. */
-            private boolean isDefaultEncoding(String enc) {
-                if (enc == null)
-                    return true;
-                enc = enc.trim();
-                if (enc.equals(""))
-                    return true;
-                if (enc.equals(JspDataObject.getDefaultEncoding()))
-                    return true;
-                if (enc.equals(getDefaultEncodingDisplay()))
-                    return true;
-                return false;
-            }
-            
-            /** Returms the display value for the default encoding. */
-            private String getDefaultEncodingDisplay() {
-                String enc = JspDataObject.getDefaultEncoding();
-                return NbBundle.getMessage(JspNode.class, "FMT_DefaultEncoding", enc);
-            }
-        });
         sheet.put(ps);
         
         return sheet;

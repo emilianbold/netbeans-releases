@@ -229,50 +229,15 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         getPrimaryFile ().setAttribute (EA_SCRIPTING_LANGUAGE, scriptingLanguage);
         firePropertyChange(PROP_SCRIPTING_LANGUAGE, null, scriptingLanguage);
     }
-    
-    /** Gets the raw encoding from the fileobject, 
-     * ensures beckward compatibility.
-     **/
-    static String getFileEncoding0(FileObject someFile) {
-        String enc = Util.getFileEncoding0(someFile);
-        // backward compatibility - read the old attribute
-        if (enc == null) {
-            enc = (String)someFile.getAttribute ("AttrEncoding"); // NOI18N
-        }
+        
+    public String getFileEncoding(boolean useEditor) {
+        String enc;
+        TagLibParseSupport tlps = null;
+        tlps = (TagLibParseSupport)getCookie(TagLibParseSupport.class);
+        enc = tlps.getCachedOpenInfo(true, useEditor).getEncoding();
         return enc;
     }
     
-    static String getFileEncoding(FileObject someFile) {
-        String enc = getFileEncoding0(someFile);
-        if (enc == null) {
-            enc = getDefaultEncoding();
-        }
-        return enc;
-    }
-    
-    
-    public static String getDefaultEncoding() {
-        String language = Locale.getDefault().getLanguage();
-        if (language.startsWith("en")) {
-            // we are English
-            return "ISO-8859-1"; // NOI18N
-            // per JSP 1.2 specification, the default encoding is always ISO-8859-1,
-            // regardless of the setting of the file.encoding property
-            //return System.getProperty("file.encoding", "ISO-8859-1");
-        }
-        return canonizeEncoding(System.getProperty("file.encoding", "ISO-8859-1"));
-
-/*        if ("ja".equals(language)) { // NOI18N
-            // we are Japanese
-            if (org.openide.util.Utilities.isUnix())
-                return "EUC-JP"; // NOI18N
-            else
-                return "Shift_JIS"; // NOI18N
-        }
-        else
-            // we are English
-            return "ISO-8859-1"; // NOI18N*/
-    }
     
     private static final String CORRECT_WINDOWS_31J = "windows-31j";
     private static final String CORRECT_EUC_JP = "EUC-JP";
@@ -545,7 +510,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         if (dobj instanceof JspDataObject) {
             JspDataObject jspDO = (JspDataObject)dobj;
             FileObject prim = jspDO.getPrimaryFile();
-            String encoding = jspDO.getFileEncoding(prim);
+            String encoding = jspDO.getFileEncoding(false);
             if (!"ISO-8859-1".equals(encoding)) {
                 // write the encoding to file
                 sun.io.CharToByteConverter.getConverter(encoding);

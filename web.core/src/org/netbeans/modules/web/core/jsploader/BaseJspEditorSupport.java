@@ -58,17 +58,20 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
     /** Timer which countdowns the auto-reparsing time. */
     private Timer timer;
     
+    /** Cash of encoding of the file */
+    private String encoding;
+    
     public BaseJspEditorSupport(JspDataObject obj) {
         super(obj, new BaseJspEnv(obj));
-
+        
         String ext = getDataObject().getPrimaryFile().getExt();
         
-        if (ext.equals(JspLoader.TAG_FILE_EXTENSION) 
-            || ext.equals(JspLoader.TAGF_FILE_EXTENSION)
-            || ext.equals(JspLoader.TAGX_FILE_EXTENSION))
-            setMIMEType (JspLoader.TAG_MIME_TYPE);
+        if (ext.equals(JspLoader.TAG_FILE_EXTENSION)
+        || ext.equals(JspLoader.TAGF_FILE_EXTENSION)
+        || ext.equals(JspLoader.TAGX_FILE_EXTENSION))
+            setMIMEType(JspLoader.TAG_MIME_TYPE);
         else
-            setMIMEType (JspLoader.JSP_MIME_TYPE);
+            setMIMEType(JspLoader.JSP_MIME_TYPE);
         
         initialize();
     }
@@ -113,6 +116,8 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
                 }
             }
         });
+        
+        encoding = null;
     }
     
     /** Restart the timer which starts the parser after the specified delay.
@@ -129,22 +134,22 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
         }
     }
     
-    protected void loadFromStreamToKit (StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
+    protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
         Reader reader = null;
         try {
             reader = new InputStreamReader(stream, getObjectEncoding());
             kit.read(reader, doc, 0);
         }
         finally {
-            if (reader != null) 
+            if (reader != null)
                 reader.close();
         }
     }
-
-    protected void saveFromKitToStream (StyledDocument doc, EditorKit kit, OutputStream stream) throws IOException, BadLocationException {
+    
+    protected void saveFromKitToStream(StyledDocument doc, EditorKit kit, OutputStream stream) throws IOException, BadLocationException {
         Writer wr = null;
         try {
-            wr = new OutputStreamWriter(stream, getObjectEncoding());
+            wr = new OutputStreamWriter(stream, encoding);
             kit.write(wr, doc, 0, doc.getLength());
         }
         finally {
@@ -171,33 +176,34 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
         }
     }
     
-    protected boolean notifyModified () {
+    protected boolean notifyModified() {
         boolean notify = super.notifyModified();
         if (!notify) {
             return false;
         }
-        JspDataObject obj = (JspDataObject)getDataObject ();
-        if (obj.getCookie (SaveCookie.class) == null) {
-            obj.addSaveCookie (new SaveCookie() {
-                public void save () throws java.io.IOException {
+        JspDataObject obj = (JspDataObject)getDataObject();
+        if (obj.getCookie(SaveCookie.class) == null) {
+            obj.addSaveCookie(new SaveCookie() {
+                public void save() throws java.io.IOException {
                     saveDocument();
                 }
             });
         }
         return true;
     }
-
+    
     /** Called when the document becomes unmodified.
      * Here, removing the save cookie from the object and marking it unmodified.
      */
-    protected void notifyUnmodified () {
-        super.notifyUnmodified ();
-        JspDataObject obj = (JspDataObject)getDataObject ();
+    protected void notifyUnmodified() {
+        super.notifyUnmodified();
+        JspDataObject obj = (JspDataObject)getDataObject();
         obj.removeSaveCookie();
     }
-
+    
     protected String getObjectEncoding() {
-        return JspDataObject.getFileEncoding(getDataObject().getPrimaryFile());
+        encoding =  ((JspDataObject)getDataObject()).getFileEncoding( (getDocument().getLength() > 0));
+        return encoding;
     }
     
     /** Save the document in this thread and start reparsing it.
@@ -222,6 +228,7 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
      */
     private void saveDocument(boolean parse, boolean forceSave) throws IOException {
         if (forceSave || isModified()) {
+            getObjectEncoding();
             super.saveDocument();
             if (parse) {
                 TagLibParseSupport sup = (TagLibParseSupport)getDataObject().getCookie(TagLibParseSupport.class);
@@ -230,6 +237,10 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
                 }
             }
         }
+    }
+    
+    public void edit() {
+        System.out.println("edit");
     }
     
   /* A method to create a new component. Overridden in subclasses.

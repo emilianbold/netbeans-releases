@@ -152,15 +152,17 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
         }
     }
     
-    public JspParserAPI.JspOpenInfo getCachedOpenInfo() {
+    public JspParserAPI.JspOpenInfo getCachedOpenInfo(boolean preferCurrent, boolean useEditor) {
         synchronized (openInfoLock) {
+            if (preferCurrent)
+                jspOpenInfoRef = null;
             long timestamp = jspFile.lastModified().getTime();
             if (jspOpenInfoRef == null) {
                 jspOpenInfoRef = new TimeReference();
             }
             JspParserAPI.JspOpenInfo info = (JspParserAPI.JspOpenInfo)jspOpenInfoRef.get(timestamp);
             if (info == null) {
-                info = JspParserFactory.getJspParser().getJspOpenInfo(jspFile, WebModule.getJspParserWM (wmRoot));
+                info = JspParserFactory.getJspParser().getJspOpenInfo(jspFile, WebModule.getJspParserWM (wmRoot), useEditor);
                 jspOpenInfoRef.put(info, timestamp);
             }
             return info;

@@ -163,7 +163,7 @@ public class JSPKit extends NbEditorKit {
     public SyntaxSupport createSyntaxSupport(BaseDocument doc) {
         FileObject fobj = NbEditorUtilities.getDataObject(doc).getPrimaryFile();
         return new JspSyntaxSupport(doc, 
-            JspContextInfo.getContextInfo().getCachedOpenInfo(doc, fobj).isXmlSyntax());
+            JspContextInfo.getContextInfo().getCachedOpenInfo(doc, fobj, false).isXmlSyntax());
     }
 
     /** Returns completion for given language (MIME type).

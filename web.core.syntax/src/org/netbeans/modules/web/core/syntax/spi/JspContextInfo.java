@@ -94,7 +94,7 @@ public abstract class JspContextInfo {
     
     public abstract JspParserAPI.ParseResult getCachedParseResult(Document doc, FileObject fo, boolean successfulOnly, boolean preferCurrent);
     
-    public abstract JspParserAPI.JspOpenInfo getCachedOpenInfo(Document doc, FileObject fo);
+    public abstract JspParserAPI.JspOpenInfo getCachedOpenInfo(Document doc, FileObject fo, boolean preferCurrent);
     
     public abstract URLClassLoader getModuleClassLoader(Document doc, FileObject fo);
     

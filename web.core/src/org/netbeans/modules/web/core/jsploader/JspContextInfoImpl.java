@@ -146,10 +146,10 @@ public class JspContextInfoImpl extends JspContextInfo {
         return null;
     }
     
-    public org.netbeans.modules.web.jsps.parserapi.JspParserAPI.JspOpenInfo getCachedOpenInfo(Document doc, FileObject fo) {
+    public org.netbeans.modules.web.jsps.parserapi.JspParserAPI.JspOpenInfo getCachedOpenInfo(Document doc, FileObject fo, boolean preferCurrent) {
         TagLibParseSupport sup = getTagLibParseSupport (doc, fo);
         if (sup != null) {
-            return sup.getCachedOpenInfo();
+            return sup.getCachedOpenInfo(preferCurrent, true);
         }
         return null;
     }
