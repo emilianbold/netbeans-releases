@@ -258,7 +258,7 @@ class FormToolBar extends JToolBar {
                     formDesigner.toggleAddMode();
                     showPaletteViewMenu();
                 } else {
-                    paletteMenuView.getPopupMenu().setVisible(false);
+                    MenuSelectionManager.defaultManager().clearSelectedPath();
                     formDesigner.toggleSelectionMode();
                 }
             }
