@@ -343,6 +343,14 @@ public final class AntBridge {
         File libdir = new File(AntSettings.getDefault().getAntHomeWithDefault(), "lib"); // NOI18N
         if (!libdir.isDirectory()) throw new IOException("No such Ant library dir: " + libdir); // NOI18N
         err.log("Creating main class loader from " + libdir);
+        // First look for ${ant.home}/patches/*.jar, to support e.g. patching #47708:
+        File[] patches = new File(libdir.getParentFile(), "patches").listFiles(new JarFilter()); // NOI18N
+        if (patches != null) {
+            for (int i = 0; i < patches.length; i++) {
+                cp.add(patches[i]);
+            }
+        }
+        // Now continue with regular classpath.
         File[] libs = libdir.listFiles(new JarFilter());
         if (libs == null) throw new IOException("Listing: " + libdir); // NOI18N
         for (int i = 0; i < libs.length; i++) {
