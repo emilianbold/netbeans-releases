@@ -117,13 +117,13 @@ public class CreateModuleXML extends Task {
                             } else {
                                 File moduleloc = new File(new File(module.getParentFile(), "locale"), module.getName());
                                 if (! moduleloc.isFile()) {
-                                    throw new BuildException("Expecting localizing bundle: " + bundle);
+                                    throw new BuildException("Expecting localizing bundle: " + bundle + " in: " + module);
                                 }
                                 JarFile jarloc = new JarFile(moduleloc);
                                 try {
                                     ZipEntry entry2 = jarloc.getEntry(bundle);
                                     if (entry2 == null) {
-                                        throw new BuildException("Expecting localizing bundle: " + bundle);
+                                        throw new BuildException("Expecting localizing bundle: " + bundle + " in: " + module);
                                     }
                                     is = jarloc.getInputStream(entry2);
                                 } finally {

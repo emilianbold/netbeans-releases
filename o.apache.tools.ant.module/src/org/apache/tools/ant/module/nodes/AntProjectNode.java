@@ -460,5 +460,8 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
         public AntProjectCookie getAntProjectCookie () {
             return (AntProjectCookie) getCookie (AntProjectCookie.class);
         }        
+        protected void firePropertiesFilePropertyChange() {
+            AntProjectNode.this.firePropertySetsChange(null, null);
+        }
     }
 }

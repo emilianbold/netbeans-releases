@@ -152,6 +152,9 @@ public class AntTargetNode extends ElementNode {
         public AntProjectCookie getAntProjectCookie () {
             return (AntProjectCookie) getCookie (AntProjectCookie.class);
         }
+        protected void firePropertiesFilePropertyChange() {
+            AntTargetNode.this.firePropertySetsChange(null, null);
+        }
     }
     
     private class DependsProperty extends AntProperty {

@@ -52,6 +52,7 @@ public class AntSettings extends SystemOption implements ChangeListener {
     private static final long serialVersionUID = -4457782585534082966L;
     
     protected void initialize () {
+        super.initialize();
         setVerbosity (Project.MSG_INFO);
         Properties p = new Properties ();
         // Enable hyperlinking for Jikes:
