@@ -1428,6 +1428,16 @@ implements Serializable, DataObject.Container {
                             return new HelpCtx (Paste.class.getName () + ".shadow"); // NOI18N
                         }
                         protected boolean handleCanPaste (DataObject obj) {
+                            // #42888 - disable "Create as Link" action on non-SystemFileSystem
+                            try {
+                                if (!DataFolder.this.getPrimaryFile().getFileSystem().equals(
+                                        Repository.getDefault().getDefaultFileSystem())) {
+                                    return false;
+                                }
+                            } catch (FileStateInvalidException ex) {
+                                // something wrong. disable.
+                                return false;
+                            }
                             return obj.isShadowAllowed ();
                         }
                         protected void handlePaste (DataObject obj) throws IOException {
