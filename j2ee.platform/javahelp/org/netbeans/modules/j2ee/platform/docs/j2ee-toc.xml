@@ -33,7 +33,7 @@
         <tocitem text="Building and Running Enterprise Applications" >
             <tocitem text="Building an Enterprise Application" target="ent_app_build" />
             <tocitem text="Validating an Enterprise Application" target="tbd" />
-            <tocitem text="Setting the Target Server for an Enterprise Application" target="tbd" />
+	    <tocitem text="Setting the Target Server for an Enterprise Application" target="ent_app_server" />
             <tocitem text="Deploying an Enterprise Application" target="tbd" />
             <tocitem text="Debugging an Enterprise Application" target="tbd" />
         </tocitem>
