@@ -101,6 +101,11 @@ public class DatabaseNodeChildren extends Children.Array
             if (! sort)
                 return 1;
             
+            if (!(o1 instanceof DatabaseNode))
+                return -1;
+            if (!(o2 instanceof DatabaseNode))
+                return 1;
+            
             int o1val, o2val, diff;
             Integer o1i = (Integer)map.get(o1.getClass().getName());
             if (o1i != null) o1val = o1i.intValue();
