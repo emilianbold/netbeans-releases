@@ -355,7 +355,7 @@ public class WrappedTextView extends View {
                             break;
                         }
                         drawLogicalLine(seg, currLogicalLine, logicalLines, g, y, lineStart, charpos, selStart, lenToDraw, selEnd);
-                        if (g.getColor() == unselectedLinkFg) {
+                        if (g.getColor() == unselectedLinkFg || g.getColor() == unselectedImportantLinkFg) {
                             underline(g, seg, charpos, lenToDraw, currLogicalLine, y);
                         }
                         y += charHeight();
