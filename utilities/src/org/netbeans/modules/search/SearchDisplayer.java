@@ -83,8 +83,8 @@ public class SearchDisplayer extends Object implements NodeAcceptor {
         }
 
         if (ow == null) {
-            setOw(NbBundle.getBundle(ResultViewTopComponent.class)
-                  .getString("TEXT_TITLE_SEARCH_RESULTS"));             //NOI18N
+            setOw(NbBundle.getMessage(ResultView.class,
+                                      "TITLE_SEARCH_RESULTS"));         //NOI18N
         }
         searchIO.select();
         searchIO.setFocusTaken(true);
