@@ -71,7 +71,7 @@ public abstract class SearchType extends org.openide.ServiceType implements Clon
   /** Gives short type name.
   * @return String representing name used as tab label or null
   */
-  public static String getTabText() {
+  public String getTabText() {
     return null;
   }
 
@@ -90,6 +90,7 @@ public abstract class SearchType extends org.openide.ServiceType implements Clon
 
 /* 
 * Log
+*  4    Gandalf   1.3         1/4/00   Petr Kuzel      Polymorphism
 *  3    Gandalf   1.2         12/15/99 Martin Balin    Fixed package statement
 *  2    Gandalf   1.1         12/14/99 Petr Kuzel      Enforcing Cloneable.
 *  1    Gandalf   1.0         12/14/99 Petr Kuzel      
