@@ -35,7 +35,15 @@ import org.netbeans.editor.ext.*;
  */
 public class Editor extends javax.swing.JFrame {
 
-    private static final File distributionDirectory = new File(System.getProperty("standalone.distribution"));
+    private static final File distributionDirectory;
+    
+    static {
+	URL url = Editor.class.getProtectionDomain().getCodeSource().getLocation();
+	String protocol = url.getProtocol();
+	File file = new File(url.getFile());
+	if (!file.isDirectory()) file = file.getParentFile();
+	distributionDirectory = file;
+    }
     
     private static final String SETTINGS =
         "settings";
@@ -460,7 +468,7 @@ public class Editor extends javax.swing.JFrame {
 
     
     private void readSettings() throws MissingResourceException {
-        File currentPath = new File( System.getProperty( "user.dir" ) ).getAbsoluteFile(); //??should not this be re-written for distributionDirectory?
+        File currentPath = new File( System.getProperty( "user.dir" ) ).getAbsoluteFile();
         fileChooser = new JFileChooser( currentPath );
         
         fileChooser.setFileView( new FileView() {

@@ -9,5 +9,4 @@ do
   CLASSPATH=$CLASSPATH:$i
 done
 
-java -Dstandalone.distribution=$INSTALATION_DIR -classpath $CLASSPATH org.netbeans.editor.example.Editor $@
-
+java -classpath $CLASSPATH org.netbeans.editor.example.Editor $@
