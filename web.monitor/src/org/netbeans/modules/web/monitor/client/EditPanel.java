@@ -200,7 +200,7 @@ public class EditPanel extends javax.swing.JPanel implements
 					  msgs.getString("MON_EditReplay"),
 					  true, 
 					  options,
-					  options[1],
+					  options[0],
 					  DialogDescriptor.BOTTOM_ALIGN,
 					  null,
 					  this);
