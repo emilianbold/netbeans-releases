@@ -84,6 +84,11 @@ public class DatabaseModule extends ModuleInstall {
         }
     }
     
+    public boolean closing() {
+        org.netbeans.modules.db.explorer.nodes.RootNode.getOption().save();
+        return true;
+    }
+    
     public void close () {
         final Node environment = TopManager.getDefault().getPlaces().nodes().environment();
         

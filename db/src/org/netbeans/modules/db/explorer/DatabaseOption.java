@@ -111,7 +111,7 @@ public class DatabaseOption extends SystemOption {
     {
         if (connections == null)
             connections = new Vector();
-        
+
         return connections;
     }
 
@@ -159,7 +159,11 @@ public class DatabaseOption extends SystemOption {
         autoConn = newAutoConn;
         firePropertyChange(PROP_AUTO_CONNECTION, new Boolean(!autoConn), new Boolean(autoConn));
     }
-    
+
+    public void save() {
+        firePropertyChange(null, null, null);
+    }
+
     /** Name of the option */
     public String displayName() {
         return bundle.getString("OptionName"); //NOI18N

@@ -10,6 +10,3 @@ Class-Path: docs/db.jar
 Name: org/netbeans/modules/db/explorer/nodes/RootNode.class
 OpenIDE-Module-Class: Node
 Type: Environment
-
-Name: org/netbeans/modules/db/explorer/DatabaseOption.class
-OpenIDE-Module-Class: Option
