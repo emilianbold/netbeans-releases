@@ -79,6 +79,14 @@ public class I18nPanel extends JPanel {
     }
 
     
+    /** Overrides superclass method to set default button. */
+    public void addNotify() {
+        super.addNotify();
+        
+        if(SwingUtilities.isDescendingFrom(replaceButton, this))
+            getRootPane().setDefaultButton(replaceButton);
+    }
+    
     /** Getter for <code>i18nString</code>. */
     public I18nString getI18nString() {
         return i18nString;
