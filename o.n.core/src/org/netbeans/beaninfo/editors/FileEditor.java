@@ -403,18 +403,51 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
                 // Replace it by our action which adds the folder change,
                 // if selected is a directory.
                 parent.put("approveSelection", new AbstractAction() { // NOI18N
+                    private String lastDir = null;
                     public void actionPerformed(ActionEvent evt) {
-                        File file = chooser.getSelectedFile();
-
-                        if(file != null && file.isDirectory()) {
-                            try {
-                                // Strip trailing ".."
-                                file = file.getCanonicalFile();
-                            } catch (java.io.IOException ioe) {
-                                // Ok, use f as is
+                        File beforefile = chooser.getSelectedFile();
+                        if (original != null) 
+                            original.actionPerformed(evt);
+                        File afterfile = chooser.getSelectedFile();
+                        File file;
+                        if (afterfile != null) 
+                            file=afterfile;
+                        else
+                            file = beforefile;
+                        
+                        if(file != null) {
+                            if (file.isDirectory()) {
+                                try {
+                                    // Strip trailing ".."
+                                    file = file.getCanonicalFile();
+                                    if (chooser.getFileSelectionMode() == chooser.DIRECTORIES_ONLY) {
+                                        //first time should select, second time should enter
+                                        //only for the case that directories are what is being
+                                        //selected
+                                        String path = file.getPath();
+                                        if (path.equals (lastDir)) {
+                                            //toggle between selecting the dir & displaying its contents
+                                            chooser.setCurrentDirectory (file);
+                                            lastDir = null;
+                                        } else {
+                                            chooser.setCurrentDirectory (file.getParentFile());
+                                            chooser.setSelectedFile(file);
+                                            chooser.ensureFileIsVisible (file);
+                                            lastDir = path;
+                                        }
+                                    } else {
+                                        chooser.setCurrentDirectory(file);
+                                    }
+                                } catch (java.io.IOException ioe) {
+                                    // Ok, use f as is
+                                }
+                            } else {
+                                //handle not a directory
+                                File dir = file.getParentFile();
+                                chooser.setCurrentDirectory (dir);
+                                chooser.setSelectedFile(file);
+                                chooser.ensureFileIsVisible(file);
                             }
-
-                            chooser.setCurrentDirectory(file);
                         } else {
                             if(original != null) {
                                 original.actionPerformed(evt);
