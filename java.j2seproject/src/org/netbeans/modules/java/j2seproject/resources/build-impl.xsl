@@ -837,7 +837,9 @@ is divided into following sections:
                         </xsl:otherwise>
                     </xsl:choose>
                 </xsl:variable>
-                <ant dir="${{project.{$subproj}}}{$scriptdirslash}" target="{$subtarget}" inheritall="false">
+                <ant target="{$subtarget}" inheritall="false">
+                    <!-- XXX #43624: cannot use inline attr on JDK 1.5 -->
+                    <xsl:attribute name="dir">${project.<xsl:value-of select="$subproj"/>}<xsl:value-of select="$scriptdirslash"/></xsl:attribute>
                     <xsl:if test="$scriptfile != 'build.xml'">
                         <xsl:attribute name="antfile">
                             <xsl:value-of select="$scriptfile"/>
