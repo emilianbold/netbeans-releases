@@ -110,6 +110,7 @@ public class EditorOperator extends TopComponentOperator {
      */    
     public EditorOperator(String filename, int index) {
         super(waitTopComponent(null, filename, index, new EditorSubchooser()));
+        this.requestFocus(); // needed for pushKey() methods
     }
 
     /** Waits for first visible TopComponent with given name in specified container.
@@ -130,6 +131,7 @@ public class EditorOperator extends TopComponentOperator {
     public EditorOperator(ContainerOperator contOper, String filename, int index) {
         super(waitTopComponent(contOper, filename, index, new EditorSubchooser()));
         copyEnvironment(contOper);
+        this.requestFocus(); // needed for pushKey() methods
     }
 
 
@@ -433,29 +435,36 @@ public class EditorOperator extends TopComponentOperator {
         return NbDocument.findLineNumber(doc, offset) + 1;
     }
     
+    /** Pushes key of requested key code. */
+    public void pushKey(int keyCode) {
+        // need to request focus before any key push
+        this.requestFocus();
+        txtEditorPane().pushKey(keyCode);
+    }
+
     /** Pushes Home key (KeyEvent.VK_HOME) */
     public void pushHomeKey() {
-        txtEditorPane().pushKey(KeyEvent.VK_HOME);
+        pushKey(KeyEvent.VK_HOME);
     }
     
     /** Pushes End key (KeyEvent.VK_END) */
     public void pushEndKey() {
-        txtEditorPane().pushKey(KeyEvent.VK_END);
+        pushKey(KeyEvent.VK_END);
     }
     
     /** Pushes Tab key (KeyEvent.VK_TAB) */
     public void pushTabKey() {
-        txtEditorPane().pushKey(KeyEvent.VK_TAB);
+        pushKey(KeyEvent.VK_TAB);
     }
     
     /** Pushes Down key (KeyEvent.VK_DOWN) */
     public void pushDownArrowKey() {
-        txtEditorPane().pushKey(KeyEvent.VK_DOWN);
+        pushKey(KeyEvent.VK_DOWN);
     }
     
     /** Pushes Up key (KeyEvent.VK_UP) */
     public void pushUpArrowKey() {
-        txtEditorPane().pushKey(KeyEvent.VK_UP);
+        pushKey(KeyEvent.VK_UP);
     }
     
     /** Returns offset of the beginning of a line.
@@ -487,6 +496,17 @@ public class EditorOperator extends TopComponentOperator {
         txtEditorPane().setCaretPosition(getLineOffset(lineNumber));
     }
     
+    /** Sets caret position to the end of specified line.
+     * Lines are numbered from 1, so setCaretPosition(1) will set caret
+     * to the end of the first line.
+     * @param lineNumber number of line (beggining from 1)
+     */
+    public void setCaretPositionToEndOfLine(int lineNumber) {
+        // getText returns contents of line plus \n, that's why we use length()-1
+        txtEditorPane().setCaretPosition(getLineOffset(lineNumber)+
+                                         getText(lineNumber).length()-1);
+    }
+
     /** Sets caret position to specified line and column
      * @param lineNumber line number where to set caret
      * @param column column where to set caret (1 means beginning of the row)
