@@ -37,7 +37,8 @@ int WINAPI
         }
 #endif    
 
-    char topdir[MAX_PATH], userdir[MAX_PATH] = "c:\\nbuser", options[4098] = "", dirs[4098] = "";
+    char topdir[MAX_PATH], userdir[MAX_PATH] = "c:\\nbuser", options[4098] = "";
+    char dirs[4098] = "", extradirs[4098];
     char jdkswitch[MAX_PATH] = "";
     char buf[MAX_PATH], *pc;
   
@@ -111,6 +112,19 @@ int WINAPI
             
             *(pc+1) = '\0';
             strcpy(dirs, q);
+        } else if (strstr(pc, "netbeans_extraclusters=") == pc) {
+            char *q = strstr(pc, "=") + 1;
+            pc = line + strlen(line) - 1;
+            while (*pc == '\n' || *pc == '\r' || *pc == '\t' || *pc == ' ')
+                pc--;
+            
+            if (*q == '"' && *pc == '"') {
+                q++;
+                pc--;
+            }
+            
+            *(pc+1) = '\0';
+            strcpy(extradirs, q);
         } else if (strstr(pc, "netbeans_jdkhome=") == pc) {
             char *q = strstr(pc, "=") + 1;
             pc = line + strlen(line) - 1;
@@ -150,6 +164,10 @@ int WINAPI
                     topdir, "\\nb4.0", topdir, "\\ide4" );
         }
     }
+    if (extradirs[0] != '\0') {
+        strcat(strcat(dirs, ";"), extradirs);
+    }
+    
     sprintf(nbexec, "%s\\platform4\\lib\\nbexec.exe", topdir);
     sprintf(cmdline2, "\"%s\" %s -J-Dnetbeans.importclass=org.netbeans.upgrade.AutoUpgrade --branding nb --clusters \"%s\" --userdir \"%s\" %s %s",
             nbexec,

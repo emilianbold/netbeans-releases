@@ -43,6 +43,10 @@ if [ -z "$netbeans_clusters" ] ; then
     fi
 fi
 
+if [ ! -z "$netbeans_extraclusters" ] ; then
+    netbeans_clusters="$netbeans_clusters:$netbeans_extraclusters"
+fi
+
 jdkhomeswitch=
 if [ ! -z "$netbeans_jdkhome" ] ; then
     jdkhomeswitch="--jdkhome \"$netbeans_jdkhome\""
