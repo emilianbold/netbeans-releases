@@ -285,7 +285,9 @@ public class BiAnalyser extends Object implements Node.Cookie {
     sb.append( "\n" + TAB + "// Property array \n" );
     sb.append( TAB + "private static PropertyDescriptor[] properties = new PropertyDescriptor[" +
                propertyCount + "];\n\n" );
-    sb.append( TAB + "static {\n" + TABx2 + "try {\n" );
+    
+    if ( allProperties.size() > 0) 
+      sb.append( TAB + "static {\n" + TABx2 + "try {\n" );
 
     it = allProperties.iterator();
     for ( int i = 0; it.hasNext(); i++ ) {
@@ -303,10 +305,12 @@ public class BiAnalyser extends Object implements Node.Cookie {
         }  
       }
     }
-    sb.append( TABx2 + "}\n" +  TABx2 + "catch( IntrospectionException e) {}" );
+    
+    if ( allProperties.size() > 0 )
+      sb.append( TABx2 + "}\n" +  TABx2 + "catch( IntrospectionException e) {}" );
 
 
-    bis.setPropertiesSection( sb.toString(), "}\n" );
+    bis.setPropertiesSection( sb.toString(), allProperties.size() > 0 ? "}\n" : "  \n" );
   }
 
   /** Regenerates the event set section of BeanInfo */
@@ -340,7 +344,8 @@ public class BiAnalyser extends Object implements Node.Cookie {
     sb.append( TAB + "private static EventSetDescriptor[] eventSets = new EventSetDescriptor[" 
       + eventCount + "];\n\n" );
 
-    sb.append( TAB + "static {\n" + TABx2 + "try {\n" );
+    if ( eventSets.size() > 0 )
+      sb.append( TAB + "static {\n" + TABx2 + "try {\n" );
 
     it = eventSets.iterator();
     for ( int i = 0; it.hasNext(); i++ ) {
@@ -356,10 +361,12 @@ public class BiAnalyser extends Object implements Node.Cookie {
           sb.append( (String)csit.next() ).append( ";\n" );
         }
       }
-    }      
+    } 
+    
+    if ( eventSets.size() > 0 )
     sb.append( TABx2 + "}\n" +  TABx2 + "catch( IntrospectionException e) {}" );
   
-    bis.setEventSetsSection( sb.toString(), "}\n" );
+    bis.setEventSetsSection( sb.toString(), eventSets.size() > 0 ? "}\n" : "  \n");
   }
   
   /** Generate image icon section */
@@ -608,6 +615,8 @@ public class BiAnalyser extends Object implements Node.Cookie {
 }
 /* 
  * Log
+ *  5    Gandalf   1.4         8/5/99   Petr Hrebejk    BeanInfo for Beans with 
+ *       no Properties or no EventSets fixed
  *  4    Gandalf   1.3         7/29/99  Petr Hrebejk    Patterns in BeanInfo 
  *       show correctly only public fields and methods
  *  3    Gandalf   1.2         7/28/99  Petr Hrebejk    Property Mode change fix
