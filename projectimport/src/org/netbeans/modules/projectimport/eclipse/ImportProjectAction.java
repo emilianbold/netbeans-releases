@@ -16,9 +16,9 @@ package org.netbeans.modules.projectimport.eclipse;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Set;
-import javax.swing.ProgressMonitor;
 import javax.swing.Timer;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.projectimport.eclipse.wizard.ProgressDialog;
 import org.netbeans.modules.projectimport.eclipse.wizard.ProjectImporterWizard;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -47,24 +47,20 @@ public class ImportProjectAction extends CallableSystemAction {
         
         final Importer importer = new Importer(eclProjects, destination);
         
-        // TODO Temporary solution until there will be final HIE spec
+        // prepare progress dialog
+        final ProgressDialog progress = new ProgressDialog(true);
+        progress.setNumberOfSteps(wizard.getNumberOfImportedProject());
         
-        // prepare progress monitor
-        final ProgressMonitor pm = new ProgressMonitor(
-                null, "Importing selected projects", "", 0,
-                wizard.getNumberOfImportedProject() + 1);
-        pm.setProgress(0);
-        pm.setMillisToPopup(0);
-        pm.setMillisToDecideToPopup(0);
         // progress timer for periodically update progress
         final Timer progressTimer = new Timer(50, null);
         progressTimer.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                pm.setProgress(importer.getNOfProcessed());
-                pm.setNote(importer.getProgressInfo());
+                progress.setCurrentStep(importer.getNOfProcessed());
+                progress.setInfo(importer.getProgressInfo());
                 if (importer.isDone()) {
                     progressTimer.stop();
-                    pm.close();
+                    progress.setVisible(false);
+                    progress.dispose();
                     // open created projects when importing finished
                     OpenProjects.getDefault().open(importer.getProjects(), true);
                 }
@@ -72,7 +68,7 @@ public class ImportProjectAction extends CallableSystemAction {
         });
         importer.startImporting(); // runs importing in separate thread
         progressTimer.start();
-        
+        progress.setVisible(true);
         //        OpenProjectList.getDefault().open(project, true);
         //        OpenProjectList.getDefault().setMainProject( project );
         //        final ProjectTab ptLogial  = ProjectTab.findDefault(ProjectTab.ID_LOGICAL);

@@ -39,7 +39,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 /**
  * DOCDO
@@ -58,6 +57,9 @@ final class Importer {
     private String progressInfo;
     private boolean done;
     
+    private JavaPlatform[] nbPlfs; // All netbeans platforms
+    private String nbDefPlfDir; // NetBeans default platform directory
+    
     Importer(final Set eclProjects, final String destination) {
         this.eclProjects = eclProjects;
         this.destination = destination;
@@ -65,6 +67,17 @@ final class Importer {
     }
     
     void startImporting() {
+        nbPlfs = JavaPlatformManager.getDefault().getInstalledPlatforms();
+        JavaPlatform defPlf = JavaPlatformManager.getDefault().getDefaultPlatform();
+        Collection installFolder = defPlf.getInstallFolders();
+        if (installFolder.isEmpty()) {
+            ErrorManager.getDefault().log(ErrorManager.WARNING,
+                    "There is not any platform in NetBeans..."); // NOI18N
+            return;
+        } else {
+            nbDefPlfDir = FileUtil.toFile(
+                    (FileObject) installFolder.toArray()[0]).getAbsolutePath();
+        }
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 ProjectManager.mutex().writeAccess(new Runnable() {
@@ -160,43 +173,39 @@ final class Importer {
     
     /** Sets <code>JavaPlatform</code> for the given project */
     private void setJavaPlatform(EclipseProject eclProject, final AntProjectHelper helper) {
-        progressInfo = "Setting JDK for \"" + eclProject.getName() + "\"";
-        JavaPlatform[] plfs = JavaPlatformManager.getDefault().getInstalledPlatforms();
-        JavaPlatform defPlf = JavaPlatformManager.getDefault().getDefaultPlatform();
-        Collection installFolder = defPlf.getInstallFolders();
-        if (installFolder.isEmpty()) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING,
-                    "There is not any platform in NetBeans..."); // NOI18N
-            return;
-        }
-        String defPlfDir = FileUtil.toFile((FileObject) installFolder.toArray()[0]).getAbsolutePath();
+        //        progressInfo = "Setting JDK for \"" + eclProject.getName() + "\"";
         String eclPlfDir = eclProject.getJDKDirectory();
         // eclPlfDir can be null in a case when a JDK was set for an eclipse
         // project in Eclipse then the directory with JDK was deleted from
         // filesystem and then a project is imported into NetBeans
-        if (eclPlfDir != null && !eclPlfDir.equals(defPlfDir)) {
-            for (int i = 0; i < plfs.length; i++) {
-                JavaPlatform plf = plfs[i];
-                final String currPlfDir = FileUtil.toFile((FileObject) plf.getInstallFolders().toArray()[0]).getAbsolutePath();
-                EditableProperties prop = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                
-                if (currPlfDir.equals(eclPlfDir)) {
-                    Element pcd = helper.getPrimaryConfigurationData(true);
-                    Element el = pcd.getOwnerDocument().createElementNS(
-                            J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,
-                            "explicit-platform"); // NOI18N
-                    pcd.appendChild(el);
-                    helper.putPrimaryConfigurationData(pcd, true);
-                    String ver = plf.getSpecification().getVersion().toString();
-                    String normalizedName = (String)plf.getProperties().get("platform.ant.name"); // NOI18N
-                    prop.setProperty(J2SEProjectProperties.JAVAC_SOURCE, ver);
-                    prop.setProperty(J2SEProjectProperties.JAVAC_TARGET, ver);
-                    prop.setProperty(J2SEProjectProperties.JAVA_PLATFORM, normalizedName);
-                    helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, prop);
-                    break;
-                }
+        if (eclPlfDir == null || eclPlfDir.equals(nbDefPlfDir)) {
+            // use default platform
+            return;
+        }
+        for (int i = 0; i < nbPlfs.length; i++) {
+            JavaPlatform nbPlf = nbPlfs[i];
+            String nbPlfDir = FileUtil.toFile(
+                    (FileObject) nbPlf.getInstallFolders().toArray()[0]).getAbsolutePath();
+            
+            if (nbPlfDir.equals(eclPlfDir)) {
+                EditableProperties prop =
+                        helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                Element pcd = helper.getPrimaryConfigurationData(true);
+                Element el = pcd.getOwnerDocument().createElementNS(
+                        J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,
+                        "explicit-platform"); // NOI18N
+                pcd.appendChild(el);
+                helper.putPrimaryConfigurationData(pcd, true);
+                String ver = nbPlf.getSpecification().getVersion().toString();
+                String normalizedName = (String)nbPlf.getProperties().get(
+                        "platform.ant.name"); // NOI18N
+                prop.setProperty(J2SEProjectProperties.JAVAC_SOURCE, ver);
+                prop.setProperty(J2SEProjectProperties.JAVAC_TARGET, ver);
+                prop.setProperty(J2SEProjectProperties.JAVA_PLATFORM, normalizedName);
+                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, prop);
+                break;
             }
         }
-        // if we are not able to find any platform the default is used
     }
+    // if we are not able to find any platform the default is used
 }
