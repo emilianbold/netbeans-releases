@@ -32,7 +32,6 @@ public class clear_Frame extends java.awt.Frame {
      */
     private void initComponents() {//GEN-BEGIN:initComponents
         popupMenu1 = new java.awt.PopupMenu();
-        label1 = new java.awt.Label();
         button1 = new java.awt.Button();
         textField1 = new java.awt.TextField();
         textArea1 = new java.awt.TextArea();
@@ -55,9 +54,6 @@ public class clear_Frame extends java.awt.Frame {
                 exitForm(evt);
             }
         });
-
-        label1.setText("label1");
-        add(label1);
 
         button1.setLabel("button1");
         add(button1);

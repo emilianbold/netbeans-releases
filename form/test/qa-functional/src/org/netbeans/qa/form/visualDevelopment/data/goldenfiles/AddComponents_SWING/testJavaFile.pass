@@ -51,9 +51,7 @@ public class clear_JFrame extends javax.swing.JFrame {
         jSlider1 = new javax.swing.JSlider();
         jProgressBar1 = new javax.swing.JProgressBar();
         jSplitPane1 = new javax.swing.JSplitPane();
-        jFormattedTextField1 = new javax.swing.JFormattedTextField();
         jPasswordField1 = new javax.swing.JPasswordField();
-        jSpinner1 = new javax.swing.JSpinner();
         jSeparator1 = new javax.swing.JSeparator();
         jTextPane1 = new javax.swing.JTextPane();
         jEditorPane1 = new javax.swing.JEditorPane();
@@ -115,12 +113,7 @@ public class clear_JFrame extends javax.swing.JFrame {
 
         getContentPane().add(jSplitPane1);
 
-        jFormattedTextField1.setText("jFormattedTextField1");
-        getContentPane().add(jFormattedTextField1);
-
         getContentPane().add(jPasswordField1);
-
-        getContentPane().add(jSpinner1);
 
         getContentPane().add(jSeparator1);
 
