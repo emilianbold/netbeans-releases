@@ -166,7 +166,7 @@ public class ProjectUtilities {
             newObjectName = sb.toString ();
         }
         
-        String relFileName = folderName + "/" + newObjectName; // NOI18N
+        String relFileName = folderName == null ? newObjectName : folderName + "/" + newObjectName; // NOI18N
 
         // test whether the selected folder on selected filesystem already exists
         if (targetFolder == null) {
@@ -176,8 +176,7 @@ public class ProjectUtilities {
         // target filesystem should be writable
         if (!targetFolder.canWrite ()) {
             return NbBundle.getMessage (ProjectUtilities.class, "MSG_fs_is_readonly"); // NOI18N
-        }
-        
+        }        
         if (existFileName(targetFolder, relFileName)) {
             return NbBundle.getMessage (ProjectUtilities.class, "MSG_file_already_exist", newObjectName); // NOI18N
         }
@@ -196,27 +195,6 @@ public class ProjectUtilities {
         }
         
         return result;
-    }
-    
-    // helper check for windows, its filesystem is case insensitive (workaround the bug #33612)
-    /** Check existence of file on case insensitive filesystem.
-     * Returns true if folder contains file with given name and extension.
-     * @param folder folder for search
-     * @param name name of file
-     * @param extension extension of file
-     * @return true if file with name and extension exists, false otherwise.
-     */    
-    private static boolean checkCaseInsensitiveName (FileObject folder, String name) {
-        // bugfix #41277, check only direct children
-        Enumeration children = folder.getChildren (false);
-        FileObject fo;
-        while (children.hasMoreElements ()) {
-            fo = (FileObject) children.nextElement ();
-            if (name.equalsIgnoreCase (fo.getName ())) {
-                return true;
-            }
-        }
-        return false;
-    }
+    }        
     
 }
