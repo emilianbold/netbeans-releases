@@ -282,8 +282,8 @@
 <mapID target="vcs.patch" url="vcs-nb/vcs_patch.html" />
 <mapID target="vcs.groups" url="vcs-nb/vcs_groups.html" />
 <mapID target="vcs.configure" url="vcs-nb/vcs_configure.html" />
-<mapID target="vcs.commands" url="vcs-nb/vcs_cvs.html" />
-<mapID target="vcs.commands" url="vcs-nb/vcs_cvscommands.html" />
+<mapID target="vcs.cvs" url="vcs-nb/vcs_cvs.html" />
+<mapID target="vcs.cvscommands" url="vcs-nb/vcs_cvscommands.html" />
 
 
 <mapID target="webbrowser.swing" url="webbrowser/swingbrowser.html" />
