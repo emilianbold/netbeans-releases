@@ -70,7 +70,7 @@ public abstract class ActionUtils {
 
         actions.add(new CloseWindowAction(tc));
         actions.add(new MaximizeWindowAction(tc));
-        return (Action[])actions.toArray(new Action[0]);
+        return (Action[])actions.toArray(new Action[actions.size()]);
     }
     
     
