@@ -13,6 +13,8 @@
 
 package org.netbeans.core.projects;
 
+import org.openide.TopManager;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.*;
 import org.openide.loaders.InstanceDataObject;
 import org.openide.filesystems.FileObject;
@@ -71,10 +73,10 @@ public final class SettingChildren extends FilterNode.Children {
             this.layer = layer;
 
             setValue (ListImageEditor.PROP_VALUES, new Integer [] {
-                new Integer (FilePositionManager.FSTATE_DEFINED),
-                new Integer (FilePositionManager.FSTATE_IGNORED),
-                new Integer (FilePositionManager.FSTATE_INHERITED),
-                new Integer (FilePositionManager.FSTATE_UNDEFINED)
+                new Integer (FileStateManager.FSTATE_DEFINED),
+                new Integer (FileStateManager.FSTATE_IGNORED),
+                new Integer (FileStateManager.FSTATE_INHERITED),
+                new Integer (FileStateManager.FSTATE_UNDEFINED)
             });
 
             setValue (ListImageEditor.PROP_IMAGES, new Image [] {
@@ -85,17 +87,74 @@ public final class SettingChildren extends FilterNode.Children {
             });
         }
 
+        public boolean canWrite () {
+            if (!super.canWrite ())
+                return false;
+            
+            Integer val = null;
+            try {
+                val = (Integer) getValue ();
+            } catch (Exception e) {
+                // ignore it, will be handled later
+            }
+            return val != null && val.intValue () != FileStateManager.FSTATE_DEFINED;
+        }
+
         public Object getValue () throws IllegalAccessException, InvocationTargetException {
-            FilePositionManager fpm = FilePositionManager.getDefault ();
-            return new Integer (fpm.getFileState (primaryFile, layer));
+            FileStateManager fsm = FileStateManager.getDefault ();
+            return new Integer (fsm.getFileState (primaryFile, layer));
         }
 
         public void setValue (Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-            throw new IllegalAccessException ();
+            FileStateManager fsm = FileStateManager.getDefault ();
+            int os = fsm.getFileState (primaryFile, layer);
+            int ns = ((Integer) val).intValue ();
+            
+            if (os == ns)
+                return;
+            
+            try {
+                switch (ns) {
+                    case FileStateManager.FSTATE_DEFINED:
+                        boolean above = false;
+                        boolean go = true;
+
+                        for (int i = 0; i < layer; i++) {
+                            int state = fsm.getFileState (primaryFile, i);
+                            if (state == FileStateManager.FSTATE_DEFINED) {
+                                // warn user, that above defined files will be removed
+
+                                NotifyDescriptor nd = new NotifyDescriptor.Confirmation (
+                                    NbBundle.getMessage (SettingChildren.class, "MSG_ask_remove_above_defined_files"), // NOI18N
+                                    NotifyDescriptor.YES_NO_OPTION);
+
+                                Object answer = TopManager.getDefault ().notify (nd);
+                                if (answer.equals (NotifyDescriptor.NO_OPTION))
+                                    go = false;
+
+                                break;
+                            }
+                        }
+
+                        if (go)
+                            fsm.define (primaryFile, layer);
+
+                        break;
+
+                    case FileStateManager.FSTATE_UNDEFINED:
+                        fsm.delete (primaryFile, layer);
+                        break;
+
+                    default:
+                        throw new IllegalArgumentException ("Required file state change isn't allowed. NewState=" + ns); // NOI18N
+                }
+            } catch (java.io.IOException e) {
+                TopManager.getDefault ().notifyException (e);
+            }
         }
 
         public PropertyEditor getPropertyEditor () {
-            return new ListImageEditor ();
+            return new FileStateEditor ();
         }
     }
 
@@ -127,9 +186,9 @@ public final class SettingChildren extends FilterNode.Children {
         }
 
         public Object getValue () throws IllegalAccessException, InvocationTargetException {
-            FilePositionManager fpm = FilePositionManager.getDefault ();
-            if (FilePositionManager.FSTATE_DEFINED == fpm.getFileState (primaryFile, 
-                    FilePositionManager.LAYER_PROJECT)) {
+            FileStateManager fsm = FileStateManager.getDefault ();
+            if (FileStateManager.FSTATE_DEFINED == fsm.getFileState (primaryFile, 
+                    FileStateManager.LAYER_PROJECT)) {
                 return new Integer (1);
             }
 
@@ -155,7 +214,7 @@ public final class SettingChildren extends FilterNode.Children {
 
             FileObject pf = ((InstanceDataObject) getCookie (InstanceDataObject.class)).getPrimaryFile ();
             weakL = new FSL (this);
-            FilePositionManager.getDefault ().addFileStatusListener (weakL, pf);
+            FileStateManager.getDefault ().addFileStatusListener (weakL, pf);
         }
         
         public PropertySet[] getPropertySets () {
@@ -184,15 +243,16 @@ public final class SettingChildren extends FilterNode.Children {
             }
 
             Sheet.Set hidden = new Sheet.Set ();
+            hidden.setName ("DFS layout"); // NOI18N
             hidden.setHidden (!Boolean.getBoolean ("netbeans.options.sheet"));
             s.put (hidden);
 
             FileObject pf = ((InstanceDataObject) getCookie (InstanceDataObject.class)).getPrimaryFile ();
             
             hidden.put (new IndicatorProperty (pf));
-            hidden.put (new FileStateProperty (pf, FilePositionManager.LAYER_PROJECT, PROP_LAYER_PROJECT, true));
-            hidden.put (new FileStateProperty (pf, FilePositionManager.LAYER_SESSION, PROP_LAYER_SESSION, true));
-            hidden.put (new FileStateProperty (pf, FilePositionManager.LAYER_MODULES, PROP_LAYER_MODULES, true));
+            hidden.put (new FileStateProperty (pf, FileStateManager.LAYER_PROJECT, PROP_LAYER_PROJECT, false));
+            hidden.put (new FileStateProperty (pf, FileStateManager.LAYER_SESSION, PROP_LAYER_SESSION, false));
+            hidden.put (new FileStateProperty (pf, FileStateManager.LAYER_MODULES, PROP_LAYER_MODULES, false));
 
             return s;
         }
@@ -210,7 +270,7 @@ public final class SettingChildren extends FilterNode.Children {
             }
         }
         
-        private static class FSL implements FilePositionManager.FileStatusListener {
+        private static class FSL implements FileStateManager.FileStatusListener {
             WeakReference node = null;
             public FSL (SettingFilterNode sfn) {
                 node = new WeakReference (sfn);
@@ -218,7 +278,7 @@ public final class SettingChildren extends FilterNode.Children {
             public void fileStatusChanged (FileObject mfo) {
                 SettingFilterNode n = (SettingFilterNode) node.get ();
                 if (n == null) {
-                    FilePositionManager.getDefault ().removeFileStatusListener (this, null);
+                    FileStateManager.getDefault ().removeFileStatusListener (this, null);
                     return;
                 }
                 
