@@ -2288,7 +2288,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         throws PersistenceException
     {
         FileObject formFile = formObject.getFormEntry().getFile();
-        if (formFile.isReadOnly()) { // should not happen
+        if (!formFile.canWrite()) { // should not happen
             PersistenceException ex = new PersistenceException(
                                  "Tried to save read-only form"); // NOI18N
             String msg = FormUtils.getFormattedBundleString(
