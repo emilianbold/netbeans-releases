@@ -1301,6 +1301,13 @@ the ${netbeans.dest}/bin/ directory.
     <taskdef name="repeat" classname="org.netbeans.nbbuild.Repeat" classpath="nbantext.jar"/>
     <mkdir dir="${netbeans.build.dir}"/>
     <repeat target="zip-one-cluster" name="one.cluster.name" values="${clusters.list}" /> 
+
+    <!-- package the misc files -->
+    <zip destfile="${netbeans.build.dir}/${clusters.prefix}-misc-${buildnum}.zip" update="true" duplicate="preserve">
+      <zipfileset file="${netbeans.dest}/bin/netbeans" filemode="755" prefix="bin"/>
+      <zipfileset dir="${netbeans.dest}/bin" prefix="bin"/>
+      <zipfileset dir="${netbeans.dest}/etc" prefix="etc"/>
+    </zip>
   </target>
   
   <target name="zip-one-cluster">
