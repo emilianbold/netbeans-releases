@@ -198,7 +198,75 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
         }
         return original.getChildren (variable, from, to);
     }
-    
+
+    /**
+     * Returns number of filtered children for given variable.
+     *
+     * @param   original the original tree model
+     * @param   variable a variable of returned fields
+     *
+     * @throws  NoInformationException if the set of children can not be
+     *          resolved
+     * @throws  ComputingException if the children resolving process
+     *          is time consuming, and will be performed off-line
+     * @throws  UnknownTypeException if this TreeModelFilter implementation is not
+     *          able to resolve dchildren for given node type
+     *
+     * @return  number of filtered children for given variable
+     */
+    public int getChildrenCount(TreeModel original, Variable variable) throws NoInformationException,
+            ComputingException, UnknownTypeException {
+
+        String type = variable.getType();
+        if (isToArrayType(type) || isMapMapType (type)) {
+            try {
+                ObjectVariable ov = (ObjectVariable) variable;
+                return Integer.parseInt(ov.invokeMethod("size", "()I", new Variable[0]).getValue());
+            } catch (NoSuchMethodException e) {
+                System.out.println (e.getLocalizedMessage ());
+                e.printStackTrace ();
+            } catch (InvalidExpressionException e) {
+                if ( (e.getTargetException () != null) &&
+                     (e.getTargetException () instanceof
+                       UnsupportedOperationException)
+                ) {
+                    return original.getChildrenCount(variable);
+                }
+                System.out.println (e.getLocalizedMessage ());
+                e.printStackTrace ();
+            }
+        }
+        else if (isMapEntryType(type)) {
+            return 2;
+        }
+        else if (type.equals("java.beans.PropertyChangeSupport")) {
+            try {
+                ObjectVariable ov = (ObjectVariable) variable;
+                ov = (ObjectVariable) ov.invokeMethod("getPropertyChangeListeners",
+                                                      "()[Ljava/beans/PropertyChangeListener;",
+                                                      new Variable [0]);
+                return ov.getFieldsCount();
+            } catch (InvalidExpressionException e) {
+                if ( (e.getTargetException () != null) &&
+                     (e.getTargetException () instanceof
+                       UnsupportedOperationException)
+                ) {
+                    // PATCH for J2ME. see 45543
+                    return original.getChildrenCount(variable);
+                }
+                System.out.println(e.getLocalizedMessage ());
+                e.printStackTrace ();
+            } catch (NoSuchMethodException e) {
+                System.out.println(e.getLocalizedMessage ());
+                e.printStackTrace ();
+            }
+        }
+        else if (type.equals("java.lang.ref.WeakReference")) {
+            return 1;
+        }
+        return original.getChildrenCount(variable);
+    }
+
     /**
      * Returns true if node is leaf.
      * 
