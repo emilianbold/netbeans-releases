@@ -33,7 +33,8 @@ import javax.swing.text.BadLocationException;
 
 import org.openide.util.WeakListener;
 import org.openide.util.NbBundle;
-import org.openide.text.EditorSupport;
+import org.openide.text.EditorSupport;          
+import org.openide.text.PositionRef;
 import org.openide.cookies.ViewCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.loaders.MultiDataObject;
@@ -296,6 +297,47 @@ public class PropertiesEditorSupport extends EditorSupport implements ViewCookie
       }
     }
   }
+     
+  /** Visible view of the underlying method. */
+  public Editor openAt(PositionRef pos) {
+    return super.openAt(pos);
+  }
+                                      
+  /** Returns a ViewCookie for editing at a given position. */
+  public PropertiesEditAt getViewerAt(String key) {
+    return new PropertiesEditAt (key);
+  }
+     
+  /** Class for opening at a given key. */
+  public class PropertiesEditAt implements ViewCookie {
+    
+    private String key;                          
+    
+    PropertiesEditAt(String key) {
+      this.key   = key;
+    }                
+     
+    public void setKey(String key) {
+      this.key = key;
+    }                            
+    
+    public String getKey() {
+      return key;
+    }
+    
+    public void view() {   
+      Element.ItemElem item = myEntry.getHandler().getStructure().getItem(key);
+      if (item != null) {                   
+        PositionRef pos = item.getKeyElem().getBounds().getBegin();
+        PropertiesEditorSupport.this.openAt(pos);
+      }
+      else {
+        PropertiesEditorSupport.this.view();
+      }          
+    }
+    
+  }
+  
 
   /** Returns an entry saving manager. */
   private synchronized EntrySavingManager getEntryModifL () {

@@ -241,7 +241,7 @@ implements Serializable {
   /** Class properties file elements, each of them contains a comment (preceding the property),
   *   a key and a value
   */
-  public static class ItemElem extends Element {
+  public static class ItemElem extends Element implements Node.Cookie {
                   
     KeyElem     key;
     ValueElem   value;
@@ -289,8 +289,23 @@ implements Serializable {
       return comment.toString() + '\n' +
              ((key   == null) ? "" : key.toString()) + '\n' +
              ((value == null) ? "" : value.toString()) + '\n';
+    }             
+                 
+    /** Returns the key element for this item. */             
+    public KeyElem getKeyElem() {
+      return key;
     }
              
+    /** Returns the value element for this item. */             
+    public ValueElem getValueElem() {
+      return value;
+    }
+
+    /** Returns the comment element for this item. */             
+    public CommentElem getCommentElem() {
+      return comment;
+    }
+
     /** Updates the element fields. This method is called after reparsing.
     * @param bounds the carrier of new information.
     */
@@ -342,7 +357,7 @@ implements Serializable {
     }
     
     /** Set the value of this item 
-    *  @param key the new key
+    *  @param newValue the new value
     */                        
     public void setValue(String newValue) {
       String oldValue = value.getValue();
@@ -359,7 +374,7 @@ implements Serializable {
     }
     
     /** Set the comment for this item 
-    *  @param key the new key
+    *  @param newComment the new comment
     */                        
     public void setComment(String newComment) {
       String oldComment = comment.getValue();
@@ -387,6 +402,7 @@ implements Serializable {
 
 /*
  * <<Log>>
+ *  7    Gandalf   1.6         6/16/99  Petr Jiricka    
  *  6    Gandalf   1.5         6/10/99  Petr Jiricka    
  *  5    Gandalf   1.4         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----

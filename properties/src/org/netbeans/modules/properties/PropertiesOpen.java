@@ -22,7 +22,10 @@ import java.beans.PropertyChangeEvent;
 import javax.swing.JTable;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
-//import javax.swing.DefaultCellEditor;
+import javax.swing.JLabel;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.border.LineBorder;
  
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.SaveCookie;
@@ -46,6 +49,8 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
   /** Main properties dataobject */                                 
   PropertiesDataObject obj;
   PropertyChangeListener modifL;
+  
+  JTable theTable = null;
 
   /** Constructor */
   public PropertiesOpen(PropertiesFileEntry fe) {
@@ -64,7 +69,46 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
     return new PropertiesCloneableTopComponent(obj, ptm/*, ptcm*/);
   }
   
-  public static class PropertiesCloneableTopComponent extends CloneableTopComponent {                                
+  PropertiesFileEntry getEntry() {         
+    return (PropertiesFileEntry)entry;
+  }
+    
+  /** Opens the table at a given key */  
+  public PropertiesOpenAt getOpenerForKey(PropertiesFileEntry entry, String key) {
+    return new PropertiesOpenAt(entry, key);
+  }
+                                                                       
+  /** Class for opening at a given key. */                                                                     
+  public class PropertiesOpenAt implements OpenCookie {
+    
+    private String key;                          
+    private PropertiesFileEntry entry;
+    
+    PropertiesOpenAt(PropertiesFileEntry entry, String key) {
+      this.entry = entry;
+      this.key   = key;
+    }                
+     
+    public void setKey(String key) {
+      this.key = key;
+    }                            
+    
+    public String getKey() {
+      return key;
+    }
+    
+    public void open() {
+      PropertiesOpen.this.open();           
+      BundleStructure bs = obj.getBundleStructure();
+      // find the entry   
+      int entryIndex = bs.getEntryIndexByFileName(entry.getFile().getName());
+      int rowIndex   = bs.getKeyIndexByName(key);                                 
+      if ((entryIndex != -1) && (rowIndex != -1)) {
+      }  
+    }
+  }
+
+  public class PropertiesCloneableTopComponent extends CloneableTopComponent {                                
     private DataObject dobj;
     private PropertyChangeListener cookieL;
     private PropertiesTableModel ptm;
@@ -92,20 +136,109 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
               setName(dobj.getNodeDelegate().getDisplayName());
           }
         }));
+        
+      initComponents();
+    }
 
-      setLayout (new BorderLayout ());
+/*
+GridBagLayout gridbag = new GridBagLayout();
+         GridBagConstraints c = new GridBagConstraints();
+         setFont(new Font("Helvetica", Font.PLAIN, 14));
+         setLayout(gridbag);         
+         c.fill = GridBagConstraints.BOTH;
+         c.weightx = 1.0;         
+         makebutton("Button1", gridbag, c);
+         makebutton("Button2", gridbag, c);
+         makebutton("Button3", gridbag, c);
+     	   c.gridwidth = GridBagConstraints.REMAINDER; //end row
+         makebutton("Button4", gridbag, c);
+         c.weightx = 0.0;		   //reset to the default
+         makebutton("Button5", gridbag, c); //another row
+ 	   c.gridwidth = GridBagConstraints.RELATIVE; //next-to-last in row
+         makebutton("Button6", gridbag, c);
+ 	   c.gridwidth = GridBagConstraints.REMAINDER; //end row
+         makebutton("Button7", gridbag, c);
+ 	   c.gridwidth = 1;	   	   //reset to the default 	   c.gridheight = 2;
+         c.weighty = 1.0;         makebutton("Button8", gridbag, c);
+         c.weighty = 0.0;		   //reset to the default
+ 	   c.gridwidth = GridBagConstraints.REMAINDER; //end row
+ 	   c.gridheight = 1;		   //reset to the default
+         makebutton("Button9", gridbag, c);
+         makebutton("Button10", gridbag, c);         setSize(300, 100);     }*/     
+         
+    /** Inits the subcomponents. */ 
+    private void initComponents() {
+      GridBagLayout gridbag = new GridBagLayout();
+      GridBagConstraints c = new GridBagConstraints();
+      setLayout (gridbag);
       
-      JTable table = new JTable(ptm/*, ptcm*/);
+      JTextArea textComment = new JTextArea();
+      JTextArea textValue = new JTextArea();
+
+      theTable = new JTable(ptm/*, ptcm*/);
+      JTextField textField = new JTextField();
+      textField.setBorder(new LineBorder(Color.black));
+      theTable.setDefaultEditor(PropertiesTableModel.StringPair.class, 
+        new PropertiesTableCellEditor(textField, textComment, textValue));
       // PENDING      
 //      PropertiesCellEditor ed = new PropertiesCellEditor(new PropertyDisplayer());
 //      table.setDefaultEditor(PropertiesTableModel.CommentValuePair.class, ed);
 //      table.setDefaultEditor(String.class, DefaultCellEditor.class);
-      JScrollPane scrollPane = new JScrollPane(table);
-      table.setPreferredScrollableViewportSize(new Dimension(500, 70));
-      table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-      add (scrollPane, BorderLayout.CENTER);
+      JScrollPane scrollPane = new JScrollPane(theTable);
+      theTable.setPreferredScrollableViewportSize(new Dimension(500, 70));
+      theTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+      
+      c.fill = GridBagConstraints.BOTH;
+      c.weightx = 1.0;         
+      c.weighty = 1.0;
+      c.gridwidth = GridBagConstraints.REMAINDER; 
+      gridbag.setConstraints(scrollPane, c);
+      add (scrollPane);
+      
+      JLabel labelComment = new JLabel(PropertiesSettings.getString("LBL_CommentLabel"));
+      c.insets = new Insets(3, 3, 3, 3);
+      c.fill = GridBagConstraints.NONE;
+      c.weightx = 0.0;
+      c.weighty = 0.0;
+      c.gridwidth = 1;
+      gridbag.setConstraints(labelComment, c);
+      add (labelComment);
+                                      
+      textComment.setRows (2);
+//      textComment.setBorder(new CompoundBorder());
+      c.fill = GridBagConstraints.HORIZONTAL;
+      c.weightx = 1.0;         
+      c.gridwidth = GridBagConstraints.REMAINDER; 
+      scrollPane = new JScrollPane(textComment);
+      gridbag.setConstraints(scrollPane, c);
+      add (scrollPane);
+
+/*          jScrollPane5.add (manifestArea);
+
+        jScrollPane5.setViewportView (manifestArea);*/
+
+      
+      JLabel labelValue = new JLabel(PropertiesSettings.getString("LBL_ValueLabel"));
+      c.fill = GridBagConstraints.NONE;
+      c.weightx = 0.0;
+      c.gridwidth = 1;
+      gridbag.setConstraints(labelValue, c);
+      add (labelValue);
+                                      
+      textValue.setRows (2);
+//      textValue.setBorder(new BasicBorders.FieldBorder());
+//      textValue.setBorder(new CompoundBorder());
+      c.fill = GridBagConstraints.HORIZONTAL;
+      c.weightx = 1.0;         
+      c.gridwidth = GridBagConstraints.REMAINDER; //end row
+      scrollPane = new JScrollPane(textValue);
+      gridbag.setConstraints(scrollPane, c);
+      add (scrollPane);
+      
       JButton addButton = new JButton(PropertiesSettings.getString("LBL_AddPropertyButton"));
-      add (addButton, BorderLayout.SOUTH);
+      c.insets = new Insets(0, 0, 0, 0);
+      gridbag.setConstraints(addButton, c);
+      add (addButton);
       addButton.addActionListener(
         new ActionListener() {
           public void actionPerformed(ActionEvent evt) {
@@ -130,6 +263,8 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
         }
       );  
     }
+    
+    
     
     /** Set the name of this top component. Handles saved/not saved state.
     * Notifies the window manager.
@@ -239,7 +374,4 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
     
   } // end of SavingManager inner class
 
-
-
-  
 }

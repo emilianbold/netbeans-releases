@@ -111,6 +111,10 @@ public class PropertiesTableModel extends AbstractTableModel {
     }
   }  // endof inner class TablePropertyBundleListener
                                                              
+  /** Returns the class for a model. */
+  public Class getColumnClass(int columnIndex) {
+    return StringPair.class;  
+  }
                                                              
   /** Returns the number of rows in the model */ 
   public int getRowCount() {
@@ -127,15 +131,26 @@ public class PropertiesTableModel extends AbstractTableModel {
     BundleStructure bs = obj.getBundleStructure();
     switch (column) {
       case 0:
-        return bs.getNthKey(row);
+        return new StringPair(bs.getNthKey(row));//bs.getNthKey(row);
       default:
         Element.ItemElem item = bs.getItem(column - 1, row);
+        return stringPairForValue(item);
+        /*
         if (item == null)
           return "";
         else  
           return item.getValue();
+        */   
     }         
   }                    
+                          
+  /* Returns a string pair for a value in an item (may be null). */
+  private StringPair stringPairForValue(Element.ItemElem item) {
+    if (item == null)
+      return new StringPair();
+    else  
+      return new StringPair(item.getComment(), item.getValue());
+  }
   
   /** Returns the name for a column */ 
   public String getColumnName(int column) {
@@ -149,11 +164,12 @@ public class PropertiesTableModel extends AbstractTableModel {
    
   /** Sets the value at rowIndex and columnIndex */                                                                                
   public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+    // PENDING - set comment for all files
     if (columnIndex == 0) {
-      // property key
+      // check if the comment has changed
       BundleStructure bs = obj.getBundleStructure();
       String oldValue = (String)bs.getNthKey(rowIndex);
-      String newValue = (String)aValue;
+      String newValue = ((StringPair)aValue).getValue();
       if ((newValue == null) || (newValue.length() == 0)) {
         // remove from all files
         for (int i=0; i < obj.getBundleStructure().getEntryCount(); i++) {
@@ -188,10 +204,11 @@ public class PropertiesTableModel extends AbstractTableModel {
         if (ps != null) {                   
           Element.ItemElem item = ps.getItem(key);
           if (item != null) {
-            item.setValue((String)aValue);
+            item.setValue(((StringPair)aValue).getValue());
+            item.setComment(((StringPair)aValue).getComment());
           }
           else {
-            ps.addItem(key, (String)aValue, "");
+            ps.addItem(key, ((StringPair)aValue).getValue(), ((StringPair)aValue).getComment());
           }
         }
       }
@@ -200,9 +217,6 @@ public class PropertiesTableModel extends AbstractTableModel {
                                                   
   /** Returns true for all cells */
   public boolean isCellEditable(int rowIndex, int columnIndex) {
-    // PENDING - all should be editable
-    if (columnIndex == 0)
-      return true;
     return true;
   }
 
@@ -210,6 +224,66 @@ public class PropertiesTableModel extends AbstractTableModel {
   public void fireTableColumnChanged(int column) {
     fireTableChanged(new TableModelEvent(this, 0, getRowCount() - 1, column));
   }
+
+  /** Object for the value for one cell. 
+  * Encapsulates up to two values. 
+  * It is used to represent either (comment, value) pair of an item, or a key for an item.
+  */
+  static class StringPair implements Serializable {
+  
+    private String comment;
+    private String value;
+    private boolean keyType;
+     
+    /** Constructs with empty comment and value. */
+    public StringPair() {
+      this (null, "", false);
+    }
+
+    /** Constructs with the given value and no comment. */
+    public StringPair(String v) {
+      this (null, v, true);
+    }
+
+    /** Constructs with the given comment and value. */
+    public StringPair(String c, String v) {
+      this (c, v, false);
+    }             
+    
+    /** Constructs with the given comment and value. */
+    public StringPair(String c, String v, boolean kt) {
+      comment = c;
+      value   = v;                                  
+      keyType = kt;
+    }             
+
+    /** Returns the comment associated with this element. */
+    public String getComment() {
+      return comment;
+    }                    
+    
+    /** Returns the value associated with this element. */
+    public String getValue() {
+      return value;
+    }    
+    
+    public Object clone() { 
+      String c = (comment == null ? null : new String(comment));
+      String v = (value == null ? null : new String(value));
+      return new StringPair(c, v);
+    }             
+    
+    public String toString() {
+      return value;
+    }                      
+    
+    /** Returns the type key/value of the pair. */
+    public boolean isKeyType () {
+      return keyType;
+    }
+  
+  } // end of inner class
+
 }
 
 /*

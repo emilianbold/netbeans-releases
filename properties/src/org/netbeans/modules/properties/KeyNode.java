@@ -24,6 +24,8 @@ import java.util.ResourceBundle;
 
 import org.openide.util.datatransfer.*;
 import org.openide.actions.*;
+import org.openide.cookies.OpenCookie;
+import org.openide.cookies.ViewCookie;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
@@ -79,6 +81,11 @@ public class KeyNode extends AbstractNode {
       }
     );
     setIconBase (ITEMS_ICON_BASE);
+
+    // edit as a viewcookie                                                                
+    PropertiesDataObject pdo = ((PropertiesDataObject)struct.getParent().getEntry().getDataObject());
+    getCookieSet().add(pdo.getOpenSupport().getOpenerForKey(struct.getParent().getEntry(), itemKey));
+    getCookieSet().add(struct.getParent().getEntry().getPropertiesEditor().getViewerAt(itemKey));
   }
 
   /** Get the represented item.
@@ -142,12 +149,30 @@ public class KeyNode extends AbstractNode {
       TopManager.getDefault().notify(msg);
       return;
     }
+    updateCookieNames();
     // regenerate all children
 /*    Node par = getParentNode();
     PropertiesFileEntry.PropKeysChildren ch = (PropertiesFileEntry.PropKeysChildren)par.getChildren();
     ch.mySetKeys();*/
   }
-
+                    
+                    
+  /** Updates the cookies for editing/viewing at a given position. */
+  private void updateCookieNames() {
+    // open cookie
+    Node.Cookie opener = getCookie(OpenCookie.class);
+    if (opener instanceof PropertiesOpen.PropertiesOpenAt) {
+      ((PropertiesOpen.PropertiesOpenAt)opener).setKey(itemKey);
+    }             
+    
+    // view cookie
+    Node.Cookie viewer = getCookie(ViewCookie.class);
+    if (viewer instanceof PropertiesEditorSupport.PropertiesEditAt) {
+      ((PropertiesEditorSupport.PropertiesEditAt)viewer).setKey(itemKey);
+    }
+  }
+  
+  
   /** Set all actions for this node.
   * @param actions new list of actions
   */
@@ -233,31 +258,14 @@ public class KeyNode extends AbstractNode {
     p.setName (Element.ItemElem.PROP_ITEM_COMMENT);
     ss.put (p);
 
-/*
-    try {
-      p = new PropertySupport.Reflection (
-        getItem(), String.class, "getValue", "setValue"
-      );
-      p.setName (Element.ItemElem.PROP_ITEM_VALUE);
-      p.setDisplayName (NbBundle.getBundle(KeyNode.class).getString("PROP_item_value"));
-      p.setShortDescription (NbBundle.getBundle(KeyNode.class).getString("HINT_item_value"));
-      ss.put (p);
-
-      p = new PropertySupport.Reflection (
-        item, String.class, "getComment", "setComment"
-      );
-      p.setName (Element.ItemElem.PROP_ITEM_COMMENT);
-      p.setDisplayName (NbBundle.getBundle(KeyNode.class).getString("PROP_item_comment"));
-      p.setShortDescription (NbBundle.getBundle(KeyNode.class).getString("HINT_item_comment"));
-      ss.put (p);
-
-    } catch (Exception ex) {
-      throw new InternalError ();
-    }
-   */ 
     return s;
   }
-
+             
+  /** Returns all the item in addition to "normal" cookies. */
+  public Node.Cookie getCookie(Class cls) {
+    if (cls.isInstance(getItem())) return getItem();
+    return super.getCookie(cls);
+  }
 
   /** Support for firing property change.
   * @param ev event describing the change
@@ -274,6 +282,7 @@ public class KeyNode extends AbstractNode {
 
 /*
  * <<Log>>
+ *  8    Gandalf   1.7         6/16/99  Petr Jiricka    
  *  7    Gandalf   1.6         6/10/99  Petr Jiricka    
  *  6    Gandalf   1.5         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
