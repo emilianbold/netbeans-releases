@@ -38,12 +38,12 @@ public final class ChildrenSupport {
     
     public synchronized Set getChildren(final FileNaming folderName, final boolean rescan) {
         if (rescan) {
-            switch (status) {
+            switch (getStatus()) {
                 case ChildrenSupport.NO_CHILDREN_CACHED:
                 case ChildrenSupport.SOME_CHILDREN_CACHED:
                     final Set newChildrenCache = ChildrenSupport.rescanChildren(folderName);
                     //TODO: UNCPath workaround
-                    final boolean isUNCHack = status == ChildrenSupport.SOME_CHILDREN_CACHED && newChildrenCache.isEmpty() && new FileInfo(folderName.getFile()).isUNCFolder();
+                    final boolean isUNCHack = getStatus() == ChildrenSupport.SOME_CHILDREN_CACHED && newChildrenCache.isEmpty() && new FileInfo(folderName.getFile()).isUNCFolder();
                     if (!isUNCHack) {
                         setChildrenCache(newChildrenCache);
                     }
@@ -58,12 +58,12 @@ public final class ChildrenSupport {
     
     public synchronized FileNaming getChild(final String childName, final FileNaming folderName, final boolean rescan) {
         FileNaming retVal = null;
-        switch (status) {
+        switch (getStatus()) {
             case ChildrenSupport.ALL_CHILDREN_CACHED:
                 retVal = lookupChildInCache(folderName, childName);
                 if (!rescan) break;
             case ChildrenSupport.SOME_CHILDREN_CACHED:
-                if (status != ChildrenSupport.ALL_CHILDREN_CACHED) retVal = lookupChildInCache(folderName, childName);
+                if (getStatus() != ChildrenSupport.ALL_CHILDREN_CACHED) retVal = lookupChildInCache(folderName, childName);
             case ChildrenSupport.NO_CHILDREN_CACHED:
                 if (retVal == null || rescan) {
                     final FileNaming original = retVal;
@@ -74,8 +74,8 @@ public final class ChildrenSupport {
                         getChildrenCache().remove(original);
                     }
                 }
-                if (retVal != null && status == ChildrenSupport.NO_CHILDREN_CACHED) {
-                    status = ChildrenSupport.SOME_CHILDREN_CACHED;
+                if (retVal != null && getStatus() == ChildrenSupport.NO_CHILDREN_CACHED) {
+                    status = (ChildrenSupport.SOME_CHILDREN_CACHED);
                 }
                 break;
         }
@@ -204,10 +204,15 @@ java.lang.AssertionError: E:\work\nb_all8\openide\masterfs\build
     public Map refresh(final FileNaming folderName) {
         final Map retVal = new HashMap();
         final Set oldChildren = new HashSet(getChildrenCache());
-        final Set newChildren = (status == ChildrenSupport.ALL_CHILDREN_CACHED) ? 
+        final Set newChildren = (getStatus() == ChildrenSupport.ALL_CHILDREN_CACHED) ? 
                 ChildrenSupport.rescanChildren(folderName) : ChildrenSupport.getSubsetOfExisting (oldChildren);
-        
-        setChildrenCache(newChildren);
+
+        if (status == ChildrenSupport.SOME_CHILDREN_CACHED && newChildren.size() < oldChildren.size()) {
+            setChildrenCache(ChildrenSupport.rescanChildren(folderName));
+            status = ChildrenSupport.ALL_CHILDREN_CACHED;
+        } else {                     
+            setChildrenCache(newChildren);
+        }
         
         final Set removed = new HashSet(oldChildren);
         removed.removeAll(newChildren);
@@ -217,7 +222,7 @@ java.lang.AssertionError: E:\work\nb_all8\openide\masterfs\build
             retVal.put(removedItem, ChildrenCache.REMOVED_CHILD);
         }
         
-        if (status == ChildrenSupport.ALL_CHILDREN_CACHED) {
+        if (getStatus() == ChildrenSupport.ALL_CHILDREN_CACHED) {
             final Set added = new HashSet(newChildren);
             added.removeAll(oldChildren);
             
@@ -246,4 +251,9 @@ java.lang.AssertionError: E:\work\nb_all8\openide\masterfs\build
     public String toString() {
         return childrenCache.toString();
     }
+
+    private int getStatus() {
+        return status;
+    }
+    
 }

@@ -35,8 +35,6 @@ import java.util.Enumeration;
  * @author Radek Matous
  */
 //TODO: listeners still kept in EventListenerList
-//TODO: check string constants and put them in bundles (DONE) but needs some sort of checking
-//TODO: consider caching of isValid value not to call ever file.exists ()
 
 public abstract class BaseFileObj extends FileObject {
     //constants
@@ -278,21 +276,29 @@ public abstract class BaseFileObj extends FileObject {
     final void fireFileDataCreatedEvent(final boolean expected) {
         assert getFileName().getFile().exists();
         assert getFileName().getFile().isFile();         
-        fireFileDataCreatedEvent(getListeners(), new FileEvent(this, this, expected));
 
         final BaseFileObj parent = getExistingParent();
-        parent.fireFileDataCreatedEvent(parent.getListeners(), new FileEvent(parent, this, expected));
+        Enumeration pListeners = (parent != null) ? parent.getListeners() : null;
+        
+        fireFileDataCreatedEvent(getListeners(), new FileEvent(this, this, expected));
+        
+        if (parent != null && pListeners != null) {
+            parent.fireFileDataCreatedEvent(pListeners, new FileEvent(parent, this, expected));
+        }
     }
 
 
     final void fireFileFolderCreatedEvent(final boolean expected) {
         assert getFileName().getFile().exists();
         assert getFileName().getFile().isDirectory(); 
+        
+        final BaseFileObj parent = getExistingParent();
+        Enumeration pListeners = (parent != null) ? parent.getListeners() : null;
+        
         fireFileFolderCreatedEvent(getListeners(), new FileEvent(this, this, expected));
 
-        final BaseFileObj parent = getExistingParent();
-        if (parent != null) {
-            parent.fireFileFolderCreatedEvent(parent.getListeners(), new FileEvent(parent, this, expected));
+        if (parent != null && pListeners != null) {
+            parent.fireFileFolderCreatedEvent(pListeners, new FileEvent(parent, this, expected));
         }
 
     }
@@ -306,45 +312,51 @@ public abstract class BaseFileObj extends FileObject {
 
     public final void fireFileChangedEvent(final boolean expected) {
         assert getFileName().getFile().exists();        
+        final BaseFileObj parent = getExistingParent();
+        Enumeration pListeners = (parent != null) ? parent.getListeners() : null;
+        
         fireFileChangedEvent(getListeners(), new FileEvent(this, this, expected));
 
-        final BaseFileObj parent = getExistingParent();
-        if (parent != null) {
-            parent.fireFileChangedEvent(parent.getListeners(), new FileEvent(parent, this, expected));
+        if (parent != null && pListeners != null) {
+            parent.fireFileChangedEvent(pListeners, new FileEvent(parent, this, expected));
         }
     }
 
 
     final void fireFileDeletedEvent(final boolean expected) {
         assert !getFileName().getFile().exists(); 
+        final BaseFileObj parent = getExistingParent();
+        Enumeration pListeners = (parent != null) ?parent.getListeners() : null;        
+        
         fireFileDeletedEvent(getListeners(), new FileEvent(this, this, expected));
 
-        final BaseFileObj parent = getExistingParent();
-        if (parent != null) {
-            parent.fireFileDeletedEvent(parent.getListeners(), new FileEvent(parent, this, expected));
+        if (parent != null && pListeners != null) {
+            parent.fireFileDeletedEvent(pListeners, new FileEvent(parent, this, expected));
         }
     }
 
 
     private void fireFileRenamedEvent(final String originalName, final String originalExt) {
-        //assert getFileName().getFile().exists();         
+        //assert getFileName().getFile().exists();
+        final BaseFileObj parent = getExistingParent();
+        Enumeration pListeners = (parent != null) ?parent.getListeners() : null;        
+        
         fireFileRenamedEvent(getListeners(), new FileRenameEvent(this, originalName, originalExt));
 
-        final BaseFileObj parent = getExistingParent();
-        if (parent != null) {
-            parent.fireFileRenamedEvent(parent.getListeners(), new FileRenameEvent(parent, this, originalName, originalExt));
+        if (parent != null && pListeners != null) {
+            parent.fireFileRenamedEvent(pListeners, new FileRenameEvent(parent, this, originalName, originalExt));
         }
     }
 
     private void fireFileAttributeChangedEvent(final String attrName, final Object oldValue, final Object newValue) {
+        final BaseFileObj parent = getExistingParent();
+        Enumeration pListeners = (parent != null) ?parent.getListeners() : null;        
+
         fireFileAttributeChangedEvent(getListeners(), new FileAttributeEvent(this, this, attrName, oldValue, newValue));
 
-        final BaseFileObj parent = getExistingParent();
-        if (parent != null) {
-            parent.fireFileAttributeChangedEvent(parent.getListeners(), new FileAttributeEvent(parent, this, attrName, oldValue, newValue));
-
+        if (parent != null && pListeners != null) {
+            parent.fireFileAttributeChangedEvent(pListeners, new FileAttributeEvent(parent, this, attrName, oldValue, newValue));
         }
-
     }
 
 

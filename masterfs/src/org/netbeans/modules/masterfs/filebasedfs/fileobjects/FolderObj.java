@@ -45,7 +45,6 @@ public final class FolderObj extends BaseFileObj {
      */
     public FolderObj(final File file) {
         super(file);
-        //assert getFileName().getFile().isDirectory() : getFileName().getFile().getAbsolutePath();
     }
 
     public final boolean isFolder() {
@@ -217,6 +216,7 @@ public final class FolderObj extends BaseFileObj {
 
     public final void refresh(final boolean expected) {
         isValid(true);
+        
         final ChildrenCache cache = getChildrenCache();
         final Mutex.Privileged mutexPrivileged = cache.getMutexPrivileged();
 
@@ -250,6 +250,9 @@ public final class FolderObj extends BaseFileObj {
             BaseFileObj newChild = factory.get(child.getFile());
             newChild = (BaseFileObj) ((newChild != null) ? newChild : getFileObject(child.getName()));
             if (operationId == ChildrenCache.ADDED_CHILD && newChild != null) {
+                newChild.isValid(true);                
+                assert newChild.isValid() : newChild.toString();
+                
                 if (newChild.isFolder()) {
                     newChild.fireFileFolderCreatedEvent(expected);
                 } else {

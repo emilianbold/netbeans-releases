@@ -35,8 +35,7 @@ final class FileObj extends BaseFileObj {
         super(file);
         lastModified();
     }
-
-
+    
     public final java.io.OutputStream getOutputStream(final org.openide.filesystems.FileLock lock) throws java.io.IOException {
         final File f = getFileName().getFile();
         assert f.exists() || !isValid(true) ;
@@ -105,7 +104,7 @@ final class FileObj extends BaseFileObj {
         return (lastModified < 0) ? new Date(0) : new Date(lastModified);
     }
 
-
+    
     public final FileObject createFolder(final String name) throws IOException {
         throw new IOException(getPath());//isn't directory - cannot create neither file nor folder
     }
@@ -141,13 +140,16 @@ final class FileObj extends BaseFileObj {
 
 
     public final void refresh(final boolean expected) {
-        if (isValid(true)) {
+        boolean isDeleted = (isValid() && !isValid(true));
+        if (isValid()) {
             final long oldLastModified = lastModified;
             lastModified();
 
             if (oldLastModified != -1 && oldLastModified != lastModified) {
                 fireFileChangedEvent(expected);
             }
+        } else if (isDeleted && getExistingParent() == null) {            
+            fireFileDeletedEvent(expected);    
         }
     }
 
