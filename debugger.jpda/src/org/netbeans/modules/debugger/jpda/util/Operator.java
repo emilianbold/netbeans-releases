@@ -48,13 +48,13 @@ public class Operator {
                   (e instanceof VMDisconnectEvent)
               ) {
                 if (finalizer != null) finalizer.run ();
-                //S ystem.out.println ("EVENT: " + e);          
-                //S ystem.out.println ("Operator end");          
+                //S ystem.out.println ("EVENT: " + e); // NOI18N
+                //S ystem.out.println ("Operator end"); // NOI18N
                 return;
               }    
               if ((e instanceof VMStartEvent) && (starter != null)) {
                 starter.run ();
-                //S ystem.out.println ("Operator.start VM");          
+                //S ystem.out.println ("Operator.start VM"); // NOI18N
                 continue;
               }
               Executor exec = null;
@@ -73,7 +73,7 @@ public class Operator {
                   ex.printStackTrace ();
                 }
             }
-//            System.out.println ("END (" + set.suspendPolicy () + ") ===========================================================================");
+//            System.out.println ("END (" + set.suspendPolicy () + ") ==========================================================================="); // NOI18N
             if (resume) {
               resume = false;
               virtualMachine.resume ();
@@ -83,7 +83,7 @@ public class Operator {
         } catch (VMDisconnectedException e) {
         }
         if (finalizer != null) finalizer.run ();
-        //S ystem.out.println ("Operator end");          
+        //S ystem.out.println ("Operator end"); // NOI18N
       }
     }, "Debugger operator thread").start (); // NOI18N
   }
@@ -129,7 +129,7 @@ public class Operator {
         }*/
       } else
       if (e instanceof BreakpointEvent) {
-//        System.out.println ("EVENT: BreakpointEvent " + ((BreakpointEvent) e).thread () + " : " + ((BreakpointEvent) e).location ());
+//        System.out.println ("EVENT: BreakpointEvent " + ((BreakpointEvent) e).thread () + " : " + ((BreakpointEvent) e).location ()); // NOI18N
       } else
       if (e instanceof StepEvent) {
         System.out.println ("EVENT: BreakpointEvent " + ((StepEvent) e).thread () + " : " + ((StepEvent) e).location ()); // NOI18N
@@ -142,6 +142,7 @@ public class Operator {
 
 /*
  * Log
+ *  10   Gandalf   1.9         1/14/00  Daniel Prusa    NOI18N
  *  9    Gandalf   1.8         1/13/00  Daniel Prusa    NOI18N
  *  8    Gandalf   1.7         1/4/00   Jan Jancura     Use trim () on user 
  *       input.
