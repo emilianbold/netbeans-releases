@@ -112,8 +112,12 @@ public class InsertI18nStringAction extends CookieAction {
         
         i18nPanel.setI18nString(support.getDefaultI18nString());
         
-        JButton OKButton = new JButton(I18nUtil.getBundle().getString("CTL_OKButton"));        
+        JButton OKButton = new JButton(I18nUtil.getBundle().getString("CTL_OKButton"));
+        OKButton.setMnemonic((I18nUtil.getBundle().getString("CTL_OKButton_Mnem")).charAt(0));                 
+        OKButton.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_CTL_OKButton"));  
         JButton cancelButton = new JButton(I18nUtil.getBundle().getString("CTL_CancelButton"));
+        cancelButton.setMnemonic((I18nUtil.getBundle().getString("CTL_CancelButton_Mnem")).charAt(0));        
+        cancelButton.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_CTL_CancelButton"));  
 
         JPanel buttonPanel = new JPanel(new GridBagLayout());
         JPanel rightPanel = new JPanel(new java.awt.GridLayout(1, 2, 5, 0));

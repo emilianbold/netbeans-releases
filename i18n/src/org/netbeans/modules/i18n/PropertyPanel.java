@@ -45,7 +45,7 @@ public class PropertyPanel extends JPanel {
     /** Creates new <code>PropertyPanel</code>. */
     public PropertyPanel() {
         initComponents();
-        this.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_PropertyPanel"));        
+        initAccessibility();
     }
 
     /** Seter for <code>i18nString</code> property. */
@@ -116,6 +116,14 @@ public class PropertyPanel extends JPanel {
         keyBundleCombo.setActionCommand(oldActionCommand);
         
         updateKey();
+    }
+    
+    private void initAccessibility() {
+        this.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_PropertyPanel"));        
+        valueText.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_valueText"));        
+        commentText.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_commentText"));        
+        replaceFormatButton.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_CTL_Format"));        
+        replaceFormatTextField.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_replaceFormatTextField"));        
     }
     
     /** This method is called from within the constructor to

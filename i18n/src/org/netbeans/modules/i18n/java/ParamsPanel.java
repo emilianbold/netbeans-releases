@@ -146,6 +146,9 @@ public class ParamsPanel extends JPanel {
         this.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_ParamsPanel"));        
         codeLabel.setDisplayedMnemonic((I18nUtil.getBundle().getString("LBL_Code_Mnem")).charAt(0));
         paramLabel.setDisplayedMnemonic((I18nUtil.getBundle().getString("LBL_Parameters_Mnem")).charAt(0));
+        removeParamButton.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_CTL_RemoveButton"));        
+        addParamButton.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_CTL_AddButton"));        
+        paramsList.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_paramsList"));        
     }
     
     /** This method is called from within the constructor to

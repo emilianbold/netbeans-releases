@@ -40,8 +40,8 @@ public abstract class InfoPanel extends JPanel {
         if(bundle == null)
             bundle = I18nUtil.getBundle();
 
-        initComponents ();
-        this.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_InfoPanel"));
+        initComponents ();   
+        initAccessibility ();
         
         setHardCodedString(hcString, document);
     }
@@ -80,6 +80,15 @@ public abstract class InfoPanel extends JPanel {
     protected JLabel getPropertyLabel() {
         return propertyLabel;
     }
+    
+    private void initAccessibility() {
+        this.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_InfoPanel"));
+        stringText.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_stringText"));
+        propertyText.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_propertyText"));
+        componentText.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_componentText"));
+        foundInText.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_foundInText"));
+    }     
+    
     
     /** This method is called from within the constructor to
      * initialize the form.

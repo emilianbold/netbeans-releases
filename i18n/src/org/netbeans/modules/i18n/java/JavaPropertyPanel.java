@@ -44,8 +44,8 @@ public class JavaPropertyPanel extends PropertyPanel {
     /** Creates new form JavaPropertyPanel */
     public JavaPropertyPanel() {
         initComponents();
-    }
-
+    }    
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -55,6 +55,7 @@ public class JavaPropertyPanel extends PropertyPanel {
         argumentsButton = new JButton();
         argumentsButton.setText(I18nUtil.getBundle().getString("CTL_Arguments"));
         argumentsButton.setMnemonic((I18nUtil.getBundle().getString("CTL_Arguments_Mnem")).charAt(0));
+        argumentsButton.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_CTL_Arguments"));
         argumentsButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 argumentsButtonActionPerformed(evt);

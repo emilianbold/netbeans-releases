@@ -57,7 +57,8 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
         comboLabel.setDisplayedMnemonic(comboText.charAt((0))); // so ugly...        
         listLabel.setText(I18nUtil.getBundle().getString("LBL_Arguments"));
         listLabel.setDisplayedMnemonic((I18nUtil.getBundle().getString("LBL_Arguments_Mnem")).charAt(0));
-        this.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_HelpStringCustomEditor"));
+        
+        initAccessibility ();     
         
         HelpCtx.setHelpIDString(this, I18nUtil.HELP_ID_CUSTOM);
     }
@@ -68,6 +69,13 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
     */
     public Object getPropertyValue() throws IllegalStateException {
         return (String)combo.getSelectedItem();
+    }
+    
+    
+    private void initAccessibility() {
+        this.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_HelpStringCustomEditor"));
+        combo.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_HelpStringCombo"));
+        list.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_HelpStringList"));
     }
     
     /** This method is called from within the constructor to

@@ -66,7 +66,7 @@ public class I18nPanel extends JPanel {
         this.propertyPanel = propertyPanel;
         
         initComponents();
-        this.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/i18n/Bundle").getString("ACS_I18nPanel"));        
+        initAccessibility();        
         
         if(!withButtons)
             remove(buttonsPanel);
@@ -144,6 +144,16 @@ public class I18nPanel extends JPanel {
     /** Creates <code>PropertyPanel</code>. */
     private JPanel createPropertyPanel() {
         return new PropertyPanel();
+    }
+    
+    
+    private void initAccessibility() {
+        this.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/i18n/Bundle").getString("ACS_I18nPanel"));        
+        skipButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/i18n/Bundle").getString("ACS_CTL_SkipButton"));        
+        cancelButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/i18n/Bundle").getString("ACS_CTL_CancelButton"));        
+        replaceButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/i18n/Bundle").getString("ACS_CTL_ReplaceButton"));        
+        infoButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/i18n/Bundle").getString("ACS_CTL_InfoButton"));        
+        helpButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/i18n/Bundle").getString("ACS_CTL_HelpButton"));        
     }
     
     /** This method is called from within the constructor to
