@@ -21,7 +21,6 @@ package org.netbeans.modules.javadoc.search;
 
 import java.awt.Rectangle;
 import java.awt.BorderLayout;
-import java.util.ResourceBundle;
 
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
@@ -45,10 +44,6 @@ import org.netbeans.modules.java.JavaDataObject;
  */
 public class ShowDocAction extends CookieAction {
 
-    // Resource bundle
-    private static final ResourceBundle bundle = NbBundle.getBundle( ShowDocAction.class );
-
-
     static final long serialVersionUID =3578357584245478L;
     
     /** Human presentable name of the action. This should be
@@ -56,7 +51,7 @@ public class ShowDocAction extends CookieAction {
     * @return the name of the action
     */
     public String getName () {
-        return bundle.getString ("CTL_SHOWDOC_MenuItem");
+        return NbBundle.getBundle( ShowDocAction.class ).getString ("CTL_SHOWDOC_MenuItem");
     }
 
     /** Cookie classes contains one class returned by cookie () method.

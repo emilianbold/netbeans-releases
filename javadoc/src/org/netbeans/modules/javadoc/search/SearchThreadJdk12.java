@@ -202,20 +202,17 @@ class SearchThreadJdk12 extends IndexSearchThread {
 
 
     /* These are constants for the inner class */
-
-    /** Source of the localized human presentable strings. */
-    static ResourceBundle bundle = NbBundle.getBundle(SearchThreadJdk12.class);
-
-    static private final String STR_CLASS = bundle.getString( "JDK12_CLASS" );
-    static private final String STR_INTERFACE = bundle.getString( "JDK12_INTERFACE" );
-    static private final String STR_EXCEPTION = bundle.getString( "JDK12_EXCEPTION" );
-    static private final String STR_CONSTRUCTOR = bundle.getString( "JDK12_CONSTRUCTOR" );
-    static private final String STR_METHOD = bundle.getString( "JDK12_METHOD" );
-    static private final String STR_ERROR = bundle.getString( "JDK12_ERROR" );
-    static private final String STR_VARIABLE = bundle.getString( "JDK12_VARIABLE" );
-    static private final String STR_STATIC = bundle.getString( "JDK12_STATIC" );
-    static private final String STR_DASH = bundle.getString( "JDK12_DASH" );
-    static private final String STR_PACKAGE = bundle.getString( "JDK12_PACKAGE" );
+    
+    static private final String STR_CLASS = ResourceUtils.getBundledString( "JDK12_CLASS" );
+    static private final String STR_INTERFACE = ResourceUtils.getBundledString( "JDK12_INTERFACE" );
+    static private final String STR_EXCEPTION = ResourceUtils.getBundledString( "JDK12_EXCEPTION" );
+    static private final String STR_CONSTRUCTOR = ResourceUtils.getBundledString( "JDK12_CONSTRUCTOR" );
+    static private final String STR_METHOD = ResourceUtils.getBundledString( "JDK12_METHOD" );
+    static private final String STR_ERROR = ResourceUtils.getBundledString( "JDK12_ERROR" );
+    static private final String STR_VARIABLE = ResourceUtils.getBundledString( "JDK12_VARIABLE" );
+    static private final String STR_STATIC = ResourceUtils.getBundledString( "JDK12_STATIC" );
+    static private final String STR_DASH = ResourceUtils.getBundledString( "JDK12_DASH" );
+    static private final String STR_PACKAGE = ResourceUtils.getBundledString( "JDK12_PACKAGE" );
 
     static private final int IN_BALAST = 0;
     static private final int IN_DT = 1;
@@ -223,7 +220,7 @@ class SearchThreadJdk12 extends IndexSearchThread {
     static private final int IN_B = 3;
     static private final int IN_DESCRIPTION = 4;
     static private final int IN_DESCRIPTION_SUFFIX = 5;
-
+    
     /** This inner class parses the JDK 1.2 Documentation index and returns
      *  found indexItems. 
      */
