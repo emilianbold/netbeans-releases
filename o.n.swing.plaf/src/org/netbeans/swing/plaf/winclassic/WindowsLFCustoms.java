@@ -13,6 +13,7 @@
 
 package org.netbeans.swing.plaf.winclassic;
 
+import java.util.Locale;
 import javax.swing.plaf.FontUIResource;
 import org.netbeans.swing.plaf.LFCustoms;
 import org.netbeans.swing.plaf.util.GuaranteedValue;
@@ -29,6 +30,9 @@ import java.awt.*;
  * Public only to be accessible by ProxyLazyValue, please don't abuse.
  */
 public final class WindowsLFCustoms extends LFCustoms {
+    
+    private static final String TAHOMA_FONT_NAME = "Tahoma";
+    
 
     public Object[] createLookAndFeelCustomizationKeysAndValues() {
         int fontsize = 11;
@@ -36,42 +40,55 @@ public final class WindowsLFCustoms extends LFCustoms {
         if (in != null) {
             fontsize = in.intValue();
         }
+        
+        Object[] result;
 
-        Object[] result = new Object[] {
-            //Workaround for help window selection color
-            "EditorPane.selectionBackground", new Color (157, 157, 255), //NOI18N
+        if (shouldWeUseTahoma()) {
+            result = new Object[] {
+                //Workaround for help window selection color
+                "EditorPane.selectionBackground", new Color (157, 157, 255), //NOI18N
 
-            //Changes default fonts to Tahoma based ones, for consistent Windows look
-            // XXX Note this is workaround for JDK bug 5079742.
-            // Please remove when JDK 1.4 is no longer supported,
-            // when only JDK 1.5_02 and higher are supported 
+                //Changes default fonts to Tahoma based ones, for consistent Windows look
+                // XXX Note this is workaround for JDK bug 5079742.
+                // Please remove when JDK 1.4 is no longer supported,
+                // when only JDK 1.5_02 and higher are supported 
+
+                "Button.font", patch2Tahoma("Button.font"), //NOI18N
+                "CheckBox.font", patch2Tahoma("CheckBox.font"), //NOI18N
+                "ComboBox.font", patch2Tahoma("ComboBox.font"), //NOI18N
+                "EditorPane.font", patch2Tahoma("EditorPane.font"), //NOI18N
+                "Label.font", patch2Tahoma("Label.font"), //NOI18N
+                "List.font", patch2Tahoma("List.font"), //NOI18N
+                "RadioButton.font", patch2Tahoma("RadioButton.font"), //NOI18N
+                "Panel.font", patch2Tahoma("Panel.font"), //NOI18N
+                "PasswordField.font", patch2Tahoma("PasswordField.font"), //NOI18N
+                "ProgressBar.font", patch2Tahoma("ProgressBar.font"), //NOI18N
+                "ScrollPane.font", patch2Tahoma("ScrollPane.font"), //NOI18N
+                "Spinner.font", patch2Tahoma("Spinner.font"), //NOI18N
+                "TabbedPane.font", patch2Tahoma("TabbedPane.font"), //NOI18N
+                "Table.font", patch2Tahoma("Table.font"), //NOI18N
+                "TableHeader.font", patch2Tahoma("TableHeader.font"), //NOI18N
+                "TextField.font", patch2Tahoma("TextField.font"), //NOI18N
+                "TextPane.font", patch2Tahoma("TextPane.font"), //NOI18N
+                "TitledBorder.font", patch2Tahoma("TitledBorder.font"), //NOI18N
+                "ToggleButton.font", patch2Tahoma("ToggleButton.font"), //NOI18N
+                "Tree.font", patch2Tahoma("Tree.font"), //NOI18N
+                "Viewport.font", patch2Tahoma("Viewport.font"), //NOI18N
+
+                //Work around a bug in windows which sets the text area font to
+                //"MonoSpaced", causing all accessible dialogs to have monospaced text
+                "TextArea.font", new GuaranteedValue ("Label.font", new Font("Dialog", Font.PLAIN, fontsize)), //NOI18N
+            };
+        } else {
+            result = new Object[] {
+                //Workaround for help window selection color
+                "EditorPane.selectionBackground", new Color (157, 157, 255), //NOI18N
+                //Work around a bug in windows which sets the text area font to
+                //"MonoSpaced", causing all accessible dialogs to have monospaced text
+                "TextArea.font", new GuaranteedValue ("Label.font", new Font("Dialog", Font.PLAIN, fontsize)), //NOI18N
+            };
+        }
             
-            "Button.font", patch2Tahoma("Button.font"), //NOI18N
-            "CheckBox.font", patch2Tahoma("CheckBox.font"), //NOI18N
-            "ComboBox.font", patch2Tahoma("ComboBox.font"), //NOI18N
-            "EditorPane.font", patch2Tahoma("EditorPane.font"), //NOI18N
-            "Label.font", patch2Tahoma("Label.font"), //NOI18N
-            "List.font", patch2Tahoma("List.font"), //NOI18N
-            "RadioButton.font", patch2Tahoma("RadioButton.font"), //NOI18N
-            "Panel.font", patch2Tahoma("Panel.font"), //NOI18N
-            "PasswordField.font", patch2Tahoma("PasswordField.font"), //NOI18N
-            "ProgressBar.font", patch2Tahoma("ProgressBar.font"), //NOI18N
-            "ScrollPane.font", patch2Tahoma("ScrollPane.font"), //NOI18N
-            "Spinner.font", patch2Tahoma("Spinner.font"), //NOI18N
-            "TabbedPane.font", patch2Tahoma("TabbedPane.font"), //NOI18N
-            "Table.font", patch2Tahoma("Table.font"), //NOI18N
-            "TableHeader.font", patch2Tahoma("TableHeader.font"), //NOI18N
-            "TextField.font", patch2Tahoma("TextField.font"), //NOI18N
-            "TextPane.font", patch2Tahoma("TextPane.font"), //NOI18N
-            "TitledBorder.font", patch2Tahoma("TitledBorder.font"), //NOI18N
-            "ToggleButton.font", patch2Tahoma("ToggleButton.font"), //NOI18N
-            "Tree.font", patch2Tahoma("Tree.font"), //NOI18N
-            "Viewport.font", patch2Tahoma("Viewport.font"), //NOI18N
-            
-            //Work around a bug in windows which sets the text area font to
-            //"MonoSpaced", causing all accessible dialogs to have monospaced text
-            "TextArea.font", new GuaranteedValue ("Label.font", new Font("Dialog", Font.PLAIN, fontsize)), //NOI18N
-        };
         return result;
     }
 
@@ -218,12 +235,39 @@ public final class WindowsLFCustoms extends LFCustoms {
         Font originalFont = UIManager.getFont(uiResource);
         FontUIResource result;
         if (originalFont != null) {
-            result = new FontUIResource("Tahoma", originalFont.getStyle(), originalFont.getSize());
+            result = new FontUIResource(TAHOMA_FONT_NAME, originalFont.getStyle(), originalFont.getSize());
         } else {
-            result = new FontUIResource("Tahoma", Font.PLAIN, 11);
+            result = new FontUIResource(TAHOMA_FONT_NAME, Font.PLAIN, 11);
         }
         return result;
     }     
+    
+    /** Finds out if tahoma font is proper to use on current system (locale, availability)
+     * @return true if tahoma font is available, false otherwise
+     */
+    private static boolean shouldWeUseTahoma () {
+        // don't try to use Tahoma for East Asian languages
+        Locale curLocale = Locale.getDefault();
+        if (Locale.JAPANESE.equals(curLocale) ||
+            Locale.KOREAN.equals(curLocale) ||
+            Locale.CHINESE.equals(curLocale) || 
+            Locale.TRADITIONAL_CHINESE.equals(curLocale) ||
+            Locale.SIMPLIFIED_CHINESE.equals(curLocale)) {
+            return false;
+        }
+
+        // check if Tahoma is really available
+        GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        String[] familyNames = env.getAvailableFontFamilyNames();
+        
+        for (int i = 0; i < familyNames.length; i++) {
+            if (TAHOMA_FONT_NAME.equals(familyNames[i])) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
 
     private class WinClassicPropertySheetColorings extends UIBootstrapValue.Lazy {
         public WinClassicPropertySheetColorings () {
