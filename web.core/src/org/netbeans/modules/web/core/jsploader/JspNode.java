@@ -47,6 +47,7 @@ public class JspNode extends DataNode {
     private static final String ICON_JSP_XML = "org/netbeans/modules/web/core/resources/jsp-xml16"; // NOI18N
     private static final String ICON_JSP_FRAGMENT = "org/netbeans/modules/web/core/resources/jsp-fragment16"; // NOI18N
     
+    public static final String PROP_FILE_ENCODING = "encoding"; //NOI18N
     public static final String PROP_REQUEST_PARAMS   = "requestparams"; // NOI18N
 
     /** Create a node for the internet data object using the default children.
@@ -66,9 +67,9 @@ public class JspNode extends DataNode {
         if (ext.equals(JspLoader.TAGF_FILE_EXTENSION) 
             || ext.equals(JspLoader.TAGX_FILE_EXTENSION)
             || ext.equals(JspLoader.TAG_FILE_EXTENSION))
-                setShortDescription (NbBundle.getMessage(JspNode.class, "LBL_tagNodeShortDesc"));
+                setShortDescription (NbBundle.getMessage(JspNode.class, "LBL_tagNodeShortDesc")); //NOI18N
         else
-                setShortDescription (NbBundle.getMessage(JspNode.class, "LBL_jspNodeShortDesc"));
+                setShortDescription (NbBundle.getMessage(JspNode.class, "LBL_jspNodeShortDesc")); //NOI18N
         
     }
 
@@ -91,14 +92,14 @@ public class JspNode extends DataNode {
 
         ps = new Sheet.Set ();
         ps.setName(EXECUTION_SET_NAME);
-        ps.setDisplayName(NbBundle.getBundle(JspNode.class).getString("PROP_executionSetName"));
-        ps.setShortDescription(NbBundle.getBundle(JspNode.class).getString("HINT_executionSetName"));
+        ps.setDisplayName(NbBundle.getBundle(JspNode.class).getString("PROP_executionSetName")); //NOI18N
+        ps.setShortDescription(NbBundle.getBundle(JspNode.class).getString("HINT_executionSetName")); //NOI18N
         
         ps.put(new PropertySupport.ReadWrite (
                    PROP_REQUEST_PARAMS,
                    String.class,
-                   NbBundle.getBundle(JspNode.class).getString("PROP_requestParams"),
-                   NbBundle.getBundle(JspNode.class).getString("HINT_requestParams")
+                   NbBundle.getBundle(JspNode.class).getString("PROP_requestParams"), //NOI18N
+                   NbBundle.getBundle(JspNode.class).getString("HINT_requestParams") //NOI18N
                ) {
                    public Object getValue() {
                        return getRequestParams(((MultiDataObject)getDataObject()).getPrimaryEntry());
@@ -117,7 +118,7 @@ public class JspNode extends DataNode {
                    }
                }
               );
-
+              
         // remove the params property
         //ps.remove(ExecSupport.PROP_FILE_PARAMS);
         // remove the debugger type property
@@ -131,7 +132,20 @@ public class JspNode extends DataNode {
         ps.setDisplayName(NbBundle.getBundle(JspNode.class).getString("PROP_textfileSetName")); // NOI18N
         ps.setShortDescription(NbBundle.getBundle(JspNode.class).getString("HINT_textfileSetName")); // NOI18N
         sheet.put(ps);
-    
+        
+        ps.put(new PropertySupport.ReadOnly (
+               PROP_FILE_ENCODING,
+               String.class,
+               NbBundle.getBundle(JspNode.class).getString("PROP_fileEncoding"), //NOI18N
+               NbBundle.getBundle(JspNode.class).getString("HINT_fileEncoding") //NOI18N
+           ) {
+               public Object getValue() {
+                   return ((JspDataObject)getDataObject()).getFileEncoding(true); 
+               }
+
+           }
+          );     
+
         Node.PropertySet[] tmp = sheet.toArray();
         String ext = getExtension();
         if (ext.equals(JspLoader.TAGF_FILE_EXTENSION) 
