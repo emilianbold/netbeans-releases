@@ -13,13 +13,19 @@
 
 package com.netbeans.developer.modules.text;
 
+import java.awt.Font;
+import java.awt.Color;
 import java.awt.Component;
+import java.util.ArrayList;
+import java.text.AttributedCharacterIterator;
 import javax.swing.text.AttributeSet;
 import javax.swing.JEditorPane;
 import com.netbeans.editor.GuardedDocument;
+import com.netbeans.editor.PrintContainer;
 import com.netbeans.editor.Syntax;
 import com.netbeans.editor.Utilities;
 import org.openide.text.NbDocument;
+import org.openide.text.AttributedCharacters;
 
 /** 
 * BaseDocument extension managing the readonly blocks of text
@@ -31,8 +37,6 @@ import org.openide.text.NbDocument;
 public class NbEditorDocument extends GuardedDocument
 implements NbDocument.PositionBiasable, NbDocument.WriteLockable,
 NbDocument.Printable, NbDocument.CustomEditor {
-
-  PrintSupport printSupport;
 
   public NbEditorDocument(Class kitClass) {
     super(kitClass);
@@ -62,25 +66,57 @@ NbDocument.Printable, NbDocument.CustomEditor {
     }
   }
 
-  protected PrintSupport getPrintSupport() {
-    if (printSupport == null) {
-      printSupport = new PrintSupport(this);
-    }
-    return printSupport;
-  }
-
   public java.text.AttributedCharacterIterator[] createPrintIterators() {
-    return getPrintSupport().createPrintIterators();
+    NbPrintContainer npc = new NbPrintContainer();
+    print(npc);
+    return npc.getIterators();
   }
   
   public Component createEditor(JEditorPane j) {
-    return Utilities.getExtUI(j).getExtComponent();
+    return Utilities.getEditorUI(j).getExtComponent();
+  }
+
+
+  class NbPrintContainer extends AttributedCharacters implements PrintContainer {
+    
+    ArrayList acl = new ArrayList();
+    
+    AttributedCharacters a;
+    
+    NbPrintContainer() {
+      a = new AttributedCharacters();
+    }
+
+    public void add(char[] chars, Font font, Color foreColor, Color backColor) {
+      a.append(chars, font, foreColor);
+    }
+
+    public void eol() {
+      acl.add(a);
+      a = new AttributedCharacters();
+    }
+
+    public boolean initEmptyLines() {
+      return true;
+    }
+    
+    public AttributedCharacterIterator[] getIterators() {
+      int cnt = acl.size();
+      AttributedCharacterIterator[] acis = new AttributedCharacterIterator[cnt];
+      for (int i = 0; i < cnt; i++) {
+        AttributedCharacters ac = (AttributedCharacters)acl.get(i);
+        acis[i] = ac.iterator();
+      }
+      return acis;
+    }
+   
   }
 
 }
 
 /*
  * Log
+ *  15   Jaga      1.12.1.0.1.03/15/00  Miloslav Metelka Structural change
  *  14   Gandalf-post-FCS1.12.1.0    3/8/00   Miloslav Metelka 
  *  13   Gandalf   1.12        1/13/00  Miloslav Metelka Localization
  *  12   Gandalf   1.11        11/14/99 Miloslav Metelka 

@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
   
-import com.netbeans.editor.Settings;
+import com.netbeans.editor.SettingNames;
 import com.netbeans.editor.SettingsUtil;
 import com.netbeans.editor.BaseKit;
 
@@ -67,10 +67,10 @@ public class BasePrintOptions extends OptionSupport {
   }
   
   public boolean getPrintLineNumberVisible() {
-    return ((Boolean)getSettingValue(Settings.PRINT_LINE_NUMBER_VISIBLE)).booleanValue();
+    return ((Boolean)getSettingValue(SettingNames.PRINT_LINE_NUMBER_VISIBLE)).booleanValue();
   }
   public void setPrintLineNumberVisible(boolean b) {
-    setSettingValue(Settings.PRINT_LINE_NUMBER_VISIBLE, (b ? Boolean.TRUE : Boolean.FALSE));
+    setSettingValue(SettingNames.PRINT_LINE_NUMBER_VISIBLE, (b ? Boolean.TRUE : Boolean.FALSE));
   }
 
   public Map getPrintColoringMap() {
@@ -87,6 +87,7 @@ public class BasePrintOptions extends OptionSupport {
 
 /*
  * Log
+ *  14   Jaga      1.12.1.0    3/15/00  Miloslav Metelka Structural change
  *  13   Gandalf   1.12        2/15/00  Miloslav Metelka print coloring map 
  *       getter fixed
  *  12   Gandalf   1.11        1/18/00  Miloslav Metelka displayName()

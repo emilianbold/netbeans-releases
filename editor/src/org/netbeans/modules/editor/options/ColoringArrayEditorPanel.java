@@ -26,7 +26,7 @@ import org.openide.explorer.propertysheet.PropertyModel;
 import org.openide.util.HelpCtx;
 
 import com.netbeans.editor.Coloring;
-import com.netbeans.editor.Settings;
+import com.netbeans.editor.SettingNames;
 
 /** 
  * ColoringArrayEditorPanel is custom property editor operating over HashMap 
@@ -69,7 +69,7 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
     typeName = BaseOptions.BASE;
 
     value = new HashMap();
-    names = new String[] { Settings.DEFAULT_COLORING };
+    names = new String[] { SettingNames.DEFAULT_COLORING };
     
     actValueIndex = 0;
     value.put(names[0], new Coloring( Font.decode( null ), Color.red, Color.blue ) );
@@ -115,15 +115,8 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
     value = map;
     
     // Obtain name of the kits type
-    try {
-      Class kitClass = Class.forName( (String)map.get( null ) );
-      typeName = OptionSupport.getTypeName( kitClass );
-    } catch( ClassNotFoundException e ) {
-      if( Boolean.getBoolean( "netbeans.debug.exceptions" ) )
-        e.printStackTrace();
-      return;
-    }
-  
+    typeName = OptionSupport.getTypeName((Class)map.get( null ));
+    
     Set keySet = map.keySet();
     
     String[] names = new String[keySet.size() - 1];
@@ -135,7 +128,7 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
     while( iter.hasNext() ) {
       String key = (String)iter.next();
       if( key == null ) continue;  // ignore the typeName item
-      names[ (key == Settings.DEFAULT_COLORING) ? 0 : (++i) ] = key;
+      names[ (key == SettingNames.DEFAULT_COLORING) ? 0 : (++i) ] = key;
     }
     
     for( i = 0; i < names.length; i++ ) {
@@ -213,7 +206,7 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
     add (detailPanel, gridBagConstraints1);
 
     masterPanel.setLayout (new java.awt.GridLayout (1, 1));
-    masterPanel.setBorder (new javax.swing.border.CompoundBorder( new javax.swing.border.TitledBorder(bundle.getString( "CAEP_SyntaxLabel" )), new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8))));
+    masterPanel.setBorder (new javax.swing.border.CompoundBorder( new javax.swing.border.TitledBorder(bundle.getString( "CAEP_SyntaxLabel" )), new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8)))); // NOI18N
 
   
         syntaxList.addListSelectionListener (new javax.swing.event.ListSelectionListener () {
@@ -301,15 +294,3 @@ private void syntaxListValueChanged (javax.swing.event.ListSelectionEvent evt) {
 
   }
 }
-
-/*
- * Log
- *  5    Gandalf-post-FCS1.3.1.0     2/28/00  Petr Nejedly    Redesign of 
- *       ColoringEditor
- *  4    Gandalf   1.3         1/13/00  Miloslav Metelka Localization
- *  3    Gandalf   1.2         1/11/00  Jesse Glick     Context help.
- *  2    Gandalf   1.1         1/11/00  Petr Nejedly    ScrollPane, distribution
- *       of changes
- *  1    Gandalf   1.0         12/28/99 Miloslav Metelka 
- * $
- */

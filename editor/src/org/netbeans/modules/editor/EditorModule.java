@@ -27,10 +27,11 @@ import com.netbeans.editor.Settings;
 import com.netbeans.editor.SettingsChangeListener;
 import com.netbeans.editor.SettingsChangeEvent;
 import com.netbeans.editor.LocaleSupport;
-import com.netbeans.editor.ext.JavaKit;
 import com.netbeans.editor.Formatter;
-import com.netbeans.editor.view.DialogSupport;
-import com.netbeans.editor.ext.ExtSettings;
+import com.netbeans.developer.modules.text.java.JavaKit;
+import com.netbeans.developer.modules.text.java.JCStorage;
+import com.netbeans.developer.modules.text.java.JCUpdateAction;
+import com.netbeans.developer.modules.text.java.JavaKit;
 
 import org.openide.modules.ModuleInstall;
 import org.openide.text.IndentEngine;
@@ -40,10 +41,6 @@ import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
-
-import com.netbeans.developer.modules.text.java.JCStorage;
-import com.netbeans.developer.modules.text.java.JCUpdateAction;
-import com.netbeans.developer.modules.text.java.NbEditorJavaKit;
 
 import org.openidex.util.Utilities2;
 
@@ -100,19 +97,12 @@ public class EditorModule extends ModuleInstall {
   /** Module installed again. */
   public void restored () {
 
-    LocaleSupport.addLocalizer(new NbLocalizer(NbEditorSettings.class));
+    LocaleSupport.addLocalizer(new NbLocalizer(NbEditorSettingsInitializer.class));
 
     // Initializations
 
     // Settings
-    ExtSettings.init();
-    NbEditorSettings.init();
-
-    // System actions to editor actions mapping
-    KitSupport.init();
-
-    // Customized dialog creator
-    DialogSupport.setDialogCreator(new NbDialogCreator());
+    NbEditorSettingsInitializer.init();
 
     FileSystem rfs = TopManager.getDefault().getRepository().getDefaultFileSystem();
     JCStorage.init(rfs.getRoot());
@@ -121,7 +111,7 @@ public class EditorModule extends ModuleInstall {
     registerIndents();
 
     // Preloading of some classes for faster editor opening
-    BaseKit.getKit(NbEditorJavaKit.class).createDefaultDocument();
+    BaseKit.getKit(JavaKit.class).createDefaultDocument();
 
     // Registration of the editor kits to JEditorPane
     for (int i = 0; i < replacements.length; i++) {
@@ -205,6 +195,7 @@ public class EditorModule extends ModuleInstall {
 
 /*
  * Log
+ *  41   Jaga      1.38.1.0.1.03/15/00  Miloslav Metelka Structural change
  *  40   Gandalf-post-FCS1.38.1.0    3/8/00   Miloslav Metelka 
  *  39   Gandalf   1.38        1/16/00  Jesse Glick     Actions pool.
  *  38   Gandalf   1.37        1/13/00  Miloslav Metelka Localization
