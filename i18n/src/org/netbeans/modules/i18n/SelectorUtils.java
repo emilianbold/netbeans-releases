@@ -153,15 +153,16 @@ public class SelectorUtils {
         while(eit.hasNext()) {
             ClassPath.Entry e = (ClassPath.Entry)eit.next();
 
-            if (e.getRoot() != null) {
-                // try if the object exists  
-                l.add(e.getRoot());
-            } else {
-                // else try to map it to sources
-                URL url = e.getURL();
-                SourceForBinaryQuery.Result r= SourceForBinaryQuery.findSourceRoots(url);
-                FileObject [] fos = r.getRoots();
+            // try to map it to sources
+            URL url = e.getURL();
+            SourceForBinaryQuery.Result r= SourceForBinaryQuery.findSourceRoots(url);
+            FileObject [] fos = r.getRoots();
+            if (fos.length > 0) {
                 for (int i = 0 ; i < fos.length; i++) l.add(fos[i]);
+            } else {
+                if (e.getRoot()!=null) 
+                    l.add(e.getRoot()); // add the class-path location
+                                        // directly
             }
         }
 
