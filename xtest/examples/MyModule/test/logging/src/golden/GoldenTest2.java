@@ -29,10 +29,10 @@ public class GoldenTest2 extends NbTestCase {
         ref("Output to ref file called testPart1.ref");
         // here write body of the test
         boolean somethingWrong = false;
-        // You can also use assert() or fail() method in the body of the test 
+        // You can also use assertTrue() or fail() methods in the body of the test 
         // to indicate a failure
         if(somethingWrong) fail();
-        assert(!somethingWrong);
+        assertTrue(!somethingWrong);
         log("mySpecialLog.log", "message to log file mySpecialLog.log");
         compareReferenceFiles();
     }
