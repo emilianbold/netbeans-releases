@@ -86,11 +86,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-openide-actions-ReorderAction.instance"/>
             <file name="org-openide-actions-SaveAllAction.instance"/>
             <file name="org-openide-actions-SaveAsTemplateAction.instance"/>
-<!--
-            <file name="org-netbeans-core-actions-SaveSettingsAction.instance"/>
--->
             <file name="org-openide-actions-SaveAction.instance"/>
-            <file name="org-netbeans-core-actions-SettingsAction.instance"/>
             <file name="org-openide-actions-ToolsAction.instance"/>
             <file name="org-openide-actions-ViewAction.instance"/>
             <file name="org-openide-actions-NewTemplateAction.instance"/>
@@ -257,12 +253,6 @@ Microsystems, Inc. All Rights Reserved.
           <file name="org-netbeans-core-actions-ConfigureShortcutsAction.instance"/>
           <attr name="org-netbeans-core-actions-ConfigureShortcutsAction.instance/org-netbeans-core-actions-OptionsAction.instance" boolvalue="true" />
           <file name="org-netbeans-core-actions-OptionsAction.instance"/>
-          <attr name="org-netbeans-core-actions-OptionsAction.instance/org-netbeans-core-actions-SettingsAction.instance" boolvalue="true" />
-          <file name="org-netbeans-core-actions-SettingsAction.instance"/>
-<!--
-          <attr name="org-netbeans-core-actions-SettingsAction.instance/org-netbeans-core-actions-SaveSettingsAction.instance" boolvalue="true"/>
-          <file name="org-netbeans-core-actions-SaveSettingsAction.instance"/>
--->
        </folder>
        <attr name="Tools/Window" boolvalue="true" />
        <folder name="Window">
@@ -562,6 +552,11 @@ Microsystems, Inc. All Rights Reserved.
     <file name="Welcome.instance">
         <attr name="instanceCreate" newvalue="org.netbeans.core.ui.WelcomeFolderNode" />
         <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
+    </file>
+
+    <file name="Workspace.instance">
+        <attr name="instanceCreate" methodvalue="org.netbeans.core.windows.nodes.WorkspacePoolContext.getDefault" />
+        <attr name="instanceClass" stringvalue="org.netbeans.core.windows.nodes.WorkspacePoolContext" />
     </file>
 
     <file name="IDESettings.settings" url="IDESettings.settings"/>
