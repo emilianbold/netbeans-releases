@@ -48,7 +48,7 @@ public class Installer extends ModuleInstall {
         }
         // UIManager is too aggressive about caching, and we get CCE's,
         // since JavaHelp's HelpUtilities sets up these defaults, and UIManager
-        // caches the actual classes (probably incorrectly).
+        // caches the actual classes (probably incorrectly). #4675772
         cleanDefaults(UIManager.getDefaults());
         cleanDefaults(UIManager.getLookAndFeelDefaults());
     }
@@ -74,7 +74,7 @@ public class Installer extends ModuleInstall {
         }
         if (!badKeys.isEmpty()) {
             if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                err.log("Cleaning up old UIDefaults keys (JRE bug): " + badKeys);
+                err.log("Cleaning up old UIDefaults keys (JRE bug #4675772): " + badKeys);
             }
             it = badKeys.iterator();
             while (it.hasNext()) {
