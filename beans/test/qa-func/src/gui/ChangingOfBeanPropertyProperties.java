@@ -75,7 +75,7 @@ public class ChangingOfBeanPropertyProperties  extends NbTestCase {
         explorer.switchToFilesystemsTab();
         
         String myObject = sampleDir+explorer.delim+NAME_TEST_FILE;
-//        JamUtilities.waitEventQueueEmpty(3000);                
+        JamUtilities.waitEventQueueEmpty(1500);                
         explorer.pushPopupMenu("Delete", myObject);
         new JelloYesNoDialog("Confirm Object Deletion").yes();
 //        JamUtilities.waitEventQueueEmpty(1500);        
@@ -94,19 +94,47 @@ public class ChangingOfBeanPropertyProperties  extends NbTestCase {
      *  - add a new property
      */    
     public void testChangeOfStyleOfDeclaredVariable() {
-        JavaWizard jw = JavaWizard.launch(JelloBundle.getString("org.netbeans.modules.java.Bundle","Templates/Classes") + "|" + JelloBundle.getString("org.netbeans.modules.java.Bundle","Templates/Classes/Class.java"),
-        sampleDir);
-        jw.setName(NAME_TEST_FILE);        
-        jw.finish();
-
+/***/
+        Explorer explorer = new Explorer();
+        explorer = Explorer.find();
+        explorer.switchToFilesystemsTab();
+        explorer.selectNode(sampleDir);
         MainFrame mf = MainFrame.getMainFrame();
+        mf.pushFileMenu("New...");
+        JamDialog dialog = new JamDialog("New Wizard");
+        DialogNode node = new DialogNode(dialog, new JamTree(dialog), "Templates, Classes");
+        node.expand();
+        node.getChild("Class").select();
+        new JamButton(dialog, "Next >").doClick();
+        dialog = new JamDialog("New Wizard - Class");
+        dialog.getJamTextField(0).setText(NAME_TEST_FILE);
+        new JamButton(dialog, "Finish").doClick();                
+/***/      
+//        JavaWizard jw = JavaWizard.launch(JelloBundle.getString("org.netbeans.modules.java.Bundle","Templates/Classes") + "|" + JelloBundle.getString("org.netbeans.modules.java.Bundle","Templates/Classes/Class.java"),        sampleDir);
+//        jw.setName(NAME_TEST_FILE);
+//        jw.updatePanel(0);
+//        jw.finish();
+
+        mf = MainFrame.getMainFrame();
         //mf.switchToEditing();
         mf.pushMenu("Tools|Options...");
         Options opt = new Options();
-        PropertiesWindow pw = opt.getPropertiesWindow("Editing"+opt.delim+"Beans Property");
-        pw.setSelectedItem("Style of Declared Variable", 0);
+        JamUtilities.waitEventQueueEmpty(1500);                
+
+//        PropertiesWindow pw = opt.getPropertiesWindow("Editing"+opt.delim+"Beans Property");
+//        pw.setSelectedItem("Style of Declared Variable", 0);
+//--------------
+        opt.selectNode("Editing"+opt.delim+"Beans Property");
+        opt.getJamTabbedPane().selectPage("Properties");
+        JelloPropertiesSheet sheet = new JelloPropertiesSheet(opt.getJamTabbedPane().getPage("Properties"));
+        sheet.edit("Style of Declared Variable");
+        sheet.setSelectedItem(0);
+        opt.close();
+//---------------
+
+        
 //start of the first property
-        Explorer explorer = new Explorer();        
+        explorer = new Explorer();        
         explorer = Explorer.find();
         explorer.switchToFilesystemsTab();
         explorer.pushPopupMenuNoBlock("Add"+"|"+JelloBundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_PROPERTY"), sampleDir
@@ -142,7 +170,15 @@ public class ChangingOfBeanPropertyProperties  extends NbTestCase {
         
         okCancelHelpDialog.ok();        
 //end of the first property
-        pw.setSelectedItem("Style of Declared Variable", 1);
+
+//        pw.setSelectedItem("Style of Declared Variable", 1);
+//--------------
+        sheet.edit("Style of Declared Variable");
+        sheet.setSelectedItem(1);
+//---------------
+
+        
+        
 //start of the second property
         explorer = Explorer.find();
         explorer.switchToFilesystemsTab();
@@ -179,7 +215,7 @@ public class ChangingOfBeanPropertyProperties  extends NbTestCase {
         
         okCancelHelpDialog.ok();        
 //end of the second property
-        pw.close();
+//        pw.close();
         opt.close();             
         
         Editor editor = new Editor(NAME_TEST_FILE);
@@ -196,22 +232,42 @@ public class ChangingOfBeanPropertyProperties  extends NbTestCase {
      *  - change of property type a name
      */    
     public void testChangePropertyNameAndType() {
-        JavaWizard jw = JavaWizard.launch(JelloBundle.getString("org.netbeans.modules.java.Bundle","Templates/Classes") + "|" + JelloBundle.getString("org.netbeans.modules.java.Bundle","Templates/Classes/Class.java"),
-        sampleDir);
-        jw.setName(NAME_TEST_FILE);        
-        jw.finish();
-
+/***/
+        Explorer explorer = new Explorer();
+        explorer = Explorer.find();
+        explorer.switchToFilesystemsTab();
+        explorer.selectNode(sampleDir);
         MainFrame mf = MainFrame.getMainFrame();
+        mf.pushFileMenu("New...");
+        JamDialog dialog = new JamDialog("New Wizard");
+        DialogNode node = new DialogNode(dialog, new JamTree(dialog), "Templates, Classes");
+        node.expand();
+        node.getChild("Class").select();
+        new JamButton(dialog, "Next >").doClick();
+        dialog = new JamDialog("New Wizard - Class");
+        dialog.getJamTextField(0).setText(NAME_TEST_FILE);
+        new JamButton(dialog, "Finish").doClick();                
+/***/      
+//        JavaWizard jw = JavaWizard.launch(JelloBundle.getString("org.netbeans.modules.java.Bundle","Templates/Classes") + "|" + JelloBundle.getString("org.netbeans.modules.java.Bundle","Templates/Classes/Class.java"),        sampleDir);
+//        jw.setName(NAME_TEST_FILE);
+//        jw.updatePanel(0);
+//        jw.finish();
+
+        mf = MainFrame.getMainFrame();
         //mf.switchToEditing();
         mf.pushMenu("Tools|Options...");
         Options opt = new Options();
-        PropertiesWindow pw = opt.getPropertiesWindow("Editing"+opt.delim+"Beans Property");
-//	JamUtilities.waitEventQueueEmpty(3000);                
-        pw.setSelectedItem("Style of Declared Variable", 0);
-        pw.close();
-        opt.close();             
-
-        Explorer explorer = new Explorer();        
+        
+//--------------
+//        opt.getJamTree().select(new JamTreeNode("Options, Editing, Beans Property"));
+        opt.selectNode("Editing"+Options.delim+"Beans Property");
+        opt.getJamTabbedPane().selectPage("Properties");
+        JelloPropertiesSheet sheet = new JelloPropertiesSheet(opt.getJamTabbedPane().getPage("Properties"));
+        sheet.edit("Style of Declared Variable");
+        sheet.setSelectedItem(0);
+        opt.close();
+//---------------
+        explorer = new Explorer();        
         explorer = Explorer.find();
         explorer.switchToFilesystemsTab();
         explorer.pushPopupMenuNoBlock("Add"+"|"+JelloBundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_PROPERTY"), sampleDir
@@ -242,19 +298,22 @@ public class ChangingOfBeanPropertyProperties  extends NbTestCase {
 
         explorer = Explorer.find();
         explorer.switchToFilesystemsTab();
+        JamUtilities.waitEventQueueEmpty(1500);                
         explorer.pushPopupMenu("Properties", sampleDir+explorer.delim+NAME_TEST_FILE+explorer.delim+"class "+NAME_TEST_FILE
                            +explorer.delim+JelloBundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")
                            +explorer.delim+"initialName");
-        PropertiesWindow pwe = new PropertiesWindow("initialName");
+        JamUtilities.waitEventQueueEmpty(1500);                
+        PropertiesWindow pwe = new PropertiesWindow("initialName");        
         pwe.switchToTab("Properties");
-        pwe.openEditDialog("Name");
-        JelloPropertyDialog dialog = new JelloPropertyDialog();
-        dialog.setValue("requiredName");
-        new JamButton(dialog, "Ok").doClickNoBlock();        
-        new JelloYesNoDialog(JelloUtilities.getForteFrame(),"Question").yes();        
+        pwe.openEditDialog("Name");        
+//        pwe.setText("Name", "requiredName");
+        JelloPropertyDialog jelloPropertyDialog = new JelloPropertyDialog();
+        jelloPropertyDialog.setValue("requiredName");
+        new JamButton(jelloPropertyDialog, "Ok").doClickNoBlock();
+        new JelloYesNoDialog(JelloUtilities.getForteFrame(),"Question").yes();
         pwe.setText("Type","requiredType");        
         new JelloYesNoDialog(JelloUtilities.getForteFrame(),"Question").yes();
-        pwe.close();
+        pwe.close();                
         
         Editor editor = new Editor(NAME_TEST_FILE);
         editor.select(1,10);
@@ -274,19 +333,48 @@ public class ChangingOfBeanPropertyProperties  extends NbTestCase {
      *  - Change of the second property mode to Write Only
      */        
     public void testChangeMode() {
-        JavaWizard jw = JavaWizard.launch(JelloBundle.getString("org.netbeans.modules.java.Bundle","Templates/Classes") + "|" + JelloBundle.getString("org.netbeans.modules.java.Bundle","Templates/Classes/Class.java"),
-        sampleDir);
-        jw.setName(NAME_TEST_FILE);        
-        jw.finish();
-
+/***/
+        Explorer explorer = new Explorer();
+        explorer = Explorer.find();
+        explorer.switchToFilesystemsTab();
+        explorer.selectNode(sampleDir);
         MainFrame mf = MainFrame.getMainFrame();
+        mf.pushFileMenu("New...");
+        JamDialog dialog = new JamDialog("New Wizard");
+        DialogNode node = new DialogNode(dialog, new JamTree(dialog), "Templates, Classes");
+        node.expand();
+        node.getChild("Class").select();
+        new JamButton(dialog, "Next >").doClick();
+        dialog = new JamDialog("New Wizard - Class");
+        dialog.getJamTextField(0).setText(NAME_TEST_FILE);
+        new JamButton(dialog, "Finish").doClick();                
+/***/      
+//        JavaWizard jw = JavaWizard.launch(JelloBundle.getString("org.netbeans.modules.java.Bundle","Templates/Classes") + "|" + JelloBundle.getString("org.netbeans.modules.java.Bundle","Templates/Classes/Class.java"),        sampleDir);
+//        jw.setName(NAME_TEST_FILE);
+//        jw.updatePanel(0);
+//        jw.finish();
+
+        mf = MainFrame.getMainFrame();
         //mf.switchToEditing();
         mf.pushMenu("Tools|Options...");
         Options opt = new Options();
-        PropertiesWindow pw = opt.getPropertiesWindow("Editing"+opt.delim+"Beans Property");
-        pw.setSelectedItem("Style of Declared Variable", 0);
+        JamUtilities.waitEventQueueEmpty(1500);                
+
+//        PropertiesWindow pw = opt.getPropertiesWindow("Editing"+opt.delim+"Beans Property");
+//        pw.setSelectedItem("Style of Declared Variable", 0);
+        
+//--------------
+        opt.selectNode("Editing"+opt.delim+"Beans Property");
+        opt.getJamTabbedPane().selectPage("Properties");
+        JelloPropertiesSheet sheet = new JelloPropertiesSheet(opt.getJamTabbedPane().getPage("Properties"));
+        sheet.edit("Style of Declared Variable");
+        sheet.setSelectedItem(0);
+        opt.close();
+//---------------
+        
+        
 //start of the first property
-        Explorer explorer = new Explorer();        
+        explorer = new Explorer();        
         explorer = Explorer.find();
         explorer.switchToFilesystemsTab();
         explorer.pushPopupMenuNoBlock("Add"+"|"+JelloBundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_PROPERTY"), sampleDir
@@ -323,7 +411,15 @@ public class ChangingOfBeanPropertyProperties  extends NbTestCase {
         okCancelHelpDialog.ok();        
 //end of the first property
 //        JamUtilities.waitEventQueueEmpty(3000);                
-        pw.setSelectedItem("Style of Declared Variable", 1);
+
+//        pw.setSelectedItem("Style of Declared Variable", 1);
+//--------------
+        sheet.edit("Style of Declared Variable");
+        sheet.setSelectedItem(1);
+        opt.close();
+//---------------
+
+        
 //start of the second property
         explorer = Explorer.find();
         explorer.switchToFilesystemsTab();
@@ -360,7 +456,7 @@ public class ChangingOfBeanPropertyProperties  extends NbTestCase {
         
         okCancelHelpDialog.ok();        
 //end of the second property
-        pw.close();
+//        pw.close();
         opt.close();             
         
         explorer = Explorer.find();
@@ -418,6 +514,7 @@ public class ChangingOfBeanPropertyProperties  extends NbTestCase {
         Explorer explorer = new Explorer();        
         explorer = Explorer.find();
         explorer.switchToFilesystemsTab();
+        JamUtilities.waitEventQueueEmpty(1500);                
         explorer.pushPopupMenu("Properties", sampleDir+explorer.delim+NAME_TEST_FILE+explorer.delim+"class "+NAME_TEST_FILE
                            +explorer.delim+JelloBundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")
                            +explorer.delim+"myProperty");
