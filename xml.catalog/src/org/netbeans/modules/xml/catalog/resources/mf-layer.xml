@@ -35,10 +35,14 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="xml">
         <folder name="entities">
             <folder name="DTD_XMLCatalog">
-                <file name="EN" url="nbres:/org/netbeans/modules/xml/catalog/impl/XCatalog-0_4.dtd"/>
+                <file name="EN" url="nbres:/org/netbeans/modules/xml/catalog/impl/XCatalog-0_4.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//DTD XMLCatalog//EN"/>
+                </file>
             </folder>
             <folder name="DTD_XCatalog">
-                <file name="EN" url="nbres:/org/netbeans/modules/xml/catalog/impl/XCatalog-0_2.dtd"/>
+                <file name="EN" url="nbres:/org/netbeans/modules/xml/catalog/impl/XCatalog-0_2.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//DTD XCatalog//EN"/>
+                </file>
             </folder>
         </folder>
     </folder>

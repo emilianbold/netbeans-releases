@@ -21,6 +21,7 @@ import org.xml.sax.*;
 
 import org.openide.util.Lookup;
 import org.openide.xml.EntityCatalog;
+import org.openide.filesystems.*;
 
 import org.netbeans.modules.xml.catalog.spi.*;
 import java.io.IOException;
@@ -48,32 +49,39 @@ public class SystemCatalogReader implements EntityResolver, CatalogReader, Seria
      * Get String iterator representing all public IDs registered in catalog.
      */
     public Iterator getPublicIDs() {
-
-        if ( DEBUG ) {
-            Util.debug ("--> SystemCatalogReader.getPublicIDs");
-        }
-
-            // get instance of system resolver that contains the catalog
-            
-            Lookup.Template templ = new Lookup.Template(EntityCatalog.class);            
-            Lookup.Result res = Lookup.getDefault().lookup(templ);
-
-            if ( DEBUG ) {
-                Util.debug ("-*- SystemCatalogReader.getPublicIDs: lookup.result = " + res);
-            }
-
-            HashSet set = new HashSet();
-            boolean found = false;
-
-            Iterator it = res.allInstances().iterator();
-            while (it.hasNext()) {                
-                EntityCatalog next = (EntityCatalog) it.next();
-
-                if ( DEBUG ) {
-                    Util.debug ("-*- SystemCatalogReader.getPublicIDs: next = " + next);
+        
+        HashSet set = new HashSet();
+        boolean found = false;
+        
+        // inspect system/xml/entities
+        
+        FileObject root = Repository.getDefault ().getDefaultFileSystem().findResource("xml/entities");
+        Enumeration en = root.getChildren(true);
+        while (en.hasMoreElements()) {
+            FileObject next = (FileObject) en.nextElement();
+            if (next.isData()) {
+                Object hint = next.getAttribute("hint.originalPublicID");
+                if (hint instanceof String) {
+                    set.add(hint);
+                    found = true;
+                } else {
+                    // we could guess it, BUT it is too dangerous
                 }
+            }
+        }
+                
+        // get instance of system resolver that contains the catalog
 
-        try {
+        Lookup.Template templ = new Lookup.Template(EntityCatalog.class);
+        Lookup.Result res = Lookup.getDefault().lookup(templ);
+
+        Iterator it = res.allInstances().iterator();
+        while (it.hasNext()) {                
+            EntityCatalog next = (EntityCatalog) it.next();
+
+            try {
+                
+                //BACKWARD COMPATABILITY it is explicit knowledge how it worked in NetBeans 3.2
                 Field uriMapF = next.getClass().getDeclaredField("id2uri");  // NOI18N
                 if (uriMapF == null) continue;
 
@@ -84,39 +92,16 @@ public class SystemCatalogReader implements EntityResolver, CatalogReader, Seria
                 if (uris != null) {
                    set.addAll(uris.keySet());               
                 }
-        } catch (NoSuchFieldException ex) {
-            if ( DEBUG ) {
-                Util.debug ("<-! SystemCatalogReader.getPublicIDs: ex = " + ex);
-                ex.printStackTrace();
+            } catch (NoSuchFieldException ex) {
+                // ignore unknown implementation
+            } catch (IllegalAccessException ex) {
+                // ignore unknown implementation
+            } catch (IllegalArgumentException ex) {
+                // ignore unknown implementation
             }
-            return null;
-        } catch (IllegalAccessException ex) {
-            if ( DEBUG ) {
-                Util.debug ("<-! SystemCatalogReader.getPublicIDs: ex = " + ex);
-                ex.printStackTrace();
-            }
-            return null;
-        } catch (IllegalArgumentException ex) {
-            if ( DEBUG ) {
-                Util.debug ("<-! SystemCatalogReader.getPublicIDs: ex = " + ex);
-                ex.printStackTrace();
-            }
-            return null;
         }
-
-            }
-            if ( DEBUG ) {
-                Util.debug ("-*- SystemCatalogReader.getPublicIDs: found = " + found);
-            }
-            if (found = false)
-                return null;
-
-            if ( DEBUG ) {
-                Util.debug ("<-- SystemCatalogReader.getPublicIDs: set = " + set);
-            }
-            return set.iterator();
-            
-            
+        
+        return (found == false) ? null : set.iterator();
     }
     
     

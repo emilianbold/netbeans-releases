@@ -23,6 +23,7 @@ import org.openide.util.actions.*;
 import org.openide.util.*;
 import org.openide.text.*;
 import org.openide.loaders.*;
+import org.openide.*;
 
 import org.netbeans.modules.xml.catalog.lib.*;
 
@@ -62,8 +63,12 @@ public class CatalogEntryNode extends BeanNode {
                 return new ViewCookieImpl(env, cat.getPublicID(), cat.getSystemID());
                 
             } catch (MalformedURLException ex) {
+                ErrorManager emgr = TopManager.getDefault().getErrorManager();
+                emgr.notify(ex);
                 return null;
             } catch (IOException ex) {
+                ErrorManager emgr = TopManager.getDefault().getErrorManager();
+                emgr.notify(ex);                
                 return null;
             }
             
