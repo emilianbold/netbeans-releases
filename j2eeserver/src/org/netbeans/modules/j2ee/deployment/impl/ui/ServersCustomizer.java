@@ -120,7 +120,7 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
         java.awt.GridBagConstraints gridBagConstraints;
 
         jPanel3 = new javax.swing.JPanel();
-        platforms = new PlatformsView ();
+        servers = new PlatformsView ();
         addButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
         cards = new javax.swing.JPanel();
@@ -131,23 +131,25 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
         serverType = new javax.swing.JTextField();
         clientArea = new javax.swing.JPanel();
         messageArea = new javax.swing.JPanel();
+        serversLabel = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
         getAccessibleContext().setAccessibleDescription(null);
-        platforms.setBorder(new javax.swing.border.EtchedBorder());
-        platforms.setPreferredSize(new java.awt.Dimension(220, 400));
+        servers.setBorder(new javax.swing.border.EtchedBorder());
+        servers.setPreferredSize(new java.awt.Dimension(220, 400));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.RELATIVE;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.RELATIVE;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 6, 6);
-        add(platforms, gridBagConstraints);
-        platforms.getAccessibleContext().setAccessibleName(null);
-        platforms.getAccessibleContext().setAccessibleDescription(null);
+        gridBagConstraints.insets = new java.awt.Insets(3, 12, 6, 6);
+        add(servers, gridBagConstraints);
+        servers.getAccessibleContext().setAccessibleName(null);
+        servers.getAccessibleContext().setAccessibleDescription(null);
 
         org.openide.awt.Mnemonics.setLocalizedText(addButton, NbBundle.getMessage(ServersCustomizer.class, "CTL_AddServer"));
         addButton.addActionListener(new java.awt.event.ActionListener() {
@@ -158,9 +160,8 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 6);
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 12, 0);
         add(addButton, gridBagConstraints);
         addButton.getAccessibleContext().setAccessibleDescription(null);
 
@@ -173,9 +174,8 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 12, 6);
         add(removeButton, gridBagConstraints);
         removeButton.getAccessibleContext().setAccessibleDescription(null);
 
@@ -235,14 +235,23 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 12, 12);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 12);
         add(cards, gridBagConstraints);
+
+        serversLabel.setLabelFor(servers);
+        org.openide.awt.Mnemonics.setLocalizedText(serversLabel, org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "CTL_Servers"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        add(serversLabel, gridBagConstraints);
 
     }//GEN-END:initComponents
     
@@ -335,7 +344,7 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
     private void expandServers(ServerInstance servInst) {
         ExplorerManager mgr = this.getExplorerManager();
         Node node = mgr.getRootContext();
-        expandAllNodes(platforms, node, mgr, servInst);
+        expandAllNodes(servers, node, mgr, servInst);
     }
     
     private static void expandAllNodes(BeanTreeView btv, Node node, ExplorerManager mgr, ServerInstance servInst) {
@@ -377,10 +386,11 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel messageArea;
-    private org.openide.explorer.view.BeanTreeView platforms;
     private javax.swing.JButton removeButton;
     private javax.swing.JTextField serverName;
     private javax.swing.JTextField serverType;
+    private org.openide.explorer.view.BeanTreeView servers;
+    private javax.swing.JLabel serversLabel;
     // End of variables declaration//GEN-END:variables
     
     
