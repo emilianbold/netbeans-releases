@@ -41,7 +41,15 @@ public final class PropertyPanelTest extends NbTestCase {
         //property editor for the JDK does not support a custom editor.
         //PropertyPanel will no longer allow itself to be put in custom editor
         //mode if the property does not support a custom editor.
-        org.netbeans.core.NonGui.registerPropertyEditors();
+        String[] syspesp = PropertyEditorManager.getEditorSearchPath();
+        String[] nbpesp = new String[] {
+            "org.netbeans.beaninfo.editors", // NOI18N
+            "org.openide.explorer.propertysheet.editors", // NOI18N
+        };
+        String[] allpesp = new String[syspesp.length + nbpesp.length];
+        System.arraycopy(nbpesp, 0, allpesp, 0, nbpesp.length);
+        System.arraycopy(syspesp, 0, allpesp, nbpesp.length, syspesp.length);
+        PropertyEditorManager.setEditorSearchPath(allpesp);
     }
     
     
