@@ -76,7 +76,8 @@ public class DimensionCustomEditor extends javax.swing.JPanel implements NbCusto
     insidePanel.setLayout (new java.awt.GridBagLayout ());
     java.awt.GridBagConstraints gridBagConstraints1;
     insidePanel.setBorder (new javax.swing.border.CompoundBorder(
-  new javax.swing.border.TitledBorder("Dimension"), 
+  new javax.swing.border.TitledBorder(
+  new javax.swing.border.EtchedBorder(), "Dimension"), 
   new javax.swing.border.EmptyBorder(new java.awt.Insets(5, 5, 5, 5))));
 
       widthLabel = new javax.swing.JLabel ();
@@ -87,6 +88,12 @@ public class DimensionCustomEditor extends javax.swing.JPanel implements NbCusto
     insidePanel.add (widthLabel, gridBagConstraints1);
 
       widthField = new javax.swing.JTextField ();
+      widthField.addActionListener (new java.awt.event.ActionListener () {
+          public void actionPerformed (java.awt.event.ActionEvent evt) {
+            updateInsets (evt);
+          }
+        }
+      );
 
     gridBagConstraints1 = new java.awt.GridBagConstraints ();
     gridBagConstraints1.gridwidth = 0;
@@ -103,6 +110,12 @@ public class DimensionCustomEditor extends javax.swing.JPanel implements NbCusto
     insidePanel.add (heightLabel, gridBagConstraints1);
 
       heightField = new javax.swing.JTextField ();
+      heightField.addActionListener (new java.awt.event.ActionListener () {
+          public void actionPerformed (java.awt.event.ActionEvent evt) {
+            updateInsets (evt);
+          }
+        }
+      );
 
     gridBagConstraints1 = new java.awt.GridBagConstraints ();
     gridBagConstraints1.gridwidth = 0;
@@ -143,6 +156,7 @@ public class DimensionCustomEditor extends javax.swing.JPanel implements NbCusto
 
 /*
  * Log
+ *  4    Gandalf   1.3         6/2/99   Ian Formanek    Fixed event handlers
  *  3    Gandalf   1.2         5/31/99  Ian Formanek    Updated for X2 form 
  *       format
  *  2    Gandalf   1.1         3/4/99   Jan Jancura     bundle moved

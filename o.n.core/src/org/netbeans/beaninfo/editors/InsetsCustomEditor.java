@@ -89,6 +89,12 @@ public class InsetsCustomEditor extends javax.swing.JPanel implements NbCustomPr
     jPanel2.add (topLabel, gridBagConstraints1);
 
       topField = new javax.swing.JTextField ();
+      topField.addActionListener (new java.awt.event.ActionListener () {
+          public void actionPerformed (java.awt.event.ActionEvent evt) {
+            updateInsets (evt);
+          }
+        }
+      );
 
     gridBagConstraints1 = new java.awt.GridBagConstraints ();
     gridBagConstraints1.gridwidth = 0;
@@ -105,6 +111,12 @@ public class InsetsCustomEditor extends javax.swing.JPanel implements NbCustomPr
     jPanel2.add (leftLabel, gridBagConstraints1);
 
       leftField = new javax.swing.JTextField ();
+      leftField.addActionListener (new java.awt.event.ActionListener () {
+          public void actionPerformed (java.awt.event.ActionEvent evt) {
+            updateInsets (evt);
+          }
+        }
+      );
 
     gridBagConstraints1 = new java.awt.GridBagConstraints ();
     gridBagConstraints1.gridwidth = 0;
@@ -121,6 +133,12 @@ public class InsetsCustomEditor extends javax.swing.JPanel implements NbCustomPr
     jPanel2.add (bottomLabel, gridBagConstraints1);
 
       bottomField = new javax.swing.JTextField ();
+      bottomField.addActionListener (new java.awt.event.ActionListener () {
+          public void actionPerformed (java.awt.event.ActionEvent evt) {
+            updateInsets (evt);
+          }
+        }
+      );
 
     gridBagConstraints1 = new java.awt.GridBagConstraints ();
     gridBagConstraints1.gridwidth = 0;
@@ -137,6 +155,12 @@ public class InsetsCustomEditor extends javax.swing.JPanel implements NbCustomPr
     jPanel2.add (rightLabel, gridBagConstraints1);
 
       rightField = new javax.swing.JTextField ();
+      rightField.addActionListener (new java.awt.event.ActionListener () {
+          public void actionPerformed (java.awt.event.ActionEvent evt) {
+            updateInsets (evt);
+          }
+        }
+      );
 
     gridBagConstraints1 = new java.awt.GridBagConstraints ();
     gridBagConstraints1.gridwidth = 0;
@@ -183,6 +207,7 @@ public class InsetsCustomEditor extends javax.swing.JPanel implements NbCustomPr
 
 /*
  * Log
+ *  4    Gandalf   1.3         6/2/99   Ian Formanek    Fixed event handlers
  *  3    Gandalf   1.2         5/31/99  Ian Formanek    Updated to X2 format
  *  2    Gandalf   1.1         3/4/99   Jan Jancura     bundle moved
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    

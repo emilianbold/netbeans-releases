@@ -84,6 +84,12 @@ public class PointCustomEditor extends javax.swing.JPanel implements NbCustomPro
     insidePanel.add (xLabel, gridBagConstraints1);
 
       xField = new javax.swing.JTextField ();
+      xField.addActionListener (new java.awt.event.ActionListener () {
+          public void actionPerformed (java.awt.event.ActionEvent evt) {
+            updateInsets (evt);
+          }
+        }
+      );
 
     gridBagConstraints1 = new java.awt.GridBagConstraints ();
     gridBagConstraints1.gridwidth = 0;
@@ -100,6 +106,12 @@ public class PointCustomEditor extends javax.swing.JPanel implements NbCustomPro
     insidePanel.add (yLabel, gridBagConstraints1);
 
       yField = new javax.swing.JTextField ();
+      yField.addActionListener (new java.awt.event.ActionListener () {
+          public void actionPerformed (java.awt.event.ActionEvent evt) {
+            updateInsets (evt);
+          }
+        }
+      );
 
     gridBagConstraints1 = new java.awt.GridBagConstraints ();
     gridBagConstraints1.gridwidth = 0;
@@ -140,6 +152,7 @@ public class PointCustomEditor extends javax.swing.JPanel implements NbCustomPro
 
 /*
  * Log
+ *  4    Gandalf   1.3         6/2/99   Ian Formanek    Fixed event handlers
  *  3    Gandalf   1.2         5/31/99  Ian Formanek    Updated to X2 format
  *  2    Gandalf   1.1         3/4/99   Jan Jancura     bundle moved
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
