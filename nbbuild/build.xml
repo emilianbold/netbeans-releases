@@ -1244,13 +1244,13 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
 
   <target name="all-ant/debugger" depends="init,all-ant,all-openide,all-openide/loaders,all-openide/io,all-openide/execution,all-debuggercore,all-debuggercore/api,all-debuggercore,all-debuggercore/viewmodel">
-    <echo message="Building module all-ant/debugger..."/>
+    <echo message="Building module ant/debugger..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
     </antcall>
-    <ant dir="../all-ant/debugger" target="netbeans"/>
+    <ant dir="../ant/debugger" target="netbeans"/>
   </target>
 
   <target name="all-openidex" depends="init">
