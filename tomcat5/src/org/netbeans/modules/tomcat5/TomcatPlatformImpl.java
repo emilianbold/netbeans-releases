@@ -46,7 +46,7 @@ public class TomcatPlatformImpl extends J2eePlatformImpl {
     private static final String SERVLET_API_DOC = "webapps/tomcat-docs/servletapi"; // NOI18N
     private static final String J2EE_API_DOC    = "docs/j2eeri-1_4-doc-api.zip";    // NOI18N
     
-    private static final String ICON = "org/netbeans/modules/tomcat5/resources/tomcat5instance.gif"; // NOI18N
+    private static final String ICON = "org/netbeans/modules/tomcat5/resources/tomcat5instance.png"; // NOI18N
     
     private File catalinaHome;
     private File catalinaBase;

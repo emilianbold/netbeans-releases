@@ -14,6 +14,7 @@
 package org.netbeans.modules.tomcat5.nodes;
 
 import java.awt.Component;
+import java.awt.Image;
 import java.beans.PropertyEditor;
 import java.io.File;
 import java.util.LinkedList;
@@ -48,7 +49,7 @@ import org.openide.DialogDisplayer;
 
 public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
     
-    private static String  ICON_BASE = "org/netbeans/modules/tomcat5/resources/tomcat5instance"; // NOI18N
+    private static String  ICON_BASE = "org/netbeans/modules/tomcat5/resources/tomcat5instance.png"; // NOI18N
     
     protected static final String PROPERTY_TOMCAT_HOME = "tomcat_home"; //NOI18N
     protected static final String PROPERTY_TOMCAT_BASE = "tomcat_base"; //NOI18N
@@ -81,12 +82,10 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
         super(children);
         //this.getChildren().add(new Node[]{new WebModuleNode(new Children.Map())});
         lkp = lookup;
-        setIconBase(ICON_BASE);
         getCookieSet().add(this);
     }
     
     private int iPort = 0;
-    
     
     public String getDisplayName(){
         Integer port = getServerPort();
@@ -96,6 +95,15 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
         }
         return NbBundle.getMessage(TomcatInstanceNode.class, "LBL_TomcatInstanceNode",  // NOI18N
             new Object []{portStr});
+    }
+    
+    
+    public Image getIcon(int type) {
+        return Utilities.loadImage(ICON_BASE);
+    }
+    
+    public Image getOpenedIcon(int type) {
+        return getIcon(type);
     }
     
     public boolean hasCustomizer() {

@@ -51,7 +51,7 @@ public final class J2eePlatform {
     /** Platform roots property */
     public static final String PROP_PLATFORM_ROOTS = "platformRoots";   //NOI18N
     
-    private static final String DEFAULT_ICON = "org/netbeans/modules/j2ee/deployment/impl/ui/resources/ServerRegistry.gif"; // NOI18N
+    private static final String DEFAULT_ICON = "org/netbeans/modules/j2ee/deployment/impl/ui/resources/Servers.png"; // NOI18N
     
     private J2eePlatformImpl impl;
     private File[] classpathCache;

@@ -15,7 +15,7 @@
   <folder name="Services">
     <folder name="J2EEServers">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.deployment.impl.Bundle"/>
-        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/deployment/impl/ui/resources/ServerRegistry.gif"/>
+        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/deployment/impl/ui/resources/Servers.png"/>
     </folder>
   </folder>
 

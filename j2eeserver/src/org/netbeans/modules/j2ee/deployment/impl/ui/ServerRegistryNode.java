@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.j2ee.deployment.impl.ui;
 
+import java.awt.Image;
 import org.netbeans.modules.j2ee.deployment.plugins.api.StartServer;
 import org.openide.nodes.*;
 import org.openide.filesystems.*;
@@ -30,6 +31,7 @@ import org.netbeans.modules.j2ee.deployment.impl.ui.actions.*;
 import org.netbeans.modules.j2ee.deployment.impl.*;
 import java.util.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
+import org.openide.util.Utilities;
 
 /**
  * The server registry node is a node representing the registry in global options.
@@ -40,7 +42,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 public class ServerRegistryNode extends AbstractNode
 implements ServerRegistry.PluginListener, InstanceListener {
     
-    static final String REGISTRY_ICON_BASE = "org/netbeans/modules/j2ee/deployment/impl/ui/resources/ServerRegistry";//NOI18N
+    static final String SERVERS_ICON = "org/netbeans/modules/j2ee/deployment/impl/ui/resources/Servers.png";//NOI18N
     
     private transient Map serverNodes = new HashMap();
     private transient HelpCtx helpCtx;
@@ -52,7 +54,6 @@ implements ServerRegistry.PluginListener, InstanceListener {
         setName("");//NOI18N
         String msg = NbBundle.getBundle(ServerRegistryNode.class).getString("SERVER_REGISTRY_NODE");//NOI18N
         setDisplayName(msg);
-        setIconBase(REGISTRY_ICON_BASE);
         String shortDescription = NbBundle.getBundle(ServerRegistryNode.class).getString("SERVER_REGISTRY_SHORT_DESCRIPTION");//NOI18N
         setShortDescription(shortDescription);
     }
@@ -96,6 +97,14 @@ implements ServerRegistry.PluginListener, InstanceListener {
         if(helpCtx == null)
             helpCtx = new HelpCtx(NbBundle.getBundle(ServerRegistryNode.class).getString("nodes_server_registry_node_html"));//NOI18N
         return helpCtx;
+    }
+    
+    public Image getIcon(int type) {
+        return Utilities.loadImage(SERVERS_ICON);
+    }
+    
+    public Image getOpenedIcon(int type) {
+        return getIcon(type);
     }
         
     private static class ServerChildren extends Children.Keys {
