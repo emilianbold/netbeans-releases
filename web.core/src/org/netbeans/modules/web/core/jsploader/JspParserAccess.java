@@ -52,7 +52,9 @@ public class JspParserAccess {
         
         
         public FileObject getDocumentBase() {
-            return webModule.getDocumentBase ();
+            if (webModule != null)
+                return webModule.getDocumentBase ();
+            return null;
         }
         
         /** Returns InputStream for the file open in editor or null
