@@ -52,10 +52,10 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="jars" depends="compile">
-    <mkdir dir="netbeans/modules"/>
+    <mkdir dir="netbeans/modules/eager"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <locjar jarfile="netbeans/modules/jsp-parser.jar"
+    <locjar jarfile="netbeans/modules/eager/jsp-parser.jar"
             manifest="manifest-subst.mf"
             basedir="src"
 	    excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt"
@@ -80,7 +80,7 @@ Microsystems, Inc. All Rights Reserved.
     <delete dir="Info"/>
     <makenbm file="web-jspparser.nbm"
              topdir="."
-             module="netbeans/modules/jsp-parser.jar"
+             module="netbeans/modules/eager/jsp-parser.jar"
 	     homepage="http://web.${homepage.base}/"
 	     distribution="http://${dist.base}/web-jspparser.nbm">
       <license file="${license.file}"/>
@@ -100,10 +100,22 @@ Microsystems, Inc. All Rights Reserved.
     <delete dir="netbeans"/>
   </target>
 
-  <!-- This target will only work *inside* the IDE! -->
-  <target depends="jars" description="Test the module inside the running IDE." name= "test">
-    <nbinstaller action="reinstall" module="netbeans/modules/jsp-parser.jar"/>
+  <target name="test-build" depends="compile">
+    <!-- need to package also extbins to reload it correctly -->
+    <mkdir dir="reload"/>
+    <filter token="BUILD_NUMBER_SUBST" value="testing"/>
+    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
+    <jar jarfile="reload/jsp-parser.jar" manifest="manifest-subst.mf" compress="false">
+      <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+      <zipfileset src="${binroot}/web/jspparser/release/modules/ext/jasper-compiler.jar" excludes="META-INF/MANIFEST.MF"/>
+      <zipfileset src="${binroot}/web/jspparser/release/modules/ext/jasper-runtime.jar" excludes="META-INF/MANIFEST.MF"/>
+    </jar>
   </target>
+  <!-- This target will only work *inside* the IDE! -->
+  <target name="test" depends="test-build" description="Test module inside running IDE.">
+    <nbinstaller module="reload/jsp-parser.jar" action="reinstall"/>
+  </target>
+
 
 </project>
 
