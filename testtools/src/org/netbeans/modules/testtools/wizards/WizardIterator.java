@@ -44,7 +44,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.LocalFileSystem;
 
-import org.netbeans.modules.group.GroupShadow;
 import org.netbeans.modules.java.JavaDataObject;
 import org.openide.util.NbBundle;
 
@@ -283,7 +282,7 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
                 set.typeName=set.typeTemplate.getPrimaryFile().getName();
             throw new IOException(NbBundle.getMessage(WizardIterator.class, "ERR_CreateTestType", new Object[] {set.typeName, set.typeTarget.getPrimaryFile().getPackageName('/'), ioe.getMessage()})); // NOI18N
         }
-        Object o[]=((GroupShadow)dob).getLinks();
+        Object o[]=GroupShadowTool.getLinks(dob);
         for (int i=0; i<o.length; i++) 
             if (o[i] instanceof DataObject) {
                 if (((DataObject)o[i]).getName().startsWith("build-")) // NOI18N
@@ -361,7 +360,7 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         DataObject o;
         while (enum.hasMoreElements()) try {
             o=DataObject.find((FileObject)enum.nextElement());
-            if (o instanceof GroupShadow)
+            if (GroupShadowTool.instanceOf(o))
                 list.add(o);
         } catch (Exception e) {}
         return (DataObject[])list.toArray(new DataObject[list.size()]);

@@ -42,7 +42,6 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${nbroot}/java/netbeans/modules/java.jar" />
         <pathelement location="${nbroot}/java/srcmodel/netbeans/modules/autoload/java-src-model.jar" />
         <pathelement location="${nbroot}/ant/netbeans/modules/ant.jar" />
-        <pathelement location="${nbroot}/utilities/group/netbeans/modules/group.jar" />
         <pathelement location="${nbroot}/jemmy/jemmy.jar" />
         <pathelement location="${nbroot}/jellytools/jelly2-nb.jar" />
         <pathelement location="${nbroot}/jemmysupport/netbeans/modules/jemmysupport.jar" />

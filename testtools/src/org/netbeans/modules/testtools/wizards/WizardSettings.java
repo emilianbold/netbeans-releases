@@ -27,7 +27,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.filesystems.FileObject;
 
-import org.netbeans.modules.group.GroupShadow;
 import org.openide.util.NbBundle;
 
 /**
@@ -114,8 +113,7 @@ class WizardSettings extends Object {
     }
 
     void readTypeSettings() {
-        GroupShadow template=(GroupShadow)typeTemplate;
-        Object o[]=template.getLinks();
+        Object o[]=GroupShadowTool.getLinks(typeTemplate);
         XMLDocument doc=null;
         for (int i=0; (i<o.length)&&(doc==null); i++) 
             if ((o[i] instanceof DataObject) && (((DataObject)o[i]).getName().indexOf("build-")>=0)) // NOI18N
