@@ -57,6 +57,9 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
     }
 
     public void updateSettingsMap (Class kitClass, Map settingsMap) {
+        // editor breaks the contact, handle it somehow
+        if (kitClass == null) return;
+
         if (kitClass == BaseKit.class) {
 
             new XMLTokenColoringInitializer().updateSettingsMap(kitClass, settingsMap);
