@@ -179,6 +179,27 @@ public class NbTestConfig extends Task {
             if (attr.getName().equals("antfile")) { // <start antfile="???">
                 ss.antfile = ProjectHelper.replaceProperties(project, attr.getValue(), project.getProperties());
             }
+            if (attr.getName().equals("onBackground")) { // <start onBackground="???">
+                String ob = ProjectHelper.replaceProperties(project, attr.getValue(), project.getProperties());
+                if (ob.equalsIgnoreCase("true") || ob.equalsIgnoreCase("yes") || ob.equals("1"))
+                    ss.onBackground = true;
+                else 
+                    if (ob.equalsIgnoreCase("false") || ob.equalsIgnoreCase("no") || ob.equals("0"))
+                        ss.onBackground = false;
+                    else
+                        throw new BuildException ("Unknown value of attribute onBackground: "+ob);
+            }
+            if (attr.getName().equals("delay")) { // <start delay="???">
+                String d = ProjectHelper.replaceProperties(project, attr.getValue(), project.getProperties());
+                int delay = 0;
+                try { 
+                    delay = Integer.parseInt(d); 
+                    ss.delay = delay;
+                }
+                catch (NumberFormatException nfe) {
+                    throw new BuildException ("Attribute delay has bad number",nfe);
+                }
+            }
         }
         return ss;
     }

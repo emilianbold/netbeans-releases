@@ -144,23 +144,35 @@ public class NbExecutor extends Task {
     }
     
     private void executeStart(MConfig.Setup setup) throws BuildException {
-        executeSetup(setup.getStartDir(), setup.getStartAntfile(), setup.getStartTarget());
+        executeSetup(setup.getStartDir(), setup.getStartAntfile(), setup.getStartTarget(), setup.getStartOnBackground(), setup.getStartDelay());
     }
 
     private void executeStop(MConfig.Setup setup) throws BuildException {
-        executeSetup(setup.getStopDir(), setup.getStopAntfile(), setup.getStopTarget());
+        executeSetup(setup.getStopDir(), setup.getStopAntfile(), setup.getStopTarget(), setup.getStopOnBackground(), setup.getStopDelay());
     }
     
-    private void executeSetup(File dir, String antfile, String targetname) throws BuildException {
+    private void executeSetup(File dir, String antfile, String targetname, boolean onBackground, int delay) throws BuildException {
         if (antfile == null && targetname == null) return;
-        Ant ant = (Ant) project.createTask("ant");
+        final Ant ant = (Ant) project.createTask("ant");
         ant.setOwningTarget(target);
         ant.setLocation(location);
         ant.init();
         ant.setDir(dir);
         ant.setAntfile(antfile);
         ant.setTarget(targetname);
-        ant.execute();
+        if (onBackground) {
+           Thread thread = new Thread() {
+               public void run() {
+                   ant.execute();
+               }
+           };
+           thread.start();
+           if (delay != 0) {
+               try { Thread.currentThread().sleep(delay); }
+               catch (InterruptedException e) { throw new BuildException(e);}
+           }
+        }
+        else ant.execute();
     }
         
 }

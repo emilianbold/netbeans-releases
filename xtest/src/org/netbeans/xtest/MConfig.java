@@ -138,6 +138,8 @@ public class MConfig {
             public File dir= null;
             public String antfile = null;
             public String target = null;
+            public boolean onBackground = false;
+            public int delay = 0;
         }
 
         private StartStop start = null, stop = null;
@@ -172,6 +174,22 @@ public class MConfig {
         
         public String getStopTarget() {
             return stop==null?null:stop.target;
+        }
+        
+        public boolean getStartOnBackground() {
+            return start==null?false:start.onBackground;
+        }
+        
+        public boolean getStopOnBackground() {
+            return stop==null?false:stop.onBackground;
+        }
+        
+        public int getStartDelay() {
+            return start==null?0:start.delay;
+        }
+        
+        public int getStopDelay() {
+            return stop==null?0:stop.delay;
         }
     }
     
