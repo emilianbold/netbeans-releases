@@ -19,8 +19,8 @@
 package org.netbeans.modules.j2ee.dd.impl.common;
 
 import java.lang.reflect.*;
-import java.util.HashMap;
-import org.netbeans.modules.j2ee.dd.api.common.ServiceRef;
+import java.util.Set;
+import java.util.HashSet;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.schema2beans.BaseBean;
@@ -54,14 +54,22 @@ public class CommonDDAccess {
     public static final String EJB_API = "org.netbeans.modules.j2ee.dd.api.ejb."; //NOI18N
     public static final String EJB_PACKAGE_PREFIX = "org.netbeans.modules.j2ee.dd.impl.ejb.model_"; //NOI18N
     
-    private static HashMap COMMON_BEANS = new HashMap ();
+    private static Set COMMON_BEANS = new HashSet ();
     static {
-        COMMON_BEANS.put("Icon"," Icon");
-        COMMON_BEANS.put("EjbRef", "EjbRef");
-        COMMON_BEANS.put("EjbLocalRef", "EjbLocalRef");
-        COMMON_BEANS.put("ResourceRef", "ResourceRef");
-        COMMON_BEANS.put("SecurityRole", "SecurityRole");
-        COMMON_BEANS.put("SecurityRoleRef", "SecurityRoleRef");
+        COMMON_BEANS.add("Icon");
+        COMMON_BEANS.add("InitParam");
+        COMMON_BEANS.add("EnvEntry");
+        COMMON_BEANS.add("EjbRef");
+        COMMON_BEANS.add("EjbLocalRef");
+        COMMON_BEANS.add("ResourceRef");
+        COMMON_BEANS.add("ResourceEnvRef");
+        COMMON_BEANS.add("ServiceRef");
+        COMMON_BEANS.add("Handler");
+        COMMON_BEANS.add("PortComponentRef");
+        COMMON_BEANS.add("MessageDestination");
+        COMMON_BEANS.add("MessageDestinationRef");
+        COMMON_BEANS.add("SecurityRole");
+        COMMON_BEANS.add("SecurityRoleRef");
     }
     
     /**
@@ -130,7 +138,6 @@ public class CommonDDAccess {
     private static String getImplementationBeanName (CommonDDBean parent, String beanName, String pkgName) {
 	if (pkgName.equals(WEB_PACKAGE_PREFIX + SERVLET_2_3)) {
             if ("InitParam".equals(beanName) && parent instanceof WebApp) return "ContextParam"; //NOI18N
-            else if ("Handler".equals(beanName) && parent instanceof ServiceRef) return "ServiceRefHandler"; //NOI18N
             else return beanName;
         } else if (beanName.equals("Session") || beanName.equals("Entity") || beanName.equals("MessageDriven")) { //NOI18N
             return beanName + "Bean"; //NOI18N
@@ -139,7 +146,7 @@ public class CommonDDAccess {
     }
     
     private static String getAPIPrefix(String beanName, String pkgName){
-        if (COMMON_BEANS.containsKey(beanName))
+        if (COMMON_BEANS.contains(beanName))
             return COMMON_API;
         if (pkgName.startsWith(EJB_PACKAGE_PREFIX))
             return EJB_API;
@@ -198,22 +205,7 @@ public class CommonDDAccess {
 		    e+ ": " +e.getMessage()));	
 	}
     }
-    
-   
-    /**
-     * Handle special cases of version differences
-     */
-    private static String getNameForMethod (CommonDDBean parent, String beanName, String pkgName) {
 
-	if (pkgName.equals(WEB_PACKAGE_PREFIX + SERVLET_2_3)) {
-            if ("InitParam".equals(beanName) && parent instanceof WebApp) return "ContextParam"; //NOI18N
-            else if ("Handler".equals(beanName) && parent instanceof ServiceRef) return "ServiceRefHandler"; //NOI18N
-            else return beanName;
-	} else {
-            return beanName;
-	}
-    }
-    
     /**
      * Handle special cases of version differences
      */

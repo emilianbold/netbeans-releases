@@ -417,7 +417,7 @@
 	<meta-element>
 		<dtd-name>param-valueType</dtd-name>
 		<namespace>http://java.sun.com/xml/ns/j2ee</namespace>
-		<bean-name>ParamValue</bean-name>
+		<bean-name>InitParam</bean-name>
 		<implements>org.netbeans.modules.j2ee.dd.api.common.InitParam</implements>
 		<extends>org.netbeans.modules.j2ee.dd.impl.common.DescriptionBeanMultiple</extends>
 	</meta-element>

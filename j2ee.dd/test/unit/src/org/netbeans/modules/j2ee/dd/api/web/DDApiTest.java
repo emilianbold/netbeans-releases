@@ -14,6 +14,7 @@
 package org.netbeans.modules.j2ee.dd.api.web;
 
 import org.netbeans.modules.j2ee.dd.api.web.*;
+import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException;
 import java.io.*;
