@@ -18,8 +18,8 @@ Microsystems, Inc. All Rights Reserved.
     <!-- jemmy and jellytools jars are on classpath for both. -->
     <import file="../../../nbbuild/templates/xtest-qa-functional.xml"/>
     
-	<!-- Custom compiler -->
-	<target name="qa-functional-compiler" depends="init,init-cp">
+    <!-- Custom compiler -->
+    <target name="qa-functional-compiler" depends="init,init-cp">
         <buildTests srcdir="qa-functional/src" compileexcludes="**/data/**">
             <classpath>
 		<path refid="test.qa-functional.compile.cp"/>
