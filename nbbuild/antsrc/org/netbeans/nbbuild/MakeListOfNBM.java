@@ -99,7 +99,7 @@ public class MakeListOfNBM extends Task {
 			inFileStream.close();
                         crc.update( array );
                         String abs = inFile.getAbsolutePath();
-                        String prefix = ds.getBasedir().getAbsolutePath() + "/netbeans/";
+                        String prefix = ds.getBasedir().getAbsolutePath() + File.separatorChar + "netbeans" + File.separatorChar;
                         if (! abs.startsWith(prefix)) throw new IllegalStateException(abs);
                         version.addFileWithCrc(abs.substring(prefix.length()), Long.toString( crc.getValue() ) );
 //                        log( "File : " + inFile.getAbsolutePath().substring((ds.getBasedir().getAbsolutePath() + "/netbeans/").length() ) + " has CRC " + crc.getValue() );
