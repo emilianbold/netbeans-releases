@@ -1680,7 +1680,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../web/webapi" target="netbeans" />
   </target>
-  <target name="all-web/project" depends="init,all-web/webapi,all-web/servletapi24,all-web/jstl11,all-java/api,all-java/platform,all-java/project,all-ant/project,all-projects/projectapi,all-projects/libraries,all-projects/projectuiapi,all-schema2beans/rt">
+  <target name="all-web/project" depends="init,all-web/webapi,all-web/servletapi24,all-web/jstl11,all-java/api,all-java/platform,all-java/project,all-ant/project,all-projects/projectapi,all-projects/libraries,all-projects/projectuiapi,all-schema2beans/rt,   all-j2ee/ddapi, all-j2ee/ejbapi, all-j2ee/utilities, all-websvc/websvcapi, all-websvc/websvcddapi">
     <echo message="Building module web/project..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
@@ -2287,6 +2287,149 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../i18n/form" target="netbeans"/>
   </target>
+
+
+
+
+  <target name="all-db/model" depends="init , all-db">
+    <echo message="Building module all-db/model.."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../db/model" target="netbeans"/>
+  </target>
+  
+  <target name="all-j2ee/ddapi" depends="init , all-web/ddapi, all-j2ee/utilities">
+    <echo message="Building module j2ee/ddapi.."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../j2ee/ddapi" target="netbeans"/>
+  </target>
+
+  <target name="all-j2ee/ejbapi" depends="init,  all-web/ddapi, all-j2ee/utilities">
+    <echo message="Building module j2ee/ejbapi.."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../j2ee/ejbapi" target="netbeans"/>
+
+  </target>  <target name="all-j2ee/ddloaders" depends="init">
+    <echo message="Building module j2ee/ddloaders.."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../j2ee/ddloaders" target="netbeans"/>
+  </target>
+
+  <target name="all-j2ee/earproject" depends="init , all-j2ee/ejbapi">
+    <echo message="Building module j2ee/earproject.."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../j2ee/earproject" target="netbeans"/>
+  </target>
+  <target name="all-j2ee/utilities" depends="init">
+    <echo message="Building module j2ee/utilities.."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../j2ee/utilities" target="netbeans"/>
+  </target>
+  <target name="all-j2ee/platform" depends="init">
+    <echo message="Building module j2ee/platform.."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../j2ee/platform" target="netbeans"/>
+  </target>
+
+  <target name="all-j2ee/ejbjarproject" depends="init, all-j2ee/ejbapi, all-websvc/websvcapi">
+    <echo message="Building module j2ee/ejbjarproject.."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../j2ee/ejbjarproject" target="netbeans"/>
+  </target>
+
+  <target name="all-j2ee/sunappsrv8" depends="init">
+    <echo message="Building module j2ee/sunappsrv8.."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../j2ee/sunappsrv8" target="netbeans"/>
+  </target>
+
+
+  <target name="all-websvc/core" depends="init">
+    <echo message="Building module websvc/core.."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../websvc/core" target="netbeans"/>
+  </target>
+
+  <target name="all-websvc/dev" depends="init">
+    <echo message="Building module websvc/dev.."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../websvc/dev" target="netbeans"/>
+  </target>
+
+  <target name="all-websvc/websvcapi" depends="init , all-websvc/websvcddapi">
+    <echo message="Building module websvc/websvcapi.."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../websvc/websvcapi" target="netbeans"/>
+  </target>
+
+  <target name="all-websvc/registry" depends="init, all-web/ddapi">
+    <echo message="Building module websvc/registry.."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../websvc/registry" target="netbeans"/>
+  </target>
+
+  <target name="all-websvc/websvcddapi" depends="init, all-web/ddapi">
+    <echo message="Building module websvc/websvcddapi.."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../websvc/websvcddapi" target="netbeans"/>
+  </target>
+
+
 
   <!-- target for branding of NetBeans IDE -->
   <target name="all-ide/branding" depends="init">
