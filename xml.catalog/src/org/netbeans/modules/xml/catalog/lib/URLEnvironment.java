@@ -17,6 +17,8 @@ import java.net.*;
 import java.util.*;
 
 import org.openide.text.*;
+import org.openide.ErrorManager;
+import org.openide.TopManager;
 
 /**
  * Defines numb read-only URL environment but finding CloneableOpenSupport (outerclass).
@@ -81,7 +83,15 @@ public abstract class URLEnvironment implements CloneableEditorSupport.Env {
      * Always return fresh stream.
      */
     public java.io.InputStream inputStream() throws java.io.IOException {
-        return peer.openStream();
+        try {
+            return peer.openStream();
+        } catch (IOException ex) {
+            // #21556
+            // annotate exception as USER error, he provided wrong URL
+            ErrorManager err = TopManager.getDefault().getErrorManager();
+            err.annotate(ex, ErrorManager.USER, null, null, null, null);
+            throw ex;
+        }
     }
     
     public void addVetoableChangeListener(java.beans.VetoableChangeListener vetoableChangeListener) {
