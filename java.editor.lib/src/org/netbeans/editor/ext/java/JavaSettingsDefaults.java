@@ -196,7 +196,7 @@ public class JavaSettingsDefaults extends ExtSettingsDefaults {
         Font italicFont = SettingsDefaults.defaultFont.deriveFont(Font.ITALIC);
         Settings.Evaluator boldSubst = new SettingsUtil.FontStylePrintColoringEvaluator(Font.BOLD);
         Settings.Evaluator italicSubst = new SettingsUtil.FontStylePrintColoringEvaluator(Font.ITALIC);
-        Settings.Evaluator lightGraySubst = new SettingsUtil.ForeColorPrintColoringEvaluator(Color.lightGray);
+        Settings.Evaluator lightGraySubst = new SettingsUtil.ForeColorPrintColoringEvaluator(new Color(100, 100, 100));
 
         Coloring commentColoring = new Coloring(null, new Color(115, 115, 115), null);
 
