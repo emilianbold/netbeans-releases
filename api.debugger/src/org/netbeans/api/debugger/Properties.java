@@ -13,7 +13,6 @@
 
 package org.netbeans.api.debugger;
 
-import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,15 +26,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem;
 import org.openide.util.RequestProcessor;
 
 
@@ -254,7 +250,7 @@ public abstract class Properties {
      * @param defaultValue a default value to be used if property is not set
      * @return a current value of property
      */
-    public abstract Collection getCollection (String propertyName, Collection collection);
+    public abstract Collection getCollection (String propertyName, Collection defaultValue);
     
     /**
      * Sets a new value of property with given propertyName.
@@ -271,7 +267,7 @@ public abstract class Properties {
      * @param defaultValue a default value to be used if property is not set
      * @return a current value of property
      */
-    public abstract Map getMap (String propertyName, Map map);
+    public abstract Map getMap (String propertyName, Map defaultValue);
     
     /**
      * Sets a new value of property with given propertyName.
