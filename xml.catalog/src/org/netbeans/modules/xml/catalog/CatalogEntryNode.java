@@ -93,6 +93,10 @@ final class CatalogEntryNode extends BeanNode {
     }
 
     
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(CatalogEntryNode.class);
+    }
+    
     /**
      * OpenSupport that is able to open an input stream.
      * Encoding, coloring, ..., let editor kit takes care

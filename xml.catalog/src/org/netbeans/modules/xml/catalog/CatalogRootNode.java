@@ -90,6 +90,7 @@ public final class CatalogRootNode extends AbstractNode {
             Object rpanel = new CatalogMounterPanel(model);
             DialogDescriptor dd = new DialogDescriptor(rpanel,
                                   Util.getString ("PROP_Mount_Catalog"), false, this); // NOI18N
+            dd.setHelpCtx(new HelpCtx(CatalogMounterPanel.class));
             myDialog = TopManager.getDefault().createDialog(dd);
             myDialog.show();
         }
