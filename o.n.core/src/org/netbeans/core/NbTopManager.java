@@ -476,6 +476,8 @@ public abstract class NbTopManager {
         // save all open files
         try {
             if ( System.getProperty ("netbeans.close") != null || ExitDialog.showDialog() ) {
+     
+                org.netbeans.CLIHandler.stopServer ();
                 
                 final WindowSystem windowSystem = (WindowSystem)Lookup.getDefault().lookup(WindowSystem.class);
                 

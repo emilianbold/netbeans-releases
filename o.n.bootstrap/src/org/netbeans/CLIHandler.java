@@ -65,6 +65,11 @@ public abstract class CLIHandler extends Object {
      * Used during later initialization or while NetBeans is up and running.
      */
     public static final int WHEN_INIT = 2;
+    
+    /** reference to our server.
+     */
+    private static Server server;
+    
     /** Testing output of the threads.
      */
     private static StringBuffer OUTPUT;
@@ -358,6 +363,15 @@ public abstract class CLIHandler extends Object {
         return doLater == null;
     }
     
+    /** Stops the server.
+     */
+    public static synchronized void stopServer () {
+        Server s = server;
+        if (s != null) {
+            s.stopServer ();
+        }
+    }
+    
     /** Registers debugging output for tests.
      */
     static void registerDebug (StringBuffer sb) {
@@ -464,7 +478,7 @@ public abstract class CLIHandler extends Object {
                     }
                 }
                 
-                Server server = new Server(arr, block, handlers, failOnUnknownOptions);
+                server = new Server(arr, block, handlers, failOnUnknownOptions);
                 
                 DataOutputStream os = new DataOutputStream(new FileOutputStream(lockFile));
                 int p = server.getLocalPort();
@@ -738,19 +752,32 @@ public abstract class CLIHandler extends Object {
             }
             
             
-            while (true) {
+            while (socket != null) {
                 try {
                     enterState(65, block);
                     Socket s = socket.accept();
                     
                     // spans new request handler
                     new Server(s, key, block, handlers, failOnUnknownOptions);
+                } catch (java.net.SocketException ex) {
+                    if (socket != null) {
+                        ex.printStackTrace();
+                    }
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
             }
         }
-        
+
+        final void stopServer () {
+            try {
+                ServerSocket s = socket;
+                socket = null;
+                s.close ();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
         
         private void handleConnect(Socket s) throws IOException {
             
