@@ -30,6 +30,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.ListSelectionModel;
 
+import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
 
 import org.netbeans.modules.db.util.DriverListUtil;
@@ -39,13 +40,29 @@ public class AddDriverDialog extends javax.swing.JPanel {
     private DefaultListModel dlm;
     private List drvs;
     
+    private final String BUNDLE = "org.netbeans.modules.db.resources.Bundle"; //NOI18N
+
     /** Creates new form AddDriverDialog1 */
     public AddDriverDialog() {
         initComponents();
+        initAccessibility();
         dlm = (DefaultListModel) drvList.getModel();
         drvs = new LinkedList();
     }
     
+    private void initAccessibility() {
+        this.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(BUNDLE).getString("ACS_AddDriverDialogA11yDesc")); //NOI18N
+        drvListLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(BUNDLE).getString("ACS_AddDriverDriverFileA11yDesc")); //NOI18N
+        drvList.getAccessibleContext().setAccessibleName(NbBundle.getBundle(BUNDLE).getString("ACS_AddDriverDriverFileListA11yName")); //NOI18N
+        drvClassLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(BUNDLE).getString("ACS_AddDriverDriverDriverClassA11yDesc")); //NOI18N
+        drvClassComboBox.getAccessibleContext().setAccessibleName(NbBundle.getBundle(BUNDLE).getString("ACS_AddDriverDriverDriverClassComboBoxA11yName")); //NOI18N
+        nameLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(BUNDLE).getString("ACS_AddDriverDriverNameA11yDesc")); //NOI18N
+        nameTextField.getAccessibleContext().setAccessibleName(NbBundle.getBundle(BUNDLE).getString("ACS_AddDriverDriverNameTextFieldA11yName")); //NOI18N
+        browseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(BUNDLE).getString("ACS_AddDriverAddButtonA11yDesc")); //NOI18N
+        findButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(BUNDLE).getString("ACS_AddDriverRemoveButtonA11yDesc")); //NOI18N
+        removeButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(BUNDLE).getString("ACS_AddDriverFindButtonA11yDesc")); //NOI18N
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -54,48 +71,82 @@ public class AddDriverDialog extends javax.swing.JPanel {
     private void initComponents() {//GEN-BEGIN:initComponents
         java.awt.GridBagConstraints gridBagConstraints;
 
-        nameLabel = new javax.swing.JLabel();
         drvListLabel = new javax.swing.JLabel();
-        drvClassLabel = new javax.swing.JLabel();
-        drvClassComboBox = new javax.swing.JComboBox();
-        nameTextField = new javax.swing.JTextField();
-        browseButton = new javax.swing.JButton();
-        findButton = new javax.swing.JButton();
         drvListScrollPane = new javax.swing.JScrollPane();
         drvList = new javax.swing.JList();
+        browseButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
+        drvClassLabel = new javax.swing.JLabel();
+        drvClassComboBox = new javax.swing.JComboBox();
+        findButton = new javax.swing.JButton();
+        nameLabel = new javax.swing.JLabel();
+        nameTextField = new javax.swing.JTextField();
 
         setLayout(new java.awt.GridBagLayout());
 
-        nameLabel.setDisplayedMnemonic('N');
-        nameLabel.setLabelFor(nameTextField);
-        nameLabel.setText("Name:");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        add(nameLabel, gridBagConstraints);
-
-        drvListLabel.setDisplayedMnemonic('L');
+        drvListLabel.setDisplayedMnemonic(NbBundle.getBundle(BUNDLE).getString("AddDriverDriverFile_Mnemonic").charAt(0));
         drvListLabel.setLabelFor(drvList);
-        drvListLabel.setText("Driver File(s):");
+        drvListLabel.setText(NbBundle.getBundle(BUNDLE).getString("AddDriverDriverFile"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         add(drvListLabel, gridBagConstraints);
 
-        drvClassLabel.setDisplayedMnemonic('C');
+        drvList.setModel(new DefaultListModel());
+        drvListScrollPane.setViewportView(drvList);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 12);
+        gridBagConstraints.weighty = 1.0;
+        add(drvListScrollPane, gridBagConstraints);
+
+        browseButton.setMnemonic(NbBundle.getBundle(BUNDLE).getString("AddDriverDriverAdd_Mnemonic").charAt(0));
+        browseButton.setText(NbBundle.getBundle(BUNDLE).getString("AddDriverDriverAdd"));
+        browseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                browseButtonActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 11);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        add(browseButton, gridBagConstraints);
+
+        removeButton.setMnemonic(NbBundle.getBundle(BUNDLE).getString("AddDriverDriverRemove_Mnemonic").charAt(0));
+        removeButton.setText(NbBundle.getBundle(BUNDLE).getString("AddDriverDriverRemove"));
+        removeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeButtonActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 11);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        add(removeButton, gridBagConstraints);
+
+        drvClassLabel.setDisplayedMnemonic(NbBundle.getBundle(BUNDLE).getString("AddDriverDriverClass_Mnemonic").charAt(0));
         drvClassLabel.setLabelFor(drvClassComboBox);
-        drvClassLabel.setText("Driver class:");
+        drvClassLabel.setText(NbBundle.getBundle(BUNDLE).getString("AddDriverDriverClass"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 12);
         add(drvClassLabel, gridBagConstraints);
 
         drvClassComboBox.setEditable(true);
@@ -109,35 +160,11 @@ public class AddDriverDialog extends javax.swing.JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 12);
         add(drvClassComboBox, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        gridBagConstraints.weightx = 1.0;
-        add(nameTextField, gridBagConstraints);
-
-        browseButton.setMnemonic('A');
-        browseButton.setText("Add...");
-        browseButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                browseButtonActionPerformed(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        add(browseButton, gridBagConstraints);
-
-        findButton.setMnemonic('F');
-        findButton.setText("Find");
+        findButton.setMnemonic(NbBundle.getBundle(BUNDLE).getString("AddDriverDriverFind_Mnemonic").charAt(0));
+        findButton.setText(NbBundle.getBundle(BUNDLE).getString("AddDriverDriverFind"));
         findButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 findButtonActionPerformed(evt);
@@ -148,36 +175,26 @@ public class AddDriverDialog extends javax.swing.JPanel {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 11);
         add(findButton, gridBagConstraints);
 
-        drvList.setModel(new DefaultListModel());
-        drvListScrollPane.setViewportView(drvList);
+        nameLabel.setDisplayedMnemonic(NbBundle.getBundle(BUNDLE).getString("AddDriverDriverName_Mnemonic").charAt(0));
+        nameLabel.setLabelFor(nameTextField);
+        nameLabel.setText(NbBundle.getBundle(BUNDLE).getString("AddDriverDriverName"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 11, 12);
+        add(nameLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridheight = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        gridBagConstraints.weighty = 1.0;
-        add(drvListScrollPane, gridBagConstraints);
-
-        removeButton.setMnemonic('R');
-        removeButton.setText("Remove");
-        removeButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                removeButtonActionPerformed(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        add(removeButton, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 11, 12);
+        gridBagConstraints.weightx = 1.0;
+        add(nameTextField, gridBagConstraints);
 
     }//GEN-END:initComponents
 

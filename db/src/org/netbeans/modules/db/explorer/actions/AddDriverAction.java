@@ -23,6 +23,7 @@ import java.util.List;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
 import org.netbeans.modules.db.explorer.dlg.AddDriverDialog;
@@ -70,7 +71,7 @@ public class AddDriverAction extends DatabaseAction {
             }
         };
 
-        DialogDescriptor descriptor = new DialogDescriptor(dlgPanel, "New Driver", true, actionListener); //NOI18N
+        DialogDescriptor descriptor = new DialogDescriptor(dlgPanel, NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("AddDriverDialogTitle"), true, actionListener); //NOI18N
         Object [] closingOptions = {DialogDescriptor.CANCEL_OPTION};
         descriptor.setClosingOptions(closingOptions);
         dialog = DialogDisplayer.getDefault().createDialog(descriptor);
