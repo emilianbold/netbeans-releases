@@ -1246,7 +1246,7 @@ public class Controller { //XXX public only for debug access to logging code
                 if (log)
                     log ("Clearing action performer for " + getValue(NAME));
                 action.setActionPerformer(null);
-            } else {
+            } else if( val ) {
                 if (log) log ("Setting action performer for " + getValue(NAME));
                 action.setActionPerformer(this);
             }
