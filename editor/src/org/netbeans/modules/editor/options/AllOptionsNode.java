@@ -169,30 +169,27 @@ public class AllOptionsNode extends FilterNode {
                 if (!(sos[i] instanceof BaseOptions)) continue;
                 
                 BaseOptions bo = (BaseOptions) sos[i];
-                if (!list.contains(bo.getClass())){
-                    if (BaseKit.getKit(bo.getKitClass()).getContentType() != null){
-                        list.add(bo.getClass());
-                        processInitializers(bo, false);
-                    }else{
-                        final String kitClazz = bo.getKitClass().toString();
-                        SwingUtilities.invokeLater(
-                        new Runnable() {
-                            public void run() {
-                                NotifyDescriptor msg = new NotifyDescriptor.Message(
-                                
-                                MessageFormat.format(
-                                NbBundle.getBundle( AllOptions.class ).getString("ERR_NoContentTypeDefined"),
-                                new Object[] {kitClazz}),
-                                NotifyDescriptor.WARNING_MESSAGE
-                                );
-                                
-                                TopManager.getDefault().notify(msg);
-                            }
-                        }
-                        );
-                    }
+                if (list.contains(bo.getClass())) list.remove(bo.getClass());
+                if (BaseKit.getKit(bo.getKitClass()).getContentType() != null){
+                    list.add(bo.getClass());
+                    processInitializers(bo, false);
                 }else{
-                    allOptions.removeOption(bo);
+                    final String kitClazz = bo.getKitClass().toString();
+                    SwingUtilities.invokeLater(
+                    new Runnable() {
+                        public void run() {
+                            NotifyDescriptor msg = new NotifyDescriptor.Message(
+                            
+                            MessageFormat.format(
+                            NbBundle.getBundle( AllOptions.class ).getString("ERR_NoContentTypeDefined"),
+                            new Object[] {kitClazz}),
+                            NotifyDescriptor.WARNING_MESSAGE
+                            );
+                            
+                            TopManager.getDefault().notify(msg);
+                        }
+                    }
+                    );
                 }
             }
 

@@ -27,6 +27,15 @@ import org.openide.xml.XMLUtil;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.w3c.dom.Document;
+import org.openide.util.Lookup;
+import org.openide.util.Lookup.Template;
+import org.openide.util.Lookup.Result;
+import java.util.Collection;
+import java.util.Iterator;
+import org.openide.modules.ModuleInfo;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
 
 /** MIME Option XML file.
  *
@@ -41,12 +50,25 @@ public abstract class MIMEOptionFile{
     protected Map properties;
     private boolean loaded = false;
     private boolean wasSaved = false;
+    private ModuleInfo editorMI;
     
     /** File change listener.
      * If file was externally modified, we have to reload settings.*/
     private final FileChangeListener fileListener = new FileChangeAdapter() {
         public void fileChanged(FileEvent fe){
             reloadSettings();
+        }
+    };
+
+    /** Editor module uninstallation listener */
+    private final PropertyChangeListener moduleListener = new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt){
+            if (!ModuleInfo.PROP_ENABLED.endsWith(evt.getPropertyName())) return;
+            if (!(evt.getSource() instanceof ModuleInfo)) return;
+            
+            if (((ModuleInfo)evt.getSource() != null) && (!((ModuleInfo)evt.getSource()).isEnabled())){
+                editorUninstalled();
+            }
         }
     };
     
@@ -66,6 +88,37 @@ public abstract class MIMEOptionFile{
         } catch (IOException ioe){
             ioe.printStackTrace();
         }
+        addEditorModuleListener();
+    }
+
+
+    private void addEditorModuleListener(){
+        Lookup.Template templ = new Lookup.Template(ModuleInfo.class);
+        Lookup.Result result = Lookup.getDefault().lookup(templ);
+        // get all modules
+        Collection modules = result.allInstances();
+        ModuleInfo curInfo;
+        for (Iterator iter = modules.iterator(); iter.hasNext(); ) {
+            curInfo = (ModuleInfo)iter.next();
+            if ("org.netbeans.modules.editor".equals(curInfo.getCodeNameBase())) { //NOI18N
+                curInfo.addPropertyChangeListener(moduleListener);
+                editorMI = curInfo;
+                break;
+            }
+        }
+    }
+
+    /** Editor is uninstalled. We have to detach processor from XMLDO. */    
+    private void editorUninstalled(){
+        // remove file change listener from xml file object, that listened to external modification
+        processor.getXMLDataObject().getPrimaryFile().removeFileChangeListener(fileListener);
+        try{
+            processor.getXMLDataObject().setValid(false);
+        }catch(PropertyVetoException pve){
+            if( Boolean.getBoolean( "netbeans.debug.exceptions" ) ) pve.printStackTrace(); //NOI18N
+        }
+        // remove editor uninstallation listener
+        editorMI.removePropertyChangeListener(moduleListener);
     }
     
     /** Getter for loaded flag.
