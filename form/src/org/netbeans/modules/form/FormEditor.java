@@ -23,6 +23,7 @@ import javax.swing.*;
 import org.openide.*;
 import org.openide.awt.*;
 import org.openide.explorer.*;
+import org.openide.windows.*;
 import org.openide.explorer.propertysheet.PropertySheetView;
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.explorer.view.BeanTreeView;
@@ -447,6 +448,21 @@ static final long serialVersionUID =4248268998485315927L;
       setName (formBundle.getString ("CTL_NoSelection"));
     }
 
+    public void open (Workspace workspace) {
+      Workspace realWorkspace = TopManager.getDefault ().getWindowManager ().getCurrentWorkspace ();
+      Workspace visualWorkspace = TopManager.getDefault().getWindowManager().findWorkspace("Visual");
+      Mode ourMode = realWorkspace.findMode(this);
+      if ((ourMode == null) && workspace.equals(visualWorkspace)) {
+        // create new mode for CI and set the bounds properly
+        ourMode = workspace.createMode(getName (), getName (), null);
+        Rectangle workingSpace = workspace.getBounds();
+        ourMode.setBounds(new Rectangle (workingSpace.x + (workingSpace.width * 3 / 10), workingSpace.y,
+            workingSpace.width * 2 / 10, workingSpace.height / 2));
+        ourMode.dockInto(this);
+      }
+      super.open(workspace);
+    }
+    
     public HelpCtx getHelpCtx () {
       return getHelpCtx (getExplorerManager ().getSelectedNodes (),
                          new HelpCtx (ComponentInspector.class));
@@ -619,6 +635,8 @@ static final long serialVersionUID =7424646018839457544L;
 
 /*
  * Log
+ *  40   Gandalf   1.39        12/8/99  Pavel Buzek     FormEditor and 
+ *       ComponentInspector windows open on Visual workspace
  *  39   Gandalf   1.38        11/5/99  Jesse Glick     Context help jumbo 
  *       patch.
  *  38   Gandalf   1.37        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

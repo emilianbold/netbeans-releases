@@ -28,6 +28,7 @@ import org.openide.src.nodes.SourceChildren;
 import org.openide.text.*;
 import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
+import org.openide.windows.Workspace;
 
 import com.netbeans.developer.modules.loaders.java.JavaEditor;
 
@@ -99,6 +100,13 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
       }
     }
     openForms.put (this, getFormManager ());
+
+    String fromWorkspace = FormEditor.getFormSettings ().getWorkspace ();
+    if (!fromWorkspace.equalsIgnoreCase ("None")) {
+      Workspace visualWorkspace = TopManager.getDefault().getWindowManager().findWorkspace(fromWorkspace);
+      if (visualWorkspace != null) visualWorkspace.activate ();
+    }
+
     // 1. show the ComponentInspector
     FormEditor.getComponentInspector().focusForm (getFormManager ());
     boolean isEditingWorkspace = isCurrentWorkspaceEditing ();
@@ -140,7 +148,13 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
         }
       }
     }
-
+  
+    String fromWorkspace = FormEditor.getFormSettings ().getWorkspace ();
+    if (!fromWorkspace.equalsIgnoreCase ("None")) {
+      Workspace visualWorkspace = TopManager.getDefault().getWindowManager().findWorkspace(fromWorkspace);
+      if (visualWorkspace != null) visualWorkspace.activate ();
+    }
+    
     // 1. open form window
     boolean isEditingWorkspace = isCurrentWorkspaceEditing ();
     if (!isEditingWorkspace) attachWorkspacesListener ();
@@ -430,6 +444,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  38   Gandalf   1.37        12/8/99  Pavel Buzek     FormEditor and 
+ *       ComponentInspector windows open on Visual workspace
  *  37   Gandalf   1.36        11/24/99 Pavel Buzek     Component Inspector is 
  *       closed with the last form
  *  36   Gandalf   1.35        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
