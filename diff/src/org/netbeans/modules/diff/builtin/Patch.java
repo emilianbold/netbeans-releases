@@ -254,11 +254,13 @@ public class Patch extends Reader {
     private static Difference[] parseContextDiff(Reader in) throws IOException {
         BufferedReader br = new BufferedReader(in);
         ArrayList diffs = new ArrayList();
-        String line;
+        String line = null;
         do {
-            do {
-                line = br.readLine();
-            } while (line != null && !DIFFERENCE_DELIMETER.equals(line));
+            if (line == null || !DIFFERENCE_DELIMETER.equals(line)) {
+                do {
+                    line = br.readLine();
+                } while (line != null && !DIFFERENCE_DELIMETER.equals(line));
+            }
             int[] firstInterval = new int[2];
             line = br.readLine();
             if (line != null && line.startsWith(CONTEXT_MARK1B)) {
@@ -377,17 +379,36 @@ public class Patch extends Reader {
         //System.out.println("mergeChanges(("+firstInterval[0]+", "+firstInterval[1]+"), ("+secondInterval[0]+", "+secondInterval[1]+"))");
         //System.out.println("firstChanges.size() = "+n1);
         //System.out.println("secondChanges.size() = "+n2);
+        int firstToSecondIntervalShift = secondInterval[0] - firstInterval[0];
+        //System.out.println("shift = "+firstToSecondIntervalShift);
         for (p1 = p2 = 0; p1 < n1 || p2 < n2; ) {
             boolean isAddRemove = true;
             while (isAddRemove && p1 < n1) {
                 int[] interval = (int[]) firstChanges.get(p1);
+                if (p2 < n2) {
+                    int[] interval2 = (int[]) secondChanges.get(p2);
+                    if (interval[0] + firstToSecondIntervalShift > interval2[0]) break;
+                    // We need to set differences successively. Differences with
+                    // higher line numbers must not precede differences with
+                    // smaller line numbers
+                }
                 isAddRemove = interval[2] == Difference.ADD || interval[2] == Difference.DELETE;
                 if (isAddRemove) {
-                    diffs.add(new Difference(interval[2], interval[0], interval[1],
-                                             secondInterval[0] + interval[0] - firstInterval[0],
-                                             secondInterval[0] + interval[1] - firstInterval[0],
-                                             (String) firstChanges.get(p1 + 1), ""));
+                    if (interval[2] == Difference.ADD) {
+                        diffs.add(new Difference(interval[2], interval[0] - 1, 0,
+                                                 interval[0] + firstToSecondIntervalShift,
+                                                 interval[1] + firstToSecondIntervalShift,
+                                                 (String) firstChanges.get(p1 + 1), ""));
+                        firstToSecondIntervalShift += interval[1] - interval[0] + 1;
+                    } else {
+                        diffs.add(new Difference(interval[2], interval[0], interval[1],
+                                                 interval[0] + firstToSecondIntervalShift - 1, 0,
+                                                 (String) firstChanges.get(p1 + 1), ""));
+                        firstToSecondIntervalShift -= interval[1] - interval[0] + 1;
+                    }
                     p1 += 2;
+                    //System.out.println("added diff = "+diffs.get(diffs.size() - 1));
+                    //System.out.println("new shift = "+firstToSecondIntervalShift);
                 }
             }
             isAddRemove = true;
@@ -395,12 +416,23 @@ public class Patch extends Reader {
                 int[] interval = (int[]) secondChanges.get(p2);
                 isAddRemove = interval[2] == Difference.ADD || interval[2] == Difference.DELETE;
                 if (isAddRemove) {
-                    diffs.add(new Difference(interval[2],
-                                             firstInterval[0] + interval[0] - secondInterval[0],
-                                             firstInterval[0] + interval[1] - secondInterval[0],
-                                             interval[0], interval[1],
-                                             "", (String) secondChanges.get(p2 + 1)));
+                    if (interval[2] == Difference.ADD) {
+                        diffs.add(new Difference(interval[2],
+                                                 interval[0] - firstToSecondIntervalShift - 1, 0,
+                                                 interval[0], interval[1],
+                                                 "", (String) secondChanges.get(p2 + 1)));
+                        firstToSecondIntervalShift += interval[1] - interval[0] + 1;
+                    } else {
+                        diffs.add(new Difference(interval[2],
+                                                 interval[0] - firstToSecondIntervalShift,
+                                                 interval[1] - firstToSecondIntervalShift,
+                                                 interval[0] - 1, 0,
+                                                 "", (String) secondChanges.get(p2 + 1)));
+                        firstToSecondIntervalShift -= interval[1] - interval[0] + 1;
+                    }
                     p2 += 2;
+                    //System.out.println("added diff = "+diffs.get(diffs.size() - 1));
+                    //System.out.println("new shift = "+firstToSecondIntervalShift);
                 }
             }
             // Change is remaining
@@ -413,6 +445,9 @@ public class Patch extends Reader {
                                          (String) secondChanges.get(p2 + 1)));
                 p1 += 2;
                 p2 += 2;
+                firstToSecondIntervalShift += interval2[1] - interval2[0] - (interval1[1] - interval1[0]);
+                //System.out.println("added diff = "+diffs.get(diffs.size() - 1));
+                //System.out.println("new shift = "+firstToSecondIntervalShift);
             }
         }
     }
