@@ -178,9 +178,9 @@ public class BeanSupport
                     defaultValues.put(properties[i].getName(), value);
                 } catch (Exception e) {
                     // problem with reading property ==>> no default value
-                    if (FormEditor.getFormSettings().getOutputLevel() != FormLoaderSettings.OUTPUT_MINIMUM) {
+//                    if (FormEditor.getFormSettings().getOutputLevel() != FormLoaderSettings.OUTPUT_MINIMUM) {
                         //            notifyPropertyException(beanInstance.getClass(), properties [i].getName(), "component", e, true); // NOI18N
-                    }
+//                    }
                 }
             } 
 //            else { // the property does not have plain read method

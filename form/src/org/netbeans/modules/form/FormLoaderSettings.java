@@ -93,7 +93,7 @@ public class FormLoaderSettings extends SystemOption {
     private static String eventVariableName = "evt"; // NOI18N
     /** The size(in pixels) of the border that marks visual components on a form
      * as selected. */
-    private static int selectionBorderSize = 3;
+    private static int selectionBorderSize = 2;
     /** The color of the border boxes on selection border */
     private static java.awt.Color selectionBorderColor = new java.awt.Color(0, 0, 192);
     /** The color of the border boxes on connection border */
@@ -129,9 +129,9 @@ public class FormLoaderSettings extends SystemOption {
         { String[].class.getName(), "org.openide.explorer.propertysheet.editors.StringArrayEditor"}, // NOI18N
     };
 
-    private static int outputLevel = OUTPUT_NORMAL;
+//    private static int outputLevel = OUTPUT_NORMAL;
 
-    private static boolean nullLayout = true;
+//    private static boolean nullLayout = true;
 
     private static int emptyFormType = 0;
 
@@ -381,38 +381,38 @@ public class FormLoaderSettings extends SystemOption {
     /** Getter for OutputLevel property.
      * @return The level of output
      */
-    public int getOutputLevel() {
-        return outputLevel;
-    }
+//    public int getOutputLevel() {
+//        return outputLevel;
+//    }
 
     /** Setter for OutputLevel property.
      * @param value The new level of output
      */
-    public void setOutputLevel(int value) {
-        if (outputLevel == value) return;
-        int oldValue = outputLevel;
-        outputLevel = value;
-        // fire the PropertyChange
-        firePropertyChange(PROP_OUTPUT_LEVEL, new Integer(oldValue), new Integer(outputLevel));
-    }
+//    public void setOutputLevel(int value) {
+//        if (outputLevel == value) return;
+//        int oldValue = outputLevel;
+//        outputLevel = value;
+//        // fire the PropertyChange
+//        firePropertyChange(PROP_OUTPUT_LEVEL, new Integer(oldValue), new Integer(outputLevel));
+//    }
 
     /** Getter for nullLayout property.
      * @return True, if null layout should be generated, false if org.netbeans.lib.awtextra.AbsoluteLayout should be used
      */
-    public boolean isNullLayout() {
-        return nullLayout;
-    }
+//    public boolean isNullLayout() {
+//        return nullLayout;
+//    }
 
     /** Setter for nullLayout property.
      * @param value True, if null layout should be generated, false if org.netbeans.lib.awtextra.AbsoluteLayout should be used
      */
-    public void setNullLayout(boolean value) {
-        if (nullLayout == value) return;
-        boolean oldValue = nullLayout;
-        nullLayout = value;
-        // fire the PropertyChange
-        firePropertyChange(PROP_NULL_LAYOUT, new Boolean(oldValue), new Boolean(nullLayout));
-    }
+//    public void setNullLayout(boolean value) {
+//        if (nullLayout == value) return;
+//        boolean oldValue = nullLayout;
+//        nullLayout = value;
+//        // fire the PropertyChange
+//        firePropertyChange(PROP_NULL_LAYOUT, new Boolean(oldValue), new Boolean(nullLayout));
+//    }
 
     public boolean getPaletteTabsVisible() {
         return paletteTabsVisible;
