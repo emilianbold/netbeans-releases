@@ -21,7 +21,6 @@ Microsystems, Inc. All Rights Reserved.
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
         <pathelement location="../openide/netbeans/lib/openide.jar"/>
-        <pathelement location="../openidex/netbeans/lib/ext/openidex.jar"/>
         <pathelement location="../java/netbeans/modules/java.jar"/>
       </classpath>
     </javac>

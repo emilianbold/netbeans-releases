@@ -24,7 +24,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.modules.ModuleInstall;
 
-import org.openidex.util.Utilities2;
 import org.netbeans.modules.form.actions.*;
 import org.netbeans.modules.form.palette.*;
 

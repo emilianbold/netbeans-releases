@@ -126,7 +126,7 @@ workspaceswitcher
     <echo message="Building module applet..."/>
     <ant dir="../applet" target="netbeans"/>
   </target>
-  <target name="all-autoupdate" depends="all-openide,all-core,all-openidex">
+  <target name="all-autoupdate" depends="all-openide,all-core">
     <echo message="Building module autoupdate..."/>
     <ant dir="../autoupdate" target="netbeans"/>
   </target>
@@ -155,7 +155,7 @@ workspaceswitcher
     <ant dir="../debuggertools" target="netbeans"/>
   </target>
   <!-- XXX illegal dependence on core! -->
-  <target name="all-editor" depends="all-openide,all-openidex,all-core">
+  <target name="all-editor" depends="all-openide,all-core">
     <echo message="Building module editor..."/>
     <ant dir="../editor" target="netbeans"/>
   </target>
@@ -196,11 +196,11 @@ workspaceswitcher
     <echo message="Building module jarpackager..."/>
     <ant dir="../jarpackager" target="netbeans"/>
   </target>
-  <target name="all-java" depends="all-openide,all-openidex">
+  <target name="all-java" depends="all-openide">
     <echo message="Building module java..."/>
     <ant dir="../java" target="netbeans"/>
   </target>
-  <target name="all-javadoc" depends="all-openide,all-openidex,all-java">
+  <target name="all-javadoc" depends="all-openide,all-java">
     <echo message="Building module javadoc..."/>
     <ant dir="../javadoc" target="netbeans"/>
   </target>
@@ -224,7 +224,7 @@ workspaceswitcher
     <echo message="Building module multicompile..."/>
     <ant dir="../multicompile" target="netbeans"/>
   </target>
-  <target name="all-objectbrowser" depends="all-openide,all-openidex">
+  <target name="all-objectbrowser" depends="all-openide">
     <echo message="Building module objectbrowser..."/>
     <ant dir="../objectbrowser" target="netbeans"/>
   </target>
@@ -278,7 +278,6 @@ workspaceswitcher
     <echo message="Building module javacvs..."/>
     <ant dir="../javacvs" target="netbeans"/>
   </target>
-
   <!-- XXX illegal dependence on core! -->
   <target name="all-web" depends="all-openide,all-openidex,all-java,all-core,all-editor">
     <echo message="Building module web..."/>
@@ -288,6 +287,7 @@ workspaceswitcher
     <echo message="Building module cpplite..."/>
     <ant dir="../cpplite" target="netbeans"/>
   </target>
+
   <target name="build-messaging" depends="init">
     <echo message="Starting a build for NetBeans (build ${buildnumber}, config '${moduleconfig}') ..."/>
     <echo message="Selected modules: ${modules}"/>

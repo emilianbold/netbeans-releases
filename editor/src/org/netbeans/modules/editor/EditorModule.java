@@ -42,8 +42,6 @@ import org.openide.util.SharedClassObject;
 import org.openide.options.SystemOption;
 import org.openide.text.PrintSettings;
 
-import org.openidex.util.Utilities2;
-
 /**
 * Module installation class for editor
 *

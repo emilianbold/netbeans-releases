@@ -38,8 +38,6 @@ import org.netbeans.modules.javadoc.comments.AutoCommentAction;
 import org.netbeans.modules.javadoc.search.SearchDocAction;
 import org.netbeans.modules.javadoc.search.DocFileSystem;
 
-import org.openidex.util.Utilities2;
-
 /** Class for initializing Javadoc module on IDE startup.
 
  @author Petr Hrebejk
