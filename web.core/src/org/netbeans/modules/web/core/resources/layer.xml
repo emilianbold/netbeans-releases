@@ -46,7 +46,7 @@ Microsystems, Inc. All Rights Reserved.
 --> 
       <folder name="JSPs">
         <attr name="JSP.jsp/JSPX.jspx" boolvalue="true"/>
-        <attr name="JSPX.jspx/JSPF.jsf" boolvalue="true"/>
+        <attr name="JSPX.jspx/JSPF.jspf" boolvalue="true"/>
 	<attr name="templateWizardURL" 
               urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSPfolder.html"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.context.Bundle"/>
@@ -72,8 +72,8 @@ Microsystems, Inc. All Rights Reserved.
                 methodvalue="org.netbeans.modules.web.dd.wizards.ServletIterator.createJspDocIterator"/>
         </file>
 
-        <!--  JSP Fragment --> 
-        <file name="JSPF.jsf" url="templates/JSPF.template">
+        <!--  JSP Segment --> 
+        <file name="JSPF.jspf" url="templates/JSPF.template">
           <attr name="template" boolvalue="true"/>
           <attr name="templateWizardURL" 
                 urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSPF.html"/>
