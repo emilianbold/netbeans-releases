@@ -17,6 +17,7 @@ import java.awt.*;
 import java.awt.datatransfer.*;
 import java.awt.dnd.*;
 import java.awt.event.*;
+import java.io.ObjectStreamException;
 import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
@@ -626,6 +627,10 @@ public class DataViewWindow extends TopComponent {
                 enucol++;
             }
         }
+    }
+    
+    protected Object writeReplace() throws ObjectStreamException {
+        return null;
     }
 }
 
