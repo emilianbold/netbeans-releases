@@ -174,11 +174,13 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         if (floatable) {
             /** Uses L&F's grip **/
             String lAndF = UIManager.getLookAndFeel().getName();
+            //XXX should use getID() note getName() - Tim
             JPanel dragarea = lAndF.equals("Windows") ? isXPTheme() ?
                                     (JPanel)new ToolbarXP() : 
                                     (JPanel) new ToolbarGrip() :
-                                    (JPanel)new ToolbarBump();
-                                
+                                    UIManager.getLookAndFeel().getID().equals("Aqua")
+                                    ? (JPanel) new ToolbarAqua() :
+                                    (JPanel)new ToolbarBump(); //NOI18N
             if (mouseListener == null)
                 mouseListener = new ToolbarMouseListener ();
 
@@ -523,6 +525,71 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         return isXP == null ? false : isXP.booleanValue();
     }    
     
+    private final class ToolbarAqua extends JPanel {
+        /** Width of grip */
+        static final int WIDTH = 5;
+        /** Minimum size. */
+        Dimension dim;
+        /** Maximum size. */
+        Dimension max;
+        static final long serialVersionUID =-8819972972003315277L;
+
+        public ToolbarAqua() {
+            dim = new Dimension (WIDTH, WIDTH);
+            max = new Dimension (WIDTH, Integer.MAX_VALUE);
+            this.setToolTipText (Toolbar.this.getDisplayName());
+        }
+        
+        public void paintComponent (Graphics g) {
+            super.paintComponent(g);
+            java.awt.Graphics2D g2d = (Graphics2D) g;
+            g2d.addRenderingHints(getHints());
+            
+            int sz = 5;
+            
+            int y = (getHeight() / 2) - (sz / 2);
+            int x = (getWidth() / 2) - (sz / 2);
+            
+            GradientPaint gradient = new GradientPaint(x+1, y+1, Color.BLACK,
+            x+sz-1, y+sz-1, Color.WHITE);
+            
+            Paint paint = g2d.getPaint();
+            
+            g2d.setPaint(gradient);
+            g2d.drawArc(x,y,sz,sz,0,359);
+            
+            g.setColor(new Color(240,240,240));
+            g.drawLine(x+(sz/2), y + (sz/2),x+(sz/2), y + (sz/2));
+
+            g2d.setPaint(paint);
+        }
+        
+        /** @return minimum size */
+        public Dimension getMinimumSize () {
+            return dim;
+        }
+        
+        /** @return preferred size */
+        public Dimension getPreferredSize () {
+            return this.getMinimumSize ();
+        }
+        
+        public Dimension getMaximumSize () {
+            return max;
+        }
+    }    
+
+    private static java.util.HashMap hintsMap = null;
+    static final java.util.Map getHints() {
+        if (hintsMap == null) {
+            hintsMap = new java.util.HashMap();
+            hintsMap.put(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+            hintsMap.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            hintsMap.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        }
+        return hintsMap;
+    }
+    
     private final class ToolbarXP extends JPanel {
         /** Width of grip */
         static final int WIDTH = 6;
@@ -611,7 +678,8 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
             return max;
         }
     }
-/*    
+    
+  /*
     public static void main(String[] args) {
         JFrame jf = new JFrame();
         jf.getContentPane().add (new ToolbarXP());
@@ -619,7 +687,8 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         jf.setLocation(20,20);
         jf.show();
     }
- */
+   */
+
     
     /** Grip for floatable toolbar, used for Windows L&F */
     private final class ToolbarGrip extends JPanel {
