@@ -9,143 +9,138 @@
 <meta name="lastupdated" content="4Feb04">
 <!-- p1 -->
 
-<title>Editing and Replaying Requests</title>
+<title>Replaying HTTP Requests</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="StyleSheet" href="../../../../usersguide/ide.css" type="text/css">
 </head>
 
 <body>
 
-<h2>Editing and Replaying Requests in the HTTP Monitor</h2>
+<h2>Replaying HTTP Requests</h2>
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p> 
-<p>You can replay HTTP requests that are associated with the current records and 
-  the saved records in the HTTP Monitor window. When you replay a request, the 
-  response appears in the web browser. Note that if the server or the web module 
-  is not running, an error message is displayed. If this happens, re-execute the 
-  module on the target server. </p>
+<p>You can replay HTTP requests that are associated with the current and saved
+  HTTP request 
+  records. When you replay a request, the 
+  response appears in the web browser.</p>
 <table>
   <tr> 
     <td valign="top"><img src="../images/warn.gif" alt="Tip"width="16" height="16">
     </td>
     <td valign=top align=left> 
-        Note that the cache configuration in 
+	Note:
+	<ul>
+	<li>If the server or the web module 
+	is not running, an error message is displayed. If this happens, 
+	re-execute the module on a running target server.</li>	
+	<li>The cache configuration in 
         certain browsers can cause problems with replaying requests. If you encounter 
         such problems, bypass the cache by clicking Reload on your browser
-        after the monitor issues the request.
+	after the monitor issues the request.</li>
+	<li>If a servlet or JSP page reads data directly from the <code>ServletInputStream</code>, 
+        instead of using methods from the <code>getParameter</code> family, 
+        requests to that resource will not replay correctly.
+       </ul>
       </td>
   </tr>
 </table>
-<table>
-  <tr> 
-    <td valign="top"><img src="../images/warn.gif" width="16" height="16"></td>
-    <td valign=top align=left> 
-      If a servlet or JSP page reads data directly from the <code>ServletInputStream</code> 
-        as opposed to using methods from the <code>getParameter</code> family, 
-        requests to that resource will not replay correctly.
-    </td>
-  </tr>
-</table>
-<p><b>To replay an HTTP request on the server:</b></p>
+<p><b>To replay HTTP requests:</b></p>
 <ol>
-  <li>In the HTTP Monitor Records pane, right-click the monitor record 
-      that you want to replay.</li>
+  <li>In the tree view on the left side of the HTTP Monitor, right-click the HTTP request 
+      record that you want to replay.</li>
   <li>Choose Replay from the contextual menu. The page resulting from the request 
       appears in the web browser.</li>
 </ol>
-<p><b>To edit and replay an HTTP request:</b></p>
+<p><b>To edit HTTP requests before replaying them:</b></p>
 <ol>
-  <li>In the HTTP Monitor Records pane, right-click the record that you want to 
-    edit.</li>
+  <li>In the tree view on the left side of the HTTP Monitor, right-click the HTTP request 
+      record that you want to edit and replay.</li>
   <li>Choose Edit and Replay from the contextual menu. The Edit and Replay dialog 
-    box appears. In the dialog box, you can make the following changes, as described 
-    in the following sections:</li>  <ul>
-    <li>Modify query parameters</li>
-    <li>Modify request information</li>
-    <li>Add cookies</li>
-    <li>Designate a different server to which to send the request</li>
-    <li>Modify the headers</li>
-  </ul>
-  <li>Click Send HTTP Request.</li>
-</ol>
-<p><b>To edit query parameters:</b></p>
-<ol>
-  <li>Click the Query tab.</li>
-  <li>To add a parameter to the query, click Add Parameter. The Add Parameter 
+  box appears. In the dialog box, you can edit the following:</li>
+<table width="100%" border="1">
+  <tr valign="top"> 
+    <td width="7%" height="38">Queries</td>
+    <td width="93%" height="38">
+  <ol><li>Click the Query tab.</li>
+  <li>Edit the query:</li>
+  <ul><li>To add a parameter to the query, click Add Parameter. The Add Parameter 
     dialog box appears. Type in a name and value, and click OK. The query parameters 
     appear in the Query tab.</li>
   <li>To edit a query parameter, click the ellipsis (...) button next to the parameter. 
   <li>To delete a query parameter, select the parameter and click Delete 
     Parameters. Use the Shift or Control key to select multiple parameters
-    for deletion.
-  </li>
-</ol>
-<p><b>To edit request data:</b></p>
-<ol>
+    for deletion.</li></ul>
+  </ul>
+  <li>Click Send HTTP Request.</li></ol></td>
+  </tr>
+  <tr valign="top"> 
+    <td width="7%" height="40">Requests</td>
+    <td width="93%" height="44"><ol>
   <li>Click the Request tab.
-  <li>To edit the Request URI parameter or the Protocol parameter, click the ellipsis 
+  <li>Edit the query:</li>
+  <ul><li>To edit the Request URI parameter or the Protocol parameter, click the ellipsis 
     (...) button next to the parameter. </li>
   <li>To change the request method, select the desired method from the combo box 
-    in the Method parameter. For instance, change <tt>GET</tt> to <tt>POST</tt>.</li>
-</ol>
-<p><b>To edit cookies:</b></p>
-<p>Note that the server ignores the values that were saved 
-when the record was recorded, and the server uses the cookie that 
-the browser generates. If the record header does not include a session 
-cookie, the browser does not send a cookie.</p>
-
-     <p>The following steps show how to edit cookies in the
-      Cookies tab. You can also edit cookies in the Header tab.
-	  Note that you can edit session cookies, but the 
-	  changes do not take effect on most servers. 
-	  The reason is because
-	  the session's cookie ID is read before
-	  the request enters the servlet container. 
-      Not all servers support the editing of cookies.</p>
+  in the Method parameter. For instance, change <tt>GET</tt> to <tt>POST</tt>.</li></ul>
+  <li>Click Send HTTP Request.</li>
+</ol></td>
+  </tr>
+  <tr valign="top"> 
+    <td width="7%" height="38">Cookies</td>
+    <td width="93%" height="44">
 <ol>
   <li>Click the Cookies tab.</li>
+  <li>Edit the query:</li>
+  <ul>
   <li>To add a cookie, click Add Cookie. The Add Cookie dialog box appears. Type 
     a name and value, and click OK.</li>
   <li>To edit a cookie, click the ellipsis (...) button next to the cookie.</li>
   <li>To delete a cookie, select the cookie and click Delete Cookies. Use 
     the Shift or Control key to select multiple 
     cookies for deletion. </li>
-</ol>
-<p><b>To edit request headers:</b></p>
-<ol>
+  </ul>
+  <li>Click Send HTTP Request.  Not all servers support the editing of cookies.
+  Note that the server ignores the values that were saved 
+when the record was recorded, and the server uses the cookie that 
+the browser generates. If the record header does not include a session 
+cookie, the browser does not send a cookie. Although you can edit session cookies, 
+but the changes do not take effect on most servers. The reason is because
+the session's cookie ID is read before the request enters the servlet container.</li>
+</ol></td>
+  </tr>
+  <tr valign="top">
+    <td width="7%" height="38">Servers</td>
+    <td width="93%" height="44"><ol>
+  <li>Click the Server tab.</li>
+  <li>Edit the query:</li>
+  <ul>
+    <li>To change a parameter's value,  such as the hostname of servlet engine 
+    or the port number of an HTTP service click the ellipsis (...) button 
+    next to the parameter.</li>
+  </ul>
+  <li>Click Send HTTP Request.</li>
+</ol></td>
+  </tr>
+ <tr valign="top"> 
+    <td width="7%" height="38">Headers</td>
+    <td width="93%" height="38"><ol>
   <li>Click the Headers tab.</li>
-  <li>To add a header, click Add Header. 
+  <li>Edit the query:</li>
+  <ul><li>To add a header, click Add Header. 
     The Add Header dialog box appears. Type in a name and value and click OK.</li>
   <li>To edit a header parameter such as Accept, Connection, Host, or User-Agent, 
     click the ellipsis (...) button next to the parameter.</li>
   <li>To delete a header, select it and click Delete Headers. Use the Shift or 
-    Control key to select multiple headers for deletion.</li>
-
+    Control key to select multiple headers for deletion.</li></ul>
+  <li>Click Send HTTP Request.</li>
 </ol>
-<p><b>To send a request to a different server:</b></p>
-<ol>
-  <li>To edit server information, such as the hostname of servlet engine or the port number 
-    of an HTTP service, click the Server tab.</li>
-  <li>To change a parameter's value, click the ellipsis (...) button next to the 
-    parameter.</li>
-</ol>
-<table>
-         <tr>
-         <th colspan=2 align=left><a name="seealso">See Also</a></th>
-         </tr>
-         <tr>
-         <td 
-width="23"></td>
-         <td>
-		<a href="view.html">Viewing HTTP Monitor Data Records</a><br>
-      <a href="sort.html">Using the HTTP Monitor Toolbar</a><br>
-        <a href="store.html">Saving HTTP Monitor Data Records</a><br>
-        <a href="delete.html">Deleting 
-HTTP Monitor Data Records</a> 
-    </td>
+  </td>
   </tr>
 </table>
+</ol>
+
+
 <hr>
 <small><a href="../credits.html">Legal Notices</a> 
 <table cellpadding="20" border="0"> 

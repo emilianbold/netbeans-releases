@@ -11,7 +11,7 @@
 
 
 
-<title>Viewing HTTP Monitor Data Records</title>
+<title>Analyzing HTTP Requests</title>
 <meta 
 http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link 
@@ -20,77 +20,73 @@ rel="StyleSheet" href="../../../../usersguide/ide.css" type="text/css">
 
 <body>
 
-<h2>Viewing HTTP Monitor Data Records</h2>
+<h2>Analyzing HTTP Requests</h2>
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p> 
-
-The HTTP Monitor consists of two panels. On the left, HTTP request records panel 
-contains a tree view of HTTP monitor data records. On the right, the Record data 
-display panel presents the data associated with the selected monitor records. 
-<p>In the tree view, the All Records category contains two subcategories: Current 
-  Records and Saved Records. Individual monitor data records reside in either 
-  of these subcategories. Requests resulting in an internal dispatch cause nested 
-  nodes on servers that support this functionality. The forwarded or included 
-  requests are nested under the node corresponding to the main requests. </p>
+<p>The HTTP Monitor consists of two panels. On the left is a tree view of 
+HTTP request records. On the right is a 
+display panel that presents the data associated with the selected HTTP 
+request records. 
+<h3>The tree view</h3>
+In the tree view, the All Records category contains two subcategories: Current 
+Records and Saved Records. Individual HTTP request records reside in either 
+of these subcategories. Requests resulting in an internal dispatch cause nested 
+nodes on servers that support this functionality. The forwarded or included 
+requests are nested under the node corresponding to the main requests. </p>
 <p>Entries in Current Records are available only during the current IDE session. 
-  Current monitor data records persist across restarts of the server. They are 
-  cleared whenever you exit the IDE, or when you explicitly delete them. Entries 
-  in Saved Records persist until you delete them. Monitor data records in all 
-  categories can be sorted according to various criteria using the buttons above 
-  the tree view. </p>
+Current HTTP request records persist across restarts of the server. They are 
+cleared whenever you exit the IDE, or when you explicitly delete them. Entries 
+in Saved Records persist until you delete them. Records in all 
+categories can be sorted according to various criteria using the buttons above 
+the tree view:
+<table width="100%" border="1">
+  <tr valign="top"> 
+    <td width="7%" height="38"><img src="../images/reload.gif" width="25" 
+height="25" alt="reload icon"></td>
+    <td width="93%" height="38">Reloads all the HTTP request records stored on 
+      the client</td>
+  </tr>
+  <tr valign="top"> 
+    <td width="7%" height="40"><img src="../images/sort.gif" width="25" 
+height="25" alt="sort in descending order icon"></td>
+    <td width="93%" height="44">Sorts the HTTP request records by timestamp in 
+      descending order</td>
+  </tr>
+  <tr valign="top"> 
+    <td width="7%" height="38"><img src="../images/sortasc.gif" width="25" 
+height="25" alt="sort in ascending order icon"></td>
+    <td width="93%" height="44">Sorts the HTTP request records by timestamp in 
+      ascending order</td>
+  </tr>
+  <tr valign="top"> 
+    <td width="7%" height="38"><img src="../images/image6.gif" width="25" 
+height="25" alt="sort alphabetically icon"></td>
+    <td width="93%" height="38">Sorts the HTTP request records alphabetically</td>
+  </tr>
+  <tr valign="top">
+    <td width="7%" height="38"><img src="../images/time.gif" width="25" 
+height="25" alt="show or hide timestamps icon"></td>
+    <td width="93%" height="44">Shows or hides the time stamps in the list of 
+      HTTP request records.</td>
+  </tr>
+</table>
+
 <table cellpadding="3" cellspacing="0" border="0">
   <tr valign="top"> 
     <td><img src="../images/tip.gif" alt="tip">&nbsp;</td>
-    <td> If the HTTP Monitor does not show the data records for a running web 
-      module, verify that the monitor is enabled for the server by right-clicking 
-      on the server's node in the Runtime tab and choosing Properties from the 
+    <td> If the HTTP Monitor does not show the HTTP request records for a running web 
+      module, verify that the monitor is enabled for your web server by 
+      right-clicking 
+      your web server's node in the Runtime window's Server Registry node
+      and choosing Properties from the 
       contextual menu. The Enable HTTP Monitor checkbox should be selected.</td>
   </tr>
 </table>
-<p>When you select a monitor data record in the HTTP request records panel, the 
-  information corresponding to that monitor data record appears in the Record 
-  data display panel. The data display panel consists of these tabs:</p>
-<ul>
-  <li><b>Request.</b> Displays the request URI, method, query string, parameters 
-    or posted data, protocol, client IP address, scheme, and the exit status of 
-    the request. A list of request attributes before and after the request is 
-    also provided. </li>
-  <li><b>Cookies.</b> Displays a list of incoming and outgoing cookies, including 
-    cookie name, cookie value, how long until the cookie expires, and whether 
-    the cookie requires a secure protocol. </li>
-  <li><b>Session.</b> Displays the status of the session before and after the 
-    transaction and attributes of the session. It states whether the session was 
-    created during the transaction. Session properties include session ID, creation 
-    time, and time of last access. Access data after the transaction is also provided, 
-    including session attributes and the maximum inactive interval. </li>
-  <li><b>Context.</b> Displays the name and absolute path of the context of the 
-    request, as well as context attributes and initialization parameters.</li>
-  <li><b>Client and Server.</b> Lists the protocol, the client IP address, the 
-    software used, the locales, and encoding, file formats, and character sets 
-    accepted. Also includes the servlet engine properties such as the Java platform, 
-    the Java version, the hostname of the servlet engine, and the port number 
-    of the HTTP service. </li>
-  <li><b>Headers.</b> Displays the HTTP headers that came in with the request. 
-    The headers are constructed by the HTTP client, which is typically, a browser. 
-    They contain information such as the nature of the client, including software 
-    and operating system, language preferences, and the file formats that the 
-    browser accepts.<br>
-  </li>
-</ul>
-<table>
-<tr>
-<th colspan=2 align=left><a name="seealso">See Also</a></th>
-</tr>
-<tr>
-<td width="23"></td>
-    <td> <a href="sort.html">Using the HTTP Monitor Toolbar</a><br>
-<a href="store.html">Saving HTTP Monitor Data Records</a><br>
-<a href="delete.html">Deleting HTTP Monitor Data Records</a><br>
-<a href="resend.html">Editing and Replaying Requests</a>
-</td>
-</tr>
-</table>
+<h3>The display panel</h3>
+When you select a HTTP request record in the tree view on the left, the 
+data corresponding to that HTTP request record appears in the 
+display panel on the right.
 <hr>
 <small><a href="../credits.html">Legal Notices</a> 
 <table cellpadding="20" border="0"> 

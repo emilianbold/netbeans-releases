@@ -10,7 +10,7 @@
 <!-- p1 -->
 
 
-<title>Monitoring Data Flow on the Web Server</title>
+<title>About the HTTP Monitor</title>
 <meta 
 http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link 
@@ -19,49 +19,19 @@ rel="StyleSheet" href="../../../../usersguide/ide.css" type="text/css">
 
 <body>
 
-<h2>Monitoring Data Flow on the Web Server</h2>
+<h2>About the HTTP Monitor</h2>
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p> 
 
-<p>The IDE provides the HTTP Monitor tool to help diagnose problems with data 
-  flow on the web server. The HTTP Monitor gathers data about HTTP requests that 
+<p>The IDE provides the HTTP Monitor to help diagnose problems with data 
+flow from  JSP page and servlet execution on the web server. The HTTP Monitor gathers data about HTTP requests that 
   are processed by the servlet engine. For each HTTP request that is processed, 
   the monitor records data about the incoming request and the data states maintained 
   on the server.</p>
-<p>You can view data, store data for future sessions, and replay and edit previous 
-  requests. HTTP monitor data records are stored until you exit the IDE, unless 
-  you explicitly save them. You can view data about JSP and servlet file execution 
-  at any time. </p>
-<p>To display the HTTP Monitor, choose Window <img src="../images/arrow.gif" alt="and choosing">&nbsp;HTTP 
-  Monitor from the main menu.</p>
-
-<table cellpadding="3" cellspacing="0" border="0">
-  <tr valign="top"> 
-    <td><img src="../images/tip.gif" alt="tip">&nbsp;</td>
-    <td> If the HTTP monitor does not show the data records for a running web 
-      module, verify that the monitor is enabled for the server by right-clicking 
-      on the server's node in the Runtime tab and choosing Properties from the 
-      contextual menu. The Enable HTTP Monitor checkbox should be selected.</td>
-  </tr>
-</table>
-<p>To configure the HTTP Server, right-click the HTTP Server node in the Runtime 
-  window, and choose Properties. Note that the HTTP server is not the same as 
-  a web server instance, and therefore cannot be configured using a web server 
-  node in the Server Registry on the Runtime tab of the Explorer. </p>
-<table>
-<tr>
-<th colspan=2 align=left><a name="seealso">See Also</a></th>
-</tr>
-<tr>
-<td width="23"></td>
-<td>
-<a href="view.html">Viewing HTTP Monitor Data Records</a><br>
-      <a href="sort.html">Using the HTTP Monitor Toolbar</a><br>
-<a href="store.html">Saving HTTP Monitor Data Records</a>
-</td>
-</tr>
-</table>
+  <p>You can analyze your HTTP requests, store request records for future sessions, and replay and edit previous HTTP
+  requests. HTTP request records are stored until you exit the IDE, unless 
+  you explicitly save them.</p>
 <hr>
 <small><a href="../credits.html">Legal Notices</a> 
 <table cellpadding="20" border="0"> 
