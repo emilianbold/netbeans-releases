@@ -58,6 +58,9 @@ public class CmpFieldHelper {
     }
 
     public void setType(String newType) {
+        if (isPrimary()) {
+            entityHelper.setPrimKeyClass(newType);
+        }
         Identifier identifier = Identifier.create(newType);
         Type type = Type.createClass(identifier);
         try {
@@ -167,6 +170,9 @@ public class CmpFieldHelper {
 
     public void setFieldName(String newName) {
         //todo: launch refactoring instead of following code
+        if (isPrimary()) {
+            entityHelper.setPrimkeyField(newName);
+        }
         ClassElement localBusinessInterfaceClass = entityHelper.getLocalBusinessInterfaceClass();
         MethodElement localGetter = getBusinessMethod(localBusinessInterfaceClass, getterMethod);
         MethodElement localSetter = getBusinessMethod(localBusinessInterfaceClass, setterMethod);
@@ -194,6 +200,10 @@ public class CmpFieldHelper {
 
     public String getFieldName() {
         return field.getFieldName();
+    }
+
+    public boolean isPrimary() {
+        return getFieldName().equals(entityHelper.getPrimkeyField());
     }
 
     public boolean edit() {

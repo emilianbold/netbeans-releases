@@ -10,7 +10,6 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
@@ -21,12 +20,11 @@ import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.action.AddSele
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.methodcontroller.EntityMethodController;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
-import org.openide.src.MethodElement;
-import org.openide.src.ClassElement;
-import org.openide.src.Type;
 import org.openide.src.Identifier;
-import org.openide.src.SourceException;
+import org.openide.src.MethodElement;
 import org.openide.src.MethodParameter;
+import org.openide.src.SourceException;
+import org.openide.src.Type;
 
 import java.lang.reflect.Modifier;
 
@@ -103,5 +101,21 @@ public class EntityHelper extends EntityAndSessionHelper {
 
     public boolean hasRemoteInterface() {
         return ejb.getRemote() != null;
+    }
+
+    public String getPrimkeyField() {
+        return ((Entity) ejb).getPrimkeyField();
+    }
+
+    public String getPrimKeyClass() {
+        return ((Entity) ejb).getPrimKeyClass();
+    }
+
+    public void setPrimkeyField(String fieldName) {
+        ((Entity) ejb).setPrimkeyField(fieldName);
+    }
+
+    public void setPrimKeyClass(String className) {
+        ((Entity) ejb).setPrimKeyClass(className);
     }
 }
