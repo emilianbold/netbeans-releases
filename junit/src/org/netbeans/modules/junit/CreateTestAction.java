@@ -128,7 +128,7 @@ public class CreateTestAction extends CookieAction {
 
         TestCreator.initialize();
         progress.showMe(true);
-
+        progress.displayStatusText(NbBundle.getMessage(CreateTestAction.class, "MSG_StatusBar_CreateTest_Begin"));
         try {
             // go through all nodes
             for(int nodeIdx = 0; nodeIdx < nodes.length; nodeIdx++) {
@@ -141,11 +141,11 @@ public class CreateTestAction extends CookieAction {
                     }
                 }
             }
-            org.openide.awt.StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(CreateTestAction.class, "MSG_StatusBar_CreateTests_Finished"));
+            progress.displayStatusText(NbBundle.getMessage(CreateTestAction.class, "MSG_StatusBar_CreateTests_Finished"));            
         }
         catch (CreateTestCanceledException e) {
             // tests creation has been canceled by the user
-            org.openide.awt.StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(CreateTestAction.class, "MSG_StatusBar_CreateTests_Cancelled"));
+            progress.displayStatusText(NbBundle.getMessage(CreateTestAction.class, "MSG_StatusBar_CreateTests_Cancelled"));            
         }
         finally {            
             progress.hideMe();
@@ -160,7 +160,7 @@ public class CreateTestAction extends CookieAction {
     private static final String msgScanning = NbBundle.getMessage(CreateTestAction.class, "LBL_generator_status_scanning");
     private static final String msgIgnoring = NbBundle.getMessage(CreateTestAction.class, "LBL_generator_status_ignoring");
 
-    private JUnitProgress progress = new JUnitProgress();
+    private JUnitProgress progress = new JUnitProgress(NbBundle.getMessage(JUnitProgress.class, "LBL_generator_progress_title"));
     private class CreateTestCanceledException extends Exception {}
     
     private void createSuiteTest(FileSystem fsTest, DataFolder folder, LinkedList suite, DataObject doSuiteT, LinkedList parentSuite) {

@@ -32,6 +32,10 @@
               <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
               <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.gif"/>
            </file>
+           <file name="org-netbeans-modules-junit-junit-testrunner.xml" url="Mount-java-JUnit-testrunner.xml">
+              <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
+              <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.gif"/>
+           </file>
          </folder>
     </folder>
 

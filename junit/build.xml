@@ -50,6 +50,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="jars" depends="compile">
     <mkdir dir="netbeans/modules"/>
+    <mkdir dir="netbeans/modules/ext"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
     <jar jarfile="netbeans/modules/junit.jar"
@@ -57,7 +58,14 @@ Microsystems, Inc. All Rights Reserved.
             basedir="src"
             excludesfile="../nbbuild/standard-jar-excludes.txt"
             compress="false"
-	    includes="org/netbeans/modules/junit/**">
+	    includes="org/netbeans/modules/junit/**"
+            excludes="org/netbeans/modules/junit/testrunner/**">
+    </jar>
+    <jar jarfile="netbeans/modules/ext/junit-testrunner.jar"
+            basedir="src"
+            excludesfile="../nbbuild/standard-jar-excludes.txt"
+            compress="false"
+	    includes="org/netbeans/modules/junit/testrunner/**">            
     </jar>
   </target>
 
