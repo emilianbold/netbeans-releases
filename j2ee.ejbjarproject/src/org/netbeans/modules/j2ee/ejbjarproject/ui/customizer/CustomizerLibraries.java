@@ -154,7 +154,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         
         TableColumn column = table.getColumnModel().getColumn(1);
         JTableHeader header = table.getTableHeader();
-        column.setMaxWidth(8 + SwingUtilities.computeStringWidth(header.getFontMetrics(header.getFont()), String.valueOf(column.getHeaderValue())));
+        column.setMaxWidth(24 + SwingUtilities.computeStringWidth(header.getFontMetrics(header.getFont()), String.valueOf(column.getHeaderValue())));
         header.setReorderingAllowed(false);
     }
     
