@@ -110,7 +110,8 @@ Microsystems, Inc. All Rights Reserved.
                 
                 <!-- run also window system tests -->
                 <include name="org/openide/windows/*Test.class"/>
-                
+                <!-- the TopComponentTest excluded because of issue # -->
+                <exclude name="org/openide/windows/TopComponentTest.class"/>                
                 <!-- originally part of ide mode -->
                 <include name="org/openide/explorer/propertysheet/DefaultPropertyModelTest.class"/>
                 <include name="org/openide/explorer/propertysheet/PropertySheetTest.class"/>
