@@ -183,8 +183,8 @@ public class TableNodeInfo extends DatabaseNodeInfo {
     {
         Vector charr = new Vector();
 
-        // it is unnecessary (it caused the problem with Indexes node)
-        // put(DatabaseNodeInfo.CHILDREN, charr);
+        // it is unnecessary (it caused the problem with Indexes node) ?????
+        put(DatabaseNodeInfo.CHILDREN, charr);
 
         DatabaseNodeChildren chil = (DatabaseNodeChildren)getNode().getChildren();
         Node[] chilNodes = chil.getNodes();

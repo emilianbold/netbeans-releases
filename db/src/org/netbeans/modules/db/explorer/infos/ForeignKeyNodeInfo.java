@@ -68,8 +68,8 @@ public class ForeignKeyNodeInfo extends TableNodeInfo {
         Vector charr = new Vector();
         DatabaseNodeChildren chil = (DatabaseNodeChildren)getNode().getChildren();
 
-        // it is unnecessary
-        // put(DatabaseNodeInfo.CHILDREN, charr);
+        // it is unnecessary ?????
+        put(DatabaseNodeInfo.CHILDREN, charr);
         chil.remove(chil.getNodes());
         initChildren(charr);
         Enumeration en = charr.elements();
