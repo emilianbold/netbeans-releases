@@ -186,13 +186,12 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             public void run () {
                 DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager ().
                     getCurrentEngine ();
-                String language = DebuggerManager.getDebuggerManager ().
-                    getCurrentSession ().getCurrentLanguage ();
                 HashMap newAnnotations = new HashMap ();
                 int i, k = stack.length;
                 for (i = 1; i < k; i++) {
 
                     // 1) check Line
+                    String language = stack[i].getDefaultStratum();                    
                     String resourceName = EditorContextBridge.getRelativePath
                         (stack [i], language);
                     int lineNumber = stack [i].getLineNumber (language);
