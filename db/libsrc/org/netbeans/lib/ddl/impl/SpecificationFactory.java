@@ -73,9 +73,7 @@ public class SpecificationFactory implements DatabaseSpecificationFactory, Drive
     * be read from default place or from folder specified by system property named
     * "db.specifications.folder".
     */
-    public SpecificationFactory ()
-    throws DDLException
-    {
+    public SpecificationFactory () throws DDLException {
         String fileDB = System.getProperty("db.specifications.file");
         String fileDrv = System.getProperty("driver.specifications.file");
         SpecificationParser parser;
@@ -129,16 +127,14 @@ public class SpecificationFactory implements DatabaseSpecificationFactory, Drive
     * It returns string array only, if you need a Specification instance, use 
     * appropriate createSpecification method.
     */
-    public Set supportedDatabases()
-    {
+    public Set supportedDatabases() {
         return dbSpecs.keySet();
     }
 
     /** Returns true if database (specified by databaseProductName) is
     * supported by system. Does not throw exception if it doesn't.
     */	
-    public boolean isDatabaseSupported(String databaseProductName)
-    {
+    public boolean isDatabaseSupported(String databaseProductName) {
         return (dbSpecs.containsKey(databaseProductName));
     }
 
@@ -148,9 +144,7 @@ public class SpecificationFactory implements DatabaseSpecificationFactory, Drive
     * and reads database metadata. Throws DatabaseProductNotFoundException if database
     * (obtained from database metadata) is not supported.
     */
-    public DatabaseSpecification createSpecification(DBConnection dbcon)
-    throws DatabaseProductNotFoundException, DDLException
-    {
+    public DatabaseSpecification createSpecification(DBConnection dbcon) throws DatabaseProductNotFoundException, DDLException {
         Connection con = dbcon.createJDBCConnection();
         DatabaseSpecification spec = createSpecification(dbcon, con);
         try {
@@ -167,9 +161,7 @@ public class SpecificationFactory implements DatabaseSpecificationFactory, Drive
     * and reads database metadata. Throws DatabaseProductNotFoundException if database
     * (obtained from database metadata) is not supported. Uses given Connection
     */
-    public DatabaseSpecification createSpecification(DBConnection dbcon, Connection jdbccon)
-    throws DatabaseProductNotFoundException, DDLException
-    {
+    public DatabaseSpecification createSpecification(DBConnection dbcon, Connection jdbccon) throws DatabaseProductNotFoundException, DDLException {
         String pn = null;
         try {
             boolean close = (jdbccon != null ? false : true);
@@ -193,9 +185,7 @@ public class SpecificationFactory implements DatabaseSpecificationFactory, Drive
     * reads metadata as createSpecification(DBConnection connection), but always
     * uses specified databaseProductName. This is not recommended technique.
     */
-    public DatabaseSpecification createSpecification(DBConnection connection, String databaseProductName, Connection c)
-    throws DatabaseProductNotFoundException
-    {
+    public DatabaseSpecification createSpecification(DBConnection connection, String databaseProductName, Connection c) throws DatabaseProductNotFoundException {
         //IBM DB2 hack
         if (databaseProductName.toUpperCase().startsWith("DB2/")) //NOI18N
             databaseProductName = "DB2/"; //NOI18N
@@ -219,9 +209,11 @@ public class SpecificationFactory implements DatabaseSpecificationFactory, Drive
     * reads metadata as createSpecification(DBConnection connection), but always
     * uses specified databaseProductName. This is not recommended technique.
     */
-    public DatabaseSpecification createSpecification(String databaseProductName, Connection c)
-    throws DatabaseProductNotFoundException
-    {
+    public DatabaseSpecification createSpecification(String databaseProductName, Connection c) throws DatabaseProductNotFoundException {
+        //IBM DB2 hack
+        if (databaseProductName.toUpperCase().startsWith("DB2/")) //NOI18N
+            databaseProductName = "DB2/"; //NOI18N
+        
         HashMap product = (HashMap) dbSpecs.get(databaseProductName);
         if (product == null) throw new DatabaseProductNotFoundException(databaseProductName);
         HashMap specmap = deepUnion(product, (HashMap) dbSpecs.get("GenericDatabaseSystem"), true);
@@ -229,15 +221,15 @@ public class SpecificationFactory implements DatabaseSpecificationFactory, Drive
         return new Specification(specmap, c);
     }
 
-    public DatabaseSpecification createSpecification(Connection c)
-    throws DatabaseProductNotFoundException, SQLException
-    {
+    public DatabaseSpecification createSpecification(Connection c) throws DatabaseProductNotFoundException, SQLException {
         return createSpecification(c, c.getMetaData().getDatabaseProductName().trim());
     }
 
-    public DatabaseSpecification createSpecification(Connection c, String databaseProductName)
-    throws DatabaseProductNotFoundException
-    {
+    public DatabaseSpecification createSpecification(Connection c, String databaseProductName) throws DatabaseProductNotFoundException {
+        //IBM DB2 hack
+        if (databaseProductName.toUpperCase().startsWith("DB2/")) //NOI18N
+            databaseProductName = "DB2/"; //NOI18N
+        
         HashMap product = (HashMap) dbSpecs.get(databaseProductName);
         if (product == null) throw new DatabaseProductNotFoundException(databaseProductName);
         HashMap specmap = deepUnion(product, (HashMap) dbSpecs.get("GenericDatabaseSystem"), true);
@@ -248,15 +240,13 @@ public class SpecificationFactory implements DatabaseSpecificationFactory, Drive
 
     /** Returns debug-mode flag
     */
-    public boolean isDebugMode()
-    {
+    public boolean isDebugMode() {
         return debug;
     }
 
     /** Sets debug-mode flag
     */
-    public void setDebugMode(boolean mode)
-    {
+    public void setDebugMode(boolean mode) {
         debug = mode;
     }
 
@@ -264,16 +254,14 @@ public class SpecificationFactory implements DatabaseSpecificationFactory, Drive
     * It returns string array only, if you need a Specification instance, use 
     * appropriate createDriverSpecification method.
     */
-    public Set supportedDrivers()
-    {
+    public Set supportedDrivers() {
         return drvSpecs.keySet();
     }
 
     /** Returns true if driver (specified by driverName) is
     * supported by system. Does not throw exception if it doesn't.
     */	
-    public boolean isDriverSupported(String driverName)
-    {
+    public boolean isDriverSupported(String driverName) {
         return (drvSpecs.containsKey(driverName));
     }
 
@@ -294,8 +282,7 @@ public class SpecificationFactory implements DatabaseSpecificationFactory, Drive
     /** Creates deep copy of Map.
     * All items will be cloned. Used internally in this object.
     */
-    private HashMap deepClone(HashMap map)
-    {
+    private HashMap deepClone(HashMap map) {
         HashMap newone = (HashMap)map.clone();
         Iterator it = newone.keySet().iterator();
         while (it.hasNext()) {
@@ -316,8 +303,7 @@ public class SpecificationFactory implements DatabaseSpecificationFactory, Drive
     /** Joins base map with additional one.
     * Copies keys only if not present in base map. Used internally in this object.
     */
-    private HashMap deepUnion(HashMap base, HashMap additional, boolean deep)
-    {
+    private HashMap deepUnion(HashMap base, HashMap additional, boolean deep) {
         Iterator it = additional.keySet().iterator();
         while (it.hasNext()) {
             Object addkey = it.next();
