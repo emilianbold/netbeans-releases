@@ -1,7 +1,7 @@
 OpenIDE-Module: org.netbeans.modules.html/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/html/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/html/mf-layer.xml
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 2.1
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 2.3
 OpenIDE-Module-Specification-Version: 1.9
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 

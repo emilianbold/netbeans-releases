@@ -1,0 +1,264 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="html tests" basedir="." default="all">
+
+    <property name="build.sysclasspath" value="ignore"/>
+
+    <property name="netbeans.home" location="../../nbbuild/netbeans"/>
+    <property name="netbeans.test.home" value="${netbeans.home}"/>
+    
+    <!-- says how to create classpath for code tests -->
+    <!-- can have values src, jar, ide               -->
+    <property name="xtest.source.location" value="src"/>
+    
+    <property name="xtest.home" location="../../xtest"/>
+
+    <property name="xtest.build" location="."/>    
+    <property name="xtest.file.name" value="test.jar"/>
+    <property name="xtest.file.location" value="lib"/>
+    
+    <!-- default testtypes, attributes and executors -->
+    <property name="xtest.testtype" value="unit"/>
+    <property name="xtest.attribs" value="stable"/>
+    <property name="xtest.executors" value="code"/>
+    
+    <!-- properties just for compiler -->
+    <property name="build.compiler.deprecation" value="off"/>
+    <!-- should be default ON, because it helps to find problems -->
+    <property name="build.compiler.debug" value="on"/>
+    
+    <!-- These in/excludes will be added to xtest.pattern    -->
+    <!-- if you want to use these properties, you should use -->
+    <!-- config with empty testbag                           -->
+    <property name="xtest.includes" value=""/>
+    <property name="xtest.excludes" value=""/>   
+    
+    <property name="xtest.general.antfile" location="${xtest.home}/lib/module_harness.xml"/>
+    
+    <!-- =========== -->
+    <!-- Init target -->
+    <!-- =========== -->
+    
+    <target name="init">
+        <taskdef name="nbpath" classname="org.netbeans.xtest.NbPath" classpath="${xtest.home}/lib/xtest.jar"/>
+        <nbpath nbhome="${netbeans.test.home}" xthome="${xtest.home}" xtexhome="${xtest.home}"/>
+    </target>
+    
+    <!-- ============ -->
+    <!-- Main targets -->
+    <!-- ============ -->
+    
+    <target name="all" depends="runtests"/>
+    
+    <!-- This target builds tests -->
+    <target name="buildtests">
+       <antcall target="jars"/>
+    </target>
+    
+    <!-- This target cleans tests -->
+    <target name="cleantests">
+       <!-- This calls common clean process. -->
+       <!-- You can write your own is you need something special -->
+       <ant dir="." antfile="${xtest.general.antfile}"
+             target="cleantests">
+       </ant>
+    </target> 
+
+    <!-- This target runs tests. You should not change this --> 
+    <!-- target unless you realy know what you are doing -->
+    <target name="runtests" depends="buildtests">
+        <ant dir="." antfile="${xtest.general.antfile}"
+             target="runtests"/>
+    </target>
+    
+    <!-- This target is executed from test-executor in newly created Project -->
+    <!-- Name of this task is defined in cfg-xxx.xml -->
+    <!-- This target executes tests inside IDE -->
+    <target name="runidetest">
+        <path id="idetest.classpath">
+          <pathelement path="${tbag.classpath}/../testsrc"/>
+          <pathelement path="${tbag.classpath}/../testfs"/>
+        </path>
+        <property name="xtest.extra.jars" refid="idetest.classpath"/>
+        <ant dir="." antfile="${xtest.general.antfile}"
+             target="test">
+           <property name="xtest.exectype" value="ide"/>
+           <property name="xtest.ide.commandline.suffix" 
+                     value="-J-Dxtest.useclassloader=org.netbeans.modules.html"/>
+        </ant>
+    </target>
+    
+    <!-- This target is executed from test-executor in newly created Project -->
+    <!-- Name of this task is defined in cfg-xxx.xml -->
+    <!-- This target executes standalone tests -->
+    <target name="runcodetest" depends="prepare-codetest-classpath">
+        <path id="codetest.complete.classpath">
+          <path refid="codetest.classpath"/>
+          <pathelement path="${tbag.classpath}"/>
+        </path>
+        <property name="codetest.classpath" refid="codetest.complete.classpath"/>
+        <ant dir="." antfile="${xtest.general.antfile}"
+             target="test">
+           <property name="xtest.exectype" value="code"/>
+        </ant>
+    </target>
+    
+    <!-- This target is executed from test-executor in newly created Project -->
+    <!-- Name of this task is defined in cfg-xxx.xml -->
+    <target name="test_report">
+        <ant dir="." antfile="${xtest.general.antfile}"
+             target="test_report"/>
+    </target>
+    
+    <target name="cleanresults">
+        <ant dir="." antfile="${xtest.general.antfile}"
+             target="cleanresults"/>
+    </target>
+    
+    <target name="realclean" depends="cleantests,cleanresults">
+        <ant dir="." antfile="${xtest.general.antfile}"
+             target="realclean"/>
+    </target>
+    
+    <target name="printconfig">
+        <echo message="Default config is testtype: ${xtest.testtype}, attributes: ${xtest.attribs}."/>
+    </target>
+
+   <!-- ========================================================== -->
+   <!-- ========================================================== -->
+
+    <target name="which-classpath">
+        <!-- this "switch" will decide how to create classpath for code tests -->
+        <condition property="jarcode.classpath">
+            <equals arg1="${xtest.source.location}" arg2="jar"/>
+        </condition>
+        <condition property="srccode.classpath">
+            <equals arg1="${xtest.source.location}" arg2="src"/>
+        </condition>
+        <condition property="idecode.classpath">
+            <equals arg1="${xtest.source.location}" arg2="ide"/>
+        </condition>
+    </target>
+
+    <!-- ========================= -->
+    <!-- Classpath for compilation -->
+    <!-- ========================= -->
+    
+    <target name="prepare-compile-classpath"
+         depends="jarcompile-classpath,srccompile-classpath,idecompile-classpath"/>
+    
+    <target name="jarcompile-classpath" depends="init,which-classpath" if="jarcode.classpath">
+        <echo message="Using jars classpath for compilation."/>
+    	<!-- this classpath will be used for compiling tests against jars -->
+	<path id="compiletest.classpath">        
+	    <pathelement location="../netbeans/modules/html.jar"/>
+	        <fileset dir="../../openide/netbeans/lib">
+                    <include name="openide*.jar"/>
+                </fileset>
+	    <pathelement path="${junit.path}"/>
+	    <pathelement path="${xerces.path}"/>
+	</path>
+    </target>
+        
+    <target name="srccompile-classpath" depends="init,which-classpath" if="srccode.classpath">
+        <echo message="Using srcs classpath for compilation."/>
+    	<!-- this classpath will be used for compiling tests against sources -->
+    	<path id="compiletest.classpath">        
+	        <pathelement location="../src"/>
+	        <fileset dir="../../openide/netbeans/lib">
+                    <include name="openide*.jar"/>
+                </fileset>
+	        <pathelement path="${junit.path}"/>
+		<pathelement path="${xerces.path}"/>
+	</path>
+    </target>
+    
+    <target name="idecompile-classpath" depends="init,which-classpath" if="idecode.classpath">
+        <echo message="Using IDE classpath for compilation."/>
+    	<!-- this classpath will be used for compiling tests against installed IDE -->
+    	<path id="compiletest.classpath">        
+	        <pathelement location="${netbeans.home}/modules/html.jar"/>
+	        <fileset dir="${netbeans.home}/lib">
+                    <include name="openide*.jar"/>
+                </fileset>
+	        <pathelement path="${junit.path}"/>
+		<pathelement path="${xerces.path}"/>
+  	</path>
+    </target>
+    
+    <!-- ================================== -->
+    <!-- Classpath for execution code tests -->
+    <!-- ================================== -->
+    
+    <target name="prepare-codetest-classpath" 
+            depends="jartest-classpath,srctest-classpath,idetest-classpath"/>
+    
+    <target name="jartest-classpath" depends="which-classpath" if="jarcode.classpath">
+        <echo message="Using jars classpath."/>
+        <!-- this classpath will be used for executing tests against jars -->
+	<path id="codetest.classpath">
+	        <pathelement location="../netbeans/modules/html.jar"/>
+	        <pathelement location="../../openide/netbeans/lib/openide.jar"/>
+	        <pathelement location="../../core/netbeans/lib/core.jar"/>
+    	</path>
+    </target>
+        
+    <target name="srctest-classpath" depends="which-classpath" if="srccode.classpath">
+        <echo message="Using srcs classpath."/>
+        <!-- this classpath will be used for executing tests against sources -->
+    	<path id="codetest.classpath">
+	        <pathelement location="../src"/>
+	        <pathelement location="../../openide/netbeans/lib/openide.jar"/>
+	        <pathelement location="../../core/netbeans/lib/core.jar"/>
+    	</path>
+    </target>
+    
+    <target name="idetest-classpath" depends="which-classpath" if="idecode.classpath">
+        <echo message="Using IDE classpath."/>
+        <!-- this classpath will be used for executing tests against installed IDE -->
+    	<path id="codetest.classpath">
+	        <pathelement location="${netbeans.home}/modules/html.jar"/>
+        	<pathelement location="${netbeans.home}/lib/openide.jar"/>        
+	        <pathelement location="${netbeans.home}/lib/core.jar"/>
+    	</path>
+    </target>
+    
+    <!-- ======== -->
+    <!-- Building -->
+    <!-- ======== -->
+    
+    <target name="compile" depends="prepare-compile-classpath">
+       <property name="compiletest.classpath" refid="compiletest.classpath"/>
+       <ant dir="." antfile="${xtest.general.antfile}"
+            target="compiletests">
+           <property name="compile.srcdir" value="unit/src"/>
+       </ant>
+    </target>
+    
+    <!-- Creates lib/test.jar with all tests for this module,       -->
+    <!-- maybe there should be more includes here, not just classes -->
+    <target name="jars" depends="compile" unless="xtest.distexec">
+        <mkdir dir="${xtest.build}/${xtest.file.location}"/>
+        <jar basedir="." 
+            jarfile="${xtest.build}/${xtest.file.location}/${xtest.file.name}"
+            includesfile="${xtest.home}/standard-test-includes.txt"
+            excludesfile="${xtest.home}/standard-test-excludes.txt">
+            <include name="**/src/**/*"/>
+        </jar>
+    </target>
+
+    
+</project>
+
