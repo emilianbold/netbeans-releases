@@ -18,100 +18,56 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 
-import java.util.Enumeration;
-
-import java.net.URL;
-import java.net.URLClassLoader;
-
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.project.ui.OpenProjectList;
-import org.netbeans.modules.project.ui.OpenProjectListSettings;
-
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
-
-import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 
 
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
-
-import org.openide.cookies.SaveCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
-import org.openide.modules.InstalledFileLocator;
-import org.openide.loaders.DataObject;
-import org.openide.util.RequestProcessor;
-import org.openide.util.RequestProcessor.Task;
-
-import org.netbeans.modules.editor.java.JCStorage;
-import org.netbeans.modules.vcs.advanced.CommandLineVcsFileSystem;
-import org.netbeans.modules.vcscore.settings.GeneralVcsSettings;
-
-public class IDESetupTest extends NbTestCase {
+public class IDESetupTest extends org.netbeans.junit.NbTestCase {
     
     public IDESetupTest(java.lang.String testName) {
         super(testName);
     }
-    
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        return new NbTestSuite(IDESetupTest.class);
-    }
-    
-    /** Configures filesystems. */
-    public void testSetupFilesystems() {
-        Repository r = Repository.getDefault();
-        File src = new File (System.getProperty("xtest.sketchpad"), "srcdir");
-        
-        InstalledFileLocator ilf = InstalledFileLocator.getDefault();
-        File jarFile = ilf.locate("modules/autoload/ext/xerces-2.6.0.jar", null, false);
-        if (jarFile == null) {
-            // NB3.5.1 ships with older version
-            jarFile = ilf.locate("modules/autoload/ext/xerces-2.0.2-1.jar", null, false);
-        }
-        File vcs = new File (System.getProperty("xtest.sketchpad"), "vcsdir");
-    }
 
-
-    
     
     public void testOpenWebProject() {
-        openProject(System.getProperty("xtest.data")+"/PerformanceTestWebApplication");
+        org.netbeans.junit.ide.ProjectSupport.openProject(System.getProperty("xtest.data")+"/PerformanceTestWebApplication");
+    }
+
+    
+    /** 
+     * Close Welcome. 
+     */
+    public void testCloseWelcome(){
+        new TopComponentOperator("Welcome").close(); //NOI18N 
+        
     }
     
     
-  
-    public void openProject(String projectPath) {
-        File projectDir = new File(projectPath);
-        
-        OpenProjectListSettings opls = OpenProjectListSettings.getInstance();
-        
-        Project project = OpenProjectList.fileToProject( projectDir );
-        
-        if ( project != null ) {
-            OpenProjectList.getDefault().open(
-            project,                    // Put the project into OpenProjectList
-            opls.isOpenSubprojects() ); // And optionaly open subprojects
-            
-            if ( opls.isOpenAsMain() ) {
-                // Set main project if selected
-                OpenProjectList.getDefault().setMainProject( project );
-            }
-        } else {
-        }
+    /** 
+     * Close Memory Toolbar. 
+     */
+    public void testCloseMemoryToolbar(){
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenu("View|Toolbars|Memory","|");
     }
     
     
+    /** Configures filesystems. */
+//    public void testSetupFilesystems() {
+//        Repository r = Repository.getDefault();
+//        File src = new File (System.getProperty("xtest.sketchpad"), "srcdir");
+//        
+//        InstalledFileLocator ilf = InstalledFileLocator.getDefault();
+//        File jarFile = ilf.locate("modules/autoload/ext/xerces-2.6.0.jar", null, false);
+//        if (jarFile == null) {
+//            // NB3.5.1 ships with older version
+//            jarFile = ilf.locate("modules/autoload/ext/xerces-2.0.2-1.jar", null, false);
+//        }
+//        File vcs = new File (System.getProperty("xtest.sketchpad"), "vcsdir");
+//    }
+
+
     /* public void openProject(String projectName) {
         final MainWithProjectsInterface projectsHandle;
         try {
@@ -162,7 +118,7 @@ public class IDESetupTest extends NbTestCase {
     }
 */    
     
-    private FileSystem installVcs(Repository r, File f) {
+/*    private FileSystem installVcs(Repository r, File f) {
         final CommandLineVcsFileSystem fs = new CommandLineVcsFileSystem ();
         try {
             // set config file and turn off refresh
@@ -193,4 +149,5 @@ public class IDESetupTest extends NbTestCase {
         }
         return fs;
     }
+ */
 }
