@@ -76,8 +76,6 @@ import org.openide.util.Utilities;
  */
 public class SimpleTestStepLocation implements WizardDescriptor.Panel {
     
-    private static final String PACKAGES_NODE_ICON_BASE
-     = "org/netbeans/modules/java/j2seproject/ui/resources/packageRoot";//NOI18N
     private final String testClassNameSuffix
             = NbBundle.getMessage(TestCreator.class,
                                   "PROP_test_classname_suffix");        //NOI18N
