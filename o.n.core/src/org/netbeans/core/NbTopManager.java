@@ -28,6 +28,7 @@ import javax.swing.border.*;
 
 import com.netbeans.ide.util.datatransfer.ExClipboard;
 import com.netbeans.ide.*;
+import com.netbeans.ide.awt.MutableKeymap;
 import com.netbeans.ide.loaders.*;
 import com.netbeans.ide.actions.*;
 import com.netbeans.ide.cookies.SaveCookie;
@@ -36,12 +37,10 @@ import com.netbeans.ide.debugger.DebuggerException;
 import com.netbeans.ide.filesystems.*;
 import com.netbeans.ide.filesystems.jar.JarFileSystem;
 import com.netbeans.ide.filesystems.local.*;
-import com.netbeans.ide.keys.ShortcutContext;
 import com.netbeans.ide.options.ControlPanel;
 import com.netbeans.ide.windows.*;
 import com.netbeans.ide.explorer.*;
 import com.netbeans.ide.explorer.view.BeanTreeView;
-import com.netbeans.ide.keys.ShortcutContext;
 
 
 import com.netbeans.developer.impl.actions.*;
@@ -65,8 +64,8 @@ import com.netbeans.ide.util.Utilities;
 * @author Ales Novak, Jaroslav Tulach, Ian Formanek, Petr Hamernik, Jan Jancura
 */
 public class NbTopManager extends TopManager {
-   /** stores main shortcut context*/
-  static private ShortcutContext shortcutContext;
+  /** stores main shortcut context*/
+  static private MutableKeymap shortcutContext;
 
   /** currently used debugger or null if none is in use */
   private static Debugger debugger;
@@ -140,9 +139,9 @@ public class NbTopManager extends TopManager {
   }
 
   /** @return default root of keyboard shortcuts */
-  public ShortcutContext getDefaultShortcutContext() {
+  public MutableKeymap getGlobalKeymap () {
     if (shortcutContext == null) {
-      shortcutContext = new ShortcutContext ();
+      shortcutContext = null;// PENDING new ShortcutContext ();
     }
     return shortcutContext;
   }
