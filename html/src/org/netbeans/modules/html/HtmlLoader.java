@@ -47,7 +47,7 @@ public class HtmlLoader extends UniFileLoader {
 
 
   public HtmlLoader() {
-    super (MultiDataObject.class);
+    super (HtmlDataObject.class);
     setDisplayName(NbBundle.getBundle(HtmlLoader.class).
                    getString("PROP_HtmlLoader_Name"));
     getExtensions ().addExtension ("html");
@@ -93,6 +93,8 @@ public class HtmlLoader extends UniFileLoader {
 
 /*
 * Log
+*  24   Gandalf   1.23        11/25/99 Jesse Glick     Fixed bogus 
+*       representation class.
 *  23   Gandalf   1.22        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
 *       Microsystems Copyright in File Comment
 *  22   Gandalf   1.21        9/30/99  Jan Jancura     Bug 3921 & 3392
